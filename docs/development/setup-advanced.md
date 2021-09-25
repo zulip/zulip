@@ -279,7 +279,7 @@ likely only a few lines of changes to `tools/lib/provision.py` and
 `scripts/lib/setup-apt-repo` if you'd like to do it yourself and
 submit a pull request, or you can ask for help in
 [#development help](https://chat.zulip.org/#narrow/stream/49-development-help)
-on chat.zulip.org, and a core team member can help guide you through
+on [The Zulip developer community](https://zulip.com/developer-community/), and a core team member can help guide you through
 adding support for the platform.
 
 ## Installing on Cloud9

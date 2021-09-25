@@ -33,7 +33,7 @@ to each new major release.
 
 Since Zulip's settings file is a Python script, there are a number of
 other things that one can configure that are not documented; ask on
-[chat.zulip.org](https://zulip.com/developer-community/)
+[The Zulip developer community](https://zulip.com/developer-community/)
 if there's something you'd like to do but can't figure out how to.
 
 ## Specific settings

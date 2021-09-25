@@ -170,14 +170,14 @@ projects. We usually decide who will mentor which projects based in
 part on who is a good fit for the needs of each student as well as
 technical expertise as well as who has available time during the
 summer. You can reach us via
-[#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) on [the Zulip
+[#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) on [The Zulip
 development community server](https://zulip.com/developer-community/),
 (compose a new stream message with your name as the topic).
 
 Zulip operates under group mentorship. That means you should
-generally post in public streams on chat.zulip.org, not send private
+generally post in public streams on [The Zulip developer community](https://zulip.com/developer-community/), not send private
 messages, for assistance. Our preferred approach is to just post in
-an appropriate public stream on chat.zulip.org and someone will help
+an appropriate public stream on [The Zulip developer community](https://zulip.com/developer-community/) and someone will help
 you. We list the Zulip contributors who are experts for various
 projects by name below; they will likely be able to provide you with
 the best feedback on your proposal (feel free to @-mention them in
@@ -198,8 +198,7 @@ make sure you don't make the same mistakes next time).
 Once you have several PRs merged (or at least one significant PR
 merged), you can start discussing with the Zulip development community
 the project you'd like to do, and developing a specific project plan.
-We recommend discussing what you're thinking in public streams on
-chat.zulip.org, so it's easy to get quick feedback from whoever is
+We recommend discussing what you're thinking in public streams on [The Zulip developer community](https://zulip.com/developer-community/), so it's easy to get quick feedback from whoever is
 online.
 
 ## Project ideas
@@ -588,7 +587,7 @@ Where should you publish your draft? We prefer Dropbox Paper or
 Google Docs, since those platforms allow people to look at the text
 without having to log in or download a particular app, and you can
 update the draft as you improve your idea. In either case, you should
-post the draft for feedback in chat.zulip.org.
+post the draft for feedback in [The Zulip developer community](https://zulip.com/developer-community/).
 
 Rough is fine! The ideal first draft to get feedback from the
 community on should include primarily (1) links to your contributions

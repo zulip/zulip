@@ -193,8 +193,8 @@ installing Zulip with a dedicated database server.
   subscribed (like on chat.zulip.org), add 20GB per (1000 user
   accounts) per (1M messages to public streams).
 
-- **Example:** When the
-  [chat.zulip.org](https://zulip.com/developer-community/) community server
+- **Example:** When 
+  [The Zulip developer community](https://zulip.com/developer-community/)
   had 12K user accounts (~300 daily actives) and 800K messages of
   history (400K to public streams), it was a default configuration
   single-server installation with 16GB of RAM, 4 cores (essentially

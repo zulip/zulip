@@ -28,7 +28,7 @@ Look at the surrounding code, or a similar part of the project, and try
 to do the same thing. If you think the other code has actively bad
 style, fix it (in a separate commit).
 
-When in doubt, ask in [chat.zulip.org](https://chat.zulip.org).
+When in doubt, ask in [The Zulip developer community](https://zulip.com/developer-community/).
 
 ## Lint tools
 
