@@ -576,16 +576,22 @@ class HostDomainMiddleware(MiddlewareMixin):
             return None
 
         subdomain = get_subdomain(request)
-        if (
-            subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
-            and subdomain != settings.SOCIAL_AUTH_SUBDOMAIN
-        ):
-            request_notes = RequestNotes.get_notes(request)
-            try:
-                request_notes.realm = get_realm(subdomain)
-            except Realm.DoesNotExist:
-                return render(request, "zerver/invalid_realm.html", status=404)
+        if subdomain == settings.SOCIAL_AUTH_SUBDOMAIN:
+            # Realms are not supposed to exist on SOCIAL_AUTH_SUBDOMAIN.
+            return None
+
+        request_notes = RequestNotes.get_notes(request)
+        try:
+            request_notes.realm = get_realm(subdomain)
             request_notes.has_fetched_realm = True
+        except Realm.DoesNotExist:
+            if subdomain == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
+                # The root domain is used for creating new
+                # organizations even if it does not host a realm.
+                return None
+
+            return render(request, "zerver/invalid_realm.html", status=404)
+
         return None
 
 
