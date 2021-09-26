@@ -2,7 +2,7 @@ import base64
 import os
 import re
 from collections import defaultdict
-from typing import Any, Callable, Dict, List, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 from unittest import mock, skipUnless
 
 import orjson
@@ -29,6 +29,7 @@ from zerver.decorator import (
 from zerver.forms import OurAuthenticationForm
 from zerver.lib.actions import (
     change_user_is_active,
+    do_create_realm,
     do_deactivate_realm,
     do_deactivate_user,
     do_reactivate_realm,
@@ -2061,3 +2062,47 @@ class TestIgnoreUnhashableLRUCache(ZulipTestCase):
         self.assertEqual(hits, 0)
         self.assertEqual(misses, 0)
         self.assertEqual(currsize, 0)
+
+
+class TestRequestNotes(ZulipTestCase):
+    def test_request_notes_realm(self) -> None:
+        """
+        This test verifies that .realm gets set correctly on the request notes
+        depending on the subdomain.
+        """
+
+        def mock_home(expected_realm: Optional[Realm]) -> Callable[[HttpRequest], HttpResponse]:
+            def inner(request: HttpRequest) -> HttpResponse:
+                self.assertEqual(RequestNotes.get_notes(request).realm, expected_realm)
+                return HttpResponse()
+
+            return inner
+
+        zulip_realm = get_realm("zulip")
+        with mock.patch("zerver.views.home.home_real", new=mock_home(zulip_realm)):
+            result = self.client_get("/", subdomain="zulip")
+            self.assertEqual(result.status_code, 200)
+
+        # When a request is made to the root subdomain and there is no realm on it,
+        # no realm can be set on the request notes.
+        with mock.patch("zerver.views.home.home_real", new=mock_home(None)):
+            result = self.client_get("/", subdomain="")
+            self.assertEqual(result.status_code, 200)
+
+        root_subdomain_realm = do_create_realm("", "Root Domain")
+        # Now test that that realm does get set, if it exists, for requests
+        # to the root subdomain.
+        with mock.patch("zerver.views.home.home_real", new=mock_home(root_subdomain_realm)):
+            result = self.client_get("/", subdomain="")
+            self.assertEqual(result.status_code, 200)
+
+        # Only the root subdomain allows requests to it without having a realm.
+        # Requests to non-root subdomains get stopped by the middleware and
+        # an error page is returned before the request hits the view.
+        with mock.patch("zerver.views.home.home_real") as mock_home_real:
+            result = self.client_get("/", subdomain="invalid")
+            self.assertEqual(result.status_code, 404)
+            self.assert_in_response(
+                "There is no Zulip organization hosted at this subdomain.", result
+            )
+            mock_home_real.assert_not_called()
