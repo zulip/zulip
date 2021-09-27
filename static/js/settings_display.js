@@ -78,7 +78,7 @@ export function set_up(settings_panel) {
             const data = {};
             data[setting] = JSON.stringify($(this).prop("checked"));
 
-            if (["left_side_userlist"].includes(setting)) {
+            if (["left_side_userlist"].includes(setting) && !for_realm_settings) {
                 change_display_setting(
                     data,
                     settings_panel,
