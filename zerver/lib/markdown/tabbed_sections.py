@@ -27,7 +27,7 @@ NAV_BAR_TEMPLATE = """
 """.strip()
 
 NAV_LIST_ITEM_TEMPLATE = """
-<li data-language="{data_language}" tabindex="0">{name}</li>
+<li data-language="{data_language}" tabindex="0">{label}</li>
 """.strip()
 
 DIV_TAB_CONTENT_TEMPLATE = """
@@ -141,10 +141,16 @@ class TabbedSectionsPreprocessor(Preprocessor):
     def generate_nav_bar(self, tab_section: Dict[str, Any]) -> str:
         li_elements = []
         for tab in tab_section["tabs"]:
-            li = NAV_LIST_ITEM_TEMPLATE.format(
-                data_language=tab.get("tab_name"), name=TAB_SECTION_LABELS.get(tab.get("tab_name"))
-            )
+            tab_name = tab.get("tab_name")
+            tab_label = TAB_SECTION_LABELS.get(tab_name)
+            if tab_label is None:
+                raise ValueError(
+                    f"Tab '{tab_name}' is not present in TAB_SECTION_LABELS in zerver/lib/markdown/tabbed_sections.py"
+                )
+
+            li = NAV_LIST_ITEM_TEMPLATE.format(data_language=tab_name, label=tab_label)
             li_elements.append(li)
+
         return NAV_BAR_TEMPLATE.format(tabs="\n".join(li_elements))
 
     def parse_tabs(self, lines: List[str]) -> Optional[Dict[str, Any]]:

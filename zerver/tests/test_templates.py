@@ -92,6 +92,15 @@ footer
         expected_html_sans_whitespace = expected_html.replace(" ", "").replace("\n", "")
         self.assertEqual(content_sans_whitespace, expected_html_sans_whitespace)
 
+    def test_markdown_tabbed_sections_missing_tabs(self) -> None:
+        template = get_template("tests/test_markdown.html")
+        context = {
+            "markdown_test_file": "zerver/tests/markdown/test_tabbed_sections_missing_tabs.md",
+        }
+        expected_regex = "^Tab 'minix' is not present in TAB_SECTION_LABELS in zerver/lib/markdown/tabbed_sections.py$"
+        with self.assertRaisesRegex(ValueError, expected_regex):
+            template.render(context)
+
     def test_markdown_nested_code_blocks(self) -> None:
         template = get_template("tests/test_markdown.html")
         context = {
