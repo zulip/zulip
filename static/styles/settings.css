@@ -469,6 +469,12 @@ input[type="checkbox"] {
     }
 }
 
+.display-settings-form {
+    .subsection-header h3 {
+        display: inline-block;
+    }
+}
+
 .organization-settings-parent > div:first-of-type {
     margin-top: 10px;
 }
