@@ -469,7 +469,8 @@ input[type="checkbox"] {
     }
 }
 
-.display-settings-form {
+.display-settings-form,
+.notification-settings-form {
     .subsection-header h3 {
         display: inline-block;
     }

@@ -1,7 +1,9 @@
 <form class="notification-settings-form">
     <div class="general_notifications subsection-parent">
-        <h3 class="inline-block">{{t "Notification triggers" }}</h3>
-        <div class="alert-notification general-notify-settings-status"></div>
+        <div class="subsection-header inline-block">
+            <h3>{{t "Notification triggers" }}</h3>
+            {{> settings_save_discard_widget section_name="general-notifiy-settings" show_only_indicator=true }}
+        </div>
         <p>{{t "Configure how Zulip notifies you about new messages." }}</p>
         <table class="notification-table table table-condensed table-bordered wrapped-table">
             <thead>
@@ -48,8 +50,10 @@
 
     <div class="desktop_notifications m-10 subsection-parent">
 
-        <h3 class="inline-block">{{t "Desktop message notifications" }}</h3>
-        <div class="alert-notification"></div>
+        <div class="subsection-header inline-block">
+            <h3>{{t "Desktop message notifications" }}</h3>
+            {{> settings_save_discard_widget section_name="desktop-message-settings" show_only_indicator=true }}
+        </div>
 
         {{#unless for_realm_settings}}
         <p><a class="send_test_notification">{{t "Test desktop notification" }}</a></p>
@@ -93,8 +97,10 @@
 
     <div class="mobile_notifications m-10 subsection-parent">
 
-        <h3 class="inline-block">{{t "Mobile message notifications" }}</h3>
-        <div class="alert-notification"></div>
+        <div class="subsection-header inline-block">
+            <h3>{{t "Mobile message notifications" }}</h3>
+            {{> settings_save_discard_widget section_name="mobile-message-settings" show_only_indicator=true }}
+        </div>
 
         {{#each notification_settings.mobile_notification_settings}}
         {{> settings_checkbox
@@ -108,8 +114,10 @@
 
     <div class="email_message_notifications m-10 subsection-parent">
 
-        <h3 class="inline-block">{{t "Email message notifications" }}</h3>
-        <div class="alert-notification"></div>
+        <div class="subsection-header inline-block">
+            <h3>{{t "Email message notifications" }}</h3>
+            {{> settings_save_discard_widget section_name="email-message-settings" show_only_indicator=true }}
+        </div>
 
         <label for="email_notifications_batching_period">
             {{t "Delay before sending message notification emails" }}
@@ -134,8 +142,10 @@
 
     <div class="other_email_notifications m-10 subsection-parent">
 
-        <h3 class="inline-block">{{t "Other emails" }}</h3>
-        <div class="alert-notification"></div>
+        <div class="subsection-header inline-block">
+            <h3>{{t "Other emails" }}</h3>
+            {{> settings_save_discard_widget section_name="other-emails-settings" show_only_indicator=true }}
+        </div>
         {{#each notification_settings.other_email_settings}}
         {{> settings_checkbox
           setting_name=this
