@@ -150,6 +150,7 @@ from zerver.lib.streams import (
     check_stream_name,
     create_stream_if_needed,
     get_default_value_for_history_public_to_subscribers,
+    get_web_public_streams_queryset,
     render_stream_description,
     send_stream_creation_event,
     subscribed_to_stream,
@@ -6596,7 +6597,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
         return color
 
     subscribed = []
-    for stream in Stream.objects.filter(realm=realm, is_web_public=True, deactivated=False):
+    for stream in get_web_public_streams_queryset(realm):
         stream_dict = stream.to_dict()
 
         # Add versions of the Subscription fields based on a simulated
@@ -7483,7 +7484,7 @@ def get_occupied_streams(realm: Realm) -> QuerySet:
 
 
 def get_web_public_streams(realm: Realm) -> List[Dict[str, Any]]:  # nocoverage
-    query = Stream.objects.filter(realm=realm, deactivated=False, is_web_public=True)
+    query = get_web_public_streams_queryset(realm)
     streams = Stream.get_client_data(query)
     return streams
 
@@ -7529,7 +7530,13 @@ def do_get_streams(
             invite_only_check = Q(invite_only=False)
             add_filter_option(invite_only_check)
         if include_web_public:
-            web_public_check = Q(is_web_public=True)
+            # This should match get_web_public_streams_queryset
+            web_public_check = Q(
+                is_web_public=True,
+                invite_only=False,
+                history_public_to_subscribers=True,
+                deactivated=False,
+            )
             add_filter_option(web_public_check)
         if include_owner_subscribed and user_profile.is_bot:
             bot_owner = user_profile.bot_owner

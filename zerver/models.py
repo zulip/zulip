@@ -874,7 +874,9 @@ class Realm(models.Model):
         if not self.web_public_streams_enabled():
             return False
 
-        return Stream.objects.filter(realm=self, is_web_public=True).exists()
+        from zerver.lib.streams import get_web_public_streams_queryset
+
+        return get_web_public_streams_queryset(self).exists()
 
 
 post_save.connect(flush_realm, sender=Realm)

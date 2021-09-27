@@ -399,15 +399,20 @@ def get_public_streams_queryset(realm: Realm) -> "QuerySet[Stream]":
 
 
 def get_web_public_streams_queryset(realm: Realm) -> "QuerySet[Stream]":
-    # In theory, is_web_public=True implies invite_only=False and
-    # history_public_to_subscribers=True, but it's safer to include
-    # this in the query.
+    # This should match the include_web_public code path in do_get_streams.
     return Stream.objects.filter(
         realm=realm,
+        is_web_public=True,
+        # In theory, nothing conflicts with allowing web-public access
+        # to deactivated streams.  However, we should offer a way to
+        # review archived streams and adjust their settings before
+        # allowing that configuration to exist.
         deactivated=False,
+        # In theory, is_web_public=True implies invite_only=False and
+        # history_public_to_subscribers=True, but it's safer to include
+        # these in the query.
         invite_only=False,
         history_public_to_subscribers=True,
-        is_web_public=True,
     )
 
 
