@@ -1329,7 +1329,7 @@ Output:
         # so mypy doesn't allow assigning lst.append to process_notification
         # So explicitly change parameter name to 'notice' to work around this problem
         with mock.patch(
-            "zerver.tornado.django_api.process_notification", lambda notice: lst.append(notice)
+            "zerver.tornado.event_queue.process_notification", lambda notice: lst.append(notice)
         ):
             # Some `send_event` calls need to be executed only after the current transaction
             # commits (using `on_commit` hooks). Because the transaction in Django tests never
