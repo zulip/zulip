@@ -856,7 +856,7 @@ export class MessageListView {
                     }
                     if (messages[i].sent_by_me && list.get(id) !== undefined) {
                         // If this is a reply we just sent, advance the pointer to it.
-                        list.select_id(messages[i].id, {then_scroll: true, from_scroll: true});
+                        list.select_id(messages[i].id, {then_scroll: true});
                         return {
                             need_user_to_scroll: false,
                         };
