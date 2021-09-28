@@ -68,10 +68,18 @@ export function set_up(settings_panel) {
         .find(`.setting_emojiset_choice[value="${CSS.escape(settings_object.emojiset)}"]`)
         .prop("checked", true);
 
+    if (for_realm_settings) {
+        // For the realm-level defaults page, we use the common
+        // settings_org.js handlers, so we can return early here.
+        return;
+    }
+
     $(`${CSS.escape(language_modal_elem)} [data-dismiss]`).on("click", () => {
         overlays.close_modal(language_modal_elem);
     });
 
+    // Common handler for sending requests to the server when an input
+    // element is changed.
     const all_display_settings = settings_config.get_all_display_settings();
     for (const setting of all_display_settings.settings.user_display_settings) {
         container.find(`.${CSS.escape(setting)}`).on("change", function () {

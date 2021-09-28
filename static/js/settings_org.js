@@ -16,6 +16,7 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as realm_icon from "./realm_icon";
 import * as realm_logo from "./realm_logo";
+import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as settings_config from "./settings_config";
 import * as settings_notifications from "./settings_notifications";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
@@ -119,7 +120,15 @@ export function get_realm_time_limits_in_minutes(property) {
     return val.toString();
 }
 
-function get_property_value(property_name) {
+function get_property_value(property_name, for_realm_default_settings) {
+    if (for_realm_default_settings) {
+        // realm_user_default_settings are stored in a separate object.
+        if (property_name === "twenty_four_hour_time") {
+            return JSON.stringify(realm_user_settings_defaults.twenty_four_hour_time);
+        }
+        return realm_user_settings_defaults[property_name];
+    }
+
     if (property_name === "realm_message_content_edit_limit_minutes") {
         return get_realm_time_limits_in_minutes("realm_message_content_edit_limit_seconds");
     }
@@ -182,12 +191,27 @@ function get_property_value(property_name) {
     return page_params[property_name];
 }
 
-export function extract_property_name(elem) {
+export function extract_property_name(elem, for_realm_default_settings) {
+    if (for_realm_default_settings) {
+        // We use the name attribute, rather than the ID attribute,
+        // for realm_user_default_settings. This is because the
+        // display/notification settings elements do not always have
+        // IDs, and also the emojiset input is not compatible with the
+        // ID approach.
+        return elem.attr("name");
+    }
     return elem.attr("id").split("-").join("_").replace("id_", "");
 }
 
 function get_subsection_property_elements(element) {
     const subsection = $(element).closest(".org-subsection-parent");
+    if (subsection.hasClass("emoji-settings")) {
+        // Because the emojiset widget has a unique radio button
+        // structure, it needs custom code.
+        const emojiset_elem = subsection.find("input[name='emojiset']:checked");
+        const translate_emoticons_elem = subsection.find(".translate_emoticons");
+        return [emojiset_elem, translate_emoticons_elem];
+    }
     return Array.from(subsection.find(".prop-element"));
 }
 
@@ -428,10 +452,10 @@ export let default_code_language_widget = null;
 export let notifications_stream_widget = null;
 export let signup_notifications_stream_widget = null;
 
-function discard_property_element_changes(elem) {
+function discard_property_element_changes(elem, for_realm_default_settings) {
     elem = $(elem);
-    const property_name = extract_property_name(elem);
-    const property_value = get_property_value(property_name);
+    const property_name = extract_property_name(elem, for_realm_default_settings);
+    const property_value = get_property_value(property_name, for_realm_default_settings);
 
     switch (property_name) {
         case "realm_authentication_methods":
@@ -445,6 +469,13 @@ function discard_property_element_changes(elem) {
             break;
         case "realm_default_code_block_language":
             default_code_language_widget.render(property_value);
+            break;
+        case "emojiset":
+            // Because the emojiset widget has a unique radio button
+            // structure, it needs custom reset code.
+            elem.closest(".org-subsection-parent")
+                .find(`.setting_emojiset_choice[value='${CSS.escape(property_value)}'`)
+                .prop("checked", true);
             break;
         default:
             if (property_value !== undefined) {
@@ -597,6 +628,11 @@ export function get_input_element_value(input_elem, input_type) {
             return input_elem.val().trim();
         case "number":
             return Number.parseInt(input_elem.val().trim(), 10);
+        case "radio-group":
+            if (input_elem.prop("checked")) {
+                return input_elem.val().trim();
+            }
+            return undefined;
         default:
             return undefined;
     }
@@ -633,10 +669,10 @@ function get_auth_method_table_data() {
     return new_auth_methods;
 }
 
-function check_property_changed(elem) {
+function check_property_changed(elem, for_realm_default_settings) {
     elem = $(elem);
-    const property_name = extract_property_name(elem);
-    let current_val = get_property_value(property_name);
+    const property_name = extract_property_name(elem, for_realm_default_settings);
+    let current_val = get_property_value(property_name, for_realm_default_settings);
     let changed_val;
 
     switch (property_name) {
@@ -665,12 +701,12 @@ function check_property_changed(elem) {
     return current_val !== changed_val;
 }
 
-export function save_discard_widget_status_handler(subsection) {
+export function save_discard_widget_status_handler(subsection, for_realm_default_settings) {
     subsection.find(".subsection-failed-status p").hide();
     subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements(subsection);
     const show_change_process_button = properties_elements.some((elem) =>
-        check_property_changed(elem),
+        check_property_changed(elem, for_realm_default_settings),
     );
 
     const save_btn_controls = subsection.find(".subsection-header .save-button-controls");
@@ -716,7 +752,11 @@ export function init_dropdown_widgets() {
     });
 }
 
-export function register_save_discard_widget_handlers(container, patch_url) {
+export function register_save_discard_widget_handlers(
+    container,
+    patch_url,
+    for_realm_default_settings,
+) {
     container.on("change input", "input, select, textarea", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -736,7 +776,7 @@ export function register_save_discard_widget_handlers(container, patch_url) {
         }
 
         const subsection = $(e.target).closest(".org-subsection-parent");
-        save_discard_widget_status_handler(subsection);
+        save_discard_widget_status_handler(subsection, for_realm_default_settings);
         return undefined;
     });
 
@@ -744,7 +784,7 @@ export function register_save_discard_widget_handlers(container, patch_url) {
         e.preventDefault();
         e.stopPropagation();
         for (const elem of get_subsection_property_elements(e.target)) {
-            discard_property_element_changes(elem);
+            discard_property_element_changes(elem, for_realm_default_settings);
         }
         const save_btn_controls = $(e.target).closest(".save-button-controls");
         change_save_button_state(save_btn_controls, "discarded");
@@ -875,10 +915,20 @@ export function register_save_discard_widget_handlers(container, patch_url) {
 
         for (let input_elem of properties_elements) {
             input_elem = $(input_elem);
-            if (check_property_changed(input_elem)) {
+            if (check_property_changed(input_elem, for_realm_default_settings)) {
                 const input_value = get_input_element_value(input_elem);
                 if (input_value !== undefined) {
-                    const property_name = input_elem.attr("id").replace("id_realm_", "");
+                    let property_name;
+                    if (for_realm_default_settings) {
+                        // We use the name attribute, rather than the ID attribute,
+                        // for realm_user_default_settings. This is because the
+                        // display/notification settings elements do not always have
+                        // IDs, and also the emojiset input is not compatible with the
+                        // ID approach.
+                        property_name = input_elem.attr("name");
+                    } else {
+                        property_name = input_elem.attr("id").replace("id_realm_", "");
+                    }
                     data[property_name] = input_value;
                 }
             }
@@ -891,13 +941,21 @@ export function register_save_discard_widget_handlers(container, patch_url) {
         e.preventDefault();
         e.stopPropagation();
         const save_button = $(e.currentTarget);
-        const subsection_id = save_button.attr("id").replace("org-submit-", "");
-        const subsection = subsection_id.split("-").join("_");
         const subsection_elem = save_button.closest(".org-subsection-parent");
+        let extra_data = {};
+
+        if (!for_realm_default_settings) {
+            // The organization settings system has some coupled
+            // fields that must be submitted together, which is
+            // managed by the get_complete_data_for_subsection function.
+            const subsection_id = save_button.attr("id").replace("org-submit-", "");
+            const subsection = subsection_id.split("-").join("_");
+            extra_data = get_complete_data_for_subsection(subsection);
+        }
 
         const data = {
             ...populate_data_for_request(subsection_elem),
-            ...get_complete_data_for_subsection(subsection),
+            ...extra_data,
         };
         save_organization_settings(data, save_button, patch_url);
     });
@@ -931,7 +989,7 @@ export function build_page() {
     set_message_content_in_email_notifications_visiblity();
     set_digest_emails_weekday_visibility();
 
-    register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm");
+    register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
 
     $(".org-subsection-parent").on("keydown", "input", (e) => {
         e.stopPropagation();

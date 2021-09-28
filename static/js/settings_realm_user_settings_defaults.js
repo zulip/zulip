@@ -1,11 +1,10 @@
 import $ from "jquery";
 
-import * as channel from "./channel";
 import {page_params} from "./page_params";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as settings_display from "./settings_display";
 import * as settings_notifications from "./settings_notifications";
-import * as settings_ui from "./settings_ui";
+import * as settings_org from "./settings_org";
 
 export const realm_default_settings_panel = {};
 
@@ -25,31 +24,11 @@ export function set_up() {
     settings_display.set_up(realm_default_settings_panel);
     settings_notifications.set_up(realm_default_settings_panel);
 
-    container.find(".presence_enabled").on("change", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const data = {presence_enabled: container.find(".presence_enabled").prop("checked")};
-        settings_ui.do_settings_change(
-            channel.patch,
-            "/json/realm/user_settings_defaults",
-            data,
-            container.find(".privacy-setting-status").expectOne(),
-        );
-    });
-
-    container.find(".enter_sends").on("change", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const data = {enter_sends: container.find(".enter_sends").prop("checked")};
-        settings_ui.do_settings_change(
-            channel.patch,
-            "/json/realm/user_settings_defaults",
-            data,
-            container.find(".other-setting-status").expectOne(),
-        );
-    });
+    settings_org.register_save_discard_widget_handlers(
+        container,
+        "/json/realm/user_settings_defaults",
+        true,
+    );
 
     maybe_disable_widgets();
 }

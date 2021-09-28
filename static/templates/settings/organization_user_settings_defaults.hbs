@@ -10,10 +10,10 @@
 
     {{> notification_settings prefix="realm_" for_realm_settings=true}}
 
-    <div class="form-horizontal privacy_settings">
+    <div class="form-horizontal privacy_settings org-subsection-parent">
         <div class="subsection-header inline-block">
             <h3 class="inline-block">{{t "Privacy settings" }}</h3>
-            {{> settings_save_discard_widget section_name="privacy-setting" show_only_indicator=true }}
+            {{> settings_save_discard_widget section_name="privacy-setting" show_only_indicator=false }}
         </div>
         {{> settings_checkbox
           setting_name="presence_enabled"
@@ -23,10 +23,10 @@
           prefix="realm_"}}
     </div>
 
-    <div class="form-horizontal other_settings">
+    <div class="form-horizontal other_settings org-subsection-parent">
         <div class="subsection-header inline-block">
             <h3 class="inline-block">{{t "Other settings" }}</h3>
-            {{> settings_save_discard_widget section_name="other-setting" show_only_indicator=true }}
+            {{> settings_save_discard_widget section_name="other-setting" show_only_indicator=false }}
         </div>
         {{> settings_checkbox
           setting_name="enter_sends"

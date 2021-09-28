@@ -133,6 +133,14 @@ export function set_up(settings_panel) {
 
     set_enable_digest_emails_visibility(settings_panel);
 
+    if (for_realm_settings) {
+        // For the realm-level defaults page, we use the common
+        // settings_org.js handlers, so we can return early here.
+        return;
+    }
+
+    // Common handler for sending requests to the server when an input
+    // element is changed.
     container.find(".notification-settings-form").on("change", "input, select", function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -149,6 +157,10 @@ export function set_up(settings_panel) {
             patch_url,
         );
     });
+
+    // This final patch of settings are ones for which we
+    // intentionally don't let organization administrators set
+    // organization-level defaults.
 
     if (!for_realm_settings) {
         container.find(".send_test_notification").on("click", () => {
