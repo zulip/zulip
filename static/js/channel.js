@@ -4,6 +4,7 @@ import * as blueslip from "./blueslip";
 import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
 import * as setup from "./setup";
+import * as spectators from "./spectators";
 
 const pending_requests = [];
 
@@ -69,12 +70,23 @@ function call(args, idempotent) {
                 return;
             }
 
-            // We got logged out somehow, perhaps from another window
-            // changing the user's password, or a session timeout.  We
-            // could display an error message, but jumping right to
-            // the login page conveys the same information with a
-            // smoother relogin experience.
-            window.location.replace(page_params.login_page);
+            if (page_params.is_spectator) {
+                // In theory, the specator implementation should be
+                // designed to prevent accessing widgets that would
+                // make network requests not available to spectators.
+                //
+                // In the case that we have a bug in that logic, we
+                // prefer the user experience of offering the
+                // login_to_access widget over reloading the page.
+                spectators.login_to_access();
+            } else {
+                // We got logged out somehow, perhaps from another window
+                // changing the user's password, or a session timeout.  We
+                // could display an error message, but jumping right to
+                // the login page conveys the same information with a
+                // smoother relogin experience.
+                window.location.replace(page_params.login_page);
+            }
         } else if (xhr.status === 403) {
             try {
                 if (
