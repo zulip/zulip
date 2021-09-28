@@ -107,8 +107,10 @@ def send_to_push_bouncer(
     return orjson.loads(res.content)
 
 
-def send_json_to_push_bouncer(method: str, endpoint: str, post_data: Mapping[str, object]) -> None:
-    send_to_push_bouncer(
+def send_json_to_push_bouncer(
+    method: str, endpoint: str, post_data: Mapping[str, object]
+) -> Dict[str, object]:
+    return send_to_push_bouncer(
         method,
         endpoint,
         orjson.dumps(post_data),
