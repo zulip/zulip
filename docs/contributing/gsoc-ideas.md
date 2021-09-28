@@ -175,7 +175,7 @@ development community server](https://zulip.com/developer-community/),
 (compose a new stream message with your name as the topic).
 
 Zulip operates under group mentorship. That means you should
-generally post in public streams on [The Zulip developer community](https://zulip.com/developer-community/), not send private
+generally post in public streams on the [Zulip developer community](https://zulip.com/developer-community/), not send private
 messages, for assistance. Our preferred approach is to just post in
 an appropriate public stream on [The Zulip developer community](https://zulip.com/developer-community/) and someone will help
 you. We list the Zulip contributors who are experts for various
@@ -587,7 +587,8 @@ Where should you publish your draft? We prefer Dropbox Paper or
 Google Docs, since those platforms allow people to look at the text
 without having to log in or download a particular app, and you can
 update the draft as you improve your idea. In either case, you should
-post the draft for feedback in [The Zulip developer community](https://zulip.com/developer-community/).
+post the draft for feedback in [The Zulip developer community]
+(https://zulip.com/developer-community/).
 
 Rough is fine! The ideal first draft to get feedback from the
 community on should include primarily (1) links to your contributions
