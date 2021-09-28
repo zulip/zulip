@@ -23,6 +23,7 @@ from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import get_active_bots_owned_by_user
 from zerver.models import (
+    ExtAuthId,
     Realm,
     RealmAuditLog,
     Recipient,
@@ -395,3 +396,10 @@ def get_owned_bot_dicts(
         }
         for botdict in result
     ]
+
+
+def do_set_ldap_ext_auth_id(user_profile: UserProfile, ext_auth_id: Optional[str]) -> None:
+    if user_profile.ext_auth_id is None:
+        user_profile.ext_auth_id = ExtAuthId()
+    user_profile.ext_auth_id.ldap = ext_auth_id
+    user_profile.ext_auth_id.save()

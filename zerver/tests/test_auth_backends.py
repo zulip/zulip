@@ -62,7 +62,7 @@ from zerver.actions.realm_settings import (
     do_set_realm_property,
 )
 from zerver.actions.user_settings import do_change_password
-from zerver.actions.users import change_user_is_active, do_deactivate_user
+from zerver.actions.users import change_user_is_active, do_deactivate_user, do_set_ldap_ext_auth_id
 from zerver.lib.avatar import avatar_url
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.dev_ldap_directory import generate_dev_ldap_dir
@@ -441,7 +441,9 @@ class AuthBackendTest(ZulipTestCase):
         self.assert_not_in_success_response(["No authentication backends are enabled"], result)
 
     @override_settings(
-        AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",), LDAP_EMAIL_ATTR="mail"
+        AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",),
+        LDAP_EMAIL_ATTR="mail",
+        AUTH_LDAP_FOREIGN_KEY="uid",
     )
     def test_ldap_backend(self) -> None:
         self.init_default_ldap_database()
@@ -5619,7 +5621,7 @@ class DjangoToLDAPUsernameTests(ZulipTestCase):
         AUTHENTICATION_BACKENDS=(
             "zproject.backends.EmailAuthBackend",
             "zproject.backends.ZulipLDAPAuthBackend",
-        )
+        ),
     )
     def test_authenticate_to_ldap_via_email(self) -> None:
         """
@@ -5863,6 +5865,81 @@ class TestLDAP(ZulipLDAPTestCase):
             )
             self.assertEqual(username, '"hamlet@test"@zulip.com')
 
+    @override_settings(
+        AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",),
+        LDAP_EMAIL_ATTR="mail",
+        AUTH_LDAP_FOREIGN_KEY="uid",
+    )
+    def test_ldap_auth_id_mail_change(self) -> None:
+        self.mock_ldap.directory["uid=tsaving,ou=users,dc=zulip,dc=com"] = {
+            "cn": ["Test Saving"],
+            "uid": ["tsaving"],
+            "mail": ["tsaving@zulip.com"],
+            "userPassword": ["secret"],
+        }
+        self.backend.authenticate(
+            request=mock.MagicMock(),
+            username="tsaving",
+            password="secret",
+            realm=get_realm("zulip"),
+        )
+        self.assertTrue(
+            get_user_by_delivery_email("tsaving@zulip.com", get_realm("zulip")).ext_auth_id
+            is not None
+        )
+        self.assertEqual(
+            get_user_by_delivery_email(  # type: ignore[union-attr]
+                "tsaving@zulip.com", get_realm("zulip")
+            ).ext_auth_id.ldap,
+            "tsaving",
+        )
+        self.mock_ldap.directory["uid=tsaving,ou=users,dc=zulip,dc=com"] = {
+            "cn": ["Test Saving"],
+            "uid": ["tsaving"],
+            "mail": ["tsave@zulip.com"],
+            "userPassword": ["secret"],
+        }
+        self.backend.authenticate(
+            request=mock.MagicMock(),
+            username="tsaving",
+            password="secret",
+            realm=get_realm("zulip"),
+        )
+        self.assertEqual(
+            get_user_by_delivery_email(  # type: ignore[union-attr]
+                "tsave@zulip.com", get_realm("zulip")
+            ).ext_auth_id.ldap,
+            "tsaving",
+        )
+        with self.assertRaises(UserProfile.DoesNotExist):
+            get_user_by_delivery_email("tsaving@zulip.com", get_realm("zulip"))
+        # Try when already existing. It should just be ignored
+        self.mock_ldap.directory["uid=tsaving2,ou=users,dc=zulip,dc=com"] = {
+            "cn": ["Test Saving2"],
+            "uid": ["tsaving2"],
+            "mail": ["tsaving2@zulip.com"],
+            "userPassword": ["secret"],
+        }
+        self.backend.authenticate(
+            request=mock.MagicMock(),
+            username="tsaving2",
+            password="secret",
+            realm=get_realm("zulip"),
+        )
+        self.mock_ldap.directory["uid=tsaving2,ou=users,dc=zulip,dc=com"] = {
+            "cn": ["Test Saving2"],
+            "uid": ["tsaving2"],
+            "mail": ["tsave@zulip.com"],
+            "userPassword": ["secret"],
+        }
+        self.backend.authenticate(
+            request=mock.MagicMock(),
+            username="tsaving2",
+            password="secret",
+            realm=get_realm("zulip"),
+        )
+        get_user_by_delivery_email("tsaving2@zulip.com", get_realm("zulip"))
+
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_get_or_build_user_when_user_exists(self) -> None:
         class _LDAPUser:
@@ -6087,6 +6164,12 @@ class TestLDAP(ZulipLDAPTestCase):
             self.assertEqual(user_profile.full_name, "First Last")
             self.assertEqual(user_profile.realm.string_id, "zulip")
 
+    def test_do_set_ldap_uid(self) -> None:
+        USER_EXT_AUTH_ID = "test"
+        user_profile = self.example_user("hamlet")
+        do_set_ldap_ext_auth_id(user_profile, USER_EXT_AUTH_ID)
+        self.assertEqual(user_profile.ext_auth_id.ldap, USER_EXT_AUTH_ID)  # type: ignore[union-attr]
+
 
 class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
     def test_authenticate(self) -> None:
@@ -6131,6 +6214,12 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         with mock.patch.object(ZulipLDAPUser, "populate_user", return_value=None):
             with self.assertRaises(PopulateUserLDAPError):
                 sync_user_from_ldap(self.example_user("hamlet"), mock.Mock())
+
+    @override_settings(AUTH_LDAP_FOREIGN_KEY="uid")
+    def test_update_ext_auth_id(self) -> None:
+        self.perform_ldap_sync(self.example_user("hamlet"))
+        hamlet = self.example_user("hamlet")
+        self.assertEqual(hamlet.ext_auth_id.ldap, "hamlet")  # type: ignore[union-attr]
 
     def test_update_full_name(self) -> None:
         self.change_ldap_user_attr("hamlet", "cn", "New Name")

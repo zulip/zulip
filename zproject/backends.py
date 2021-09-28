@@ -74,8 +74,10 @@ from zxcvbn import zxcvbn
 
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.custom_profile_fields import do_update_user_custom_profile_data_if_changed
-from zerver.actions.user_settings import do_regenerate_api_key
-from zerver.actions.users import do_deactivate_user
+
+from zerver.actions.user_settings import do_change_user_delivery_email, do_regenerate_api_key
+from zerver.actions.users import do_deactivate_user, do_set_ldap_ext_auth_id
+from zerver.decorator import client_is_exempt_from_rate_limiting
 from zerver.lib.avatar import avatar_url, is_avatar_new
 from zerver.lib.avatar_hash import user_avatar_content_hash
 from zerver.lib.dev_ldap_directory import init_fakeldap
@@ -846,6 +848,22 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 raise ZulipLDAPError(e.msg)
             do_change_full_name(user_profile, full_name, None)
 
+    def sync_mail_from_ldap(
+        self, current_mail: str, ldap_user: _LDAPUser, realm: Realm
+    ) -> Optional[UserProfile]:
+        if (
+            settings.AUTH_LDAP_FOREIGN_KEY in ldap_user.attrs
+            and UserProfile.objects.filter(
+                ext_auth_id__ldap=ldap_user.attrs[settings.AUTH_LDAP_FOREIGN_KEY][0], realm=realm
+            ).exists()
+        ):
+            user_profile = UserProfile.objects.get(
+                ext_auth_id__ldap=ldap_user.attrs[settings.AUTH_LDAP_FOREIGN_KEY][0], realm=realm
+            )
+            do_change_user_delivery_email(user_profile, current_mail)
+            return user_profile
+        return None
+
     def sync_custom_profile_fields_from_ldap(
         self, user_profile: UserProfile, ldap_user: _LDAPUser
     ) -> None:
@@ -932,6 +950,10 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         if self.is_account_realm_access_forbidden(ldap_user, self._realm):
             raise ZulipLDAPError("User not allowed to access realm")
 
+        auth_id = None
+        if settings.AUTH_LDAP_FOREIGN_KEY in ldap_user.attrs:
+            auth_id = ldap_user.attrs[settings.AUTH_LDAP_FOREIGN_KEY][0]
+
         if ldap_should_sync_active_status():  # nocoverage
             ldap_disabled = self.is_user_disabled_in_ldap(ldap_user)
             if ldap_disabled:
@@ -940,9 +962,18 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                 raise ZulipLDAPError("User has been deactivated")
 
         user_profile = common_get_active_user(username, self._realm, return_data)
+
         if user_profile is not None:
+            # Set LDAP identifier
+            do_set_ldap_ext_auth_id(user_profile, auth_id)
             # An existing user, successfully authed; return it.
             return user_profile, False
+
+        changed_mail_profile = self.sync_mail_from_ldap(
+            current_mail=username, ldap_user=ldap_user, realm=self._realm
+        )
+        if changed_mail_profile is not None:
+            return changed_mail_profile, False
 
         if return_data.get("inactive_realm"):
             # This happens if there is a user account in a deactivated realm
@@ -1007,6 +1038,8 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         user_profile = do_create_user(
             username, None, self._realm, full_name, acting_user=None, **opts
         )
+        do_set_ldap_ext_auth_id(user_profile, auth_id)
+
         self.sync_avatar_from_ldap(user_profile, ldap_user)
         self.sync_custom_profile_fields_from_ldap(user_profile, ldap_user)
 
@@ -1081,9 +1114,12 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
                 )
                 do_reactivate_user(user, acting_user=None)
 
+        self.sync_mail_from_ldap(username, ldap_user, user.realm)
         self.sync_avatar_from_ldap(user, ldap_user)
         self.sync_full_name_from_ldap(user, ldap_user)
         self.sync_custom_profile_fields_from_ldap(user, ldap_user)
+        if settings.AUTH_LDAP_FOREIGN_KEY in ldap_user.attrs:
+            do_set_ldap_ext_auth_id(user, ldap_user.attrs[settings.AUTH_LDAP_FOREIGN_KEY][0])
         return (user, built)
 
 

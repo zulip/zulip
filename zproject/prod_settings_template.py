@@ -218,6 +218,10 @@ AUTH_LDAP_USER_SEARCH = LDAPSearch(
 ## (defined in AUTH_LDAP_USER_SEARCH).
 # AUTH_LDAP_USERNAME_ATTR = "uid"
 
+## Sets the attribute that is used to identify the user
+## when the mail of the user has changed.+
+# AUTH_LDAP_FOREIGN_KEY = "uid"
+
 ## This map defines how to populate attributes of a Zulip user from LDAP.
 ##
 ## The format is `zulip_name: ldap_name`; each entry maps a Zulip

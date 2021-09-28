@@ -7,7 +7,11 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
+<<<<<<<< HEAD:zerver/migrations/0423_user_profile_extauthid.py
         ("zerver", "0422_multiuseinvite_status"),
+========
+        ("zerver", "0394_alter_realm_want_advertise_in_communities_directory"),
+>>>>>>>> a6f56b1d17 (auth: Sync LDAP mail on change.):zerver/migrations/0395_user_profile_extauthid.py
     ]
 
     operations = [
