@@ -45,6 +45,7 @@ EXEMPT_FILES = {
     "static/js/billing/upgrade.js",
     "static/js/blueslip.ts",
     "static/js/blueslip_stacktrace.ts",
+    "static/js/channel.js",
     "static/js/click_handlers.js",
     "static/js/compose_actions.js",
     "static/js/compose_closed_ui.js",

@@ -1,7 +1,9 @@
 import $ from "jquery";
 
 import * as blueslip from "./blueslip";
+import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
+import * as setup from "./setup";
 
 const pending_requests = [];
 
@@ -52,7 +54,28 @@ function call(args, idempotent) {
             return;
         }
 
-        if (xhr.status === 403) {
+        if (xhr.status === 401) {
+            if (
+                setup.password_change_in_progress ||
+                setup.xhr_password_changes.get(xhr) !== setup.password_changes
+            ) {
+                // The backend for handling password change API requests
+                // will replace the user's session; this results in a
+                // brief race where any API request will fail with a 401
+                // error after the old session is deactivated but before
+                // the new one has been propagated to the browser.  So we
+                // skip our normal HTTP 401 error handling if we're in the
+                // process of executing a password change.
+                return;
+            }
+
+            // We got logged out somehow, perhaps from another window
+            // changing the user's password, or a session timeout.  We
+            // could display an error message, but jumping right to
+            // the login page conveys the same information with a
+            // smoother relogin experience.
+            window.location.replace(page_params.login_page);
+        } else if (xhr.status === 403) {
             try {
                 if (
                     JSON.parse(xhr.responseText).code === "CSRF_FAILED" &&
