@@ -70,6 +70,7 @@ from zerver.lib.validator import (
     check_int_in,
     check_list,
     check_none_or,
+    check_or,
     check_short_string,
     check_string,
     check_string_fixed_length,
@@ -990,6 +991,25 @@ class ValidatorTestCase(ZulipTestCase):
         x = None
         with self.assertRaisesRegex(ValidationError, r"x is not a string or integer"):
             check_string_or_int("x", x)
+
+    def test_check_or(self) -> None:
+        x: Any = "valid"
+        check_or(check_string_in(["valid"]), check_url)("x", x)
+
+        x = "http://zulip-bots.example.com/"
+        check_or(check_string_in(["valid"]), check_url)("x", x)
+
+        x = "invalid"
+        with self.assertRaisesRegex(ValidationError, r"x is not a URL"):
+            check_or(check_string_in(["valid"]), check_url)("x", x)
+
+        x = "http://127.0.0"
+        with self.assertRaisesRegex(ValidationError, r"x is not a URL"):
+            check_or(check_string_in(["valid"]), check_url)("x", x)
+
+        x = 1
+        with self.assertRaisesRegex(ValidationError, r"x is not a string"):
+            check_or(check_string_in(["valid"]), check_url)("x", x)
 
 
 class DeactivatedRealmTest(ZulipTestCase):
