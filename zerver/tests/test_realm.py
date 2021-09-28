@@ -913,7 +913,7 @@ class RealmAPITest(ZulipTestCase):
             # duplicate code. default_language is currently present in Realm table also and thus
             # is updated using '/realm' endpoint, but this will be removed in future and the
             # settings in RealmUserDefault table will be used.
-            if prop in ["default_language", "enable_marketing_emails"]:
+            if prop in ["default_language", "enable_login_emails", "enable_marketing_emails"]:
                 continue
             self.do_test_realm_default_setting_update_api(prop)
 

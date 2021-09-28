@@ -29,7 +29,9 @@ def copy_default_settings(
     #
     # Note that this function will do at least one save() on target_profile.
     for settings_name in UserBaseSettings.property_types:
-        if settings_name == "default_language" and isinstance(settings_source, RealmUserDefault):
+        if settings_name in ["default_language", "enable_login_emails"] and isinstance(
+            settings_source, RealmUserDefault
+        ):
             continue
         value = getattr(settings_source, settings_name)
         setattr(target_profile, settings_name, value)

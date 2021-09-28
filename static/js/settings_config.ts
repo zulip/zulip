@@ -406,9 +406,6 @@ export const realm_user_settings_defaults_labels = {
         defaultMessage: "Send mobile notifications even if user is online (useful for testing)",
     }),
     enable_digest_emails: $t({defaultMessage: "Send digest emails when user is away"}),
-    enable_login_emails: $t({
-        defaultMessage: "Send email notifications for new logins to the account",
-    }),
 
     realm_presence_enabled: $t({defaultMessage: "Display availability to other users when online"}),
     realm_enter_sends: $t({defaultMessage: "Enter sends when composing a message"}),

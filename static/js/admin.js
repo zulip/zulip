@@ -62,12 +62,10 @@ function get_realm_level_notification_settings(options) {
         realm_user_settings_defaults,
     );
 
-    // We remove enable_marketing_emails setting from all_notification_settings, since there is no
-    // realm-level default of this setting.
-    all_notifications_settings.settings.other_email_settings = [
-        "enable_digest_emails",
-        "enable_login_emails",
-    ];
+    // We remove enable_marketing_emails and enable_login_emails
+    // setting from all_notification_settings, since there are no
+    // realm-level defaults for these setting.
+    all_notifications_settings.settings.other_email_settings = ["enable_digest_emails"];
 
     options.general_settings = all_notifications_settings.general_settings;
     options.notification_settings = all_notifications_settings.settings;
