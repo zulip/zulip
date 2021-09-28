@@ -499,7 +499,7 @@ li,
     position: relative;
     margin-right: -32px;
     margin-top: -1px;
-    padding: 8px 3px 0 13px;
+    padding: 6px 3px 6px 13px;
 
     /* This property nullifies the box-shadow rendered by .btn class */
     &:active {
@@ -2409,6 +2409,15 @@ div.topic_edit_spinner .loading_indicator_spinner {
     margin-top: 7px;
     margin-bottom: -5px;
     text-align: left;
+}
+
+#multiuse_invite_link {
+    width: 350px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
 }
 
 #invite-stream-checkboxes {
