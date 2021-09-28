@@ -88,7 +88,7 @@
             <div class="emojiset_choices grey-box">
                 {{#each settings_object.emojiset_choices}}
                 <label>
-                    <input type="radio" class="setting_emojiset_choice" name="emojiset_group" value="{{this.key}}" />
+                    <input type="radio" class="setting_emojiset_choice" name="emojiset" value="{{this.key}}" />
                     <span>{{this.text}}</span>
                     <span class="right">
                         {{#if (eq this.key "text") }}
