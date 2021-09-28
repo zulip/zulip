@@ -20,6 +20,7 @@ from typing import (
 
 import django.contrib.auth
 import orjson
+import re2
 from bitfield import BitField
 from bitfield.types import BitHandler
 from django.conf import settings
@@ -1084,21 +1085,21 @@ post_delete.connect(flush_realm_emoji, sender=RealmEmoji)
 
 
 def filter_pattern_validator(value: str) -> Pattern[str]:
-    regex = re.compile(r"^(?:(?:[\w\-#_= /:]*|[+]|[!])(\(\?P<\w+>.+\)))+$")
-    error_msg = _("Invalid linkifier pattern.  Valid characters are {}.").format(
-        "[ a-zA-Z_#=/:+!-]",
-    )
-
-    if not regex.match(str(value)):
-        raise ValidationError(error_msg)
-
     try:
-        pattern = re.compile(value)
-    except re.error:
-        # Regex is invalid
-        raise ValidationError(error_msg)
+        # Do not write errors to stderr (this still raises exceptions)
+        options = re2.Options()
+        options.log_errors = False
 
-    return pattern
+        regex = re2.compile(value, options=options)
+    except re2.error as e:
+        if len(e.args) >= 1:
+            if isinstance(e.args[0], str):  # nocoverage
+                raise ValidationError(_("Bad regular expression: {}").format(e.args[0]))
+            if isinstance(e.args[0], bytes):
+                raise ValidationError(_("Bad regular expression: {}").format(e.args[0].decode()))
+        raise ValidationError(_("Unknown regular expression error"))  # nocoverage
+
+    return regex
 
 
 def filter_format_validator(value: str) -> None:

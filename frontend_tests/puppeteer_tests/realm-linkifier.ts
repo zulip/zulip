@@ -42,7 +42,7 @@ async function test_delete_linkifier(page: Page): Promise<void> {
 async function test_add_invalid_linkifier_pattern(page: Page): Promise<void> {
     await page.waitForSelector(".admin-linkifier-form", {visible: true});
     await common.fill_form(page, "form.admin-linkifier-form", {
-        pattern: "a$",
+        pattern: "(foo",
         url_format_string: "https://trac.example.com/ticket/%(id)s",
     });
     await page.click("form.admin-linkifier-form button.button");
@@ -50,7 +50,7 @@ async function test_add_invalid_linkifier_pattern(page: Page): Promise<void> {
     await page.waitForSelector("div#admin-linkifier-status", {visible: true});
     assert.strictEqual(
         await common.get_text_from_selector(page, "div#admin-linkifier-status"),
-        "Failed: Invalid linkifier pattern.  Valid characters are [ a-zA-Z_#=/:+!-].",
+        "Failed: Bad regular expression: missing ): (foo",
     );
 }
 
@@ -83,8 +83,8 @@ async function test_edit_invalid_linkifier(page: Page): Promise<void> {
     await page.click(".linkifier_row .edit");
     await page.waitForFunction(() => document.activeElement?.id === "dialog_widget_modal");
     await common.fill_form(page, "form.linkifier-edit-form", {
-        pattern: "####",
-        url_format_string: "####",
+        pattern: "#(?P<id>d????)",
+        url_format_string: "????",
     });
     await page.click(".dialog_submit_button");
 
@@ -96,7 +96,7 @@ async function test_edit_invalid_linkifier(page: Page): Promise<void> {
     );
     assert.strictEqual(
         edit_linkifier_pattern_status,
-        "Failed: Invalid linkifier pattern.  Valid characters are [ a-zA-Z_#=/:+!-].",
+        "Failed: Bad regular expression: bad repetition operator: ????",
     );
 
     const edit_linkifier_format_status_selector = "div#edit-linkifier-format-status";
