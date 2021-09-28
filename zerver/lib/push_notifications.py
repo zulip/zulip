@@ -391,7 +391,7 @@ def send_notifications_to_bouncer(
     apns_payload: Dict[str, Any],
     gcm_payload: Dict[str, Any],
     gcm_options: Dict[str, Any],
-) -> None:
+) -> Tuple[int, int]:
     post_data = {
         "user_id": user_profile_id,
         "apns_payload": apns_payload,
@@ -399,7 +399,11 @@ def send_notifications_to_bouncer(
         "gcm_options": gcm_options,
     }
     # Calls zilencer.views.remote_server_notify_push
-    send_json_to_push_bouncer("POST", "push/notify", post_data)
+    response_data = send_json_to_push_bouncer("POST", "push/notify", post_data)
+    assert isinstance(response_data["total_android_devices"], int)
+    assert isinstance(response_data["total_apple_devices"], int)
+
+    return response_data["total_android_devices"], response_data["total_apple_devices"]
 
 
 #
@@ -959,7 +963,15 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     logger.info("Sending push notifications to mobile clients for user %s", user_profile_id)
 
     if uses_notification_bouncer():
-        send_notifications_to_bouncer(user_profile_id, apns_payload, gcm_payload, gcm_options)
+        total_android_devices, total_apple_devices = send_notifications_to_bouncer(
+            user_profile_id, apns_payload, gcm_payload, gcm_options
+        )
+        logger.info(
+            "Sent mobile push notifications for user %s through bouncer: %s via FCM devices, %s via APNs devices",
+            user_profile_id,
+            total_android_devices,
+            total_apple_devices,
+        )
         return
 
     android_devices = list(
@@ -970,6 +982,11 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS)
     )
 
+    logger.info(
+        "Sending mobile push notifications for user %s: %s via FCM devices, %s via APNs devices",
+        user_profile_id,
+        len(android_devices),
+        len(apple_devices),
+    )
     send_apple_push_notification(user_profile.id, apple_devices, apns_payload)
-
     send_android_push_notification(android_devices, gcm_payload, gcm_options)
