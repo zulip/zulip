@@ -24,7 +24,6 @@ import * as stream_settings_data from "./stream_settings_data";
 import * as ui_report from "./ui_report";
 
 export let parse_time_limit;
-export let save_organization_settings;
 
 const meta = {
     loaded: false,
@@ -561,6 +560,26 @@ export function change_save_button_state($element, state) {
     show_hide_element($element, is_show, 800);
 }
 
+export function save_organization_settings(data, save_button) {
+    const subsection_parent = save_button.closest(".org-subsection-parent");
+    const save_btn_container = subsection_parent.find(".save-button-controls");
+    const failed_alert_elem = subsection_parent.find(".subsection-failed-status p");
+    change_save_button_state(save_btn_container, "saving");
+    channel.patch({
+        url: "/json/realm",
+        data,
+        success() {
+            failed_alert_elem.hide();
+            change_save_button_state(save_btn_container, "succeeded");
+        },
+        error(xhr) {
+            change_save_button_state(save_btn_container, "failed");
+            save_button.hide();
+            ui_report.error($t_html({defaultMessage: "Save failed"}), xhr, failed_alert_elem);
+        },
+    });
+}
+
 function get_input_type(input_elem, input_type) {
     if (["boolean", "string", "number"].includes(input_type)) {
         return input_type;
@@ -757,26 +776,6 @@ export function build_page() {
         const save_btn_controls = $(e.target).closest(".save-button-controls");
         change_save_button_state(save_btn_controls, "discarded");
     });
-
-    save_organization_settings = function (data, save_button) {
-        const subsection_parent = save_button.closest(".org-subsection-parent");
-        const save_btn_container = subsection_parent.find(".save-button-controls");
-        const failed_alert_elem = subsection_parent.find(".subsection-failed-status p");
-        change_save_button_state(save_btn_container, "saving");
-        channel.patch({
-            url: "/json/realm",
-            data,
-            success() {
-                failed_alert_elem.hide();
-                change_save_button_state(save_btn_container, "succeeded");
-            },
-            error(xhr) {
-                change_save_button_state(save_btn_container, "failed");
-                save_button.hide();
-                ui_report.error($t_html({defaultMessage: "Save failed"}), xhr, failed_alert_elem);
-            },
-        });
-    };
 
     parse_time_limit = function parse_time_limit(elem) {
         return Math.floor(Number.parseFloat(elem.val(), 10).toFixed(1) * 60);
