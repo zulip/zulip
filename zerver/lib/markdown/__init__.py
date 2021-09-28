@@ -37,6 +37,7 @@ import markdown.inlinepatterns
 import markdown.postprocessors
 import markdown.treeprocessors
 import markdown.util
+import re2
 import requests
 from django.conf import settings
 from django.db.models import Q
@@ -1779,7 +1780,9 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
 # Name for the outer capture group we use to separate whitespace and
 # other delimiters from the actual content.  This value won't be an
 # option in user-entered capture groups.
+BEFORE_CAPTURE_GROUP = "linkifier_before_match"
 OUTER_CAPTURE_GROUP = "linkifier_actual_match"
+AFTER_CAPTURE_GROUP = "linkifier_after_match"
 
 
 def prepare_linkifier_pattern(source: str) -> str:
@@ -1787,30 +1790,44 @@ def prepare_linkifier_pattern(source: str) -> str:
     whitespace, or opening delimiters, won't match if there are word
     characters directly after, and saves what was matched as
     OUTER_CAPTURE_GROUP."""
-    return fr"""(?<![^\s'"\(,:<])(?P<{OUTER_CAPTURE_GROUP}>{source})(?!\w)"""
+    return fr"""(?P<{BEFORE_CAPTURE_GROUP}>^|\s|['"\(,:<])(?P<{OUTER_CAPTURE_GROUP}>{source})(?P<{AFTER_CAPTURE_GROUP}>$|[^\pL\pN])"""
 
 
 # Given a regular expression pattern, linkifies groups that match it
 # using the provided format string to construct the URL.
-class LinkifierPattern(markdown.inlinepatterns.Pattern):
+class LinkifierPattern(markdown.inlinepatterns.InlineProcessor):
     """Applied a given linkifier to the input"""
 
     def __init__(
         self,
         source_pattern: str,
         format_string: str,
-        markdown_instance: Optional[markdown.Markdown] = None,
+        md: markdown.Markdown,
     ) -> None:
-        self.pattern = prepare_linkifier_pattern(source_pattern)
-        self.format_string = format_string
-        markdown.inlinepatterns.Pattern.__init__(self, self.pattern, markdown_instance)
+        # Do not write errors to stderr (this still raises exceptions)
+        options = re2.Options()
+        options.log_errors = False
 
-    def handleMatch(self, m: Match[str]) -> Union[Element, str]:
+        self.md = md
+        self.compiled_re = re2.compile(prepare_linkifier_pattern(source_pattern), options=options)
+        self.format_string = format_string
+
+    def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
+        self, m: Match[str], data: str
+    ) -> Union[Tuple[Element, int, int], Tuple[None, None, None]]:
         db_data = self.md.zulip_db_data
-        return url_to_a(
+        url = url_to_a(
             db_data,
             self.format_string % m.groupdict(),
             markdown.util.AtomicString(m.group(OUTER_CAPTURE_GROUP)),
+        )
+        if isinstance(url, str):
+            return None, None, None
+
+        return (
+            url,
+            m.start(2),
+            m.end(2),
         )
 
 
@@ -2336,11 +2353,19 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
     matches: List[Dict[str, Union[str, int]]] = []
     linkifiers = linkifiers_for_realm(linkifiers_key)
 
+    options = re2.Options()
+    options.log_errors = False
     for linkifier in linkifiers:
         raw_pattern = linkifier["pattern"]
         url_format_string = linkifier["url_format"]
-        pattern = prepare_linkifier_pattern(raw_pattern)
-        for m in re.finditer(pattern, topic_name):
+        try:
+            pattern = re2.compile(prepare_linkifier_pattern(raw_pattern), options=options)
+        except re2.error:
+            # An invalid regex shouldn't be possible here, and logging
+            # here on an invalid regex would spam the logs with every
+            # message sent; simply move on.
+            continue
+        for m in pattern.finditer(topic_name):
             match_details = m.groupdict()
             match_text = match_details["linkifier_actual_match"]
             # We format the linkifier's url string using the matched text.
