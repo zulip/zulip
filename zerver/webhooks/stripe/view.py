@@ -2,6 +2,7 @@
 import time
 from typing import Any, Dict, Optional, Sequence, Tuple
 
+import stripe
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
@@ -11,6 +12,7 @@ from zerver.lib.response import json_success
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
+from zproject.config import get_secret
 
 
 class SuppressedEvent(Exception):
@@ -53,6 +55,14 @@ def api_stripe_webhook(
     payload: Dict[str, Any] = REQ(argument_type="body"),
     stream: str = REQ(default="test"),
 ) -> HttpResponse:
+    sig_header = request.META["HTTP_STRIPE_SIGNATURE"]
+    try:
+        stripe.Webhook.construct_event(request.body, sig_header, get_secret("stripe_api_endpoint"))
+    except ValueError as e:
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError as e:
+        return HttpResponse(status=400)
+
     try:
         topic, body = topic_and_body(payload)
     except SuppressedEvent:  # nocoverage
