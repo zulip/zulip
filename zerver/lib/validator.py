@@ -582,15 +582,3 @@ def check_string_or_int(var_name: str, val: object) -> Union[str, int]:
         return val
 
     raise ValidationError(_("{var_name} is not a string or integer").format(var_name=var_name))
-
-
-def check_or(sub_validator1: Validator[Any], sub_validator2: Validator[Any]) -> Validator[Any]:
-    def f(var_name: str, val: object) -> Validator[Any]:
-        try:
-            return sub_validator1(var_name, val)
-        except ValidationError:
-            pass
-
-        return sub_validator2(var_name, val)
-
-    return f
