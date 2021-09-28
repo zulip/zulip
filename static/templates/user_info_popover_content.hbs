@@ -178,4 +178,12 @@
         </a>
     </li>
     {{/if}}
+    {{#if can_modify}}
+    <li>
+        <a href="#organization/user-list-admin" tabindex="0" class="sidebar-popover-manage-user">
+            <i class="fa fa-pencil" aria-hidden="true"></i> {{#tr}}Manage this user{{/tr}}
+        </a>
+    </li>
+    {{/if}}
+
 </ul>

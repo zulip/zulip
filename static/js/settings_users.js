@@ -511,12 +511,8 @@ function handle_reactivation(tbody, status_field) {
     });
 }
 
-function handle_human_form(tbody, status_field) {
-    tbody.on("click", ".open-user-form", (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
-        const person = people.get_by_user_id(user_id);
+export function show_user_settings(user_id) {
+    const person = people.get_by_user_id(user_id);
 
         if (!person) {
             return;
@@ -568,6 +564,7 @@ function handle_human_form(tbody, status_field) {
         }
 
         function submit_user_details() {
+            const status_field = $("#user-field-status").expectOne();
             const role = Number.parseInt($("#user-role-select").val().trim(), 10);
             const full_name = $("#edit-user-form").find("input[name='full_name']");
             const profile_data = get_human_profile_data(fields_user_pills);
@@ -582,7 +579,9 @@ function handle_human_form(tbody, status_field) {
             settings_ui.do_settings_change(channel.patch, url, data, status_field);
             overlays.close_modal("#dialog_widget_modal");
         }
-
+        console.log(html_body);
+        //! -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+        //! This appears to be responsible for edeting users. 
         dialog_widget.launch({
             html_heading: $t_html({defaultMessage: "Change user info and roles"}),
             parent: modal_parent,
@@ -591,6 +590,16 @@ function handle_human_form(tbody, status_field) {
             post_render: set_role_dropdown_and_fields_user_pills,
             fade: true,
         });
+        //! -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+}
+
+function handle_human_form(tbody, status_field) {
+    tbody.on("click", ".open-user-form", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
+        show_user_settings(user_id);
     });
 }
 
@@ -655,6 +664,7 @@ function handle_bot_form(tbody, status_field) {
             owner_widget = new DropdownListWidget(opts);
         }
 
+        
         dialog_widget.launch({
             html_heading: $t({defaultMessage: "Change bot info and owner"}),
             parent: modal_parent,
@@ -663,6 +673,7 @@ function handle_bot_form(tbody, status_field) {
             post_render: get_bot_owner_widget,
             fade: true,
         });
+
     });
 }
 

@@ -12,6 +12,7 @@ import render_user_group_info_popover from "../templates/user_group_info_popover
 import render_user_group_info_popover_content from "../templates/user_group_info_popover_content.hbs";
 import render_user_info_popover_content from "../templates/user_info_popover_content.hbs";
 import render_user_info_popover_title from "../templates/user_info_popover_title.hbs";
+import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
 
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
@@ -23,7 +24,17 @@ import * as emoji_picker from "./emoji_picker";
 import * as feature_flags from "./feature_flags";
 import * as giphy from "./giphy";
 import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
+import {$t, $t_html} from "./i18n";
+import {page_params} from "./page_params";
+import * as settings_config from "./settings_config";
+import * as dialog_widget from "./dialog_widget";
+import * as settings_account from "./settings_account";
+import * as settings_users from "./settings_users";
+
+
+
+
+
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
@@ -35,7 +46,6 @@ import * as muted_users_ui from "./muted_users_ui";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import * as realm_playground from "./realm_playground";
@@ -207,6 +217,7 @@ function render_user_info_popover(
     const is_muted = muted_users.is_user_muted(user.user_id);
     const status_text = user_status.get_status_text(user.user_id);
     const status_emoji_info = user_status.get_status_emoji(user.user_id);
+    const can_modify = page_params.is_admin && !is_me;
 
     const args = {
         can_revoke_away,
@@ -234,6 +245,7 @@ function render_user_info_popover(
         status_text,
         status_emoji_info,
         user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
+        can_modify: can_modify,
     };
 
     if (user.is_bot) {
@@ -952,6 +964,7 @@ export function register_click_handlers() {
         e.preventDefault();
     });
 
+
     /* These click handlers are implemented as just deep links to the
      * relevant part of the Zulip UI, so we don't want preventDefault,
      * but we do want to close the modal when you click them. */
@@ -1005,6 +1018,86 @@ export function register_click_handlers() {
         e.stopPropagation();
         e.preventDefault();
     });
+
+    //!-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    //!-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    $("body").on("click", ".sidebar-popover-manage-user", async (e) => {
+        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        await new Promise(r => setTimeout(r, 1000));
+        settings_users.show_user_settings(user_id);
+       
+        
+    //     e.stopPropagation();
+    //     e.preventDefault();
+    //    console.log("in here");
+
+    //    const modal_parent = $("#user-info-form-modal-container");
+    //    let fields_user_pills;
+    //    const user_id = elem_to_user_id($(e.target).parents("ul"));
+    //    const user_email = people.get_by_user_id(user_id).email;
+    //    const name = people.get_by_user_id(user_id).full_name;
+    //    const person = people.get_by_user_id(user_id);
+
+    //    const html_body = render_admin_human_form({
+    //     user_id,
+    //     email: user_email,
+    //     full_name: name,
+    //     user_role_values: settings_config.user_role_values,
+    //     disable_role_dropdown: person.is_owner && !page_params.is_owner,
+    //     });
+    //     console.log(html_body);
+    //     const status_field = $("#user-field-status").expectOne();
+    //     function set_role_dropdown_and_fields_user_pills() {
+    //         $("#user-role-select").val(person.role);
+    //         if (!page_params.is_owner) {
+    //             $("#user-role-select")
+    //                 .find(
+    //                     `option[value="${CSS.escape(
+    //                         settings_config.user_role_values.owner.code,
+    //                     )}"]`,
+    //                 )
+    //                 .hide();
+    //         }
+
+    //         const element = "#edit-user-form .custom-profile-field-form";
+    //         $(element).html("");
+    //         settings_account.append_custom_profile_fields(element, user_id);
+    //         settings_account.initialize_custom_date_type_fields(element);
+    //         fields_user_pills = settings_account.initialize_custom_user_type_fields(
+    //             element,
+    //             user_id,
+    //             true,
+    //             false,
+    //         );
+    //     }
+    //     function submit_user_details() {
+    //         const role = Number.parseInt($("#user-role-select").val().trim(), 10);
+    //         const full_name = $("#edit-user-form").find("input[name='full_name']");
+    //         const profile_data = get_human_profile_data(fields_user_pills);
+
+    //         const url = "/json/users/" + encodeURIComponent(user_id);
+    //         const data = {
+    //             full_name: JSON.stringify(full_name.val()),
+    //             role: JSON.stringify(role),
+    //             profile_data: JSON.stringify(profile_data),
+    //         };
+
+    //         settings_ui.do_settings_change(channel.patch, url, data, status_field);
+    //         overlays.close_modal("#dialog_widget_modal");
+    //     }
+
+    //    dialog_widget.launch({
+    //     html_heading: $t_html({defaultMessage: "Change user info and roles"}),
+    //     parent: modal_parent,
+    //     html_body,
+    //     on_click: submit_user_details,
+    //     post_render: set_role_dropdown_and_fields_user_pills,
+    //     fade: true,
+    // });
+    });
+    //!-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    //!-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
     $("#user_presences").on("click", ".user-list-sidebar-menu-icon", function (e) {
         e.stopPropagation();
