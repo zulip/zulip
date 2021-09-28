@@ -326,7 +326,8 @@ def update_realm_user_settings_defaults(
     ),
     enable_online_push_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
     enable_digest_emails: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    enable_login_emails: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    # enable_login_emails is not included here, because we don't want
+    # security-related settings to be controlled by organization administrators.
     # enable_marketing_emails is not included here, since we don't at
     # present allow organizations to customize this. (The user's selection
     # in the signup form takes precedence over RealmUserDefault).

@@ -7767,13 +7767,6 @@ paths:
           schema:
             type: boolean
           example: true
-        - name: enable_login_emails
-          in: query
-          description: |
-            Enable email notifications for new logins to account.
-          schema:
-            type: boolean
-          example: true
         - name: message_content_in_email_notifications
           in: query
           description: |
