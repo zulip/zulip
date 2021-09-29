@@ -100,38 +100,13 @@ export function set_up(settings_panel) {
     const notification_sound_elem = $(settings_panel.notification_sound_elem);
     const for_realm_settings = settings_panel.for_realm_settings;
 
-    container.find(".notification-settings-form").on("change", "input, select", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const input_elem = $(e.currentTarget);
-        if (input_elem.parents("#stream-specific-notify-table").length) {
-            stream_edit.stream_setting_changed(e, true);
-            return;
-        }
-        const setting_name = input_elem.attr("name");
-        change_notification_setting(
-            setting_name,
-            settings_org.get_input_element_value(this),
-            input_elem.closest(".subsection-parent").find(".alert-notification"),
-            patch_url,
-        );
-    });
-
-    update_desktop_icon_count_display(settings_panel);
-
-    if (!for_realm_settings) {
-        container.find(".send_test_notification").on("click", () => {
-            notifications.send_test_notification(
-                $t({defaultMessage: "This is what a Zulip notification looks like."}),
-            );
-        });
-    }
-
     container.find(".play_notification_sound").on("click", () => {
         if (settings_object.notification_sound !== "none") {
             notification_sound_elem[0].play();
         }
     });
+
+    update_desktop_icon_count_display(settings_panel);
 
     const notification_sound_dropdown = container.find(".setting_notification_sound");
     notification_sound_dropdown.val(settings_object.notification_sound);
@@ -157,6 +132,32 @@ export function set_up(settings_panel) {
     );
 
     set_enable_digest_emails_visibility(settings_panel);
+
+    container.find(".notification-settings-form").on("change", "input, select", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const input_elem = $(e.currentTarget);
+        if (input_elem.parents("#stream-specific-notify-table").length) {
+            stream_edit.stream_setting_changed(e, true);
+            return;
+        }
+        const setting_name = input_elem.attr("name");
+        change_notification_setting(
+            setting_name,
+            settings_org.get_input_element_value(this),
+            input_elem.closest(".subsection-parent").find(".alert-notification"),
+            patch_url,
+        );
+    });
+
+    if (!for_realm_settings) {
+        container.find(".send_test_notification").on("click", () => {
+            notifications.send_test_notification(
+                $t({defaultMessage: "This is what a Zulip notification looks like."}),
+            );
+        });
+    }
+
     if (!for_realm_settings) {
         set_enable_marketing_emails_visibility();
         rerender_ui();
