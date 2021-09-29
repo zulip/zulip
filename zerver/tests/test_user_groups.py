@@ -9,8 +9,8 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_usermessage
 from zerver.lib.user_groups import (
     create_user_group,
-    get_memberships_of_users,
-    get_user_groups,
+    get_direct_memberships_of_users,
+    get_direct_user_groups,
     user_groups_in_realm_serialized,
 )
 from zerver.models import Realm, UserGroup, UserGroupMembership, UserProfile, get_realm
@@ -43,10 +43,10 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[1]["description"], "")
         self.assertEqual(user_groups[1]["members"], [])
 
-    def test_get_user_groups(self) -> None:
+    def test_get_direct_user_groups(self) -> None:
         othello = self.example_user("othello")
         self.create_user_group_for_test("support")
-        user_groups = get_user_groups(othello)
+        user_groups = get_direct_user_groups(othello)
         self.assert_length(user_groups, 1)
         self.assertEqual(user_groups[0].name, "support")
 
@@ -184,14 +184,14 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_success(result)
         self.assertEqual(UserGroupMembership.objects.count(), 4)
-        members = get_memberships_of_users(user_group, [hamlet, othello])
+        members = get_direct_memberships_of_users(user_group, [hamlet, othello])
         self.assert_length(members, 2)
 
         # Test adding a member already there.
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_error(result, f"User {othello.id} is already a member of this group")
         self.assertEqual(UserGroupMembership.objects.count(), 4)
-        members = get_memberships_of_users(user_group, [hamlet, othello])
+        members = get_direct_memberships_of_users(user_group, [hamlet, othello])
         self.assert_length(members, 2)
 
         aaron = self.example_user("aaron")
@@ -204,7 +204,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_success(result)
         self.assertEqual(UserGroupMembership.objects.count(), 3)
-        members = get_memberships_of_users(user_group, [hamlet, othello, aaron])
+        members = get_direct_memberships_of_users(user_group, [hamlet, othello, aaron])
         self.assert_length(members, 1)
 
         # Test remove a member that's already removed
@@ -212,7 +212,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_error(result, f"There is no member '{othello.id}' in this user group")
         self.assertEqual(UserGroupMembership.objects.count(), 3)
-        members = get_memberships_of_users(user_group, [hamlet, othello, aaron])
+        members = get_direct_memberships_of_users(user_group, [hamlet, othello, aaron])
         self.assert_length(members, 1)
 
         # Test when nothing is provided
@@ -482,7 +482,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             if error_msg is None:
                 self.assert_json_success(result)
                 self.assertEqual(UserGroupMembership.objects.count(), 4)
-                members = get_memberships_of_users(user_group, [aaron, othello])
+                members = get_direct_memberships_of_users(user_group, [aaron, othello])
                 self.assert_length(members, 2)
             else:
                 self.assert_json_error(result, error_msg)
@@ -496,7 +496,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             if error_msg is None:
                 self.assert_json_success(result)
                 self.assertEqual(UserGroupMembership.objects.count(), 3)
-                members = get_memberships_of_users(user_group, [aaron, othello])
+                members = get_direct_memberships_of_users(user_group, [aaron, othello])
                 self.assert_length(members, 1)
             else:
                 self.assert_json_error(result, error_msg)

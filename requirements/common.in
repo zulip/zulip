@@ -183,3 +183,6 @@ backoff
 
 # Needed for reading bson files in rocketchat import tool
 pymongo
+
+# For querying recursive group membership
+django-cte

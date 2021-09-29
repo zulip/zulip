@@ -31,7 +31,7 @@ from zerver.lib.url_encoding import (
     stream_narrow_url,
     topic_narrow_url,
 )
-from zerver.lib.user_groups import access_user_group_by_id, get_user_group_members
+from zerver.lib.user_groups import access_user_group_by_id, get_user_group_direct_members
 from zerver.models import (
     Message,
     Recipient,
@@ -368,7 +368,7 @@ def get_mentioned_user_group_name(
     smallest_user_group_name = None
     for user_group_id in mentioned_user_group_ids:
         current_user_group = access_user_group_by_id(user_group_id, user_profile, for_mention=True)
-        current_user_group_size = len(get_user_group_members(current_user_group))
+        current_user_group_size = len(get_user_group_direct_members(current_user_group))
 
         if current_user_group_size < smallest_user_group_size:
             # If multiple user groups are mentioned, we prefer the

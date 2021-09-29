@@ -38,6 +38,7 @@ from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
     DefaultStream,
+    GroupGroupMembership,
     Huddle,
     Message,
     Reaction,
@@ -127,6 +128,7 @@ ALL_ZULIP_TABLES = {
     "zerver_defaultstreamgroup_streams",
     "zerver_draft",
     "zerver_emailchangestatus",
+    "zerver_groupgroupmembership",
     "zerver_huddle",
     "zerver_message",
     "zerver_missedmessageemailaddress",
@@ -703,6 +705,13 @@ def get_realm_config() -> Config:
         model=UserGroupMembership,
         normal_parent=user_groups_config,
         parent_key="user_group__in",
+    )
+
+    Config(
+        table="zerver_groupgroupmembership",
+        model=GroupGroupMembership,
+        normal_parent=user_groups_config,
+        parent_key="supergroup__in",
     )
 
     Config(
