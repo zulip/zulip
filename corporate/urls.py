@@ -5,6 +5,7 @@ from django.urls import path
 from django.views.generic import TemplateView
 
 from corporate.views.billing_page import billing_home, replace_payment_source, update_plan
+from corporate.views.support import support_request
 from corporate.views.upgrade import initial_upgrade, sponsorship, upgrade
 from zerver.lib.rest import rest_path
 
@@ -16,6 +17,7 @@ i18n_urlpatterns: Any = [
     # Billing
     path("billing/", billing_home),
     path("upgrade/", initial_upgrade, name="initial_upgrade"),
+    path("support/", support_request),
 ]
 
 v1_api_and_json_patterns = [
