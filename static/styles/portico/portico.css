@@ -645,6 +645,7 @@ input.text-error {
                 &.nav-header {
                     background-color: transparent;
                     cursor: default;
+                    font-size: 14px;
                 }
             }
 
