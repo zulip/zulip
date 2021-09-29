@@ -36,6 +36,7 @@ from django.utils.functional import Promise
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
+from django_cte import CTEManager
 
 from confirmation import settings as confirmation_settings
 from zerver.lib import cache
@@ -1976,10 +1977,18 @@ class PasswordTooWeakError(Exception):
 
 
 class UserGroup(models.Model):
+    objects = CTEManager()
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     name: str = models.CharField(max_length=100)
     direct_members: Manager = models.ManyToManyField(
         UserProfile, through="UserGroupMembership", related_name="direct_groups"
+    )
+    direct_subgroups: Manager = models.ManyToManyField(
+        "self",
+        symmetrical=False,
+        through="GroupGroupMembership",
+        through_fields=("supergroup", "subgroup"),
+        related_name="direct_supergroups",
     )
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     description: str = models.TextField(default="")
@@ -1996,6 +2005,19 @@ class UserGroupMembership(models.Model):
 
     class Meta:
         unique_together = (("user_group", "user_profile"),)
+
+
+class GroupGroupMembership(models.Model):
+    id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
+    supergroup: UserGroup = models.ForeignKey(UserGroup, on_delete=CASCADE, related_name="+")
+    subgroup: UserGroup = models.ForeignKey(UserGroup, on_delete=CASCADE, related_name="+")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["supergroup", "subgroup"], name="zerver_groupgroupmembership_uniq"
+            )
+        ]
 
 
 def remote_user_to_email(remote_user: str) -> str:
