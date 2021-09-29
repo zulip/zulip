@@ -767,7 +767,7 @@ export function build_page() {
         return undefined;
     });
 
-    $(".organization").on("click", ".subsection-header .subsection-changes-discard button", (e) => {
+    $(".admin-realm-form").on("click", ".subsection-header .subsection-changes-discard button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         for (const elem of get_subsection_property_elements(e.target)) {
@@ -914,7 +914,7 @@ export function build_page() {
         return data;
     }
 
-    $(".organization").on("click", ".subsection-header .subsection-changes-save button", (e) => {
+    $(".admin-realm-form").on("click", ".subsection-header .subsection-changes-save button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const save_button = $(e.currentTarget);
