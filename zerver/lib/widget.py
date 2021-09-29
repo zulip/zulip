@@ -7,7 +7,7 @@ from zerver.models import Message, SubMessage
 
 
 def get_widget_data(content: str) -> Tuple[Optional[str], Optional[str]]:
-    valid_widget_types = ["poll", "todo"]
+    valid_widget_types = ["anonymous-poll", "poll", "todo"]
     tokens = content.split(" ")
 
     # tokens[0] will always exist
@@ -22,7 +22,7 @@ def get_widget_data(content: str) -> Tuple[Optional[str], Optional[str]]:
 
 
 def get_extra_data_from_widget_type(content: str, widget_type: Optional[str]) -> Any:
-    if widget_type == "poll":
+    if widget_type == "poll" or widget_type == "anonymous-poll":
         # This is used to extract the question from the poll command.
         # The command '/poll question' will pre-set the question in the poll
         lines = content.splitlines()

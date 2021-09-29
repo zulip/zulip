@@ -393,6 +393,14 @@ function should_show_custom_query(query, items) {
 
 export const slash_commands = [
     {
+        text: $t({
+            defaultMessage:
+                "/anonymous-poll Where should we go to lunch today? (Create an anonymous poll)",
+        }),
+        name: "anonymous-poll",
+        aliases: "",
+    },
+    {
         text: $t({defaultMessage: "/dark (Toggle dark mode)"}),
         name: "dark",
         aliases: "night",

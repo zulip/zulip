@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as anonymous_poll_widget from "./anonymous_poll_widget";
 import * as blueslip from "./blueslip";
 import * as message_lists from "./message_lists";
 import * as narrow_state from "./narrow_state";
@@ -8,6 +9,7 @@ import * as todo_widget from "./todo_widget";
 import * as zform from "./zform";
 
 const widgets = new Map([
+    ["anonymous-poll", anonymous_poll_widget],
     ["poll", poll_widget],
     ["todo", todo_widget],
     ["zform", zform],

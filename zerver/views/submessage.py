@@ -41,7 +41,7 @@ def process_submessage(
 
     is_widget_author = message.sender_id == user_profile.id
 
-    if widget_type == "poll":
+    if widget_type == "poll" or widget_type == "anonymous-poll":
         try:
             validate_poll_data(poll_data=widget_data, is_widget_author=is_widget_author)
         except ValidationError as error:
