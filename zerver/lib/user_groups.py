@@ -1,7 +1,9 @@
 from typing import Any, Dict, List
 
 from django.db import transaction
+from django.db.models import QuerySet
 from django.utils.translation import gettext as _
+from django_cte import With
 
 from zerver.lib.exceptions import JsonableError
 from zerver.models import Realm, UserGroup, UserGroupMembership, UserProfile
@@ -95,3 +97,34 @@ def get_direct_memberships_of_users(user_group: UserGroup, members: List[UserPro
             user_group=user_group, user_profile__in=members
         ).values_list("user_profile_id", flat=True)
     )
+
+
+# These recursive lookups use standard PostgreSQL common table
+# expression (CTE) queries. These queries use the django-cte library,
+# because upstream Django does not yet support CTE.
+#
+# https://www.postgresql.org/docs/current/queries-with.html
+# https://pypi.org/project/django-cte/
+# https://code.djangoproject.com/ticket/28919
+
+
+def get_recursive_subgroups(user_group: UserGroup) -> "QuerySet[UserGroup]":
+    cte = With.recursive(
+        lambda cte: UserGroup.objects.filter(id=user_group.id)
+        .values("id")
+        .union(cte.join(UserGroup, direct_supergroups=cte.col.id).values("id"))
+    )
+    return cte.join(UserGroup, id=cte.col.id).with_cte(cte)
+
+
+def get_recursive_group_members(user_group: UserGroup) -> "QuerySet[UserProfile]":
+    return UserProfile.objects.filter(direct_groups__in=get_recursive_subgroups(user_group))
+
+
+def get_recursive_membership_groups(user_profile: UserProfile) -> "QuerySet[UserGroup]":
+    cte = With.recursive(
+        lambda cte: user_profile.direct_groups.values("id").union(
+            cte.join(UserGroup, direct_subgroups=cte.col.id).values("id")
+        )
+    )
+    return cte.join(UserGroup, id=cte.col.id).with_cte(cte)
