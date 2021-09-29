@@ -716,35 +716,8 @@ export function init_dropdown_widgets() {
     });
 }
 
-export function build_page() {
-    meta.loaded = true;
-
-    loading.make_indicator($("#admin_page_auth_methods_loading_indicator"));
-
-    // Initialize all the dropdown list widgets.
-    init_dropdown_widgets();
-    // Populate realm domains
-    populate_realm_domains(page_params.realm_domains);
-
-    // Populate authentication methods table
-    populate_auth_methods(page_params.realm_authentication_methods);
-
-    for (const property_name of simple_dropdown_properties) {
-        set_property_dropdown_value(property_name);
-    }
-
-    set_realm_waiting_period_dropdown();
-    set_video_chat_provider_dropdown();
-    set_giphy_rating_dropdown();
-    set_msg_edit_limit_dropdown();
-    set_msg_delete_limit_dropdown();
-    set_delete_own_message_policy_dropdown();
-    set_message_retention_setting_dropdown();
-    set_org_join_restrictions_dropdown();
-    set_message_content_in_email_notifications_visiblity();
-    set_digest_emails_weekday_visibility();
-
-    $(".admin-realm-form").on("change input", "input, select, textarea", (e) => {
+export function register_save_discard_widget_handlers(container, patch_url) {
+    container.on("change input", "input, select, textarea", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -767,7 +740,7 @@ export function build_page() {
         return undefined;
     });
 
-    $(".admin-realm-form").on("click", ".subsection-header .subsection-changes-discard button", (e) => {
+    container.on("click", ".subsection-header .subsection-changes-discard button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         for (const elem of get_subsection_property_elements(e.target)) {
@@ -914,7 +887,7 @@ export function build_page() {
         return data;
     }
 
-    $(".admin-realm-form").on("click", ".subsection-header .subsection-changes-save button", (e) => {
+    container.on("click", ".subsection-header .subsection-changes-save button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const save_button = $(e.currentTarget);
@@ -926,8 +899,39 @@ export function build_page() {
             ...populate_data_for_request(subsection_elem),
             ...get_complete_data_for_subsection(subsection),
         };
-        save_organization_settings(data, save_button, "/json/realm");
+        save_organization_settings(data, save_button, patch_url);
     });
+}
+
+export function build_page() {
+    meta.loaded = true;
+
+    loading.make_indicator($("#admin_page_auth_methods_loading_indicator"));
+
+    // Initialize all the dropdown list widgets.
+    init_dropdown_widgets();
+    // Populate realm domains
+    populate_realm_domains(page_params.realm_domains);
+
+    // Populate authentication methods table
+    populate_auth_methods(page_params.realm_authentication_methods);
+
+    for (const property_name of simple_dropdown_properties) {
+        set_property_dropdown_value(property_name);
+    }
+
+    set_realm_waiting_period_dropdown();
+    set_video_chat_provider_dropdown();
+    set_giphy_rating_dropdown();
+    set_msg_edit_limit_dropdown();
+    set_msg_delete_limit_dropdown();
+    set_delete_own_message_policy_dropdown();
+    set_message_retention_setting_dropdown();
+    set_org_join_restrictions_dropdown();
+    set_message_content_in_email_notifications_visiblity();
+    set_digest_emails_weekday_visibility();
+
+    register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm");
 
     $(".org-subsection-parent").on("keydown", "input", (e) => {
         e.stopPropagation();
