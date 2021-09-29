@@ -202,7 +202,7 @@ body.night-mode {
     .new-style .button {
         background-color: hsla(0, 0%, 0%, 0.2);
 
-        &:not(.sea-green):not(.btn-danger):not(.btn-warning):not(.btn-link) {
+        &:not(.sea-green):not(.btn-danger):not(.btn-warning):not(.btn-link):not(.poll-vote) {
             border-color: hsla(0, 0%, 0%, 0.6);
             color: inherit;
         }
@@ -1099,6 +1099,28 @@ body.night-mode {
 
         &:hover {
             background-color: hsl(228, 96%, 71%);
+        }
+    }
+
+    /* Widgets: Poll */
+    .poll-widget {
+        .poll-vote {
+            color: hsl(185, 35%, 65%);
+            border-color: hsl(185, 35%, 35%);
+
+            &:hover {
+                color: hsl(185, 50%, 70%);
+                border-color: hsl(185, 40%, 40%);
+                background-color: hsl(185, 20%, 20%);
+            }
+            &:focus {
+                color: hsl(185, 50%, 65%);
+                border-color: hsl(185, 40%, 50%);
+                background-color: hsl(185, 40%, 35%);
+            }
+        }
+        .poll-names {
+            color: hsl(236, 15%, 70%);
         }
     }
 }
