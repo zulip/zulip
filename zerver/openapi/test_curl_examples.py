@@ -54,7 +54,7 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
             f = open(file_name)
             for line in f:
                 # A typical example from the Markdown source looks like this:
-                #     {generate_code_example(curl, ...}
+                #     {generate_code_example(curl)|...|...}
                 if line.startswith("{generate_code_example(curl"):
                     curl_commands_to_test.append(line)
         else:
