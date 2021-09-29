@@ -560,13 +560,13 @@ export function change_save_button_state($element, state) {
     show_hide_element($element, is_show, 800);
 }
 
-export function save_organization_settings(data, save_button) {
+export function save_organization_settings(data, save_button, patch_url) {
     const subsection_parent = save_button.closest(".org-subsection-parent");
     const save_btn_container = subsection_parent.find(".save-button-controls");
     const failed_alert_elem = subsection_parent.find(".subsection-failed-status p");
     change_save_button_state(save_btn_container, "saving");
     channel.patch({
-        url: "/json/realm",
+        url: patch_url,
         data,
         success() {
             failed_alert_elem.hide();
@@ -926,7 +926,7 @@ export function build_page() {
             ...populate_data_for_request(subsection_elem),
             ...get_complete_data_for_subsection(subsection),
         };
-        save_organization_settings(data, save_button);
+        save_organization_settings(data, save_button, "/json/realm");
     });
 
     $(".org-subsection-parent").on("keydown", "input", (e) => {
