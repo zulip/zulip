@@ -106,42 +106,40 @@ export function set_up(settings_panel) {
         });
     }
 
-    if (!for_realm_settings) {
-        $(language_modal_elem)
-            .find(".language")
-            .on("click", (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                overlays.close_modal(language_modal_elem);
-
-                const $link = $(e.target).closest("a[data-code]");
-                const setting_value = $link.attr("data-code");
-                const data = {default_language: setting_value};
-
-                const new_language = $link.attr("data-name");
-                container.find(".default_language_name").text(new_language);
-
-                change_display_setting(
-                    data,
-                    settings_panel,
-                    ".language-settings-status",
-                    $t_html(
-                        {
-                            defaultMessage:
-                                "Saved. Please <z-link>reload</z-link> for the change to take effect.",
-                        },
-                        {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
-                    ),
-                    true,
-                );
-            });
-
-        container.find(".setting_default_language").on("click", (e) => {
+    $(language_modal_elem)
+        .find(".language")
+        .on("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            overlays.open_modal(language_modal_elem);
+            overlays.close_modal(language_modal_elem);
+
+            const $link = $(e.target).closest("a[data-code]");
+            const setting_value = $link.attr("data-code");
+            const data = {default_language: setting_value};
+
+            const new_language = $link.attr("data-name");
+            container.find(".default_language_name").text(new_language);
+
+            change_display_setting(
+                data,
+                settings_panel,
+                ".language-settings-status",
+                $t_html(
+                    {
+                        defaultMessage:
+                            "Saved. Please <z-link>reload</z-link> for the change to take effect.",
+                    },
+                    {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
+                ),
+                true,
+            );
         });
-    }
+
+    container.find(".setting_default_language").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        overlays.open_modal(language_modal_elem);
+    });
 
     container.find(".setting_twenty_four_hour_time").on("change", function () {
         const data = {twenty_four_hour_time: this.value};

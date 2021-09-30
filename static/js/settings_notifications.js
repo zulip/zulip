@@ -161,19 +161,14 @@ export function set_up(settings_panel) {
     // This final patch of settings are ones for which we
     // intentionally don't let organization administrators set
     // organization-level defaults.
+    container.find(".send_test_notification").on("click", () => {
+        notifications.send_test_notification(
+            $t({defaultMessage: "This is what a Zulip notification looks like."}),
+        );
+    });
 
-    if (!for_realm_settings) {
-        container.find(".send_test_notification").on("click", () => {
-            notifications.send_test_notification(
-                $t({defaultMessage: "This is what a Zulip notification looks like."}),
-            );
-        });
-    }
-
-    if (!for_realm_settings) {
-        set_enable_marketing_emails_visibility();
-        rerender_ui();
-    }
+    set_enable_marketing_emails_visibility();
+    rerender_ui();
 }
 
 export function update_page(settings_panel) {
