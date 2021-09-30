@@ -8,6 +8,7 @@ on:
 
 jobs:
   CodeQL:
+    if: ${{!github.event.repository.private}}
     runs-on: ubuntu-latest
 
     steps:
