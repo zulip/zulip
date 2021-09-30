@@ -414,7 +414,13 @@ instructions for other supported platforms.
 
 1. Upgrade your server to the latest Zulip `4.x` release.
 
-2. Same as for Bionic to Focal.
+2. As the Zulip user, stop the Zulip server and run the following
+   to back up the system:
+
+   ```bash
+   supervisorctl stop all
+   /home/zulip/deployments/current/manage.py backup --output=/home/zulip/release-upgrade.backup.tar.gz
+   ```
 
 3. Follow [Debian's instructions to upgrade the OS][bullseye-upgrade].
 
@@ -434,7 +440,19 @@ instructions for other supported platforms.
    /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
    ```
 
-5. Same as for Stretch to Buster.
+5. Reinstall the current version of Zulip, which among other things
+   will recompile Zulip's Python module dependencies for your new
+   version of Python:
+
+   ```bash
+   rm -rf /srv/zulip-venv-cache/*
+   /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
+       /home/zulip/deployments/current/ --ignore-static-assets
+   ```
+
+   This will finish by restarting your Zulip server; you should now
+   be able to navigate to its URL and confirm everything is working
+   correctly.
 
 6. Debian Bullseye has a different version of the low-level glibc
    library, which affects how PostgreSQL orders text data (known as
@@ -459,7 +477,13 @@ instructions for other supported platforms.
    only upgrade to Zulip 3.0 and newer after completing this process,
    since newer releases don't support Ubuntu Debian Stretch.
 
-2. Same as for Bionic to Focal.
+2. As the Zulip user, stop the Zulip server and run the following
+   to back up the system:
+
+   ```bash
+   supervisorctl stop all
+   /home/zulip/deployments/current/manage.py backup --output=/home/zulip/release-upgrade.backup.tar.gz
+   ```
 
 3. Follow [Debian's instructions to upgrade the OS][debian-upgrade-os].
 
