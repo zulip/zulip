@@ -65,10 +65,21 @@ function update_desktop_icon_count_display(settings_panel) {
     }
 }
 
-export function set_enable_digest_emails_visibility(container) {
+export function set_enable_digest_emails_visibility(settings_panel) {
+    const container = $(settings_panel.container);
+    const for_realm_settings = settings_panel.for_realm_settings;
+
     if (page_params.realm_digest_emails_enabled) {
+        if (for_realm_settings) {
+            container.find(".other_email_notifications").show();
+            return;
+        }
         container.find(".enable_digest_emails_label").parent().show();
     } else {
+        if (for_realm_settings) {
+            container.find(".other_email_notifications").hide();
+            return;
+        }
         container.find(".enable_digest_emails_label").parent().hide();
     }
 }
@@ -145,7 +156,7 @@ export function set_up(settings_panel) {
         settings_object.email_notifications_batching_period_seconds,
     );
 
-    set_enable_digest_emails_visibility(container);
+    set_enable_digest_emails_visibility(settings_panel);
     if (!for_realm_settings) {
         set_enable_marketing_emails_visibility();
         rerender_ui();

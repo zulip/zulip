@@ -18,6 +18,7 @@ import * as realm_icon from "./realm_icon";
 import * as realm_logo from "./realm_logo";
 import * as settings_config from "./settings_config";
 import * as settings_notifications from "./settings_notifications";
+import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
 import * as settings_ui from "./settings_ui";
 import * as stream_settings_data from "./stream_settings_data";
 import * as ui_report from "./ui_report";
@@ -378,10 +379,10 @@ function update_dependent_subsettings(property_name) {
             break;
         case "realm_digest_emails_enabled":
             settings_notifications.set_enable_digest_emails_visibility(
-                $("#user-notification-settings"),
+                settings_notifications.user_settings_panel,
             );
             settings_notifications.set_enable_digest_emails_visibility(
-                $("#realm-user-default-settings"),
+                settings_realm_user_settings_defaults.realm_default_settings_panel,
             );
             set_digest_emails_weekday_visibility();
             break;
