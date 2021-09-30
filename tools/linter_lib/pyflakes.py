@@ -15,6 +15,16 @@ def check_pyflakes(files: List[str], options: argparse.Namespace) -> bool:
             "zerver/views/realm.py",
             "local variable 'message_retention_days' is assigned to but never used",
         ),
+        # The list of imports from django_auth_ldap which is manually maintained in
+        # django_auth_ldap_exports should be imported "as is" in the production settings.
+        (
+            "",
+            "from zproject.django_auth_ldap_exports import *' used; unable to detect undefined names",
+        ),
+        (
+            "",
+            "'LDAPSearch' may be undefined, or defined from star imports: zproject.django_auth_ldap_exports",
+        ),
         ("settings.py", "settings import *' used; unable to detect undefined names"),
         (
             "settings.py",
