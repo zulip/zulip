@@ -148,11 +148,6 @@ function user_has_permission(policy_value: number): boolean {
         return true;
     }
 
-    if (policy_value !== settings_config.common_policy_values.by_full_members.code) {
-        throw new Error("Unexpected policy value.");
-    }
-
-    /* We know the user is a member, but need to check if they are a "Full member". */
     const current_datetime = new Date();
     const person_date_joined = new Date(user_join_date);
     const user_join_days =
