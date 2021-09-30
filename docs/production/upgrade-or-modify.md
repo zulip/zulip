@@ -408,11 +408,46 @@ instructions for other supported platforms.
 
 ### Upgrading from Debian Buster to Debian Bullseye
 
-We expect to have tested documentation for upgrading from Buster to
-Bullseye available soon. See [this chat.zulip.org
-thread][bullseye-discussion-thread]) for the current status of that work.
+1. Upgrade your server to the latest Zulip `4.x` release.
 
-[bullseye-discussion-thread]: https://chat.zulip.org/#narrow/stream/3-backend/topic/Upgrade.20to.20bullseye
+2. Same as for Bionic to Focal.
+
+3. Follow [Debian's instructions to upgrade the OS][bullseye-upgrade].
+
+   [bullseye-upgrade]: https://www.debian.org/releases/bullseye/amd64/release-notes/ch-upgrading.html
+
+   When prompted for you how to upgrade configuration
+   files for services that Zulip manages like Redis, PostgreSQL,
+   Nginx, and memcached, the best choice is `N` to keep the
+   currently installed version. But it's not important; the next
+   step will re-install Zulip's configuration in any case.
+
+4. As root, run the following steps to regenerate configurations
+   for services used by Zulip:
+
+   ```bash
+   apt remove upstart -y
+   /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
+   ```
+
+5. Same as for Stretch to Buster.
+
+6. Debian Bullseye has a different version of the low-level glibc
+   library, which affects how PostgreSQL orders text data (known as
+   "collations"); this corrupts database indexes that rely on
+   collations. Regenerate the affected indexes by running:
+
+   ```bash
+   /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
+   ```
+
+7. As root, finish by verifying the contents of the full-text indexes:
+
+   ```bash
+   /home/zulip/deployments/current/manage.py audit_fts_indexes
+   ```
+
+8. As an additional step, you can also [upgrade the postgresql version](#upgrading-postgresql).
 
 ### Upgrading from Debian Stretch to Debian Buster
 
