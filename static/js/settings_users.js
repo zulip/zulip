@@ -512,7 +512,8 @@ function handle_reactivation(tbody, status_field) {
 }
 
 export function show_user_settings(user_id) {
-    const person = people.get_by_user_id(user_id);
+    $(() => {
+        const person = people.get_by_user_id(user_id);
 
         if (!person) {
             return;
@@ -579,9 +580,9 @@ export function show_user_settings(user_id) {
             settings_ui.do_settings_change(channel.patch, url, data, status_field);
             overlays.close_modal("#dialog_widget_modal");
         }
-        console.log(html_body);
-        //! -----------------------------------------------------------------------------------------------------------------------------------------------------------------
-        //! This appears to be responsible for edeting users. 
+
+        // ! -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+        // ! This appears to be responsible for edeting users.
         dialog_widget.launch({
             html_heading: $t_html({defaultMessage: "Change user info and roles"}),
             parent: modal_parent,
@@ -590,10 +591,12 @@ export function show_user_settings(user_id) {
             post_render: set_role_dropdown_and_fields_user_pills,
             fade: true,
         });
-        //! -----------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+        // ! -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    });
 }
 
+// ! Maybe we can use ".open-user-form" as aparameter and then export this function all together?
+// ? This would enable us to call the "handle_human_form" from popovers.js? 
 function handle_human_form(tbody, status_field) {
     tbody.on("click", ".open-user-form", (e) => {
         e.stopPropagation();
@@ -664,7 +667,6 @@ function handle_bot_form(tbody, status_field) {
             owner_widget = new DropdownListWidget(opts);
         }
 
-        
         dialog_widget.launch({
             html_heading: $t({defaultMessage: "Change bot info and owner"}),
             parent: modal_parent,
@@ -673,7 +675,6 @@ function handle_bot_form(tbody, status_field) {
             post_render: get_bot_owner_widget,
             fade: true,
         });
-
     });
 }
 

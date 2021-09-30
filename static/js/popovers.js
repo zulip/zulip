@@ -1019,85 +1019,10 @@ export function register_click_handlers() {
         e.preventDefault();
     });
 
-    //!-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    //!-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     $("body").on("click", ".sidebar-popover-manage-user", async (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
-        await new Promise(r => setTimeout(r, 1000));
-        settings_users.show_user_settings(user_id);
-       
-        
-    //     e.stopPropagation();
-    //     e.preventDefault();
-    //    console.log("in here");
-
-    //    const modal_parent = $("#user-info-form-modal-container");
-    //    let fields_user_pills;
-    //    const user_id = elem_to_user_id($(e.target).parents("ul"));
-    //    const user_email = people.get_by_user_id(user_id).email;
-    //    const name = people.get_by_user_id(user_id).full_name;
-    //    const person = people.get_by_user_id(user_id);
-
-    //    const html_body = render_admin_human_form({
-    //     user_id,
-    //     email: user_email,
-    //     full_name: name,
-    //     user_role_values: settings_config.user_role_values,
-    //     disable_role_dropdown: person.is_owner && !page_params.is_owner,
-    //     });
-    //     console.log(html_body);
-    //     const status_field = $("#user-field-status").expectOne();
-    //     function set_role_dropdown_and_fields_user_pills() {
-    //         $("#user-role-select").val(person.role);
-    //         if (!page_params.is_owner) {
-    //             $("#user-role-select")
-    //                 .find(
-    //                     `option[value="${CSS.escape(
-    //                         settings_config.user_role_values.owner.code,
-    //                     )}"]`,
-    //                 )
-    //                 .hide();
-    //         }
-
-    //         const element = "#edit-user-form .custom-profile-field-form";
-    //         $(element).html("");
-    //         settings_account.append_custom_profile_fields(element, user_id);
-    //         settings_account.initialize_custom_date_type_fields(element);
-    //         fields_user_pills = settings_account.initialize_custom_user_type_fields(
-    //             element,
-    //             user_id,
-    //             true,
-    //             false,
-    //         );
-    //     }
-    //     function submit_user_details() {
-    //         const role = Number.parseInt($("#user-role-select").val().trim(), 10);
-    //         const full_name = $("#edit-user-form").find("input[name='full_name']");
-    //         const profile_data = get_human_profile_data(fields_user_pills);
-
-    //         const url = "/json/users/" + encodeURIComponent(user_id);
-    //         const data = {
-    //             full_name: JSON.stringify(full_name.val()),
-    //             role: JSON.stringify(role),
-    //             profile_data: JSON.stringify(profile_data),
-    //         };
-
-    //         settings_ui.do_settings_change(channel.patch, url, data, status_field);
-    //         overlays.close_modal("#dialog_widget_modal");
-    //     }
-
-    //    dialog_widget.launch({
-    //     html_heading: $t_html({defaultMessage: "Change user info and roles"}),
-    //     parent: modal_parent,
-    //     html_body,
-    //     on_click: submit_user_details,
-    //     post_render: set_role_dropdown_and_fields_user_pills,
-    //     fade: true,
-    // });
+        settings_users.show_user_settings(user_id);  
     });
-    //!-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    //!-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 
     $("#user_presences").on("click", ".user-list-sidebar-menu-icon", function (e) {
         e.stopPropagation();
