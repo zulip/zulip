@@ -81,6 +81,7 @@ below features are supported.
   organization's configured default settings for new users change.
 
 **Feature level 94**
+
 * [`POST /register`](/api/register-queue): Added
   `demo_organization_scheduled_deletion_date` field to realm data.
 
