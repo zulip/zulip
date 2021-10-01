@@ -38,7 +38,7 @@ DIV_TAB_CONTENT_TEMPLATE = """
 
 # If adding new entries here, also check if you need to update
 # tabbed-instructions.js
-TAB_DISPLAY_NAMES = {
+TAB_SECTION_LABELS = {
     "desktop-web": "Desktop/Web",
     "ios": "iOS",
     "android": "Android",
@@ -138,7 +138,7 @@ class TabbedSectionsPreprocessor(Preprocessor):
         li_elements = []
         for tab in tab_section["tabs"]:
             li = NAV_LIST_ITEM_TEMPLATE.format(
-                data_language=tab.get("tab_name"), name=TAB_DISPLAY_NAMES.get(tab.get("tab_name"))
+                data_language=tab.get("tab_name"), name=TAB_SECTION_LABELS.get(tab.get("tab_name"))
             )
             li_elements.append(li)
         return NAV_BAR_TEMPLATE.format(tabs="\n".join(li_elements))
