@@ -227,9 +227,16 @@ export function format_text(textarea, type) {
     let is_selected_text_italic = false;
     let is_inner_text_italic = false;
     const field = textarea.get(0);
-    const range = textarea.range();
+    let range = textarea.range();
     let text = textarea.val();
     const selected_text = range.text;
+
+    // Remove new line and space around selected text.
+    const left_trim_length = range.text.length - range.text.trimStart().length;
+    const right_trim_length = range.text.length - range.text.trimEnd().length;
+
+    field.setSelectionRange(range.start + left_trim_length, range.end - right_trim_length);
+    range = textarea.range();
 
     const is_selection_bold = () =>
         // First check if there are enough characters before/after selection.
