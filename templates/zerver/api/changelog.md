@@ -1,4 +1,4 @@
-# API Changelog
+# API changelog
 
 This page documents changes to the Zulip Server API over time. See also
 the [Zulip server changelog][server-changelog].
