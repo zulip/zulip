@@ -76,10 +76,10 @@ header
 <p>
   <div class="code-section no-tabs" markdown="1">
     <ul class="nav">
-      <li data-language="null_tab" tabindex="0">None</li>
+      <li data-language="instructions-for-all-platforms" tabindex="0">Instructions for all platforms</li>
     </ul>
     <div class="blocks">
-      <div data-language="null_tab" markdown="1"></p>
+      <div data-language="instructions-for-all-platforms" markdown="1"></p>
         <p>Instructions for all platforms</p>
       <p></div>
     </div>

@@ -73,6 +73,7 @@ TAB_SECTION_LABELS = {
     "not-stream": "From other views",
     "via-recent-topics": "Via recent topics",
     "via-left-sidebar": "Via left sidebar",
+    "instructions-for-all-platforms": "Instructions for all platforms",
 }
 
 
@@ -97,7 +98,10 @@ class TabbedSectionsPreprocessor(Preprocessor):
             else:
                 tab_class = "no-tabs"
                 tab_section["tabs"] = [
-                    {"tab_name": "null_tab", "start": tab_section["start_tabs_index"]}
+                    {
+                        "tab_name": "instructions-for-all-platforms",
+                        "start": tab_section["start_tabs_index"],
+                    }
                 ]
             nav_bar = self.generate_nav_bar(tab_section)
             content_blocks = self.generate_content_blocks(tab_section, lines)
