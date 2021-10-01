@@ -178,7 +178,7 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: ".rendered_markdown time",
+        target: [".rendered_markdown time", ".rendered_markdown .copy_codeblock"],
         allowHTML: true,
         appendTo: () => document.body,
         onHidden(instance) {
