@@ -103,6 +103,8 @@ export function initialize() {
             // check if user selected a range of text.
             return;
         }
+
+        let observer;
         tippy(e.target, {
             ...default_popover_props,
             content: render_formatting_buttons_popover(),
@@ -116,6 +118,7 @@ export function initialize() {
             onHidden(instance) {
                 textarea.off("keyup.tooltip_check_selection_range");
                 instance.destroy();
+                observer.disconnect();
             },
             onShow(instance) {
                 const $popper = $(instance.popper);
@@ -136,6 +139,13 @@ export function initialize() {
                         instance.hide();
                     }
                 });
+                function hide_if_textarea_hidden() {
+                    if (!textarea.is(":visible")) {
+                        instance.hide();
+                    }
+                }
+                observer = new MutationObserver(hide_if_textarea_hidden);
+                observer.observe(textarea.get(0), {attributes: true});
             },
         });
     });
