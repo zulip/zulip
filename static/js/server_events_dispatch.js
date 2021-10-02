@@ -385,41 +385,9 @@ export function dispatch_normal_event(event) {
 
         case "realm_user_settings_defaults": {
             realm_user_settings_defaults[event.property] = event.value;
+            settings_realm_user_settings_defaults.update_page(event.property);
 
-            const display_settings_list = [
-                "color_scheme",
-                "default_view",
-                "demote_inactive_streams",
-                "dense_mode",
-                "emojiset",
-                "fluid_layout_width",
-                "high_contrast_mode",
-                "left_side_userlist",
-                "translate_emoticons",
-                "starred_message_counts",
-                "twenty_four_hour_time",
-            ];
-
-            const container_elem = $("#realm-user-default-settings");
-            if (display_settings_list.includes(event.property)) {
-                settings_display.update_page(
-                    settings_realm_user_settings_defaults.realm_default_settings_panel,
-                );
-            } else if (settings_config.all_notification_settings.includes(event.property)) {
-                settings_notifications.update_page(
-                    settings_realm_user_settings_defaults.realm_default_settings_panel,
-                );
-            } else {
-                container_elem
-                    .find(`.${CSS.escape(event.property)}`)
-                    .prop("checked", realm_user_settings_defaults[event.property]);
-            }
-
-            if (event.property === "emojiset") {
-                settings_display.report_emojiset_change(
-                    settings_realm_user_settings_defaults.realm_default_settings_panel,
-                );
-            } else if (event.property === "notification_sound") {
+            if (event.property === "notification_sound") {
                 notifications.update_notification_sound_source(
                     $("#realm-default-notification-sound-audio"),
                     realm_user_settings_defaults,

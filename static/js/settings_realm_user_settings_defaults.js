@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as settings_display from "./settings_display";
@@ -19,6 +20,22 @@ export function maybe_disable_widgets() {
             .addClass("control-label-disabled");
     }
 }
+
+export function update_page(property) {
+    if (!overlays.settings_open()) {
+        return;
+    }
+    const container = $(realm_default_settings_panel.container);
+    const value = realm_user_settings_defaults[property];
+
+    if (property === "emojiset") {
+        container.find(`input[value=${CSS.escape(value)}]`).prop("checked", true);
+        return;
+    }
+    const input_elem = container.find(`[name=${CSS.escape(property)}]`);
+    settings_org.set_input_element_value(input_elem, value);
+}
+
 export function set_up() {
     const container = $(realm_default_settings_panel.container);
     settings_display.set_up(realm_default_settings_panel);
