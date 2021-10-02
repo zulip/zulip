@@ -1502,7 +1502,7 @@ class StripeTest(StripeTestCase):
             "request_message": "Running into this weird issue.",
         }
         result = self.client_post("/support/", data)
-        self.assert_in_success_response(["Thanks for getting in touch with us!"], result)
+        self.assert_in_success_response(["Thanks for contacting us!"], result)
 
         from django.core.mail import outbox
 
