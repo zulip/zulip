@@ -3530,6 +3530,19 @@ paths:
                                         Whether [new users joining](/help/allow-anyone-to-join-without-an-invitation)
                                         this organization are required to have an email
                                         address in one of the `realm_domains` configured for the organization.
+                                    enable_spectator_access:
+                                      type: boolean
+                                      description: |
+                                        Whether web public streams are enabled in this organization.
+
+                                        Can only be enabled if the `WEB_PUBLIC_STREAMS_ENABLED`
+                                        [server setting][server-settings] is enabled on the Zulip
+                                        server. See also the `create_web_public_stream_policy` realm
+                                        setting.
+
+                                        [server-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
+
+                                        **Changes**: New in Zulip 5.0 (feature level 109).
                                     giphy_rating:
                                       type: integer
                                       description: |
@@ -6629,7 +6642,10 @@ paths:
 
             Note that creating web public streams requires the
             `WEB_PUBLIC_STREAMS_ENABLED` [server setting][server-settings]
-            to be enabled on the Zulip server in question.
+            to be enabled on the Zulip server in question, the organization
+            to have enabled the `enable_spectator_access` realm setting, and
+            the current use to have permission under the organization's
+            `create_web_public_stream_policy` realm setting.
 
             [server-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
 
@@ -10379,7 +10395,8 @@ paths:
 
                           Has no effect and should not be displayed in settings UI
                           unless the Zulip server has the `WEB_PUBLIC_STREAMS_ENABLED`
-                          server-level setting enabled.
+                          server-level setting enabled and the organization has enabled
+                          the `enable_spectator_access` realm setting.
 
                           The policy for which users can create web
                           public streams in this organization. Allowed
@@ -10582,6 +10599,20 @@ paths:
                           Whether notification emails in this organization are allowed to
                           contain Zulip the message content, or simply indicate that a new
                           message was sent.
+                      realm_enable_spectator_access:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether web public streams and related anonymous access APIs/features
+                          are enabled in this organization.
+
+                          Can only be enabled if the `WEB_PUBLIC_STREAMS_ENABLED`
+                          [server setting][server-settings] is enabled on the Zulip
+                          server. See also the `create_web_public_stream_policy` realm
+                          setting.
+
+                          **Changes**: New in Zulip 5.0 (feature level 109).
                       realm_video_chat_provider:
                         type: integer
                         description: |
@@ -11466,7 +11497,8 @@ paths:
                           the organization's [stream creation policy](/help/configure-who-can-create-streams).
 
                           Note that this will be false if the Zulip server does not have the
-                          `WEB_PUBLIC_STREAMS_ENABLED` setting enabled.
+                          `WEB_PUBLIC_STREAMS_ENABLED` setting enabled or if the organization has
+                          not enabled the `enable_spectator_access` realm setting.
 
                           **Changes**: New in Zulip 5.0 (feature level 103).
                       can_subscribe_other_users:
@@ -12811,7 +12843,10 @@ paths:
 
             Note that creating web public streams requires the
             `WEB_PUBLIC_STREAMS_ENABLED` [server setting][server-settings]
-            to be enabled on the Zulip server in question.
+            to be enabled on the Zulip server in question, the organization
+            to have enabled the `enable_spectator_access` realm setting, and
+            the current use to have permission under the organization's
+            `create_web_public_stream_policy` realm setting.
 
             [server-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
 

@@ -138,6 +138,7 @@ def update_realm(
         str_validator=check_capped_string(Realm.MAX_REALM_SUBDOMAIN_LENGTH),
         default=None,
     ),
+    enable_spectator_access: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     realm = user_profile.realm
 

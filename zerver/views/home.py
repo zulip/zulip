@@ -8,7 +8,7 @@ from django.shortcuts import redirect, render
 from django.utils.cache import patch_cache_control
 
 from zerver.context_processors import get_valid_realm_from_request
-from zerver.decorator import web_public_view, zulip_login_required, zulip_redirect_to_login
+from zerver.decorator import web_public_view, zulip_login_required
 from zerver.forms import ToSForm
 from zerver.lib.actions import do_change_tos_version, realm_user_count
 from zerver.lib.compatibility import is_outdated_desktop_app, is_unsupported_browser
@@ -102,20 +102,25 @@ def update_last_reminder(user_profile: Optional[UserProfile]) -> None:
 
 
 def home(request: HttpRequest) -> HttpResponse:
-    if not settings.ROOT_DOMAIN_LANDING_PAGE:
-        return home_real(request)
-
-    # If settings.ROOT_DOMAIN_LANDING_PAGE, sends the user the landing
-    # page, not the login form, on the root domain
-
     subdomain = get_subdomain(request)
-    if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
-        return home_real(request)
 
-    return hello_view(request)
+    # If settings.ROOT_DOMAIN_LANDING_PAGE and this is the root
+    # domain, send the user the landing page.
+    if settings.ROOT_DOMAIN_LANDING_PAGE and subdomain == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
+        return hello_view(request)
+
+    # TODO: The following logic is a bit hard to read. We save a
+    # database query in the common case by avoiding the call to
+    # `get_valid_realm_from_request` if user hasn't requested
+    # web-public access.
+    if (
+        request.POST.get("prefers_web_public_view") == "true"
+        or request.session.get("prefers_web_public_view")
+    ) and get_valid_realm_from_request(request).allow_web_public_streams_access():
+        return web_public_view(home_real)(request)
+    return zulip_login_required(home_real)(request)
 
 
-@web_public_view
 def home_real(request: HttpRequest) -> HttpResponse:
     # Before we do any real work, check if the app is banned.
     client_user_agent = request.META.get("HTTP_USER_AGENT", "")
@@ -169,11 +174,8 @@ def home_real(request: HttpRequest) -> HttpResponse:
             redirect_to = get_safe_redirect_to(request.POST.get("next"), realm.uri)
             return redirect(redirect_to)
 
-        prefers_web_public_view = request.session.get("prefers_web_public_view")
-        if not prefers_web_public_view:
-            # For users who haven't opted into the spectator
-            # experience, we redirect to the login page.
-            return zulip_redirect_to_login(request, settings.HOME_NOT_LOGGED_IN)
+        # See the assert in `home` above for why this must be true.
+        assert request.session.get("prefers_web_public_view")
 
         # For users who have selected public access, we load the
         # spectator experience.  We fall through to the shared code

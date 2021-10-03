@@ -240,6 +240,10 @@ class Realm(models.Model):
         default=2 ** 31 - 1,
     )
 
+    # Allow users to access web public streams without login. This
+    # setting also controls API access of web public streams.
+    enable_spectator_access: bool = models.BooleanField(default=False)
+
     # Whether the organization has enabled inline image and URL previews.
     inline_image_preview: bool = models.BooleanField(default=True)
     inline_url_embed_preview: bool = models.BooleanField(default=False)
@@ -639,6 +643,7 @@ class Realm(models.Model):
         email_address_visibility=int,
         email_changes_disabled=bool,
         emails_restricted_to_domains=bool,
+        enable_spectator_access=bool,
         giphy_rating=int,
         inline_image_preview=bool,
         inline_url_embed_preview=bool,
@@ -894,16 +899,20 @@ class Realm(models.Model):
         return True
 
     def has_web_public_streams(self) -> bool:
-        """
-        If any of the streams in the realm is web
-        public, then the realm is web public.
-        """
         if not self.web_public_streams_enabled():
             return False
 
         from zerver.lib.streams import get_web_public_streams_queryset
 
         return get_web_public_streams_queryset(self).exists()
+
+    def allow_web_public_streams_access(self) -> bool:
+        """
+        If any of the streams in the realm is web
+        public and `enable_spectator_access` is True,
+        then the Realm is web public.
+        """
+        return self.enable_spectator_access and self.has_web_public_streams()
 
 
 post_save.connect(flush_realm, sender=Realm)
