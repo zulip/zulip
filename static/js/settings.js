@@ -54,6 +54,9 @@ function setup_settings_label() {
         send_private_typing_notifications: $t({
             defaultMessage: "Let recipients see when I'm typing private messages",
         }),
+        send_read_receipts: $t({
+            defaultMessage: "Let participants see when I've read messages",
+        }),
 
         ...settings_config.notification_settings_labels,
         ...settings_config.display_settings_labels,

@@ -16,12 +16,8 @@ below features are supported.
 * [`POST /register`](/api/register-queue), [`PATCH
   /settings`](/api/update-settings), [`PATCH
   /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
-  Added two new settings: `send_private_typing_notifications` controls
-  whether clients should send typing notifications when composing
-  private messages, and `send_stream_typing_notifications` does the
-  same when composing stream messages. Only
-  `send_private_typing_notifications` has a functional effect, as
-  stream-level typing notifications are not a finished feature.
+  Added three new privacy settings: `send_private_typing_notifications`,
+  `send_stream_typing_notifications`, and `send_read_receipts`.
 
 **Feature level 104**
 
