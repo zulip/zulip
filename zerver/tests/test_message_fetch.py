@@ -1310,6 +1310,17 @@ class PostProcessTest(ZulipTestCase):
 
 
 class GetOldMessagesTest(ZulipTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.realm = get_realm("zulip")
+        self.realm.enable_spectator_access = True
+        self.realm.save()
+
+    def tearDown(self) -> None:
+        super().tearDown()
+        self.realm.enable_spectator_access = False
+        self.realm.save()
+
     def get_and_check_messages(
         self, modified_params: Dict[str, Union[str, int]], **kwargs: Any
     ) -> Dict[str, Any]:
@@ -1533,6 +1544,31 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assert_json_error(
             result, "Not logged in: API authentication or user session required", status_code=401
         )
+
+    def test_unauthenticated_get_messages_disabled_spectator_login(self) -> None:
+        """
+        An unauthenticated call to GET /json/messages without valid
+        parameters in the `streams:web-public` narrow returns a 401.
+        """
+        self.realm.enable_spectator_access = False
+        self.realm.save()
+        post_params: Dict[str, Union[int, str, bool]] = {
+            "anchor": 1,
+            "num_before": 1,
+            "num_after": 1,
+            "narrow": orjson.dumps(
+                [
+                    dict(operator="streams", operand="web-public"),
+                    dict(operator="stream", operand="Scotland"),
+                ]
+            ).decode(),
+        }
+        result = self.client_get("/json/messages", dict(post_params))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", status_code=401
+        )
+        self.realm.enable_spectator_access = True
+        self.realm.save()
 
     def test_unauthenticated_narrow_to_non_web_public_streams_without_web_public(self) -> None:
         """

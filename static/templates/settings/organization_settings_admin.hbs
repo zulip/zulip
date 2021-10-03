@@ -142,6 +142,12 @@
                   label=admin_settings_label.realm_default_code_block_language }}
 
                 {{> settings_checkbox
+                  setting_name="realm_enable_spectator_access"
+                  prefix="id_"
+                  is_checked=realm_enable_spectator_access
+                  label=admin_settings_label.realm_enable_spectator_access}}
+
+                {{> settings_checkbox
                   setting_name="realm_message_content_allowed_in_email_notifications"
                   prefix="id_"
                   is_checked=realm_message_content_allowed_in_email_notifications

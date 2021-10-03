@@ -3533,6 +3533,11 @@ paths:
                                         Whether notification emails in this organization are allowed to
                                         contain Zulip the message content, or simply indicate that a new
                                         message was sent.
+                                    enable_spectator_access:
+                                      type: boolean
+                                      description: |
+                                        Whether to allow users to access web public streams without login.
+                                        This setting also controls API access of web public streams.
                                     video_chat_provider:
                                       type: integer
                                       description: |
@@ -10615,6 +10620,13 @@ paths:
                           Whether notification emails in this organization are allowed to
                           contain Zulip the message content, or simply indicate that a new
                           message was sent.
+                      realm_enable_spectator_access:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether to allow users to access web public streams without login.
+                          This setting also controls API access of web public streams.
                       realm_video_chat_provider:
                         type: integer
                         description: |

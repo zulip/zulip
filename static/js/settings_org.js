@@ -319,6 +319,13 @@ function set_message_content_in_email_notifications_visiblity() {
     );
 }
 
+function set_enable_spectator_access() {
+    change_element_block_display_property(
+        "enable_spectator_access_label",
+        page_params.realm_enable_spectator_access,
+    );
+}
+
 function set_digest_emails_weekday_visibility() {
     change_element_block_display_property(
         "id_realm_digest_weekday",
@@ -412,6 +419,9 @@ function update_dependent_subsettings(property_name) {
             break;
         case "realm_message_content_allowed_in_email_notifications":
             set_message_content_in_email_notifications_visiblity();
+            break;
+        case "realm_enable_spectator_access":
+            set_enable_spectator_access();
             break;
         case "realm_digest_emails_enabled":
             settings_notifications.set_enable_digest_emails_visibility(

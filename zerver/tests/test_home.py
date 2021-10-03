@@ -136,6 +136,7 @@ class HomeTest(ZulipTestCase):
         "realm_emails_restricted_to_domains",
         "realm_embedded_bots",
         "realm_emoji",
+        "realm_enable_spectator_access",
         "realm_filters",
         "realm_giphy_rating",
         "realm_icon_source",
@@ -312,8 +313,22 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(result.url, "/login/")
 
         # Tell server that user wants to login anonymously
-        # Redirects to load webapp.
+        # Redirects to load webapp. Since Realm.enable_spectator_access
+        # is False, the login should fail.
+        realm = get_realm("zulip")
         result = self.client_post("/", {"prefers_web_public_view": "true"})
+        self.assertEqual(self.client.session.get("prefers_web_public_view"), None)
+        self.assertEqual(realm.enable_spectator_access, False)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, "/login/")
+
+        # Enable spectator login.
+        realm.enable_spectator_access = True
+        realm.save()
+
+        result = self.client_post("/", {"prefers_web_public_view": "true"})
+        self.assertEqual(self.client.session.get("prefers_web_public_view"), True)
+        self.assertEqual(realm.enable_spectator_access, True)
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, "http://zulip.testserver")
 
@@ -330,6 +345,9 @@ class HomeTest(ZulipTestCase):
         ]
         expected_keys = [i for i in self.expected_page_params_keys if i not in removed_keys]
         self.assertEqual(actual_keys, expected_keys)
+
+        realm.enable_spectator_access = False
+        realm.save()
 
     def test_home_under_2fa_without_otp_device(self) -> None:
         with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):

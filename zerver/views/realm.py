@@ -133,6 +133,7 @@ def update_realm(
     digest_weekday: Optional[int] = REQ(
         json_validator=check_int_in(Realm.DIGEST_WEEKDAY_VALUES), default=None
     ),
+    enable_spectator_access: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     realm = user_profile.realm
 
