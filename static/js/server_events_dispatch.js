@@ -585,6 +585,7 @@ export function dispatch_normal_event(event) {
                 "starred_message_counts",
                 "send_stream_typing_notifications",
                 "send_private_typing_notifications",
+                "send_read_receipts",
             ];
 
             if (user_display_settings.includes(event.property)) {

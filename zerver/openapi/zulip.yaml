@@ -7884,6 +7884,16 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: send_read_receipts
+          in: query
+          description: |
+            Whether other users are allowed to see whether you've
+            read messages.
+
+            **Changes**: New in Zulip 5.0 (feature level 105).
+          schema:
+            type: boolean
+          example: true
       responses:
         "200":
           description: Success
@@ -9760,6 +9770,13 @@ paths:
                               notifications for stream messages if and only if this setting is enabled.
 
                               **Changes**: New in Zulip 5.0 (feature level 105).
+                          send_read_receipts:
+                            type: boolean
+                            description: |
+                              Whether other users are allowed to see whether you've
+                              read messages.
+
+                              **Changes**: New in Zulip 5.0 (feature level 105).
                       has_zoom_token:
                         type: boolean
                         description: |
@@ -11428,6 +11445,13 @@ paths:
                               stream messages.
 
                               **Changes**: New in Zulip 5.0 (feature level 105).
+                          send_read_receipts:
+                            type: boolean
+                            description: |
+                              Whether other users are allowed to see whether you've
+                              read messages.
+
+                              **Changes**: New in Zulip 5.0 (feature level 105).
                       realm_users:
                         type: array
                         description: |
@@ -12476,6 +12500,16 @@ paths:
           description: |
             Whether [typing notifications](/help/status-and-availability#typing-notifications) be sent when composing
             stream messages.
+
+            **Changes**: New in Zulip 5.0 (feature level 105).
+          schema:
+            type: boolean
+          example: true
+        - name: send_read_receipts
+          in: query
+          description: |
+            Whether other users are allowed to see whether you've
+            read messages.
 
             **Changes**: New in Zulip 5.0 (feature level 105).
           schema:

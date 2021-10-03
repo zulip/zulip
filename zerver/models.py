@@ -1439,6 +1439,7 @@ class UserBaseSettings(models.Model):
     # Privacy settings
     send_stream_typing_notifications: bool = models.BooleanField(default=True)
     send_private_typing_notifications: bool = models.BooleanField(default=True)
+    send_read_receipts: bool = models.BooleanField(default=True)
 
     display_settings_legacy = dict(
         color_scheme=int,
@@ -1492,6 +1493,7 @@ class UserBaseSettings(models.Model):
             # Add new general settings here.
             send_stream_typing_notifications=bool,
             send_private_typing_notifications=bool,
+            send_read_receipts=bool,
         ),
     }
 
