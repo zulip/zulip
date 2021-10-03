@@ -7864,6 +7864,26 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: send_private_typing_notifications
+          in: query
+          description: |
+            Whether [typing notifications](/help/status-and-availability#typing-notifications) be sent when composing
+            private messages.
+
+            **Changes**: New in Zulip 5.0 (feature level 105).
+          schema:
+            type: boolean
+          example: true
+        - name: send_stream_typing_notifications
+          in: query
+          description: |
+            Whether [typing notifications](/help/status-and-availability#typing-notifications) be sent when composing
+            stream messages.
+
+            **Changes**: New in Zulip 5.0 (feature level 105).
+          schema:
+            type: boolean
+          example: true
       responses:
         "200":
           description: Success
@@ -9722,6 +9742,24 @@ paths:
                                   type: string
                                   description: |
                                     The text describing the emoji set.
+                          send_private_typing_notifications:
+                            type: boolean
+                            description: |
+                              Whether the user has chosen to send [typing
+                              notifications](/help/status-and-availability#typing-notifications)
+                              when composing private messages. The client should send typing
+                              notifications for private messages if and only if this setting is enabled.
+
+                              **Changes**: New in Zulip 5.0 (feature level 105).
+                          send_stream_typing_notifications:
+                            type: boolean
+                            description: |
+                              Whether the user has chosen to send [typing
+                              notifications](/help/status-and-availability#typing-notifications)
+                              when composing stream messages. The client should send typing
+                              notifications for stream messages if and only if this setting is enabled.
+
+                              **Changes**: New in Zulip 5.0 (feature level 105).
                       has_zoom_token:
                         type: boolean
                         description: |
@@ -11376,6 +11414,20 @@ paths:
                                   type: string
                                   description: |
                                     The text describing the emoji set.
+                          send_private_typing_notifications:
+                            type: boolean
+                            description: |
+                              Whether [typing notifications](/help/status-and-availability#typing-notifications) be sent when composing
+                              private messages.
+
+                              **Changes**: New in Zulip 5.0 (feature level 105).
+                          send_stream_typing_notifications:
+                            type: boolean
+                            description: |
+                              Whether [typing notifications](/help/status-and-availability#typing-notifications) be sent when composing
+                              stream messages.
+
+                              **Changes**: New in Zulip 5.0 (feature level 105).
                       realm_users:
                         type: array
                         description: |
@@ -12406,6 +12458,26 @@ paths:
 
             **Changes**: Before Zulip 5.0 (feature level 81), this setting was managed by
             the `POST /users/me/enter-sends` endpoint, with the same parameter format.
+          schema:
+            type: boolean
+          example: true
+        - name: send_private_typing_notifications
+          in: query
+          description: |
+            Whether [typing notifications](/help/status-and-availability#typing-notifications) be sent when composing
+            private messages.
+
+            **Changes**: New in Zulip 5.0 (feature level 105).
+          schema:
+            type: boolean
+          example: true
+        - name: send_stream_typing_notifications
+          in: query
+          description: |
+            Whether [typing notifications](/help/status-and-availability#typing-notifications) be sent when composing
+            stream messages.
+
+            **Changes**: New in Zulip 5.0 (feature level 105).
           schema:
             type: boolean
           example: true

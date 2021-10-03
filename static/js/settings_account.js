@@ -682,11 +682,15 @@ export function set_up() {
         );
     });
 
-    $("#user_presence_enabled").on("change", (e) => {
+    $("#privacy_settings_box").on("change", "input", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
-        const data = {presence_enabled: $("#user_presence_enabled").prop("checked")};
+        const input_elem = $(e.currentTarget);
+        const setting_name = input_elem.attr("name");
+        const checked = input_elem.prop("checked");
+
+        const data = {[setting_name]: checked};
         settings_ui.do_settings_change(
             channel.patch,
             "/json/settings",

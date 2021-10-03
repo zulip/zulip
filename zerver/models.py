@@ -1436,6 +1436,10 @@ class UserBaseSettings(models.Model):
     # Whether or not the user wants to sync their drafts.
     enable_drafts_synchronization = models.BooleanField(default=True)
 
+    # Privacy settings
+    send_stream_typing_notifications: bool = models.BooleanField(default=True)
+    send_private_typing_notifications: bool = models.BooleanField(default=True)
+
     display_settings_legacy = dict(
         color_scheme=int,
         default_language=str,
@@ -1481,7 +1485,15 @@ class UserBaseSettings(models.Model):
     }  # Add new notifications settings here.
 
     # Define the types of the various automatically managed properties
-    property_types = {**display_settings_legacy, **notification_setting_types}
+    property_types = {
+        **display_settings_legacy,
+        **notification_setting_types,
+        **dict(
+            # Add new general settings here.
+            send_stream_typing_notifications=bool,
+            send_private_typing_notifications=bool,
+        ),
+    }
 
     class Meta:
         abstract = True

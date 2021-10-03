@@ -48,6 +48,12 @@ function setup_settings_label() {
         presence_enabled: $t({
             defaultMessage: "Display my availability to other users when online",
         }),
+        send_stream_typing_notifications: $t({
+            defaultMessage: "Let subscribers see when I'm typing messages in streams",
+        }),
+        send_private_typing_notifications: $t({
+            defaultMessage: "Let recipients see when I'm typing private messages",
+        }),
 
         ...settings_config.notification_settings_labels,
         ...settings_config.display_settings_labels,

@@ -583,6 +583,8 @@ export function dispatch_normal_event(event) {
                 "twenty_four_hour_time",
                 "translate_emoticons",
                 "starred_message_counts",
+                "send_stream_typing_notifications",
+                "send_private_typing_notifications",
             ];
 
             if (user_display_settings.includes(event.property)) {

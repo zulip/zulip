@@ -395,6 +395,8 @@ def update_realm_user_settings_defaults(
         json_validator=check_int, default=None
     ),
     twenty_four_hour_time: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    send_stream_typing_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    send_private_typing_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     if notification_sound is not None or email_notifications_batching_period_seconds is not None:
         check_settings_values(notification_sound, email_notifications_batching_period_seconds)
