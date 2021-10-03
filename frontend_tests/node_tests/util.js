@@ -10,7 +10,7 @@ const {run_test} = require("../zjsunit/test");
 set_global("document", {});
 const util = zrequire("util");
 const stream_data = zrequire("stream_data");
-const sub_store = zrequire("sub_store")
+const sub_store = zrequire("sub_store");
 
 const stream_underscore = {
     subscribed: true,
@@ -339,9 +339,9 @@ run_test("filter_by_word_prefix_match", () => {
     stream_data.add_sub(stream_space_dash_underscore_slash);
     const streams = stream_data.subscribed_stream_ids();
     const stream_id_to_name = (stream) => sub_store.get(stream).name;
-    assert.deepEqual(util.filter_by_word_prefix_match(streams, "under", stream_id_to_name), [1, 5])
-    assert.deepEqual(util.filter_by_word_prefix_match(streams, "dash", stream_id_to_name), [2, 5])
-    assert.deepEqual(util.filter_by_word_prefix_match(streams, "slash", stream_id_to_name), [3, 5])
-    assert.deepEqual(util.filter_by_word_prefix_match(streams, "space", stream_id_to_name), [4, 5])
-    assert.deepEqual(util.filter_by_word_prefix_match(streams, "stream-d", stream_id_to_name), [2])
+    assert.deepEqual(util.filter_by_word_prefix_match(streams, "under", stream_id_to_name), [1, 5]);
+    assert.deepEqual(util.filter_by_word_prefix_match(streams, "dash", stream_id_to_name), [2, 5]);
+    assert.deepEqual(util.filter_by_word_prefix_match(streams, "slash", stream_id_to_name), [3, 5]);
+    assert.deepEqual(util.filter_by_word_prefix_match(streams, "space", stream_id_to_name), [4, 5]);
+    assert.deepEqual(util.filter_by_word_prefix_match(streams, "stream-d", stream_id_to_name), [2]);
 });

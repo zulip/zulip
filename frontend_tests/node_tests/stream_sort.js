@@ -70,7 +70,6 @@ const stream_space_dash_underscore_slash = {
     pin_to_top: false,
 };
 
-
 function sort_groups(query) {
     const streams = stream_data.subscribed_stream_ids();
     return stream_sort.sort_groups(streams, query);
@@ -158,30 +157,30 @@ run_test("sort_groups", () => {
         same_as_before: false,
         pinned_streams: [6],
         normal_streams: [10],
-        dormant_streams: []
-    })
+        dormant_streams: [],
+    });
     assert.deepEqual(stream_sort.sort_groups(streams, "dash"), {
         same_as_before: false,
         pinned_streams: [],
         normal_streams: [10, 7],
-        dormant_streams: []
-    })
+        dormant_streams: [],
+    });
     assert.deepEqual(stream_sort.sort_groups(streams, "slash"), {
         same_as_before: false,
         pinned_streams: [],
         normal_streams: [10, 8],
-        dormant_streams: []
-    })
+        dormant_streams: [],
+    });
     assert.deepEqual(stream_sort.sort_groups(streams, "space"), {
         same_as_before: false,
         pinned_streams: [],
         normal_streams: [9, 10],
-        dormant_streams: []
-    })
+        dormant_streams: [],
+    });
     assert.deepEqual(stream_sort.sort_groups(streams, "stream-d"), {
         same_as_before: false,
         pinned_streams: [],
         normal_streams: [7],
-        dormant_streams: []
-    })
+        dormant_streams: [],
+    });
 });
