@@ -25,11 +25,9 @@ Contents:
 **If you encounter errors installing the Zulip development
 environment,** check [troubleshooting and common
 errors](#troubleshooting-and-common-errors). If that doesn't help,
-please visit [#provision
-help](https://chat.zulip.org/#narrow/stream/21-provision-help) in the
-[Zulip development community
-server](https://zulip.com/developer-community/) for real-time help or
-[file an issue](https://github.com/zulip/zulip/issues).
+please visit <a href="https://chat.zulip.org/#narrow/stream/21-provision-help" target="_blank">#provision help</a> in the
+<a href="https://zulip.com/developer-community/" target="_blank">Zulip development community server</a> for real-time help or
+<a href="https://github.com/zulip/zulip/issues" target="_blank">file an issue</a>.
 
 When reporting your issue, please include the following information:
 
@@ -68,7 +66,7 @@ Follow our [Git guide][set-up-git] in order to install Git, set up a
 GitHub account, create an SSH key to access code on GitHub
 efficiently, etc. Be sure to create an SSH key and add it to your
 GitHub account using
-[these instructions](https://help.github.com/en/articles/generating-an-ssh-key).
+<a href="https://help.github.com/en/articles/generating-an-ssh-key" target="_blank">these instructions</a>.
 
 ### Step 1: Install prerequisites
 
@@ -81,8 +79,8 @@ Jump to:
 
 #### macOS
 
-1. Install [Vagrant][vagrant-dl] (latest).
-2. Install [Docker Desktop](https://docs.docker.com/desktop/mac/install/) (latest).
+1. Install <a href="https://www.vagrantup.com/downloads.html" target="_blank">Vagrant</a> (latest).
+2. Install <a href="https://docs.docker.com/desktop/mac/install/" target="_blank">Docker Desktop</a> (latest).
 
 Now you are ready for [Step 2: Get Zulip code](#step-2-get-zulip-code).
 
@@ -117,8 +115,7 @@ christie adm cdrom sudo dip plugdev lpadmin sambashare docker
 ##### 3. Make sure the Docker daemon is running:
 
 If you had previously installed and removed an older version of
-Docker, an [Ubuntu
-bug](https://bugs.launchpad.net/ubuntu/+source/docker.io/+bug/1844894)
+Docker, an <a href="https://bugs.launchpad.net/ubuntu/+source/docker.io/+bug/1844894" target="_blank">Ubuntu bug</a>
 may prevent Docker from being automatically enabled and started after
 installation. You can check using the following:
 
@@ -145,8 +142,7 @@ Now you are ready for [Step 2: Get Zulip code](#step-2-get-zulip-code).
 
 The setup for Debian is very similar to that [for Ubuntu
 above](#ubuntu), except that the `docker.io` package is only available
-in Debian 10 and later; for Debian 9, see [Docker CE for
-Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
+in Debian 10 and later; for Debian 9, see <a href="https://docs.docker.com/install/linux/docker-ce/debian/" target="_blank">Docker CE for Debian</a>.
 
 #### Windows 10
 
@@ -154,11 +150,11 @@ Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
 We recommend using [WSL 2 for Windows development](../development/setup-advanced.html#installing-directly-on-windows-10-with-wsl-2).
 :::
 
-1. Install [Git for Windows][git-bash], which installs _Git BASH_.
-2. Install [VirtualBox][vbox-dl] (latest).
-3. Install [Vagrant][vagrant-dl] (latest).
+1. Install <a href="https://git-for-windows.github.io/" target="_blank">Git for Windows</a>, which installs _Git BASH_.
+2. Install <a href="https://www.virtualbox.org/wiki/Downloads" target="_blank">VirtualBox</a> (latest).
+3. Install <a href="https://www.vagrantup.com/downloads.html" target="_blank">Vagrant</a> (latest).
 
-(Note: While _Git BASH_ is recommended, you may also use [Cygwin][cygwin-dl].
+(Note: While _Git BASH_ is recommended, you may also use <a href="https://cygwin.com/" target="_blank">Cygwin</a>.
 If you do, make sure to **install default required packages** along with
 **git**, **curl**, **openssh**, and **rsync** binaries.)
 
@@ -171,7 +167,7 @@ It is important that you **always run Git BASH with administrator
 privileges** when working on Zulip code, as not doing so will cause
 errors in the development environment (such as symlink creation). You
 might wish to configure your Git BASH shortcut to always run with
-these privileges enabled (see this [guide][bash-admin-setup] for how
+these privileges enabled (see this <a href="https://superuser.com/questions/1002262/run-applications-as-administrator-by-default-in-windows-10" target="_blank">guide</a> for how
 to set this up).
 
 ##### Enable native symlinks
@@ -230,7 +226,7 @@ projects and to instead follow these instructions exactly.)
 
 ### Step 2: Get Zulip code
 
-1. In your browser, visit <https://github.com/zulip/zulip>
+1. In your browser, visit <a href="https://github.com/zulip/zulip" target="_blank">https://github.com/zulip/zulip</a>
    and click the `fork` button. You will need to be logged in to GitHub to
    do this.
 2. Open Terminal (macOS/Ubuntu) or Git BASH (Windows; must
@@ -305,8 +301,8 @@ without provisioning after the first time). Other common issues are
 documented in the
 [Troubleshooting and common errors](#troubleshooting-and-common-errors)
 section. If that doesn't help, please visit
-[#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
-in the [Zulip development community server](https://zulip.com/developer-community/) for
+<a href="https://chat.zulip.org/#narrow/stream/21-provision-help" target="_blank">#provision help</a>
+in the <a href="https://zulip.com/developer-community/" target="_blank">Zulip development community server</a> for
 real-time help.
 
 On Windows, you will see the message
@@ -372,7 +368,7 @@ webpack: bundle is now VALID.
 ```
 
 Now the Zulip server should be running and accessible. Verify this by
-navigating to <http://localhost:9991/> in the browser on your main machine.
+navigating to <a href="http://localhost:9991/" target="_blank">http://localhost:9991/</a> in the browser on your main machine.
 
 You should see something like this:
 
@@ -446,10 +442,8 @@ guest); this should complete in about a minute.
 After provisioning, you'll want to
 [(re)start the Zulip development server](#step-3-start-the-development-environment).
 
-If you run into any trouble, [#provision
-help](https://chat.zulip.org/#narrow/stream/21-provision-help) in the
-[Zulip development community
-server](https://zulip.com/developer-community/) is a great place to ask for
+If you run into any trouble, <a href="https://chat.zulip.org/#narrow/stream/21-provision-help" target="_blank">#provision help</a> in the
+<a href="https://zulip.com/developer-community/" target="_blank">Zulip development community server</a> is a great place to ask for
 help.
 
 #### Rebuilding the development environment
@@ -508,8 +502,8 @@ $ vagrant halt
 ```
 
 Check out the Vagrant documentation to learn more about
-[suspend](https://www.vagrantup.com/docs/cli/suspend.html) and
-[halt](https://www.vagrantup.com/docs/cli/halt.html).
+<a href="https://www.vagrantup.com/docs/cli/suspend.html" target="_blank">suspend</a> and
+<a href="https://www.vagrantup.com/docs/cli/halt.html" target="_blank">halt</a>.
 
 #### Resuming the development environment
 
@@ -547,9 +541,9 @@ equivalently `vagrant provision` from outside).
 If these solutions aren't working for you or you encounter an issue not
 documented below, there are a few ways to get further help:
 
-- Ask in [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
-  in the [Zulip development community server](https://zulip.com/developer-community/).
-- [File an issue](https://github.com/zulip/zulip/issues).
+- Ask in <a href="https://chat.zulip.org/#narrow/stream/21-provision-help" target="_blank">#provision help</a>
+  in the <a href="https://zulip.com/developer-community/" target="_blank">Zulip development community server</a>.
+- <a href="https://github.com/zulip/zulip/issues" target="_blank">File an issue</a>.
 
 When reporting your issue, please include the following information:
 
@@ -668,12 +662,11 @@ Then Vagrant was not able to create a symbolic link.
 
 First, if you are using Windows, **make sure you have run Git BASH (or
 Cygwin) as an administrator**. By default, only administrators can
-create symbolic links on Windows. Additionally [UAC][windows-uac], a
+create symbolic links on Windows. Additionally <a href="https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/how-user-account-control-works" target="_blank">UAC</a>, a
 Windows feature intended to limit the impact of malware, can prevent
-even administrator accounts from creating symlinks. [Turning off
-UAC][disable-uac] will allow you to create symlinks. You can also try
+even administrator accounts from creating symlinks. <a href="https://stackoverflow.com/questions/15320550/why-is-secreatesymboliclinkprivilege-ignored-on-windows-8" target="_blank">Turning off UAC</a> will allow you to create symlinks. You can also try
 some of the solutions mentioned
-[here](https://superuser.com/questions/124679/how-do-i-create-a-link-in-windows-7-home-premium-as-a-regular-user).
+<a href="https://superuser.com/questions/124679/how-do-i-create-a-link-in-windows-7-home-premium-as-a-regular-user" target="_blank">here</a>.
 
 [windows-uac]: https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/how-user-account-control-works
 [disable-uac]: https://stackoverflow.com/questions/15320550/why-is-secreatesymboliclinkprivilege-ignored-on-windows-8
@@ -754,8 +747,7 @@ setting called VT-x (Intel) or (AMD-V).
 If this is already enabled in your BIOS, double-check that you are running a
 64-bit operating system.
 
-For further information about troubleshooting vagrant timeout errors [see
-this post](https://stackoverflow.com/questions/22575261/vagrant-stuck-connection-timeout-retrying#22575302).
+For further information about troubleshooting vagrant timeout errors <a href="https://stackoverflow.com/questions/22575261/vagrant-stuck-connection-timeout-retrying#22575302" target="_blank">see this post</a>.
 
 #### Vagrant was unable to communicate with the guest machine
 
@@ -892,7 +884,7 @@ default: OSError: [Errno 26] Text file busy: 'baremetrics'
 ```
 
 This error is caused by a
-[bug](https://www.virtualbox.org/ticket/19004) in recent versions of
+<a href="https://www.virtualbox.org/ticket/19004" target="_blank">bug</a> in recent versions of
 the VirtualBox Guest Additions for Linux on Windows hosts. You can
 check the running version of VirtualBox Guest Additions with this
 command:
