@@ -2320,7 +2320,19 @@ class UserDisplayActionTest(BaseAction):
             color_scheme=[2, 3, 1],
         )
 
-        num_events = 2
+        user_settings_object = True
+        num_events = 1
+
+        legacy_setting = setting_name in UserProfile.display_settings_legacy
+        if legacy_setting:
+            # Two events:`update_display_settings` and `user_settings`.
+            # `update_display_settings` is only sent for settings added
+            # before feature level 89 which introduced `user_settings`.
+            # We send both events so that older clients that do not
+            # rely on `user_settings` don't break.
+            num_events = 2
+            user_settings_object = False
+
         values = test_changes.get(setting_name)
 
         property_type = UserProfile.property_types[setting_name]
@@ -2339,10 +2351,15 @@ class UserDisplayActionTest(BaseAction):
                     self.user_profile, setting_name, value, acting_user=self.user_profile
                 ),
                 num_events=num_events,
+                user_settings_object=user_settings_object,
             )
 
             check_user_settings_update("events[0]", events[0])
-            check_update_display_settings("events[1]", events[1])
+            if legacy_setting:
+                # Only settings added before feature level 89
+                # generate this event.
+                self.assert_length(events, 2)
+                check_update_display_settings("events[1]", events[1])
 
     def test_change_user_settings(self) -> None:
         for prop in UserProfile.property_types:
