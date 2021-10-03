@@ -9,6 +9,39 @@ const {run_test} = require("../zjsunit/test");
 
 set_global("document", {});
 const util = zrequire("util");
+const stream_data = zrequire("stream_data");
+const sub_store = zrequire("sub_store")
+
+const stream_underscore = {
+    subscribed: true,
+    name: "stream_underscore",
+    stream_id: 1,
+    pin_to_top: true,
+};
+const stream_dash = {
+    subscribed: true,
+    name: "stream-dash",
+    stream_id: 2,
+    pin_to_top: false,
+};
+const stream_slash = {
+    subscribed: true,
+    name: "stream/slash",
+    stream_id: 3,
+    pin_to_top: false,
+};
+const stream_space = {
+    subscribed: true,
+    name: "stream space",
+    stream_id: 4,
+    pin_to_top: false,
+};
+const stream_space_dash_underscore_slash = {
+    subscribed: true,
+    name: "stream space-dash_underscore/slash",
+    stream_id: 5,
+    pin_to_top: false,
+};
 
 run_test("CachedValue", () => {
     let x = 5;
@@ -296,4 +329,19 @@ run_test("clean_user_content_links", () => {
             "<a>unsafe</a> " +
             '<a href="/#fragment" title="http://zulip.zulipdev.com/#fragment">fragment</a>',
     );
+});
+
+run_test("filter_by_word_prefix_match", () => {
+    stream_data.add_sub(stream_underscore);
+    stream_data.add_sub(stream_dash);
+    stream_data.add_sub(stream_slash);
+    stream_data.add_sub(stream_space);
+    stream_data.add_sub(stream_space_dash_underscore_slash);
+    const streams = stream_data.subscribed_stream_ids();
+    const stream_id_to_name = (stream) => sub_store.get(stream).name;
+    assert.deepEqual(util.filter_by_word_prefix_match(streams, "under", stream_id_to_name), [1, 5])
+    assert.deepEqual(util.filter_by_word_prefix_match(streams, "dash", stream_id_to_name), [2, 5])
+    assert.deepEqual(util.filter_by_word_prefix_match(streams, "slash", stream_id_to_name), [3, 5])
+    assert.deepEqual(util.filter_by_word_prefix_match(streams, "space", stream_id_to_name), [4, 5])
+    assert.deepEqual(util.filter_by_word_prefix_match(streams, "stream-d", stream_id_to_name), [2])
 });
