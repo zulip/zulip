@@ -214,6 +214,7 @@ export function dispatch_normal_event(event) {
                 private_message_policy: noop,
                 send_welcome_emails: noop,
                 message_content_allowed_in_email_notifications: noop,
+                realm_enable_spectator_access: noop,
                 signup_notifications_stream_id: noop,
                 emails_restricted_to_domains: noop,
                 video_chat_provider: compose.update_video_chat_button_display,

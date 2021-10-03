@@ -28,6 +28,9 @@ const admin_settings_label = {
     realm_message_content_allowed_in_email_notifications: $t({
         defaultMessage: "Allow message content in message notification emails",
     }),
+    realm_enable_spectator_access: $t({
+        defaultMessage: "Allow creating web-public streams (visible to anyone on the Internet)",
+    }),
     realm_digest_emails_enabled: $t({
         defaultMessage: "Send weekly digest emails to inactive users",
     }),
@@ -119,6 +122,7 @@ export function build_page() {
         realm_send_welcome_emails: page_params.realm_send_welcome_emails,
         realm_message_content_allowed_in_email_notifications:
             page_params.realm_message_content_allowed_in_email_notifications,
+        realm_enable_spectator_access: page_params.realm_enable_spectator_access,
         settings_send_digest_emails: page_params.settings_send_digest_emails,
         realm_digest_emails_enabled: page_params.realm_digest_emails_enabled,
         realm_digest_weekday: page_params.realm_digest_weekday,
