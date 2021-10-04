@@ -417,8 +417,11 @@ def fetch_initial_state_data(
         # 102); we can remove this once we no longer need to support
         # legacy mobile app versions that read the old property.
         state["can_create_streams"] = (
-            settings_user.can_create_private_streams() or settings_user.can_create_public_streams()
+            settings_user.can_create_private_streams()
+            or settings_user.can_create_public_streams()
+            or settings_user.can_create_web_public_streams()
         )
+        state["can_create_web_public_streams"] = settings_user.can_create_web_public_streams()
         state["can_subscribe_other_users"] = settings_user.can_subscribe_other_users()
         state["can_invite_others_to_realm"] = settings_user.can_invite_others_to_realm()
         state["is_admin"] = settings_user.is_realm_admin
@@ -752,8 +755,13 @@ def apply_event(
                     # Recompute properties based on is_admin/is_guest
                     state["can_create_private_streams"] = user_profile.can_create_private_streams()
                     state["can_create_public_streams"] = user_profile.can_create_public_streams()
+                    state[
+                        "can_create_web_public_streams"
+                    ] = user_profile.can_create_web_public_streams()
                     state["can_create_streams"] = (
-                        state["can_create_private_streams"] or state["can_create_public_streams"]
+                        state["can_create_private_streams"]
+                        or state["can_create_public_streams"]
+                        or state["can_create_web_public_streams"]
                     )
                     state["can_subscribe_other_users"] = user_profile.can_subscribe_other_users()
                     state["can_invite_others_to_realm"] = user_profile.can_invite_others_to_realm()
@@ -942,6 +950,7 @@ def apply_event(
             policy_permission_dict = {
                 "create_public_stream_policy": "can_create_public_streams",
                 "create_private_stream_policy": "can_create_private_streams",
+                "create_web_public_stream_policy": "can_create_web_public_streams",
                 "invite_to_stream_policy": "can_subscribe_other_users",
                 "invite_to_realm_policy": "can_invite_others_to_realm",
             }
@@ -962,7 +971,9 @@ def apply_event(
 
             # Finally, we need to recompute this value from its inputs.
             state["can_create_streams"] = (
-                state["can_create_private_streams"] or state["can_create_public_streams"]
+                state["can_create_private_streams"]
+                or state["can_create_public_streams"]
+                or state["can_create_web_public_streams"]
             )
         elif event["op"] == "update_dict":
             for key, value in event["data"].items():

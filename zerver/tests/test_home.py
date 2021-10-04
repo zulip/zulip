@@ -53,6 +53,7 @@ class HomeTest(ZulipTestCase):
         "can_create_private_streams",
         "can_create_public_streams",
         "can_create_streams",
+        "can_create_web_public_streams",
         "can_invite_others_to_realm",
         "can_subscribe_other_users",
         "corporate_enabled",

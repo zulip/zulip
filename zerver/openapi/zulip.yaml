@@ -11462,6 +11462,18 @@ paths:
                           **Changes**: New in Zulip 5.0 (feature level 102). In older
                           versions, the deprecated `can_create_streams` property should be
                           used to determine whether the user can create private streams.
+                      can_create_web_public_streams:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `fetch_event_types`.
+
+                          Whether the current user is allowed to create public streams with
+                          the organization's [stream creation policy](/help/configure-who-can-create-streams).
+
+                          Note that this will be false if the Zulip server does not have the
+                          `WEB_PUBLIC_STREAMS_ENABLED` setting enabled.
+
+                          **Changes**: New in Zulip 5.0 (feature level 103).
                       can_subscribe_other_users:
                         type: boolean
                         description: |

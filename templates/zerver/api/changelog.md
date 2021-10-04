@@ -16,6 +16,8 @@ below features are supported.
 * [`POST /register`](/api/register-queue): Added `create_web_public_stream_policy`
   policy for which users can create web public streams.
 * [`PATCH /realm`]: Added support for updating `create_web_public_stream_policy`.
+* [`POST /register`](/api/register-queue): Added `can_create_web_public_streams` boolean
+  field to the response.
 
 **Feature level 102**
 
