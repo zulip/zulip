@@ -511,7 +511,7 @@ function handle_reactivation(tbody, status_field) {
     });
 }
 
-export function show_user_settings(user_id) {
+export function show_user_settings(user_id, status_field) {
     $(() => {
         const person = people.get_by_user_id(user_id);
 
@@ -565,7 +565,7 @@ export function show_user_settings(user_id) {
         }
 
         function submit_user_details() {
-            const status_field = $("#user-field-status").expectOne();
+            // const status_field = $("#user-field-status").expectOne();
             const role = Number.parseInt($("#user-role-select").val().trim(), 10);
             const full_name = $("#edit-user-form").find("input[name='full_name']");
             const profile_data = get_human_profile_data(fields_user_pills);
@@ -602,7 +602,14 @@ function handle_human_form(tbody, status_field) {
         e.stopPropagation();
         e.preventDefault();
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
-        show_user_settings(user_id);
+        show_user_settings(user_id, status_field);
+    });
+}
+
+export function test(user_uid) {
+    $(()=>{
+        const status_field = $("#user-field-status").expectOne();
+        show_user_settings(user_uid, status_field);
     });
 }
 

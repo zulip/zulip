@@ -1020,8 +1020,17 @@ export function register_click_handlers() {
     });
 
     $("body").on("click", ".sidebar-popover-manage-user", async (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        // $( '#admin-user-list' ).on("ready", function() {
+        //     console.log( "ready!" );
+        // });
         const user_id = elem_to_user_id($(e.target).parents("ul"));
-        settings_users.show_user_settings(user_id);  
+        // const status_field = $("#user-field-status").expectOne();
+
+        // settings_users.show_user_settings(user_id, status_field);  
+        // settings_users.test(user_id);  
+        
     });
 
     $("#user_presences").on("click", ".user-list-sidebar-menu-icon", function (e) {
