@@ -1130,6 +1130,12 @@ realm_user_person_types = dict(
             ("delivery_email", str),
         ],
     ),
+    email=DictType(
+        required_keys=[
+            ("user_id", int),
+            ("new_email", str),
+        ],
+    ),
     full_name=DictType(
         required_keys=[
             # vertical formatting

@@ -549,6 +549,24 @@ paths:
                                                 This user-generated HTML content should be rendered
                                                 using the same CSS and client-side security protections
                                                 as are used for message content.
+                                    - type: object
+                                      additionalProperties: False
+                                      description: |
+                                        When the Zulip display email address of a user changes,
+                                        either due to the user's email address changing, or
+                                        due to changes in the organization's
+                                        [email address visibility][help-email-visibility].
+
+                                        [help-email-visibility]: /help/restrict-visibility-of-email-addresses).
+                                      properties:
+                                        user_id:
+                                          type: integer
+                                          description: |
+                                            The ID of the user affected by this change.
+                                        new_email:
+                                          type: string
+                                          description: |
+                                            The new email of the user.
                               additionalProperties: false
                               example:
                                 {

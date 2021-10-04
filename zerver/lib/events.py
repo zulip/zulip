@@ -787,6 +787,9 @@ def apply_event(
                     if field in person and field in state:
                         state[field] = person[field]
 
+                if "new_email" in person:
+                    state["email"] = person["new_email"]
+
                 # In the unlikely event that the current user
                 # just changed to/from being an admin, we need
                 # to add/remove the data on all bots in the
@@ -832,6 +835,8 @@ def apply_event(
                             p["profile_data"][str(custom_field_id)] = {
                                 "value": custom_field_new_value,
                             }
+                    if "new_email" in person:
+                        p["email"] = person["new_email"]
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "realm_bot":
