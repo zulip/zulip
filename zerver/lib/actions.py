@@ -35,6 +35,7 @@ from django.db.models.query import QuerySet
 from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 from django.utils.translation import override as override_language
 from psycopg2.extras import execute_values
 from psycopg2.sql import SQL
@@ -6489,11 +6490,13 @@ def do_update_message(
         # Notify users that the topic was moved.
         old_thread_notification_string = None
         if send_notification_to_old_thread:
-            old_thread_notification_string = _("This topic was moved by {user} to {new_location}")
+            old_thread_notification_string = gettext_lazy(
+                "This topic was moved by {user} to {new_location}"
+            )
 
         new_thread_notification_string = None
         if send_notification_to_new_thread:
-            new_thread_notification_string = _(
+            new_thread_notification_string = gettext_lazy(
                 "This topic was moved here from {old_location} by {user}"
             )
 

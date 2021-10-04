@@ -79,9 +79,18 @@ class EditMessageTestCase(ZulipTestCase):
             )
 
     def prepare_move_topics(
-        self, user_email: str, old_stream: str, new_stream: str, topic: str
+        self,
+        user_email: str,
+        old_stream: str,
+        new_stream: str,
+        topic: str,
+        language: Optional[str] = None,
     ) -> Tuple[UserProfile, Stream, Stream, int, int]:
         user_profile = self.example_user(user_email)
+        if language is not None:
+            user_profile.default_language = language
+            user_profile.save(update_fields=["default_language"])
+
         self.login(user_email)
         stream = self.make_stream(old_stream)
         new_stream = self.make_stream(new_stream)
@@ -1286,7 +1295,13 @@ class EditMessageTest(EditMessageTestCase):
 
     def test_move_message_to_stream(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
-            "iago", "test move stream", "new stream", "test"
+            "iago",
+            "test move stream",
+            "new stream",
+            "test",
+            # Set the user's translation language to German to test that
+            # it is overridden by the realm's default language.
+            "de",
         )
 
         result = self.client_patch(
@@ -1296,6 +1311,7 @@ class EditMessageTest(EditMessageTestCase):
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
             },
+            HTTP_ACCEPT_LANGUAGE="de",
         )
 
         self.assert_json_success(result)
