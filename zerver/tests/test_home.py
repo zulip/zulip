@@ -116,6 +116,7 @@ class HomeTest(ZulipTestCase):
         "realm_community_topic_editing_limit_seconds",
         "realm_create_private_stream_policy",
         "realm_create_public_stream_policy",
+        "realm_create_web_public_stream_policy",
         "realm_default_code_block_language",
         "realm_default_external_accounts",
         "realm_default_language",

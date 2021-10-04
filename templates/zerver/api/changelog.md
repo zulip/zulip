@@ -11,6 +11,12 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 103**
+
+* [`POST /register`](/api/register-queue): Added `create_web_public_stream_policy`
+  policy for which users can create web public streams.
+* [`PATCH /realm`]: Added support for updating `create_web_public_stream_policy`.
+
 **Feature level 102**
 
 * [`POST /register`](/api/register-queue), `PATCH /realm`: The

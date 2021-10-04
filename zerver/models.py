@@ -263,6 +263,7 @@ class Realm(models.Model):
     POLICY_MODERATORS_ONLY = 4
     POLICY_EVERYONE = 5
     POLICY_NOBODY = 6
+    POLICY_OWNERS_ONLY = 7
 
     COMMON_POLICY_TYPES = [
         POLICY_MEMBERS_ONLY,
@@ -287,6 +288,16 @@ class Realm(models.Model):
         POLICY_NOBODY,
     ]
 
+    # We don't allow granting roles less than Moderator access to
+    # create web-public streams, since it's a sensitive feature that
+    # can be used to send spam.
+    CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES = [
+        POLICY_ADMINS_ONLY,
+        POLICY_MODERATORS_ONLY,
+        POLICY_OWNERS_ONLY,
+        POLICY_NOBODY,
+    ]
+
     DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 259200
 
     # Who in the organization is allowed to add custom emojis.
@@ -296,6 +307,9 @@ class Realm(models.Model):
     create_public_stream_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
     create_private_stream_policy: int = models.PositiveSmallIntegerField(
         default=POLICY_MEMBERS_ONLY
+    )
+    create_web_public_stream_policy: int = models.PositiveSmallIntegerField(
+        default=POLICY_OWNERS_ONLY
     )
 
     # Who in the organization is allowed to delete messages they themselves sent.
@@ -611,6 +625,7 @@ class Realm(models.Model):
         bot_creation_policy=int,
         create_public_stream_policy=int,
         create_private_stream_policy=int,
+        create_web_public_stream_policy=int,
         invite_to_stream_policy=int,
         move_messages_between_streams_policy=int,
         default_language=str,

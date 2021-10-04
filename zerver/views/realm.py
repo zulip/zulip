@@ -106,6 +106,9 @@ def update_realm(
     create_private_stream_policy: Optional[int] = REQ(
         json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
     ),
+    create_web_public_stream_policy: Optional[int] = REQ(
+        json_validator=check_int_in(Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES), default=None
+    ),
     invite_to_stream_policy: Optional[int] = REQ(
         json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
     ),

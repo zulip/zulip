@@ -10405,6 +10405,25 @@ paths:
 
                           **Changes**: Before Zulip 5.0 (feature level 102), permission to
                           create streams was controlled by the `realm_create_stream_policy` setting.
+                      realm_create_web_public_stream_policy:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Has no effect and should not be displayed in settings UI
+                          unless the Zulip server has the `WEB_PUBLIC_STREAMS_ENABLED`
+                          server-level setting enabled.
+
+                          The policy for which users can create web
+                          public streams in this organization. Allowed
+                          values are:
+
+                          - 2 = admins only
+                          - 4 = admins and moderators only
+                          - 6 = nobody
+                          - 7 = owners only
+
+                          **Changes**: Added in Zulip 5.0 (feature level 103).
                       realm_invite_to_stream_policy:
                         type: integer
                         description: |
