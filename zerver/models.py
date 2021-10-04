@@ -1856,6 +1856,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             "add_custom_emoji_policy",
             "create_private_stream_policy",
             "create_public_stream_policy",
+            "create_web_public_stream_policy",
             "delete_own_message_policy",
             "edit_topic_policy",
             "invite_to_stream_policy",
@@ -1871,6 +1872,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
         if policy_value == Realm.POLICY_EVERYONE:
             return True
+
+        if self.is_realm_owner:
+            return True
+
+        if policy_value == Realm.POLICY_OWNERS_ONLY:
+            return False
 
         if self.is_realm_admin:
             return True
@@ -1898,6 +1905,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     def can_create_private_streams(self) -> bool:
         return self.has_permission("create_private_stream_policy")
+
+    def can_create_web_public_streams(self) -> bool:
+        if not self.realm.web_public_streams_enabled():
+            return False
+        return self.has_permission("create_web_public_stream_policy")
 
     def can_subscribe_other_users(self) -> bool:
         return self.has_permission("invite_to_stream_policy")

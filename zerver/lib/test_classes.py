@@ -1269,6 +1269,14 @@ Output:
         self.assertFalse(validation_func(new_member_user))
         self.assertFalse(validation_func(guest_user))
 
+        do_set_realm_property(realm, policy, Realm.POLICY_OWNERS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(owner_user))
+        self.assertFalse(validation_func(admin_user))
+        self.assertFalse(validation_func(moderator_user))
+        self.assertFalse(validation_func(member_user))
+        self.assertFalse(validation_func(new_member_user))
+        self.assertFalse(validation_func(guest_user))
+
         do_set_realm_property(realm, policy, Realm.POLICY_ADMINS_ONLY, acting_user=None)
         self.assertTrue(validation_func(owner_user))
         self.assertTrue(validation_func(admin_user))

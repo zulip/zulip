@@ -475,6 +475,8 @@ class StreamAdminTest(ZulipTestCase):
         ]
 
         # Normal user cannot create web-public streams
+        self.assertFalse(user_profile.can_create_web_public_streams())
+        self.assertTrue(owner.can_create_web_public_streams())
         with self.assertRaisesRegex(JsonableError, "Must be an organization owner"):
             list_to_streams(
                 streams_raw,
@@ -483,6 +485,8 @@ class StreamAdminTest(ZulipTestCase):
             )
 
         with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
+            self.assertFalse(user_profile.can_create_web_public_streams())
+            self.assertFalse(owner.can_create_web_public_streams())
             with self.assertRaisesRegex(JsonableError, "Web public streams are not enabled."):
                 list_to_streams(
                     streams_raw,
@@ -3353,6 +3357,13 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def test_can_create_public_streams(self) -> None:
         self._test_can_create_streams("create_public_stream_policy", invite_only=False)
+
+    def test_can_create_web_public_streams(self) -> None:
+        def validation_func(user_profile: UserProfile) -> bool:
+            user_profile.refresh_from_db()
+            return user_profile.can_create_web_public_streams()
+
+        self.check_has_permission_policies("create_web_public_stream_policy", validation_func)
 
     def test_user_settings_for_subscribing_other_users(self) -> None:
         """
