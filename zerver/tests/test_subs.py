@@ -474,10 +474,10 @@ class StreamAdminTest(ZulipTestCase):
             for (stream_name, stream_description) in zip(stream_names, stream_descriptions)
         ]
 
-        # Normal user cannot create web-public streams
         self.assertFalse(user_profile.can_create_web_public_streams())
         self.assertTrue(owner.can_create_web_public_streams())
-        with self.assertRaisesRegex(JsonableError, "Must be an organization owner"):
+        # As per create_web_public_stream_policy, only owners can create web-public streams by default.
+        with self.assertRaisesRegex(JsonableError, "Insufficient permission"):
             list_to_streams(
                 streams_raw,
                 user_profile,
@@ -3261,7 +3261,11 @@ class SubscriptionAPITest(ZulipTestCase):
         )
 
     def _test_user_settings_for_creating_streams(
-        self, stream_policy: str, *, invite_only: bool
+        self,
+        stream_policy: str,
+        *,
+        invite_only: bool,
+        is_web_public: bool,
     ) -> None:
         user_profile = self.example_user("cordelia")
         realm = user_profile.realm
@@ -3272,6 +3276,7 @@ class SubscriptionAPITest(ZulipTestCase):
             user_profile,
             ["new_stream1"],
             invite_only=invite_only,
+            is_web_public=is_web_public,
             allow_fail=True,
         )
         self.assert_json_error(result, "Insufficient permission")
@@ -3289,6 +3294,7 @@ class SubscriptionAPITest(ZulipTestCase):
             ["new_stream2"],
             allow_fail=True,
             invite_only=invite_only,
+            is_web_public=is_web_public,
         )
         self.assert_json_error(result, "Insufficient permission")
 
@@ -3301,6 +3307,7 @@ class SubscriptionAPITest(ZulipTestCase):
             user_profile,
             ["new_stream3"],
             invite_only=invite_only,
+            is_web_public=is_web_public,
             allow_fail=True,
         )
         self.assert_json_error(result, "Not allowed for guest users")
@@ -3310,6 +3317,7 @@ class SubscriptionAPITest(ZulipTestCase):
             self.test_user,
             ["new_stream4"],
             invite_only=invite_only,
+            is_web_public=is_web_public,
         )
 
         do_set_realm_property(
@@ -3320,6 +3328,7 @@ class SubscriptionAPITest(ZulipTestCase):
             user_profile,
             ["new_stream5"],
             invite_only=invite_only,
+            is_web_public=is_web_public,
             allow_fail=True,
         )
         self.assert_json_error(result, "Insufficient permission")
@@ -3329,12 +3338,21 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def test_user_settings_for_creating_private_streams(self) -> None:
         self._test_user_settings_for_creating_streams(
-            "create_private_stream_policy", invite_only=True
+            "create_private_stream_policy",
+            invite_only=True,
+            is_web_public=False,
         )
 
     def test_user_settings_for_creating_public_streams(self) -> None:
         self._test_user_settings_for_creating_streams(
-            "create_public_stream_policy", invite_only=False
+            "create_public_stream_policy",
+            invite_only=False,
+            is_web_public=False,
+        )
+
+    def test_user_settings_for_creating_web_public_streams(self) -> None:
+        self._test_user_settings_for_creating_streams(
+            "create_web_public_stream_policy", invite_only=False, is_web_public=True
         )
 
     def _test_can_create_streams(self, stream_policy: str, invite_only: bool) -> None:
