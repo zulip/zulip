@@ -117,6 +117,12 @@ log][commit-log] for an up-to-date list of raw changes.
 
 ## Zulip 4.x series
 
+### 4.7 -- 2021-10-04
+
+- CVE-2021-41115: Prevent organization administrators from affecting
+  the server with a regular expression denial-of-service attack
+  through linkifier patterns.
+
 ### 4.6 -- 2021-09-23
 
 - Documented official support for Debian 11 Bullseye, now that it is
