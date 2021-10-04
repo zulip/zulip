@@ -2049,6 +2049,10 @@ class EditMessageTest(EditMessageTestCase):
     def test_mark_topic_as_resolved(self) -> None:
         self.login("iago")
         admin_user = self.example_user("iago")
+        # Set the user's translation language to German to test that
+        # it is overridden by the realm's default language.
+        admin_user.default_language = "de"
+        admin_user.save()
         stream = self.make_stream("new")
         self.subscribe(admin_user, stream.name)
         original_topic = "topic 1"
@@ -2077,6 +2081,7 @@ class EditMessageTest(EditMessageTestCase):
                 "topic": resolved_topic,
                 "propagate_mode": "change_all",
             },
+            HTTP_ACCEPT_LANGUAGE="de",
         )
 
         self.assert_json_success(result)
