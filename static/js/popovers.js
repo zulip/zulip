@@ -12,7 +12,6 @@ import render_user_group_info_popover from "../templates/user_group_info_popover
 import render_user_group_info_popover_content from "../templates/user_group_info_popover_content.hbs";
 import render_user_info_popover_content from "../templates/user_info_popover_content.hbs";
 import render_user_info_popover_title from "../templates/user_info_popover_title.hbs";
-import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
 
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
@@ -24,17 +23,7 @@ import * as emoji_picker from "./emoji_picker";
 import * as feature_flags from "./feature_flags";
 import * as giphy from "./giphy";
 import * as hash_util from "./hash_util";
-import {$t, $t_html} from "./i18n";
-import {page_params} from "./page_params";
-import * as settings_config from "./settings_config";
-import * as dialog_widget from "./dialog_widget";
-import * as settings_account from "./settings_account";
-import * as settings_users from "./settings_users";
-
-
-
-
-
+import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
@@ -46,6 +35,7 @@ import * as muted_users_ui from "./muted_users_ui";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import * as realm_playground from "./realm_playground";
@@ -53,6 +43,7 @@ import * as reminder from "./reminder";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
+import * as settings_users from "./settings_users";
 import * as stream_popover from "./stream_popover";
 import * as user_groups from "./user_groups";
 import * as user_status from "./user_status";
@@ -245,7 +236,7 @@ function render_user_info_popover(
         status_text,
         status_emoji_info,
         user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
-        can_modify: can_modify,
+        can_modify,
     };
 
     if (user.is_bot) {
@@ -964,7 +955,6 @@ export function register_click_handlers() {
         e.preventDefault();
     });
 
-
     /* These click handlers are implemented as just deep links to the
      * relevant part of the Zulip UI, so we don't want preventDefault,
      * but we do want to close the modal when you click them. */
@@ -1020,17 +1010,29 @@ export function register_click_handlers() {
     });
 
     $("body").on("click", ".sidebar-popover-manage-user", async (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        // $( '#admin-user-list' ).on("ready", function() {
-        //     console.log( "ready!" );
-        // });
         const user_id = elem_to_user_id($(e.target).parents("ul"));
-        // const status_field = $("#user-field-status").expectOne();
 
-        // settings_users.show_user_settings(user_id, status_field);  
-        // settings_users.test(user_id);  
-        
+        const observer = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                if (!mutation.addedNodes) {
+                    return;
+                }
+
+                for (let i = 0; i < mutation.addedNodes.length; i = i + 1) {
+                    const node = mutation.addedNodes[i];
+                    if (node.id === "settings-change-box") {
+                        const status_field = $("#user-field-status").first();
+                        settings_users.show_user_settings(user_id, status_field);
+                        observer.disconnect();
+                    }
+                }
+            }
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+        });
     });
 
     $("#user_presences").on("click", ".user-list-sidebar-menu-icon", function (e) {

@@ -512,91 +512,79 @@ function handle_reactivation(tbody, status_field) {
 }
 
 export function show_user_settings(user_id, status_field) {
-    $(() => {
-        const person = people.get_by_user_id(user_id);
+    const person = people.get_by_user_id(user_id);
 
-        if (!person) {
-            return;
+    if (!person) {
+        return;
+    }
+
+    let user_email = settings_data.email_for_user_settings(person);
+    if (!user_email) {
+        // When email_address_visibility is "Nobody", we still
+        // want to show the fake email address in the edit form.
+        //
+        // We may in the future want to just hide the form field
+        // for this situation, once we display user IDs.
+        user_email = person.email;
+    }
+
+    const html_body = render_admin_human_form({
+        user_id,
+        email: user_email,
+        full_name: person.full_name,
+        user_role_values: settings_config.user_role_values,
+        disable_role_dropdown: person.is_owner && !page_params.is_owner,
+    });
+
+    const modal_parent = $("#user-info-form-modal-container");
+    let fields_user_pills;
+
+    function set_role_dropdown_and_fields_user_pills() {
+        $("#user-role-select").val(person.role);
+        if (!page_params.is_owner) {
+            $("#user-role-select")
+                .find(`option[value="${CSS.escape(settings_config.user_role_values.owner.code)}"]`)
+                .hide();
         }
 
-        let user_email = settings_data.email_for_user_settings(person);
-        if (!user_email) {
-            // When email_address_visibility is "Nobody", we still
-            // want to show the fake email address in the edit form.
-            //
-            // We may in the future want to just hide the form field
-            // for this situation, once we display user IDs.
-            user_email = person.email;
-        }
-
-        const html_body = render_admin_human_form({
+        const element = "#edit-user-form .custom-profile-field-form";
+        $(element).html("");
+        settings_account.append_custom_profile_fields(element, user_id);
+        settings_account.initialize_custom_date_type_fields(element);
+        fields_user_pills = settings_account.initialize_custom_user_type_fields(
+            element,
             user_id,
-            email: user_email,
-            full_name: person.full_name,
-            user_role_values: settings_config.user_role_values,
-            disable_role_dropdown: person.is_owner && !page_params.is_owner,
-        });
+            true,
+            false,
+        );
+    }
 
-        const modal_parent = $("#user-info-form-modal-container");
-        let fields_user_pills;
+    function submit_user_details() {
+        const role = Number.parseInt($("#user-role-select").val().trim(), 10);
+        const full_name = $("#edit-user-form").find("input[name='full_name']");
+        const profile_data = get_human_profile_data(fields_user_pills);
 
-        function set_role_dropdown_and_fields_user_pills() {
-            $("#user-role-select").val(person.role);
-            if (!page_params.is_owner) {
-                $("#user-role-select")
-                    .find(
-                        `option[value="${CSS.escape(
-                            settings_config.user_role_values.owner.code,
-                        )}"]`,
-                    )
-                    .hide();
-            }
+        const url = "/json/users/" + encodeURIComponent(user_id);
+        const data = {
+            full_name: JSON.stringify(full_name.val()),
+            role: JSON.stringify(role),
+            profile_data: JSON.stringify(profile_data),
+        };
 
-            const element = "#edit-user-form .custom-profile-field-form";
-            $(element).html("");
-            settings_account.append_custom_profile_fields(element, user_id);
-            settings_account.initialize_custom_date_type_fields(element);
-            fields_user_pills = settings_account.initialize_custom_user_type_fields(
-                element,
-                user_id,
-                true,
-                false,
-            );
-        }
+        settings_ui.do_settings_change(channel.patch, url, data, status_field);
+        overlays.close_modal("#dialog_widget_modal");
+    }
 
-        function submit_user_details() {
-            // const status_field = $("#user-field-status").expectOne();
-            const role = Number.parseInt($("#user-role-select").val().trim(), 10);
-            const full_name = $("#edit-user-form").find("input[name='full_name']");
-            const profile_data = get_human_profile_data(fields_user_pills);
-
-            const url = "/json/users/" + encodeURIComponent(user_id);
-            const data = {
-                full_name: JSON.stringify(full_name.val()),
-                role: JSON.stringify(role),
-                profile_data: JSON.stringify(profile_data),
-            };
-
-            settings_ui.do_settings_change(channel.patch, url, data, status_field);
-            overlays.close_modal("#dialog_widget_modal");
-        }
-
-        // ! -----------------------------------------------------------------------------------------------------------------------------------------------------------------
-        // ! This appears to be responsible for edeting users.
-        dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Change user info and roles"}),
-            parent: modal_parent,
-            html_body,
-            on_click: submit_user_details,
-            post_render: set_role_dropdown_and_fields_user_pills,
-            fade: true,
-        });
-        // ! -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    dialog_widget.launch({
+        html_heading: $t_html({defaultMessage: "Change user info and roles"}),
+        parent: modal_parent,
+        html_body,
+        on_click: submit_user_details,
+        post_render: set_role_dropdown_and_fields_user_pills,
+        fade: true,
     });
 }
 
-// ! Maybe we can use ".open-user-form" as aparameter and then export this function all together?
-// ? This would enable us to call the "handle_human_form" from popovers.js? 
 function handle_human_form(tbody, status_field) {
     tbody.on("click", ".open-user-form", (e) => {
         e.stopPropagation();
@@ -607,7 +595,7 @@ function handle_human_form(tbody, status_field) {
 }
 
 export function test(user_uid) {
-    $(()=>{
+    $(() => {
         const status_field = $("#user-field-status").expectOne();
         show_user_settings(user_uid, status_field);
     });
