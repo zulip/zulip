@@ -1897,8 +1897,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         return self.has_permission("user_group_edit_policy")
 
     def can_edit_topic_of_any_message(self) -> bool:
-        if self.realm.edit_topic_policy == Realm.POLICY_EVERYONE:
-            return True
         return self.has_permission("edit_topic_policy")
 
     def can_add_custom_emoji(self) -> bool:
