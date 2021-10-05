@@ -1931,7 +1931,6 @@ div.focused_table {
         left: 0;
     }
 
-    .search_icon_hover_highlight,
     .search_icon:hover {
         color: hsl(0, 0%, 0%);
         text-decoration: none;
