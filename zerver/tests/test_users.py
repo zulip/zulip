@@ -2069,6 +2069,7 @@ class DeleteUserTest(ZulipTestCase):
             replacement_dummy_user.delivery_email, f"deleteduser{hamlet_user_id}@{realm.uri}"
         )
         self.assertEqual(replacement_dummy_user.is_mirror_dummy, True)
+        self.assertEqual(replacement_dummy_user.is_active, False)
 
         self.assertEqual(Message.objects.filter(id__in=personal_message_ids_to_hamlet).count(), 0)
         # Huddle messages from hamlet should have been deleted, but messages of other participants should
