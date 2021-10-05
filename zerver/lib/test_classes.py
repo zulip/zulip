@@ -1261,6 +1261,14 @@ Output:
         )
         member_user.save()
 
+        do_set_realm_property(realm, policy, Realm.POLICY_NOBODY, acting_user=None)
+        self.assertFalse(validation_func(owner_user))
+        self.assertFalse(validation_func(admin_user))
+        self.assertFalse(validation_func(moderator_user))
+        self.assertFalse(validation_func(member_user))
+        self.assertFalse(validation_func(new_member_user))
+        self.assertFalse(validation_func(guest_user))
+
         do_set_realm_property(realm, policy, Realm.POLICY_ADMINS_ONLY, acting_user=None)
         self.assertTrue(validation_func(owner_user))
         self.assertTrue(validation_func(admin_user))
@@ -1292,6 +1300,14 @@ Output:
         self.assertTrue(validation_func(member_user))
         self.assertTrue(validation_func(new_member_user))
         self.assertFalse(validation_func(guest_user))
+
+        do_set_realm_property(realm, policy, Realm.POLICY_EVERYONE, acting_user=None)
+        self.assertTrue(validation_func(owner_user))
+        self.assertTrue(validation_func(admin_user))
+        self.assertTrue(validation_func(moderator_user))
+        self.assertTrue(validation_func(member_user))
+        self.assertTrue(validation_func(new_member_user))
+        self.assertTrue(validation_func(guest_user))
 
     def subscribe_realm_to_manual_license_management_plan(
         self, realm: Realm, licenses: int, licenses_at_next_renewal: int, billing_schedule: int
