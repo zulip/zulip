@@ -1233,6 +1233,26 @@ class NormalActionsTest(BaseAction):
         assert isinstance(events[1]["person"]["avatar_url"], str)
         assert isinstance(events[1]["person"]["avatar_url_medium"], str)
 
+    def test_change_user_delivery_email_email_address_visibility_everyone(self) -> None:
+        do_set_realm_property(
+            self.user_profile.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
+        )
+        # Important: We need to refresh from the database here so that
+        # we don't have a stale UserProfile object with an old value
+        # for email being passed into this next function.
+        self.user_profile.refresh_from_db()
+        action = lambda: do_change_user_delivery_email(self.user_profile, "newhamlet@zulip.com")
+        events = self.verify_action(action, num_events=3, client_gravatar=False)
+
+        check_realm_user_update("events[0]", events[0], "delivery_email")
+        check_realm_user_update("events[1]", events[1], "avatar_fields")
+        check_realm_user_update("events[2]", events[2], "email")
+        assert isinstance(events[1]["person"]["avatar_url"], str)
+        assert isinstance(events[1]["person"]["avatar_url_medium"], str)
+
     def test_change_realm_authentication_methods(self) -> None:
         def fake_backends() -> Any:
             backends = (
