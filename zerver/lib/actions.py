@@ -239,6 +239,7 @@ from zerver.models import (
     get_bot_services,
     get_client,
     get_default_stream_groups,
+    get_fake_email_domain,
     get_huddle_recipient,
     get_huddle_user_ids,
     get_old_unclaimed_attachments,
@@ -1219,7 +1220,7 @@ def do_delete_user(user_profile: UserProfile) -> None:
     personal_recipient.delete()
     replacement_user = create_user(
         force_id=user_id,
-        email=f"deleteduser{user_id}@{realm.uri}",
+        email=f"deleteduser{user_id}@{get_fake_email_domain(realm)}",
         password=None,
         realm=realm,
         full_name=f"Deleted User {user_id}",

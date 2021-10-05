@@ -2066,7 +2066,7 @@ class DeleteUserTest(ZulipTestCase):
         replacement_dummy_user = UserProfile.objects.get(id=hamlet_user_id, realm=realm)
 
         self.assertEqual(
-            replacement_dummy_user.delivery_email, f"deleteduser{hamlet_user_id}@{realm.uri}"
+            replacement_dummy_user.delivery_email, f"deleteduser{hamlet_user_id}@zulip.testserver"
         )
         self.assertEqual(replacement_dummy_user.is_mirror_dummy, True)
         self.assertEqual(replacement_dummy_user.is_active, False)
