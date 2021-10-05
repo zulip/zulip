@@ -93,7 +93,7 @@ function bind_title_area_handlers() {
         e.stopPropagation();
     });
 
-    $("#message_view_header span:nth-last-child(2)").on("click", (e) => {
+    $("#message_view_header .navbar-click-opens-search").on("click", (e) => {
         if (document.getSelection().type === "Range") {
             // Allow copy/paste to work normally without interference.
             return;

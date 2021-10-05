@@ -341,7 +341,7 @@ body.night-mode {
         }
     }
 
-    #message_view_header span:nth-last-child(2):hover + .search_closed {
+    #message_view_header .navbar-click-opens-search:hover + .search_closed {
         color: hsl(0, 0%, 100%);
     }
 
