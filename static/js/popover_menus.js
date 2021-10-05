@@ -18,6 +18,7 @@ import * as settings_data from "./settings_data";
 
 let left_sidebar_stream_setting_popover_displayed = false;
 let compose_mobile_button_popover_displayed = false;
+export let compose_formatting_popover_instance;
 
 const default_popover_props = {
     delay: 0,
@@ -94,59 +95,61 @@ export function initialize() {
     });
 
     // compose formatting buttons popover
-    $("body").on("select", ".new_message_textarea, .message_edit_content", (e) => {
-        hideAll();
-        const textarea = $(e.currentTarget);
-        const caret_offset = position(e.currentTarget);
-        const range = textarea.range();
-        if (!range || !range.length) {
-            // check if user selected a range of text.
-            return;
-        }
-
-        let observer;
-        tippy(e.target, {
-            ...default_popover_props,
-            content: render_formatting_buttons_popover(),
-            placement: "top-start",
-            trigger: "manual",
-            // Shifting 3px to left places `B` above selection.
-            // Extra 5px from top to get popover closer to text.
-            offset: [caret_offset.left - 3, -1 * caret_offset.top + 5],
-            arrow: false,
-            showOnCreate: true,
-            onHidden(instance) {
-                textarea.off("keyup.tooltip_check_selection_range");
-                instance.destroy();
-                observer.disconnect();
-            },
-            onShow(instance) {
-                const $popper = $(instance.popper);
-                // Remove extra padding around the buttons so that
-                // user doesn't click on it by mistake.
-                $popper.find(".tippy-content").css("padding", 0);
-                $popper.on("click", ".compose_formatting_button", (e) => {
-                    const format_type = $(e.currentTarget)
-                        .find("[data-format-type]")
-                        .data("format-type");
-                    compose_ui.format_text(textarea, format_type);
-                    textarea.trigger("focus");
-                });
-                textarea.on("keyup.tooltip_check_selection_range", () => {
-                    // Hide if there is no longer any text selected.
-                    const range = textarea.range();
-                    if (!range || !range.length) {
-                        instance.hide();
+    $("body").on("mousedown", ".new_message_textarea, .message_edit_content", () => {
+        $("body").one("select", ".new_message_textarea, .message_edit_content", (e) => {
+            hideAll();
+            const textarea = $(e.currentTarget);
+            const caret_offset = position(e.currentTarget);
+            const range = textarea.range();
+            if (!range || !range.length) {
+                // check if user selected a range of text.
+                return;
+            }
+            let observer;
+            compose_formatting_popover_instance = tippy(e.target, {
+                ...default_popover_props,
+                content: render_formatting_buttons_popover(),
+                placement: "top-start",
+                trigger: "manual",
+                // Shifting 3px to left places `B` above selection.
+                // Extra 5px from top to get popover closer to text.
+                offset: [caret_offset.left - 3, -1 * caret_offset.top + 5],
+                arrow: false,
+                showOnCreate: true,
+                onHidden(instance) {
+                    textarea.off("keyup.tooltip_check_selection_range");
+                    instance.destroy();
+                    observer.disconnect();
+                    compose_formatting_popover_instance = undefined;
+                },
+                onShow(instance) {
+                    const $popper = $(instance.popper);
+                    // Remove extra padding around the buttons so that
+                    // user doesn't click on it by mistake.
+                    $popper.find(".tippy-content").css("padding", 0);
+                    $popper.on("click", ".compose_formatting_button", (e) => {
+                        const format_type = $(e.currentTarget)
+                            .find("[data-format-type]")
+                            .data("format-type");
+                        compose_ui.format_text(textarea, format_type);
+                        textarea.trigger("focus");
+                    });
+                    textarea.on("keyup.tooltip_check_selection_range", () => {
+                        // Hide if there is no longer any text selected.
+                        const range = textarea.range();
+                        if (!range || !range.length) {
+                            instance.hide();
+                        }
+                    });
+                    function hide_if_textarea_hidden() {
+                        if (!textarea.is(":visible")) {
+                            instance.hide();
+                        }
                     }
-                });
-                function hide_if_textarea_hidden() {
-                    if (!textarea.is(":visible")) {
-                        instance.hide();
-                    }
-                }
-                observer = new MutationObserver(hide_if_textarea_hidden);
-                observer.observe(textarea.get(0), {attributes: true});
-            },
+                    observer = new MutationObserver(hide_if_textarea_hidden);
+                    observer.observe(textarea.get(0), {attributes: true});
+                },
+            });
         });
     });
 }

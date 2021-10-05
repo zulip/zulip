@@ -1312,11 +1312,11 @@ export function hide_all_except_sidebars(opts) {
 
 // This function will hide all the popovers, including the mobile web
 // or narrow window sidebars.
-export function hide_all(not_hide_tippy_instances) {
+export function hide_all(not_hide_tippy_instances, exclude_tippy_instance) {
     hide_userlist_sidebar();
     stream_popover.hide_streamlist_sidebar();
     hide_all_except_sidebars({
-        exclude_tippy_instance: undefined,
+        exclude_tippy_instance,
         not_hide_tippy_instances,
     });
 }
