@@ -1243,6 +1243,7 @@ Output:
     ) -> None:
 
         realm = get_realm("zulip")
+        owner_user = self.example_user("desdemona")
         admin_user = self.example_user("iago")
         moderator_user = self.example_user("shiva")
         member_user = self.example_user("hamlet")
@@ -1261,6 +1262,7 @@ Output:
         member_user.save()
 
         do_set_realm_property(realm, policy, Realm.POLICY_ADMINS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(owner_user))
         self.assertTrue(validation_func(admin_user))
         self.assertFalse(validation_func(moderator_user))
         self.assertFalse(validation_func(member_user))
@@ -1268,6 +1270,7 @@ Output:
         self.assertFalse(validation_func(guest_user))
 
         do_set_realm_property(realm, policy, Realm.POLICY_MODERATORS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(owner_user))
         self.assertTrue(validation_func(admin_user))
         self.assertTrue(validation_func(moderator_user))
         self.assertFalse(validation_func(member_user))
@@ -1275,6 +1278,7 @@ Output:
         self.assertFalse(validation_func(guest_user))
 
         do_set_realm_property(realm, policy, Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(owner_user))
         self.assertTrue(validation_func(admin_user))
         self.assertTrue(validation_func(moderator_user))
         self.assertTrue(validation_func(member_user))
@@ -1282,6 +1286,7 @@ Output:
         self.assertFalse(validation_func(guest_user))
 
         do_set_realm_property(realm, policy, Realm.POLICY_MEMBERS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(owner_user))
         self.assertTrue(validation_func(admin_user))
         self.assertTrue(validation_func(moderator_user))
         self.assertTrue(validation_func(member_user))
