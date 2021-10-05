@@ -1228,6 +1228,7 @@ def do_delete_user(user_profile: UserProfile) -> None:
         password=None,
         realm=realm,
         full_name=f"Deleted User {user_id}",
+        active=False,
         is_mirror_dummy=True,
     )
     subs_to_recreate = [
