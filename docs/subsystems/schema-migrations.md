@@ -46,10 +46,9 @@ migrations.
   `main` already has new migrations, the migration graph must fork.
   The migration should be named and numbered in `main` to follow in
   usual sequence, but its dependency should be set to the last
-  migration that exists on the release branch.  This should be
+  migration that exists on the release branch. This should be
   followed, on `main`, by a migration which merges the two resulting
-  tips; you can make such a merge with `manage.py makemigrations
-  --merge`.
+  tips; you can make such a merge with `manage.py makemigrations --merge`.
 - **Large tables**: For our very largest tables (e.g. Message and
   UserMessage), we often need to take precautions when adding columns
   to the table, performing data backfills, or building indexes. We
