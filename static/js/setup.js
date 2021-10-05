@@ -6,17 +6,6 @@ import {page_params} from "./page_params";
 import * as util from "./util";
 
 // Miscellaneous early setup.
-export let password_change_in_progress = false;
-export let password_changes = 0;
-export const xhr_password_changes = new WeakMap();
-
-export function set_password_change_in_progress(value) {
-    password_change_in_progress = value;
-    if (!value) {
-        password_changes += 1;
-    }
-}
-
 $(() => {
     if (util.is_mobile()) {
         // Disable the tutorial; it's ugly on mobile.
@@ -46,14 +35,6 @@ $(() => {
     $.fn.safeOuterWidth = function (...args) {
         return this.outerWidth(...args) || 0;
     };
-
-    // Remember the number of completed password changes when the
-    // request was initiated.  This allows us to detect race
-    // situations where a password change occurred before we got a
-    // response that failed due to the ongoing password change.
-    $(document).ajaxSend((event, xhr) => {
-        xhr_password_changes.set(xhr, password_changes);
-    });
 
     $.fn.expectOne = function () {
         if (blueslip && this.length !== 1) {

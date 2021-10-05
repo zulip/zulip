@@ -19,15 +19,6 @@ const xhr_401 = {
     responseText: '{"msg": "Use cannnot access XYZ"}',
 };
 
-const xhr_password_changes = new WeakMap();
-xhr_password_changes.set(xhr_401, 0);
-
-const setup = mock_esm("../../static/js/setup", {
-    password_change_in_progress: false,
-    password_changes: 0,
-    xhr_password_changes,
-});
-
 let login_to_access_shown = false;
 mock_esm("../../static/js/spectators", {
     login_to_access: () => {
@@ -44,7 +35,7 @@ set_global("window", {
 const reload_state = zrequire("reload_state");
 const channel = zrequire("channel");
 
-const default_stub_xhr = "default-stub-xhr";
+const default_stub_xhr = {"default-stub-xhr": 0};
 
 const $ = mock_jquery({});
 
@@ -176,7 +167,7 @@ test("normal_post", () => {
 
     let orig_success_called;
     let orig_error_called;
-    const stub_xhr = "stub-xhr-normal-post";
+    const stub_xhr = {"stub-xhr-normal-post": 0};
 
     test_with_mock_ajax({
         xhr: stub_xhr,
@@ -273,12 +264,12 @@ test("authentication_error_401_password_change_in_progress", () => {
         // password_change_in_progress = true
         check_ajax_options(options) {
             page_params.is_spectator = true;
-            setup.password_change_in_progress = true;
+            channel.set_password_change_in_progress(true);
 
             options.simulate_error();
             assert.ok(!login_to_access_shown);
 
-            setup.password_change_in_progress = false;
+            channel.set_password_change_in_progress(false);
             page_params.is_spectator = false;
             login_to_access_shown = false;
         },
@@ -372,7 +363,7 @@ test("retry", () => {
 test("too_many_pending", () => {
     channel.clear_for_tests();
     $.ajax = () => {
-        const xhr = "stub";
+        const xhr = {stub: 0};
         return xhr;
     };
 
