@@ -557,7 +557,7 @@ paths:
                                         due to changes in the organization's
                                         [email address visibility][help-email-visibility].
 
-                                        [help-email-visibility]: /help/restrict-visibility-of-email-addresses).
+                                        [help-email-visibility]: /help/restrict-visibility-of-email-addresses
                                       properties:
                                         user_id:
                                           type: integer
