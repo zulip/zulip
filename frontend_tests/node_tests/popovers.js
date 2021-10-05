@@ -196,6 +196,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
             status_text: "on the beach",
             status_emoji_info,
             user_mention_syntax: "@**Alice Smith**",
+            can_modify: false,
         });
         return "content-html";
     });
