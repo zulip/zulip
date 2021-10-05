@@ -3257,7 +3257,7 @@ class SubscriptionAPITest(ZulipTestCase):
         )
 
     def _test_user_settings_for_creating_streams(
-        self, stream_policy: str, invite_only: bool
+        self, stream_policy: str, *, invite_only: bool
     ) -> None:
         user_profile = self.example_user("cordelia")
         realm = user_profile.realm
