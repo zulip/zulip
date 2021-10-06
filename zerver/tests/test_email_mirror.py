@@ -16,6 +16,7 @@ from zerver.lib.actions import (
     do_deactivate_realm,
     do_deactivate_user,
     ensure_stream,
+    internal_send_stream_message,
 )
 from zerver.lib.email_mirror import (
     create_missed_message_address,
@@ -36,10 +37,12 @@ from zerver.lib.email_mirror_helpers import (
     get_email_gateway_message_string_from_address,
 )
 from zerver.lib.email_notifications import convert_html_to_markdown
+from zerver.lib.message import prepend_topic_to_content, truncate_topic
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish, most_recent_message, most_recent_usermessage
 from zerver.models import (
+    MAX_TOPIC_NAME_LENGTH,
     MissedMessageEmailAddress,
     Recipient,
     Stream,
@@ -490,6 +493,51 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         self.assertEqual(message.content, text)
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
+
+    def test_receive_stream_email_include_subject_in_body_when_subject_is_truncated_in_topic(
+        self,
+    ) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+
+        stream_to_address = encode_email_address(stream)
+
+        # subject which exceeds the MAX_TOPIC_NAME_LENGTH
+        message_subject = "TestStreamEmailMessages subject" + "-" * MAX_TOPIC_NAME_LENGTH
+        message_body = "TestStreamEmailMessages body"
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content(message_body)
+
+        incoming_valid_message["Subject"] = message_subject
+        incoming_valid_message["From"] = self.example_email("hamlet")
+        incoming_valid_message["To"] = stream_to_address
+        incoming_valid_message["Reply-to"] = self.example_email("othello")
+
+        process_message(incoming_valid_message)
+
+        message = most_recent_message(user_profile)
+
+        expected_message_content = prepend_topic_to_content(message_subject, message_body)
+        self.assertEqual(message.content, expected_message_content)
+
+        expected_topic_name = truncate_topic(message_subject)
+        self.assertEqual(message.topic_name(), expected_topic_name)
+
+        internal_send_stream_message(
+            user_profile,
+            stream,
+            message_subject,
+            message_body,
+        )
+
+        message = most_recent_message(user_profile)
+        # this is the second message in the topic and hence won't include the subject in its body
+        self.assertEqual(message.content, message_body)
+        # the topic will still be truncated
+        self.assertEqual(message.topic_name(), expected_topic_name)
 
 
 class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
