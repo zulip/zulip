@@ -166,6 +166,9 @@ rules:
             ...
     message: "Use change_user_is_active to mutate user_profile.is_active"
     severity: ERROR
+    paths:
+      exclude:
+        - zerver/migrations/0373_fix_deleteduser_dummies.py
 
   - id: confirmation-object-get
     languages: [python]
