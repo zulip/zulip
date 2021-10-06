@@ -48,10 +48,10 @@ function rerender_ui() {
     }
 }
 
-function change_notification_setting(setting, value, status_element, url) {
+function change_notification_setting(setting, value, status_element) {
     const data = {};
     data[setting] = value;
-    settings_ui.do_settings_change(channel.patch, url, data, status_element);
+    settings_ui.do_settings_change(channel.patch, "/json/settings", data, status_element);
 }
 
 function update_desktop_icon_count_display(settings_panel) {
@@ -96,7 +96,6 @@ export function set_enable_marketing_emails_visibility() {
 export function set_up(settings_panel) {
     const container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
-    const patch_url = settings_panel.patch_url;
     const notification_sound_elem = $(settings_panel.notification_sound_elem);
     const for_realm_settings = settings_panel.for_realm_settings;
 
@@ -154,7 +153,6 @@ export function set_up(settings_panel) {
             setting_name,
             settings_org.get_input_element_value(this),
             input_elem.closest(".subsection-parent").find(".alert-notification"),
-            patch_url,
         );
     });
 
@@ -201,7 +199,6 @@ export function update_page(settings_panel) {
 export function initialize() {
     user_settings_panel.container = "#user-notification-settings";
     user_settings_panel.settings_object = user_settings;
-    user_settings_panel.patch_url = "/json/settings";
     user_settings_panel.notification_sound_elem = "#user-notification-sound-audio";
     user_settings_panel.for_realm_settings = false;
 }
