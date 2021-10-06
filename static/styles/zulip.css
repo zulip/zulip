@@ -1844,7 +1844,7 @@ div.focused_table {
         /* Provide the visual cue that clicking this will work as expected. */
         cursor: pointer;
 
-        &:hover + .search_closed {
+        &:hover ~ .search_closed {
             opacity: 1;
         }
     }
