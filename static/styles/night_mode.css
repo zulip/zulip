@@ -270,6 +270,12 @@ body.night-mode {
         background-color: transparent;
     }
 
+    .create_stream_plus_button {
+        color: hsl(0, 0%, 100%);
+        background-color: hsla(0, 0%, 0%, 0.2);
+        border-color: hsla(0, 0%, 0%, 0.6);
+    }
+
     .emoji-info-popover
         .emoji-popover
         .emoji-popover-category-tabs
