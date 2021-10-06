@@ -419,8 +419,6 @@ body.night-mode {
     .clear_search_button:active,
     .clear_search_button:disabled:hover,
     #user-groups .save-instructions,
-    #searchbox_legacy .search_button,
-    #searchbox .search_button,
     .close,
     #user_presences li:hover .user-list-sidebar-menu-icon,
     li.top_left_all_messages:hover .all-messages-sidebar-menu-icon,
@@ -434,8 +432,6 @@ body.night-mode {
     .collapse_composebox_button:hover,
     #message_edit_tooltip:hover,
     .clear_search_button:hover,
-    #searchbox_legacy .search_button:hover,
-    #searchbox .search_button:hover,
     .close:hover {
         color: hsl(0, 0%, 100%);
     }
