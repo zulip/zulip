@@ -199,6 +199,12 @@
             cursor: pointer;
         }
     }
+
+    /* hovering over the userlist-header creates the same highlight effect as hovering over the user_filter_icon */
+    &:hover > #user_filter_icon {
+        opacity: 1;
+        cursor: pointer;
+    }
 }
 
 #keyboard-icon {
