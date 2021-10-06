@@ -22,9 +22,8 @@ export function set_default_language_name(name) {
     user_default_language_name = name;
 }
 
-function change_display_setting(data, settings_panel, status_element, success_msg_html, sticky) {
-    const container = $(settings_panel.container);
-    const $status_el = container.find(`${status_element}`);
+function change_display_setting(data, status_element, success_msg_html, sticky) {
+    const $status_el = $("#user-display-settings").find(`${status_element}`);
     const status_is_sticky = $status_el.data("is_sticky");
     const display_message_html = status_is_sticky
         ? $status_el.data("sticky_msg_html")
@@ -38,7 +37,7 @@ function change_display_setting(data, settings_panel, status_element, success_ms
         $status_el.data("is_sticky", true);
         $status_el.data("sticky_msg_html", success_msg_html);
     }
-    settings_ui.do_settings_change(channel.patch, settings_panel.patch_url, data, $status_el, opts);
+    settings_ui.do_settings_change(channel.patch, "/json/settings", data, $status_el, opts);
 }
 
 export function set_up(settings_panel) {
@@ -85,7 +84,6 @@ export function set_up(settings_panel) {
             if (["left_side_userlist"].includes(setting) && !for_realm_settings) {
                 change_display_setting(
                     data,
-                    settings_panel,
                     ".display-settings-status",
                     $t_html(
                         {
@@ -97,7 +95,7 @@ export function set_up(settings_panel) {
                     true,
                 );
             } else {
-                change_display_setting(data, settings_panel, ".display-settings-status");
+                change_display_setting(data, ".display-settings-status");
             }
         });
     }
@@ -118,7 +116,6 @@ export function set_up(settings_panel) {
 
             change_display_setting(
                 data,
-                settings_panel,
                 ".language-settings-status",
                 $t_html(
                     {
@@ -139,22 +136,22 @@ export function set_up(settings_panel) {
 
     container.find(".setting_twenty_four_hour_time").on("change", function () {
         const data = {twenty_four_hour_time: this.value};
-        change_display_setting(data, settings_panel, ".time-settings-status");
+        change_display_setting(data, ".time-settings-status");
     });
 
     container.find(".setting_demote_inactive_streams").on("change", function () {
         const data = {demote_inactive_streams: this.value};
-        change_display_setting(data, settings_panel, ".display-settings-status");
+        change_display_setting(data, ".display-settings-status");
     });
 
     container.find(".setting_color_scheme").on("change", function () {
         const data = {color_scheme: this.value};
-        change_display_setting(data, settings_panel, ".display-settings-status");
+        change_display_setting(data, ".display-settings-status");
     });
 
     container.find(".setting_default_view").on("change", function () {
         const data = {default_view: this.value};
-        change_display_setting(data, settings_panel, ".display-settings-status");
+        change_display_setting(data, ".display-settings-status");
     });
 
     $("body").on("click", ".reload_link", () => {
@@ -186,7 +183,7 @@ export function set_up(settings_panel) {
 
     container.find(".translate_emoticons").on("change", function () {
         const data = {translate_emoticons: JSON.stringify(this.checked)};
-        change_display_setting(data, settings_panel, ".emoji-settings-status");
+        change_display_setting(data, ".emoji-settings-status");
     });
 }
 
