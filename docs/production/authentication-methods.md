@@ -256,14 +256,14 @@ the next time your `manage.py sync_ldap_user_data` cron job runs.
 
 Other fields you may want to sync from LDAP include:
 
-- Boolean flags; `is_realm_admin` (the organization's administrator
-  permission) is the main one. You can use the
+- Boolean flags describing the user's level of permission:
+  `is_realm_owner` (Organization owner), `is_realm_admin` (Organization administrator),
+  `is_guest` (Guest), `is_moderator` (Moderator). You can use the
   [AUTH_LDAP_USER_FLAGS_BY_GROUP][django-auth-booleans] feature of
-  `django-auth-ldap` to configure a group to get this permissions.
-  (We don't recommend using this flags feature for managing
-  `is_active` because deactivating a user this way would not disable
-  any active sessions the user might have; see the above discussion of
-  automatic deactivation for how to do that properly).
+  `django-auth-ldap` to configure a group to get any of these permissions.
+  (Don't use this to modify other boolean flags such as
+  `is_active` as that can introduce inconsistent state in the database;
+  see the above discussion of automatic deactivation for how to do that properly).
 - String fields like `default_language` (e.g. `en`) or `timezone`, if
   you have that data in the right format in your LDAP database.
 
