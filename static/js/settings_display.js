@@ -47,10 +47,6 @@ export function set_up(settings_panel) {
     const settings_object = settings_panel.settings_object;
     const patch_url = settings_panel.patch_url;
     const for_realm_settings = settings_panel.for_realm_settings;
-    let language_modal_elem;
-    if (!for_realm_settings) {
-        language_modal_elem = settings_panel.language_modal_elem;
-    }
 
     container.find(".display-settings-status").hide();
 
@@ -74,8 +70,8 @@ export function set_up(settings_panel) {
         return;
     }
 
-    $(`${CSS.escape(language_modal_elem)} [data-dismiss]`).on("click", () => {
-        overlays.close_modal(language_modal_elem);
+    $("#user_default_language_modal [data-dismiss]").on("click", () => {
+        overlays.close_modal("#user_default_language_modal");
     });
 
     // Common handler for sending requests to the server when an input
@@ -106,12 +102,12 @@ export function set_up(settings_panel) {
         });
     }
 
-    $(language_modal_elem)
+    $("#user_default_language_modal")
         .find(".language")
         .on("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            overlays.close_modal(language_modal_elem);
+            overlays.close_modal("#user_default_language_modal");
 
             const $link = $(e.target).closest("a[data-code]");
             const setting_value = $link.attr("data-code");
@@ -138,7 +134,7 @@ export function set_up(settings_panel) {
     container.find(".setting_default_language").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        overlays.open_modal(language_modal_elem);
+        overlays.open_modal("#user_default_language_modal");
     });
 
     container.find(".setting_twenty_four_hour_time").on("change", function () {
@@ -240,6 +236,5 @@ export function initialize() {
     user_settings_panel.container = "#user-display-settings";
     user_settings_panel.settings_object = user_settings;
     user_settings_panel.patch_url = "/json/settings";
-    user_settings_panel.language_modal_elem = "#user_default_language_modal";
     user_settings_panel.for_realm_settings = false;
 }
