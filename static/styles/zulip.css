@@ -1905,7 +1905,8 @@ div.focused_table {
         height: 30px;
         text-align: center;
         padding: 4px;
-        color: hsl(0, 0%, 80%);
+        color: inherit;
+        opacity: 0.5;
         font-size: 18px;
         box-shadow: none;
         text-shadow: none;
@@ -1913,7 +1914,7 @@ div.focused_table {
     }
 
     .search_button:hover {
-        color: hsl(0, 0%, 0%);
+        opacity: 1;
     }
 
     .search_button:disabled {
