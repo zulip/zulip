@@ -623,9 +623,9 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
             if (need_user_to_scroll) {
                 reason = $t({defaultMessage: "Sent! Scroll down to view your message."});
                 notify_above_composebox(reason, "", above_composebox_narrow_url, null, "");
-                setTimeout(() => {
+                /*setTimeout(() => {
                     $("#out-of-view-notification").hide();
-                }, 3000);
+                }, 3000);*/
             }
 
             // This is the HAPPY PATH--for most messages we do nothing
@@ -723,6 +723,11 @@ export function register_click_handlers() {
     });
     $("#out-of-view-notification").on("click", ".out-of-view-notification-close", (e) => {
         clear_compose_notifications();
+        e.stopPropagation();
+        e.preventDefault();
+    });
+    $("#out-of-view-notification").on("click", ".out-of-view-notification-scroll", (e) => {
+        navigate.to_end();
         e.stopPropagation();
         e.preventDefault();
     });
