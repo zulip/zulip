@@ -173,21 +173,25 @@
 }
 
 .create_stream_plus_button {
+    font-size: 24px;
+    font-weight: 500;
+    position: relative;
+    top: 2px;
+    border: 1px solid hsl(0, 0%, 80%);
+    border-radius: 5px;
+    background-color: hsl(0, 0%, 100%);
+    color: hsl(0, 0%, 0%);
     margin: 0 0 0 5px;
+    height: 27px;
 
-    border: none;
-    outline: none;
-    background-color: transparent;
+    &:hover {
+        border: 1px solid hsl(0, 0%, 47%);
+    }
 
-    font-size: 2.2em;
-    font-weight: 300;
-    line-height: 1;
-    color: hsl(0, 0%, 67%);
-
-    display: inline-block;
-    transition: all 0.2s ease;
-    padding-bottom: 0;
-    padding-top: 0;
+    span {
+        position: relative;
+        top: -5px;
+    }
 }
 
 #create_stream_description {
