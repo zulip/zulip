@@ -259,10 +259,8 @@
 
 .compose_invite_close,
 .compose_private_stream_alert_close {
-    display: inline-block;
-    margin-top: 4px;
-
     width: 10px;
+    margin-left: auto;
 }
 
 .compose-all-everyone-controls,
@@ -271,6 +269,12 @@
 .compose_private_stream_alert_controls {
     float: right;
     position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.compose_invite_link {
+    order: 1;
 }
 
 .compose_invite_user p,
