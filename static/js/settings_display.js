@@ -44,7 +44,6 @@ export function set_up(settings_panel) {
     meta.loaded = true;
     const container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
-    const patch_url = settings_panel.patch_url;
     const for_realm_settings = settings_panel.for_realm_settings;
 
     container.find(".display-settings-status").hide();
@@ -168,7 +167,7 @@ export function set_up(settings_panel) {
         loading.make_indicator(spinner, {text: settings_ui.strings.saving});
 
         channel.patch({
-            url: patch_url,
+            url: "/json/settings",
             data,
             success() {},
             error(xhr) {
@@ -232,6 +231,5 @@ export function initialize() {
 
     user_settings_panel.container = "#user-display-settings";
     user_settings_panel.settings_object = user_settings;
-    user_settings_panel.patch_url = "/json/settings";
     user_settings_panel.for_realm_settings = false;
 }
