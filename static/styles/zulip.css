@@ -1923,17 +1923,11 @@ div.focused_table {
     .search_icon {
         position: absolute;
         height: 100%;
-        color: hsl(0, 0%, 80%);
         text-decoration: none;
         padding: 0 10px;
         font-size: 20px;
         z-index: 5;
         left: 0;
-    }
-
-    .search_icon:hover {
-        color: hsl(0, 0%, 0%);
-        text-decoration: none;
     }
 
     #search_arrows {
