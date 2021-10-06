@@ -5034,6 +5034,7 @@ def do_create_realm(
     org_type: Optional[int] = None,
     date_created: Optional[datetime.datetime] = None,
     is_demo_organization: Optional[bool] = False,
+    enable_spectator_access: Optional[bool] = False,
 ) -> Realm:
     if string_id == settings.SOCIAL_AUTH_SUBDOMAIN:
         raise AssertionError("Creating a realm on SOCIAL_AUTH_SUBDOMAIN is not allowed!")
@@ -5056,6 +5057,8 @@ def do_create_realm(
         kwargs["plan_type"] = plan_type
     if org_type is not None:
         kwargs["org_type"] = org_type
+    if enable_spectator_access is not None:
+        kwargs["enable_spectator_access"] = enable_spectator_access
 
     if date_created is not None:
         # The date_created parameter is intended only for use by test
