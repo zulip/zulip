@@ -752,7 +752,7 @@ input[type="checkbox"] {
     }
 
     .edit-bot-buttons {
-        padding-top: 5px;
+        padding-top: 2px;
 
         button {
             background-color: transparent;
@@ -777,6 +777,9 @@ input[type="checkbox"] {
         .copy-gold {
             color: hsl(51, 90%, 50%);
         }
+        .copy-grey {
+            color: hsl(0, 0%, 67%);
+        }
     }
 
     .bot-information-box {
@@ -789,7 +792,7 @@ input[type="checkbox"] {
         border-radius: 4px;
         box-sizing: border-box;
 
-        overflow: auto;
+        overflow: hidden;
 
         .details {
             display: inline-block;
