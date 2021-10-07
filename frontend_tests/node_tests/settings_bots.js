@@ -21,9 +21,7 @@ const bot_data_params = {
 
 const avatar = mock_esm("../../static/js/avatar");
 
-function ClipboardJS(sel) {
-    expect(["#copy_zuliprc","#copy_zulip_bot_eid","#copy_zulip_bot_apikey"]).to.include(sel);
-}
+function ClipboardJS() {}
 mock_cjs("clipboard", ClipboardJS);
 
 const bot_data = zrequire("bot_data");
