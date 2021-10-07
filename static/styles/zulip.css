@@ -2850,8 +2850,7 @@ select.inline_select_topic_edit {
         width: calc(100% - 108px);
     }
     /* todo: Figure out why this has to be different
-       from above at this width and resolve it
-       #searchbox_legacy .navbar-search.expanded, */
+       from above at this width and resolve it */
     #searchbox_legacy .navbar-search.expanded,
     #searchbox .navbar-search.expanded {
         width: calc(100% - 123px);
@@ -2862,9 +2861,6 @@ select.inline_select_topic_edit {
     }
 
     #top_navbar:not(.rightside-userlist) {
-        /* .search_closed .fa-search {
-               right: 115px;
-           } */
         .top-navbar-border {
             width: calc(100% - 75px);
         }
