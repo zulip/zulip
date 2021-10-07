@@ -4582,6 +4582,24 @@ def do_change_logo_source(
     send_event(realm, event, active_user_ids(realm.id))
 
 
+def do_change_realm_org_type(
+    realm: Realm,
+    org_type: int,
+    acting_user: Optional[UserProfile],
+) -> None:
+    old_value = realm.org_type
+    realm.org_type = org_type
+    realm.save(update_fields=["org_type"])
+
+    RealmAuditLog.objects.create(
+        event_type=RealmAuditLog.REALM_ORG_TYPE_CHANGED,
+        realm=realm,
+        event_time=timezone_now(),
+        acting_user=acting_user,
+        extra_data={"old_value": old_value, "new_value": org_type},
+    )
+
+
 def do_change_plan_type(
     realm: Realm, plan_type: int, *, acting_user: Optional[UserProfile]
 ) -> None:
