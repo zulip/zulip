@@ -118,7 +118,14 @@ def home(request: HttpRequest) -> HttpResponse:
         or request.session.get("prefers_web_public_view")
     ) and get_valid_realm_from_request(request).allow_web_public_streams_access():
         return web_public_view(home_real)(request)
-    return zulip_login_required(home_real)(request)
+    response = zulip_login_required(home_real)(request)
+
+    # User is logged in and hence no longer `prefers_web_public_view`.
+    if "prefers_web_public_view" in request.session.keys():
+        del request.session["prefers_web_public_view"]
+        request.session.modified = True
+
+    return response
 
 
 def home_real(request: HttpRequest) -> HttpResponse:

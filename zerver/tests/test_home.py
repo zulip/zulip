@@ -327,7 +327,7 @@ class HomeTest(ZulipTestCase):
         realm.save()
 
         result = self.client_post("/", {"prefers_web_public_view": "true"})
-        self.assertEqual(self.client.session.get("prefers_web_public_view"), True)
+        self.assertEqual(self.client.session.get("prefers_web_public_view"), None)
         self.assertEqual(realm.enable_spectator_access, False)
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, "/login/")
