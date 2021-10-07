@@ -4,6 +4,7 @@ import random
 import secrets
 import shutil
 import subprocess
+import zipfile
 from collections import defaultdict
 from typing import Any, Dict, Iterator, List, Optional, Set, Tuple, Type, TypeVar
 
@@ -1290,7 +1291,8 @@ def do_convert_data(original_path: str, output_dir: str, token: str, threads: in
         if not os.path.exists(slack_data_dir):
             os.makedirs(slack_data_dir)
 
-        subprocess.check_call(["unzip", "-q", original_path, "-d", slack_data_dir])
+        with zipfile.ZipFile(original_path) as zipObj:
+            zipObj.extractall(slack_data_dir)
     elif os.path.isdir(original_path):
         slack_data_dir = original_path
     else:
