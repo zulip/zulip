@@ -11,6 +11,7 @@ from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.actions import (
     do_add_deactivated_redirect,
     do_change_plan_type,
+    do_change_realm_org_type,
     do_change_realm_subdomain,
     do_create_realm,
     do_deactivate_realm,
@@ -610,6 +611,25 @@ class RealmTest(ZulipTestCase):
             )
             self.assertEqual(get_realm("onpremise").message_visibility_limit, None)
             self.assertEqual(get_realm("onpremise").upload_quota_gb, None)
+
+    def test_change_org_type(self) -> None:
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        self.assertEqual(realm.org_type, Realm.ORG_TYPES["business"]["id"])
+
+        do_change_realm_org_type(realm, Realm.ORG_TYPES["government"]["id"], acting_user=iago)
+        realm = get_realm("zulip")
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.REALM_ORG_TYPE_CHANGED
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = {
+            "old_value": Realm.ORG_TYPES["business"]["id"],
+            "new_value": Realm.ORG_TYPES["government"]["id"],
+        }
+        self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
+        self.assertEqual(realm_audit_log.acting_user, iago)
+        self.assertEqual(realm.org_type, Realm.ORG_TYPES["government"]["id"])
 
     def test_change_plan_type(self) -> None:
         realm = get_realm("zulip")

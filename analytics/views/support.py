@@ -20,6 +20,7 @@ from zerver.decorator import require_server_admin
 from zerver.forms import check_subdomain_available
 from zerver.lib.actions import (
     do_change_plan_type,
+    do_change_realm_org_type,
     do_change_realm_subdomain,
     do_deactivate_realm,
     do_scrub_realm,
@@ -139,6 +140,7 @@ def support(
     ),
     scrub_realm: Optional[bool] = REQ(default=None, json_validator=check_bool),
     query: Optional[str] = REQ("q", default=None),
+    org_type: Optional[int] = REQ(default=None, converter=to_non_negative_int),
 ) -> HttpResponse:
     context: Dict[str, Any] = {}
 
@@ -163,6 +165,11 @@ def support(
             current_plan_type = realm.plan_type
             do_change_plan_type(realm, plan_type, acting_user=acting_user)
             msg = f"Plan type of {realm.string_id} changed from {get_plan_name(current_plan_type)} to {get_plan_name(plan_type)} "
+            context["success_message"] = msg
+        elif org_type is not None:
+            current_realm_type = realm.org_type
+            do_change_realm_org_type(realm, org_type, acting_user=acting_user)
+            msg = f"Org type of {realm.string_id} changed from {get_org_type_display_name(current_realm_type)} to {get_org_type_display_name(org_type)} "
             context["success_message"] = msg
         elif discount is not None:
             current_discount = get_discount_for_realm(realm) or 0
@@ -321,4 +328,8 @@ def support(
     context["get_org_type_display_name"] = get_org_type_display_name
     context["realm_icon_url"] = realm_icon_url
     context["Confirmation"] = Confirmation
+    context["sorted_realm_types"] = sorted(
+        Realm.ORG_TYPES.values(), key=lambda d: d["display_order"]
+    )
+
     return render(request, "analytics/support.html", context=context)
