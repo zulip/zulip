@@ -25,30 +25,47 @@
         </div>
 
         <div class="float-right top-links">
-            {% if user_is_authenticated %}
-                {% include 'zerver/portico-header-dropdown.html' %}
-            {% else %}
-                {% if login_link_disabled %}
-                {% elif not only_sso %}
-                <a href="{{login_url}}">{{ _('Log in') }}</a>
-                {% endif %}
-            {% endif %}
+            <i class="fa fa-bars hamburger-portico"></i>
+            <div class="cross-portico"><i class="fa fa-remove"></i></div>
 
-            {% if register_link_disabled %}
-            {% elif only_sso %}
-                <a href="{{ url('login-sso') }}">{{ _('Log in') }}</a>
-            {% else %}
+            <ul class="portico_nav_dropdown">
                 {% if user_is_authenticated %}
+                    <li>
+                        {% include 'zerver/portico-header-dropdown.html' %}
+                    </li>
                 {% else %}
-                <a href="{{ url('register') }}">{{ _('Sign up') }}</a>
+                    {% if login_link_disabled %}
+                    {% elif not only_sso %}
+                    <li>
+                        <a href="{{login_url}}">{{ _('Log in') }}</a>
+                    </li>
+                    {% endif %}
                 {% endif %}
-            {% endif %}
 
-            {% if find_team_link_disabled %}
-            {% else %}
-            <a href="{{ root_domain_uri }}/accounts/find/">Find accounts</a>
-            <a href="{{ root_domain_uri }}/new">New organization</a>
-            {% endif %}
+                {% if register_link_disabled %}
+                {% elif only_sso %}
+                    <li>
+                        <a href="{{ url('login-sso') }}">{{ _('Log in') }}</a>
+                    </li>
+                {% else %}
+                    {% if user_is_authenticated %}
+                    {% else %}
+                    <li>
+                        <a href="{{ url('register') }}">{{ _('Sign up') }}</a>
+                    </li>
+                    {% endif %}
+                {% endif %}
+
+                {% if find_team_link_disabled %}
+                {% else %}
+                <li>
+                    <a href="{{ root_domain_uri }}/accounts/find/">Find accounts</a>
+                </li>
+                <li>
+                    <a href="{{ root_domain_uri }}/new">New organization</a>
+                </li>
+                {% endif %}
+            </ul>
         </div>
     </div>
 </div>
