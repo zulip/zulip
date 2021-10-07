@@ -545,15 +545,14 @@ export function set_up() {
             return data;
         },
     });
-    
+
     new ClipboardJS("#copy_zulip_bot_eid", {
         text(trigger) {
             const bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
             const bot_id = Number.parseInt(bot_info.attr("data-user-id"), 10);
             const bot = bot_data.get(bot_id);
             const data = generate_zuliprc_content(bot);
-            const eid = data.match(/([a-zA-Z0-9.-]+@[a-zA-Z0-9.-]+\.[a-zA-Z0-9_-]+)/gi)[0];
-            console.log(data);
+            const eid = data.match(/([\d.a-z-]+@[\d.a-z-]+\.[\w-]+)/gi)[0];
             return eid;
         },
     });
@@ -564,7 +563,7 @@ export function set_up() {
             const bot_id = Number.parseInt(bot_info.attr("data-user-id"), 10);
             const bot = bot_data.get(bot_id);
             const data = generate_zuliprc_content(bot);
-            return data.match(/key=([^=.*]+?(?=site))/)[1];
+            return data.match(/key=([^*.=]+?(?=site))/)[1];
         },
     });
 
