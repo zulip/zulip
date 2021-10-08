@@ -2836,6 +2836,7 @@ nav {
     color: hsl(0, 0%, 53%);
 
     text-align: left;
+    white-space: nowrap;
 }
 
 .pricing-model .pricing-container .bottom .button {
