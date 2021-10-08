@@ -5,7 +5,7 @@ import * as emojisets from "./emojisets";
 import {$t_html, get_language_name} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
-import * as settings_config from "./settings_config";
+import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
 import * as ui_report from "./ui_report";
 import {user_settings} from "./user_settings";
@@ -22,8 +22,7 @@ export function set_default_language_name(name) {
     user_default_language_name = name;
 }
 
-function change_display_setting(data, status_element, success_msg_html, sticky) {
-    const $status_el = $("#user-display-settings").find(`${status_element}`);
+function change_display_setting(data, $status_el, success_msg_html, sticky) {
     const status_is_sticky = $status_el.data("is_sticky");
     const display_message_html = status_is_sticky
         ? $status_el.data("sticky_msg_html")
@@ -74,30 +73,30 @@ export function set_up(settings_panel) {
 
     // Common handler for sending requests to the server when an input
     // element is changed.
-    const all_display_settings = settings_config.get_all_display_settings();
-    for (const setting of all_display_settings.settings.user_display_settings) {
-        container.find(`.${CSS.escape(setting)}`).on("change", function () {
-            const data = {};
-            data[setting] = JSON.stringify($(this).prop("checked"));
+    container.on("change", "input[type=checkbox], select", function (e) {
+        const input_elem = $(e.currentTarget);
+        const setting = input_elem.attr("name");
+        const data = {};
+        data[setting] = settings_org.get_input_element_value(this);
+        const status_element = input_elem.closest(".subsection-parent").find(".alert-notification");
 
-            if (["left_side_userlist"].includes(setting)) {
-                change_display_setting(
-                    data,
-                    ".display-settings-status",
-                    $t_html(
-                        {
-                            defaultMessage:
-                                "Saved. Please <z-link>reload</z-link> for the change to take effect.",
-                        },
-                        {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
-                    ),
-                    true,
-                );
-            } else {
-                change_display_setting(data, ".display-settings-status");
-            }
-        });
-    }
+        if (["left_side_userlist"].includes(setting)) {
+            change_display_setting(
+                data,
+                status_element,
+                $t_html(
+                    {
+                        defaultMessage:
+                            "Saved. Please <z-link>reload</z-link> for the change to take effect.",
+                    },
+                    {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
+                ),
+                true,
+            );
+        } else {
+            change_display_setting(data, status_element);
+        }
+    });
 
     $("#user_default_language_modal")
         .find(".language")
@@ -115,7 +114,7 @@ export function set_up(settings_panel) {
 
             change_display_setting(
                 data,
-                ".language-settings-status",
+                container.find(".language-settings-status"),
                 $t_html(
                     {
                         defaultMessage:
@@ -131,26 +130,6 @@ export function set_up(settings_panel) {
         e.preventDefault();
         e.stopPropagation();
         overlays.open_modal("#user_default_language_modal");
-    });
-
-    container.find(".setting_twenty_four_hour_time").on("change", function () {
-        const data = {twenty_four_hour_time: this.value};
-        change_display_setting(data, ".time-settings-status");
-    });
-
-    container.find(".setting_demote_inactive_streams").on("change", function () {
-        const data = {demote_inactive_streams: this.value};
-        change_display_setting(data, ".display-settings-status");
-    });
-
-    container.find(".setting_color_scheme").on("change", function () {
-        const data = {color_scheme: this.value};
-        change_display_setting(data, ".display-settings-status");
-    });
-
-    container.find(".setting_default_view").on("change", function () {
-        const data = {default_view: this.value};
-        change_display_setting(data, ".display-settings-status");
     });
 
     $("body").on("click", ".reload_link", () => {
@@ -178,11 +157,6 @@ export function set_up(settings_panel) {
                 );
             },
         });
-    });
-
-    container.find(".translate_emoticons").on("change", function () {
-        const data = {translate_emoticons: JSON.stringify(this.checked)};
-        change_display_setting(data, ".emoji-settings-status");
     });
 }
 
