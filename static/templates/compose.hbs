@@ -1,4 +1,13 @@
 <div id="compose-content">
+    {{!-- scroll to bottom button is not part of compose but
+    helps us align it at various screens sizes with
+    minimal css and no JS. --}}
+    <div id="scroll-to-bottom-button-container">
+        <div id="scroll-to-bottom-button" data-tippy-content="Scroll to bottom" data-tippy-placement="left">
+            <i class="fa fa-chevron-down"></i>
+        </div>
+    </div>
+
     <div id="compose_controls" class="new-style">
         <div id="compose_buttons">
             <span class="new_message_button reply_button_container">

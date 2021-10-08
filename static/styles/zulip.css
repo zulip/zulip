@@ -3047,3 +3047,33 @@ select.inline_select_topic_edit {
         margin: 0;
     }
 }
+
+#scroll-to-bottom-button-container {
+    display: none;
+
+    z-index: 3;
+    position: absolute;
+    right: 20px;
+    bottom: 0;
+
+    #scroll-to-bottom-button {
+        text-align: center;
+        width: 40px;
+        height: 40px;
+        background: hsl(240, 96%, 68%, 0.5);
+        border-radius: 50%;
+        cursor: pointer;
+
+        &:hover {
+            background: hsl(240, 96%, 68%);
+        }
+
+        i {
+            color: hsl(0, 0%, 100%);
+            margin: 0 auto;
+            font-size: 21px;
+            position: relative;
+            top: 8px;
+        }
+    }
+}

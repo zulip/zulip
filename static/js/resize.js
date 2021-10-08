@@ -186,6 +186,14 @@ export function reset_compose_message_max_height(bottom_whitespace_height) {
         // The 10 here leaves space for the selected message border.
         bottom_whitespace_height - compose_non_textarea_height - 10,
     );
+    adjust_scroll_to_bottom_button_offset();
+}
+
+export function adjust_scroll_to_bottom_button_offset() {
+    $("#scroll-to-bottom-button-container").css(
+        "margin-bottom",
+        $("#compose").outerHeight() + 30 + "px",
+    );
 }
 
 export function resize_bottom_whitespace(h) {
