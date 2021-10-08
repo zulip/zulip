@@ -286,6 +286,10 @@ html {
     text-align: center;
 }
 
+.thanks-page div {
+    text-align: center;
+}
+
 .lead {
     font-weight: bold;
 }
@@ -645,6 +649,7 @@ input.text-error {
                 &.nav-header {
                     background-color: transparent;
                     cursor: default;
+                    font-size: 14px;
                 }
             }
 

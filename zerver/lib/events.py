@@ -238,8 +238,8 @@ def fetch_initial_state_data(
         state["realm_edit_topic_policy"] = (
             Realm.POLICY_ADMINS_ONLY if user_profile is None else realm.edit_topic_policy
         )
-        state["realm_allow_message_deleting"] = (
-            False if user_profile is None else realm.allow_message_deleting
+        state["realm_delete_own_message_policy"] = (
+            Realm.POLICY_ADMINS_ONLY if user_profile is None else realm.delete_own_message_policy
         )
 
         # TODO: Can we delete these lines?  They seem to be in property_types...
@@ -411,7 +411,17 @@ def fetch_initial_state_data(
             client_gravatar=False,
         )
 
-        state["can_create_streams"] = settings_user.can_create_streams()
+        state["can_create_private_streams"] = settings_user.can_create_private_streams()
+        state["can_create_public_streams"] = settings_user.can_create_public_streams()
+        # TODO/compatibility: Deprecated in Zulip 5.0 (feature level
+        # 102); we can remove this once we no longer need to support
+        # legacy mobile app versions that read the old property.
+        state["can_create_streams"] = (
+            settings_user.can_create_private_streams()
+            or settings_user.can_create_public_streams()
+            or settings_user.can_create_web_public_streams()
+        )
+        state["can_create_web_public_streams"] = settings_user.can_create_web_public_streams()
         state["can_subscribe_other_users"] = settings_user.can_subscribe_other_users()
         state["can_invite_others_to_realm"] = settings_user.can_invite_others_to_realm()
         state["is_admin"] = settings_user.is_realm_admin
@@ -743,7 +753,16 @@ def apply_event(
                     state["is_moderator"] = person["role"] == UserProfile.ROLE_MODERATOR
                     state["is_guest"] = person["role"] == UserProfile.ROLE_GUEST
                     # Recompute properties based on is_admin/is_guest
-                    state["can_create_streams"] = user_profile.can_create_streams()
+                    state["can_create_private_streams"] = user_profile.can_create_private_streams()
+                    state["can_create_public_streams"] = user_profile.can_create_public_streams()
+                    state[
+                        "can_create_web_public_streams"
+                    ] = user_profile.can_create_web_public_streams()
+                    state["can_create_streams"] = (
+                        state["can_create_private_streams"]
+                        or state["can_create_public_streams"]
+                        or state["can_create_web_public_streams"]
+                    )
                     state["can_subscribe_other_users"] = user_profile.can_subscribe_other_users()
                     state["can_invite_others_to_realm"] = user_profile.can_invite_others_to_realm()
 
@@ -775,6 +794,9 @@ def apply_event(
                 for field in ["delivery_email", "email", "full_name", "is_billing_admin"]:
                     if field in person and field in state:
                         state[field] = person[field]
+
+                if "new_email" in person:
+                    state["email"] = person["new_email"]
 
                 # In the unlikely event that the current user
                 # just changed to/from being an admin, we need
@@ -821,6 +843,8 @@ def apply_event(
                             p["profile_data"][str(custom_field_id)] = {
                                 "value": custom_field_new_value,
                             }
+                    if "new_email" in person:
+                        p["email"] = person["new_email"]
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "realm_bot":
@@ -924,7 +948,9 @@ def apply_event(
                 state["realm_upload_quota_mib"] = event["extra_data"]["upload_quota"]
 
             policy_permission_dict = {
-                "create_stream_policy": "can_create_streams",
+                "create_public_stream_policy": "can_create_public_streams",
+                "create_private_stream_policy": "can_create_private_streams",
+                "create_web_public_stream_policy": "can_create_web_public_streams",
                 "invite_to_stream_policy": "can_subscribe_other_users",
                 "invite_to_realm_policy": "can_invite_others_to_realm",
             }
@@ -943,6 +969,12 @@ def apply_event(
                         event["property"]
                     )
 
+            # Finally, we need to recompute this value from its inputs.
+            state["can_create_streams"] = (
+                state["can_create_private_streams"]
+                or state["can_create_public_streams"]
+                or state["can_create_web_public_streams"]
+            )
         elif event["op"] == "update_dict":
             for key, value in event["data"].items():
                 state["realm_" + key] = value
@@ -1165,7 +1197,11 @@ def apply_event(
         # this setting is not a part of UserBaseSettings class.
         if event["property"] != "timezone":
             assert event["property"] in UserProfile.property_types
-        state[event["property"]] = event["value"]
+        if event["property"] in {
+            **UserProfile.display_settings_legacy,
+            **UserProfile.notification_settings_legacy,
+        }:
+            state[event["property"]] = event["value"]
         state["user_settings"][event["property"]] = event["value"]
     elif event["type"] == "invites_changed":
         pass

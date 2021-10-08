@@ -1,6 +1,6 @@
 import datetime
 from operator import itemgetter
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 from unittest import mock
 
 import orjson
@@ -9,8 +9,10 @@ from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import (
+    do_change_plan_type,
     do_change_stream_post_policy,
     do_change_user_role,
+    do_deactivate_stream,
     do_delete_messages,
     do_set_realm_property,
     do_update_message,
@@ -77,9 +79,18 @@ class EditMessageTestCase(ZulipTestCase):
             )
 
     def prepare_move_topics(
-        self, user_email: str, old_stream: str, new_stream: str, topic: str
+        self,
+        user_email: str,
+        old_stream: str,
+        new_stream: str,
+        topic: str,
+        language: Optional[str] = None,
     ) -> Tuple[UserProfile, Stream, Stream, int, int]:
         user_profile = self.example_user(user_email)
+        if language is not None:
+            user_profile.default_language = language
+            user_profile.save(update_fields=["default_language"])
+
         self.login(user_email)
         stream = self.make_stream(old_stream)
         new_stream = self.make_stream(new_stream)
@@ -310,6 +321,78 @@ class EditMessageTest(EditMessageTestCase):
         self.login("othello")
         result = self.client_get("/json/messages/" + str(msg_id))
         self.assert_json_error(result, "Invalid message(s)")
+
+    def test_fetch_raw_message_spectator(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login("iago")
+        web_public_stream = self.make_stream("web-public-stream", is_web_public=True)
+        self.subscribe(user_profile, web_public_stream.name)
+
+        web_public_stream_msg_id = self.send_stream_message(
+            user_profile, web_public_stream.name, content="web-public message"
+        )
+
+        non_web_public_stream = self.make_stream("non-web-public-stream")
+        non_web_public_stream_msg_id = self.send_stream_message(
+            user_profile, non_web_public_stream.name, content="non web-public message"
+        )
+
+        # Generate a private message to use in verification.
+        private_message_id = self.send_personal_message(user_profile, user_profile)
+
+        invalid_message_id = private_message_id + 1000
+
+        self.logout()
+
+        # Confirm WEB_PUBLIC_STREAMS_ENABLED is enforced.
+        with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
+            result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
+        )
+
+        # Verify success with web-public stream and default SELF_HOSTED plan type.
+        result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        self.assert_json_success(result)
+        self.assertEqual(result.json()["raw_content"], "web-public message")
+
+        # Verify LIMITED plan type does not allow web-public access.
+        do_change_plan_type(user_profile.realm, Realm.LIMITED, acting_user=None)
+        result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
+        )
+
+        # Verify works with STANDARD_FREE plan type too.
+        do_change_plan_type(user_profile.realm, Realm.STANDARD_FREE, acting_user=None)
+        result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        self.assert_json_success(result)
+        self.assertEqual(result.json()["raw_content"], "web-public message")
+
+        # Verify private messages are rejected.
+        result = self.client_get("/json/messages/" + str(private_message_id))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
+        )
+
+        # Verify an actual public stream is required.
+        result = self.client_get("/json/messages/" + str(non_web_public_stream_msg_id))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
+        )
+
+        # Verify invalid message IDs are rejected with the same error message.
+        result = self.client_get("/json/messages/" + str(invalid_message_id))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
+        )
+
+        # Verify deactivated streams are rejected.  This may change in the future.
+        do_deactivate_stream(web_public_stream, acting_user=None)
+        result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
+        )
 
     def test_fetch_raw_message_stream_wrong_realm(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -1212,7 +1295,13 @@ class EditMessageTest(EditMessageTestCase):
 
     def test_move_message_to_stream(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
-            "iago", "test move stream", "new stream", "test"
+            "iago",
+            "test move stream",
+            "new stream",
+            "test",
+            # Set the user's translation language to German to test that
+            # it is overridden by the realm's default language.
+            "de",
         )
 
         result = self.client_patch(
@@ -1222,6 +1311,7 @@ class EditMessageTest(EditMessageTestCase):
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
             },
+            HTTP_ACCEPT_LANGUAGE="de",
         )
 
         self.assert_json_success(result)
@@ -1959,6 +2049,10 @@ class EditMessageTest(EditMessageTestCase):
     def test_mark_topic_as_resolved(self) -> None:
         self.login("iago")
         admin_user = self.example_user("iago")
+        # Set the user's translation language to German to test that
+        # it is overridden by the realm's default language.
+        admin_user.default_language = "de"
+        admin_user.save()
         stream = self.make_stream("new")
         self.subscribe(admin_user, stream.name)
         original_topic = "topic 1"
@@ -1987,6 +2081,7 @@ class EditMessageTest(EditMessageTestCase):
                 "topic": resolved_topic,
                 "propagate_mode": "change_all",
             },
+            HTTP_ACCEPT_LANGUAGE="de",
         )
 
         self.assert_json_success(result)
@@ -2068,14 +2163,16 @@ class DeleteMessageTest(ZulipTestCase):
 
     def test_delete_message_by_user(self) -> None:
         def set_message_deleting_params(
-            allow_message_deleting: bool, message_content_delete_limit_seconds: int
+            delete_own_message_policy: int, message_content_delete_limit_seconds: Union[int, str]
         ) -> None:
             self.login("iago")
             result = self.client_patch(
                 "/json/realm",
                 {
-                    "allow_message_deleting": orjson.dumps(allow_message_deleting).decode(),
-                    "message_content_delete_limit_seconds": message_content_delete_limit_seconds,
+                    "delete_own_message_policy": delete_own_message_policy,
+                    "message_content_delete_limit_seconds": orjson.dumps(
+                        message_content_delete_limit_seconds
+                    ).decode(),
                 },
             )
             self.assert_json_success(result)
@@ -2096,7 +2193,7 @@ class DeleteMessageTest(ZulipTestCase):
             return result
 
         # Test if message deleting is not allowed(default).
-        set_message_deleting_params(False, 0)
+        set_message_deleting_params(Realm.POLICY_ADMINS_ONLY, "unlimited")
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         msg_id = self.send_stream_message(hamlet, "Scotland")
@@ -2111,8 +2208,8 @@ class DeleteMessageTest(ZulipTestCase):
         self.assert_json_success(result)
 
         # Test if message deleting is allowed.
-        # Test if time limit is zero(no limit).
-        set_message_deleting_params(True, 0)
+        # Test if time limit is None(no limit).
+        set_message_deleting_params(Realm.POLICY_EVERYONE, "unlimited")
         msg_id = self.send_stream_message(hamlet, "Scotland")
         message = Message.objects.get(id=msg_id)
         message.date_sent = message.date_sent - datetime.timedelta(seconds=600)
@@ -2125,7 +2222,7 @@ class DeleteMessageTest(ZulipTestCase):
         self.assert_json_success(result)
 
         # Test if time limit is non-zero.
-        set_message_deleting_params(True, 240)
+        set_message_deleting_params(Realm.POLICY_EVERYONE, 240)
         msg_id_1 = self.send_stream_message(hamlet, "Scotland")
         message = Message.objects.get(id=msg_id_1)
         message.date_sent = message.date_sent - datetime.timedelta(seconds=120)
@@ -2166,6 +2263,63 @@ class DeleteMessageTest(ZulipTestCase):
             m.side_effect = Message.DoesNotExist()
             result = test_delete_message_by_owner(msg_id=msg_id)
             self.assert_json_error(result, "Message already deleted")
+
+    def test_delete_message_according_to_delete_own_message_policy(self) -> None:
+        def check_delete_message_by_sender(
+            sender_name: str, error_msg: Optional[str] = None
+        ) -> None:
+            sender = self.example_user(sender_name)
+            msg_id = self.send_stream_message(sender, "Verona")
+            self.login_user(sender)
+            result = self.client_delete(f"/json/messages/{msg_id}")
+            if error_msg is None:
+                self.assert_json_success(result)
+            else:
+                self.assert_json_error(result, error_msg)
+
+        realm = get_realm("zulip")
+
+        do_set_realm_property(
+            realm, "delete_own_message_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+        )
+        check_delete_message_by_sender("shiva", "You don't have permission to delete this message")
+        check_delete_message_by_sender("iago")
+
+        do_set_realm_property(
+            realm, "delete_own_message_policy", Realm.POLICY_MODERATORS_ONLY, acting_user=None
+        )
+        check_delete_message_by_sender(
+            "cordelia", "You don't have permission to delete this message"
+        )
+        check_delete_message_by_sender("shiva")
+
+        do_set_realm_property(
+            realm, "delete_own_message_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+        )
+        check_delete_message_by_sender(
+            "polonius", "You don't have permission to delete this message"
+        )
+        check_delete_message_by_sender("cordelia")
+
+        do_set_realm_property(
+            realm, "delete_own_message_policy", Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None
+        )
+        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
+        cordelia = self.example_user("cordelia")
+        cordelia.date_joined = timezone_now() - datetime.timedelta(days=9)
+        cordelia.save()
+        check_delete_message_by_sender(
+            "cordelia", "You don't have permission to delete this message"
+        )
+        cordelia.date_joined = timezone_now() - datetime.timedelta(days=11)
+        cordelia.save()
+        check_delete_message_by_sender("cordelia")
+
+        do_set_realm_property(
+            realm, "delete_own_message_policy", Realm.POLICY_EVERYONE, acting_user=None
+        )
+        check_delete_message_by_sender("cordelia")
+        check_delete_message_by_sender("polonius")
 
     def test_delete_event_sent_after_transaction_commits(self) -> None:
         """

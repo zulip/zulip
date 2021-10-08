@@ -183,17 +183,17 @@ export function dispatch_normal_event(event) {
             const realm_settings = {
                 add_custom_emoji_policy: settings_emoji.update_custom_emoji_ui,
                 allow_edit_history: noop,
-                allow_message_deleting: noop,
                 allow_message_editing: noop,
                 edit_topic_policy: noop,
                 user_group_edit_policy: noop,
                 avatar_changes_disabled: settings_account.update_avatar_change_display,
                 bot_creation_policy: settings_bots.update_bot_permissions_ui,
-                create_stream_policy: noop,
+                create_public_stream_policy: noop,
+                create_private_stream_policy: noop,
                 invite_to_stream_policy: noop,
                 default_code_block_language: noop,
                 default_language: noop,
-                default_twenty_four_hour_time: noop,
+                delete_own_message_policy: noop,
                 description: noop,
                 digest_emails_enabled: noop,
                 digest_weekday: noop,
@@ -385,40 +385,9 @@ export function dispatch_normal_event(event) {
 
         case "realm_user_settings_defaults": {
             realm_user_settings_defaults[event.property] = event.value;
+            settings_realm_user_settings_defaults.update_page(event.property);
 
-            const display_settings_list = [
-                "color_scheme",
-                "default_view",
-                "demote_inactive_streams",
-                "dense_mode",
-                "emojiset",
-                "fluid_layout_width",
-                "high_contrast_mode",
-                "left_side_userlist",
-                "translate_emoticons",
-                "starred_message_counts",
-            ];
-
-            const container_elem = $("#realm-user-default-settings");
-            if (display_settings_list.includes(event.property)) {
-                settings_display.update_page(
-                    settings_realm_user_settings_defaults.realm_default_settings_panel,
-                );
-            } else if (settings_config.all_notification_settings.includes(event.property)) {
-                settings_notifications.update_page(
-                    settings_realm_user_settings_defaults.realm_default_settings_panel,
-                );
-            } else {
-                container_elem
-                    .find(`.${CSS.escape(event.property)}`)
-                    .prop("checked", realm_user_settings_defaults[event.property]);
-            }
-
-            if (event.property === "emojiset") {
-                settings_display.report_emojiset_change(
-                    settings_realm_user_settings_defaults.realm_default_settings_panel,
-                );
-            } else if (event.property === "notification_sound") {
+            if (event.property === "notification_sound") {
                 notifications.update_notification_sound_source(
                     $("#realm-default-notification-sound-audio"),
                     realm_user_settings_defaults,
@@ -614,6 +583,9 @@ export function dispatch_normal_event(event) {
                 "twenty_four_hour_time",
                 "translate_emoticons",
                 "starred_message_counts",
+                "send_stream_typing_notifications",
+                "send_private_typing_notifications",
+                "send_read_receipts",
             ];
 
             if (user_display_settings.includes(event.property)) {

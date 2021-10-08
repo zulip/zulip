@@ -15,6 +15,10 @@ def check_pyflakes(files: List[str], options: argparse.Namespace) -> bool:
             "zerver/views/realm.py",
             "local variable 'message_retention_days' is assigned to but never used",
         ),
+        (
+            "zerver/views/realm.py",
+            "local variable 'message_content_delete_limit_seconds' is assigned to but never used",
+        ),
         ("settings.py", "settings import *' used; unable to detect undefined names"),
         (
             "settings.py",

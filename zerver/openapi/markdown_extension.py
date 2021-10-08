@@ -10,7 +10,7 @@ import json
 import re
 import shlex
 from textwrap import dedent
-from typing import Any, Dict, List, Mapping, Match, Optional, Pattern, Tuple
+from typing import Any, Dict, List, Mapping, Match, Optional, Pattern
 
 import markdown
 from django.conf import settings
@@ -31,15 +31,32 @@ from zerver.openapi.openapi import (
     openapi_spec,
 )
 
+API_ENDPOINT_NAME = r"/[a-z_/-{}]+:[a-z]+"
+API_LANGUAGE = r"\w+"
+API_KEY_TYPE = r"fixture|example"
 MACRO_REGEXP = re.compile(
-    r"\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+)\s*\))?\}"
+    rf"""
+        {{
+          generate_code_example
+          (?: \( \s* ({API_LANGUAGE}) \s* \) )?
+          \|
+          \s* ({API_ENDPOINT_NAME}) \s*
+          \|
+          \s* ({API_KEY_TYPE}) \s*
+        }}
+    """,
+    re.VERBOSE,
 )
-PYTHON_EXAMPLE_REGEX = re.compile(r"\# \{code_example\|\s*(.+?)\s*\}")
-JS_EXAMPLE_REGEX = re.compile(r"\/\/ \{code_example\|\s*(.+?)\s*\}")
-MACRO_REGEXP_DESC = re.compile(r"\{generate_api_description(\(\s*(.+?)\s*\))}")
-MACRO_REGEXP_TITLE = re.compile(r"\{generate_api_title(\(\s*(.+?)\s*\))}")
-MACRO_REGEXP_RESPONSE_DESC = re.compile(r"\{generate_response_description(\(\s*(.+?)\s*\))}")
-MACRO_REGEXP_PARAMETER_DESC = re.compile(r"\{generate_parameter_description(\(\s*(.+?)\s*\))}")
+PYTHON_EXAMPLE_REGEX = re.compile(r"\# \{code_example\|\s*(start|end)\s*\}")
+JS_EXAMPLE_REGEX = re.compile(r"\/\/ \{code_example\|\s*(start|end)\s*\}")
+MACRO_REGEXP_DESC = re.compile(rf"{{generate_api_description\(\s*({API_ENDPOINT_NAME})\s*\)}}")
+MACRO_REGEXP_TITLE = re.compile(rf"{{generate_api_title\(\s*({API_ENDPOINT_NAME})\s*\)}}")
+MACRO_REGEXP_RESPONSE_DESC = re.compile(
+    rf"{{generate_response_description\(\s*({API_ENDPOINT_NAME})\s*\)}}"
+)
+MACRO_REGEXP_PARAMETER_DESC = re.compile(
+    rf"{{generate_parameter_description\(\s*({API_ENDPOINT_NAME})\s*\)}}"
+)
 
 PYTHON_CLIENT_CONFIG = """
 #!/usr/bin/env python3
@@ -85,25 +102,6 @@ DEFAULT_EXAMPLE = {
     "boolean": False,
 }
 ADMIN_CONFIG_LANGUAGES = ["python", "javascript"]
-
-
-def parse_language_and_options(input_str: Optional[str]) -> Tuple[str, Dict[str, Any]]:
-    if not input_str:
-        return ("", {})
-    language_and_options = re.match(
-        r"(?P<language>\w+)(,\s*(?P<options>[\"\'\w\d\[\],= ]+))?", input_str
-    )
-    assert language_and_options is not None
-    kwargs_pattern = re.compile(r"(?P<key>\w+)\s*=\s*(?P<value>[\'\"\w\d]+|\[[\'\",\w\d ]+\])")
-    language = language_and_options.group("language")
-    assert language is not None
-    if language_and_options.group("options"):
-        _options = kwargs_pattern.finditer(language_and_options.group("options"))
-        options = {}
-        for m in _options:
-            options[m.group("key")] = json.loads(m.group("value").replace("'", '"'))
-        return (language, options)
-    return (language, {})
 
 
 def extract_code_example(
@@ -363,6 +361,7 @@ def generate_curl_example(
 def render_curl_example(
     function: str,
     api_url: str,
+    admin_config: bool = False,
 ) -> List[str]:
     """A simple wrapper around generate_curl_example."""
     parts = function.split(":")
@@ -475,7 +474,7 @@ class BasePreprocessor(Preprocessor):
         return lines
 
     def generate_text(self, match: Match[str]) -> List[str]:
-        function = match.group(2)
+        function = match.group(1)
         text = self.render(function)
         return text
 
@@ -488,21 +487,22 @@ class APICodeExamplesPreprocessor(BasePreprocessor):
         super().__init__(MACRO_REGEXP, md, config)
 
     def generate_text(self, match: Match[str]) -> List[str]:
-        language, options = parse_language_and_options(match.group(2))
-        function = match.group(3)
-        key = match.group(4)
+        language = match.group(1) or ""
+        function = match.group(2)
+        key = match.group(3)
         if self.api_url is None:
             raise AssertionError("Cannot render curl API examples without API URL set.")
-        options["api_url"] = self.api_url
 
         if key == "fixture":
             text = self.render(function)
         elif key == "example":
             path, method = function.rsplit(":", 1)
-            if language in ADMIN_CONFIG_LANGUAGES and check_requires_administrator(path, method):
-                text = SUPPORTED_LANGUAGES[language]["render"](function, admin_config=True)
-            else:
-                text = SUPPORTED_LANGUAGES[language]["render"](function, **options)
+            admin_config = language in ADMIN_CONFIG_LANGUAGES and check_requires_administrator(
+                path, method
+            )
+            text = SUPPORTED_LANGUAGES[language]["render"](
+                function, api_url=self.api_url, admin_config=admin_config
+            )
         return text
 
     def render(self, function: str) -> List[str]:

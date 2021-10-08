@@ -273,6 +273,45 @@ class PushBouncerNotificationTest(BouncerTestCase):
             result = self.uuid_post(self.server_uuid, endpoint, payload)
             self.assert_json_error(result, "Empty or invalid length token")
 
+    def test_send_notification_endpoint(self) -> None:
+        hamlet = self.example_user("hamlet")
+        server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
+        token = "aaaa"
+        for i in ["aa", "bb"]:
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.GCM,
+                token=hex_to_b64(token + i),
+                user_id=hamlet.id,
+                server=server,
+            )
+        RemotePushDeviceToken.objects.create(
+            kind=RemotePushDeviceToken.APNS,
+            token=hex_to_b64(token),
+            user_id=hamlet.id,
+            server=server,
+        )
+        payload = {
+            "user_id": hamlet.id,
+            "gcm_payload": "test",
+            "apns_payload": "test",
+            "gcm_options": {},
+        }
+        with mock.patch("zilencer.views.send_android_push_notification"), mock.patch(
+            "zilencer.views.send_apple_push_notification"
+        ):
+            result = self.uuid_post(
+                self.server_uuid,
+                "/api/v1/remotes/push/notify",
+                payload,
+                content_type="application/json",
+            )
+        self.assert_json_success(result)
+        data = result.json()
+        self.assertEqual(
+            {"result": "success", "msg": "", "total_android_devices": 2, "total_apple_devices": 1},
+            data,
+        )
+
     def test_remote_push_unregister_all(self) -> None:
         payload = self.get_generic_payload("register")
 
@@ -1051,14 +1090,23 @@ class HandlePushNotificationTest(PushNotificationTest):
             "zerver.lib.push_notifications.get_message_payload_gcm",
             return_value=({"gcm": True}, {}),
         ), mock.patch(
-            "zerver.lib.push_notifications.send_notifications_to_bouncer"
-        ) as mock_send:
+            "zerver.lib.push_notifications.send_notifications_to_bouncer", return_value=(3, 5)
+        ) as mock_send, self.assertLogs(
+            "zerver.lib.push_notifications", level="INFO"
+        ) as mock_logging_info:
             handle_push_notification(user_profile.id, missed_message)
             mock_send.assert_called_with(
                 user_profile.id,
                 {"apns": True},
                 {"gcm": True},
                 {},
+            )
+            self.assertEqual(
+                mock_logging_info.output,
+                [
+                    f"INFO:zerver.lib.push_notifications:Sending push notifications to mobile clients for user {user_profile.id}",
+                    f"INFO:zerver.lib.push_notifications:Sent mobile push notifications for user {user_profile.id} through bouncer: 3 via FCM devices, 5 via APNs devices",
+                ],
             )
 
     def test_non_bouncer_push(self) -> None:
@@ -1877,7 +1925,10 @@ class TestGetGCMPayload(PushNotificationTest):
 class TestSendNotificationsToBouncer(ZulipTestCase):
     @mock.patch("zerver.lib.remote_server.send_to_push_bouncer")
     def test_send_notifications_to_bouncer(self, mock_send: mock.MagicMock) -> None:
-        send_notifications_to_bouncer(1, {"apns": True}, {"gcm": True}, {})
+        mock_send.return_value = {"total_android_devices": 1, "total_apple_devices": 3}
+        total_android_devices, total_apple_devices = send_notifications_to_bouncer(
+            1, {"apns": True}, {"gcm": True}, {}
+        )
         post_data = {
             "user_id": 1,
             "apns_payload": {"apns": True},
@@ -1890,6 +1941,8 @@ class TestSendNotificationsToBouncer(ZulipTestCase):
             orjson.dumps(post_data),
             extra_headers={"Content-type": "application/json"},
         )
+        self.assertEqual(total_android_devices, 1)
+        self.assertEqual(total_apple_devices, 3)
 
 
 @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")

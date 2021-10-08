@@ -36,7 +36,7 @@ Here is the **full list of search operators**.
 * `streams:public`: Search the history of all [public
   streams](/help/change-the-privacy-of-a-stream) in the organization.
 
-* `is:alerted`: See [alert words](/help/add-an-alert-word).
+* `is:alerted`: See [alert words](/help/pm-mention-alert-notifications#alert-words).
 * `is:mentioned`: See [mentions](/help/mention-a-user-or-group).
 * `is:starred`: See [starred messages](/help/star-a-message).
 * `is:resolved`: Search messages in [resolved topics](/help/resolve-a-topic).

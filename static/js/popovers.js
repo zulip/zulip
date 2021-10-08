@@ -443,7 +443,7 @@ export function toggle_actions_popover(element, id) {
             editability_menu_item = $t({defaultMessage: "Edit"});
         } else if (editability === message_edit.editability_types.TOPIC_ONLY) {
             use_edit_icon = false;
-            editability_menu_item = $t({defaultMessage: "View source / Edit topic"});
+            editability_menu_item = $t({defaultMessage: "View source / Move message"});
         } else {
             use_edit_icon = false;
             editability_menu_item = $t({defaultMessage: "View source"});

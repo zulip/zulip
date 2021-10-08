@@ -35,6 +35,7 @@ from django.db.models.query import QuerySet
 from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 from django.utils.translation import override as override_language
 from psycopg2.extras import execute_values
 from psycopg2.sql import SQL
@@ -150,6 +151,7 @@ from zerver.lib.streams import (
     check_stream_name,
     create_stream_if_needed,
     get_default_value_for_history_public_to_subscribers,
+    get_web_public_streams_queryset,
     render_stream_description,
     send_stream_creation_event,
     subscribed_to_stream,
@@ -169,7 +171,7 @@ from zerver.lib.topic import (
     update_messages_for_topic_edit,
 )
 from zerver.lib.topic_mutes import add_topic_mute, get_topic_mutes, remove_topic_mute
-from zerver.lib.types import ProfileFieldData
+from zerver.lib.types import ProfileDataElementValue, ProfileFieldData
 from zerver.lib.upload import (
     claim_attachment,
     delete_avatar_image,
@@ -1114,10 +1116,21 @@ def do_reactivate_realm(realm: Realm) -> None:
 def do_change_realm_subdomain(
     realm: Realm, new_subdomain: str, *, acting_user: Optional[UserProfile]
 ) -> None:
+    """Changing a realm's subdomain is a highly disruptive operation,
+    because all existing clients will need to be updated to point to
+    the new URL.  Further, requests to fetch data frmo existing event
+    queues will fail with an authentication error when this change
+    happens (because the old subdomain is no longer associated with
+    the realm), making it hard for us to provide a graceful update
+    experience for clients.
+    """
     old_subdomain = realm.subdomain
     old_uri = realm.uri
+    # If the realm had been a demo organization scheduled for
+    # deleting, clear that state.
+    realm.demo_organization_scheduled_deletion_date = None
     realm.string_id = new_subdomain
-    realm.save(update_fields=["string_id"])
+    realm.save(update_fields=["string_id", "demo_organization_scheduled_deletion_date"])
     RealmAuditLog.objects.create(
         realm=realm,
         event_type=RealmAuditLog.REALM_SUBDOMAIN_CHANGED,
@@ -4580,6 +4593,24 @@ def do_change_logo_source(
     send_event(realm, event, active_user_ids(realm.id))
 
 
+def do_change_realm_org_type(
+    realm: Realm,
+    org_type: int,
+    acting_user: Optional[UserProfile],
+) -> None:
+    old_value = realm.org_type
+    realm.org_type = org_type
+    realm.save(update_fields=["org_type"])
+
+    RealmAuditLog.objects.create(
+        event_type=RealmAuditLog.REALM_ORG_TYPE_CHANGED,
+        realm=realm,
+        event_time=timezone_now(),
+        acting_user=acting_user,
+        extra_data={"old_value": old_value, "new_value": org_type},
+    )
+
+
 def do_change_plan_type(
     realm: Realm, plan_type: int, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -4990,6 +5021,36 @@ def do_change_stream_message_retention_days(
     send_event(stream.realm, event, can_access_stream_user_ids(stream))
 
 
+def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
+    """This function implements overrides for the default configuration
+    for new organizations when the administrator selected specific
+    organization types.
+
+    This substantially simplifies our /help/ advice for folks setting
+    up new organizations of these types.
+    """
+
+    # Custom configuration for educational organizations.  The present
+    # defaults are designed for a single class, not a department or
+    # larger institution, since those are more common.
+    if (
+        realm.org_type == Realm.ORG_TYPES["education_nonprofit"]["id"]
+        or realm.org_type == Realm.ORG_TYPES["education"]["id"]
+    ):
+        # Limit email address visibility and user creation to administrators.
+        realm.email_address_visibility = Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+        realm.invite_to_realm_policy = Realm.POLICY_ADMINS_ONLY
+        # Restrict public stream creation to staff, but allow private
+        # streams (useful for study groups, etc.).
+        realm.create_public_stream_policy = Realm.POLICY_ADMINS_ONLY
+        # Don't allow members (students) to manage user groups or
+        # stream subscriptions.
+        realm.user_group_edit_policy = Realm.POLICY_MODERATORS_ONLY
+        realm.invite_to_stream_policy = Realm.POLICY_MODERATORS_ONLY
+        # Allow moderators (TAs?) to move topics between streams.
+        realm.move_messages_between_streams_policy = Realm.POLICY_MODERATORS_ONLY
+
+
 def do_create_realm(
     string_id: str,
     name: str,
@@ -5037,6 +5098,8 @@ def do_create_realm(
             realm.demo_organization_scheduled_deletion_date = (
                 realm.date_created + datetime.timedelta(days=settings.DEMO_ORG_DEADLINE_DAYS)
             )
+
+        set_realm_permissions_based_on_org_type(realm)
         realm.save()
 
         RealmAuditLog.objects.create(
@@ -5885,15 +5948,14 @@ def maybe_send_resolve_topic_notifications(
     if old_topic.lstrip(RESOLVED_TOPIC_PREFIX) != new_topic.lstrip(RESOLVED_TOPIC_PREFIX):
         return
 
-    if new_topic.startswith(RESOLVED_TOPIC_PREFIX) and not old_topic.startswith(
+    topic_resolved: bool = new_topic.startswith(RESOLVED_TOPIC_PREFIX) and not old_topic.startswith(
         RESOLVED_TOPIC_PREFIX
-    ):
-        notification_string = _("{user} has marked this topic as resolved.")
-    elif old_topic.startswith(RESOLVED_TOPIC_PREFIX) and not new_topic.startswith(
+    )
+    topic_unresolved: bool = old_topic.startswith(
         RESOLVED_TOPIC_PREFIX
-    ):
-        notification_string = _("{user} has marked this topic as unresolved.")
-    else:
+    ) and not new_topic.startswith(RESOLVED_TOPIC_PREFIX)
+
+    if not topic_resolved and not topic_unresolved:
         # If there's some other weird topic that does not toggle the
         # state of "topic starts with RESOLVED_TOPIC_PREFIX", we do
         # nothing. Any other logic could result in cases where we send
@@ -5912,6 +5974,11 @@ def maybe_send_resolve_topic_notifications(
     sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
     user_mention = f"@_**{user_profile.full_name}|{user_profile.id}**"
     with override_language(stream.realm.default_language):
+        if topic_resolved:
+            notification_string = _("{user} has marked this topic as resolved.")
+        elif topic_unresolved:
+            notification_string = _("{user} has marked this topic as unresolved.")
+
         internal_send_stream_message(
             sender,
             stream,
@@ -6452,11 +6519,13 @@ def do_update_message(
         # Notify users that the topic was moved.
         old_thread_notification_string = None
         if send_notification_to_old_thread:
-            old_thread_notification_string = _("This topic was moved by {user} to {new_location}")
+            old_thread_notification_string = gettext_lazy(
+                "This topic was moved by {user} to {new_location}"
+            )
 
         new_thread_notification_string = None
         if send_notification_to_new_thread:
-            new_thread_notification_string = _(
+            new_thread_notification_string = gettext_lazy(
                 "This topic was moved here from {old_location} by {user}"
             )
 
@@ -6592,7 +6661,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
         return color
 
     subscribed = []
-    for stream in Stream.objects.filter(realm=realm, is_web_public=True, deactivated=False):
+    for stream in get_web_public_streams_queryset(realm):
         stream_dict = stream.to_dict()
 
         # Add versions of the Subscription fields based on a simulated
@@ -7479,7 +7548,7 @@ def get_occupied_streams(realm: Realm) -> QuerySet:
 
 
 def get_web_public_streams(realm: Realm) -> List[Dict[str, Any]]:  # nocoverage
-    query = Stream.objects.filter(realm=realm, deactivated=False, is_web_public=True)
+    query = get_web_public_streams_queryset(realm)
     streams = Stream.get_client_data(query)
     return streams
 
@@ -7525,7 +7594,13 @@ def do_get_streams(
             invite_only_check = Q(invite_only=False)
             add_filter_option(invite_only_check)
         if include_web_public:
-            web_public_check = Q(is_web_public=True)
+            # This should match get_web_public_streams_queryset
+            web_public_check = Q(
+                is_web_public=True,
+                invite_only=False,
+                history_public_to_subscribers=True,
+                deactivated=False,
+            )
             add_filter_option(web_public_check)
         if include_owner_subscribed and user_profile.is_bot:
             bot_owner = user_profile.bot_owner
@@ -7727,11 +7802,8 @@ def try_reorder_realm_custom_profile_fields(realm: Realm, order: List[int]) -> N
 def notify_user_update_custom_profile_data(
     user_profile: UserProfile, field: Dict[str, Union[int, str, List[int], None]]
 ) -> None:
-    data = dict(id=field["id"])
-    if field["type"] == CustomProfileField.USER:
-        data["value"] = orjson.dumps(field["value"]).decode()
-    else:
-        data["value"] = field["value"]
+    data = dict(id=field["id"], value=field["value"])
+
     if field["rendered_value"]:
         data["rendered_value"] = field["rendered_value"]
     payload = dict(user_id=user_profile.id, custom_profile_field=data)
@@ -7741,7 +7813,7 @@ def notify_user_update_custom_profile_data(
 
 def do_update_user_custom_profile_data_if_changed(
     user_profile: UserProfile,
-    data: List[Dict[str, Union[int, str, List[int]]]],
+    data: List[Dict[str, Union[int, ProfileDataElementValue]]],
 ) -> None:
     with transaction.atomic():
         for custom_profile_field in data:
@@ -7749,17 +7821,24 @@ def do_update_user_custom_profile_data_if_changed(
                 user_profile=user_profile, field_id=custom_profile_field["id"]
             )
 
-            if not created and field_value.value == str(custom_profile_field["value"]):
+            # field_value.value is a TextField() so we need to have field["value"]
+            # in string form to correctly make comparisons and assignments.
+            if isinstance(custom_profile_field["value"], str):
+                custom_profile_field_value_string = custom_profile_field["value"]
+            else:
+                custom_profile_field_value_string = orjson.dumps(
+                    custom_profile_field["value"]
+                ).decode()
+
+            if not created and field_value.value == custom_profile_field_value_string:
                 # If the field value isn't actually being changed to a different one,
                 # we have nothing to do here for this field.
-                # Note: field_value.value is a TextField() so we need to cast field['value']
-                # to a string for the comparison in this if.
                 continue
 
-            field_value.value = custom_profile_field["value"]
+            field_value.value = custom_profile_field_value_string
             if field_value.field.is_renderable():
                 field_value.rendered_value = render_stream_description(
-                    str(custom_profile_field["value"])
+                    custom_profile_field_value_string
                 )
                 field_value.save(update_fields=["value", "rendered_value"])
             else:

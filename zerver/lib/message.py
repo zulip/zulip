@@ -2,7 +2,7 @@ import copy
 import datetime
 import zlib
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Union
 
 import ahocorasick
 import orjson
@@ -24,15 +24,17 @@ from zerver.lib.cache import (
     to_dict_cache_key_id,
 )
 from zerver.lib.display_recipient import bulk_fetch_display_recipients
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.markdown import MessageRenderingResult, markdown_convert, topic_links
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionData
+from zerver.lib.request import RequestVariableConversionError
 from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,
     get_subscribed_stream_recipient_ids_for_user,
     num_subscribers_for_stream_id,
 )
+from zerver.lib.streams import get_web_public_streams_queryset
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import DB_TOPIC_NAME, MESSAGE__TOPIC, TOPIC_LINKS, TOPIC_NAME
 from zerver.lib.topic_mutes import build_topic_mute_checker, topic_is_muted
@@ -707,6 +709,48 @@ def access_message(
     if has_message_access(user_profile, message, has_user_message=user_message is not None):
         return (message, user_message)
     raise JsonableError(_("Invalid message(s)"))
+
+
+def access_web_public_message(
+    realm: Realm,
+    message_id: int,
+) -> Message:
+    """Access control method for unauthenticated requests interacting
+    with a message in web public streams.
+    """
+
+    # We throw a MissingAuthenticationError for all errors in this
+    # code path, to avoid potentially leaking information on whether a
+    # message with the provided ID exists on the server if the client
+    # shouldn't have access to it.
+    if not realm.web_public_streams_enabled():
+        raise MissingAuthenticationError()
+
+    try:
+        message = Message.objects.select_related().get(id=message_id)
+    except Message.DoesNotExist:
+        raise MissingAuthenticationError()
+
+    if not message.is_stream_message():
+        raise MissingAuthenticationError()
+
+    queryset = get_web_public_streams_queryset(realm)
+    try:
+        stream = queryset.get(id=message.recipient.type_id)
+    except Stream.DoesNotExist:
+        raise MissingAuthenticationError()
+
+    # These should all have been enforced by the code in
+    # get_web_public_streams_queryset
+    assert stream.is_web_public
+    assert not stream.deactivated
+    assert not stream.invite_only
+    assert stream.history_public_to_subscribers
+
+    # Now that we've confirmed this message was sent to the target
+    # web-public stream, we can return it as having been successfully
+    # accessed.
+    return message
 
 
 def has_message_access(
@@ -1427,3 +1471,15 @@ def wildcard_mention_allowed(sender: UserProfile, stream: Stream) -> bool:
         return not sender.is_guest
 
     raise AssertionError("Invalid wildcard mention policy")
+
+
+def parse_message_content_delete_limit(
+    value: Union[int, str],
+    special_values_map: Mapping[str, Optional[int]],
+) -> Optional[int]:
+    if isinstance(value, str) and value in special_values_map.keys():
+        return special_values_map[value]
+    if isinstance(value, str) or value <= 0:
+        raise RequestVariableConversionError("message_content_delete_limit_seconds", value)
+    assert isinstance(value, int)
+    return value

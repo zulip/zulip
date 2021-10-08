@@ -275,13 +275,15 @@ run_test("allow normal typing when processing text", ({override}) => {
 });
 
 run_test("streams", ({override}) => {
-    settings_data.user_can_create_streams = () => true;
+    settings_data.user_can_create_private_streams = () => true;
+    settings_data.user_can_create_public_streams = () => true;
     override(overlays, "streams_open", () => true);
     override(overlays, "is_active", () => true);
     assert_mapping("S", stream_settings_ui, "keyboard_sub");
     assert_mapping("V", stream_settings_ui, "view_stream");
     assert_mapping("n", stream_settings_ui, "open_create_stream");
-    settings_data.user_can_create_streams = () => false;
+    settings_data.user_can_create_private_streams = () => false;
+    settings_data.user_can_create_public_streams = () => false;
     assert_unmapped("n");
 });
 

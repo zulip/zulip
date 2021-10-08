@@ -16,14 +16,15 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as realm_icon from "./realm_icon";
 import * as realm_logo from "./realm_logo";
+import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as settings_config from "./settings_config";
 import * as settings_notifications from "./settings_notifications";
+import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
 import * as settings_ui from "./settings_ui";
 import * as stream_settings_data from "./stream_settings_data";
 import * as ui_report from "./ui_report";
 
 export let parse_time_limit;
-export let save_organization_settings;
 
 const meta = {
     loaded: false,
@@ -119,7 +120,15 @@ export function get_realm_time_limits_in_minutes(property) {
     return val.toString();
 }
 
-function get_property_value(property_name) {
+function get_property_value(property_name, for_realm_default_settings) {
+    if (for_realm_default_settings) {
+        // realm_user_default_settings are stored in a separate object.
+        if (property_name === "twenty_four_hour_time") {
+            return JSON.stringify(realm_user_settings_defaults.twenty_four_hour_time);
+        }
+        return realm_user_settings_defaults[property_name];
+    }
+
     if (property_name === "realm_message_content_edit_limit_minutes") {
         return get_realm_time_limits_in_minutes("realm_message_content_edit_limit_seconds");
     }
@@ -158,8 +167,8 @@ function get_property_value(property_name) {
     }
 
     if (property_name === "realm_msg_delete_limit_setting") {
-        if (!page_params.realm_allow_message_deleting) {
-            return "never";
+        if (page_params.realm_message_content_delete_limit_seconds === null) {
+            return "any_time";
         }
         for (const [value, elem] of settings_config.msg_delete_limit_dropdown_values) {
             if (elem.seconds === page_params.realm_message_content_delete_limit_seconds) {
@@ -179,24 +188,36 @@ function get_property_value(property_name) {
         return "no_restriction";
     }
 
-    if (property_name === "realm_default_twenty_four_hour_time") {
-        return JSON.stringify(page_params[property_name]);
-    }
-
     return page_params[property_name];
 }
 
-export function extract_property_name(elem) {
+export function extract_property_name(elem, for_realm_default_settings) {
+    if (for_realm_default_settings) {
+        // We use the name attribute, rather than the ID attribute,
+        // for realm_user_default_settings. This is because the
+        // display/notification settings elements do not always have
+        // IDs, and also the emojiset input is not compatible with the
+        // ID approach.
+        return elem.attr("name");
+    }
     return elem.attr("id").split("-").join("_").replace("id_", "");
 }
 
 function get_subsection_property_elements(element) {
     const subsection = $(element).closest(".org-subsection-parent");
+    if (subsection.hasClass("emoji-settings")) {
+        // Because the emojiset widget has a unique radio button
+        // structure, it needs custom code.
+        const emojiset_elem = subsection.find("input[name='emojiset']:checked");
+        const translate_emoticons_elem = subsection.find(".translate_emoticons");
+        return [emojiset_elem, translate_emoticons_elem];
+    }
     return Array.from(subsection.find(".prop-element"));
 }
 
 const simple_dropdown_properties = [
-    "realm_create_stream_policy",
+    "realm_create_private_stream_policy",
+    "realm_create_public_stream_policy",
     "realm_invite_to_stream_policy",
     "realm_user_group_edit_policy",
     "realm_private_message_policy",
@@ -247,6 +268,38 @@ function set_msg_edit_limit_dropdown() {
         value === "custom_limit",
     );
     settings_ui.disable_sub_setting_onchange(value !== "never", "id_realm_edit_topic_policy", true);
+}
+
+function message_delete_limit_setting_enabled() {
+    // This function is used to check whether the time-limit setting
+    // should be enabled. The setting is disabled when delete_own_message_policy
+    // is set to 'admins only' as admins can delete messages irrespective of
+    // time limit.
+    if (
+        page_params.realm_delete_own_message_policy ===
+        settings_config.common_message_policy_values.by_admins_only.code
+    ) {
+        return false;
+    }
+    return true;
+}
+
+function set_delete_own_message_policy_dropdown() {
+    const value = get_property_value("realm_delete_own_message_policy");
+    $("#id_realm_delete_own_message_policy").val(value);
+    settings_ui.disable_sub_setting_onchange(
+        message_delete_limit_setting_enabled(),
+        "id_realm_msg_delete_limit_setting",
+        true,
+    );
+    const limit_value = get_property_value("realm_msg_delete_limit_setting");
+    if (limit_value === "custom_limit") {
+        settings_ui.disable_sub_setting_onchange(
+            message_delete_limit_setting_enabled(),
+            "id_realm_message_content_delete_limit_minutes",
+            true,
+        );
+    }
 }
 
 function set_msg_delete_limit_dropdown() {
@@ -374,6 +427,9 @@ function update_dependent_subsettings(property_name) {
         case "realm_message_content_delete_limit_minutes":
             set_msg_delete_limit_dropdown();
             break;
+        case "realm_delete_own_message_policy":
+            set_delete_own_message_policy_dropdown();
+            break;
         case "realm_org_join_restrictions":
             set_org_join_restrictions_dropdown();
             break;
@@ -382,10 +438,10 @@ function update_dependent_subsettings(property_name) {
             break;
         case "realm_digest_emails_enabled":
             settings_notifications.set_enable_digest_emails_visibility(
-                $("#user-notification-settings"),
+                settings_notifications.user_settings_panel,
             );
             settings_notifications.set_enable_digest_emails_visibility(
-                $("#realm-user-default-settings"),
+                settings_realm_user_settings_defaults.realm_default_settings_panel,
             );
             set_digest_emails_weekday_visibility();
             break;
@@ -396,10 +452,10 @@ export let default_code_language_widget = null;
 export let notifications_stream_widget = null;
 export let signup_notifications_stream_widget = null;
 
-function discard_property_element_changes(elem) {
+function discard_property_element_changes(elem, for_realm_default_settings) {
     elem = $(elem);
-    const property_name = extract_property_name(elem);
-    const property_value = get_property_value(property_name);
+    const property_name = extract_property_name(elem, for_realm_default_settings);
+    const property_value = get_property_value(property_name, for_realm_default_settings);
 
     switch (property_name) {
         case "realm_authentication_methods":
@@ -413,6 +469,13 @@ function discard_property_element_changes(elem) {
             break;
         case "realm_default_code_block_language":
             default_code_language_widget.render(property_value);
+            break;
+        case "emojiset":
+            // Because the emojiset widget has a unique radio button
+            // structure, it needs custom reset code.
+            elem.closest(".org-subsection-parent")
+                .find(`.setting_emojiset_choice[value='${CSS.escape(property_value)}'`)
+                .prop("checked", true);
             break;
         default:
             if (property_value !== undefined) {
@@ -456,9 +519,6 @@ export function sync_realm_settings(property) {
             break;
         case "message_content_delete_limit_seconds":
             property = "message_content_delete_limit_minutes";
-            break;
-        case "allow_message_deleting":
-            property = "msg_delete_limit_setting";
             break;
     }
     const element = $(`#id_realm_${CSS.escape(property)}`);
@@ -531,6 +591,26 @@ export function change_save_button_state($element, state) {
     show_hide_element($element, is_show, 800);
 }
 
+export function save_organization_settings(data, save_button, patch_url) {
+    const subsection_parent = save_button.closest(".org-subsection-parent");
+    const save_btn_container = subsection_parent.find(".save-button-controls");
+    const failed_alert_elem = subsection_parent.find(".subsection-failed-status p");
+    change_save_button_state(save_btn_container, "saving");
+    channel.patch({
+        url: patch_url,
+        data,
+        success() {
+            failed_alert_elem.hide();
+            change_save_button_state(save_btn_container, "succeeded");
+        },
+        error(xhr) {
+            change_save_button_state(save_btn_container, "failed");
+            save_button.hide();
+            ui_report.error($t_html({defaultMessage: "Save failed"}), xhr, failed_alert_elem);
+        },
+    });
+}
+
 function get_input_type(input_elem, input_type) {
     if (["boolean", "string", "number"].includes(input_type)) {
         return input_type;
@@ -548,6 +628,11 @@ export function get_input_element_value(input_elem, input_type) {
             return input_elem.val().trim();
         case "number":
             return Number.parseInt(input_elem.val().trim(), 10);
+        case "radio-group":
+            if (input_elem.prop("checked")) {
+                return input_elem.val().trim();
+            }
+            return undefined;
         default:
             return undefined;
     }
@@ -584,10 +669,10 @@ function get_auth_method_table_data() {
     return new_auth_methods;
 }
 
-function check_property_changed(elem) {
+function check_property_changed(elem, for_realm_default_settings) {
     elem = $(elem);
-    const property_name = extract_property_name(elem);
-    let current_val = get_property_value(property_name);
+    const property_name = extract_property_name(elem, for_realm_default_settings);
+    let current_val = get_property_value(property_name, for_realm_default_settings);
     let changed_val;
 
     switch (property_name) {
@@ -616,12 +701,12 @@ function check_property_changed(elem) {
     return current_val !== changed_val;
 }
 
-export function save_discard_widget_status_handler(subsection) {
+export function save_discard_widget_status_handler(subsection, for_realm_default_settings) {
     subsection.find(".subsection-failed-status p").hide();
     subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements(subsection);
     const show_change_process_button = properties_elements.some((elem) =>
-        check_property_changed(elem),
+        check_property_changed(elem, for_realm_default_settings),
     );
 
     const save_btn_controls = subsection.find(".subsection-header .save-button-controls");
@@ -667,34 +752,12 @@ export function init_dropdown_widgets() {
     });
 }
 
-export function build_page() {
-    meta.loaded = true;
-
-    loading.make_indicator($("#admin_page_auth_methods_loading_indicator"));
-
-    // Initialize all the dropdown list widgets.
-    init_dropdown_widgets();
-    // Populate realm domains
-    populate_realm_domains(page_params.realm_domains);
-
-    // Populate authentication methods table
-    populate_auth_methods(page_params.realm_authentication_methods);
-
-    for (const property_name of simple_dropdown_properties) {
-        set_property_dropdown_value(property_name);
-    }
-
-    set_realm_waiting_period_dropdown();
-    set_video_chat_provider_dropdown();
-    set_giphy_rating_dropdown();
-    set_msg_edit_limit_dropdown();
-    set_msg_delete_limit_dropdown();
-    set_message_retention_setting_dropdown();
-    set_org_join_restrictions_dropdown();
-    set_message_content_in_email_notifications_visiblity();
-    set_digest_emails_weekday_visibility();
-
-    $(".admin-realm-form").on("change input", "input, select, textarea", (e) => {
+export function register_save_discard_widget_handlers(
+    container,
+    patch_url,
+    for_realm_default_settings,
+) {
+    container.on("change input", "input, select, textarea", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -713,39 +776,19 @@ export function build_page() {
         }
 
         const subsection = $(e.target).closest(".org-subsection-parent");
-        save_discard_widget_status_handler(subsection);
+        save_discard_widget_status_handler(subsection, for_realm_default_settings);
         return undefined;
     });
 
-    $(".organization").on("click", ".subsection-header .subsection-changes-discard button", (e) => {
+    container.on("click", ".subsection-header .subsection-changes-discard button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         for (const elem of get_subsection_property_elements(e.target)) {
-            discard_property_element_changes(elem);
+            discard_property_element_changes(elem, for_realm_default_settings);
         }
         const save_btn_controls = $(e.target).closest(".save-button-controls");
         change_save_button_state(save_btn_controls, "discarded");
     });
-
-    save_organization_settings = function (data, save_button) {
-        const subsection_parent = save_button.closest(".org-subsection-parent");
-        const save_btn_container = subsection_parent.find(".save-button-controls");
-        const failed_alert_elem = subsection_parent.find(".subsection-failed-status p");
-        change_save_button_state(save_btn_container, "saving");
-        channel.patch({
-            url: "/json/realm",
-            data,
-            success() {
-                failed_alert_elem.hide();
-                change_save_button_state(save_btn_container, "succeeded");
-            },
-            error(xhr) {
-                change_save_button_state(save_btn_container, "failed");
-                save_button.hide();
-                ui_report.error($t_html({defaultMessage: "Save failed"}), xhr, failed_alert_elem);
-            },
-        });
-    };
 
     parse_time_limit = function parse_time_limit(elem) {
         return Math.floor(Number.parseFloat(elem.val(), 10).toFixed(1) * 60);
@@ -774,8 +817,8 @@ export function build_page() {
                 }
                 const delete_limit_setting_value = $("#id_realm_msg_delete_limit_setting").val();
                 switch (delete_limit_setting_value) {
-                    case "never": {
-                        data.allow_message_deleting = false;
+                    case "any_time": {
+                        data.message_content_delete_limit_seconds = JSON.stringify("unlimited");
 
                         break;
                     }
@@ -783,21 +826,17 @@ export function build_page() {
                         data.message_content_delete_limit_seconds = parse_time_limit(
                             $("#id_realm_message_content_delete_limit_minutes"),
                         );
-                        // Disable deleting if the parsed time limit is 0 seconds
-                        data.allow_message_deleting = Boolean(
-                            data.message_content_delete_limit_seconds,
-                        );
 
                         break;
                     }
                     default: {
-                        data.allow_message_deleting = true;
                         data.message_content_delete_limit_seconds =
                             settings_config.msg_delete_limit_dropdown_values.get(
                                 delete_limit_setting_value,
                             ).seconds;
                     }
                 }
+                data.delete_own_message_policy = $("#id_realm_delete_own_message_policy").val();
                 break;
             }
             case "notifications":
@@ -866,13 +905,6 @@ export function build_page() {
                 data = {};
                 data.authentication_methods = JSON.stringify(get_auth_method_table_data());
                 break;
-            case "user_defaults": {
-                const realm_default_twenty_four_hour_time = $(
-                    "#id_realm_default_twenty_four_hour_time",
-                ).val();
-                data.default_twenty_four_hour_time = realm_default_twenty_four_hour_time;
-                break;
-            }
         }
         return data;
     }
@@ -883,10 +915,20 @@ export function build_page() {
 
         for (let input_elem of properties_elements) {
             input_elem = $(input_elem);
-            if (check_property_changed(input_elem)) {
+            if (check_property_changed(input_elem, for_realm_default_settings)) {
                 const input_value = get_input_element_value(input_elem);
                 if (input_value !== undefined) {
-                    const property_name = input_elem.attr("id").replace("id_realm_", "");
+                    let property_name;
+                    if (for_realm_default_settings) {
+                        // We use the name attribute, rather than the ID attribute,
+                        // for realm_user_default_settings. This is because the
+                        // display/notification settings elements do not always have
+                        // IDs, and also the emojiset input is not compatible with the
+                        // ID approach.
+                        property_name = input_elem.attr("name");
+                    } else {
+                        property_name = input_elem.attr("id").replace("id_realm_", "");
+                    }
                     data[property_name] = input_value;
                 }
             }
@@ -895,20 +937,59 @@ export function build_page() {
         return data;
     }
 
-    $(".organization").on("click", ".subsection-header .subsection-changes-save button", (e) => {
+    container.on("click", ".subsection-header .subsection-changes-save button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const save_button = $(e.currentTarget);
-        const subsection_id = save_button.attr("id").replace("org-submit-", "");
-        const subsection = subsection_id.split("-").join("_");
         const subsection_elem = save_button.closest(".org-subsection-parent");
+        let extra_data = {};
+
+        if (!for_realm_default_settings) {
+            // The organization settings system has some coupled
+            // fields that must be submitted together, which is
+            // managed by the get_complete_data_for_subsection function.
+            const subsection_id = save_button.attr("id").replace("org-submit-", "");
+            const subsection = subsection_id.split("-").join("_");
+            extra_data = get_complete_data_for_subsection(subsection);
+        }
 
         const data = {
             ...populate_data_for_request(subsection_elem),
-            ...get_complete_data_for_subsection(subsection),
+            ...extra_data,
         };
-        save_organization_settings(data, save_button);
+        save_organization_settings(data, save_button, patch_url);
     });
+}
+
+export function build_page() {
+    meta.loaded = true;
+
+    loading.make_indicator($("#admin_page_auth_methods_loading_indicator"));
+
+    // Initialize all the dropdown list widgets.
+    init_dropdown_widgets();
+    // Populate realm domains
+    populate_realm_domains(page_params.realm_domains);
+
+    // Populate authentication methods table
+    populate_auth_methods(page_params.realm_authentication_methods);
+
+    for (const property_name of simple_dropdown_properties) {
+        set_property_dropdown_value(property_name);
+    }
+
+    set_realm_waiting_period_dropdown();
+    set_video_chat_provider_dropdown();
+    set_giphy_rating_dropdown();
+    set_msg_edit_limit_dropdown();
+    set_msg_delete_limit_dropdown();
+    set_delete_own_message_policy_dropdown();
+    set_message_retention_setting_dropdown();
+    set_org_join_restrictions_dropdown();
+    set_message_content_in_email_notifications_visiblity();
+    set_digest_emails_weekday_visibility();
+
+    register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
 
     $(".org-subsection-parent").on("keydown", "input", (e) => {
         e.stopPropagation();

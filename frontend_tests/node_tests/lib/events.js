@@ -240,10 +240,17 @@ exports.fixtures = {
         value: 1,
     },
 
-    realm__update__create_stream_policy: {
+    realm__update__create_private_stream_policy: {
         type: "realm",
         op: "update",
-        property: "create_stream_policy",
+        property: "create_private_stream_policy",
+        value: 2,
+    },
+
+    realm__update__create_public_stream_policy: {
+        type: "realm",
+        op: "update",
+        property: "create_public_stream_policy",
         value: 2,
     },
 
@@ -252,13 +259,6 @@ exports.fixtures = {
         op: "update",
         property: "default_code_block_language",
         value: "javascript",
-    },
-
-    realm__update__default_twenty_four_hour_time: {
-        type: "realm",
-        op: "update",
-        property: "default_twenty_four_hour_time",
-        value: false,
     },
 
     realm__update__disallow_disposable_email_addresses: {

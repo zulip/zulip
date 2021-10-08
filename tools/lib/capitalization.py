@@ -75,6 +75,7 @@ IGNORED_PHRASES = [
     r"I say",
     r"I want",
     r"I'm",
+    r"I've",
     # Specific short words
     r"beta",
     r"and",

@@ -566,7 +566,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assert_error_update_invalid_value(
             field_name, "1909-3-5", f"{field_name} is not a date"
         )
-        self.assert_error_update_invalid_value(field_name, 123, f"{field_name} is not a string")
+        self.assert_error_update_invalid_value(field_name, [123], f"{field_name} is not a string")
 
     def test_update_invalid_url(self) -> None:
         field_name = "Favorite website"
@@ -621,7 +621,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             else:
                 expected_rendered_value[f["id"]] = None
 
-        for field_dict in iago.profile_data:
+        for field_dict in iago.profile_data():
             self.assertEqual(field_dict["value"], expected_value[field_dict["id"]])
             self.assertEqual(
                 field_dict["rendered_value"], expected_rendered_value[field_dict["id"]]
@@ -642,7 +642,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             "/json/users/me/profile_data", {"data": orjson.dumps(data).decode()}
         )
         self.assert_json_success(result)
-        for field_dict in iago.profile_data:
+        for field_dict in iago.profile_data():
             if field_dict["id"] == field.id:
                 self.assertEqual(field_dict["value"], "foobar")
 
@@ -680,7 +680,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         )
 
         iago = self.example_user("iago")
-        iago_profile_quote = iago.profile_data[-1]
+        iago_profile_quote = iago.profile_data()[-1]
         value = iago_profile_quote["value"]
         rendered_value = iago_profile_quote["rendered_value"]
         self.assertIsNone(value)
@@ -692,7 +692,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         }
         do_update_user_custom_profile_data_if_changed(iago, [update_dict])
 
-        iago_profile_quote = self.example_user("iago").profile_data[-1]
+        iago_profile_quote = self.example_user("iago").profile_data()[-1]
         value = iago_profile_quote["value"]
         rendered_value = iago_profile_quote["rendered_value"]
         self.assertIsNotNone(value)

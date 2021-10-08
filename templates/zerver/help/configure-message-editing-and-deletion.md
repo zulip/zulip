@@ -29,7 +29,7 @@ is highly configurable. Two things are true under any configuration:
 
 [2] Controlled by **Who can edit topic of any message**.
 
-[3] Controlled by **Allow message deleting**.
+[3] Controlled by **Who can delete their own messages**.
 
 [4] Controlled by **Who can move messages between streams**, in
 addition to other restrictions on editing topics.
@@ -58,7 +58,7 @@ You can access the message editing and deletion settings as follows.
 {settings_tab|organization-permissions}
 
 4. Under **Message editing**, configure **Allow message editing**,
-   **Who can edit topic of any message**, and **Allow message deleting**.
+   **Who can edit topic of any message**, and **Who can delete their own messages**.
 
 {!save-changes.md!}
 

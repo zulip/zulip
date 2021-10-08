@@ -20,7 +20,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import validate_external_account_field_data
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.types import ProfileFieldData
+from zerver.lib.types import ProfileDataElementValue, ProfileFieldData
 from zerver.lib.users import validate_user_custom_profile_data
 from zerver.lib.validator import (
     check_capped_string,
@@ -196,12 +196,12 @@ def remove_user_custom_profile_data(
 def update_user_custom_profile_data(
     request: HttpRequest,
     user_profile: UserProfile,
-    data: List[Dict[str, Union[int, str, List[int]]]] = REQ(
+    data: List[Dict[str, Union[int, ProfileDataElementValue]]] = REQ(
         json_validator=check_list(
             check_dict_only(
                 [
                     ("id", check_int),
-                    ("value", check_union([check_int, check_string, check_list(check_int)])),
+                    ("value", check_union([check_string, check_list(check_int)])),
                 ]
             ),
         )

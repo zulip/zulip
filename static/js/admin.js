@@ -24,7 +24,6 @@ const admin_settings_label = {
     realm_signup_notifications_stream: $t({defaultMessage: "New user notifications:"}),
     realm_inline_image_preview: $t({defaultMessage: "Show previews of uploaded and linked images"}),
     realm_inline_url_embed_preview: $t({defaultMessage: "Show previews of linked websites"}),
-    realm_default_twenty_four_hour_time: $t({defaultMessage: "Time format"}),
     realm_send_welcome_emails: $t({defaultMessage: "Send emails introducing Zulip to new users"}),
     realm_message_content_allowed_in_email_notifications: $t({
         defaultMessage: "Allow message content in message notification emails",
@@ -63,12 +62,10 @@ function get_realm_level_notification_settings(options) {
         realm_user_settings_defaults,
     );
 
-    // We remove enable_marketing_emails setting from all_notification_settings, since there is no
-    // realm-level default of this setting.
-    all_notifications_settings.settings.other_email_settings = [
-        "enable_digest_emails",
-        "enable_login_emails",
-    ];
+    // We remove enable_marketing_emails and enable_login_emails
+    // setting from all_notification_settings, since there are no
+    // realm-level defaults for these setting.
+    all_notifications_settings.settings.other_email_settings = ["enable_digest_emails"];
 
     options.general_settings = all_notifications_settings.general_settings;
     options.notification_settings = all_notifications_settings.settings;
@@ -88,7 +85,6 @@ export function build_page() {
         server_inline_image_preview: page_params.server_inline_image_preview,
         realm_inline_url_embed_preview: page_params.realm_inline_url_embed_preview,
         server_inline_url_embed_preview: page_params.server_inline_url_embed_preview,
-        realm_default_twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
         realm_authentication_methods: page_params.realm_authentication_methods,
         realm_user_group_edit_policy: page_params.realm_user_group_edit_policy,
         realm_name_changes_disabled: page_params.realm_name_changes_disabled,
@@ -141,6 +137,9 @@ export function build_page() {
         realm_invite_required: page_params.realm_invite_required,
         can_edit_user_groups: settings_data.user_can_edit_user_groups(),
         policy_values: settings_config.common_policy_values,
+        realm_delete_own_message_policy: page_params.realm_delete_own_message_policy,
+        DELETE_OWN_MESSAGE_POLICY_ADMINS_ONLY:
+            settings_config.common_message_policy_values.by_admins_only.code,
         ...settings_org.get_organization_settings_options(),
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
         color_scheme_values: settings_config.color_scheme_values,
@@ -154,6 +153,7 @@ export function build_page() {
             realm_user_settings_defaults.enable_stream_audible_notifications,
         email_notifications_batching_period_values:
             settings_config.email_notifications_batching_period_values,
+        twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
@@ -182,13 +182,6 @@ export function build_page() {
 
     $("#id_realm_default_language").val(page_params.realm_default_language);
     $("#id_realm_digest_weekday").val(options.realm_digest_weekday);
-
-    // default_twenty_four_hour time is a boolean in the API but a
-    // dropdown, so we need to convert the value to a string for
-    // storage in the browser's DOM.
-    $("#id_realm_default_twenty_four_hour_time").val(
-        JSON.stringify(page_params.realm_default_twenty_four_hour_time),
-    );
 }
 
 export function launch(section) {

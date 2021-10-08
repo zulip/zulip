@@ -1233,6 +1233,26 @@ class NormalActionsTest(BaseAction):
         assert isinstance(events[1]["person"]["avatar_url"], str)
         assert isinstance(events[1]["person"]["avatar_url_medium"], str)
 
+    def test_change_user_delivery_email_email_address_visibility_everyone(self) -> None:
+        do_set_realm_property(
+            self.user_profile.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
+        )
+        # Important: We need to refresh from the database here so that
+        # we don't have a stale UserProfile object with an old value
+        # for email being passed into this next function.
+        self.user_profile.refresh_from_db()
+        action = lambda: do_change_user_delivery_email(self.user_profile, "newhamlet@zulip.com")
+        events = self.verify_action(action, num_events=3, client_gravatar=False)
+
+        check_realm_user_update("events[0]", events[0], "delivery_email")
+        check_realm_user_update("events[1]", events[1], "avatar_fields")
+        check_realm_user_update("events[2]", events[2], "email")
+        assert isinstance(events[1]["person"]["avatar_url"], str)
+        assert isinstance(events[1]["person"]["avatar_url_medium"], str)
+
     def test_change_realm_authentication_methods(self) -> None:
         def fake_backends() -> Any:
             backends = (
@@ -2127,13 +2147,15 @@ class RealmPropertyActionTest(BaseAction):
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
             waiting_period_threshold=[10, 20],
-            create_stream_policy=[4, 3, 2, 1],
-            invite_to_stream_policy=[4, 3, 2, 1],
-            private_message_policy=[2, 1],
-            user_group_edit_policy=[1, 2, 3, 4],
-            wildcard_mention_policy=[7, 6, 5, 4, 3, 2, 1],
-            email_address_visibility=[Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS],
-            bot_creation_policy=[Realm.BOT_CREATION_EVERYONE],
+            create_public_stream_policy=Realm.COMMON_POLICY_TYPES,
+            create_private_stream_policy=Realm.COMMON_POLICY_TYPES,
+            create_web_public_stream_policy=Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES,
+            invite_to_stream_policy=Realm.COMMON_POLICY_TYPES,
+            private_message_policy=Realm.PRIVATE_MESSAGE_POLICY_TYPES,
+            user_group_edit_policy=Realm.COMMON_POLICY_TYPES,
+            wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
+            email_address_visibility=Realm.EMAIL_ADDRESS_VISIBILITY_TYPES,
+            bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,
             video_chat_provider=[
                 Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"],
             ],
@@ -2142,9 +2164,10 @@ class RealmPropertyActionTest(BaseAction):
             ],
             default_code_block_language=["python", "javascript"],
             message_content_delete_limit_seconds=[1000, 1100, 1200],
-            invite_to_realm_policy=[6, 4, 3, 2, 1],
-            move_messages_between_streams_policy=[4, 3, 2, 1],
-            add_custom_emoji_policy=[4, 3, 2, 1],
+            invite_to_realm_policy=Realm.INVITE_TO_REALM_POLICY_TYPES,
+            move_messages_between_streams_policy=Realm.COMMON_POLICY_TYPES,
+            add_custom_emoji_policy=Realm.COMMON_POLICY_TYPES,
+            delete_own_message_policy=Realm.COMMON_MESSAGE_POLICY_TYPES,
         )
 
         vals = test_values.get(name)
@@ -2168,14 +2191,23 @@ class RealmPropertyActionTest(BaseAction):
         for count, val in enumerate(vals[1:]):
             now = timezone_now()
             state_change_expected = True
+            old_value = vals[count]
+            num_events = 1
+            if name == "email_address_visibility" and Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE in [
+                old_value,
+                val,
+            ]:
+                # email update event is sent for each user.
+                num_events = 11
+
             events = self.verify_action(
                 lambda: do_set_realm_property(
                     self.user_profile.realm, name, val, acting_user=self.user_profile
                 ),
                 state_change_expected=state_change_expected,
+                num_events=num_events,
             )
 
-            old_value = vals[count]
             self.assertEqual(
                 RealmAuditLog.objects.filter(
                     realm=self.user_profile.realm,
@@ -2193,6 +2225,12 @@ class RealmPropertyActionTest(BaseAction):
                 1,
             )
             check_realm_update("events[0]", events[0], name)
+
+            if name == "email_address_visibility" and Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE in [
+                old_value,
+                val,
+            ]:
+                check_realm_user_update("events[1]", events[1], "email")
 
     def test_change_realm_property(self) -> None:
         for prop in Realm.property_types:
@@ -2265,7 +2303,7 @@ class RealmPropertyActionTest(BaseAction):
 
     def test_change_realm_user_default_setting(self) -> None:
         for prop in RealmUserDefault.property_types:
-            if prop in ["default_language", "twenty_four_hour_time"]:
+            if prop == "default_language":
                 continue
             self.do_set_realm_user_default_setting_test(prop)
 
@@ -2282,7 +2320,19 @@ class UserDisplayActionTest(BaseAction):
             color_scheme=[2, 3, 1],
         )
 
-        num_events = 2
+        user_settings_object = True
+        num_events = 1
+
+        legacy_setting = setting_name in UserProfile.display_settings_legacy
+        if legacy_setting:
+            # Two events:`update_display_settings` and `user_settings`.
+            # `update_display_settings` is only sent for settings added
+            # before feature level 89 which introduced `user_settings`.
+            # We send both events so that older clients that do not
+            # rely on `user_settings` don't break.
+            num_events = 2
+            user_settings_object = False
+
         values = test_changes.get(setting_name)
 
         property_type = UserProfile.property_types[setting_name]
@@ -2301,10 +2351,15 @@ class UserDisplayActionTest(BaseAction):
                     self.user_profile, setting_name, value, acting_user=self.user_profile
                 ),
                 num_events=num_events,
+                user_settings_object=user_settings_object,
             )
 
             check_user_settings_update("events[0]", events[0])
-            check_update_display_settings("events[1]", events[1])
+            if legacy_setting:
+                # Only settings added before feature level 89
+                # generate this event.
+                self.assert_length(events, 2)
+                check_update_display_settings("events[1]", events[1])
 
     def test_change_user_settings(self) -> None:
         for prop in UserProfile.property_types:

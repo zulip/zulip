@@ -61,8 +61,10 @@ async function navigate_to_subscriptions(page: Page): Promise<void> {
 }
 
 async function test_reload_hash(page: Page): Promise<void> {
-    const initial_page_load_time = await page.evaluate(() => zulip_test.page_params.page_load_time);
-    console.log("initial load time: " + initial_page_load_time);
+    const initial_page_load_time = await page.evaluate(
+        (): number => zulip_test.page_params.page_load_time,
+    );
+    console.log(`initial load time: ${initial_page_load_time}`);
 
     const initial_hash = await page.evaluate(() => window.location.hash);
 
@@ -82,7 +84,7 @@ async function navigation_tests(page: Page): Promise<void> {
 
     await navigate_to_settings(page);
 
-    const verona_id = await page.evaluate(() => zulip_test.get_stream_id("Verona"));
+    const verona_id = await page.evaluate((): number => zulip_test.get_stream_id("Verona"));
     const verona_narrow = `narrow/stream/${verona_id}-Verona`;
 
     await navigate_using_left_sidebar(page, verona_narrow, "message_feed_container");

@@ -168,9 +168,14 @@ function test_policy(label, policy, validation_func) {
 }
 
 test_policy(
-    "user_can_create_streams",
-    "realm_create_stream_policy",
-    settings_data.user_can_create_streams,
+    "user_can_create_private_streams",
+    "realm_create_private_stream_policy",
+    settings_data.user_can_create_private_streams,
+);
+test_policy(
+    "user_can_create_public_streams",
+    "realm_create_public_stream_policy",
+    settings_data.user_can_create_public_streams,
 );
 test_policy(
     "user_can_subscribe_other_users",
@@ -241,6 +246,12 @@ test_message_policy(
     "user_can_edit_topic_of_any_message",
     "realm_edit_topic_policy",
     settings_data.user_can_edit_topic_of_any_message,
+);
+
+test_message_policy(
+    "user_can_delete_own_message",
+    "realm_delete_own_message_policy",
+    settings_data.user_can_delete_own_message,
 );
 
 run_test("using_dark_theme", () => {

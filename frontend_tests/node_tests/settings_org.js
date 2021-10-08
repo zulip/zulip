@@ -166,12 +166,11 @@ function test_submit_settings_form(override, submit_form) {
         realm_email_address_visibility:
             settings_config.email_address_visibility_values.admins_only.code,
         realm_add_custom_emoji_policy: settings_config.common_policy_values.by_admins_only.code,
-        realm_create_stream_by_admins_only: true,
         realm_waiting_period_threshold: 1,
         realm_default_language: '"es"',
-        realm_default_twenty_four_hour_time: false,
         realm_invite_to_stream_policy: settings_config.common_policy_values.by_admins_only.code,
-        realm_create_stream_policy: settings_config.common_policy_values.by_members.code,
+        realm_create_private_stream_policy: settings_config.common_policy_values.by_members.code,
+        realm_create_public_stream_policy: settings_config.common_policy_values.by_members.code,
         realm_invite_to_realm_policy: settings_config.common_policy_values.by_members.code,
     });
 
@@ -205,10 +204,15 @@ function test_submit_settings_form(override, submit_form) {
     invite_to_stream_policy_elem.attr("id", "id_realm_invite_to_stream_policy");
     invite_to_stream_policy_elem.data = () => "number";
 
-    const create_stream_policy_elem = $("#id_realm_create_stream_policy");
-    create_stream_policy_elem.val("2");
-    create_stream_policy_elem.attr("id", "id_realm_create_stream_policy");
-    create_stream_policy_elem.data = () => "number";
+    const create_public_stream_policy_elem = $("#id_realm_create_public_stream_policy");
+    create_public_stream_policy_elem.val("2");
+    create_public_stream_policy_elem.attr("id", "id_realm_create_public_stream_policy");
+    create_public_stream_policy_elem.data = () => "number";
+
+    const create_private_stream_policy_elem = $("#id_realm_create_private_stream_policy");
+    create_private_stream_policy_elem.val("2");
+    create_private_stream_policy_elem.attr("id", "id_realm_create_private_stream_policy");
+    create_private_stream_policy_elem.data = () => "number";
 
     const add_custom_emoji_policy_elem = $("#id_realm_add_custom_emoji_policy");
     add_custom_emoji_policy_elem.val("1");
@@ -235,7 +239,8 @@ function test_submit_settings_form(override, submit_form) {
         bot_creation_policy_elem,
         email_address_visibility_elem,
         add_custom_emoji_policy_elem,
-        create_stream_policy_elem,
+        create_public_stream_policy_elem,
+        create_private_stream_policy_elem,
         invite_to_stream_policy_elem,
     ]);
 
@@ -248,7 +253,8 @@ function test_submit_settings_form(override, submit_form) {
         invite_to_stream_policy: 1,
         email_address_visibility: 1,
         add_custom_emoji_policy: 1,
-        create_stream_policy: 2,
+        create_public_stream_policy: 2,
+        create_private_stream_policy: 2,
     };
     assert.deepEqual(data, expected_value);
 
@@ -262,24 +268,16 @@ function test_submit_settings_form(override, submit_form) {
     realm_default_language_elem.val("en");
     realm_default_language_elem.attr("id", "id_realm_default_language");
     realm_default_language_elem.data = () => "string";
-    const realm_default_twenty_four_hour_time_elem = $("#id_realm_default_twenty_four_hour_time");
-    realm_default_twenty_four_hour_time_elem.val("true");
-    realm_default_twenty_four_hour_time_elem.attr("id", "id_realm_default_twenty_four_hour_time");
-    realm_default_twenty_four_hour_time_elem.data = () => "boolean";
 
     subsection_elem = $(`#org-${CSS.escape(subsection)}`);
     subsection_elem.closest = () => subsection_elem;
-    subsection_elem.set_find_results(".prop-element", [
-        realm_default_language_elem,
-        realm_default_twenty_four_hour_time_elem,
-    ]);
+    subsection_elem.set_find_results(".prop-element", [realm_default_language_elem]);
 
     submit_form(ev);
     assert.ok(patched);
 
     expected_value = {
         default_language: "en",
-        default_twenty_four_hour_time: "true",
     };
     assert.deepEqual(data, expected_value);
 
@@ -466,7 +464,8 @@ function test_sync_realm_settings() {
         }
     }
 
-    test_common_policy("create_stream_policy");
+    test_common_policy("create_private_stream_policy");
+    test_common_policy("create_public_stream_policy");
     test_common_policy("invite_to_stream_policy");
     test_common_policy("invite_to_realm_policy");
 
@@ -476,7 +475,7 @@ function test_sync_realm_settings() {
         property_elem.length = 1;
         property_elem.attr("id", "id_realm_message_content_edit_limit_minutes");
 
-        page_params.realm_create_stream_policy = 1;
+        page_params.realm_create_public_stream_policy = 1;
         page_params.realm_message_content_edit_limit_seconds = 120;
 
         settings_org.sync_realm_settings("message_content_edit_limit_seconds");
@@ -511,7 +510,7 @@ function test_sync_realm_settings() {
         property_elem.length = 1;
         property_elem.attr("id", "id_realm_message_content_edit_limit_minutes");
 
-        page_params.realm_create_stream_policy = 1;
+        page_params.realm_create_public_stream_policy = 1;
         page_params.realm_message_content_edit_limit_seconds = 120;
 
         settings_org.sync_realm_settings("message_content_edit_limit_seconds");
@@ -584,7 +583,8 @@ function test_discard_changes_button(discard_changes) {
         settings_config.common_message_policy_values.by_everyone.code;
     page_params.realm_allow_message_editing = true;
     page_params.realm_message_content_edit_limit_seconds = 3600;
-    page_params.realm_allow_message_deleting = true;
+    page_params.realm_delete_own_message_policy =
+        settings_config.common_message_policy_values.by_everyone.code;
     page_params.realm_message_content_delete_limit_seconds = 120;
 
     const allow_edit_history = $("#id_realm_allow_edit_history").prop("checked", false);
@@ -696,7 +696,7 @@ test("set_up", ({override, mock_template}) => {
     test_realms_domain_modal(override, () => $("#submit-add-realm-domain").trigger("click"));
     test_submit_settings_form(
         override,
-        $(".organization").get_on_handler(
+        $(".admin-realm-form").get_on_handler(
             "click",
             ".subsection-header .subsection-changes-save button",
         ),
@@ -710,7 +710,7 @@ test("set_up", ({override, mock_template}) => {
     test_sync_realm_settings();
     test_parse_time_limit();
     test_discard_changes_button(
-        $(".organization").get_on_handler(
+        $(".admin-realm-form").get_on_handler(
             "click",
             ".subsection-header .subsection-changes-discard button",
         ),

@@ -418,3 +418,82 @@ class TypingHappyPathTestStreams(ZulipTestCase):
         self.assertEqual(topic, event["topic"])
         self.assertEqual("typing", event["type"])
         self.assertEqual("stop", event["op"])
+
+
+class TestSendTypingNotificationsSettings(ZulipTestCase):
+    def test_send_private_typing_notifications_setting(self) -> None:
+        sender = self.example_user("hamlet")
+        recipient_user = self.example_user("othello")
+        expected_recipients = {sender, recipient_user}
+        expected_recipient_ids = {user.id for user in expected_recipients}
+
+        params = dict(
+            to=orjson.dumps([recipient_user.id]).decode(),
+            op="start",
+        )
+
+        # Test typing events sent when `send_private_typing_notifications` set to `True`.
+        self.assertTrue(sender.send_private_typing_notifications)
+
+        events: List[Mapping[str, Any]] = []
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
+            result = self.api_post(sender, "/api/v1/typing", params)
+
+        self.assert_json_success(result)
+        self.assert_length(events, 1)
+        event_user_ids = set(events[0]["users"])
+        self.assertEqual(expected_recipient_ids, event_user_ids)
+        self.assertEqual(orjson.loads(result.content)["msg"], "")
+
+        sender.send_private_typing_notifications = False
+        sender.save()
+
+        # No events should be sent now
+        events = []
+        with self.tornado_redirected_to_list(events, expected_num_events=0):
+            result = self.api_post(sender, "/api/v1/typing", params)
+
+        self.assert_json_error(
+            result, "User has disabled typing notifications for private messages"
+        )
+        self.assertEqual(events, [])
+
+    def test_send_stream_typing_notifications_setting(self) -> None:
+        sender = self.example_user("hamlet")
+        stream_name = self.get_streams(sender)[0]
+        stream_id = self.get_stream_id(stream_name)
+        topic = "Some topic"
+
+        expected_user_ids = {
+            user_profile.id
+            for user_profile in self.users_subscribed_to_stream(stream_name, sender.realm)
+        }
+
+        params = dict(
+            type="stream",
+            op="start",
+            to=orjson.dumps([stream_id]).decode(),
+            topic=topic,
+        )
+
+        # Test typing events sent when `send_stream_typing_notifications` set to `True`.
+        self.assertTrue(sender.send_stream_typing_notifications)
+
+        events: List[Mapping[str, Any]] = []
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
+            result = self.api_post(sender, "/api/v1/typing", params)
+        self.assert_json_success(result)
+        self.assert_length(events, 1)
+        self.assertEqual(orjson.loads(result.content)["msg"], "")
+        event_user_ids = set(events[0]["users"])
+        self.assertEqual(expected_user_ids, event_user_ids)
+
+        sender.send_stream_typing_notifications = False
+        sender.save()
+
+        # No events should be sent now
+        events = []
+        with self.tornado_redirected_to_list(events, expected_num_events=0):
+            result = self.api_post(sender, "/api/v1/typing", params)
+        self.assert_json_error(result, "User has disabled typing notifications for stream messages")
+        self.assertEqual(events, [])

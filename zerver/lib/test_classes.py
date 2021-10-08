@@ -524,15 +524,6 @@ Output:
         # not as a spectator.
         self.assertEqual(page_params["is_spectator"], False)
 
-    def check_rendered_spectator(self, result: HttpResponse) -> None:
-        """Verifies that a visit of / was a 200 that rendered page_params
-        for a (logged-out) spectator."""
-        self.assertEqual(result.status_code, 200)
-        page_params = self._get_page_params(result)
-        # It is important to check `is_spectator` to verify
-        # that we treated this request to render for a `spectator`
-        self.assertEqual(page_params["is_spectator"], True)
-
     def login_with_return(
         self, email: str, password: Optional[str] = None, **kwargs: Any
     ) -> HttpResponse:
@@ -1243,6 +1234,7 @@ Output:
     ) -> None:
 
         realm = get_realm("zulip")
+        owner_user = self.example_user("desdemona")
         admin_user = self.example_user("iago")
         moderator_user = self.example_user("shiva")
         member_user = self.example_user("hamlet")
@@ -1260,7 +1252,24 @@ Output:
         )
         member_user.save()
 
+        do_set_realm_property(realm, policy, Realm.POLICY_NOBODY, acting_user=None)
+        self.assertFalse(validation_func(owner_user))
+        self.assertFalse(validation_func(admin_user))
+        self.assertFalse(validation_func(moderator_user))
+        self.assertFalse(validation_func(member_user))
+        self.assertFalse(validation_func(new_member_user))
+        self.assertFalse(validation_func(guest_user))
+
+        do_set_realm_property(realm, policy, Realm.POLICY_OWNERS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(owner_user))
+        self.assertFalse(validation_func(admin_user))
+        self.assertFalse(validation_func(moderator_user))
+        self.assertFalse(validation_func(member_user))
+        self.assertFalse(validation_func(new_member_user))
+        self.assertFalse(validation_func(guest_user))
+
         do_set_realm_property(realm, policy, Realm.POLICY_ADMINS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(owner_user))
         self.assertTrue(validation_func(admin_user))
         self.assertFalse(validation_func(moderator_user))
         self.assertFalse(validation_func(member_user))
@@ -1268,6 +1277,7 @@ Output:
         self.assertFalse(validation_func(guest_user))
 
         do_set_realm_property(realm, policy, Realm.POLICY_MODERATORS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(owner_user))
         self.assertTrue(validation_func(admin_user))
         self.assertTrue(validation_func(moderator_user))
         self.assertFalse(validation_func(member_user))
@@ -1275,6 +1285,7 @@ Output:
         self.assertFalse(validation_func(guest_user))
 
         do_set_realm_property(realm, policy, Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(owner_user))
         self.assertTrue(validation_func(admin_user))
         self.assertTrue(validation_func(moderator_user))
         self.assertTrue(validation_func(member_user))
@@ -1282,11 +1293,20 @@ Output:
         self.assertFalse(validation_func(guest_user))
 
         do_set_realm_property(realm, policy, Realm.POLICY_MEMBERS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(owner_user))
         self.assertTrue(validation_func(admin_user))
         self.assertTrue(validation_func(moderator_user))
         self.assertTrue(validation_func(member_user))
         self.assertTrue(validation_func(new_member_user))
         self.assertFalse(validation_func(guest_user))
+
+        do_set_realm_property(realm, policy, Realm.POLICY_EVERYONE, acting_user=None)
+        self.assertTrue(validation_func(owner_user))
+        self.assertTrue(validation_func(admin_user))
+        self.assertTrue(validation_func(moderator_user))
+        self.assertTrue(validation_func(member_user))
+        self.assertTrue(validation_func(new_member_user))
+        self.assertTrue(validation_func(guest_user))
 
     def subscribe_realm_to_manual_license_management_plan(
         self, realm: Realm, licenses: int, licenses_at_next_renewal: int, billing_schedule: int
@@ -1329,7 +1349,7 @@ Output:
         # so mypy doesn't allow assigning lst.append to process_notification
         # So explicitly change parameter name to 'notice' to work around this problem
         with mock.patch(
-            "zerver.tornado.django_api.process_notification", lambda notice: lst.append(notice)
+            "zerver.tornado.event_queue.process_notification", lambda notice: lst.append(notice)
         ):
             # Some `send_event` calls need to be executed only after the current transaction
             # commits (using `on_commit` hooks). Because the transaction in Django tests never

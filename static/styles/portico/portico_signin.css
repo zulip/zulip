@@ -417,6 +417,7 @@ html {
         input[type="text"],
         input[type="email"],
         input[type="password"],
+        textarea,
         select {
             padding: 10px 32px 10px 12px;
             margin: 25px 0 5px;
@@ -686,6 +687,13 @@ html {
     max-width: 500px;
 }
 
+.anonymous_access_form {
+    button {
+        /* Avoid excessive space at top of login form */
+        margin-top: 0;
+    }
+}
+
 button.login-social-button {
     width: 328px;
     height: auto;
@@ -815,6 +823,16 @@ button#register_auth_button_gitlab {
                 margin-left: 2px;
             }
         }
+
+        &.support-form-field {
+            width: 450px;
+
+            input,
+            textarea {
+                width: 400px;
+                font-size: 1rem;
+            }
+        }
     }
 
     & [for="realm_in_root_domain"] {
@@ -829,6 +847,12 @@ button#register_auth_button_gitlab {
         margin: 25px auto 30px;
         width: 330px;
         border-radius: 4px;
+    }
+
+    .support-submit-button {
+        margin-top: 20px;
+        margin-bottom: 5px;
+        width: 450px;
     }
 
     .register-button .loader {
@@ -868,7 +892,9 @@ button#register_auth_button_gitlab {
         }
     }
 
-    #id_email {
+    #id_email,
+    #support_from,
+    #support_realm {
         font-weight: normal;
         margin: 2px;
         padding-top: 25px;

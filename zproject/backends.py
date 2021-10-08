@@ -73,6 +73,7 @@ from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.redis_utils import get_dict_from_redis, get_redis_client, put_dict_in_redis
 from zerver.lib.request import RequestNotes
 from zerver.lib.subdomains import get_subdomain
+from zerver.lib.types import ProfileDataElementValue
 from zerver.lib.url_encoding import add_query_to_redirect_url
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.models import (
@@ -1339,11 +1340,11 @@ def sync_user_profile_custom_fields(
         fields_by_var_name[var_name] = field
 
     existing_values = {}
-    for data in user_profile.profile_data:
+    for data in user_profile.profile_data():
         var_name = "_".join(data["name"].lower().split(" "))
         existing_values[var_name] = data["value"]
 
-    profile_data: List[Dict[str, Union[int, str, List[int]]]] = []
+    profile_data: List[Dict[str, Union[int, ProfileDataElementValue]]] = []
     for var_name, value in custom_field_name_to_value.items():
         try:
             field = fields_by_var_name[var_name]

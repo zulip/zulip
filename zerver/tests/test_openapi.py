@@ -14,11 +14,7 @@ from zerver.lib.request import _REQ, arguments_map
 from zerver.lib.rest import rest_dispatch
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.utils import assert_is_not_none
-from zerver.openapi.markdown_extension import (
-    generate_curl_example,
-    parse_language_and_options,
-    render_curl_example,
-)
+from zerver.openapi.markdown_extension import generate_curl_example, render_curl_example
 from zerver.openapi.openapi import (
     OPENAPI_SPEC_PATH,
     OpenAPISpec,
@@ -621,60 +617,6 @@ so maybe we shouldn't include it in pending_endpoints.
                     self.checked_endpoints.add(url_pattern)
 
         self.check_for_non_existant_openapi_endpoints()
-
-
-class ModifyExampleGenerationTestCase(ZulipTestCase):
-    def test_no_mod_argument(self) -> None:
-        res = parse_language_and_options("python")
-        self.assertEqual(res, ("python", {}))
-
-    def test_single_simple_mod_argument(self) -> None:
-        res = parse_language_and_options("curl, mod=1")
-        self.assertEqual(res, ("curl", {"mod": 1}))
-
-        res = parse_language_and_options("curl, mod='somevalue'")
-        self.assertEqual(res, ("curl", {"mod": "somevalue"}))
-
-        res = parse_language_and_options('curl, mod="somevalue"')
-        self.assertEqual(res, ("curl", {"mod": "somevalue"}))
-
-    def test_multiple_simple_mod_argument(self) -> None:
-        res = parse_language_and_options("curl, mod1=1, mod2='a'")
-        self.assertEqual(res, ("curl", {"mod1": 1, "mod2": "a"}))
-
-        res = parse_language_and_options("curl, mod1=\"asdf\", mod2='thing', mod3=3")
-        self.assertEqual(res, ("curl", {"mod1": "asdf", "mod2": "thing", "mod3": 3}))
-
-    def test_single_list_mod_argument(self) -> None:
-        res = parse_language_and_options("curl, exclude=['param1', 'param2']")
-        self.assertEqual(res, ("curl", {"exclude": ["param1", "param2"]}))
-
-        res = parse_language_and_options('curl, exclude=["param1", "param2"]')
-        self.assertEqual(res, ("curl", {"exclude": ["param1", "param2"]}))
-
-        res = parse_language_and_options("curl, exclude=['param1', \"param2\"]")
-        self.assertEqual(res, ("curl", {"exclude": ["param1", "param2"]}))
-
-    def test_multiple_list_mod_argument(self) -> None:
-        res = parse_language_and_options("curl, exclude=['param1', \"param2\"], special=['param3']")
-        self.assertEqual(res, ("curl", {"exclude": ["param1", "param2"], "special": ["param3"]}))
-
-    def test_multiple_mixed_mod_arguments(self) -> None:
-        res = parse_language_and_options(
-            'curl, exclude=["asdf", \'sdfg\'], other_key=\'asdf\', more_things="asdf", another_list=[1, "2"]'
-        )
-        self.assertEqual(
-            res,
-            (
-                "curl",
-                {
-                    "exclude": ["asdf", "sdfg"],
-                    "other_key": "asdf",
-                    "more_things": "asdf",
-                    "another_list": [1, "2"],
-                },
-            ),
-        )
 
 
 class TestCurlExampleGeneration(ZulipTestCase):

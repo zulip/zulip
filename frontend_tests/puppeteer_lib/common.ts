@@ -496,7 +496,7 @@ class CommonUtils {
         );
     }
 
-    async run_test(test_function: (page: Page) => Promise<void>): Promise<void> {
+    async run_test_async(test_function: (page: Page) => Promise<void>): Promise<void> {
         // Pass a page instance to test so we can take
         // a screenshot of it when the test fails.
         const browser = await this.ensure_browser();
@@ -511,21 +511,20 @@ class CommonUtils {
                 lineNumber,
                 columnNumber,
             }: ConsoleMessageLocation): Promise<string> => {
-                if (lineNumber === undefined || columnNumber === undefined) {
-                    return `${url}`;
-                }
-
                 let frame = new StackFrame({
                     fileName: url,
-                    lineNumber: lineNumber + 1,
-                    columnNumber: columnNumber + 1,
+                    lineNumber: lineNumber === undefined ? undefined : lineNumber + 1,
+                    columnNumber: columnNumber === undefined ? undefined : columnNumber + 1,
                 });
                 try {
                     frame = await this.gps.getMappedLocation(frame);
                 } catch {
                     // Ignore source mapping errors
                 }
-                return `${frame.fileName}:${frame.lineNumber}:${frame.columnNumber}`;
+                if (frame.lineNumber === undefined || frame.columnNumber === undefined) {
+                    return String(frame.fileName);
+                }
+                return `${String(frame.fileName)}:${frame.lineNumber}:${frame.columnNumber}`;
             };
 
             const console_ready1 = console_ready;
@@ -561,7 +560,9 @@ class CommonUtils {
                         } catch {
                             // Ignore source mapping errors
                         }
-                        return `\n    at ${frame.functionName} (${frame.fileName}:${frame.lineNumber}:${frame.columnNumber})`;
+                        return `\n    at ${String(frame.functionName)} (${String(
+                            frame.fileName,
+                        )}:${String(frame.lineNumber)}:${String(frame.columnNumber)})`;
                     }),
                 );
                 await console_ready1;
@@ -601,6 +602,13 @@ class CommonUtils {
             await console_ready;
             await browser.close();
         }
+    }
+
+    run_test(test_function: (page: Page) => Promise<void>): void {
+        this.run_test_async(test_function).catch((error) => {
+            console.error(error);
+            process.exit(1);
+        });
     }
 }
 

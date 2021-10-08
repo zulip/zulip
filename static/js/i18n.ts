@@ -25,7 +25,7 @@ export const intl = createIntl(
     cache,
 );
 
-export const $t = intl.formatMessage;
+export const $t = intl.formatMessage.bind(intl);
 
 export const default_html_elements = Object.fromEntries(
     ["b", "code", "em", "i", "kbd", "p", "strong"].map((tag) => [
@@ -114,7 +114,7 @@ export function get_language_list_columns(default_language: string): LanguageLis
                 const name = lang.name;
                 let name_with_percent = name;
                 if (lang.percent_translated !== undefined) {
-                    name_with_percent = name + " (" + lang.percent_translated + "%)";
+                    name_with_percent = `${name} (${lang.percent_translated}%)`;
                 }
 
                 let selected = false;

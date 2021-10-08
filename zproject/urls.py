@@ -324,7 +324,7 @@ v1_api_and_json_patterns = [
     ),
     rest_path(
         "messages/<int:message_id>",
-        GET=json_fetch_raw_message,
+        GET=(json_fetch_raw_message, {"allow_anonymous_user_web"}),
         PATCH=update_message_backend,
         DELETE=delete_message_backend,
     ),
@@ -759,7 +759,37 @@ urls += [
     ),
     path(
         "help/configure-missed-message-emails",
-        RedirectView.as_view(url="/help/configure-message-notification-emails", permanent=True),
+        RedirectView.as_view(url="/help/email-notifications", permanent=True),
+    ),
+    path(
+        "help/add-an-alert-word",
+        RedirectView.as_view(
+            url="/help/pm-mention-alert-notifications#alert-words", permanent=True
+        ),
+    ),
+    path(
+        "help/test-mobile-notifications",
+        RedirectView.as_view(url="/help/mobile-notifications", permanent=True),
+    ),
+    path(
+        "help/troubleshooting-desktop-notifications",
+        RedirectView.as_view(
+            url="/help/desktop-notifications#troubleshooting-desktop-notifications", permanent=True
+        ),
+    ),
+    path(
+        "help/change-notification-sound",
+        RedirectView.as_view(
+            url="/help/desktop-notifications#change-notification-sound", permanent=True
+        ),
+    ),
+    path(
+        "help/configure-message-notification-emails",
+        RedirectView.as_view(url="/help/email-notifications", permanent=True),
+    ),
+    path(
+        "help/disable-new-login-emails",
+        RedirectView.as_view(url="/help/email-notifications#new-login-emails", permanent=True),
     ),
     # This redirect is particularly important, because the old URL
     # appears in links from Welcome Bot messages.

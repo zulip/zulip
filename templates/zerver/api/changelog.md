@@ -1,4 +1,4 @@
-# API Changelog
+# API changelog
 
 This page documents changes to the Zulip Server API over time. See also
 the [Zulip server changelog][server-changelog].
@@ -10,6 +10,67 @@ server versions is to check the `zulip_feature_level` parameter in the
 below features are supported.
 
 ## Changes in Zulip 5.0
+
+**Feature level 105**
+
+* [`POST /register`](/api/register-queue), [`PATCH
+  /settings`](/api/update-settings), [`PATCH
+  /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added three new privacy settings: `send_private_typing_notifications`,
+  `send_stream_typing_notifications`, and `send_read_receipts`.
+
+**Feature level 104**
+
+* [`PATCH /realm`]: Added `string_id` parameter for changing an
+  organization's subdomain. Currently, this is only allowed for
+  changing changing a demo organization to a normal one.
+
+**Feature level 103**
+
+* [`POST /register`](/api/register-queue): Added `create_web_public_stream_policy`
+  policy for which users can create web public streams.
+* [`PATCH /realm`]: Added support for updating `create_web_public_stream_policy`.
+* [`POST /register`](/api/register-queue): Added `can_create_web_public_streams` boolean
+  field to the response.
+
+**Feature level 102**
+
+* [`POST /register`](/api/register-queue), `PATCH /realm`: The
+  `create_stream_policy` setting was split into two settings for
+  different types of streams: `create_private_stream_policy` and
+  `create_public_stream_policy`.
+* [`POST /register`](/api/register-queue): The `create_stream_policy`
+  property was deprecated in favor of the
+  `create_private_stream_policy` and `create_public_stream_policy`
+  properties, but it still available for backwards-compatibility.
+
+**Feature level 101**
+
+* [`POST /register`](/api/register-queue), `PATCH /realm`: Replaced
+  the `allow_message_deleting` boolean field with an integer field
+  `delete_own_message_policy` defining which roles can delete messages
+  they had sent.
+
+**Feature level 100**
+
+* [`POST /register`](/api/register-queue), [`GET
+  /events`](/api/get-events): `message_content_delete_limit_seconds`
+  now represents no limit using `null`, instead of the integer 0.
+* `PATCH /realm`: One now sets `message_content_delete_limit_seconds`
+  to no limit by passing the string `unlimited`, rather than the
+  integer 0.
+
+**Feature level 99**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  `PATCH /realm`: The `default_twenty_four_hour_time` parameter to
+  `PATCH /realm` has been replaced by the `twenty_four_hour_time` parameter
+  to `PATCH /realm/user_settings_defaults`, to match the new model for
+  user preference defaults settings.
+
+* [`POST /register`](/api/register-queue): Removed `realm_default_twenty_four_hour_time`
+  from the response object. This value is now available in the
+  `twenty_four_hour_time` field of the `realm_user_settings_default` object.
 
 **Feature level 98**
 
@@ -42,6 +103,7 @@ below features are supported.
   organization's configured default settings for new users change.
 
 **Feature level 94**
+
 * [`POST /register`](/api/register-queue): Added
   `demo_organization_scheduled_deletion_date` field to realm data.
 

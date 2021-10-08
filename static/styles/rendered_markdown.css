@@ -54,10 +54,19 @@
     h6 {
         font-weight: 600;
         line-height: 1.4;
-        /* No margin-top is important to make messages that start with a heading
-           avoid a weird blank area at the top of a message. */
-        margin-top: 0;
+        margin-top: 15px;
         margin-bottom: 5px;
+    }
+
+    /* Headings: Ensure that messages that start with a heading don't have
+       a weirdly blank area at the very start of the message. */
+    h1:first-child,
+    h2:first-child,
+    h3:first-child,
+    h4:first-child,
+    h5:first-child,
+    h6:first-child {
+        margin-top: 0;
     }
 
     /* We use a modest progression of heading sizes to make them stand out
@@ -79,14 +88,11 @@
     }
 
     h5 {
-        font-size: 1em;
-        text-decoration: underline;
+        font-size: 1.05em;
     }
 
     h6 {
         font-size: 1em;
-        font-weight: normal;
-        text-decoration: underline;
     }
 
     /* Formatting for blockquotes */

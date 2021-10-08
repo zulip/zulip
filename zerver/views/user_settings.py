@@ -189,6 +189,11 @@ def json_change_settings(
     realm_name_in_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
     presence_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     enter_sends: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    send_private_typing_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    send_stream_typing_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    send_read_receipts: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     if (
         default_language is not None

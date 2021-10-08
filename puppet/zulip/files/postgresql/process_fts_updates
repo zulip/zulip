@@ -7,7 +7,7 @@
 # program processes `fts_update_log`, updating the PostgreSQL full-text
 # search column search_tsvector in the main zerver_message.
 #
-# There are three cases this has to cover:
+# There are four cases this has to cover:
 #
 # 1. Running in development, with a venv but no
 #    /home/zulip/deployments/current nor /etc/zulip/zulip.conf
@@ -19,6 +19,10 @@
 # 3. Running in production, on a postgresql machine which is not the
 #    frontend, with a /etc/zulip/zulip.conf but no venv nor
 #    /home/zulip/deployments/current
+#
+# 4. Running in production, on an application frontend server connected
+#    to a remote postgresql server, because we cannot run code _on_ the
+#    PostgreSQL server, such as in docker-zulip.
 #
 # Because of case (3), we cannot rely on functions from outside this
 # file (e.g. provided by scripts.lib.zulip_tools).  For case (1),
@@ -103,10 +107,21 @@ USING_PGROONGA = False
 try:
     # Case (1); we insert the path to the development root.
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../..")))
-    # Case (2) could take this branch if it set up the venv first, but
-    # there is no reason to unnecessarily bring in the Django
-    # dependency; it will fall into the path below due the venv not
-    # being configured.
+
+    # Cases (2) and (4); we insert the path to the production root.
+    # This likely works out the same as the above path.
+    #
+    # We insert this path after the above, so that if running this
+    # command from a specific non-current Zulip deployment, we prefer
+    # that deployment's libraries.
+    sys.path.insert(1, "/home/zulip/deployments/current")
+
+    # For cases (2) and (4), we also need to set up the virtualenv, so we
+    # can read the Django settings.
+    from scripts.lib.setup_path import setup_path
+
+    setup_path()
+
     os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
     from django.conf import settings
 
@@ -119,8 +134,7 @@ try:
     pg_args["connect_timeout"] = "600"
     USING_PGROONGA = settings.USING_PGROONGA
 except ImportError:
-    # Case (2) and (3); we know that the PostgreSQL server is on this
-    # host.
+    # Case (3): we know that the PostgreSQL server is on this host.
     pg_args["user"] = "zulip"
 
     config_file = configparser.RawConfigParser()

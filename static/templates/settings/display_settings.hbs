@@ -3,8 +3,10 @@
     <div class="lang-settings">
         <!-- this is inline block so that the alert notification can sit beside
         it. If there's not an alert, don't make it inline-block. -->
-        <h3 class="inline-block">{{t "Language settings" }}</h3>
-        <div class="alert-notification language-settings-status"></div>
+        <div class="subsection-header inline-block">
+            <h3>{{t "Language settings" }}</h3>
+            {{> settings_save_discard_widget section_name="language-settings" show_only_indicator=true }}
+        </div>
 
         <div class="input-group">
             <label class="inline-block title">{{t "Default language" }}</label>
@@ -18,15 +20,17 @@
     </div>
     {{/unless}}
 
-    <div class="display-settings">
-        <h3 class="inline-block">{{t "Display settings" }}</h3>
-        <div class="alert-notification display-settings-status"></div>
+    <div class="display-settings {{#if for_realm_settings}}org-subsection-parent{{/if}}">
+        <div class="subsection-header">
+            <h3>{{t "Display settings" }}</h3>
+            {{> settings_save_discard_widget section_name="display-settings" show_only_indicator=(not for_realm_settings) }}
+        </div>
 
-        <div class="input-group">
+        <div class="input-group inline-block">
             <label for="default_view" class="dropdown-title">{{t "Default view" }}
                 {{> ../help_link_widget link="/help/change-default-view" }}
             </label>
-            <select name="default_view" class="setting_default_view">
+            <select name="default_view" class="setting_default_view prop-element" data-setting-widget-type="string">
                 {{> dropdown_options_widget option_values=default_view_values}}
             </select>
         </div>
@@ -34,7 +38,7 @@
         <div class="input-group">
             <label for="color_scheme" class="dropdown-title">{{t "Color scheme" }}
             </label>
-            <select name="color_scheme" class="setting_color_scheme">
+            <select name="color_scheme" class="setting_color_scheme prop-element" data-setting-widget-type="number">
                 {{> dropdown_options_widget option_values=color_scheme_values}}
             </select>
         </div>
@@ -52,37 +56,39 @@
             <label for="demote_inactive_streams" class="dropdown-title">{{t "Demote inactive streams" }}
                 {{> ../help_link_widget link="/help/manage-inactive-streams" }}
             </label>
-            <select name="demote_inactive_streams" class="setting_demote_inactive_streams">
+            <select name="demote_inactive_streams" class="setting_demote_inactive_streams prop-element"  data-setting-widget-type="number">
                 {{> dropdown_options_widget option_values=demote_inactive_streams_values}}
             </select>
         </div>
     </div>
 
-    {{#unless for_realm_settings}}
-    <div class="time-settings">
-        <h3 class="inline-block">{{t "Time settings" }}</h3>
-        <div class="alert-notification time-settings-status"></div>
+    <div class="time-settings {{#if for_realm_settings}}org-subsection-parent{{/if}}">
+        <div class="subsection-header">
+            <h3>{{t "Time settings" }}</h3>
+            {{> settings_save_discard_widget section_name="time-settings" show_only_indicator=(not for_realm_settings) }}
+        </div>
 
         <div class="input-group">
             <label for="twenty_four_hour_time" class="dropdown-title">{{ settings_label.twenty_four_hour_time }}</label>
-            <select name="twenty_four_hour_time" class="setting_twenty_four_hour_time">
+            <select name="twenty_four_hour_time" class="setting_twenty_four_hour_time prop-element" data-setting-widget-type="string">
                 {{#each twenty_four_hour_time_values}}
                 <option value='{{ this.value }}'>{{ this.description }}</option>
                 {{/each}}
             </select>
         </div>
     </div>
-    {{/unless}}
 
-    <div class="emoji-settings">
-        <h3 class="inline-block light">{{t "Emoji settings" }}</h3>
-        <div class="alert-notification emoji-settings-status"></div>
+    <div class="emoji-settings {{#if for_realm_settings}}org-subsection-parent{{/if}}">
+        <div class="subsection-header">
+            <h3 class="light">{{t "Emoji settings" }}</h3>
+            {{> settings_save_discard_widget section_name="emoji-settings" show_only_indicator=(not for_realm_settings) }}
+        </div>
 
         <div class="input-group">
             <div class="emojiset_choices grey-box">
                 {{#each settings_object.emojiset_choices}}
                 <label>
-                    <input type="radio" class="setting_emojiset_choice" name="emojiset_group" value="{{this.key}}" />
+                    <input type="radio" class="setting_emojiset_choice prop-element" name="emojiset" value="{{this.key}}" data-setting-widget-type="radio-group"/>
                     <span>{{this.text}}</span>
                     <span class="right">
                         {{#if (eq this.key "text") }}

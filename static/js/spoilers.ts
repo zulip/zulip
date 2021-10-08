@@ -1,12 +1,12 @@
 import $ from "jquery";
 
 function collapse_spoiler(spoiler: JQuery): void {
-    const spoiler_height = spoiler.height();
+    const spoiler_height = spoiler.height() || 0;
 
     // Set height to rendered height on next frame, then to zero on following
     // frame to allow CSS transition animation to work
     requestAnimationFrame(() => {
-        spoiler.height(spoiler_height + "px");
+        spoiler.height(`${spoiler_height}px`);
         spoiler.removeClass("spoiler-content-open");
 
         requestAnimationFrame(() => {
@@ -21,8 +21,8 @@ function expand_spoiler(spoiler: JQuery): void {
     // of the content). CSS animations do not work with properties set to
     // `auto`, so we get the actual height of the content here and temporarily
     // put it explicitly on the element styling to allow the transition to work.
-    const spoiler_height = spoiler.prop("scrollHeight");
-    spoiler.height(spoiler_height + "px");
+    const spoiler_height: number = spoiler.prop("scrollHeight");
+    spoiler.height(`${spoiler_height}px`);
     // The `spoiler-content-open` class has CSS animations defined on it which
     // will trigger on the frame after this class change.
     spoiler.addClass("spoiler-content-open");

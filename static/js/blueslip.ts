@@ -16,28 +16,9 @@ if (Error.stackTraceLimit !== undefined) {
     Error.stackTraceLimit = 100000;
 }
 
-function pad(num: number, width: number): string {
-    return num.toString().padStart(width, "0");
-}
-
 function make_logger_func(name: "debug" | "log" | "info" | "warn" | "error") {
     return function Logger_func(this: Logger, ...args: unknown[]) {
-        const now = new Date();
-        const date_str =
-            now.getUTCFullYear() +
-            "-" +
-            pad(now.getUTCMonth() + 1, 2) +
-            "-" +
-            pad(now.getUTCDate(), 2) +
-            " " +
-            pad(now.getUTCHours(), 2) +
-            ":" +
-            pad(now.getUTCMinutes(), 2) +
-            ":" +
-            pad(now.getUTCSeconds(), 2) +
-            "." +
-            pad(now.getUTCMilliseconds(), 3) +
-            " UTC";
+        const date_str = new Date().toISOString();
 
         const str_args = args.map((x) => (typeof x === "object" ? JSON.stringify(x) : x));
 
@@ -85,7 +66,7 @@ function report_error(
     if (page_params.development_environment) {
         // In development, we display blueslip errors in the web UI,
         // to make them hard to miss.
-        blueslip_stacktrace.display_stacktrace(msg, stack);
+        void blueslip_stacktrace.display_stacktrace(msg, stack);
     }
 
     const key = ":" + msg + stack;
@@ -108,7 +89,7 @@ function report_error(
     //
     // Important: We don't use channel.js here so that exceptions
     // always make it to the server even if reload_state.is_in_progress.
-    $.ajax({
+    void $.ajax({
         type: "POST",
         url: "/json/report/error",
         dataType: "json",
@@ -186,7 +167,7 @@ export function exception_msg(
     if (ex.fileName !== undefined) {
         message += " at " + ex.fileName;
         if (ex.lineNumber !== undefined) {
-            message += ":" + ex.lineNumber;
+            message += `:${ex.lineNumber}`;
         }
     }
     return message;

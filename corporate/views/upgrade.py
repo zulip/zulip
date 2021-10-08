@@ -1,7 +1,6 @@
 import logging
 from decimal import Decimal
 from typing import Any, Dict, Optional
-from urllib.parse import urlencode, urljoin, urlunsplit
 
 from django import forms
 from django.conf import settings
@@ -24,6 +23,7 @@ from corporate.lib.stripe import (
     update_sponsorship_status,
     validate_licenses,
 )
+from corporate.lib.support import get_support_url
 from corporate.models import (
     CustomerPlan,
     ZulipSponsorshipRequest,
@@ -37,7 +37,7 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.validator import check_bool, check_int, check_string_in
-from zerver.models import Realm, UserProfile, get_org_type_display_name, get_realm
+from zerver.models import Realm, UserProfile, get_org_type_display_name
 
 billing_logger = logging.getLogger("corporate.stripe")
 
@@ -221,12 +221,7 @@ def sponsorship(
 
     requested_by = user.full_name
     user_role = user.get_role_name()
-
-    support_realm_uri = get_realm(settings.STAFF_SUBDOMAIN).uri
-    support_url = urljoin(
-        support_realm_uri,
-        urlunsplit(("", "", reverse("support"), urlencode({"q": realm.string_id}), "")),
-    )
+    support_url = get_support_url(realm)
 
     post_data = request.POST.copy()
     # We need to do this because the field name in the template

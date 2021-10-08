@@ -20,9 +20,9 @@ from zerver.lib.url_encoding import near_message_url
 from zerver.models import (
     GENERIC_INTERFACE,
     SLACK_INTERFACE,
+    Realm,
     Service,
     UserProfile,
-    email_to_domain,
     get_client,
     get_user_profile_by_id,
 )
@@ -40,7 +40,9 @@ class OutgoingWebhookServiceInterface(metaclass=abc.ABCMeta):
         )
 
     @abc.abstractmethod
-    def make_request(self, base_url: str, event: Dict[str, Any]) -> Optional[Response]:
+    def make_request(
+        self, base_url: str, event: Dict[str, Any], realm: Realm
+    ) -> Optional[Response]:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -49,7 +51,9 @@ class OutgoingWebhookServiceInterface(metaclass=abc.ABCMeta):
 
 
 class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
-    def make_request(self, base_url: str, event: Dict[str, Any]) -> Optional[Response]:
+    def make_request(
+        self, base_url: str, event: Dict[str, Any], realm: Realm
+    ) -> Optional[Response]:
         """
         We send a simple version of the message to outgoing
         webhooks, since most of them really only need
@@ -98,20 +102,38 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
 
 class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
-    def make_request(self, base_url: str, event: Dict[str, Any]) -> Optional[Response]:
+    def make_request(
+        self, base_url: str, event: Dict[str, Any], realm: Realm
+    ) -> Optional[Response]:
         if event["message"]["type"] == "private":
             failure_message = "Slack outgoing webhooks don't support private messages."
             fail_with_message(event, failure_message)
             return None
 
+        # https://api.slack.com/legacy/custom-integrations/outgoing-webhooks#legacy-info__post-data
+        # documents the Slack outgoing webhook format:
+        #
+        # token=XXXXXXXXXXXXXXXXXX
+        # team_id=T0001
+        # team_domain=example
+        # channel_id=C2147483705
+        # channel_name=test
+        # thread_ts=1504640714.003543
+        # timestamp=1504640775.000005
+        # user_id=U2147483697
+        # user_name=Steve
+        # text=googlebot: What is the air-speed velocity of an unladen swallow?
+        # trigger_word=googlebot:
+
         request_data = [
             ("token", self.token),
-            ("team_id", event["message"]["sender_realm_str"]),
-            ("team_domain", email_to_domain(event["message"]["sender_email"])),
-            ("channel_id", event["message"]["stream_id"]),
+            ("team_id", f"T{realm.id}"),
+            ("team_domain", realm.host),
+            ("channel_id", f"C{event['message']['stream_id']}"),
             ("channel_name", event["message"]["display_recipient"]),
+            ("thread_ts", event["message"]["timestamp"]),
             ("timestamp", event["message"]["timestamp"]),
-            ("user_id", event["message"]["sender_id"]),
+            ("user_id", f"U{event['message']['sender_id']}"),
             ("user_name", event["message"]["sender_full_name"]),
             ("text", event["command"]),
             ("trigger_word", event["trigger"]),
@@ -326,11 +348,12 @@ def do_rest_call(
     """Returns response of call if no exception occurs."""
     try:
         start_time = perf_counter()
+        bot_profile = service_handler.user_profile
         response = service_handler.make_request(
             base_url,
             event,
+            bot_profile.realm,
         )
-        bot_profile = service_handler.user_profile
         logging.info(
             "Outgoing webhook request from %s@%s took %f seconds",
             bot_profile.id,

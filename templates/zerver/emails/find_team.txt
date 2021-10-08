@@ -1,3 +1,5 @@
+{{ _("Thanks for your request!") }}
+
 {% trans -%}
 Your email address {{ email }} has accounts with the following Zulip organizations hosted by {{ external_host }}:
 {%- endtrans %}

@@ -98,8 +98,14 @@
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
-                    <label for="realm_create_stream_policy" class="dropdown-title">{{t "Who can create streams" }}</label>
-                    <select name="realm_create_stream_policy" id="id_realm_create_stream_policy" class="prop-element" data-setting-widget-type="number">
+                    <label for="realm_create_public_stream_policy" class="dropdown-title">{{t "Who can create public streams" }}</label>
+                    <select name="realm_create_public_stream_policy" id="id_realm_create_public_stream_policy" class="prop-element" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=common_policy_values}}
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="realm_create_private_stream_policy" class="dropdown-title">{{t "Who can create private streams" }}</label>
+                    <select name="realm_create_private_stream_policy" id="id_realm_create_private_stream_policy" class="prop-element" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=common_policy_values}}
                     </select>
                 </div>
@@ -159,10 +165,20 @@
                   label=admin_settings_label.realm_allow_edit_history}}
 
                 <div class="input-group">
+                    <label for="realm_delete_own_message_policy" class="dropdown-title">{{t "Who can delete their own messages" }}
+                        <i class="fa fa-info-circle settings-info-icon tippy-zulip-tooltip"
+                          aria-hidden="true" data-tippy-content="{{t 'Administrators can delete any message.' }}"></i>
+                    </label>
+                    <select name="realm_delete_own_message_policy" id="id_realm_delete_own_message_policy" class="prop-element" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=common_message_policy_values}}
+                    </select>
+                </div>
+
+                <div class="input-group">
                     <label for="realm_msg_delete_limit_setting" class="dropdown-title">
-                        {{t "Allow message deleting" }}
-                        <i class="fa fa-info-circle settings-info-icon realm_allow_message_deleting_tooltip tippy-zulip-tooltip"
-                          aria-hidden="true" data-tippy-content="{{t 'Administrators can always delete any message.' }}"></i>
+                        {{t "Time limit for deleting messages" }}
+                        <i class="fa fa-info-circle settings-info-icon tippy-zulip-tooltip"
+                          aria-hidden="true" data-tippy-content="{{t 'Administrators can delete any message.' }}"></i>
                     </label>
                     <select name="realm_msg_delete_limit_setting" id="id_realm_msg_delete_limit_setting" class="prop-element">
                         {{#each msg_delete_limit_dropdown_values}}

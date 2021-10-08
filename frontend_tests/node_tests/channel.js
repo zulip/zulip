@@ -4,19 +4,38 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {mock_jquery, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_jquery, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
+const {page_params} = require("../zjsunit/zpage_params");
 
 set_global("setTimeout", (f, delay) => {
     assert.equal(delay, 0);
     f();
 });
 
+const xhr_401 = {
+    status: 401,
+    responseText: '{"msg": "Use cannnot access XYZ"}',
+};
+
+let login_to_access_shown = false;
+mock_esm("../../static/js/spectators", {
+    login_to_access: () => {
+        login_to_access_shown = true;
+    },
+});
+
+set_global("window", {
+    location: {
+        replace: () => {},
+    },
+});
+
 const reload_state = zrequire("reload_state");
 const channel = zrequire("channel");
 
-const default_stub_xhr = "default-stub-xhr";
+const default_stub_xhr = {"default-stub-xhr": 0};
 
 const $ = mock_jquery({});
 
@@ -148,7 +167,7 @@ test("normal_post", () => {
 
     let orig_success_called;
     let orig_error_called;
-    const stub_xhr = "stub-xhr-normal-post";
+    const stub_xhr = {"stub-xhr-normal-post": 0};
 
     test_with_mock_ajax({
         xhr: stub_xhr,
@@ -211,6 +230,67 @@ test("patch_with_form_data", () => {
             // Just make sure these don't explode.
             options.simulate_success();
             options.simulate_error();
+        },
+    });
+});
+
+test("authentication_error_401_is_spectator", () => {
+    test_with_mock_ajax({
+        xhr: xhr_401,
+        run_code() {
+            channel.post({});
+        },
+
+        // is_spectator = true
+        check_ajax_options(options) {
+            page_params.is_spectator = true;
+
+            options.simulate_error();
+            assert.ok(login_to_access_shown);
+
+            login_to_access_shown = false;
+        },
+    });
+});
+
+test("authentication_error_401_password_change_in_progress", () => {
+    test_with_mock_ajax({
+        xhr: xhr_401,
+        run_code() {
+            channel.post({});
+        },
+
+        // is_spectator = true
+        // password_change_in_progress = true
+        check_ajax_options(options) {
+            page_params.is_spectator = true;
+            channel.set_password_change_in_progress(true);
+
+            options.simulate_error();
+            assert.ok(!login_to_access_shown);
+
+            channel.set_password_change_in_progress(false);
+            page_params.is_spectator = false;
+            login_to_access_shown = false;
+        },
+    });
+});
+
+test("authentication_error_401_not_spectator", () => {
+    test_with_mock_ajax({
+        xhr: xhr_401,
+        run_code() {
+            channel.post({});
+        },
+
+        // is_spectator = false
+        check_ajax_options(options) {
+            page_params.is_spectator = false;
+
+            options.simulate_error();
+            assert.ok(!login_to_access_shown);
+
+            login_to_access_shown = false;
         },
     });
 });
@@ -283,7 +363,7 @@ test("retry", () => {
 test("too_many_pending", () => {
     channel.clear_for_tests();
     $.ajax = () => {
-        const xhr = "stub";
+        const xhr = {stub: 0};
         return xhr;
     };
 

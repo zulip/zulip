@@ -601,13 +601,19 @@ export function setup_page(callback) {
     function populate_and_fill() {
         $("#subscriptions_table").empty();
 
+        // TODO: Ideally we'd indicate in some way what stream types
+        // the user can create, by showing other options as disabled.
+        const stream_privacy_policy = stream_data.stream_privacy_policy_values.public.code;
         const template_data = {
-            can_create_streams: settings_data.user_can_create_streams(),
+            can_create_streams:
+                settings_data.user_can_create_private_streams() ||
+                settings_data.user_can_create_public_streams(),
             hide_all_streams: !should_list_all_streams(),
             max_name_length: page_params.max_stream_name_length,
             max_description_length: page_params.max_stream_description_length,
             is_owner: page_params.is_owner,
             stream_privacy_policy_values: stream_data.stream_privacy_policy_values,
+            stream_privacy_policy,
             stream_post_policy_values: stream_data.stream_post_policy_values,
             zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
             org_level_message_retention_setting:
@@ -643,7 +649,8 @@ export function setup_page(callback) {
             }
 
             if (
-                settings_data.user_can_create_streams() ||
+                settings_data.user_can_create_private_streams() ||
+                settings_data.user_can_create_public_streams() ||
                 page_params.realm_is_zephyr_mirror_realm
             ) {
                 open_create_stream();

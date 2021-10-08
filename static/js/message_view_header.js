@@ -93,7 +93,7 @@ function bind_title_area_handlers() {
         e.stopPropagation();
     });
 
-    $("#message_view_header span:nth-last-child(2)").on("click", (e) => {
+    $("#message_view_header .navbar-click-opens-search").on("click", (e) => {
         if (document.getSelection().type === "Range") {
             // Allow copy/paste to work normally without interference.
             return;
@@ -111,10 +111,10 @@ function bind_title_area_handlers() {
     // with whether search is being opened or not.
     $("#message_view_header .narrow_description > a")
         .on("mouseenter", () => {
-            $("#message_view_header .search_closed").addClass("search_icon_hover_highlight");
+            $("#message_view_header .search_closed").css("opacity", 0.5);
         })
         .on("mouseleave", () => {
-            $("#message_view_header .search_closed").removeClass("search_icon_hover_highlight");
+            $("#message_view_header .search_closed").css("opacity", "");
         });
 }
 

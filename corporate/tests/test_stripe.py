@@ -1487,6 +1487,41 @@ class StripeTest(StripeTestCase):
 
         self.assert_json_success(response)
 
+    def test_support_request(self) -> None:
+        user = self.example_user("hamlet")
+        self.assertIsNone(get_customer_by_realm(user.realm))
+
+        self.login_user(user)
+
+        result = self.client_get("/support/")
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["Contact support"], result)
+
+        data = {
+            "request_subject": "Not getting messages.",
+            "request_message": "Running into this weird issue.",
+        }
+        result = self.client_post("/support/", data)
+        self.assert_in_success_response(["Thanks for contacting us!"], result)
+
+        from django.core.mail import outbox
+
+        self.assert_length(outbox, 1)
+
+        for message in outbox:
+            self.assert_length(message.to, 1)
+            self.assertEqual(message.to[0], "desdemona+admin@zulip.com")
+            self.assertEqual(message.subject, "Support request for zulip")
+            self.assertEqual(message.reply_to, ["hamlet@zulip.com"])
+            self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
+            self.assertIn("Zulip Support <noreply-", self.email_display_from(message))
+            self.assertIn("Requested by: King Hamlet (Member)", message.body)
+            self.assertIn(
+                "Support URL: http://zulip.testserver/activity/support?q=zulip", message.body
+            )
+            self.assertIn("Subject: Not getting messages.", message.body)
+            self.assertIn("Message:\nRunning into this weird issue", message.body)
+
     def test_request_sponsorship(self) -> None:
         user = self.example_user("hamlet")
         self.assertIsNone(get_customer_by_realm(user.realm))
@@ -2622,7 +2657,7 @@ class StripeTest(StripeTestCase):
                     "/json/billing/plan", {"status": CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE}
                 )
                 self.assert_json_success(result)
-                self.assertRegexpMatches(
+                self.assertRegex(
                     m.output[0],
                     r"INFO:corporate.stripe:Change plan status: Customer.id: \d*, CustomerPlan.id: \d*, status: 2",
                 )
@@ -2644,7 +2679,7 @@ class StripeTest(StripeTestCase):
                     "/json/billing/plan", {"status": CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE}
                 )
                 self.assert_json_success(result)
-                self.assertRegexpMatches(
+                self.assertRegex(
                     m.output[0],
                     r"INFO:corporate.stripe:Change plan status: Customer.id: \d*, CustomerPlan.id: \d*, status: 4",
                 )

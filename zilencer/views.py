@@ -196,7 +196,9 @@ def remote_server_notify_push(
 
     send_apple_push_notification(user_id, apple_devices, apns_payload, remote=True)
 
-    return json_success()
+    return json_success(
+        {"total_android_devices": len(android_devices), "total_apple_devices": len(apple_devices)}
+    )
 
 
 def validate_incoming_table_data(

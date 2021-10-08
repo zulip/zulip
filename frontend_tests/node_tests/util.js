@@ -291,7 +291,7 @@ run_test("clean_user_content_links", () => {
                 '<a href="/#fragment" target="_blank">fragment</a>',
         ),
         '<a href="http://example.com" target="_blank" rel="noopener noreferrer" title="http://example.com/">good</a> ' +
-            '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/file.png" target="_blank" rel="noopener noreferrer" title="file.png">upload</a> ' +
+            '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/file.png" target="_blank" rel="noopener noreferrer" title="translated: Download file.png">upload</a> ' +
             "<a>invalid</a> " +
             "<a>unsafe</a> " +
             '<a href="/#fragment" title="http://zulip.zulipdev.com/#fragment">fragment</a>',

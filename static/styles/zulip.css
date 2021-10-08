@@ -499,7 +499,7 @@ li,
     position: relative;
     margin-right: -32px;
     margin-top: -1px;
-    padding: 8px 3px 0 13px;
+    padding: 6px 3px 6px 13px;
 
     /* This property nullifies the box-shadow rendered by .btn class */
     &:active {
@@ -1831,7 +1831,7 @@ div.focused_table {
         /* Provide the visual cue that clicking this will work as expected. */
         cursor: pointer;
         &:hover + .search_closed {
-            color: hsl(0, 0%, 0%);
+            opacity: 1;
         }
     }
 }
@@ -1905,7 +1905,8 @@ div.focused_table {
         height: 30px;
         text-align: center;
         padding: 4px;
-        color: hsl(0, 0%, 80%);
+        color: inherit;
+        opacity: 0.5;
         font-size: 18px;
         box-shadow: none;
         text-shadow: none;
@@ -1913,7 +1914,7 @@ div.focused_table {
     }
 
     .search_button:hover {
-        color: hsl(0, 0%, 0%);
+        opacity: 1;
     }
 
     .search_button:disabled {
@@ -1923,18 +1924,11 @@ div.focused_table {
     .search_icon {
         position: absolute;
         height: 100%;
-        color: hsl(0, 0%, 80%);
         text-decoration: none;
         padding: 0 10px;
         font-size: 20px;
         z-index: 5;
         left: 0;
-    }
-
-    .search_icon_hover_highlight,
-    .search_icon:hover {
-        color: hsl(0, 0%, 0%);
-        text-decoration: none;
     }
 
     #search_arrows {
@@ -2411,6 +2405,15 @@ div.topic_edit_spinner .loading_indicator_spinner {
     text-align: left;
 }
 
+#multiuse_invite_link {
+    width: 350px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+}
+
 #invite-stream-checkboxes {
     padding-bottom: 26px;
 }
@@ -2856,8 +2859,7 @@ select.inline_select_topic_edit {
         width: calc(100% - 108px);
     }
     /* todo: Figure out why this has to be different
-       from above at this width and resolve it
-       #searchbox_legacy .navbar-search.expanded, */
+       from above at this width and resolve it */
     #searchbox_legacy .navbar-search.expanded,
     #searchbox .navbar-search.expanded {
         width: calc(100% - 123px);
@@ -2868,9 +2870,6 @@ select.inline_select_topic_edit {
     }
 
     #top_navbar:not(.rightside-userlist) {
-        /* .search_closed .fa-search {
-               right: 115px;
-           } */
         .top-navbar-border {
             width: calc(100% - 75px);
         }

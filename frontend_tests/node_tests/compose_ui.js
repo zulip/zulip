@@ -460,6 +460,163 @@ run_test("test_compose_height_changes", ({override}) => {
     assert.ok(!compose_box_top_set);
 });
 
+run_test("format_text", () => {
+    let set_text = "";
+    let wrap_selection_called = false;
+    let wrap_syntax = "";
+
+    mock_esm("text-field-edit", {
+        set: (field, text) => {
+            set_text = text;
+        },
+        wrapSelection: (field, syntax) => {
+            wrap_selection_called = true;
+            wrap_syntax = syntax;
+        },
+    });
+
+    function reset_state() {
+        set_text = "";
+        wrap_selection_called = false;
+        wrap_syntax = "";
+    }
+
+    const textarea = $("#compose-textarea");
+    textarea.get = () => ({
+        setSelectionRange: () => {},
+    });
+
+    function init_textarea(val, range) {
+        textarea.val = () => val;
+        textarea.range = () => range;
+    }
+
+    const italic_syntax = "*";
+    const bold_syntax = "**";
+
+    // Bold selected text
+    reset_state();
+    init_textarea("abc", {
+        start: 0,
+        end: 3,
+        text: "abc",
+        length: 3,
+    });
+    compose_ui.format_text(textarea, "bold");
+    assert.equal(set_text, "");
+    assert.equal(wrap_selection_called, true);
+    assert.equal(wrap_syntax, bold_syntax);
+
+    // Undo bold selected text, syntax not selected
+    reset_state();
+    init_textarea("**abc**", {
+        start: 2,
+        end: 5,
+        text: "abc",
+        length: 7,
+    });
+    compose_ui.format_text(textarea, "bold");
+    assert.equal(set_text, "abc");
+    assert.equal(wrap_selection_called, false);
+
+    // Undo bold selected text, syntax selected
+    reset_state();
+    init_textarea("**abc**", {
+        start: 0,
+        end: 7,
+        text: "**abc**",
+        length: 7,
+    });
+    compose_ui.format_text(textarea, "bold");
+    assert.equal(set_text, "abc");
+    assert.equal(wrap_selection_called, false);
+
+    // Italic selected text
+    reset_state();
+    init_textarea("abc", {
+        start: 0,
+        end: 3,
+        text: "abc",
+        length: 3,
+    });
+    compose_ui.format_text(textarea, "italic");
+    assert.equal(set_text, "");
+    assert.equal(wrap_selection_called, true);
+    assert.equal(wrap_syntax, italic_syntax);
+
+    // Undo italic selected text, syntax not selected
+    reset_state();
+    init_textarea("*abc*", {
+        start: 1,
+        end: 4,
+        text: "abc",
+        length: 3,
+    });
+    compose_ui.format_text(textarea, "italic");
+    assert.equal(set_text, "abc");
+    assert.equal(wrap_selection_called, false);
+
+    // Undo italic selected text, syntax selected
+    reset_state();
+    init_textarea("*abc*", {
+        start: 0,
+        end: 5,
+        text: "*abc*",
+        length: 5,
+    });
+    compose_ui.format_text(textarea, "italic");
+    assert.equal(set_text, "abc");
+    assert.equal(wrap_selection_called, false);
+
+    // Undo bold selected text, text is both italic and bold, syntax not selected.
+    reset_state();
+    init_textarea("***abc***", {
+        start: 3,
+        end: 6,
+        text: "abc",
+        length: 3,
+    });
+    compose_ui.format_text(textarea, "bold");
+    assert.equal(set_text, "*abc*");
+    assert.equal(wrap_selection_called, false);
+
+    // Undo bold selected text, text is both italic and bold, syntax selected.
+    reset_state();
+    init_textarea("***abc***", {
+        start: 0,
+        end: 9,
+        text: "***abc***",
+        length: 9,
+    });
+    compose_ui.format_text(textarea, "bold");
+    assert.equal(set_text, "*abc*");
+    assert.equal(wrap_selection_called, false);
+
+    // Undo italic selected text, text is both italic and bold, syntax not selected.
+    reset_state();
+    init_textarea("***abc***", {
+        start: 3,
+        end: 6,
+        text: "abc",
+        length: 3,
+    });
+    compose_ui.format_text(textarea, "italic");
+    assert.equal(set_text, "**abc**");
+    assert.equal(wrap_selection_called, false);
+
+    // Undo italic selected text, text is both italic and bold, syntax selected.
+    reset_state();
+    init_textarea("***abc***", {
+        start: 0,
+        end: 9,
+        text: "***abc***",
+        length: 9,
+    });
+    compose_ui.format_text(textarea, "italic");
+    assert.equal(set_text, "**abc**");
+    assert.equal(wrap_selection_called, false);
+});
+
 run_test("markdown_shortcuts", ({override}) => {
     let format_text_type;
     override(compose_ui, "format_text", (textarea, type) => {

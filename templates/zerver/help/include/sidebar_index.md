@@ -110,12 +110,9 @@
 * [Mute a stream](/help/mute-a-stream)
 * [Mute a topic](/help/mute-a-topic)
 * [Mute a user](/help/mute-a-user)
-* [Alert words](/help/add-an-alert-word)
-* [Message notification emails](/help/configure-message-notification-emails)
-* [Disable new login emails](/help/disable-new-login-emails)
-* [Change notification sound](/help/change-notification-sound)
-* [Troubleshoot desktop notifications](/help/troubleshooting-desktop-notifications)
-* [Test mobile notifications](/help/test-mobile-notifications)
+* [Email notifications](/help/email-notifications)
+* [Desktop notifications](/help/desktop-notifications)
+* [Mobile notifications](/help/mobile-notifications)
 
 ## Apps
 * [Desktop installation guides](/help/desktop-app-install-guide)

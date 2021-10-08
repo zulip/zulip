@@ -219,7 +219,7 @@ paths:
                             - type: object
                               description: |
                                 Event sent to a user's clients when that user's set of configured
-                                [alert words](/help/add-an-alert-word) have changed.
+                                [alert words](/help/pm-mention-alert-notifications#alert-words) have changed.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -549,6 +549,24 @@ paths:
                                                 This user-generated HTML content should be rendered
                                                 using the same CSS and client-side security protections
                                                 as are used for message content.
+                                    - type: object
+                                      additionalProperties: False
+                                      description: |
+                                        When the Zulip display email address of a user changes,
+                                        either due to the user's email address changing, or
+                                        due to changes in the organization's
+                                        [email address visibility][help-email-visibility].
+
+                                        [help-email-visibility]: /help/restrict-visibility-of-email-addresses
+                                      properties:
+                                        user_id:
+                                          type: integer
+                                          description: |
+                                            The ID of the user affected by this change.
+                                        new_email:
+                                          type: string
+                                          description: |
+                                            The new email of the user.
                               additionalProperties: false
                               example:
                                 {
@@ -3556,10 +3574,17 @@ paths:
                                         in this organization. Null if no default has been set.
                                     message_content_delete_limit_seconds:
                                       type: integer
+                                      nullable: true
                                       description: |
                                         Messages sent more than this many seconds ago cannot be deleted
                                         with this organization's
                                         [message deletion policy](/help/configure-message-editing-and-deletion).
+
+                                        A 'null' value means no limit: messages can be deleted
+                                        regardless of how long ago they were sent.
+
+                                        **Changes**: No limit was represented using the
+                                        special value `0` before Zulip 5.0 (feature level 100).
                                     authentication_methods:
                                       type: object
                                       additionalProperties:
@@ -3893,6 +3918,9 @@ paths:
                                 of the organization (realm) have changed.
 
                                 [new-user-defaults]: /help/configure-default-new-user-settings
+
+                                See [PATCH /realm/user_settings_defaults](/api/update-realm-user-settings-defaults)
+                                for details on possible properties.
 
                                 **Changes**: New in Zulip 5.0 (feature level 95).
                               properties:
@@ -5111,7 +5139,7 @@ paths:
                         <td><code>has_alert_word</code></td>
                         <td>
                             Whether the message contains any of the current user's
-                            <a href="/help/add-an-alert-word">configured alert words</a>.
+                            <a href="/help/pm-mention-alert-notifications#alert-words">configured alert words</a>.
                             Cannot be changed by the user directly, but
                             can change if the message is edited to add/remove
                             one of the current user's alert words.
@@ -7764,13 +7792,6 @@ paths:
           schema:
             type: boolean
           example: true
-        - name: enable_login_emails
-          in: query
-          description: |
-            Enable email notifications for new logins to account.
-          schema:
-            type: boolean
-          example: true
         - name: message_content_in_email_notifications
           in: query
           description: |
@@ -7829,6 +7850,47 @@ paths:
           description: |
             Whether pressing Enter in the compose box sends a message
             (or saves a message edit).
+          schema:
+            type: boolean
+          example: true
+        - name: twenty_four_hour_time
+          in: query
+          description: |
+            Whether time should be [displayed in 24-hour notation](/help/change-the-time-format).
+
+            **Changes**: New in Zulip 5.0 (feature level 99).
+            Previously, this default was edited using the
+            `default_twenty_four_hour_time` parameter to the `PATCH /realm` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: send_private_typing_notifications
+          in: query
+          description: |
+            Whether [typing notifications](/help/status-and-availability#typing-notifications) be sent when composing
+            private messages.
+
+            **Changes**: New in Zulip 5.0 (feature level 105).
+          schema:
+            type: boolean
+          example: true
+        - name: send_stream_typing_notifications
+          in: query
+          description: |
+            Whether [typing notifications](/help/status-and-availability#typing-notifications) be sent when composing
+            stream messages.
+
+            **Changes**: New in Zulip 5.0 (feature level 105).
+          schema:
+            type: boolean
+          example: true
+        - name: send_read_receipts
+          in: query
+          description: |
+            Whether other users are allowed to see whether you've
+            read messages.
+
+            **Changes**: New in Zulip 5.0 (feature level 105).
           schema:
             type: boolean
           example: true
@@ -8773,7 +8835,7 @@ paths:
                         description: |
                           Present if `alert_words` is present in `fetch_event_types`.
 
-                          An array of strings, each an [alert word](/help/add-an-alert-word)
+                          An array of strings, each an [alert word](/help/pm-mention-alert-notifications#alert-words)
                           that the current user has configured.
                         items:
                           type: string
@@ -9690,6 +9752,31 @@ paths:
                                   type: string
                                   description: |
                                     The text describing the emoji set.
+                          send_private_typing_notifications:
+                            type: boolean
+                            description: |
+                              Whether the user has chosen to send [typing
+                              notifications](/help/status-and-availability#typing-notifications)
+                              when composing private messages. The client should send typing
+                              notifications for private messages if and only if this setting is enabled.
+
+                              **Changes**: New in Zulip 5.0 (feature level 105).
+                          send_stream_typing_notifications:
+                            type: boolean
+                            description: |
+                              Whether the user has chosen to send [typing
+                              notifications](/help/status-and-availability#typing-notifications)
+                              when composing stream messages. The client should send typing
+                              notifications for stream messages if and only if this setting is enabled.
+
+                              **Changes**: New in Zulip 5.0 (feature level 105).
+                          send_read_receipts:
+                            type: boolean
+                            description: |
+                              Whether other users are allowed to see whether you've
+                              read messages.
+
+                              **Changes**: New in Zulip 5.0 (feature level 105).
                       has_zoom_token:
                         type: boolean
                         description: |
@@ -10322,24 +10409,76 @@ paths:
 
                           Whether this organization is configured to allow users to access
                           [message edit history](/help/view-a-messages-edit-history).
-                      realm_allow_message_deleting:
-                        type: boolean
+                      realm_delete_own_message_policy:
+                        type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Whether messages can be deleted in this Zulip organization.
+                          The policy defining which users can delete
+                          messages that they had sent.
+
+                          - 1 = members only
+                          - 2 = admins only
+                          - 3 = full members only
+                          - 4 = admins and moderators only
+                          - 5 = everyone
+
+                          **Changes**: New in Zulip 5.0 (feature level 101), replacing the
+                          previous `allow_message_deleting` boolean;
+                          `true` corresponded to `everyone`, and `false` to `admins only`.
                       realm_bot_creation_policy:
                         type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
                           The policy for which users can create bot users in this organization.
-                      realm_create_stream_policy:
+                      realm_create_public_stream_policy:
                         type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The policy for which users can create streams in this organization.
+                          The policy for which users can create public streams in this organization.
+
+                          - 1 = members only
+                          - 2 = admins only
+                          - 3 = full members only
+                          - 4 = admins and moderators only
+
+                          **Changes**: Before Zulip 5.0 (feature level 102), permission to
+                          create streams was controlled by the `realm_create_stream_policy` setting.
+                      realm_create_private_stream_policy:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The policy for which users can create private streams in this organization.
+
+                          - 1 = members only
+                          - 2 = admins only
+                          - 3 = full members only
+                          - 4 = admins and moderators only
+
+                          **Changes**: Before Zulip 5.0 (feature level 102), permission to
+                          create streams was controlled by the `realm_create_stream_policy` setting.
+                      realm_create_web_public_stream_policy:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Has no effect and should not be displayed in settings UI
+                          unless the Zulip server has the `WEB_PUBLIC_STREAMS_ENABLED`
+                          server-level setting enabled.
+
+                          The policy for which users can create web
+                          public streams in this organization. Allowed
+                          values are:
+
+                          - 2 = admins only
+                          - 4 = admins and moderators only
+                          - 6 = nobody
+                          - 7 = owners only
+
+                          **Changes**: Added in Zulip 5.0 (feature level 103).
                       realm_invite_to_stream_policy:
                         type: integer
                         description: |
@@ -10373,13 +10512,6 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           The default UI language for new users joining this organization.
-                      realm_default_twenty_four_hour_time:
-                        type: boolean
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          Whether new members of this organization will see times displayed in
-                          24-hour time (true) or 12-hour time (false).
                       realm_description:
                         type: string
                         description: |
@@ -10599,12 +10731,19 @@ paths:
                           in this organization. Null if no default has been set.
                       realm_message_content_delete_limit_seconds:
                         type: integer
+                        nullable: true
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
                           Messages sent more than this many seconds ago cannot be deleted
                           with this organization's
                           [message deletion policy](/help/configure-message-editing-and-deletion).
+
+                          A 'null' value means no limit: messages can be deleted
+                          regardless of how long ago they were sent.
+
+                          **Changes**: No limit was represented using the
+                          special value `0` before Zulip 5.0 (feature level 100).
                       realm_authentication_methods:
                         type: object
                         additionalProperties:
@@ -11071,6 +11210,12 @@ paths:
                             type: boolean
                             description: |
                               Whether time should be [displayed in 24-hour notation](/help/change-the-time-format).
+
+                              **Changes**: New in Zulip 5.0 (feature level 99).
+                              This value was previously available as
+                              `realm_default_twenty_four_hour_time` in
+                              the top-level response object (only when `realm` was
+                              present in `fetch_event_types`).
                           dense_mode:
                             type: boolean
                             description: |
@@ -11286,6 +11431,27 @@ paths:
                                   type: string
                                   description: |
                                     The text describing the emoji set.
+                          send_private_typing_notifications:
+                            type: boolean
+                            description: |
+                              Whether [typing notifications](/help/status-and-availability#typing-notifications) be sent when composing
+                              private messages.
+
+                              **Changes**: New in Zulip 5.0 (feature level 105).
+                          send_stream_typing_notifications:
+                            type: boolean
+                            description: |
+                              Whether [typing notifications](/help/status-and-availability#typing-notifications) be sent when composing
+                              stream messages.
+
+                              **Changes**: New in Zulip 5.0 (feature level 105).
+                          send_read_receipts:
+                            type: boolean
+                            description: |
+                              Whether other users are allowed to see whether you've
+                              read messages.
+
+                              **Changes**: New in Zulip 5.0 (feature level 105).
                       realm_users:
                         type: array
                         description: |
@@ -11335,11 +11501,55 @@ paths:
                           resolution. See also `avatar_url_medium`.
                       can_create_streams:
                         type: boolean
+                        deprecated: true
                         description: |
                           Present if `realm_user` is present in `fetch_event_types`.
 
-                          Whether the current user is allowed to create streams with
+                          Whether the current user is allowed to create at least one type
+                          of stream with the organization's [stream creation
+                          policy](/help/configure-who-can-create-streams). Its value will
+                          always equal `can_create_public_streams || can_create_private_streams`.
+
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 102), when
+                          the new `create_private_stream_policy` and
+                          `create_public_stream_policy` properties introduced the
+                          possibility that a user could only create one type of stream.
+
+                          This field will be removed in a future release.
+                      can_create_public_streams:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `fetch_event_types`.
+
+                          Whether the current user is allowed to create public streams with
                           the organization's [stream creation policy](/help/configure-who-can-create-streams).
+
+                          **Changes**: New in Zulip 5.0 (feature level 102). In older
+                          versions, the deprecated `can_create_streams` property should be
+                          used to determine whether the user can create public streams.
+                      can_create_private_streams:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `fetch_event_types`.
+
+                          Whether the current user is allowed to create private streams with
+                          the organization's [stream creation policy](/help/configure-who-can-create-streams).
+
+                          **Changes**: New in Zulip 5.0 (feature level 102). In older
+                          versions, the deprecated `can_create_streams` property should be
+                          used to determine whether the user can create private streams.
+                      can_create_web_public_streams:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `fetch_event_types`.
+
+                          Whether the current user is allowed to create public streams with
+                          the organization's [stream creation policy](/help/configure-who-can-create-streams).
+
+                          Note that this will be false if the Zulip server does not have the
+                          `WEB_PUBLIC_STREAMS_ENABLED` setting enabled.
+
+                          **Changes**: New in Zulip 5.0 (feature level 103).
                       can_subscribe_other_users:
                         type: boolean
                         description: |
@@ -12272,6 +12482,36 @@ paths:
 
             **Changes**: Before Zulip 5.0 (feature level 81), this setting was managed by
             the `POST /users/me/enter-sends` endpoint, with the same parameter format.
+          schema:
+            type: boolean
+          example: true
+        - name: send_private_typing_notifications
+          in: query
+          description: |
+            Whether [typing notifications](/help/status-and-availability#typing-notifications) be sent when composing
+            private messages.
+
+            **Changes**: New in Zulip 5.0 (feature level 105).
+          schema:
+            type: boolean
+          example: true
+        - name: send_stream_typing_notifications
+          in: query
+          description: |
+            Whether [typing notifications](/help/status-and-availability#typing-notifications) be sent when composing
+            stream messages.
+
+            **Changes**: New in Zulip 5.0 (feature level 105).
+          schema:
+            type: boolean
+          example: true
+        - name: send_read_receipts
+          in: query
+          description: |
+            Whether other users are allowed to see whether you've
+            read messages.
+
+            **Changes**: New in Zulip 5.0 (feature level 105).
           schema:
             type: boolean
           example: true

@@ -20,7 +20,7 @@ export function make_indicator(
     if (abs_positioned) {
         // Create some additional containers to facilitate absolutely
         // positioned spinners.
-        const container_id = container.attr("id");
+        const container_id = container.attr("id")!;
         let inner_container = $("<div>", {id: `${container_id}_box_container`});
         container.append(inner_container);
         container = inner_container;

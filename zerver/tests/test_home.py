@@ -50,7 +50,10 @@ class HomeTest(ZulipTestCase):
         "avatar_url",
         "avatar_url_medium",
         "bot_types",
+        "can_create_private_streams",
+        "can_create_public_streams",
         "can_create_streams",
+        "can_create_web_public_streams",
         "can_invite_others_to_realm",
         "can_subscribe_other_users",
         "corporate_enabled",
@@ -104,7 +107,6 @@ class HomeTest(ZulipTestCase):
         "queue_id",
         "realm_add_custom_emoji_policy",
         "realm_allow_edit_history",
-        "realm_allow_message_deleting",
         "realm_allow_message_editing",
         "realm_authentication_methods",
         "realm_available_video_chat_providers",
@@ -113,13 +115,15 @@ class HomeTest(ZulipTestCase):
         "realm_bot_domain",
         "realm_bots",
         "realm_community_topic_editing_limit_seconds",
-        "realm_create_stream_policy",
+        "realm_create_private_stream_policy",
+        "realm_create_public_stream_policy",
+        "realm_create_web_public_stream_policy",
         "realm_default_code_block_language",
         "realm_default_external_accounts",
         "realm_default_language",
         "realm_default_stream_groups",
         "realm_default_streams",
-        "realm_default_twenty_four_hour_time",
+        "realm_delete_own_message_policy",
         "realm_description",
         "realm_digest_emails_enabled",
         "realm_digest_weekday",
@@ -302,6 +306,18 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(set(actual_keys), set(expected_keys))
 
     def test_logged_out_home(self) -> None:
+        # Redirect to login on first request.
+        result = self.client_get("/")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, "/login/")
+
+        # Tell server that user wants to login anonymously
+        # Redirects to load webapp.
+        result = self.client_post("/", {"prefers_web_public_view": "true"})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, "http://zulip.testserver")
+
+        # Always load the web app from then on directly
         result = self.client_get("/")
         self.assertEqual(result.status_code, 200)
 

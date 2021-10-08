@@ -1,6 +1,6 @@
 import autosize from "autosize";
 import $ from "jquery";
-import {wrapSelection} from "text-field-edit";
+import {set, wrapSelection} from "text-field-edit";
 
 import * as common from "./common";
 import {$t} from "./i18n";
@@ -221,17 +221,156 @@ export function handle_keyup(event, textarea) {
 }
 
 export function format_text(textarea, type) {
+    const italic_syntax = "*";
+    const bold_syntax = "**";
+    const bold_and_italic_syntax = "***";
+    let is_selected_text_italic = false;
+    let is_inner_text_italic = false;
     const field = textarea.get(0);
-    const range = textarea.range();
+    let range = textarea.range();
+    let text = textarea.val();
+    const selected_text = range.text;
+
+    // Remove new line and space around selected text.
+    const left_trim_length = range.text.length - range.text.trimStart().length;
+    const right_trim_length = range.text.length - range.text.trimEnd().length;
+
+    field.setSelectionRange(range.start + left_trim_length, range.end - right_trim_length);
+    range = textarea.range();
+
+    const is_selection_bold = () =>
+        // First check if there are enough characters before/after selection.
+        range.start >= bold_syntax.length &&
+        text.length - range.end >= bold_syntax.length &&
+        // And then if the characters have bold_syntax around them.
+        text.slice(range.start - bold_syntax.length, range.start) === bold_syntax &&
+        text.slice(range.end, range.end + bold_syntax.length) === bold_syntax;
+
+    const is_inner_text_bold = () =>
+        // Check if selected text itself has bold_syntax inside it.
+        range.length > 4 &&
+        selected_text.slice(0, bold_syntax.length) === bold_syntax &&
+        selected_text.slice(-bold_syntax.length) === bold_syntax;
 
     switch (type) {
         case "bold":
-            // Ctrl + B: Convert selected text to bold text
-            wrapSelection(field, "**");
+            // Ctrl + B: Toggle bold syntax on selection.
+
+            // If the selection is already surrounded by bold syntax,
+            // remove it rather than adding another copy.
+            if (is_selection_bold()) {
+                // Remove the bold_syntax from text.
+                text =
+                    text.slice(0, range.start - bold_syntax.length) +
+                    text.slice(range.start, range.end) +
+                    text.slice(range.end + bold_syntax.length);
+                set(field, text);
+                field.setSelectionRange(
+                    range.start - bold_syntax.length,
+                    range.end - bold_syntax.length,
+                );
+                break;
+            } else if (is_inner_text_bold()) {
+                // Remove bold syntax inside the selection, if present.
+                text =
+                    text.slice(0, range.start) +
+                    text.slice(range.start + bold_syntax.length, range.end - bold_syntax.length) +
+                    text.slice(range.end);
+                set(field, text);
+                field.setSelectionRange(range.start, range.end - bold_syntax.length * 2);
+                break;
+            }
+
+            // Otherwise, we don't have bold syntax, so we add it.
+            wrapSelection(field, bold_syntax);
             break;
         case "italic":
-            // Ctrl + I: Convert selected text to italic text
-            wrapSelection(field, "*");
+            // Ctrl + I: Toggle italic syntax on selection. This is
+            // much more complex than toggling bold syntax, because of
+            // the following subtle detail: If our selection is
+            // **foo**, toggling italics should add italics, since in
+            // fact it's just bold syntax, even though with *foo* and
+            // ***foo*** should remove italics.
+
+            // If the text is already italic, we remove the italic_syntax from text.
+            if (range.start >= 1 && text.length - range.end >= italic_syntax.length) {
+                // If text has italic_syntax around it.
+                const has_italic_syntax =
+                    text.slice(range.start - italic_syntax.length, range.start) === italic_syntax &&
+                    text.slice(range.end, range.end + italic_syntax.length) === italic_syntax;
+
+                if (is_selection_bold()) {
+                    // If text has bold_syntax around it.
+                    if (
+                        range.start >= 3 &&
+                        text.length - range.end >= bold_and_italic_syntax.length
+                    ) {
+                        // If text is both bold and italic.
+                        const has_bold_and_italic_syntax =
+                            text.slice(range.start - bold_and_italic_syntax.length, range.start) ===
+                                bold_and_italic_syntax &&
+                            text.slice(range.end, range.end + bold_and_italic_syntax.length) ===
+                                bold_and_italic_syntax;
+                        if (has_bold_and_italic_syntax) {
+                            is_selected_text_italic = true;
+                        }
+                    }
+                } else if (has_italic_syntax) {
+                    // If text is only italic.
+                    is_selected_text_italic = true;
+                }
+            }
+
+            if (is_selected_text_italic) {
+                // If text has italic syntax around it, we remove the italic syntax.
+                text =
+                    text.slice(0, range.start - italic_syntax.length) +
+                    text.slice(range.start, range.end) +
+                    text.slice(range.end + italic_syntax.length);
+                set(field, text);
+                field.setSelectionRange(
+                    range.start - italic_syntax.length,
+                    range.end - italic_syntax.length,
+                );
+                break;
+            } else if (
+                selected_text.length > italic_syntax.length * 2 &&
+                // If the selected text contains italic syntax
+                selected_text.slice(0, italic_syntax.length) === italic_syntax &&
+                selected_text.slice(-italic_syntax.length) === italic_syntax
+            ) {
+                if (is_inner_text_bold()) {
+                    if (
+                        selected_text.length > bold_and_italic_syntax.length * 2 &&
+                        selected_text.slice(0, bold_and_italic_syntax.length) ===
+                            bold_and_italic_syntax &&
+                        selected_text.slice(-bold_and_italic_syntax.length) ===
+                            bold_and_italic_syntax
+                    ) {
+                        // If selected text is both bold and italic.
+                        is_inner_text_italic = true;
+                    }
+                } else {
+                    // If selected text is only italic.
+                    is_inner_text_italic = true;
+                }
+            }
+
+            if (is_inner_text_italic) {
+                // We remove the italic_syntax from within the selected text.
+                text =
+                    text.slice(0, range.start) +
+                    text.slice(
+                        range.start + italic_syntax.length,
+                        range.end - italic_syntax.length,
+                    ) +
+                    text.slice(range.end);
+                set(field, text);
+                field.setSelectionRange(range.start, range.end - italic_syntax.length * 2);
+                break;
+            }
+
+            wrapSelection(field, italic_syntax);
             break;
         case "link": {
             // Ctrl + L: Insert a link to selected text

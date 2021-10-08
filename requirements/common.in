@@ -183,3 +183,6 @@ backoff
 
 # Needed for reading bson files in rocketchat import tool
 pymongo
+
+# Non-backtracking regular expressions
+google-re2

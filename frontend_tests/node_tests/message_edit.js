@@ -122,10 +122,10 @@ run_test("get_editability", ({override}) => {
     assert.equal(message_edit.is_topic_editable(message), false);
 });
 
-run_test("get_deletability", () => {
+run_test("get_deletability", ({override}) => {
     page_params.is_admin = true;
-    page_params.realm_allow_message_deleting = false;
-    page_params.realm_message_content_delete_limit_seconds = 0;
+    override(settings_data, "user_can_delete_own_message", () => false);
+    page_params.realm_message_content_delete_limit_seconds = null;
     const message = {
         sent_by_me: false,
         locally_echoed: true,
@@ -145,7 +145,7 @@ run_test("get_deletability", () => {
     message.locally_echoed = false;
     assert.equal(message_edit.get_deletability(message), false);
 
-    page_params.realm_allow_message_deleting = true;
+    override(settings_data, "user_can_delete_own_message", () => true);
     assert.equal(message_edit.get_deletability(message), true);
 
     const now = new Date();

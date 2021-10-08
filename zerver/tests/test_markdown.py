@@ -1406,26 +1406,25 @@ class MarkdownTest(ZulipTestCase):
         url_format_string = r"https://trac.example.com/ticket/%(id)s"
         linkifier_1 = RealmFilter(
             realm=realm,
-            pattern=r"(?P<id>ABC\-[0-9]+)(?![A-Z0-9-])",
+            pattern=r"(?P<id>ABC\-[0-9]+)",
             url_format_string=url_format_string,
         )
         linkifier_1.save()
         self.assertEqual(
             linkifier_1.__str__(),
-            r"<RealmFilter(zulip): (?P<id>ABC\-[0-9]+)(?![A-Z0-9-])"
-            " https://trac.example.com/ticket/%(id)s>",
+            r"<RealmFilter(zulip): (?P<id>ABC\-[0-9]+) https://trac.example.com/ticket/%(id)s>",
         )
 
         url_format_string = r"https://other-trac.example.com/ticket/%(id)s"
         linkifier_2 = RealmFilter(
             realm=realm,
-            pattern=r"(?P<id>[A-Z][A-Z0-9]*\-[0-9]+)(?![A-Z0-9-])",
+            pattern=r"(?P<id>[A-Z][A-Z0-9]*\-[0-9]+)",
             url_format_string=url_format_string,
         )
         linkifier_2.save()
         self.assertEqual(
             linkifier_2.__str__(),
-            r"<RealmFilter(zulip): (?P<id>[A-Z][A-Z0-9]*\-[0-9]+)(?![A-Z0-9-])"
+            r"<RealmFilter(zulip): (?P<id>[A-Z][A-Z0-9]*\-[0-9]+)"
             " https://other-trac.example.com/ticket/%(id)s>",
         )
 

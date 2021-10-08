@@ -27,17 +27,13 @@ class RealmFilterTest(ZulipTestCase):
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_error(result, "This field cannot be blank.")
 
-        data["pattern"] = "$a"
+        data["pattern"] = "(foo"
         result = self.client_post("/json/realm/filters", info=data)
-        self.assert_json_error(
-            result, "Invalid linkifier pattern.  Valid characters are [ a-zA-Z_#=/:+!-]."
-        )
+        self.assert_json_error(result, "Bad regular expression: missing ): (foo")
 
-        data["pattern"] = r"ZUL-(?P<id>\d++)"
+        data["pattern"] = r"ZUL-(?P<id>\d????)"
         result = self.client_post("/json/realm/filters", info=data)
-        self.assert_json_error(
-            result, "Invalid linkifier pattern.  Valid characters are [ a-zA-Z_#=/:+!-]."
-        )
+        self.assert_json_error(result, "Bad regular expression: bad repetition operator: ????")
 
         data["pattern"] = r"ZUL-(?P<id>\d+)"
         data["url_format_string"] = "$fgfg"
@@ -189,13 +185,11 @@ class RealmFilterTest(ZulipTestCase):
         )
 
         data = {
-            "pattern": r"ZUL-(?P<id>\d++)",
+            "pattern": r"ZUL-(?P<id>\d????)",
             "url_format_string": "https://realm.com/my_realm_filter/%(id)s",
         }
         result = self.client_patch(f"/json/realm/filters/{linkifier_id}", info=data)
-        self.assert_json_error(
-            result, "Invalid linkifier pattern.  Valid characters are [ a-zA-Z_#=/:+!-]."
-        )
+        self.assert_json_error(result, "Bad regular expression: bad repetition operator: ????")
 
         data["pattern"] = r"ZUL-(?P<id>\d+)"
         data["url_format_string"] = "$fgfg"

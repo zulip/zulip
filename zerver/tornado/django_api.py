@@ -11,7 +11,6 @@ from requests.packages.urllib3.util.retry import Retry
 
 from zerver.lib.queue import queue_json_publish
 from zerver.models import Client, Realm, UserProfile
-from zerver.tornado.event_queue import process_notification
 from zerver.tornado.sharding import get_tornado_port, get_tornado_uri, notify_tornado_queue_name
 
 
@@ -127,6 +126,17 @@ def get_user_events(
 
 def send_notification_http(realm: Realm, data: Mapping[str, Any]) -> None:
     if not settings.USING_TORNADO or settings.RUNNING_INSIDE_TORNADO:
+        # To allow the backend test suite to not require a separate
+        # Tornado process, we simply call the process_notification
+        # handler directly rather than making the notify_tornado HTTP
+        # request.  It would perhaps be better to instead implement
+        # this via some sort of `responses` module configuration, but
+        # perhaps it's more readable to have the logic live here.
+        #
+        # We use an import local to this function to prevent this hack
+        # from creating import cycles.
+        from zerver.tornado.event_queue import process_notification
+
         process_notification(data)
     else:
         tornado_uri = get_tornado_uri(realm)

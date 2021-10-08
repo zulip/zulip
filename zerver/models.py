@@ -1,4 +1,3 @@
-import ast
 import datetime
 import re
 import secrets
@@ -20,6 +19,8 @@ from typing import (
 )
 
 import django.contrib.auth
+import orjson
+import re2
 from bitfield import BitField
 from bitfield.types import BitHandler
 from django.conf import settings
@@ -76,6 +77,7 @@ from zerver.lib.types import (
     LinkifierDict,
     ProfileData,
     ProfileDataElementBase,
+    ProfileDataElementValue,
     RealmUserValidator,
     UserFieldElement,
     Validator,
@@ -217,7 +219,7 @@ class Realm(models.Model):
     string_id: str = models.CharField(max_length=MAX_REALM_SUBDOMAIN_LENGTH, unique=True)
 
     date_created: datetime.datetime = models.DateTimeField(default=timezone_now)
-    demo_organization_scheduled_deletion_date: datetime.datetime = models.DateTimeField(
+    demo_organization_scheduled_deletion_date: Optional[datetime.datetime] = models.DateTimeField(
         default=None, null=True
     )
     deactivated: bool = models.BooleanField(default=False)
@@ -261,6 +263,7 @@ class Realm(models.Model):
     POLICY_MODERATORS_ONLY = 4
     POLICY_EVERYONE = 5
     POLICY_NOBODY = 6
+    POLICY_OWNERS_ONLY = 7
 
     COMMON_POLICY_TYPES = [
         POLICY_MEMBERS_ONLY,
@@ -285,13 +288,32 @@ class Realm(models.Model):
         POLICY_NOBODY,
     ]
 
+    # We don't allow granting roles less than Moderator access to
+    # create web-public streams, since it's a sensitive feature that
+    # can be used to send spam.
+    CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES = [
+        POLICY_ADMINS_ONLY,
+        POLICY_MODERATORS_ONLY,
+        POLICY_OWNERS_ONLY,
+        POLICY_NOBODY,
+    ]
+
     DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 259200
 
     # Who in the organization is allowed to add custom emojis.
     add_custom_emoji_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
 
     # Who in the organization is allowed to create streams.
-    create_stream_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
+    create_public_stream_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
+    create_private_stream_policy: int = models.PositiveSmallIntegerField(
+        default=POLICY_MEMBERS_ONLY
+    )
+    create_web_public_stream_policy: int = models.PositiveSmallIntegerField(
+        default=POLICY_OWNERS_ONLY
+    )
+
+    # Who in the organization is allowed to delete messages they themselves sent.
+    delete_own_message_policy: bool = models.PositiveSmallIntegerField(default=POLICY_ADMINS_ONLY)
 
     # Who in the organization is allowed to edit topics of any message.
     edit_topic_policy: int = models.PositiveSmallIntegerField(default=POLICY_EVERYONE)
@@ -366,12 +388,14 @@ class Realm(models.Model):
     # some other actions.
     waiting_period_threshold: int = models.PositiveIntegerField(default=0)
 
-    allow_message_deleting: bool = models.BooleanField(default=False)
     DEFAULT_MESSAGE_CONTENT_DELETE_LIMIT_SECONDS = (
         600  # if changed, also change in admin.js, setting_org.js
     )
-    message_content_delete_limit_seconds: int = models.IntegerField(
-        default=DEFAULT_MESSAGE_CONTENT_DELETE_LIMIT_SECONDS,
+    MESSAGE_CONTENT_DELETE_LIMIT_SPECIAL_VALUES_MAP = {
+        "unlimited": None,
+    }
+    message_content_delete_limit_seconds: int = models.PositiveIntegerField(
+        default=DEFAULT_MESSAGE_CONTENT_DELETE_LIMIT_SECONDS, null=True
     )
 
     allow_message_editing: bool = models.BooleanField(default=True)
@@ -386,7 +410,6 @@ class Realm(models.Model):
     allow_edit_history: bool = models.BooleanField(default=True)
 
     # Defaults for new users
-    default_twenty_four_hour_time: bool = models.BooleanField(default=False)
     default_language: str = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
 
     DEFAULT_NOTIFICATION_STREAM_NAME = "general"
@@ -599,13 +622,13 @@ class Realm(models.Model):
     property_types: Dict[str, Union[type, Tuple[type, ...]]] = dict(
         add_custom_emoji_policy=int,
         allow_edit_history=bool,
-        allow_message_deleting=bool,
         bot_creation_policy=int,
-        create_stream_policy=int,
+        create_public_stream_policy=int,
+        create_private_stream_policy=int,
+        create_web_public_stream_policy=int,
         invite_to_stream_policy=int,
         move_messages_between_streams_policy=int,
         default_language=str,
-        default_twenty_four_hour_time=bool,
         description=str,
         digest_emails_enabled=bool,
         disallow_disposable_email_addresses=bool,
@@ -630,8 +653,9 @@ class Realm(models.Model):
         private_message_policy=int,
         user_group_edit_policy=int,
         default_code_block_language=(str, type(None)),
-        message_content_delete_limit_seconds=int,
+        message_content_delete_limit_seconds=(int, type(None)),
         wildcard_mention_policy=int,
+        delete_own_message_policy=int,
     )
 
     DIGEST_WEEKDAY_VALUES = [0, 1, 2, 3, 4, 5, 6]
@@ -875,7 +899,9 @@ class Realm(models.Model):
         if not self.web_public_streams_enabled():
             return False
 
-        return Stream.objects.filter(realm=self, is_web_public=True).exists()
+        from zerver.lib.streams import get_web_public_streams_queryset
+
+        return get_web_public_streams_queryset(self).exists()
 
 
 post_save.connect(flush_realm, sender=Realm)
@@ -1074,21 +1100,21 @@ post_delete.connect(flush_realm_emoji, sender=RealmEmoji)
 
 
 def filter_pattern_validator(value: str) -> Pattern[str]:
-    regex = re.compile(r"^(?:(?:[\w\-#_= /:]*|[+]|[!])(\(\?P<\w+>.+\)))+$")
-    error_msg = _("Invalid linkifier pattern.  Valid characters are {}.").format(
-        "[ a-zA-Z_#=/:+!-]",
-    )
-
-    if not regex.match(str(value)):
-        raise ValidationError(error_msg)
-
     try:
-        pattern = re.compile(value)
-    except re.error:
-        # Regex is invalid
-        raise ValidationError(error_msg)
+        # Do not write errors to stderr (this still raises exceptions)
+        options = re2.Options()
+        options.log_errors = False
 
-    return pattern
+        regex = re2.compile(value, options=options)
+    except re2.error as e:
+        if len(e.args) >= 1:
+            if isinstance(e.args[0], str):  # nocoverage
+                raise ValidationError(_("Bad regular expression: {}").format(e.args[0]))
+            if isinstance(e.args[0], bytes):
+                raise ValidationError(_("Bad regular expression: {}").format(e.args[0].decode()))
+        raise ValidationError(_("Unknown regular expression error"))  # nocoverage
+
+    return regex
 
 
 def filter_format_validator(value: str) -> None:
@@ -1410,6 +1436,11 @@ class UserBaseSettings(models.Model):
     # Whether or not the user wants to sync their drafts.
     enable_drafts_synchronization = models.BooleanField(default=True)
 
+    # Privacy settings
+    send_stream_typing_notifications: bool = models.BooleanField(default=True)
+    send_private_typing_notifications: bool = models.BooleanField(default=True)
+    send_read_receipts: bool = models.BooleanField(default=True)
+
     display_settings_legacy = dict(
         color_scheme=int,
         default_language=str,
@@ -1455,7 +1486,16 @@ class UserBaseSettings(models.Model):
     }  # Add new notifications settings here.
 
     # Define the types of the various automatically managed properties
-    property_types = {**display_settings_legacy, **notification_setting_types}
+    property_types = {
+        **display_settings_legacy,
+        **notification_setting_types,
+        **dict(
+            # Add new general settings here.
+            send_stream_typing_notifications=bool,
+            send_private_typing_notifications=bool,
+            send_read_receipts=bool,
+        ),
+    }
 
     class Meta:
         abstract = True
@@ -1683,7 +1723,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     def get_role_name(self) -> str:
         return self.ROLE_ID_TO_NAME_MAP[self.role]
 
-    @property
     def profile_data(self) -> ProfileData:
         values = CustomProfileFieldValue.objects.filter(user_profile=self)
         user_data = {
@@ -1829,7 +1868,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     def has_permission(self, policy_name: str) -> bool:
         if policy_name not in [
             "add_custom_emoji_policy",
-            "create_stream_policy",
+            "create_private_stream_policy",
+            "create_public_stream_policy",
+            "create_web_public_stream_policy",
+            "delete_own_message_policy",
             "edit_topic_policy",
             "invite_to_stream_policy",
             "invite_to_realm_policy",
@@ -1840,6 +1882,15 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
         policy_value = getattr(self.realm, policy_name)
         if policy_value == Realm.POLICY_NOBODY:
+            return False
+
+        if policy_value == Realm.POLICY_EVERYONE:
+            return True
+
+        if self.is_realm_owner:
+            return True
+
+        if policy_value == Realm.POLICY_OWNERS_ONLY:
             return False
 
         if self.is_realm_admin:
@@ -1863,8 +1914,16 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         assert policy_value == Realm.POLICY_FULL_MEMBERS_ONLY
         return not self.is_provisional_member
 
-    def can_create_streams(self) -> bool:
-        return self.has_permission("create_stream_policy")
+    def can_create_public_streams(self) -> bool:
+        return self.has_permission("create_public_stream_policy")
+
+    def can_create_private_streams(self) -> bool:
+        return self.has_permission("create_private_stream_policy")
+
+    def can_create_web_public_streams(self) -> bool:
+        if not self.realm.web_public_streams_enabled():
+            return False
+        return self.has_permission("create_web_public_stream_policy")
 
     def can_subscribe_other_users(self) -> bool:
         return self.has_permission("invite_to_stream_policy")
@@ -1879,12 +1938,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         return self.has_permission("user_group_edit_policy")
 
     def can_edit_topic_of_any_message(self) -> bool:
-        if self.realm.edit_topic_policy == Realm.POLICY_EVERYONE:
-            return True
         return self.has_permission("edit_topic_policy")
 
     def can_add_custom_emoji(self) -> bool:
         return self.has_permission("add_custom_emoji_policy")
+
+    def can_delete_own_message(self) -> bool:
+        return self.has_permission("delete_own_message_policy")
 
     def can_access_public_streams(self) -> bool:
         return not (self.is_guest or self.realm.is_zephyr_mirror_realm)
@@ -3723,6 +3783,7 @@ class AbstractRealmAuditLog(models.Model):
     REALM_SUBDOMAIN_CHANGED = 214
     REALM_CREATED = 215
     REALM_DEFAULT_USER_SETTINGS_CHANGED = 216
+    REALM_ORG_TYPE_CHANGED = 217
 
     SUBSCRIPTION_CREATED = 301
     SUBSCRIPTION_ACTIVATED = 302
@@ -3878,7 +3939,7 @@ class CustomProfileField(models.Model):
         (SELECT, gettext_lazy("List of options"), validate_select_field, str, "SELECT"),
     ]
     USER_FIELD_TYPE_DATA: List[UserFieldElement] = [
-        (USER, gettext_lazy("Person picker"), check_valid_user_ids, ast.literal_eval, "USER"),
+        (USER, gettext_lazy("Person picker"), check_valid_user_ids, orjson.loads, "USER"),
     ]
 
     SELECT_FIELD_VALIDATORS: Dict[int, ExtendedValidator] = {
@@ -3905,7 +3966,7 @@ class CustomProfileField(models.Model):
 
     ALL_FIELD_TYPES = [*FIELD_TYPE_DATA, *SELECT_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA]
 
-    FIELD_VALIDATORS: Dict[int, Validator[Union[int, str, List[int]]]] = {
+    FIELD_VALIDATORS: Dict[int, Validator[ProfileDataElementValue]] = {
         item[0]: item[2] for item in FIELD_TYPE_DATA
     }
     FIELD_CONVERTERS: Dict[int, Callable[[Any], Any]] = {

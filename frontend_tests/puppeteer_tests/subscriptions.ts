@@ -68,13 +68,13 @@ async function test_subscription_button_verona_stream(page: Page): Promise<void>
     // We assume Verona is already subscribed, so the first line here
     // should happen immediately.
     button = await subscribed();
-    button!.click();
+    await button!.click();
     button = await unsubscribed();
-    button!.click();
+    await button!.click();
     button = await subscribed();
-    button!.click();
+    await button!.click();
     button = await unsubscribed();
-    button!.click();
+    await button!.click();
     button = await subscribed();
 }
 

@@ -7,23 +7,52 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 /*
-    Until now, we had seen various testing techniques, learnt
+    Until now, we had seen various testing techniques, learned
     how to use helper functions like `mock_esm`, `override` of
     `run_test` etc., but we didn't see how to deal with
     render calls to handlebars templates. We'll learn that
     in this test.
 
-    The below code tests the rendering of alert words in settings UI
-    i.e., render_alert_words_ui function of static/js/alert_words_ui.js.
+    The below code tests the rendering of typing notifications which
+    is handled by the function `typing_events.render_notifications_for_narrow`.
+    The function relies on the `typing_notifications.hbs` template for
+    rendering html.
+    It is worthwhile to read those (they're short and simple) before proceeding
+    as that would help better understand the below test.
 */
 
-const alert_words = zrequire("alert_words");
-const alert_words_ui = zrequire("alert_words_ui");
+const typing_events = zrequire("typing_events");
+const people = zrequire("people");
 
-// Let's first add a few alert words.
-alert_words.initialize({
-    alert_words: ["foo", "bar"],
-});
+// Let us add a few users to use as typists.
+const anna = {
+    email: "anna@example.com",
+    full_name: "Anna Karenina",
+    user_id: 8,
+};
+
+const vronsky = {
+    email: "vronsky@example.com",
+    full_name: "Alexei Vronsky",
+    user_id: 9,
+};
+
+const levin = {
+    email: "levin@example.com",
+    full_name: "Konstantin Levin",
+    user_id: 10,
+};
+
+const kitty = {
+    email: "kitty@example.com",
+    full_name: "Kitty S",
+    user_id: 11,
+};
+
+people.add_active_user(anna);
+people.add_active_user(vronsky);
+people.add_active_user(levin);
+people.add_active_user(kitty);
 
 /*
     Notice the `mock_template` in the object passed to `run_test` wrapper below.
@@ -36,55 +65,72 @@ alert_words.initialize({
 
     It's usage below will make it more clear to you.
 */
-run_test("render_alert_words_ui", ({mock_template}) => {
-    const word_list = $("#alert_words_list");
+run_test("typing_events.render_notifications_for_narrow", ({override, mock_template}) => {
+    // All typists are rendered in `#typing_notifications`.
+    const typing_notifications = $("#typing_notifications");
 
-    // All the alert word elements will be rendered in `#alert_words_list`. That is
-    // done with the help of `append` in actual code. We can test that all alert words
-    // are added to it by making its `append` add the values passed to it to an array
-    // as shown below and verifying its contents later.
-    const appended = [];
-    word_list.append = (rendered) => {
-        appended.push(rendered);
-    };
+    const two_typing_users_ids = [anna.user_id, vronsky.user_id];
+    const two_typing_users = [anna, vronsky];
 
-    // Existing alert words in the actual code are removed before adding them
-    // to avoid duplicates by calling `remove` on find results of `#alert_words_list`.
-    // We make sure that doesn't fail by creating stubs here.
-    const alert_word_items = $.create("alert_word_items");
-    word_list.set_find_results(".alert-word-item", alert_word_items);
-    alert_word_items.remove = () => {};
+    // Based on typing_events.MAX_USERS_TO_DISPLAY_NAME (which is currently 3),
+    // we display either the list of all users typing (if they do not exceed
+    // MAX_USERS_TO_DISPLAY_NAME) or 'Several people are typing…'
 
-    // As you can see below, the first argument to mock_template takes
+    // As we are not testing any functionality of `get_users_typing_for_narrow`,
+    // let's override it to return two typists.
+    override(typing_events, "get_users_typing_for_narrow", () => two_typing_users_ids);
+
+    const two_typing_users_rendered_html = "Two typing users rendered html stub";
+
+    // As you can see below, the first argument of mock_template takes
     // the relative path of the template we want to mock w.r.t static/templates/
     //
     // The second argument takes a boolean determing whether to render html.
     // We mostly set this to `false` and recommend you avoid setting this to `true`
     // unless necessary in situations where you want to test conditionals
-    // or something similar. Find and see examples where we set this to true with
-    // help of `git grep mock_template | grep true`.
+    // or something similar. The latter examples below would make that more clear.
     //
     // The third takes a function to run on calling this template. The function
     // gets passed an object(`args` below) containing arguments passed to the template.
     // Additionally, it can also have rendered html passed to it if second argument of
-    // mock_template was set to true. Any render calls to this template
+    // mock_template was set to `true`. Any render calls to this template
     // will run the function and return the function's return value.
-    mock_template("settings/alert_word_settings_item.hbs", false, (args) => "stub-" + args.word);
+    //
+    // We often use the function in third argument, like below, to make sure
+    // the arguments passed to the template are what we expect.
+    mock_template("typing_notifications.hbs", false, (args) => {
+        assert.deepEqual(args.users, two_typing_users);
+        assert.ok(!args.several_users); // Whether to show 'Several people are typing…'
+        return two_typing_users_rendered_html;
+    });
 
-    // On redering alert words UI, `#create_alert_word_name` will be focused.
-    // Create a stub for that and make sure it isn't focused now but is focused
-    // after calling `render_alert_words_ui`.
-    const new_alert_word = $("#create_alert_word_name");
-    assert.ok(!new_alert_word.is_focused());
+    typing_events.render_notifications_for_narrow();
+    // Make sure #typing_notifications's html content is set to the rendered template
+    // which we mocked and gave a custom return value.
+    assert.equal(typing_notifications.html(), two_typing_users_rendered_html);
 
-    // This is the function we are testing. It gets all the alert words which
-    // are added with `alert_words.initialize` above, renders each alert word nicely
-    // with the help of `alert_word_settings_item.hbs`, appends each of those rendered
-    // elements to #alert_words_list and focuses #create_alert_word.
-    alert_words_ui.render_alert_words_ui();
+    // Now we'll see how setting the second argument to `true`
+    // can be helpful in testing conditionals inside the template.
 
-    // If you missed it, the `stub-` part prepended to alert words is an effect
-    // of the return value of the function passed into `mock_template` call above.
-    assert.deepEqual(appended, ["stub-bar", "stub-foo"]);
-    assert.ok(new_alert_word.is_focused());
+    // Let's set the mock to just return the rendered html.
+    mock_template("typing_notifications.hbs", true, (args, rendered_html) => rendered_html);
+
+    // Since we only have two(<MAX_USERS_TO_DISPLAY_NAME) typists, both of them
+    // should be rendered but not 'Several people are typing…'
+    typing_events.render_notifications_for_narrow();
+    assert.ok(typing_notifications.html().includes(`${anna.full_name} is typing…`));
+    assert.ok(typing_notifications.html().includes(`${vronsky.full_name} is typing…`));
+    assert.ok(!typing_notifications.html().includes("Several people are typing…"));
+
+    // Change to having four typists and verify the rendered html has
+    // 'Several people are typing…' but not the list of users.
+    const four_typing_users_ids = [anna.user_id, vronsky.user_id, levin.user_id, kitty.user_id];
+    override(typing_events, "get_users_typing_for_narrow", () => four_typing_users_ids);
+
+    typing_events.render_notifications_for_narrow();
+    assert.ok(typing_notifications.html().includes("Several people are typing…"));
+    assert.ok(!typing_notifications.html().includes(`${anna.full_name} is typing…`));
+    assert.ok(!typing_notifications.html().includes(`${vronsky.full_name} is typing…`));
+    assert.ok(!typing_notifications.html().includes(`${levin.full_name} is typing…`));
+    assert.ok(!typing_notifications.html().includes(`${kitty.full_name} is typing…`));
 });

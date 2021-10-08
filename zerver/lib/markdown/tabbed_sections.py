@@ -27,7 +27,7 @@ NAV_BAR_TEMPLATE = """
 """.strip()
 
 NAV_LIST_ITEM_TEMPLATE = """
-<li data-language="{data_language}" tabindex="0">{name}</li>
+<li data-language="{data_language}" tabindex="0">{label}</li>
 """.strip()
 
 DIV_TAB_CONTENT_TEMPLATE = """
@@ -38,7 +38,7 @@ DIV_TAB_CONTENT_TEMPLATE = """
 
 # If adding new entries here, also check if you need to update
 # tabbed-instructions.js
-TAB_DISPLAY_NAMES = {
+TAB_SECTION_LABELS = {
     "desktop-web": "Desktop/Web",
     "ios": "iOS",
     "android": "Android",
@@ -57,6 +57,7 @@ TAB_DISPLAY_NAMES = {
     "mm-gitlab-omnibus": "GitLab Omnibus",
     "send-email-invitations": "Send email invitations",
     "share-an-invite-link": "Share an invite link",
+    "require-invitations": "Require invitations",
     "allow-anyone-to-join": "Allow anyone to join",
     "restrict-by-email-domain": "Restrict by email domain",
     "zoom": "Zoom",
@@ -72,6 +73,9 @@ TAB_DISPLAY_NAMES = {
     "not-stream": "From other views",
     "via-recent-topics": "Via recent topics",
     "via-left-sidebar": "Via left sidebar",
+    "instructions-for-all-platforms": "Instructions for all platforms",
+    "public-streams": "Public streams",
+    "private-streams": "Private streams",
 }
 
 
@@ -96,7 +100,10 @@ class TabbedSectionsPreprocessor(Preprocessor):
             else:
                 tab_class = "no-tabs"
                 tab_section["tabs"] = [
-                    {"tab_name": "null_tab", "start": tab_section["start_tabs_index"]}
+                    {
+                        "tab_name": "instructions-for-all-platforms",
+                        "start": tab_section["start_tabs_index"],
+                    }
                 ]
             nav_bar = self.generate_nav_bar(tab_section)
             content_blocks = self.generate_content_blocks(tab_section, lines)
@@ -136,10 +143,16 @@ class TabbedSectionsPreprocessor(Preprocessor):
     def generate_nav_bar(self, tab_section: Dict[str, Any]) -> str:
         li_elements = []
         for tab in tab_section["tabs"]:
-            li = NAV_LIST_ITEM_TEMPLATE.format(
-                data_language=tab.get("tab_name"), name=TAB_DISPLAY_NAMES.get(tab.get("tab_name"))
-            )
+            tab_name = tab.get("tab_name")
+            tab_label = TAB_SECTION_LABELS.get(tab_name)
+            if tab_label is None:
+                raise ValueError(
+                    f"Tab '{tab_name}' is not present in TAB_SECTION_LABELS in zerver/lib/markdown/tabbed_sections.py"
+                )
+
+            li = NAV_LIST_ITEM_TEMPLATE.format(data_language=tab_name, label=tab_label)
             li_elements.append(li)
+
         return NAV_BAR_TEMPLATE.format(tabs="\n".join(li_elements))
 
     def parse_tabs(self, lines: List[str]) -> Optional[Dict[str, Any]]:

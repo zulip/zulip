@@ -33,6 +33,9 @@ export type UserSettingsType = {
     translate_emoticons: boolean;
     twenty_four_hour_time: boolean;
     wildcard_mentions_notify: boolean;
+    send_stream_typing_notifications: boolean;
+    send_private_typing_notifications: boolean;
+    send_read_receipts: boolean;
 };
 
 export let user_settings = {} as UserSettingsType;

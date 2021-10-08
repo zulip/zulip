@@ -46,7 +46,7 @@ def overwrite_symlink(src: str, dst: str) -> None:
         # Note: creating a temporary filename like this is not generally
         # secure.  It’s fine in this case because os.symlink refuses to
         # overwrite an existing target; we handle the error and try again.
-        tmp = os.path.join(dir, ".{}.{:010x}".format(base, random.randrange(1 << 40)))
+        tmp = os.path.join(dir, f".{base}.{random.randrange(1 << 40):010x}")
         try:
             os.symlink(src, tmp)
         except FileExistsError:
@@ -197,7 +197,7 @@ def get_deployment_lock(error_rerun_script: str) -> None:
             print(
                 WARNING
                 + "Another deployment in progress; waiting for lock... "
-                + "(If no deployment is running, rmdir {})".format(LOCK_DIR)
+                + f"(If no deployment is running, rmdir {LOCK_DIR})"
                 + ENDC,
                 flush=True,
             )
@@ -207,9 +207,9 @@ def get_deployment_lock(error_rerun_script: str) -> None:
         print(
             FAIL
             + "Deployment already in progress.  Please run\n"
-            + "  {}\n".format(error_rerun_script)
+            + f"  {error_rerun_script}\n"
             + "manually when the previous deployment finishes, or run\n"
-            + "  rmdir {}\n".format(LOCK_DIR)
+            + f"  rmdir {LOCK_DIR}\n"
             + "if the previous deployment crashed."
             + ENDC
         )
@@ -387,17 +387,17 @@ def may_be_perform_purging(
     if dry_run:
         print("Performing a dry run...")
     if not no_headings:
-        print("Cleaning unused {}s...".format(dir_type))
+        print(f"Cleaning unused {dir_type}s...")
 
     for directory in dirs_to_purge:
         if verbose:
-            print("Cleaning unused {}: {}".format(dir_type, directory))
+            print(f"Cleaning unused {dir_type}: {directory}")
         if not dry_run:
             run_as_root(["rm", "-rf", directory])
 
     for directory in dirs_to_keep:
         if verbose:
-            print("Keeping used {}: {}".format(dir_type, directory))
+            print(f"Keeping used {dir_type}: {directory}")
 
 
 @functools.lru_cache(None)
@@ -540,7 +540,7 @@ def assert_running_as_root(strip_lib_from_paths: bool = False) -> None:
     if strip_lib_from_paths:
         script_name = script_name.replace("scripts/lib/upgrade", "scripts/upgrade")
     if not is_root():
-        print("{} must be run as root.".format(script_name))
+        print(f"{script_name} must be run as root.")
         sys.exit(1)
 
 
@@ -597,7 +597,7 @@ def get_tornado_ports(config_file: configparser.RawConfigParser) -> List[int]:
 
 
 def get_or_create_dev_uuid_var_path(path: str) -> str:
-    absolute_path = "{}/{}".format(get_dev_uuid_var_path(), path)
+    absolute_path = f"{get_dev_uuid_var_path()}/{path}"
     os.makedirs(absolute_path, exist_ok=True)
     return absolute_path
 

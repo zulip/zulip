@@ -35,4 +35,9 @@ explicitly set a notification preference.
 
 ## Related articles
 
+* [Desktop notifications](/help/desktop-notifications)
+* [Email notifications](/help/email-notifications)
+* [Mobile notifications](/help/mobile-notifications)
 * [Mute a stream](/help/mute-a-stream)
+* [Mute a topic](/help/mute-a-topic)
+* [PMs, mentions, and alerts](/help/pm-mention-alert-notifications)

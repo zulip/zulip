@@ -28,8 +28,8 @@ async function realm_creation_tests(page: Page): Promise<void> {
 
     // Open the confirmation URL
     const page_content = await page.evaluate(() => document.querySelector("body")!.textContent);
-    const confirmation_key = await JSON.parse(page_content!).confirmation_key;
-    const confirmation_url = "http://" + host + "/accounts/do_confirm/" + confirmation_key;
+    const confirmation_key: string = JSON.parse(page_content!).confirmation_key;
+    const confirmation_url = `http://${host}/accounts/do_confirm/${confirmation_key}`;
     await page.goto(confirmation_url);
 
     // We wait until the DOMContentLoaded event because we want the code

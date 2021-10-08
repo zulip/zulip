@@ -1,16 +1,18 @@
 import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import orjson
+from django.contrib.auth.models import AnonymousUser
 from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
+from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.actions import check_update_message, do_delete_messages
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.html_diff import highlight_html_differences
-from zerver.lib.message import access_message
+from zerver.lib.message import access_message, access_web_public_message
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -131,13 +133,13 @@ def validate_can_delete_message(user_profile: UserProfile, message: Message) -> 
     if message.sender != user_profile:
         # Users can only delete messages sent by them.
         raise JsonableError(_("You don't have permission to delete this message"))
-    if not user_profile.realm.allow_message_deleting:
-        # User can not delete message, if message deleting is not allowed in realm.
+    if not user_profile.can_delete_own_message():
+        # Only user with roles as allowed by delete_own_message_policy can delete message.
         raise JsonableError(_("You don't have permission to delete this message"))
 
-    deadline_seconds = user_profile.realm.message_content_delete_limit_seconds
-    if deadline_seconds == 0:
-        # 0 for no time limit to delete message
+    deadline_seconds: Optional[int] = user_profile.realm.message_content_delete_limit_seconds
+    if deadline_seconds is None:
+        # None means no time limit to delete message
         return
     if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
         # User can not delete message after deadline time of realm
@@ -168,8 +170,14 @@ def delete_message_backend(
 @has_request_variables
 def json_fetch_raw_message(
     request: HttpRequest,
-    user_profile: UserProfile,
+    maybe_user_profile: Union[UserProfile, AnonymousUser],
     message_id: int = REQ(converter=to_non_negative_int, path_only=True),
 ) -> HttpResponse:
-    (message, user_message) = access_message(user_profile, message_id)
+
+    if not maybe_user_profile.is_authenticated:
+        realm = get_valid_realm_from_request(request)
+        message = access_web_public_message(realm, message_id)
+    else:
+        (message, user_message) = access_message(maybe_user_profile, message_id)
+
     return json_success({"raw_content": message.content})

@@ -11,7 +11,11 @@ os.chdir(os.path.join(os.path.dirname(__file__), ".."))
 def build_for_prod_or_puppeteer(quiet: bool) -> NoReturn:
     """Builds for production, writing the output to disk"""
 
-    webpack_args = ["node", "node_modules/.bin/webpack-cli", "--mode=production"]
+    webpack_args = ["node"]
+    with open("/proc/meminfo") as meminfo:
+        if int(next(meminfo).split()[1]) < 3 * 1024 * 1024:
+            webpack_args += ["--max-old-space-size=1536"]
+    webpack_args += ["node_modules/.bin/webpack-cli", "--mode=production"]
     if quiet:
         webpack_args += ["--stats=errors-only"]
     os.execvp(webpack_args[0], webpack_args)

@@ -21,7 +21,6 @@ import * as pill_typeahead from "./pill_typeahead";
 import * as settings_bots from "./settings_bots";
 import * as settings_data from "./settings_data";
 import * as settings_ui from "./settings_ui";
-import * as setup from "./setup";
 import * as ui_report from "./ui_report";
 import * as user_pill from "./user_pill";
 import * as user_profile from "./user_profile";
@@ -443,14 +442,14 @@ export function set_up() {
             }
         }
 
-        setup.set_password_change_in_progress(true);
+        channel.set_password_change_in_progress(true);
         const opts = {
             success_continuation() {
-                setup.set_password_change_in_progress(false);
+                channel.set_password_change_in_progress(false);
                 overlays.close_modal("#change_password_modal");
             },
             error_continuation() {
-                setup.set_password_change_in_progress(false);
+                channel.set_password_change_in_progress(false);
             },
             error_msg_element: change_password_error,
             failure_msg_html: null,
@@ -683,13 +682,15 @@ export function set_up() {
         );
     });
 
-    $("#user_presence_enabled").val(user_settings.presence_enabled);
-
-    $("#user_presence_enabled").on("change", (e) => {
+    $("#privacy_settings_box").on("change", "input", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
-        const data = {presence_enabled: $("#user_presence_enabled").prop("checked")};
+        const input_elem = $(e.currentTarget);
+        const setting_name = input_elem.attr("name");
+        const checked = input_elem.prop("checked");
+
+        const data = {[setting_name]: checked};
         settings_ui.do_settings_change(
             channel.patch,
             "/json/settings",

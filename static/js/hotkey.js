@@ -738,7 +738,8 @@ export function process_hotkey(e, hotkey) {
         if (
             event_name === "n_key" &&
             overlays.streams_open() &&
-            settings_data.user_can_create_streams()
+            (settings_data.user_can_create_private_streams() ||
+                settings_data.user_can_create_public_streams())
         ) {
             stream_settings_ui.open_create_stream();
             return true;

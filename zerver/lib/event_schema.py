@@ -920,7 +920,7 @@ def check_realm_default_update(
     _check_realm_default_update(var_name, event)
 
     assert prop == event["property"]
-    assert prop not in ["default_language", "twenty_four_hour_time"]
+    assert prop != "default_language"
     assert prop in RealmUserDefault.property_types
 
     prop_type = RealmUserDefault.property_types[prop]
@@ -1128,6 +1128,12 @@ realm_user_person_types = dict(
             # vertical formatting
             ("user_id", int),
             ("delivery_email", str),
+        ],
+    ),
+    email=DictType(
+        required_keys=[
+            ("user_id", int),
+            ("new_email", str),
         ],
     ),
     full_name=DictType(
