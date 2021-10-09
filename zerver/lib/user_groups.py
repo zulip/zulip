@@ -14,7 +14,7 @@ def access_user_group_by_id(
         user_group = UserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
         if not for_mention and user_group.is_system_group:
             raise JsonableError(_("Insufficient permission"))
-        group_member_ids = get_user_group_members(user_group)
+        group_member_ids = get_user_group_direct_members(user_group)
         if (
             not user_profile.is_realm_admin
             and not user_profile.is_moderator
@@ -83,7 +83,7 @@ def create_user_group(
         return user_group
 
 
-def get_user_group_members(user_group: UserGroup) -> List[UserProfile]:
+def get_user_group_direct_members(user_group: UserGroup) -> List[UserProfile]:
     members = UserGroupMembership.objects.filter(user_group=user_group)
     return [member.user_profile.id for member in members]
 
