@@ -17,7 +17,7 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.user_groups import (
     access_user_group_by_id,
-    get_memberships_of_users,
+    get_direct_memberships_of_users,
     get_user_group_direct_members,
     user_groups_in_realm_serialized,
 )
@@ -114,7 +114,7 @@ def add_members_to_group_backend(
 
     user_group = access_user_group_by_id(user_group_id, user_profile)
     user_profiles = user_ids_to_users(members, user_profile.realm)
-    existing_member_ids = set(get_memberships_of_users(user_group, user_profiles))
+    existing_member_ids = set(get_direct_memberships_of_users(user_group, user_profiles))
 
     for user_profile in user_profiles:
         if user_profile.id in existing_member_ids:
