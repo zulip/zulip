@@ -18,7 +18,7 @@ from zerver.lib.response import json_success
 from zerver.lib.user_groups import (
     access_user_group_by_id,
     get_memberships_of_users,
-    get_user_group_members,
+    get_user_group_direct_members,
     user_groups_in_realm_serialized,
 )
 from zerver.lib.users import user_ids_to_users
@@ -136,7 +136,7 @@ def remove_members_from_group_backend(
 
     user_profiles = user_ids_to_users(members, user_profile.realm)
     user_group = access_user_group_by_id(user_group_id, user_profile)
-    group_member_ids = get_user_group_members(user_group)
+    group_member_ids = get_user_group_direct_members(user_group)
     for member in members:
         if member not in group_member_ids:
             raise JsonableError(_("There is no member '{}' in this user group").format(member))
