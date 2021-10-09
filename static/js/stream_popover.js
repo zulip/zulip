@@ -4,6 +4,7 @@ import $ from "jquery";
 import render_all_messages_sidebar_actions from "../templates/all_messages_sidebar_actions.hbs";
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
 import render_move_topic_to_stream from "../templates/move_topic_to_stream.hbs";
+import render_rename_topic from "../templates/rename_topic_modal.hbs";
 import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
 import render_stream_sidebar_actions from "../templates/stream_sidebar_actions.hbs";
 import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs";
@@ -267,6 +268,10 @@ function build_topic_popover(opts) {
     // Arguably, we could offer the "Move topic" option even if users
     // can only edit the name within a stream.
     const can_move_topic = settings_data.user_can_move_messages_between_streams();
+    // can_only_rename_topic is a check for showing either rename option or move topic option
+    const can_only_rename_topic = can_move_topic
+        ? false
+        : settings_data.user_can_edit_topic_of_any_message();
 
     const content = render_topic_sidebar_actions({
         stream_name: sub.name,
@@ -274,6 +279,7 @@ function build_topic_popover(opts) {
         topic_name,
         topic_muted,
         can_move_topic,
+        can_only_rename_topic,
         is_realm_admin: page_params.is_admin,
         topic_is_resolved: topic_name.startsWith(message_edit.RESOLVED_TOPIC_PREFIX),
         color: sub.color,
@@ -387,6 +393,16 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
 
     stream_bar.decorate(current_stream_name, stream_header_colorblock, false);
     overlays.open_modal("#move_topic_modal");
+}
+
+function build_rename_topic_popover(e, current_stream_id, topic_name) {
+    const args = {
+        topic_name,
+        current_stream_id,
+    };
+    hide_topic_popover();
+    $("#rename-a-topic-modal-holder").html(render_rename_topic(args));
+    overlays.open_modal("#rename_topic_modal");
 }
 
 export function register_click_handlers() {
@@ -702,6 +718,15 @@ export function register_topic_handlers() {
         e.preventDefault();
     });
 
+    $("body").on("click", ".sidebar-popover-rename-topic", (e) => {
+        const topic_row = $(e.currentTarget);
+        const stream_id = Number.parseInt(topic_row.attr("data-stream-id"), 10);
+        const topic_name = topic_row.attr("data-topic-name");
+        build_rename_topic_popover(e, stream_id, topic_name);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
     $("body").on("click", "#topic_stream_edit_form_error .send-status-close", () => {
         $("#topic_stream_edit_form_error").hide();
     });
@@ -765,6 +790,44 @@ export function register_topic_handlers() {
             },
             (xhr) => {
                 message_edit.hide_topic_move_spinner();
+                show_error_msg(xhr.responseJSON.msg);
+            },
+        );
+    });
+
+    $("body").on("click", "#do_rename_topic_button", (e) => {
+        e.preventDefault();
+        function show_error_msg(msg) {
+            $("#topic_stream_edit_form_error .error-msg").text(msg);
+            $("#topic_stream_edit_form_error").show();
+        }
+
+        const params = Object.fromEntries(
+            $("#rename_topic_form")
+                .serializeArray()
+                .map(({name, value}) => [name, value]),
+        );
+
+        const {old_topic_name} = params;
+        let {new_topic_name, current_stream_id} = params;
+
+        new_topic_name = new_topic_name.trim();
+        current_stream_id = Number.parseInt(current_stream_id, 10);
+
+        if (new_topic_name.toLowerCase() === old_topic_name.toLowerCase()) {
+            show_error_msg("Please select a different topic name.");
+            return;
+        }
+
+        message_edit.show_rename_topic_spinner();
+        with_first_message_id(
+            current_stream_id,
+            old_topic_name,
+            (message_id) => {
+                message_edit.rename_topic_sidebare(message_id, new_topic_name);
+            },
+            (xhr) => {
+                message_edit.hide_topic_rename_spinner();
                 show_error_msg(xhr.responseJSON.msg);
             },
         );

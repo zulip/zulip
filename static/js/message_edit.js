@@ -230,6 +230,18 @@ export function show_topic_move_spinner() {
     $("#move_topic_modal .modal-footer").hide();
 }
 
+export function hide_topic_rename_spinner() {
+    const spinner = $("#rename_topic_modal .topic_move_spinner");
+    loading.destroy_indicator(spinner);
+    $("#rename_topic_modal .modal-footer").hide();
+}
+
+export function show_rename_topic_spinner() {
+    const spinner = $("#rename_topic_modal .topic_move_spinner");
+    loading.make_indicator(spinner);
+    $("#rename_topic_modal .modal-footer").show();
+}
+
 export function end_if_focused_on_inline_topic_edit() {
     const focused_elem = $(".topic_edit_form").find(":focus");
     if (focused_elem.length === 1) {
@@ -1097,6 +1109,38 @@ export function move_topic_containing_message_to_stream(
             reset_modal_ui();
             ui_report.error(
                 $t_html({defaultMessage: "Error moving the topic"}),
+                xhr,
+                $("#home-error"),
+                4000,
+            );
+        },
+    });
+}
+
+export function rename_topic_sidebare(message_id, new_topic_name) {
+    function reset_modal_ui() {
+        currently_topic_editing_messages = currently_topic_editing_messages.filter(
+            (id) => id !== message_id,
+        );
+        hide_topic_rename_spinner();
+        overlays.close_modal("#rename_topic_modal");
+    }
+
+    const request = {
+        message_id,
+        topic: new_topic_name,
+        propagate_mode: "change_later",
+    };
+
+    channel.patch({
+        url: "/json/messages/" + message_id,
+        data: request,
+        success() {
+            reset_modal_ui();
+        },
+        error(xhr) {
+            ui_report.error(
+                $t_html({defaultMessage: "Error renaming a topic"}),
                 xhr,
                 $("#home-error"),
                 4000,
