@@ -186,3 +186,6 @@ pymongo
 
 # Non-backtracking regular expressions
 google-re2
+
+# For querying recursive group membership
+django-cte
