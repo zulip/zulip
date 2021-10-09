@@ -9,8 +9,8 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_usermessage
 from zerver.lib.user_groups import (
     create_user_group,
+    get_direct_user_groups,
     get_memberships_of_users,
-    get_user_groups,
     user_groups_in_realm_serialized,
 )
 from zerver.models import Realm, UserGroup, UserGroupMembership, UserProfile, get_realm
@@ -43,10 +43,10 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[1]["description"], "")
         self.assertEqual(user_groups[1]["members"], [])
 
-    def test_get_user_groups(self) -> None:
+    def test_get_direct_user_groups(self) -> None:
         othello = self.example_user("othello")
         self.create_user_group_for_test("support")
-        user_groups = get_user_groups(othello)
+        user_groups = get_direct_user_groups(othello)
         self.assert_length(user_groups, 1)
         self.assertEqual(user_groups[0].name, "support")
 
