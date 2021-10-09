@@ -139,9 +139,8 @@ export const update_elements = (content) => {
                     stream_icon = $("<i>", {class:"fa fa-lock"});
                 }
                 $(this).empty()
-                for (let i = 0; i < 2; i++) {
-                    $(this).append($("<span>"));
-                }
+                $(this).append($("<span>", {class:"icon"}));
+                $(this).append($("<span>", {class:"text"}));
                 $(this).children("span:nth-of-type(1)").html(stream_icon);
                 $(this).children("span:nth-of-type(2)").text(" " + stream_name);
             }
