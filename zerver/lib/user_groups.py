@@ -54,7 +54,7 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[Dict[str, Any]]:
     return sorted(group_dicts.values(), key=lambda group_dict: group_dict["id"])
 
 
-def get_user_groups(user_profile: UserProfile) -> List[UserGroup]:
+def get_direct_user_groups(user_profile: UserProfile) -> List[UserGroup]:
     return list(user_profile.usergroup_set.all())
 
 
