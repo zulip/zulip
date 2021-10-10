@@ -133,6 +133,21 @@
         width: 0;
     }
 
+
+    #compose-globe-icon {
+        position: relative;
+        left: 5px;
+        width: 0;
+    }
+
+
+    #compose-hash-icon {
+        position: relative;
+        left: 5px;
+        width: 0;
+    }
+
+
     .message_header {
         background: none;
         background-color: hsl(0, 0%, 92%);
@@ -402,6 +417,14 @@ input.recipient_box {
     }
 
     &.lock-padding {
+        padding-left: 18px;
+    }
+
+    &.globe-padding {
+        padding-left: 20px;
+    }
+
+    &.hash-padding {
         padding-left: 18px;
     }
 }

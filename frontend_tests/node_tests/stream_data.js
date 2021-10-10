@@ -105,6 +105,9 @@ test("basics", () => {
     assert.ok(stream_data.get_invite_only("social"));
     assert.ok(!stream_data.get_invite_only("unknown"));
 
+    assert.ok(stream_data.is_web_public("social"));
+    assert.ok(!stream_data.is_web_public("unknown"));
+
     assert.equal(stream_data.get_color("social"), "red");
     assert.equal(stream_data.get_color("unknown"), "#c2c2c2");
 
