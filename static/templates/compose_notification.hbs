@@ -1,5 +1,16 @@
 {{! Content of sent-message notifications }}
 <div class="compose-notifications-content">
-    {{note}} {{#if link_class}}<a href="{{above_composebox_narrow_url}}" class="{{link_class}}" data-message-id="{{link_msg_id}}">{{link_text}}</a>{{/if}}
+    {{note}} 
+    {{#if link_class}}
+        <a href="{{above_composebox_narrow_url}}" class="{{link_class}}" data-message-id="{{link_msg_id}}">{{default_message}}
+        {{#if is_private_stream}}
+            <i class="fa fa-lock"></i>
+        {{else if is_global_stream}}
+            <i class="fa fa-globe"></i>
+        {{else}}
+            <span class="hashtag"></span>
+        {{/if}}      
+    {{message_recipient}}</a>
+    {{/if}}
     <button type="button" class="out-of-view-notification-close close">&times;</button>
 </div>
