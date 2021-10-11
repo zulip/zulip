@@ -1581,11 +1581,15 @@ div.focused_table {
     white-space: nowrap;
 
     label.checkbox {
-        margin-right: 0 !important;
-
+        /* Place the checkboxes on their own lines. */
+        display: block;
         input {
             margin: 0;
             vertical-align: baseline;
+        }
+
+        & + label.checkbox {
+            margin-top: 10px;
         }
     }
 
@@ -1593,10 +1597,6 @@ div.focused_table {
         display: inline-block;
         margin-right: 10px;
     }
-}
-
-.topic_move_breadcrumb_messages {
-    margin-top: 10px !important;
 }
 
 .message_length_controller {
