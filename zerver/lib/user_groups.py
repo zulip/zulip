@@ -55,7 +55,7 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[Dict[str, Any]]:
 
 
 def get_direct_user_groups(user_profile: UserProfile) -> List[UserGroup]:
-    return list(user_profile.usergroup_set.all())
+    return list(user_profile.direct_groups.all())
 
 
 def remove_user_from_user_group(user_profile: UserProfile, user_group: UserGroup) -> int:
