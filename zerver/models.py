@@ -1978,7 +1978,9 @@ class PasswordTooWeakError(Exception):
 class UserGroup(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     name: str = models.CharField(max_length=100)
-    direct_members: Manager = models.ManyToManyField(UserProfile, through="UserGroupMembership")
+    direct_members: Manager = models.ManyToManyField(
+        UserProfile, through="UserGroupMembership", related_name="direct_groups"
+    )
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     description: str = models.TextField(default="")
     is_system_group: bool = models.BooleanField(default=False)
@@ -1989,8 +1991,8 @@ class UserGroup(models.Model):
 
 class UserGroupMembership(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
-    user_group: UserGroup = models.ForeignKey(UserGroup, on_delete=CASCADE)
-    user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
+    user_group: UserGroup = models.ForeignKey(UserGroup, on_delete=CASCADE, related_name="+")
+    user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE, related_name="+")
 
     class Meta:
         unique_together = (("user_group", "user_profile"),)

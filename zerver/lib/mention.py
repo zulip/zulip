@@ -102,11 +102,9 @@ class MentionData:
         if user_group_names:
             for group in UserGroup.objects.filter(
                 realm_id=realm_id, name__in=user_group_names, is_system_group=False
-            ).prefetch_related("usergroupmembership_set"):
+            ).prefetch_related("direct_members"):
                 self.user_group_name_info[group.name.lower()] = group
-                self.user_group_members[group.id] = [
-                    m.user_profile_id for m in group.usergroupmembership_set.all()
-                ]
+                self.user_group_members[group.id] = [m.id for m in group.direct_members.all()]
 
     def get_user_by_name(self, name: str) -> Optional[FullNameInfo]:
         # warning: get_user_by_name is not dependable if two
