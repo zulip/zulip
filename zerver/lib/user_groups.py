@@ -84,8 +84,9 @@ def create_user_group(
 
 
 def get_user_group_direct_members(user_group: UserGroup) -> List[UserProfile]:
-    members = UserGroupMembership.objects.filter(user_group=user_group)
-    return [member.user_profile.id for member in members]
+    return UserGroupMembership.objects.filter(user_group=user_group).values_list(
+        "user_profile_id", flat=True
+    )
 
 
 def get_direct_memberships_of_users(user_group: UserGroup, members: List[UserProfile]) -> List[int]:
