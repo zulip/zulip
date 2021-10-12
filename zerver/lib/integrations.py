@@ -388,6 +388,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         function="zerver.webhooks.github.view.api_github_webhook",
         stream_name="github",
     ),
+    WebhookIntegration("githubsponsors", ['version-control'], display_name="Github Sponsors"),
     WebhookIntegration("gitlab", ["version-control"], display_name="GitLab"),
     WebhookIntegration("gocd", ["continuous-integration"], display_name="GoCD"),
     WebhookIntegration("gogs", ["version-control"], stream_name="commits"),
