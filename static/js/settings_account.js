@@ -180,8 +180,7 @@ export function initialize_custom_date_type_fields(element_id) {
     $(element_id).find(".custom_user_field .datepicker").flatpickr({
         altFormat: "F j, Y",
         allowInput: true,
-        allowInvalidPreload: true,
-        
+        allowInvalidPreload: true,      
     });
 
     $(element_id)
