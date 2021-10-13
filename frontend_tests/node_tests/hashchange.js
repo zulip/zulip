@@ -9,10 +9,6 @@ const $ = require("../zjsunit/zjquery");
 const {user_settings} = require("../zjsunit/zpage_params");
 
 let window_stub;
-set_global("location", {
-    protocol: "http:",
-    host: "example.com",
-});
 set_global("to_$", () => window_stub);
 
 mock_esm("../../static/js/search", {
@@ -330,5 +326,5 @@ run_test("save_narrow", ({override}) => {
     helper.clear_events();
     hashchange.save_narrow(operators);
     helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
-    assert.equal(url_pushed, "http://example.com/#narrow/is/starred");
+    assert.equal(url_pushed, "http://zulip.zulipdev.com/#narrow/is/starred");
 });

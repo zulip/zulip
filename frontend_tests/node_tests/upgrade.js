@@ -14,6 +14,7 @@ const noop = () => {};
 const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
+const location = set_global("location", {});
 
 const StripeCheckout = set_global("StripeCheckout", {
     configure: noop,
@@ -44,7 +45,7 @@ run_test("initialize", ({override}) => {
                     assert.equal(stripe_token, "stripe_add_card_token");
                     assert.deepEqual(ignored_inputs, []);
                     assert.equal(type, "POST");
-                    window.location.replace = (new_location) => {
+                    location.replace = (new_location) => {
                         assert.equal(new_location, "/billing");
                     };
                     success_callback();
@@ -54,7 +55,7 @@ run_test("initialize", ({override}) => {
                     assert.equal(stripe_token, undefined);
                     assert.deepEqual(ignored_inputs, []);
                     assert.equal(type, "POST");
-                    window.location.replace = (new_location) => {
+                    location.replace = (new_location) => {
                         assert.equal(new_location, "/billing");
                     };
                     success_callback();
@@ -64,7 +65,7 @@ run_test("initialize", ({override}) => {
                     assert.equal(stripe_token, undefined);
                     assert.deepEqual(ignored_inputs, []);
                     assert.equal(type, "POST");
-                    window.location.replace = (new_location) => {
+                    location.replace = (new_location) => {
                         assert.equal(new_location, "/");
                     };
                     success_callback();
