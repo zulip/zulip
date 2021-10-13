@@ -200,13 +200,9 @@ jobs:
         # Only upload coverage when both frontend and backend
         # tests are ran.
         if: ${{ matrix.include_frontend_tests }}
-        run: |
-          # Codcov requires `.coverage` file to be stored in the
-          # current working directory.
-          mv ./var/.coverage ./.coverage
-          . /srv/zulip-py3-venv/bin/activate || true
-
-          pip install codecov && codecov || echo "Error in uploading coverage reports to codecov.io."
+        uses: codecov/codecov-action@v2
+        with:
+          files: var/coverage.xml,var/node-coverage/lcov.info
 
       - name: Store Puppeteer artifacts
         # Upload these on failure, as well
