@@ -9,6 +9,7 @@ from zerver.lib.avatar_hash import (
     user_avatar_path_from_ids,
 )
 from zerver.lib.upload import MEDIUM_AVATAR_SIZE, upload_backend
+from zerver.lib.url_encoding import append_url_query_string
 from zerver.models import UserProfile
 
 
@@ -42,8 +43,7 @@ def avatar_url_from_dict(userdict: Dict[str, Any], medium: bool = False) -> str:
         email=userdict["email"],
         medium=medium,
     )
-    url += "&version={:d}".format(userdict["avatar_version"])
-    return url
+    return append_url_query_string(url, "version={:d}".format(userdict["avatar_version"]))
 
 
 def get_avatar_field(
@@ -94,14 +94,12 @@ def get_avatar_field(
         email=email,
         medium=medium,
     )
-    url += f"&version={avatar_version:d}"
-    return url
+    return append_url_query_string(url, f"version={avatar_version:d}")
 
 
 def get_gravatar_url(email: str, avatar_version: int, medium: bool = False) -> str:
     url = _get_unversioned_gravatar_url(email, medium)
-    url += f"&version={avatar_version:d}"
-    return url
+    return append_url_query_string(url, f"version={avatar_version:d}")
 
 
 def _get_unversioned_gravatar_url(email: str, medium: bool) -> str:
