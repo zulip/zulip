@@ -12,7 +12,10 @@ const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
 const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
-const dom = new JSDOM(template, {pretendToBeVisual: true});
+const dom = new JSDOM(template, {
+    pretendToBeVisual: true,
+    url: "http://zulip.zulipdev.com/upgrade/#billing",
+});
 const jquery = jQueryFactory(dom.window);
 
 const history = set_global("history", {});
@@ -20,11 +23,7 @@ const loading = mock_esm("../../static/js/loading");
 set_global("document", {
     title: "Zulip",
 });
-const location = set_global("location", {
-    pathname: "/upgrade/",
-    search: "",
-    hash: "#billing",
-});
+const location = set_global("location", dom.window.location);
 
 const helpers = zrequire("billing/helpers");
 

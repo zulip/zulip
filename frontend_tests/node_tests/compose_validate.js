@@ -3,13 +3,11 @@
 const {strict: assert} = require("assert");
 
 const {$t_html} = require("../zjsunit/i18n");
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
-
-set_global("document", {location: {}});
 
 const channel = mock_esm("../../static/js/channel");
 const compose_actions = mock_esm("../../static/js/compose_actions");
