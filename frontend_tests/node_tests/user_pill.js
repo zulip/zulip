@@ -33,7 +33,7 @@ const isaac_item = {
     type: "user",
     user_id: isaac.user_id,
     deactivated: false,
-    img_src: `/avatar/${isaac.user_id}&s=50`,
+    img_src: `http://zulip.zulipdev.com/avatar/${isaac.user_id}?s=50`,
 };
 
 let pill_widget = {};
