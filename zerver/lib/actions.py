@@ -4323,7 +4323,7 @@ def do_change_full_name(
 
 
 def check_change_full_name(
-    user_profile: UserProfile, full_name_raw: str, acting_user: UserProfile
+    user_profile: UserProfile, full_name_raw: str, acting_user: Optional[UserProfile]
 ) -> str:
     """Verifies that the user's proposed full name is valid.  The caller
     is responsible for checking check permissions.  Returns the new
