@@ -17,6 +17,7 @@ import json
 import logging
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union, cast
+from urllib.parse import urlencode
 
 import magic
 import orjson
@@ -1428,7 +1429,9 @@ def redirect_deactivated_user_to_login(realm: Realm, email: str) -> HttpResponse
     # Specifying the template name makes sure that the user is not redirected to dev_login in case of
     # a deactivated account on a test server.
     login_url = reverse("login_page", kwargs={"template_name": "zerver/login.html"})
-    redirect_url = add_query_to_redirect_url(realm.uri + login_url, f"is_deactivated={email}")
+    redirect_url = add_query_to_redirect_url(
+        realm.uri + login_url, urlencode({"is_deactivated": email})
+    )
     return HttpResponseRedirect(redirect_url)
 
 
