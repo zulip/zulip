@@ -27,7 +27,7 @@ i18n_urlpatterns: List[Union[URLPattern, URLResolver]] = [
     path("activity", get_installation_activity),
     path("activity/support", support, name="support"),
     path("realm_activity/<realm_str>/", get_realm_activity),
-    path("user_activity/<email>/", get_user_activity),
+    path("user_activity/<user_profile_id>/", get_user_activity),
     path("stats/realm/<realm_str>/", stats_for_realm),
     path("stats/installation", stats_for_installation),
     path("stats/remote/<int:remote_server_id>/installation", stats_for_remote_installation),

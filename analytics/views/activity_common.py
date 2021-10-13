@@ -52,10 +52,10 @@ def format_date_for_activity_reports(date: Optional[datetime]) -> str:
         return ""
 
 
-def user_activity_link(email: str) -> mark_safe:
+def user_activity_link(email: str, user_profile_id: int) -> mark_safe:
     from analytics.views.user_activity import get_user_activity
 
-    url = reverse(get_user_activity, kwargs=dict(email=email))
+    url = reverse(get_user_activity, kwargs=dict(user_profile_id=user_profile_id))
     email_link = f'<a href="{escape(url)}">{escape(email)}</a>'
     return mark_safe(email_link)
 
@@ -84,13 +84,11 @@ def remote_installation_stats_link(server_id: int, hostname: str) -> mark_safe:
     return mark_safe(stats_link)
 
 
-def get_user_activity_summary(records: List[QuerySet]) -> Dict[str, Dict[str, Any]]:
-    #: `Any` used above should be `Union(int, datetime)`.
-    #: However current version of `Union` does not work inside other function.
-    #: We could use something like:
-    # `Union[Dict[str, Dict[str, int]], Dict[str, Dict[str, datetime]]]`
-    #: but that would require this long `Union` to carry on throughout inner functions.
-    summary: Dict[str, Dict[str, Any]] = {}
+def get_user_activity_summary(records: List[QuerySet]) -> Dict[str, Any]:
+    #: The type annotation used above is clearly overly permissive.
+    #: We should perhaps use TypedDict to clearly lay out the schema
+    #: for the user activity summary.
+    summary: Dict[str, Any] = {}
 
     def update(action: str, record: QuerySet) -> None:
         if action not in summary:
@@ -107,6 +105,7 @@ def get_user_activity_summary(records: List[QuerySet]) -> Dict[str, Dict[str, An
 
     if records:
         summary["name"] = records[0].user_profile.full_name
+        summary["user_profile_id"] = records[0].user_profile.id
 
     for record in records:
         client = record.client.name
