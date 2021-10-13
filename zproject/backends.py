@@ -75,7 +75,7 @@ from zerver.lib.redis_utils import get_dict_from_redis, get_redis_client, put_di
 from zerver.lib.request import RequestNotes
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.types import ProfileDataElementValue
-from zerver.lib.url_encoding import add_query_to_redirect_url
+from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.models import (
     CustomProfileField,
@@ -1429,7 +1429,7 @@ def redirect_deactivated_user_to_login(realm: Realm, email: str) -> HttpResponse
     # Specifying the template name makes sure that the user is not redirected to dev_login in case of
     # a deactivated account on a test server.
     login_url = reverse("login_page", kwargs={"template_name": "zerver/login.html"})
-    redirect_url = add_query_to_redirect_url(
+    redirect_url = append_url_query_string(
         realm.uri + login_url, urlencode({"is_deactivated": email})
     )
     return HttpResponseRedirect(redirect_url)

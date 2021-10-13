@@ -10,7 +10,7 @@ from zerver.lib.realm_logo import get_realm_logo_url
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.upload import upload_logo_image
-from zerver.lib.url_encoding import add_query_arg_to_redirect_url
+from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.validator import check_bool
 from zerver.models import UserProfile
 
@@ -62,5 +62,5 @@ def get_logo_backend(
     # our templates depend on being able to use the ampersand to
     # add query parameters to our url, get_logo_url does '?version=version_number'
     # hacks to prevent us from having to jump through decode/encode hoops.
-    url = add_query_arg_to_redirect_url(url, request.META["QUERY_STRING"])
+    url = append_url_query_string(url, request.META["QUERY_STRING"])
     return redirect(url)
