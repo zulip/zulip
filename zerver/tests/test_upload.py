@@ -892,7 +892,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
         self.assertEqual(
             url,
-            "/user_avatars/5/fc2b9f1a81f4508a4df2d95451a2a77e0524ca0e-medium.png?x=x&version=2",
+            "/user_avatars/5/fc2b9f1a81f4508a4df2d95451a2a77e0524ca0e-medium.png?version=2",
         )
 
         url = get_avatar_field(
@@ -926,8 +926,8 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         """Verifies URL schemes for avatars and realm icons."""
         backend: ZulipUploadBackend = LocalUploadBackend()
         self.assertEqual(backend.get_public_upload_root_url(), "/user_avatars/")
-        self.assertEqual(backend.get_avatar_url("hash", False), "/user_avatars/hash.png?x=x")
-        self.assertEqual(backend.get_avatar_url("hash", True), "/user_avatars/hash-medium.png?x=x")
+        self.assertEqual(backend.get_avatar_url("hash", False), "/user_avatars/hash.png")
+        self.assertEqual(backend.get_avatar_url("hash", True), "/user_avatars/hash-medium.png")
         self.assertEqual(
             backend.get_realm_icon_url(15, 1), "/user_avatars/15/realm/icon.png?version=1"
         )
@@ -942,11 +942,11 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         with self.settings(S3_AVATAR_BUCKET="bucket"):
             backend = S3UploadBackend()
             self.assertEqual(
-                backend.get_avatar_url("hash", False), "https://bucket.s3.amazonaws.com/hash?x=x"
+                backend.get_avatar_url("hash", False), "https://bucket.s3.amazonaws.com/hash"
             )
             self.assertEqual(
                 backend.get_avatar_url("hash", True),
-                "https://bucket.s3.amazonaws.com/hash-medium.png?x=x",
+                "https://bucket.s3.amazonaws.com/hash-medium.png",
             )
             self.assertEqual(
                 backend.get_realm_icon_url(15, 1),
