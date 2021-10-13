@@ -16,13 +16,6 @@ const noop = () => {};
 set_global("document", {});
 set_global("navigator", {});
 
-// Setting these up so that we can test that links to uploads within messages are
-// automatically converted to server relative links.
-document.location = {
-    protocol: "https:",
-    host: "foo.com",
-};
-
 const fake_now = 555;
 
 const channel = mock_esm("../../static/js/channel");

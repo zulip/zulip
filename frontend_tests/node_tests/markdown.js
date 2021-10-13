@@ -9,10 +9,6 @@ const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
-set_global("location", {
-    origin: "http://zulip.zulipdev.com",
-});
-
 const example_realm_linkifiers = [
     {
         pattern: "#(?P<id>[0-9]{2,8})",
