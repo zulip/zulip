@@ -40,7 +40,7 @@ from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, subscribed_to_stream
 from zerver.lib.types import ProfileDataElementValue, Validator
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.url_encoding import add_query_arg_to_redirect_url
+from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import (
     access_bot_by_id,
     access_user_by_id,
@@ -249,7 +249,7 @@ def avatar(
     # add query parameters to our url, get_avatar_url does '?x=x'
     # hacks to prevent us from having to jump through decode/encode hoops.
     assert url is not None
-    url = add_query_arg_to_redirect_url(url, request.META["QUERY_STRING"])
+    url = append_url_query_string(url, request.META["QUERY_STRING"])
     return redirect(url)
 
 
