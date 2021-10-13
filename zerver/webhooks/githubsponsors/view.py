@@ -1,6 +1,6 @@
 # datetime
 import datetime
-from typing import Any, Dict, Sequence, Union
+from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
 
@@ -12,12 +12,8 @@ from zerver.models import UserProfile
 
 
 class DatetimeParser:
-    def __init__(self):
-        self.date = None
-
-    def parse(self, date) -> str:
-        self.date = date
-        date_frm_payload = [int(i) for i in self.date.split("T")[0].split("-")]
+    def parse(self, date: str) -> str:
+        date_frm_payload = [int(i) for i in date.split("T")[0].split("-")]
         date_string_object = datetime.datetime(
             date_frm_payload[0], date_frm_payload[1], date_frm_payload[2]
         )

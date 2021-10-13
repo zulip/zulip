@@ -1,7 +1,4 @@
-from django.conf import settings
-
 from zerver.lib.test_classes import WebhookTestCase
-from zerver.models import get_realm, get_system_bot
 
 from .view import DatetimeParser
 
@@ -15,7 +12,7 @@ class GithubSponsorHookTests(WebhookTestCase):
     # NEW SPONSOR CREATED TEST
     def test_github_sponsor_created_message(self) -> None:
         expected_topic = "New Sponsorship Subscription"
-        expected_message = f':confetti: New Subscription for a Sponsorship! :confetti:\nmonalisa subscribed for a "$5 a month" Sponsorship on 20 December 2019, Friday'
+        expected_message = ':confetti: New Subscription for a Sponsorship! :confetti:\nmonalisa subscribed for a "$5 a month" Sponsorship on 20 December 2019, Friday'
 
         # use fixture named github_sponsor_created
         self.check_webhook(
@@ -28,7 +25,7 @@ class GithubSponsorHookTests(WebhookTestCase):
     # SPONSOR TIER CHANGE TEST
     def test_github_sponsor_pending_tier_change_message(self) -> None:
         expected_topic = "Subscription Change"
-        expected_message = f':bullhorn: Subscription Tier Change :bullhorn:\nmonalisa changed their Sponsor subscription from "$10 a month" to "$5 a month" effective from 30 December 2019, Monday'
+        expected_message = ':bullhorn: Subscription Tier Change :bullhorn:\nmonalisa changed their Sponsor subscription from "$10 a month" to "$5 a month" effective from 30 December 2019, Monday'
 
         # using fixture named gihub_sponsor_downgrade
         self.check_webhook(
