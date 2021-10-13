@@ -67,6 +67,8 @@ function short_tb(tb) {
     return lines.splice(0, i + 1).join("\n") + "\n(...)\n";
 }
 
+require("../../static/js/templates"); // register Zulip extensions
+
 function run_one_module(file) {
     zjquery.clear_initialize_function();
     zjquery.clear_all_elements();
@@ -80,11 +82,6 @@ test.set_verbose(files.length === 1);
 
 try {
     for (const file of files) {
-        // register Zulip extensions before each test file; this is
-        // necessary because of how we mock i18n for every module
-        // except for the i18n test suite.
-        require("../../static/js/templates");
-
         namespace.start();
         namespace.set_global("window", window);
         namespace.set_global("to_$", () => window);
