@@ -2,6 +2,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 from .view import DatetimeParser
 
+'''Webhook Integration for Github Sponsors'''
 
 class GithubSponsorHookTests(WebhookTestCase):
     STREAM_NAME = "test"
