@@ -1101,6 +1101,13 @@ body.night-mode {
             background-color: hsl(228, 96%, 71%);
         }
     }
+
+    /* Same as the one from compose.css, but used prevent day mode style override in night mode with the !important directive */
+    #send_controls {
+        .compose_checkbox_label {
+            color: hsl(0, 0%, 80%);
+        }
+    }
 }
 
 @supports (-moz-appearance: none) {

@@ -439,7 +439,7 @@ input.recipient_box {
     height: 2.2em;
 
     .compose_checkbox_label {
-        color: hsl(0, 0%, 67%);
+        color: hsl(0, 0%, 30%);
         margin: 4px;
     }
 }
