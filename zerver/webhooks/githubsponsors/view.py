@@ -3,7 +3,6 @@ import datetime
 from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
-from typing_extensions import TypedDict
 
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
