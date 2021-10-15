@@ -7,7 +7,6 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.type_debug import print_types
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -24,7 +23,6 @@ class DatetimeParser:
 
 @webhook_view("GitHubSponsors")
 @has_request_variables
-@print_types
 def api_githubsponsors_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
@@ -35,7 +33,7 @@ def api_githubsponsors_webhook(
     parser = (
         DatetimeParser()
     )  # helper function to parse datetime object received from the payload to readable string format
-    ACTION: Any = payload.get("action")
+    ACTION: Any = payload["action"]
     SENDER = payload["sender"]["login"]
     if ACTION == "created":
         TIER_NAME = payload["sponsorship"]["tier"]["name"]
