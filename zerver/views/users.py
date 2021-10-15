@@ -639,7 +639,7 @@ def get_subscription_backend(
     stream_id: int = REQ(json_validator=check_int, path_only=True),
 ) -> HttpResponse:
     target_user = access_user_by_id(user_profile, user_id, for_admin=False)
-    (stream, sub) = access_stream_by_id(user_profile, stream_id)
+    (stream, sub) = access_stream_by_id(user_profile, stream_id, allow_realm_admin=True)
 
     subscription_status = {"is_subscribed": subscribed_to_stream(target_user, stream_id)}
 
