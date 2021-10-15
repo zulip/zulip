@@ -2,7 +2,7 @@
     If this is your first time using Zulip, we recommend starting with the web
     or desktop experience to set up your account and get oriented.
 
-- Get the [mobile and desktop apps](/apps). Zulip also works great in a browser.
+- Get the [mobile and desktop apps](/apps). Zulip also works great in a [browser](/help/supported-browsers).
 - [Add a profile picture](/help/change-your-profile-picture) and
   [edit your profile information](https://zulip.com/help/edit-your-profile) to tell others
   about yourself.

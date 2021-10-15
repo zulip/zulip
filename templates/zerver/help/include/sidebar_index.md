@@ -119,6 +119,7 @@
 * [Zulip in a Terminal](/help/zulip-in-a-terminal)
 * [Connect through a proxy](/help/connect-through-a-proxy)
 * [Use a custom certificate](/help/custom-certificates)
+* [Supported browsers](/help/supported-browsers)
 
 # Zulip administration
 
