@@ -167,6 +167,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/for/research/", "for research")
         self._test("/for/business/", "Communication efficiency represents")
         self._test("/for/communities/", "Zulip for communities")
+        self._test("/self-hosting/", "Self-host Zulip")
         self._test("/security/", "TLS encryption")
         self._test("/attribution/", "Attributions")
         self._test("/devlogin/", "Normal users", landing_page=False)
