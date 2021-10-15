@@ -17,24 +17,24 @@
                 </div>
                 <i class="fa fa-angle-right" aria-hidden="true" {{#unless is_stream_editable}}style="display:none"{{/unless}}></i>
                 <input type="text" placeholder="{{topic}}" value="{{topic}}" class="message_edit_topic" id="message_edit_topic" autocomplete="off" />
-                <div class="message_edit_breadcrumb_messages"  style='display:none;'>
-                    <label class="checkbox">
-                        <input class="send_notification_to_new_thread" name="send_notification_to_new_thread" type="checkbox" {{#if notify_new_thread}}checked="checked"{{/if}} />
-                        <span></span>
-                        {{t "Send notification to new topic" }}
-                    </label>
-                    <label class="checkbox">
-                        <input class="send_notification_to_old_thread" name="send_notification_to_old_thread" type="checkbox" {{#if notify_old_thread}}checked="checked"{{/if}} />
-                        <span></span>
-                        {{t "Send notification to old topic" }}
-                    </label>
-                </div>
             </div>
             <select class='message_edit_topic_propagate' style='display:none;'>
                 <option value="change_one"> {{t "Move only this message" }}</option>
                 <option selected="selected" value="change_later"> {{t "Move this and all following messages in this topic" }}</option>
                 <option value="change_all"> {{t "Move all messages in this topic" }}</option>
             </select>
+            <div class="message_edit_breadcrumb_messages"  style='display:none;'>
+                <label class="checkbox">
+                    <input class="send_notification_to_new_thread" name="send_notification_to_new_thread" type="checkbox" {{#if notify_new_thread}}checked="checked"{{/if}} />
+                    <span></span>
+                    {{t "Send notification to new topic" }}
+                </label>
+                <label class="checkbox">
+                    <input class="send_notification_to_old_thread" name="send_notification_to_old_thread" type="checkbox" {{#if notify_old_thread}}checked="checked"{{/if}} />
+                    <span></span>
+                    {{t "Send notification to old topic" }}
+                </label>
+            </div>
         </div>
     </div>
     {{/if}}
