@@ -1407,6 +1407,12 @@ input[type="checkbox"] {
         .org-settings-list {
             position: relative;
         }
+        .settings-sticky-bar {
+            position: sticky;
+            z-index: 1;
+            background-color: hsl(0, 0%, 100%);
+            top: 0;
+        }
     }
 
     .settings-header {
