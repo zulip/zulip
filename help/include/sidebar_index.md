@@ -131,6 +131,7 @@
 ## Apps
 * [Desktop installation guides](/help/desktop-app-install-guide)
 * [Zulip in a Terminal](/help/zulip-in-a-terminal)
+* [Supported browsers](/help/supported-browsers)
 * [Connect through a proxy](/help/connect-through-a-proxy)
 * [Use a custom certificate](/help/custom-certificates)
 
