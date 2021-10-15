@@ -1517,7 +1517,6 @@ div.focused_table {
 
 #message_edit_topic {
     margin: 0 5px 5px 0;
-    width: auto;
 }
 
 .message_edit_header {
@@ -1540,7 +1539,7 @@ div.focused_table {
 
 .topic_move_breadcrumb_messages,
 .message_edit_breadcrumb_messages {
-    margin: 0 5px 5px 0 !important;
+    margin: 0 5px 5px 0;
     align-self: center;
     width: 100%;
     white-space: nowrap;
@@ -1563,6 +1562,10 @@ div.focused_table {
         display: inline-block;
         margin-right: 10px;
     }
+}
+
+.message_edit_breadcrumb_messages {
+    margin-bottom: 15px;
 }
 
 .message_length_controller {
