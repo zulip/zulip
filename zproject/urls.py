@@ -742,19 +742,45 @@ urls += [path("saml/metadata.xml", saml_sp_metadata)]
 
 # SCIM2
 
-from django_scim import views as scim_views
+from zerver.lib.scim import (
+    ZulipSCIMSearchView,
+    ZulipSCIMUserSearchView,
+    ZulipSCIMUsersView,
+    ZulipSCIMView,
+)
 
 urls += [
-    # These first couple entries mark the Groups feature of SCIM as
-    # something we haven't implemented.
+    # We have to register all the SCIM URL patterns first, because we override
+    # all the SCIM View classes and we need Django to use them instead of
+    # the django-scim2 Views that the app will register.
+    re_path(r"^scim/v2/$", ZulipSCIMView.as_view(implemented=False)),
+    re_path(r"^scim/v2/.search$", ZulipSCIMSearchView.as_view(implemented=False)),
+    re_path(r"^scim/v2/Users/.search$", ZulipSCIMUserSearchView.as_view()),
+    re_path(r"^scim/v2/Users(?:/(?P<uuid>[^/]+))?$", ZulipSCIMUsersView.as_view()),
+    # Everything below here are features that we don't yet support and we want
+    # to explicitly mark them to return "Not Implemented" rather than running
+    # the django-scim2 code for them.
     re_path(
         r"^scim/v2/Groups/.search$",
-        scim_views.SCIMView.as_view(implemented=False),
+        ZulipSCIMView.as_view(implemented=False),
     ),
     re_path(
         r"^scim/v2/Groups(?:/(?P<uuid>[^/]+))?$",
-        scim_views.SCIMView.as_view(implemented=False),
+        ZulipSCIMView.as_view(implemented=False),
     ),
+    re_path(r"^scim/v2/Me$", ZulipSCIMView.as_view(implemented=False)),
+    re_path(
+        r"^scim/v2/ServiceProviderConfig$",
+        ZulipSCIMView.as_view(implemented=False),
+    ),
+    re_path(
+        r"^scim/v2/ResourceTypes(?:/(?P<uuid>[^/]+))?$",
+        ZulipSCIMView.as_view(implemented=False),
+    ),
+    re_path(r"^scim/v2/Schemas(?:/(?P<uuid>[^/]+))?$", ZulipSCIMView.as_view(implemented=False)),
+    re_path(r"^scim/v2/Bulk$", ZulipSCIMView.as_view(implemented=False)),
+    # At the end we still register the django-scim2 url patterns (even though we override them all above)
+    # so that reverse("scim:viewname") still works like the internal library code expects.
     path("scim/v2/", include("django_scim.urls", namespace="scim")),
 ]
 
