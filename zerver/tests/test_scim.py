@@ -200,6 +200,43 @@ class TestSCIMUser(SCIMTestCase):
         output_data = orjson.loads(result.content)
         self.assertEqual(output_data, expected_response_schema)
 
+    def test_search_users(self) -> None:
+        """
+        Tests a basic .search POST query:
+        https://datatracker.ietf.org/doc/html/rfc7644#section-3.4.3
+        """
+        realm = get_realm("zulip")
+
+        # A payload to find all users whose email ends with @zulip.com
+        payload = {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:SearchRequest"],
+            "filter": 'userName ew "@zulip.com"',
+        }
+        result = self.client_post(
+            "/scim/v2/Users/.search",
+            payload,
+            content_type="application/json",
+            **self.scim_headers(),
+        )
+        self.assertEqual(result.status_code, 200)
+        output_data = orjson.loads(result.content)
+
+        user_query = UserProfile.objects.filter(
+            realm=realm, is_bot=False, delivery_email__endswith="@zulip.com"
+        )
+        expected_response_schema = {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
+            "totalResults": user_query.count(),
+            "itemsPerPage": 50,
+            "startIndex": 1,
+            "Resources": [],
+        }
+        for user_profile in user_query.order_by("id"):
+            user_schema = self.generate_user_schema(user_profile)
+            expected_response_schema["Resources"].append(user_schema)
+
+        self.assertEqual(output_data, expected_response_schema)
+
     def test_post(self) -> None:
         # A payload for creating a new user with the specified account details.
         payload = {
