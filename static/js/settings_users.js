@@ -574,7 +574,7 @@ function handle_human_form(tbody, status_field) {
 
             const url = "/json/users/" + encodeURIComponent(user_id);
             const data = {
-                full_name: JSON.stringify(full_name.val()),
+                full_name: full_name.val(),
                 role: JSON.stringify(role),
                 profile_data: JSON.stringify(profile_data),
             };

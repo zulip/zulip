@@ -8277,11 +8277,12 @@ paths:
           in: query
           description: |
             The user's full name.
-          content:
-            application/json:
-              schema:
-                type: string
-              example: NewName
+
+            **Changes**: Removed unnecessary JSON-encoding of this parameter in
+            Zulip 5.0 (feature level 106).
+          schema:
+            type: string
+          example: NewName
           required: false
         - name: role
           in: query

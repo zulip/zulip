@@ -11,6 +11,11 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 106**
+
+* [`PATCH /user/{user_id}`](/api/update-user): Removed unnecessary JSON-encoding of string
+  parameter `full_name`.
+
 **Feature level 105**
 
 * [`POST /register`](/api/register-queue), [`PATCH
