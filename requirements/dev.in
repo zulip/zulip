@@ -51,7 +51,7 @@ snakeviz
 python-digitalocean
 
 # Needed for updating the locked pip dependencies
-pip-tools
+pip-tools<6.3.0  # https://github.com/jazzband/pip-tools/pull/1455 breaks our hack for installing specific commits from Git
 
 # zulip's linting framework - zulint
 https://github.com/zulip/zulint/archive/9908540b7734b51f86ccabab706befc2ff33212a.zip#egg=zulint==0.0.1
@@ -70,7 +70,7 @@ cairosvg
 python-debian
 
 # Pattern-based lint tool
-semgrep
+semgrep<0.69.0  # 0.69.0 prints an annoying notice about metrics
 
 # Contains Pysa, a security-focused static analyzer
 pyre-check
