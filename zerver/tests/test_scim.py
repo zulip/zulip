@@ -84,6 +84,32 @@ class TestNonSCIMAPIAccess(SCIMTestCase):
         self.assert_json_error(result, "This endpoint requires HTTP basic authentication.", 400)
 
 
+class TestExceptionDetailsNotRevealedToClient(SCIMTestCase):
+    def test_exception_details_not_revealed_to_client(self) -> None:
+        """
+        Verify that, unlike in default django-scim2 behavior, details of an exception
+        are not revealed in the HttpResponse.
+        """
+        with mock.patch(
+            "zerver.lib.scim.ZulipSCIMUser.to_dict", side_effect=Exception("test exception")
+        ), self.assertLogs("django_scim.views", "ERROR") as mock_scim_logger, self.assertLogs(
+            "django.request", "ERROR"
+        ) as mock_request_logger:
+            result = self.client_get("/scim/v2/Users", **self.scim_headers())
+            # Only a generic error message is returned:
+            self.assertEqual(
+                result.json(),
+                {
+                    "schemas": ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                    "detail": "Exception while processing SCIM request.",
+                    "status": 500,
+                },
+            )
+            # Details of the exception still get internally logged as expected:
+            self.assertIn("test exception", mock_scim_logger.output[0])
+            self.assertIn("Internal Server Error: /scim/v2/Users", mock_request_logger.output[0])
+
+
 class TestSCIMUser(SCIMTestCase):
     def test_get_by_id(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -645,3 +671,20 @@ class TestSCIMGroup(SCIMTestCase):
             self.assertEqual(
                 m.output, ["ERROR:django.request:Not Implemented: /scim/v2/Groups/.search"]
             )
+
+
+class TestRemainingUnsupportedSCIMFeatures(SCIMTestCase):
+    def test_endpoints_disabled(self) -> None:
+        for url in [
+            "/scim/v2/",
+            "/scim/v2/.search",
+            "/scim/v2/Bulk",
+            "/scim/v2/Me",
+            "/scim/v2/ResourceTypes",
+            "/scim/v2/Schemas",
+            "/scim/v2/ServiceProviderConfig",
+        ]:
+            with self.assertLogs("django.request", "ERROR") as m:
+                result = self.client_get(url, **self.scim_headers())
+            self.assertEqual(result.status_code, 501)
+            self.assertEqual(m.output, [f"ERROR:django.request:Not Implemented: {url}"])
