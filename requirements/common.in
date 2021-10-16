@@ -138,7 +138,6 @@ lxml
 
 # Needed for 2-factor authentication
 django-two-factor-auth[call,phonenumberslite,sms]
-https://github.com/karls/twilio-python/archive/fb847755d2ec943a4fd84f0c33ae9f7f4999095a.zip#egg=twilio==6.61.0+git  # support PyJWT ≥ 2.0.0: https://github.com/twilio/twilio-python/pull/560
 
 # Needed for processing payments (in corporate)
 stripe
