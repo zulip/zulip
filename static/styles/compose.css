@@ -359,6 +359,7 @@ textarea.new_message_textarea {
         0% {
             box-shadow: none;
         }
+
         100% {
             box-shadow: 0 0 0 1pt hsl(0, 100%, 50%);
         }

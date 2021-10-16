@@ -33,6 +33,7 @@
     .nav-tabs {
         border-bottom: 0;
         font-size: 1.2em;
+
         a {
             font-weight: bold;
         }
@@ -49,6 +50,7 @@
 
     .support-link {
         margin: 10px 20px;
+
         a,
         a:hover,
         a:visited {
@@ -62,8 +64,10 @@
         label {
             display: inline-block;
         }
+
         input[type="radio"] {
             display: none;
+
             &:checked {
                 + .box {
                     background-color: hsl(153, 32%, 55%);
@@ -72,6 +76,7 @@
                 }
             }
         }
+
         .box {
             width: 120px;
             height: 70px;
@@ -86,28 +91,34 @@
             margin: 0 10px 5px 0;
             padding: 30px 20px;
             vertical-align: top;
+
             &:hover {
                 background-color: hsl(0, 0%, 91%);
                 border-color: hsl(0, 0%, 80%);
             }
+
             .schedule-time {
                 font-weight: bold;
                 font-size: 1.2em;
                 margin-top: 10px;
             }
+
             .schedule-amount {
                 margin-top: 5px;
                 font-size: 1.1em;
                 height: 50px;
             }
+
             .schedule-amount-2 {
                 font-size: 0.9em;
             }
+
             .management-type {
                 font-weight: bold;
                 font-size: 1.2em;
                 margin-top: 10px;
             }
+
             .management-type-text {
                 font-size: 1.1em;
                 margin-top: 5px;
@@ -128,6 +139,7 @@
         border: 0;
         height: 40px;
         margin: 5px 0 0 0;
+
         span {
             background: 0;
             box-shadow: none;
@@ -145,6 +157,7 @@
     .stripe-button-el:active,
     .stripe-button-el:enabled:active {
         background-color: hsl(169, 70%, 32%);
+
         span {
             background: 0;
             box-shadow: none;
@@ -285,6 +298,7 @@ input[name="licenses"]::-webkit-inner-spin-button {
     appearance: none;
     margin: 0;
 }
+
 input[name="licenses"] {
     appearance: textfield;
 }
@@ -294,6 +308,7 @@ input[name="licenses"] {
         box-sizing: border-box;
         height: 30px;
     }
+
     textarea {
         box-sizing: border-box;
     }
