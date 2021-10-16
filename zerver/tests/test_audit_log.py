@@ -206,7 +206,7 @@ class TestRealmAuditLog(ZulipTestCase):
         start = timezone_now()
         new_name = "George Hamletovich"
         self.login("iago")
-        req = dict(full_name=orjson.dumps(new_name).decode())
+        req = dict(full_name=new_name)
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assertTrue(result.status_code == 200)
         query = RealmAuditLog.objects.filter(

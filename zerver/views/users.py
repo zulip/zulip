@@ -163,7 +163,7 @@ def update_user_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     user_id: int,
-    full_name: Optional[str] = REQ(default=None, json_validator=check_string),
+    full_name: Optional[str] = REQ(default=None),
     role: Optional[int] = REQ(
         default=None,
         json_validator=check_int_in(
