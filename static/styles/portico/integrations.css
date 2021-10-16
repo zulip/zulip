@@ -502,6 +502,7 @@ $category-text: hsl(219, 23%, 33%);
 
             .categories {
                 order: 2;
+
                 .integration-category {
                     font-size: 0.9em;
                     font-weight: 400;

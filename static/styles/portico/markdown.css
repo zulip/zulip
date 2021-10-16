@@ -35,6 +35,7 @@
                 height: 30px;
             }
         }
+
         &#using-zulip,
         &#zulip-administration {
             font-size: 1.75em;
@@ -348,6 +349,7 @@
             margin-left: 15px;
             margin-top: 10px;
         }
+
         ul.nav {
             margin: 0;
 
