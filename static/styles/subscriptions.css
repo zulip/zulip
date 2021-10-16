@@ -909,6 +909,7 @@
 
     .stream-description {
         margin-bottom: 5px;
+
         .no-description {
             font-style: italic;
             color: hsl(0, 0%, 67%);
@@ -946,6 +947,7 @@
 
         .subscription-type-text {
             display: inline;
+
             ul {
                 margin: 0 0 10px 14px;
                 list-style-type: unset;
@@ -1065,6 +1067,7 @@
         }
     }
 }
+
 #change_stream_info_modal {
     .modal-header h3 {
         text-overflow: ellipsis;
@@ -1214,6 +1217,7 @@
         display: block;
         text-align: center;
         margin-left: 0;
+
         .tab-container {
             .ind-tab {
                 width: 85px;

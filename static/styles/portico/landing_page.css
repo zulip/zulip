@@ -325,6 +325,7 @@ nav {
 
     .nav-dropdown {
         padding-bottom: 3px;
+
         ul {
             width: 300px;
         }
@@ -339,6 +340,7 @@ nav {
 
                 div.dropdown-column {
                     float: left;
+
                     &:first-of-type {
                         width: 40%;
                     }
@@ -350,6 +352,7 @@ nav {
 
                 div.dropdown-column {
                     float: left;
+
                     &:first-of-type {
                         width: 40%;
                     }
@@ -2358,6 +2361,7 @@ nav {
 
     opacity: 0.7;
 }
+
 .portico-landing.why-page .markdown {
     font-size: 1.1rem;
 }
@@ -2368,12 +2372,14 @@ nav {
     padding: 20px 30px;
     margin-top: 20px;
     font-size: 1.05em;
+
     p {
         line-height: 1.5;
         margin: 0;
         font-weight: 400;
         color: hsl(220, 23%, 33%);
     }
+
     p:last-child {
         margin-top: 10px;
     }
@@ -4251,6 +4257,7 @@ nav {
 
     a {
         color: hsl(0, 0%, 100%);
+
         &.case-study-link {
             margin-left: 20px;
             text-decoration: underline;

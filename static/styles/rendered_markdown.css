@@ -244,6 +244,7 @@
             float: right;
             width: 25px;
             height: 25px;
+
             &:hover .spoiler-arrow {
                 &::before,
                 &::after {
@@ -264,6 +265,7 @@
             margin-top: 2px;
             text-align: left;
             transform: rotate(45deg);
+
             &::before,
             &::after {
                 position: absolute;
@@ -274,17 +276,21 @@
                 background-color: hsl(0, 0%, 83%);
                 transition: 0.4s ease;
             }
+
             &::after {
                 position: absolute;
                 transform: rotate(90deg);
                 top: -5px;
                 left: 5px;
             }
+
             &.spoiler-button-open {
                 transform: rotate(45deg) translate(-5px, -5px);
+
                 &::before {
                     transform: translate(10px, 0);
                 }
+
                 &::after {
                     transform: rotate(90deg) translate(10px, 0);
                 }
