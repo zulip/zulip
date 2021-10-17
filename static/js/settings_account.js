@@ -428,6 +428,10 @@ export function set_up() {
 
         const new_pw_field = $("#new_password");
         const new_pw = data.new_password;
+        if (new_pw === "") {
+            settings_change_error($t_html({defaultMessage: "Please choose a new password"}));
+            return;
+        }
         if (new_pw !== "") {
             if (password_quality === undefined) {
                 // password_quality didn't load, for whatever reason.
