@@ -6,7 +6,6 @@ Contents:
 - [Installing directly on Windows 10 with WSL 2](#installing-directly-on-windows-10-with-wsl-2)
 - [Using the Vagrant Hyper-V provider on Windows](#using-the-vagrant-hyper-v-provider-on-windows-beta)
 - [Newer versions of supported platforms](#newer-versions-of-supported-platforms)
-- [Installing directly on cloud9](#installing-on-cloud9)
 
 ## Installing directly on Ubuntu, Debian, CentOS, or Fedora
 
@@ -281,56 +280,3 @@ submit a pull request, or you can ask for help in
 [#development help](https://chat.zulip.org/#narrow/stream/49-development-help)
 on chat.zulip.org, and a core team member can help guide you through
 adding support for the platform.
-
-## Installing on Cloud9
-
-AWS Cloud9 is a cloud-based integrated development environment (IDE)
-that lets you write, run, and debug your code with just a browser. It
-includes a code editor, debugger, and terminal.
-
-This section documents how to set up the Zulip development environment
-in a Cloud9 workspace. If you don't have an existing Cloud9 account,
-you can sign up [here](https://aws.amazon.com/cloud9/).
-
-- Create a Workspace, and select the blank template.
-- Resize the workspace to be 1GB of memory and 4GB of disk
-  space. (This is under free limit for both the old Cloud9 and the AWS
-  Free Tier).
-- Clone the zulip repo:
-  `git clone --config pull.rebase https://github.com/<your-username>/zulip.git`
-- Restart rabbitmq-server since its broken on Cloud9:
-  `sudo service rabbitmq-server restart`.
-- And run provision `cd zulip && ./tools/provision`, once this is done.
-- Activate the Zulip virtual environment by
-  `source /srv/zulip-py3-venv/bin/activate` or by opening a new
-  terminal.
-
-#### Install zulip-cloud9
-
-There's a NPM package, `zulip-cloud9`, that provides a wrapper around
-the Zulip development server for use in the Cloud9 environment.
-
-Note: `npm i -g zulip-cloud9` does not work in zulip's virtual
-environment. Although by default, any packages installed in workspace
-folder (i.e. the top level folder) are added to `$PATH`.
-
-```bash
-cd .. # switch to workspace folder if you are in zulip directory
-npm i zulip-cloud9
-zulip-dev start # to start the development server
-```
-
-If you get error of the form `bash: cannot find command zulip-dev`,
-you need to start a new terminal.
-
-Your development server would be running at
-`https://<workspace-name>-<username>.c9users.io` on port 8080. You
-dont need to add `:8080` to your URL, since the Cloud9 proxy should
-automatically forward the connection. You might want to visit
-[zulip-cloud9 repo](https://github.com/cPhost/zulip-cloud9) and it's
-[wiki](https://github.com/cPhost/zulip-cloud9/wiki) for more info on
-how to use zulip-cloud9 package.
-
-[zulip-rtd-git-cloning]: ../git/cloning.html#step-1b-clone-to-your-machine
-[zulip-rtd-git-connect]: ../git/cloning.html#step-1c-connect-your-fork-to-zulip-upstream
-[port-forward-setup]: ../development/remote.html#running-the-development-server
