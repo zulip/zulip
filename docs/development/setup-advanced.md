@@ -63,7 +63,7 @@ the [WSL 2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about)
 installation method described here.
 
 1. Install WSL 2 by following the instructions provided by Microsoft
-   [here](https://docs.microsoft.com/en-us/windows/wsl/wsl2-install).
+   [here](https://docs.microsoft.com/en-us/windows/wsl/install).
 
 1. Install the `Ubuntu 18.04` Linux distribution from the Microsoft
    Store.
