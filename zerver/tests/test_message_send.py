@@ -2732,3 +2732,23 @@ class CheckMessageTest(ZulipTestCase):
         test_bot.realm.deactivated = True
         send_rate_limited_pm_notification_to_bot_owner(test_bot, good_realm, content)
         self.assertEqual(test_bot.last_reminder, None)
+
+    def test_no_topic_message(self) -> None:
+        realm = get_realm("zulip")
+        sender = self.example_user("iago")
+        client = make_client(name="test suite")
+        stream = get_stream("Denmark", realm)
+        topic_name = "(no topic)"
+        message_content = "whatever"
+        addressee = Addressee.for_stream(stream, topic_name)
+
+        do_set_realm_property(realm, "mandatory_topics", True, acting_user=None)
+        realm.refresh_from_db()
+
+        with self.assertRaisesRegex(JsonableError, "Topics are required in this organization"):
+            check_message(sender, client, addressee, message_content, realm)
+
+        do_set_realm_property(realm, "mandatory_topics", False, acting_user=None)
+        realm.refresh_from_db()
+        ret = check_message(sender, client, addressee, message_content, realm)
+        self.assertEqual(ret.message.sender.id, sender.id)
