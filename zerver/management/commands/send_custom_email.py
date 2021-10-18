@@ -83,7 +83,7 @@ class Command(ZulipBaseCommand):
             # Sends at most one copy to each email address, even if it
             # is an administrator in several organizations.
             sponsored_realms = Realm.objects.filter(
-                plan_type=Realm.STANDARD_FREE, deactivated=False
+                plan_type=Realm.PLAN_TYPE_STANDARD_FREE, deactivated=False
             )
             admin_roles = [UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER]
             users = UserProfile.objects.filter(

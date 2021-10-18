@@ -68,7 +68,7 @@ def promote_sponsoring_zulip_in_realm(realm: Realm) -> bool:
 
     # If PROMOTE_SPONSORING_ZULIP is enabled, advertise sponsoring
     # Zulip in the gear menu of non-paying organizations.
-    return realm.plan_type in [Realm.STANDARD_FREE, Realm.SELF_HOSTED]
+    return realm.plan_type in [Realm.PLAN_TYPE_STANDARD_FREE, Realm.PLAN_TYPE_SELF_HOSTED]
 
 
 def get_billing_info(user_profile: Optional[UserProfile]) -> BillingInfo:
@@ -85,7 +85,7 @@ def get_billing_info(user_profile: Optional[UserProfile]) -> BillingInfo:
                 elif CustomerPlan.objects.filter(customer=customer).exists():
                     show_billing = True
 
-        if not user_profile.is_guest and user_profile.realm.plan_type == Realm.LIMITED:
+        if not user_profile.is_guest and user_profile.realm.plan_type == Realm.PLAN_TYPE_LIMITED:
             show_plans = True
 
     return BillingInfo(
