@@ -228,6 +228,10 @@ click-option-group==0.5.3 \
     --hash=sha256:9653a2297357335d7325a1827e71ac1245d91c97d959346a7decabd4a52d5354 \
     --hash=sha256:a6e924f3c46b657feb5b72679f7e930f8e5b224b766ab35c91ae4019b4e0615e
     # via semgrep
+codespell==2.1.0 \
+    --hash=sha256:19d3fe5644fef3425777e66f225a8c82d39059dcfe9edb3349a8a2cf48383ee5 \
+    --hash=sha256:b864c7d917316316ac24272ee992d7937c3519be4569209c5b60035ac5d569b5
+    # via -r requirements/dev.in
 colorama==0.4.4 \
     --hash=sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b \
     --hash=sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2
