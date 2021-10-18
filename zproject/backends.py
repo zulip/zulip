@@ -2146,7 +2146,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
 class ZulipSAMLIdentityProvider(SAMLIdentityProvider):
     def get_user_details(self, attributes: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Overriden to support plumbing of additional Attributes
+        Overridden to support plumbing of additional Attributes
         from the SAMLResponse.
         """
         result = super().get_user_details(attributes)

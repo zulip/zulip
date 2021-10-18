@@ -1118,7 +1118,7 @@ def do_change_realm_subdomain(
 ) -> None:
     """Changing a realm's subdomain is a highly disruptive operation,
     because all existing clients will need to be updated to point to
-    the new URL.  Further, requests to fetch data frmo existing event
+    the new URL.  Further, requests to fetch data from existing event
     queues will fail with an authentication error when this change
     happens (because the old subdomain is no longer associated with
     the realm), making it hard for us to provide a graceful update
@@ -1689,7 +1689,7 @@ def get_recipient_info(
     )
 
     # We deal with only the users who have disabled this setting, since that
-    # will ususally be much smaller a set than those who have enabled it (which
+    # will usually be much smaller a set than those who have enabled it (which
     # is the default)
     pm_mention_email_disabled_user_ids = get_ids_for(
         lambda r: not r["enable_offline_email_notifications"]

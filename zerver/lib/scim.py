@@ -139,7 +139,7 @@ class ZulipSCIMUser(SCIMUser):
         functions (which update audit logs, send events, etc.) or
         doing application-specific validation.
 
-        Thus, we've completely overriden the upstream implementation
+        Thus, we've completely overridden the upstream implementation
         to store the values of the supported attributes that the
         request would like to change. Actually modifying the database
         is implemented in self.save().
@@ -207,11 +207,11 @@ class ZulipSCIMUser(SCIMUser):
         This method is forked from the superclass and is called to handle "replace"
         PATCH operations. Such an operation tells us to change the values
         of a User's attributes as specified. The superclass implements a very basic
-        behavior in this method and is meant to be overriden, since this is an adapter class.
+        behavior in this method and is meant to be overridden, since this is an adapter class.
         """
         if not isinstance(value, dict):
             # Restructure for use in loop below. Taken from the
-            # overriden upstream method.
+            # overridden upstream method.
             assert path is not None
             value = {path: value}
 
