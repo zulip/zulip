@@ -161,6 +161,10 @@ charset-normalizer==2.0.7 \
     --hash=sha256:e019de665e2bcf9c2b64e2e5aa025fa991da8720daa3c1138cadd2fd1856aed0 \
     --hash=sha256:f7af805c321bfa1ce6714c51f254e0d5bb5e5834039bc17db7ebe3a4cec9492b
     # via requests
+click==8.0.3 \
+    --hash=sha256:353f466495adaeb40b6b5f592f9f91cb22372351c84caeb068132442a4518ef3 \
+    --hash=sha256:410e932b050f5eed773c4cda94de75971c89cdb3155a72a0831139a79e5ecb5b
+    # via zulip
 cryptography==35.0.0 \
     --hash=sha256:07bb7fbfb5de0980590ddfc7f13081520def06dc9ed214000ad4372fb4e3c7f6 \
     --hash=sha256:18d90f4711bf63e2fb21e8c8e51ed8189438e6b35a6d996201ebd98a26abbbe6 \
@@ -381,10 +385,12 @@ importlib-metadata==4.8.1 ; python_version < "3.8" \
     --hash=sha256:f284b3e11256ad1e5d03ab86bb2ccd6f5339688ff17a4d797a0fe7df326f23b1
     # via
     #   -r requirements/common.in
+    #   click
     #   cssutils
     #   jsonschema
     #   markdown
     #   sqlalchemy
+    #   zulip-bots
 ipython==7.16.1 \
     --hash=sha256:2dbcc8c27ca7d3cfe4fcdff7f45b27f9a8d3edfa70ff8024a71c7a8eb5f09d64 \
     --hash=sha256:9f4fcb31d3b2c533333893b9172264e4821c1ac91839500f31bd43f2c59b3ccf
@@ -1239,13 +1245,13 @@ zipp==3.6.0 \
     --hash=sha256:71c644c5369f4a6e07636f0aa966270449561fcea2e3d6747b8d23efaa9d7832 \
     --hash=sha256:9fe5ea21568a0a70e50f273397638d39b03353731e6cbbb3fd8502a33fec40bc
     # via importlib-metadata
-https://github.com/zulip/python-zulip-api/archive/0.8.0.zip#egg=zulip==0.8.0+git&subdirectory=zulip \
-    --hash=sha256:eb45c00939245cfdbefc8f766c5910675e296a9779b51f0fd64c18f66466864a
+https://github.com/zulip/python-zulip-api/archive/c59b143d962c4af378521176892bc614a1babeff.zip#egg=zulip==0.8.0+git&subdirectory=zulip \
+    --hash=sha256:87928e34af0fb5d9301a503e3fe1ca589e9beed460c489a80236cd3903b4f617
     # via
     #   -r requirements/common.in
     #   zulip-bots
-https://github.com/zulip/python-zulip-api/archive/0.8.0.zip#egg=zulip_bots==0.8.0+git&subdirectory=zulip_bots \
-    --hash=sha256:eb45c00939245cfdbefc8f766c5910675e296a9779b51f0fd64c18f66466864a
+https://github.com/zulip/python-zulip-api/archive/c59b143d962c4af378521176892bc614a1babeff.zip#egg=zulip_bots==0.8.0+git&subdirectory=zulip_bots \
+    --hash=sha256:87928e34af0fb5d9301a503e3fe1ca589e9beed460c489a80236cd3903b4f617
     # via -r requirements/common.in
 zxcvbn==4.4.28 \
     --hash=sha256:151bd816817e645e9064c354b13544f85137ea3320ca3be1fb6873ea75ef7dc1
