@@ -623,6 +623,7 @@ input.text-error {
                 text-align: left;
                 opacity: 1;
                 cursor: pointer;
+
                 &:hover {
                     background-color: hsl(190, 10%, 90%);
                     transition: none;
@@ -805,6 +806,7 @@ a.bottom-signup-button {
             font-weight: 400;
             font-size: 0.8em;
             opacity: 0.8;
+
             p {
                 /* Avoid double-applying the 1.2em font-size here */
                 font-size: 1em;
@@ -1667,6 +1669,7 @@ label.label-title {
 
 #devtools-registration {
     float: left;
+
     form {
         display: inline;
     }

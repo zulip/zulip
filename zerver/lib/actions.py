@@ -1116,10 +1116,21 @@ def do_reactivate_realm(realm: Realm) -> None:
 def do_change_realm_subdomain(
     realm: Realm, new_subdomain: str, *, acting_user: Optional[UserProfile]
 ) -> None:
+    """Changing a realm's subdomain is a highly disruptive operation,
+    because all existing clients will need to be updated to point to
+    the new URL.  Further, requests to fetch data frmo existing event
+    queues will fail with an authentication error when this change
+    happens (because the old subdomain is no longer associated with
+    the realm), making it hard for us to provide a graceful update
+    experience for clients.
+    """
     old_subdomain = realm.subdomain
     old_uri = realm.uri
+    # If the realm had been a demo organization scheduled for
+    # deleting, clear that state.
+    realm.demo_organization_scheduled_deletion_date = None
     realm.string_id = new_subdomain
-    realm.save(update_fields=["string_id"])
+    realm.save(update_fields=["string_id", "demo_organization_scheduled_deletion_date"])
     RealmAuditLog.objects.create(
         realm=realm,
         event_type=RealmAuditLog.REALM_SUBDOMAIN_CHANGED,
@@ -4312,7 +4323,7 @@ def do_change_full_name(
 
 
 def check_change_full_name(
-    user_profile: UserProfile, full_name_raw: str, acting_user: UserProfile
+    user_profile: UserProfile, full_name_raw: str, acting_user: Optional[UserProfile]
 ) -> str:
     """Verifies that the user's proposed full name is valid.  The caller
     is responsible for checking check permissions.  Returns the new
@@ -4582,6 +4593,24 @@ def do_change_logo_source(
     send_event(realm, event, active_user_ids(realm.id))
 
 
+def do_change_realm_org_type(
+    realm: Realm,
+    org_type: int,
+    acting_user: Optional[UserProfile],
+) -> None:
+    old_value = realm.org_type
+    realm.org_type = org_type
+    realm.save(update_fields=["org_type"])
+
+    RealmAuditLog.objects.create(
+        event_type=RealmAuditLog.REALM_ORG_TYPE_CHANGED,
+        realm=realm,
+        event_time=timezone_now(),
+        acting_user=acting_user,
+        extra_data={"old_value": old_value, "new_value": org_type},
+    )
+
+
 def do_change_plan_type(
     realm: Realm, plan_type: int, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -4596,7 +4625,11 @@ def do_change_plan_type(
         extra_data={"old_value": old_value, "new_value": plan_type},
     )
 
-    if plan_type == Realm.STANDARD:
+    if plan_type == Realm.PLUS:
+        realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
+        realm.message_visibility_limit = None
+        realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD
+    elif plan_type == Realm.STANDARD:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
         realm.message_visibility_limit = None
         realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD

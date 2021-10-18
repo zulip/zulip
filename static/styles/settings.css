@@ -32,28 +32,36 @@ h3 .fa-question-circle-o {
     .block {
         display: block;
     }
+
     .center-block {
         margin: 0 auto;
     }
+
     .center {
         text-align: center;
     }
+
     .w-70 {
         width: 70%;
     }
+
     .w-200 {
         width: 200px;
     }
+
     .m-t-20 {
         margin-top: 20px;
     }
+
     .m-t-10 {
         margin-top: 10px;
     }
+
     .grid {
         label {
             min-width: 200px;
         }
+
         .warning {
             display: inline-block;
             vertical-align: top;
@@ -62,12 +70,14 @@ h3 .fa-question-circle-o {
             text-align: left;
         }
     }
+
     #account-settings,
     #profile-field-settings {
         .grid {
             label {
                 min-width: 120px;
             }
+
             .warning {
                 display: block;
                 width: calc(100% - 20px - 5px);
@@ -75,6 +85,7 @@ h3 .fa-question-circle-o {
             }
         }
     }
+
     .warning {
         #pw_strength {
             width: 140px;
@@ -82,6 +93,7 @@ h3 .fa-question-circle-o {
             margin: 6px 0 0 0;
         }
     }
+
     .button {
         ul {
             text-align: left;
@@ -469,6 +481,13 @@ input[type="checkbox"] {
     }
 }
 
+.display-settings-form,
+.notification-settings-form {
+    .subsection-header h3 {
+        display: inline-block;
+    }
+}
+
 .organization-settings-parent > div:first-of-type {
     margin-top: 10px;
 }
@@ -693,10 +712,12 @@ input[type="checkbox"] {
 .profile_field_choices_table {
     .movable-profile-field-row {
         cursor: move;
+
         .fa-ellipsis-v {
             color: hsl(0, 0, 75%);
             position: relative;
             top: 1px;
+
             + i {
                 margin-right: 5px;
             }
@@ -938,6 +959,7 @@ input[type="checkbox"] {
 
     li {
         list-style-type: none;
+
         &.alert-word-item:first-child {
             background: none;
             margin-top: 8px;
@@ -1054,6 +1076,7 @@ input[type="checkbox"] {
         span[contenteditable] {
             display: inline-block;
             word-break: break-all;
+
             &:empty::before {
                 opacity: 0.5;
                 display: inline-block;
@@ -1094,9 +1117,11 @@ input[type="checkbox"] {
 
     .ntm {
         cursor: not-allowed;
+
         h4 > .button {
             cursor: not-allowed;
             display: none;
+
             &:hover {
                 border-color: hsl(4, 56%, 82%);
             }
@@ -1403,6 +1428,13 @@ input[type="checkbox"] {
         .org-settings-list {
             position: relative;
         }
+
+        .settings-sticky-bar {
+            position: sticky;
+            z-index: 1;
+            background-color: hsl(0, 0%, 100%);
+            top: 0;
+        }
     }
 
     .settings-header {
@@ -1602,6 +1634,7 @@ input[type="checkbox"] {
 .dropdown-list-widget {
     button {
         margin: 0 5px;
+
         &.dropdown-toggle {
             /* Match settings for select elements. */
             padding: 4px 6px;
@@ -1932,6 +1965,7 @@ input[type="checkbox"] {
         flex-direction: column;
         margin-top: 5px;
     }
+
     #settings_page .custom_user_field textarea {
         width: calc(100% - 25px);
     }

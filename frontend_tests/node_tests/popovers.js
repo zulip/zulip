@@ -202,9 +202,6 @@ test_ui("sender_hover", ({override, mock_template}) => {
 
     $.create(".user_popover_email", {children: []});
     const image_stubber = make_image_stubber();
-    window.location = {
-        href: "http://chat.zulip.org/",
-    };
     const base_url = window.location.href;
     handler.call(target, e);
 
@@ -221,12 +218,6 @@ test_ui("actions_popover", ({override, mock_template}) => {
     const target = $.create("click target");
 
     const handler = $("#main_div").get_on_handler("click", ".actions_hover");
-
-    window.location = {
-        protocol: "http:",
-        host: "chat.zulip.org",
-        pathname: "/",
-    };
 
     const message = {
         id: 999,
@@ -265,7 +256,7 @@ test_ui("actions_popover", ({override, mock_template}) => {
         // TODO: Test all the properties of the popover
         assert.equal(
             opts.conversation_time_uri,
-            "http://chat.zulip.org/#narrow/stream/Bracket.20.28.20stream/topic/Actions.20.281.29/near/999",
+            "http://zulip.zulipdev.com/#narrow/stream/Bracket.20.28.20stream/topic/Actions.20.281.29/near/999",
         );
         return "actions-content";
     });

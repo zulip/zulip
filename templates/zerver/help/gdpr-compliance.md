@@ -58,7 +58,7 @@ compliance.
 
 ## Zulip Cloud's subprocessors
 
-To support delivery of our Services, Kandra Labs, Inc may engage and
+To support delivery of our Services, Kandra Labs, Inc. may engage and
 use data processors with access to certain Customer Data (each, a
 "Subprocessor").  This section provides important information about
 the identity, location and role of each Subprocessor.  Terms used on
@@ -82,20 +82,20 @@ our Services:
 
 * [Amazon Web Services, Inc.](https://aws.amazon.com/compliance/gdpr-center/)
   for cloud infrastructure.
-* [DigitalOcean, Inc.](https://www.digitalocean.com/security/gdpr/)
+* [DigitalOcean, LLC](https://www.digitalocean.com/security/gdpr/)
   for cloud infrastructure.
-* [Front, Inc.](https://community.frontapp.com/t/x1p4mw/is-front-compliant-with-gdpr)
+* [FrontApp, Inc.](https://community.frontapp.com/t/x1p4mw/is-front-compliant-with-gdpr)
   for customer support.
-* [Google Inc.](https://privacy.google.com/businesses/compliance/) for
-  cloud infrastructure and services.
-* [Mailchimp, Inc.](https://kb.mailchimp.com/accounts/management/about-the-general-data-protection-regulation)
-  for email processing.
-* [Mailgun, Inc.](https://www.mailgun.com/gdpr) for email processing.
-* [RackSpace, Inc.](https://www.rackspace.com/en-us/gdpr) for cloud
-  infrastructure for our Zephyr mirroring service.
-* [Sentry, Inc.](https://blog.sentry.io/2018/03/14/gdpr-sentry-and-you)
+* [Functional Software, Inc. d/b/a Sentry](https://blog.sentry.io/2018/03/14/gdpr-sentry-and-you)
   for error tracking.
+* [Google LLC](https://privacy.google.com/businesses/compliance/) for
+  cloud infrastructure and services.
+* [Mailgun Technologies, Inc.](https://www.mailgun.com/gdpr) for email processing.
+* [Rackspace US, Inc.](https://www.rackspace.com/en-us/gdpr) for cloud
+  infrastructure for our Zephyr mirroring service.
 * [Stripe, Inc.](https://stripe.com/guides/general-data-protection-regulation) for payment processing.
+* [The Rocket Science Group LLC d/b/a Mailchimp](https://kb.mailchimp.com/accounts/management/about-the-general-data-protection-regulation)
+  for email processing.
 
 ## GDPR compliance with Zulip Cloud
 

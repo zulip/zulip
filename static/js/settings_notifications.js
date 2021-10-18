@@ -48,10 +48,10 @@ function rerender_ui() {
     }
 }
 
-function change_notification_setting(setting, value, status_element, url) {
+function change_notification_setting(setting, value, status_element) {
     const data = {};
     data[setting] = value;
-    settings_ui.do_settings_change(channel.patch, url, data, status_element);
+    settings_ui.do_settings_change(channel.patch, "/json/settings", data, status_element);
 }
 
 function update_desktop_icon_count_display(settings_panel) {
@@ -96,42 +96,16 @@ export function set_enable_marketing_emails_visibility() {
 export function set_up(settings_panel) {
     const container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
-    const patch_url = settings_panel.patch_url;
     const notification_sound_elem = $(settings_panel.notification_sound_elem);
     const for_realm_settings = settings_panel.for_realm_settings;
-
-    container.find(".notification-settings-form").on("change", "input, select", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const input_elem = $(e.currentTarget);
-        if (input_elem.parents("#stream-specific-notify-table").length) {
-            stream_edit.stream_setting_changed(e, true);
-            return;
-        }
-        const setting_name = input_elem.attr("name");
-        change_notification_setting(
-            setting_name,
-            settings_org.get_input_element_value(this),
-            input_elem.closest(".subsection-parent").find(".alert-notification"),
-            patch_url,
-        );
-    });
-
-    update_desktop_icon_count_display(settings_panel);
-
-    if (!for_realm_settings) {
-        container.find(".send_test_notification").on("click", () => {
-            notifications.send_test_notification(
-                $t({defaultMessage: "This is what a Zulip notification looks like."}),
-            );
-        });
-    }
 
     container.find(".play_notification_sound").on("click", () => {
         if (settings_object.notification_sound !== "none") {
             notification_sound_elem[0].play();
         }
     });
+
+    update_desktop_icon_count_display(settings_panel);
 
     const notification_sound_dropdown = container.find(".setting_notification_sound");
     notification_sound_dropdown.val(settings_object.notification_sound);
@@ -157,10 +131,42 @@ export function set_up(settings_panel) {
     );
 
     set_enable_digest_emails_visibility(settings_panel);
-    if (!for_realm_settings) {
-        set_enable_marketing_emails_visibility();
-        rerender_ui();
+
+    if (for_realm_settings) {
+        // For the realm-level defaults page, we use the common
+        // settings_org.js handlers, so we can return early here.
+        return;
     }
+
+    // Common handler for sending requests to the server when an input
+    // element is changed.
+    container.find(".notification-settings-form").on("change", "input, select", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const input_elem = $(e.currentTarget);
+        if (input_elem.parents("#stream-specific-notify-table").length) {
+            stream_edit.stream_setting_changed(e, true);
+            return;
+        }
+        const setting_name = input_elem.attr("name");
+        change_notification_setting(
+            setting_name,
+            settings_org.get_input_element_value(this),
+            input_elem.closest(".subsection-parent").find(".alert-notification"),
+        );
+    });
+
+    // This final patch of settings are ones for which we
+    // intentionally don't let organization administrators set
+    // organization-level defaults.
+    container.find(".send_test_notification").on("click", () => {
+        notifications.send_test_notification(
+            $t({defaultMessage: "This is what a Zulip notification looks like."}),
+        );
+    });
+
+    set_enable_marketing_emails_visibility();
+    rerender_ui();
 }
 
 export function update_page(settings_panel) {
@@ -193,7 +199,6 @@ export function update_page(settings_panel) {
 export function initialize() {
     user_settings_panel.container = "#user-notification-settings";
     user_settings_panel.settings_object = user_settings;
-    user_settings_panel.patch_url = "/json/settings";
     user_settings_panel.notification_sound_elem = "#user-notification-sound-audio";
     user_settings_panel.for_realm_settings = false;
 }

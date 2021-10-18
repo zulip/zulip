@@ -173,21 +173,25 @@
 }
 
 .create_stream_plus_button {
+    font-size: 24px;
+    font-weight: 500;
+    position: relative;
+    top: 2px;
+    border: 1px solid hsl(0, 0%, 80%);
+    border-radius: 5px;
+    background-color: hsl(0, 0%, 100%);
+    color: hsl(0, 0%, 0%);
     margin: 0 0 0 5px;
+    height: 27px;
 
-    border: none;
-    outline: none;
-    background-color: transparent;
+    &:hover {
+        border: 1px solid hsl(0, 0%, 47%);
+    }
 
-    font-size: 2.2em;
-    font-weight: 300;
-    line-height: 1;
-    color: hsl(0, 0%, 67%);
-
-    display: inline-block;
-    transition: all 0.2s ease;
-    padding-bottom: 0;
-    padding-top: 0;
+    span {
+        position: relative;
+        top: -5px;
+    }
 }
 
 #create_stream_description {
@@ -905,6 +909,7 @@
 
     .stream-description {
         margin-bottom: 5px;
+
         .no-description {
             font-style: italic;
             color: hsl(0, 0%, 67%);
@@ -942,6 +947,7 @@
 
         .subscription-type-text {
             display: inline;
+
             ul {
                 margin: 0 0 10px 14px;
                 list-style-type: unset;
@@ -1061,6 +1067,7 @@
         }
     }
 }
+
 #change_stream_info_modal {
     .modal-header h3 {
         text-overflow: ellipsis;
@@ -1210,6 +1217,7 @@
         display: block;
         text-align: center;
         margin-left: 0;
+
         .tab-container {
             .ind-tab {
                 width: 85px;

@@ -10,6 +10,12 @@
 
 {!how-to-invite-users-to-join.md!}
 
+To get everyone off to a good start, you may wish to share the guide
+to [Getting started with Zulip](/help/getting-started-with-zulip).
+
+!!! tip ""
+    You can link to your Zulip organization with a [nice badge](/help/linking-to-zulip).
+
 ## Related articles
 
 * [Setting up your organization](/help/getting-your-organization-started-with-zulip)

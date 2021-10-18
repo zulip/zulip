@@ -9,6 +9,7 @@ import urllib
 from contextlib import contextmanager
 from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional, Sequence, Tuple, Type
 from unittest import mock
+from urllib.parse import urlencode
 
 import jwt
 import ldap
@@ -170,7 +171,8 @@ class AuthBackendTest(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(
                 result.url,
-                f"{user_profile.realm.uri}/login/?is_deactivated={user_profile.delivery_email}",
+                f"{user_profile.realm.uri}/login/?"
+                + urlencode({"is_deactivated": user_profile.delivery_email}),
             )
         else:
             # Just takes you back to the login page treating as
@@ -905,7 +907,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         params["next"] = next
         params["multiuse_object_key"] = multiuse_object_key
         if len(params) > 0:
-            url += f"?{urllib.parse.urlencode(params)}"
+            url += f"?{urlencode(params)}"
         if user_agent is not None:
             headers["HTTP_USER_AGENT"] = user_agent
 
@@ -1119,7 +1121,8 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(
                 result.url,
-                f"{user_profile.realm.uri}/login/?is_deactivated={user_profile.delivery_email}",
+                f"{user_profile.realm.uri}/login/?"
+                + urlencode({"is_deactivated": user_profile.delivery_email}),
             )
         self.assertEqual(
             m.output,
@@ -2888,7 +2891,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
 
         params["user"] = json.dumps(account_data_dict)
 
-        url += f"&{urllib.parse.urlencode(params)}"
+        url += f"&{urlencode(params)}"
         return url, headers
 
     def social_auth_test(

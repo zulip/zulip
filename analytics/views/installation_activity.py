@@ -223,7 +223,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
             if string_id in estimated_arrs:
                 row["arr"] = estimated_arrs[string_id]
 
-            if row["plan_type"] == Realm.STANDARD:
+            if row["plan_type"] in [Realm.STANDARD, Realm.PLUS]:
                 row["effective_rate"] = 100 - int(realms_to_default_discount.get(string_id, 0))
             elif row["plan_type"] == Realm.STANDARD_FREE:
                 row["effective_rate"] = 0

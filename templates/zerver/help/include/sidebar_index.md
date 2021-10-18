@@ -2,6 +2,7 @@
 * [Getting started with Zulip](/help/getting-started-with-zulip)
 * [Setting up your organization](/help/getting-your-organization-started-with-zulip)
 * [Moderating open organizations](/help/moderating-open-organizations)
+* [Setting up Zulip for a class](/help/setting-up-zulip-for-a-class)
 * [Using Zulip for a class](/help/using-zulip-for-a-class)
 * [Using Zulip via email](/help/using-zulip-via-email)
 
@@ -27,6 +28,7 @@
 * [Create streams](/help/create-streams)
 * [Customize settings for new users](/help/customize-settings-for-new-users)
 * [Invite users to join](/help/invite-users-to-join)
+* [Create user groups](/help/create-user-groups)
 * [Set up integrations](/help/set-up-integrations)
 
 ## Account basics

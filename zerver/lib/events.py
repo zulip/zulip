@@ -1197,7 +1197,11 @@ def apply_event(
         # this setting is not a part of UserBaseSettings class.
         if event["property"] != "timezone":
             assert event["property"] in UserProfile.property_types
-        state[event["property"]] = event["value"]
+        if event["property"] in {
+            **UserProfile.display_settings_legacy,
+            **UserProfile.notification_settings_legacy,
+        }:
+            state[event["property"]] = event["value"]
         state["user_settings"][event["property"]] = event["value"]
     elif event["type"] == "invites_changed":
         pass

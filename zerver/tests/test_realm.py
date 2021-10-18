@@ -11,6 +11,7 @@ from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.actions import (
     do_add_deactivated_redirect,
     do_change_plan_type,
+    do_change_realm_org_type,
     do_change_realm_subdomain,
     do_create_realm,
     do_deactivate_realm,
@@ -169,6 +170,37 @@ class RealmTest(ZulipTestCase):
         self.assert_json_error(result, "description is too long (limit: 1000 characters)")
         realm = get_realm("zulip")
         self.assertNotEqual(realm.description, new_description)
+
+    def test_realm_convert_demo_realm(self) -> None:
+        data = dict(string_id="coolrealm")
+
+        self.login("iago")
+        result = self.client_patch("/json/realm", data)
+        self.assert_json_error(result, "Must be an organization owner")
+
+        self.login("desdemona")
+        result = self.client_patch("/json/realm", data)
+        self.assert_json_error(result, "Must be a demo organization.")
+
+        data = dict(string_id="lear")
+        self.login("desdemona")
+        realm = get_realm("zulip")
+        realm.demo_organization_scheduled_deletion_date = timezone_now() + datetime.timedelta(
+            days=30
+        )
+        realm.save()
+        result = self.client_patch("/json/realm", data)
+        self.assert_json_error(result, "Subdomain unavailable. Please choose a different one.")
+
+        # Now try to change the string_id to something available.
+        data = dict(string_id="coolrealm")
+        result = self.client_patch("/json/realm", data)
+        self.assert_json_success(result)
+        json = orjson.loads(result.content)
+        self.assertEqual(json["realm_uri"], "http://coolrealm.testserver")
+        realm = get_realm("coolrealm")
+        self.assertIsNone(realm.demo_organization_scheduled_deletion_date)
+        self.assertEqual(realm.string_id, data["string_id"])
 
     def test_realm_name_length(self) -> None:
         new_name = "A" * (Realm.MAX_REALM_NAME_LENGTH + 1)
@@ -611,6 +643,25 @@ class RealmTest(ZulipTestCase):
             self.assertEqual(get_realm("onpremise").message_visibility_limit, None)
             self.assertEqual(get_realm("onpremise").upload_quota_gb, None)
 
+    def test_change_org_type(self) -> None:
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        self.assertEqual(realm.org_type, Realm.ORG_TYPES["business"]["id"])
+
+        do_change_realm_org_type(realm, Realm.ORG_TYPES["government"]["id"], acting_user=iago)
+        realm = get_realm("zulip")
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.REALM_ORG_TYPE_CHANGED
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = {
+            "old_value": Realm.ORG_TYPES["business"]["id"],
+            "new_value": Realm.ORG_TYPES["government"]["id"],
+        }
+        self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
+        self.assertEqual(realm_audit_log.acting_user, iago)
+        self.assertEqual(realm.org_type, Realm.ORG_TYPES["government"]["id"])
+
     def test_change_plan_type(self) -> None:
         realm = get_realm("zulip")
         iago = self.example_user("iago")
@@ -648,6 +699,12 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_STANDARD)
 
         do_change_plan_type(realm, Realm.LIMITED, acting_user=iago)
+        do_change_plan_type(realm, Realm.PLUS, acting_user=iago)
+        realm = get_realm("zulip")
+        self.assertEqual(realm.plan_type, Realm.PLUS)
+        self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
+        self.assertEqual(realm.message_visibility_limit, None)
+        self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_STANDARD)
 
         do_change_plan_type(realm, Realm.SELF_HOSTED, acting_user=iago)
         self.assertEqual(realm.plan_type, Realm.SELF_HOSTED)

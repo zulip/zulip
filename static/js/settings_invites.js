@@ -58,11 +58,11 @@ function populate_invites(invites_data) {
     add_invited_as_text(invites_data.invites);
 
     const invites_table = $("#admin_invites_table").expectOne();
-
     ListWidget.create(invites_table, invites_data.invites, {
         name: "admin_invites_list",
         modifier(item) {
             item.invited_absolute_time = timerender.absolute_time(item.invited * 1000);
+            item.expiry_date_absolute_time = timerender.absolute_time(item.expiry_date * 1000);
             item.is_admin = page_params.is_admin;
             item.disable_buttons =
                 item.invited_as === settings_config.user_role_values.owner.code &&

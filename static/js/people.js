@@ -619,8 +619,9 @@ export function exclude_me_from_string(user_ids_string) {
 }
 
 export function format_small_avatar_url(raw_url) {
-    const url = raw_url + "&s=50";
-    return url;
+    const url = new URL(raw_url, location);
+    url.search += (url.search ? "&" : "") + "s=50";
+    return url.href;
 }
 
 export function sender_is_bot(message) {

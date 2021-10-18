@@ -564,7 +564,12 @@ class FetchInitialStateDataTest(ZulipTestCase):
         )
         self.assertIn("user_settings", result)
         for prop in UserProfile.property_types:
-            self.assertIn(prop, result)
+            if prop in {
+                **UserProfile.display_settings_legacy,
+                **UserProfile.notification_settings_legacy,
+            }:
+                # Only legacy settings are included in the top level.
+                self.assertIn(prop, result)
             self.assertIn(prop, result["user_settings"])
 
 

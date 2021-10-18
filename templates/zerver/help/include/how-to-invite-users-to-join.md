@@ -21,7 +21,4 @@
 
 {end_tabs}
 
-!!! tip ""
-    You can link to your Zulip organization with a [nice badge](/help/linking-to-zulip).
-
 [allow-anyone-to-join]: /help/allow-anyone-to-join-without-an-invitation

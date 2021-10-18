@@ -11,6 +11,20 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 105**
+
+* [`POST /register`](/api/register-queue), [`PATCH
+  /settings`](/api/update-settings), [`PATCH
+  /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added three new privacy settings: `send_private_typing_notifications`,
+  `send_stream_typing_notifications`, and `send_read_receipts`.
+
+**Feature level 104**
+
+* [`PATCH /realm`]: Added `string_id` parameter for changing an
+  organization's subdomain. Currently, this is only allowed for
+  changing changing a demo organization to a normal one.
+
 **Feature level 103**
 
 * [`POST /register`](/api/register-queue): Added `create_web_public_stream_policy`

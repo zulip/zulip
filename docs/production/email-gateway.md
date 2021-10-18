@@ -118,7 +118,16 @@ Congratulations! The integration should be fully operational.
      in the email gateway integration section (`EMAIL_GATEWAY_LOGIN` and others).
    - Password in `/etc/zulip/zulip-secrets.conf` as `email_gateway_password`.
 
-1. Install a cron job to poll the inbox every minute for new messages:
+1. Test your configuration by sending emails to the target email
+   account and then running the Zulip tool to poll that inbox:
+
+   ```
+   su zulip -c '/home/zulip/deployments/current/manage.py email_mirror'
+   ```
+
+1. Once everything is working, Install the cron job which will poll
+   the inbox every minute for new messages using the tool you tested
+   in the last step:
    ```bash
    cd /home/zulip/deployments/current/
    sudo cp puppet/zulip/files/cron.d/email-mirror /etc/cron.d/

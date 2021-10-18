@@ -12,18 +12,7 @@ trying to send a group of people a message, you'll want to either
 
 ### Create a user group
 
-{start_tabs}
-
-{settings_tab|user-groups-admin}
-
-1. Under **Add a new user group**, enter a **Name** and **Description**.
-
-1. Click **Save**.
-
-1. Find the group in the list below, and add members. Zulip will notify
-   everyone who is added.
-
-{end_tabs}
+{!how-to-create-a-user-group.md!}
 
 ### Modify a user group
 
@@ -46,3 +35,4 @@ any user group they are a part of. Guests cannot modify user groups.
 ## Related articles
 
 * [Restrict user group management](/help/restrict-user-group-management)
+* [Create user groups](/help/create-user-groups)

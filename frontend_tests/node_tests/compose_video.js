@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -16,13 +16,6 @@ mock_esm("../../static/js/giphy", {
 });
 mock_esm("../../static/js/resize", {
     watch_manual_resize() {},
-});
-set_global("document", {
-    execCommand() {
-        return false;
-    },
-    location: {},
-    to_$: () => $("document-stub"),
 });
 
 const server_events_dispatch = zrequire("server_events_dispatch");

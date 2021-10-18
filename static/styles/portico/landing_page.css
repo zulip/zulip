@@ -325,6 +325,7 @@ nav {
 
     .nav-dropdown {
         padding-bottom: 3px;
+
         ul {
             width: 300px;
         }
@@ -339,6 +340,7 @@ nav {
 
                 div.dropdown-column {
                     float: left;
+
                     &:first-of-type {
                         width: 40%;
                     }
@@ -350,6 +352,7 @@ nav {
 
                 div.dropdown-column {
                     float: left;
+
                     &:first-of-type {
                         width: 40%;
                     }
@@ -2358,6 +2361,7 @@ nav {
 
     opacity: 0.7;
 }
+
 .portico-landing.why-page .markdown {
     font-size: 1.1rem;
 }
@@ -2368,12 +2372,14 @@ nav {
     padding: 20px 30px;
     margin-top: 20px;
     font-size: 1.05em;
+
     p {
         line-height: 1.5;
         margin: 0;
         font-weight: 400;
         color: hsl(220, 23%, 33%);
     }
+
     p:last-child {
         margin-top: 10px;
     }
@@ -2836,6 +2842,7 @@ nav {
     color: hsl(0, 0%, 53%);
 
     text-align: left;
+    white-space: nowrap;
 }
 
 .pricing-model .pricing-container .bottom .button {
@@ -4147,12 +4154,14 @@ nav {
                 width: 18px;
                 height: 18px;
                 margin-right: 5px;
-                margin-top: 2px;
+                margin-top: 4px;
                 background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16px" height="16px" viewBox="0 0 24 24"><path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-1.25 17.292l-4.5-4.364 1.857-1.858 2.643 2.506 5.643-5.784 1.857 1.857-7.5 7.643z"/></svg>');
             }
 
             .list-content {
                 margin-left: 22px;
+                line-height: 1.6;
+                font-size: 18px;
             }
         }
     }
@@ -4248,6 +4257,7 @@ nav {
 
     a {
         color: hsl(0, 0%, 100%);
+
         &.case-study-link {
             margin-left: 20px;
             text-decoration: underline;

@@ -36,6 +36,7 @@ from django.utils.functional import Promise
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
+from django_cte import CTEManager
 
 from confirmation import settings as confirmation_settings
 from zerver.lib import cache
@@ -219,7 +220,7 @@ class Realm(models.Model):
     string_id: str = models.CharField(max_length=MAX_REALM_SUBDOMAIN_LENGTH, unique=True)
 
     date_created: datetime.datetime = models.DateTimeField(default=timezone_now)
-    demo_organization_scheduled_deletion_date: datetime.datetime = models.DateTimeField(
+    demo_organization_scheduled_deletion_date: Optional[datetime.datetime] = models.DateTimeField(
         default=None, null=True
     )
     deactivated: bool = models.BooleanField(default=False)
@@ -539,6 +540,7 @@ class Realm(models.Model):
     LIMITED = 2
     STANDARD = 3
     STANDARD_FREE = 4
+    PLUS = 10
     plan_type: int = models.PositiveSmallIntegerField(default=SELF_HOSTED)
 
     # This value is also being used in static/js/settings_bots.bot_creation_policy_values.
@@ -1436,6 +1438,11 @@ class UserBaseSettings(models.Model):
     # Whether or not the user wants to sync their drafts.
     enable_drafts_synchronization = models.BooleanField(default=True)
 
+    # Privacy settings
+    send_stream_typing_notifications: bool = models.BooleanField(default=True)
+    send_private_typing_notifications: bool = models.BooleanField(default=True)
+    send_read_receipts: bool = models.BooleanField(default=True)
+
     display_settings_legacy = dict(
         color_scheme=int,
         default_language=str,
@@ -1481,7 +1488,16 @@ class UserBaseSettings(models.Model):
     }  # Add new notifications settings here.
 
     # Define the types of the various automatically managed properties
-    property_types = {**display_settings_legacy, **notification_setting_types}
+    property_types = {
+        **display_settings_legacy,
+        **notification_setting_types,
+        **dict(
+            # Add new general settings here.
+            send_stream_typing_notifications=bool,
+            send_private_typing_notifications=bool,
+            send_read_receipts=bool,
+        ),
+    }
 
     class Meta:
         abstract = True
@@ -1962,9 +1978,19 @@ class PasswordTooWeakError(Exception):
 
 
 class UserGroup(models.Model):
+    objects = CTEManager()
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     name: str = models.CharField(max_length=100)
-    members: Manager = models.ManyToManyField(UserProfile, through="UserGroupMembership")
+    direct_members: Manager = models.ManyToManyField(
+        UserProfile, through="UserGroupMembership", related_name="direct_groups"
+    )
+    direct_subgroups: Manager = models.ManyToManyField(
+        "self",
+        symmetrical=False,
+        through="GroupGroupMembership",
+        through_fields=("supergroup", "subgroup"),
+        related_name="direct_supergroups",
+    )
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     description: str = models.TextField(default="")
     is_system_group: bool = models.BooleanField(default=False)
@@ -1975,11 +2001,24 @@ class UserGroup(models.Model):
 
 class UserGroupMembership(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
-    user_group: UserGroup = models.ForeignKey(UserGroup, on_delete=CASCADE)
-    user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
+    user_group: UserGroup = models.ForeignKey(UserGroup, on_delete=CASCADE, related_name="+")
+    user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE, related_name="+")
 
     class Meta:
         unique_together = (("user_group", "user_profile"),)
+
+
+class GroupGroupMembership(models.Model):
+    id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
+    supergroup: UserGroup = models.ForeignKey(UserGroup, on_delete=CASCADE, related_name="+")
+    subgroup: UserGroup = models.ForeignKey(UserGroup, on_delete=CASCADE, related_name="+")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["supergroup", "subgroup"], name="zerver_groupgroupmembership_uniq"
+            )
+        ]
 
 
 def remote_user_to_email(remote_user: str) -> str:
@@ -3769,6 +3808,7 @@ class AbstractRealmAuditLog(models.Model):
     REALM_SUBDOMAIN_CHANGED = 214
     REALM_CREATED = 215
     REALM_DEFAULT_USER_SETTINGS_CHANGED = 216
+    REALM_ORG_TYPE_CHANGED = 217
 
     SUBSCRIPTION_CREATED = 301
     SUBSCRIPTION_ACTIVATED = 302
@@ -4145,3 +4185,26 @@ def flush_alert_word(*, instance: AlertWord, **kwargs: object) -> None:
 
 post_save.connect(flush_alert_word, sender=AlertWord)
 post_delete.connect(flush_alert_word, sender=AlertWord)
+
+
+class SCIMClient(models.Model):
+    realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
+    name: str = models.TextField()
+
+    class Meta:
+        unique_together = ("realm", "name")
+
+    def __str__(self) -> str:
+        return f"<SCIMClient {self.name} for realm {self.realm_id}>"
+
+    def format_requestor_for_logs(self) -> str:
+        return f"scim-client:{self.name}:realm:{self.realm_id}"
+
+    @property
+    def is_authenticated(self) -> bool:
+        """
+        The purpose of this is to make SCIMClient behave like a UserProfile
+        when an instance is assigned to request.user - we need it to pass
+        request.user.is_authenticated verifications.
+        """
+        return True

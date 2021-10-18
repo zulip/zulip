@@ -43,6 +43,7 @@ body.night-mode {
         .tippy-content a {
             color: hsl(236, 33%, 90%);
         }
+
         &[data-placement^="top"] {
             > .tippy-arrow {
                 &::before {
@@ -50,6 +51,7 @@ body.night-mode {
                 }
             }
         }
+
         &[data-placement^="bottom"] {
             > .tippy-arrow {
                 &::before {
@@ -57,6 +59,7 @@ body.night-mode {
                 }
             }
         }
+
         &[data-placement^="left"] {
             > .tippy-arrow {
                 &::before {
@@ -64,6 +67,7 @@ body.night-mode {
                 }
             }
         }
+
         &[data-placement^="right"] {
             > .tippy-arrow {
                 &::before {
@@ -270,6 +274,12 @@ body.night-mode {
         background-color: transparent;
     }
 
+    .create_stream_plus_button {
+        color: hsl(0, 0%, 100%);
+        background-color: hsla(0, 0%, 0%, 0.2);
+        border-color: hsla(0, 0%, 0%, 0.6);
+    }
+
     .emoji-info-popover
         .emoji-popover
         .emoji-popover-category-tabs
@@ -341,13 +351,10 @@ body.night-mode {
         }
     }
 
-    #message_view_header span:nth-last-child(2):hover + .search_closed {
-        color: hsl(0, 0%, 100%);
-    }
-
     #message_view_header .stream {
         color: hsl(236, 33%, 90%);
     }
+
     #message_view_header .sub_count,
     #message_view_header .narrow_description {
         color: hsla(0, 0%, 90%, 1);
@@ -423,11 +430,6 @@ body.night-mode {
     .clear_search_button:active,
     .clear_search_button:disabled:hover,
     #user-groups .save-instructions,
-    #message_view_header .search_icon,
-    #searchbox_legacy .search_icon,
-    #searchbox_legacy .search_button,
-    #searchbox .search_icon,
-    #searchbox .search_button,
     .close,
     #user_presences li:hover .user-list-sidebar-menu-icon,
     li.top_left_all_messages:hover .all-messages-sidebar-menu-icon,
@@ -441,12 +443,6 @@ body.night-mode {
     .collapse_composebox_button:hover,
     #message_edit_tooltip:hover,
     .clear_search_button:hover,
-    #message_view_header .search_icon:hover,
-    .search_icon_hover_highlight,
-    #searchbox_legacy .search_icon:hover,
-    #searchbox_legacy .search_button:hover,
-    #searchbox .search_icon:hover,
-    #searchbox .search_button:hover,
     .close:hover {
         color: hsl(0, 0%, 100%);
     }
@@ -547,6 +543,7 @@ body.night-mode {
     #recent_topics_table td a {
         color: hsl(206, 89%, 74%);
         text-decoration: none;
+
         &:hover {
             color: hsl(208, 64%, 52%);
         }
@@ -1095,6 +1092,7 @@ body.night-mode {
 
     .color_animated_button {
         background-color: hsl(209, 32%, 5%);
+
         * {
             color: hsl(0, 0%, 100%);
         }

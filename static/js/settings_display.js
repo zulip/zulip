@@ -5,7 +5,7 @@ import * as emojisets from "./emojisets";
 import {$t_html, get_language_name} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
-import * as settings_config from "./settings_config";
+import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
 import * as ui_report from "./ui_report";
 import {user_settings} from "./user_settings";
@@ -22,9 +22,7 @@ export function set_default_language_name(name) {
     user_default_language_name = name;
 }
 
-function change_display_setting(data, settings_panel, status_element, success_msg_html, sticky) {
-    const container = $(settings_panel.container);
-    const $status_el = container.find(`${status_element}`);
+function change_display_setting(data, $status_el, success_msg_html, sticky) {
     const status_is_sticky = $status_el.data("is_sticky");
     const display_message_html = status_is_sticky
         ? $status_el.data("sticky_msg_html")
@@ -38,19 +36,14 @@ function change_display_setting(data, settings_panel, status_element, success_ms
         $status_el.data("is_sticky", true);
         $status_el.data("sticky_msg_html", success_msg_html);
     }
-    settings_ui.do_settings_change(channel.patch, settings_panel.patch_url, data, $status_el, opts);
+    settings_ui.do_settings_change(channel.patch, "/json/settings", data, $status_el, opts);
 }
 
 export function set_up(settings_panel) {
     meta.loaded = true;
     const container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
-    const patch_url = settings_panel.patch_url;
     const for_realm_settings = settings_panel.for_realm_settings;
-    let language_modal_elem;
-    if (!for_realm_settings) {
-        language_modal_elem = settings_panel.language_modal_elem;
-    }
 
     container.find(".display-settings-status").hide();
 
@@ -68,91 +61,75 @@ export function set_up(settings_panel) {
         .find(`.setting_emojiset_choice[value="${CSS.escape(settings_object.emojiset)}"]`)
         .prop("checked", true);
 
-    $(`${CSS.escape(language_modal_elem)} [data-dismiss]`).on("click", () => {
-        overlays.close_modal(language_modal_elem);
-    });
-
-    const all_display_settings = settings_config.get_all_display_settings();
-    for (const setting of all_display_settings.settings.user_display_settings) {
-        container.find(`.${CSS.escape(setting)}`).on("change", function () {
-            const data = {};
-            data[setting] = JSON.stringify($(this).prop("checked"));
-
-            if (["left_side_userlist"].includes(setting) && !for_realm_settings) {
-                change_display_setting(
-                    data,
-                    settings_panel,
-                    ".display-settings-status",
-                    $t_html(
-                        {
-                            defaultMessage:
-                                "Saved. Please <z-link>reload</z-link> for the change to take effect.",
-                        },
-                        {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
-                    ),
-                    true,
-                );
-            } else {
-                change_display_setting(data, settings_panel, ".display-settings-status");
-            }
-        });
+    if (for_realm_settings) {
+        // For the realm-level defaults page, we use the common
+        // settings_org.js handlers, so we can return early here.
+        return;
     }
 
-    if (!for_realm_settings) {
-        $(language_modal_elem)
-            .find(".language")
-            .on("click", (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                overlays.close_modal(language_modal_elem);
+    $("#user_default_language_modal [data-dismiss]").on("click", () => {
+        overlays.close_modal("#user_default_language_modal");
+    });
 
-                const $link = $(e.target).closest("a[data-code]");
-                const setting_value = $link.attr("data-code");
-                const data = {default_language: setting_value};
+    // Common handler for sending requests to the server when an input
+    // element is changed.
+    container.on("change", "input[type=checkbox], select", function (e) {
+        const input_elem = $(e.currentTarget);
+        const setting = input_elem.attr("name");
+        const data = {};
+        data[setting] = settings_org.get_input_element_value(this);
+        const status_element = input_elem.closest(".subsection-parent").find(".alert-notification");
 
-                const new_language = $link.attr("data-name");
-                container.find(".default_language_name").text(new_language);
+        if (["left_side_userlist"].includes(setting)) {
+            change_display_setting(
+                data,
+                status_element,
+                $t_html(
+                    {
+                        defaultMessage:
+                            "Saved. Please <z-link>reload</z-link> for the change to take effect.",
+                    },
+                    {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
+                ),
+                true,
+            );
+        } else {
+            change_display_setting(data, status_element);
+        }
+    });
 
-                change_display_setting(
-                    data,
-                    settings_panel,
-                    ".language-settings-status",
-                    $t_html(
-                        {
-                            defaultMessage:
-                                "Saved. Please <z-link>reload</z-link> for the change to take effect.",
-                        },
-                        {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
-                    ),
-                    true,
-                );
-            });
-
-        container.find(".setting_default_language").on("click", (e) => {
+    $("#user_default_language_modal")
+        .find(".language")
+        .on("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            overlays.open_modal(language_modal_elem);
+            overlays.close_modal("#user_default_language_modal");
+
+            const $link = $(e.target).closest("a[data-code]");
+            const setting_value = $link.attr("data-code");
+            const data = {default_language: setting_value};
+
+            const new_language = $link.attr("data-name");
+            container.find(".default_language_name").text(new_language);
+
+            change_display_setting(
+                data,
+                container.find(".language-settings-status"),
+                $t_html(
+                    {
+                        defaultMessage:
+                            "Saved. Please <z-link>reload</z-link> for the change to take effect.",
+                    },
+                    {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
+                ),
+                true,
+            );
         });
-    }
 
-    container.find(".setting_twenty_four_hour_time").on("change", function () {
-        const data = {twenty_four_hour_time: this.value};
-        change_display_setting(data, settings_panel, ".time-settings-status");
-    });
-
-    container.find(".setting_demote_inactive_streams").on("change", function () {
-        const data = {demote_inactive_streams: this.value};
-        change_display_setting(data, settings_panel, ".display-settings-status");
-    });
-
-    container.find(".setting_color_scheme").on("change", function () {
-        const data = {color_scheme: this.value};
-        change_display_setting(data, settings_panel, ".display-settings-status");
-    });
-
-    container.find(".setting_default_view").on("change", function () {
-        const data = {default_view: this.value};
-        change_display_setting(data, settings_panel, ".display-settings-status");
+    container.find(".setting_default_language").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        overlays.open_modal("#user_default_language_modal");
     });
 
     $("body").on("click", ".reload_link", () => {
@@ -169,7 +146,7 @@ export function set_up(settings_panel) {
         loading.make_indicator(spinner, {text: settings_ui.strings.saving});
 
         channel.patch({
-            url: patch_url,
+            url: "/json/settings",
             data,
             success() {},
             error(xhr) {
@@ -180,11 +157,6 @@ export function set_up(settings_panel) {
                 );
             },
         });
-    });
-
-    container.find(".translate_emoticons").on("change", function () {
-        const data = {translate_emoticons: JSON.stringify(this.checked)};
-        change_display_setting(data, settings_panel, ".emoji-settings-status");
     });
 }
 
@@ -233,7 +205,5 @@ export function initialize() {
 
     user_settings_panel.container = "#user-display-settings";
     user_settings_panel.settings_object = user_settings;
-    user_settings_panel.patch_url = "/json/settings";
-    user_settings_panel.language_modal_elem = "#user_default_language_modal";
     user_settings_panel.for_realm_settings = false;
 }

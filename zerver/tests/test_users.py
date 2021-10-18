@@ -1320,6 +1320,26 @@ class UserProfileTest(ZulipTestCase):
         )
         self.assertTrue(result["is_subscribed"])
 
+        self.login("iago")
+        stream = self.make_stream("private_stream", invite_only=True)
+        # Unsubscribed admin can check subscription status in a private stream.
+        result = orjson.loads(
+            self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
+        )
+        self.assertFalse(result["is_subscribed"])
+
+        # Unsubscribed non-admins cannot check subscription status in a private stream.
+        self.login("shiva")
+        result = self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}")
+        self.assert_json_error(result, "Invalid stream id")
+
+        # Subscribed non-admins can check subscription status in a private stream
+        self.subscribe(self.example_user("shiva"), stream.name)
+        result = orjson.loads(
+            self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
+        )
+        self.assertFalse(result["is_subscribed"])
+
 
 class ActivateTest(ZulipTestCase):
     def test_basics(self) -> None:

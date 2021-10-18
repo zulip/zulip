@@ -10,6 +10,7 @@ from confirmation.models import Confirmation, ConfirmationKeyException, get_obje
 from zerver.decorator import require_realm_admin, require_realm_owner
 from zerver.forms import check_subdomain_available as check_subdomain
 from zerver.lib.actions import (
+    do_change_realm_subdomain,
     do_deactivate_realm,
     do_reactivate_realm,
     do_set_realm_authentication_methods,
@@ -132,6 +133,10 @@ def update_realm(
     default_code_block_language: Optional[str] = REQ(default=None),
     digest_weekday: Optional[int] = REQ(
         json_validator=check_int_in(Realm.DIGEST_WEEKDAY_VALUES), default=None
+    ),
+    string_id: Optional[str] = REQ(
+        str_validator=check_capped_string(Realm.MAX_REALM_SUBDOMAIN_LENGTH),
+        default=None,
     ),
 ) -> HttpResponse:
     realm = user_profile.realm
@@ -273,6 +278,21 @@ def update_realm(
         else:
             data["default_code_block_language"] = default_code_block_language
 
+    if string_id is not None:
+        if not user_profile.is_realm_owner:
+            raise OrganizationOwnerRequired()
+
+        if realm.demo_organization_scheduled_deletion_date is None:
+            raise JsonableError(_("Must be a demo organization."))
+
+        try:
+            check_subdomain(string_id)
+        except ValidationError as err:
+            raise JsonableError(str(err.message))
+
+        do_change_realm_subdomain(realm, string_id, acting_user=user_profile)
+        data["realm_uri"] = realm.uri
+
     return json_success(data)
 
 
@@ -375,6 +395,11 @@ def update_realm_user_settings_defaults(
         json_validator=check_int, default=None
     ),
     twenty_four_hour_time: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    send_stream_typing_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    send_private_typing_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    send_read_receipts: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     if notification_sound is not None or email_notifications_batching_period_seconds is not None:
         check_settings_values(notification_sound, email_notifications_batching_period_seconds)

@@ -3229,37 +3229,6 @@ class SubscriptionAPITest(ZulipTestCase):
             result, f"Stream name '{stream_name}' contains NULL (0x00) characters."
         )
 
-    def _test_user_settings_for_adding_streams(self, stream_policy: str, invite_only: bool) -> None:
-        # TODO: This test makes excessive use of mocking and should be
-        # rewritten to be more similar to _test_user_settings_for_creating_streams.
-        method = "can_create_private_streams" if invite_only else "can_create_public_streams"
-        do_set_realm_property(
-            self.test_user.realm, stream_policy, Realm.POLICY_ADMINS_ONLY, acting_user=None
-        )
-
-        with mock.patch(f"zerver.models.UserProfile.{method}", return_value=False):
-            result = self.common_subscribe_to_streams(
-                self.test_user, ["stream1"], invite_only=invite_only, allow_fail=True
-            )
-            self.assert_json_error(result, "Insufficient permission")
-
-        with mock.patch(f"zerver.models.UserProfile.{method}", return_value=True):
-            self.common_subscribe_to_streams(self.test_user, ["stream2"], invite_only=invite_only)
-
-        # User should still be able to subscribe to an existing stream
-        with mock.patch(f"zerver.models.UserProfile.{method}", return_value=False):
-            self.common_subscribe_to_streams(self.test_user, ["stream2"], invite_only=invite_only)
-
-    def test_user_settings_for_adding_private_streams(self) -> None:
-        self._test_user_settings_for_adding_streams(
-            "create_private_stream_policy", invite_only=True
-        )
-
-    def test_user_settings_for_adding_public_streams(self) -> None:
-        self._test_user_settings_for_adding_streams(
-            "create_public_stream_policy", invite_only=False
-        )
-
     def _test_user_settings_for_creating_streams(
         self,
         stream_policy: str,

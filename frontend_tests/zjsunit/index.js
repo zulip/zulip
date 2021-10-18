@@ -15,7 +15,8 @@ const blueslip = require("./zblueslip");
 const zjquery = require("./zjquery");
 const zpage_params = require("./zpage_params");
 
-global.DOMParser = new JSDOM().window.DOMParser;
+const dom = new JSDOM("", {url: "http://zulip.zulipdev.com/"});
+global.DOMParser = dom.window.DOMParser;
 
 require("@babel/register")({
     extensions: [".es6", ".es", ".jsx", ".js", ".mjs", ".ts"],
@@ -85,9 +86,8 @@ try {
         namespace.start();
         namespace.set_global("window", window);
         namespace.set_global("to_$", () => window);
-        namespace.set_global("location", {
-            hash: "#",
-        });
+        namespace.set_global("location", dom.window.location);
+        window.location.href = "http://zulip.zulipdev.com/#";
         namespace.set_global("setTimeout", noop);
         namespace.set_global("setInterval", noop);
         _.throttle = immediate;

@@ -58,6 +58,9 @@ const settings_playgrounds = mock_esm("../../static/js/settings_playgrounds");
 const settings_notifications = mock_esm("../../static/js/settings_notifications");
 const settings_org = mock_esm("../../static/js/settings_org");
 const settings_profile_fields = mock_esm("../../static/js/settings_profile_fields");
+const settings_realm_user_settings_defaults = mock_esm(
+    "../../static/js/settings_realm_user_settings_defaults",
+);
 const settings_streams = mock_esm("../../static/js/settings_streams");
 const settings_user_groups = mock_esm("../../static/js/settings_user_groups");
 const settings_users = mock_esm("../../static/js/settings_users");
@@ -996,39 +999,19 @@ run_test("server_event_dispatch_op_errors", ({override}) => {
 });
 
 run_test("realm_user_settings_defaults", ({override}) => {
-    override(settings_display, "update_page", noop);
-    override(settings_notifications, "update_page", noop);
     let event = event_fixtures.realm_user_settings_defaults__emojiset;
     realm_user_settings_defaults.emojiset = "text";
-    let called = false;
-    settings_display.report_emojiset_change = () => {
-        called = true;
-    };
+    override(settings_realm_user_settings_defaults, "update_page", noop);
     dispatch(event);
     assert_same(realm_user_settings_defaults.emojiset, "google");
-    assert_same(called, true);
 
     event = event_fixtures.realm_user_settings_defaults__notification_sound;
     realm_user_settings_defaults.notification_sound = "zulip";
-    called = false;
+    let called = false;
     notifications.update_notification_sound_source = () => {
         called = true;
     };
     dispatch(event);
     assert_same(realm_user_settings_defaults.notification_sound, "ding");
-    assert_same(called, true);
-
-    const presence_enabled_elem = $.create(".presence_enabled");
-    $("#realm-user-default-settings").set_find_results(".presence_enabled", presence_enabled_elem);
-    called = false;
-    presence_enabled_elem.prop = (property, value) => {
-        assert_same(property, "checked");
-        assert_same(value, false);
-        called = true;
-    };
-    event = event_fixtures.realm_user_settings_defaults__presence_enabled;
-    realm_user_settings_defaults.presence_enabled = true;
-    dispatch(event);
-    assert_same(realm_user_settings_defaults.presence_enabled, false);
     assert_same(called, true);
 });
