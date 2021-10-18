@@ -312,7 +312,7 @@ class Command(BaseCommand):
                 description="The Zulip development environment default organization."
                 "  It's great for testing!",
                 invite_required=False,
-                plan_type=Realm.SELF_HOSTED,
+                plan_type=Realm.PLAN_TYPE_SELF_HOSTED,
                 org_type=Realm.ORG_TYPES["business"]["id"],
             )
             RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
@@ -327,7 +327,7 @@ class Command(BaseCommand):
                     name="MIT",
                     emails_restricted_to_domains=True,
                     invite_required=False,
-                    plan_type=Realm.SELF_HOSTED,
+                    plan_type=Realm.PLAN_TYPE_SELF_HOSTED,
                     org_type=Realm.ORG_TYPES["business"]["id"],
                 )
                 RealmDomain.objects.create(realm=mit_realm, domain="mit.edu")
@@ -337,7 +337,7 @@ class Command(BaseCommand):
                     name="Lear & Co.",
                     emails_restricted_to_domains=False,
                     invite_required=False,
-                    plan_type=Realm.SELF_HOSTED,
+                    plan_type=Realm.PLAN_TYPE_SELF_HOSTED,
                     org_type=Realm.ORG_TYPES["business"]["id"],
                 )
 

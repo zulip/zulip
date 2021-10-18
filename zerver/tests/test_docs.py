@@ -395,7 +395,7 @@ class PlansPageTest(ZulipTestCase):
         self.assert_in_response("does not exist", result)
 
         realm = get_realm("zulip")
-        realm.plan_type = Realm.STANDARD_FREE
+        realm.plan_type = Realm.PLAN_TYPE_STANDARD_FREE
         realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
         self.assertEqual(result.status_code, 302)
@@ -431,7 +431,7 @@ class PlansPageTest(ZulipTestCase):
         self.assert_not_in_success_response([current_plan, sponsorship_pending], result)
 
         realm = get_realm("zulip")
-        realm.plan_type = Realm.SELF_HOSTED
+        realm.plan_type = Realm.PLAN_TYPE_SELF_HOSTED
         realm.save(update_fields=["plan_type"])
 
         with self.settings(PRODUCTION=True):
@@ -451,7 +451,7 @@ class PlansPageTest(ZulipTestCase):
         self.assert_in_success_response([sign_up_now, upgrade_to_standard], result)
         self.assert_not_in_success_response([current_plan, sponsorship_pending], result)
 
-        realm.plan_type = Realm.LIMITED
+        realm.plan_type = Realm.PLAN_TYPE_LIMITED
         realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response([current_plan, upgrade_to_standard], result)
@@ -464,7 +464,7 @@ class PlansPageTest(ZulipTestCase):
                 [sign_up_now, sponsorship_pending, upgrade_to_standard], result
             )
 
-        realm.plan_type = Realm.STANDARD_FREE
+        realm.plan_type = Realm.PLAN_TYPE_STANDARD_FREE
         realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response([current_plan], result)
@@ -472,7 +472,7 @@ class PlansPageTest(ZulipTestCase):
             [sign_up_now, upgrade_to_standard, sponsorship_pending], result
         )
 
-        realm.plan_type = Realm.STANDARD
+        realm.plan_type = Realm.PLAN_TYPE_STANDARD
         realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response([current_plan], result)
@@ -494,7 +494,7 @@ class PlansPageTest(ZulipTestCase):
             [sign_up_now, upgrade_to_standard, sponsorship_pending], result
         )
 
-        realm.plan_type = Realm.LIMITED
+        realm.plan_type = Realm.PLAN_TYPE_LIMITED
         realm.save()
         customer.sponsorship_pending = True
         customer.save()

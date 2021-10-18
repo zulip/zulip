@@ -466,7 +466,7 @@ class TestSupportEndpoint(ZulipTestCase):
         )
         self.assert_in_success_response(["Sponsorship approved for lear"], result)
         lear_realm.refresh_from_db()
-        self.assertEqual(lear_realm.plan_type, Realm.STANDARD_FREE)
+        self.assertEqual(lear_realm.plan_type, Realm.PLAN_TYPE_STANDARD_FREE)
         customer = get_customer_by_realm(lear_realm)
         assert customer is not None
         self.assertFalse(customer.sponsorship_pending)

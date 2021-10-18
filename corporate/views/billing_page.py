@@ -75,7 +75,7 @@ def billing_home(
         "has_active_plan": False,
     }
 
-    if user.realm.plan_type == user.realm.STANDARD_FREE:
+    if user.realm.plan_type == user.realm.PLAN_TYPE_STANDARD_FREE:
         context["is_sponsored"] = True
         return render(request, "corporate/billing.html", context=context)
 
