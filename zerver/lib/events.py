@@ -175,7 +175,7 @@ def fetch_initial_state_data(
             state["max_message_id"] = -1
 
     if want("drafts"):
-        # Note: if a user ever disables synching drafts then all of
+        # Note: if a user ever disables syncing drafts then all of
         # their old drafts stored on the server will be deleted and
         # simply retained in local storage. In which case user_drafts
         # would just be an empty queryset.

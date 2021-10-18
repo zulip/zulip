@@ -673,7 +673,7 @@ def validate_scim_bearer_token(request: HttpRequest) -> Optional[SCIMClient]:
     This function verifies the request is allowed to make SCIM requests on this subdomain,
     by checking the provided bearer token and ensuring it matches a scim client configured
     for this subdomain in settings.SCIM_CONFIG.
-    If succesful, returns the corresponding SCIMClient object. Returns None otherwise.
+    If successful, returns the corresponding SCIMClient object. Returns None otherwise.
     """
 
     subdomain = get_subdomain(request)
@@ -702,7 +702,7 @@ def validate_scim_bearer_token(request: HttpRequest) -> Optional[SCIMClient]:
 
 class ZulipSCIMAuthCheckMiddleware(SCIMAuthCheckMiddleware):
     """
-    Overriden version of middleware implemented in django-scim2
+    Overridden version of middleware implemented in django-scim2
     (https://github.com/15five/django-scim2/blob/master/src/django_scim/middleware.py)
     to also handle authenticating the client.
     """

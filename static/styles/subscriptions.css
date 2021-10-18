@@ -1201,7 +1201,7 @@
         to show alert beside stream name we set its display
         to block so it is shown in new line. But to avoid
         it covering whole screen width we set max-width
-        so that it does not losses inline-block appearence. */
+        so that it does not losses inline-block appearance. */
 
         /* TODO: This will probably be not required once
         we have tabbed navigation as button group width

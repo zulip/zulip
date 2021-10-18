@@ -1127,7 +1127,7 @@ def process_message_update_event(
             # code path, and represent just rendering previews; there should be no
             # real content changes.
             # It doesn't really matter what we set `acting_user_id` in this case,
-            # becuase we know this event isn't meant to send notifications.
+            # because we know this event isn't meant to send notifications.
             acting_user_id = user_profile_id
 
         user_event = dict(event_template)  # shallow copy, but deep enough for our needs
