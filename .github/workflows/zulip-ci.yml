@@ -100,6 +100,11 @@ jobs:
           source tools/ci/activate-venv
           ./tools/test-tools
 
+      - name: Run Codespell lint
+        run: |
+          source tools/ci/activate-venv
+          ./tools/run-codespell
+
       - name: Run backend lint
         run: |
           source tools/ci/activate-venv

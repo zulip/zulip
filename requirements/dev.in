@@ -77,3 +77,6 @@ pyre-check
 
 # For sorting versions when uploading releases
 natsort
+
+# For spell check linter
+codespell
