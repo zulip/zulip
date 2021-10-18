@@ -9,7 +9,6 @@ import * as bot_data from "./bot_data";
 import {buddy_list} from "./buddy_list";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
-import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as dark_theme from "./dark_theme";
@@ -542,8 +541,6 @@ export function dispatch_normal_event(event) {
                         const sub = sub_store.get(stream_id);
                         stream_settings_ui.update_subscribers_ui(sub);
                     }
-
-                    compose_fade.update_faded_users();
                     break;
                 }
                 case "peer_remove": {
@@ -556,8 +553,6 @@ export function dispatch_normal_event(event) {
                         const sub = sub_store.get(stream_id);
                         stream_settings_ui.update_subscribers_ui(sub);
                     }
-
-                    compose_fade.update_faded_users();
                     break;
                 }
                 case "remove":

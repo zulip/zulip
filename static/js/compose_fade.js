@@ -1,9 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 
-import {buddy_list} from "./buddy_list";
 import * as compose_fade_helper from "./compose_fade_helper";
-import * as compose_fade_users from "./compose_fade_users";
 import * as compose_state from "./compose_state";
 import * as floating_recipient_bar from "./floating_recipient_bar";
 import * as message_lists from "./message_lists";
@@ -114,39 +112,14 @@ function fade_messages() {
     );
 }
 
-const user_fade_config = {
-    get_user_id($li) {
-        return buddy_list.get_key_from_li({$li});
-    },
-    fade($li) {
-        return $li.addClass("user-fade");
-    },
-    unfade($li) {
-        return $li.removeClass("user-fade");
-    },
-};
-
 function do_update_all() {
-    const user_items = buddy_list.get_items();
-
     if (compose_fade_helper.want_normal_display()) {
         if (!normal_display) {
             display_messages_normally();
-            compose_fade_users.display_users_normally(user_items, user_fade_config);
         }
     } else {
         fade_messages();
-        compose_fade_users.fade_users(user_items, user_fade_config);
     }
-}
-
-// This one only updates the users, not both, like update_faded_messages.
-// This is for when new presence information comes in, redrawing the presence
-// list.
-export function update_faded_users() {
-    const user_items = buddy_list.get_items();
-
-    compose_fade_users.update_user_info(user_items, user_fade_config);
 }
 
 // This gets called on keyup events, hence the throttling.
@@ -160,7 +133,6 @@ export function start_compose(msg_type) {
 export function clear_compose() {
     compose_fade_helper.clear_focused_recipient();
     display_messages_normally();
-    update_faded_users();
 }
 
 export function update_message_list() {

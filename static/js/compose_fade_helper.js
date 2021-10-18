@@ -16,6 +16,7 @@ export function set_focused_recipient(recipient) {
     focused_recipient = recipient;
 }
 
+// we should probably use this for the buddy_list two section layout.
 export function would_receive_message(user_id) {
     if (focused_recipient.type === "stream") {
         const sub = sub_store.get(focused_recipient.stream_id);

@@ -2,6 +2,16 @@ import $ from "jquery";
 import _ from "lodash";
 
 import * as blueslip from "./blueslip";
+// We need to import compose_fade_helper here so that focused_recipient exists
+// when compose_fade_helper is called.
+// compose_fade_helper is itself only imported in one place, inside compose_fade.js
+// via the line `import * as compose_fade_helper from "./compose_fade_helper";` but
+// changing the above to `import * from "./compose_fade_helper";` does not fix the
+// problem, it is possible that some file that imports compose_fade via
+// `import * as compose_fade from "./compose_fade";` also needs to be changed to
+// `import * from "./compose_fade";` but this is just guess work.
+// Regardless of the root cause, we should fix things so that this isn't necessary.
+import "./compose_fade_helper";
 import * as buddy_data from "./buddy_data";
 import {buddy_list} from "./buddy_list";
 import * as channel from "./channel";

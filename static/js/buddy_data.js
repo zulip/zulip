@@ -1,7 +1,6 @@
 import _ from "lodash";
 
 import * as blueslip from "./blueslip";
-import * as compose_fade_users from "./compose_fade_users";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as muted_users from "./muted_users";
@@ -23,18 +22,6 @@ import * as util from "./util";
 */
 
 export const max_size_before_shrinking = 600;
-
-const fade_config = {
-    get_user_id(item) {
-        return item.user_id;
-    },
-    fade(item) {
-        item.faded = true;
-    },
-    unfade(item) {
-        item.faded = false;
-    },
-};
 
 export function get_user_circle_class(user_id) {
     const status = buddy_status(user_id);
@@ -259,13 +246,11 @@ export function get_title_data(user_ids_string, is_group) {
 
 export function get_item(user_id) {
     const info = info_for(user_id);
-    compose_fade_users.update_user_info([info], fade_config);
     return info;
 }
 
 export function get_items_for_users(user_ids) {
     const user_info = user_ids.map((user_id) => info_for(user_id));
-    compose_fade_users.update_user_info(user_info, fade_config);
     return user_info;
 }
 

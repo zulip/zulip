@@ -28,7 +28,6 @@ const fake_now = 555;
 
 const channel = mock_esm("../../static/js/channel");
 const compose_actions = mock_esm("../../static/js/compose_actions");
-const compose_fade = mock_esm("../../static/js/compose_fade");
 const compose_pm_pill = mock_esm("../../static/js/compose_pm_pill");
 const loading = mock_esm("../../static/js/loading");
 const markdown = mock_esm("../../static/js/markdown");
@@ -483,45 +482,6 @@ test_ui("initialize", ({override}) => {
         assert.equal($("#compose-send-button").attr(), undefined);
         assert.ok(uppy_cancel_all_called);
     })();
-});
-
-test_ui("update_fade", ({override}) => {
-    initialize_handlers({override});
-
-    const selector =
-        "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient";
-    const keyup_handler_func = $(selector).get_on_handler("keyup");
-
-    let set_focused_recipient_checked = false;
-    let update_all_called = false;
-    let update_narrow_to_recipient_visibility_called = false;
-
-    override(compose_fade, "set_focused_recipient", (msg_type) => {
-        assert.equal(msg_type, "private");
-        set_focused_recipient_checked = true;
-    });
-
-    override(compose_fade, "update_all", () => {
-        update_all_called = true;
-    });
-
-    override(compose_actions, "update_narrow_to_recipient_visibility", () => {
-        update_narrow_to_recipient_visibility_called = true;
-    });
-
-    compose_state.set_message_type(false);
-    keyup_handler_func();
-    assert.ok(!set_focused_recipient_checked);
-    assert.ok(!update_all_called);
-    assert.ok(update_narrow_to_recipient_visibility_called);
-
-    update_narrow_to_recipient_visibility_called = false;
-
-    compose_state.set_message_type("private");
-    keyup_handler_func();
-    assert.ok(set_focused_recipient_checked);
-    assert.ok(update_all_called);
-    assert.ok(update_narrow_to_recipient_visibility_called);
 });
 
 test_ui("trigger_submit_compose_form", ({override, override_rewire}) => {

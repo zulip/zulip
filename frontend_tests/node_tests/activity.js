@@ -381,7 +381,6 @@ test("first/prev/next", ({override, mock_template}) => {
             case alice.user_id:
                 rendered_alice = true;
                 assert.deepEqual(data, {
-                    faded: true,
                     href: "#narrow/pm-with/1-alice",
                     is_current_user: false,
                     my_user_status: undefined,
@@ -404,7 +403,6 @@ test("first/prev/next", ({override, mock_template}) => {
                     num_unread: 0,
                     user_circle_class: "user_circle_green",
                     user_circle_status: "translated: Active",
-                    faded: false,
                     status_emoji_info: undefined,
                 });
                 break;
@@ -447,7 +445,6 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
             num_unread: 0,
             user_circle_class: "user_circle_green",
             user_circle_status: "translated: Active",
-            faded: true,
             status_emoji_info: undefined,
         });
         assert.ok(html.startsWith("<li data-user-id="));
