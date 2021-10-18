@@ -4625,23 +4625,23 @@ def do_change_plan_type(
         extra_data={"old_value": old_value, "new_value": plan_type},
     )
 
-    if plan_type == Realm.PLUS:
+    if plan_type == Realm.PLAN_TYPE_PLUS:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
         realm.message_visibility_limit = None
         realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD
-    elif plan_type == Realm.STANDARD:
+    elif plan_type == Realm.PLAN_TYPE_STANDARD:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
         realm.message_visibility_limit = None
         realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD
-    elif plan_type == Realm.SELF_HOSTED:
+    elif plan_type == Realm.PLAN_TYPE_SELF_HOSTED:
         realm.max_invites = None  # type: ignore[assignment] # Apparent mypy bug with Optional[int] setter.
         realm.message_visibility_limit = None
         realm.upload_quota_gb = None
-    elif plan_type == Realm.STANDARD_FREE:
+    elif plan_type == Realm.PLAN_TYPE_STANDARD_FREE:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
         realm.message_visibility_limit = None
         realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD
-    elif plan_type == Realm.LIMITED:
+    elif plan_type == Realm.PLAN_TYPE_LIMITED:
         realm.max_invites = settings.INVITES_DEFAULT_REALM_DAILY_MAX
         realm.message_visibility_limit = Realm.MESSAGE_VISIBILITY_LIMITED
         realm.upload_quota_gb = Realm.UPLOAD_QUOTA_LIMITED
@@ -5137,7 +5137,7 @@ def do_create_realm(
     realm.save(update_fields=["notifications_stream", "signup_notifications_stream"])
 
     if plan_type is None and settings.BILLING_ENABLED:
-        do_change_plan_type(realm, Realm.LIMITED, acting_user=None)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
 
     admin_realm = get_realm(settings.SYSTEM_BOT_REALM)
     sender = get_system_bot(settings.NOTIFICATION_BOT, admin_realm.id)

@@ -536,12 +536,12 @@ class Realm(models.Model):
     # plan_type controls various features around resource/feature
     # limitations for a Zulip organization on multi-tenant installations
     # like Zulip Cloud.
-    SELF_HOSTED = 1
-    LIMITED = 2
-    STANDARD = 3
-    STANDARD_FREE = 4
-    PLUS = 10
-    plan_type: int = models.PositiveSmallIntegerField(default=SELF_HOSTED)
+    PLAN_TYPE_SELF_HOSTED = 1
+    PLAN_TYPE_LIMITED = 2
+    PLAN_TYPE_STANDARD = 3
+    PLAN_TYPE_STANDARD_FREE = 4
+    PLAN_TYPE_PLUS = 10
+    plan_type: int = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED)
 
     # This value is also being used in static/js/settings_bots.bot_creation_policy_values.
     # On updating it here, update it there as well.
@@ -834,7 +834,7 @@ class Realm(models.Model):
         return used_space
 
     def ensure_not_on_limited_plan(self) -> None:
-        if self.plan_type == Realm.LIMITED:
+        if self.plan_type == Realm.PLAN_TYPE_LIMITED:
             raise JsonableError(self.UPGRADE_TEXT_STANDARD)
 
     @property
@@ -885,7 +885,7 @@ class Realm(models.Model):
             # the server level before it is available to users.
             return False
 
-        if self.plan_type == Realm.LIMITED:
+        if self.plan_type == Realm.PLAN_TYPE_LIMITED:
             # In Zulip Cloud, we also require a paid or sponsored
             # plan, to protect against the spam/abuse attacks that
             # target every open Internet service that can host files.

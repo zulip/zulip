@@ -1542,16 +1542,18 @@ class NormalActionsTest(BaseAction):
         realm = self.user_profile.realm
 
         state_data = fetch_initial_state_data(self.user_profile)
-        self.assertEqual(state_data["realm_plan_type"], Realm.SELF_HOSTED)
+        self.assertEqual(state_data["realm_plan_type"], Realm.PLAN_TYPE_SELF_HOSTED)
         self.assertEqual(state_data["zulip_plan_is_not_limited"], True)
 
         events = self.verify_action(
-            lambda: do_change_plan_type(realm, Realm.LIMITED, acting_user=self.user_profile)
+            lambda: do_change_plan_type(
+                realm, Realm.PLAN_TYPE_LIMITED, acting_user=self.user_profile
+            )
         )
         check_realm_update("events[0]", events[0], "plan_type")
 
         state_data = fetch_initial_state_data(self.user_profile)
-        self.assertEqual(state_data["realm_plan_type"], Realm.LIMITED)
+        self.assertEqual(state_data["realm_plan_type"], Realm.PLAN_TYPE_LIMITED)
         self.assertEqual(state_data["zulip_plan_is_not_limited"], False)
 
     def test_realm_emoji_events(self) -> None:
