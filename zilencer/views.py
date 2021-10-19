@@ -202,9 +202,11 @@ def remote_server_notify_push(
         len(apple_devices),
     )
 
-    send_android_push_notification(android_devices, gcm_payload, gcm_options, remote=True)
+    send_android_push_notification(
+        user_id, android_devices, gcm_payload, gcm_options, remote=server
+    )
 
-    send_apple_push_notification(user_id, apple_devices, apns_payload, remote=True)
+    send_apple_push_notification(user_id, apple_devices, apns_payload, remote=server)
 
     return json_success(
         {"total_android_devices": len(android_devices), "total_apple_devices": len(apple_devices)}
