@@ -247,7 +247,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
             HTTP_AUTHORIZATION=api_auth,
         )
         self.assert_json_error(
-            result, "Zulip server auth failure: 5678-efgh is not registered", status_code=401
+            result,
+            "Zulip server auth failure: 5678-efgh is not registered -- did you run `manage.py register_server`?",
+            status_code=401,
         )
 
     def test_remote_push_user_endpoints(self) -> None:
@@ -1981,7 +1983,7 @@ class TestSendToPushBouncer(ZulipTestCase):
         self.assertEqual(
             str(exc.exception),
             "Push notifications bouncer error: "
-            "Zulip server auth failure: testRole is not registered",
+            "Zulip server auth failure: testRole is not registered -- did you run `manage.py register_server`?",
         )
 
     @responses.activate
