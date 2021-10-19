@@ -983,7 +983,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     )
 
     logger.info(
-        "Sending mobile push notifications for user %s: %s via FCM devices, %s via APNs devices",
+        "Sending mobile push notifications for local user %s: %s via FCM devices, %s via APNs devices",
         user_profile_id,
         len(android_devices),
         len(apple_devices),

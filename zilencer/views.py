@@ -41,6 +41,8 @@ from zilencer.models import (
     RemoteZulipServer,
 )
 
+logger = logging.getLogger(__name__)
+
 
 def validate_entity(entity: Union[UserProfile, RemoteZulipServer]) -> RemoteZulipServer:
     if not isinstance(entity, RemoteZulipServer):
@@ -190,6 +192,14 @@ def remote_server_notify_push(
             kind=RemotePushDeviceToken.APNS,
             server=server,
         )
+    )
+
+    logger.info(
+        "Sending mobile push notifications for remote user %s:%s: %s via FCM devices, %s via APNs devices",
+        server.uuid,
+        user_id,
+        len(android_devices),
+        len(apple_devices),
     )
 
     send_android_push_notification(android_devices, gcm_payload, gcm_options, remote=True)
