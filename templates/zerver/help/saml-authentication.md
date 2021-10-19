@@ -117,8 +117,7 @@ how to configure these SAML providers to work with Zulip.
 
 1. Make sure you have created your organization.
 1. Make sure your Keycloak server is up and running. We assume the URL
-   is `https://keycloak.example.com` and your Keycloak realm is `master` (which
-   is the default name for a Keycloak realm).
+   is `https://keycloak.example.com` and your Keycloak realm is `yourrealm`.
 1. In Keycloak, register a new Client for your Zulip organization:
     * Client-ID: `https://zulipchat.com`
     * Client Protocol: `saml`
@@ -150,7 +149,7 @@ following information to Zulip Support at support@zulip.com:
     * The URL of your Zulip Cloud organization, i.e. `https://example.zulipchat.com`.
     * The URL of your Keycloak realm. If `master` is your Keycloak
       realm name, then the Keycloak realm URL should resemble
-      `https://keycloak.example.com/auth/realms/master`.
+      `https://keycloak.example.com/auth/realms/yourrealm`.
 
 
 ## Related articles
