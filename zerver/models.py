@@ -1120,7 +1120,28 @@ def filter_pattern_validator(value: str) -> Pattern[str]:
 
 
 def filter_format_validator(value: str) -> None:
-    regex = re.compile(r"^([\.\/:a-zA-Z0-9#_?=&;~-]+%\(([a-zA-Z0-9_-]+)\)s)+[/a-zA-Z0-9#_?=&;~-]*$")
+    """Does not attempt to verify URL-ness, but rather %(foo)s.
+
+    URLValidator is assumed to have caught anything which is malformed
+    as a URL.
+    """
+
+    regex = re.compile(
+        r"""
+            ^
+            (
+              [^%]                        # Any non-percent,
+            |                             #   OR...
+              % (                         # A %, which can mean:
+                  \( [a-zA-Z0-9_-]+ \) s  #   Interpolation group
+                |                         #     OR
+                  %                       #   %%, which is an escaped %
+                )
+            )+                            # Those happen one or more times
+            $
+        """,
+        re.VERBOSE,
+    )
 
     if not regex.match(value):
         raise ValidationError(_("Invalid URL format string."))
