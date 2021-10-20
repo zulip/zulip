@@ -105,10 +105,7 @@ async function test_edit_invalid_linkifier(page: Page): Promise<void> {
         page,
         edit_linkifier_format_status_selector,
     );
-    assert.strictEqual(
-        edit_linkifier_format_status,
-        "Failed: Enter a valid URL.,Invalid URL format string.",
-    );
+    assert.strictEqual(edit_linkifier_format_status, "Failed: Enter a valid URL.");
 
     await page.click(".close-modal-btn");
     await page.waitForSelector("#dialog_widget_modal", {hidden: true});
