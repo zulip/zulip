@@ -28,5 +28,11 @@ export function update_avatar(user_id, avatar_url) {
     let url = avatar_url;
     url = people.format_small_avatar_url(url);
     message_store.update_property("small_avatar_url", url, {user_id});
+
+    rerender_messages_view();
+}
+
+export function update_user_status_emoji(user_id, status_emoji_info) {
+    message_store.update_property("status_emoji_info", status_emoji_info, {user_id});
     rerender_messages_view();
 }

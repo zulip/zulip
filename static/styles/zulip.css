@@ -2460,6 +2460,22 @@ div.topic_edit_spinner .loading_indicator_spinner {
     top: 3px;
 }
 
+.emoji_message_feed {
+    height: 16px;
+    width: 16px;
+    top: 0;
+}
+
+.status_emoji {
+    height: 16px;
+    width: 16px;
+    /* We are setting minimum width here because when the user's name is very long,
+    emoji's width decreases and causes it to break. */
+    min-width: 16px;
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
 /* FIXME: Combine this rule with the one in portico.css somehow? */
 #pw_strength {
     width: 100%;

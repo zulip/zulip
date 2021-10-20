@@ -72,7 +72,7 @@ test("close", () => {
 test("build_private_messages_list", ({override}) => {
     const timestamp = 0;
     pm_conversations.recent.insert([101, 102], timestamp);
-
+    pm_conversations.recent.insert([103], timestamp);
     let num_unread_for_person = 1;
     override(unread, "num_unread_for_person", () => num_unread_for_person);
 
@@ -87,12 +87,24 @@ test("build_private_messages_list", ({override}) => {
 
     const expected_data = [
         {
+            is_active: false,
+            is_group: false,
+            is_zero: false,
+            recipients: "Me Myself",
+            status_emoji_info: undefined,
+            unread: 1,
+            url: "#narrow/pm-with/103-me",
+            user_circle_class: "user_circle_empty",
+            user_ids_string: "103",
+        },
+        {
             recipients: "Alice, Bob",
             user_ids_string: "101,102",
             unread: 1,
             is_zero: false,
             is_active: false,
             url: "#narrow/pm-with/101,102-group",
+            status_emoji_info: undefined,
             user_circle_class: "user_circle_fraction",
             is_group: true,
         },
@@ -104,6 +116,8 @@ test("build_private_messages_list", ({override}) => {
     pm_list._build_private_messages_list();
     expected_data[0].unread = 0;
     expected_data[0].is_zero = true;
+    expected_data[1].unread = 0;
+    expected_data[1].is_zero = true;
     assert.deepEqual(pm_data, expected_data);
 
     pm_list._build_private_messages_list();
@@ -133,6 +147,7 @@ test("build_private_messages_list_bot", ({override}) => {
             is_zero: false,
             is_active: false,
             url: "#narrow/pm-with/314-outgoingwebhook",
+            status_emoji_info: undefined,
             user_circle_class: "user_circle_green",
             is_group: false,
         },
@@ -143,6 +158,7 @@ test("build_private_messages_list_bot", ({override}) => {
             is_zero: false,
             is_active: false,
             url: "#narrow/pm-with/101,102-group",
+            status_emoji_info: undefined,
             user_circle_class: "user_circle_fraction",
             is_group: true,
         },

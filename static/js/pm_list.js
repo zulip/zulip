@@ -10,6 +10,7 @@ import * as stream_popover from "./stream_popover";
 import * as ui from "./ui";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
+import * as user_status from "./user_status";
 import * as vdom from "./vdom";
 
 let prior_dom;
@@ -75,6 +76,7 @@ export function _get_convos() {
         const is_active = user_ids_string === active_user_ids_string;
 
         let user_circle_class;
+        let status_emoji_info;
 
         if (is_group) {
             user_circle_class = "user_circle_fraction";
@@ -85,6 +87,8 @@ export function _get_convos() {
 
             if (recipient_user_obj.is_bot) {
                 user_circle_class = "user_circle_green";
+            } else {
+                status_emoji_info = user_status.get_status_emoji(user_id);
             }
         }
 
@@ -95,6 +99,7 @@ export function _get_convos() {
             is_zero: num_unread === 0,
             is_active,
             url: hash_util.pm_with_uri(reply_to),
+            status_emoji_info,
             user_circle_class,
             is_group,
         };

@@ -5,6 +5,7 @@ import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as recent_senders from "./recent_senders";
 import * as stream_topic_history from "./stream_topic_history";
+import * as user_status from "./user_status";
 import * as util from "./util";
 
 export function process_new_message(message) {
@@ -31,6 +32,7 @@ export function process_new_message(message) {
     if (sender) {
         message.sender_full_name = sender.full_name;
         message.sender_email = sender.email;
+        message.status_emoji_info = user_status.get_status_emoji(message.sender_id);
     }
 
     // Convert topic even for PMs, as legacy code
