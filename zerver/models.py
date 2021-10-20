@@ -698,7 +698,7 @@ class Realm(models.Model):
     night_logo_version: int = models.PositiveSmallIntegerField(default=1)
 
     def authentication_methods_dict(self) -> Dict[str, bool]:
-        """Returns the a mapping from authentication flags to their status,
+        """Returns the mapping from authentication flags to their status,
         showing only those authentication flags that are supported on
         the current server (i.e. if EmailAuthBackend is not configured
         on the server, this will not return an entry for "Email")."""
