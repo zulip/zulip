@@ -2048,13 +2048,13 @@ zope.interface==5.4.0 \
 https://github.com/zulip/zulint/archive/9908540b7734b51f86ccabab706befc2ff33212a.zip#egg=zulint==0.0.1 \
     --hash=sha256:d436cd5b5de03d99b3d01d7e33d11a969ff909cb9e233e4ea30359b186c47d78
     # via -r requirements/dev.in
-https://github.com/zulip/python-zulip-api/archive/c59b143d962c4af378521176892bc614a1babeff.zip#egg=zulip==0.8.0+git&subdirectory=zulip \
-    --hash=sha256:87928e34af0fb5d9301a503e3fe1ca589e9beed460c489a80236cd3903b4f617
+https://github.com/zulip/python-zulip-api/archive/0.8.1.zip#egg=zulip==0.8.1+git&subdirectory=zulip \
+    --hash=sha256:703c578a28d941607a6b8fbb13eed47f84d89d71c2fbcc9e52667b7fba57f692
     # via
     #   -r requirements/common.in
     #   zulip-bots
-https://github.com/zulip/python-zulip-api/archive/c59b143d962c4af378521176892bc614a1babeff.zip#egg=zulip_bots==0.8.0+git&subdirectory=zulip_bots \
-    --hash=sha256:87928e34af0fb5d9301a503e3fe1ca589e9beed460c489a80236cd3903b4f617
+https://github.com/zulip/python-zulip-api/archive/0.8.1.zip#egg=zulip_bots==0.8.1+git&subdirectory=zulip_bots \
+    --hash=sha256:703c578a28d941607a6b8fbb13eed47f84d89d71c2fbcc9e52667b7fba57f692
     # via -r requirements/common.in
 zxcvbn==4.4.28 \
     --hash=sha256:151bd816817e645e9064c354b13544f85137ea3320ca3be1fb6873ea75ef7dc1
