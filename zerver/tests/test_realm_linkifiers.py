@@ -126,6 +126,11 @@ class RealmFilterTest(ZulipTestCase):
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)
 
+        data["pattern"] = r"ZUL-URI-(?P<id>\d+)"
+        data["url_format_string"] = "https://example.com/%ba/%(id)s"
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+
         data["pattern"] = r"(?P<org>[a-zA-Z0-9_-]+)/(?P<repo>[a-zA-Z0-9_-]+)#(?P<id>[0-9]+)"
         data["url_format_string"] = "https://github.com/%(org)s/%(repo)s/issue/%(id)s"
         result = self.client_post("/json/realm/filters", info=data)
@@ -215,6 +220,13 @@ class RealmFilterTest(ZulipTestCase):
             "https://example.com/%(foo)s%(bars)s",
             "https://example.com/%(foo)s/and/%(bar)s",
             "https://example.com/?foo=%(foo)s",
+            "https://example.com/%ab",
+            "https://example.com/%ba",
+            "https://example.com/%21",
+            "https://example.com/words%20with%20spaces",
+            "https://example.com/back%20to%20%(back)s",
+            "https://example.com/encoded%2fwith%2fletters",
+            "https://example.com/encoded%2Fwith%2Fupper%2Fcase%2Fletters",
             "https://example.com/%%",
             "https://example.com/%%(",
             "https://example.com/%%()",
@@ -228,13 +240,6 @@ class RealmFilterTest(ZulipTestCase):
         invalid_urls = [
             "file:///etc/passwd",
             "data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==",
-            "https://example.com/%ab",
-            "https://example.com/%ba",
-            "https://example.com/%21",
-            "https://example.com/words%20with%20spaces",
-            "https://example.com/back%20to%20%(back)s",
-            "https://example.com/encoded%2fwith%2fletters",
-            "https://example.com/encoded%2Fwith%2Fupper%2Fcase%2Fletters",
             "https://example.com/%(foo)",
             "https://example.com/%()s",
             "https://example.com/%4!",
