@@ -204,6 +204,7 @@ class RealmFilterTest(ZulipTestCase):
 
     def test_valid_urls(self) -> None:
         valid_urls = [
+            "http://example.com/",
             "https://example.com/",
             "https://user:password@example.com/",
             "https://example.com/@user/thing",
@@ -225,6 +226,8 @@ class RealmFilterTest(ZulipTestCase):
             filter_format_validator(url)
 
         invalid_urls = [
+            "file:///etc/passwd",
+            "data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==",
             "https://example.com/%ab",
             "https://example.com/%ba",
             "https://example.com/%21",

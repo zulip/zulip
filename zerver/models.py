@@ -1120,11 +1120,13 @@ def filter_pattern_validator(value: str) -> Pattern[str]:
 
 
 def filter_format_validator(value: str) -> None:
-    """Does not attempt to verify URL-ness, but rather %(foo)s.
+    """Verifies URL-ness, and then %(foo)s.
 
-    URLValidator is assumed to have caught anything which is malformed
-    as a URL.
+    URLValidator is assumed to catch anything which is malformed as a
+    URL; the regex then verifies the format-string pieces.
     """
+
+    URLValidator()(value)
 
     regex = re.compile(
         r"""
@@ -1144,7 +1146,7 @@ def filter_format_validator(value: str) -> None:
     )
 
     if not regex.match(value):
-        raise ValidationError(_("Invalid URL format string."))
+        raise ValidationError(_("Invalid format string in URL."))
 
 
 class RealmFilter(models.Model):
@@ -1155,7 +1157,7 @@ class RealmFilter(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     pattern: str = models.TextField()
-    url_format_string: str = models.TextField(validators=[URLValidator(), filter_format_validator])
+    url_format_string: str = models.TextField(validators=[filter_format_validator])
 
     class Meta:
         unique_together = ("realm", "pattern")
