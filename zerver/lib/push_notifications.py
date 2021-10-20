@@ -37,7 +37,6 @@ from zerver.models import (
     get_display_recipient,
     get_user_profile_by_id,
 )
-from zilencer.models import RemoteZulipServer
 
 if TYPE_CHECKING:
     import aioapns
@@ -45,7 +44,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 if settings.ZILENCER_ENABLED:
-    from zilencer.models import RemotePushDeviceToken
+    from zilencer.models import RemotePushDeviceToken, RemoteZulipServer
 
 DeviceToken = Union[PushDeviceToken, "RemotePushDeviceToken"]
 
