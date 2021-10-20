@@ -149,12 +149,12 @@ problems and how to resolve them:
 ### Restrict unattended upgrades
 
 :::{important}
-We recommend that you disable or limit Ubuntu's unattended-upgrades
-to skip some server packages. With unattended upgrades enabled but
-not limited, the moment a new PostgreSQL release is published, your
-Zulip server will have its PostgreSQL server upgraded (and thus
-restarted). If you do disable unattended-upgrades, do not forget to
-regularly install apt upgrades manually!
+We recommend that you limit Ubuntu's unattended-upgrades to skip some server
+packages. With unattended upgrades enabled but not limited, the moment a new
+PostgreSQL release is published, your Zulip server will have its PostgreSQL
+server upgraded (and thus restarted). You may want to limit the unattended
+upgrades to be once a week happening during a non-busy time, e.g. 3 AM on
+Sundays.
 :::
 
 Restarting one of the system services that Zulip uses (PostgreSQL,
