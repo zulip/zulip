@@ -1138,6 +1138,9 @@ def filter_format_validator(value: str) -> None:
                   \( [a-zA-Z0-9_-]+ \) s  #   Interpolation group
                 |                         #     OR
                   %                       #   %%, which is an escaped %
+                |                         #     OR
+                  [0-9a-fA-F][0-9a-fA-F]  #   URL percent-encoded bytes, which we
+                                          #   special-case in markdown translation
                 )
             )+                            # Those happen one or more times
             $

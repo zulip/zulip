@@ -1795,7 +1795,22 @@ class LinkifierPattern(CompiledInlineProcessor):
         options.log_errors = False
 
         compiled_re2 = re2.compile(prepare_linkifier_pattern(source_pattern), options=options)
-        self.format_string = format_string
+
+        # Find percent-encoded bytes and escape them from the python
+        # interpolation.  That is:
+        #     %(foo)s -> %(foo)s
+        #     %%      -> %%
+        #     %ab     -> %%ab
+        #     %%ab    -> %%ab
+        #     %%%ab   -> %%%%ab
+        #
+        # We do this here, rather than before storing, to make edits
+        # to the underlying linkifier more straightforward, and
+        # because JS does not have a real formatter.
+        self.format_string = re.sub(
+            r"(?<!%)(%%)*%([a-fA-F0-9][a-fA-F0-9])", r"\1%%\2", format_string
+        )
+
         super().__init__(compiled_re2, md)
 
     def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
