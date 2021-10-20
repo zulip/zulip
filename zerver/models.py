@@ -120,7 +120,7 @@ def query_for_ids(query: QuerySet, user_ids: List[int], field: str) -> QuerySet:
 
 
 # Doing 1000 remote cache requests to get_display_recipient is quite slow,
-# so add a local cache as well as the remote cache cache.
+# so add a local cache as well as the remote cache.
 #
 # This local cache has a lifetime of just a single request; it is
 # cleared inside `flush_per_request_caches` in our middleware.  It
