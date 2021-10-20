@@ -133,7 +133,7 @@ def send_apple_push_notification(
     user_id: int,
     devices: Sequence[DeviceToken],
     payload_data: Dict[str, Any],
-    remote: Optional[RemoteZulipServer] = None,
+    remote: Optional["RemoteZulipServer"] = None,
 ) -> None:
     if not devices:
         return
@@ -300,7 +300,7 @@ def send_android_push_notification(
     devices: Sequence[DeviceToken],
     data: Dict[str, Any],
     options: Dict[str, Any],
-    remote: Optional[RemoteZulipServer] = None,
+    remote: Optional["RemoteZulipServer"] = None,
 ) -> None:
     """
     Send a GCM message to the given devices.
