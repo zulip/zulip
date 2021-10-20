@@ -7,6 +7,7 @@ on:
       - .github/workflows/production-suite.yml
       - "**/migrations/**"
       - babel.config.js
+      - manage.py
       - postcss.config.js
       - puppet/**
       - requirements/**
@@ -16,6 +17,9 @@ on:
       - tools/**
       - webpack.config.ts
       - yarn.lock
+      - zerver/worker/queue_processors.py
+      - zerver/lib/push_notifications.py
+      - zerver/decorator.py
       - zproject/**
 
 defaults:
