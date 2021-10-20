@@ -1,6 +1,6 @@
 # Resize the compose box.
 
-Zulip's compose box can be expanded, collapsed or stretched as desired.
+The zulip compose box can be expanded, collapsed or stretched as desired.  
 The compose box has to be open. Read on [Open the compose box](/help/open-the-compose-box)
 
 ## Expanding the compose box.
@@ -16,5 +16,6 @@ The compose box has to be open. Read on [Open the compose box](/help/open-the-co
 * Stretching the compose box is done by dragging the bottom right corner of the box.
 
 ## Related Articles
-[Open the compose box](/help/open-the-compose-box)
-[Messaging tips & tricks](/help/messaging-tips)
+[Open the compose box](/help/open-the-compose-box)  
+[Messaging tips & tricks](/help/messaging-tips)  
+[Replying to messages](/help/replying-to-messages)
