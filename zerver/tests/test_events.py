@@ -2698,6 +2698,7 @@ class RealmPropertyActionTest(BaseAction):
             desktop_icon_count_display=[1, 2, 3],
             notification_sound=["zulip", "ding"],
             email_notifications_batching_period_seconds=[120, 300],
+            email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES,
         )
 
         vals = test_values.get(name)
@@ -2770,6 +2771,7 @@ class UserDisplayActionTest(BaseAction):
             demote_inactive_streams=[2, 3, 1],
             user_list_style=[1, 2, 3],
             color_scheme=[2, 3, 1],
+            email_address_visibility=[5, 4, 1, 2, 3],
         )
 
         user_settings_object = True
