@@ -50,7 +50,6 @@
 * [Change your timezone](/help/change-your-timezone)
 * [Use 24-hour time](/help/change-the-time-format)
 * [Enable emoticon translations](/help/enable-emoticon-translations)
-* [View emoji as text](/help/view-emoji-as-text)
 * [Enable full width display](/help/enable-full-width-display)
 * [Display the buddy list on narrow screens](/help/move-the-users-list-to-the-left-sidebar)
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
