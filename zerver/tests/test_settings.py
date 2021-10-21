@@ -362,6 +362,7 @@ class ChangeSettingsTest(ZulipTestCase):
             email_notifications_batching_period_seconds=100,
             notification_sound="ding",
             desktop_icon_count_display=2,
+            email_address_visibility=3,
         )
 
         self.login("hamlet")

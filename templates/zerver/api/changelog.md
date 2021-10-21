@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 146**
+
+* [`POST /register`](/api/register-queue), [`PATCH
+  /settings`](/api/update-settings), [`PATCH
+  /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults): Added
+  user `email_address_visibility` setting which will replace the existing realm
+  `email_address_visibility` setting.
+
 **Feature level 145**
 
 * [`DELETE users/me/subscriptions`](/api/unsubscribe): Normal users can

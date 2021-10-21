@@ -8776,6 +8776,33 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: email_address_visibility
+          in: query
+          description: |
+            The [policy][permission-level] this user has selected for which other
+            users in this organization can see the real email address of this user.
+
+            - 1 = everyone
+            - 2 = members only
+            - 3 = administrators only
+            - 4 = nobody (though note that administrators can change this setting).
+            - 5 = moderators only
+
+            **Changes**: New in Zulip 6.0 (feature level 146) replacing the existing
+            realm-level setting.
+
+            [permission-level]: /api/roles-and-permissions#permission-levels
+          content:
+            application/json:
+              schema:
+                type: integer
+                enum:
+                  - 1
+                  - 2
+                  - 3
+                  - 4
+                  - 5
+              example: 1
       responses:
         "200":
           description: Success
@@ -10683,6 +10710,8 @@ paths:
                               read messages.
 
                               **Changes**: New in Zulip 5.0 (feature level 105).
+                          email_address_visibility:
+                            $ref: "#/components/schemas/EmailAddressVisibility"
                       user_topics:
                         type: array
                         description: |
@@ -12595,6 +12624,8 @@ paths:
                               read messages.
 
                               **Changes**: New in Zulip 5.0 (feature level 105).
+                          email_address_visibility:
+                            $ref: "#/components/schemas/EmailAddressVisibility"
                       realm_users:
                         type: array
                         description: |
@@ -13730,6 +13761,33 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: email_address_visibility
+          in: query
+          description: |
+            The [policy][permission-level] this user has selected for which other
+            users in this organization can see the real email address of this user.
+
+            - 1 = everyone
+            - 2 = members only
+            - 3 = administrators only
+            - 4 = nobody (though note that administrators can change this setting).
+            - 5 = moderators only
+
+            **Changes**: New in Zulip 6.0 (feature level 146) replacing the existing
+            realm-level setting.
+
+            [permission-level]: /api/roles-and-permissions#permission-levels
+          content:
+            application/json:
+              schema:
+                type: integer
+                enum:
+                  - 1
+                  - 2
+                  - 3
+                  - 4
+                  - 5
+              example: 1
       responses:
         "200":
           description: Success
@@ -15861,6 +15919,22 @@ components:
             in the default stream group.
           items:
             $ref: "#/components/schemas/BasicStream"
+    EmailAddressVisibility:
+      type: integer
+      description: |
+        The [policy][permission-level] this user has selected for which other
+        users in this organization can see the real email address of this user.
+
+        - 1 = everyone
+        - 2 = members only
+        - 3 = administrators only
+        - 4 = nobody (though note that administrators can change this setting).
+        - 5 = moderators only
+
+        **Changes**: New in Zulip 6.0 (feature level 146) replacing the existing
+        realm-level setting.
+
+        [permission-level]: /api/roles-and-permissions#permission-levels
     EmojiReaction:
       allOf:
         - $ref: "#/components/schemas/EmojiReactionBase"

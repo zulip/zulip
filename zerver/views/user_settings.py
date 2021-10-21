@@ -220,6 +220,9 @@ def json_change_settings(
     user_list_style: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.USER_LIST_STYLE_CHOICES), default=None
     ),
+    email_address_visibility: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None
+    ),
 ) -> HttpResponse:
     if (
         default_language is not None

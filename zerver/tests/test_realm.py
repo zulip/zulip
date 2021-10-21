@@ -1206,6 +1206,7 @@ class RealmAPITest(ZulipTestCase):
             desktop_icon_count_display=[1, 2, 3],
             notification_sound=["zulip", "ding"],
             email_notifications_batching_period_seconds=[120, 300],
+            email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES,
         )
 
         vals = test_values.get(name)

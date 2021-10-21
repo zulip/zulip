@@ -1603,6 +1603,26 @@ class UserBaseSettings(models.Model):
     send_private_typing_notifications: bool = models.BooleanField(default=True)
     send_read_receipts: bool = models.BooleanField(default=True)
 
+    # Who in the organization has access to users' actual email
+    # addresses.  Controls whether the UserProfile.email field is the
+    # same as UserProfile.delivery_email, or is instead garbage.
+    EMAIL_ADDRESS_VISIBILITY_EVERYONE = 1
+    EMAIL_ADDRESS_VISIBILITY_MEMBERS = 2
+    EMAIL_ADDRESS_VISIBILITY_ADMINS = 3
+    EMAIL_ADDRESS_VISIBILITY_NOBODY = 4
+    EMAIL_ADDRESS_VISIBILITY_MODERATORS = 5
+    email_address_visibility: int = models.PositiveSmallIntegerField(
+        default=EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+    )
+    EMAIL_ADDRESS_VISIBILITY_TYPES = [
+        EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+        # The MEMBERS level is not yet implemented on the backend.
+        ## EMAIL_ADDRESS_VISIBILITY_MEMBERS,
+        EMAIL_ADDRESS_VISIBILITY_ADMINS,
+        EMAIL_ADDRESS_VISIBILITY_NOBODY,
+        EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+    ]
+
     display_settings_legacy = dict(
         # Don't add anything new to this legacy dict.
         # Instead, see `modern_settings` below.
@@ -1650,6 +1670,7 @@ class UserBaseSettings(models.Model):
     modern_settings = dict(
         # Add new general settings here.
         display_emoji_reaction_users=bool,
+        email_address_visibility=int,
         escape_navigates_to_default_view=bool,
         send_private_typing_notifications=bool,
         send_read_receipts=bool,
