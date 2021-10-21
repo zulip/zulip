@@ -1,5 +1,6 @@
 import re
 from typing import Any, Callable, Dict, Match, Optional
+from urllib.parse import urljoin
 
 import magic
 import requests
@@ -116,6 +117,8 @@ def get_link_embed_data(
         for key in ["title", "description", "image"]:
             if not data.get(key) and generic_data.get(key):
                 data[key] = generic_data[key]
+    if "image" in data:
+        data["image"] = urljoin(response.url, data["image"])
     return data
 
 

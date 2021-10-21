@@ -24,7 +24,7 @@ from typing import (
     TypeVar,
     Union,
 )
-from urllib.parse import urlencode, urlsplit
+from urllib.parse import urlencode, urljoin, urlsplit
 from xml.etree import ElementTree as etree
 from xml.etree.ElementTree import Element, SubElement
 
@@ -504,7 +504,7 @@ class OpenGraphSession(OutgoingSession):
 
 
 def fetch_open_graph_image(url: str) -> Optional[Dict[str, Any]]:
-    og = {"image": None, "title": None, "desc": None}
+    og: Dict[str, Optional[str]] = {"image": None, "title": None, "desc": None}
 
     try:
         with OpenGraphSession().get(
@@ -532,7 +532,9 @@ def fetch_open_graph_image(url: str) -> Optional[Dict[str, Any]]:
                     break
                 elif element.tag in ("meta", "{http://www.w3.org/1999/xhtml}meta"):
                     if element.get("property") == "og:image":
-                        og["image"] = element.get("content")
+                        content = element.get("content")
+                        if content is not None:
+                            og["image"] = urljoin(res.url, content)
                     elif element.get("property") == "og:title":
                         og["title"] = element.get("content")
                     elif element.get("property") == "og:description":
@@ -710,12 +712,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         container = SubElement(root, "div")
         container.set("class", "message_embed")
 
-        parsed_img_link = urllib.parse.urlparse(img_link)
-        # Append domain where relative img_link url is given
-        if not parsed_img_link.netloc:
-            parsed_url = urllib.parse.urlparse(link)
-            domain = "{url.scheme}://{url.netloc}/".format(url=parsed_url)
-            img_link = urllib.parse.urljoin(domain, img_link)
         img = SubElement(container, "a")
         img.set("style", "background-image: url(" + img_link + ")")
         img.set("href", link)
