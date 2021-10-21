@@ -720,6 +720,11 @@ class EmailSendingWorker(LoopQueueProcessingWorker):
 
 @assign_queue("missedmessage_mobile_notifications")
 class PushNotificationsWorker(QueueProcessingWorker):
+    # The use of aioapns in the backend means that we cannot use
+    # SIGALRM to limit how long a consume takes, as SIGALRM does not
+    # play well with asyncio.
+    MAX_CONSUME_SECONDS = None
+
     def start(self) -> None:
         # initialize_push_notifications doesn't strictly do anything
         # beyond printing some logging warnings if push notifications
