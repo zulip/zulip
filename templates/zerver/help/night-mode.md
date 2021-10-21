@@ -9,7 +9,7 @@ for working in a dark space.
 
 {settings_tab|display-settings}
 
-2. Under **Display settings**, configure **Color scheme**.
+2. Under **Theme**, configure **Color scheme**.
 
 {end_tabs}
 
