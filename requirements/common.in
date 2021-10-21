@@ -191,3 +191,6 @@ django-cte
 
 # SCIM integration
 django-scim2
+
+# CSS manipulation
+soupsieve
