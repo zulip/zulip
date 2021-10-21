@@ -94,8 +94,8 @@ def sanitize_name(value: str) -> str:
     * not stripping trailing dashes and underscores.
     """
     value = unicodedata.normalize("NFKC", value)
-    value = re.sub(r"[^\w\s.-]", "", value, flags=re.U).strip()
-    value = re.sub(r"[-\s]+", "-", value, flags=re.U)
+    value = re.sub(r"[^\w\s.-]", "", value).strip()
+    value = re.sub(r"[-\s]+", "-", value)
     assert value not in {"", ".", ".."}
     return mark_safe(value)
 
