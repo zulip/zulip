@@ -87,8 +87,8 @@ export const get_all_display_settings = (): DisplaySettings => ({
             "dense_mode",
             "high_contrast_mode",
             "left_side_userlist",
-            "starred_message_counts",
             "fluid_layout_width",
+            "starred_message_counts",
         ],
     },
     render_only: {
