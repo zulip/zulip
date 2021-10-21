@@ -14,7 +14,7 @@ configure a different view as the default.
 
 {settings_tab|display-settings}
 
-2. Under **Display settings**, click on the **Default view** dropdown.
+2. Under **Advanced**, click on the **Default view** dropdown.
 
 3. Select a view.
 
