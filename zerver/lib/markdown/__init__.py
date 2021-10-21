@@ -148,7 +148,7 @@ EMOJI_REGEX = r"(?P<syntax>:[\w\-\+]+:)"
 def verbose_compile(pattern: str) -> Pattern[str]:
     return re.compile(
         f"^(.*?){pattern}(.*?)$",
-        re.DOTALL | re.UNICODE | re.VERBOSE,
+        re.DOTALL | re.VERBOSE,
     )
 
 
@@ -169,7 +169,7 @@ def get_compiled_stream_link_regex() -> Pattern[str]:
     # are not required.
     return re.compile(
         STREAM_LINK_REGEX,
-        re.DOTALL | re.UNICODE | re.VERBOSE,
+        re.DOTALL | re.VERBOSE,
     )
 
 
@@ -192,7 +192,7 @@ def get_compiled_stream_topic_link_regex() -> Pattern[str]:
     # are not required.
     return re.compile(
         STREAM_TOPIC_LINK_REGEX,
-        re.DOTALL | re.UNICODE | re.VERBOSE,
+        re.DOTALL | re.VERBOSE,
     )
 
 
@@ -2404,7 +2404,7 @@ def maybe_update_markdown_engines(linkifiers_key: int, email_gateway: bool) -> N
 #
 # We also use repr() to improve reproducibility, and to escape terminal control
 # codes, which can do surprisingly nasty things.
-_privacy_re = re.compile("\\w", flags=re.UNICODE)
+_privacy_re = re.compile("\\w")
 
 
 def privacy_clean_markdown(content: str) -> str:
