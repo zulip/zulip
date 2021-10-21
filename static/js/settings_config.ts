@@ -52,11 +52,11 @@ export const color_scheme_values = {
     },
     night: {
         code: 2,
-        description: $t({defaultMessage: "Night mode"}),
+        description: $t({defaultMessage: "Dark mode"}),
     },
     day: {
         code: 3,
-        description: $t({defaultMessage: "Day mode"}),
+        description: $t({defaultMessage: "Light mode"}),
     },
 };
 
