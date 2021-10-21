@@ -358,13 +358,14 @@ class PermissionTest(ZulipTestCase):
         # required in apps like the mobile apps.
         # delivery_email is sent for admins.
         admin.refresh_from_db()
+        user.refresh_from_db()
         self.login_user(admin)
         result = self.client_get("/json/users", {"client_gravatar": "true"})
         self.assert_json_success(result)
         members = result.json()["members"]
         hamlet = find_dict(members, "user_id", user.id)
         self.assertEqual(hamlet["email"], f"user{user.id}@zulip.testserver")
-        self.assertEqual(hamlet["avatar_url"], get_gravatar_url(user.email, 1))
+        self.assertEqual(hamlet["avatar_url"], get_gravatar_url(user.delivery_email, 1))
         self.assertEqual(hamlet["delivery_email"], self.example_email("hamlet"))
 
     def test_user_cannot_promote_to_admin(self) -> None:
