@@ -712,6 +712,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         container = SubElement(root, "div")
         container.set("class", "message_embed")
 
+        img_link = get_camo_url(img_link)
         img = SubElement(container, "a")
         img.set("style", "background-image: url(" + img_link + ")")
         img.set("href", link)
