@@ -90,6 +90,7 @@ module = [
     "social_core.*",
     "social_django.*",
     "sourcemap.*",
+    "soupsieve.*",
     "sphinx_rtd_theme.*",
     "talon_core.*",
     "tlds.*",
