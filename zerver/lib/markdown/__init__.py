@@ -43,6 +43,7 @@ import requests
 from django.conf import settings
 from markdown.blockparser import BlockParser
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
+from soupsieve import escape as css_escape
 from tlds import tld_set
 from typing_extensions import TypedDict
 
@@ -714,7 +715,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
         img_link = get_camo_url(img_link)
         img = SubElement(container, "a")
-        img.set("style", "background-image: url(" + img_link + ")")
+        img.set("style", "background-image: url(" + css_escape(img_link) + ")")
         img.set("href", link)
         img.set("class", "message_embed_image")
 
