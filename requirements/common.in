@@ -187,3 +187,6 @@ backoff
 
 # Non-backtracking regular expressions
 google-re2
+
+# CSS manipulation
+soupsieve

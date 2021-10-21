@@ -1,3 +1,4 @@
+import re
 from typing import Any, Callable, Dict, Optional
 from unittest import mock
 
@@ -484,7 +485,7 @@ class PreviewTestCase(ZulipTestCase):
 
     @override_settings(CAMO_URI="")
     def test_inline_url_embed_preview(self) -> None:
-        with_preview = '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(http://ia.media-imdb.com/images/rock.jpg)"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
+        with_preview = '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(http\\:\\/\\/ia\\.media-imdb\\.com\\/images\\/rock\\.jpg)"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
         without_preview = '<p><a href="http://test.org/">http://test.org/</a></p>'
         msg = self._send_message_with_test_org_url(sender=self.example_user("hamlet"))
         self.assertEqual(msg.rendered_content, with_preview)
@@ -499,7 +500,9 @@ class PreviewTestCase(ZulipTestCase):
         self.assertEqual(msg.rendered_content, without_preview)
 
     def test_inline_url_embed_preview_with_camo(self) -> None:
-        camo_url = get_camo_url("http://ia.media-imdb.com/images/rock.jpg")
+        camo_url = re.sub(
+            r"([^\w-])", r"\\\1", get_camo_url("http://ia.media-imdb.com/images/rock.jpg")
+        )
         with_preview = (
             '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url('
             + camo_url
@@ -507,6 +510,43 @@ class PreviewTestCase(ZulipTestCase):
         )
         msg = self._send_message_with_test_org_url(sender=self.example_user("hamlet"))
         self.assertEqual(msg.rendered_content, with_preview)
+
+    @override_settings(CAMO_URI="")
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_link_preview_css_escaping_image(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+        with mock_queue_publish("zerver.lib.actions.queue_json_publish") as patched:
+            msg_id = self.send_stream_message(user, "Scotland", topic_name="foo", content=url)
+            patched.assert_called_once()
+            queue = patched.call_args[0][0]
+            self.assertEqual(queue, "embed_links")
+            event = patched.call_args[0][1]
+
+        # Swap the URL out for one with characters that need CSS escaping
+        html = re.sub(r"rock\.jpg", "rock).jpg", self.open_graph_html)
+        mocked_response = mock.Mock(side_effect=self.create_mock_response(url, html=html))
+        with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
+            with mock.patch("requests.get", mocked_response), self.assertLogs(
+                level="INFO"
+            ) as info_logs:
+                FetchLinksEmbedData().consume(event)
+            self.assertTrue(
+                "INFO:root:Time spent on get_link_embed_data for http://test.org/: "
+                in info_logs.output[0]
+            )
+
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        with_preview = (
+            '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url('
+            + "http\\:\\/\\/ia\\.media-imdb\\.com\\/images\\/rock\\)\\.jpg"
+            + ')"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
+        )
+        self.assertEqual(
+            with_preview,
+            msg.rendered_content,
+        )
 
     @override_settings(CAMO_URI="")
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
@@ -522,7 +562,7 @@ class PreviewTestCase(ZulipTestCase):
 
     @override_settings(CAMO_URI="")
     def test_inline_url_embed_preview_with_relative_image_url(self) -> None:
-        with_preview_relative = '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(http://test.org/images/rock.jpg)"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
+        with_preview_relative = '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(http\\:\\/\\/test\\.org\\/images\\/rock\\.jpg)"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
         # Try case where the Open Graph image is a relative URL.
         msg = self._send_message_with_test_org_url(
             sender=self.example_user("prospero"), relative_url=True
@@ -712,7 +752,7 @@ class PreviewTestCase(ZulipTestCase):
 
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertIn(data["title"], msg.rendered_content)
-        self.assertIn(data["image"], msg.rendered_content)
+        self.assertIn(re.sub(r"([^\w-])", r"\\\1", data["image"]), msg.rendered_content)
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_valid_content_type_error_get_data(self) -> None:
