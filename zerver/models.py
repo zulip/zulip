@@ -3830,6 +3830,7 @@ class AbstractRealmAuditLog(models.Model):
     STREAM_CREATED = 601
     STREAM_DEACTIVATED = 602
     STREAM_NAME_CHANGED = 603
+    STREAM_REACTIVATED = 604
 
     event_type: int = models.PositiveSmallIntegerField()
 
