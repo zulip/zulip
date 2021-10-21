@@ -250,6 +250,7 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, SAMLIdPConfigDict] = {
     "test_idp": {
         "entity_id": "https://idp.testshib.org/idp/shibboleth",
         "url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",
+        "slo_url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/Logout",
         "x509cert": get_from_file_if_exists("zerver/tests/fixtures/saml/idp.crt"),
         "attr_user_permanent_id": "email",
         "attr_first_name": "first_name",
