@@ -657,7 +657,7 @@ export function initialize() {
         // Don't let clicks in the compose area count as
         // "unfocusing" our compose -- in other words, e.g.
         // clicking "Press Enter to send" should not
-        // trigger the composebox-closing code above.
+        // trigger the composebox-closing code in MAIN CLICK HANDLER.
         // But do allow our formatting link.
         if (!$(e.target).is("a")) {
             e.stopPropagation();
