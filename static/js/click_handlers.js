@@ -858,6 +858,13 @@ export function initialize() {
                 return;
             } else if (
                 !window.getSelection().toString() &&
+                // Clicking any input or text area should not close
+                // the compose box; this means using the sidebar
+                // filters or search widgets won't unnecessarily close
+                // compose.
+                !$(e.target).closest("input").length &&
+                !$(e.target).closest("textarea").length &&
+                !$(e.target).closest("select").length &&
                 // Clicks inside an overlay, popover, custom
                 // modal, or backdrop of one of the above
                 // should not have any effect on the compose
