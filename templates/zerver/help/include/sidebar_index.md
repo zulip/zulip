@@ -131,6 +131,7 @@
 * [Import from Rocket.Chat](/help/import-from-rocketchat)
 * [Configure authentication methods](/help/configure-authentication-methods)
 * [SAML authentication](/help/saml-authentication)
+* [SCIM provisioning](/help/scim)
 * [Export your organization](/help/export-your-organization)
 * [Change organization URL](/help/change-organization-url)
 * [Deactivate your organization](/help/deactivate-your-organization)
