@@ -30,12 +30,8 @@ from zerver.models import UserProfile
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GITHUB_EVENT")
 
 TOPIC_FOR_DISCUSSION = "{repo} discussion #{number}: {title}"
-DISCUSSION_TEMPLATE = (
-    "{author} started a new discussion [{title}]({url}) in {category}:\n```quote\n{body}\n```"
-)
-DISCUSSION_COMMENT_TEMPLATE = (
-    "{author} [commented]({comment_url}) on [discussion]({discussion_url}):\n```quote\n{body}\n```"
-)
+DISCUSSION_TEMPLATE = "{author} created [discussion #{discussion_id}]({url}) in {category}:\n```quote\n### {title}\n{body}\n```"
+DISCUSSION_COMMENT_TEMPLATE = "{author} [commented]({comment_url}) on [discussion #{discussion_id}]({discussion_url}):\n```quote\n{body}\n```"
 
 
 class Helper:
@@ -266,10 +262,11 @@ def get_discussion_body(helper: Helper) -> str:
     payload = helper.payload
     return DISCUSSION_TEMPLATE.format(
         author=get_sender_name(payload),
-        title=payload["discussion"]["title"],
         url=payload["discussion"]["html_url"],
         body=payload["discussion"]["body"],
         category=payload["discussion"]["category"]["name"],
+        discussion_id=payload["discussion"]["number"],
+        title=payload["discussion"]["title"],
     )
 
 
@@ -280,6 +277,7 @@ def get_discussion_comment_body(helper: Helper) -> str:
         body=payload["comment"]["body"],
         discussion_url=payload["discussion"]["html_url"],
         comment_url=payload["comment"]["html_url"],
+        discussion_id=payload["discussion"]["number"],
     )
 
 

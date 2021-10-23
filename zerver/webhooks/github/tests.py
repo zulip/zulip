@@ -486,9 +486,9 @@ A temporary team so that I can get some webhook fixtures!
         self.assertTrue(stack_info)
 
     def test_discussion_msg(self) -> None:
-        expected_message = "Codertocat started a new discussion [Welcome to discussions!](https://github.com/baxterthehacker/public-repo/discussions/90) in General:\n```quote\nWe're glad to have you here!\n```"
+        expected_message = "Codertocat created [discussion #90](https://github.com/baxterthehacker/public-repo/discussions/90) in General:\n```quote\n### Welcome to discussions!\nWe're glad to have you here!\n```"
         self.check_webhook("discussion", TOPIC_DISCUSSION, expected_message)
 
     def test_discussion_comment_msg(self) -> None:
-        expected_message = "Codertocat [commented](https://github.com/baxterthehacker/public-repo/discussions/90#discussioncomment-544078) on [discussion](https://github.com/baxterthehacker/public-repo/discussions/90):\n```quote\nI have so many questions to ask you!\n```"
+        expected_message = "Codertocat [commented](https://github.com/baxterthehacker/public-repo/discussions/90#discussioncomment-544078) on [discussion #90](https://github.com/baxterthehacker/public-repo/discussions/90):\n```quote\nI have so many questions to ask you!\n```"
         self.check_webhook("discussion_comment", TOPIC_DISCUSSION, expected_message)
