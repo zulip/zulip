@@ -74,7 +74,7 @@ export function build_user_avatar_widget(upload_function) {
         $("#user-avatar-source").hide();
     }
 
-    $("#user-avatar-upload-widget .image-delete-button").on("click keydown", (e) => {
+    $("#user-avatar-upload-widget .image-delete-button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
         function delete_user_avatar() {
