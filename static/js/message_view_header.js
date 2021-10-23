@@ -148,7 +148,7 @@ function insert_extended_description_box_if_needed(message_view_header_data) {
     }
 }
 
-function close_extended_description_and_show_open_icon() {
+export function close_extended_description_and_show_open_icon() {
     $(".open_extended_description_icon").show();
     hide_extended_description();
 }

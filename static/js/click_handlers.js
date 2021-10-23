@@ -24,6 +24,7 @@ import * as message_edit from "./message_edit";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
+import * as message_view_header from "./message_view_header";
 import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
 import * as notifications from "./notifications";
@@ -827,7 +828,7 @@ export function initialize() {
             return;
         }
 
-        // Dismiss popovers if the user has clicked outside them
+        // Dismiss popovers or extended description if the user has clicked outside them
         if (
             $(
                 '.popover-inner, #user-profile-modal, .emoji-info-popover, .app-main [class^="column-"].expanded',
@@ -840,6 +841,10 @@ export function initialize() {
             // the popover without being displayed.
             const not_hide_tippy_instances = true;
             popovers.hide_all(not_hide_tippy_instances);
+        }
+
+        if ($(".extended_description").has(e.target).length === 0) {
+            message_view_header.close_extended_description_and_show_open_icon();
         }
 
         if (compose_state.composing()) {
