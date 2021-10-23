@@ -563,6 +563,10 @@ export const email_notifications_batching_period_values = [
         value: 60 * 60 * 24 * 7,
         description: $t({defaultMessage: "1 week"}),
     },
+    {
+        value: "custom_period",
+        description: $t({defaultMessage: "N minutes"}),
+    },
 ];
 
 const email_message_notification_settings = [

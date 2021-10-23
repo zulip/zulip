@@ -65,10 +65,30 @@ function update_desktop_icon_count_display(settings_panel) {
     }
 }
 
+function set_notification_batching_ui(container, setting_seconds, force_custom) {
+    const select_elem = container.find(".setting_email_notifications_batching_period_seconds");
+    const edit_elem = container.find(".email_notification_batching_period_edit_minutes");
+    const valid_period_values = settings_config.email_notifications_batching_period_values.map(
+        (x) => x.value,
+    );
+
+    // We display the custom widget if either the user just selected
+    // custom_period, or the current value cannot be represented with
+    // the existing set of values.
+    if (force_custom || !valid_period_values.includes(setting_seconds)) {
+        const setting_minutes = setting_seconds / 60;
+        select_elem.val("custom_period");
+        edit_elem.val(setting_minutes);
+        edit_elem.parent().show();
+    } else {
+        select_elem.val(setting_seconds);
+        edit_elem.parent().hide();
+    }
+}
+
 export function set_enable_digest_emails_visibility(settings_panel) {
     const container = $(settings_panel.container);
     const for_realm_settings = settings_panel.for_realm_settings;
-
     if (page_params.realm_digest_emails_enabled) {
         if (for_realm_settings) {
             container.find(".other_email_notifications").show();
@@ -123,10 +143,8 @@ export function set_up(settings_panel) {
         }
     });
 
-    const email_notifications_batching_period_dropdown = container.find(
-        ".setting_email_notifications_batching_period_seconds",
-    );
-    email_notifications_batching_period_dropdown.val(
+    set_notification_batching_ui(
+        container,
         settings_object.email_notifications_batching_period_seconds,
     );
 
@@ -148,10 +166,29 @@ export function set_up(settings_panel) {
             stream_edit.stream_setting_changed(e, true);
             return;
         }
-        const setting_name = input_elem.attr("name");
+        let setting_name = input_elem.attr("name");
+        let setting_value = settings_org.get_input_element_value(this);
+
+        if (setting_name === "email_notifications_batching_period_seconds") {
+            if (input_elem.val() === "custom_period") {
+                set_notification_batching_ui(
+                    container,
+                    settings_object.email_notifications_batching_period_seconds,
+                    true,
+                );
+                return;
+            }
+            set_notification_batching_ui(container, setting_value);
+        } else if (setting_name === "email_notification_batching_period_edit_minutes") {
+            // This field is in minutes, but the actual setting is seconds
+            setting_value = setting_value * 60;
+            set_notification_batching_ui(container, setting_value);
+            setting_name = "email_notifications_batching_period_seconds";
+        }
+
         change_notification_setting(
             setting_name,
-            settings_org.get_input_element_value(this),
+            setting_value,
             input_elem.closest(".subsection-parent").find(".alert-notification"),
         );
     });
@@ -187,8 +224,11 @@ export function update_page(settings_panel) {
                 update_desktop_icon_count_display(settings_panel);
                 break;
             }
-            case "notification_sound":
             case "email_notifications_batching_period_seconds": {
+                set_notification_batching_ui(container, settings_object[setting]);
+                break;
+            }
+            case "notification_sound": {
                 container.find(`.setting_${CSS.escape(setting)}`).val(settings_object[setting]);
                 break;
             }
