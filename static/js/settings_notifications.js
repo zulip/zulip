@@ -173,25 +173,30 @@ export function update_page(settings_panel) {
     const container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
     for (const setting of settings_config.all_notification_settings) {
-        if (
-            setting === "enable_offline_push_notifications" &&
-            !page_params.realm_push_notifications_enabled
-        ) {
-            // If push notifications are disabled at the realm level,
-            // we should just leave the checkbox always off.
-            continue;
-        } else if (setting === "desktop_icon_count_display") {
-            update_desktop_icon_count_display(settings_panel);
-            continue;
-        } else if (
-            setting === "notification_sound" ||
-            setting === "email_notifications_batching_period_seconds"
-        ) {
-            container.find(`.setting_${CSS.escape(setting)}`).val(settings_object[setting]);
-            continue;
+        switch (setting) {
+            case "enable_offline_push_notifications": {
+                if (!page_params.realm_push_notifications_enabled) {
+                    // If push notifications are disabled at the realm level,
+                    // we should just leave the checkbox always off.
+                    break;
+                }
+                container.find(`.${CSS.escape(setting)}`).prop("checked", settings_object[setting]);
+                break;
+            }
+            case "desktop_icon_count_display": {
+                update_desktop_icon_count_display(settings_panel);
+                break;
+            }
+            case "notification_sound":
+            case "email_notifications_batching_period_seconds": {
+                container.find(`.setting_${CSS.escape(setting)}`).val(settings_object[setting]);
+                break;
+            }
+            default: {
+                container.find(`.${CSS.escape(setting)}`).prop("checked", settings_object[setting]);
+                break;
+            }
         }
-
-        container.find(`.${CSS.escape(setting)}`).prop("checked", settings_object[setting]);
     }
     rerender_ui();
 }
