@@ -26,14 +26,14 @@
                     </div>
                     <div class="bottom">
                         <div class="text-content">
-                            {% if not realm or realm.plan_type == realm.SELF_HOSTED %}
+                            {% if not realm or realm.plan_type == realm.PLAN_TYPE_SELF_HOSTED %}
                             <div class="pricing-details">
                                 Free cloud service
                             </div>
                             <a href="/new/" class="button green">
                                 Create organization
                             </a>
-                            {% elif realm.plan_type == realm.LIMITED or sponsorship_pending %}
+                            {% elif realm.plan_type == realm.PLAN_TYPE_LIMITED or sponsorship_pending %}
                             <div class="pricing-details"></div>
                             <a href='/upgrade' class="button black-current-value" type="button">
                                 Current plan
@@ -79,7 +79,7 @@
                                 Upgrade to Standard
                                 {% endif %}
                             </a>
-                            {% elif realm.plan_type in [realm.STANDARD, realm.STANDARD_FREE] %}
+                            {% elif realm.plan_type in [realm.PLAN_TYPE_STANDARD, realm.PLAN_TYPE_STANDARD_FREE] %}
                             <a href='/billing' class="button black-current-value" type="button">
                                 {% if realm_on_free_trial %}
                                 Current plan (free trial)

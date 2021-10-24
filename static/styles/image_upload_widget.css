@@ -154,6 +154,7 @@
 #user-avatar-source {
     font-size: 1em;
     z-index: 99;
+
     a {
         position: relative;
         top: 10px;

@@ -85,7 +85,7 @@ run_test("typing_events.render_notifications_for_narrow", ({override, mock_templ
     // As you can see below, the first argument of mock_template takes
     // the relative path of the template we want to mock w.r.t static/templates/
     //
-    // The second argument takes a boolean determing whether to render html.
+    // The second argument takes a boolean determining whether to render html.
     // We mostly set this to `false` and recommend you avoid setting this to `true`
     // unless necessary in situations where you want to test conditionals
     // or something similar. The latter examples below would make that more clear.

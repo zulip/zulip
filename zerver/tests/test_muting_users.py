@@ -312,7 +312,7 @@ class MutedUsersTests(ZulipTestCase):
         self.make_stream("general")
         self.subscribe(hamlet, "general")
 
-        # No muting. Only Hamlet is subscribed to #general, so only he can potentially recieve
+        # No muting. Only Hamlet is subscribed to #general, so only he can potentially receive
         # notifications.
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as m:
             message_id = self.send_stream_message(cordelia, "general")

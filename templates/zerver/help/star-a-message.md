@@ -39,6 +39,6 @@ can disable that feature.
 
 {settings_tab|display-settings}
 
-1. Under **Display settings**, toggle **Show counts for starred messages**.
+1. Under **Advanced**, toggle **Show counts for starred messages**.
 
 {end_tabs}

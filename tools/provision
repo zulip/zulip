@@ -10,6 +10,13 @@ if [ "$EUID" -eq 0 ]; then
     exit 1
 fi
 
+if [ -e "$(dirname "${BASH_SOURCE[0]}")/../.vagrant" ] && [ ! -e /home/vagrant ]; then
+    echo 'Error: provision should be run inside the Vagrant environment.' >&2
+    # shellcheck disable=SC2016
+    echo 'Try `vagrant up --provision`.' >&2
+    exit 1
+fi
+
 os="$(. /etc/os-release && echo "$ID $VERSION_ID")"
 case "$os" in
     'ubuntu 14.04' | 'ubuntu 16.04')

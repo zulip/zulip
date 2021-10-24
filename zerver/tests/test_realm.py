@@ -626,7 +626,7 @@ class RealmTest(ZulipTestCase):
 
     def test_initial_plan_type(self) -> None:
         with self.settings(BILLING_ENABLED=True):
-            self.assertEqual(do_create_realm("hosted", "hosted").plan_type, Realm.LIMITED)
+            self.assertEqual(do_create_realm("hosted", "hosted").plan_type, Realm.PLAN_TYPE_LIMITED)
             self.assertEqual(
                 get_realm("hosted").max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX
             )
@@ -636,7 +636,9 @@ class RealmTest(ZulipTestCase):
             self.assertEqual(get_realm("hosted").upload_quota_gb, Realm.UPLOAD_QUOTA_LIMITED)
 
         with self.settings(BILLING_ENABLED=False):
-            self.assertEqual(do_create_realm("onpremise", "onpremise").plan_type, Realm.SELF_HOSTED)
+            self.assertEqual(
+                do_create_realm("onpremise", "onpremise").plan_type, Realm.PLAN_TYPE_SELF_HOSTED
+            )
             self.assertEqual(
                 get_realm("onpremise").max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX
             )
@@ -665,43 +667,52 @@ class RealmTest(ZulipTestCase):
     def test_change_plan_type(self) -> None:
         realm = get_realm("zulip")
         iago = self.example_user("iago")
-        self.assertEqual(realm.plan_type, Realm.SELF_HOSTED)
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
         self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)
         self.assertEqual(realm.upload_quota_gb, None)
 
-        do_change_plan_type(realm, Realm.STANDARD, acting_user=iago)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=iago)
         realm = get_realm("zulip")
         realm_audit_log = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
         ).last()
         assert realm_audit_log is not None
-        expected_extra_data = {"old_value": Realm.SELF_HOSTED, "new_value": Realm.STANDARD}
+        expected_extra_data = {
+            "old_value": Realm.PLAN_TYPE_SELF_HOSTED,
+            "new_value": Realm.PLAN_TYPE_STANDARD,
+        }
         self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
         self.assertEqual(realm_audit_log.acting_user, iago)
-        self.assertEqual(realm.plan_type, Realm.STANDARD)
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
         self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)
         self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_STANDARD)
 
-        do_change_plan_type(realm, Realm.LIMITED, acting_user=iago)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=iago)
         realm = get_realm("zulip")
-        self.assertEqual(realm.plan_type, Realm.LIMITED)
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_LIMITED)
         self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, Realm.MESSAGE_VISIBILITY_LIMITED)
         self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_LIMITED)
 
-        do_change_plan_type(realm, Realm.STANDARD_FREE, acting_user=iago)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=iago)
         realm = get_realm("zulip")
-        self.assertEqual(realm.plan_type, Realm.STANDARD_FREE)
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD_FREE)
         self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)
         self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_STANDARD)
 
-        do_change_plan_type(realm, Realm.LIMITED, acting_user=iago)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=iago)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_PLUS, acting_user=iago)
+        realm = get_realm("zulip")
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_PLUS)
+        self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
+        self.assertEqual(realm.message_visibility_limit, None)
+        self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_STANDARD)
 
-        do_change_plan_type(realm, Realm.SELF_HOSTED, acting_user=iago)
-        self.assertEqual(realm.plan_type, Realm.SELF_HOSTED)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=iago)
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
         self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)
         self.assertEqual(realm.upload_quota_gb, None)
@@ -709,7 +720,7 @@ class RealmTest(ZulipTestCase):
     def test_message_retention_days(self) -> None:
         self.login("iago")
         realm = get_realm("zulip")
-        self.assertEqual(realm.plan_type, Realm.SELF_HOSTED)
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
 
         req = dict(message_retention_days=orjson.dumps(10).decode())
         result = self.client_patch("/json/realm", req)
@@ -741,12 +752,12 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
 
-        do_change_plan_type(realm, Realm.LIMITED, acting_user=None)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
         req = dict(message_retention_days=orjson.dumps(10).decode())
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(result, "Available on Zulip Standard. Upgrade to access.")
 
-        do_change_plan_type(realm, Realm.STANDARD, acting_user=None)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
         req = dict(message_retention_days=orjson.dumps(10).decode())
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
@@ -760,7 +771,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.email_address_visibility, Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
         self.assertEqual(realm.description, "")
         self.assertTrue(realm.invite_required)
-        self.assertEqual(realm.plan_type, Realm.LIMITED)
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_LIMITED)
         self.assertEqual(realm.org_type, Realm.ORG_TYPES["unspecified"]["id"])
         self.assertEqual(type(realm.date_created), datetime.datetime)
 
@@ -778,7 +789,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.signup_notifications_stream.name, "core team")
         self.assertEqual(realm.signup_notifications_stream.realm, realm)
 
-        self.assertEqual(realm.plan_type, Realm.LIMITED)
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_LIMITED)
 
     def test_do_create_realm_with_keyword_arguments(self) -> None:
         date_created = timezone_now() - datetime.timedelta(days=100)
@@ -790,7 +801,7 @@ class RealmTest(ZulipTestCase):
             email_address_visibility=Realm.EMAIL_ADDRESS_VISIBILITY_MEMBERS,
             description="realm description",
             invite_required=False,
-            plan_type=Realm.STANDARD_FREE,
+            plan_type=Realm.PLAN_TYPE_STANDARD_FREE,
             org_type=Realm.ORG_TYPES["community"]["id"],
         )
         self.assertEqual(realm.string_id, "realm_string_id")
@@ -799,7 +810,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.email_address_visibility, Realm.EMAIL_ADDRESS_VISIBILITY_MEMBERS)
         self.assertEqual(realm.description, "realm description")
         self.assertFalse(realm.invite_required)
-        self.assertEqual(realm.plan_type, Realm.STANDARD_FREE)
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD_FREE)
         self.assertEqual(realm.org_type, Realm.ORG_TYPES["community"]["id"])
         self.assertEqual(realm.date_created, date_created)
 
@@ -849,7 +860,7 @@ class RealmTest(ZulipTestCase):
             self.assertEqual(realm.web_public_streams_enabled(), False)
             self.assertEqual(realm.has_web_public_streams(), False)
 
-        realm.plan_type = Realm.LIMITED
+        realm.plan_type = Realm.PLAN_TYPE_LIMITED
         realm.save()
         self.assertEqual(Stream.objects.filter(realm=realm, is_web_public=True).count(), 1)
         self.assertEqual(realm.web_public_streams_enabled(), False)

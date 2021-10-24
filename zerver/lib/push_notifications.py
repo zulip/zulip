@@ -44,7 +44,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 if settings.ZILENCER_ENABLED:
-    from zilencer.models import RemotePushDeviceToken
+    from zilencer.models import RemotePushDeviceToken, RemoteZulipServer
 
 DeviceToken = Union[PushDeviceToken, "RemotePushDeviceToken"]
 
@@ -130,7 +130,10 @@ APNS_MAX_RETRIES = 3
 
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(
-    user_id: int, devices: Sequence[DeviceToken], payload_data: Dict[str, Any], remote: bool = False
+    user_id: int,
+    devices: Sequence[DeviceToken],
+    payload_data: Dict[str, Any],
+    remote: Optional["RemoteZulipServer"] = None,
 ) -> None:
     if not devices:
         return
@@ -155,7 +158,17 @@ def send_apple_push_notification(
     else:
         DeviceTokenClass = PushDeviceToken
 
-    logger.info("APNs: Sending notification for user %d to %d devices", user_id, len(devices))
+    if remote:
+        logger.info(
+            "APNs: Sending notification for remote user %s:%d to %d devices",
+            remote.uuid,
+            user_id,
+            len(devices),
+        )
+    else:
+        logger.info(
+            "APNs: Sending notification for local user %d to %d devices", user_id, len(devices)
+        )
     payload_data = modernize_apns_payload(payload_data).copy()
     message = {**payload_data.pop("custom", {}), "aps": payload_data}
     for device in devices:
@@ -228,11 +241,12 @@ def gcm_enabled() -> bool:  # nocoverage
     return gcm_client is not None
 
 
+# This is purely used in testing
 def send_android_push_notification_to_user(
     user_profile: UserProfile, data: Dict[str, Any], options: Dict[str, Any]
 ) -> None:
     devices = list(PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM))
-    send_android_push_notification(devices, data, options)
+    send_android_push_notification(user_profile.id, devices, data, options)
 
 
 def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
@@ -282,10 +296,11 @@ def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
 
 @statsd_increment("android_push_notification")
 def send_android_push_notification(
+    user_id: int,
     devices: Sequence[DeviceToken],
     data: Dict[str, Any],
     options: Dict[str, Any],
-    remote: bool = False,
+    remote: Optional["RemoteZulipServer"] = None,
 ) -> None:
     """
     Send a GCM message to the given devices.
@@ -307,6 +322,17 @@ def send_android_push_notification(
         )
         return
 
+    if remote:
+        logger.info(
+            "GCM: Sending notification for remote user %s:%d to %d devices",
+            remote.uuid,
+            user_id,
+            len(devices),
+        )
+    else:
+        logger.info(
+            "GCM: Sending notification for local user %d to %d devices", user_id, len(devices)
+        )
     reg_ids = [device.token for device in devices]
     priority = parse_gcm_options(options, data)
     try:
@@ -876,7 +902,9 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
             PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS)
         )
         if android_devices:
-            send_android_push_notification(android_devices, gcm_payload, gcm_options)
+            send_android_push_notification(
+                user_profile_id, android_devices, gcm_payload, gcm_options
+            )
         if apple_devices:
             send_apple_push_notification(user_profile_id, apple_devices, apns_payload)
 
@@ -983,10 +1011,10 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     )
 
     logger.info(
-        "Sending mobile push notifications for user %s: %s via FCM devices, %s via APNs devices",
+        "Sending mobile push notifications for local user %s: %s via FCM devices, %s via APNs devices",
         user_profile_id,
         len(android_devices),
         len(apple_devices),
     )
     send_apple_push_notification(user_profile.id, apple_devices, apns_payload)
-    send_android_push_notification(android_devices, gcm_payload, gcm_options)
+    send_android_push_notification(user_profile.id, android_devices, gcm_payload, gcm_options)

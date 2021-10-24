@@ -28,6 +28,8 @@ from django.utils.cache import patch_vary_headers
 from django.utils.deprecation import MiddlewareMixin
 from django.utils.translation import gettext as _
 from django.views.csrf import csrf_failure as html_csrf_failure
+from django_scim.middleware import SCIMAuthCheckMiddleware
+from django_scim.settings import scim_settings
 from sentry_sdk import capture_exception
 from sentry_sdk.integrations.logging import ignore_logger
 
@@ -44,7 +46,7 @@ from zerver.lib.subdomains import get_subdomain
 from zerver.lib.types import ViewFuncT
 from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.utils import statsd
-from zerver.models import Realm, flush_per_request_caches, get_realm
+from zerver.models import Realm, SCIMClient, flush_per_request_caches, get_realm
 
 logger = logging.getLogger("zulip.requests")
 slow_query_logger = logging.getLogger("zulip.slow_queries")
@@ -664,3 +666,71 @@ class ZulipCommonMiddleware(CommonMiddleware):
         if settings.RUNNING_INSIDE_TORNADO:
             return False
         return super().should_redirect_with_slash(request)
+
+
+def validate_scim_bearer_token(request: HttpRequest) -> Optional[SCIMClient]:
+    """
+    This function verifies the request is allowed to make SCIM requests on this subdomain,
+    by checking the provided bearer token and ensuring it matches a scim client configured
+    for this subdomain in settings.SCIM_CONFIG.
+    If successful, returns the corresponding SCIMClient object. Returns None otherwise.
+    """
+
+    subdomain = get_subdomain(request)
+    scim_config_dict = settings.SCIM_CONFIG.get(subdomain)
+    if not scim_config_dict:
+        return None
+
+    valid_bearer_token = scim_config_dict.get("bearer_token")
+    scim_client_name = scim_config_dict.get("scim_client_name")
+    # We really don't want a misconfiguration where this is unset,
+    # allowing free access to the SCIM API:
+    assert valid_bearer_token
+    assert scim_client_name
+
+    if request.headers.get("Authorization") != f"Bearer {valid_bearer_token}":
+        return None
+
+    request_notes = RequestNotes.get_notes(request)
+    assert request_notes.realm
+
+    # While API authentication code paths are sufficiently high
+    # traffic that we prefer to use a cache, SCIM is much lower
+    # traffic, and doing a database query is plenty fast.
+    return SCIMClient.objects.get(realm=request_notes.realm, name=scim_client_name)
+
+
+class ZulipSCIMAuthCheckMiddleware(SCIMAuthCheckMiddleware):
+    """
+    Overridden version of middleware implemented in django-scim2
+    (https://github.com/15five/django-scim2/blob/master/src/django_scim/middleware.py)
+    to also handle authenticating the client.
+    """
+
+    def process_request(self, request: HttpRequest) -> Optional[HttpResponse]:
+        # This determines whether this is a SCIM request based on the request's path
+        # and if it is, logs request information, including the body, as well as the response
+        # for debugging purposes to the `django_scim.middleware` logger, at DEBUG level.
+        # We keep those logs in /var/log/zulip/scim.log
+        if self.should_log_request(request):
+            self.log_request(request)
+
+        # Here we verify the request is indeed to a SCIM endpoint. That's ensured
+        # by comparing the path with self.reverse_url, which is the root SCIM path /scim/b2/.
+        # Of course we don't want to proceed with authenticating the request for SCIM
+        # if a non-SCIM endpoint is being queried.
+        if not request.path.startswith(self.reverse_url):
+            return None
+
+        scim_client = validate_scim_bearer_token(request)
+        if not scim_client:
+            response = HttpResponse(status=401)
+            response["WWW-Authenticate"] = scim_settings.WWW_AUTHENTICATE_HEADER
+            return response
+
+        # The client has been successfully authenticated for SCIM on this subdomain,
+        # so we can assign the corresponding SCIMClient object to request.user - which
+        # will allow this request to pass request.user.is_authenticated checks from now on,
+        # to be served by the relevant views implemented in django-scim2.
+        request.user = scim_client
+        return None

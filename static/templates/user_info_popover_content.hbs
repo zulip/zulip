@@ -83,7 +83,6 @@
         {{#unless is_me}}<hr />{{/unless}}
         <li class="user_info_status_text">
             <span id="status_message">
-                {{status_text}}
                 {{#if status_emoji_info}}
                     {{#if status_emoji_info.emoji_alt_code}}
                         <div class="emoji_alt_code">&nbsp:{{status_emoji_info.emoji_name}}:</div>
@@ -95,6 +94,7 @@
                         {{/if}}
                     {{/if}}
                 {{/if}}
+                {{status_text}}
                 {{#if is_me}}(<a tabindex="0" class="clear_status">{{#tr}}clear{{/tr}}</a>){{/if}}
             </span>
         </li>

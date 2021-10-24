@@ -164,9 +164,11 @@ p.n-margin {
     font-size: 16px;
     margin: 0 auto 12px;
     padding: 5px;
+
     i {
         margin: 0 3px 0 1px;
     }
+
     p {
         margin: 0;
         padding: 4px;
@@ -726,6 +728,7 @@ li.actual-dropdown-menu i {
         filter: invert(20%) sepia(11%) saturate(0%) hue-rotate(272deg)
             brightness(20%) contrast(95%);
     }
+
     .about_zulip_text {
         position: relative;
         top: 1.4px;
@@ -1338,6 +1341,7 @@ td.pointer {
 .on_hover_topic_resolve,
 .on_hover_topic_mute {
     opacity: 0.2;
+
     &:hover {
         cursor: pointer;
         opacity: 0.7;
@@ -1498,6 +1502,7 @@ div.focused_table {
     .btn-wrapper {
         cursor: not-allowed;
     }
+
     .disable-btn {
         pointer-events: none;
     }
@@ -1506,6 +1511,7 @@ div.focused_table {
 .topic_edit {
     display: none;
     line-height: 22px;
+
     .alert {
         display: inline-block;
         margin: 0;
@@ -1581,11 +1587,16 @@ div.focused_table {
     white-space: nowrap;
 
     label.checkbox {
-        margin-right: 0 !important;
+        /* Place the checkboxes on their own lines. */
+        display: block;
 
         input {
             margin: 0;
             vertical-align: baseline;
+        }
+
+        & + label.checkbox {
+            margin-top: 10px;
         }
     }
 
@@ -1593,10 +1604,6 @@ div.focused_table {
         display: inline-block;
         margin-right: 10px;
     }
-}
-
-.topic_move_breadcrumb_messages {
-    margin-top: 10px !important;
 }
 
 .message_length_controller {
@@ -1674,6 +1681,7 @@ div.focused_table {
     color: inherit;
     opacity: 0.5;
     text-decoration: none;
+
     &:hover {
         opacity: 1;
     }
@@ -1693,9 +1701,11 @@ div.focused_table {
     border: none;
     white-space: nowrap;
     cursor: default;
+
     .hidden {
         display: none;
     }
+
     .sub_count,
     .stream,
     & > span {
@@ -1714,15 +1724,19 @@ div.focused_table {
         @media (width < $sm_min) {
             padding: 7px 3.5px; /* based on having ~41.66% decrease */
         }
+
         i {
             margin-right: 3px;
         }
+
         .fa {
             margin: 0 3px 0 5px;
+
             .fa-envelope {
                 font-size: 14px;
                 margin: 0 5px 0 5px;
             }
+
             .fa-hashtag {
                 font-size: 1.2rem;
                 /* font-weight: 800; */
@@ -1754,6 +1768,7 @@ div.focused_table {
         padding-right: 10px;
         margin-right: 1px;
         overflow: visible;
+
         .fa.fa-user-o {
             margin-left: 0;
         }
@@ -1830,6 +1845,7 @@ div.focused_table {
 
         /* Provide the visual cue that clicking this will work as expected. */
         cursor: pointer;
+
         &:hover + .search_closed {
             opacity: 1;
         }
@@ -1850,6 +1866,7 @@ div.focused_table {
         margin-top: 0;
         width: calc(100% - 2px);
         position: absolute;
+
         .search_button {
             display: inline;
             margin-right: 15px;
@@ -1966,12 +1983,15 @@ div.focused_table {
     #search_arrows {
         padding-left: 0;
     }
+
     #search_query {
         padding-left: 35px;
     }
+
     .search_button {
         right: 0;
     }
+
     .navbar-search.expanded {
         .search_button {
             margin-right: 14px;
@@ -2778,6 +2798,7 @@ select.inline_select_topic_edit {
         .search_closed .fa-search {
             right: 72px;
         }
+
         .top-navbar-border,
         #searchbox_legacy .navbar-search.expanded,
         #searchbox .navbar-search.expanded {
@@ -2873,6 +2894,7 @@ select.inline_select_topic_edit {
         .top-navbar-border {
             width: calc(100% - 75px);
         }
+
         #searchbox_legacy .navbar-search.expanded,
         #searchbox .navbar-search.expanded {
             width: calc(100% - 90px);

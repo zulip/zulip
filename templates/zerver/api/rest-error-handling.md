@@ -19,7 +19,7 @@ errors common to many endpoints:
 
 {generate_code_example|/rest-error-handling:post|fixture}
 
-The `retry-after` paremeter in the response indicates how many seconds
+The `retry-after` parameter in the response indicates how many seconds
 the client must wait before making additional requests.
 
 To help clients avoid exceeding rate limits, Zulip sets the following

@@ -39,6 +39,10 @@ class Customer:
     def delete_discount(customer: Customer) -> None: ...
     @staticmethod
     def list(limit: Optional[int] = ...) -> List[Customer]: ...
+    @staticmethod
+    def create_balance_transaction(
+        customer_id: str, amount: int, currency: str, description: str
+    ) -> None: ...
 
 class Invoice:
     id: str

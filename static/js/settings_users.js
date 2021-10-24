@@ -14,7 +14,6 @@ import {DropdownListWidget} from "./dropdown_list_widget";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
-import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as presence from "./presence";
@@ -574,13 +573,13 @@ function handle_human_form(tbody, status_field) {
 
             const url = "/json/users/" + encodeURIComponent(user_id);
             const data = {
-                full_name: JSON.stringify(full_name.val()),
+                full_name: full_name.val(),
                 role: JSON.stringify(role),
                 profile_data: JSON.stringify(profile_data),
             };
 
             settings_ui.do_settings_change(channel.patch, url, data, status_field);
-            overlays.close_modal("#dialog_widget_modal");
+            dialog_widget.close_modal();
         }
 
         dialog_widget.launch({
@@ -632,7 +631,7 @@ function handle_bot_form(tbody, status_field) {
             }
 
             settings_ui.do_settings_change(channel.patch, url, data, status_field);
-            overlays.close_modal("#dialog_widget_modal");
+            dialog_widget.close_modal();
         }
 
         function get_bot_owner_widget() {
@@ -656,7 +655,7 @@ function handle_bot_form(tbody, status_field) {
         }
 
         dialog_widget.launch({
-            html_heading: $t({defaultMessage: "Change bot info and owner"}),
+            html_heading: $t_html({defaultMessage: "Change bot info and owner"}),
             parent: modal_parent,
             html_body,
             on_click: submit_bot_details,

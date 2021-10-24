@@ -42,6 +42,7 @@ from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
     DefaultStream,
+    GroupGroupMembership,
     Huddle,
     Message,
     MutedUser,
@@ -121,6 +122,7 @@ ID_MAP: Dict[str, Dict[int, int]] = {
     "service": {},
     "usergroup": {},
     "usergroupmembership": {},
+    "groupgroupmembership": {},
     "botstoragedata": {},
     "botconfigdata": {},
     "analytics_realmcount": {},
@@ -1119,7 +1121,10 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     if "zerver_usergroup" in data:
         re_map_foreign_keys(data, "zerver_usergroup", "realm", related_table="realm")
         re_map_foreign_keys_many_to_many(
-            data, "zerver_usergroup", "members", related_table="user_profile"
+            data, "zerver_usergroup", "direct_members", related_table="user_profile"
+        )
+        re_map_foreign_keys_many_to_many(
+            data, "zerver_usergroup", "direct_subgroups", related_table="usergroup"
         )
         update_model_ids(UserGroup, data, "usergroup")
         bulk_import_model(data, UserGroup)
@@ -1132,6 +1137,15 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         )
         update_model_ids(UserGroupMembership, data, "usergroupmembership")
         bulk_import_model(data, UserGroupMembership)
+
+        re_map_foreign_keys(
+            data, "zerver_groupgroupmembership", "supergroup", related_table="usergroup"
+        )
+        re_map_foreign_keys(
+            data, "zerver_groupgroupmembership", "subgroup", related_table="usergroup"
+        )
+        update_model_ids(GroupGroupMembership, data, "groupgroupmembership")
+        bulk_import_model(data, GroupGroupMembership)
 
     if "zerver_botstoragedata" in data:
         re_map_foreign_keys(
@@ -1251,9 +1265,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     import_analytics_data(realm=realm, import_dir=import_dir)
 
     if settings.BILLING_ENABLED:
-        do_change_plan_type(realm, Realm.LIMITED, acting_user=None)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
     else:
-        do_change_plan_type(realm, Realm.SELF_HOSTED, acting_user=None)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=None)
     return realm
 
 

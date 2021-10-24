@@ -563,7 +563,7 @@ export function set_up() {
                 url: "/json/users/me",
                 success() {
                     dialog_widget.hide_dialog_spinner();
-                    overlays.close_modal("#dialog_widget_modal");
+                    dialog_widget.close_modal();
                     window.location.href = "/login/";
                 },
                 error(xhr) {
@@ -589,7 +589,7 @@ export function set_up() {
                         }
                     }
                     dialog_widget.hide_dialog_spinner();
-                    overlays.close_modal("#dialog_widget_modal");
+                    dialog_widget.close_modal();
                     $("#account-settings-status")
                         .addClass("alert-error")
                         .html(rendered_error_msg)

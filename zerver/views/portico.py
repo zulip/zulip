@@ -44,7 +44,7 @@ def plans_view(request: HttpRequest) -> HttpResponse:
     realm_on_free_trial = False
 
     if realm is not None:
-        if realm.plan_type == Realm.SELF_HOSTED and settings.PRODUCTION:
+        if realm.plan_type == Realm.PLAN_TYPE_SELF_HOSTED and settings.PRODUCTION:
             return HttpResponseRedirect("https://zulip.com/plans")
         if not request.user.is_authenticated:
             return redirect_to_login(next="/plans")

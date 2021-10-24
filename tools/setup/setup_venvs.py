@@ -7,6 +7,9 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 if ZULIP_PATH not in sys.path:
     sys.path.append(ZULIP_PATH)
 
+# unset PIP_USER if set, since it is not compatible with virtualenvs.
+os.environ.pop("PIP_USER", None)
+
 from scripts.lib.setup_venv import setup_virtualenv
 from scripts.lib.zulip_tools import overwrite_symlink
 

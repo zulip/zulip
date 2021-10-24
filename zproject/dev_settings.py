@@ -179,3 +179,11 @@ SOCIAL_AUTH_SAML_SP_ENTITY_ID = "http://localhost:9991"
 SOCIAL_AUTH_SUBDOMAIN = "auth"
 
 MEMCACHED_USERNAME: Optional[str] = None
+
+SCIM_CONFIG = {
+    "zulip": {
+        "bearer_token": "token1234",
+        "scim_client_name": "test-scim-client",
+        "name_formatted_included": True,
+    }
+}

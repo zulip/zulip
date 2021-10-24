@@ -31,6 +31,7 @@ import * as rows from "./rows";
 import * as settings_data from "./settings_data";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 
@@ -585,6 +586,17 @@ function edit_message(row, raw_content) {
         const is_stream_edited = is_stream_editable ? new_stream_id !== original_stream_id : false;
         message_edit_topic_propagate.toggle(is_topic_edited || is_stream_edited);
         message_edit_breadcrumb_messages.toggle(is_stream_edited);
+
+        if (is_stream_edited) {
+            /* Reinitialize the typeahead component with content for the new stream. */
+            const new_stream_name = sub_store.get(new_stream_id).name;
+            message_edit_topic.data("typeahead").unlisten();
+            composebox_typeahead.initialize_topic_edit_typeahead(
+                message_edit_topic,
+                new_stream_name,
+                true,
+            );
+        }
     }
 
     if (!message.locally_echoed) {
@@ -1007,7 +1019,7 @@ export function delete_message(msg_id) {
                     (id) => id !== msg_id,
                 );
                 dialog_widget.hide_dialog_spinner();
-                overlays.close_modal("#dialog_widget_modal");
+                dialog_widget.close_modal();
             },
             error(xhr) {
                 currently_deleting_messages = currently_deleting_messages.filter(
