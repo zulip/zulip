@@ -450,6 +450,16 @@ $category-text: hsl(219, 23%, 33%);
 
     .integration-divider {
         padding: 11px 15px 0 15px;
+        br {
+            display: none;
+        }
+        
+        @media (max-width: 552px) {
+            br {
+                display: block;
+            }
+        }
+        
     }
 
     /* -- integration instructions -- */
@@ -502,6 +512,7 @@ $category-text: hsl(219, 23%, 33%);
 
             .categories {
                 order: 2;
+
                 .integration-category {
                     font-size: 0.9em;
                     font-weight: 400;
