@@ -46,7 +46,7 @@
 * [Review your settings](/help/review-your-settings)
 * [Night mode](/help/night-mode)
 * [Change your language](/help/change-your-language)
-* [Change default view](/help/change-default-view)
+* [Configure default view](/help/configure-default-view)
 * [Change your timezone](/help/change-your-timezone)
 * [Use 24-hour time](/help/change-the-time-format)
 * [Enable emoticon translations](/help/enable-emoticon-translations)

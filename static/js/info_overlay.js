@@ -13,6 +13,7 @@ import * as markdown from "./markdown";
 import * as overlays from "./overlays";
 import * as rendered_markdown from "./rendered_markdown";
 import * as ui from "./ui";
+import {user_settings} from "./user_settings";
 import * as util from "./util";
 
 // Make it explicit that our toggler is undefined until
@@ -169,7 +170,8 @@ export function set_up_toggler() {
     const $search_operators = $(render_search_operator());
     $(".informational-overlays .overlay-body").append($search_operators);
 
-    const $keyboard_shortcuts = $(render_keyboard_shortcut());
+    const user_escape_setting = {escape_enabled: user_settings.escape_navigates_to_default_view};
+    const $keyboard_shortcuts = $(render_keyboard_shortcut(user_escape_setting));
     $(".informational-overlays .overlay-body").append($keyboard_shortcuts);
 
     const opts = {

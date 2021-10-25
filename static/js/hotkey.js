@@ -40,6 +40,7 @@ import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as topic_zoom from "./topic_zoom";
 import * as ui from "./ui";
+import {user_settings} from "./user_settings";
 
 function do_narrow_action(action) {
     action(message_lists.current.selected_id(), {trigger: "hotkey"});
@@ -329,8 +330,12 @@ export function process_escape_key(e) {
         return true;
     }
 
-    hashchange.set_hash_to_default_view();
-    return true;
+    if (user_settings.escape_navigates_to_default_view) {
+        hashchange.set_hash_to_default_view();
+        return true;
+    }
+
+    return false;
 }
 
 function handle_popover_events(event_name) {

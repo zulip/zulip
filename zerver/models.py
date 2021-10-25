@@ -1379,6 +1379,7 @@ class UserBaseSettings(models.Model):
     # This setting controls which view is rendered first when Zulip loads.
     # Values for it are URL suffix after `#`.
     default_view: str = models.TextField(default="recent_topics")
+    escape_navigates_to_default_view: bool = models.BooleanField(default=True)
     dense_mode: bool = models.BooleanField(default=True)
     fluid_layout_width: bool = models.BooleanField(default=False)
     high_contrast_mode: bool = models.BooleanField(default=False)
@@ -1522,6 +1523,7 @@ class UserBaseSettings(models.Model):
             send_stream_typing_notifications=bool,
             send_private_typing_notifications=bool,
             send_read_receipts=bool,
+            escape_navigates_to_default_view=bool,
         ),
     }
 

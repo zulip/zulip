@@ -667,6 +667,11 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.left_side_userlist, true);
 
+    event = event_fixtures.user_settings__escape_navigates_to_default_view;
+    user_settings.escape_navigates_to_default_view = false;
+    dispatch(event);
+    assert_same(user_settings.escape_navigates_to_default_view, true);
+
     // We alias message_list.narrowed to message_lists.current
     // to make sure we get line coverage on re-rendering
     // the current message list.  The actual code tests

@@ -194,6 +194,9 @@ export function update_page(settings_panel) {
         .val(JSON.stringify(settings_object.twenty_four_hour_time));
     container.find(".setting_color_scheme").val(JSON.stringify(settings_object.color_scheme));
     container.find(".setting_default_view").val(settings_object.default_view);
+    container
+        .find(".escape_navigates_to_default_view")
+        .prop("checked", settings_object.escape_navigates_to_default_view);
 
     // TODO: Set emoji set selector here.
     // Longer term, we'll want to automate this function

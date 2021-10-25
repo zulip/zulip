@@ -576,6 +576,7 @@ export function dispatch_normal_event(event) {
                 "demote_inactive_streams",
                 "dense_mode",
                 "emojiset",
+                "escape_navigates_to_default_view",
                 "fluid_layout_width",
                 "high_contrast_mode",
                 "left_side_userlist",

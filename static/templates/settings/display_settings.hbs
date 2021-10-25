@@ -82,11 +82,17 @@
 
         <div class="input-group inline-block">
             <label for="default_view" class="dropdown-title">{{t "Default view" }}
-                {{> ../help_link_widget link="/help/change-default-view" }}
+                {{> ../help_link_widget link="/help/configure-default-view" }}
             </label>
             <select name="default_view" class="setting_default_view prop-element" data-setting-widget-type="string">
                 {{> dropdown_options_widget option_values=default_view_values}}
             </select>
+
+            {{> settings_checkbox
+              setting_name="escape_navigates_to_default_view"
+              is_checked=settings_object.escape_navigates_to_default_view
+              label=settings_label.escape_navigates_to_default_view
+              prefix=prefix}}
         </div>
 
         <div class="input-group">
