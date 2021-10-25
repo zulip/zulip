@@ -453,13 +453,11 @@ $category-text: hsl(219, 23%, 33%);
         br {
             display: none;
         }
-        
         @media (max-width: 552px) {
             br {
                 display: block;
             }
-        }
-        
+        }   
     }
 
     /* -- integration instructions -- */
