@@ -101,6 +101,10 @@
 
         #recent_topics_search {
             flex-grow: 1;
+            padding-right: 20px;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
         }
 
         .clear_search_button {
