@@ -11,6 +11,13 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 107**
+* [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
+  [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added user setting `escape_navigates_to_default_view` to allow users to
+  [disable the keyboard shortcut](/help/configure-default-view) for the `Esc` key that
+  navigates the app to the default view.
+
 **Feature level 106**
 
 * [`PATCH /user/{user_id}`](/api/update-user): Removed unnecessary JSON-encoding of string
@@ -503,7 +510,7 @@ field with an integer field `invite_to_realm_policy`.
 **Feature level 42**
 
 * `PATCH /settings/display`: Added a new `default_view` setting allowing
-  the user to [set the default view](/help/change-default-view).
+  the user to [set the default view](/help/configure-default-view).
 
 **Feature level 41**
 

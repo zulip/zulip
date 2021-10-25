@@ -576,6 +576,7 @@ export function dispatch_normal_event(event) {
                 "demote_inactive_streams",
                 "dense_mode",
                 "emojiset",
+                "escape_navigates_to_default_view",
                 "fluid_layout_width",
                 "high_contrast_mode",
                 "left_side_userlist",
@@ -671,6 +672,10 @@ export function dispatch_normal_event(event) {
             if (event.property === "presence_enabled") {
                 user_settings.presence_enabled = event.value;
                 $("#user_presence_enabled").prop("checked", user_settings.presence_enabled);
+                break;
+            }
+            if (event.property === "escape_navigates_to_default_view") {
+                $("#go-to-default-view-hotkey-help").toggleClass("notdisplayed", !event.value);
                 break;
             }
             settings_display.update_page(settings_display.user_settings_panel);
