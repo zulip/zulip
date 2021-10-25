@@ -7715,7 +7715,7 @@ paths:
         - name: default_view
           in: query
           description: |
-            The [default view](/help/change-default-view) used when opening a new
+            The [default view](/help/configure-default-view) used when opening a new
             Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
             - "recent_topics" - Recent topics view
@@ -7723,6 +7723,16 @@ paths:
           schema:
             type: string
           example: all_messages
+        - name: escape_navigates_to_default_view
+          in: query
+          description: |
+            Whether the escape key navigates to the
+            [configured default view](/help/configure-default-view).
+
+            **Changes**: New in Zulip 5.0 (feature level 107).
+          schema:
+            type: boolean
+          example: true
         - name: left_side_userlist
           in: query
           description: |
@@ -9629,11 +9639,18 @@ paths:
                           default_view:
                             type: string
                             description: |
-                              The [default view](/help/change-default-view) used when opening a new
+                              The [default view](/help/configure-default-view) used when opening a new
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
                               - "recent_topics" - Recent topics view
                               - "all_messages" - All messages view
+                          escape_navigates_to_default_view:
+                            type: boolean
+                            description: |
+                              Whether the escape key navigates to the
+                              [configured default view](/help/configure-default-view).
+
+                              **Changes**: New in Zulip 5.0 (feature level 107).
                           left_side_userlist:
                             type: boolean
                             description: |
@@ -10290,7 +10307,7 @@ paths:
                           and only for clients that did not include `user_settings_object` in
                           their client_capabilities` when registering the event queue.
 
-                          The [default view](/help/change-default-view) in Zulip, represented
+                          The [default view](/help/configure-default-view) in Zulip, represented
                           as the URL suffix after `#` to be rendered when Zulip loads.
 
                           Currently supported values are `all_messages` and `recent_topics`.
@@ -11315,11 +11332,18 @@ paths:
                           default_view:
                             type: string
                             description: |
-                              The [default view](/help/change-default-view) used when opening a new
+                              The [default view](/help/configure-default-view) used when opening a new
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
                               - "recent_topics" - Recent topics view
                               - "all_messages" - All messages view
+                          escape_navigates_to_default_view:
+                            type: boolean
+                            description: |
+                              Whether the escape key navigates to the
+                              [configured default view](/help/configure-default-view).
+
+                              **Changes**: New in Zulip 5.0 (feature level 107).
                           left_side_userlist:
                             type: boolean
                             description: |
@@ -12244,7 +12268,7 @@ paths:
         - name: default_view
           in: query
           description: |
-            The [default view](/help/change-default-view) used when opening a new
+            The [default view](/help/configure-default-view) used when opening a new
             Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
             - "recent_topics" - Recent topics view
@@ -12257,6 +12281,16 @@ paths:
           schema:
             type: string
           example: all_messages
+        - name: escape_navigates_to_default_view
+          in: query
+          description: |
+            Whether the escape key navigates to the
+            [configured default view](/help/configure-default-view).
+
+            **Changes**: New in Zulip 5.0 (feature level 107).
+          schema:
+            type: boolean
+          example: true
         - name: left_side_userlist
           in: query
           description: |

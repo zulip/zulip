@@ -667,6 +667,16 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.left_side_userlist, true);
 
+    event = event_fixtures.user_settings__escape_navigates_to_default_view;
+    user_settings.escape_navigates_to_default_view = false;
+    let toggled = [];
+    $("#go-to-default-view-hotkey-help").toggleClass = (cls) => {
+        toggled.push(cls);
+    };
+    dispatch(event);
+    assert_same(user_settings.escape_navigates_to_default_view, true);
+    assert_same(toggled, ["notdisplayed"]);
+
     // We alias message_list.narrowed to message_lists.current
     // to make sure we get line coverage on re-rendering
     // the current message list.  The actual code tests
@@ -694,7 +704,7 @@ run_test("user_settings", ({override}) => {
 
     event = event_fixtures.user_settings__high_contrast_mode;
     user_settings.high_contrast_mode = false;
-    let toggled = [];
+    toggled = [];
     $("body").toggleClass = (cls) => {
         toggled.push(cls);
     };

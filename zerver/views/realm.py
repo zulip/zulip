@@ -343,6 +343,7 @@ def update_realm_user_settings_defaults(
     default_view: Optional[str] = REQ(
         str_validator=check_string_in(default_view_options), default=None
     ),
+    escape_navigates_to_default_view: Optional[bool] = REQ(json_validator=check_bool, default=None),
     left_side_userlist: Optional[bool] = REQ(json_validator=check_bool, default=None),
     emojiset: Optional[str] = REQ(str_validator=check_string_in(emojiset_choices), default=None),
     demote_inactive_streams: Optional[int] = REQ(

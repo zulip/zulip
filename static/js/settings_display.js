@@ -47,16 +47,14 @@ export function set_up(settings_panel) {
 
     container.find(".advanced-settings-status").hide();
 
+    // Select current values for enum/select type fields. For boolean
+    // fields, the current value is set automatically in the template.
     container.find(".setting_demote_inactive_streams").val(settings_object.demote_inactive_streams);
-
     container.find(".setting_color_scheme").val(settings_object.color_scheme);
-
     container.find(".setting_default_view").val(settings_object.default_view);
-
     container
         .find(".setting_twenty_four_hour_time")
         .val(JSON.stringify(settings_object.twenty_four_hour_time));
-
     container
         .find(`.setting_emojiset_choice[value="${CSS.escape(settings_object.emojiset)}"]`)
         .prop("checked", true);
@@ -186,9 +184,15 @@ export function update_page(settings_panel) {
     const container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
 
+    // Boolean fields
     container.find(".left_side_userlist").prop("checked", settings_object.left_side_userlist);
-    container.find(".default_language_name").text(default_language_name);
     container.find(".translate_emoticons").prop("checked", settings_object.translate_emoticons);
+    container
+        .find(".escape_navigates_to_default_view")
+        .prop("checked", settings_object.escape_navigates_to_default_view);
+
+    // Enum/select fields
+    container.find(".default_language_name").text(default_language_name);
     container
         .find(".setting_twenty_four_hour_time")
         .val(JSON.stringify(settings_object.twenty_four_hour_time));

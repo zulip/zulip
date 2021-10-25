@@ -430,8 +430,10 @@ td .button {
 }
 
 .input-group {
-    .thinner {
-        margin: 10px 0;
+    /* Class to use when the following input-group is related and should
+       appear just after this element. */
+    &.thinner {
+        margin: 0;
     }
 
     label.checkbox + label {

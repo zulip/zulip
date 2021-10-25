@@ -434,6 +434,7 @@ export const display_settings_labels = {
             defaultMessage: "Convert emoticons before sending (<code>:)</code> becomes 😃)",
         }),
     ),
+    escape_navigates_to_default_view: $t({defaultMessage: "Escape key navigates to default view"}),
 };
 
 export const notification_settings_labels = {
