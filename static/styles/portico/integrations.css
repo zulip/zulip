@@ -448,17 +448,17 @@ $category-text: hsl(219, 23%, 33%);
         }
     }
 
-  .integration-divider {
-	padding: 11px 15px 0 15px;
-	br {
-		display: none;
-	}
-	@media (max-width: 552px) {
-		br {
-			display: block;
-		}
-	}
-}
+    .integration-divider {
+        padding: 11px 15px 0 15px;
+        br {
+            display: none;
+        }
+        @media (max-width: 552px) {
+            br {
+                display: block;
+            }
+        }
+    }
 
     /* -- integration instructions -- */
 
