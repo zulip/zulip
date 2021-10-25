@@ -446,6 +446,14 @@ $category-text: hsl(219, 23%, 33%);
             margin: 5px;
             font-size: 0.9em;
         }
+        @media (max-width: 552px) {
+            .button {
+                display: flex;
+                flex-wrap: wrap;
+                width: 170px;
+                margin-left: 40px;
+            }
+        }
     }
 
     .integration-divider {
