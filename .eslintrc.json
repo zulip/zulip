@@ -4,6 +4,7 @@
         "node": true
     },
     "extends": [
+        "./.eslintrc-no-magic-numbers",
         "eslint:recommended",
         "plugin:import/errors",
         "plugin:import/warnings",
