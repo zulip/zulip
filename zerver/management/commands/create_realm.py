@@ -5,12 +5,9 @@ from django.core import validators
 from django.core.exceptions import ValidationError
 from django.core.management.base import CommandError
 from django.db.utils import IntegrityError
-from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.actions import do_create_realm, do_create_user
 from zerver.lib.initial_password import initial_password
-from zerver.lib.actions import (
-    do_create_realm,
-    do_create_user,
-)
+from zerver.lib.management import ZulipBaseCommand
 from zerver.models import UserProfile
 
 class Command(ZulipBaseCommand):
