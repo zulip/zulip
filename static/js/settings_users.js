@@ -19,7 +19,6 @@ import * as presence from "./presence";
 import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
-import * as settings_data from "./settings_data";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as timerender from "./timerender";
 import * as ui from "./ui";
@@ -41,8 +40,22 @@ function compare_a_b(a, b) {
 }
 
 function sort_email(a, b) {
-    const email_a = settings_data.email_for_user_settings(a) || "";
-    const email_b = settings_data.email_for_user_settings(b) || "";
+    const email_a = a.delivery_email;
+    const email_b = b.delivery_email;
+
+    if (email_a === null && email_b === null) {
+        // If both the emails are hidden, we sort the list by name.
+        return compare_a_b(a.full_name.toLowerCase(), b.full_name.toLowerCase());
+    }
+
+    if (email_a === null) {
+        // User with hidden should be at last.
+        return 1;
+    }
+    if (email_b === null) {
+        // User with hidden should be at last.
+        return -1;
+    }
     return compare_a_b(email_a.toLowerCase(), email_b.toLowerCase());
 }
 
@@ -79,6 +92,15 @@ function sort_user_id(a, b) {
 
 function get_user_info_row(user_id) {
     return $(`tr.user_row[data-user-id='${CSS.escape(user_id)}']`);
+}
+
+export function allow_sorting_deactivated_users_list_by_email() {
+    const deactivated_users = people.get_non_active_realm_users();
+    const deactivated_humans_with_visble_email = deactivated_users.filter(
+        (user) => !user.is_bot && user.delivery_email,
+    );
+
+    return deactivated_humans_with_visble_email.length !== 0;
 }
 
 export function update_view_on_deactivate(user_id) {
@@ -235,7 +257,7 @@ function human_info(person) {
     info.can_modify = page_params.is_admin;
     info.is_current_user = people.is_my_user_id(person.user_id);
     info.cannot_deactivate = info.is_current_user || (person.is_owner && !page_params.is_owner);
-    info.display_email = settings_data.email_for_user_settings(person);
+    info.display_email = person.delivery_email;
 
     if (info.is_active) {
         // TODO: We might just want to show this
@@ -445,7 +467,7 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
             const realm_name = page_params.realm_name;
             const opts = {
                 username: user.full_name,
-                email: settings_data.email_for_user_settings(user),
+                email: user.delivery_email,
                 bots_owned_by_user,
                 number_of_invites_by_user,
                 admin_email: people.my_current_email(),
@@ -561,11 +583,9 @@ export function show_edit_user_info_modal(user_id, from_user_info_popover) {
         return;
     }
 
-    const user_email = settings_data.email_for_user_settings(person);
-
     const html_body = render_admin_human_form({
         user_id,
-        email: user_email,
+        email: person.delivery_email,
         full_name: person.full_name,
         user_role_values: settings_config.user_role_values,
         disable_role_dropdown: person.is_owner && !page_params.is_owner,

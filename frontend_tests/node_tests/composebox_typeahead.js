@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, set_global, with_overrides, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
-const {page_params, user_settings} = require("../zjsunit/zpage_params");
+const {user_settings} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
@@ -859,12 +859,10 @@ test("initialize", ({override, mock_template}) => {
         assert.equal(matcher(query, cordelia), false);
 
         query = "oth";
-        page_params.realm_email_address_visibility =
-            settings_config.email_address_visibility_values.admins_only.code;
-        page_params.is_admin = false;
+        deactivated_user.delivery_email = null;
         assert.equal(matcher(query, deactivated_user), false);
 
-        page_params.is_admin = true;
+        deactivated_user.delivery_email = "other@zulip.com";
         assert.equal(matcher(query, deactivated_user), true);
 
         function sorter(query, people) {
@@ -963,6 +961,7 @@ test("initialize", ({override, mock_template}) => {
         assert.deepEqual(sorted_names_from(actual_value), ["Sweden", "The Netherlands"]);
         assert.ok(caret_called);
 
+        othello.delivery_email = "othello@zulip.com";
         // options.highlighter()
         //
         // Again, here we only verify that the highlighter has been set to

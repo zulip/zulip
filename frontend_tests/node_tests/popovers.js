@@ -48,6 +48,7 @@ const popovers = zrequire("popovers");
 
 const alice = {
     email: "alice@example.com",
+    delivery_email: "alice-delivery@example.com",
     full_name: "Alice Smith",
     user_id: 42,
     avatar_version: 5,
@@ -179,7 +180,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
             can_send_private_message: true,
             can_unmute: false,
             user_full_name: "Alice Smith",
-            user_email: "alice@example.com",
+            user_email: "alice-delivery@example.com",
             user_id: 42,
             user_time: undefined,
             user_type: $t({defaultMessage: "Member"}),
@@ -189,7 +190,6 @@ test_ui("sender_hover", ({override, mock_template}) => {
             pm_with_url: "#narrow/pm-with/42-alice",
             sent_by_uri: "#narrow/sender/42-alice",
             private_message_class: "respond_personal_button",
-            show_email: false,
             is_me: false,
             is_active: true,
             is_bot: undefined,

@@ -18,60 +18,6 @@ export function initialize(current_user_join_date: Date): void {
     about page_params and settings_config details.
 */
 
-function user_can_access_delivery_email(): boolean {
-    // This function checks whether the current user should expect to
-    // see .delivery_email fields on user objects that it can access.
-    //
-    // If false, either everyone has access to emails (and there is no
-    // delivery_email field for anyone) or this user does not have
-    // access to emails (and this client will never receive a user
-    // object with a delivery_email field).
-    if (
-        page_params.realm_email_address_visibility ===
-        settings_config.email_address_visibility_values.admins_only.code
-    ) {
-        return page_params.is_admin;
-    }
-
-    if (
-        page_params.realm_email_address_visibility ===
-        settings_config.email_address_visibility_values.moderators.code
-    ) {
-        return page_params.is_admin || page_params.is_moderator;
-    }
-
-    return false;
-}
-
-export function show_email(): boolean {
-    if (
-        page_params.realm_email_address_visibility ===
-        settings_config.email_address_visibility_values.everyone.code
-    ) {
-        return true;
-    }
-    return user_can_access_delivery_email();
-}
-
-// TODO: Move this to people when converting it
-// to TypeScript.
-interface Person {
-    delivery_email: string;
-    email: string;
-}
-
-export function email_for_user_settings(person: Person): string | undefined {
-    if (!show_email()) {
-        return undefined;
-    }
-
-    if (person.delivery_email && user_can_access_delivery_email()) {
-        return person.delivery_email;
-    }
-
-    return person.email;
-}
-
 export function get_time_preferences(user_timezone: string): {
     timezone: string;
     format: string;

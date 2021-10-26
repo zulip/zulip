@@ -74,6 +74,7 @@ run_test("updates", () => {
 
     const isaac = {
         email: "isaac@example.com",
+        delivery_email: null,
         user_id: 32,
         full_name: "Isaac Newton",
     };
@@ -187,6 +188,19 @@ run_test("updates", () => {
     assert.equal(person.is_admin, true);
     assert.equal(user_id, isaac.user_id);
     assert.equal(full_name, "Sir Isaac");
+
+    person = people.get_by_email(isaac.email);
+    assert.equal(person.delivery_email, null);
+    user_events.update_person({
+        user_id: isaac.user_id,
+        delivery_email: "isaac-delivery@example.com",
+    });
+    person = people.get_by_email(isaac.email);
+    assert.equal(person.delivery_email, "isaac-delivery@example.com");
+
+    user_events.update_person({user_id: isaac.user_id, delivery_email: null});
+    person = people.get_by_email(isaac.email);
+    assert.equal(person.delivery_email, null);
 
     user_events.update_person({user_id: isaac.user_id, avatar_url: "http://gravatar.com/123456"});
     person = people.get_by_email(isaac.email);

@@ -13,7 +13,6 @@ import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
-import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
@@ -28,9 +27,8 @@ function format_member_list_elem(person) {
         name: person.full_name,
         user_id: person.user_id,
         is_current_user: person.user_id === page_params.user_id,
-        email: settings_data.email_for_user_settings(person),
+        email: person.delivery_email,
         can_edit_subscribers: page_params.is_admin,
-        show_email: settings_data.show_email(),
     });
 }
 

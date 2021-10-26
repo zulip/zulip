@@ -30,7 +30,6 @@ const user_groups = mock_esm("../../static/js/user_groups", {
 const ui_report = mock_esm("../../static/js/ui_report");
 
 const people = zrequire("people");
-const settings_config = zrequire("settings_config");
 const settings_data = zrequire("settings_data");
 const settings_user_groups_legacy = zrequire("settings_user_groups_legacy");
 const user_pill = zrequire("user_pill");
@@ -208,13 +207,11 @@ test_ui("populate_user_groups", ({mock_template}) => {
             result = config.matcher.call(fake_context, alice);
             assert.ok(result);
 
-            page_params.realm_email_address_visibility =
-                settings_config.email_address_visibility_values.admins_only.code;
-            page_params.is_admin = false;
+            bob.delivery_email = null;
             result = config.matcher.call(fake_context_for_email, bob);
             assert.ok(!result);
 
-            page_params.is_admin = true;
+            bob.delivery_email = "bob-delivery@example.com";
             result = config.matcher.call(fake_context_for_email, bob);
             assert.ok(result);
         })();

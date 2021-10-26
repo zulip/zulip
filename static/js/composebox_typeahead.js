@@ -17,7 +17,6 @@ import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as rows from "./rows";
-import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
@@ -86,14 +85,15 @@ function get_language_matcher(query) {
 }
 
 export function query_matches_person(query, person) {
-    if (!settings_data.show_email()) {
+    if (!person.delivery_email) {
         return typeahead.query_matches_source_attrs(query, person, ["full_name"], " ");
     }
-    let email_attr = "email";
-    if (person.delivery_email) {
-        email_attr = "delivery_email";
-    }
-    return typeahead.query_matches_source_attrs(query, person, ["full_name", email_attr], " ");
+    return typeahead.query_matches_source_attrs(
+        query,
+        person,
+        ["full_name", "delivery_email"],
+        " ",
+    );
 }
 
 export function query_matches_name(query, user_group_or_stream) {

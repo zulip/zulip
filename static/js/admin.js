@@ -15,6 +15,7 @@ import * as settings_org from "./settings_org";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
+import * as settings_users from "./settings_users";
 
 const admin_settings_label = {
     // Organization profile
@@ -177,7 +178,6 @@ export function build_page() {
         disable_enable_spectator_access_setting:
             !page_params.server_web_public_streams_enabled ||
             !page_params.zulip_plan_is_not_limited,
-        can_sort_by_email: settings_data.show_email(),
         realm_push_notifications_enabled: page_params.realm_push_notifications_enabled,
         realm_org_type_values: settings_org.get_org_type_dropdown_options(),
         realm_want_advertise_in_communities_directory:
@@ -187,6 +187,8 @@ export function build_page() {
         is_business_type_org:
             page_params.realm_org_type === settings_config.all_org_type_values.business.code,
         realm_enable_read_receipts: page_params.realm_enable_read_receipts,
+        allow_sorting_deactivated_users_list_by_email:
+            settings_users.allow_sorting_deactivated_users_list_by_email(),
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {

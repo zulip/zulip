@@ -45,7 +45,6 @@ import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
-import * as settings_data from "./settings_data";
 import * as settings_users from "./settings_users";
 import * as stream_popover from "./stream_popover";
 import * as ui_report from "./ui_report";
@@ -240,8 +239,7 @@ function render_user_info_popover(
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         private_message_class: private_msg_class,
         sent_by_uri: hash_util.by_sender_url(user.email),
-        show_email: settings_data.show_email(),
-        user_email: people.get_visible_email(user),
+        user_email: user.delivery_email,
         user_full_name: user.full_name,
         user_id: user.user_id,
         user_last_seen_time_status: buddy_data.user_last_seen_time_status(user.user_id),

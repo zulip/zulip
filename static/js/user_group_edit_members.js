@@ -12,7 +12,6 @@ import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as settings_data from "./settings_data";
 import * as ui from "./ui";
 import * as user_group_edit from "./user_group_edit";
 import * as user_groups from "./user_groups";
@@ -39,9 +38,8 @@ function format_member_list_elem(person) {
         name: person.full_name,
         user_id: person.user_id,
         is_current_user: person.user_id === page_params.user_id,
-        email: settings_data.email_for_user_settings(person),
+        email: person.delivery_email,
         can_edit_subscribers: user_group_edit.can_edit(current_group_id),
-        show_email: settings_data.show_email(),
     });
 }
 

@@ -1267,7 +1267,7 @@ function safe_lower(s) {
 }
 
 export function matches_user_settings_search(person, value) {
-    const email = settings_data.email_for_user_settings(person);
+    const email = person.delivery_email;
 
     return safe_lower(person.full_name).includes(value) || safe_lower(email).includes(value);
 }

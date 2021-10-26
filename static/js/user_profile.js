@@ -188,7 +188,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     const args = {
         user_id: user.user_id,
         full_name: user.full_name,
-        email: people.get_visible_email(user),
+        email: user.delivery_email,
         profile_data,
         user_avatar: people.medium_avatar_url_for_person(user),
         is_me: people.is_current_user(user.email),
@@ -196,7 +196,6 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         date_joined: dateFormat.format(parseISO(user.date_joined)),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         last_seen: buddy_data.user_last_seen_time_status(user.user_id),
-        show_email: settings_data.show_email(),
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
         user_is_guest: user.is_guest,
@@ -210,7 +209,6 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         } else if (bot_owner_id) {
             const bot_owner = people.get_by_user_id(bot_owner_id);
             args.bot_owner = bot_owner;
-            args.show_email = true;
         }
         args.bot_type = settings_bots.type_id_to_string(user.bot_type);
     }
