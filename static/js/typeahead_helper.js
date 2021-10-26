@@ -10,7 +10,6 @@ import * as compose_state from "./compose_state";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as recent_senders from "./recent_senders";
-import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as user_groups from "./user_groups";
 import * as user_status from "./user_status";
@@ -95,7 +94,7 @@ export function render_person(person) {
         status_emoji_info,
     };
 
-    typeahead_arguments.secondary = settings_data.email_for_user_settings(person);
+    typeahead_arguments.secondary = person.delivery_email;
     return render_typeahead_item(typeahead_arguments);
 }
 
