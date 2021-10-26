@@ -83,12 +83,12 @@ class Command(ZulipBaseCommand):
             raise CommandError("Realm '{}' already exists.".format(string_id))
 
         try:
-            user = do_create_user(
+            do_create_user(
                 email,
                 pw,
                 realm,
                 full_name,
-		role=UserProfile.ROLE_REALM_OWNER,
+                role=UserProfile.ROLE_REALM_OWNER,
                 acting_user=None,
             )
         except IntegrityError:
