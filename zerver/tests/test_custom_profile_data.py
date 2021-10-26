@@ -9,6 +9,7 @@ from zerver.actions.custom_profile_fields import (
     try_add_realm_custom_profile_field,
     try_reorder_realm_custom_profile_fields,
 )
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.test_classes import ZulipTestCase
@@ -16,6 +17,7 @@ from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementVal
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
+    UserProfile,
     custom_profile_fields_for_realm,
     get_realm,
 )
@@ -979,6 +981,12 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
 
     def test_get_custom_profile_fields_from_api_for_single_user(self) -> None:
         self.login("iago")
+        do_change_user_setting(
+            self.example_user("iago"),
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=None,
+        )
         expected_keys = {
             "result",
             "msg",

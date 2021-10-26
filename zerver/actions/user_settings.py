@@ -13,8 +13,10 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import (
     cache_delete,
     delete_user_profile_caches,
+    flush_user_profile,
     user_profile_by_api_key_cache_key,
 )
+from zerver.lib.create_user import get_display_email_address
 from zerver.lib.i18n import get_language_name
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
@@ -64,10 +66,10 @@ def send_delivery_email_update_events(
 
     for active_user in active_users:
         could_access_delivery_email_previously = can_access_delivery_email(
-            active_user, user_profile.id, old_visibility_setting, user_profile.is_bot
+            active_user, user_profile.id, old_visibility_setting
         )
         can_access_delivery_email_now = can_access_delivery_email(
-            active_user, user_profile.id, visibility_setting, user_profile.is_bot
+            active_user, user_profile.id, visibility_setting
         )
 
         if could_access_delivery_email_previously != can_access_delivery_email_now:
@@ -501,6 +503,26 @@ def do_change_user_setting(
                 active_user_ids(user_profile.realm_id),
             )
         )
+
+    if setting_name == "email_address_visibility":
+        send_delivery_email_update_events(
+            user_profile, old_value, user_profile.email_address_visibility
+        )
+
+        if UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE not in [old_value, setting_value]:
+            # We use real email addresses on UserProfile.email only if
+            # EMAIL_ADDRESS_VISIBILITY_EVERYONE is configured, so
+            # changes between values that will not require changing
+            # that field, so we can save work and return here.
+            return
+
+        user_profile.email = get_display_email_address(user_profile)
+        user_profile.save(update_fields=["email"])
+
+        transaction.on_commit(lambda: flush_user_profile(sender=UserProfile, instance=user_profile))
+
+        send_user_email_update_event(user_profile)
+        notify_avatar_url_change(user_profile)
 
     if setting_name == "enable_drafts_synchronization" and setting_value is False:
         # Delete all of the drafts from the backend but don't send delete events

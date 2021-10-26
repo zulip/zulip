@@ -34,7 +34,14 @@ def bulk_create_users(
         UserProfile.objects.filter(realm=realm).values_list("email", flat=True)
     )
     users = sorted(user_raw for user_raw in users_raw if user_raw[0] not in existing_users)
+
     realm_user_default = RealmUserDefault.objects.get(realm=realm)
+    if bot_type is None:
+        email_address_visibility = realm_user_default.email_address_visibility
+    else:
+        # There is no privacy motivation for limiting access to bot email addresses,
+        # so we hardcode them to EMAIL_ADDRESS_VISIBILITY_EVERYONE.
+        email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
 
     # Now create user_profiles
     profiles_to_create: List[UserProfile] = []
@@ -51,6 +58,7 @@ def bulk_create_users(
             tos_version,
             timezone,
             tutorial_status=UserProfile.TUTORIAL_FINISHED,
+            email_address_visibility=email_address_visibility,
         )
 
         if bot_type is None:
@@ -67,7 +75,7 @@ def bulk_create_users(
                 setattr(profile, settings_name, value)
         profiles_to_create.append(profile)
 
-    if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+    if email_address_visibility == UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
         UserProfile.objects.bulk_create(profiles_to_create)
     else:
         for user_profile in profiles_to_create:

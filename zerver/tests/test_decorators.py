@@ -15,11 +15,8 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_reactivate_user
-from zerver.actions.realm_settings import (
-    do_deactivate_realm,
-    do_reactivate_realm,
-    do_set_realm_property,
-)
+from zerver.actions.realm_settings import do_deactivate_realm, do_reactivate_realm
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import change_user_is_active, do_deactivate_user
 from zerver.decorator import (
     authenticate_notify,
@@ -1239,10 +1236,10 @@ class FetchAPIKeyTest(ZulipTestCase):
 
     def test_fetch_api_key_email_address_visibility(self) -> None:
         user = self.example_user("cordelia")
-        do_set_realm_property(
-            user.realm,
+        do_change_user_setting(
+            user,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
 

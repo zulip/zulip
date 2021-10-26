@@ -570,7 +570,7 @@ paths:
                                       description: |
                                         When the Zulip display email address of a user changes,
                                         either due to the user's email address changing, or
-                                        due to changes in the organization's
+                                        due to changes in the user's
                                         [email address visibility][help-email-visibility].
 
                                         [help-email-visibility]: /help/restrict-visibility-of-email-addresses
@@ -7242,8 +7242,8 @@ paths:
                         description: |
                           The user's real email address. This value will be `None` if you cannot
                           access this user's real email address. For bot users, this field is
-                          always set to the real email of the bot, since everyone can access the
-                          bot's email irrespective of `email_address_visibility` setting.
+                          always set to the real email of the bot, because bot users always have
+                          `email_address_visibility` as `EMAIL_ADDRESS_VISIBILITY_EVERYONE`.
 
                           **Changes**: Prior to Zulip 7.0 (feature level 163), this field was present
                           only when `email_address_visibility` was restricted and you had access to
@@ -16942,8 +16942,8 @@ components:
           description: |
             The user's real email address. This value will be `None` if you cannot
             access user's real email address. For bot users, this field is always
-            set to the real email of the bot, since everyone can access the bot's
-            email irrespective of `email_address_visibility` setting.
+            set to the real email of the bot, because bot users always have
+            `email_address_visibility` as `EMAIL_ADDRESS_VISIBILITY_EVERYONE`.
 
             **Changes**: Prior to Zulip 7.0 (feature level 163), this field was present
             only when `email_address_visibility` was restricted and you had access to the
