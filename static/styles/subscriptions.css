@@ -481,6 +481,8 @@
             margin-top: calc(45vh - 75px);
             text-align: center;
             font-size: 1em;
+            margin-left: 2em;
+            margin-right: 2em;
 
             span {
                 color: hsl(0, 0%, 67%);
