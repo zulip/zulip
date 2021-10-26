@@ -34,6 +34,7 @@ const bob = {
 
 const ted = {
     email: "ted@zulip.com",
+    delivery_email: "ted@zulip.com",
     user_id: 101,
     full_name: "Ted Smith",
 };

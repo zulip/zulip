@@ -678,11 +678,11 @@ test("render_person when emails hidden", ({mock_template}) => {
 
 test("render_person", ({mock_template}) => {
     // Test render_person with regular person
-    page_params.is_admin = true;
+    a_user.delivery_email = "a_user_delivery@zulip.org";
     let rendered = false;
     mock_template("typeahead_list_item.hbs", false, (args) => {
         assert.equal(args.primary, a_user.full_name);
-        assert.equal(args.secondary, a_user.email);
+        assert.equal(args.secondary, a_user.delivery_email);
         rendered = true;
         return "typeahead-item-stub";
     });

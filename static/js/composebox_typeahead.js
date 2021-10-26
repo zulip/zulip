@@ -18,7 +18,6 @@ import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as rows from "./rows";
-import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
@@ -90,7 +89,7 @@ function get_language_matcher(query) {
 export function query_matches_person(query, person) {
     return (
         typeahead.query_matches_string(query, person.full_name, " ") ||
-        (settings_data.show_email() &&
+        (Boolean(person.delivery_email) &&
             typeahead.query_matches_string(query, people.get_visible_email(person), " "))
     );
 }

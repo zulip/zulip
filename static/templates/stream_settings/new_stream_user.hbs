@@ -2,7 +2,7 @@
     <td>
         {{full_name}}{{#if is_current_user}} <span class="my_user_status">{{t "(you)"}}</span>{{/if}}
     </td>
-    {{#if show_email}}
+    {{#if email}}
         <td class="subscriber-email">{{email}}</td>
     {{else}}
         <td class="hidden-subscriber-email">{{t "(hidden)"}}</td>
