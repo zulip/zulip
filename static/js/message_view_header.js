@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import render_message_view_header from "../templates/message_view_header.hbs";
+import render_message_view_header_extended_description from "../templates/message_view_header_extended_description.hbs";
 
 import {$t} from "./i18n";
 import * as narrow_state from "./narrow_state";
@@ -118,6 +119,42 @@ function bind_title_area_handlers() {
         });
 }
 
+function insert_extended_description_box_if_needed(message_view_header_data) {
+    // closes extended_description if it was previously open
+    hide_extended_description();
+
+    if (
+        $(".narrow_description")[0] &&
+        $(".narrow_description")[0].scrollWidth > $(".narrow_description").innerWidth()
+    ) {
+        $(".open_extended_description_icon").show();
+        $(".open_extended_description_icon").on("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            $(".open_extended_description_icon").hide();
+            $(".close_extended_description_icon").show();
+            const extended_description_elem = $("#message_view_header_extended_description");
+            extended_description_elem.empty();
+            const rendered =
+                render_message_view_header_extended_description(message_view_header_data);
+            extended_description_elem.append(rendered);
+            extended_description_elem.removeClass("notdisplayed");
+            $(".close_extended_description_icon").on("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                $(".open_extended_description_icon").show();
+                hide_extended_description();
+            });
+        });
+    }
+}
+
+function hide_extended_description() {
+    $(".close_extended_description_icon").hide();
+    const extended_description_elem = $("#message_view_header_extended_description");
+    extended_description_elem.empty();
+}
+
 function build_message_view_header(filter) {
     // This makes sure we don't waste time appending
     // message_view_header on a template where it's never used
@@ -127,6 +164,7 @@ function build_message_view_header(filter) {
         const message_view_header_data = make_message_view_header(filter);
         append_and_display_title_area(message_view_header_data);
         bind_title_area_handlers();
+        insert_extended_description_box_if_needed(message_view_header_data);
         if (page_params.search_pills_enabled && $("#search_query").is(":focus")) {
             open_search_bar_and_close_narrow_description();
         } else {

@@ -1823,6 +1823,11 @@ div.focused_table {
         }
     }
 
+    .open_extended_description_icon,
+    .close_extended_description_icon {
+        display: none;
+    }
+
     .search_closed {
         overflow: visible;
         flex: 0; /* makes sure search icon is always visible */
@@ -1849,6 +1854,31 @@ div.focused_table {
         &:hover ~ .search_closed {
             opacity: 1;
         }
+    }
+}
+
+.extended_description {
+    padding: 5px;
+    position: absolute;
+    overflow-wrap: anywhere;
+    background-color: hsl(0, 0%, 100%);
+    border: 1px solid hsl(0, 0%, 88%);
+    width: calc(100% - 12px);
+    @media (max-width: $xl_min) {
+        width: calc(100% - 94px);
+    }
+    @media (max-width: $md_min) {
+        margin-left: 40px;
+        width: calc(100% - 133px);
+    }
+
+    @media (max-width: $sm_min) {
+        line-height: calc(20 / 14);
+    }
+
+    .extended_description_data {
+        border: 2px solid hsl(0, 0%, 80%);
+        padding: 10px;
     }
 }
 
