@@ -766,7 +766,7 @@ export function content_highlighter(item) {
     }
 }
 
-const show_flatpickr = (element, callback, default_timestamp) => {
+export function show_flatpickr(element, callback, default_timestamp, options = {}) {
     const flatpickr_input = $("<input id='#timestamp_flatpickr'>");
 
     const instance = flatpickr_input.flatpickr({
@@ -774,11 +774,13 @@ const show_flatpickr = (element, callback, default_timestamp) => {
         enableTime: true,
         clickOpens: false,
         defaultDate: default_timestamp,
-        plugins: [new ConfirmDatePlugin({})],
+        plugins: [new ConfirmDatePlugin({showAlways: true})],
         positionElement: element,
         dateFormat: "Z",
         formatDate: (date) => formatISO(date),
+        ...options,
     });
+
     const container = $($(instance.innerContainer).parent());
     container.on("click", ".flatpickr-calendar", (e) => {
         e.stopPropagation();
@@ -792,7 +794,9 @@ const show_flatpickr = (element, callback, default_timestamp) => {
     });
     instance.open();
     container.find(".flatpickr-monthDropdown-months").trigger("focus");
-};
+
+    return instance;
+}
 
 export function content_typeahead_selected(item, event) {
     const pieces = split_at_cursor(this.query, this.$element);
