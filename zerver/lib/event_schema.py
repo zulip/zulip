@@ -1066,6 +1066,7 @@ realm_user_type = DictType(
         ("profile_data", StringDictType(dict)),
         ("timezone", str),
         ("date_joined", str),
+        ("email_address_visibility", EnumType(UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES)),
     ]
 )
 
@@ -1118,6 +1119,7 @@ realm_user_person_types = dict(
             ("avatar_url", OptionalType(str)),
             ("avatar_url_medium", OptionalType(str)),
             ("avatar_version", int),
+            ("email_address_visibility", int),
         ],
     ),
     bot_owner_id=DictType(

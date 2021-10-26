@@ -61,7 +61,7 @@ from zerver.actions.realm_settings import (
     do_reactivate_realm,
     do_set_realm_property,
 )
-from zerver.actions.user_settings import do_change_password
+from zerver.actions.user_settings import do_change_password, do_change_user_setting
 from zerver.actions.users import change_user_is_active, do_deactivate_user
 from zerver.lib.avatar import avatar_url
 from zerver.lib.avatar_hash import user_avatar_path
@@ -6129,11 +6129,10 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
 
     def test_update_with_hidden_emails(self) -> None:
         hamlet = self.example_user("hamlet")
-        realm = get_realm("zulip")
-        do_set_realm_property(
-            realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
         hamlet.refresh_from_db()

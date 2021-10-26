@@ -298,14 +298,13 @@ def notify_created_user(user_profile: UserProfile) -> None:
         # later event.
         custom_profile_field_data={},
     )
+    person["email_address_visibility"] = user_row["email_address_visibility"]
 
     active_users = user_profile.realm.get_active_users()
     user_ids_with_real_email_access = []
     user_ids_without_real_email_access = []
     for user in active_users:
-        if can_access_delivery_email(
-            user, user_profile.id, user_profile.realm.email_address_visibility
-        ):
+        if can_access_delivery_email(user, user_profile.id, user_row["email_address_visibility"]):
             user_ids_with_real_email_access.append(user.id)
         else:
             user_ids_without_real_email_access.append(user.id)

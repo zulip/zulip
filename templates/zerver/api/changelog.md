@@ -27,6 +27,9 @@ format used by the Zulip server that they are interacting with.
   /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults): Added
   user `email_address_visibility` setting which will replace the existing realm
   `email_address_visibility` setting.
+* [`GET /events`](/api/get-events): Added user `email_address_visibility` field
+  to the person object in the events sent when adding a user and when user changes
+  their avatar.
 
 **Feature level 145**
 

@@ -754,6 +754,9 @@ def apply_event(
 
         if event["op"] == "add":
             person = copy.deepcopy(person)
+            if person["email_address_visibility"] != UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+                client_gravatar = False
+            del person["email_address_visibility"]
             if client_gravatar:
                 if person["avatar_url"].startswith("https://secure.gravatar.com"):
                     person["avatar_url"] = None
@@ -844,9 +847,17 @@ def apply_event(
                     if not was_admin and now_admin:
                         state["realm_bots"] = get_owned_bot_dicts(user_profile)
 
-            if client_gravatar and "avatar_url" in person:
+            if "avatar_url" in person:
                 # Respect the client_gravatar setting in the `users` data.
-                if person["avatar_url"].startswith("https://secure.gravatar.com"):
+                if (
+                    person["email_address_visibility"]
+                    != UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+                ):
+                    client_gravatar = False
+
+                if client_gravatar and person["avatar_url"].startswith(
+                    "https://secure.gravatar.com"
+                ):
                     person["avatar_url"] = None
                     person["avatar_url_medium"] = None
 
@@ -1380,11 +1391,6 @@ def do_events_register(
     )
     stream_typing_notifications = client_capabilities.get("stream_typing_notifications", False)
     user_settings_object = client_capabilities.get("user_settings_object", False)
-
-    if realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
-        # If real email addresses are not available to the user, their
-        # clients cannot compute gravatars, so we force-set it to false.
-        client_gravatar = False
 
     if fetch_event_types is not None:
         event_types_set: Optional[Set[str]] = set(fetch_event_types)

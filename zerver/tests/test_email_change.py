@@ -13,12 +13,11 @@ from confirmation.models import (
 )
 from zerver.actions.create_user import do_reactivate_user
 from zerver.actions.realm_settings import do_deactivate_realm, do_set_realm_property
-from zerver.actions.user_settings import do_start_email_change_process
+from zerver.actions.user_settings import do_change_user_setting, do_start_email_change_process
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
     EmailChangeStatus,
-    Realm,
     UserProfile,
     get_realm,
     get_user,
@@ -87,12 +86,6 @@ class EmailChangeTestCase(ZulipTestCase):
 
     def test_confirm_email_change(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_set_realm_property(
-            user_profile.realm,
-            "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
-            acting_user=None,
-        )
 
         old_email = user_profile.delivery_email
         new_email = "hamlet-new@zulip.com"
@@ -263,10 +256,10 @@ class EmailChangeTestCase(ZulipTestCase):
 
     def test_change_delivery_email_end_to_end_with_admins_visibility(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_set_realm_property(
-            user_profile.realm,
+        do_change_user_setting(
+            user_profile,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
 

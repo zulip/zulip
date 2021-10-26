@@ -9,7 +9,7 @@ from django.test import override_settings
 from zulip_bots.custom_exceptions import ConfigValidationError
 
 from zerver.actions.bots import do_change_bot_owner
-from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.realm_settings import do_set_realm_user_default_setting
 from zerver.actions.streams import do_change_stream_permission
 from zerver.actions.users import do_change_can_create_users, do_change_user_role, do_deactivate_user
 from zerver.lib.bot_config import ConfigError, get_bot_config
@@ -19,6 +19,7 @@ from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file, queries_captured
 from zerver.models import (
     Realm,
+    RealmUserDefault,
     Service,
     UserProfile,
     get_bot_services,
@@ -320,10 +321,11 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         # Test that we don't mangle the email field with
         # email_address_visiblity limited to admins
         user = self.example_user("hamlet")
-        do_set_realm_property(
-            user.realm,
+        realm_user_default = RealmUserDefault.objects.get(realm=user.realm)
+        do_set_realm_user_default_setting(
+            realm_user_default,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
         user.refresh_from_db()

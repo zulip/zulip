@@ -17,7 +17,7 @@ from zerver.actions.invites import do_create_multiuse_invite_link, do_invite_use
 from zerver.actions.message_send import get_recipient_info
 from zerver.actions.muted_users import do_mute_user
 from zerver.actions.realm_settings import do_set_realm_property
-from zerver.actions.user_settings import bulk_regenerate_api_keys
+from zerver.actions.user_settings import bulk_regenerate_api_keys, do_change_user_setting
 from zerver.actions.users import (
     change_user_is_active,
     do_change_can_create_users,
@@ -55,7 +55,6 @@ from zerver.models import (
     InvalidFakeEmailDomain,
     Message,
     PreregistrationUser,
-    Realm,
     RealmDomain,
     RealmUserDefault,
     Recipient,
@@ -329,10 +328,10 @@ class PermissionTest(ZulipTestCase):
         # Now, switch email address visibility, check client_gravatar
         # is automatically disabled for the user.
         with self.captureOnCommitCallbacks(execute=True):
-            do_set_realm_property(
-                user.realm,
+            do_change_user_setting(
+                user,
                 "email_address_visibility",
-                Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+                UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
                 acting_user=None,
             )
         result = self.client_get("/json/users", {"client_gravatar": "true"})
@@ -344,16 +343,6 @@ class PermissionTest(ZulipTestCase):
         # user's Gravatar.
         self.assertEqual(hamlet["avatar_url"], get_gravatar_url(user.delivery_email, 1))
         self.assertEqual(hamlet["delivery_email"], user.delivery_email)
-
-        # Also verify the /events code path.  This is a bit hacky, but
-        # basically we want to verify client_gravatar is being
-        # overridden.
-        with mock.patch(
-            "zerver.lib.events.request_event_queue", return_value=None
-        ) as mock_request_event_queue:
-            with self.assertRaises(JsonableError):
-                do_events_register(user, user.realm, get_client("website"), client_gravatar=True)
-            self.assertEqual(mock_request_event_queue.call_args_list[0][0][3], False)
 
         # client_gravatar is still turned off for admins.  In theory,
         # it doesn't need to be, but client-side changes would be
@@ -835,8 +824,11 @@ class QueryCountTest(ZulipTestCase):
 class BulkCreateUserTest(ZulipTestCase):
     def test_create_users(self) -> None:
         realm = get_realm("zulip")
-        realm.email_address_visibility = Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
-        realm.save()
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        realm_user_default.email_address_visibility = (
+            RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS
+        )
+        realm_user_default.save()
 
         name_list = [
             ("Fred Flintstone", "fred@zulip.com"),
@@ -856,8 +848,10 @@ class BulkCreateUserTest(ZulipTestCase):
         self.assertEqual(lisa.is_bot, False)
         self.assertEqual(lisa.bot_type, None)
 
-        realm.email_address_visibility = Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
-        realm.save()
+        realm_user_default.email_address_visibility = (
+            RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+        )
+        realm_user_default.save()
 
         name_list = [
             ("Bono", "bono@zulip.com"),
@@ -2135,7 +2129,9 @@ class GetProfileTest(ZulipTestCase):
 
     def test_get_all_profiles_avatar_urls(self) -> None:
         hamlet = self.example_user("hamlet")
-        result = self.api_get(hamlet, "/api/v1/users")
+        result = self.api_get(
+            hamlet, "/api/v1/users", {"client_gravatar": orjson.dumps(False).decode()}
+        )
         response_dict = self.assert_json_success(result)
 
         (my_user,) = (user for user in response_dict["members"] if user["email"] == hamlet.email)
@@ -2148,11 +2144,10 @@ class GetProfileTest(ZulipTestCase):
     def test_user_email_according_to_email_address_visibility_setting(self) -> None:
         hamlet = self.example_user("hamlet")
 
-        realm = hamlet.realm
-        do_set_realm_property(
-            realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
             acting_user=None,
         )
 
@@ -2163,10 +2158,10 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(result["user"].get("delivery_email"), None)
         self.assertEqual(result["user"].get("email"), f"user{hamlet.id}@zulip.testserver")
 
-        do_set_realm_property(
-            realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
 
@@ -2183,10 +2178,10 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(result["user"].get("delivery_email"), None)
         self.assertEqual(result["user"].get("email"), f"user{hamlet.id}@zulip.testserver")
 
-        do_set_realm_property(
-            realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
             acting_user=None,
         )
 
@@ -2203,10 +2198,10 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(result["user"].get("delivery_email"), None)
         self.assertEqual(result["user"].get("email"), f"user{hamlet.id}@zulip.testserver")
 
-        do_set_realm_property(
-            realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )
 

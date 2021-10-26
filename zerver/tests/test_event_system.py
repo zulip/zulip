@@ -11,7 +11,7 @@ from django.utils.timezone import now as timezone_now
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.message_send import check_send_message
 from zerver.actions.presence import do_update_user_presence
-from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.lib.event_schema import check_restart_event
 from zerver.lib.events import fetch_initial_state_data
@@ -22,11 +22,11 @@ from zerver.lib.test_helpers import (
     HostRequestMock,
     dummy_handler,
     queries_captured,
+    reset_emails_in_zulip_realm,
     stub_event_queue_user_events,
 )
 from zerver.lib.users import get_api_key, get_raw_user_data
 from zerver.models import (
-    Realm,
     UserMessage,
     UserPresence,
     UserProfile,
@@ -443,6 +443,13 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(message["content"], "<p><strong>hello</strong></p>")
         self.assertIn("gravatar.com", message["avatar_url"])
 
+        do_change_user_setting(
+            user_profile,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
+        )
+
         message = get_message(apply_markdown=False, client_gravatar=True)
         self.assertEqual(message["display_recipient"], "Denmark")
         self.assertEqual(message["content"], "**hello**")
@@ -483,63 +490,56 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
     def test_delivery_email_presence_for_non_admins(self) -> None:
         user_profile = self.example_user("aaron")
+        hamlet = self.example_user("hamlet")
         self.assertFalse(user_profile.is_realm_admin)
 
-        do_set_realm_property(
-            user_profile.realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )
         result = fetch_initial_state_data(user_profile)
 
-        for key, value in result["raw_users"].items():
-            if key == user_profile.id:
-                self.assertEqual(value["delivery_email"], user_profile.delivery_email)
-            else:
-                self.assertNotIn("delivery_email", value)
+        (hamlet_obj,) = (value for key, value in result["raw_users"].items() if key == hamlet.id)
+        self.assertNotIn("delivery_email", hamlet_obj)
 
-        do_set_realm_property(
-            user_profile.realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
         result = fetch_initial_state_data(user_profile)
 
-        for key, value in result["raw_users"].items():
-            if key == user_profile.id:
-                self.assertEqual(value["delivery_email"], user_profile.delivery_email)
-            else:
-                self.assertNotIn("delivery_email", value)
+        (hamlet_obj,) = (value for key, value in result["raw_users"].items() if key == hamlet.id)
+        self.assertNotIn("delivery_email", hamlet_obj)
 
     def test_delivery_email_presence_for_admins(self) -> None:
         user_profile = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
         self.assertTrue(user_profile.is_realm_admin)
 
-        do_set_realm_property(
-            user_profile.realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )
         result = fetch_initial_state_data(user_profile)
 
-        for key, value in result["raw_users"].items():
-            if key == user_profile.id:
-                self.assertEqual(value["delivery_email"], user_profile.delivery_email)
-            else:
-                self.assertNotIn("delivery_email", value)
+        (hamlet_obj,) = (value for key, value in result["raw_users"].items() if key == hamlet.id)
+        self.assertNotIn("delivery_email", hamlet_obj)
 
-        do_set_realm_property(
-            user_profile.realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
         result = fetch_initial_state_data(user_profile)
-        for key, value in result["raw_users"].items():
-            self.assertIn("delivery_email", value)
+        (hamlet_obj,) = (value for key, value in result["raw_users"].items() if key == hamlet.id)
+        self.assertIn("delivery_email", hamlet_obj)
 
     def test_user_avatar_url_field_optional(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -574,6 +574,8 @@ class FetchInitialStateDataTest(ZulipTestCase):
             for user_dict in raw_users.values()
             if "avatar_url" in user_dict and "gravatar.com" in user_dict["avatar_url"]
         ]
+
+        reset_emails_in_zulip_realm()
 
         # Test again with client_gravatar = True
         result = fetch_initial_state_data(
@@ -809,6 +811,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                 sender_avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
                 sender_avatar_version=1,
                 sender_is_mirror_dummy=None,
+                sender_email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
                 recipient_type=None,
                 recipient_type_id=None,
             ),

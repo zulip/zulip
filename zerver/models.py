@@ -2065,7 +2065,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         return allowed_bot_types
 
     def email_address_is_realm_public(self) -> bool:
-        if self.realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+        if self.email_address_visibility == UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
             return True
         if self.is_bot:
             return True

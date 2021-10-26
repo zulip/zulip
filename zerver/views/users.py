@@ -89,7 +89,6 @@ from zerver.models import (
     EmailContainsPlusError,
     InvalidFakeEmailDomain,
     Message,
-    Realm,
     Service,
     Stream,
     UserProfile,
@@ -637,10 +636,6 @@ def get_user_data(
     compress very poorly compared to other data.
     """
     realm = user_profile.realm
-    if realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
-        # If email addresses are only available to administrators,
-        # clients cannot compute gravatars, so we force-set it to false.
-        client_gravatar = False
 
     members = get_raw_user_data(
         realm,

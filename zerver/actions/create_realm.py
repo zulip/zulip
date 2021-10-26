@@ -95,8 +95,7 @@ def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
         realm.org_type == Realm.ORG_TYPES["education_nonprofit"]["id"]
         or realm.org_type == Realm.ORG_TYPES["education"]["id"]
     ):
-        # Limit email address visibility and user creation to administrators.
-        realm.email_address_visibility = Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+        # Limit user creation to administrators.
         realm.invite_to_realm_policy = Realm.POLICY_ADMINS_ONLY
         # Restrict public stream creation to staff, but allow private
         # streams (useful for study groups, etc.).
@@ -211,7 +210,19 @@ def do_create_realm(
             event_time=realm.date_created,
         )
 
-        RealmUserDefault.objects.create(realm=realm)
+        realm_default_email_address_visibility = RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+        if (
+            realm.org_type == Realm.ORG_TYPES["education_nonprofit"]["id"]
+            or realm.org_type == Realm.ORG_TYPES["education"]["id"]
+        ):
+            # Email address of users should be initially visible to admins only.
+            realm_default_email_address_visibility = (
+                RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS
+            )
+
+        RealmUserDefault.objects.create(
+            realm=realm, email_address_visibility=realm_default_email_address_visibility
+        )
 
         create_system_user_groups_for_realm(realm)
 

@@ -67,7 +67,10 @@ def bulk_create_users(
                 setattr(profile, settings_name, value)
         profiles_to_create.append(profile)
 
-    if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+    if (
+        realm_user_default.email_address_visibility
+        == RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+    ):
         UserProfile.objects.bulk_create(profiles_to_create)
     else:
         for user_profile in profiles_to_create:

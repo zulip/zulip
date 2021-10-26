@@ -38,7 +38,8 @@ from moto import mock_s3
 from mypy_boto3_s3.service_resource import Bucket
 
 import zerver.lib.upload
-from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.realm_settings import do_set_realm_user_default_setting
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib import cache
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
@@ -49,7 +50,7 @@ from zerver.lib.upload import LocalUploadBackend, S3UploadBackend
 from zerver.models import (
     Client,
     Message,
-    Realm,
+    RealmUserDefault,
     Subscription,
     UserMessage,
     UserProfile,
@@ -194,12 +195,21 @@ def stdout_suppressed() -> Iterator[IO[str]]:
 
 def reset_emails_in_zulip_realm() -> None:
     realm = get_realm("zulip")
-    do_set_realm_property(
-        realm,
+    realm_user_default = RealmUserDefault.objects.get(realm=realm)
+    do_set_realm_user_default_setting(
+        realm_user_default,
         "email_address_visibility",
-        Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+        RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
         acting_user=None,
     )
+    users = UserProfile.objects.filter(realm=realm)
+    for user in users:
+        do_change_user_setting(
+            user,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
+        )
 
 
 def get_test_image_file(filename: str) -> IO[bytes]:

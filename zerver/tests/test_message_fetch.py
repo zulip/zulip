@@ -15,6 +15,7 @@ from analytics.models import RealmCount
 from zerver.actions.message_edit import do_update_message
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.uploads import do_claim_attachments
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.avatar import avatar_url
 from zerver.lib.exceptions import JsonableError
@@ -1680,31 +1681,37 @@ class GetOldMessagesTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
 
-        do_set_realm_property(
-            hamlet.realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )
 
         self.send_personal_message(hamlet, self.example_user("iago"))
 
-        result = self.get_and_check_messages(dict(client_gravatar=orjson.dumps(False).decode()))
+        result = self.get_and_check_messages(
+            dict(anchor="newest", client_gravatar=orjson.dumps(False).decode())
+        )
         message = result["messages"][0]
         self.assertIn("gravatar.com", message["avatar_url"])
 
-        result = self.get_and_check_messages(dict(client_gravatar=orjson.dumps(True).decode()))
+        result = self.get_and_check_messages(
+            dict(anchor="newest", client_gravatar=orjson.dumps(True).decode())
+        )
         message = result["messages"][0]
         self.assertEqual(message["avatar_url"], None)
 
         # Now verify client_gravatar doesn't run with EMAIL_ADDRESS_VISIBILITY_ADMINS
-        do_set_realm_property(
-            hamlet.realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
-        result = self.get_and_check_messages(dict(client_gravatar=orjson.dumps(True).decode()))
+        result = self.get_and_check_messages(
+            dict(anchor="newest", client_gravatar=orjson.dumps(True).decode())
+        )
         message = result["messages"][0]
         self.assertIn("gravatar.com", message["avatar_url"])
 

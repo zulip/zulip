@@ -991,12 +991,10 @@ def get_messages_backend(
 
     assert realm is not None
 
-    if (
-        is_web_public_query
-        or realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
-    ):
-        # If email addresses are only available to administrators,
-        # clients cannot compute gravatars, so we force-set it to false.
+    if is_web_public_query:
+        # client_gravatar here is just the user-requested value. "finalize_payload" function
+        # is responsible for sending avatar_url based on each individual sender's
+        # email_address_visibility setting.
         client_gravatar = False
 
     include_history = ok_to_include_history(narrow, user_profile, is_web_public_query)

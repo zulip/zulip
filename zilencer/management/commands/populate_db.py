@@ -333,6 +333,9 @@ class Command(BaseCommand):
 
             realm_user_default = RealmUserDefault.objects.get(realm=zulip_realm)
             realm_user_default.enter_sends = True
+            realm_user_default.email_address_visibility = (
+                RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS
+            )
             realm_user_default.save()
 
             if options["test_suite"]:

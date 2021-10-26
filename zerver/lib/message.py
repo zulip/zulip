@@ -376,6 +376,13 @@ class MessageDict:
         if not skip_copy:
             obj = copy.copy(obj)
 
+        if obj["sender_email_address_visibility"] != UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+            # If email address of the sender is only available to administrators,
+            # clients cannot compute gravatars, so we force-set it to false.
+            # If we plumbed the current user's role, we could allow client_gravatar=True
+            # here if the current user's role has access to the target user's email address.
+            client_gravatar = False
+
         MessageDict.set_sender_avatar(obj, client_gravatar)
         if apply_markdown:
             obj["content_type"] = "text/html"
@@ -393,6 +400,7 @@ class MessageDict:
         del obj["recipient_type"]
         del obj["recipient_type_id"]
         del obj["sender_is_mirror_dummy"]
+        del obj["sender_email_address_visibility"]
         return obj
 
     @staticmethod
@@ -606,6 +614,7 @@ class MessageDict:
             "avatar_source",
             "avatar_version",
             "is_mirror_dummy",
+            "email_address_visibility",
         )
 
         rows = query_for_ids(query, sender_ids, "zerver_userprofile.id")
@@ -622,6 +631,7 @@ class MessageDict:
             obj["sender_avatar_source"] = user_row["avatar_source"]
             obj["sender_avatar_version"] = user_row["avatar_version"]
             obj["sender_is_mirror_dummy"] = user_row["is_mirror_dummy"]
+            obj["sender_email_address_visibility"] = user_row["email_address_visibility"]
 
     @staticmethod
     def hydrate_recipient_info(obj: Dict[str, Any], display_recipient: DisplayRecipientT) -> None:

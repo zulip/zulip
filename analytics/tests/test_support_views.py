@@ -8,11 +8,8 @@ from django.utils.timezone import now as timezone_now
 from corporate.lib.stripe import add_months, update_sponsorship_status
 from corporate.models import Customer, CustomerPlan, LicenseLedger, get_customer_by_realm
 from zerver.actions.invites import do_create_multiuse_invite_link
-from zerver.actions.realm_settings import (
-    do_change_realm_org_type,
-    do_send_realm_reactivation_email,
-    do_set_realm_property,
-)
+from zerver.actions.realm_settings import do_change_realm_org_type, do_send_realm_reactivation_email
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_emails_in_zulip_realm
 from zerver.models import (
@@ -218,10 +215,10 @@ class TestSupportEndpoint(ZulipTestCase):
 
         self.login("iago")
 
-        do_set_realm_property(
-            get_realm("zulip"),
+        do_change_user_setting(
+            self.example_user("hamlet"),
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
             acting_user=None,
         )
 

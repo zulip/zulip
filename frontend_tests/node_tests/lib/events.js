@@ -530,6 +530,7 @@ exports.fixtures = {
             profile_data: {},
             timezone: "America/New_York",
             date_joined: "2020-01-01",
+            email_address_visibility: 4,
         },
     },
 
