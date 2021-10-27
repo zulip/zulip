@@ -9,8 +9,6 @@ const {page_params} = require("../zjsunit/zpage_params");
 const narrow_state = mock_esm("../../static/js/narrow_state");
 const stream_topic_history_util = mock_esm("../../static/js/stream_topic_history_util");
 
-const settings_config = zrequire("settings_config");
-
 const huddle_data = zrequire("huddle_data");
 
 const stream_data = zrequire("stream_data");
@@ -57,8 +55,6 @@ const example_avatar_url = "http://example.com/example.png";
 function init() {
     page_params.is_admin = true;
     page_params.search_pills_enabled = true;
-    page_params.realm_email_address_visibility =
-        settings_config.email_address_visibility_values.admins_only.code;
 
     people.init();
     people.add_active_user(bob);

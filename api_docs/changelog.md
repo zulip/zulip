@@ -37,6 +37,8 @@ format used by the Zulip server that they are interacting with.
   /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults): Added
   user setting `email_address_visibility`  which will replace the existing realm
   setting `email_address_visibility`.
+* [`POST /register`](/api/register-queue), [`PATCH /realm`]: Removed realm-level
+  `email_address_visibility` setting.
 
 **Feature level 162**
 
