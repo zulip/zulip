@@ -1113,12 +1113,14 @@ body.night-mode {
                 border-color: hsl(185, 40%, 40%);
                 background-color: hsl(185, 20%, 20%);
             }
+
             &:focus {
                 color: hsl(185, 50%, 65%);
                 border-color: hsl(185, 40%, 50%);
                 background-color: hsl(185, 40%, 35%);
             }
         }
+
         .poll-names {
             color: hsl(236, 15%, 70%);
         }

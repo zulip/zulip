@@ -69,11 +69,13 @@
         &:hover {
             border-color: hsl(156, 30%, 50%);
         }
+
         &:focus {
             outline: 0;
             background-color: hsl(156, 41%, 90%);
         }
     }
+
     .poll-names {
         color: hsl(0, 0%, 45%);
         padding-left: 4px;
