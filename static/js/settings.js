@@ -104,6 +104,7 @@ export function build_page() {
         send_read_receipts_tooltip: $t({
             defaultMessage: "Read receipts are currently disabled in this organization.",
         }),
+        email_address_visibility_values: settings_config.email_address_visibility_values,
     });
 
     $(".settings-box").html(rendered_settings_tab);

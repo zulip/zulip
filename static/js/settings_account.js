@@ -792,4 +792,20 @@ export function set_up() {
             $("#account-settings .privacy-setting-status").expectOne(),
         );
     });
+
+    $("#user_email_address_visibility").val(user_settings.email_address_visibility);
+
+    $("#user_email_address_visibility").on("change", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const data = {email_address_visibility: this.value};
+
+        settings_ui.do_settings_change(
+            channel.patch,
+            "/json/settings",
+            data,
+            $("#account-settings .privacy-setting-status").expectOne(),
+        );
+    });
 }

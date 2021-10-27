@@ -27,6 +27,16 @@
           label=settings_label.realm_send_read_receipts
           prefix="realm_"
           help_link="/help/read-receipts"}}
+
+        <div class="input-group">
+            <label for="email_address_visibility" class="dropdown-title">{{t "Who can access user's email address" }}
+                {{> ../help_link_widget link="/help/restrict-visibility-of-email-addresses" }}
+            </label>
+            <select name="email_address_visibility" class="email_address_visibility prop-element" data-setting-widget-type="number"
+              id="realm_email_address_visibility">
+                {{> dropdown_options_widget option_values=email_address_visibility_values}}
+            </select>
+        </div>
     </div>
 
     <div class="form-horizontal other_settings org-subsection-parent">
