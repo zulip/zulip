@@ -128,9 +128,6 @@ def update_realm(
     wildcard_mention_policy: Optional[int] = REQ(
         json_validator=check_int_in(Realm.WILDCARD_MENTION_POLICY_TYPES), default=None
     ),
-    email_address_visibility: Optional[int] = REQ(
-        json_validator=check_int_in(Realm.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None
-    ),
     video_chat_provider: Optional[int] = REQ(json_validator=check_int, default=None),
     giphy_rating: Optional[int] = REQ(json_validator=check_int, default=None),
     default_code_block_language: Optional[str] = REQ(default=None),

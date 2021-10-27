@@ -99,8 +99,6 @@ function createSaveButtons(subsection) {
 function test_submit_settings_form(override, submit_form) {
     Object.assign(page_params, {
         realm_bot_creation_policy: settings_bots.bot_creation_policy_values.restricted.code,
-        realm_email_address_visibility:
-            settings_config.email_address_visibility_values.admins_only.code,
         realm_add_custom_emoji_policy: settings_config.common_policy_values.by_admins_only.code,
         realm_waiting_period_threshold: 1,
         realm_default_language: '"es"',
@@ -158,10 +156,6 @@ function test_submit_settings_form(override, submit_form) {
     $bot_creation_policy_elem.val("1");
     $bot_creation_policy_elem.attr("id", "id_realm_bot_creation_policy");
     $bot_creation_policy_elem.data = () => "number";
-    const $email_address_visibility_elem = $("#id_realm_email_address_visibility");
-    $email_address_visibility_elem.val("1");
-    $email_address_visibility_elem.attr("id", "id_realm_email_address_visibility");
-    $email_address_visibility_elem.data = () => "number";
 
     const $invite_to_realm_policy_elem = $("#id_realm_invite_to_realm_policy");
     $invite_to_realm_policy_elem.val("2");
@@ -172,7 +166,6 @@ function test_submit_settings_form(override, submit_form) {
     $subsection_elem.closest = () => $subsection_elem;
     $subsection_elem.set_find_results(".prop-element", [
         $bot_creation_policy_elem,
-        $email_address_visibility_elem,
         $add_custom_emoji_policy_elem,
         $create_public_stream_policy_elem,
         $create_private_stream_policy_elem,
@@ -188,7 +181,6 @@ function test_submit_settings_form(override, submit_form) {
         bot_creation_policy: 1,
         invite_to_realm_policy: 2,
         invite_to_stream_policy: 1,
-        email_address_visibility: 1,
         add_custom_emoji_policy: 1,
         create_public_stream_policy: 2,
         create_private_stream_policy: 2,

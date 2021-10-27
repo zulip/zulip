@@ -430,26 +430,6 @@ class Realm(models.Model):
         WILDCARD_MENTION_POLICY_MODERATORS,
     ]
 
-    # Who in the organization has access to users' actual email
-    # addresses.  Controls whether the UserProfile.email field is the
-    # same as UserProfile.delivery_email, or is instead garbage.
-    EMAIL_ADDRESS_VISIBILITY_EVERYONE = 1
-    EMAIL_ADDRESS_VISIBILITY_MEMBERS = 2
-    EMAIL_ADDRESS_VISIBILITY_ADMINS = 3
-    EMAIL_ADDRESS_VISIBILITY_NOBODY = 4
-    EMAIL_ADDRESS_VISIBILITY_MODERATORS = 5
-    email_address_visibility: int = models.PositiveSmallIntegerField(
-        default=EMAIL_ADDRESS_VISIBILITY_EVERYONE,
-    )
-    EMAIL_ADDRESS_VISIBILITY_TYPES = [
-        EMAIL_ADDRESS_VISIBILITY_EVERYONE,
-        # The MEMBERS level is not yet implemented on the backend.
-        ## EMAIL_ADDRESS_VISIBILITY_MEMBERS,
-        EMAIL_ADDRESS_VISIBILITY_ADMINS,
-        EMAIL_ADDRESS_VISIBILITY_NOBODY,
-        EMAIL_ADDRESS_VISIBILITY_MODERATORS,
-    ]
-
     # Threshold in days for new users to create streams, and potentially take
     # some other actions.
     waiting_period_threshold: int = models.PositiveIntegerField(default=0)
@@ -704,7 +684,6 @@ class Realm(models.Model):
         digest_emails_enabled=bool,
         digest_weekday=int,
         disallow_disposable_email_addresses=bool,
-        email_address_visibility=int,
         email_changes_disabled=bool,
         emails_restricted_to_domains=bool,
         enable_read_receipts=bool,

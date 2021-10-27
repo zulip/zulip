@@ -105,7 +105,6 @@ function make_image_stubber() {
 function test_ui(label, f) {
     run_test(label, (handlers) => {
         page_params.is_admin = false;
-        page_params.realm_email_address_visibility = 3;
         page_params.custom_profile_fields = [];
         popovers.clear_for_testing();
         popovers.register_click_handlers();

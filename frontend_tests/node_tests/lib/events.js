@@ -280,13 +280,6 @@ exports.fixtures = {
         value: false,
     },
 
-    realm__update__email_addresses_visibility: {
-        type: "realm",
-        op: "update",
-        property: "email_address_visibility",
-        value: 3,
-    },
-
     realm__update__emails_restricted_to_domains: {
         type: "realm",
         op: "update",

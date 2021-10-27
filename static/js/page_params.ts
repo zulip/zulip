@@ -21,7 +21,6 @@ export const page_params: {
     realm_create_web_public_stream_policy: number;
     realm_delete_own_message_policy: number;
     realm_edit_topic_policy: number;
-    realm_email_address_visibility: number;
     realm_enable_spectator_access: boolean;
     realm_invite_to_realm_policy: number;
     realm_invite_to_stream_policy: number;

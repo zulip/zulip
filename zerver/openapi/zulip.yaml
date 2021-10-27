@@ -3810,6 +3810,12 @@ paths:
                                 Unlike the simpler [realm/update](#realm-update) event format, this
                                 event type supports multiple properties being changed in a
                                 single event.
+
+                                **Changes**: The `email_address_visibility` setting was removed in Zulip 6.0 (feature level 146).
+                                It was replaced by a [user setting](/api/update-settings) with a
+                                [realm user default](/api/update-realm-user-settings-defaults), with the encoding of different
+                                values preserved. Clients can support all versions by supporting the current API and treating
+                                every user as having the realm's email address visibility value.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -3942,21 +3948,6 @@ paths:
 
                                         [permission-level]: /api/roles-and-permissions#permission-levels
                                         [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
-                                    email_address_visibility:
-                                      type: integer
-                                      description: |
-                                        The [policy][permission-level] for which users in this organization can see
-                                        the real email addresses of other users.
-
-                                        - 1 = Everyone
-                                        - 2 = Members only
-                                        - 3 = Administrators only
-                                        - 4 = Nobody (though note that administrators can change this setting)
-                                        - 5 = Moderators only
-
-                                        **Changes**: Nobody added as an option in Zulip 3.0 (feature level 1).
-
-                                        [permission-level]: /api/roles-and-permissions#permission-levels
                                     email_changes_disabled:
                                       type: boolean
                                       description: |
@@ -9590,6 +9581,12 @@ paths:
         if you need deeper details about how the Zulip event queue system
         works, avoids clients needing to worry about large classes of
         potentially messy races, etc.
+
+        **Changes**: The `email_address_visibility` setting was removed in Zulip 6.0 (feature level 146).
+        It was replaced by a [user setting](/api/update-settings) with a
+        [realm user default](/api/update-realm-user-settings-defaults), with the encoding of different
+        values preserved. Clients can support all versions by supporting the current API and treating
+        every user as having the realm's email address visibility value.
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -11587,23 +11584,6 @@ paths:
 
                           Whether the organization disallows disposable email
                           addresses.
-                      realm_email_address_visibility:
-                        type: integer
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          The [policy][permission-level] for which users in this organization can see
-                          the real email addresses of other users.
-
-                          - 1 = Everyone
-                          - 2 = Members only
-                          - 3 = Administrators only
-                          - 4 = Nobody (though note that administrators can change this setting)
-                          - 5 = Moderators only
-
-                          **Changes**: Nobody added as an option in Zulip 3.0 (feature level 1).
-
-                          [permission-level]: /api/roles-and-permissions#permission-levels
                       realm_email_changes_disabled:
                         type: boolean
                         description: |

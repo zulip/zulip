@@ -316,7 +316,6 @@ class Command(BaseCommand):
                 string_id="zulip",
                 name="Zulip Dev",
                 emails_restricted_to_domains=False,
-                email_address_visibility=Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
                 description="The Zulip development environment default organization."
                 "  It's great for testing!",
                 invite_required=False,

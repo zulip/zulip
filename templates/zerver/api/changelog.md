@@ -38,6 +38,8 @@ format used by the Zulip server that they are interacting with.
 * [`GET /events`](/api/get-events): Event for updating `delivery_email`  is now sent to
   all users who have access to it and is also sent when `email_address_visibility` setting
   changes.
+* [`POST /register`](/api/register-queue), [`PATCH /realm`]: Removed realm-level
+  `email_address_visibility` setting.
 
 **Feature level 145**
 

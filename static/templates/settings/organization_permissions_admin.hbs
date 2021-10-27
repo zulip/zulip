@@ -81,14 +81,6 @@
                   is_checked=realm_avatar_changes_disabled
                   label=admin_settings_label.realm_avatar_changes_disabled}}
             </div>
-            <div class="input-group">
-                <label for="realm_email_address_visibility">{{t "Who can access user email addresses" }}
-                    {{> ../help_link_widget link="/help/restrict-visibility-of-email-addresses" }}
-                </label>
-                <select name="realm_email_address_visibility" class="setting-widget prop-element" id="id_realm_email_address_visibility" data-setting-widget-type="number">
-                    {{> dropdown_options_widget option_values=email_address_visibility_values}}
-                </select>
-            </div>
         </div>
 
         <div id="org-stream-permissions" class="org-subsection-parent">

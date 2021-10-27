@@ -2508,7 +2508,6 @@ class RealmPropertyActionTest(BaseAction):
             private_message_policy=Realm.PRIVATE_MESSAGE_POLICY_TYPES,
             user_group_edit_policy=Realm.COMMON_POLICY_TYPES,
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
-            email_address_visibility=Realm.EMAIL_ADDRESS_VISIBILITY_TYPES,
             bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,
             video_chat_provider=[
                 Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"],
@@ -2547,12 +2546,6 @@ class RealmPropertyActionTest(BaseAction):
             state_change_expected = True
             old_value = vals[count]
             num_events = 1
-            if name == "email_address_visibility" and Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE in [
-                old_value,
-                val,
-            ]:
-                # email update event is sent for each user.
-                num_events = 11
 
             events = self.verify_action(
                 lambda: do_set_realm_property(
@@ -2579,12 +2572,6 @@ class RealmPropertyActionTest(BaseAction):
                 1,
             )
             check_realm_update("events[0]", events[0], name)
-
-            if name == "email_address_visibility" and Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE in [
-                old_value,
-                val,
-            ]:
-                check_realm_user_update("events[1]", events[1], "email")
 
     def test_change_realm_property(self) -> None:
         for prop in Realm.property_types:

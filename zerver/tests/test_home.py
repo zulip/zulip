@@ -133,7 +133,6 @@ class HomeTest(ZulipTestCase):
         "realm_disallow_disposable_email_addresses",
         "realm_domains",
         "realm_edit_topic_policy",
-        "realm_email_address_visibility",
         "realm_email_auth_enabled",
         "realm_email_changes_disabled",
         "realm_emails_restricted_to_domains",

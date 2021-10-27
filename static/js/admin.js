@@ -213,7 +213,6 @@ export function build_page() {
     insert_tip_box();
 
     $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);
-    $("#id_realm_email_address_visibility").val(page_params.realm_email_address_visibility);
 
     $("#id_realm_digest_weekday").val(options.realm_digest_weekday);
 }

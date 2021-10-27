@@ -106,8 +106,6 @@ function test(label, f) {
         people.clear_recipient_counts_for_testing();
         page_params.is_admin = false;
         page_params.realm_is_zephyr_mirror_realm = false;
-        page_params.realm_email_address_visibility =
-            settings_config.email_address_visibility_values.admins_only.code;
 
         f(helpers);
     });

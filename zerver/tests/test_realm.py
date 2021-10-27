@@ -591,7 +591,6 @@ class RealmTest(ZulipTestCase):
             create_private_stream_policy=10,
             create_web_public_stream_policy=10,
             invite_to_stream_policy=10,
-            email_address_visibility=10,
             message_retention_days=10,
             video_chat_provider=10,
             giphy_rating=10,
@@ -830,7 +829,6 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.string_id, "realm_string_id")
         self.assertEqual(realm.name, "realm name")
         self.assertFalse(realm.emails_restricted_to_domains)
-        self.assertEqual(realm.email_address_visibility, Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
         self.assertEqual(realm.description, "")
         self.assertTrue(realm.invite_required)
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_LIMITED)
@@ -860,7 +858,6 @@ class RealmTest(ZulipTestCase):
             "realm name",
             emails_restricted_to_domains=True,
             date_created=date_created,
-            email_address_visibility=Realm.EMAIL_ADDRESS_VISIBILITY_MEMBERS,
             description="realm description",
             invite_required=False,
             plan_type=Realm.PLAN_TYPE_STANDARD_FREE,
@@ -869,7 +866,6 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.string_id, "realm_string_id")
         self.assertEqual(realm.name, "realm name")
         self.assertTrue(realm.emails_restricted_to_domains)
-        self.assertEqual(realm.email_address_visibility, Realm.EMAIL_ADDRESS_VISIBILITY_MEMBERS)
         self.assertEqual(realm.description, "realm description")
         self.assertFalse(realm.invite_required)
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD_FREE)
@@ -1124,7 +1120,6 @@ class RealmAPITest(ZulipTestCase):
             invite_to_stream_policy=Realm.COMMON_POLICY_TYPES,
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
             bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,
-            email_address_visibility=Realm.EMAIL_ADDRESS_VISIBILITY_TYPES,
             video_chat_provider=[
                 dict(
                     video_chat_provider=orjson.dumps(
