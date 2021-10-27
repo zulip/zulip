@@ -452,6 +452,7 @@ $category-text: hsl(219, 23%, 33%);
                 flex-wrap: wrap;
                 width: 170px;
                 margin-left: 40px;
+                justify-content: center;
             }
         }
     }
