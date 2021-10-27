@@ -12,13 +12,7 @@ from confirmation.models import Confirmation, create_confirmation_link, generate
 from zerver.actions.custom_profile_fields import do_remove_realm_custom_profile_fields
 from zerver.actions.message_delete import do_delete_messages_by_sender
 from zerver.actions.user_groups import update_users_in_full_members_system_group
-from zerver.actions.user_settings import (
-    do_delete_avatar_image,
-    send_delivery_email_update_events,
-    send_user_email_update_event,
-)
-from zerver.lib.cache import flush_user_profile
-from zerver.lib.create_user import get_display_email_address
+from zerver.actions.user_settings import do_delete_avatar_image
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
 from zerver.lib.send_email import FromAddress, send_email_to_admins
 from zerver.lib.sessions import delete_user_sessions
@@ -97,30 +91,6 @@ def do_set_realm_property(
             }
         ).decode(),
     )
-
-    if name == "email_address_visibility":
-        user_profiles = UserProfile.objects.filter(realm=realm, is_bot=False)
-
-        for user_profile in user_profiles:
-            send_delivery_email_update_events(user_profile, old_value, value)
-
-        if Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE not in [old_value, value]:
-            # We use real email addresses on UserProfile.email only if
-            # EMAIL_ADDRESS_VISIBILITY_EVERYONE is configured, so
-            # changes between values that will not require changing
-            # that field, so we can save work and return here.
-            return
-
-        for user_profile in user_profiles:
-            user_profile.email = get_display_email_address(user_profile)
-        UserProfile.objects.bulk_update(user_profiles, ["email"])
-
-        for user_profile in user_profiles:
-            transaction.on_commit(
-                lambda: flush_user_profile(sender=UserProfile, instance=user_profile)
-            )
-            # TODO: Design a bulk event for this or force-reload all clients
-            send_user_email_update_event(user_profile)
 
     if name == "waiting_period_threshold":
         update_users_in_full_members_system_group(realm, acting_user=acting_user)

@@ -16,13 +16,6 @@ const message_user_ids = mock_esm("../../static/js/message_user_ids");
 
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
-const settings_config = zrequire("settings_config");
-const visibility = settings_config.email_address_visibility_values;
-const admins_only = visibility.admins_only.code;
-
-function set_email_visibility(code) {
-    page_params.realm_email_address_visibility = code;
-}
 
 const welcome_bot = {
     email: "welcome-bot@example.com",
@@ -56,7 +49,6 @@ function initialize() {
     people.init();
     people.add_active_user({...me});
     people.initialize_current_user(me.user_id);
-    set_email_visibility(admins_only);
     muted_users.set_muted_users([]);
 }
 
