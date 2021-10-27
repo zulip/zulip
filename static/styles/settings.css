@@ -1483,7 +1483,9 @@ $option_title_width: 180px;
 #id_realm_delete_own_message_policy,
 #id_realm_message_content_delete_limit_seconds,
 #id_realm_move_messages_within_stream_limit_seconds,
-#id_realm_move_messages_between_streams_limit_seconds {
+#id_realm_move_messages_between_streams_limit_seconds,
+#user_email_address_visibility,
+#realm_email_address_visibility {
     width: 325px;
 }
 

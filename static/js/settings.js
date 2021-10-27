@@ -107,6 +107,7 @@ export function build_page() {
             defaultMessage: "Read receipts are currently disabled in this organization.",
         }),
         user_is_only_organization_owner: people.is_current_user_only_owner(),
+        email_address_visibility_values: settings_config.email_address_visibility_values,
     });
 
     $(".settings-box").html(rendered_settings_tab);
