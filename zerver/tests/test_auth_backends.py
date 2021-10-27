@@ -2048,7 +2048,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
         self.assert_logged_in_user_id(hamlet.id)
         with self.assertLogs("zulip.auth.saml") as mock_logger:
-            result = self.make_idp_initiated_logout_request("nonexistant@zulip.com")
+            result = self.make_idp_initiated_logout_request("nonexistent@zulip.com")
         self.assert_logged_in_user_id(hamlet.id)
 
         self.assertEqual(
