@@ -32,7 +32,7 @@ tar -xf zulip-server-latest.tar.gz
 ## Step 2: Install Zulip
 
 To set up Zulip with the most common configuration,
-you can run the installer as follows:
+run the installer as follows:
 
 ```bash
 sudo -s  # If not already root
@@ -65,7 +65,7 @@ consult [Troubleshooting](#troubleshooting) below.
   If you'd prefer to acquire an SSL certificate yourself in any other way,
   it's easy to [provide it to Zulip][doc-ssl-manual].
 
-You can see the more advanced installer options
+Advanced installer options are explained
 in our [deployment options][doc-deployment-options] documentation.
 
 [doc-settings]: ../production/settings.md
