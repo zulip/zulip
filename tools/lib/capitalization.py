@@ -72,6 +72,7 @@ IGNORED_PHRASES = [
     r".zuliprc",
     r"__\w+\.\w+__",
     # Things using "I"
+    r"I understand",
     r"I say",
     r"I want",
     r"I'm",
