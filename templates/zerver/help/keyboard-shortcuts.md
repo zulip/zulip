@@ -45,7 +45,7 @@ below, and add more to your repertoire as needed.
   [if enabled][disable-escape])
   until you are in the [default view](/help/configure-default-view).
 
-[disable-escape]: configure-default-view#disable-escape-key-navigation-to-default-view
+[disable-escape]: /help/configure-default-view#set-whether-esc-navigates-to-the-default-view
 ## Navigation
 
 * **Search messages**: `/` or `Ctrl+k`
