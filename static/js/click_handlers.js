@@ -124,6 +124,11 @@ export function initialize() {
             return true;
         }
 
+        // Button to expand or condense long messages.
+        if (target.is("button.message_expander") || target.is("button.message_condenser")) {
+            return true;
+        }
+
         // Inline image and twitter previews.
         if (target.is("img.message_inline_image") || target.is("img.twitter-avatar")) {
             return true;

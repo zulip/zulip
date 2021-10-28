@@ -192,6 +192,13 @@ body.night-mode {
         background-color: hsl(208, 17%, 29%);
     }
 
+    .private-message .expand_condense_buttons_wrapper {
+        .message_expander,
+        .message_condenser {
+            background-color: hsl(208, 17%, 29%);
+        }
+    }
+
     /* do not turn the .message_header .stream_label text dark on hover because they're
        on a dark background, and don't change the dark labels dark either. */
     .message_header:not(.dark_background)
@@ -296,6 +303,13 @@ body.night-mode {
         .emoji-popover-category-tabs
         .emoji-popover-tab-item.active {
         background-color: hsla(0, 0%, 0%, 0.5);
+    }
+
+    .expand_condense_buttons_wrapper {
+        .message_expander,
+        .message_condenser {
+            background-color: hsl(212, 28%, 18%);
+        }
     }
 
     .new-style .tab-switcher .ind-tab.selected,

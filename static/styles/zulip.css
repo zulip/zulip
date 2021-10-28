@@ -1196,6 +1196,13 @@ td.pointer {
     /* Base color backgrounds for messageboxes,
        private messages, mentions, and unread messages */
 
+    .expand_condense_buttons_wrapper {
+        .message_expander,
+        .message_condenser {
+            background-color: hsl(192deg 20% 95%);
+        }
+    }
+
     .message-header-contents {
         background-color: hsla(192, 19%, 75%, 0.2);
         box-shadow: inset 1px 1px 0 hsl(0, 0%, 88%);
@@ -1437,6 +1444,12 @@ div.focused_table {
     display: block;
     position: relative;
     overflow: hidden;
+    /* We are using very high value here to imitate an infinite value so that
+    we can enable collapse/expand animation. */
+    max-height: 1000vh;
+    transition: max-height 0.5s ease-in-out, mask-size 0.3s ease-in-out;
+    mask-image: none;
+    mask-size: 200% 200%;
 
     &:empty {
         display: none;
@@ -1446,12 +1459,22 @@ div.focused_table {
         max-height: 8.5em;
         min-height: 0;
         overflow: hidden;
+        mask-image: linear-gradient(to bottom, hsl(0, 0%, 100%), transparent);
+        mask-size: 60% 101%;
+
+        ~ .expand_condense_buttons_wrapper {
+            margin: -20px 0 20px;
+        }
     }
 
     &.collapsed {
         max-height: 0;
         min-height: 0;
         overflow: hidden;
+
+        ~ .expand_condense_buttons_wrapper {
+            margin: 12px 0;
+        }
     }
 }
 
@@ -1606,19 +1629,30 @@ div.focused_table {
     }
 }
 
-.message_length_controller {
+.topic_move_breadcrumb_messages {
+    margin-top: 10px !important;
+}
+
+.expand_condense_buttons_wrapper {
     display: none;
-    text-align: center;
-    color: hsl(200, 100%, 40%);
+    height: 25px;
+    position: relative;
+    margin: 12px;
+    transition: margin-top 0.5s ease-in-out, margin-bottom 0.5s ease-in-out;
 
-    /* to match .message_content */
-    margin-left: 5px;
-    margin-right: 35px;
-    /* to make message-uncollapse easier */
-    margin-top: 10px;
-
-    &:hover {
-        text-decoration: underline;
+    .message_expander,
+    .message_condenser {
+        display: none;
+        position: absolute;
+        left: 50%;
+        text-align: center;
+        color: inherit;
+        background-color: hsl(0, 0%, 100%);
+        width: 100px;
+        border-radius: 10px;
+        border: solid 1px hsl(215deg 47% 50%);
+        font-size: 13px;
+        font-weight: 400;
     }
 }
 
