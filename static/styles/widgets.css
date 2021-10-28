@@ -109,7 +109,6 @@ button {
         border-radius: 3px;
         border: 1px solid hsl(0, 0%, 80%);
         background-color: hsl(0, 0%, 100%);
-        width: 100px;
 
         &:hover {
             border-color: hsl(0, 0%, 60%);
