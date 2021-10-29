@@ -1478,40 +1478,6 @@ input[type="checkbox"] {
         }
     }
 
-    .custom_user_field {
-        padding-bottom: 20px;
-
-        textarea {
-            width: 320px;
-            height: 80px;
-        }
-
-        &:hover .remove_date {
-            display: inline-flex;
-        }
-
-        .remove_date {
-            opacity: 0.5;
-            display: none;
-            cursor: pointer;
-            position: relative;
-            top: 2px;
-            left: -20px;
-
-            &:hover {
-                opacity: 1;
-            }
-        }
-
-        .datepicker {
-            cursor: default;
-        }
-
-        .person_picker {
-            min-width: 206px;
-        }
-    }
-
     .content-wrapper {
         position: absolute;
         left: 251px;
@@ -1562,8 +1528,42 @@ input[type="checkbox"] {
         cursor: default;
     }
 
-    .custom_user_field .field_hint {
-        color: hsl(0, 0%, 67%);
+    .custom_user_field {
+        padding-bottom: 20px;
+
+        .field_hint {
+            color: hsl(0, 0%, 67%);
+        }
+
+        textarea {
+            width: 320px;
+            height: 80px;
+        }
+
+        &:hover .remove_date {
+            display: inline-flex;
+        }
+
+        .remove_date {
+            opacity: 0.5;
+            display: none;
+            cursor: pointer;
+            position: relative;
+            top: 2px;
+            left: -20px;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+
+        .datepicker {
+            cursor: default;
+        }
+
+        .person_picker {
+            min-width: 206px;
+        }
     }
 
     #show_my_user_profile_modal {
@@ -1942,8 +1942,11 @@ input[type="checkbox"] {
         margin-top: 5px;
     }
 
-    #settings_page .custom_user_field textarea {
-        width: calc(100% - 25px);
+    #settings_page,
+    #edit-user-form {
+        .custom_user_field textarea {
+            width: calc(100% - 25px);
+        }
     }
 }
 
