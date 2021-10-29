@@ -610,7 +610,6 @@ def get_subscribers(client: Client) -> None:
     # {code_example|start}
     # Get the subscribers to a stream
     result = client.get_subscribers(stream="new stream")
-    print(result)
     # {code_example|end}
     assert result["subscribers"] == [11, 26]
 
