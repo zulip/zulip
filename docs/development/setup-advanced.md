@@ -58,36 +58,44 @@ ignoring the parts about `vagrant` (since you're not using it).
 ## Installing directly on Windows 10 with WSL 2
 
 Zulip's development environment is most easily set up on Windows using
-the [WSL 2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about)
+the Windows Subsystem for Linux ([WSL
+2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about))
 installation method described here.
 
-1. Install WSL 2 by following the instructions provided by Microsoft
-   [here](https://docs.microsoft.com/en-us/windows/wsl/install).
+1. Enable virtualization through your BIOS settings. This sequence
+   depends on your specific hardware and brand, but here are [some
+   basic instructions.][windows-bios-virtualization]
 
-1. Install the `Ubuntu 18.04` Linux distribution from the Microsoft
-   Store.
+1. [Install WSL 2](https://docs.microsoft.com/en-us/windows/wsl/setup/environment).
 
-1. Launch the `Ubuntu 18.04` shell and run the following commands:
+1. Launch the Ubuntu shell as an administrator and run the following command:
 
    ```bash
    sudo apt update && sudo apt upgrade
+   ```
+
+1. Install dependencies with the following command:
+
+   ```bash
    sudo apt install rabbitmq-server memcached redis-server postgresql
    ```
 
 1. Open `/etc/rabbitmq/rabbitmq-env.conf` using e.g.:
 
    ```bash
-   sudo vim /etc/rabbitmq/rabbitmq-env.conf
+   sudo nano /etc/rabbitmq/rabbitmq-env.conf
    ```
 
-   Add the following lines at the end of your file and save:
+   Confirm the following lines are at the end of your file, and add
+   them if not present. Then save your changes (`Ctrl+O`, then `Enter`
+   to confirm the path), and exit `nano` (`Ctrl+X`).
 
    ```ini
    NODE_IP_ADDRESS=127.0.0.1
    NODE_PORT=5672
    ```
 
-1. Make sure you are inside the WSL disk and not in a Windows mounted disk.
+1. Run the command below to make sure you are inside the WSL disk and not in a Windows mounted disk.
    You will run into permission issues if you run `provision` from `zulip`
    in a Windows mounted disk.
 
@@ -95,8 +103,15 @@ installation method described here.
    cd ~  # or cd /home/USERNAME
    ```
 
-1. [Clone your fork of the Zulip repository][zulip-rtd-git-cloning]
-   and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
+1. [Create your fork](../git/cloning.html#step-1a-create-your-fork) of
+   the [Zulip server repository](https://github.com/zulip/zulip).
+
+1. [Create a new SSH key][create-ssh-key] for the WSL-2 Virtual
+   Machine and add it to your GitHub account. Note that SSH keys
+   linked to your Windows computer will not work within the virtual
+   machine.
+
+1. Clone and connect to the Zulip upstream repository:
 
    ```bash
    git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git ~/zulip
@@ -105,8 +120,7 @@ installation method described here.
    ```
 
 1. Run the following to install the Zulip development environment and
-   start it (click `Allow access` if you get popups for Windows Firewall
-   blocking some services)
+   start it. (If Windows Firewall creates popups to block services, simply click `Allow Access`.)
 
    ```bash
    # Start database, cache, and other services
@@ -127,17 +141,26 @@ installation method described here.
 1. If you are facing problems or you see error messages after running `./tools/run-dev.py`,
    you can try running `./tools/provision` again.
 
-1. [Visual Studio Code Remote - WSL](https://code.visualstudio.com/docs/remote/wsl) is
-   recommended for editing files when developing with WSL.
+1. The [Visual Studio Code Remote -
+   WSL](https://code.visualstudio.com/docs/remote/wsl) extension is
+   recommended for editing files when developing with WSL. When you
+   have it installed, you can run:
+
+   ```bash
+   code .
+   ```
+
+   to open VSCode connected to your WSL environment.
 
 1. You're done! You can pick up the [documentation on using the
-   Zulip development
-   environment](../development/setup-vagrant.html#step-4-developing),
+   Zulip development environment](../development/setup-vagrant.html#step-4-developing),
    ignoring the parts about `vagrant` (since you're not using it).
 
 WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
 
+[create-ssh-key]: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account
 [uninstall-wsl]: https://docs.microsoft.com/en-us/windows/wsl/faq#how-do-i-uninstall-a-wsl-distribution-
+[windows-bios-virtualization]: https://www.thewindowsclub.com/disable-hardware-virtualization-in-windows-10
 
 ## Using the Vagrant Hyper-V provider on Windows (beta)
 
