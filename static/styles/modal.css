@@ -111,18 +111,12 @@
     appearance: button;
     text-transform: none;
     overflow: visible;
-    outline: none !important;
     line-height: 1.15;
     margin: 0;
     will-change: transform;
     backface-visibility: hidden;
     transform: translateZ(0);
     transition: transform 0.25s ease-out;
-
-    &:focus {
-        box-shadow: hsl(198, 76%, 47%) 0 0 0 1px,
-            hsla(198, 76%, 47%, 0.3) 0 0 0 5px;
-    }
 }
 
 .modal__btn:focus,
