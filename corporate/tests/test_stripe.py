@@ -300,6 +300,7 @@ MOCKED_STRIPE_FUNCTION_NAMES = [
         "Coupon.create",
         "Customer.create",
         "Customer.create_balance_transaction",
+        "Customer.list_balance_transactions",
         "Customer.retrieve",
         "Customer.save",
         "Invoice.create",
@@ -2982,7 +2983,8 @@ class StripeTest(StripeTestCase):
 
     @mock_stripe()
     def test_switch_realm_from_standard_to_plus_plan(self, *mock: Mock) -> None:
-        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        realm = iago.realm
 
         # Test upgrading to Plus when realm has no Standard subscription
         with self.assertRaises(BillingError) as billing_context:
@@ -3002,12 +3004,28 @@ class StripeTest(StripeTestCase):
             "Organization missing Stripe customer.", billing_context.exception.error_description
         )
 
-        plan.customer.stripe_customer_id = "cus_12345"
-        plan.customer.save(update_fields=["stripe_customer_id"])
-        plan.price_per_license = get_price_per_license(CustomerPlan.STANDARD, CustomerPlan.MONTHLY)
-        plan.automanage_licenses = True
+        king = self.lear_user("king")
+        realm = king.realm
+        customer = update_or_create_stripe_customer(king)
+        plan = CustomerPlan.objects.create(
+            customer=customer,
+            automanage_licenses=True,
+            billing_cycle_anchor=timezone_now(),
+            billing_schedule=CustomerPlan.MONTHLY,
+            tier=CustomerPlan.STANDARD,
+        )
+        ledger = LicenseLedger.objects.create(
+            plan=plan,
+            is_renewal=True,
+            event_time=timezone_now(),
+            licenses=9,
+            licenses_at_next_renewal=9,
+        )
+        realm.plan_type = Realm.PLAN_TYPE_STANDARD
+        realm.save(update_fields=["plan_type"])
         plan.invoiced_through = ledger
-        plan.save(update_fields=["price_per_license", "automanage_licenses", "invoiced_through"])
+        plan.price_per_license = get_price_per_license(CustomerPlan.STANDARD, CustomerPlan.MONTHLY)
+        plan.save(update_fields=["invoiced_through", "price_per_license"])
 
         switch_realm_from_standard_to_plus_plan(realm)
 
@@ -3017,6 +3035,29 @@ class StripeTest(StripeTestCase):
         assert plus_plan is not None
         self.assertEqual(plus_plan.tier, CustomerPlan.PLUS)
         self.assertEqual(LicenseLedger.objects.filter(plan=plus_plan).count(), 1)
+
+        # There are 9 licenses and the realm is on the Standard monthly plan.
+        # Therefore, the customer has already paid 800 * 9 = 7200 = $72 for
+        # the month. Once they upgrade to Plus, the new price for their 9
+        # licenses will be 1600 * 9 = 14400 = $144. Since the customer has
+        # already paid $72 for a month, -7200 = -$72 will be credited to the
+        # customer's balance.
+        stripe_customer_id = customer.stripe_customer_id
+        assert stripe_customer_id is not None
+        _, cb_txn = stripe.Customer.list_balance_transactions(  # type: ignore[attr-defined] # mypy seems to incorrectly think that this function doesn't exist
+            stripe_customer_id
+        )
+        self.assertEqual(cb_txn.amount, -7200)
+        self.assertEqual(
+            cb_txn.description,
+            "Credit from early termination of Standard plan",
+        )
+        self.assertEqual(cb_txn.type, "adjustment")
+
+        # The customer now only pays the difference 14400 - 7200 = 7200 = $72,
+        # since the unused proration is for the whole month.
+        (invoice,) = stripe.Invoice.list(customer=stripe_customer_id)
+        self.assertEqual(invoice.amount_due, 7200)
 
     def test_update_billing_method_of_current_plan(self) -> None:
         realm = get_realm("zulip")
