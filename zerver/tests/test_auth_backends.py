@@ -112,6 +112,7 @@ from zproject.backends import (
     PopulateUserLDAPError,
     RateLimitedAuthenticationByUsername,
     SAMLAuthBackend,
+    SAMLDocument,
     SocialAuthMixin,
     ZulipAuthMixin,
     ZulipDummyBackend,
@@ -2084,6 +2085,19 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/")
 
+    def test_saml_idp_initiate_logout_invalid_logout_response(self) -> None:
+        parameters = {"SAMLRequest": "this is not a valid SAMLRequest string."}
+        with self.assertLogs("zulip.auth.saml") as mock_logger:
+            result = self.client_get("http://zulip.testserver/complete/saml/", parameters)
+
+        self.assertIn(
+            "ERROR:zulip.auth.saml:Error parsing SAMLRequest: Start tag expected, '<' not found",
+            mock_logger.output[0],
+        )
+
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/login/")
+
     def test_auth_registration_with_no_name_provided(self) -> None:
         """
         The SAMLResponse may not actually provide name values, which is considered
@@ -2365,7 +2379,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         """
 
         with self.assertLogs(self.logger_string, level="INFO") as m, mock.patch.object(
-            SAMLAuthBackend, "get_issuing_idp", return_value="test_idp"
+            SAMLDocument, "get_issuing_idp", return_value="test_idp"
         ):
             relay_state = orjson.dumps(
                 dict(
