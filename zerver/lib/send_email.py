@@ -261,6 +261,7 @@ def send_email(
 
     try:
         # This will call .open() for us, which is a no-op if it's already open;
+        raise smtplib.SMTPResponseException("test", "ll")
         # it will only call .close() if it was not open to begin with
         if connection.send_messages([mail]) == 0:
             logger.error("Unknown error sending %s email to %s", template, mail.to)

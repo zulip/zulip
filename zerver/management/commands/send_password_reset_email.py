@@ -6,7 +6,7 @@ from django.core.management.base import CommandError
 
 from zerver.forms import generate_password_reset_url
 from zerver.lib.management import ZulipBaseCommand
-from zerver.lib.send_email import FromAddress, send_email
+from zerver.lib.send_email import EmailNotDeliveredException, FromAddress, send_email
 from zerver.models import UserProfile
 
 
@@ -16,6 +16,13 @@ class Command(ZulipBaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "--entire-server", action="store_true", help="Send to every user on the server. "
+        )
+        parser.add_argument(
+            "--retries",
+            type=int,
+            default=5,
+            dest="retry_number",
+            help="Number of times to retry sending to a given recipient before giving up.",
         )
         self.add_user_list_args(
             parser,
@@ -38,9 +45,9 @@ class Command(ZulipBaseCommand):
                     )
                 raise error
 
-        self.send(users)
+        self.send(users, int(options["retry_number"]))
 
-    def send(self, users: List[UserProfile]) -> None:
+    def send(self, users: List[UserProfile], retry_number: int) -> None:
         """Sends one-use only links for resetting password to target users"""
         for user_profile in users:
             context = {
@@ -50,10 +57,18 @@ class Command(ZulipBaseCommand):
                 "realm_name": user_profile.realm.name,
                 "active_account_in_realm": True,
             }
-            send_email(
-                "zerver/emails/password_reset",
-                to_user_ids=[user_profile.id],
-                from_address=FromAddress.tokenized_no_reply_address(),
-                from_name=FromAddress.security_email_from_name(user_profile=user_profile),
-                context=context,
-            )
+
+            for i in range(0, retry_number):
+                try:
+                    send_email(
+                        "zerver/emails/password_reset",
+                        to_user_ids=[user_profile.id],
+                        from_address=FromAddress.tokenized_no_reply_address(),
+                        from_name=FromAddress.security_email_from_name(user_profile=user_profile),
+                        context=context,
+                    )
+                except EmailNotDeliveredException:
+                    if i == retry_number - 1:
+                        print(f"Failed to send to {user_profile.delivery_email}")
+                else:
+                    break
