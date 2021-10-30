@@ -18,9 +18,15 @@ from scripts.lib.zulip_tools import ENDC, WARNING, run
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--clean", action="store_true")
+    parser.add_argument("--watch", action="store_true")
     args = parser.parse_args()
 
     path = os.path.join(ZULIP_PATH, "docs")
+
+    if args.watch:
+        run(["make", "livehtml", "-C", path])
+        return
+
     if not args.clean:
         run(["make", "html", "-C", path])
         print(

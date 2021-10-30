@@ -235,7 +235,9 @@ codespell==2.1.0 \
 colorama==0.4.4 \
     --hash=sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b \
     --hash=sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2
-    # via semgrep
+    # via
+    #   semgrep
+    #   sphinx-autobuild
 constantly==15.1.0 \
     --hash=sha256:586372eb92059873e29eba4f9dec8381541b4d3834660707faf8ba59146dfc35 \
     --hash=sha256:dd2fa9d6b1a51a83f0d7dd76293d734046aa176e384bf6e33b7e44880eb37c5d
@@ -716,6 +718,9 @@ line-profiler==3.3.1 \
     --hash=sha256:fc778a581972ae2f9c1b46dc6b27f9cc69756f55fc6bf1aa816edb00a6402d5f \
     --hash=sha256:fd64fa020947d4a7156f47c3348c61eb5f82b7ca9cedb24472ac3e3ef6ac6598
     # via -r requirements/dev.in
+livereload==2.6.3 \
+    --hash=sha256:776f2f865e59fde56490a56bcc6773b6917366bce0c267c60ee8aaf1a0959869
+    # via sphinx-autobuild
 lxml==4.6.4 \
     --hash=sha256:08eb9200d88b376a8ed5e50f1dc1d1a45b49305169674002a3b5929943390591 \
     --hash=sha256:0b12c95542f04d10cba46b3ff28ea52ea56995b78cf918f0b11b05e75812bb79 \
@@ -1649,6 +1654,7 @@ six==1.16.0 \
     #   html5lib
     #   isodate
     #   jsonschema
+    #   livereload
     #   openapi-core
     #   openapi-schema-validator
     #   openapi-spec-validator
@@ -1701,7 +1707,12 @@ sphinx==4.2.0 \
     # via
     #   -r requirements/docs.in
     #   myst-parser
+    #   sphinx-autobuild
     #   sphinx-rtd-theme
+sphinx-autobuild==2021.3.14 \
+    --hash=sha256:8fe8cbfdb75db04475232f05187c776f46f6e9e04cacf1e49ce81bdac649ccac \
+    --hash=sha256:de1ca3b66e271d2b5b5140c35034c89e47f263f2cd5db302c9217065f7443f05
+    # via -r requirements/dev.in
 sphinx-rtd-theme==1.0.0 \
     --hash=sha256:4d35a56f4508cfee4c4fb604373ede6feae2a306731d533f409ef5c3496fdbd8 \
     --hash=sha256:eec6d497e4c2195fa0e8b2016b337532b8a699a68bcb22a512870e16925c6a5c
@@ -1825,6 +1836,7 @@ tornado==4.5.3 \
     --hash=sha256:b36298e9f63f18cad97378db2222c0e0ca6a55f6304e605515e05a25483ed51a
     # via
     #   -r requirements/common.in
+    #   livereload
     #   snakeviz
 tqdm==4.62.3 \
     --hash=sha256:8dd278a422499cd6b727e6ae4061c40b48fce8b76d1ccbf5d34fca9b7f925b0c \
