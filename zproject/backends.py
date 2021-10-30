@@ -2279,7 +2279,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
                 # The only valid SAMLRequest we can receive is a LogoutRequest.
                 logout_request_xml = OneLogin_Saml2_Logout_Request(
-                    config, saml_response_or_request[0]
+                    saml_settings, saml_response_or_request[0]
                 ).get_xml()
                 issuers = [OneLogin_Saml2_Logout_Request.get_issuer(logout_request_xml)]
         except self.SAMLRESPONSE_PARSING_EXCEPTIONS:
