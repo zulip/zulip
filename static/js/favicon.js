@@ -9,7 +9,7 @@ let favicon_state;
 
 function load_and_set_favicon(rendered_favicon) {
     favicon_state = {
-        url: URL.createObjectURL(new Blob([rendered_favicon], { type: "image/svg+xml" })),
+        url: URL.createObjectURL(new Blob([rendered_favicon], {type: "image/svg+xml"})),
         image: new Image(),
     };
 
