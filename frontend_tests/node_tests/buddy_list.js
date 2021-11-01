@@ -79,7 +79,7 @@ run_test("basics", ({override}) => {
     };
 
     buddy_list.populate({
-        keys: [alice.user_id],
+        user_keys: [alice.user_id],
     });
     assert.ok(appended);
 
@@ -128,7 +128,7 @@ run_test("big_list", ({override}) => {
     });
 
     buddy_list.populate({
-        keys: user_ids,
+        user_keys: user_ids,
     });
 
     assert.equal(chunks_inserted, 6);
@@ -136,7 +136,7 @@ run_test("big_list", ({override}) => {
 
 run_test("force_render", ({override}) => {
     const buddy_list = new BuddyList();
-    buddy_list.render_count = 50;
+    buddy_list.users_render_count = 50;
 
     let num_rendered = 0;
     override(buddy_list, "render_more", (opts) => {
@@ -170,7 +170,7 @@ run_test("find_li w/force_render", ({override}) => {
         return $stub_li;
     });
 
-    buddy_list.keys = ["foo", "bar", key, "baz"];
+    buddy_list.user_keys = ["foo", "bar", key, "baz"];
 
     let shown;
 
@@ -213,7 +213,7 @@ run_test("scrolling", ({override}) => {
     override(message_viewport, "height", () => 550);
 
     buddy_list.populate({
-        keys: [],
+        user_keys: [],
     });
 
     let tried_to_fill;
