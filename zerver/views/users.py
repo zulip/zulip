@@ -1,10 +1,12 @@
 from typing import Any, Dict, List, Optional, Union
 
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
 
+from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import require_member_or_admin, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
 from zerver.lib.actions import (
@@ -32,6 +34,7 @@ from zerver.lib.email_validation import email_allowed_for_realm
 from zerver.lib.exceptions import (
     CannotDeactivateLastUserError,
     JsonableError,
+    MissingAuthenticationError,
     OrganizationOwnerRequired,
 )
 from zerver.lib.integrations import EMBEDDED_BOTS
@@ -219,7 +222,10 @@ def update_user_backend(
 
 
 def avatar(
-    request: HttpRequest, user_profile: UserProfile, email_or_id: str, medium: bool = False
+    request: HttpRequest,
+    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    email_or_id: str,
+    medium: bool = False,
 ) -> HttpResponse:
     """Accepts an email address or user ID and returns the avatar"""
     is_email = False
@@ -228,8 +234,25 @@ def avatar(
     except ValueError:
         is_email = True
 
+    if not maybe_user_profile.is_authenticated:
+        # Allow anonynous access to avatars only if spectators are
+        # enabled in the organization.
+        realm = get_valid_realm_from_request(request)
+        # TODO: Replace with realm.allow_web_public_streams_access()
+        # when the method is available.
+        if not realm.has_web_public_streams():
+            raise MissingAuthenticationError()
+
+        # We only allow the ID format for accessing a user's avatar
+        # for spectators. This is mainly for defense in depth, since
+        # email_address_visibility should mean spectators only
+        # interact with fake email addresses anyway.
+        if is_email:
+            raise MissingAuthenticationError()
+    else:
+        realm = maybe_user_profile.realm
+
     try:
-        realm = user_profile.realm
         if is_email:
             avatar_user_profile = get_user_including_cross_realm(email_or_id, realm)
         else:

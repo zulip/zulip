@@ -1047,28 +1047,44 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
         self.logout()
 
-        # Test /avatar/<email_or_id> endpoint with HTTP basic auth.
-        response = self.api_get(hamlet, "/avatar/cordelia@zulip.com", {"foo": "bar"})
-        redirect_url = response["Location"]
-        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + "&foo=bar"))
+        with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
+            # Test /avatar/<email_or_id> endpoint with HTTP basic auth.
+            response = self.api_get(hamlet, "/avatar/cordelia@zulip.com", {"foo": "bar"})
+            redirect_url = response["Location"]
+            self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + "&foo=bar"))
 
-        response = self.api_get(hamlet, f"/avatar/{cordelia.id}", {"foo": "bar"})
-        redirect_url = response["Location"]
-        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + "&foo=bar"))
+            response = self.api_get(hamlet, f"/avatar/{cordelia.id}", {"foo": "bar"})
+            redirect_url = response["Location"]
+            self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + "&foo=bar"))
 
-        # Test cross_realm_bot avatar access using email.
-        response = self.api_get(hamlet, "/avatar/welcome-bot@zulip.com", {"foo": "bar"})
-        redirect_url = response["Location"]
-        self.assertTrue(redirect_url.endswith(str(avatar_url(cross_realm_bot)) + "&foo=bar"))
+            # Test cross_realm_bot avatar access using email.
+            response = self.api_get(hamlet, "/avatar/welcome-bot@zulip.com", {"foo": "bar"})
+            redirect_url = response["Location"]
+            self.assertTrue(redirect_url.endswith(str(avatar_url(cross_realm_bot)) + "&foo=bar"))
 
-        # Test cross_realm_bot avatar access using id.
-        response = self.api_get(hamlet, f"/avatar/{cross_realm_bot.id}", {"foo": "bar"})
-        redirect_url = response["Location"]
-        self.assertTrue(redirect_url.endswith(str(avatar_url(cross_realm_bot)) + "&foo=bar"))
+            # Test cross_realm_bot avatar access using id.
+            response = self.api_get(hamlet, f"/avatar/{cross_realm_bot.id}", {"foo": "bar"})
+            redirect_url = response["Location"]
+            self.assertTrue(redirect_url.endswith(str(avatar_url(cross_realm_bot)) + "&foo=bar"))
 
+            # Without spectators enabled, no unauthenticated access.
+            response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
+            self.assert_json_error(
+                response,
+                "Not logged in: API authentication or user session required",
+                status_code=401,
+            )
+
+        # Allow unauthenticated/spectator requests by ID.
+        response = self.client_get(f"/avatar/{cordelia.id}", {"foo": "bar"})
+        self.assertEqual(302, response.status_code)
+
+        # Disallow unauthenticated/spectator requests by email.
         response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
         self.assert_json_error(
-            response, "Not logged in: API authentication or user session required", status_code=401
+            response,
+            "Not logged in: API authentication or user session required",
+            status_code=401,
         )
 
     def test_get_user_avatar_medium(self) -> None:
@@ -1090,18 +1106,34 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
         self.logout()
 
-        # Test /avatar/<email_or_id>/medium endpoint with HTTP basic auth.
-        response = self.api_get(hamlet, "/avatar/cordelia@zulip.com/medium", {"foo": "bar"})
-        redirect_url = response["Location"]
-        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + "&foo=bar"))
+        with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
+            # Test /avatar/<email_or_id>/medium endpoint with HTTP basic auth.
+            response = self.api_get(hamlet, "/avatar/cordelia@zulip.com/medium", {"foo": "bar"})
+            redirect_url = response["Location"]
+            self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + "&foo=bar"))
 
-        response = self.api_get(hamlet, f"/avatar/{cordelia.id}/medium", {"foo": "bar"})
-        redirect_url = response["Location"]
-        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + "&foo=bar"))
+            response = self.api_get(hamlet, f"/avatar/{cordelia.id}/medium", {"foo": "bar"})
+            redirect_url = response["Location"]
+            self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + "&foo=bar"))
 
+            # Without spectators enabled, no unauthenticated access.
+            response = self.client_get("/avatar/cordelia@zulip.com/medium", {"foo": "bar"})
+            self.assert_json_error(
+                response,
+                "Not logged in: API authentication or user session required",
+                status_code=401,
+            )
+
+        # Allow unauthenticated/spectator requests by ID.
+        response = self.client_get(f"/avatar/{cordelia.id}/medium", {"foo": "bar"})
+        self.assertEqual(302, response.status_code)
+
+        # Disallow unauthenticated/spectator requests by email.
         response = self.client_get("/avatar/cordelia@zulip.com/medium", {"foo": "bar"})
         self.assert_json_error(
-            response, "Not logged in: API authentication or user session required", status_code=401
+            response,
+            "Not logged in: API authentication or user session required",
+            status_code=401,
         )
 
     def test_non_valid_user_avatar(self) -> None:
