@@ -86,6 +86,7 @@ from zproject.backends import (
     ExternalAuthResult,
     GenericOpenIdConnectBackend,
     SAMLAuthBackend,
+    SAMLSPInitiatedLogout,
     ZulipLDAPAuthBackend,
     ZulipLDAPConfigurationError,
     ZulipRemoteUserBackend,
@@ -1115,6 +1116,28 @@ def json_fetch_api_key(
 
 
 logout_then_login = require_post(django_logout_then_login)
+
+
+@require_post
+def logout_view(request: HttpRequest, /, **kwargs: Any) -> HttpResponse:
+    realm = RequestNotes.get_notes(request).realm
+    assert realm is not None
+
+    if not settings.SAML_ENABLE_SP_INITIATED_SINGLE_LOGOUT or not saml_auth_enabled(realm):
+        return logout_then_login(request, **kwargs)
+
+    if not request.user.is_authenticated:
+        raise JsonableError(_("Not logged in."))
+
+    # This will first redirect to the IdP with a LogoutRequest and if successful on the IdP side,
+    # the user will be redirected to our SAMLResponse-handling endpoint with a success LogoutResponse,
+    # where we will finally terminate their session.
+    result = SAMLSPInitiatedLogout.slo_request_to_idp(request, return_to=None)
+    if result is None:
+        # This session wasn't authenticated via SAML, so proceed with normal logout process.
+        return logout_then_login(request, **kwargs)
+
+    return result
 
 
 def password_reset(request: HttpRequest) -> HttpResponse:

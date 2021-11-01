@@ -494,6 +494,9 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 #    }
 # }
 
+# This setting allows enabling of SP-initiated logout with SAML.
+# SAML_ENABLE_SP_INITIATED_SINGLE_LOGOUT = True
+
 ########
 ## Apple authentication ("Sign in with Apple").
 ##

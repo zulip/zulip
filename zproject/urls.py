@@ -29,7 +29,7 @@ from zerver.views.auth import (
     jwt_fetch_api_key,
     log_into_subdomain,
     login_page,
-    logout_then_login,
+    logout_view,
     password_reset,
     remote_user_jwt,
     remote_user_sso,
@@ -533,7 +533,7 @@ i18n_urls = [
     # return `/accounts/login/`.
     path("accounts/login/", login_page, {"template_name": "zerver/login.html"}, name="login_page"),
     path("accounts/login/", LoginView.as_view(template_name="zerver/login.html"), name="login"),
-    path("accounts/logout/", logout_then_login),
+    path("accounts/logout/", logout_view),
     path("accounts/webathena_kerberos_login/", webathena_kerberos_login),
     path("accounts/password/reset/", password_reset, name="password_reset"),
     path(
