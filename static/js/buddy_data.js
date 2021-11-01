@@ -263,10 +263,10 @@ export function get_item(user_id) {
     return info;
 }
 
-export function get_items_for_users(user_ids) {
-    const user_info = user_ids.map((user_id) => info_for(user_id));
-    compose_fade_users.update_user_info(user_info, fade_config);
-    return user_info;
+export function get_items_for_people(ids) {
+    const info = ids.map((id) => info_for(id));
+    compose_fade_users.update_user_info(info, fade_config);
+    return info;
 }
 
 function user_is_recently_active(user_id) {

@@ -513,7 +513,7 @@ test("user_last_seen_time_status", ({override}) => {
     assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Idle");
 });
 
-test("get_items_for_users", () => {
+test("get_items_for_people", () => {
     people.add_active_user(alice);
     people.add_active_user(fred);
     user_status.set_away(alice.user_id);
@@ -530,7 +530,7 @@ test("get_items_for_users", () => {
         user_status.set_status_emoji({user_id, ...status_emoji_info});
     }
 
-    assert.deepEqual(buddy_data.get_items_for_users(user_ids), [
+    assert.deepEqual(buddy_data.get_items_for_people(user_ids), [
         {
             faded: false,
             href: "#narrow/pm-with/1001-self",

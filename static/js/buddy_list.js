@@ -37,7 +37,7 @@ class BuddyListConf {
 
     get_data_from_keys(opts) {
         const keys = opts.keys;
-        const data = buddy_data.get_items_for_users(keys);
+        const data = buddy_data.get_items_for_people(keys);
         return data;
     }
 
@@ -55,15 +55,15 @@ class BuddyListConf {
 }
 
 export class BuddyList extends BuddyListConf {
-    keys = [];
+    user_keys = [];
 
     populate(opts) {
-        this.render_count = 0;
+        this.users_render_count = 0;
         this.$container.empty();
 
         // We rely on our caller to give us items
         // in already-sorted order.
-        this.keys = opts.keys;
+        this.user_keys = opts.user_keys;
 
         this.fill_screen_with_content();
     }
@@ -71,21 +71,21 @@ export class BuddyList extends BuddyListConf {
     render_more(opts) {
         const chunk_size = opts.chunk_size;
 
-        const begin = this.render_count;
+        const begin = this.users_render_count;
         const end = begin + chunk_size;
 
-        const more_keys = this.keys.slice(begin, end);
+        const more_keys = this.user_keys.slice(begin, end);
 
         if (more_keys.length === 0) {
             return;
         }
 
-        const items = this.get_data_from_keys({
-            keys: more_keys,
+        const user_items = this.get_data_from_keys({
+            keys: this.user_keys,
         });
 
         const html = this.items_to_html({
-            items,
+            items: user_items,
         });
         this.$container = $(this.container_sel);
         this.$container.append(html);
@@ -96,7 +96,7 @@ export class BuddyList extends BuddyListConf {
         // actually render these keys, we still "count" them
         // as rendered.
 
-        this.render_count += more_keys.length;
+        this.users_render_count += more_keys.length;
         this.update_padding();
     }
 
@@ -106,40 +106,40 @@ export class BuddyList extends BuddyListConf {
     }
 
     first_key() {
-        return this.keys[0];
+        return this.user_keys[0];
     }
 
     prev_key(key) {
-        const i = this.keys.indexOf(key);
+        const i = this.user_keys.indexOf(key);
 
         if (i <= 0) {
             return undefined;
         }
 
-        return this.keys[i - 1];
+        return this.user_keys[i - 1];
     }
 
     next_key(key) {
-        const i = this.keys.indexOf(key);
+        const i = this.user_keys.indexOf(key);
 
         if (i < 0) {
             return undefined;
         }
 
-        return this.keys[i + 1];
+        return this.user_keys[i + 1];
     }
 
     maybe_remove_key(opts) {
-        const pos = this.keys.indexOf(opts.key);
+        const pos = this.user_keys.indexOf(opts.key);
 
         if (pos < 0) {
             return;
         }
 
-        this.keys.splice(pos, 1);
+        this.user_keys.splice(pos, 1);
 
-        if (pos < this.render_count) {
-            this.render_count -= 1;
+        if (pos < this.users_render_count) {
+            this.users_render_count -= 1;
             const $li = this.find_li({key: opts.key});
             $li.remove();
             this.update_padding();
@@ -150,15 +150,15 @@ export class BuddyList extends BuddyListConf {
         const key = opts.key;
         let i;
 
-        for (i = 0; i < this.keys.length; i += 1) {
-            const list_key = this.keys[i];
+        for (i = 0; i < this.user_keys.length; i += 1) {
+            const list_key = this.user_keys[i];
 
             if (this.compare_function(key, list_key) < 0) {
                 return i;
             }
         }
 
-        return this.keys.length;
+        return this.user_keys.length;
     }
 
     force_render(opts) {
@@ -166,7 +166,7 @@ export class BuddyList extends BuddyListConf {
 
         // Try to render a bit optimistically here.
         const cushion_size = 3;
-        const chunk_size = pos + cushion_size - this.render_count;
+        const chunk_size = pos + cushion_size - this.users_render_count;
 
         if (chunk_size <= 0) {
             blueslip.error("cannot show key at this position: " + pos);
@@ -195,7 +195,7 @@ export class BuddyList extends BuddyListConf {
             return $li;
         }
 
-        const pos = this.keys.indexOf(key);
+        const pos = this.user_keys.indexOf(key);
 
         if (pos < 0) {
             // TODO: See ListCursor.get_row() for why this is
@@ -220,16 +220,16 @@ export class BuddyList extends BuddyListConf {
         const pos = opts.pos;
 
         if (new_key === undefined) {
-            if (pos === this.render_count) {
-                this.render_count += 1;
+            if (pos === this.users_render_count) {
+                this.users_render_count += 1;
                 this.$container.append(html);
                 this.update_padding();
             }
             return;
         }
 
-        if (pos < this.render_count) {
-            this.render_count += 1;
+        if (pos < this.users_render_count) {
+            this.users_render_count += 1;
             const $li = this.find_li({key: new_key});
             $li.before(html);
             this.update_padding();
@@ -249,9 +249,9 @@ export class BuddyList extends BuddyListConf {
         // Order is important here--get the new_key
         // before mutating our list.  An undefined value
         // corresponds to appending.
-        const new_key = this.keys[pos];
+        const new_key = this.user_keys[pos];
 
-        this.keys.splice(pos, 0, key);
+        this.user_keys.splice(pos, 0, key);
 
         const html = this.item_to_html({item});
         this.insert_new_html({
@@ -269,7 +269,7 @@ export class BuddyList extends BuddyListConf {
         // Add a fudge factor.
         height += 10;
 
-        while (this.render_count < this.keys.length) {
+        while (this.users_render_count < this.user_keys.length) {
             const padding_height = $(this.padding_sel).height();
             const bottom_offset = elem.scrollHeight - elem.scrollTop - padding_height;
 
@@ -301,8 +301,8 @@ export class BuddyList extends BuddyListConf {
 
     update_padding() {
         padded_widget.update_padding({
-            shown_rows: this.render_count,
-            total_rows: this.keys.length,
+            shown_rows: this.users_render_count,
+            total_rows: this.user_keys.length,
             content_sel: this.container_sel,
             padding_sel: this.padding_sel,
         });

@@ -90,7 +90,7 @@ people.initialize_current_user(me.user_id);
 
 function clear_buddy_list() {
     buddy_list.populate({
-        keys: [],
+        user_keys: [],
     });
 }
 
@@ -218,17 +218,19 @@ test("presence_list_full_update", ({override, mock_template}) => {
     compose_state.private_message_recipient = () => fred.email;
     compose_fade.set_focused_recipient("private");
 
-    const user_ids = activity.build_user_sidebar();
+    const key_groups = activity.build_user_sidebar();
 
-    assert.deepEqual(user_ids, [
-        me.user_id,
-        alice.user_id,
-        fred.user_id,
-        jill.user_id,
-        norbert.user_id,
-        zoe.user_id,
-        mark.user_id,
-    ]);
+    assert.deepEqual(key_groups, {
+        user_keys: [
+            me.user_id,
+            alice.user_id,
+            fred.user_id,
+            jill.user_id,
+            norbert.user_id,
+            zoe.user_id,
+            mark.user_id,
+        ],
+    });
 });
 
 function simulate_right_column_buddy_list() {
@@ -299,7 +301,7 @@ test("handlers", ({override, mock_template}) => {
     function init() {
         $.clear_all_elements();
         buddy_list.populate({
-            keys: [me.user_id, alice.user_id, fred.user_id],
+            user_keys: [me.user_id, alice.user_id, fred.user_id],
         });
         activity.set_cursor_and_filter();
         $("#user_presences").empty = () => {};
