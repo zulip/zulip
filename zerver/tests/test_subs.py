@@ -28,9 +28,11 @@ from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_real
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
+    deactivated_streams_by_old_name,
     do_change_stream_group_based_setting,
     do_change_stream_post_policy,
     do_deactivate_stream,
+    do_reactivate_stream,
 )
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.users import do_change_user_role, do_deactivate_user
@@ -1333,6 +1335,95 @@ class StreamAdminTest(ZulipTestCase):
         denmark_usermessage.refresh_from_db()
         self.assertTrue(new_stream_usermessage.flags.read)
         self.assertFalse(denmark_usermessage.flags.read)
+
+    def test_deactivated_streams_by_old_name(self) -> None:
+        realm = get_realm("zulip")
+        stream = self.make_stream("new_stream")
+        do_deactivate_stream(stream, acting_user=None)
+        self.assertEqual(set(deactivated_streams_by_old_name(realm, "new_stream")), {stream})
+
+        second_stream = self.make_stream("new_stream")
+        do_deactivate_stream(second_stream, acting_user=None)
+        self.assertEqual(
+            set(deactivated_streams_by_old_name(realm, "new_stream")), {stream, second_stream}
+        )
+
+        self.make_stream("!DEACTIVATED:old_style")  # This is left active
+        old_style = self.make_stream("old_style")
+        do_deactivate_stream(old_style, acting_user=None)
+        old_style.name = "!!DEACTIVATED:old_style"
+        old_style.save()
+        self.assertEqual(set(deactivated_streams_by_old_name(realm, "old_style")), {old_style})
+
+    def test_reactivate_stream_active_stream(self) -> None:
+        stream = self.make_stream("new_stream")
+        with self.assertRaisesRegex(JsonableError, "Stream is not currently deactivated"):
+            do_reactivate_stream(stream, new_name="new_stream", acting_user=None)
+
+    def test_reactivate_stream_existing_name(self) -> None:
+        stream = self.make_stream("new_stream")
+        self.make_stream("existing")
+        do_deactivate_stream(stream, acting_user=None)
+        with self.assertRaisesRegex(JsonableError, "Stream named existing already exists"):
+            do_reactivate_stream(stream, new_name="existing", acting_user=None)
+
+    def test_reactivate_stream(self) -> None:
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        stream = self.make_stream("new_stream", is_web_public=True)
+        self.subscribe(hamlet, stream.name)
+        self.subscribe(cordelia, stream.name)
+        do_deactivate_stream(stream, acting_user=None)
+        with self.capture_send_event_calls(expected_num_events=4) as events:
+            do_reactivate_stream(stream, new_name="new_stream", acting_user=None)
+
+        # Tell all admins and owners that the stream exists
+        self.assertEqual(events[0]["event"]["op"], "create")
+        self.assertEqual(events[0]["event"]["streams"][0]["name"], "new_stream")
+        self.assertEqual(events[0]["event"]["streams"][0]["stream_id"], stream.id)
+        self.assertEqual(set(events[0]["users"]), {iago.id, desdemona.id})
+
+        # Tell the owners that they're subscribed to it
+        self.assertEqual(events[1]["event"]["op"], "add")
+        self.assertEqual(events[1]["event"]["subscriptions"][0]["name"], "new_stream")
+        self.assertEqual(events[1]["event"]["subscriptions"][0]["stream_id"], stream.id)
+        self.assertEqual(events[1]["users"], [desdemona.id])
+
+        # Send a message there logging the reactivation
+        self.assertEqual(events[2]["event"]["type"], "message")
+
+        # iago (as an admin) gets to know that desdemona (the owner) is now subscribed.
+        self.assertEqual(
+            events[3],
+            {
+                "event": {
+                    "op": "peer_add",
+                    "stream_ids": [stream.id],
+                    "type": "subscription",
+                    "user_ids": [desdemona.id],
+                },
+                "users": [iago.id],
+            },
+        )
+
+        stream = Stream.objects.get(id=stream.id)
+        self.assertFalse(stream.deactivated)
+        self.assertTrue(stream.invite_only)
+        self.assertFalse(stream.is_web_public)
+        self.assertTrue(stream.history_public_to_subscribers)
+
+        self.assertEqual(
+            [desdemona.id],
+            [
+                sub.user_profile_id
+                for sub in get_active_subscriptions_for_stream_id(
+                    stream.id, include_deactivated_users=True
+                )
+            ],
+        )
 
     def test_vacate_private_stream_removes_default_stream(self) -> None:
         stream = self.make_stream("new_stream", invite_only=True)
