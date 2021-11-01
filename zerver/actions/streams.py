@@ -6,6 +6,7 @@ from typing import Any, Collection, Dict, Iterable, List, Mapping, Optional, Set
 import orjson
 from django.conf import settings
 from django.db import transaction
+from django.db.models import Q, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
@@ -137,6 +138,103 @@ def do_deactivate_stream(
         event_type=RealmAuditLog.STREAM_DEACTIVATED,
         event_time=event_time,
     )
+
+
+def deactivated_streams_by_old_name(realm: Realm, stream_name: str) -> QuerySet[Stream]:
+    fixed_length_prefix = ".......!DEACTIVATED:"
+    truncated_name = stream_name[0 : Stream.MAX_NAME_LENGTH - len(fixed_length_prefix)]
+
+    old_names: List[str] = []
+    for bang_length in range(1, 21):
+        name = "!" * bang_length + "DEACTIVATED:" + stream_name
+        old_names.append(name[0 : Stream.MAX_NAME_LENGTH])
+
+    possible_streams = Stream.objects.filter(realm=realm, deactivated=True).filter(
+        # We go looking for names as they are post-1b6f68bb59dc; 8
+        # characters, followed by `!DEACTIVATED:`, followed by at
+        # most MAX_NAME_LENGTH-(length of the prefix) of the name
+        # they provided:
+        Q(name__regex=rf"^{fixed_length_prefix}{truncated_name}")
+        # Finally, we go looking for the pre-1b6f68bb59dc version,
+        # which is any number of `!` followed by `DEACTIVATED:`
+        # and a prefix of the old stream name
+        | Q(name__in=old_names),
+    )
+
+    return possible_streams
+
+
+@transaction.atomic(savepoint=False)
+def do_reactivate_stream(
+    stream: Stream, new_name: str, *, acting_user: Optional[UserProfile]
+) -> None:
+    realm = stream.realm
+    if not stream.deactivated:
+        raise JsonableError(_("Stream is not currently deactivated"))
+    if Stream.objects.filter(realm=realm, name=new_name).exists():
+        raise JsonableError(
+            _("Stream named {stream_name} already exists").format(stream_name=new_name)
+        )
+    assert stream.recipient_id is not None
+
+    stream.deactivated = False
+    stream.name = new_name
+
+    # We only set invite_only=True during deactivation, which can lead
+    # to the invalid state of to invite-only but also web-public
+    # streams.  Explicitly reset the access; we do not use
+    # do_change_stream_permission because no users need be notified,
+    # and it cannot handle the broken state that may currently exist.
+    stream.is_web_public = False
+    stream.invite_only = True
+    stream.history_public_to_subscribers = True
+    stream.save(
+        update_fields=[
+            "name",
+            "deactivated",
+            "is_web_public",
+            "invite_only",
+            "history_public_to_subscribers",
+        ]
+    )
+
+    # Update caches
+    cache_set(display_recipient_cache_key(stream.recipient_id), new_name)
+    messages = Message.objects.filter(recipient_id=stream.recipient_id).only("id")
+    cache_delete_many(to_dict_cache_key_id(message.id) for message in messages)
+
+    # Unset the is_web_public cache on attachments, since the stream is now private.
+    Attachment.objects.filter(messages__recipient_id=stream.recipient_id).update(is_web_public=None)
+    ArchivedAttachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
+        is_web_public=None
+    )
+
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        modified_stream=stream,
+        event_type=RealmAuditLog.STREAM_REACTIVATED,
+        event_time=timezone_now(),
+    )
+
+    # All admins always get to know about private streams' existence,
+    # but we only subscribe the realm owners.
+    send_stream_creation_event(stream, [user.id for user in realm.get_admin_users_and_bots()])
+    bulk_add_subscriptions(
+        realm=realm,
+        streams=[stream],
+        users=realm.get_human_owner_users(),
+        acting_user=acting_user,
+    )
+
+    sender = get_system_bot(settings.NOTIFICATION_BOT, stream.realm_id)
+    with override_language(stream.realm.default_language):
+        internal_send_stream_message(
+            sender,
+            stream,
+            str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC),
+            _("Stream {stream_name} un-archived.").format(stream_name=new_name),
+        )
 
 
 def bulk_delete_cache_keys(message_ids_to_clear: List[int]) -> None:
