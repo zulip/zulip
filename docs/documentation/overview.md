@@ -96,7 +96,7 @@ various extensions for macros and variable interpolation,
 (`render_markdown_path` in the code), designed to make it convenient
 to do the things one does a lot in each type of documentation.
 
-### General user documentation
+### End user documentation
 
 Zulip's [help center](https://zulip.com/help/) documentation is
 designed to explain how the product works to end users. We aim for
