@@ -107,11 +107,33 @@ the server controls the website at that hostname; and is then given a
 certificate. (For details, refer to
 [Let's Encrypt](https://letsencrypt.org/how-it-works/).)
 
-Then it records a flag in `/etc/zulip/zulip.conf` saying Certbot is in
-use and should be auto-renewed. A cron job checks that flag, then
-checks if any certificates are due for renewal, and if they are (so
-approximately once every 60 days), repeats the process of request,
-prove, get a fresh certificate.
+### Renewal
+
+Let's Encrypt certificates expire after 90 days. Short expiration
+periods are good for security, but they also mean that it's important
+to automatically renew them to avoid regular maintenance work.
+
+Zulip configures automatic renewal for you. As a result, a Zulip
+server configured with Certbot does not require any ongoing work to
+maintain a current valid SSL certificate.
+
+Specifically, the `setup-certbot` tool (and by extension, the
+installer option) enables the Certbot `auto_renew` property in
+`/etc/zulip/zulip.conf`. This, in turn, configures a cron job
+(`/etc/cron.d/certbot`) that will renew any Certbot certificates that
+are due for renewal. The renewal process repeats the Certbot
+proof-of-control process, receives the new certificate from Certbot,
+installs the new certificate, and then reloads `nginx`.
+
+#### Troubleshooting
+
+If your Certbot certificate expires, it is usually because of firewall
+rules preventing the Certbot renewal process (which is essentially
+identical to the initial certificate request process) from
+working. You can debug interactively by running the command from the
+cron job,
+`/home/zulip/deployments/current/scripts/lib/certbot-maybe-renew`, as
+`root`.
 
 ## Self-signed certificate
 
