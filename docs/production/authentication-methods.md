@@ -611,6 +611,7 @@ another IdP.
    the user's email address in the NameID to know which user's
    sessions to terminate.
 1. Make sure `Front Channel Logout` is enabled, which it should be by default.
+   Disable `Force POST Binding`, as Zulip only supports the Redirect binding.
 1. In `Fine Grain SAML Endpoint Configuration`, set `Logout Service Redirect Binding URL`
    to the same value you provided for `SSO URL` above.
 1. Add the IdP's `Redirect Binding URL`for `SingleLogoutService` to
