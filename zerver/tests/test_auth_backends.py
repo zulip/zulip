@@ -46,6 +46,7 @@ from django_auth_ldap.backend import LDAPSearch, _LDAPUser
 from jwt.exceptions import PyJWTError
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.logout_request import OneLogin_Saml2_Logout_Request
+from onelogin.saml2.logout_response import OneLogin_Saml2_Logout_Response
 from onelogin.saml2.response import OneLogin_Saml2_Response
 from onelogin.saml2.utils import OneLogin_Saml2_Utils
 from social_core.exceptions import AuthFailed, AuthStateForbidden
@@ -2065,6 +2066,128 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
     def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
         return dict(email=email, name=name)
+
+    @override_settings(SAML_ENABLE_SP_INITIATED_SINGLE_LOGOUT=True)
+    def test_saml_sp_initiated_logout_success(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        # Begin by logging in via the IdP (the user needs to log in via SAML for the session
+        # for SP-initiated logout to make sense - and the logout flow uses information
+        # about the IdP that was used for login)
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+        with self.assertLogs(self.logger_string, level="INFO"):
+            result = self.social_auth_test(
+                account_data_dict,
+                expect_choose_email_screen=False,
+                subdomain="zulip",
+            )
+        self.client_get(result["Location"])
+
+        self.assert_logged_in_user_id(hamlet.id)
+
+        result = self.client_post("/accounts/logout/")
+        # A redirect to the IdP is returned.
+        self.assertEqual(result.status_code, 302)
+        self.assertIn(
+            settings.SOCIAL_AUTH_SAML_ENABLED_IDPS["test_idp"]["slo_url"], result["Location"]
+        )
+        # This doesn't log the user out yet.
+        self.assert_logged_in_user_id(hamlet.id)
+
+        # Verify the redirect has the correct form - a LogoutRequest for hamlet
+        # is delivered to the IdP in the SAMLRequest param.
+        query_dict = urllib.parse.parse_qs(urllib.parse.urlparse(result["Location"]).query)
+        saml_request_encoded = query_dict["SAMLRequest"][0]
+        saml_request = OneLogin_Saml2_Utils.decode_base64_and_inflate(saml_request_encoded).decode()
+        self.assertIn("<samlp:LogoutRequest", saml_request)
+        self.assertIn(f"saml:NameID>{hamlet.delivery_email}</saml:NameID>", saml_request)
+
+        unencoded_logout_response = self.fixture_data("logoutresponse.txt", type="saml")
+        logout_response: str = base64.b64encode(unencoded_logout_response.encode()).decode()
+        # It's hard to create fully-correct LogoutResponse with signatures in tests,
+        # so we rely on mocking the validating functions instead.
+        with mock.patch.object(
+            OneLogin_Saml2_Logout_Response, "is_valid", return_value=True
+        ), mock.patch.object(
+            OneLogin_Saml2_Auth,
+            "validate_response_signature",
+            return_value=True,
+        ):
+            result = self.client_get(
+                "/complete/saml/",
+                {
+                    "SAMLResponse": logout_response,
+                    "SigAlg": "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256",
+                    "Signature": "foo",
+                },
+            )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/accounts/login/")
+        self.client_get(result["Location"])
+        self.assert_logged_in_user_id(None)
+
+    @override_settings(SAML_ENABLE_SP_INITIATED_SINGLE_LOGOUT=True)
+    def test_saml_sp_initiated_logout_invalid_logoutresponse(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+        self.assert_logged_in_user_id(hamlet.id)
+
+        unencoded_logout_response = self.fixture_data("logoutresponse.txt", type="saml")
+        logout_response: str = base64.b64encode(unencoded_logout_response.encode()).decode()
+        result = self.client_get(
+            "/complete/saml/",
+            {
+                "SAMLResponse": logout_response,
+                "SigAlg": "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256",
+                "Signature": "foo",
+            },
+        )
+        self.assert_json_error(
+            result,
+            "LogoutResponse error: ['invalid_logout_response_signature', 'Signature validation failed. Logout Response rejected']",
+        )
+        self.assert_logged_in_user_id(hamlet.id)
+
+    @override_settings(SAML_ENABLE_SP_INITIATED_SINGLE_LOGOUT=True)
+    def test_saml_sp_initiated_logout_endpoint_when_not_logged_in(self) -> None:
+        self.assert_logged_in_user_id(None)
+
+        result = self.client_post("/accounts/logout/")
+        self.assert_json_error(result, "Not logged in.")
+
+    @override_settings(SAML_ENABLE_SP_INITIATED_SINGLE_LOGOUT=True)
+    def test_saml_sp_initiated_logout_logged_in_not_via_saml(self) -> None:
+        """
+        If the user is logged in, but not via SAML, the normal logout flow
+        should be executed instead of the SAML SP-initiated logout flow.
+        """
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+        self.assert_logged_in_user_id(hamlet.id)
+
+        result = self.client_post("/accounts/logout/")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/accounts/login/")
+        self.client_get(result["Location"])
+        self.assert_logged_in_user_id(None)
+
+    @override_settings(SAML_ENABLE_SP_INITIATED_SINGLE_LOGOUT=True)
+    def test_saml_sp_initiated_logout_when_saml_not_enabled(self) -> None:
+        """
+        If SAML is not enabled, the normal logout flow should be correctly executed.
+        This test verifies that this scenario doesn't end up with some kind of error
+        due to going down the SAML SP-initiated logout codepaths.
+        """
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+        self.assert_logged_in_user_id(hamlet.id)
+
+        with self.settings(AUTHENTICATION_BACKENDS=("zproject.backends.EmailAuthBackend",)):
+            result = self.client_post("/accounts/logout/")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/accounts/login/")
+        self.client_get(result["Location"])
+        self.assert_logged_in_user_id(None)
 
     def test_saml_idp_initiated_logout_success(self) -> None:
         hamlet = self.example_user("hamlet")
