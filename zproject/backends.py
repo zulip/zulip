@@ -1295,6 +1295,7 @@ class ExternalAuthDataDict(TypedDict, total=False):
     desktop_flow_otp: Optional[str]
     multiuse_object_key: str
     full_name_validated: bool
+    params_to_store_in_authenticated_session: Dict[str, str]
 
 
 class ExternalAuthResult:
@@ -1797,6 +1798,7 @@ def social_auth_finish(
         full_name_validated=full_name_validated,
         mobile_flow_otp=mobile_flow_otp,
         desktop_flow_otp=desktop_flow_otp,
+        params_to_store_in_authenticated_session=backend.get_params_to_store_in_authenticated_session(),
     )
     if user_profile is None:
         data_dict.update(dict(full_name=full_name, email=email_address))
@@ -1874,6 +1876,13 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
 
     def should_auto_signup(self) -> bool:
         return False
+
+    def get_params_to_store_in_authenticated_session(self) -> Dict[str, str]:
+        """
+        Specifies a dict of keys:values to be saved in the user's session
+        after successfully authenticating.
+        """
+        return {"authentication_method": self.name}
 
     @classmethod
     def dict_representation(cls, realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:
@@ -2700,6 +2709,11 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         auto_signup = settings.SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name].get("auto_signup", False)
         assert isinstance(auto_signup, bool)
         return auto_signup
+
+    def get_params_to_store_in_authenticated_session(self) -> Dict[str, str]:
+        idp_name = self.strategy.session_get("saml_idp_name")
+
+        return {"authentication_method": f"saml:{idp_name}"}
 
 
 def patch_saml_auth_require_messages_signed(auth: OneLogin_Saml2_Auth) -> None:
