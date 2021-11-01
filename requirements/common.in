@@ -16,7 +16,7 @@ Jinja2
 
 # Needed for Markdown processing
 Markdown
-importlib-metadata;python_version<"3.8"  # for Markdown
+importlib-metadata;python_version<"3.10"  # for Markdown
 Pygments
 jsx-lexer
 
