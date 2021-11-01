@@ -60,7 +60,8 @@ below features are supported.
 
 * [`POST /register`](/api/register-queue), [`GET
   /events`](/api/get-events): `message_content_delete_limit_seconds`
-  now represents no limit using `null`, instead of the integer 0.
+  now represents no limit using `null`, instead of the integer 0, and 0 is
+  no longer a possible value with any meaning.
 * `PATCH /realm`: One now sets `message_content_delete_limit_seconds`
   to no limit by passing the string `unlimited`, rather than the
   integer 0.

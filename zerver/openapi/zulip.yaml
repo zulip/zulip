@@ -3580,7 +3580,7 @@ paths:
                                         with this organization's
                                         [message deletion policy](/help/configure-message-editing-and-deletion).
 
-                                        A 'null' value means no limit: messages can be deleted
+                                        Will not be 0. A 'null' value means no limit: messages can be deleted
                                         regardless of how long ago they were sent.
 
                                         **Changes**: No limit was represented using the
@@ -10731,7 +10731,7 @@ paths:
                           with this organization's
                           [message deletion policy](/help/configure-message-editing-and-deletion).
 
-                          A 'null' value means no limit: messages can be deleted
+                          Will not be 0. A 'null' value means no limit: messages can be deleted
                           regardless of how long ago they were sent.
 
                           **Changes**: No limit was represented using the
