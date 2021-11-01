@@ -61,7 +61,7 @@ https://github.com/zulip/zulint/archive/9908540b7734b51f86ccabab706befc2ff33212a
 # These modules are built into later versions of Python and will
 # generate different locked files if executed with Python ≥ 3.7, so
 # despite being dependent packages, they have to be added separately.
-importlib-metadata;python_version<"3.8"  # for jsonpickle, jsonschema
+importlib-metadata;python_version<"3.10"  # for jsonpickle, jsonschema
 
 # Needed for using integration logo svg files as bot avatars
 cairosvg
