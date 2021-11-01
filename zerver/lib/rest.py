@@ -147,7 +147,10 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
             target_function = authenticated_rest_api_view(
                 allow_webhook_access="allow_incoming_webhooks" in view_flags,
             )(target_function)
-        elif request.path.startswith("/json") and "allow_anonymous_user_web" in view_flags:
+        elif (
+            request.path.startswith(("/json", "/avatar"))
+            and "allow_anonymous_user_web" in view_flags
+        ):
             # For endpoints that support anonymous web access, we do that.
             # TODO: Allow /api calls when this is stable enough.
             auth_kwargs = dict(allow_unauthenticated=True)

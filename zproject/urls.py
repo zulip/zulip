@@ -669,9 +669,14 @@ urls += [
     rest_path("thumbnail", GET=(backend_serve_thumbnail, {"override_api_url_scheme"})),
     # Avatars have the same constraint because their URLs are included
     # in API data structures used by both the mobile and web clients.
-    rest_path("avatar/<email_or_id>", GET=(avatar, {"override_api_url_scheme"})),
     rest_path(
-        "avatar/<email_or_id>/medium", {"medium": True}, GET=(avatar, {"override_api_url_scheme"})
+        "avatar/<email_or_id>",
+        GET=(avatar, {"override_api_url_scheme", "allow_anonymous_user_web"}),
+    ),
+    rest_path(
+        "avatar/<email_or_id>/medium",
+        {"medium": True},
+        GET=(avatar, {"override_api_url_scheme", "allow_anonymous_user_web"}),
     ),
 ]
 
