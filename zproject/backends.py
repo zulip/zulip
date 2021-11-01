@@ -2165,9 +2165,22 @@ class ZulipSAMLIdentityProvider(SAMLIdentityProvider):
 
 
 class SAMLDocument:
+    """
+    Parent class, subclassed by SAMLRequest and SAMLResponse,
+    for wrapping the fiddly logic of handling these SAML XML documents.
+    """
+
     SAML_PARSING_EXCEPTIONS = (OneLogin_Saml2_Error, binascii.Error, XMLSyntaxError)
 
     def __init__(self, encoded_saml_message: str, backend: "SAMLAuthBackend") -> None:
+        """
+        encoded_saml_message is the base64-encoded XML string that's received
+        in the SAMLRequest or SAMLResponse params. The underlying XML
+        can be either deflated or not, both cases should be handled fine by the class.
+
+        backend is an instance of the SAMLAuthBackend class, which is handling
+        the HTTP request in which the SAMLRequest or SAMLResponse was delivered.
+        """
         self.encoded_saml_message = encoded_saml_message
         self.backend = backend
 
