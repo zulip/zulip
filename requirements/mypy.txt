@@ -70,7 +70,7 @@ greenlet==1.1.2 \
     --hash=sha256:fa877ca7f6b48054f847b61d6fa7bed5cebb663ebc55e018fda12db09dcc664c \
     --hash=sha256:fdcec0b8399108577ec290f55551d926d9a1fa6cad45882093a7a07ac5ec147b
     # via sqlalchemy
-importlib-metadata==4.8.1 ; python_version < "3.8" \
+importlib-metadata==4.8.1 ; python_version < "3.10" \
     --hash=sha256:b618b6d2d5ffa2f16add5697cf57a46c76a56229b0ed1c438322e4e95645bd15 \
     --hash=sha256:f284b3e11256ad1e5d03ab86bb2ccd6f5339688ff17a4d797a0fe7df326f23b1
     # via
