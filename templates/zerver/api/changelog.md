@@ -1,13 +1,22 @@
 # API changelog
 
-This page documents changes to the Zulip Server API over time. See also
-the [Zulip server changelog][server-changelog].
+This page documents changes to the Zulip Server API over time. See
+also the [Zulip release lifecycle](../overview/release-lifecycle.md)
+for background on why this API changelog is important, and the [Zulip
+server changelog][server-changelog].
 
-The recommended way for a client like the Zulip mobile or desktop apps
-that needs to support interaction with a wide range of different Zulip
-server versions is to check the `zulip_feature_level` parameter in the
-`/register` and `/server_settings` responses to determine which of the
-below features are supported.
+The API feature levels system used in this changelog is designed to
+make it possible to write API clients, such as the Zulip mobile and
+terminal apps, that work with a wide range of Zulip server
+versions. Every change to the Zulip API is recorded both here and in
+**Changes** entries in the API documentation for the modified
+endpoint(s).
+
+When using an API endpoint whose behavior has changed, Zulip API
+clients should check the `zulip_feature_level` field, present in the
+[`GET /server_settings`](/api/get-server-settings) and [`POST
+/register`](/api/register-queue) responses, to determine the API
+format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 5.0
 
