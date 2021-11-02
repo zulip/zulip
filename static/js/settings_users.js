@@ -276,6 +276,7 @@ section.bots.create_table = () => {
         sort_fields: {
             email: sort_bot_email,
             bot_owner: sort_bot_owner,
+            id: sort_user_id,
         },
         simplebar_container: $("#admin-bot-list .progressive-table-wrapper"),
     });
