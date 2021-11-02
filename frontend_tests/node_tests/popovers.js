@@ -52,6 +52,7 @@ const alice = {
     is_guest: false,
     is_admin: false,
     role: 400,
+    date_joined: "2021-11-01T16:32:16.458735+00:00",
 };
 
 const me = {
@@ -111,6 +112,7 @@ function test_ui(label, f) {
 }
 
 test_ui("sender_hover", ({override, mock_template}) => {
+    page_params.is_spectator = false;
     override($.fn, "popover", noop);
     override(emoji, "get_emoji_details_by_name", noop);
 
@@ -196,6 +198,8 @@ test_ui("sender_hover", ({override, mock_template}) => {
             status_text: "on the beach",
             status_emoji_info,
             user_mention_syntax: "@**Alice Smith**",
+            date_joined: undefined,
+            spectator_view: false,
         });
         return "content-html";
     });
