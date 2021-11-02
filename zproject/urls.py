@@ -676,11 +676,14 @@ urls += [
     ),
     rest_path(
         "user_uploads/<realm_id_str>/<path:filename>",
-        GET=(serve_file_backend, {"override_api_url_scheme"}),
+        GET=(serve_file_backend, {"override_api_url_scheme", "allow_anonymous_user_web"}),
     ),
     # This endpoint redirects to camo; it requires an exception for the
     # same reason.
-    rest_path("thumbnail", GET=(backend_serve_thumbnail, {"override_api_url_scheme"})),
+    rest_path(
+        "thumbnail",
+        GET=(backend_serve_thumbnail, {"override_api_url_scheme", "allow_anonymous_user_web"}),
+    ),
     # Avatars have the same constraint because their URLs are included
     # in API data structures used by both the mobile and web clients.
     rest_path(

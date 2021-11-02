@@ -25,7 +25,12 @@ import re2
 from bitfield import BitField
 from bitfield.types import BitHandler
 from django.conf import settings
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    AnonymousUser,
+    PermissionsMixin,
+    UserManager,
+)
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
@@ -74,7 +79,7 @@ from zerver.lib.cache import (
     user_profile_by_id_cache_key,
     user_profile_cache_key,
 )
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, RateLimited
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import (
@@ -3378,14 +3383,36 @@ def validate_attachment_request_for_spectator_access(
         )
         attachment.refresh_from_db()
 
-    return attachment.is_web_public
+    if not attachment.is_web_public:
+        return False
+
+    if settings.RATE_LIMITING:
+        try:
+            from zerver.lib.rate_limiter import rate_limit_spectator_attachment_access_by_file
+
+            rate_limit_spectator_attachment_access_by_file(attachment.path_id)
+        except RateLimited:
+            return False
+
+    return True
 
 
-def validate_attachment_request(user_profile: UserProfile, path_id: str) -> Optional[bool]:
+def validate_attachment_request(
+    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    path_id: str,
+    realm: Optional[Realm] = None,
+) -> Optional[bool]:
     try:
         attachment = Attachment.objects.get(path_id=path_id)
     except Attachment.DoesNotExist:
         return None
+
+    if isinstance(maybe_user_profile, AnonymousUser):
+        assert realm is not None
+        return validate_attachment_request_for_spectator_access(realm, attachment)
+
+    user_profile = maybe_user_profile
+    assert isinstance(user_profile, UserProfile)
 
     # Update cached is_realm_public property, if necessary.
     if attachment.is_realm_public is None:

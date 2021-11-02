@@ -516,3 +516,21 @@ class RateLimitResult:
         self.secs_to_freedom = secs_to_freedom
         self.over_limit = over_limit
         self.remaining = remaining
+
+
+class RateLimitedSpectatorAttachmentAccessByFile(RateLimitedObject):
+    def __init__(self, path_id: str) -> None:
+        self.path_id = path_id
+        super().__init__()
+
+    def key(self) -> str:
+        return f"{type(self).__name__}:{self.path_id}"
+
+    def rules(self) -> List[Tuple[int, int]]:
+        return settings.RATE_LIMITING_RULES["spectator_attachment_access_by_file"]
+
+
+def rate_limit_spectator_attachment_access_by_file(path_id: str) -> None:
+    ratelimited, _ = RateLimitedSpectatorAttachmentAccessByFile(path_id).rate_limit()
+    if ratelimited:
+        raise RateLimited

@@ -1,12 +1,15 @@
 from mimetypes import guess_type
+from typing import Union
 
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import redirect
 from django.utils.cache import patch_cache_control
 from django.utils.translation import gettext as _
 from django_sendfile import sendfile
 
+from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success
 from zerver.lib.upload import (
@@ -76,9 +79,12 @@ def serve_file_download_backend(
 
 
 def serve_file_backend(
-    request: HttpRequest, user_profile: UserProfile, realm_id_str: str, filename: str
+    request: HttpRequest,
+    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    realm_id_str: str,
+    filename: str,
 ) -> HttpResponse:
-    return serve_file(request, user_profile, realm_id_str, filename, url_only=False)
+    return serve_file(request, maybe_user_profile, realm_id_str, filename, url_only=False)
 
 
 def serve_file_url_backend(
@@ -94,14 +100,15 @@ def serve_file_url_backend(
 
 def serve_file(
     request: HttpRequest,
-    user_profile: UserProfile,
+    maybe_user_profile: Union[UserProfile, AnonymousUser],
     realm_id_str: str,
     filename: str,
     url_only: bool = False,
     download: bool = False,
 ) -> HttpResponse:
     path_id = f"{realm_id_str}/{filename}"
-    is_authorized = validate_attachment_request(user_profile, path_id)
+    realm = get_valid_realm_from_request(request)
+    is_authorized = validate_attachment_request(maybe_user_profile, path_id, realm)
 
     if is_authorized is None:
         return HttpResponseNotFound(_("<p>File not found.</p>"))
