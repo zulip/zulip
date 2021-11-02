@@ -162,7 +162,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
 
     mock_template("user_info_popover_title.hbs", false, (opts) => {
         assert.deepEqual(opts, {
-            user_avatar: "avatar/alice@example.com",
+            user_avatar: "http://zulip.zulipdev.com/avatar/42?s=50",
             user_is_guest: false,
         });
         return "title-html";
