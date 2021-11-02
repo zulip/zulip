@@ -3120,3 +3120,21 @@ select.inline_select_topic_edit {
     top: -1px;
     font-weight: 600;
 }
+
+.spectator_login_for_image_button {
+    max-width: 250px;
+    height: 50px;
+
+    :hover {
+        text-decoration: none;
+    }
+
+    .login_button {
+        padding: 5px;
+        margin-top: 5px;
+
+        .fa {
+            top: 1px;
+        }
+    }
+}

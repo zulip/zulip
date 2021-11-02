@@ -4,6 +4,7 @@ import _ from "lodash";
 
 import * as resolved_topic from "../shared/js/resolved_topic";
 import render_bookend from "../templates/bookend.hbs";
+import render_login_to_view_image_button from "../templates/login_to_view_image_button.hbs";
 import render_message_group from "../templates/message_group.hbs";
 import render_recipient_row from "../templates/recipient_row.hbs";
 import render_single_message from "../templates/single_message.hbs";
@@ -630,6 +631,16 @@ export class MessageListView {
             const $row = $(dom_row);
             this._put_row($row);
             this._post_process_single_row($row);
+        }
+
+        if (page_params.is_spectator) {
+            // For images that fail to load due to being rate limited or being denied access
+            // by server in general, we tell user to login to be able to view the image.
+            $message_rows.find(".message_inline_image img").on("error", (e) => {
+                $(e.target)
+                    .closest(".message_inline_image")
+                    .replaceWith(render_login_to_view_image_button());
+            });
         }
     }
 
