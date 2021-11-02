@@ -256,7 +256,8 @@ function render_user_info_popover(
         placement: popover_placement,
         template: render_no_arrow_popover({class: template_class}),
         title: render_user_info_popover_title({
-            user_avatar: "avatar/" + user.email,
+            // See the load_medium_avatar comment for important background.
+            user_avatar: people.small_avatar_url_for_person(user),
             user_is_guest: user.is_guest,
         }),
         html: true,
@@ -269,6 +270,13 @@ function render_user_info_popover(
     init_email_clipboard();
     init_email_tooltip(user);
 
+    // Note: We pass the normal-size avatar in initial rendering, and
+    // then query the server to replace it with the medium-size
+    // avatar.  The purpose of this double-fetch approach is to take
+    // advantage of the fact that the browser should already have the
+    // low-resolution image cached and thus display a low-resolution
+    // avatar rather than a blank area during the network delay for
+    // fetching the medium-size one.
     load_medium_avatar(user, $(".popover-avatar"));
 }
 
