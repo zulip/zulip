@@ -979,7 +979,6 @@ class DeferredWorker(QueueProcessingWorker):
                     threads=6,
                     upload=True,
                     public_only=True,
-                    delete_after_upload=True,
                 )
             except Exception:
                 export_event.extra_data = orjson.dumps(
