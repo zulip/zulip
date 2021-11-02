@@ -183,7 +183,7 @@ function FakeElement(selector, opts) {
         },
         remove() {
             throw new Error(`
-                We don't support remove in zjuery.
+                We don't support remove in zjquery.
 
                 You can do $(...).remove = ... if necessary.
 
