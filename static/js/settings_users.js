@@ -76,6 +76,10 @@ function sort_last_active(a, b) {
     );
 }
 
+function sort_user_id(a, b) {
+    return compare_a_b(a.user_id, b.user_id);
+}
+
 function get_user_info_row(user_id) {
     return $(`tr.user_row[data-user-id='${CSS.escape(user_id)}']`);
 }
@@ -300,6 +304,7 @@ section.active.create_table = (active_users) => {
             email: sort_email,
             last_active: sort_last_active,
             role: sort_role,
+            id: sort_user_id,
         },
         simplebar_container: $("#admin-user-list .progressive-table-wrapper"),
     });
@@ -327,6 +332,7 @@ section.deactivated.create_table = (deactivated_users) => {
         sort_fields: {
             email: sort_email,
             role: sort_role,
+            id: sort_user_id,
         },
         simplebar_container: $("#admin-deactivated-users-list .progressive-table-wrapper"),
     });
