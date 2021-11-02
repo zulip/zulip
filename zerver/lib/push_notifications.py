@@ -818,8 +818,28 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
     """
     user_profile = get_user_profile_by_id(user_profile_id)
     message_ids = bulk_access_messages_expect_usermessage(user_profile_id, message_ids)
-    gcm_payload, gcm_options = get_remove_payload_gcm(user_profile, message_ids)
-    apns_payload = get_remove_payload_apns(user_profile, message_ids)
+
+    # APNs has a 4KB limit on the maximum size of messages, which
+    # translated to several hundred message IDs in one of these
+    # notifications. In rare cases, it's possible for someone to mark
+    # thousands of push notification eligible messages as read at
+    # once. We could handle this situation with a loop, but we choose
+    # to truncate instead to avoid extra network traffic, because it's
+    # very likely the user has manually cleared the notifications in
+    # their mobile device's UI anyway.
+    #
+    # When truncating, we keep only the newest N messages in this
+    # remove event. This is optimal because older messages are the
+    # ones most likely to have already been manually cleared at some
+    # point in the past.
+    #
+    # We choose 200 here because a 10-digit message ID plus a comma and
+    # space consume 12 bytes, and 12 x 200 = 2400 bytes is still well
+    # below the 4KB limit (leaving plenty of space for metadata).
+    MAX_APNS_MESSAGE_IDS = 200
+    truncated_message_ids = list(sorted(message_ids))[-MAX_APNS_MESSAGE_IDS:]
+    gcm_payload, gcm_options = get_remove_payload_gcm(user_profile, truncated_message_ids)
+    apns_payload = get_remove_payload_apns(user_profile, truncated_message_ids)
 
     if uses_notification_bouncer():
         send_notifications_to_bouncer(user_profile_id, apns_payload, gcm_payload, gcm_options)
@@ -835,6 +855,10 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
         if apple_devices:
             send_apple_push_notification(user_profile_id, apple_devices, apns_payload)
 
+    # We intentionally use the non-truncated message_ids here.  We are
+    # assuming in this very rare case that the user has manually
+    # dismissed these notifications on the device side, and the server
+    # should no longer track them as outstanding notifications.
     UserMessage.objects.filter(
         user_profile_id=user_profile_id,
         message_id__in=message_ids,
