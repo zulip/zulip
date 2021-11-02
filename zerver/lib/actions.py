@@ -7284,11 +7284,12 @@ def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
 
     check_invite_limit(prereg_user.referred_by.realm, 1)
 
-    prereg_user.invited_at = timezone_now()
-    prereg_user.save()
     invite_expires_in_days = (
         prereg_user.confirmation.get().expiry_date - prereg_user.invited_at
     ).days
+
+    prereg_user.invited_at = timezone_now()
+    prereg_user.save()
     prereg_user.confirmation.clear()
 
     do_increment_logging_stat(
