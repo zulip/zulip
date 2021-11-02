@@ -1,9 +1,9 @@
 # API changelog
 
 This page documents changes to the Zulip Server API over time. See
-also the [Zulip release lifecycle](../overview/release-lifecycle.md)
-for background on why this API changelog is important, and the [Zulip
-server changelog][server-changelog].
+also the [Zulip release lifecycle][release-lifecycle] for background
+on why this API changelog is important, and the [Zulip server
+changelog][server-changelog].
 
 The API feature levels system used in this changelog is designed to
 make it possible to write API clients, such as the Zulip mobile and
@@ -919,3 +919,4 @@ No changes; feature level used for Zulip 3.0 release.
   being changed and should not be used by clients.
 
 [server-changelog]: https://zulip.readthedocs.io/en/latest/overview/changelog.html
+[release-lifecycle]: https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html
