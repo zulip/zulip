@@ -67,10 +67,10 @@ importlib-metadata;python_version<"3.10"  # for jsonpickle, jsonschema
 cairosvg
 
 # Needed for tools/check-thirdparty
-python-debian
+python-debian<0.1.42  # https://bugs.debian.org/997857
 
 # Pattern-based lint tool
-semgrep<0.69.0  # 0.69.0 prints an annoying notice about metrics
+semgrep
 
 # Contains Pysa, a security-focused static analyzer
 pyre-check
