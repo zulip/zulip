@@ -242,15 +242,21 @@
             margin: auto;
             border-radius: 6px;
 
+            tbody {
+                border-bottom: none;
+
+                tr:last-of-type {
+                    border-bottom: none;
+                }
+            }
+
             tr {
                 border-bottom: 1px solid hsl(0, 0%, 93%);
 
-                &:last-of-type {
-                    border-bottom: none;
-                }
-
-                td {
+                td,
+                th {
                     padding: 4px 0;
+                    vertical-align: middle;
 
                     &:first-of-type {
                         padding-left: 10px;
@@ -258,10 +264,6 @@
 
                     &:last-of-type {
                         padding-right: 10px;
-                    }
-
-                    &.unsubscribe {
-                        text-align: right;
                     }
                 }
             }
@@ -275,13 +277,25 @@
                 content: "No subscribers to this stream.";
                 display: block;
 
-                text-align: center;
                 color: hsl(0, 0%, 67%);
+                padding: 5px 5px 5px 10px;
             }
 
-            &:empty {
-                display: block;
-                padding: 5px;
+            thead th {
+                color: inherit;
+                background-color: hsl(0, 0%, 100%);
+
+                &:first-of-type {
+                    border-top-left-radius: 4px;
+                }
+
+                &:last-of-type {
+                    border-top-right-radius: 4px;
+                }
+
+                position: sticky;
+                top: 0;
+                z-index: 1;
             }
         }
     }
