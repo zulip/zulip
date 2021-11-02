@@ -1947,7 +1947,6 @@ def export_realm_wrapper(
     threads: int,
     upload: bool,
     public_only: bool,
-    delete_after_upload: bool,
     percent_callback: Optional[Callable[[Any], None]] = None,
     consent_message_id: Optional[int] = None,
 ) -> Optional[str]:
@@ -1958,9 +1957,8 @@ def export_realm_wrapper(
         public_only=public_only,
         consent_message_id=consent_message_id,
     )
-    print(f"Finished exporting to {output_dir}")
+    shutil.rmtree(output_dir)
     print(f"Tarball written to {tarball_path}")
-
     if not upload:
         return None
 
@@ -1971,12 +1969,10 @@ def export_realm_wrapper(
     public_url = zerver.lib.upload.upload_backend.upload_export_tarball(
         realm, tarball_path, percent_callback=percent_callback
     )
-    print()
-    print(f"Uploaded to {public_url}")
+    print(f"\nUploaded to {public_url}")
 
-    if delete_after_upload:
-        os.remove(tarball_path)
-        print(f"Successfully deleted the tarball at {tarball_path}")
+    os.remove(tarball_path)
+    print(f"Successfully deleted the tarball at {tarball_path}")
     return public_url
 
 
