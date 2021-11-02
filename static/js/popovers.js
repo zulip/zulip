@@ -1,5 +1,5 @@
 import ClipboardJS from "clipboard";
-import {add, formatISO, set} from "date-fns";
+import {add, formatISO, parseISO, set} from "date-fns";
 import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
 import tippy, {hideAll} from "tippy.js";
@@ -208,6 +208,13 @@ function render_user_info_popover(
     const status_text = user_status.get_status_text(user.user_id);
     const status_emoji_info = user_status.get_status_emoji(user.user_id);
 
+    const spectator_view = page_params.is_spectator;
+    let date_joined;
+    if (spectator_view) {
+        const dateFormat = new Intl.DateTimeFormat("default", {dateStyle: "long"});
+        date_joined = dateFormat.format(parseISO(user.date_joined));
+    }
+
     const args = {
         can_revoke_away,
         can_set_away,
@@ -234,6 +241,8 @@ function render_user_info_popover(
         status_text,
         status_emoji_info,
         user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
+        date_joined,
+        spectator_view,
     };
 
     if (user.is_bot) {
