@@ -203,7 +203,7 @@ class RateLimitTests(ZulipTestCase):
         resp = self.send_unauthed_api_request(REMOTE_ADDR="127.0.0.2")
         self.assertNotEqual(resp.status_code, 429)
 
-    @rate_limit_rule(1, 5, domain="create_realm_by_ip")
+    @rate_limit_rule(1, 5, domain="sends_email_by_ip")
     def test_create_realm_rate_limiting(self) -> None:
         with self.settings(OPEN_REALM_CREATION=True):
             self.do_test_hit_ratelimits(
@@ -211,7 +211,7 @@ class RateLimitTests(ZulipTestCase):
                 is_json=False,
             )
 
-    @rate_limit_rule(1, 5, domain="find_account_by_ip")
+    @rate_limit_rule(1, 5, domain="sends_email_by_ip")
     def test_find_account_rate_limiting(self) -> None:
         self.do_test_hit_ratelimits(
             lambda: self.client_post("/accounts/find/", {"emails": "new@zulip.com"}),
@@ -221,12 +221,27 @@ class RateLimitTests(ZulipTestCase):
     # Test whether submitting multiple emails is handled correctly.
     # The limit is set to 10 per second, so 5 requests with 2 emails
     # submitted in each should be allowed.
-    @rate_limit_rule(1, 10, domain="find_account_by_ip")
+    @rate_limit_rule(1, 10, domain="sends_email_by_ip")
     def test_find_account_rate_limiting_multiple(self) -> None:
         self.do_test_hit_ratelimits(
             lambda: self.client_post("/accounts/find/", {"emails": "new@zulip.com,new2@zulip.com"}),
             is_json=False,
         )
+
+    @rate_limit_rule(1, 5, domain="sends_email_by_ip")
+    def test_combined_ip_limits(self) -> None:
+        # Alternate requests to /new/ and /accounts/find/
+        request_count = 0
+
+        def alternate_requests() -> HttpResponse:
+            nonlocal request_count
+            request_count += 1
+            if request_count % 2 == 1:
+                return self.client_post("/new/", {"email": "new@zulip.com"})
+            else:
+                return self.client_post("/accounts/find/", {"emails": "new@zulip.com"})
+
+        self.do_test_hit_ratelimits(alternate_requests, is_json=False)
 
     @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
     @rate_limit_rule(1, 5, domain="api_by_remote_server")
