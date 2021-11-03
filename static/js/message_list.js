@@ -2,7 +2,6 @@ import autosize from "autosize";
 import $ from "jquery";
 
 import * as blueslip from "./blueslip";
-import {$t} from "./i18n";
 import {MessageListData} from "./message_list_data";
 import {MessageListView} from "./message_list_view";
 import * as narrow_banner from "./narrow_banner";
@@ -230,25 +229,6 @@ export class MessageList {
         return this.data.selected_idx();
     }
 
-    subscribed_bookend_content(stream_name) {
-        return $t({defaultMessage: "You subscribed to stream {stream}"}, {stream: stream_name});
-    }
-
-    unsubscribed_bookend_content(stream_name) {
-        return $t({defaultMessage: "You unsubscribed from stream {stream}"}, {stream: stream_name});
-    }
-
-    not_subscribed_bookend_content(stream_name) {
-        return $t(
-            {defaultMessage: "You are not subscribed to stream {stream}"},
-            {stream: stream_name},
-        );
-    }
-
-    deactivated_bookend_content() {
-        return $t({defaultMessage: "This stream has been deactivated"});
-    }
-
     // Maintains a trailing bookend element explaining any changes in
     // your subscribed/unsubscribed status at the bottom of the
     // message list.
@@ -261,30 +241,29 @@ export class MessageList {
         if (stream_name === undefined) {
             return;
         }
-        let trailing_bookend_content;
+        let deactivated = false;
+        let just_unsubscribed = false;
         let show_button = true;
         const subscribed = stream_data.is_subscribed_by_name(stream_name);
         const sub = stream_data.get_sub(stream_name);
         if (sub === undefined) {
-            trailing_bookend_content = this.deactivated_bookend_content();
+            deactivated = true;
             // Hide the resubscribe button for streams that no longer exist.
             show_button = false;
-        } else if (subscribed) {
-            trailing_bookend_content = this.subscribed_bookend_content(stream_name);
-        } else {
-            if (!this.last_message_historical) {
-                trailing_bookend_content = this.unsubscribed_bookend_content(stream_name);
+        } else if (!subscribed && !this.last_message_historical) {
+            just_unsubscribed = true;
 
-                // For invite only streams hide the resubscribe button
-                // Hide button for guest users
-                show_button = !page_params.is_guest && !sub.invite_only;
-            } else {
-                trailing_bookend_content = this.not_subscribed_bookend_content(stream_name);
-            }
+            // For invite only streams hide the resubscribe button
+            // Hide button for guest users
+            show_button = !page_params.is_guest && !sub.invite_only;
         }
-        if (trailing_bookend_content !== undefined) {
-            this.view.render_trailing_bookend(trailing_bookend_content, subscribed, show_button);
-        }
+        this.view.render_trailing_bookend(
+            stream_name,
+            subscribed,
+            deactivated,
+            just_unsubscribed,
+            show_button,
+        );
     }
 
     unmuted_messages(messages) {
