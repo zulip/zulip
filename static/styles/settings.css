@@ -1843,6 +1843,12 @@ input[type="checkbox"] {
         display: block;
     }
 
+    .new-user-group-form div.user_name,
+    .new-user-group-form div.user_description,
+    .new-emoji-form div.emoji_name {
+        margin-bottom: 5px;
+    }
+
     .user-avatar-section .avatar-controls {
         display: inline-block;
         margin-top: 10px;
@@ -1907,6 +1913,20 @@ input[type="checkbox"] {
 @media (width < $sm_min) {
     #pw_strength {
         margin: auto;
+    }
+
+    .new-user-group-form #admin_user_submit,
+    .new-emoji-form #admin_emoji_submit {
+        margin: 5px 0;
+    }
+
+    .new-emoji-form div.emoji_name {
+        margin: 0 0 15px;
+    }
+
+    .new-emoji-form #emoji_upload_button,
+    .new-emoji-form #emoji_image_clear_button {
+        margin-left: -3px;
     }
 
     #linkifier-settings .new-linkifier-form,

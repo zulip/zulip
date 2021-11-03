@@ -22,15 +22,15 @@
                 <div class="new-user-group-form">
                     <div class="settings-section-title new-user-group-section-title no-padding">{{t "Add a new user group" }}</div>
                     <div class="alert" id="admin-user-group-status"></div>
-                    <div class="inline-block">
+                    <div class="inline-block user_name">
                         <label for="user_group_name">{{t "Name" }}</label>
                         <input type="text" name="name" id="user_group_name" maxlength="100" placeholder="{{t 'marketing' }}" />
                     </div>
-                    <div class="inline-block">
+                    <div class="inline-block user_decription">
                         <label for="user_group_description">{{t "Description" }}</label>
                         <input type="text" name="description" id="user_group_description" maxlength="300" placeholder="{{t 'Marketing team' }}" />
                     </div>
-                    <button type="submit" class="button rounded sea-green">
+                    <button type="submit" id="admin_user_submit" class="button rounded sea-green">
                         {{t 'Save' }}
                     </button>
                 </div>
