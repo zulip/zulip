@@ -1,6 +1,6 @@
 import time
 from contextlib import contextmanager
-from typing import Callable, Iterator, Optional
+from typing import Any, Callable, Iterator
 from unittest import mock, skipUnless
 
 import DNS
@@ -118,8 +118,8 @@ class RateLimitTests(ZulipTestCase):
             },
         )
 
-    def send_unauthed_api_request(self) -> HttpResponse:
-        result = self.client_get("/json/messages")
+    def send_unauthed_api_request(self, **kwargs: Any) -> HttpResponse:
+        result = self.client_get("/json/messages", **kwargs)
         # We're not making a correct request here, but rate-limiting is supposed
         # to happen before the request fails due to not being correctly made. Thus
         # we expect either an 400 error if the request is allowed by the rate limiter,
@@ -198,6 +198,10 @@ class RateLimitTests(ZulipTestCase):
     @rate_limit_rule(1, 5, domain="api_by_ip")
     def test_hit_ratelimits_as_ip(self) -> None:
         self.do_test_hit_ratelimits(self.send_unauthed_api_request)
+
+        # Other IPs should not be rate-limited
+        resp = self.send_unauthed_api_request(REMOTE_ADDR="127.0.0.2")
+        self.assertNotEqual(resp.status_code, 429)
 
     @rate_limit_rule(1, 5, domain="create_realm_by_ip")
     def test_create_realm_rate_limiting(self) -> None:
