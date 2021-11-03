@@ -308,15 +308,15 @@ export class MessageListView {
 
         if (!last_subscribed && first_subscribed) {
             group.bookend_top = true;
-            group.subscribed = stream;
-            group.bookend_content = this.list.subscribed_bookend_content(stream);
+            group.subscribed = true;
+            group.stream_name = stream;
             return;
         }
 
         if (last_subscribed && !first_subscribed) {
             group.bookend_top = true;
-            group.unsubscribed = stream;
-            group.bookend_content = this.list.unsubscribed_bookend_content(stream);
+            group.just_unsubscribed = true;
+            group.stream_name = stream;
             return;
         }
     }
@@ -1295,12 +1295,14 @@ export class MessageListView {
         trailing_bookend.remove();
     }
 
-    render_trailing_bookend(trailing_bookend_content, subscribed, show_button) {
+    render_trailing_bookend(stream_name, subscribed, deactivated, just_unsubscribed, show_button) {
         const rendered_trailing_bookend = $(
             render_bookend({
-                bookend_content: trailing_bookend_content,
+                stream_name,
                 trailing: show_button,
                 subscribed,
+                deactivated,
+                just_unsubscribed,
             }),
         );
         rows.get_table(this.table_name).append(rendered_trailing_bookend);

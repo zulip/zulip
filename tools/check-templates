@@ -26,6 +26,8 @@ EXCLUDED_FILES = [
     "templates/zerver/emails/missed_message.source.html",
     # Previously unchecked and our parser doesn't like its indentation
     "static/assets/icons/template.hbs",
+    # Template checker recommends very hard to read indentation.
+    "static/templates/bookend.hbs",
     # The parser does not like the indentation of custom ReadTheDocs templates
     "docs/_templates/layout.html",
 ]
