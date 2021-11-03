@@ -266,8 +266,7 @@ RATE_LIMITING_RULES: Dict[str, List[Tuple[int, int]]] = {
     "api_by_ip": [],
     "api_by_remote_server": [],
     "authenticate_by_username": [],
-    "create_realm_by_ip": [],
-    "find_account_by_ip": [],
+    "sends_email_by_ip": [],
     "password_reset_form_by_email": [],
 }
 

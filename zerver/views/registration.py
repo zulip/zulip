@@ -605,7 +605,7 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
         form = RealmCreationForm(request.POST)
         if form.is_valid():
             try:
-                rate_limit_request_by_ip(request, domain="create_realm_by_ip")
+                rate_limit_request_by_ip(request, domain="sends_email_by_ip")
             except RateLimited as e:
                 assert e.secs_to_freedom is not None
                 return render(
@@ -725,7 +725,7 @@ def find_account(
             emails = form.cleaned_data["emails"]
             for i in range(len(emails)):
                 try:
-                    rate_limit_request_by_ip(request, domain="find_account_by_ip")
+                    rate_limit_request_by_ip(request, domain="sends_email_by_ip")
                 except RateLimited as e:
                     assert e.secs_to_freedom is not None
                     return render(
