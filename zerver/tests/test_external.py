@@ -194,6 +194,16 @@ class RateLimitTests(ZulipTestCase):
 
         self.do_test_hit_ratelimits(lambda: self.send_api_message(user, "some stuff"))
 
+    @rate_limit_rule(1, 5, domain="email_change_by_user")
+    def test_hit_change_email_ratelimit_as_user(self) -> None:
+        user = self.example_user("cordelia")
+        RateLimitedUser(user).clear_history()
+
+        emails = ["new-email-{n}@zulip.com" for n in range(1, 8)]
+        self.do_test_hit_ratelimits(
+            lambda: self.api_patch(user, "/api/v1/settings", {"email": emails.pop()}),
+        )
+
     @rate_limit_rule(1, 5, domain="api_by_ip")
     def test_hit_ratelimits_as_ip(self) -> None:
         self.do_test_hit_ratelimits(self.send_unauthed_api_request)
