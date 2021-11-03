@@ -14,9 +14,10 @@
     "recommendations": [
         "42crunch.vscode-openapi",
         "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode"
+        "esbenp.prettier-vscode",
+        "ms-vscode-remote.vscode-remote-extensionpack"
     ],
 
-    // Extensions recommended by VS Code that are not recommended for users of zulip/zulip.
+    // Extensions recommended by VS Code which are not recommended for users of zulip/zulip.
     "unwantedRecommendations": []
 }
