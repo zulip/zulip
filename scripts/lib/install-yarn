@@ -10,7 +10,8 @@ check_version() {
     # than running yarn --version.
     link="$(command -v yarn)" \
         && bin="$(readlink -f "$link")" \
-        && current_version="$(jq -r '.version' "${bin%/*/*}/package.json")" \
+        && [ "$bin" = /srv/zulip-yarn/bin/yarn ] \
+        && current_version="$(jq -r '.version' /srv/zulip-yarn/package.json)" \
         && [ "$current_version" = "$version" ]
 }
 
