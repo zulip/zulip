@@ -10,10 +10,14 @@
 <div class="app help terms-page inline-block{% if page_is_help_center %} help-center{% endif %}{% if page_is_api_center %} api-center{% endif %}">
     <div class="sidebar">
         <div class="content">
+            {% if not page_is_policy_center %}
             <h1><a href="https://zulip.com" class="no-underline">Zulip homepage</a></h1>
             <h1><a href="{{ doc_root }}" class="no-underline">{{ doc_root_title }} home</a></h1>
+            {% endif %}
             {{ render_markdown_path(sidebar_index, api_uri_context) }}
+            {% if not page_is_policy_center %}
             <h1 class="home-link"><a href="/" class="no-underline">Back to Zulip</a></h1>
+            {% endif %}
         </div>
     </div>
 

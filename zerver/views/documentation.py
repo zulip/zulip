@@ -69,6 +69,7 @@ class ApiURLView(TemplateView):
 
 class MarkdownDirectoryView(ApiURLView):
     path_template = ""
+    policies_view = False
 
     def get_path(self, article: str) -> DocumentationArticle:
         http_status = 200
@@ -90,7 +91,6 @@ class MarkdownDirectoryView(ApiURLView):
         # The following is a somewhat hacky approach to extract titles from articles.
         # Hack: `context["article"] has a leading `/`, so we use + to add directories.
         article_path = os.path.join(settings.DEPLOY_ROOT, "templates") + path
-
         if (not os.path.exists(article_path)) and self.path_template == "/zerver/api/%s.md":
             try:
                 endpoint_name, endpoint_method = get_endpoint_from_operationid(article)
@@ -134,6 +134,13 @@ class MarkdownDirectoryView(ApiURLView):
             sidebar_article = self.get_path("include/sidebar_index")
             sidebar_index = sidebar_article.article_path
             title_base = "Zulip Help Center"
+        elif self.path_template == f"{settings.POLICIES_DIRECTORY}/%s.md":
+            context["page_is_policy_center"] = True
+            context["doc_root"] = "/policies/"
+            context["doc_root_title"] = "Terms and policies"
+            sidebar_article = self.get_path("sidebar_index")
+            sidebar_index = sidebar_article.article_path
+            title_base = "Zulip terms and policies"
         else:
             context["page_is_api_center"] = True
             context["doc_root"] = "/api/"
@@ -188,6 +195,12 @@ class MarkdownDirectoryView(ApiURLView):
         return context
 
     def get(self, request: HttpRequest, article: str = "") -> HttpResponse:
+        # Hack: It's hard to reinitialize urls.py from tests, and so
+        # we want to defer the use of settings.POLICIES_DIRECTORY to
+        # runtime.
+        if self.policies_view:
+            self.path_template = f"{settings.POLICIES_DIRECTORY}/%s.md"
+
         documentation_article = self.get_path(article)
         http_status = documentation_article.article_http_status
         result = super().get(self, article=article)

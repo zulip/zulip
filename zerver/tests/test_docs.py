@@ -558,49 +558,34 @@ class AppsPageTest(ZulipTestCase):
 
 
 class PrivacyTermsTest(ZulipTestCase):
-    def test_custom_tos_template(self) -> None:
-        response = self.client_get("/terms/")
-
-        self.assert_in_success_response(
-            [
-                'Thanks for using our products and services ("Services"). ',
-                "By using our Services, you are agreeing to these terms",
-            ],
-            response,
-        )
-
     def test_custom_terms_of_service_template(self) -> None:
-        not_configured_message = (
-            "This installation of Zulip does not have a configured terms of service"
-        )
-        with self.settings(TERMS_OF_SERVICE=None):
-            response = self.client_get("/terms/")
-        self.assert_in_success_response([not_configured_message], response)
-        with self.settings(TERMS_OF_SERVICE="zerver/tests/markdown/test_markdown.md"):
-            response = self.client_get("/terms/")
-        self.assert_in_success_response(["This is some <em>bold text</em>."], response)
-        self.assert_not_in_success_response([not_configured_message], response)
+        # Test fails due to this issue:
+        # https://stackoverflow.com/questions/45173272/django-pytest-test-url-based-on-settings
+        not_configured_message = "This installation of Zulip has not been configured"
+        with self.settings(POLICIES_DIRECTORY="/zerver/policies_absent"):
+            response = self.client_get("/policies/terms")
+        self.assert_in_response(not_configured_message, response)
+
+        with self.settings(POLICIES_DIRECTORY="/corporate/policies"):
+            response = self.client_get("/policies/terms")
+        self.assert_in_success_response(["Kandra Labs"], response)
 
     def test_custom_privacy_policy_template(self) -> None:
-        not_configured_message = (
-            "This installation of Zulip does not have a configured privacy policy"
-        )
-        with self.settings(PRIVACY_POLICY=None):
-            response = self.client_get("/privacy/")
-        self.assert_in_success_response([not_configured_message], response)
-        with self.settings(PRIVACY_POLICY="zerver/tests/markdown/test_markdown.md"):
-            response = self.client_get("/privacy/")
-        self.assert_in_success_response(["This is some <em>bold text</em>."], response)
-        self.assert_not_in_success_response([not_configured_message], response)
+        not_configured_message = "This installation of Zulip has not been configured"
+        with self.settings(POLICIES_DIRECTORY="/zerver/policies_absent"):
+            response = self.client_get("/policies/privacy")
+        self.assert_in_response(not_configured_message, response)
+
+        with self.settings(POLICIES_DIRECTORY="/corporate/policies"):
+            response = self.client_get("/policies/privacy")
+        self.assert_in_success_response(["Kandra Labs"], response)
 
     def test_custom_privacy_policy_template_with_absolute_url(self) -> None:
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        abs_path = os.path.join(
-            current_dir, "..", "..", "templates/zerver/tests/markdown/test_markdown.md"
-        )
-        with self.settings(PRIVACY_POLICY=abs_path):
-            response = self.client_get("/privacy/")
-        self.assert_in_success_response(["This is some <em>bold text</em>."], response)
+        abs_path = os.path.join(current_dir, "..", "..", "templates/corporate/policies")
+        with self.settings(POLICIES_DIRECTORY=abs_path):
+            response = self.client_get("/policies/privacy")
+        self.assert_in_success_response(["Kandra Labs."], response)
 
     def test_no_nav(self) -> None:
         # Test that our ?nav=0 feature of /privacy and /terms,
@@ -608,11 +593,11 @@ class PrivacyTermsTest(ZulipTestCase):
         # policies that ToS/Privacy pages linked from an iOS app have
         # no links to the rest of the site if there's pricing
         # information for anything elsewhere on the site.
-        response = self.client_get("/terms/")
-        self.assert_in_success_response(["Plans"], response)
+        response = self.client_get("/policies/terms")
+        self.assert_in_success_response(["Back to Zulip"], response)
 
-        response = self.client_get("/terms/", {"nav": "no"})
-        self.assert_not_in_success_response(["Plans"], response)
+        response = self.client_get("/policies/terms", {"nav": "no"})
+        self.assert_not_in_success_response(["Back to Zulip"], response)
 
-        response = self.client_get("/privacy/", {"nav": "no"})
-        self.assert_not_in_success_response(["Plans"], response)
+        response = self.client_get("/policies/privacy", {"nav": "no"})
+        self.assert_not_in_success_response(["Back to Zulip"], response)

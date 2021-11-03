@@ -271,6 +271,7 @@ RATE_LIMITING_RULES: Dict[str, List[Tuple[int, int]]] = {
     "password_reset_form_by_email": [],
 }
 
+TERMS_OF_SERVICE_VERSION = None
 FREE_TRIAL_DAYS: Optional[int] = None
 
 SCIM_CONFIG = {

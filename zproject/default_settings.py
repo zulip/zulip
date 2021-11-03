@@ -177,8 +177,7 @@ TORNADO_PORTS: List[int] = []
 USING_TORNADO = True
 
 # ToS/Privacy templates
-PRIVACY_POLICY: Optional[str] = None
-TERMS_OF_SERVICE: Optional[str] = None
+POLICIES_DIRECTORY: str = "/zerver/policies_absent"
 
 # Security
 ENABLE_FILE_LINKS = False
