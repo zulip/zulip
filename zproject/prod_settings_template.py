@@ -756,6 +756,10 @@ CAMO_URI = "/external_content/"
 ## Controls whether Zulip will rate-limit user requests.
 # RATE_LIMITING = True
 
+## Fetch TOR exit node list every hour, and group all TOR exit nodes
+## together into one bucket when applying rate-limiting.
+# RATE_LIMIT_TOR_TOGETHER = False
+
 ## If you want to set a Terms of Service for your server, set the path
 ## to your Markdown file, and uncomment the following line.
 # TERMS_OF_SERVICE = '/etc/zulip/terms.md'
