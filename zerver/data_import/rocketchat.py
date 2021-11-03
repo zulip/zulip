@@ -137,6 +137,10 @@ def process_users(
 def get_stream_name(rc_channel: Dict[str, Any]) -> str:
     if rc_channel.get("teamMain"):
         return f'[TEAM] {rc_channel["name"]}'
+    elif rc_channel.get("t") == "l":
+        # Rocket.Chat livechat channels uses the `fname` field
+        # to specify the channel name.
+        return rc_channel["fname"]
     else:
         return rc_channel["name"]
 
@@ -389,7 +393,7 @@ def process_message_attachment(
         upload_file.write(b"".join(upload_file_data["chunk"]))
 
     attachment_content = (
-        f'{upload_file_data["description"]}\n\n[{file_name}](/user_uploads/{s3_path})'
+        f'{upload_file_data.get("description", "")}\n\n[{file_name}](/user_uploads/{s3_path})'
     )
 
     fileinfo = {

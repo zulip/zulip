@@ -246,6 +246,14 @@ class RocketChatImporter(ZulipTestCase):
             huddle_id_to_huddle_map=huddle_id_to_huddle_map,
         )
 
+        # Add a dummy livechat channel
+        room_id_to_room_map["2t6Lyzd2KAD3nS8Ch"] = {
+            "_id": "2t6Lyzd2KAD3nS8Ch",
+            "fname": "guest",
+            "t": "l",
+            "ts": datetime.datetime(2019, 11, 6, 0, 38, 42, 796000),
+        }
+
         zerver_stream = convert_channel_data(
             room_id_to_room_map=room_id_to_room_map,
             team_id_to_team_map=team_id_to_team_map,
@@ -254,8 +262,8 @@ class RocketChatImporter(ZulipTestCase):
         )
 
         # Only rooms are converted to streams.
-        self.assert_length(room_id_to_room_map, 6)
-        self.assert_length(zerver_stream, 6)
+        self.assert_length(room_id_to_room_map, 7)
+        self.assert_length(zerver_stream, 7)
 
         # Normal public stream
         self.assertEqual(zerver_stream[0]["name"], "general")
@@ -290,6 +298,14 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(zerver_stream[5]["rendered_description"], "")
         self.assertEqual(zerver_stream[5]["stream_post_policy"], 1)
         self.assertEqual(zerver_stream[5]["realm"], realm_id)
+
+        # Livechat channel
+        self.assertEqual(zerver_stream[6]["name"], "guest")
+        self.assertEqual(zerver_stream[6]["invite_only"], False)
+        self.assertEqual(zerver_stream[6]["description"], "")
+        self.assertEqual(zerver_stream[6]["rendered_description"], "")
+        self.assertEqual(zerver_stream[6]["stream_post_policy"], 1)
+        self.assertEqual(zerver_stream[6]["realm"], realm_id)
 
     def test_convert_stream_subscription_data(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
