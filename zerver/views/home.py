@@ -148,6 +148,10 @@ def home_real(request: HttpRequest) -> HttpResponse:
     if request.user.is_authenticated:
         user_profile = request.user
         realm = user_profile.realm
+
+        # User is logged in and hence no longer `prefers_web_public_view`.
+        if "prefers_web_public_view" in request.session.keys():
+            del request.session["prefers_web_public_view"]
     else:
         realm = get_valid_realm_from_request(request)
 
