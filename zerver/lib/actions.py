@@ -7288,6 +7288,8 @@ def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
         prereg_user.confirmation.get().expiry_date - prereg_user.invited_at
     ).days
 
+    # Reset confirmation object and re-trigger invitation/confirmation email with an
+    # expiration time with the same number of days as the original invite.
     prereg_user.invited_at = timezone_now()
     prereg_user.save()
     prereg_user.confirmation.clear()
