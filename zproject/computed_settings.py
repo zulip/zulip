@@ -391,6 +391,10 @@ RATE_LIMITING_RULES = {
     "find_account_by_ip": [
         (3600, 10),
     ],
+    "email_change_by_user": [
+        (3600, 2),  # 2 per hour
+        (86400, 5),  # 5 per day
+    ],
     "password_reset_form_by_email": [
         (3600, 2),  # 2 reset emails per hour
         (86400, 5),  # 5 per day
