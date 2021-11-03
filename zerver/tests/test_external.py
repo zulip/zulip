@@ -70,6 +70,7 @@ class MITNameTest(ZulipTestCase):
 
 @contextmanager
 def rate_limit_rule(range_seconds: int, num_requests: int, domain: str) -> Iterator[None]:
+    RateLimitedIPAddr("127.0.0.1", domain=domain).clear_history()
     add_ratelimit_rule(range_seconds, num_requests, domain=domain)
     try:
         yield
@@ -196,13 +197,11 @@ class RateLimitTests(ZulipTestCase):
 
     @rate_limit_rule(1, 5, domain="api_by_ip")
     def test_hit_ratelimits_as_ip(self) -> None:
-        RateLimitedIPAddr("127.0.0.1").clear_history()
         self.do_test_hit_ratelimits(self.send_unauthed_api_request)
 
     @rate_limit_rule(1, 5, domain="create_realm_by_ip")
     def test_create_realm_rate_limiting(self) -> None:
         with self.settings(OPEN_REALM_CREATION=True):
-            RateLimitedIPAddr("127.0.0.1", domain="create_realm_by_ip").clear_history()
             self.do_test_hit_ratelimits(
                 lambda: self.client_post("/new/", {"email": "new@zulip.com"}),
                 is_json=False,
@@ -210,7 +209,6 @@ class RateLimitTests(ZulipTestCase):
 
     @rate_limit_rule(1, 5, domain="find_account_by_ip")
     def test_find_account_rate_limiting(self) -> None:
-        RateLimitedIPAddr("127.0.0.1", domain="find_account_by_ip").clear_history()
         self.do_test_hit_ratelimits(
             lambda: self.client_post("/accounts/find/", {"emails": "new@zulip.com"}),
             is_json=False,
@@ -221,7 +219,6 @@ class RateLimitTests(ZulipTestCase):
     # submitted in each should be allowed.
     @rate_limit_rule(1, 10, domain="find_account_by_ip")
     def test_find_account_rate_limiting_multiple(self) -> None:
-        RateLimitedIPAddr("127.0.0.1", domain="find_account_by_ip").clear_history()
         self.do_test_hit_ratelimits(
             lambda: self.client_post("/accounts/find/", {"emails": "new@zulip.com,new2@zulip.com"}),
             is_json=False,
