@@ -149,10 +149,11 @@ class RateLimitTests(ZulipTestCase):
     def do_test_hit_ratelimits(
         self,
         request_func: Callable[[], HttpResponse],
-        assert_func: Optional[Callable[[HttpResponse], None]] = None,
+        is_json: bool = True,
     ) -> HttpResponse:
-        def default_assert_func(result: HttpResponse) -> None:
+        def api_assert_func(result: HttpResponse) -> None:
             self.assertEqual(result.status_code, 429)
+            self.assertEqual(result.headers["Content-Type"], "application/json")
             json = result.json()
             self.assertEqual(json.get("result"), "error")
             self.assertIn("API usage exceeded rate limit", json.get("msg"))
@@ -160,8 +161,15 @@ class RateLimitTests(ZulipTestCase):
             self.assertTrue("Retry-After" in result)
             self.assertEqual(result["Retry-After"], "0.5")
 
-        if assert_func is None:
-            assert_func = default_assert_func
+        def user_facing_assert_func(result: HttpResponse) -> None:
+            self.assertEqual(result.status_code, 429)
+            self.assertNotEqual(result.headers["Content-Type"], "application/json")
+            self.assert_in_response("Rate limit exceeded.", result)
+
+        if is_json:
+            assert_func = api_assert_func
+        else:
+            assert_func = user_facing_assert_func
 
         start_time = time.time()
         for i in range(6):
@@ -193,27 +201,19 @@ class RateLimitTests(ZulipTestCase):
 
     @rate_limit_rule(1, 5, domain="create_realm_by_ip")
     def test_create_realm_rate_limiting(self) -> None:
-        def assert_func(result: HttpResponse) -> None:
-            self.assertEqual(result.status_code, 429)
-            self.assert_in_response("Rate limit exceeded.", result)
-
         with self.settings(OPEN_REALM_CREATION=True):
             RateLimitedIPAddr("127.0.0.1", domain="create_realm_by_ip").clear_history()
             self.do_test_hit_ratelimits(
                 lambda: self.client_post("/new/", {"email": "new@zulip.com"}),
-                assert_func=assert_func,
+                is_json=False,
             )
 
     @rate_limit_rule(1, 5, domain="find_account_by_ip")
     def test_find_account_rate_limiting(self) -> None:
-        def assert_func(result: HttpResponse) -> None:
-            self.assertEqual(result.status_code, 429)
-            self.assert_in_response("Rate limit exceeded.", result)
-
         RateLimitedIPAddr("127.0.0.1", domain="find_account_by_ip").clear_history()
         self.do_test_hit_ratelimits(
             lambda: self.client_post("/accounts/find/", {"emails": "new@zulip.com"}),
-            assert_func=assert_func,
+            is_json=False,
         )
 
     # Test whether submitting multiple emails is handled correctly.
@@ -221,14 +221,10 @@ class RateLimitTests(ZulipTestCase):
     # submitted in each should be allowed.
     @rate_limit_rule(1, 10, domain="find_account_by_ip")
     def test_find_account_rate_limiting_multiple(self) -> None:
-        def assert_func(result: HttpResponse) -> None:
-            self.assertEqual(result.status_code, 429)
-            self.assert_in_response("Rate limit exceeded.", result)
-
         RateLimitedIPAddr("127.0.0.1", domain="find_account_by_ip").clear_history()
         self.do_test_hit_ratelimits(
             lambda: self.client_post("/accounts/find/", {"emails": "new@zulip.com,new2@zulip.com"}),
-            assert_func=assert_func,
+            is_json=False,
         )
 
     @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
