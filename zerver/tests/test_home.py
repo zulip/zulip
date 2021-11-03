@@ -330,6 +330,12 @@ class HomeTest(ZulipTestCase):
         ]
         expected_keys = [i for i in self.expected_page_params_keys if i not in removed_keys]
         self.assertEqual(actual_keys, expected_keys)
+        self.assertEqual(self.client.session.get("prefers_web_public_view"), True)
+
+        # Web public session key should clear once user is logged in
+        self.login("hamlet")
+        self.client_get("/")
+        self.assertEqual(self.client.session.get("prefers_web_public_view"), None)
 
     def test_home_under_2fa_without_otp_device(self) -> None:
         with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
