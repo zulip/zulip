@@ -850,7 +850,7 @@ prefills that value in the new account creation form, but gives the
 user the opportunity to edit it before submitting. When `True`, Zulip
 assumes the name is correct, and new users will not be presented with
 a registration form unless they need to accept Terms of Service for
-the server (i.e. `TERMS_OF_SERVICE=True`).
+the server (i.e. `TERMS_OF_SERVICE_VERSION` is set).
 
 ## Adding more authentication backends
 

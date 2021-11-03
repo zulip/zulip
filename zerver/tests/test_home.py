@@ -457,10 +457,7 @@ class HomeTest(ZulipTestCase):
             user.tos_version = user_tos_version
             user.save()
 
-            with self.settings(TERMS_OF_SERVICE="whatever"), self.settings(
-                TERMS_OF_SERVICE_VERSION="99.99"
-            ):
-
+            with self.settings(TERMS_OF_SERVICE_VERSION="99.99"):
                 result = self.client_get("/", dict(stream="Denmark"))
 
             html = result.content.decode()

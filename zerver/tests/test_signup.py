@@ -5125,7 +5125,7 @@ class UserSignUpTest(InviteUserBase):
             LDAP_APPEND_DOMAIN="zulip.com",
             AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
             AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",),
-            TERMS_OF_SERVICE=False,
+            TERMS_OF_SERVICE_VERSION=None,
         ):
             result = self.client_get(confirmation_url)
             self.assertEqual(result.status_code, 200)
@@ -5257,7 +5257,7 @@ class UserSignUpTest(InviteUserBase):
             "AssertionError: Mirror dummy user is already active!" in error_log.output[0]
         )
 
-    @override_settings(TERMS_OF_SERVICE=False)
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_dev_user_registration(self) -> None:
         """Verify that /devtools/register_user creates a new user, logs them
         in, and redirects to the logged-in app."""
@@ -5273,7 +5273,7 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(result["Location"], "http://zulip.testserver/")
         self.assert_logged_in_user_id(user_profile.id)
 
-    @override_settings(TERMS_OF_SERVICE=False)
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_dev_user_registration_create_realm(self) -> None:
         count = UserProfile.objects.count()
         string_id = f"realm-{count}"
@@ -5291,7 +5291,7 @@ class UserSignUpTest(InviteUserBase):
         assert user_profile is not None
         self.assert_logged_in_user_id(user_profile.id)
 
-    @override_settings(TERMS_OF_SERVICE=False)
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_dev_user_registration_create_demo_realm(self) -> None:
         result = self.client_post("/devtools/register_demo_realm/")
         self.assertEqual(result.status_code, 302)
