@@ -81,6 +81,11 @@ def get_apps_page_url() -> str:
     return "https://zulip.com/apps/"
 
 
+def is_isolated_page(request: HttpRequest) -> bool:
+    """Accept a GET param `?nav=no` to render an isolated, navless page."""
+    return request.GET.get("nav") == "no"
+
+
 def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     """Context available to all Zulip Jinja2 templates that have a request
     passed in.  Designed to provide the long list of variables at the
@@ -145,8 +150,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "custom_logo_url": settings.CUSTOM_LOGO_URL,
         "register_link_disabled": register_link_disabled,
         "login_link_disabled": login_link_disabled,
-        "terms_of_service": settings.TERMS_OF_SERVICE,
-        "privacy_policy": settings.PRIVACY_POLICY,
+        "terms_of_service": settings.TERMS_OF_SERVICE_VERSION is not None,
         "login_url": settings.HOME_NOT_LOGGED_IN,
         "only_sso": settings.ONLY_SSO,
         "external_host": settings.EXTERNAL_HOST,
@@ -172,6 +176,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "platform": RequestNotes.get_notes(request).client_name,
         "allow_search_engine_indexing": allow_search_engine_indexing,
         "landing_page_navbar_message": settings.LANDING_PAGE_NAVBAR_MESSAGE,
+        "is_isolated_page": is_isolated_page(request),
         "default_page_params": default_page_params,
     }
 
