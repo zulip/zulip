@@ -8,7 +8,7 @@
 # See requirements/README.md for more detail.
 
 # Needed to build RTD docs
-sphinx
+sphinx<4.0.0
 sphinx-rtd-theme
 
 # Needed to build Markdown docs

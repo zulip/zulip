@@ -12,7 +12,7 @@ typing-extensions
 dataclasses;python_version<"3.7"
 
 # Needed for rendering backend templates
-Jinja2
+Jinja2<3.0.0
 
 # Needed for Markdown processing
 Markdown
@@ -61,7 +61,7 @@ html2text
 https://github.com/zulip/talon/archive/1711705c952806d4a704c7dbf58f21db8e11756a.zip#egg=talon-core==1.4.8.zulip1&subdirectory=talon-core
 
 # Needed for inlining the CSS in emails
-premailer
+premailer<3.9.0
 
 # Needed for JWT-based auth
 PyJWT
@@ -132,7 +132,7 @@ https://github.com/zulip/python-zulip-api/archive/4d482e0ef30297f716885fd8246f46
 py3dns
 
 # Install Python Social Auth
-social-auth-app-django
+social-auth-app-django<5.0.0
 social-auth-core[azuread,saml]<4.0.3  # 4.0.3 needs PyJWT 2: https://github.com/Pr0Ger/PyAPNs2/pull/122, https://github.com/twilio/twilio-python/issues/556
 
 # For encrypting a login token to the desktop app
@@ -143,6 +143,7 @@ lxml
 
 # Needed for 2-factor authentication
 django-two-factor-auth[call,phonenumberslite,sms]
+twilio<7.0.0
 
 # Needed for processing payments (in corporate)
 stripe
@@ -171,7 +172,7 @@ requests[security]
 requests-oauthlib
 
 # For OpenAPI schema validation.
-openapi-core<0.14.0  # https://github.com/p1c2u/openapi-core/issues/322
+openapi-core
 
 # For reporting errors to sentry.io
 sentry-sdk

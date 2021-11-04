@@ -2,5 +2,5 @@
 # /tools/update-locked-requirements to update requirements/dev.txt
 # and requirements/mypy.txt.
 # See requirements/README.md for more detail.
-mypy
+mypy==0.812
 sqlalchemy-stubs

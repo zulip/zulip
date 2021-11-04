@@ -27,7 +27,7 @@ responses
 isort
 
 # For doing highly usable Python profiling
-line-profiler<3.2  # https://github.com/pyutils/line_profiler/issues/77
+line-profiler
 
 # for pep8 linter
 pycodestyle
@@ -54,10 +54,10 @@ snakeviz
 python-digitalocean
 
 # Needed for updating the locked pip dependencies
-pip-tools
+pip-tools<6.3.0  # https://github.com/jazzband/pip-tools/pull/1455 breaks our hack for installing specific commits from Git
 
 # zulip's linting framework - zulint
-https://github.com/zulip/zulint/archive/6cc46d23906757895e917cc75e231f81f824a31d.zip#egg=zulint==0.0.1
+https://github.com/zulip/zulint/archive/9908540b7734b51f86ccabab706befc2ff33212a.zip#egg=zulint==0.0.1
 
 -r mypy.in
 
@@ -70,10 +70,10 @@ importlib-metadata;python_version<"3.8"  # for jsonpickle, jsonschema
 cairosvg
 
 # Needed for tools/check-thirdparty
-python-debian
+python-debian<0.1.42  # https://bugs.debian.org/997857
 
 # Pattern-based lint tool
-semgrep
+semgrep<0.53.0
 
 # Contains Pysa, a security-focused static analyzer
 pyre-check
