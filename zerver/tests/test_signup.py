@@ -2468,6 +2468,10 @@ class InvitationsTestCase(InviteUserBase):
         self.assertEqual(scheduledemail_filter.count(), 1)
         original_timestamp = scheduledemail_filter.values_list("scheduled_timestamp", flat=True)
 
+        invite_expires_in_days = (
+            prereg_user.confirmation.get().expiry_date - prereg_user.invited_at
+        ).days
+
         # Resend invite
         result = self.client_post("/json/invites/" + str(prereg_user.id) + "/resend")
         self.assertEqual(
@@ -2475,6 +2479,13 @@ class InvitationsTestCase(InviteUserBase):
                 address__iexact=invitee, type=ScheduledEmail.INVITATION_REMINDER
             ).count(),
             1,
+        )
+
+        # Verify that the new invite has the same number of expiration days as the original invite.
+        prereg_user = PreregistrationUser.objects.get(email=invitee)
+        self.assertEqual(
+            (prereg_user.confirmation.get().expiry_date - prereg_user.invited_at).days,
+            invite_expires_in_days,
         )
 
         # Check that we have exactly one scheduled email, and that it is different
