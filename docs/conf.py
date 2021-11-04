@@ -16,6 +16,7 @@ on_rtd = os.environ.get("READTHEDOCS") == "True"
 
 extensions = [
     "myst_parser",
+    "sphinx_rtd_theme",
 ]
 templates_path = ["_templates"]
 project = "Zulip"
