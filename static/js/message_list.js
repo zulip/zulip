@@ -241,6 +241,7 @@ export class MessageList {
         if (stream_name === undefined) {
             return;
         }
+
         let deactivated = false;
         let just_unsubscribed = false;
         let show_button = true;
@@ -254,7 +255,7 @@ export class MessageList {
             just_unsubscribed = true;
 
             // For invite only streams hide the resubscribe button
-            // Hide button for guest users
+            // Hide button for guest users and spectators
             show_button = !page_params.is_guest && !sub.invite_only;
         }
         this.view.render_trailing_bookend(
@@ -263,6 +264,7 @@ export class MessageList {
             deactivated,
             just_unsubscribed,
             show_button,
+            page_params.is_spectator,
         );
     }
 
