@@ -2500,6 +2500,10 @@ div.topic_edit_spinner .loading_indicator_spinner {
     overflow: hidden;
     text-transform: uppercase;
     font-size: 0.8em;
+}
+
+.sub-unsub-message .stream-status,
+.date_row span {
     opacity: 0.5;
 }
 
