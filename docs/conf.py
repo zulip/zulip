@@ -43,7 +43,7 @@ myst_substitutions = {
 
 html_theme = "sphinx_rtd_theme"
 html_theme_options = {
-    "collapse_navigation": False,
+    "collapse_navigation": not on_rtd,  # makes local builds much faster
     "logo_only": True,
 }
 html_logo = "images/zulip-logo.svg"
