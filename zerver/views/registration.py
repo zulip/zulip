@@ -668,6 +668,17 @@ def accounts_home(
     if request.method == "POST":
         form = HomepageForm(request.POST, realm=realm, from_multiuse_invite=from_multiuse_invite)
         if form.is_valid():
+            try:
+                rate_limit_request_by_ip(request, domain="sends_email_by_ip")
+            except RateLimited as e:
+                assert e.secs_to_freedom is not None
+                return render(
+                    request,
+                    "zerver/rate_limit_exceeded.html",
+                    context={"retry_after": int(e.secs_to_freedom)},
+                    status=429,
+                )
+
             email = form.cleaned_data["email"]
 
             try:

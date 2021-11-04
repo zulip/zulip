@@ -245,6 +245,13 @@ class RateLimitTests(ZulipTestCase):
         self.assert_length(outbox, 0)
 
     @rate_limit_rule(1, 5, domain="sends_email_by_ip")
+    def test_register_account_rate_limiting(self) -> None:
+        self.do_test_hit_ratelimits(
+            lambda: self.client_post("/register/", {"email": "new@zulip.com"}),
+            is_json=False,
+        )
+
+    @rate_limit_rule(1, 5, domain="sends_email_by_ip")
     def test_combined_ip_limits(self) -> None:
         # Alternate requests to /new/ and /accounts/find/
         request_count = 0
