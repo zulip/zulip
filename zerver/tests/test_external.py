@@ -178,7 +178,7 @@ class RateLimitTests(ZulipTestCase):
         with mock.patch("time.time", return_value=(start_time + 1.01)):
             result = request_func()
 
-            self.assertNotEqual(result, 429)
+            self.assertNotEqual(result.status_code, 429)
 
     def test_hit_ratelimits_as_user(self) -> None:
         user = self.example_user("cordelia")
