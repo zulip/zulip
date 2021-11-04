@@ -97,11 +97,9 @@ class RateLimitTests(ZulipTestCase):
         self.api_get(user, "/api/v1/messages")
 
         settings.RATE_LIMITING = True
-        add_ratelimit_rule(1, 5)
 
     def tearDown(self) -> None:
         settings.RATE_LIMITING = False
-        remove_ratelimit_rule(1, 5)
 
         super().tearDown()
 
@@ -189,6 +187,7 @@ class RateLimitTests(ZulipTestCase):
 
             self.assertNotEqual(result.status_code, 429)
 
+    @rate_limit_rule(1, 5, domain="api_by_user")
     def test_hit_ratelimits_as_user(self) -> None:
         user = self.example_user("cordelia")
         RateLimitedUser(user).clear_history()
