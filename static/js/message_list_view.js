@@ -836,7 +836,7 @@ export class MessageListView {
             // If user narrows to a stream, doesn't update
             // trailing bookend if user is subscribed.
             const sub = stream_data.get_sub(stream_name);
-            if (sub === undefined || !sub.subscribed) {
+            if (sub === undefined || !sub.subscribed || page_params.is_spectator) {
                 list.update_trailing_bookend();
             }
         }
@@ -1295,7 +1295,14 @@ export class MessageListView {
         trailing_bookend.remove();
     }
 
-    render_trailing_bookend(stream_name, subscribed, deactivated, just_unsubscribed, show_button) {
+    render_trailing_bookend(
+        stream_name,
+        subscribed,
+        deactivated,
+        just_unsubscribed,
+        show_button,
+        is_spectator,
+    ) {
         const rendered_trailing_bookend = $(
             render_bookend({
                 stream_name,
@@ -1303,6 +1310,7 @@ export class MessageListView {
                 subscribed,
                 deactivated,
                 just_unsubscribed,
+                is_spectator,
             }),
         );
         rows.get_table(this.table_name).append(rendered_trailing_bookend);
