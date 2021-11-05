@@ -1109,6 +1109,15 @@ if PRODUCTION:
         "/etc/zulip/saml/zulip-private-key.key"
     )
 
+    if SOCIAL_AUTH_SAML_SP_PUBLIC_CERT and SOCIAL_AUTH_SAML_SP_PRIVATE_KEY:
+        # If the certificates are set up, it's certainly desirable to sign
+        # LogoutRequests and LogoutResponses unless explicitly specified otherwise
+        # in the configuration.
+        if "logoutRequestSigned" not in SOCIAL_AUTH_SAML_SECURITY_CONFIG:
+            SOCIAL_AUTH_SAML_SECURITY_CONFIG["logoutRequestSigned"] = True
+        if "logoutResponseSigned" not in SOCIAL_AUTH_SAML_SECURITY_CONFIG:
+            SOCIAL_AUTH_SAML_SECURITY_CONFIG["logoutResponseSigned"] = True
+
 if "signatureAlgorithm" not in SOCIAL_AUTH_SAML_SECURITY_CONFIG:
     # If the configuration doesn't explicitly specify the algorithm,
     # we set RSA1 with SHA256 to override the python3-saml default, which uses
