@@ -411,7 +411,7 @@ li.top_left_recent_topics {
     right: 0;
     font-size: 1em;
     text-align: center;
-    padding: 0 6px 0 6px;
+    padding: 0 6px;
 }
 
 /*
@@ -424,7 +424,7 @@ li.top_left_recent_topics {
     right: 0;
     font-size: 0.9em;
     text-align: center;
-    padding: 1px 6px 0 6px;
+    padding: 1px 6px 0;
 }
 
 /*

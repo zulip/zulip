@@ -652,7 +652,7 @@ ul {
 
 .user_info_status_text {
     opacity: 0.8;
-    padding: 2px 0 3px 0;
+    padding: 2px 0 3px;
 
     .status_emoji {
         height: 18px;
