@@ -228,6 +228,22 @@ class RateLimitTests(ZulipTestCase):
             is_json=False,
         )
 
+    # If I submit with 3 emails and the rate-limit is 2, I should get
+    # a 429 and not send any emails.
+    @rate_limit_rule(1, 2, domain="sends_email_by_ip")
+    def test_find_account_rate_limiting_multiple_one_request(self) -> None:
+        emails = [
+            "iago@zulip.com",
+            "cordelia@zulip.com",
+            "hamlet@zulip.com",
+        ]
+        resp = self.client_post("/accounts/find/", {"emails": ",".join(emails)})
+        self.assertEqual(resp.status_code, 429)
+
+        from django.core.mail import outbox
+
+        self.assert_length(outbox, 0)
+
     @rate_limit_rule(1, 5, domain="sends_email_by_ip")
     def test_combined_ip_limits(self) -> None:
         # Alternate requests to /new/ and /accounts/find/
