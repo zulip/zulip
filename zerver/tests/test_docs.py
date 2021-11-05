@@ -159,6 +159,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/for/open-source/", "for open source projects")
         self._test("/for/events/", "for conferences and events")
         self._test("/for/education/", "education pricing")
+        self._test("/case-studies/lean/", "Lean theorem prover")
         self._test("/case-studies/tum/", "Technical University of Munich")
         self._test("/case-studies/ucsd/", "UCSD")
         self._test("/for/research/", "for research")
