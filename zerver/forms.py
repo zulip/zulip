@@ -326,13 +326,13 @@ class ZulipPasswordResetForm(PasswordResetForm):
                 rate_limit_password_reset_form_by_email(email)
                 rate_limit_request_by_ip(request, domain="sends_email_by_ip")
             except RateLimited:
-                # TODO: Show an informative, user-facing error message.
                 logging.info(
                     "Too many password reset attempts for email %s from %s",
                     email,
                     request.META["REMOTE_ADDR"],
                 )
-                return
+                # The view will handle the RateLimit exception and render an appropriate page
+                raise
 
         user: Optional[UserProfile] = None
         try:

@@ -227,6 +227,18 @@ class RateLimitTests(ZulipTestCase):
             is_json=False,
         )
 
+    @rate_limit_rule(1, 5, domain="sends_email_by_ip")
+    def test_password_reset_rate_limiting(self) -> None:
+        with self.assertLogs(level="INFO") as m:
+            self.do_test_hit_ratelimits(
+                lambda: self.client_post("/accounts/password/reset/", {"email": "new@zulip.com"}),
+                is_json=False,
+            )
+        self.assertEqual(
+            m.output,
+            ["INFO:root:Too many password reset attempts for email new@zulip.com from 127.0.0.1"],
+        )
+
     # Test whether submitting multiple emails is handled correctly.
     # The limit is set to 10 per second, so 5 requests with 2 emails
     # submitted in each should be allowed.
