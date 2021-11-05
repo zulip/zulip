@@ -8,8 +8,8 @@
     margin-left: 3%;
     margin-right: 3%;
     padding: 20px 10px 15px;
-    background-color: hsl(0deg 0% 100% / 48%);
-    box-shadow: 0 0 40px hsl(0deg 0% 0% / 6%);
+    background-color: hsla(0, 0%, 100%, 0.48);
+    box-shadow: 0 0 40px hsla(0, 0%, 0%, 0.06);
 }
 
 #fixture_body {
