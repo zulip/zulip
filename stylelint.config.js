@@ -20,6 +20,11 @@ module.exports = {
         // Additional stylistic rules
         "font-family-name-quotes": "always-where-recommended",
 
+        // Compatibility with older browsers
+        "alpha-value-notation": "number",
+        "color-function-notation": "legacy",
+        "hue-degree-notation": "number",
+
         // Limit language features
         "color-no-hex": true,
         "color-named": "never",
