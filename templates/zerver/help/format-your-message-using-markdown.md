@@ -17,7 +17,7 @@ to allow you to easily format your messages.
 * [Emoji and emoticons](#emoji-and-emoticons)
 * [Mentions](#mentions)
 * [Status messages](#status-messages)
-* [Mention a time](#mention-a-time)
+* [Global times](#global-times)
 * [Tables](#tables)
 * [Paragraphs and lines](#paragraphs-and-lines)
 
@@ -205,7 +205,7 @@ the variant that only contains the user ID).
 
 ![Markdown status](/static/images/help/markdown-status.png)
 
-## Mention a time
+## Global times
 
 When collaborating with people in another timezone, you often need to
 express a specific time clearly. Rather than typing out your timezone

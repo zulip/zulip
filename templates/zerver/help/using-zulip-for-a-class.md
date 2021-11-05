@@ -34,7 +34,7 @@ from today’s lecture. [lecture notes 10/2.pdf]() You can view a recording of t
 
 ### Formatting tips
 
-* You can [post a time](/help/format-your-message-using-markdown#mention-a-time)
+* You can [post a time](/help/format-your-message-using-markdown#global-times)
   that everyone will see in their own timezone.
 * Share URLs as [named links](/help/format-your-message-using-markdown#links).
 
