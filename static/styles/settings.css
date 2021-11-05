@@ -1753,7 +1753,7 @@ input[type="checkbox"] {
 @supports (-moz-appearance: none) {
     #settings_page select {
         appearance: none;
-        background: hsl(0, 0%, 100%) url(../images/dropdown.png) right / 20px
+        background: hsl(0, 0%, 100%) url("../images/dropdown.png") right / 20px
             no-repeat;
         padding-right: 20px;
     }
