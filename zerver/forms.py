@@ -18,6 +18,7 @@ from jinja2.utils import Markup as mark_safe
 from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationTokenForm
 from two_factor.utils import totp_digits
 
+from zerver.decorator import rate_limit_request_by_ip
 from zerver.lib.actions import do_change_password, email_not_system_bot
 from zerver.lib.email_validation import email_allowed_for_realm
 from zerver.lib.exceptions import JsonableError, RateLimited
@@ -323,9 +324,14 @@ class ZulipPasswordResetForm(PasswordResetForm):
         if settings.RATE_LIMITING:
             try:
                 rate_limit_password_reset_form_by_email(email)
+                rate_limit_request_by_ip(request, domain="sends_email_by_ip")
             except RateLimited:
                 # TODO: Show an informative, user-facing error message.
-                logging.info("Too many password reset attempts for email %s", email)
+                logging.info(
+                    "Too many password reset attempts for email %s from %s",
+                    email,
+                    request.META["REMOTE_ADDR"],
+                )
                 return
 
         user: Optional[UserProfile] = None
