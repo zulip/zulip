@@ -51,6 +51,7 @@ from zerver.lib.exceptions import (
     JsonableError,
     PasswordAuthDisabledError,
     PasswordResetRequiredError,
+    RateLimited,
     RealmDeactivatedError,
     UserDeactivatedError,
 )
@@ -992,11 +993,20 @@ def password_reset(request: HttpRequest) -> HttpResponse:
         )
         return HttpResponseRedirect(redirect_url)
 
-    response = DjangoPasswordResetView.as_view(
-        template_name="zerver/reset.html",
-        form_class=ZulipPasswordResetForm,
-        success_url="/accounts/password/reset/done/",
-    )(request)
+    try:
+        response = DjangoPasswordResetView.as_view(
+            template_name="zerver/reset.html",
+            form_class=ZulipPasswordResetForm,
+            success_url="/accounts/password/reset/done/",
+        )(request)
+    except RateLimited as e:
+        assert e.secs_to_freedom is not None
+        return render(
+            request,
+            "zerver/rate_limit_exceeded.html",
+            context={"retry_after": int(e.secs_to_freedom)},
+            status=429,
+        )
     assert isinstance(response, HttpResponse)
     return response
 
