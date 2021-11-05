@@ -16,9 +16,9 @@ module.exports = {
         // Disable standard rules we don't comply with yet
         "comment-empty-line-before": null,
         "declaration-empty-line-before": null,
-
-        // Additional stylistic rules
-        "font-family-name-quotes": "always-where-recommended",
+        "keyframes-name-pattern": null,
+        "selector-class-pattern": null,
+        "selector-id-pattern": null,
 
         // Compatibility with older browsers
         "alpha-value-notation": "number",
@@ -45,12 +45,5 @@ module.exports = {
         "function-url-scheme-allowed-list": [
             "data", // Allow data URIs
         ],
-
-        // We use autoprefixer to generate vendor prefixes
-        "at-rule-no-vendor-prefix": true,
-        "media-feature-name-no-vendor-prefix": true,
-        "property-no-vendor-prefix": true,
-        "selector-no-vendor-prefix": true,
-        "value-no-vendor-prefix": true,
     },
 };
