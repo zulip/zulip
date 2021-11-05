@@ -524,7 +524,7 @@
             border: none;
             background-color: hsl(0, 0%, 98%);
             box-shadow: inset 0 0 50px hsla(0, 0%, 0%, 0.5);
-            background-image: url(../images/preview-loading.png);
+            background-image: url("../images/preview-loading.png");
             background-size: 150px auto;
             background-position: center center;
             background-repeat: no-repeat;

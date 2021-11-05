@@ -36,7 +36,7 @@
             }
 
             &:checked ~ span {
-                background-image: url(../images/checkbox.svg);
+                background-image: url("../images/checkbox.svg");
                 background-size: 85%;
                 background-position: 50% 50%;
                 background-repeat: no-repeat;
