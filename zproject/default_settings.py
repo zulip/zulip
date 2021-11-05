@@ -376,7 +376,7 @@ if TYPE_CHECKING:
 
 JWT_AUTH_KEYS: Dict[str, "JwtAuthKey"] = {}
 
-# https://docs.djangoproject.com/en/2.2/ref/settings/#std:setting-SERVER_EMAIL
+# https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-SERVER_EMAIL
 # Django setting for what from address to use in error emails.
 SERVER_EMAIL = ZULIP_ADMINISTRATOR
 # Django setting for who receives error emails.
