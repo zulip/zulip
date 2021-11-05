@@ -586,7 +586,9 @@ class PasswordResetTest(ZulipTestCase):
                 self.client_post("/accounts/password/reset/", {"email": email})
             self.assertEqual(
                 info_logs.output,
-                ["INFO:root:Too many password reset attempts for email hamlet@zulip.com"],
+                [
+                    "INFO:root:Too many password reset attempts for email hamlet@zulip.com from 127.0.0.1"
+                ],
             )
             self.assert_length(outbox, 2)
 
