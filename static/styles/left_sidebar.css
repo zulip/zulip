@@ -100,10 +100,7 @@ li.show-more-topics {
             margin-left: 0;
 
             &.topic-list li {
-                padding-top: 2px;
-                padding-right: 0;
-                padding-bottom: 2px;
-                padding-left: calc($topic_indent - $topic_resolve_width);
+                padding: 2px 0 2px calc($topic_indent - $topic_resolve_width);
 
                 &.filter-topics {
                     padding-bottom: 0;

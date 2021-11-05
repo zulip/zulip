@@ -1039,11 +1039,9 @@ td.pointer {
     font-weight: normal;
     height: 17px;
     line-height: 17px;
-    border-top-color: hsla(0, 0%, 0%, 0);
-    border-right-color: hsla(0, 0%, 0%, 0);
-    border-bottom-color: hsla(0, 0%, 0%, 0);
+    border-color: hsla(0, 0%, 0%, 0) hsla(0, 0%, 0%, 0) hsla(0, 0%, 0%, 0)
+        hsl(0, 0%, 88%);
     background-color: hsl(0, 0%, 88%);
-    border-left-color: hsl(0, 0%, 88%);
     border-width: 0;
     position: relative;
     text-decoration: none;
@@ -2751,11 +2749,7 @@ select.inline_select_topic_edit {
                    hide little artifacts from showing up in
                    the gutter below the navbar. */
                 margin-top: $header_height;
-                padding-top: $header_padding_bottom;
-
-                padding-bottom: 0;
-                padding-left: 15px;
-                padding-right: 15px;
+                padding: $header_padding_bottom 15px 0 15px;
                 height: 100%;
                 right: 0;
             }
