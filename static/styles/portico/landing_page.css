@@ -426,7 +426,7 @@ nav {
             justify-content: center;
 
             height: 400px;
-            padding: 100px 100px 50px 100px;
+            padding: 100px 100px 50px;
 
             margin: 0;
 
@@ -450,7 +450,7 @@ nav {
 
             h2 {
                 font-size: 1.8em;
-                margin: 30px auto 0 auto;
+                margin: 30px auto 0;
 
                 max-width: 600px;
                 line-height: 1.3;
@@ -545,7 +545,7 @@ nav {
             border-radius: 10px;
 
             box-shadow: 10px 20px 80px hsla(0, 0%, 0%, 0.15);
-            margin: 100px auto 150px auto;
+            margin: 100px auto 150px;
             text-align: center;
 
             .envelope {
@@ -702,7 +702,7 @@ nav {
 
 .portico-landing.hello .hero {
     position: relative;
-    padding: 60px 50px 30px 50px;
+    padding: 60px 50px 30px;
 
     color: hsl(0, 0%, 100%);
 
@@ -789,7 +789,7 @@ nav {
 
         a {
             display: block;
-            margin: 20px auto 0 auto;
+            margin: 20px auto 0;
             text-align: center;
         }
 
@@ -1153,7 +1153,7 @@ nav {
         }
 
         .answer {
-            margin: 20px 0 0 0;
+            margin: 20px 0 0;
             font-weight: 400;
         }
     }
@@ -1281,7 +1281,7 @@ nav {
         }
 
         .stream {
-            padding: 3px 5px 0 5px;
+            padding: 3px 5px 0;
             margin: 0 5px;
 
             background-color: hsl(0, 0%, 100%);
@@ -1294,12 +1294,12 @@ nav {
 
 .portico-landing.hello .screen {
     position: relative;
-    margin: -300px auto 0 auto;
+    margin: -300px auto 0;
 
     width: 600px;
     height: 350px;
 
-    padding: 10px 30px 10px 30px;
+    padding: 10px 30px;
 
     border-radius: 12px;
     box-shadow: 0 0 50px hsla(0, 0%, 0%, 0.2);
@@ -1371,7 +1371,7 @@ nav {
 }
 
 .portico-landing.hello .features {
-    padding: 50px 0 100px 0;
+    padding: 50px 0 100px;
 
     background-color: hsl(0, 0%, 100%);
 
@@ -1492,7 +1492,7 @@ nav {
 }
 
 .tour .carousel-inner .start-button {
-    padding: 11px 25px 11px 25px;
+    padding: 11px 25px;
     font-size: 1.2rem;
     font-weight: 400;
     color: hsl(0, 0%, 100%);
@@ -1663,7 +1663,7 @@ nav {
 .tour .carousel-inner .call-to-action {
     display: inline-block;
     margin: 40px auto;
-    padding: 11px 25px 11px 25px;
+    padding: 11px 25px;
 
     font-size: 1.2rem;
     line-height: 20px;
@@ -1704,7 +1704,7 @@ nav {
 }
 
 .carousel-indicators {
-    margin: 20px 0 0 0;
+    margin: 20px 0 0;
     display: flex;
     justify-content: center;
     padding-left: 0;
@@ -1768,7 +1768,7 @@ nav {
 
 .portico-landing .testimonials .quote-container {
     width: 98%;
-    margin: 30px auto 20px auto;
+    margin: 30px auto 20px;
     padding-left: 2%;
 
     font-size: 1.2rem;
@@ -1976,7 +1976,7 @@ nav {
 
 .portico-landing.hello .apps {
     position: relative;
-    padding: 200px 80px 100px 80px;
+    padding: 200px 80px 100px;
     margin-top: -50px;
 
     background: linear-gradient(145deg, hsl(191, 56%, 55%), hsl(169, 65%, 42%));
@@ -2061,7 +2061,7 @@ nav {
 }
 
 .portico-landing.hello .integrations {
-    padding: 80px 80px;
+    padding: 80px;
 }
 
 .portico-landing.hello .integrations .content {
@@ -2111,13 +2111,13 @@ nav {
 
 .portico-landing.hello .call-to-action-bottom {
     position: relative;
-    padding: 50px 100px 0 100px;
+    padding: 50px 100px 0;
     margin-top: 0;
 }
 
 .portico-landing.hello .call-to-action-bottom .button {
     display: table;
-    margin: 20px auto 0 auto;
+    margin: 20px auto 0;
     padding: 10px 20px;
     font-size: 1em;
     font-weight: 600;
@@ -2129,7 +2129,7 @@ nav {
 }
 
 .portico-landing.hello .call-to-action-bottom .zulip-octopus {
-    margin: 15px auto 50px auto;
+    margin: 15px auto 50px;
     width: 32px;
     height: 30px;
     background-image: url(../../images/landing-page/zulip-octopus.png);
@@ -2159,7 +2159,7 @@ nav {
 .portico-landing.apps .hero {
     position: relative;
 
-    padding: 100px 50px 50px 50px;
+    padding: 100px 50px 50px;
     background: linear-gradient(35deg, hsl(197, 100%, 16%), hsl(166, 45%, 49%));
     height: 600px;
 
@@ -2249,7 +2249,7 @@ nav {
 
 .portico-landing.apps .other-apps {
     background-color: hsl(0, 0%, 100%);
-    padding: 50px 50px 120px 50px;
+    padding: 50px 50px 120px;
 
     text-align: center;
 }
@@ -2263,7 +2263,7 @@ nav {
 
 .portico-landing.apps .other-apps .apps {
     display: inline-block;
-    margin: 50px 0 0 0;
+    margin: 50px 0 0;
 }
 
 .portico-landing.apps .other-apps .apps .icon {
@@ -2311,12 +2311,12 @@ nav {
 
 .download-from-google-play-store img {
     height: 42px;
-    padding: 15px 0 15px 0;
+    padding: 15px 0;
 }
 
 .download-from-apple-app-store img {
     height: 42px;
-    padding: 15px 0 15px 0;
+    padding: 15px 0;
 }
 
 /* -- /for/open-source/ -- */
@@ -2330,10 +2330,10 @@ nav {
 }
 
 .portico-landing.why-page .hero {
-    padding: 200px 50px 100px 50px;
+    padding: 200px 50px 100px;
 
     &.empty-hero {
-        padding: 50px 50px 70px 50px;
+        padding: 50px 50px 70px;
     }
 
     background-color: hsl(153, 32%, 55%);
@@ -2341,12 +2341,12 @@ nav {
 }
 
 .portico-landing.why-page .hero.small-hero {
-    padding: 120px 50px 30px 50px;
+    padding: 120px 50px 30px;
 }
 
 .portico-landing.why-page .hero h1 {
     position: relative;
-    margin: 0 0 20px 0;
+    margin: 0 0 20px;
 
     font-size: 3.5em;
     font-weight: 300;
@@ -2497,7 +2497,7 @@ nav {
 
 .portico-landing.why-page .testimonials .quote-container {
     width: 98%;
-    margin: 30px auto 20px auto;
+    margin: 30px auto 20px;
     padding-left: 2%;
 
     font-size: 1.2rem;
@@ -2566,7 +2566,7 @@ nav {
 .portico-landing.hello .apps .screen.android {
     width: 200px;
     height: 370px;
-    padding: 10px 0 30px 0;
+    padding: 10px 0 30px;
     border-radius: 20px;
 
     transform: translateY(-110px);
@@ -2711,7 +2711,7 @@ nav {
 
 .pricing-model .pricing-container .block {
     display: inline-block;
-    margin: 40px 20px 20px 20px;
+    margin: 40px 20px 20px;
 }
 
 .pricing-model .pricing-container .block .plan-title {
@@ -2761,7 +2761,7 @@ nav {
 .pricing-model .pricing-container hr {
     border: none;
     border-bottom: 2px solid hsl(170, 47%, 53%);
-    margin: 15px 0 15px 0;
+    margin: 15px 0;
 }
 
 .pricing-model .pricing-container .text-content .description {
@@ -2971,7 +2971,7 @@ nav {
 }
 
 .text-content .pricing-details {
-    padding: 15px 0 15px 0;
+    padding: 15px 0;
     height: 25px;
 
     font-weight: 400;
@@ -2980,7 +2980,7 @@ nav {
     text-align: center;
 
     &.multi-line {
-        padding: 5px 0 25px 0;
+        padding: 5px 0 25px;
     }
 }
 
@@ -2995,12 +2995,12 @@ nav {
 
 .portico-landing.jobs h2 {
     line-height: 1.4;
-    margin: 20px 0 5px 0;
+    margin: 20px 0 5px;
 }
 
 .portico-landing.jobs h3 {
     line-height: 1.4;
-    margin: 20px 0 7px 0;
+    margin: 20px 0 7px;
 }
 
 .portico-landing.jobs .open-positions-top .padded-content {
@@ -3141,7 +3141,7 @@ nav {
     }
 
     .tour .carousel-inner .tour-item-header {
-        margin: 0 0 30px 0;
+        margin: 0 0 30px;
     }
 
     .tour .carousel-control {
@@ -3195,7 +3195,7 @@ nav {
 
         ul {
             display: block;
-            margin: 20px auto 0 auto;
+            margin: 20px auto 0;
             float: none;
             text-align: center;
         }
@@ -3296,7 +3296,7 @@ nav {
 
     .portico-landing.hello .apps,
     .portico-landing.hello .integrations {
-        padding: 200px 50px 80px 50px;
+        padding: 200px 50px 80px;
     }
 
     .portico-landing.hello .apps .left-side .content {
@@ -3560,7 +3560,7 @@ nav {
     }
 
     .portico-landing.apps .other-apps {
-        padding: 50px 5px 120px 5px;
+        padding: 50px 5px 120px;
     }
 
     .portico-landing.apps .other-apps h2 {
@@ -3577,14 +3577,14 @@ nav {
     }
 
     .portico-landing.apps .other-apps .apps .icon.fa-mobile-phone {
-        padding: 7px 10px 5px 10px;
+        padding: 7px 10px 5px;
         width: 35px;
         font-size: 2.5em;
     }
 
     .portico-landing.apps .other-apps .apps .icon.fa-windows {
         font-size: 2em;
-        padding: 10px 13px 2px 13px !important;
+        padding: 10px 13px 2px !important;
     }
 
     .portico-landing.apps .other-apps .apps .icon::after {
@@ -3756,7 +3756,7 @@ nav {
     .portico-header .dropdown ul {
         width: 100%;
         height: auto;
-        margin: 42px 0 0 0;
+        margin: 42px 0 0;
         font-size: 0.8em;
     }
 
@@ -3817,7 +3817,7 @@ nav {
 
 @media (width <= 640px) {
     .portico-landing.hello .integrations .integration-icons .group {
-        margin: 10px 16px 0 16px;
+        margin: 10px 16px 0;
     }
 
     .portico-landing.features-app {
@@ -3931,11 +3931,11 @@ nav {
     }
 
     .portico-landing.hello .hero {
-        padding: 60px 5px 40px 5px;
+        padding: 60px 5px 40px;
     }
 
     .portico-landing.hello header {
-        padding: 0 45px 0 45px;
+        padding: 0 45px;
     }
 
     .portico-landing.hello .integrations .content header {
@@ -4442,7 +4442,7 @@ nav {
 
                     p {
                         padding: 0;
-                        margin: 0 0 -10px 0;
+                        margin: 0 0 -10px;
                         width: 100%;
                         text-align: center;
                         font-weight: 550;
@@ -4470,7 +4470,7 @@ nav {
 .feature-intro {
     max-width: 800px;
     margin: 50px auto 0;
-    padding: 0 4vw 0;
+    padding: 0 4vw;
 
     h1 {
         font-size: 36px;
@@ -4483,7 +4483,7 @@ nav {
         margin-top: 50px;
 
         .description {
-            margin: 0 10px 0;
+            margin: 0 10px;
         }
 
         p {

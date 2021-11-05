@@ -532,7 +532,7 @@ div.overlay {
     }
 
     &.stream_create_info {
-        margin: 10px 10px 0 10px;
+        margin: 10px 10px 0;
     }
 
     .bankruptcy_unread_count {

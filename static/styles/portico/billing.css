@@ -127,7 +127,7 @@
     }
 
     .stripe-button-el {
-        padding: 11px 25px 11px 25px;
+        padding: 11px 25px;
         font-weight: 400;
         color: hsl(0, 0%, 100%);
         background: linear-gradient(
@@ -138,7 +138,7 @@
         box-shadow: 0 3px 10px hsla(0, 0%, 0%, 0.2);
         border: 0;
         height: 40px;
-        margin: 5px 0 0 0;
+        margin: 5px 0 0;
 
         span {
             background: 0;

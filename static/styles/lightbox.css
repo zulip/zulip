@@ -66,7 +66,7 @@
     .image-description,
     .image-actions {
         float: left;
-        margin: 20px 20px;
+        margin: 20px;
     }
 
     .image-actions {
@@ -223,7 +223,7 @@
         .image-list {
             position: relative;
             display: inline-block;
-            padding: 15px 0 12px 0;
+            padding: 15px 0 12px;
             height: 50px;
             font-size: 0;
 

@@ -208,7 +208,7 @@
     display: inline-block;
     font-size: 1.5em;
     line-height: 1.5;
-    margin: 10px 0 0 0;
+    margin: 10px 0 0;
 }
 
 .new-stream-name,
@@ -316,7 +316,7 @@
 }
 
 .subscriber-search {
-    margin: 10px 0 0 0;
+    margin: 10px 0 0;
 }
 
 .subscriber_list_add .form-inline {
@@ -334,7 +334,7 @@
 }
 
 .remove-subscriber-form {
-    margin: 0 0 0 0;
+    margin: 0;
 }
 
 #subscription-status {
@@ -489,9 +489,9 @@
             }
 
             button {
-                padding: 6px 10px 8px 10px;
+                padding: 6px 10px 8px;
                 display: block;
-                margin: 0 auto 10px auto;
+                margin: 0 auto 10px;
             }
         }
 
@@ -608,7 +608,7 @@
 }
 
 .stream-row {
-    padding: 15px 10px 11px 10px;
+    padding: 15px 10px 11px;
     border-bottom: 1px solid hsl(0, 0%, 93%);
     cursor: pointer;
 
@@ -905,7 +905,7 @@
 
         .stream_change_property_info {
             vertical-align: top;
-            margin: -5px 0 0 0;
+            margin: -5px 0 0;
         }
     }
 
@@ -1042,7 +1042,7 @@
             padding: 5px 0;
 
             input[type="radio"] {
-                margin: 3.5px 0 1px 0;
+                margin: 3.5px 0 1px;
             }
 
             &:last-of-type {
