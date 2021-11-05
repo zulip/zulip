@@ -577,10 +577,7 @@ pre {
     margin-top: 5px;
     margin-bottom: 5px;
     /* Bootstrap's default here is 9.5 on all sides */
-    padding-top: 5px;
-    padding-bottom: 3px;
-    padding-left: 7px;
-    padding-right: 7px;
+    padding: 5px 7px 3px;
 }
 
 .rendered_markdown pre code {
