@@ -539,7 +539,7 @@ class RateLimitedRealmMirror(RateLimitedObject):
 
 
 def rate_limit_mirror_by_realm(recipient_realm: Realm) -> None:
-    ratelimited = RateLimitedRealmMirror(recipient_realm).rate_limit()[0]
+    ratelimited, secs_to_freedom = RateLimitedRealmMirror(recipient_realm).rate_limit()
 
     if ratelimited:
-        raise RateLimited()
+        raise RateLimited(secs_to_freedom)
