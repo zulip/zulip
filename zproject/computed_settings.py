@@ -394,7 +394,7 @@ RATE_LIMITING_RULES = {
         (86400, 5),  # 5 per day
     ],
     "sends_email_by_ip": [
-        (1800, 5),
+        (86400, 5),
     ],
 }
 
