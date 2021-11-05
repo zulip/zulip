@@ -1514,6 +1514,41 @@ nav {
     }
 }
 
+@keyframes animate_progress_slider {
+    0% {
+        background-position: 100% 0;
+    }
+
+    100% {
+        background-position: 0 0;
+    }
+}
+
+.portico-landing.hello .carousel-indicators .auto-progress-bar {
+    flex: 0.08;
+    border-radius: 4px;
+    background-image: linear-gradient(
+        to right,
+        hsl(220, 23%, 33%) 0%,
+        hsl(220, 23%, 33%) 50%,
+        hsl(222, 12%, 66%) 50.001%,
+        hsl(222, 12%, 66%) 100%
+    );
+    background-repeat: no-repeat;
+    background-size: 200%;
+    background-color: hsl(220, 23%, 33%);
+    background-position: 100% 50%;
+    animation-timing-function: linear;
+    animation-delay: 0.2s;
+    /* Sync 1.3s with JS file */
+    animation-duration: 1.3s;
+    transition: none;
+
+    &.active {
+        animation-name: animate_progress_slider;
+    }
+}
+
 .tour .carousel-inner .start-image {
     position: relative;
     margin: 0 auto;

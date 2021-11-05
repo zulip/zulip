@@ -193,11 +193,23 @@ $(() => {
         }
     });
 
+    function auto_slide_to_next(interval) {
+        setTimeout(() => {
+            $(".carousel").carousel("next");
+        }, interval);
+    }
+
+    // We move user to the 2nd slide in 1300ms since we want user
+    // to see the next slide and not focus on the first slide at all.
+    // Sync the interval value of 1300ms with the animation in css file.
+    auto_slide_to_next(1300);
+
     $(".carousel").on("slid", function () {
         const $this = $(this);
         $this.find(".visibility-control").show();
         if ($this.find(".carousel-inner .item").first().hasClass("active")) {
             $this.find(".left.visibility-control").hide();
+            auto_slide_to_next(1300);
         } else if ($this.find(".carousel-inner .item").last().hasClass("active")) {
             $this.find(".right.visibility-control").hide();
         }
