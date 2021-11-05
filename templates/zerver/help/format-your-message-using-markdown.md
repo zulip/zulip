@@ -19,6 +19,7 @@ to allow you to easily format your messages.
 * [Status messages](#status-messages)
 * [Mention a time](#mention-a-time)
 * [Tables](#tables)
+* [Todo lists](#todo-lists)
 * [Paragraphs and lines](#paragraphs-and-lines)
 
 ## Emphasis
@@ -244,6 +245,13 @@ The header separators (`---`) must be at least three dashes long.
 ```
 
 ![Markdown table](/static/images/help/markdown-table.png)
+
+## Todo lists
+
+The `/todo` command in Zulip creates a simple todo list. To add a new task, fill in the task's title and description, and click on "Add Task". The completed tasks can be crossed off using the checkbox. Note that you cannot edit the tasks once created.
+
+![Markdown todo-lists](/static/images/help/markdown-todo.png)
+
 
 ## Paragraphs and lines
 
