@@ -20,7 +20,7 @@ import * as navigate from "./navigate";
 import * as people from "./people";
 import * as recent_senders from "./recent_senders";
 import {get, process_message, topics} from "./recent_topics_data";
-import {get_topic_key, is_in_focus, is_visible} from "./recent_topics_util";
+import {get_topic_key, is_in_focus, is_visible, set_visible} from "./recent_topics_util";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as sub_store from "./sub_store";
@@ -600,6 +600,7 @@ export function show() {
     // a messages narrow. We hide it and show recent topics.
     $("#message_feed_container").hide();
     $("#recent_topics_view").show();
+    set_visible(true);
     $("#message_view_header_underpadding").hide();
     $(".header").css("padding-bottom", "0px");
 
@@ -622,6 +623,7 @@ function filter_buttons() {
 export function hide() {
     $("#message_feed_container").show();
     $("#recent_topics_view").hide();
+    set_visible(false);
     // On firefox (and flaky on other browsers), focus
     // remains on search box even after it is hidden. We
     // forcefully blur it so that focus returns to the visible
