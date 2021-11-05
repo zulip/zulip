@@ -663,6 +663,9 @@ export function dispatch_normal_event(event) {
                 // Rerender buddy list status emoji
                 activity.build_user_sidebar();
             }
+            if (event.property === "escape_navigates_to_default_view") {
+                $("#go-to-default-view-hotkey-help").toggleClass("notdisplayed", !event.value);
+            }
             if (event.property === "enter_sends") {
                 user_settings.enter_sends = event.value;
                 $("#enter_sends").prop("checked", user_settings.enter_sends);
@@ -674,11 +677,7 @@ export function dispatch_normal_event(event) {
                 $("#user_presence_enabled").prop("checked", user_settings.presence_enabled);
                 break;
             }
-            if (event.property === "escape_navigates_to_default_view") {
-                $("#go-to-default-view-hotkey-help").toggleClass("notdisplayed", !event.value);
-                break;
-            }
-            settings_display.update_page(settings_display.user_settings_panel);
+            settings_display.update_page(event.property);
             break;
         }
 
