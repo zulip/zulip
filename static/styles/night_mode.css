@@ -626,7 +626,7 @@ body.night-mode {
     }
 
     .draft-row .message_header_private_message .message_label_clickable {
-        padding: 4px 6px 3px 6px;
+        padding: 4px 6px 3px;
         color: inherit;
     }
 

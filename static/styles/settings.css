@@ -90,7 +90,7 @@ h3 .fa-question-circle-o {
         #pw_strength {
             width: 140px;
             height: 8px;
-            margin: 6px 0 0 0;
+            margin: 6px 0 0;
         }
     }
 
@@ -246,7 +246,7 @@ td .button {
     .settings-section-title {
         font-size: 1.4em;
         font-weight: 500;
-        margin: 10px 0 10px 0;
+        margin: 10px 0;
 
         &.transparent {
             background-color: transparent;
@@ -426,7 +426,7 @@ td .button {
 
 .button,
 .input-group {
-    margin: 0 0 20px 0;
+    margin: 0 0 20px;
 }
 
 .input-group {
@@ -460,7 +460,7 @@ input[type="checkbox"] {
     }
 
     .inline-block {
-        margin: -2px 0 0 0;
+        margin: -2px 0 0;
     }
 }
 
@@ -729,7 +729,7 @@ input[type="checkbox"] {
 
 #admin-linkifier-pattern-status,
 #admin-linkifier-format-status {
-    margin: 20px 0 0 0;
+    margin: 20px 0 0;
 }
 
 .progressive-table-wrapper {
@@ -871,7 +871,7 @@ input[type="checkbox"] {
 }
 
 .bot_edit_errors {
-    margin: 20px 20px 0 20px;
+    margin: 20px 20px 0;
 }
 
 #bots_lists_navbar .active a {
@@ -899,7 +899,7 @@ input[type="checkbox"] {
     }
 
     .buttons {
-        margin: 10px 0 5px 0;
+        margin: 10px 0 5px;
     }
 
     button.dropdown-toggle {
@@ -1015,7 +1015,7 @@ input[type="checkbox"] {
 
     label {
         border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
-        padding: 8px 0 10px 0;
+        padding: 8px 0 10px;
 
         &:last-of-type {
             border-bottom: none;
@@ -1264,7 +1264,7 @@ input[type="checkbox"] {
 
     input.search {
         font-size: 0.9rem;
-        margin: 10px 0 20px 0;
+        margin: 10px 0 20px;
     }
 
     .form-sidebar {
@@ -1391,7 +1391,7 @@ input[type="checkbox"] {
             .icon {
                 width: 18px;
                 height: 18px;
-                margin: 10px 10px;
+                margin: 10px;
                 text-align: center;
 
                 font-size: 1.4em;
@@ -1850,7 +1850,7 @@ input[type="checkbox"] {
     }
 
     .subsection-failed-status p {
-        margin: 5px 0 0 0;
+        margin: 5px 0 0;
     }
 }
 
@@ -1933,7 +1933,7 @@ input[type="checkbox"] {
 
     #settings_page .save-button-controls {
         display: block;
-        margin: 10px 0 0 0;
+        margin: 10px 0 0;
     }
 }
 

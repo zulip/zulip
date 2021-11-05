@@ -118,7 +118,7 @@ pre {
 }
 
 p.n-margin {
-    margin: 10px 0 0 0;
+    margin: 10px 0 0;
 }
 
 .small-line-height {
@@ -474,7 +474,7 @@ li,
     outline-color: hsl(0, 0%, 73%);
     height: 18px;
     width: 10px;
-    padding: 6px 6px;
+    padding: 6px;
     display: block;
     /* The below two avoids the padded element from displaying
     it's own border and background color */
@@ -1035,7 +1035,7 @@ td.pointer {
 
 .stream_label {
     display: inline-block;
-    padding: 4px 6px 3px 6px;
+    padding: 4px 6px 3px;
     font-weight: normal;
     height: 17px;
     line-height: 17px;
@@ -1186,7 +1186,7 @@ td.pointer {
     .message_label_clickable {
         background-color: hsl(0, 0%, 27%);
         display: inline-block;
-        padding: 3px 6px 2px 6px;
+        padding: 3px 6px 2px;
         font-weight: normal;
         height: 17px;
         line-height: 17px;
@@ -1697,7 +1697,7 @@ div.focused_table {
     display: flex;
     align-content: flex-start;
     flex-wrap: nowrap;
-    margin: 0 0 0 0;
+    margin: 0;
     border: none;
     white-space: nowrap;
     cursor: default;
@@ -1734,7 +1734,7 @@ div.focused_table {
 
             .fa-envelope {
                 font-size: 14px;
-                margin: 0 5px 0 5px;
+                margin: 0 5px;
             }
 
             .fa-hashtag {
@@ -1964,7 +1964,7 @@ div.focused_table {
 
     @media (width >= $sm_min) {
         .pill {
-            padding: 2px 0 2px 0 !important;
+            padding: 2px 0 !important;
             font-size: 14px;
         }
     }
@@ -2090,7 +2090,7 @@ div.focused_table {
     border: 1px solid hsl(0, 0%, 93%);
     box-shadow: 0 0 1px hsla(0, 0%, 0%, 0.2);
     border-radius: 12px;
-    padding: 1px 1px 1px 1px;
+    padding: 1px;
     font-size: 9px;
     z-index: 15;
     font-weight: normal;
@@ -2509,7 +2509,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
         width: 33%;
         border-top: 1px solid hsl(0, 0%, 88%);
         border-bottom: 1px solid hsl(0, 0%, 100%);
-        margin: 0 5px 0 5px;
+        margin: 0 5px;
     }
 }
 
@@ -2610,7 +2610,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 #topic_edit_form {
     display: inline-block;
-    margin: 0 0 0 0;
+    margin: 0;
     height: 22px;
     padding-left: 20px;
     padding-right: 3px;
