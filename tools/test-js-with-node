@@ -3,8 +3,10 @@ import argparse
 import glob
 import os
 import pwd
+import shutil
 import subprocess
 import sys
+import tempfile
 from typing import Any, Dict, List
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -212,12 +214,6 @@ options = parser.parse_args()
 individual_files = options.args
 parallel = options.parallel
 
-if options.coverage and parallel > 1:
-    parallel = 1
-    print(
-        BOLDRED + "You cannot use --coverage with parallel tests. Running in serial mode.\n" + ENDC
-    )
-
 assert_provisioning_status_ok(options.skip_provision_check)
 
 
@@ -291,12 +287,49 @@ def run_tests_via_node_js() -> int:
     ret = 0
     if parallel > 1:
         sub_tests = [test_files[i::parallel] for i in range(parallel)]
-        parallel_processes = [subprocess.Popen(node_tests_cmd + sub_test) for sub_test in sub_tests]
+        if options.coverage:
+            # ensure a clean start.
+            coverage_dir = os.path.join(ROOT_DIR, "var/node-coverage")
+            if os.path.exists(coverage_dir) and os.path.isdir(coverage_dir):
+                shutil.rmtree(coverage_dir)
+            os.mkdir(coverage_dir)
 
-        for process in parallel_processes:
-            status_code = process.wait()
-            if status_code != 0:
-                ret = status_code
+            # ensure that we work with a unique output folder just in case.
+            with tempfile.TemporaryDirectory(prefix="nyc_outputs_", dir=coverage_dir) as temp_dir:
+                nyc = os.path.join(ROOT_DIR, "node_modules/.bin/nyc")
+                command = [nyc, "--extension", ".hbs", "--extension", ".ts"]
+                command += ["--silent"]
+                command += ["--temp-directory", temp_dir]
+                command += node_tests_cmd
+                parallel_processes = [
+                    subprocess.Popen(command + sub_test) for sub_test in sub_tests
+                ]
+
+                for process in parallel_processes:
+                    status_code = process.wait()
+                    if status_code != 0:
+                        ret = status_code
+                        return ret
+
+                command = [nyc, "merge", temp_dir, NODE_COVERAGE_PATH]
+                ret = subprocess.check_call(command)
+                if ret != 0:
+                    return ret
+
+                # using a context manager ensures that we automatically clean up temp_dir
+            command = [nyc, "report"]
+            command += ["--temp-directory", coverage_dir]
+            command += ["--report-dir", coverage_dir]
+            command += ["-r=lcov", "-r=json", "-r=text-summary"]
+            ret = subprocess.check_call(command)
+        else:
+            parallel_processes = [
+                subprocess.Popen(node_tests_cmd + sub_test) for sub_test in sub_tests
+            ]
+            for process in parallel_processes:
+                status_code = process.wait()
+                if status_code != 0:
+                    ret = status_code
         return ret
 
     node_tests_cmd += test_files
