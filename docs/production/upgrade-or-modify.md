@@ -541,9 +541,9 @@ instructions for other supported platforms.
 ## Upgrading PostgreSQL
 
 Starting with Zulip 3.0, we use the latest available version of
-PostgreSQL at installation time (currently version 13). Upgrades to
+PostgreSQL at installation time (currently version 14). Upgrades to
 the version of PostgreSQL are no longer linked to upgrades of the
-distribution; that is, you may opt to upgrade to PostgreSQL 13 while
+distribution; that is, you may opt to upgrade to PostgreSQL 14 while
 running Ubuntu 18.04 Bionic.
 
 To upgrade the version of PostgreSQL on the Zulip server:
