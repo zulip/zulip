@@ -42,6 +42,7 @@ class zulip::profile::base {
         'curl',
         'jq',
         'procps',
+        'python3-pybind11',
         # Used to read /etc/zulip/zulip.conf for `zulipconf` Puppet function
         'crudini',
         # Accurate time is essential
