@@ -6,7 +6,7 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-UPGRADE_TO=${1:-13}
+UPGRADE_TO=${1:-14}
 UPGRADE_FROM=$(crudini --get /etc/zulip/zulip.conf postgresql version)
 ZULIP_PATH="$(dirname "$0")/../.."
 
