@@ -135,7 +135,7 @@ html {
             border: 2px inset hsl(213, 23%, 25%);
             background-color: hsl(0, 0%, 100%);
             color: hsl(213, 23%, 25%);
-            padding: 13px 20px 11px 20px;
+            padding: 13px 20px 11px;
 
             &:hover {
                 background-color: hsl(213, 65%, 97%);
@@ -337,7 +337,7 @@ html {
     button {
         display: inline-block;
         vertical-align: top;
-        padding: 13px 22px 13px 22px;
+        padding: 13px 22px;
 
         font-family: "Source Sans 3", sans-serif;
 
@@ -376,6 +376,7 @@ html {
     .alert-info {
         font-weight: 400;
     }
+
     .alert {
         &:not(.alert-info) {
             padding: 0;
@@ -998,6 +999,7 @@ button#register_auth_button_gitlab {
     font-size: 1.2rem;
     height: 45px;
     width: 325px;
+
     &:focus {
         outline: none;
     }
@@ -1043,7 +1045,7 @@ button#register_auth_button_gitlab {
 
     .white-box {
         min-width: 450px;
-        padding: 30px 0 50px 0;
+        padding: 30px 0 50px;
     }
 
     form {

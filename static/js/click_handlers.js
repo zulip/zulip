@@ -657,7 +657,7 @@ export function initialize() {
         // Don't let clicks in the compose area count as
         // "unfocusing" our compose -- in other words, e.g.
         // clicking "Press Enter to send" should not
-        // trigger the composebox-closing code above.
+        // trigger the composebox-closing code in MAIN CLICK HANDLER.
         // But do allow our formatting link.
         if (!$(e.target).is("a")) {
             e.stopPropagation();
@@ -858,6 +858,13 @@ export function initialize() {
                 return;
             } else if (
                 !window.getSelection().toString() &&
+                // Clicking any input or text area should not close
+                // the compose box; this means using the sidebar
+                // filters or search widgets won't unnecessarily close
+                // compose.
+                !$(e.target).closest("input").length &&
+                !$(e.target).closest("textarea").length &&
+                !$(e.target).closest("select").length &&
                 // Clicks inside an overlay, popover, custom
                 // modal, or backdrop of one of the above
                 // should not have any effect on the compose
@@ -865,6 +872,7 @@ export function initialize() {
                 !$(e.target).closest(".overlay").length &&
                 !$(e.target).closest(".popover").length &&
                 !$(e.target).closest(".modal").length &&
+                !$(e.target).closest(".micromodal").length &&
                 !$(e.target).closest("[data-tippy-root]").length &&
                 !$(e.target).closest(".modal-backdrop").length &&
                 $(e.target).closest("body").length

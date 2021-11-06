@@ -94,8 +94,8 @@ def sanitize_name(value: str) -> str:
     * not stripping trailing dashes and underscores.
     """
     value = unicodedata.normalize("NFKC", value)
-    value = re.sub(r"[^\w\s.-]", "", value, flags=re.U).strip()
-    value = re.sub(r"[-\s]+", "-", value, flags=re.U)
+    value = re.sub(r"[^\w\s.-]", "", value).strip()
+    value = re.sub(r"[-\s]+", "-", value)
     assert value not in {"", ".", ".."}
     return mark_safe(value)
 
@@ -575,10 +575,7 @@ class S3UploadBackend(ZulipUploadBackend):
 
     def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
         medium_suffix = "-medium.png" if medium else ""
-        public_url = self.get_public_upload_url(f"{hash_key}{medium_suffix}")
-
-        # ?x=x allows templates to append additional parameters with &s
-        return public_url + "?x=x"
+        return self.get_public_upload_url(f"{hash_key}{medium_suffix}")
 
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
         # export_path has a leading /
@@ -878,9 +875,8 @@ class LocalUploadBackend(ZulipUploadBackend):
         delete_local_file("avatars", path_id + "-medium.png")
 
     def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
-        # ?x=x allows templates to append additional parameters with &s
         medium_suffix = "-medium" if medium else ""
-        return f"/user_avatars/{hash_key}{medium_suffix}.png?x=x"
+        return f"/user_avatars/{hash_key}{medium_suffix}.png"
 
     def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
         source_file_path = user_avatar_path(source_profile)
@@ -901,7 +897,6 @@ class LocalUploadBackend(ZulipUploadBackend):
         write_local_file(upload_path, "icon.png", resized_data)
 
     def get_realm_icon_url(self, realm_id: int, version: int) -> str:
-        # ?x=x allows templates to append additional parameters with &s
         return f"/user_avatars/{realm_id}/realm/icon.png?version={version}"
 
     def upload_realm_logo_image(
@@ -921,7 +916,6 @@ class LocalUploadBackend(ZulipUploadBackend):
         write_local_file(upload_path, resized_file, resized_data)
 
     def get_realm_logo_url(self, realm_id: int, version: int, night: bool) -> str:
-        # ?x=x allows templates to append additional parameters with &s
         if night:
             file_name = "night_logo.png"
         else:

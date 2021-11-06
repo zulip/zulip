@@ -250,6 +250,7 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, SAMLIdPConfigDict] = {
     "test_idp": {
         "entity_id": "https://idp.testshib.org/idp/shibboleth",
         "url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",
+        "slo_url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/Logout",
         "x509cert": get_from_file_if_exists("zerver/tests/fixtures/saml/idp.crt"),
         "attr_user_permanent_id": "email",
         "attr_first_name": "first_name",
@@ -265,9 +266,17 @@ RATE_LIMITING_RULES: Dict[str, List[Tuple[int, int]]] = {
     "api_by_ip": [],
     "api_by_remote_server": [],
     "authenticate_by_username": [],
-    "create_realm_by_ip": [],
-    "find_account_by_ip": [],
+    "sends_email_by_ip": [],
+    "email_change_by_user": [],
     "password_reset_form_by_email": [],
 }
 
 FREE_TRIAL_DAYS: Optional[int] = None
+
+SCIM_CONFIG = {
+    "zulip": {
+        "bearer_token": "token1234",
+        "scim_client_name": "test-scim-client",
+        "name_formatted_included": True,
+    }
+}

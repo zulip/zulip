@@ -50,22 +50,6 @@ jobs:
       HOME: /home/github/
 
     steps:
-      - name: Add required permissions
-        run: |
-          # The checkout actions doesn't clone to ~/zulip or allow
-          # us to use the path option to clone outside the current
-          # /__w/zulip/zulip directory. Since this directory is owned
-          # by root we need to change it's ownership to allow the
-          # github user to clone the code here.
-          # Note: /__w/ is a docker volume mounted to $GITHUB_WORKSPACE
-          # which is /home/runner/work/.
-          sudo chown -R github .
-
-          # This is the GitHub Actions specific cache directory the
-          # the current github user must be able to access for the
-          # cache action to work. It is owned by root currently.
-          sudo chmod -R 0777 /__w/_temp/
-
       - uses: actions/checkout@v2
 
       - name: Create cache directories
@@ -115,6 +99,11 @@ jobs:
         run: |
           source tools/ci/activate-venv
           ./tools/test-tools
+
+      - name: Run Codespell lint
+        run: |
+          source tools/ci/activate-venv
+          ./tools/run-codespell
 
       - name: Run backend lint
         run: |
@@ -216,13 +205,9 @@ jobs:
         # Only upload coverage when both frontend and backend
         # tests are ran.
         if: ${{ matrix.include_frontend_tests }}
-        run: |
-          # Codcov requires `.coverage` file to be stored in the
-          # current working directory.
-          mv ./var/.coverage ./.coverage
-          . /srv/zulip-py3-venv/bin/activate || true
-
-          pip install codecov && codecov || echo "Error in uploading coverage reports to codecov.io."
+        uses: codecov/codecov-action@v2
+        with:
+          files: var/coverage.xml,var/node-coverage/lcov.info
 
       - name: Store Puppeteer artifacts
         # Upload these on failure, as well

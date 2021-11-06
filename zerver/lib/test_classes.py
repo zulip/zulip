@@ -326,12 +326,24 @@ Output:
         self.validate_api_response_openapi(url, "patch", result, info, kwargs)
         return result
 
+    def json_patch(self, url: str, payload: Dict[str, Any] = {}, **kwargs: Any) -> HttpResponse:
+        data = orjson.dumps(payload)
+        django_client = self.client  # see WRAPPER_COMMENT
+        self.set_http_headers(kwargs)
+        return django_client.patch(url, data=data, content_type="application/json", **kwargs)
+
     @instrument_url
     def client_put(self, url: str, info: Dict[str, Any] = {}, **kwargs: Any) -> HttpResponse:
         encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
         return django_client.put(url, encoded, **kwargs)
+
+    def json_put(self, url: str, payload: Dict[str, Any] = {}, **kwargs: Any) -> HttpResponse:
+        data = orjson.dumps(payload)
+        django_client = self.client  # see WRAPPER_COMMENT
+        self.set_http_headers(kwargs)
+        return django_client.put(url, data=data, content_type="application/json", **kwargs)
 
     @instrument_url
     def client_delete(self, url: str, info: Dict[str, Any] = {}, **kwargs: Any) -> HttpResponse:
@@ -1326,7 +1338,7 @@ Output:
             licenses=licenses,
             licenses_at_next_renewal=licenses_at_next_renewal,
         )
-        realm.plan_type = Realm.STANDARD
+        realm.plan_type = Realm.PLAN_TYPE_STANDARD
         realm.save(update_fields=["plan_type"])
         return plan, ledger
 

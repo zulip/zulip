@@ -6,7 +6,6 @@ import {page_params} from "../page_params";
 export function create_ajax_request(
     url,
     form_name,
-    stripe_token = null,
     ignored_inputs = [],
     type = "POST",
     success_callback,
@@ -32,9 +31,6 @@ export function create_ajax_request(
     $(free_trial_alert_message).hide();
 
     const data = {};
-    if (stripe_token) {
-        data.stripe_token = stripe_token.id;
-    }
 
     for (const item of form.serializeArray()) {
         if (ignored_inputs.includes(item.name)) {

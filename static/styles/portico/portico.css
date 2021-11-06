@@ -451,7 +451,7 @@ img.screenshot {
 .laptop-image {
     width: 787px;
     height: 414px;
-    background-image: url(../../images/landing-page/laptop.png);
+    background-image: url("../../images/landing-page/laptop.png");
     background-size: contain;
 }
 
@@ -583,7 +583,7 @@ input.text-error {
     .portico-logo {
         height: 28px;
         width: auto;
-        padding: 6px 0 6px 0;
+        padding: 6px 0;
     }
 }
 
@@ -596,7 +596,7 @@ input.text-error {
             display: none;
             position: absolute;
             right: 0;
-            margin: 10px 0 0 0;
+            margin: 10px 0 0;
             list-style-type: none;
             width: 300px;
             background-color: hsl(0, 0%, 100%);
@@ -623,6 +623,7 @@ input.text-error {
                 text-align: left;
                 opacity: 1;
                 cursor: pointer;
+
                 &:hover {
                     background-color: hsl(190, 10%, 90%);
                     transition: none;
@@ -713,7 +714,7 @@ input.text-error {
 }
 
 .main-headline {
-    background: url(../../images/landing-page/gg.jpg);
+    background: url("../../images/landing-page/gg.jpg");
     background-position: center;
     background-size: cover;
 }
@@ -797,7 +798,7 @@ a.bottom-signup-button {
             /* Wrap when screen is small to prevent very short line */
             min-width: 300px;
             font-size: 1.4em;
-            margin: 10px 10px 0 10px;
+            margin: 10px 10px 0;
         }
 
         .profile-description {
@@ -805,6 +806,7 @@ a.bottom-signup-button {
             font-weight: 400;
             font-size: 0.8em;
             opacity: 0.8;
+
             p {
                 /* Avoid double-applying the 1.2em font-size here */
                 font-size: 1em;
@@ -827,7 +829,7 @@ a.bottom-signup-button {
         display: inline-block;
         padding: 10px;
         border: 1px solid transparent;
-        margin: 0 0 -1px 0;
+        margin: 0 0 -1px;
 
         &:hover {
             cursor: pointer;
@@ -914,7 +916,7 @@ input#terminal:checked ~ #tab-terminal {
 
     .sponsor-picture img {
         height: 170px;
-        margin: 0 20px 0 20px;
+        margin: 0 20px;
         pointer-events: none;
     }
 }
@@ -1101,7 +1103,7 @@ input.new-organization-button {
 .footer-main {
     min-width: 350px;
     margin: 0 auto;
-    padding: 0 20px 0 20px;
+    padding: 0 20px;
     position: relative;
 }
 
@@ -1364,7 +1366,7 @@ input.new-organization-button {
 
 .error_page .errorcontent {
     text-align: left;
-    padding: 40px 40px 30px 40px;
+    padding: 40px 40px 30px;
 }
 
 .error_page .lead {
@@ -1558,7 +1560,7 @@ input.new-organization-button {
     }
 
     .header {
-        padding: 4px 0 6px 0;
+        padding: 4px 0 6px;
     }
 
     .header-main {
@@ -1667,6 +1669,7 @@ label.label-title {
 
 #devtools-registration {
     float: left;
+
     form {
         display: inline;
     }
@@ -1750,7 +1753,7 @@ label.label-title {
     }
 
     #desktop-data {
-        padding: 13px 12px 12px 12px;
+        padding: 13px 12px 12px;
         font-family: "Source Code Pro", monospace;
     }
 }

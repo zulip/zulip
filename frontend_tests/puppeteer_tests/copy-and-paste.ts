@@ -12,7 +12,7 @@ async function copy_messages(
     return await page.evaluate(
         (start_message: string, end_message: string) => {
             function get_message_node(message: string): Element {
-                return $(`.message_row .message_content:contains("${CSS.escape(message)}")`).get(0);
+                return $(`.message_row .message_content:contains("${CSS.escape(message)}")`)[0];
             }
 
             // select messages from start_message to end_message

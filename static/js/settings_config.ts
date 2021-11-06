@@ -87,8 +87,8 @@ export const get_all_display_settings = (): DisplaySettings => ({
             "dense_mode",
             "high_contrast_mode",
             "left_side_userlist",
-            "starred_message_counts",
             "fluid_layout_width",
+            "starred_message_counts",
         ],
     },
     render_only: {
@@ -434,6 +434,7 @@ export const display_settings_labels = {
             defaultMessage: "Convert emoticons before sending (<code>:)</code> becomes 😃)",
         }),
     ),
+    escape_navigates_to_default_view: $t({defaultMessage: "Escape key navigates to default view"}),
 };
 
 export const notification_settings_labels = {
@@ -561,6 +562,10 @@ export const email_notifications_batching_period_values = [
     {
         value: 60 * 60 * 24 * 7,
         description: $t({defaultMessage: "1 week"}),
+    },
+    {
+        value: "custom_period",
+        description: $t({defaultMessage: "N minutes"}),
     },
 ];
 

@@ -10,7 +10,7 @@ from django.contrib.auth.views import (
     PasswordResetConfirmView,
     PasswordResetDoneView,
 )
-from django.urls import path
+from django.urls import path, re_path
 from django.urls.resolvers import URLPattern, URLResolver
 from django.utils.module_loading import import_string
 from django.views.generic import RedirectView, TemplateView
@@ -669,9 +669,14 @@ urls += [
     rest_path("thumbnail", GET=(backend_serve_thumbnail, {"override_api_url_scheme"})),
     # Avatars have the same constraint because their URLs are included
     # in API data structures used by both the mobile and web clients.
-    rest_path("avatar/<email_or_id>", GET=(avatar, {"override_api_url_scheme"})),
     rest_path(
-        "avatar/<email_or_id>/medium", {"medium": True}, GET=(avatar, {"override_api_url_scheme"})
+        "avatar/<email_or_id>",
+        GET=(avatar, {"override_api_url_scheme", "allow_anonymous_user_web"}),
+    ),
+    rest_path(
+        "avatar/<email_or_id>/medium",
+        {"medium": True},
+        GET=(avatar, {"override_api_url_scheme", "allow_anonymous_user_web"}),
     ),
 ]
 
@@ -739,6 +744,50 @@ urls += [
 
 urls += [path("", include("social_django.urls", namespace="social"))]
 urls += [path("saml/metadata.xml", saml_sp_metadata)]
+
+# SCIM2
+
+from zerver.lib.scim import (
+    ZulipSCIMSearchView,
+    ZulipSCIMUserSearchView,
+    ZulipSCIMUsersView,
+    ZulipSCIMView,
+)
+
+urls += [
+    # We have to register all the SCIM URL patterns first, because we override
+    # all the SCIM View classes and we need Django to use them instead of
+    # the django-scim2 Views that the app will register.
+    re_path(r"^scim/v2/$", ZulipSCIMView.as_view(implemented=False)),
+    re_path(r"^scim/v2/.search$", ZulipSCIMSearchView.as_view(implemented=False)),
+    re_path(r"^scim/v2/Users/.search$", ZulipSCIMUserSearchView.as_view()),
+    re_path(r"^scim/v2/Users(?:/(?P<uuid>[^/]+))?$", ZulipSCIMUsersView.as_view()),
+    # Everything below here are features that we don't yet support and we want
+    # to explicitly mark them to return "Not Implemented" rather than running
+    # the django-scim2 code for them.
+    re_path(
+        r"^scim/v2/Groups/.search$",
+        ZulipSCIMView.as_view(implemented=False),
+    ),
+    re_path(
+        r"^scim/v2/Groups(?:/(?P<uuid>[^/]+))?$",
+        ZulipSCIMView.as_view(implemented=False),
+    ),
+    re_path(r"^scim/v2/Me$", ZulipSCIMView.as_view(implemented=False)),
+    re_path(
+        r"^scim/v2/ServiceProviderConfig$",
+        ZulipSCIMView.as_view(implemented=False),
+    ),
+    re_path(
+        r"^scim/v2/ResourceTypes(?:/(?P<uuid>[^/]+))?$",
+        ZulipSCIMView.as_view(implemented=False),
+    ),
+    re_path(r"^scim/v2/Schemas(?:/(?P<uuid>[^/]+))?$", ZulipSCIMView.as_view(implemented=False)),
+    re_path(r"^scim/v2/Bulk$", ZulipSCIMView.as_view(implemented=False)),
+    # At the end we still register the django-scim2 url patterns (even though we override them all above)
+    # so that reverse("scim:viewname") still works like the internal library code expects.
+    path("scim/v2/", include("django_scim.urls", namespace="scim")),
+]
 
 # User documentation site
 help_documentation_view = MarkdownDirectoryView.as_view(

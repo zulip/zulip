@@ -118,7 +118,7 @@ function get_slash_matcher(query) {
     query = typeahead.clean_query_lowercase(query);
 
     return function (item) {
-        return typeahead.query_matches_source_attrs(query, item, ["name"], " ");
+        return typeahead.query_matches_source_attrs(query, item, ["name", "aliases"], " ");
     };
 }
 
@@ -393,40 +393,39 @@ function should_show_custom_query(query, items) {
 
 export const slash_commands = [
     {
-        text: $t({defaultMessage: "/dark (Toggle night mode)"}),
+        text: $t({defaultMessage: "/dark (Toggle dark mode)"}),
         name: "dark",
-    },
-    {
-        text: $t({defaultMessage: "/day (Toggle day mode)"}),
-        name: "day",
+        aliases: "night",
     },
     {
         text: $t({defaultMessage: "/fixed-width (Toggle fixed width mode)"}),
         name: "fixed-width",
+        aliases: "",
     },
     {
         text: $t({defaultMessage: "/fluid-width (Toggle fluid width mode)"}),
         name: "fluid-width",
+        aliases: "",
     },
     {
-        text: $t({defaultMessage: "/light (Toggle day mode)"}),
+        text: $t({defaultMessage: "/light (Toggle light mode)"}),
         name: "light",
+        aliases: "day",
     },
     {
         text: $t({defaultMessage: "/me is excited (Display action text)"}),
         name: "me",
-    },
-    {
-        text: $t({defaultMessage: "/night (Toggle night mode)"}),
-        name: "night",
+        aliases: "",
     },
     {
         text: $t({defaultMessage: "/poll Where should we go to lunch today? (Create a poll)"}),
         name: "poll",
+        aliases: "",
     },
     {
         text: $t({defaultMessage: "/todo (Create a todo list)"}),
         name: "todo",
+        aliases: "",
     },
 ];
 
@@ -767,7 +766,7 @@ export function content_highlighter(item) {
     }
 }
 
-const show_flatpickr = (element, callback, default_timestamp) => {
+export function show_flatpickr(element, callback, default_timestamp, options = {}) {
     const flatpickr_input = $("<input id='#timestamp_flatpickr'>");
 
     const instance = flatpickr_input.flatpickr({
@@ -775,11 +774,13 @@ const show_flatpickr = (element, callback, default_timestamp) => {
         enableTime: true,
         clickOpens: false,
         defaultDate: default_timestamp,
-        plugins: [new ConfirmDatePlugin({})],
+        plugins: [new ConfirmDatePlugin({showAlways: true})],
         positionElement: element,
         dateFormat: "Z",
         formatDate: (date) => formatISO(date),
+        ...options,
     });
+
     const container = $($(instance.innerContainer).parent());
     container.on("click", ".flatpickr-calendar", (e) => {
         e.stopPropagation();
@@ -793,7 +794,9 @@ const show_flatpickr = (element, callback, default_timestamp) => {
     });
     instance.open();
     container.find(".flatpickr-monthDropdown-months").trigger("focus");
-};
+
+    return instance;
+}
 
 export function content_typeahead_selected(item, event) {
     const pieces = split_at_cursor(this.query, this.$element);

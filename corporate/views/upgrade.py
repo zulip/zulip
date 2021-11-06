@@ -2,6 +2,7 @@ import logging
 from decimal import Decimal
 from typing import Any, Dict, Optional
 
+import stripe
 from django import forms
 from django.conf import settings
 from django.core import signing
@@ -13,19 +14,24 @@ from django.urls import reverse
 from corporate.lib.stripe import (
     DEFAULT_INVOICE_DAYS_UNTIL_DUE,
     MIN_INVOICED_LICENSES,
-    STRIPE_PUBLISHABLE_KEY,
     BillingError,
+    compute_plan_parameters,
+    ensure_realm_does_not_have_active_plan,
     get_latest_seat_count,
+    is_free_trial_offer_enabled,
     is_sponsored_realm,
     process_initial_upgrade,
     sign_string,
     unsign_string,
+    update_or_create_stripe_customer,
     update_sponsorship_status,
     validate_licenses,
 )
 from corporate.lib.support import get_support_url
 from corporate.models import (
     CustomerPlan,
+    PaymentIntent,
+    Session,
     ZulipSponsorshipRequest,
     get_current_plan_by_customer,
     get_customer_by_realm,
@@ -58,23 +64,87 @@ def check_upgrade_parameters(
     schedule: str,
     license_management: Optional[str],
     licenses: Optional[int],
-    has_stripe_token: bool,
     seat_count: int,
 ) -> None:
     if billing_modality not in VALID_BILLING_MODALITY_VALUES:  # nocoverage
-        raise BillingError("unknown billing_modality")
+        raise BillingError("unknown billing_modality", "")
     if schedule not in VALID_BILLING_SCHEDULE_VALUES:  # nocoverage
         raise BillingError("unknown schedule")
     if license_management not in VALID_LICENSE_MANAGEMENT_VALUES:  # nocoverage
         raise BillingError("unknown license_management")
+    validate_licenses(billing_modality == "charge_automatically", licenses, seat_count)
 
-    charge_automatically = False
-    if billing_modality == "charge_automatically":
-        charge_automatically = True
-        if not has_stripe_token:
-            raise BillingError("autopay with no card")
 
-    validate_licenses(charge_automatically, licenses, seat_count)
+def setup_upgrade_checkout_session_and_payment_intent(
+    user: UserProfile,
+    seat_count: int,
+    licenses: int,
+    license_management: str,
+    billing_schedule: int,
+    billing_modality: str,
+    onboarding: bool,
+) -> stripe.checkout.Session:
+    customer = update_or_create_stripe_customer(user)
+    assert customer is not None  # for mypy
+    free_trial = is_free_trial_offer_enabled()
+    _, _, _, price_per_license = compute_plan_parameters(
+        CustomerPlan.STANDARD,
+        license_management == "automatic",
+        billing_schedule,
+        customer.default_discount,
+        free_trial,
+    )
+    metadata = {
+        "billing_modality": billing_modality,
+        "billing_schedule": billing_schedule,
+        "licenses": licenses,
+        "license_management": license_management,
+        "price_per_license": price_per_license,
+        "seat_count": seat_count,
+        "type": "upgrade",
+        "user_email": user.delivery_email,
+        "realm_id": user.realm.id,
+        "realm_str": user.realm.string_id,
+    }
+    if free_trial:
+        if onboarding:
+            session_type = Session.FREE_TRIAL_UPGRADE_FROM_ONBOARDING_PAGE
+        else:
+            session_type = Session.FREE_TRIAL_UPGRADE_FROM_BILLING_PAGE
+        payment_intent = None
+    else:
+        session_type = Session.UPGRADE_FROM_BILLING_PAGE
+        stripe_payment_intent = stripe.PaymentIntent.create(
+            amount=price_per_license * licenses,
+            currency="usd",
+            customer=customer.stripe_customer_id,
+            description=f"Upgrade to Zulip Standard, ${price_per_license/100} x {licenses}",
+            receipt_email=user.delivery_email,
+            confirm=False,
+            statement_descriptor="Zulip Standard",
+            metadata=metadata,
+        )
+        payment_intent = PaymentIntent.objects.create(
+            customer=customer,
+            stripe_payment_intent_id=stripe_payment_intent.id,
+            status=PaymentIntent.get_status_integer_from_status_text(stripe_payment_intent.status),
+        )
+    stripe_session = stripe.checkout.Session.create(
+        cancel_url=f"{user.realm.uri}/upgrade/",
+        customer=customer.stripe_customer_id,
+        mode="setup",
+        payment_method_types=["card"],
+        metadata=metadata,
+        setup_intent_data={"metadata": metadata},
+        success_url=f"{user.realm.uri}/billing/event_status?stripe_session_id={{CHECKOUT_SESSION_ID}}",
+    )
+    session = Session.objects.create(
+        customer=customer, stripe_session_id=stripe_session.id, type=session_type
+    )
+    if payment_intent is not None:
+        session.payment_intent = payment_intent
+        session.save(update_fields=["payment_intent"])
+    return stripe_session
 
 
 @require_organization_member
@@ -86,13 +156,13 @@ def upgrade(
     schedule: str = REQ(str_validator=check_string_in(VALID_BILLING_SCHEDULE_VALUES)),
     signed_seat_count: str = REQ(),
     salt: str = REQ(),
+    onboarding: bool = REQ(default=False, json_validator=check_bool),
     license_management: Optional[str] = REQ(
         default=None, str_validator=check_string_in(VALID_LICENSE_MANAGEMENT_VALUES)
     ),
     licenses: Optional[int] = REQ(json_validator=check_int, default=None),
-    stripe_token: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
-
+    ensure_realm_does_not_have_active_plan(user.realm)
     try:
         seat_count = unsign_seat_count(signed_seat_count, salt)
         if billing_modality == "charge_automatically" and license_management == "automatic":
@@ -101,43 +171,61 @@ def upgrade(
             schedule = "annual"
             license_management = "manual"
         check_upgrade_parameters(
-            billing_modality,
-            schedule,
-            license_management,
-            licenses,
-            stripe_token is not None,
-            seat_count,
+            billing_modality, schedule, license_management, licenses, seat_count
         )
-        assert licenses is not None
+        assert licenses is not None and license_management is not None
         automanage_licenses = license_management == "automatic"
+        charge_automatically = billing_modality == "charge_automatically"
 
         billing_schedule = {"annual": CustomerPlan.ANNUAL, "monthly": CustomerPlan.MONTHLY}[
             schedule
         ]
-        process_initial_upgrade(user, licenses, automanage_licenses, billing_schedule, stripe_token)
-    except BillingError as e:
-        if not settings.TEST_SUITE:  # nocoverage
-            billing_logger.warning(
-                "BillingError during upgrade: %s. user=%s, realm=%s (%s), billing_modality=%s, "
-                "schedule=%s, license_management=%s, licenses=%s, has stripe_token: %s",
-                e.error_description,
-                user.id,
-                user.realm.id,
-                user.realm.string_id,
-                billing_modality,
-                schedule,
-                license_management,
+        if charge_automatically:
+            stripe_checkout_session = setup_upgrade_checkout_session_and_payment_intent(
+                user,
+                seat_count,
                 licenses,
-                stripe_token is not None,
+                license_management,
+                billing_schedule,
+                billing_modality,
+                onboarding,
             )
-        raise
+            return json_success(
+                data={
+                    "stripe_session_url": stripe_checkout_session.url,
+                    "stripe_session_id": stripe_checkout_session.id,
+                }
+            )
+        else:
+            process_initial_upgrade(
+                user,
+                licenses,
+                automanage_licenses,
+                billing_schedule,
+                False,
+                is_free_trial_offer_enabled(),
+            )
+            return json_success(data={})
+
+    except BillingError as e:
+        billing_logger.warning(
+            "BillingError during upgrade: %s. user=%s, realm=%s (%s), billing_modality=%s, "
+            "schedule=%s, license_management=%s, licenses=%s",
+            e.error_description,
+            user.id,
+            user.realm.id,
+            user.realm.string_id,
+            billing_modality,
+            schedule,
+            license_management,
+            licenses,
+        )
+        raise e
     except Exception:
         billing_logger.exception("Uncaught exception in billing:", stack_info=True)
         error_message = BillingError.CONTACT_SUPPORT.format(email=settings.ZULIP_ADMINISTRATOR)
         error_description = "uncaught exception during upgrade"
         raise BillingError(error_description, error_message)
-    else:
-        return json_success()
 
 
 @zulip_login_required
@@ -172,7 +260,6 @@ def initial_upgrade(
     signed_seat_count, salt = sign_string(str(seat_count))
     context: Dict[str, Any] = {
         "realm": user.realm,
-        "publishable_key": STRIPE_PUBLISHABLE_KEY,
         "email": user.delivery_email,
         "seat_count": seat_count,
         "signed_seat_count": signed_seat_count,

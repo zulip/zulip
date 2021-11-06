@@ -367,7 +367,7 @@ $category-text: hsl(219, 23%, 33%);
         .integration-name {
             font-size: 1.2em;
             font-weight: 400;
-            margin: 10px 4px 0 4px;
+            margin: 10px 4px 0;
 
             &.create-your-own {
                 margin-top: 27px;
@@ -442,14 +442,14 @@ $category-text: hsl(219, 23%, 33%);
         }
 
         .button {
-            padding: 11px 25px 11px 25px;
+            padding: 11px 25px;
             margin: 5px;
             font-size: 0.9em;
         }
     }
 
     .integration-divider {
-        padding: 11px 15px 0 15px;
+        padding: 11px 15px 0;
     }
 
     /* -- integration instructions -- */
@@ -502,6 +502,7 @@ $category-text: hsl(219, 23%, 33%);
 
             .categories {
                 order: 2;
+
                 .integration-category {
                     font-size: 0.9em;
                     font-weight: 400;

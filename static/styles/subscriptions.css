@@ -173,21 +173,25 @@
 }
 
 .create_stream_plus_button {
+    font-size: 24px;
+    font-weight: 500;
+    position: relative;
+    top: 2px;
+    border: 1px solid hsl(0, 0%, 80%);
+    border-radius: 5px;
+    background-color: hsl(0, 0%, 100%);
+    color: hsl(0, 0%, 0%);
     margin: 0 0 0 5px;
+    height: 27px;
 
-    border: none;
-    outline: none;
-    background-color: transparent;
+    &:hover {
+        border: 1px solid hsl(0, 0%, 47%);
+    }
 
-    font-size: 2.2em;
-    font-weight: 300;
-    line-height: 1;
-    color: hsl(0, 0%, 67%);
-
-    display: inline-block;
-    transition: all 0.2s ease;
-    padding-bottom: 0;
-    padding-top: 0;
+    span {
+        position: relative;
+        top: -5px;
+    }
 }
 
 #create_stream_description {
@@ -204,7 +208,7 @@
     display: inline-block;
     font-size: 1.5em;
     line-height: 1.5;
-    margin: 10px 0 0 0;
+    margin: 10px 0 0;
 }
 
 .new-stream-name,
@@ -312,7 +316,7 @@
 }
 
 .subscriber-search {
-    margin: 10px 0 0 0;
+    margin: 10px 0 0;
 }
 
 .subscriber_list_add .form-inline {
@@ -330,7 +334,7 @@
 }
 
 .remove-subscriber-form {
-    margin: 0 0 0 0;
+    margin: 0;
 }
 
 #subscription-status {
@@ -477,15 +481,17 @@
             margin-top: calc(45vh - 75px);
             text-align: center;
             font-size: 1em;
+            margin-left: 2em;
+            margin-right: 2em;
 
             span {
                 color: hsl(0, 0%, 67%);
             }
 
             button {
-                padding: 6px 10px 8px 10px;
+                padding: 6px 10px 8px;
                 display: block;
-                margin: 0 auto 10px auto;
+                margin: 0 auto 10px;
             }
         }
 
@@ -518,7 +524,7 @@
             border: none;
             background-color: hsl(0, 0%, 98%);
             box-shadow: inset 0 0 50px hsla(0, 0%, 0%, 0.5);
-            background-image: url(../images/preview-loading.png);
+            background-image: url("../images/preview-loading.png");
             background-size: 150px auto;
             background-position: center center;
             background-repeat: no-repeat;
@@ -602,7 +608,7 @@
 }
 
 .stream-row {
-    padding: 15px 10px 11px 10px;
+    padding: 15px 10px 11px;
     border-bottom: 1px solid hsl(0, 0%, 93%);
     cursor: pointer;
 
@@ -899,12 +905,13 @@
 
         .stream_change_property_info {
             vertical-align: top;
-            margin: -5px 0 0 0;
+            margin: -5px 0 0;
         }
     }
 
     .stream-description {
         margin-bottom: 5px;
+
         .no-description {
             font-style: italic;
             color: hsl(0, 0%, 67%);
@@ -942,6 +949,7 @@
 
         .subscription-type-text {
             display: inline;
+
             ul {
                 margin: 0 0 10px 14px;
                 list-style-type: unset;
@@ -1034,7 +1042,7 @@
             padding: 5px 0;
 
             input[type="radio"] {
-                margin: 3.5px 0 1px 0;
+                margin: 3.5px 0 1px;
             }
 
             &:last-of-type {
@@ -1061,6 +1069,7 @@
         }
     }
 }
+
 #change_stream_info_modal {
     .modal-header h3 {
         text-overflow: ellipsis;
@@ -1194,7 +1203,7 @@
         to show alert beside stream name we set its display
         to block so it is shown in new line. But to avoid
         it covering whole screen width we set max-width
-        so that it does not losses inline-block appearence. */
+        so that it does not losses inline-block appearance. */
 
         /* TODO: This will probably be not required once
         we have tabbed navigation as button group width
@@ -1210,6 +1219,7 @@
         display: block;
         text-align: center;
         margin-left: 0;
+
         .tab-container {
             .ind-tab {
                 width: 85px;

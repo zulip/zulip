@@ -799,7 +799,7 @@ export function keyboard_sub() {
     const active_data = get_active_data();
     const row_data = get_row_data(active_data.row);
     if (row_data) {
-        sub_or_unsub(row_data.object, false);
+        sub_or_unsub(row_data.object);
     }
 }
 
@@ -949,13 +949,8 @@ export function open_create_stream() {
     browser_history.update("#streams/new");
 }
 
-export function unsubscribe_from_private_stream(sub, from_stream_popover) {
-    let modal_parent = $("#subscriptions_table");
+export function unsubscribe_from_private_stream(sub) {
     const html_body = render_unsubscribe_private_stream_modal();
-
-    if (from_stream_popover) {
-        modal_parent = $(".left-sidebar-modal-holder");
-    }
 
     function unsubscribe_from_stream() {
         let stream_row;
@@ -969,22 +964,20 @@ export function unsubscribe_from_private_stream(sub, from_stream_popover) {
     }
 
     confirm_dialog.launch({
-        parent: modal_parent,
         html_heading: $t_html(
             {defaultMessage: "Unsubscribe from {stream_name}"},
             {stream_name: sub.name},
         ),
         html_body,
         on_click: unsubscribe_from_stream,
-        fade: true,
     });
 }
 
-export function sub_or_unsub(sub, from_stream_popover, stream_row) {
+export function sub_or_unsub(sub, stream_row) {
     if (sub.subscribed) {
         // TODO: This next line should allow guests to access web-public streams.
         if (sub.invite_only || page_params.is_guest) {
-            unsubscribe_from_private_stream(sub, from_stream_popover);
+            unsubscribe_from_private_stream(sub);
             return;
         }
         ajaxUnsubscribe(sub, stream_row);

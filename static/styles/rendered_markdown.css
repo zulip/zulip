@@ -2,7 +2,7 @@
     /* The default top/bottom margins for paragraphs are small, to make sure
        they look nice next to blockquotes, lists, etc. */
     p {
-        margin: 3px 0 3px 0;
+        margin: 3px 0;
     }
 
     /* The spacing between two paragraphs is significantly larger.  We
@@ -121,7 +121,7 @@
     /* Formatting for Markdown tables */
     table {
         padding-right: 10px;
-        margin: 5px 5px 5px 5px;
+        margin: 5px;
         width: 99%;
         display: block;
         max-width: fit-content;
@@ -216,7 +216,7 @@
         position: relative;
         top: 1px;
         display: block;
-        margin: 5px 0 15px 0;
+        margin: 5px 0 15px;
 
         .spoiler-header {
             padding: 5px;
@@ -244,6 +244,7 @@
             float: right;
             width: 25px;
             height: 25px;
+
             &:hover .spoiler-arrow {
                 &::before,
                 &::after {
@@ -264,6 +265,7 @@
             margin-top: 2px;
             text-align: left;
             transform: rotate(45deg);
+
             &::before,
             &::after {
                 position: absolute;
@@ -274,17 +276,21 @@
                 background-color: hsl(0, 0%, 83%);
                 transition: 0.4s ease;
             }
+
             &::after {
                 position: absolute;
                 transform: rotate(90deg);
                 top: -5px;
                 left: 5px;
             }
+
             &.spoiler-button-open {
                 transform: rotate(45deg) translate(-5px, -5px);
+
                 &::before {
                     transform: translate(10px, 0);
                 }
+
                 &::after {
                     transform: rotate(90deg) translate(10px, 0);
                 }
@@ -571,10 +577,7 @@ pre {
     margin-top: 5px;
     margin-bottom: 5px;
     /* Bootstrap's default here is 9.5 on all sides */
-    padding-top: 5px;
-    padding-bottom: 3px;
-    padding-left: 7px;
-    padding-right: 7px;
+    padding: 5px 7px 3px;
 }
 
 .rendered_markdown pre code {

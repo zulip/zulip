@@ -35,11 +35,11 @@
 
     li {
         list-style: none;
-        margin: 2px 2px 2px 0;
+        margin: 2px 2px 6px 0;
     }
 
     ul {
-        margin: 0 0 5px 0;
+        margin: 0 0 5px;
         padding: 0;
     }
 }
@@ -52,17 +52,34 @@
 
     .poll-option {
         font-weight: 600;
+        font-size: 12pt;
     }
 
     .poll-vote {
         color: hsl(156, 41%, 40%);
         border-color: hsl(156, 28%, 70%);
+        border-style: solid;
+        border-radius: 3px;
         margin-right: 4px;
+        padding-left: 2px; /* padding for Chromium browsers */
+        padding-right: 2px;
+        min-width: 28px;
         background-color: hsl(0, 0%, 100%);
 
         &:hover {
             border-color: hsl(156, 30%, 50%);
         }
+
+        &:focus {
+            outline: 0;
+            background-color: hsl(156, 41%, 90%);
+        }
+    }
+
+    .poll-names {
+        color: hsl(0, 0%, 45%);
+        padding-left: 4px;
+        font-size: 10pt;
     }
 }
 
@@ -111,7 +128,7 @@ button {
     &.poll-option,
     &.poll-question {
         padding: 4px 6px;
-        margin: 2px 0 2px 0;
+        margin: 2px 0;
     }
 }
 

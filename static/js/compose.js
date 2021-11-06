@@ -11,6 +11,7 @@ import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
+import * as composebox_typeahead from "./composebox_typeahead";
 import * as echo from "./echo";
 import * as giphy from "./giphy";
 import {$t, $t_html} from "./i18n";
@@ -625,6 +626,46 @@ export function initialize() {
             video_call_link = page_params.jitsi_server_url + "/" + video_call_id;
             insert_video_call_url(video_call_link, target_textarea);
         }
+    });
+
+    let instance = null;
+    $("body").on("click", ".time_pick", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        let target_textarea;
+        let edit_message_id;
+        if ($(e.target).parents(".message_edit_form").length === 1) {
+            edit_message_id = rows.id($(e.target).parents(".message_row"));
+            target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
+        }
+
+        if (instance === null) {
+            const on_timestamp_selection = (val) => {
+                const timestr = `<time:${val}> `;
+                compose_ui.insert_syntax_and_focus(timestr, target_textarea);
+                instance = null;
+            };
+
+            instance = composebox_typeahead.show_flatpickr(
+                $(e.target)[0],
+                on_timestamp_selection,
+                new Date(),
+                {
+                    // place the time picker above the icon and centerize it horizontally
+                    position: "above center",
+                },
+            );
+
+            $(document).one("compose_canceled.zulip compose_finished.zulip", () => {
+                instance = null;
+            });
+            return;
+        }
+
+        instance.close();
+        instance.destroy();
+        instance = null;
     });
 
     $("#compose").on("click", ".markdown_preview", (e) => {

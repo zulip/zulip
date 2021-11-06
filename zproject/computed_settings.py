@@ -187,6 +187,7 @@ MIDDLEWARE = (
     "zerver.middleware.HostDomainMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "zerver.middleware.ZulipSCIMAuthCheckMiddleware",
     # Make sure 2FA middlewares come after authentication middleware.
     "django_otp.middleware.OTPMiddleware",  # Required by two factor auth.
     "two_factor.middleware.threadlocals.ThreadLocals",  # Required by Twilio
@@ -213,6 +214,7 @@ INSTALLED_APPS = [
     "confirmation",
     "zerver",
     "social_django",
+    "django_scim",
     # 2FA related apps.
     "django_otp",
     "django_otp.plugins.otp_static",
@@ -383,15 +385,16 @@ RATE_LIMITING_RULES = {
     "authenticate_by_username": [
         (1800, 5),  # 5 login attempts within 30 minutes
     ],
-    "create_realm_by_ip": [
-        (1800, 5),
-    ],
-    "find_account_by_ip": [
-        (3600, 10),
+    "email_change_by_user": [
+        (3600, 2),  # 2 per hour
+        (86400, 5),  # 5 per day
     ],
     "password_reset_form_by_email": [
         (3600, 2),  # 2 reset emails per hour
         (86400, 5),  # 5 per day
+    ],
+    "sends_email_by_ip": [
+        (86400, 5),
     ],
 }
 
@@ -716,6 +719,7 @@ TRACEMALLOC_DUMP_DIR = zulip_path("/var/log/zulip/tracemalloc")
 DELIVER_SCHEDULED_MESSAGES_LOG_PATH = zulip_path("/var/log/zulip/deliver_scheduled_messages.log")
 RETENTION_LOG_PATH = zulip_path("/var/log/zulip/message_retention.log")
 AUTH_LOG_PATH = zulip_path("/var/log/zulip/auth.log")
+SCIM_LOG_PATH = zulip_path("/var/log/zulip/scim.log")
 
 ZULIP_WORKER_TEST_FILE = "/tmp/zulip-worker-test-file"
 
@@ -817,6 +821,12 @@ LOGGING: Dict[str, Any] = {
             "formatter": "default",
             "filename": LDAP_LOG_PATH,
         },
+        "scim_file": {
+            "level": "DEBUG",
+            "class": "logging.handlers.WatchedFileHandler",
+            "formatter": "default",
+            "filename": SCIM_LOG_PATH,
+        },
         "slow_queries_file": {
             "level": "INFO",
             "class": "logging.handlers.WatchedFileHandler",
@@ -911,6 +921,11 @@ LOGGING: Dict[str, Any] = {
         "django_auth_ldap": {
             "level": "DEBUG",
             "handlers": ["console", "ldap_file", "errors_file"],
+            "propagate": False,
+        },
+        "django_scim": {
+            "level": "DEBUG",
+            "handlers": ["scim_file", "errors_file"],
             "propagate": False,
         },
         "pika": {
@@ -1115,6 +1130,13 @@ if "signatureAlgorithm" not in SOCIAL_AUTH_SAML_SECURITY_CONFIG:
     default_signature_alg = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"
     SOCIAL_AUTH_SAML_SECURITY_CONFIG["signatureAlgorithm"] = default_signature_alg
 
+if "wantMessagesSigned" not in SOCIAL_AUTH_SAML_SECURITY_CONFIG:
+    # This setting controls whether LogoutRequests delivered to us
+    # need to be signed. The default of False is not acceptable,
+    # because we don't want anyone to be able to submit a request
+    # to get other users logged out.
+    SOCIAL_AUTH_SAML_SECURITY_CONFIG["wantMessagesSigned"] = True
+
 for idp_name, idp_dict in SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
     if DEVELOPMENT:
         idp_dict["entity_id"] = get_secret("saml_entity_id", "")
@@ -1194,3 +1216,22 @@ if SENTRY_DSN:
     from .sentry import setup_sentry
 
     setup_sentry(SENTRY_DSN, get_config("machine", "deploy_type", "development"))
+
+SCIM_SERVICE_PROVIDER = {
+    "USER_ADAPTER": "zerver.lib.scim.ZulipSCIMUser",
+    "USER_FILTER_PARSER": "zerver.lib.scim_filter.ZulipUserFilterQuery",
+    # NETLOC is actually overridden by the behavior of base_scim_location_getter,
+    # but django-scim2 requires it to be set, even though it ends up not being used.
+    # So we need to give it some value here, and EXTERNAL_HOST is the most generic.
+    "NETLOC": EXTERNAL_HOST,
+    "SCHEME": EXTERNAL_URI_SCHEME,
+    "GET_EXTRA_MODEL_FILTER_KWARGS_GETTER": "zerver.lib.scim.get_extra_model_filter_kwargs_getter",
+    "BASE_LOCATION_GETTER": "zerver.lib.scim.base_scim_location_getter",
+    "AUTHENTICATION_SCHEMES": [
+        {
+            "type": "bearer",
+            "name": "Bearer",
+            "description": "Bearer token",
+        },
+    ],
+}

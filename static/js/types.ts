@@ -10,5 +10,5 @@ export type UserGroupUpdateEvent = {
 };
 
 // TODO/typescript: Move the User and Stream placeholder
-// types to their approriate modules.
+// types to their appropriate modules.
 export type User = Record<string, never>;

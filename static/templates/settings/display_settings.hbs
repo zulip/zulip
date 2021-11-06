@@ -1,15 +1,15 @@
 <form class="display-settings-form">
-    {{#unless for_realm_settings}}
-    <div class="lang-settings">
+    <div class="lang-time-settings {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
+        {{#unless for_realm_settings}}
         <!-- this is inline block so that the alert notification can sit beside
-        it. If there's not an alert, don't make it inline-block. -->
+        it. If there's not an alert, don't make it inline-block.-->
         <div class="subsection-header inline-block">
-            <h3>{{t "Language settings" }}</h3>
+            <h3>{{t "Language and time" }}</h3>
             {{> settings_save_discard_widget section_name="language-settings" show_only_indicator=true }}
         </div>
 
         <div class="input-group">
-            <label class="inline-block title">{{t "Default language" }}</label>
+            <label class="inline-block title">{{t "Language" }}</label>
             <button type="button" class="setting_default_language button btn-link rounded small inline-block">
                 <span class="default_language_name">{{default_language_name}}</span>
                 <i class="fa fa-pencil"></i>
@@ -17,56 +17,7 @@
         </div>
 
         {{> ../default_language_modal language_list=language_list_dbl_col prefix=prefix}}
-    </div>
-    {{/unless}}
-
-    <div class="display-settings {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
-        <div class="subsection-header">
-            <h3>{{t "Display settings" }}</h3>
-            {{> settings_save_discard_widget section_name="display-settings" show_only_indicator=(not for_realm_settings) }}
-        </div>
-
-        <div class="input-group inline-block">
-            <label for="default_view" class="dropdown-title">{{t "Default view" }}
-                {{> ../help_link_widget link="/help/change-default-view" }}
-            </label>
-            <select name="default_view" class="setting_default_view prop-element" data-setting-widget-type="string">
-                {{> dropdown_options_widget option_values=default_view_values}}
-            </select>
-        </div>
-
-        <div class="input-group">
-            <label for="color_scheme" class="dropdown-title">{{t "Color scheme" }}
-            </label>
-            <select name="color_scheme" class="setting_color_scheme prop-element" data-setting-widget-type="number">
-                {{> dropdown_options_widget option_values=color_scheme_values}}
-            </select>
-        </div>
-
-        {{#each display_settings.settings.user_display_settings}}
-        {{> settings_checkbox
-          setting_name=this
-          is_checked=(lookup ../settings_object this)
-          label=(lookup ../settings_label this)
-          render_only=(lookup ../display_settings.render_only this)
-          prefix=../prefix}}
-        {{/each}}
-
-        <div class="input-group">
-            <label for="demote_inactive_streams" class="dropdown-title">{{t "Demote inactive streams" }}
-                {{> ../help_link_widget link="/help/manage-inactive-streams" }}
-            </label>
-            <select name="demote_inactive_streams" class="setting_demote_inactive_streams prop-element"  data-setting-widget-type="number">
-                {{> dropdown_options_widget option_values=demote_inactive_streams_values}}
-            </select>
-        </div>
-    </div>
-
-    <div class="time-settings {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
-        <div class="subsection-header">
-            <h3>{{t "Time settings" }}</h3>
-            {{> settings_save_discard_widget section_name="time-settings" show_only_indicator=(not for_realm_settings) }}
-        </div>
+        {{/unless}}
 
         <div class="input-group">
             <label for="twenty_four_hour_time" class="dropdown-title">{{ settings_label.twenty_four_hour_time }}</label>
@@ -76,15 +27,25 @@
                 {{/each}}
             </select>
         </div>
+
     </div>
 
-    <div class="emoji-settings {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
+
+    <div class="theme-settings {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
         <div class="subsection-header">
-            <h3 class="light">{{t "Emoji settings" }}</h3>
-            {{> settings_save_discard_widget section_name="emoji-settings" show_only_indicator=(not for_realm_settings) }}
+            <h3 class="light">{{t "Theme" }}</h3>
+            {{> settings_save_discard_widget section_name="theme-settings" show_only_indicator=(not for_realm_settings) }}
         </div>
 
         <div class="input-group">
+            <label for="color_scheme" class="dropdown-title">{{t "Color scheme" }}</label>
+            <select name="color_scheme" class="setting_color_scheme prop-element" data-setting-widget-type="number">
+                {{> dropdown_options_widget option_values=color_scheme_values}}
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label class="emoji-theme title">{{t "Emoji theme" }}</label>
             <div class="emojiset_choices grey-box">
                 {{#each settings_object.emojiset_choices}}
                 <label>
@@ -110,5 +71,47 @@
           is_checked=settings_object.translate_emoticons
           label=settings_label.translate_emoticons
           prefix=prefix}}
+
+    </div>
+
+    <div class="advanced-settings {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
+        <div class="subsection-header">
+            <h3 class="light">{{t "Advanced" }}</h3>
+            {{> settings_save_discard_widget section_name="advanced-settings" show_only_indicator=(not for_realm_settings) }}
+        </div>
+
+        <div class="input-group thinner setting-next-is-related">
+            <label for="default_view" class="dropdown-title">{{t "Default view" }}
+                {{> ../help_link_widget link="/help/configure-default-view" }}
+            </label>
+            <select name="default_view" class="setting_default_view prop-element" data-setting-widget-type="string">
+                {{> dropdown_options_widget option_values=default_view_values}}
+            </select>
+        </div>
+
+        {{> settings_checkbox
+          setting_name="escape_navigates_to_default_view"
+          is_checked=settings_object.escape_navigates_to_default_view
+          label=settings_label.escape_navigates_to_default_view
+          prefix=prefix}}
+
+        <div class="input-group">
+            <label for="demote_inactive_streams" class="dropdown-title">{{t "Demote inactive streams" }}
+                {{> ../help_link_widget link="/help/manage-inactive-streams" }}
+            </label>
+            <select name="demote_inactive_streams" class="setting_demote_inactive_streams prop-element"  data-setting-widget-type="number">
+                {{> dropdown_options_widget option_values=demote_inactive_streams_values}}
+            </select>
+        </div>
+
+        {{#each display_settings.settings.user_display_settings}}
+        {{> settings_checkbox
+          setting_name=this
+          is_checked=(lookup ../settings_object this)
+          label=(lookup ../settings_label this)
+          render_only=(lookup ../display_settings.render_only this)
+          prefix=../prefix}}
+        {{/each}}
+
     </div>
 </form>

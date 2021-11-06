@@ -36,6 +36,7 @@ from django.utils.functional import Promise
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
+from django_cte import CTEManager
 
 from confirmation import settings as confirmation_settings
 from zerver.lib import cache
@@ -119,7 +120,7 @@ def query_for_ids(query: QuerySet, user_ids: List[int], field: str) -> QuerySet:
 
 
 # Doing 1000 remote cache requests to get_display_recipient is quite slow,
-# so add a local cache as well as the remote cache cache.
+# so add a local cache as well as the remote cache.
 #
 # This local cache has a lifetime of just a single request; it is
 # cleared inside `flush_per_request_caches` in our middleware.  It
@@ -535,11 +536,12 @@ class Realm(models.Model):
     # plan_type controls various features around resource/feature
     # limitations for a Zulip organization on multi-tenant installations
     # like Zulip Cloud.
-    SELF_HOSTED = 1
-    LIMITED = 2
-    STANDARD = 3
-    STANDARD_FREE = 4
-    plan_type: int = models.PositiveSmallIntegerField(default=SELF_HOSTED)
+    PLAN_TYPE_SELF_HOSTED = 1
+    PLAN_TYPE_LIMITED = 2
+    PLAN_TYPE_STANDARD = 3
+    PLAN_TYPE_STANDARD_FREE = 4
+    PLAN_TYPE_PLUS = 10
+    plan_type: int = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED)
 
     # This value is also being used in static/js/settings_bots.bot_creation_policy_values.
     # On updating it here, update it there as well.
@@ -696,7 +698,7 @@ class Realm(models.Model):
     night_logo_version: int = models.PositiveSmallIntegerField(default=1)
 
     def authentication_methods_dict(self) -> Dict[str, bool]:
-        """Returns the a mapping from authentication flags to their status,
+        """Returns the mapping from authentication flags to their status,
         showing only those authentication flags that are supported on
         the current server (i.e. if EmailAuthBackend is not configured
         on the server, this will not return an entry for "Email")."""
@@ -832,7 +834,7 @@ class Realm(models.Model):
         return used_space
 
     def ensure_not_on_limited_plan(self) -> None:
-        if self.plan_type == Realm.LIMITED:
+        if self.plan_type == Realm.PLAN_TYPE_LIMITED:
             raise JsonableError(self.UPGRADE_TEXT_STANDARD)
 
     @property
@@ -883,7 +885,7 @@ class Realm(models.Model):
             # the server level before it is available to users.
             return False
 
-        if self.plan_type == Realm.LIMITED:
+        if self.plan_type == Realm.PLAN_TYPE_LIMITED:
             # In Zulip Cloud, we also require a paid or sponsored
             # plan, to protect against the spam/abuse attacks that
             # target every open Internet service that can host files.
@@ -1118,10 +1120,36 @@ def filter_pattern_validator(value: str) -> Pattern[str]:
 
 
 def filter_format_validator(value: str) -> None:
-    regex = re.compile(r"^([\.\/:a-zA-Z0-9#_?=&;~-]+%\(([a-zA-Z0-9_-]+)\)s)+[/a-zA-Z0-9#_?=&;~-]*$")
+    """Verifies URL-ness, and then %(foo)s.
+
+    URLValidator is assumed to catch anything which is malformed as a
+    URL; the regex then verifies the format-string pieces.
+    """
+
+    URLValidator()(value)
+
+    regex = re.compile(
+        r"""
+            ^
+            (
+              [^%]                        # Any non-percent,
+            |                             #   OR...
+              % (                         # A %, which can mean:
+                  \( [a-zA-Z0-9_-]+ \) s  #   Interpolation group
+                |                         #     OR
+                  %                       #   %%, which is an escaped %
+                |                         #     OR
+                  [0-9a-fA-F][0-9a-fA-F]  #   URL percent-encoded bytes, which we
+                                          #   special-case in markdown translation
+                )
+            )+                            # Those happen one or more times
+            $
+        """,
+        re.VERBOSE,
+    )
 
     if not regex.match(value):
-        raise ValidationError(_("Invalid URL format string."))
+        raise ValidationError(_("Invalid format string in URL."))
 
 
 class RealmFilter(models.Model):
@@ -1132,7 +1160,7 @@ class RealmFilter(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     pattern: str = models.TextField()
-    url_format_string: str = models.TextField(validators=[URLValidator(), filter_format_validator])
+    url_format_string: str = models.TextField(validators=[filter_format_validator])
 
     class Meta:
         unique_together = ("realm", "pattern")
@@ -1351,6 +1379,7 @@ class UserBaseSettings(models.Model):
     # This setting controls which view is rendered first when Zulip loads.
     # Values for it are URL suffix after `#`.
     default_view: str = models.TextField(default="recent_topics")
+    escape_navigates_to_default_view: bool = models.BooleanField(default=True)
     dense_mode: bool = models.BooleanField(default=True)
     fluid_layout_width: bool = models.BooleanField(default=False)
     high_contrast_mode: bool = models.BooleanField(default=False)
@@ -1494,6 +1523,7 @@ class UserBaseSettings(models.Model):
             send_stream_typing_notifications=bool,
             send_private_typing_notifications=bool,
             send_read_receipts=bool,
+            escape_navigates_to_default_view=bool,
         ),
     }
 
@@ -1976,9 +2006,19 @@ class PasswordTooWeakError(Exception):
 
 
 class UserGroup(models.Model):
+    objects = CTEManager()
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     name: str = models.CharField(max_length=100)
-    members: Manager = models.ManyToManyField(UserProfile, through="UserGroupMembership")
+    direct_members: Manager = models.ManyToManyField(
+        UserProfile, through="UserGroupMembership", related_name="direct_groups"
+    )
+    direct_subgroups: Manager = models.ManyToManyField(
+        "self",
+        symmetrical=False,
+        through="GroupGroupMembership",
+        through_fields=("supergroup", "subgroup"),
+        related_name="direct_supergroups",
+    )
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     description: str = models.TextField(default="")
     is_system_group: bool = models.BooleanField(default=False)
@@ -1989,11 +2029,24 @@ class UserGroup(models.Model):
 
 class UserGroupMembership(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
-    user_group: UserGroup = models.ForeignKey(UserGroup, on_delete=CASCADE)
-    user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
+    user_group: UserGroup = models.ForeignKey(UserGroup, on_delete=CASCADE, related_name="+")
+    user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE, related_name="+")
 
     class Meta:
         unique_together = (("user_group", "user_profile"),)
+
+
+class GroupGroupMembership(models.Model):
+    id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
+    supergroup: UserGroup = models.ForeignKey(UserGroup, on_delete=CASCADE, related_name="+")
+    subgroup: UserGroup = models.ForeignKey(UserGroup, on_delete=CASCADE, related_name="+")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["supergroup", "subgroup"], name="zerver_groupgroupmembership_uniq"
+            )
+        ]
 
 
 def remote_user_to_email(remote_user: str) -> str:
@@ -3805,6 +3858,7 @@ class AbstractRealmAuditLog(models.Model):
     STREAM_CREATED = 601
     STREAM_DEACTIVATED = 602
     STREAM_NAME_CHANGED = 603
+    STREAM_REACTIVATED = 604
 
     event_type: int = models.PositiveSmallIntegerField()
 
@@ -4160,3 +4214,26 @@ def flush_alert_word(*, instance: AlertWord, **kwargs: object) -> None:
 
 post_save.connect(flush_alert_word, sender=AlertWord)
 post_delete.connect(flush_alert_word, sender=AlertWord)
+
+
+class SCIMClient(models.Model):
+    realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
+    name: str = models.TextField()
+
+    class Meta:
+        unique_together = ("realm", "name")
+
+    def __str__(self) -> str:
+        return f"<SCIMClient {self.name} for realm {self.realm_id}>"
+
+    def format_requestor_for_logs(self) -> str:
+        return f"scim-client:{self.name}:realm:{self.realm_id}"
+
+    @property
+    def is_authenticated(self) -> bool:
+        """
+        The purpose of this is to make SCIMClient behave like a UserProfile
+        when an instance is assigned to request.user - we need it to pass
+        request.user.is_authenticated verifications.
+        """
+        return True

@@ -17,6 +17,7 @@ import json
 import logging
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union, cast
+from urllib.parse import urlencode
 
 import magic
 import orjson
@@ -34,6 +35,7 @@ from django.utils.translation import gettext as _
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser, ldap_error
 from lxml.etree import XMLSyntaxError
 from onelogin.saml2.errors import OneLogin_Saml2_Error
+from onelogin.saml2.logout_request import OneLogin_Saml2_Logout_Request
 from onelogin.saml2.response import OneLogin_Saml2_Response
 from onelogin.saml2.settings import OneLogin_Saml2_Settings
 from requests import HTTPError
@@ -61,6 +63,7 @@ from zerver.lib.actions import (
     do_create_user,
     do_deactivate_user,
     do_reactivate_user,
+    do_regenerate_api_key,
     do_update_user_custom_profile_data_if_changed,
 )
 from zerver.lib.avatar import avatar_url, is_avatar_new
@@ -72,9 +75,10 @@ from zerver.lib.mobile_auth_otp import is_valid_otp
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.redis_utils import get_dict_from_redis, get_redis_client, put_dict_in_redis
 from zerver.lib.request import RequestNotes
+from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.types import ProfileDataElementValue
-from zerver.lib.url_encoding import add_query_to_redirect_url
+from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.models import (
     CustomProfileField,
@@ -1428,7 +1432,9 @@ def redirect_deactivated_user_to_login(realm: Realm, email: str) -> HttpResponse
     # Specifying the template name makes sure that the user is not redirected to dev_login in case of
     # a deactivated account on a test server.
     login_url = reverse("login_page", kwargs={"template_name": "zerver/login.html"})
-    redirect_url = add_query_to_redirect_url(realm.uri + login_url, f"is_deactivated={email}")
+    redirect_url = append_url_query_string(
+        realm.uri + login_url, urlencode({"is_deactivated": email})
+    )
     return HttpResponseRedirect(redirect_url)
 
 
@@ -2143,7 +2149,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
 class ZulipSAMLIdentityProvider(SAMLIdentityProvider):
     def get_user_details(self, attributes: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Overriden to support plumbing of additional Attributes
+        Overridden to support plumbing of additional Attributes
         from the SAMLResponse.
         """
         result = super().get_user_details(attributes)
@@ -2249,21 +2255,33 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
         return data
 
-    def get_issuing_idp(self, SAMLResponse: str) -> Optional[str]:
+    def get_issuing_idp(self, saml_response_or_request: Tuple[str, str]) -> Optional[str]:
         """
-        Given a SAMLResponse, returns which of the configured IdPs is declared as the issuer.
+        Given a SAMLResponse or SAMLRequest, returns which of the configured IdPs
+        is declared as the issuer.
         This value MUST NOT be trusted as the true issuer!
         The signatures are not validated, so it can be tampered with by the user.
         That's not a problem for this function,
         and true validation happens later in the underlying libraries, but it's important
         to note this detail. The purpose of this function is merely as a helper to figure out which
-        of the configured IdPs' information to use for parsing and validating the response.
+        of the configured IdPs' information to use for parsing and validating the request.
         """
         try:
             config = self.generate_saml_config()
             saml_settings = OneLogin_Saml2_Settings(config, sp_validation_only=True)
-            resp = OneLogin_Saml2_Response(settings=saml_settings, response=SAMLResponse)
-            issuers = resp.get_issuers()
+            if saml_response_or_request[1] == "SAMLResponse":
+                resp = OneLogin_Saml2_Response(
+                    settings=saml_settings, response=saml_response_or_request[0]
+                )
+                issuers = resp.get_issuers()
+            else:
+                assert saml_response_or_request[1] == "SAMLRequest"
+
+                # The only valid SAMLRequest we can receive is a LogoutRequest.
+                logout_request_xml = OneLogin_Saml2_Logout_Request(
+                    config, saml_response_or_request[0]
+                ).get_xml()
+                issuers = [OneLogin_Saml2_Logout_Request.get_issuer(logout_request_xml)]
         except self.SAMLRESPONSE_PARSING_EXCEPTIONS:
             self.logger.info("Error while parsing SAMLResponse:", exc_info=True)
             return None
@@ -2354,10 +2372,76 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         )
         raise AuthFailed(self, error_msg)
 
+    def process_logout(self, subdomain: str, idp_name: str) -> Optional[HttpResponse]:
+        """
+        We override process_logout, because we need to customize
+        the way of revoking sessions and introduce NameID validation.
+
+        The python-social-auth and python3-saml implementations expect a simple
+        callback function without arguments, to delete the session. We're not
+        happy with that for two reasons:
+        1. These implementations don't look at the NameID in the LogoutRequest, which
+           is not quite correct, as a LogoutRequest to logout user X can be delivered
+           through any means, and doesn't need a session to be valid.
+           E.g. a backchannel logout request sent by the IdP wouldn't have a session cookie.
+           Also, hypothetically, a LogoutRequest to logout user Y shouldn't logout user X, even if the
+           request is made with a session cookie belonging to user X.
+        2. We want to revoke all sessions for the user, not just the current session
+           of the request, so after validating the LogoutRequest, we need to identify
+           the user by the NameID, do some validation and then revoke all sessions.
+
+        TODO: This does not return a LogoutResponse in case of failure, like the spec requires.
+        https://github.com/zulip/zulip/issues/20076 is the related issue with more detail
+        on how to implement the desired behavior.
+        """
+        idp = self.get_idp(idp_name)
+        auth = self._create_saml_auth(idp)
+        # This validates the LogoutRequest and prepares the response
+        # (the URL to which to redirect the client to convey the response to the IdP)
+        # but is a no-op otherwise because keep_local_session=True keeps it from
+        # doing anything else. We want to take care of revoking session on our own.
+        url = auth.process_slo(keep_local_session=True)
+        errors = auth.get_errors()
+        if errors:
+            self.logger.info("/complete/saml/: LogoutRequest failed: %s", errors)
+            return None
+
+        logout_request_xml = auth.get_last_request_xml()
+        name_id = OneLogin_Saml2_Logout_Request.get_nameid(logout_request_xml)
+        try:
+            validate_email(name_id)
+        except ValidationError:
+            self.logger.info(
+                "/complete/saml/: LogoutRequest failed: NameID is not a valid email address: %s",
+                name_id,
+            )
+            return None
+
+        return_data: Dict[str, Any] = {}
+
+        realm = get_realm(subdomain)
+        user_profile = common_get_active_user(name_id, realm, return_data)
+        if user_profile is None:
+            self.logger.info(
+                "/complete/saml/: LogoutRequest failed: No user with email specified in NameID found in realm %s. return_data=%s",
+                realm.id,
+                return_data,
+            )
+            return None
+
+        self.logger.info(
+            "/complete/saml/: LogoutRequest triggered deletion of all session for user %s",
+            user_profile.id,
+        )
+        delete_user_sessions(user_profile)
+        do_regenerate_api_key(user_profile, user_profile)
+
+        return HttpResponseRedirect(url)
+
     def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
         """
         Additional ugly wrapping on top of auth_complete in SocialAuthMixin.
-        We handle two things here:
+        We handle two things for processing SAMLResponses here:
             1. Working around bad RelayState or SAMLResponse parameters in the request.
             Both parameters should be present if the user came to /complete/saml/ through
             the IdP as intended. The errors can happen if someone simply types the endpoint into
@@ -2367,26 +2451,35 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             into the RelayState. We need to read them and set those values in the session,
             and then change the RelayState param to the idp_name, because that's what
             SAMLAuth.auth_complete() expects.
+
+        Additionally, this handles incoming LogoutRequests for IdP-initated logout.
         """
+
+        SAMLRequest = self.strategy.request_data().get("SAMLRequest")
         SAMLResponse = self.strategy.request_data().get("SAMLResponse")
-        if SAMLResponse is None:
-            self.logger.info("/complete/saml/: No SAMLResponse in request.")
+        if SAMLResponse is None and SAMLRequest is None:
+            self.logger.info("/complete/saml/: No SAMLResponse or SAMLRequest in request.")
             return None
+        elif SAMLRequest is not None:
+            saml_response_or_request = (SAMLRequest, "SAMLRequest")
+        elif SAMLResponse is not None:
+            saml_response_or_request = (SAMLResponse, "SAMLResponse")
 
         relayed_params = self.get_relayed_params()
 
         subdomain = self.choose_subdomain(relayed_params)
         if subdomain is None:
             error_msg = (
-                "/complete/saml/: Can't figure out subdomain for this authentication request. "
-                + "relayed_params: %s"
+                "/complete/saml/: Can't figure out subdomain for this %s. " + "relayed_params: %s"
             )
-            self.logger.info(error_msg, relayed_params)
+            self.logger.info(error_msg, saml_response_or_request[1], relayed_params)
             return None
 
-        idp_name = self.get_issuing_idp(SAMLResponse)
+        idp_name = self.get_issuing_idp(saml_response_or_request)
         if idp_name is None:
-            self.logger.info("/complete/saml/: No valid IdP as issuer of the SAMLResponse.")
+            self.logger.info(
+                "/complete/saml/: No valid IdP as issuer of the %s.", saml_response_or_request[1]
+            )
             return None
 
         idp_valid = self.validate_idp_for_subdomain(idp_name, subdomain)
@@ -2397,6 +2490,9 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             )
             self.logger.info(error_msg, idp_name, subdomain)
             return None
+
+        if saml_response_or_request[1] == "SAMLRequest":
+            return self.process_logout(subdomain, idp_name)
 
         result = None
         try:

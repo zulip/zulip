@@ -197,17 +197,14 @@ export function on_load_success(invites_data, initialize_event_handlers) {
             email,
             referred_by,
         };
-        const modal_parent = $("#admin_invites_table");
         const html_body = render_settings_revoke_invite_modal(ctx);
 
         confirm_dialog.launch({
-            parent: modal_parent,
             html_heading: ctx.is_multiuse
                 ? $t_html({defaultMessage: "Revoke invitation link"})
                 : $t_html({defaultMessage: "Revoke invitation to {email}"}, {email}),
             html_body,
             on_click: do_revoke_invite,
-            fade: true,
         });
 
         $(".dialog_submit_button").attr("data-invite-id", meta.invite_id);
@@ -224,15 +221,12 @@ export function on_load_success(invites_data, initialize_event_handlers) {
         const email = row.find(".email").text();
         meta.current_resend_invite_user_modal_row = row;
         meta.invite_id = $(e.currentTarget).attr("data-invite-id");
-        const modal_parent = $("#admin_invites_table");
         const html_body = render_settings_resend_invite_modal({email});
 
         confirm_dialog.launch({
-            parent: modal_parent,
             html_heading: $t_html({defaultMessage: "Resend invitation"}),
             html_body,
             on_click: do_resend_invite,
-            fade: true,
         });
 
         $(".dialog_submit_button").attr("data-invite-id", meta.invite_id);

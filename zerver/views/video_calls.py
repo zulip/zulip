@@ -29,7 +29,7 @@ from zerver.lib.pysa import mark_sanitized
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain
-from zerver.lib.url_encoding import add_query_arg_to_redirect_url, add_query_to_redirect_url
+from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.validator import check_dict, check_string
 from zerver.models import UserProfile, get_realm
 
@@ -191,7 +191,7 @@ def get_bigbluebutton_url(request: HttpRequest, user_profile: UserProfile) -> Ht
             + settings.BIG_BLUE_BUTTON_SECRET
         ).encode()
     ).hexdigest()
-    url = add_query_to_redirect_url(
+    url = append_url_query_string(
         "/calls/bigbluebutton/join",
         urlencode(
             {
@@ -225,7 +225,7 @@ def join_bigbluebutton(
     else:
         try:
             response = VideoCallSession().get(
-                add_query_to_redirect_url(
+                append_url_query_string(
                     settings.BIG_BLUE_BUTTON_URL + "api/create",
                     urlencode(
                         {
@@ -260,7 +260,7 @@ def join_bigbluebutton(
         checksum = hashlib.sha1(
             ("join" + join_params + settings.BIG_BLUE_BUTTON_SECRET).encode()
         ).hexdigest()
-        redirect_url_base = add_query_to_redirect_url(
+        redirect_url_base = append_url_query_string(
             settings.BIG_BLUE_BUTTON_URL + "api/join", join_params
         )
-        return redirect(add_query_arg_to_redirect_url(redirect_url_base, "checksum=" + checksum))
+        return redirect(append_url_query_string(redirect_url_base, "checksum=" + checksum))

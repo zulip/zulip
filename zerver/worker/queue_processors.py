@@ -213,6 +213,8 @@ def retry_send_email_failures(
 class QueueProcessingWorker(ABC):
     queue_name: str
     MAX_CONSUME_SECONDS: Optional[int] = 30
+    # The MAX_CONSUME_SECONDS timeout is only enabled when handling a
+    # single queue at once, with no threads.
     ENABLE_TIMEOUTS = False
     CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM = 50
     MAX_SECONDS_BEFORE_UPDATE_STATS = 30
@@ -718,6 +720,11 @@ class EmailSendingWorker(LoopQueueProcessingWorker):
 
 @assign_queue("missedmessage_mobile_notifications")
 class PushNotificationsWorker(QueueProcessingWorker):
+    # The use of aioapns in the backend means that we cannot use
+    # SIGALRM to limit how long a consume takes, as SIGALRM does not
+    # play well with asyncio.
+    MAX_CONSUME_SECONDS = None
+
     def start(self) -> None:
         # initialize_push_notifications doesn't strictly do anything
         # beyond printing some logging warnings if push notifications
@@ -972,7 +979,6 @@ class DeferredWorker(QueueProcessingWorker):
                     threads=6,
                     upload=True,
                     public_only=True,
-                    delete_after_upload=True,
                 )
             except Exception:
                 export_event.extra_data = orjson.dumps(

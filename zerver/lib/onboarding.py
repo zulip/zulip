@@ -65,9 +65,7 @@ def send_initial_pms(user: UserProfile) -> None:
     if user.is_realm_admin:
         help_url = user.realm.uri + "/help/getting-your-organization-started-with-zulip"
         organization_setup_text = (
-            "* "
-            + _("[Read the guide]({help_url}) for getting your organization started with Zulip")
-            + "\n"
+            " " + _("We also have a guide for [Setting up your organization]({help_url}).")
         ).format(help_url=help_url)
 
     welcome_msg = _("Hello, and welcome to Zulip!")
@@ -78,28 +76,28 @@ def send_initial_pms(user: UserProfile) -> None:
 
     content = "".join(
         [
-            welcome_msg + "\n\n",
-            _("This is a private message from me, Welcome Bot.") + " ",
-            _("Here are some tips to get you started:") + "\n",
-            "* " + _("Download our [Desktop and mobile apps]({apps_url})") + "\n",
+            welcome_msg + " ",
+            _("This is a private message from me, Welcome Bot.") + "\n\n",
             "* "
-            + _("Customize your account and notifications on your [Settings page]({settings_url})")
-            + "\n",
-            "* "
-            + _("Type `?` to check out Zulip's keyboard shortcuts")
-            + "\n {organization_setup_text}\n",
-            _("The most important shortcut is `r` to reply.") + "\n\n",
+            + _(
+                "If you are new to Zulip, check out our [Getting started guide]({getting_started_url})!"
+            )
+            + "{organization_setup_text}\n",
+            "* " + _("[Add a profile picture]({profile_url}).") + "\n",
+            "* " + _("[Browse and subscribe to streams]({streams_url}).") + "\n",
+            "* " + _("Download our [mobile and desktop apps]({apps_url}).") + " ",
+            _("Zulip also works great in a browser.") + "\n",
+            "* " + _("You can type `?` to learn more about Zulip shortcuts.") + "\n\n",
             _("Practice sending a few messages by replying to this conversation.") + " ",
-            _(
-                "If you're not into keyboards, that's okay too; "
-                "clicking anywhere on this message will also do the trick!"
-            ),
+            _("Click anywhere on this message or press `r` to reply."),
         ]
     )
 
     content = content.format(
+        getting_started_url="/help/getting-started-with-zulip",
         apps_url="/apps",
-        settings_url="#settings",
+        profile_url="#settings/profile",
+        streams_url="#streams/all",
         organization_setup_text=organization_setup_text,
         demo_org_help_url="/help/demo-organizations",
     )

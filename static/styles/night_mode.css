@@ -43,6 +43,7 @@ body.night-mode {
         .tippy-content a {
             color: hsl(236, 33%, 90%);
         }
+
         &[data-placement^="top"] {
             > .tippy-arrow {
                 &::before {
@@ -50,6 +51,7 @@ body.night-mode {
                 }
             }
         }
+
         &[data-placement^="bottom"] {
             > .tippy-arrow {
                 &::before {
@@ -57,6 +59,7 @@ body.night-mode {
                 }
             }
         }
+
         &[data-placement^="left"] {
             > .tippy-arrow {
                 &::before {
@@ -64,6 +67,7 @@ body.night-mode {
                 }
             }
         }
+
         &[data-placement^="right"] {
             > .tippy-arrow {
                 &::before {
@@ -124,8 +128,19 @@ body.night-mode {
         border-color: hsla(0, 0%, 100%, 0.4);
     }
 
-    .modal-bg {
+    .modal-bg,
+    .modal__container {
         background-color: hsl(212, 28%, 18%);
+    }
+
+    .modal__close {
+        &::before {
+            color: hsl(236, 33%, 90%);
+        }
+
+        &:hover {
+            background: hsla(0, 0%, 91%, 0.1);
+        }
     }
 
     .streams_popover .sp-container {
@@ -198,7 +213,7 @@ body.night-mode {
     .new-style .button {
         background-color: hsla(0, 0%, 0%, 0.2);
 
-        &:not(.sea-green):not(.btn-danger):not(.btn-warning):not(.btn-link) {
+        &:not(.sea-green):not(.btn-danger):not(.btn-warning):not(.btn-link):not(.poll-vote) {
             border-color: hsla(0, 0%, 0%, 0.6);
             color: inherit;
         }
@@ -268,6 +283,12 @@ body.night-mode {
 
     .new-style .button.no-style {
         background-color: transparent;
+    }
+
+    .create_stream_plus_button {
+        color: hsl(0, 0%, 100%);
+        background-color: hsla(0, 0%, 0%, 0.2);
+        border-color: hsla(0, 0%, 0%, 0.6);
     }
 
     .emoji-info-popover
@@ -344,6 +365,7 @@ body.night-mode {
     #message_view_header .stream {
         color: hsl(236, 33%, 90%);
     }
+
     #message_view_header .sub_count,
     #message_view_header .narrow_description {
         color: hsla(0, 0%, 90%, 1);
@@ -532,6 +554,7 @@ body.night-mode {
     #recent_topics_table td a {
         color: hsl(206, 89%, 74%);
         text-decoration: none;
+
         &:hover {
             color: hsl(208, 64%, 52%);
         }
@@ -603,7 +626,7 @@ body.night-mode {
     }
 
     .draft-row .message_header_private_message .message_label_clickable {
-        padding: 4px 6px 3px 6px;
+        padding: 4px 6px 3px;
         color: inherit;
     }
 
@@ -1080,12 +1103,37 @@ body.night-mode {
 
     .color_animated_button {
         background-color: hsl(209, 32%, 5%);
+
         * {
             color: hsl(0, 0%, 100%);
         }
 
         &:hover {
             background-color: hsl(228, 96%, 71%);
+        }
+    }
+
+    /* Widgets: Poll */
+    .poll-widget {
+        .poll-vote {
+            color: hsl(185, 35%, 65%);
+            border-color: hsl(185, 35%, 35%);
+
+            &:hover {
+                color: hsl(185, 50%, 70%);
+                border-color: hsl(185, 40%, 40%);
+                background-color: hsl(185, 20%, 20%);
+            }
+
+            &:focus {
+                color: hsl(185, 50%, 65%);
+                border-color: hsl(185, 40%, 50%);
+                background-color: hsl(185, 40%, 35%);
+            }
+        }
+
+        .poll-names {
+            color: hsl(236, 15%, 70%);
         }
     }
 }

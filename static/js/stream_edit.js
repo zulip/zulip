@@ -914,18 +914,15 @@ export function initialize() {
         }
 
         if (sub.invite_only && people.is_my_user_id(target_user_id)) {
-            const modal_parent = $("#subscriptions_table");
             const html_body = render_unsubscribe_private_stream_modal();
 
             confirm_dialog.launch({
-                parent: modal_parent,
                 html_heading: $t_html(
                     {defaultMessage: "Unsubscribe from {stream_name}"},
                     {stream_name: sub.name},
                 ),
                 html_body,
                 on_click: remove_user_from_private_stream,
-                fade: true,
             });
             return;
         }
@@ -941,7 +938,7 @@ export function initialize() {
         const stream_row = $(
             `#subscriptions_table div.stream-row[data-stream-id='${CSS.escape(sub.stream_id)}']`,
         );
-        stream_settings_ui.sub_or_unsub(sub, false, stream_row);
+        stream_settings_ui.sub_or_unsub(sub, stream_row);
 
         if (!sub.subscribed) {
             open_edit_panel_for_row(stream_row);
@@ -978,14 +975,12 @@ export function initialize() {
             archive_stream(stream_id, $(".stream_change_property_info"), row);
         }
 
-        const modal_parent = $("#subscription_overlay");
         const stream_name = stream_data.maybe_get_stream_name(stream_id);
         const html_body = render_settings_deactivation_stream_modal({
             stream_name,
         });
 
         confirm_dialog.launch({
-            parent: modal_parent,
             html_heading: $t_html(
                 {defaultMessage: "Archive stream {stream}"},
                 {stream: stream_name},
@@ -993,7 +988,6 @@ export function initialize() {
             help_link: "/help/archive-a-stream",
             html_body,
             on_click: do_archive_stream,
-            fade: true,
         });
 
         $(".dialog_submit_button").attr("data-stream-id", stream_id);

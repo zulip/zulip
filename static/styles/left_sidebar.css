@@ -100,10 +100,7 @@ li.show-more-topics {
             margin-left: 0;
 
             &.topic-list li {
-                padding-top: 2px;
-                padding-right: 0;
-                padding-bottom: 2px;
-                padding-left: calc($topic_indent - $topic_resolve_width);
+                padding: 2px 0 2px calc($topic_indent - $topic_resolve_width);
 
                 &.filter-topics {
                     padding-bottom: 0;
@@ -159,8 +156,10 @@ li.show-more-topics {
 
 .narrows_panel {
     margin-bottom: 4px;
+
     li a {
         margin-top: 1px;
+
         &:hover {
             text-decoration: none;
         }
@@ -198,9 +197,11 @@ li.show-more-topics {
     text-decoration: none;
     margin-left: 10px;
     margin-top: 5px;
+
     i {
         min-width: 19px;
         text-align: center;
+
         &::before {
             padding-right: 3px;
         }
@@ -407,7 +408,7 @@ li.top_left_recent_topics {
     right: 0;
     font-size: 1em;
     text-align: center;
-    padding: 0 6px 0 6px;
+    padding: 0 6px;
 }
 
 /*
@@ -420,7 +421,7 @@ li.top_left_recent_topics {
     right: 0;
     font-size: 0.9em;
     text-align: center;
-    padding: 1px 6px 0 6px;
+    padding: 1px 6px 0;
 }
 
 /*
@@ -443,6 +444,7 @@ ul.topic-list {
 
 ul.expanded_private_messages {
     list-style-type: none;
+
     span.fa-group {
         font-size: 90%;
     }
@@ -515,10 +517,12 @@ li.expanded_private_message {
 #topics_header {
     margin-right: 10px;
     color: hsl(0, 0%, 43%);
+
     a {
         color: inherit;
         text-decoration: none;
         text-transform: uppercase;
+
         i {
             margin: 0 5px 0 10px;
             position: relative;
@@ -559,6 +563,7 @@ li.expanded_private_message {
     .show-more-topics {
         display: none;
     }
+
     .zoom-in-hide {
         display: none;
     }

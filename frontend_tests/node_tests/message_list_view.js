@@ -218,7 +218,7 @@ test("muted_message_vars", () => {
         // Additionally test that, `contains_mention` is true on that message which has a mention.
         assert.equal(result[1].contains_mention, true);
 
-        // Now test rehiding muted user's messsage
+        // Now test rehiding muted user's message
         is_revealed = false;
         result = calculate_variables(list, messages, is_revealed);
 

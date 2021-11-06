@@ -45,18 +45,16 @@ export function set_up(settings_panel) {
     const settings_object = settings_panel.settings_object;
     const for_realm_settings = settings_panel.for_realm_settings;
 
-    container.find(".display-settings-status").hide();
+    container.find(".advanced-settings-status").hide();
 
+    // Select current values for enum/select type fields. For boolean
+    // fields, the current value is set automatically in the template.
     container.find(".setting_demote_inactive_streams").val(settings_object.demote_inactive_streams);
-
     container.find(".setting_color_scheme").val(settings_object.color_scheme);
-
     container.find(".setting_default_view").val(settings_object.default_view);
-
     container
         .find(".setting_twenty_four_hour_time")
         .val(JSON.stringify(settings_object.twenty_four_hour_time));
-
     container
         .find(`.setting_emojiset_choice[value="${CSS.escape(settings_object.emojiset)}"]`)
         .prop("checked", true);
@@ -142,7 +140,7 @@ export function set_up(settings_panel) {
         if (current_emojiset === data.emojiset) {
             return;
         }
-        const spinner = container.find(".emoji-settings-status").expectOne();
+        const spinner = container.find(".theme-settings-status").expectOne();
         loading.make_indicator(spinner, {text: settings_ui.strings.saving});
 
         channel.patch({
@@ -153,7 +151,7 @@ export function set_up(settings_panel) {
                 ui_report.error(
                     settings_ui.strings.failure_html,
                     xhr,
-                    container.find(".emoji-settings-status").expectOne(),
+                    container.find(".theme-settings-status").expectOne(),
                 );
             },
         });
@@ -169,7 +167,7 @@ export async function report_emojiset_change(settings_panel) {
     // update in all active browser windows.
     await emojisets.select(settings_panel.settings_object.emojiset);
 
-    const spinner = $(settings_panel.container).find(".emoji-settings-status");
+    const spinner = $(settings_panel.container).find(".theme-settings-status");
     if (spinner.length) {
         loading.destroy_indicator(spinner);
         ui_report.success(
@@ -186,9 +184,15 @@ export function update_page(settings_panel) {
     const container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
 
+    // Boolean fields
     container.find(".left_side_userlist").prop("checked", settings_object.left_side_userlist);
-    container.find(".default_language_name").text(default_language_name);
     container.find(".translate_emoticons").prop("checked", settings_object.translate_emoticons);
+    container
+        .find(".escape_navigates_to_default_view")
+        .prop("checked", settings_object.escape_navigates_to_default_view);
+
+    // Enum/select fields
+    container.find(".default_language_name").text(default_language_name);
     container
         .find(".setting_twenty_four_hour_time")
         .val(JSON.stringify(settings_object.twenty_four_hour_time));

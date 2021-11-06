@@ -13,6 +13,7 @@ import * as markdown from "./markdown";
 import * as overlays from "./overlays";
 import * as rendered_markdown from "./rendered_markdown";
 import * as ui from "./ui";
+import {user_settings} from "./user_settings";
 import * as util from "./util";
 
 // Make it explicit that our toggler is undefined until
@@ -210,6 +211,10 @@ export function set_up_toggler() {
 
     $(".informational-overlays .overlay-tabs").append(elem);
 
+    $("#go-to-default-view-hotkey-help").toggleClass(
+        "notdisplayed",
+        !user_settings.escape_navigates_to_default_view,
+    );
     common.adjust_mac_shortcuts(".hotkeys_table .hotkey kbd");
     common.adjust_mac_shortcuts("#markdown-instructions kbd");
 }

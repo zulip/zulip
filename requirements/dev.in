@@ -51,7 +51,7 @@ snakeviz
 python-digitalocean
 
 # Needed for updating the locked pip dependencies
-pip-tools
+pip-tools<6.3.0  # https://github.com/jazzband/pip-tools/pull/1455 breaks our hack for installing specific commits from Git
 
 # zulip's linting framework - zulint
 https://github.com/zulip/zulint/archive/9908540b7734b51f86ccabab706befc2ff33212a.zip#egg=zulint==0.0.1
@@ -61,13 +61,13 @@ https://github.com/zulip/zulint/archive/9908540b7734b51f86ccabab706befc2ff33212a
 # These modules are built into later versions of Python and will
 # generate different locked files if executed with Python ≥ 3.7, so
 # despite being dependent packages, they have to be added separately.
-importlib-metadata;python_version<"3.8"  # for jsonpickle, jsonschema
+importlib-metadata;python_version<"3.10"  # for jsonpickle, jsonschema
 
 # Needed for using integration logo svg files as bot avatars
 cairosvg
 
 # Needed for tools/check-thirdparty
-python-debian
+python-debian<0.1.42  # https://bugs.debian.org/997857
 
 # Pattern-based lint tool
 semgrep
@@ -77,3 +77,6 @@ pyre-check
 
 # For sorting versions when uploading releases
 natsort
+
+# For spell check linter
+codespell

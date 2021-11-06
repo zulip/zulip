@@ -80,21 +80,29 @@ root domain. Replace the last line above with the following, after replacing
 
 ## Caveats
 
-This import tool is currently beta and does not support importing
-the following data:
+This import tool is currently beta has the following known limitations:
 
--   User avatars
--   Uploaded files
--   Default channels for new users
--   Wildcard mentions such as `@all` and `@here` are not converted.
--   Starred messages
--   Threads as separate topics
--   Messages longer than Zulip's limit of 10,000 characters.
+-   User avatars are not imported.
+-   Default channels for new users are not imported.
+-   Starred messages are not imported.
+-   Messages longer than Zulip's limit of 10,000 characters are not
+    imported.
+-   Messages from Rocket.Chat Discussions are imported as topics
+    inside the Zulip stream corresponding to the parent channel of the
+    Rocket.Chat Discussion.
+-   Messages from Rocket.Chat Discussions having direct channels
+    (i.e. private messages) as their parent are imported as normal
+    private messages in Zulip.
+-   While Rocket.Chat Threads are in general imported as separate
+    topics, Rocket.Chat Threads within Rocket.Chat Discussions are
+    imported as normal messages within the topic containing that
+    Discussion, and Threads in Direct Messages are imported as normal
+    Zulip private messages.
 
-Additionally, because Rocket.Chat does not provide a stable data
-export API, the import tool may require small changes from time to
-time to account for changes in the Rocket.Chat database format.
-Please [contact us](/help/contact-support) if you counter any problems
-using this tool.
+Additionally, because Rocket.Chat does not provide a documented or
+stable data export API, the import tool may require small changes from
+time to time to account for changes in the Rocket.Chat database
+format.  Please [contact us](/help/contact-support) if you encounter
+any problems using this tool.
 
 [upgrade-zulip-from-git]: https://zulip.readthedocs.io/en/latest/production/upgrade-or-modify.html#upgrading-from-a-git-repository

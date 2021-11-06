@@ -2,6 +2,7 @@
 * [Getting started with Zulip](/help/getting-started-with-zulip)
 * [Setting up your organization](/help/getting-your-organization-started-with-zulip)
 * [Moderating open organizations](/help/moderating-open-organizations)
+* [Setting up Zulip for a class](/help/setting-up-zulip-for-a-class)
 * [Using Zulip for a class](/help/using-zulip-for-a-class)
 * [Using Zulip via email](/help/using-zulip-via-email)
 
@@ -27,6 +28,7 @@
 * [Create streams](/help/create-streams)
 * [Customize settings for new users](/help/customize-settings-for-new-users)
 * [Invite users to join](/help/invite-users-to-join)
+* [Create user groups](/help/create-user-groups)
 * [Set up integrations](/help/set-up-integrations)
 
 ## Account basics
@@ -44,11 +46,10 @@
 * [Review your settings](/help/review-your-settings)
 * [Night mode](/help/night-mode)
 * [Change your language](/help/change-your-language)
-* [Change default view](/help/change-default-view)
 * [Change your timezone](/help/change-your-timezone)
 * [Use 24-hour time](/help/change-the-time-format)
 * [Enable emoticon translations](/help/enable-emoticon-translations)
-* [View emoji as text](/help/view-emoji-as-text)
+* [Configure default view](/help/configure-default-view)
 * [Enable full width display](/help/enable-full-width-display)
 * [Display the buddy list on narrow screens](/help/move-the-users-list-to-the-left-sidebar)
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
@@ -130,6 +131,7 @@
 * [Import from Rocket.Chat](/help/import-from-rocketchat)
 * [Configure authentication methods](/help/configure-authentication-methods)
 * [SAML authentication](/help/saml-authentication)
+* [SCIM provisioning](/help/scim)
 * [Export your organization](/help/export-your-organization)
 * [Change organization URL](/help/change-organization-url)
 * [Deactivate your organization](/help/deactivate-your-organization)

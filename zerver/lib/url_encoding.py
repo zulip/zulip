@@ -1,7 +1,6 @@
-import urllib
 from typing import Any, Dict, List
+from urllib.parse import quote, urlsplit
 
-from zerver.lib.pysa import mark_sanitized
 from zerver.lib.topic import get_topic_from_message_info
 from zerver.models import Realm, Stream, UserProfile
 
@@ -10,7 +9,7 @@ def hash_util_encode(string: str) -> str:
     # Do the same encoding operation as hash_util.encodeHashComponent on the
     # frontend.
     # `safe` has a default value of "/", but we want those encoded, too.
-    return urllib.parse.quote(string, safe=b"").replace(".", "%2E").replace("%", ".")
+    return quote(string, safe=b"").replace(".", "%2E").replace("%", ".")
 
 
 def encode_stream(stream_id: int, stream_name: str) -> str:
@@ -100,14 +99,7 @@ def near_pm_message_url(realm: Realm, message: Dict[str, Any]) -> str:
     return full_url
 
 
-def add_query_to_redirect_url(original_url: str, query: str) -> str:
-    # Using 'mark_sanitized' because user-controlled data after the '?' is
-    # not relevant for open redirects
-    return original_url + "?" + mark_sanitized(query)
-
-
-def add_query_arg_to_redirect_url(original_url: str, query_arg: str) -> str:
-    assert "?" in original_url
-    # Using 'mark_sanitized' because user-controlled data after the '?' is
-    # not relevant for open redirects
-    return original_url + "&" + mark_sanitized(query_arg)
+def append_url_query_string(original_url: str, query: str) -> str:
+    u = urlsplit(original_url)
+    query = u.query + ("&" if u.query and query else "") + query
+    return u._replace(query=query).geturl()

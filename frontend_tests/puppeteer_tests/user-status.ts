@@ -45,7 +45,7 @@ async function test_user_status(page: Page): Promise<void> {
     );
     await page.waitForSelector(".status_emoji_wrapper .smiley_icon", {visible: true});
 
-    // Manualy adding everthing.
+    // Manually adding everything.
     await page.type(".user_status", "Busy");
     const tada_emoji_selector = ".emoji-1f389";
     await page.click(".status_emoji_wrapper .smiley_icon");
@@ -59,7 +59,7 @@ async function test_user_status(page: Page): Promise<void> {
     // It should close the modal after saving.
     await page.waitForSelector("#set_user_status_modal", {hidden: true});
 
-    // Check if the emoji is added in user presense list.
+    // Check if the emoji is added in user presence list.
     await page.waitForSelector(`.user-presence-link .status_emoji${tada_emoji_selector}`);
 }
 

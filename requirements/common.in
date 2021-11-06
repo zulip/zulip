@@ -16,7 +16,7 @@ Jinja2
 
 # Needed for Markdown processing
 Markdown
-importlib-metadata;python_version<"3.8"  # for Markdown
+importlib-metadata;python_version<"3.10"  # for Markdown
 Pygments
 jsx-lexer
 
@@ -120,8 +120,8 @@ python-magic
 # the version from Git rather than a PyPI release. Keeping everything in
 # one repository simplifies the process of implementing and documenting
 # new bots for new contributors.
-https://github.com/zulip/python-zulip-api/archive/0.8.0.zip#egg=zulip==0.8.0+git&subdirectory=zulip
-https://github.com/zulip/python-zulip-api/archive/0.8.0.zip#egg=zulip_bots==0.8.0+git&subdirectory=zulip_bots
+https://github.com/zulip/python-zulip-api/archive/0.8.1.zip#egg=zulip==0.8.1+git&subdirectory=zulip
+https://github.com/zulip/python-zulip-api/archive/0.8.1.zip#egg=zulip_bots==0.8.1+git&subdirectory=zulip_bots
 
 # Used for Hesiod lookups, etc.
 py3dns
@@ -138,7 +138,6 @@ lxml
 
 # Needed for 2-factor authentication
 django-two-factor-auth[call,phonenumberslite,sms]
-https://github.com/karls/twilio-python/archive/fb847755d2ec943a4fd84f0c33ae9f7f4999095a.zip#egg=twilio==6.61.0+git  # support PyJWT ≥ 2.0.0: https://github.com/twilio/twilio-python/pull/560
 
 # Needed for processing payments (in corporate)
 stripe
@@ -186,3 +185,12 @@ pymongo
 
 # Non-backtracking regular expressions
 google-re2
+
+# For querying recursive group membership
+django-cte
+
+# SCIM integration
+django-scim2
+
+# CSS manipulation
+soupsieve

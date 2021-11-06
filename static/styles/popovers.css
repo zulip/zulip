@@ -258,14 +258,17 @@ ul {
 #user-profile-modal {
     border-radius: 4px;
     height: 60vh;
+
     #tab-toggle {
         font-weight: initial;
         margin: 6px 4px 6px 0;
         width: 100%;
+
         .tab-switcher {
             margin-left: 2px;
         }
     }
+
     .name {
         color: hsl(0, 0%, 20%);
         display: inline-block;
@@ -292,6 +295,7 @@ ul {
             outline: 9px solid hsl(0, 0%, 100%);
         }
     }
+
     #name {
         font-size: 26px;
         font-weight: 700;
@@ -305,6 +309,7 @@ ul {
             margin-left: 10px;
         }
     }
+
     #default-section {
         display: inline-block;
         vertical-align: top;
@@ -376,6 +381,7 @@ ul {
             padding-right: 3px;
         }
     }
+
     .stream-list-top-section {
         display: flex;
 
@@ -508,6 +514,7 @@ ul {
             .popover-inner {
                 width: 70%;
             }
+
             .sp-picker-container {
                 border-left: none !important;
             }
@@ -551,6 +558,7 @@ ul {
         position: static;
         margin-right: 0;
     }
+
     #user-profile-modal {
         .stream-list-top-section {
             display: block;
@@ -644,7 +652,8 @@ ul {
 
 .user_info_status_text {
     opacity: 0.8;
-    padding: 2px 0 3px 0;
+    padding: 2px 0 3px;
+
     .status_emoji {
         height: 18px;
         width: 18px;
@@ -655,6 +664,7 @@ ul {
 #move_topic_modal {
     /* Ensure that the dropdown can overflow the modal. */
     overflow: visible;
+
     .modal-body {
         overflow: visible;
     }

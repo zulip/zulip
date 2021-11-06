@@ -1,15 +1,36 @@
 # API changelog
 
-This page documents changes to the Zulip Server API over time. See also
-the [Zulip server changelog][server-changelog].
+This page documents changes to the Zulip Server API over time. See
+also the [Zulip release lifecycle][release-lifecycle] for background
+on why this API changelog is important, and the [Zulip server
+changelog][server-changelog].
 
-The recommended way for a client like the Zulip mobile or desktop apps
-that needs to support interaction with a wide range of different Zulip
-server versions is to check the `zulip_feature_level` parameter in the
-`/register` and `/server_settings` responses to determine which of the
-below features are supported.
+The API feature levels system used in this changelog is designed to
+make it possible to write API clients, such as the Zulip mobile and
+terminal apps, that work with a wide range of Zulip server
+versions. Every change to the Zulip API is recorded both here and in
+**Changes** entries in the API documentation for the modified
+endpoint(s).
+
+When using an API endpoint whose behavior has changed, Zulip API
+clients should check the `zulip_feature_level` field, present in the
+[`GET /server_settings`](/api/get-server-settings) and [`POST
+/register`](/api/register-queue) responses, to determine the API
+format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 5.0
+
+**Feature level 107**
+* [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
+  [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added user setting `escape_navigates_to_default_view` to allow users to
+  [disable the keyboard shortcut](/help/configure-default-view) for the `Esc` key that
+  navigates the app to the default view.
+
+**Feature level 106**
+
+* [`PATCH /user/{user_id}`](/api/update-user): Removed unnecessary JSON-encoding of string
+  parameter `full_name`.
 
 **Feature level 105**
 
@@ -55,7 +76,8 @@ below features are supported.
 
 * [`POST /register`](/api/register-queue), [`GET
   /events`](/api/get-events): `message_content_delete_limit_seconds`
-  now represents no limit using `null`, instead of the integer 0.
+  now represents no limit using `null`, instead of the integer 0, and 0 is
+  no longer a possible value with any meaning.
 * `PATCH /realm`: One now sets `message_content_delete_limit_seconds`
   to no limit by passing the string `unlimited`, rather than the
   integer 0.
@@ -498,7 +520,7 @@ field with an integer field `invite_to_realm_policy`.
 **Feature level 42**
 
 * `PATCH /settings/display`: Added a new `default_view` setting allowing
-  the user to [set the default view](/help/change-default-view).
+  the user to [set the default view](/help/configure-default-view).
 
 **Feature level 41**
 
@@ -897,3 +919,4 @@ No changes; feature level used for Zulip 3.0 release.
   being changed and should not be used by clients.
 
 [server-changelog]: https://zulip.readthedocs.io/en/latest/overview/changelog.html
+[release-lifecycle]: https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html

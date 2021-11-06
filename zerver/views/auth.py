@@ -51,6 +51,7 @@ from zerver.lib.exceptions import (
     JsonableError,
     PasswordAuthDisabledError,
     PasswordResetRequiredError,
+    RateLimited,
     RealmDeactivatedError,
     UserDeactivatedError,
 )
@@ -63,7 +64,7 @@ from zerver.lib.response import json_success
 from zerver.lib.sessions import set_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.types import ViewFuncT
-from zerver.lib.url_encoding import add_query_to_redirect_url
+from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.users import get_api_key
 from zerver.lib.utils import has_api_key_format
@@ -385,9 +386,7 @@ def create_response_for_otp_flow(
     }
     # We can't use HttpResponseRedirect, since it only allows HTTP(S) URLs
     response = HttpResponse(status=302)
-    response["Location"] = add_query_to_redirect_url(
-        "zulip://login", urllib.parse.urlencode(params)
-    )
+    response["Location"] = append_url_query_string("zulip://login", urllib.parse.urlencode(params))
 
     return response
 
@@ -530,7 +529,7 @@ def oauth_redirect_to_root(
 
     params = {**params, **extra_url_params}
 
-    return redirect(add_query_to_redirect_url(main_site_uri, urllib.parse.urlencode(params)))
+    return redirect(append_url_query_string(main_site_uri, urllib.parse.urlencode(params)))
 
 
 def handle_desktop_flow(func: ViewFuncT) -> ViewFuncT:
@@ -554,7 +553,7 @@ def start_remote_user_sso(request: HttpRequest) -> HttpResponse:
     to do authentication, so we need this additional endpoint.
     """
     query = request.META["QUERY_STRING"]
-    return redirect(add_query_to_redirect_url(reverse(remote_user_sso), query))
+    return redirect(append_url_query_string(reverse(remote_user_sso), query))
 
 
 @handle_desktop_flow
@@ -759,7 +758,7 @@ def login_page(
     if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
         redirect_url = reverse("realm_redirect")
         if request.GET:
-            redirect_url = add_query_to_redirect_url(redirect_url, request.GET.urlencode())
+            redirect_url = append_url_query_string(redirect_url, request.GET.urlencode())
         return HttpResponseRedirect(redirect_url)
 
     realm = get_realm_from_request(request)
@@ -989,16 +988,25 @@ def logout_then_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
 
 def password_reset(request: HttpRequest) -> HttpResponse:
     if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
-        redirect_url = add_query_to_redirect_url(
+        redirect_url = append_url_query_string(
             reverse("realm_redirect"), urlencode({"next": reverse("password_reset")})
         )
         return HttpResponseRedirect(redirect_url)
 
-    response = DjangoPasswordResetView.as_view(
-        template_name="zerver/reset.html",
-        form_class=ZulipPasswordResetForm,
-        success_url="/accounts/password/reset/done/",
-    )(request)
+    try:
+        response = DjangoPasswordResetView.as_view(
+            template_name="zerver/reset.html",
+            form_class=ZulipPasswordResetForm,
+            success_url="/accounts/password/reset/done/",
+        )(request)
+    except RateLimited as e:
+        assert e.secs_to_freedom is not None
+        return render(
+            request,
+            "zerver/rate_limit_exceeded.html",
+            context={"retry_after": int(e.secs_to_freedom)},
+            status=429,
+        )
     assert isinstance(response, HttpResponse)
     return response
 

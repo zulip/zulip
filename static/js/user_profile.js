@@ -152,7 +152,7 @@ export function show_user_profile(user) {
         full_name: user.full_name,
         email: people.get_visible_email(user),
         profile_data,
-        user_avatar: "avatar/" + user.email + "/medium",
+        user_avatar: "avatar/" + user.user_id + "/medium",
         is_me: people.is_current_user(user.email),
         date_joined: dateFormat.format(parseISO(user.date_joined)),
         last_seen: buddy_data.user_last_seen_time_status(user.user_id),

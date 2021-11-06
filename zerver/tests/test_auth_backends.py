@@ -9,6 +9,7 @@ import urllib
 from contextlib import contextmanager
 from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional, Sequence, Tuple, Type
 from unittest import mock
+from urllib.parse import urlencode
 
 import jwt
 import ldap
@@ -28,7 +29,9 @@ from django.utils.timezone import now as timezone_now
 from django_auth_ldap.backend import LDAPSearch, _LDAPUser
 from jwt.exceptions import PyJWTError
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
+from onelogin.saml2.logout_request import OneLogin_Saml2_Logout_Request
 from onelogin.saml2.response import OneLogin_Saml2_Response
+from onelogin.saml2.utils import OneLogin_Saml2_Utils
 from social_core.exceptions import AuthFailed, AuthStateForbidden
 from social_django.storage import BaseDjangoStorage
 from social_django.strategy import DjangoStrategy
@@ -170,7 +173,8 @@ class AuthBackendTest(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(
                 result.url,
-                f"{user_profile.realm.uri}/login/?is_deactivated={user_profile.delivery_email}",
+                f"{user_profile.realm.uri}/login/?"
+                + urlencode({"is_deactivated": user_profile.delivery_email}),
             )
         else:
             # Just takes you back to the login page treating as
@@ -905,7 +909,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         params["next"] = next
         params["multiuse_object_key"] = multiuse_object_key
         if len(params) > 0:
-            url += f"?{urllib.parse.urlencode(params)}"
+            url += f"?{urlencode(params)}"
         if user_agent is not None:
             headers["HTTP_USER_AGENT"] = user_agent
 
@@ -1119,7 +1123,8 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(
                 result.url,
-                f"{user_profile.realm.uri}/login/?is_deactivated={user_profile.delivery_email}",
+                f"{user_profile.realm.uri}/login/?"
+                + urlencode({"is_deactivated": user_profile.delivery_email}),
             )
         self.assertEqual(
             m.output,
@@ -1928,8 +1933,156 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
         return saml_response
 
+    def generate_saml_logout_request_from_idp(self, email: str) -> str:
+        """
+        The logoutrequest.txt fixture has a pre-generated LogoutRequest,
+        with {email} placeholder, that can
+        be filled out with the data we want.
+        """
+        unencoded_logout_request = self.fixture_data("logoutrequest.txt", type="saml").format(
+            email=email,
+        )
+        logout_request: str = base64.b64encode(unencoded_logout_request.encode()).decode()
+
+        return logout_request
+
+    def make_idp_initiated_logout_request(
+        self, email: str, make_validity_checks_pass: bool = True
+    ) -> HttpResponse:
+        samlrequest = self.generate_saml_logout_request_from_idp(email)
+        parameters = {"SAMLRequest": samlrequest}
+
+        if make_validity_checks_pass:
+            # It's hard to create fully-correct LogoutRequests with signatures in tests,
+            # so we rely on mocking the validating functions instead.
+            with mock.patch.object(
+                OneLogin_Saml2_Logout_Request, "is_valid", return_value=True
+            ), mock.patch.object(
+                OneLogin_Saml2_Auth,
+                "validate_request_signature",
+                return_value=True,
+            ):
+                result = self.client_get("http://zulip.testserver/complete/saml/", parameters)
+        else:
+            result = self.client_get("http://zulip.testserver/complete/saml/", parameters)
+        return result
+
     def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
         return dict(email=email, name=name)
+
+    def test_saml_idp_initiated_logout_success(self) -> None:
+        hamlet = self.example_user("hamlet")
+        old_api_key = hamlet.api_key
+        self.login("hamlet")
+
+        self.assert_logged_in_user_id(hamlet.id)
+        result = self.make_idp_initiated_logout_request(hamlet.delivery_email)
+        self.assert_logged_in_user_id(None)
+
+        # The expected response is a redirect to the IdP's slo_url endpoint
+        # with a SAMLResponse announcing success.
+        self.assertEqual(result.status_code, 302)
+        redirect_to = result["Location"]
+        self.assertIn(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS["test_idp"]["slo_url"], redirect_to)
+
+        parsed = urllib.parse.urlparse(redirect_to)
+        query_dict = urllib.parse.parse_qs(parsed.query)
+
+        self.assertIn("SAMLResponse", query_dict)
+        # Do some very basic parsing of the SAMLResponse to verify it's a success response.
+        saml_response_encoded = query_dict["SAMLResponse"][0]
+        saml_response = OneLogin_Saml2_Utils.decode_base64_and_inflate(
+            saml_response_encoded
+        ).decode()
+        self.assertIn(
+            '<samlp:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:Success" />', saml_response
+        )
+
+        hamlet.refresh_from_db()
+        # Ensure that the user's api_key was rotated:
+        self.assertNotEqual(hamlet.api_key, old_api_key)
+
+    def test_saml_idp_initiated_logout_request_for_different_user(self) -> None:
+        """
+        This test verifies that sessions are revoked based on the NameID
+        in the LogoutRequest rather than just the logged in session cookie.
+        """
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        cordelia_old_api_key = cordelia.api_key
+        self.login("hamlet")
+
+        self.assert_logged_in_user_id(hamlet.id)
+        # We're logged in as hamlet, but deliver a LogoutRequest for cordelia.
+        # This means our session should not be affected.
+        self.make_idp_initiated_logout_request(cordelia.delivery_email)
+        self.assert_logged_in_user_id(hamlet.id)
+
+        cordelia.refresh_from_db()
+        # Cordelia's api_key should have been rotated:
+        self.assertNotEqual(cordelia.api_key, cordelia_old_api_key)
+
+    def test_saml_idp_initiated_logout_invalid_nameid_format(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+
+        self.assert_logged_in_user_id(hamlet.id)
+        with self.assertLogs("zulip.auth.saml") as mock_logger:
+            # LogoutRequests need to have the email address in NameID
+            # so putting "hamlet" there is invalid.
+            result = self.make_idp_initiated_logout_request("hamlet")
+        self.assert_logged_in_user_id(hamlet.id)
+
+        self.assertEqual(
+            mock_logger.output,
+            [
+                "INFO:zulip.auth.saml:/complete/saml/: LogoutRequest failed: NameID is not a valid email address: hamlet"
+            ],
+        )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/")
+
+    def test_saml_idp_initiated_logout_user_not_in_realm(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+
+        self.assert_logged_in_user_id(hamlet.id)
+        with self.assertLogs("zulip.auth.saml") as mock_logger:
+            result = self.make_idp_initiated_logout_request("nonexistent@zulip.com")
+        self.assert_logged_in_user_id(hamlet.id)
+
+        self.assertEqual(
+            mock_logger.output,
+            [
+                "INFO:zulip.auth.saml:/complete/saml/: LogoutRequest failed: No user with email specified in NameID found in realm 2. return_data={}"
+            ],
+        )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/")
+
+    def test_saml_idp_initiated_logout_invalid_signature(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+
+        self.assert_logged_in_user_id(hamlet.id)
+        with self.assertLogs("zulip.auth.saml") as mock_logger:
+            # LogoutRequests  we generate in tests don't have signatures. We can use
+            # the make_validity_checks_pass argument to disable mocking of python3-saml
+            # internal validation functions to make validation of our LogoutRequest fail
+            # and test our error-handling of that.
+            result = self.make_idp_initiated_logout_request(
+                hamlet.delivery_email, make_validity_checks_pass=False
+            )
+        self.assert_logged_in_user_id(hamlet.id)
+
+        self.assertEqual(
+            mock_logger.output,
+            [
+                "INFO:zulip.auth.saml:/complete/saml/: LogoutRequest failed: ['invalid_logout_request_signature', 'Signature validation failed. Logout Request rejected']"
+            ],
+        )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/")
 
     def test_auth_registration_with_no_name_provided(self) -> None:
         """
@@ -2082,7 +2235,12 @@ class SAMLAuthBackendTest(SocialAuthBase):
             self.assertEqual(result.status_code, 302)
             self.assertIn("login", result.url)
         self.assertEqual(
-            m.output, [self.logger_output("/complete/saml/: No SAMLResponse in request.", "info")]
+            m.output,
+            [
+                self.logger_output(
+                    "/complete/saml/: No SAMLResponse or SAMLRequest in request.", "info"
+                )
+            ],
         )
 
         # Check that POSTing the RelayState, but with missing SAMLResponse,
@@ -2098,7 +2256,12 @@ class SAMLAuthBackendTest(SocialAuthBase):
             self.assertEqual(result.status_code, 302)
             self.assertIn("login", result.url)
         self.assertEqual(
-            m.output, [self.logger_output("/complete/saml/: No SAMLResponse in request.", "info")]
+            m.output,
+            [
+                self.logger_output(
+                    "/complete/saml/: No SAMLResponse or SAMLRequest in request.", "info"
+                )
+            ],
         )
 
         # Now test bad SAMLResponses.
@@ -2157,7 +2320,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             m.output,
             [
                 self.logger_output(
-                    "/complete/saml/: Can't figure out subdomain for this authentication request. relayed_params: {}".format(
+                    "/complete/saml/: Can't figure out subdomain for this SAMLResponse. relayed_params: {}".format(
                         "{}"
                     ),
                     "info",
@@ -2490,7 +2653,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             m.output,
             [
                 self.logger_output(
-                    "/complete/saml/: Can't figure out subdomain for this authentication request. relayed_params: {}",
+                    "/complete/saml/: Can't figure out subdomain for this SAMLResponse. relayed_params: {}",
                     "info",
                 )
             ],
@@ -2888,7 +3051,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
 
         params["user"] = json.dumps(account_data_dict)
 
-        url += f"&{urllib.parse.urlencode(params)}"
+        url += f"&{urlencode(params)}"
         return url, headers
 
     def social_auth_test(

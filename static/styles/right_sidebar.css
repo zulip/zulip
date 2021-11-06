@@ -32,7 +32,7 @@
             font-size: 1em;
             display: none;
             text-align: center;
-            padding: 0 6px 0 6px;
+            padding: 0 6px;
 
             i {
                 padding-right: 0.25em;
@@ -76,10 +76,7 @@
     .user_circle {
         width: 8px;
         height: 8px;
-        margin-top: 0;
-        margin-bottom: 0;
-        margin-left: 5px;
-        margin-right: 5px;
+        margin: 0 5px;
         display: block;
     }
 

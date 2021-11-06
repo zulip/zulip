@@ -479,7 +479,7 @@ class BasePreprocessor(Preprocessor):
         return text
 
     def render(self, function: str) -> List[str]:
-        raise NotImplementedError("Must be overriden by a child class")
+        raise NotImplementedError("Must be overridden by a child class")
 
 
 class APICodeExamplesPreprocessor(BasePreprocessor):

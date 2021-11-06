@@ -14,7 +14,7 @@ security support policies. In short:
   if you don't do so.
 - New server releases are announced via the low-traffic
   [zulip-announce email
-  list](https://groups.google.com/forum/#!forum/zulip-announce). We
+  list](https://groups.google.com/g/zulip-announce). We
   highly recommend subscribing so that you are notified about new
   security releases.
 - Zulip Cloud runs the branch that will become the next major

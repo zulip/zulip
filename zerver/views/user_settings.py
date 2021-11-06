@@ -36,6 +36,7 @@ from zerver.lib.email_validation import (
 )
 from zerver.lib.exceptions import JsonableError, RateLimited
 from zerver.lib.i18n import get_available_language_codes
+from zerver.lib.rate_limiter import RateLimitedUser
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
@@ -141,6 +142,7 @@ def json_change_settings(
     default_view: Optional[str] = REQ(
         str_validator=check_string_in(default_view_options), default=None
     ),
+    escape_navigates_to_default_view: Optional[bool] = REQ(json_validator=check_bool, default=None),
     left_side_userlist: Optional[bool] = REQ(json_validator=check_bool, default=None),
     emojiset: Optional[str] = REQ(str_validator=check_string_in(emojiset_choices), default=None),
     demote_inactive_streams: Optional[int] = REQ(
@@ -267,6 +269,12 @@ def json_change_settings(
             )
         except ValidationError as e:
             raise JsonableError(e.message)
+
+        ratelimited, time_until_free = RateLimitedUser(
+            user_profile, domain="email_change_by_user"
+        ).rate_limit()
+        if ratelimited:
+            raise RateLimited(time_until_free)
 
         do_start_email_change_process(user_profile, new_email)
 

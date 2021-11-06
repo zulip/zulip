@@ -175,7 +175,7 @@ def fetch_initial_state_data(
             state["max_message_id"] = -1
 
     if want("drafts"):
-        # Note: if a user ever disables synching drafts then all of
+        # Note: if a user ever disables syncing drafts then all of
         # their old drafts stored on the server will be deleted and
         # simply retained in local storage. In which case user_drafts
         # would just be an empty queryset.
@@ -282,7 +282,7 @@ def fetch_initial_state_data(
         state["realm_is_zephyr_mirror_realm"] = realm.is_zephyr_mirror_realm
         state["development_environment"] = settings.DEVELOPMENT
         state["realm_plan_type"] = realm.plan_type
-        state["zulip_plan_is_not_limited"] = realm.plan_type != Realm.LIMITED
+        state["zulip_plan_is_not_limited"] = realm.plan_type != Realm.PLAN_TYPE_LIMITED
         state["upgrade_text_for_wide_organization_logo"] = str(Realm.UPGRADE_TEXT_STANDARD)
 
         state["password_min_length"] = settings.PASSWORD_MIN_LENGTH
@@ -944,7 +944,7 @@ def apply_event(
 
             if event["property"] == "plan_type":
                 # Then there are some extra fields that also need to be set.
-                state["zulip_plan_is_not_limited"] = event["value"] != Realm.LIMITED
+                state["zulip_plan_is_not_limited"] = event["value"] != Realm.PLAN_TYPE_LIMITED
                 state["realm_upload_quota_mib"] = event["extra_data"]["upload_quota"]
 
             policy_permission_dict = {

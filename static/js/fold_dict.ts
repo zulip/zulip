@@ -17,6 +17,10 @@ type KeyValue<V> = {k: string; v: V};
 export class FoldDict<V> {
     private _items: Map<string, KeyValue<V>> = new Map();
 
+    get size(): number {
+        return this._items.size;
+    }
+
     get(key: string): V | undefined {
         const mapping = this._items.get(this._munge(key));
         if (mapping === undefined) {
@@ -54,10 +58,6 @@ export class FoldDict<V> {
         for (const {k, v} of this._items.values()) {
             yield [k, v];
         }
-    }
-
-    get size(): number {
-        return this._items.size;
     }
 
     clear(): void {

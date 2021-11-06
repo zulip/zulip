@@ -840,32 +840,6 @@ export class MessageListView {
         }
 
         if (list === message_lists.current && messages_are_new) {
-            // First, in single-recipient narrows, potentially
-            // auto-scroll to the latest message if it was sent by us.
-            if (narrow_state.narrowed_by_reply()) {
-                const selected_id = list.selected_id();
-                let i;
-
-                // Iterate backwards to find the last message
-                // sent_by_me, stopping at the pointer position.
-                // There's a reasonable argument that this search
-                // should be limited in how far offscreen it's willing
-                // to go.
-                for (i = messages.length - 1; i >= 0; i -= 1) {
-                    const id = messages[i].id;
-                    if (id <= selected_id) {
-                        break;
-                    }
-                    if (messages[i].sent_by_me && list.get(id) !== undefined) {
-                        // If this is a reply we just sent, advance the pointer to it.
-                        list.select_id(messages[i].id, {then_scroll: true, from_scroll: true});
-                        return {
-                            need_user_to_scroll: false,
-                        };
-                    }
-                }
-            }
-
             if (started_scrolled_up) {
                 return {
                     need_user_to_scroll: true,

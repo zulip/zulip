@@ -5,7 +5,7 @@
 # used to verify the repositories (via `apt-key`), to explicitly pin
 # the trusted signing keys, as opposed to blindly trusting HTTPS.
 #
-# Each /etc/apt/soruces.list.d/foo.list file is created via `--list
+# Each /etc/apt/sources.list.d/foo.list file is created via `--list
 # foo`, where `foo` defaults to `zulip`.  The default `zulip.list` is
 # installed in `scripts/lib/install` / `tools/lib/provision.py`, and
 # other `.list` files may be installed by Puppet.

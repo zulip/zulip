@@ -42,6 +42,6 @@
         height: 1.5px; /* 1px is too thin, 2px is too thick */
         width: 6px;
         display: block;
-        margin: 3.25px auto 0 auto; /* (total height - line height) / 2 = 3.25px */
+        margin: 3.25px auto 0; /* (total height - line height) / 2 = 3.25px */
     }
 }

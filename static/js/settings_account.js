@@ -563,7 +563,7 @@ export function set_up() {
                 url: "/json/users/me",
                 success() {
                     dialog_widget.hide_dialog_spinner();
-                    overlays.close_modal("#dialog_widget_modal");
+                    dialog_widget.close_modal();
                     window.location.href = "/login/";
                 },
                 error(xhr) {
@@ -589,7 +589,7 @@ export function set_up() {
                         }
                     }
                     dialog_widget.hide_dialog_spinner();
-                    overlays.close_modal("#dialog_widget_modal");
+                    dialog_widget.close_modal();
                     $("#account-settings-status")
                         .addClass("alert-error")
                         .html(rendered_error_msg)
@@ -598,14 +598,11 @@ export function set_up() {
             });
         }
         const html_body = render_confirm_deactivate_own_user();
-        const modal_parent = $("#account-settings .account-settings-form");
         confirm_dialog.launch({
-            parent: modal_parent,
             html_heading: $t_html({defaultMessage: "Deactivate your account"}),
             html_body,
             on_click: handle_confirm,
             help_link: "/help/deactivate-your-account",
-            fade: true,
             loading_spinner: true,
         });
     });

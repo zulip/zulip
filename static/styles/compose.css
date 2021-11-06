@@ -62,7 +62,7 @@
 #compose-content {
     border-top: 1px solid hsla(0, 0%, 0%, 0.07);
     transition: background-color 200ms linear;
-    padding: 4px 4px 8px 4px;
+    padding: 4px 4px 8px;
     border-left: 1px solid hsl(0, 0%, 93%);
     border-right: 1px solid hsl(0, 0%, 93%);
     height: 100%;
@@ -246,15 +246,16 @@
 .compose-all-everyone,
 .compose-announce,
 .compose_not_subscribed {
-    padding: 4px 0 4px 0;
+    padding: 4px 0;
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    position: relative;
 }
 
 #compose_not_subscribed_close {
-    top: 1px;
-    right: 10px;
+    top: 0;
+    right: 0;
+    position: absolute;
 }
 
 .compose_invite_close,
@@ -275,7 +276,7 @@
 
 .compose_invite_user p,
 .compose_not_subscribed p {
-    margin: 0;
+    margin: 0 20px;
     display: inline-block;
     max-width: calc(100% - 100px);
 }
@@ -287,7 +288,7 @@
 /* Like .nav-tabs > li > a */
 div[id^="message-edit-send-status"],
 #compose-send-status {
-    padding: 8px 14px 8px 14px;
+    padding: 8px 14px;
     margin-bottom: 8px;
     line-height: 20px;
     display: none;
@@ -336,7 +337,7 @@ div[id^="message-edit-send-status"],
 }
 
 .compose-notifications-content {
-    padding: 4px 22px 4px 22px;
+    padding: 4px 22px;
     text-align: center;
 }
 
@@ -359,6 +360,7 @@ textarea.new_message_textarea {
         0% {
             box-shadow: none;
         }
+
         100% {
             box-shadow: 0 0 0 1pt hsl(0, 100%, 50%);
         }

@@ -191,7 +191,7 @@ test("get_subscribed_streams_for_user", () => {
     // test_user is subscribed to all three streams, but current user (me)
     // gets only two because of subscriber visibility policy of stream:
     // #denmark: current user is subscribed to it so he can see its subscribers.
-    // #social: current user is can get this as neither this is invite onyl nor current
+    // #social: current user is can get this as neither this is invite only nor current
     //          user is a guest.
     // #test: current user is no longer subscribed to a private stream, so
     //        he can not see whether test_user is subscribed to it.

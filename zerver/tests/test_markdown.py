@@ -1401,6 +1401,20 @@ class MarkdownTest(ZulipTestCase):
             ],
         )
 
+        # Test URI escaping
+        RealmFilter(
+            realm=realm,
+            pattern=r"url-(?P<id>[0-9]+)",
+            url_format_string="https://example.com/%%%ba/%(id)s",
+        ).save()
+        msg = Message(sender=self.example_user("hamlet"))
+        content = "url-123 is well-escaped"
+        converted = markdown_convert(content, message_realm=realm, message=msg)
+        self.assertEqual(
+            converted.rendered_content,
+            '<p><a href="https://example.com/%%ba/123">url-123</a> is well-escaped</p>',
+        )
+
     def test_multiple_matching_realm_patterns(self) -> None:
         realm = get_realm("zulip")
         url_format_string = r"https://trac.example.com/ticket/%(id)s"

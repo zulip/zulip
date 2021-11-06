@@ -38,6 +38,7 @@ from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
     DefaultStream,
+    GroupGroupMembership,
     Huddle,
     Message,
     Reaction,
@@ -127,6 +128,7 @@ ALL_ZULIP_TABLES = {
     "zerver_defaultstreamgroup_streams",
     "zerver_draft",
     "zerver_emailchangestatus",
+    "zerver_groupgroupmembership",
     "zerver_huddle",
     "zerver_message",
     "zerver_missedmessageemailaddress",
@@ -148,6 +150,7 @@ ALL_ZULIP_TABLES = {
     "zerver_scheduledemail_users",
     "zerver_scheduledmessage",
     "zerver_scheduledmessagenotificationemail",
+    "zerver_scimclient",
     "zerver_service",
     "zerver_stream",
     "zerver_submessage",
@@ -197,6 +200,8 @@ NON_EXPORTED_TABLES = {
     "zerver_scheduledemail",
     "zerver_scheduledemail_users",
     "zerver_scheduledmessage",
+    # SCIMClient should be manually created for the new realm after importing.
+    "zerver_scimclient",
     # These tables are related to a user's 2FA authentication
     # configuration, which will need to be set up again on the new
     # server.
@@ -703,6 +708,13 @@ def get_realm_config() -> Config:
         model=UserGroupMembership,
         normal_parent=user_groups_config,
         parent_key="user_group__in",
+    )
+
+    Config(
+        table="zerver_groupgroupmembership",
+        model=GroupGroupMembership,
+        normal_parent=user_groups_config,
+        parent_key="supergroup__in",
     )
 
     Config(
@@ -1935,7 +1947,6 @@ def export_realm_wrapper(
     threads: int,
     upload: bool,
     public_only: bool,
-    delete_after_upload: bool,
     percent_callback: Optional[Callable[[Any], None]] = None,
     consent_message_id: Optional[int] = None,
 ) -> Optional[str]:
@@ -1946,9 +1957,8 @@ def export_realm_wrapper(
         public_only=public_only,
         consent_message_id=consent_message_id,
     )
-    print(f"Finished exporting to {output_dir}")
+    shutil.rmtree(output_dir)
     print(f"Tarball written to {tarball_path}")
-
     if not upload:
         return None
 
@@ -1959,12 +1969,10 @@ def export_realm_wrapper(
     public_url = zerver.lib.upload.upload_backend.upload_export_tarball(
         realm, tarball_path, percent_callback=percent_callback
     )
-    print()
-    print(f"Uploaded to {public_url}")
+    print(f"\nUploaded to {public_url}")
 
-    if delete_after_upload:
-        os.remove(tarball_path)
-        print(f"Successfully deleted the tarball at {tarball_path}")
+    os.remove(tarball_path)
+    print(f"Successfully deleted the tarball at {tarball_path}")
     return public_url
 
 

@@ -1,17 +1,28 @@
-<div class="modal modal-bg new-style hide {{#if fade}}fade{{/if}}" id="dialog_widget_modal" tabindex="-1" role="dialog" aria-labelledby="dialog_widget_modal" aria-hidden="true">
-    <div class="modal-header">
-        <button type="button" class="close close-modal-btn" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
-        <div class="dialog_heading">{{{ html_dialog_heading }}}</div>
-    </div>
-    <div class="modal-body dialog_body">
-        <div id="dialog_error" class="alert"></div>
-        {{{ html_body }}}
-    </div>
-    <div class="modal-footer">
-        <button class="button rounded close-modal-btn" data-dismiss="modal">{{t "Cancel" }}</button>
-        <button class="button rounded {{#if danger_submit_button}}btn-danger{{else}}sea-green{{/if}} dialog_submit_button">
-            <img class="loader" alt="" src="" />
-            <span>{{{ html_submit_button }}}</span>
-        </button>
+<div class="micromodal" id="dialog_widget_modal" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+        <div {{#if id}}id="{{id}}" {{/if}}class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
+            <header class="modal__header">
+                <h1 class="modal__title dialog_heading">
+                    {{{ heading_text }}}
+                    {{#if link}}
+                    {{> help_link_widget }}
+                    {{/if}}
+                </h1>
+                <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
+            </header>
+            <main class="modal__content">
+                <div class="alert" id="dialog_error"></div>
+                {{{ html_body }}}
+            </main>
+            <footer class="modal__footer">
+                {{#unless single_footer_button}}
+                <button class="modal__btn dialog_cancel_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{t "Cancel" }}</button>
+                {{/unless}}
+                <button class="modal__btn dialog_submit_button"{{#if single_footer_button}} aria-label="{{t 'Close this dialog window' }}" data-micromodal-close{{/if}}>
+                    <span>{{{ html_submit_button }}}</span>
+                    <div class="modal__spinner"></div>
+                </button>
+            </footer>
+        </div>
     </div>
 </div>

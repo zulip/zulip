@@ -14,10 +14,7 @@ const noop = () => {};
 const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
-
-const StripeCheckout = set_global("StripeCheckout", {
-    configure: noop,
-});
+const location = set_global("location", {});
 
 const helpers = zrequire("../js/billing/helpers");
 zrequire("../js/billing/upgrade");
@@ -28,7 +25,6 @@ run_test("initialize", ({override}) => {
     page_params.seat_count = 8;
     page_params.percent_off = 20;
 
-    let token_func;
     override(helpers, "set_tab", (page_name) => {
         assert.equal(page_name, "upgrade");
     });
@@ -36,35 +32,33 @@ run_test("initialize", ({override}) => {
     let create_ajax_request_form_call_count = 0;
     helpers.__Rewire__(
         "create_ajax_request",
-        (url, form_name, stripe_token, ignored_inputs, type, success_callback) => {
+        (url, form_name, ignored_inputs, type, success_callback) => {
             create_ajax_request_form_call_count += 1;
             switch (form_name) {
                 case "autopay":
                     assert.equal(url, "/json/billing/upgrade");
-                    assert.equal(stripe_token, "stripe_add_card_token");
                     assert.deepEqual(ignored_inputs, []);
                     assert.equal(type, "POST");
-                    window.location.replace = (new_location) => {
-                        assert.equal(new_location, "/billing");
+                    location.replace = (new_location) => {
+                        assert.equal(new_location, "https://stripe_session_url");
                     };
-                    success_callback();
+                    // mock redirectToCheckout and verify its called
+                    success_callback({stripe_session_url: "https://stripe_session_url"});
                     break;
                 case "invoice":
                     assert.equal(url, "/json/billing/upgrade");
-                    assert.equal(stripe_token, undefined);
                     assert.deepEqual(ignored_inputs, []);
                     assert.equal(type, "POST");
-                    window.location.replace = (new_location) => {
+                    location.replace = (new_location) => {
                         assert.equal(new_location, "/billing");
                     };
                     success_callback();
                     break;
                 case "sponsorship":
                     assert.equal(url, "/json/billing/sponsorship");
-                    assert.equal(stripe_token, undefined);
                     assert.deepEqual(ignored_inputs, []);
                     assert.equal(type, "POST");
-                    window.location.replace = (new_location) => {
+                    location.replace = (new_location) => {
                         assert.equal(new_location, "/");
                     };
                     success_callback();
@@ -74,29 +68,6 @@ run_test("initialize", ({override}) => {
             }
         },
     );
-
-    const open_func = (config_opts) => {
-        assert.equal(config_opts.name, "Zulip");
-        assert.equal(config_opts.zipCode, true);
-        assert.equal(config_opts.billingAddress, true);
-        assert.equal(config_opts.panelLabel, "Make payment");
-        assert.equal(config_opts.label, "Add card");
-        assert.equal(config_opts.allowRememberMe, false);
-        assert.equal(config_opts.email, "{{ email }}");
-        assert.equal(config_opts.description, "Zulip Cloud Standard");
-        token_func("stripe_add_card_token");
-    };
-
-    StripeCheckout.configure = (config_opts) => {
-        assert.equal(config_opts.image, "/static/images/logo/zulip-icon-128x128.png");
-        assert.equal(config_opts.locale, "auto");
-        assert.equal(config_opts.key, "{{ publishable_key }}");
-        token_func = config_opts.token;
-
-        return {
-            open: open_func,
-        };
-    };
 
     override(helpers, "show_license_section", (section) => {
         assert.equal(section, "automatic");
@@ -117,7 +88,8 @@ run_test("initialize", ({override}) => {
     $("#autopay-form").data = (key) =>
         document.querySelector("#autopay-form").getAttribute("data-" + key);
 
-    $.get_initialize_function()();
+    const initialize_function = $.get_initialize_function();
+    initialize_function();
 
     const e = {
         preventDefault: noop,
@@ -196,8 +168,6 @@ run_test("initialize", ({override}) => {
 });
 
 run_test("autopay_form_fields", () => {
-    assert.equal(document.querySelector("#autopay-form").dataset.key, "{{ publishable_key }}");
-    assert.equal(document.querySelector("#autopay-form").dataset.email, "{{ email }}");
     assert.equal(
         document.querySelector("#autopay-form [name=seat_count]").value,
         "{{ seat_count }}",

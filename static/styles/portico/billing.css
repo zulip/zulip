@@ -33,6 +33,7 @@
     .nav-tabs {
         border-bottom: 0;
         font-size: 1.2em;
+
         a {
             font-weight: bold;
         }
@@ -49,6 +50,7 @@
 
     .support-link {
         margin: 10px 20px;
+
         a,
         a:hover,
         a:visited {
@@ -62,8 +64,10 @@
         label {
             display: inline-block;
         }
+
         input[type="radio"] {
             display: none;
+
             &:checked {
                 + .box {
                     background-color: hsl(153, 32%, 55%);
@@ -72,6 +76,7 @@
                 }
             }
         }
+
         .box {
             width: 120px;
             height: 70px;
@@ -86,28 +91,34 @@
             margin: 0 10px 5px 0;
             padding: 30px 20px;
             vertical-align: top;
+
             &:hover {
                 background-color: hsl(0, 0%, 91%);
                 border-color: hsl(0, 0%, 80%);
             }
+
             .schedule-time {
                 font-weight: bold;
                 font-size: 1.2em;
                 margin-top: 10px;
             }
+
             .schedule-amount {
                 margin-top: 5px;
                 font-size: 1.1em;
                 height: 50px;
             }
+
             .schedule-amount-2 {
                 font-size: 0.9em;
             }
+
             .management-type {
                 font-weight: bold;
                 font-size: 1.2em;
                 margin-top: 10px;
             }
+
             .management-type-text {
                 font-size: 1.1em;
                 margin-top: 5px;
@@ -116,7 +127,7 @@
     }
 
     .stripe-button-el {
-        padding: 11px 25px 11px 25px;
+        padding: 11px 25px;
         font-weight: 400;
         color: hsl(0, 0%, 100%);
         background: linear-gradient(
@@ -127,7 +138,8 @@
         box-shadow: 0 3px 10px hsla(0, 0%, 0%, 0.2);
         border: 0;
         height: 40px;
-        margin: 5px 0 0 0;
+        margin: 5px 0 0;
+
         span {
             background: 0;
             box-shadow: none;
@@ -145,6 +157,7 @@
     .stripe-button-el:active,
     .stripe-button-el:enabled:active {
         background-color: hsl(169, 70%, 32%);
+
         span {
             background: 0;
             box-shadow: none;
@@ -180,6 +193,8 @@
         display: none;
     }
 
+    #restartsession-loading,
+    #webhook-loading,
     #sponsorship-loading,
     #planchange-loading,
     #licensechange-loading,
@@ -191,6 +206,8 @@
         text-align: center;
     }
 
+    #restartsession-success,
+    #webhook-success,
     #sponsorship-success,
     #planchange-success,
     #licensechange-success,
@@ -201,6 +218,8 @@
         display: none;
     }
 
+    #restartsession-error,
+    #webhook-error,
     #sponsorship-error,
     #planchange-error,
     #licensechange-error,
@@ -232,6 +251,8 @@
         stroke: hsl(0, 0%, 100%);
     }
 
+    #restartsession_loading_indicator,
+    #webhook_loading_indicator,
     #sponsorship_loading_indicator,
     #planchange_loading_indicator,
     #licensechange_loading_indicator,
@@ -241,6 +262,8 @@
         margin: 10px auto;
     }
 
+    #restartsession_loading_indicator_box_container,
+    #webhook_loading_indicator_box_container,
     #sponsorship_loading_indicator_box_container,
     #planchange_loading_indicator_box_container,
     #licensechange_loading_indicator_box_container,
@@ -251,6 +274,8 @@
         left: 50%;
     }
 
+    #restartsession_loading_indicator_box,
+    #webhook_loading_indicator_box,
     #sponsorship_loading_indicator_box,
     #planchange_loading_indicator_box,
     #licensechange_loading_indicator_box,
@@ -264,6 +289,8 @@
         border-radius: 6px;
     }
 
+    #restartsession_loading_indicator .loading_indicator_text,
+    #webhook_loading_indicator .loading_indicator_text,
     #sponsorship_loading_indicator .loading_indicator_text,
     #planchange_loading_indicator .loading_indicator_text,
     #licensechange_loading_indicator .loading_indicator_text,
@@ -280,11 +307,12 @@
     }
 }
 
-input[name="licenses"]::-webkit-outer-spin-button,
-input[name="licenses"]::-webkit-inner-spin-button {
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
     appearance: none;
     margin: 0;
 }
+
 input[name="licenses"] {
     appearance: textfield;
 }
@@ -294,6 +322,7 @@ input[name="licenses"] {
         box-sizing: border-box;
         height: 30px;
     }
+
     textarea {
         box-sizing: border-box;
     }

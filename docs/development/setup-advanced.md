@@ -6,7 +6,6 @@ Contents:
 - [Installing directly on Windows 10 with WSL 2](#installing-directly-on-windows-10-with-wsl-2)
 - [Using the Vagrant Hyper-V provider on Windows](#using-the-vagrant-hyper-v-provider-on-windows-beta)
 - [Newer versions of supported platforms](#newer-versions-of-supported-platforms)
-- [Installing directly on cloud9](#installing-on-cloud9)
 
 ## Installing directly on Ubuntu, Debian, CentOS, or Fedora
 
@@ -59,36 +58,44 @@ ignoring the parts about `vagrant` (since you're not using it).
 ## Installing directly on Windows 10 with WSL 2
 
 Zulip's development environment is most easily set up on Windows using
-the [WSL 2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about)
+the Windows Subsystem for Linux ([WSL
+2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about))
 installation method described here.
 
-1. Install WSL 2 by following the instructions provided by Microsoft
-   [here](https://docs.microsoft.com/en-us/windows/wsl/wsl2-install).
+1. Enable virtualization through your BIOS settings. This sequence
+   depends on your specific hardware and brand, but here are [some
+   basic instructions.][windows-bios-virtualization]
 
-1. Install the `Ubuntu 18.04` Linux distribution from the Microsoft
-   Store.
+1. [Install WSL 2](https://docs.microsoft.com/en-us/windows/wsl/setup/environment).
 
-1. Launch the `Ubuntu 18.04` shell and run the following commands:
+1. Launch the Ubuntu shell as an administrator and run the following command:
 
    ```bash
    sudo apt update && sudo apt upgrade
+   ```
+
+1. Install dependencies with the following command:
+
+   ```bash
    sudo apt install rabbitmq-server memcached redis-server postgresql
    ```
 
 1. Open `/etc/rabbitmq/rabbitmq-env.conf` using e.g.:
 
    ```bash
-   sudo vim /etc/rabbitmq/rabbitmq-env.conf
+   sudo nano /etc/rabbitmq/rabbitmq-env.conf
    ```
 
-   Add the following lines at the end of your file and save:
+   Confirm the following lines are at the end of your file, and add
+   them if not present. Then save your changes (`Ctrl+O`, then `Enter`
+   to confirm the path), and exit `nano` (`Ctrl+X`).
 
    ```ini
    NODE_IP_ADDRESS=127.0.0.1
    NODE_PORT=5672
    ```
 
-1. Make sure you are inside the WSL disk and not in a Windows mounted disk.
+1. Run the command below to make sure you are inside the WSL disk and not in a Windows mounted disk.
    You will run into permission issues if you run `provision` from `zulip`
    in a Windows mounted disk.
 
@@ -96,8 +103,15 @@ installation method described here.
    cd ~  # or cd /home/USERNAME
    ```
 
-1. [Clone your fork of the Zulip repository][zulip-rtd-git-cloning]
-   and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
+1. [Create your fork](../git/cloning.html#step-1a-create-your-fork) of
+   the [Zulip server repository](https://github.com/zulip/zulip).
+
+1. [Create a new SSH key][create-ssh-key] for the WSL-2 Virtual
+   Machine and add it to your GitHub account. Note that SSH keys
+   linked to your Windows computer will not work within the virtual
+   machine.
+
+1. Clone and connect to the Zulip upstream repository:
 
    ```bash
    git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git ~/zulip
@@ -106,8 +120,7 @@ installation method described here.
    ```
 
 1. Run the following to install the Zulip development environment and
-   start it (click `Allow access` if you get popups for Windows Firewall
-   blocking some services)
+   start it. (If Windows Firewall creates popups to block services, simply click `Allow Access`.)
 
    ```bash
    # Start database, cache, and other services
@@ -128,17 +141,26 @@ installation method described here.
 1. If you are facing problems or you see error messages after running `./tools/run-dev.py`,
    you can try running `./tools/provision` again.
 
-1. [Visual Studio Code Remote - WSL](https://code.visualstudio.com/docs/remote/wsl) is
-   recommended for editing files when developing with WSL.
+1. The [Visual Studio Code Remote -
+   WSL](https://code.visualstudio.com/docs/remote/wsl) extension is
+   recommended for editing files when developing with WSL. When you
+   have it installed, you can run:
+
+   ```bash
+   code .
+   ```
+
+   to open VSCode connected to your WSL environment.
 
 1. You're done! You can pick up the [documentation on using the
-   Zulip development
-   environment](../development/setup-vagrant.html#step-4-developing),
+   Zulip development environment](../development/setup-vagrant.html#step-4-developing),
    ignoring the parts about `vagrant` (since you're not using it).
 
 WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
 
+[create-ssh-key]: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account
 [uninstall-wsl]: https://docs.microsoft.com/en-us/windows/wsl/faq#how-do-i-uninstall-a-wsl-distribution-
+[windows-bios-virtualization]: https://www.thewindowsclub.com/disable-hardware-virtualization-in-windows-10
 
 ## Using the Vagrant Hyper-V provider on Windows (beta)
 
@@ -281,56 +303,3 @@ submit a pull request, or you can ask for help in
 [#development help](https://chat.zulip.org/#narrow/stream/49-development-help)
 on chat.zulip.org, and a core team member can help guide you through
 adding support for the platform.
-
-## Installing on Cloud9
-
-AWS Cloud9 is a cloud-based integrated development environment (IDE)
-that lets you write, run, and debug your code with just a browser. It
-includes a code editor, debugger, and terminal.
-
-This section documents how to set up the Zulip development environment
-in a Cloud9 workspace. If you don't have an existing Cloud9 account,
-you can sign up [here](https://aws.amazon.com/cloud9/).
-
-- Create a Workspace, and select the blank template.
-- Resize the workspace to be 1GB of memory and 4GB of disk
-  space. (This is under free limit for both the old Cloud9 and the AWS
-  Free Tier).
-- Clone the zulip repo:
-  `git clone --config pull.rebase https://github.com/<your-username>/zulip.git`
-- Restart rabbitmq-server since its broken on Cloud9:
-  `sudo service rabbitmq-server restart`.
-- And run provision `cd zulip && ./tools/provision`, once this is done.
-- Activate the Zulip virtual environment by
-  `source /srv/zulip-py3-venv/bin/activate` or by opening a new
-  terminal.
-
-#### Install zulip-cloud9
-
-There's a NPM package, `zulip-cloud9`, that provides a wrapper around
-the Zulip development server for use in the Cloud9 environment.
-
-Note: `npm i -g zulip-cloud9` does not work in zulip's virtual
-environment. Although by default, any packages installed in workspace
-folder (i.e. the top level folder) are added to `$PATH`.
-
-```bash
-cd .. # switch to workspace folder if you are in zulip directory
-npm i zulip-cloud9
-zulip-dev start # to start the development server
-```
-
-If you get error of the form `bash: cannot find command zulip-dev`,
-you need to start a new terminal.
-
-Your development server would be running at
-`https://<workspace-name>-<username>.c9users.io` on port 8080. You
-dont need to add `:8080` to your URL, since the Cloud9 proxy should
-automatically forward the connection. You might want to visit
-[zulip-cloud9 repo](https://github.com/cPhost/zulip-cloud9) and it's
-[wiki](https://github.com/cPhost/zulip-cloud9/wiki) for more info on
-how to use zulip-cloud9 package.
-
-[zulip-rtd-git-cloning]: ../git/cloning.html#step-1b-clone-to-your-machine
-[zulip-rtd-git-connect]: ../git/cloning.html#step-1c-connect-your-fork-to-zulip-upstream
-[port-forward-setup]: ../development/remote.html#running-the-development-server

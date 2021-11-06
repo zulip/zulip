@@ -58,7 +58,13 @@ if settings.BILLING_ENABLED:
 
 
 def get_plan_name(plan_type: int) -> str:
-    return ["", "self hosted", "limited", "standard", "open source"][plan_type]
+    return {
+        Realm.PLAN_TYPE_SELF_HOSTED: "self hosted",
+        Realm.PLAN_TYPE_LIMITED: "limited",
+        Realm.PLAN_TYPE_STANDARD: "standard",
+        Realm.PLAN_TYPE_STANDARD_FREE: "open source",
+        Realm.PLAN_TYPE_PLUS: "plus",
+    }[plan_type]
 
 
 def get_confirmations(

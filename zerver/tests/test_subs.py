@@ -1263,7 +1263,7 @@ class StreamAdminTest(ZulipTestCase):
         user_profile = self.example_user("desdemona")
         self.login_user(user_profile)
         realm = user_profile.realm
-        do_change_plan_type(realm, Realm.LIMITED, acting_user=None)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
         stream = self.subscribe(user_profile, "stream_name1")
 
         result = self.client_patch(
@@ -1271,7 +1271,7 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Available on Zulip Standard. Upgrade to access.")
 
-        do_change_plan_type(realm, Realm.SELF_HOSTED, acting_user=None)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=None)
         events: List[Mapping[str, Any]] = []
         with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.client_patch(
@@ -1437,13 +1437,13 @@ class StreamAdminTest(ZulipTestCase):
             },
         ]
 
-        do_change_plan_type(realm, Realm.LIMITED, acting_user=admin)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=admin)
         with self.assertRaisesRegex(
             JsonableError, "Available on Zulip Standard. Upgrade to access."
         ):
             list_to_streams(streams_raw, owner, autocreate=True)
 
-        do_change_plan_type(realm, Realm.SELF_HOSTED, acting_user=admin)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=admin)
         result = list_to_streams(streams_raw, owner, autocreate=True)
         self.assert_length(result[0], 0)
         self.assert_length(result[1], 3)

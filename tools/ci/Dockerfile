@@ -7,6 +7,8 @@
 # To rebuild from this file for a given release, say Ubuntu 18.04 bionic:
 #   docker build . --build-arg=BASE_IMAGE=ubuntu:18.04 --pull --tag=zulip/ci:bionic
 #   docker push zulip/ci:bionic
+#
+# tools/ci/build-docker-images will rebuild all images, but not push them.
 
 ARG BASE_IMAGE
 FROM $BASE_IMAGE
@@ -59,8 +61,8 @@ RUN apt-get update \
     zlib1g-dev
 
 ARG USERNAME=github
-RUN groupadd --gid 3434 $USERNAME \
-  && useradd --uid 3434 --gid $USERNAME --shell /bin/bash --create-home $USERNAME \
+RUN groupadd --gid 1001 $USERNAME \
+  && useradd --uid 1001 --gid $USERNAME --shell /bin/bash --create-home $USERNAME \
   && echo "$USERNAME ALL = (ALL) NOPASSWD: ALL" >> /etc/sudoers.d/50-$USERNAME \
   && echo 'Defaults    env_keep += "DEBIAN_FRONTEND"' >> /etc/sudoers.d/env_keep
 
