@@ -747,6 +747,12 @@ test_people("message_methods", () => {
         people.small_avatar_url_for_person(maria),
         "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon&s=50",
     );
+    assert.equal(
+        people.medium_avatar_url_for_person(maria),
+        "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon&s=500",
+    );
+    assert.equal(people.medium_avatar_url_for_person(charles), "/avatar/301/medium");
+    assert.equal(people.medium_avatar_url_for_person(ashton), "/avatar/303/medium");
 
     muted_users.add_muted_user(30);
     assert.deepEqual(people.sender_info_for_recent_topics_row([30]), [

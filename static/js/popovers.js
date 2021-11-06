@@ -158,8 +158,7 @@ function init_email_tooltip(user) {
 }
 
 function load_medium_avatar(user, elt) {
-    const avatar_path = "avatar/" + user.user_id + "/medium?v=" + user.avatar_version;
-    const user_avatar_url = new URL(avatar_path, window.location.href);
+    const user_avatar_url = people.medium_avatar_url_for_person(user);
     const sender_avatar_medium = new Image();
 
     sender_avatar_medium.src = user_avatar_url;
