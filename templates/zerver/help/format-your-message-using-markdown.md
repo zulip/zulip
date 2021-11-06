@@ -248,7 +248,9 @@ The header separators (`---`) must be at least three dashes long.
 
 ## Todo lists
 
-The `/todo` command in Zulip creates a simple todo list. To add a new task, fill in the task's title and description, and click on "Add Task". The completed tasks can be crossed off using the checkbox. Note that you cannot edit the tasks once created.
+The `/todo` command in Zulip creates a simple todo list. To add a new task, fill in the task's title and description, and click on "Add Task". The tasks, once created, cannot be edited. The completed tasks can be crossed off using the checkbox. 
+
+**NOTE**: The `/todo` command must be used at the beginning of the sentence. 
 
 ![Markdown todo-lists](/static/images/help/markdown-todo.png)
 
