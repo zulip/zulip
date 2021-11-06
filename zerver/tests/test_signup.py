@@ -2452,7 +2452,12 @@ class InvitationsTestCase(InviteUserBase):
         self.login("iago")
         invitee = "resend_me@zulip.com"
 
-        self.assert_json_success(self.invite(invitee, ["Denmark"]))
+        initial_timestamp = timezone_now()
+        with patch("zerver.lib.actions.timezone_now", return_value=initial_timestamp), patch(
+            "confirmation.models.timezone_now",
+            return_value=initial_timestamp,
+        ):
+            self.assert_json_success(self.invite(invitee, ["Denmark"]))
         prereg_user = PreregistrationUser.objects.get(email=invitee)
 
         # Verify and then clear from the outbox the original invite email
@@ -2471,9 +2476,17 @@ class InvitationsTestCase(InviteUserBase):
         invite_expires_in_days = (
             prereg_user.confirmation.get().expiry_date - prereg_user.invited_at
         ).days
+        print(prereg_user.confirmation.get().expiry_date, prereg_user.invited_at)
 
-        # Resend invite
-        result = self.client_post("/json/invites/" + str(prereg_user.id) + "/resend")
+        # Resend invite 2 days later
+        with patch(
+            "zerver.lib.actions.timezone_now",
+            return_value=initial_timestamp + datetime.timedelta(days=2),
+        ), patch(
+            "confirmation.models.timezone_now",
+            return_value=initial_timestamp + datetime.timedelta(days=2),
+        ):
+            result = self.client_post("/json/invites/" + str(prereg_user.id) + "/resend")
         self.assertEqual(
             ScheduledEmail.objects.filter(
                 address__iexact=invitee, type=ScheduledEmail.INVITATION_REMINDER
@@ -2483,9 +2496,17 @@ class InvitationsTestCase(InviteUserBase):
 
         # Verify that the new invite has the same number of expiration days as the original invite.
         prereg_user = PreregistrationUser.objects.get(email=invitee)
+        print(
+            prereg_user.confirmation.get().expiry_date,
+            prereg_user.invited_at,
+            invite_expires_in_days,
+        )
         self.assertEqual(
             (prereg_user.confirmation.get().expiry_date - prereg_user.invited_at).days,
             invite_expires_in_days,
+        )
+        self.assertEqual(
+            prereg_user.confirmation.get().date_sent, initial_timestamp + datetime.timedelta(days=2)
         )
 
         # Check that we have exactly one scheduled email, and that it is different
