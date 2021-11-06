@@ -2760,6 +2760,13 @@ select.inline_select_topic_edit {
         }
     }
 
+    @media (max-height: 600px) {
+        .scrollMenu {
+            overflow-y: scroll;
+            height: calc(100vh - 100px);
+        }
+    }
+
     .column-middle {
         margin-right: 7px;
     }
