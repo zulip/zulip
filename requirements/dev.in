@@ -80,3 +80,6 @@ natsort
 
 # For spell check linter
 codespell
+
+# Hot reload while editing Sphinx documentation
+sphinx-autobuild
