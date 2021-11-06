@@ -344,7 +344,7 @@ if [ "$package_system" = apt ]; then
     # `zulip::profile::base` such that the new dependency is seen by
     # upgrades, as well as new installs.
     if ! apt-get install -y \
-        python3 python3-yaml puppet git curl jq crudini \
+        python3 python3-yaml puppet git curl jq crudini python3-pybind11 \
         "${ADDITIONAL_PACKAGES[@]}"; then
         set +x
         echo -e '\033[0;31m' >&2
