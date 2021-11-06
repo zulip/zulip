@@ -206,12 +206,10 @@ test_ui("sender_hover", ({override, mock_template}) => {
 
     $.create(".user_popover_email", {children: []});
     const image_stubber = make_image_stubber();
-    const base_url = window.location.href;
     handler.call(target, e);
 
     const avatar_img = image_stubber.get(0);
-    const expected_url = new URL("avatar/42/medium?v=" + alice.avatar_version, base_url);
-    assert.equal(avatar_img.src.toString(), expected_url.toString());
+    assert.equal(avatar_img.src.toString(), "/avatar/42/medium");
 
     // todo: load image
 });
