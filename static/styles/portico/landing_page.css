@@ -4167,6 +4167,18 @@ nav {
         div.quote {
             width: 400px;
         }
+
+        @media (width < 1024px) {
+            div.quote {
+                width: 300px;
+            }
+        }
+
+        @media (width < 768px) {
+            div.quote {
+                width: auto;
+            }
+        }
     }
 
     .topics-image {
