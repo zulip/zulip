@@ -376,6 +376,10 @@ td .button {
     .dropdown-toggle i.fa-pencil {
         margin-left: 3px;
     }
+
+    .hidden-email {
+        font-style: italic;
+    }
 }
 
 #admin-user-list,
