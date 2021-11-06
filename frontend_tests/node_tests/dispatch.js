@@ -916,6 +916,12 @@ run_test("user_settings", ({override}) => {
         assert_same(args.name, event.property);
         assert_same(args.setting, event.value);
     }
+
+    override(notifications, "redraw_favicon", noop);
+    event = event_fixtures.user_settings__realm_icon_as_favicon;
+    user_settings.realm_icon_as_favicon = false;
+    dispatch(event);
+    assert_same(user_settings.realm_icon_as_favicon, true);
 });
 
 run_test("update_message (read)", ({override}) => {

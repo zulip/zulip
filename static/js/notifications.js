@@ -159,6 +159,10 @@ export function update_unread_counts(new_unread_count, new_pm_count) {
     redraw_title();
 }
 
+export function redraw_favicon() {
+    // Add redraw call here
+}
+
 export function is_window_focused() {
     return window_focused;
 }

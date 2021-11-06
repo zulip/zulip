@@ -38,6 +38,13 @@ releases.
 
 ## Changes in Zulip 6.0
 
+**Feature level 157**
+
+* [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
+  [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added user setting `realm_icon_as_favicon` to enable using the
+  [organization profile picture as browser favicon](/help/organization-profile-picture-as-favicon).
+
 **Feature level 156**
 
 No changes; feature level used for Zulip 6.0 release.

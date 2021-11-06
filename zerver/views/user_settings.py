@@ -158,6 +158,7 @@ def json_change_settings(
     starred_message_counts: Optional[bool] = REQ(json_validator=check_bool, default=None),
     fluid_layout_width: Optional[bool] = REQ(json_validator=check_bool, default=None),
     high_contrast_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    realm_icon_as_favicon: Optional[bool] = REQ(json_validator=check_bool, default=None),
     color_scheme: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.COLOR_SCHEME_CHOICES), default=None
     ),
