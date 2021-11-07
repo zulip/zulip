@@ -137,10 +137,6 @@ def process_users(
 def get_stream_name(rc_channel: Dict[str, Any]) -> str:
     if rc_channel.get("teamMain"):
         return f'[TEAM] {rc_channel["name"]}'
-    elif rc_channel.get("t") == "l":
-        # Rocket.Chat livechat channels uses the `fname` field
-        # to specify the channel name.
-        return rc_channel["fname"]
     else:
         return rc_channel["name"]
 
@@ -774,13 +770,15 @@ def map_upload_id_to_upload_data(
     return upload_id_to_upload_data_map
 
 
-def separate_channel_and_private_messages(
+def separate_channel_private_and_livechat_messages(
     messages: List[Dict[str, Any]],
     dsc_id_to_dsc_map: Dict[str, Dict[str, Any]],
     direct_id_to_direct_map: Dict[str, Dict[str, Any]],
     huddle_id_to_huddle_map: Dict[str, Dict[str, Any]],
+    livechat_id_to_livechat_map: Dict[str, Dict[str, Any]],
     channel_messages: List[Dict[str, Any]],
     private_messages: List[Dict[str, Any]],
+    livechat_messages: List[Dict[str, Any]],
 ) -> None:
     private_channels_list = list(direct_id_to_direct_map.keys()) + list(
         huddle_id_to_huddle_map.keys()
@@ -799,6 +797,8 @@ def separate_channel_and_private_messages(
                 message["rid"] = parent_channel_id
         if message["rid"] in private_channels_list:
             private_messages.append(message)
+        elif message["rid"] in livechat_id_to_livechat_map:
+            livechat_messages.append(message)
         else:
             channel_messages.append(message)
 
@@ -826,6 +826,7 @@ def categorize_channels_and_map_with_id(
     dsc_id_to_dsc_map: Dict[str, Dict[str, Any]],
     direct_id_to_direct_map: Dict[str, Dict[str, Any]],
     huddle_id_to_huddle_map: Dict[str, Dict[str, Any]],
+    livechat_id_to_livechat_map: Dict[str, Dict[str, Any]],
 ) -> None:
     for channel in channel_data:
         if channel.get("prid"):
@@ -835,6 +836,8 @@ def categorize_channels_and_map_with_id(
                 huddle_id_to_huddle_map[channel["_id"]] = channel
             else:
                 direct_id_to_direct_map[channel["_id"]] = channel
+        elif channel["t"] == "l":
+            livechat_id_to_livechat_map[channel["_id"]] = channel
         else:
             room_id_to_room_map[channel["_id"]] = channel
             if channel.get("teamMain"):
@@ -959,6 +962,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     dsc_id_to_dsc_map: Dict[str, Dict[str, Any]] = {}
     direct_id_to_direct_map: Dict[str, Dict[str, Any]] = {}
     huddle_id_to_huddle_map: Dict[str, Dict[str, Any]] = {}
+    livechat_id_to_livechat_map: Dict[str, Dict[str, Any]] = {}
 
     categorize_channels_and_map_with_id(
         channel_data=rocketchat_data["room"],
@@ -967,6 +971,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         dsc_id_to_dsc_map=dsc_id_to_dsc_map,
         direct_id_to_direct_map=direct_id_to_direct_map,
         huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+        livechat_id_to_livechat_map=livechat_id_to_livechat_map,
     )
 
     zerver_stream = convert_channel_data(
@@ -1047,14 +1052,17 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
 
     channel_messages: List[Dict[str, Any]] = []
     private_messages: List[Dict[str, Any]] = []
+    livechat_messages: List[Dict[str, Any]] = []
 
-    separate_channel_and_private_messages(
+    separate_channel_private_and_livechat_messages(
         messages=rocketchat_data["message"],
         dsc_id_to_dsc_map=dsc_id_to_dsc_map,
         direct_id_to_direct_map=direct_id_to_direct_map,
         huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+        livechat_id_to_livechat_map=livechat_id_to_livechat_map,
         channel_messages=channel_messages,
         private_messages=private_messages,
+        livechat_messages=livechat_messages,
     )
 
     total_reactions: List[ZerverFieldsT] = []
