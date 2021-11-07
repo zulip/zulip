@@ -87,6 +87,7 @@ This import tool is currently beta has the following known limitations:
 -   Starred messages are not imported.
 -   Messages longer than Zulip's limit of 10,000 characters are not
     imported.
+-   Livechat channels/messages are not imported.
 -   Messages from Rocket.Chat Discussions are imported as topics
     inside the Zulip stream corresponding to the parent channel of the
     Rocket.Chat Discussion.

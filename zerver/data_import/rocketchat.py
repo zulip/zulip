@@ -440,7 +440,11 @@ def process_raw_message_batch(
     ) -> str:
         # Fix user mentions
         for user_id in mention_user_ids:
-            user = user_handler.get_user(user_id=user_id)
+            try:
+                user = user_handler.get_user(user_id=user_id)
+            except KeyError:
+                # This happens when the user mentioned is deleted.
+                continue
             rc_mention = "@{short_name}".format(**user)
             zulip_mention = "@**{full_name}**".format(**user)
             content = content.replace(rc_mention, zulip_mention)
@@ -604,7 +608,11 @@ def process_messages(
             usernames = reactions[react_code]["usernames"]
 
             for username in usernames:
-                rc_user_id = username_to_user_id_map[username]
+                rc_user_id = username_to_user_id_map.get(username)
+                if not rc_user_id:
+                    # The user might have been deleted (reactions by
+                    # deleted users stays in the RC database).
+                    continue
                 user_id = user_id_mapper.get(rc_user_id)
                 reactions_list.append({"name": name, "user_id": user_id})
 
@@ -613,7 +621,7 @@ def process_messages(
     def message_to_dict(message: Dict[str, Any]) -> Dict[str, Any]:
         rc_sender_id = message["u"]["_id"]
         sender_id = user_id_mapper.get(rc_sender_id)
-        content = message["msg"]
+        content = message.get("msg", "")
 
         if message.get("reactions"):
             reactions = list_reactions(message["reactions"])
