@@ -154,16 +154,16 @@
                             <option value="{{0}}">{{1.text}}</option>
                         {{/each}}
                     </select>
-                    <div class="dependent-inline-block">
-                        <label for="id_realm_message_content_edit_limit_minutes" class="inline-block realm-time-limit-label">
-                            {{t 'N' }}:
-                        </label>
-                        <input type="text" id="id_realm_message_content_edit_limit_minutes"
-                          name="realm_message_content_edit_limit_minutes"
-                          class="admin-realm-time-limit-input prop-element"
-                          autocomplete="off"
-                          value="{{ realm_message_content_edit_limit_minutes }}"/>
-                    </div>
+                </div>
+                <div class="dependent-block">
+                    <label for="id_realm_message_content_edit_limit_minutes" class="inline-block realm-time-limit-label">
+                        {{t 'Duration editing is allowed after posting (minutes)'}}:&nbsp;
+                    </label>
+                    <input type="text" id="id_realm_message_content_edit_limit_minutes"
+                      name="realm_message_content_edit_limit_minutes"
+                      class="admin-realm-time-limit-input prop-element"
+                      autocomplete="off"
+                      value="{{ realm_message_content_edit_limit_minutes }}"/>
                 </div>
 
                 <div class="input-group">
@@ -200,16 +200,16 @@
                             <option value="{{0}}">{{1.text}}</option>
                         {{/each}}
                     </select>
-                    <div class="dependent-inline-block">
-                        <label for="id_realm_message_content_delete_limit_minutes" class="inline-block realm-time-limit-label">
-                            {{t 'N' }}:
-                        </label>
-                        <input type="text" id="id_realm_message_content_delete_limit_minutes"
-                          name="realm_message_content_delete_limit_minutes"
-                          class="admin-realm-time-limit-input prop-element"
-                          autocomplete="off"
-                          value="{{ realm_message_content_delete_limit_minutes }}"/>
-                    </div>
+                </div>
+                <div class="dependent-block">
+                    <label for="id_realm_message_content_delete_limit_minutes" class="inline-block realm-time-limit-label">
+                        {{t "Duration deletion is allowed after posting (minutes)" }}:
+                    </label>
+                    <input type="text" id="id_realm_message_content_delete_limit_minutes"
+                      name="realm_message_content_delete_limit_minutes"
+                      class="admin-realm-time-limit-input prop-element"
+                      autocomplete="off"
+                      value="{{ realm_message_content_delete_limit_minutes }}"/>
                 </div>
 
                 <div class="input-group">

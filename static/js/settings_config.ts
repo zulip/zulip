@@ -345,7 +345,7 @@ const time_limit_dropdown_values = new Map([
     [
         "custom_limit",
         {
-            text: $t({defaultMessage: "Up to N minutes after posting"}),
+            text: $t({defaultMessage: "Custom"}),
         },
     ],
 ]);
@@ -411,7 +411,7 @@ export const msg_delete_limit_dropdown_values = new Map([
     [
         "custom_limit",
         {
-            text: $t({defaultMessage: "Up to N minutes after posting"}),
+            text: $t({defaultMessage: "Custom"}),
         },
     ],
 ]);
@@ -623,7 +623,7 @@ export const email_notifications_batching_period_values = [
     },
     {
         value: "custom_period",
-        description: $t({defaultMessage: "N minutes"}),
+        description: $t({defaultMessage: "Custom"}),
     },
 ];
 

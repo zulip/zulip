@@ -129,17 +129,17 @@
                     <option value="{{ this.value }}">{{ this.description }}</option>
                 {{/each}}
             </select>
-            <div class="dependent-inline-block">
-                <label for="email_notification_batching_period_edit_minutes" class="inline-block">
-                    {{t 'N' }}:
-                </label>
-                <input type="text"
-                  name="email_notification_batching_period_edit_minutes"
-                  class="email_notification_batching_period_edit_minutes admin-realm-time-limit-input prop-element"
-                  data-setting-widget-type="number"
-                  autocomplete="off"
-                  id="{{prefix}}email_notification_batching_period_edit_minutes"/>
-            </div>
+        </div>
+        <div class="dependent-block">
+            <label for="email_notification_batching_period_edit_minutes" class="inline-block">
+                {{t 'Delay period (minutes)' }}:
+            </label>
+            <input type="text"
+              name="email_notification_batching_period_edit_minutes"
+              class="email_notification_batching_period_edit_minutes admin-realm-time-limit-input prop-element"
+              data-setting-widget-type="number"
+              autocomplete="off"
+              id="{{prefix}}email_notification_batching_period_edit_minutes"/>
         </div>
 
         {{#each notification_settings.email_message_notification_settings}}
