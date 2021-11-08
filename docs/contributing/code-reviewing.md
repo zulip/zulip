@@ -117,7 +117,7 @@ sooner is better.
   the job to fail by clicking on the failed job. This will open
   up a page in the CI that has more details on why the job failed.
   For example [this](https://github.com/zulip/zulip/runs/2092955762)
-  is the page of the `Ubuntu 18.04 Bionic (Python 3.6, backend + frontend)` job.
+  is the page of the "Debian 10 Buster (Python 3.7, backend + frontend)" job.
   See our docs on [continuous integration](../testing/continuous-integration.md)
   to learn more.
 

@@ -62,7 +62,7 @@ branch, or a significant time has passed since you last used it.
 ### Test an install
 
 The `test-install` tooling takes a distribution release name
-(e.g. "focal" or "bionic"), the path to an unpacked release directory
+(e.g. "focal"), the path to an unpacked release directory
 or tarball, and then any of the normal options you want to pass down
 into the installer.
 

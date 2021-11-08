@@ -8,9 +8,6 @@ Django[argon2]==3.2.*
 # needed for Literal, TypedDict
 typing-extensions
 
-# Backport of @dataclass
-dataclasses;python_version<"3.7"
-
 # Needed for rendering backend templates
 Jinja2
 

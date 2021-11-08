@@ -1,8 +1,7 @@
 import inspect
 import os
-import sys
 from collections import abc
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple, Union
 from unittest.mock import MagicMock, patch
 
 import yaml
@@ -328,15 +327,6 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
         needs to be mapped to list."""
 
         origin = getattr(t, "__origin__", None)
-        if sys.version_info < (3, 7):  # nocoverage
-            if origin == List:
-                origin = list
-            elif origin == Dict:
-                origin = dict
-            elif origin == Mapping:
-                origin = abc.Mapping
-            elif origin == Sequence:
-                origin = abc.Sequence
 
         if not origin:
             # Then it's most likely one of the fundamental data types
