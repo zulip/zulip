@@ -84,7 +84,6 @@ This import tool is currently beta has the following known limitations:
 
 -   User avatars are not imported.
 -   Default channels for new users are not imported.
--   Starred messages are not imported.
 -   Messages longer than Zulip's limit of 10,000 characters are not
     imported.
 -   Livechat channels/messages are not imported.
@@ -94,6 +93,11 @@ This import tool is currently beta has the following known limitations:
 -   Messages from Rocket.Chat Discussions having direct channels
     (i.e. private messages) as their parent are imported as normal
     private messages in Zulip.
+-   If a user is subscribed to a Rocket.Chat Discussion but not to
+    its parent channel, they will lose access to that Discussion
+    (now topic) upon migration to Zulip and will need to be explicitly
+    subscribed to the whole parent stream to gain back the access.
+    Starred messages from such discussions are also not imported.
 -   While Rocket.Chat Threads are in general imported as separate
     topics, Rocket.Chat Threads within Rocket.Chat Discussions are
     imported as normal messages within the topic containing that

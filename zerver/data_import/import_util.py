@@ -160,6 +160,7 @@ def make_user_messages(
     is_pm_data: bool,
     mention_map: Dict[int, Set[int]],
     wildcard_mention_map: Dict[int, bool] = {},
+    message_starred_map: Dict[int, Set[int]] = {},
 ) -> List[ZerverFieldsT]:
 
     zerver_usermessage = []
@@ -170,17 +171,20 @@ def make_user_messages(
         sender_id = message["sender"]
         mention_user_ids = mention_map[message_id]
         wildcard_mention = wildcard_mention_map.get(message_id, False)
+        starred_user_ids = message_starred_map.get(message_id, set())
         subscriber_ids = subscriber_map.get(recipient_id, set())
         user_ids = subscriber_ids | {sender_id}
 
         for user_id in user_ids:
             is_mentioned = user_id in mention_user_ids
+            is_starred = user_id in starred_user_ids
             user_message = build_user_message(
                 user_id=user_id,
                 message_id=message_id,
                 is_private=is_pm_data,
                 is_mentioned=is_mentioned,
                 wildcard_mention=wildcard_mention,
+                is_starred=is_starred,
             )
             zerver_usermessage.append(user_message)
 
@@ -406,8 +410,11 @@ def build_user_message(
     is_private: bool,
     is_mentioned: bool,
     wildcard_mention: bool = False,
+    is_starred: bool = False,
 ) -> ZerverFieldsT:
     flags_mask = 1  # For read
+    if is_starred:
+        flags_mask += 2  # For starred message
     if is_mentioned:
         flags_mask += 8  # For mentioned
     if wildcard_mention:

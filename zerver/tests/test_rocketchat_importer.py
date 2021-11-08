@@ -27,7 +27,15 @@ from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Message, Reaction, Recipient, UserProfile, get_realm, get_user
+from zerver.models import (
+    Message,
+    Reaction,
+    Recipient,
+    UserMessage,
+    UserProfile,
+    get_realm,
+    get_user,
+)
 
 
 class RocketChatImporter(ZulipTestCase):
@@ -1025,3 +1033,35 @@ class RocketChatImporter(ZulipTestCase):
             personal_messages[0].content,
             "Hey @**Hermione Granger** :grin:, how's everything going?",
         )
+
+        # Tests for starred messages and wildcard mentions
+        userprofile_harry = UserProfile.objects.get(email="harrypotter@email.com")
+        userprofile_hermione = UserProfile.objects.get(email="hermionegranger@email.com")
+        userprofile_ron = UserProfile.objects.get(email="ronweasley@email.com")
+
+        # Test starred messages are imported correctly
+        message = Message.objects.get(content__contains="welcome to the team!")
+
+        usermessage_harry = UserMessage.objects.get(message=message, user_profile=userprofile_harry)
+        usermessage_hermione = UserMessage.objects.get(
+            message=message, user_profile=userprofile_hermione
+        )
+        usermessage_ron = UserMessage.objects.get(message=message, user_profile=userprofile_ron)
+
+        # Message is starred by hermione and ron, but not harry
+        self.assertFalse(usermessage_harry.flags.starred.is_set)
+        self.assertTrue(usermessage_hermione.flags.starred.is_set)
+        self.assertTrue(usermessage_ron.flags.starred.is_set)
+
+        # Test wildcard mentions are imported correctly
+        message = Message.objects.get(content="Yo @**all**!")
+
+        usermessage_harry = UserMessage.objects.get(message=message, user_profile=userprofile_harry)
+        usermessage_hermione = UserMessage.objects.get(
+            message=message, user_profile=userprofile_hermione
+        )
+        usermessage_ron = UserMessage.objects.get(message=message, user_profile=userprofile_ron)
+
+        self.assertTrue(usermessage_harry.flags.wildcard_mentioned.is_set)
+        self.assertTrue(usermessage_hermione.flags.wildcard_mentioned.is_set)
+        self.assertTrue(usermessage_ron.flags.wildcard_mentioned.is_set)

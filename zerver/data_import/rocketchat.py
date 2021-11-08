@@ -464,6 +464,7 @@ def process_raw_message_batch(
 
     user_mention_map: Dict[int, Set[int]] = {}
     wildcard_mention_map: Dict[int, bool] = {}
+    message_starred_map: Dict[int, Set[int]] = {}
     zerver_message: List[ZerverFieldsT] = []
 
     for raw_message in raw_messages:
@@ -471,6 +472,7 @@ def process_raw_message_batch(
         mention_user_ids = raw_message["mention_user_ids"]
         user_mention_map[message_id] = mention_user_ids
         wildcard_mention_map[message_id] = raw_message["wildcard_mention"]
+        message_starred_map[message_id] = raw_message["starred_user_ids"]
 
         content = fix_mentions(
             content=raw_message["content"],
@@ -538,6 +540,7 @@ def process_raw_message_batch(
         is_pm_data=is_pm_data,
         mention_map=user_mention_map,
         wildcard_mention_map=wildcard_mention_map,
+        message_starred_map=message_starred_map,
     )
 
     message_json = dict(
@@ -665,6 +668,14 @@ def process_messages(
         message_dict["topic_name"] = get_topic_name(
             message, dsc_id_to_dsc_map, thread_id_mapper, is_pm_data
         )
+
+        # Add users who starred the message to message_dict
+        starred_user_ids = set()
+        for starred in message.get("starred", []):
+            rc_user_id = starred["_id"]
+            user_id = user_id_mapper.get(rc_user_id)
+            starred_user_ids.add(user_id)
+        message_dict["starred_user_ids"] = starred_user_ids
 
         # Add user mentions to message_dict
         mention_user_ids = set()
