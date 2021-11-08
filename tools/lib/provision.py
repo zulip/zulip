@@ -83,8 +83,6 @@ if vendor == "debian" and os_version == "10":  # buster
     POSTGRESQL_VERSION = "11"
 elif vendor == "debian" and os_version == "11":  # bullseye
     POSTGRESQL_VERSION = "13"
-elif vendor == "ubuntu" and os_version == "18.04":  # bionic
-    POSTGRESQL_VERSION = "10"
 elif vendor == "ubuntu" and os_version == "20.04":  # focal
     POSTGRESQL_VERSION = "12"
 elif vendor == "ubuntu" and os_version == "21.10":  # impish

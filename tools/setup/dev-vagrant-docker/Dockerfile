@@ -1,18 +1,12 @@
-FROM ubuntu:18.04
+FROM debian:10
 
-ARG UBUNTU_MIRROR
+ARG DEBIAN_MIRROR
 
 # Basic packages and dependencies of docker-systemctl-replacement
 RUN echo locales locales/default_environment_locale select C.UTF-8 | debconf-set-selections \
     && echo locales locales/locales_to_be_generated select "C.UTF-8 UTF-8" | debconf-set-selections \
-    && { [ ! "$UBUNTU_MIRROR" ] || sed -i "s|http://\(\w*\.\)*archive\.ubuntu\.com/ubuntu/\? |$UBUNTU_MIRROR |" /etc/apt/sources.list; } \
-    # This restores man pages and other documentation that have been
-    # stripped from the default Ubuntu cloud image and installs
-    # ubuntu-minimal and ubuntu-standard.
-    #
-    # This makes sense to do because we're using this image as a
-    # development environment, not a minimal production system.
-    && printf 'y\n\n' | unminimize \
+    && { [ ! "$DEBIAN_MIRROR" ] || sed -i "s|http://\(\w*\.\)*\.debian\.org/debian |$DEBIAN_MIRROR |" /etc/apt/sources.list; } \
+    && apt-get update \
     && apt-get install --no-install-recommends -y \
            ca-certificates \
            curl \
@@ -39,7 +33,7 @@ RUN \
     && mkdir -p /run/sshd \
     # docker-systemctl-replacement doesn’t work with template units yet:
     # https://github.com/gdraheim/docker-systemctl-replacement/issues/62
-    && ln -ns /lib/systemd/system/postgresql@.service /etc/systemd/system/multi-user.target.wants/postgresql@10-main.service \
+    && ln -ns /lib/systemd/system/postgresql@.service /etc/systemd/system/multi-user.target.wants/postgresql@11-main.service \
     # redis fails to start with the default configuration if IPv6 is disabled:
     # https://github.com/antirez/redis/pull/5598
     && dpkg-divert --add --rename /etc/default/redis-server \
