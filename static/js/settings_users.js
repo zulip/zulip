@@ -312,6 +312,11 @@ section.active.create_table = (active_users) => {
 
     loading.destroy_indicator($("#admin_page_users_loading_indicator"));
     $("#admin_users_table").show();
+    if (settings_data.show_email()) {
+        $("#admin-user-list").find(".user_id").addClass("hide-user-id-narrow-width");
+    } else {
+        $("#admin-user-list").find(".user_email").addClass("hide-user-email-narrow-width");
+    }
 };
 
 section.deactivated.create_table = (deactivated_users) => {

@@ -1979,3 +1979,12 @@ input[type="checkbox"] {
         margin-top: 10px;
     }
 }
+
+@media (width < 840px) {
+    #admin-user-list {
+        .hide-user-id-narrow-width,
+        .hide-user-email-narrow-width {
+            display: none;
+        }
+    }
+}

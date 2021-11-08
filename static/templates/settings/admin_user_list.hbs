@@ -8,11 +8,11 @@
         <span class="email">{{display_email}}</span>
     </td>
     {{else}}
-    <td>
+    <td class="user_email">
         <span class="hidden-email">{{t "(hidden)"}}</span>
     </td>
     {{/if}}
-    <td>
+    <td class="user_id">
         <span class="user_id">{{user_id}}</span>
     </td>
     {{#unless is_bot}}
