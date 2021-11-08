@@ -257,8 +257,10 @@ instructions for other supported platforms.
 
 ### Upgrading from Ubuntu 18.04 Bionic to 20.04 Focal
 
-1. Upgrade your server to the latest Zulip release (at least 3.0,
-   which adds support for Ubuntu Focal).
+1. Upgrade your server to the latest Zulip `3.x` or `4.x` release (at
+   least 3.0, which adds support for Ubuntu 20.04). You can only
+   upgrade to Zulip 5.0 and newer after completing this process, since
+   newer releases don't support Ubuntu 18.04.
 
 2. As the Zulip user, stop the Zulip server and run the following
    to back up the system:
@@ -354,14 +356,17 @@ instructions for other supported platforms.
    be able to navigate to its URL and confirm everything is working
    correctly.
 
-6. [Upgrade to the latest Zulip release](#upgrading-to-a-release), now
-   that your server is running a supported operating system.
+6. [Upgrade to the latest `4.x` release](#upgrading-to-a-release).
 
-7. As root, finish by verifying the contents of the full-text indexes:
+7. As root, verify the contents of the full-text indexes:
 
    ```bash
    /home/zulip/deployments/current/manage.py audit_fts_indexes
    ```
+
+8. [Upgrade from Bionic to
+   Focal](#upgrading-from-ubuntu-18-04-bionic-to-20-04-focal), so that
+   you are running a supported operating system.
 
 ### Upgrading from Ubuntu 14.04 Trusty to 16.04 Xenial
 
@@ -544,7 +549,7 @@ Starting with Zulip 3.0, we use the latest available version of
 PostgreSQL at installation time (currently version 14). Upgrades to
 the version of PostgreSQL are no longer linked to upgrades of the
 distribution; that is, you may opt to upgrade to PostgreSQL 14 while
-running Ubuntu 18.04 Bionic.
+running Ubuntu 20.04.
 
 To upgrade the version of PostgreSQL on the Zulip server:
 

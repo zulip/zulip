@@ -61,6 +61,7 @@ def error_desupported_os(vendor: str, os_version: str) -> "NoReturn":
 UNSUPPORTED_DISTROS = [
     ("ubuntu", "14.04"),
     ("ubuntu", "16.04"),
+    ("ubuntu", "18.04"),
     ("debian", "9"),
 ]
 distro_info = parse_os_release()
@@ -127,7 +128,6 @@ if os.path.exists("/etc/init.d/postgresql"):
     if not postgresql_version:
         default_postgresql_version = {
             ("debian", "10"): "11",
-            ("ubuntu", "18.04"): "10",
             ("ubuntu", "20.04"): "12",
             ("centos", "7"): "11",
         }

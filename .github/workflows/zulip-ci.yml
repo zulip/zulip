@@ -18,11 +18,10 @@ jobs:
         include:
           # Base images are built using `tools/ci/Dockerfile.prod.template`.
           # The comments at the top explain how to build and upload these images.
-          # Bionic ships with Python 3.6.
-          - docker_image: zulip/ci:bionic
-            name: Ubuntu 18.04 Bionic (Python 3.6, backend + frontend)
-            os: bionic
-            is_bionic: true
+          # Debian 10 ships with Python 3.7.3.
+          - docker_image: zulip/ci:buster
+            name: Debian 10 Buster (Python 3.7, backend + frontend)
+            os: buster
             include_frontend_tests: true
           # Focal ships with Python 3.8.2.
           - docker_image: zulip/ci:focal
@@ -79,13 +78,6 @@ jobs:
           key: v1-emoji-${{ matrix.os }}-${{ hashFiles('tools/setup/emoji/emoji_map.json') }}-${{ hashFiles('tools/setup/emoji/build_emoji') }}-${{ hashFiles('tools/setup/emoji/emoji_setup_utils.py') }}-${{ hashFiles('tools/setup/emoji/emoji_names.py') }}-${{ hashFiles('package.json') }}
           restore-keys: v1-emoji-${{ matrix.os }}
 
-      - name: Do Bionic hack
-        if: ${{ matrix.is_bionic }}
-        run: |
-          # Temporary hack till `sudo service redis-server start` gets fixes in Bionic. See
-          # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
-          sudo sed -i '/^bind/s/bind.*/bind 0.0.0.0/' /etc/redis/redis.conf
-
       - name: Install dependencies
         run: |
           # This is the main setup job for the test suite
@@ -135,7 +127,7 @@ jobs:
           source tools/ci/activate-venv
 
           # Currently our compiled requirements files will differ for different python versions
-          # so we will run test-locked-requirements only for Bionic.
+          # so we will run test-locked-requirements only for Debian 10.
           # ./tools/test-locked-requirements
           # ./tools/test-run-dev  # https://github.com/zulip/zulip/pull/14233
           #
@@ -195,7 +187,7 @@ jobs:
           fi
 
       - name: Test locked requirements
-        if: ${{ matrix.is_bionic }}
+        if: ${{ matrix.os == 'buster' }}
         run: |
           . /srv/zulip-py3-venv/bin/activate && \
           ./tools/test-locked-requirements

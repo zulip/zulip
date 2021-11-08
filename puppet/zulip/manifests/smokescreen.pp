@@ -29,17 +29,11 @@ class zulip::smokescreen {
     ensure  => file,
     require => Exec['compile smokescreen'],
   }
-  unless $::operatingsystem == 'Ubuntu' and $::operatingsystemrelease == '18.04' {
-    # Puppet 5.5.0 and below make this always-noisy, as they spout out
-    # a notify line about tidying the managed file above.  Skip
-    # on Bionic, which has that old version; they'll get tidied upon
-    # upgrade to 20.04.
-    tidy { '/usr/local/bin/smokescreen-*':
-      path    => '/usr/local/bin',
-      recurse => 1,
-      matches => 'smokescreen-*',
-      require => Exec['compile smokescreen'],
-    }
+  tidy { '/usr/local/bin/smokescreen-*':
+    path    => '/usr/local/bin',
+    recurse => 1,
+    matches => 'smokescreen-*',
+    require => Exec['compile smokescreen'],
   }
 
   $listen_address = zulipconf('http_proxy', 'listen_address', '127.0.0.1')

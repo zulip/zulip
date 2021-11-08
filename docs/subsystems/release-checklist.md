@@ -33,7 +33,7 @@ preparing a new release.
   Transifex and commit them.
 - Use `build-release-tarball` to generate a release tarball.
 - Test the new tarball extensively, both new install and upgrade from last
-  release, on both Bionic and Focal.
+  release, on Ubuntu 20.04.
 - Repeat until release is ready.
 - Send around the Paper blog post draft for review.
 - Move the blog post draft to Ghost. (For a draft in Dropbox Paper,
