@@ -112,7 +112,7 @@ export function set_up(settings_panel) {
 
             change_display_setting(
                 data,
-                container.find(".language-settings-status"),
+                container.find(".lang-time-settings-status"),
                 $t_html(
                     {
                         defaultMessage:
