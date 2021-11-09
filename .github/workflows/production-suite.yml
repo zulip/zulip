@@ -196,11 +196,11 @@ jobs:
         run: sudo /tmp/production-verify
 
       - name: Upgrade postgresql
-        if: ${{ matrix.is_bionic }}
+        if: ${{ matrix.os == 'focal' }}
         run: sudo /tmp/production-upgrade-pg
 
       - name: Verify install after upgrading postgresql
-        if: ${{ matrix.is_bionic }}
+        if: ${{ matrix.os == 'focal' }}
         run: sudo /tmp/production-verify
 
       - name: Report status
