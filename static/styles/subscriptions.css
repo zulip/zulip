@@ -297,6 +297,10 @@
                 top: 0;
                 z-index: 1;
             }
+
+            .hidden-subscriber-email {
+                font-style: italic;
+            }
         }
     }
 }
