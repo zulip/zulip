@@ -26,12 +26,16 @@ export function update_page(property) {
         return;
     }
     const container = $(realm_default_settings_panel.container);
-    const value = realm_user_settings_defaults[property];
+    let value = realm_user_settings_defaults[property];
 
     if (property === "emojiset") {
         container.find(`input[value=${CSS.escape(value)}]`).prop("checked", true);
         return;
     }
+    if (property === "twenty_four_hour_time") {
+        value = value.toString();
+    }
+
     const input_elem = container.find(`[name=${CSS.escape(property)}]`);
     settings_org.set_input_element_value(input_elem, value);
 }
