@@ -374,6 +374,13 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
         default_text: $t({defaultMessage: "No streams"}),
         include_current_item: false,
         value: current_stream_id,
+        on_update: () => {
+            // Update the color of `stream_header_colorblock`.
+            const stream_name = stream_data.maybe_get_stream_name(
+                Number.parseInt(stream_widget.value(), 10),
+            );
+            stream_bar.decorate(stream_name, stream_header_colorblock, false);
+        },
     };
 
     hide_topic_popover();
@@ -428,21 +435,6 @@ export function register_click_handlers() {
         ".starred-messages-sidebar-menu-icon",
         build_starred_messages_popover,
     );
-
-    $("body").on("click keypress", ".move-topic-dropdown .list_item", (e) => {
-        // We want the dropdown to collapse once any of the list item is pressed
-        // and thus don't want to kill the natural bubbling of event.
-        e.preventDefault();
-
-        if (e.type === "keypress" && e.key !== "Enter") {
-            return;
-        }
-        const stream_name = stream_data.maybe_get_stream_name(
-            Number.parseInt(stream_widget.value(), 10),
-        );
-
-        stream_bar.decorate(stream_name, stream_header_colorblock, false);
-    });
 
     register_stream_handlers();
     register_topic_handlers();
