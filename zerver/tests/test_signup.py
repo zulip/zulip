@@ -1281,6 +1281,31 @@ class InviteUserTest(InviteUserBase):
             inviter.email,
         )
 
+    def test_invite_from_now_deactivated_user(self) -> None:
+        """
+        While accepting an invitation from a user,
+        processing for a new user account will only
+        be completed if the inviter is not deactivated
+        after sending the invite.
+        """
+        inviter = self.example_user("hamlet")
+        self.login_user(inviter)
+        invitee = self.nonreg_email("alice")
+
+        result = self.invite(invitee, ["Denmark"])
+        self.assert_json_success(result)
+
+        prereg_user = PreregistrationUser.objects.get(email=invitee)
+        change_user_is_active(inviter, False)
+        do_create_user(
+            invitee,
+            "password",
+            inviter.realm,
+            "full name",
+            prereg_user=prereg_user,
+            acting_user=None,
+        )
+
     def test_successful_invite_user_as_owner_from_owner_account(self) -> None:
         self.login("desdemona")
         invitee = self.nonreg_email("alice")
