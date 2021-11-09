@@ -503,7 +503,12 @@ def process_new_human_user(
     add_new_user_history(user_profile, streams)
 
     # mit_beta_users don't have a referred_by field
-    if not mit_beta_user and prereg_user is not None and prereg_user.referred_by is not None:
+    if (
+        not mit_beta_user
+        and prereg_user is not None
+        and prereg_user.referred_by is not None
+        and prereg_user.referred_by.is_active
+    ):
         # This is a cross-realm private message.
         with override_language(prereg_user.referred_by.default_language):
             internal_send_private_message(
