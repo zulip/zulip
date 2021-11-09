@@ -28,10 +28,16 @@ export function update_page(property) {
     const container = $(realm_default_settings_panel.container);
     let value = realm_user_settings_defaults[property];
 
+    // settings_org.set_input_element_value doesn't support radio
+    // button widgets like this one.
     if (property === "emojiset") {
         container.find(`input[value=${CSS.escape(value)}]`).prop("checked", true);
         return;
     }
+
+    // The twenty_four_hour_time setting is represented as a boolean
+    // in the API, but a dropdown with "true"/"false" as strings in
+    // the UI, so we need to convert its format here.
     if (property === "twenty_four_hour_time") {
         value = value.toString();
     }
