@@ -252,7 +252,10 @@ class TornadoQueueClient(QueueClient[Channel]):
     def __init__(self) -> None:
         super().__init__(
             # TornadoConnection can process heartbeats, so enable them.
-            rabbitmq_heartbeat=None
+            rabbitmq_heartbeat=None,
+            # Only ask for 100 un-acknowledged messages at once from
+            # the server, rather than an unbounded number.
+            prefetch=100,
         )
         self._on_open_cbs: List[Callable[[Channel], None]] = []
         self._connection_failure_count = 0
