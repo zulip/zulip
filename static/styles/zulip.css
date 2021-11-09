@@ -2687,9 +2687,34 @@ select.inline_select_topic_edit {
     margin: 0;
 }
 
-/* Hide the up and down arrows in the Flatpickr datepicker year */
-.flatpickr-months .numInputWrapper span {
-    display: none;
+.flatpickr-calendar {
+    /* Hide the up and down arrows in the Flatpickr datepicker year */
+    .flatpickr-months .numInputWrapper span {
+        display: none;
+    }
+
+    .flatpickr-time-separator {
+        position: relative;
+        left: 5px;
+    }
+
+    .flatpickr-time input {
+        margin: 0 5px;
+    }
+
+    @media (width < $md_min) {
+        /* Center align flatpickr on mobile
+         * devices so that it doesn't go out of
+         * the viewport. */
+        left: 0 !important;
+        right: 0 !important;
+        margin: auto;
+
+        &::after,
+        &::before {
+            border-top-width: 0;
+        }
+    }
 }
 
 #about-zulip {
