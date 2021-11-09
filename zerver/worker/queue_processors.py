@@ -219,6 +219,12 @@ class QueueProcessingWorker(ABC):
     CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM = 50
     MAX_SECONDS_BEFORE_UPDATE_STATS = 30
 
+    # How many un-acknowledged events the worker should have on hand,
+    # fetched from the rabbitmq server.  Larger values may be more
+    # performant, but if queues are large, cause more network IO at
+    # startup and steady-state memory.
+    PREFETCH = 100
+
     def __init__(self) -> None:
         self.q: Optional[SimpleQueueClient] = None
         if not hasattr(self, "queue_name"):
@@ -390,7 +396,7 @@ class QueueProcessingWorker(ABC):
         check_and_send_restart_signal()
 
     def setup(self) -> None:
-        self.q = SimpleQueueClient()
+        self.q = SimpleQueueClient(prefetch=self.PREFETCH)
 
     def start(self) -> None:
         assert self.q is not None
@@ -408,6 +414,9 @@ class QueueProcessingWorker(ABC):
 class LoopQueueProcessingWorker(QueueProcessingWorker):
     sleep_delay = 1
     batch_size = 100
+
+    def setup(self) -> None:
+        self.q = SimpleQueueClient(prefetch=max(self.PREFETCH, self.batch_size))
 
     def start(self) -> None:  # nocoverage
         assert self.q is not None
