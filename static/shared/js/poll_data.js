@@ -103,6 +103,14 @@ export class PollData {
                 // All message readers may add a new option to the poll.
                 const idx = data.idx;
                 const option = data.option;
+                const options = this.get_widget_data().options;
+
+                // While the UI doesn't allow adding duplicate options
+                // to an existing poll, the /poll command syntax to create
+                // them does not prevent duplicates, so we suppress them here.
+                if (this.is_option_present(options, option)) {
+                    return;
+                }
 
                 if (!Number.isInteger(idx) || idx < 0 || idx > MAX_IDX) {
                     this.report_error_function("poll widget: bad type for inbound option idx");
