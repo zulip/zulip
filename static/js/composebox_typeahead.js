@@ -778,6 +778,7 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         positionElement: element,
         dateFormat: "Z",
         formatDate: (date) => formatISO(date),
+        disableMobile: true,
         ...options,
     });
 
