@@ -255,15 +255,11 @@
 
                 td,
                 th {
-                    padding: 4px 0;
+                    padding: 4px 0 4px 5px;
                     vertical-align: middle;
 
                     &:first-of-type {
                         padding-left: 10px;
-                    }
-
-                    &:last-of-type {
-                        padding-left: 5px;
                     }
                 }
             }
