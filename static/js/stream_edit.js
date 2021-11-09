@@ -535,7 +535,6 @@ export function show_settings_for(node) {
         other_settings,
         stream_post_policy_values: stream_data.stream_post_policy_values,
         message_retention_text: get_retention_policy_text_for_subscription_type(sub),
-        show_email: settings_data.show_email(),
     });
     ui.get_content_element($("#stream_settings")).html(html);
 
