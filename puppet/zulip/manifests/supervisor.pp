@@ -81,7 +81,7 @@ class zulip::supervisor {
         Package['supervisor'],
       ],
       hasstatus  => true,
-      status     => 'supervisorctl status',
+      status     => $zulip::common::supervisor_status,
       # Restarting the whole supervisorctl on every update to its
       # configuration files has the unfortunate side-effect of
       # restarting all of the services it controls; this results in an
@@ -98,9 +98,6 @@ class zulip::supervisor {
       #
       # Also, to handle the case that supervisord wasn't running at
       # all, we check if it is not running and if so, start it.
-      #
-      # We use supervisor[d] as the pattern so the bash/grep commands
-      # don't match.
       hasrestart => true,
       # lint:ignore:140chars
       restart    => "bash -c 'if pgrep -x supervisord >/dev/null; then supervisorctl reread && supervisorctl update; else ${zulip::common::supervisor_start}; fi'",
