@@ -81,7 +81,7 @@ class zulip::supervisor {
         Package['supervisor'],
       ],
       hasstatus  => true,
-      status     => 'supervisorctl status',
+      status     => $zulip::common::supervisor_status,
       # Restarting the whole supervisorctl on every update to its
       # configuration files has the unfortunate side-effect of
       # restarting all of the services it controls; this results in an
