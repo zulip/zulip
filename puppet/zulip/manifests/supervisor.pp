@@ -98,9 +98,6 @@ class zulip::supervisor {
       #
       # Also, to handle the case that supervisord wasn't running at
       # all, we check if it is not running and if so, start it.
-      #
-      # We use supervisor[d] as the pattern so the bash/grep commands
-      # don't match.
       hasrestart => true,
       # lint:ignore:140chars
       restart    => "bash -c 'if pgrep -x supervisord >/dev/null; then supervisorctl reread && supervisorctl update; else ${zulip::common::supervisor_start}; fi'",
