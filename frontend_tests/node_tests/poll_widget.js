@@ -77,7 +77,6 @@ run_test("PollData my question", () => {
                 names: "",
                 count: 0,
                 key: "99,1",
-                current_user_vote: false,
             },
         ],
         question: "best plan?",
@@ -99,7 +98,6 @@ run_test("PollData my question", () => {
                 names: "Me Myself",
                 count: 1,
                 key: "99,1",
-                current_user_vote: true,
             },
         ],
         question: "best plan?",
@@ -121,7 +119,6 @@ run_test("PollData my question", () => {
                 names: "Me Myself, Alice Lee",
                 count: 2,
                 key: "99,1",
-                current_user_vote: true,
             },
         ],
         question: "best plan?",
@@ -170,7 +167,6 @@ run_test("PollData my question", () => {
                 names: "Alice Lee",
                 count: 1,
                 key: "99,1",
-                current_user_vote: false,
             },
         ],
         question: "best plan?",
@@ -397,4 +393,43 @@ run_test("activate own poll", ({mock_template}) => {
         poll_question_submit.trigger("click");
         assert.deepEqual(out_data, undefined);
     }
+});
+
+run_test("PollData anonymous", () => {
+    const is_my_poll = true;
+    const question = "Favorite color?";
+
+    const data_holder = new PollData({
+        current_user_id: me.user_id,
+        message_sender_id: me.user_id,
+        is_my_poll,
+        question,
+        options: ["blue"],
+        comma_separated_names: people.get_full_names_for_poll_option,
+        report_error_function: blueslip.warn,
+        anonymous_poll: true,
+    });
+
+    const vote_event = {
+        type: "vote",
+        key: "canned,0",
+        vote: 1,
+    };
+
+    data_holder.handle_event(me.user_id, vote_event);
+    data_holder.handle_event(alice.user_id, vote_event);
+
+    const data = data_holder.get_widget_data();
+
+    assert.deepEqual(data, {
+        options: [
+            {
+                option: "blue",
+                names: "",
+                count: 2,
+                key: "canned,0",
+            },
+        ],
+        question: "Favorite color?",
+    });
 });
