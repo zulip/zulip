@@ -30,12 +30,8 @@ const default_popover_props = {
     touch: true,
 };
 
-export function is_left_sidebar_stream_setting_popover_displayed() {
-    return left_sidebar_stream_setting_popover_displayed;
-}
-
-export function is_compose_mobile_button_popover_displayed() {
-    return compose_mobile_button_popover_displayed;
+export function any_active() {
+    return left_sidebar_stream_setting_popover_displayed || compose_mobile_button_popover_displayed;
 }
 
 export function initialize() {
