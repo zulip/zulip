@@ -908,11 +908,6 @@ input[type="checkbox"] {
     .buttons {
         margin: 10px 0 5px;
     }
-
-    button.dropdown-toggle {
-        font-weight: 600;
-        color: hsl(0, 0%, 67%);
-    }
 }
 
 .edit_bot_email {
