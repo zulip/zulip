@@ -185,4 +185,18 @@ export function initialize() {
             instance.destroy();
         },
     });
+
+    delegate("body", {
+        target: ".add-task-wrapper",
+        onShow(instance) {
+            // Handle dynamic text for todo widget add task button.
+            const elem = $(instance.reference);
+            const content = elem.attr("data-tippy-content");
+            if (content === undefined) {
+                return false;
+            }
+            instance.setContent(content);
+            return true;
+        },
+    });
 }

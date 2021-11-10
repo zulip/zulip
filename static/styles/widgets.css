@@ -114,6 +114,14 @@ button {
         &:hover {
             border-color: hsl(0, 0%, 60%);
         }
+
+        &:disabled {
+            position: relative;
+            z-index: -1;
+            filter: saturate(0);
+            background-color: hsl(0, 0%, 93%);
+            color: hsl(0, 3%, 52%);
+        }
     }
 }
 
@@ -166,4 +174,21 @@ button {
 
 .current-user-vote {
     background-color: hsla(156, 10%, 90%, 0.9);
+}
+
+.add-task-wrapper {
+    display: inline;
+    position: relative;
+    z-index: 1;
+
+    &:hover {
+        cursor: not-allowed;
+
+        .add-task:disabled {
+            cursor: not-allowed;
+            background-color: hsl(0, 0%, 93%);
+            color: hsl(156, 39%, 54%);
+            border-color: hsl(156, 39%, 77%);
+        }
+    }
 }
