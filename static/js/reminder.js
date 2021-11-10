@@ -52,7 +52,7 @@ export function schedule_message(request = compose.create_message_object()) {
     const command_line = raw_message[0];
     const message = raw_message.slice(1).join("\n");
 
-    const deferred_message_type = deferred_message_types.find(
+    const deferred_message_type = Object.values(deferred_message_types).find(
         (props) => command_line.match(props.test) !== null,
     );
     const command = command_line.match(deferred_message_type.test)[0];
