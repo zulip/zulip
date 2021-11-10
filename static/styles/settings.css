@@ -387,6 +387,14 @@ td .button {
     .table tr:first-of-type td {
         border-top: none;
     }
+
+    .name {
+        width: 190px;
+    }
+
+    .email {
+        width: 190px;
+    }
 }
 
 .dynamic-input {
@@ -1716,10 +1724,6 @@ input[type="checkbox"] {
     tbody {
         border-bottom: none;
     }
-}
-
-#admin-user-list .last_active {
-    width: 100px;
 }
 
 .required-text {
