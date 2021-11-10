@@ -50,13 +50,6 @@ function setup_subscriptions_stream_hash(sub) {
     browser_history.update(hash);
 }
 
-function compare_by_email(a, b) {
-    if (a.delivery_email && b.delivery_email) {
-        return util.strcmp(a.delivery_email, b.delivery_email);
-    }
-    return util.strcmp(a.email, b.email);
-}
-
 function compare_by_name(a, b) {
     return util.strcmp(a.full_name, b.full_name);
 }
@@ -362,12 +355,7 @@ export function sort_but_pin_current_user_on_top(users) {
     }
 
     const my_user = people.get_by_email(people.my_current_email());
-    let compare_function;
-    if (settings_data.show_email()) {
-        compare_function = compare_by_email;
-    } else {
-        compare_function = compare_by_name;
-    }
+    const compare_function = compare_by_name;
     if (users.includes(my_user)) {
         users.splice(users.indexOf(my_user), 1);
         users.sort(compare_function);
