@@ -111,7 +111,8 @@ export function schedule_message(request = compose.create_message_object()) {
     want slash commands to be blocking in nature. */
     $("#compose-textarea").prop("disabled", true);
 
-    transmit.send_message(request, success, error);
+    const future_message = true;
+    transmit.send_message(request, success, error, future_message);
 }
 
 export function do_set_reminder_for_message(message_id, timestamp) {
