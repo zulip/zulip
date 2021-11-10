@@ -1067,7 +1067,7 @@ class NoopWorker(QueueProcessingWorker):
 class BatchNoopWorker(LoopQueueProcessingWorker):
     """Used to profile the queue processing framework, in zilencer's queue_rate."""
 
-    batch_size = 500
+    batch_size = 100
 
     def __init__(self, max_consume: int = 1000, slow_queries: Sequence[int] = []) -> None:
         self.consumed = 0
