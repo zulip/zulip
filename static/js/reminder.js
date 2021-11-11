@@ -32,7 +32,7 @@ export function is_deferred_delivery(message_content) {
     return reminders_test.test(message_content) || scheduled_test.test(message_content);
 }
 
-function patch_request_for_scheduling(request, message_content, deliver_at, delivery_type) {
+export function patch_request_for_scheduling(request, message_content, deliver_at, delivery_type) {
     if (request.type === "private") {
         request.to = JSON.stringify(request.to);
     } else {
@@ -59,31 +59,21 @@ export function schedule_message(request = compose.create_message_object()) {
 
     const deliver_at = command_line.slice(command.length + 1);
 
-    if (
-        message.trim() === "" ||
-        deliver_at.trim() === "" ||
-        command_line.slice(command.length, command.length + 1) !== " "
-    ) {
+    let error_message;
+    if (command_line.slice(command.length, command.length + 1) !== " ") {
+        error_message = $t({
+            defaultMessage:
+                "Invalid slash command. Check if you are missing a space after the command.",
+        });
+    } else if (deliver_at.trim() === "") {
+        error_message = $t({defaultMessage: "Please specify a date or time."});
+    } else if (message.trim() === "") {
+        error_message = $t({defaultMessage: "You have nothing to send!"});
+    }
+
+    if (error_message) {
+        compose_error.show(error_message, $("#compose-textarea"));
         $("#compose-textarea").prop("disabled", false);
-        if (command_line.slice(command.length, command.length + 1) !== " ") {
-            compose_error.show(
-                $t_html({
-                    defaultMessage:
-                        "Invalid slash command. Check if you are missing a space after the command.",
-                }),
-                $("#compose-textarea"),
-            );
-        } else if (deliver_at.trim() === "") {
-            compose_error.show(
-                $t_html({defaultMessage: "Please specify a date or time"}),
-                $("#compose-textarea"),
-            );
-        } else {
-            compose_error.show(
-                $t_html({defaultMessage: "Your reminder note is empty!"}),
-                $("#compose-textarea"),
-            );
-        }
         return;
     }
 
@@ -96,8 +86,9 @@ export function schedule_message(request = compose.create_message_object()) {
 
     const success = function (data) {
         if (request.delivery_type === deferred_message_types.scheduled.delivery_type) {
+            const deliver_at = data.deliver_at;
             notifications.notify_above_composebox(
-                "Scheduled your Message to be delivered at: " + data.deliver_at,
+                $t_html({defaultMessage: `Message scheduled for {deliver_at}`}, {deliver_at}),
             );
         }
         $("#compose-textarea").prop("disabled", false);
