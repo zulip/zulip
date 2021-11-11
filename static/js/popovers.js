@@ -1131,8 +1131,10 @@ export function register_click_handlers() {
     });
 
     $("body").on("click", ".flatpickr-confirm", (e) => {
-        const datestr = $(".remind.custom")[0].value;
-        reminder_click_handler(datestr, e);
+        if ($(".remind.custom")[0]) {
+            const datestr = $(".remind.custom")[0].value;
+            reminder_click_handler(datestr, e);
+        }
     });
 
     $("body").on("click", ".respond_personal_button, .compose_private_message", (e) => {
