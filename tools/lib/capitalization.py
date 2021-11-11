@@ -165,6 +165,8 @@ IGNORED_PHRASES = [
     # Used in our case studies
     r"Technical University of Munich",
     r"University of California San Diego",
+    # Used in stream creation form
+    r"email hidden",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the
