@@ -23,7 +23,8 @@ function make_person_highlighter(query) {
 
     return function (person) {
         if (settings_data.show_email()) {
-            return hilite(person.full_name) + " &lt;" + hilite(person.email) + "&gt;";
+            const email = settings_data.email_for_user_settings(person);
+            return hilite(person.full_name) + " &lt;" + hilite(email) + "&gt;";
         }
         return hilite(person.full_name);
     };
