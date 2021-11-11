@@ -2684,6 +2684,13 @@ select.inline_select_topic_edit {
         margin: 0 5px;
     }
 
+    .flatpickr-confirm {
+        color: hsl(0, 0%, 100%);
+        background-color: hsl(213, 90%, 65%);
+        font-size: 18px;
+        font-weight: 600;
+    }
+
     @media (width < $md_min) {
         /* Center align flatpickr on mobile
          * devices so that it doesn't go out of
