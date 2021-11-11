@@ -774,7 +774,13 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         enableTime: true,
         clickOpens: false,
         defaultDate: default_timestamp,
-        plugins: [new ConfirmDatePlugin({showAlways: true})],
+        plugins: [
+            new ConfirmDatePlugin({
+                showAlways: true,
+                confirmText: $t({defaultMessage: "Confirm"}),
+                confirmIcon: "",
+            }),
+        ],
         positionElement: element,
         dateFormat: "Z",
         formatDate: (date) => formatISO(date),
