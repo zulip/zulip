@@ -1188,6 +1188,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     $("form#send_message_form").off("keydown");
     $("form#send_message_form").off("keyup");
     $("#private_message_recipient").off("blur");
+    $("#send_later").css = noop;
     ct.initialize();
 
     // Now let's make sure that all the stub functions have been called

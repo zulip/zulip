@@ -47,7 +47,7 @@ export function patch_request_for_scheduling(request, message_content, deliver_a
     return new_request;
 }
 
-export function schedule_message(request = compose.create_message_object()) {
+export function schedule_message(request = compose.create_message_object(), success_callback) {
     const raw_message = request.content.split("\n");
     const command_line = raw_message[0];
     const message = raw_message.slice(1).join("\n");
@@ -84,15 +84,14 @@ export function schedule_message(request = compose.create_message_object()) {
         deferred_message_type.delivery_type,
     );
 
-    const success = function (data) {
+    const success = function () {
         if (request.delivery_type === deferred_message_types.scheduled.delivery_type) {
-            const deliver_at = data.deliver_at;
             notifications.notify_above_composebox(
                 $t_html({defaultMessage: `Message scheduled for {deliver_at}`}, {deliver_at}),
             );
         }
-        $("#compose-textarea").prop("disabled", false);
-        compose.clear_compose_box();
+
+        success_callback();
     };
     const error = function (response) {
         $("#compose-textarea").prop("disabled", false);
