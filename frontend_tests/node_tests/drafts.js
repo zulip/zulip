@@ -221,6 +221,20 @@ test("remove_old_drafts", () => {
     assert.deepEqual(draft_model.get(), {id3: draft_3});
 });
 
+test("delete_all_drafts", () => {
+    const draft_model = drafts.draft_model;
+    const ls = localstorage();
+    const data = {draft_1, draft_2, short_msg};
+    ls.set("drafts", data);
+    assert.deepEqual(draft_model.get(), data);
+
+    const unread_count = $('<span class="unread_count"></span>');
+    $(".top_left_drafts").set_find_results(".unread_count", unread_count);
+
+    drafts.delete_all_drafts();
+    assert.deepEqual(draft_model.get(), {});
+});
+
 test("format_drafts", ({override, mock_template}) => {
     function feb12() {
         return new Date(1549958107000); // 2/12/2019 07:55:07 AM (UTC+0)
