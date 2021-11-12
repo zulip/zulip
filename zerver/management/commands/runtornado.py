@@ -104,7 +104,7 @@ class Command(BaseCommand):
                 from zerver.tornado.ioloop_logging import logging_data
 
                 logging_data["port"] = str(port)
-                setup_event_queue(port)
+                setup_event_queue(http_server, port)
                 add_client_gc_hook(missedmessage_hook)
                 setup_tornado_rabbitmq()
 
