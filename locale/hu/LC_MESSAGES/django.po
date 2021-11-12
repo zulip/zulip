@@ -200,7 +200,7 @@ msgstr ""
 
 #: corporate/views/billing_page.py:253
 msgid "Nothing to change."
-msgstr ""
+msgstr "Nincs változtatnivaló"
 
 #: templates/analytics/stats.html:10
 msgid "Analytics are fully available 24 hours after organization creation."
@@ -369,7 +369,7 @@ msgstr "Kapcsolatfelvétel az ügyfélszolgálattal"
 
 #: templates/corporate/support_request.html:15
 msgid "From"
-msgstr ""
+msgstr "Küldő"
 
 #: templates/corporate/support_request.html:19
 msgid "Organization"
@@ -377,15 +377,15 @@ msgstr "Szervezet"
 
 #: templates/corporate/support_request.html:23
 msgid "Subject"
-msgstr ""
+msgstr "Tárgy"
 
 #: templates/corporate/support_request.html:27
 msgid "Message"
-msgstr ""
+msgstr "Üzenet"
 
 #: templates/corporate/support_request.html:33
 msgid "Submit"
-msgstr ""
+msgstr "Küld"
 
 #: templates/corporate/upgrade.html:20
 #, python-format
@@ -426,7 +426,7 @@ msgstr "Legjobban felügyelhető"
 
 #: templates/corporate/upgrade.html:241
 msgid "Leave blank if your organization does not have a website."
-msgstr ""
+msgstr "Hagyd üresen, ha nincs weblapotok"
 
 #: templates/two_factor/_wizard_forms.html:26
 msgid "Or, alternatively, use one of your backup phones:"
@@ -548,6 +548,12 @@ msgid ""
 "        Consider <a class=\"search-shared-history\" href=\"\">searching all public streams</a>.\n"
 "        "
 msgstr ""
+"\n"
+"        Ennyit találtunk az\n"
+"        <a href=\"/help/search-for-messages#searching-shared-history\"\n"
+"          target=\"_blank\" rel=\"noopener noreferrer\">előzményeidben</a>.\n"
+"        Talán, ha <a class=\"search-shared-history\" href=\"\">minden nyilvános csatornát átnéznénk</a>.\n"
+"        "
 
 #: templates/zerver/app/message_feed_errors.html:23
 msgid "Nothing's been sent here yet!"
@@ -560,7 +566,10 @@ msgid ""
 "        start the conversation</a>?\n"
 "        "
 msgstr ""
-
+"\n"
+"        Mit szólsz <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
+"        egy új beszélgetéshez</a>?\n"
+"        "
 #: templates/zerver/app/message_feed_errors.html:33
 msgid "You have no private messages yet!"
 msgstr "Még nincs privát üzeneted!"
@@ -575,7 +584,10 @@ msgid ""
 "        start the conversation</a>?\n"
 "        "
 msgstr ""
-
+"\n"
+"        Tedd meg <a href=\"#\" class=\"empty_feed_compose_private\">\n"
+"        az első lépést, üzenj</a>!\n"
+"        "
 #: templates/zerver/app/message_feed_errors.html:43
 msgid "You have no private messages with this person yet!"
 msgstr "Még nincs privát üzenetváltásod ezzel a személlyel!"
@@ -591,6 +603,10 @@ msgid ""
 "        start a conversation with yourself</a>?\n"
 "        "
 msgstr ""
+"\n"
+"        Tedd meg <a href=\"#\" class=\"empty_feed_compose_private\">\n"
+"        az első lépést, üzenj magadnak</a>!\n"
+"        "
 
 #: templates/zerver/app/message_feed_errors.html:63
 msgid "You have no group private messages with this person yet!"
@@ -636,7 +652,10 @@ msgid ""
 "        here</a>.\n"
 "        "
 msgstr ""
-
+"\n"
+"        Ismerd meg az üzenetek csillagozását <a href=\"/help/star-a-message\">\n"
+"        itt</a>.\n"
+"        "
 #: templates/zerver/app/message_feed_errors.html:113
 msgid "You have no unread messages!"
 msgstr "Nincs olvasatlan üzeneted!"
@@ -652,14 +671,17 @@ msgid ""
 "        here</a>.\n"
 "        "
 msgstr ""
-
+"\n"
+"        Találd meg, hol beszélnek rólad <a href=\"/help/mention-a-user-or-group\">\n"
+"        itt</a>.\n"
+"        "
 #: templates/zerver/app/message_feed_errors.html:126
 msgid "No search results"
 msgstr "Nincs találat"
 
 #: templates/zerver/app/message_feed_errors.html:130
 msgid "No topics are marked as resolved."
-msgstr ""
+msgstr "Egy téma sincs befejezettnek jelölve."
 
 #: templates/zerver/billing_nav.html:4
 #: templates/zerver/development/integrations_dev_panel.html:15
@@ -806,26 +828,26 @@ msgstr "Vagy folytathatod a böngészőben is."
 
 #: templates/zerver/developer-community.html:24
 msgid "The Zulip developer community"
-msgstr ""
+msgstr "A Zulip fejlesztői közösség"
 
 #: templates/zerver/developer-community.html:31
 #: templates/zerver/developer-community.html:56
 msgid "Join as a user"
-msgstr ""
+msgstr "Csatlakozz, mint felhasználó"
 
 #: templates/zerver/developer-community.html:34
 #: templates/zerver/developer-community.html:59
 msgid "Join as a self-hoster"
-msgstr ""
+msgstr "Csatlakozz, mint szervező"
 
 #: templates/zerver/developer-community.html:37
 #: templates/zerver/developer-community.html:62
 msgid "Join as a contributor"
-msgstr ""
+msgstr "Csatlakozz mint támogató"
 
 #: templates/zerver/development/dev_login.html:23
 msgid "Anonymous user"
-msgstr ""
+msgstr "Anonymous felhasználó"
 
 #: templates/zerver/development/dev_login.html:27
 msgid "Owners"
@@ -881,7 +903,7 @@ msgstr "Ha nem te kérted a változtatást, keress minket haladéktalanul a/az %
 #: templates/zerver/emails/confirm_registration.source.html:10
 #: templates/zerver/emails/confirm_registration.txt:2
 msgid "You have requested a new Zulip organization. Awesome!"
-msgstr ""
+msgstr "Kikértél egy új Zulip szerveződést. Csodás!"
 
 #: templates/zerver/emails/compiled/confirm_registration.html:13
 #: templates/zerver/emails/confirm_registration.source.html:12
@@ -895,6 +917,7 @@ msgstr "Épp most regisztráltál a Zulip-ba. Kiváló!"
 msgid ""
 "Click the button below to create the organization and register your account."
 msgstr ""
+"Kattints a lenti gombra, hogy elkezdj egy szerveződést és regisztrálj!"
 
 #: templates/zerver/emails/compiled/confirm_registration.html:20
 #: templates/zerver/emails/confirm_registration.source.html:19
@@ -1026,7 +1049,7 @@ msgstr "Úszó hal"
 #: templates/zerver/emails/find_team.source.html:8
 #: templates/zerver/emails/find_team.txt:1
 msgid "Thanks for your request!"
-msgstr ""
+msgstr "Köszönjük igénylésed!"
 
 #: templates/zerver/emails/compiled/find_team.html:11
 #, python-format
@@ -1035,6 +1058,9 @@ msgid ""
 "organizations hosted by <a href=\"%(external_host)s\" style=\"color:#5f5ec7;"
 " text-decoration:underline\">%(external_host)s</a>:"
 msgstr ""
+"Az e-mail címed %(email)s fiókjai a következő Zulip "
+"szervezőknél találhatók: <a href=\"%(external_host)s\" style=\"color:#5f5ec7;"
+" text-decoration:underline\">%(external_host)s</a>:"
 
 #: templates/zerver/emails/compiled/find_team.html:19
 #: templates/zerver/emails/find_team.source.html:18
@@ -1063,6 +1089,10 @@ msgid ""
 "href=\"https://zulip.com/help/demo-organizations\" style=\"color:#5f5ec7; "
 "text-decoration:underline\">here</a>!"
 msgstr ""
+"You've created a demo Zulip organization. Note that this organization will "
+"be automatically deleted in 30 days. Learn more about demo organizations <a "
+"href=\"https://zulip.com/help/demo-organizations\" style=\"color:#5f5ec7; "
+"text-decoration:underline\">here</a>!"
 
 #: templates/zerver/emails/compiled/followup_day1.html:16
 #: templates/zerver/emails/followup_day1.source.html:15
@@ -1116,6 +1146,9 @@ msgid ""
 "style=\"color:#5f5ec7; text-decoration:underline\">mobile and desktop</a> "
 "apps)"
 msgstr ""
+"(ezek kellenek majd, hogy belépj a <a href=\"%(apps_page_link)s\" "
+"style=\"color:#5f5ec7; text-decoration:underline\">mobil és asztali</a> "
+"applikációkba)"
 
 #: templates/zerver/emails/compiled/followup_day1.html:47
 #, python-format
@@ -1126,6 +1159,11 @@ msgid ""
 "decoration:underline\">keyboard shortcuts</a>, or <a href=\"%(realm_uri)s\" "
 "style=\"color:#5f5ec7; text-decoration:underline\">dive right in</a>!"
 msgstr ""
+"Olvasd el az <a href=\"%(getting_started_link)s\" style=\"color:#5f5ec7; "
+"text-decoration:underline\">admin útmutatót</a>, válj Zulip-profivá egy"
+"pár <a href=\"%(keyboard_shortcuts_link)s\" style=\"color:#5f5ec7; text-"
+"decoration:underline\">gyorsbillentyűvel</a>, vagy <a href=\"%(realm_uri)s\" "
+"style=\"color:#5f5ec7; text-decoration:underline\">ugorj a mélyvízbe</a>!"
 
 #: templates/zerver/emails/compiled/followup_day1.html:49
 #, python-format
@@ -1136,6 +1174,11 @@ msgid ""
 "decoration:underline\">keyboard shortcuts</a>, or <a href=\"%(realm_uri)s\" "
 "style=\"color:#5f5ec7; text-decoration:underline\">dive right in</a>!"
 msgstr ""
+"<a href=\"%(getting_started_link)s\" style=\"color:#5f5ec7; text-"
+"decoration:underline\">Tudj meg többet</a> és válj Zulip-profivá egy pár "
+"<a href=\"%(keyboard_shortcuts_link)s\" style=\"color:#5f5ec7; text-"
+"decoration:underline\">gyorsbillentyűvel</a>, vagy <a href=\"%(realm_uri)s\" "
+"style=\"color:#5f5ec7; text-decoration:underline\">ugorj a mélyvízbe</a>!"
 
 #: templates/zerver/emails/compiled/followup_day1.html:54
 #: templates/zerver/emails/followup_day1.source.html:48
@@ -1161,6 +1204,12 @@ msgid ""
 "href=\"https://zulip.com/developer-community/\" style=\"color:#5f5ec7; text-"
 "decoration:underline\">Zulip community server</a>!"
 msgstr ""
+"Psszt... Kövess minket <a href=\"https://twitter.com/zulip\" "
+"style=\"color:#5f5ec7; text-decoration:underline\">Twitter</a>, csillagozz "
+"<a href=\"https://github.com/zulip/zulip\" style=\"color:#5f5ec7; írj"
+"decoration:underline\">GitHub</a>, vagy üzenj élőben a <a "
+"href=\"https://zulip.com/developer-community/\" style=\"color:#5f5ec7; text-"
+"decoration:underline\">Zulip közösségi szerveren</a>!"
 
 #: templates/zerver/emails/compiled/followup_day2.html:9
 #: templates/zerver/emails/followup_day2.source.html:8
@@ -1309,6 +1358,8 @@ msgid ""
 "You are receiving this because @%(mentioned_user_group_name)s was mentioned "
 "in %(realm_name)s."
 msgstr ""
+"Ezt azért kapod, mert @%(mentioned_user_group_name)s meg lett említve "
+"itt: %(realm_name)s."
 
 #: templates/zerver/emails/compiled/missed_message.html:33
 #: templates/zerver/emails/missed_message.source.html:32
@@ -1482,6 +1533,10 @@ msgid ""
 "href=\"%(help_link)s\" style=\"color:#5f5ec7; text-"
 "decoration:underline\">reactivate your account</a>."
 msgstr ""
+"Korábban volt itt fiókod %(organization_url)s, de azóta "
+"deaktiválták. A szervezeti admint keresd meg, hogy <a "
+"href=\"%(help_link)s\" style=\"color:#5f5ec7; text-"
+"decoration:underline\">vissza-aktiváljon téged.</a>."
 
 #: templates/zerver/emails/compiled/password_reset.html:22
 #: templates/zerver/emails/password_reset.source.html:21
@@ -1519,6 +1574,10 @@ msgid ""
 "    Free plan because of unpaid invoices. The unpaid invoices have been voided.\n"
 "    "
 msgstr ""
+"\n"
+"    A szervezeted, %(organization_name_with_link)s, visszakerült a Zulip Cloud\n"
+"    Free tervbe fizetetlen számlák miatt. A számlák érvénytelenítésre kerültek.\n"
+"    "
 
 #: templates/zerver/emails/compiled/realm_auto_downgraded.html:15
 #: templates/zerver/emails/realm_auto_downgraded.source.html:15
@@ -1528,6 +1587,9 @@ msgid ""
 "    To continue on the Zulip Cloud Standard plan, please upgrade again by going to %(upgrade_url)s.\n"
 "    "
 msgstr ""
+"\n"
+"    Hogy folytathasd a Zulip Cloud Standard előfizetést, kérjük jelentkezz ismét: %(upgrade_url)s.\n"
+"    "
 
 #: templates/zerver/emails/compiled/realm_auto_downgraded.html:22
 #: templates/zerver/emails/realm_auto_downgraded.source.html:22
@@ -1537,6 +1599,9 @@ msgid ""
 "    If you think this was a mistake or need more details, please reach out to us at %(support_email)s.\n"
 "    "
 msgstr ""
+"\n"
+"    Amennyiben szerinted tévedés történt, itt ezen a címen érsz el minket: %(support_email)s.\n"
+"    "
 
 #: templates/zerver/emails/compiled/realm_reactivation.html:9
 #: templates/zerver/emails/realm_reactivation.source.html:8
@@ -1585,7 +1650,7 @@ msgstr "Ha nem te voltál, keress bennünket haladéktalanul a <%(support_email)
 
 #: templates/zerver/emails/confirm_registration.subject.txt:2
 msgid "Create your Zulip organization"
-msgstr ""
+msgstr "Kezdj egy új Zulip szerveződést"
 
 #: templates/zerver/emails/confirm_registration.subject.txt:4
 msgid "Activate your Zulip account"
@@ -1677,10 +1742,12 @@ msgid ""
 "Your email address %(email)s has accounts with the following Zulip "
 "organizations hosted by <a href=\"%(external_host)s\">%(external_host)s</a>:"
 msgstr ""
+"Az e-mail címed %(email)s a következő Zulip szervezőknél "
+"található meg <a href=\"%(external_host)s\">%(external_host)s</a>:"
 
 #: templates/zerver/emails/find_team.subject.txt:1
 msgid "Your Zulip accounts"
-msgstr ""
+msgstr "Zulip fiókjaid"
 
 #: templates/zerver/emails/find_team.txt:3
 #, python-format
@@ -1688,6 +1755,8 @@ msgid ""
 "Your email address %(email)s has accounts with the following Zulip "
 "organizations hosted by %(external_host)s:"
 msgstr ""
+"Az e-mail címed %(email)s a következő Zulip szervezőknél "
+"található meg %(external_host)s:"
 
 #: templates/zerver/emails/followup_day1.source.html:13
 msgid ""
