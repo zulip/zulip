@@ -4679,7 +4679,7 @@ msgstr "Érvénytelen json a submessage számára"
 
 #: zerver/views/thumbnail.py:32 zerver/views/upload.py:98
 msgid "<p>You are not authorized to view this file.</p>"
-msgstr ""
+msgstr "<p>Nincs jogosultságod eme fájl megtekintéséhez.</p>"
 
 #: zerver/views/typing.py:32
 msgid "Empty 'to' list"
@@ -4695,15 +4695,15 @@ msgstr ""
 
 #: zerver/views/upload.py:96
 msgid "<p>File not found.</p>"
-msgstr ""
+msgstr "<p>Fájl nem található.</p>"
 
 #: zerver/views/upload.py:108
 msgid "Invalid token"
-msgstr ""
+msgstr "Érvénytelen token"
 
 #: zerver/views/upload.py:110
 msgid "Invalid filename"
-msgstr ""
+msgstr "Érvénytelen fájlnév"
 
 #: zerver/views/upload.py:117
 msgid "You must specify a file to upload"
@@ -4716,16 +4716,16 @@ msgstr "Egyszerre csak egy állomány tölthető fel"
 
 #: zerver/views/user_groups.py:61
 msgid "No new data supplied"
-msgstr ""
+msgstr "Nincs új bevitt adat"
 
 #: zerver/views/user_groups.py:122
 #, python-brace-format
 msgid "User {user_id} is already a member of this group"
-msgstr ""
+msgstr "Ez a felhasználó {user_id} már tagja ennek a csoportnak"
 
 #: zerver/views/user_groups.py:142
 msgid "There is no member '{}' in this user group"
-msgstr ""
+msgstr "Nincs '{}' nevű tag ebben a csoportban"
 
 #: zerver/views/user_settings.py:47
 msgid "Avatar changes are disabled in this organization."
@@ -4737,11 +4737,11 @@ msgstr "Az email cím változtatás ebben a szervezetben le van tiltva."
 
 #: zerver/views/user_settings.py:101
 msgid "Invalid default_language"
-msgstr ""
+msgstr "Érvénytelen default_language"
 
 #: zerver/views/user_settings.py:108
 msgid "Invalid notification sound '{}'"
-msgstr ""
+msgstr "Érvénytelen értesítő hang '{}'"
 
 #: zerver/views/user_settings.py:116
 msgid "Invalid email batching period: {} seconds"
@@ -4757,11 +4757,11 @@ msgstr "Hibás jelszó!"
 
 #: zerver/views/user_settings.py:226
 msgid "You're making too many attempts! Try again in {} seconds."
-msgstr ""
+msgstr "Túl sok próbálkozás! Próbálkozz újra {} mp múltán."
 
 #: zerver/views/user_settings.py:232
 msgid "New password is too weak!"
-msgstr ""
+msgstr "Túl gyenge az új jelszó"
 
 #: zerver/views/user_settings.py:308
 msgid "You must upload exactly one avatar."
@@ -4817,43 +4817,43 @@ msgstr "Eldobható email címek használata ebben a szervezetben nem engedélyez
 
 #: zerver/views/users.py:604
 msgid "Email '{}' already in use"
-msgstr ""
+msgstr "Ezt az e-mailt '{}' már használják"
 
 #: zerver/views/video_calls.py:46
 msgid "Invalid Zoom access token"
-msgstr ""
+msgstr "Invalid Zoom access token"
 
 #: zerver/views/video_calls.py:51
 msgid "Zoom credentials have not been configured"
-msgstr ""
+msgstr "Zoom hitelesítés nincs beállítva"
 
 #: zerver/views/video_calls.py:129
 msgid "Invalid Zoom session identifier"
-msgstr ""
+msgstr "Érvénytelen Zoom szoba azonosító"
 
 #: zerver/views/video_calls.py:143
 msgid "Invalid Zoom credentials"
-msgstr ""
+msgstr "Érvénytelen Zoom hitelesítés"
 
 #: zerver/views/video_calls.py:164
 msgid "Failed to create Zoom call"
-msgstr ""
+msgstr "Sikertelen Zoom híváspróba"
 
 #: zerver/views/video_calls.py:224
 msgid "BigBlueButton is not configured."
-msgstr ""
+msgstr "BigBlueButton nincs beállítva."
 
 #: zerver/views/video_calls.py:242
 msgid "Error connecting to the BigBlueButton server."
-msgstr ""
+msgstr "Hiba a BigBlueButton szerverhez való csatlakozás során."
 
 #: zerver/views/video_calls.py:246
 msgid "Error authenticating to the BigBlueButton server."
-msgstr ""
+msgstr "Hiba történt BigBlueButton szerver auth alatt."
 
 #: zerver/views/video_calls.py:249
 msgid "BigBlueButton server returned an unexpected error."
-msgstr ""
+msgstr "BigBlueButton szerver váratlan hibát jelez."
 
 #: zerver/views/zephyr.py:36
 msgid "Could not find Kerberos credential"
@@ -4861,7 +4861,7 @@ msgstr "Kerberos azonosítóadatok nem találhatóak"
 
 #: zerver/views/zephyr.py:38
 msgid "Webathena login not enabled"
-msgstr ""
+msgstr "Webathena belépés nem engedett"
 
 #: zerver/views/zephyr.py:59
 msgid "Invalid Kerberos cache"
@@ -4869,7 +4869,7 @@ msgstr "A Kerberos gyorsítótár érvénytelen"
 
 #: zerver/views/zephyr.py:75
 msgid "We were unable to set up mirroring for you"
-msgstr ""
+msgstr "Sikertelen mirror setup"
 
 #: zerver/webhooks/freshstatus/view.py:97
 #: zerver/webhooks/uptimerobot/view.py:56 zerver/webhooks/zabbix/view.py:50
@@ -4882,11 +4882,11 @@ msgstr "Ismeretlen webhook kérés"
 
 #: zerver/webhooks/ifttt/view.py:30 zerver/webhooks/zapier/view.py:42
 msgid "Content can't be empty"
-msgstr ""
+msgstr "Tartalom nem maradhat üres"
 
 #: zerver/webhooks/librato/view.py:173
 msgid "Malformed JSON input"
-msgstr ""
+msgstr "Deformálódott JSON input"
 
 #: zerver/webhooks/newrelic/view.py:52
 msgid "The newrelic webhook requires timestamp in milliseconds"
@@ -4903,15 +4903,15 @@ msgstr ""
 
 #: zerver/webhooks/slack/view.py:29
 msgid "Error: channels_map_to_topics parameter other than 0 or 1"
-msgstr ""
+msgstr "Hiba: channels_map_to_topics paraméter más mint 0 vagy 1"
 
 #: zerver/webhooks/slack/view.py:35
 msgid "Message from Slack"
-msgstr ""
+msgstr "Üzenet Slack felől"
 
 #: zerver/webhooks/wordpress/view.py:56
 msgid "Unknown WordPress webhook action: {}"
-msgstr ""
+msgstr "Ismeretlen WordPress webhook eljárás: {}"
 
 #: zerver/worker/queue_processors.py:1013
 #, python-brace-format
@@ -4924,7 +4924,7 @@ msgstr ""
 #. error
 #: zilencer/views.py:49
 msgid "Must validate with valid Zulip server API key"
-msgstr ""
+msgstr "Érvényes Zulip szerver API kulccsal igazolj"
 
 #. error
 #: zilencer/views.py:57
@@ -4945,7 +4945,7 @@ msgstr ""
 
 #: zilencer/views.py:244
 msgid "Invalid data."
-msgstr ""
+msgstr "Érvénytelen adat"
 
 #: zproject/backends.py:465
 msgid "You need to reset your password."
@@ -4953,11 +4953,11 @@ msgstr ""
 
 #: zproject/backends.py:2122
 msgid "Missing id_token parameter"
-msgstr ""
+msgstr "Hiányzó id_token paraméter"
 
 #: zproject/backends.py:2655
 msgid "Invalid OTP"
-msgstr ""
+msgstr "Érvénytelen OTP"
 
 #: zproject/backends.py:2658
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
