@@ -10,6 +10,7 @@
 # klucsik <klucsik.krisztian@gmail.com>, 2020
 # stuntsman, 2020
 # Tim Abbott <tabbott@kandralabs.com>, 2020
+# Eekain, 2021
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
@@ -1838,7 +1839,7 @@ msgstr "%(referrer_name)s szeretné, ha csatlakoznál hozzá a Zulip-ban, ami eg
 #: templates/zerver/emails/invitation.subject.txt:1
 #, python-format
 msgid "%(referrer_full_name)s has invited you to join %(referrer_realm_name)s"
-msgstr ""
+msgstr "%(referrer_full_name)s meghívott, ide: %(referrer_realm_name)s"
 
 #: templates/zerver/emails/invitation.txt:3
 #, python-format
@@ -2061,7 +2062,7 @@ msgstr "Fiókok keresése"
 
 #: templates/zerver/footer.html:3
 msgid "Product"
-msgstr ""
+msgstr "A termék"
 
 #: templates/zerver/footer.html:5
 msgid "Home"
@@ -2085,7 +2086,7 @@ msgstr "Asztali &amp; mobil appok"
 
 #: templates/zerver/footer.html:10
 msgid "Security"
-msgstr ""
+msgstr "Biztonság"
 
 #: templates/zerver/footer.html:11
 msgid "Integrations"
@@ -2093,15 +2094,15 @@ msgstr "Integrációk"
 
 #: templates/zerver/footer.html:15
 msgid "Solutions"
-msgstr ""
+msgstr "Javítások"
 
 #: templates/zerver/footer.html:18
 msgid "Companies"
-msgstr ""
+msgstr "Társaságok"
 
 #: templates/zerver/footer.html:21
 msgid "Open source projects"
-msgstr ""
+msgstr "Nyílt forrású projektek"
 
 #: templates/zerver/footer.html:24
 msgid "Education"
@@ -2109,27 +2110,27 @@ msgstr "Oktatás"
 
 #: templates/zerver/footer.html:27
 msgid "Events and conferences"
-msgstr ""
+msgstr "Események, konferenciák"
 
 #: templates/zerver/footer.html:30
 msgid "Research"
-msgstr ""
+msgstr "Kutatás"
 
 #: templates/zerver/footer.html:33
 msgid "Communities"
-msgstr ""
+msgstr "Közösségek"
 
 #: templates/zerver/footer.html:38
 msgid "Customer stories"
-msgstr ""
+msgstr "Felhasználói vallomások"
 
 #: templates/zerver/footer.html:41
 msgid "Technical University of Munich"
-msgstr ""
+msgstr "Technical University of Munich"
 
 #: templates/zerver/footer.html:44
 msgid "University of California San Diego"
-msgstr ""
+msgstr "University of California San Diego"
 
 #: templates/zerver/footer.html:49
 msgid "Accounts"
@@ -2149,11 +2150,11 @@ msgstr "Magánszféra védelme"
 
 #: templates/zerver/footer.html:63
 msgid "For users"
-msgstr ""
+msgstr "Felhasználóknak"
 
 #: templates/zerver/footer.html:66
 msgid "Getting started"
-msgstr ""
+msgstr "Vágjunk bele!"
 
 #: templates/zerver/footer.html:69
 msgid "Help center"
@@ -2165,35 +2166,35 @@ msgstr "Közösségi csevegés"
 
 #: templates/zerver/footer.html:80
 msgid "Blog"
-msgstr ""
+msgstr "Blog"
 
 #: templates/zerver/footer.html:85
 msgid "For administrators"
-msgstr ""
+msgstr "Adminoknak"
 
 #: templates/zerver/footer.html:89
 msgid "Setting up your organization"
-msgstr ""
+msgstr "Szerveződés elkezdése"
 
 #: templates/zerver/footer.html:94
 msgid "Installing a Zulip server"
-msgstr ""
+msgstr "Zulip szerver telepítése"
 
 #: templates/zerver/footer.html:99
 msgid "Upgrading a Zulip server"
-msgstr ""
+msgstr "Zulip szerver frissítése"
 
 #: templates/zerver/footer.html:104
 msgid "Modifying Zulip"
-msgstr ""
+msgstr "Zulip módosítása"
 
 #: templates/zerver/footer.html:110
 msgid "For contributors"
-msgstr ""
+msgstr "Támogatók részére"
 
 #: templates/zerver/footer.html:112
 msgid "GitHub"
-msgstr ""
+msgstr "GitHub"
 
 #: templates/zerver/footer.html:115
 msgid "Contributing to Zulip"
@@ -2205,11 +2206,11 @@ msgstr ""
 
 #: templates/zerver/footer.html:121
 msgid "Translation"
-msgstr ""
+msgstr "Fordítás"
 
 #: templates/zerver/footer.html:128
 msgid "About us"
-msgstr ""
+msgstr "Rólunk"
 
 #: templates/zerver/footer.html:130
 msgid "Team"
@@ -2221,11 +2222,11 @@ msgstr "Előzmények"
 
 #: templates/zerver/footer.html:132
 msgid "Jobs"
-msgstr ""
+msgstr "Munkalehetőségek"
 
 #: templates/zerver/footer.html:134
 msgid "Sponsor Zulip"
-msgstr ""
+msgstr "Támogasd a Zulipot"
 
 #: templates/zerver/for-communities.html:29
 #: templates/zerver/for-communities.html:52
