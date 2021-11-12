@@ -704,6 +704,14 @@ export function initialize() {
         compose_actions.update_placeholder_text();
     });
 
+    $("body").on("click", ".formatting_button", (e) => {
+        const $elt = $(e.target);
+        const textarea = $elt.closest("form").find("textarea");
+        const format_type = $elt.data("format-type");
+        compose_ui.format_text(textarea, format_type);
+        textarea.trigger("focus");
+    });
+
     if (page_params.narrow !== undefined) {
         if (page_params.narrow_topic !== undefined) {
             compose_actions.start("stream", {topic: page_params.narrow_topic});
