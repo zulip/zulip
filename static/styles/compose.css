@@ -152,12 +152,6 @@
     .messagebox {
         box-shadow: none !important;
     }
-
-    .message-control-link {
-        position: relative;
-        margin-right: 5px;
-        top: 3px;
-    }
 }
 
 #send_message_form {
@@ -186,17 +180,16 @@
 }
 
 #below-compose-content {
+    display: flex;
     width: 100%;
     margin-top: 6px;
 }
 
 #compose_limit_indicator {
-    position: relative;
     margin-right: 8px;
-    top: 3px;
-    float: right;
     font-size: 12px;
     color: hsl(39, 100%, 50%);
+    align-self: center;
 
     &.over_limit {
         color: hsl(0, 100%, 50%);
@@ -427,21 +420,15 @@ input.recipient_box {
 }
 
 #compose-send-button {
-    /* To arrange the right tab order for the compose box keyboard UI,
-       this element appears before its proper position in the DOM and is configured
-       to float right, so that tabbing from the compose box goes here and then
-       to the message controls to its left, to ensure "Tab then Enter" sends messages. */
+    height: 25px;
     padding-top: 3px;
     padding-bottom: 3px;
     margin-bottom: 0;
     font-weight: 600;
-    float: right;
     font-size: 0.9em;
 }
 
 #send_controls {
-    float: right;
-    position: relative;
     font-size: 0.8em;
     height: 2.2em;
 
@@ -461,30 +448,43 @@ input.recipient_box {
 }
 
 #sending-indicator {
-    top: 2px;
-    position: relative;
     font-weight: bold;
-    display: inline-block;
 }
 
-.compose_giphy_link .compose_gif_icon {
-    position: relative;
-    font-size: 23px;
-    top: -4px;
+.compose_control_buttons_container {
+    flex-wrap: wrap;
+    margin-right: auto;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+
+    .compose_gif_icon {
+        font-size: 22px;
+        padding-bottom: 2px;
+    }
+
+    .message-control-link,
+    #sending-indicator {
+        padding: 0 4px;
+        align-self: center;
+    }
+}
+
+.compose_right_float_container {
+    display: flex;
+    white-space: nowrap;
+    gap: 4px;
+    margin-top: 10px;
 }
 
 a.compose_control_button {
+    padding: 5px;
     display: block;
     opacity: 0.7;
     color: inherit;
     text-decoration: none;
-    font-size: 15px;
-    width: auto;
-    height: 15px;
-    margin-right: 8px;
-    padding-top: 5px;
+    font-size: 17px;
     text-align: center;
-    float: left;
 
     &:hover {
         opacity: 1;
