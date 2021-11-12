@@ -1054,6 +1054,7 @@ test("initialize", ({override, mock_template}) => {
             id: "stream_message_recipient_stream",
         },
         preventDefault: noop,
+        stopPropagation: noop,
     };
 
     $("#stream_message_recipient_topic").data = () => ({typeahead: {shown: true}});
