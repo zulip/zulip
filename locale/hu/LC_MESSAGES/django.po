@@ -31,7 +31,7 @@ msgstr "Vendég felhasználóknak nem engedélyezett"
 
 #: analytics/views/stats.py:132
 msgid "Invalid organization"
-msgstr "Hibás szervezet"
+msgstr "Érvénytelen szervezet"
 
 #: analytics/views/stats.py:271
 msgid "Public streams"
@@ -3998,7 +3998,7 @@ msgstr "{item} nem lehet üres."
 #: zerver/lib/validator.py:77 zerver/lib/validator.py:143
 #, python-brace-format
 msgid "Invalid {var_name}"
-msgstr ""
+msgstr "Érvénytelen {var_name}"
 
 #: zerver/lib/validator.py:92
 #, python-brace-format
@@ -4013,42 +4013,42 @@ msgstr "{var_name} hossza {length}, ami érvénytelen; {target_length} hosszúna
 #: zerver/lib/validator.py:127 zerver/lib/validator.py:129
 #, python-brace-format
 msgid "{var_name} is not a date"
-msgstr ""
+msgstr "{var_name} nem dátum"
 
 #: zerver/lib/validator.py:135
 #, python-brace-format
 msgid "{var_name} is not an integer"
-msgstr ""
+msgstr "{var_name} nem integer"
 
 #: zerver/lib/validator.py:154
 #, python-brace-format
 msgid "{var_name} is too small"
-msgstr ""
+msgstr "{var_name} túl kevés"
 
 #: zerver/lib/validator.py:156
 #, python-brace-format
 msgid "{var_name} is too large"
-msgstr ""
+msgstr "{var_name} túl sok"
 
 #: zerver/lib/validator.py:164
 #, python-brace-format
 msgid "{var_name} is not a float"
-msgstr ""
+msgstr "{var_name} nem float"
 
 #: zerver/lib/validator.py:170
 #, python-brace-format
 msgid "{var_name} is not a boolean"
-msgstr ""
+msgstr "{var_name} nem boolean"
 
 #: zerver/lib/validator.py:180
 #, python-brace-format
 msgid "{var_name} is not a valid hex color code"
-msgstr ""
+msgstr "{var_name} érvénytelen hex color kód"
 
 #: zerver/lib/validator.py:200
 #, python-brace-format
 msgid "{var_name} is not a list"
-msgstr ""
+msgstr "{var_name} nem lista"
 
 #: zerver/lib/validator.py:204
 #, python-brace-format
@@ -4208,7 +4208,7 @@ msgstr "A/z {} azonosítójú felhasználó letiltásra került."
 
 #: zerver/models.py:3960
 msgid "User with ID {} is a bot"
-msgstr ""
+msgstr "{} felhasználó egy bot"
 
 #: zerver/models.py:3993
 msgid "List of options"
@@ -4291,7 +4291,7 @@ msgstr ""
 
 #: zerver/views/auth.py:463
 msgid "Bad JSON web token"
-msgstr ""
+msgstr "Rossz JSON web token"
 
 #: zerver/views/auth.py:467
 msgid "No user specified in JSON web token claims"
@@ -4348,7 +4348,7 @@ msgstr ""
 
 #: zerver/views/hotspots.py:19
 msgid "Unknown hotspot: {}"
-msgstr ""
+msgstr "Ismeretlen hotspot: {}"
 
 #: zerver/views/invite.py:51
 msgid "Must be invited as an valid type of user"
@@ -4390,7 +4390,7 @@ msgstr "Az üzenettörlésre rendelkezésre álló időkorlát letelt."
 
 #: zerver/views/message_edit.py:166
 msgid "Message already deleted"
-msgstr ""
+msgstr "Törölt üzenet"
 
 #: zerver/views/message_fetch.py:96
 #, python-brace-format
@@ -4407,11 +4407,11 @@ msgstr ""
 
 #: zerver/views/message_fetch.py:956
 msgid "Too many messages requested (maximum {})."
-msgstr ""
+msgstr "Túl sok üzenetet kérsz (maximum {})."
 
 #: zerver/views/message_flags.py:96
 msgid "No such topic '{}'"
-msgstr ""
+msgstr "Nincs ilyen téma: '{}'"
 
 #: zerver/views/message_send.py:159
 msgid "Invalid time format"
@@ -4443,7 +4443,7 @@ msgstr "A deliver_at hiányzik egy késleltetett üzenetfeladási kérésben."
 
 #: zerver/views/muting.py:40
 msgid "Topic already muted"
-msgstr ""
+msgstr "A téma már néma"
 
 #: zerver/views/muting.py:49
 msgid "Topic is not muted"
@@ -4451,15 +4451,15 @@ msgstr "A téma nincs lenémítva"
 
 #: zerver/views/muting.py:95
 msgid "Cannot mute self"
-msgstr ""
+msgstr "Nem némíthatod le önmagad"
 
 #: zerver/views/muting.py:103
 msgid "User already muted"
-msgstr ""
+msgstr "A felhasználó már néma"
 
 #: zerver/views/muting.py:118
 msgid "User is not muted"
-msgstr ""
+msgstr "A felhasználó nem néma"
 
 #: zerver/views/presence.py:46
 msgid "Presence is not supported for bot users."
@@ -4489,7 +4489,7 @@ msgstr "Üres vagy érvénytelen hosszúságú token"
 
 #: zerver/views/push_notifications.py:25
 msgid "Invalid APNS token"
-msgstr ""
+msgstr "Érvénytelen APNS token"
 
 #: zerver/views/reactions.py:49
 msgid ""
@@ -4503,7 +4503,7 @@ msgstr "Ez a reakció nem létezik."
 
 #: zerver/views/realm.py:147
 msgid "Invalid language '{}'"
-msgstr ""
+msgstr "Érvénytelen nyelv '{}'"
 
 #: zerver/views/realm.py:152
 msgid "At least one authentication method must be enabled."
@@ -4511,11 +4511,11 @@ msgstr ""
 
 #: zerver/views/realm.py:156
 msgid "Invalid video_chat_provider {}"
-msgstr ""
+msgstr "Érvénytelen video_chat_provider {}"
 
 #: zerver/views/realm.py:160
 msgid "Invalid giphy_rating {}"
-msgstr ""
+msgstr "Érvénytelen giphy_rating {}"
 
 #: zerver/views/realm.py:286
 msgid "Must be a demo organization."
@@ -4523,7 +4523,7 @@ msgstr ""
 
 #: zerver/views/realm_domains.py:32
 msgid "Invalid domain: {}"
-msgstr ""
+msgstr "Érvénytelen domain: {}"
 
 #: zerver/views/realm_domains.py:35
 #, python-brace-format
@@ -4541,17 +4541,17 @@ msgstr "Ilyen nevű egyedi hangulatjel már létezik."
 
 #: zerver/views/realm_emoji.py:38
 msgid "You must upload exactly one file."
-msgstr ""
+msgstr "Egyszerre csak egy fájlt tölts fel."
 
 #: zerver/views/realm_emoji.py:41
 msgid "Only administrators can override built-in emoji."
-msgstr ""
+msgstr "Eredeti emotikont csakis adminisztrátor változtathat."
 
 #: zerver/views/realm_emoji.py:45 zerver/views/realm_icon.py:25
 #: zerver/views/realm_logo.py:30 zerver/views/upload.py:125
 #: zerver/views/user_settings.py:316
 msgid "Uploaded file is larger than the allowed limit of {} MiB"
-msgstr ""
+msgstr "A feltöltött fájl meghaladja az engedett értéket: {} MiB"
 
 #: zerver/views/realm_emoji.py:52
 msgid "Image file upload failed."
@@ -4576,7 +4576,7 @@ msgstr ""
 
 #: zerver/views/realm_icon.py:20
 msgid "You must upload exactly one icon."
-msgstr ""
+msgstr "Kizárólag egy ikont tölts fel."
 
 #: zerver/views/realm_linkifiers.py:45 zerver/views/realm_linkifiers.py:67
 msgid "Linkifier not found."
@@ -4920,6 +4920,9 @@ msgid ""
 "\n"
 "{public_url}"
 msgstr ""
+"Az adatok exportálása kész, és elérhető itt:\n"
+"\n"
+"{public_url}"
 
 #. error
 #: zilencer/views.py:49
@@ -4929,19 +4932,19 @@ msgstr "Érvényes Zulip szerver API kulccsal igazolj"
 #. error
 #: zilencer/views.py:57
 msgid "Invalid token type"
-msgstr ""
+msgstr "Érvénytelen token tipus"
 
 #: zilencer/views.py:85
 msgid "{} is not a valid hostname"
-msgstr ""
+msgstr "{} egy érvénytelen hostname"
 
 #: zilencer/views.py:222
 msgid "Invalid property {}"
-msgstr ""
+msgstr "Érvénytelen érték {}"
 
 #: zilencer/views.py:224
 msgid "Data is out of order."
-msgstr ""
+msgstr "Váratlan adat"
 
 #: zilencer/views.py:244
 msgid "Invalid data."
@@ -4949,7 +4952,7 @@ msgstr "Érvénytelen adat"
 
 #: zproject/backends.py:465
 msgid "You need to reset your password."
-msgstr ""
+msgstr "Állítsd vissza a jelszavadat."
 
 #: zproject/backends.py:2122
 msgid "Missing id_token parameter"
@@ -4961,4 +4964,4 @@ msgstr "Érvénytelen OTP"
 
 #: zproject/backends.py:2658
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
-msgstr ""
+msgstr "A mobile_flow_otp és desktop_flow_otp nem használhatóak egyszerre."
