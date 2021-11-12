@@ -7,7 +7,5 @@
 <a role="button" class="compose_control_button fa fa-video-camera video_link" aria-label="{{t 'Add video call' }}" tabindex=0 data-tippy-content="{{t 'Add video call' }}"></a>
 <a role="button" class="compose_control_button fa fa-smile-o emoji_map" aria-label="{{t 'Add emoji' }}" tabindex=0 data-tippy-content="{{t 'Add emoji' }}"></a>
 <a role="button" class="compose_control_button fa fa-clock-o time_pick" aria-label="{{t 'Add global time' }}" tabindex=0 data-tippy-content="{{t 'Add global time<br />Everyone sees global times in their own time zone.' }}" data-tippy-maxWidth="none" data-tippy-allowHtml="true"></a>
-<a role="button" class="compose_control_button compose_giphy_link {{#unless giphy_enabled }} hide {{/unless}}" aria-label="{{t 'Add GIF' }}" data-tippy-content="{{t 'Add GIF' }}">
-    <i class="compose_gif_icon zulip-icon zulip-icon-gif" tabindex=0></i>
-</a>
+<a role="button" class="compose_control_button compose_gif_icon {{#unless giphy_enabled }} hide {{/unless}} zulip-icon zulip-icon-gif" aria-label="{{t 'Add GIF' }}" tabindex=0 data-tippy-content="{{t 'Add GIF' }}"></a>
 <a role="button" class="message-control-link" tabindex=0 data-overlay-trigger="message-formatting">{{t 'Help' }}</a>
