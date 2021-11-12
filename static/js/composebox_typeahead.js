@@ -226,6 +226,7 @@ function handle_keydown(e) {
                     // typing a next message!
                     $("#compose-send-button").trigger("focus");
                     e.preventDefault();
+                    e.stopPropagation();
                 }
             } else {
                 // Enter
