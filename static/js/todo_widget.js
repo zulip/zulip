@@ -191,7 +191,7 @@ export function activate(opts) {
         elem.find("ul.todo-widget").html(html);
         elem.find(".widget-error").text("");
 
-        elem.find("button.task").on("click", (e) => {
+        elem.find("input.task").on("click", (e) => {
             e.stopPropagation();
             const key = $(e.target).attr("data-key");
 
