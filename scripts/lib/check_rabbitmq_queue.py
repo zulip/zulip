@@ -52,7 +52,7 @@ CRITICAL_SECONDS_TO_CLEAR: DefaultDict[str, int] = defaultdict(
 
 
 def analyze_queue_stats(
-    queue_name: str, stats: Dict[str, Any], queue_count_rabbitmqctl: int
+    queue_name: str, stats: Dict[str, Any], old_stats: Dict[str, Any], queue_count_rabbitmqctl: int
 ) -> Dict[str, Any]:
     now = int(time.time())
     if stats == {}:
@@ -77,6 +77,28 @@ def analyze_queue_stats(
             name=queue_name,
             message="queue appears to be stuck, last update {}, queue size {}".format(
                 stats["update_time"], queue_count_rabbitmqctl
+            ),
+        )
+
+    if (
+        old_stats
+        and now - stats["update_time"] <= 180
+        and stats["recent_average_consume_time"] is None
+        and now - old_stats["update_time"] > 180
+        and queue_count_rabbitmqctl > 10
+    ):
+        # It's likely the worker keeps restarting and isn't processing events.
+        # This will trigger a false alarm if a worker is started after >180s of downtime and
+        # there is a number of events in the queue - and will resolve after a while once the
+        # worker has calculated its average consume time and updated the stats. That should be okay
+        # because restarting after significant downtime means something attention-worthy was
+        # happening anyway and it's likely other alerts will be triggered due to the accumulated
+        # backlog.
+        return dict(
+            status=CRITICAL,
+            name=queue_name,
+            message="queue may be continually restarting, last update {}, queue size {} old stats file last update {}".format(
+                stats["update_time"], queue_count_rabbitmqctl, old_stats["update_time"]
             ),
         )
 
@@ -154,23 +176,23 @@ def check_rabbitmq_queues() -> None:
         universal_newlines=True,
     ).strip()
     queue_stats: Dict[str, Dict[str, Any]] = {}
+    old_queue_stats: Dict[str, Dict[str, Any]] = {}
     queues_to_check = set(normal_queues).intersection(set(queues_with_consumers))
     for queue in queues_to_check:
         fn = queue + ".stats"
         file_path = os.path.join(queue_stats_dir, fn)
-        if not os.path.exists(file_path):
-            queue_stats[queue] = {}
-            continue
+        old_file_path = file_path + ".old"
 
-        with open(file_path) as f:
-            try:
-                queue_stats[queue] = json.load(f)
-            except json.decoder.JSONDecodeError:
-                queue_stats[queue] = {}
+        queue_stats[queue] = get_data_from_file(file_path)
+        old_queue_stats[queue] = get_data_from_file(old_file_path)
 
     results = []
     for queue_name, stats in queue_stats.items():
-        results.append(analyze_queue_stats(queue_name, stats, queue_counts_rabbitmqctl[queue_name]))
+        results.append(
+            analyze_queue_stats(
+                queue_name, stats, old_queue_stats[queue_name], queue_counts_rabbitmqctl[queue_name]
+            )
+        )
 
     results.extend(check_other_queues(queue_counts_rabbitmqctl))
 
@@ -188,3 +210,14 @@ def check_rabbitmq_queues() -> None:
         print(f"{now}|{status}|{states[status]}|{error_message}")
     else:
         print(f"{now}|{status}|{states[status]}|queues normal")
+
+
+def get_data_from_file(file_path: str) -> Dict[str, Any]:
+    if not os.path.exists(file_path):
+        return {}
+
+    with open(file_path) as f:
+        try:
+            return json.load(f)
+        except json.decoder.JSONDecodeError:
+            return {}

@@ -6,15 +6,41 @@ from scripts.lib.check_rabbitmq_queue import CRITICAL, OK, UNKNOWN, WARNING, ana
 
 class AnalyzeQueueStatsTests(TestCase):
     def test_no_stats_available(self) -> None:
-        result = analyze_queue_stats("name", {}, 0)
+        result = analyze_queue_stats("name", {}, {}, 0)
         self.assertEqual(result["status"], UNKNOWN)
 
     def test_queue_stuck(self) -> None:
         """Last update > 5 minutes ago and there's events in the queue."""
 
-        result = analyze_queue_stats("name", {"update_time": time.time() - 301}, 100)
+        result = analyze_queue_stats("name", {"update_time": time.time() - 301}, {}, 100)
         self.assertEqual(result["status"], CRITICAL)
         self.assertIn("queue appears to be stuck", result["message"])
+
+    def test_queue_stuck_in_restart_loop(self) -> None:
+        """
+        Worker keeps restarting and crashing without being able to process events,
+        meaning the .old stats file gets relatively old while current stats file stays
+        with a fresh timestamp.
+        """
+
+        now = time.time()
+        result = analyze_queue_stats(
+            "name",
+            {
+                "update_time": now,
+                "current_queue_size": 10000,
+                "recent_average_consume_time": None,
+            },
+            {
+                "update_time": now - 200,
+                "current_queue_size": 10000,
+                "recent_average_consume_time": 0.0001,
+            },
+            10000,
+        )
+
+        self.assertEqual(result["status"], CRITICAL)
+        self.assertIn("queue may be continually restarting", result["message"])
 
     def test_queue_just_started(self) -> None:
         """
@@ -28,6 +54,7 @@ class AnalyzeQueueStatsTests(TestCase):
                 "current_queue_size": 10000,
                 "recent_average_consume_time": None,
             },
+            {},
             10000,
         )
         self.assertEqual(result["status"], OK)
@@ -42,6 +69,7 @@ class AnalyzeQueueStatsTests(TestCase):
                 "queue_last_emptied_timestamp": time.time() - 10000,
                 "recent_average_consume_time": 1,
             },
+            {},
             10000,
         )
         self.assertEqual(result["status"], CRITICAL)
@@ -56,6 +84,7 @@ class AnalyzeQueueStatsTests(TestCase):
                 "queue_last_emptied_timestamp": time.time() - 10000,
                 "recent_average_consume_time": 0.0001,
             },
+            {},
             10000,
         )
         self.assertEqual(result["status"], OK)
@@ -70,6 +99,7 @@ class AnalyzeQueueStatsTests(TestCase):
                     "queue_last_emptied_timestamp": time.time() - 10000,
                     "recent_average_consume_time": 1,
                 },
+                {},
                 11,
             )
             self.assertEqual(result["status"], WARNING)
@@ -83,6 +113,7 @@ class AnalyzeQueueStatsTests(TestCase):
                     "queue_last_emptied_timestamp": time.time() - 10000,
                     "recent_average_consume_time": 1,
                 },
+                {},
                 9,
             )
             self.assertEqual(result["status"], OK)

@@ -234,9 +234,11 @@ class QueueProcessingWorker(ABC):
         self.idle = True
         self.last_statistics_update_time = 0.0
 
-        self.update_statistics(0)
+        self.update_statistics(0, backup_old_stats=True)
 
-    def update_statistics(self, remaining_local_queue_size: int) -> None:
+    def update_statistics(
+        self, remaining_local_queue_size: int, backup_old_stats: bool = False
+    ) -> None:
         total_seconds = sum(seconds for _, seconds in self.recent_consume_times)
         total_events = sum(events_number for events_number, _ in self.recent_consume_times)
         if total_events == 0:
@@ -261,8 +263,37 @@ class QueueProcessingWorker(ABC):
                 f.write(
                     orjson.dumps(stats_dict, option=orjson.OPT_APPEND_NEWLINE | orjson.OPT_INDENT_2)
                 )
+            if backup_old_stats:
+                self.backup_old_stats_if_needed(fn)
             os.rename(tmp_fn, fn)
         self.last_statistics_update_time = time.time()
+
+    def backup_old_stats_if_needed(self, fn: str) -> None:
+        """
+        A backup file with .old suffix will almost always be created upon
+        the start of a queue worker. This file will contains the final stats
+        from the last *real* run. We emphasize *real*, because runs in which
+        no events were processed are discounted.
+        """
+        if not os.path.exists(fn):
+            return
+
+        with open(fn, "rb") as f:
+            try:
+                data = orjson.loads(f.read())
+            except orjson.JSONDecodeError:
+                # Backing up an invalid data file is pointless.
+                return
+
+        fn_old = fn + ".old"
+        if data.get("recent_average_consume_time") is None and os.path.exists(fn_old):
+            # If we don't have recent_average_consume_time data,
+            # that means the worker was started recently enough
+            # that it hasn't had time to estimate this number yet.
+            # That makes the it not worth overwriting the old stats file.
+            return
+
+        os.rename(fn, fn_old)
 
     def get_remaining_local_queue_size(self) -> int:
         if self.q is not None:
