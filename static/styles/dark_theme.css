@@ -342,6 +342,10 @@ body.night-mode {
         border-color: transparent;
     }
 
+    .compose_control_buttons_container .divider {
+        color: hsla(236, 33%, 90%, 0.5);
+    }
+
     /* Not that .message_row (below) needs to be more contrast on dark mode */
     #compose-content,
     .message_list .recipient_row,
