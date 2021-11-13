@@ -468,6 +468,12 @@ input.recipient_box {
         padding: 0 4px;
         align-self: center;
     }
+
+    .divider {
+        color: hsl(0, 0%, 88%);
+        font-size: 20px;
+        margin: 0 3px;
+    }
 }
 
 .compose_right_float_container {
