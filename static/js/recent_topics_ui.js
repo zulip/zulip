@@ -639,6 +639,7 @@ function filter_buttons() {
 }
 
 export function hide() {
+    $("#message_view_header_underpadding").show();
     $("#message_feed_container").show();
     $("#recent_topics_view").hide();
     set_visible(false);
@@ -648,7 +649,6 @@ export function hide() {
     // focused element.
     $("#recent_topics_search").trigger("blur");
 
-    $("#message_view_header_underpadding").show();
     $(".header").css("padding-bottom", "10px");
 
     // This solves a bug with message_view_header
