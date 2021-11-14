@@ -136,7 +136,7 @@
 .dialog_submit_button {
     margin-left: 12px;
     background-color: hsl(214, 100%, 31%);
-    color: hsl(0, 0%, 100%);
+    color: hsl(0, 0%, 100%) !important;
 }
 
 @keyframes mmfadeIn {
