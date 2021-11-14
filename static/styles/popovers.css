@@ -692,8 +692,10 @@ ul {
     }
 
     #topic_stream_edit_form_error {
-        background-color: hsla(0, 70%, 87%, 0.7);
-        color: hsl(0, 100%, 50%);
+        background-color: transparent;
+        color: hsl(2, 46%, 68%);
+        border-color: hsl(2, 46%, 68%);
+        margin-bottom: 10px;
     }
 
     .topic_stream_edit_header {

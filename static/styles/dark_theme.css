@@ -442,6 +442,7 @@ body.night-mode {
     .clear_search_button:disabled:hover,
     #user-groups .save-instructions,
     .close,
+    .send-status-close,
     #user_presences li:hover .user-list-sidebar-menu-icon,
     li.top_left_all_messages:hover .all-messages-sidebar-menu-icon,
     li.top_left_starred_messages:hover .starred-messages-sidebar-menu-icon,
