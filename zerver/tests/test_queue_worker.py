@@ -73,8 +73,8 @@ class FakeClient:
 
 
 @contextmanager
-def simulated_queue_client(client: Callable[[], object]) -> Iterator[None]:
-    with patch.object(queue_processors, "SimpleQueueClient", client):
+def simulated_queue_client(client: FakeClient) -> Iterator[None]:
+    with patch.object(queue_processors, "SimpleQueueClient", lambda *args, **kwargs: client):
         yield
 
 
@@ -108,7 +108,7 @@ class WorkerTest(ZulipTestCase):
         )
         fake_client.enqueue("user_activity", data_old_format)
 
-        with simulated_queue_client(lambda: fake_client):
+        with simulated_queue_client(fake_client):
             worker = queue_processors.UserActivityWorker()
             worker.setup()
             worker.start()
@@ -123,7 +123,7 @@ class WorkerTest(ZulipTestCase):
         # up. Ideally, we'd use an event with a slightly newer
         # time, but it's not really important.
         fake_client.enqueue("user_activity", data)
-        with simulated_queue_client(lambda: fake_client):
+        with simulated_queue_client(fake_client):
             worker = queue_processors.UserActivityWorker()
             worker.setup()
             worker.start()
@@ -230,7 +230,7 @@ class WorkerTest(ZulipTestCase):
             self.assertEqual(row.mentioned_user_group_id, mentioned_user_group_id)
 
         with send_mock as sm, timer_mock as tm:
-            with simulated_queue_client(lambda: fake_client):
+            with simulated_queue_client(fake_client):
                 self.assertFalse(timer.is_alive())
 
                 time_zero = datetime.datetime(2021, 1, 1, tzinfo=datetime.timezone.utc)
@@ -355,7 +355,7 @@ class WorkerTest(ZulipTestCase):
         )
 
         with send_mock as sm, timer_mock as tm:
-            with simulated_queue_client(lambda: fake_client):
+            with simulated_queue_client(fake_client):
                 time_zero = datetime.datetime(2021, 1, 1, tzinfo=datetime.timezone.utc)
                 # Verify that we make forward progress if one of the messages throws an exception
                 fake_client.enqueue("missedmessage_emails", hamlet_event1)
@@ -406,7 +406,7 @@ class WorkerTest(ZulipTestCase):
                 "message_ids": [1],
             }
 
-        with simulated_queue_client(lambda: fake_client):
+        with simulated_queue_client(fake_client):
             worker = queue_processors.PushNotificationsWorker()
             worker.setup()
             with patch(
@@ -487,7 +487,7 @@ class WorkerTest(ZulipTestCase):
         for element in data:
             fake_client.enqueue("email_mirror", element)
 
-        with simulated_queue_client(lambda: fake_client):
+        with simulated_queue_client(fake_client):
             worker = queue_processors.MirrorWorker()
             worker.setup()
             worker.start()
@@ -512,7 +512,7 @@ class WorkerTest(ZulipTestCase):
         for element in data:
             fake_client.enqueue("email_mirror", element)
 
-        with simulated_queue_client(lambda: fake_client), self.assertLogs(
+        with simulated_queue_client(fake_client), self.assertLogs(
             "zerver.worker.queue_processors", level="WARNING"
         ) as warn_logs:
             start_time = time.time()
@@ -589,7 +589,7 @@ class WorkerTest(ZulipTestCase):
         ) -> None:
             fake_client.enqueue(queue_name, event)
 
-        with simulated_queue_client(lambda: fake_client):
+        with simulated_queue_client(fake_client):
             worker = queue_processors.EmailSendingWorker()
             worker.setup()
             with patch(
@@ -636,7 +636,7 @@ class WorkerTest(ZulipTestCase):
         for element in data:
             fake_client.enqueue("invites", element)
 
-        with simulated_queue_client(lambda: fake_client):
+        with simulated_queue_client(fake_client):
             worker = queue_processors.ConfirmationEmailWorker()
             worker.setup()
             with patch("zerver.lib.actions.send_email"), patch(
@@ -665,7 +665,7 @@ class WorkerTest(ZulipTestCase):
         except OSError:  # nocoverage # error handling for the directory not existing
             pass
 
-        with simulated_queue_client(lambda: fake_client):
+        with simulated_queue_client(fake_client):
             worker = UnreliableWorker()
             worker.setup()
             with self.assertLogs(level="ERROR") as m:
@@ -702,7 +702,7 @@ class WorkerTest(ZulipTestCase):
         except OSError:  # nocoverage # error handling for the directory not existing
             pass
 
-        with simulated_queue_client(lambda: fake_client):
+        with simulated_queue_client(fake_client):
             loopworker = UnreliableLoopWorker()
             loopworker.setup()
             with self.assertLogs(level="ERROR") as m:
@@ -745,7 +745,7 @@ class WorkerTest(ZulipTestCase):
         except OSError:  # nocoverage # error handling for the directory not existing
             pass
 
-        with simulated_queue_client(lambda: fake_client):
+        with simulated_queue_client(fake_client):
             worker = TimeoutWorker()
             worker.setup()
             worker.ENABLE_TIMEOUTS = True
@@ -785,7 +785,7 @@ class WorkerTest(ZulipTestCase):
             },
         )
 
-        with simulated_queue_client(lambda: fake_client):
+        with simulated_queue_client(fake_client):
             worker = TimeoutWorker()
             worker.setup()
             worker.ENABLE_TIMEOUTS = True
