@@ -47,7 +47,7 @@ Event = Dict[str, Any]
 
 
 class FakeClient:
-    def __init__(self) -> None:
+    def __init__(self, prefetch: int = 0) -> None:
         self.queues: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
 
     def enqueue(self, queue_name: str, data: Dict[str, Any]) -> None:
