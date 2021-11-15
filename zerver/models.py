@@ -1595,7 +1595,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # compatibility in Zulip APIs where users are referred to by their
     # email address, not their ID; it should be used in all API use cases.
     #
-    # Both fields are unique within a realm (in a case-insensitive fashion).
+    # Both fields are unique within a realm (in a case-insensitive
+    # fashion). Since Django's unique_together is case sensitive, this
+    # is enforced via SQL indexes created by
+    # zerver/migrations/0295_case_insensitive_email_indexes.py.
     delivery_email: str = models.EmailField(blank=False, db_index=True)
     email: str = models.EmailField(blank=False, db_index=True)
 
