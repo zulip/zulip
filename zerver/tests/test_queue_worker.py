@@ -4,8 +4,9 @@ import os
 import signal
 import time
 from collections import defaultdict
+from contextlib import contextmanager
 from inspect import isabstract
-from typing import Any, Callable, Dict, List, Mapping, Optional
+from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional
 from unittest.mock import MagicMock, patch
 
 import orjson
@@ -20,7 +21,7 @@ from zerver.lib.rate_limiter import RateLimiterLockingException
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 from zerver.lib.send_email import EmailNotDeliveredException, FromAddress
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import mock_queue_publish, simulated_queue_client
+from zerver.lib.test_helpers import mock_queue_publish
 from zerver.models import (
     NotificationTriggers,
     PreregistrationUser,
@@ -45,34 +46,41 @@ from zerver.worker.queue_processors import (
 Event = Dict[str, Any]
 
 
+class FakeClient:
+    def __init__(self) -> None:
+        self.queues: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+
+    def enqueue(self, queue_name: str, data: Dict[str, Any]) -> None:
+        self.queues[queue_name].append(data)
+
+    def start_json_consumer(
+        self,
+        queue_name: str,
+        callback: Callable[[List[Dict[str, Any]]], None],
+        batch_size: int = 1,
+        timeout: Optional[int] = None,
+    ) -> None:
+        chunk: List[Dict[str, Any]] = []
+        queue = self.queues[queue_name]
+        while queue:
+            chunk.append(queue.pop(0))
+            if len(chunk) >= batch_size or not len(queue):
+                callback(chunk)
+                chunk = []
+
+    def local_queue_size(self) -> int:
+        return sum(len(q) for q in self.queues.values())
+
+
+@contextmanager
+def simulated_queue_client(client: Callable[[], object]) -> Iterator[None]:
+    with patch.object(queue_processors, "SimpleQueueClient", client):
+        yield
+
+
 class WorkerTest(ZulipTestCase):
-    class FakeClient:
-        def __init__(self) -> None:
-            self.queues: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
-
-        def enqueue(self, queue_name: str, data: Dict[str, Any]) -> None:
-            self.queues[queue_name].append(data)
-
-        def start_json_consumer(
-            self,
-            queue_name: str,
-            callback: Callable[[List[Dict[str, Any]]], None],
-            batch_size: int = 1,
-            timeout: Optional[int] = None,
-        ) -> None:
-            chunk: List[Dict[str, Any]] = []
-            queue = self.queues[queue_name]
-            while queue:
-                chunk.append(queue.pop(0))
-                if len(chunk) >= batch_size or not len(queue):
-                    callback(chunk)
-                    chunk = []
-
-        def local_queue_size(self) -> int:
-            return sum(len(q) for q in self.queues.values())
-
     def test_UserActivityWorker(self) -> None:
-        fake_client = self.FakeClient()
+        fake_client = FakeClient()
 
         user = self.example_user("hamlet")
         UserActivity.objects.filter(
@@ -174,7 +182,7 @@ class WorkerTest(ZulipTestCase):
 
         events = [hamlet_event1, hamlet_event2, othello_event]
 
-        fake_client = self.FakeClient()
+        fake_client = FakeClient()
         for event in events:
             fake_client.enqueue("missedmessage_emails", event)
 
@@ -381,7 +389,7 @@ class WorkerTest(ZulipTestCase):
         functions to immediately produce the effect we want, to test its handling by the queue
         processor.
         """
-        fake_client = self.FakeClient()
+        fake_client = FakeClient()
 
         def fake_publish(
             queue_name: str, event: Dict[str, Any], processor: Callable[[Any], None]
@@ -466,7 +474,7 @@ class WorkerTest(ZulipTestCase):
 
     @patch("zerver.worker.queue_processors.mirror_email")
     def test_mirror_worker(self, mock_mirror_email: MagicMock) -> None:
-        fake_client = self.FakeClient()
+        fake_client = FakeClient()
         stream = get_stream("Denmark", get_realm("zulip"))
         stream_to_address = encode_email_address(stream)
         data = [
@@ -489,7 +497,7 @@ class WorkerTest(ZulipTestCase):
     @patch("zerver.worker.queue_processors.mirror_email")
     @override_settings(RATE_LIMITING_MIRROR_REALM_RULES=[(10, 2)])
     def test_mirror_worker_rate_limiting(self, mock_mirror_email: MagicMock) -> None:
-        fake_client = self.FakeClient()
+        fake_client = FakeClient()
         realm = get_realm("zulip")
         RateLimitedRealmMirror(realm).clear_history()
         stream = get_stream("Denmark", realm)
@@ -565,7 +573,7 @@ class WorkerTest(ZulipTestCase):
     def test_email_sending_worker_retries(self) -> None:
         """Tests the retry_send_email_failures decorator to make sure it
         retries sending the email 3 times and then gives up."""
-        fake_client = self.FakeClient()
+        fake_client = FakeClient()
 
         data = {
             "template_prefix": "zerver/emails/confirm_new_email",
@@ -597,7 +605,7 @@ class WorkerTest(ZulipTestCase):
         self.assertEqual(data["failed_tries"], 1 + MAX_REQUEST_RETRIES)
 
     def test_invites_worker(self) -> None:
-        fake_client = self.FakeClient()
+        fake_client = FakeClient()
         inviter = self.example_user("iago")
         prereg_alice = PreregistrationUser.objects.create(
             email=self.nonreg_email("alice"), referred_by=inviter, realm=inviter.realm
@@ -647,7 +655,7 @@ class WorkerTest(ZulipTestCase):
                     raise Exception("Worker task not performing as expected!")
                 processed.append(data["type"])
 
-        fake_client = self.FakeClient()
+        fake_client = FakeClient()
         for msg in ["good", "fine", "unexpected behaviour", "back to normal"]:
             fake_client.enqueue("unreliable_worker", {"type": msg})
 
@@ -727,7 +735,7 @@ class WorkerTest(ZulipTestCase):
                     time.sleep(5)
                 processed.append(data["type"])
 
-        fake_client = self.FakeClient()
+        fake_client = FakeClient()
         for msg in ["good", "fine", "timeout", "back to normal"]:
             fake_client.enqueue("timeout_worker", {"type": msg})
 
@@ -767,7 +775,7 @@ class WorkerTest(ZulipTestCase):
                 pid = os.getpid()
                 os.kill(pid, signal.SIGALRM)
 
-        fake_client = self.FakeClient()
+        fake_client = FakeClient()
         fake_client.enqueue(
             "timeout_worker",
             {
