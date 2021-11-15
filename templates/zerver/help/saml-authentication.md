@@ -42,7 +42,7 @@ how to configure these SAML providers to work with Zulip.
 
 1. Navigate to the OneLogin Applications page, and click "Add App".
 
-1. Search for the "SAML Test Connector (IdP w/ attr w/ sign response)" app and select it.
+1. Search for the "SAML Custom Connector (Advanced)" app and select it.
 
 1. Set a name and logo according to your preferences and click "Save". This doesn't affect anything in Zulip,
    but will be shown on your OneLogin Applications page.
@@ -52,6 +52,7 @@ how to configure these SAML providers to work with Zulip.
     * Set `https://zulipchat.com` as the Audience.
     * Set `https://auth.zulipchat.com/complete/saml/` as the Recipient, ACS URL
       and ACS URL Validator.
+    * Leave the remaining fields as they are.
 
 1. Go to the "Parameters" section. Ignore the pre-configured parameters that are already there
    and add custom ones to match the following screenshot:
