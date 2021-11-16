@@ -1300,13 +1300,13 @@ export class MessageListView {
         subscribed,
         deactivated,
         just_unsubscribed,
-        show_button,
+        can_toggle_subscription,
         is_spectator,
     ) {
         const rendered_trailing_bookend = $(
             render_bookend({
                 stream_name,
-                trailing: show_button,
+                can_toggle_subscription,
                 subscribed,
                 deactivated,
                 just_unsubscribed,
