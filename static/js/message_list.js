@@ -253,10 +253,7 @@ export class MessageList {
             show_button = false;
         } else if (!subscribed && !this.last_message_historical) {
             just_unsubscribed = true;
-
-            // For invite only streams hide the resubscribe button
-            // Hide button for guest users and spectators
-            show_button = !page_params.is_guest && !sub.invite_only;
+            show_button = stream_data.can_toggle_subscription(sub);
         }
         this.view.render_trailing_bookend(
             stream_name,
