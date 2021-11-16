@@ -59,6 +59,10 @@ export function maybe_disable_widgets() {
         .prop("disabled", true);
 
     $(".organization-box [data-name='organization-settings']")
+        .find(".dropdown_list_reset_button")
+        .hide();
+
+    $(".organization-box [data-name='organization-settings']")
         .find(".control-label-disabled")
         .addClass("enabled");
 
