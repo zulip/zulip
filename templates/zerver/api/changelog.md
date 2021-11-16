@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 5.0
 
+**Feature level 108**
+
+* In the mobile application authentication flow, the authenticated
+  user's `user_id` is now included in the parameters encoded in the
+  final `zulip://` redirect URL.
+
 **Feature level 107**
 * [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
   [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):

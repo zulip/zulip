@@ -382,6 +382,7 @@ def create_response_for_otp_flow(
     params = {
         encrypted_key_field_name: otp_encrypt_api_key(key, otp),
         "email": user_profile.delivery_email,
+        "user_id": user_profile.id,
         "realm": realm_uri,
     }
     # We can't use HttpResponseRedirect, since it only allows HTTP(S) URLs
