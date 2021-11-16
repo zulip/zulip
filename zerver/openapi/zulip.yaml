@@ -3412,24 +3412,214 @@ paths:
                                   description: |
                                     An object containing the properties that have changed.
                                   properties:
+                                    add_custom_emoji_policy:
+                                      type: integer
+                                      description: |
+                                        The policy for which users can add custom emoji in this organization.
                                     allow_edit_history:
                                       type: boolean
                                       description: |
                                         Whether this organization is configured to allow users to access
                                         [message edit history](/help/view-a-messages-edit-history).
+                                    allow_message_editing:
+                                      type: boolean
+                                      description: |
+                                        Whether this organizations [message edit policy](/help/configure-message-editing-and-deletion)
+                                        allows editing the content of messages.
+                                    authentication_methods:
+                                      type: object
+                                      additionalProperties:
+                                        description: |
+                                          Boolean describing whether the authentication method (i.e its key)
+                                          is enabled in this organization.
+                                        type: boolean
+                                      description: |
+                                        Dictionary of 'authentication_method_name': 'boolean' with each
+                                        entry describing whether the authentication name can be used for
+                                        authenticating into the organization.
                                     bot_creation_policy:
                                       type: integer
                                       description: |
                                         The policy for which users can create bot users in this organization.
-                                    create_stream_policy:
+                                    community_topic_editing_limit_seconds:
                                       type: integer
                                       description: |
-                                        The policy for which users can create streams in this organization.
+                                        Messages sent more than this many seconds ago cannot have
+                                        their topics edited by other users with this organization's
+                                        [message edit policy](/help/configure-message-editing-and-deletion).
+
+                                        **Changes**: New in Zulip 3.0 (feature level 11). Previously this
+                                        value was hardcoded to 86400 seconds (1 day).
+                                    create_public_stream_policy:
+                                      type: integer
+                                      description: |
+                                        The policy for which users can
+                                        create public streams in this organization.
+
+                                        **Changes**: Before Zulip 5.0 (feature level 102), permission to
+                                        create streams was controlled by the `create_stream_policy` setting.
+                                    create_private_stream_policy:
+                                      type: integer
+                                      description: |
+                                        The policy for which users can
+                                        create private streams in this organization.
+
+                                        **Changes**: Before Zulip 5.0 (feature level 102), permission to
+                                        create streams was controlled by the `create_stream_policy` setting.
+                                    default_code_block_language:
+                                      type: string
+                                      nullable: true
+                                      description: |
+                                        The default pygments language code to be used for a code blocks
+                                        in this organization. Null if no default has been set.
+                                    default_language:
+                                      type: string
+                                      description: |
+                                        The default language for the organization.
+                                    description:
+                                      type: string
+                                      description: |
+                                        The description of the organization, used on login and registration pages.
+                                    digest_emails_enabled:
+                                      type: boolean
+                                      description: |
+                                        Whether the organization has enabled [weekly digest emails](/help/digest-emails).
+                                    digest_weekday:
+                                      type: integer
+                                      description: |
+                                        The day of the week when the organization will send
+                                        its weekly digest email to inactive users.
+                                    disallow_disposable_email_addresses:
+                                      type: boolean
+                                      description: |
+                                        Whether the organization disallows disposable email
+                                        addresses.
+                                    edit_topic_policy:
+                                      type: integer
+                                      description: |
+                                        The policy for which users can edit topics of any message.
+
+                                        - 1 = members only
+                                        - 2 = admins only
+                                        - 3 = full members only
+                                        - 4 = moderators only
+                                        - 5 = everyone
+
+                                        **Changes**: New in Zulip 5.0 (feature level 75), replacing the
+                                        previous `allow_community_topic_editing` boolean.
+                                    email_address_visibility:
+                                      type: integer
+                                      description: |
+                                        The policy for which users in this organization can see the
+                                        real email addresses of other users.
+
+                                        - 1 = everyone
+                                        - 2 = members only
+                                        - 3 = administrators only
+                                        - 4 = nobody (though note that administrators can change this setting).
+                                        - 5 = moderators only
+                                    email_changes_disabled:
+                                      type: boolean
+                                      description: |
+                                        Whether users are allowed to change their own email address in this
+                                        organization. This is typically disabled for organizations that
+                                        synchronize accounts from LDAP or a similar corporate database.
+                                    emails_restricted_to_domains:
+                                      type: boolean
+                                      description: |
+                                        Whether [new users joining](/help/allow-anyone-to-join-without-an-invitation)
+                                        this organization are required to have an email
+                                        address in one of the `realm_domains` configured for the organization.
+                                    giphy_rating:
+                                      type: integer
+                                      description: |
+                                        Maximum rating of the GIFs that will be retrieved from GIPHY.
+
+                                        **Changes**: New in Zulip 4.0 (feature level 55).
+                                    icon_source:
+                                      type: string
+                                      description: |
+                                        String indicating whether the organization's
+                                        [profile icon](/help/create-your-organization-profile) was uploaded
+                                        by a user or is the default. Useful for UI allowing editing the organization's icon.
+
+                                        - "G" means generated by Gravatar (the default).
+                                        - "U" means uploaded by an organization administrator.
+                                    icon_url:
+                                      type: string
+                                      description: |
+                                        The URL of the organization's [profile icon](/help/create-your-organization-profile).
+                                    inline_image_preview:
+                                      type: boolean
+                                      description: |
+                                        Whether this organization has been configured to enable
+                                        [previews of linked images](/help/allow-image-link-previews).
+                                    inline_url_embed_preview:
+                                      type: boolean
+                                      description: |
+                                        Whether this organization has been configured to enable
+                                        [previews of linked websites](/help/allow-image-link-previews).
+                                    invite_required:
+                                      type: boolean
+                                      description: |
+                                        Whether an invitation is required to join this organization.
+                                    invite_to_realm_policy:
+                                      type: integer
+                                      description: |
+                                        The policy for which users can invite other users
+                                        to join the organization.
+
+                                        **Changes**: New in Zulip 4.0 (feature level 50) replacing the
+                                        previous `invite_by_admins_only` boolean.
                                     invite_to_stream_policy:
                                       type: integer
                                       description: |
                                         The policy for which users can add other users to streams in this
                                         organization.
+                                    logo_source:
+                                      type: string
+                                      description: |
+                                        String indicating whether the organization's
+                                        [profile wide logo](/help/create-your-organization-profile) was uploaded
+                                        by a user or is the default. Useful for UI allowing editing the
+                                        organization's wide logo.
+
+                                        - "D" means the logo is the default Zulip logo.
+                                        - "U" means uploaded by an organization administrator.
+                                    logo_url:
+                                      type: string
+                                      description: |
+                                        The URL of the organization's wide logo configured in the
+                                        [organization profile](/help/create-your-organization-profile).
+                                    mandatory_topics:
+                                      type: boolean
+                                      description: |
+                                        Whether [topics are required](/help/require-topics) for messages in this organization.
+                                    message_content_allowed_in_email_notifications:
+                                      type: boolean
+                                      description: |
+                                        Whether notification emails in this organization are allowed to
+                                        contain Zulip the message content, or simply indicate that a new
+                                        message was sent.
+                                    message_content_delete_limit_seconds:
+                                      type: integer
+                                      nullable: true
+                                      description: |
+                                        Messages sent more than this many seconds ago cannot be deleted
+                                        with this organization's
+                                        [message deletion policy](/help/configure-message-editing-and-deletion).
+
+                                        Will not be 0. A 'null' value means no limit: messages can be deleted
+                                        regardless of how long ago they were sent.
+
+                                        **Changes**: No limit was represented using the
+                                        special value `0` before Zulip 5.0 (feature level 100).
+                                    message_content_edit_limit_seconds:
+                                      type: integer
+                                      description: |
+                                        Messages sent more than this many seconds ago cannot be edited
+                                        with this organization's
+                                        [message edit policy](/help/configure-message-editing-and-deletion).
                                     move_messages_between_streams_policy:
                                       type: integer
                                       description: |
@@ -3441,6 +3631,97 @@ paths:
                                         - 4 = Moderators only
 
                                         **Changes**: New in Zulip 4.0 (feature level 56)
+                                    name:
+                                      type: string
+                                      description: |
+                                        The name of the organization, used in login pages etc.
+                                    name_changes_disabled:
+                                      type: boolean
+                                      description: |
+                                        Indicates whether users are
+                                        [allowed to change](/help/restrict-name-and-email-changes) their name
+                                        via the Zulip UI in this organization. Typically disabled
+                                        in organizations syncing this this type of account information
+                                        an external user database like LDAP.
+                                    night_logo_source:
+                                      type: string
+                                      description: |
+                                        String indicating whether the organization's night theme
+                                        [profile wide logo](/help/create-your-organization-profile) was uploaded
+                                        by a user or is the default. Useful for UI allowing editing the
+                                        organization's wide logo.
+
+                                        - "D" means the logo is the default Zulip logo.
+                                        - "U" means uploaded by an organization administrator.
+                                    night_logo_url:
+                                      type: string
+                                      description: |
+                                        The URL of the organization's night theme wide-format logo configured in the
+                                        [organization profile](/help/create-your-organization-profile).
+                                    notifications_stream_id:
+                                      type: integer
+                                      description: |
+                                        The ID of the stream to which notifications announcing the
+                                        creation of new streams are sent. -1 if such notifications are disabled.
+
+                                        Since these notifications are sent by the server, this field is
+                                        primarily relevant to clients containing UI for changing it.
+                                    plan_type:
+                                      type: integer
+                                      description: |
+                                        The plan type of the organization.
+
+                                        - 1 = Self-hosted organization (SELF_HOSTED)
+                                        - 2 = Zulip Cloud free plan (LIMITED)
+                                        - 3 = Zulip Cloud Standard plan (STANDARD)
+                                        - 4 = Zulip Cloud Standard plan, sponsored for free (STANDARD_FREE)
+                                    presence_disabled:
+                                      type: boolean
+                                      description: |
+                                        Whether online presence of other users is shown in this
+                                        organization.
+                                    private_message_policy:
+                                      type: integer
+                                      description: |
+                                        Policy for [who can send private messages](/help/restrict-private-messages)
+                                        in this organization.
+
+                                        - 1 = Everyone
+                                        - 2 = Nobody
+                                    send_welcome_emails:
+                                      type: boolean
+                                      description: |
+                                        Whether or not this organization is configured to send the standard Zulip
+                                        [welcome emails](/help/disable-welcome-emails) to new users joining the organization.
+                                    signup_notifications_stream_id:
+                                      type: integer
+                                      description: |
+                                        The ID of the stream to which notifications announcing
+                                        that new users have joined the organization are sent.
+                                        -1 if such notifications are disabled.
+
+                                        Since these notifications are sent by the server, this field is
+                                        primarily relevant to clients containing UI for changing it.
+                                    user_group_edit_policy:
+                                      type: integer
+                                      description: |
+                                        The organization's policy for [who can manage user groups
+                                        ](/help/restrict-user-group-management).
+
+                                        - 1 = All members can create and edit user groups
+                                        - 2 = Only organization administrators can create and edit user groups
+                                        - 3 = Only full members can create and edit user groups
+                                        - 4 = Only organization administrators and moderators can create and edit user groups
+                                    video_chat_provider:
+                                      type: integer
+                                      description: |
+                                        The configured video call provider for the organization.
+                                    waiting_period_threshold:
+                                      type: integer
+                                      description: |
+                                        Members whose accounts have been created at least this many days ago
+                                        will be treated as [full members](/help/restrict-permissions-of-new-members)
+                                        for the purpose of settings that restrict access to new members.
                                     wildcard_mention_policy:
                                       type: integer
                                       description: |
@@ -3459,267 +3740,6 @@ paths:
 
                                         **Changes**: New in Zulip 4.0 (feature level 33). Moderators option added in
                                         Zulip 4.0 (feature level 62).
-                                    description:
-                                      type: string
-                                      description: |
-                                        The description of the organization, used on login and registration pages.
-                                    giphy_rating:
-                                      type: integer
-                                      description: |
-                                        Maximum rating of the GIFs that will be retrieved from GIPHY.
-
-                                        **Changes**: New in Zulip 4.0 (feature level 55).
-                                    digest_emails_enabled:
-                                      type: boolean
-                                      description: |
-                                        Whether the organization has enabled [weekly digest emails](/help/digest-emails).
-                                    disallow_disposable_email_addresses:
-                                      type: boolean
-                                      description: |
-                                        Whether the organization disallows disposable email
-                                        addresses.
-                                    email_address_visibility:
-                                      type: integer
-                                      description: |
-                                        The policy for which users in this organization can see the
-                                        real email addresses of other users.
-
-                                        - 1 = everyone
-                                        - 2 = members only
-                                        - 3 = administrators only
-                                        - 4 = nobody (though note that administrators can change this setting).
-                                        - 5 = moderators only
-                                    email_changes_disabled:
-                                      type: boolean
-                                      description: |
-                                        Whether users are allowed to change their own email address in this
-                                        organization. This is typically disabled for organizations that
-                                        synchronize accounts from LDAP or a similar corporate database.
-                                    invite_required:
-                                      type: boolean
-                                      description: |
-                                        Whether an invitation is required to join this organization.
-                                    inline_image_preview:
-                                      type: boolean
-                                      description: |
-                                        Whether this organization has been configured to enable
-                                        [previews of linked images](/help/allow-image-link-previews).
-                                    inline_url_embed_preview:
-                                      type: boolean
-                                      description: |
-                                        Whether this organization has been configured to enable
-                                        [previews of linked websites](/help/allow-image-link-previews).
-                                    mandatory_topics:
-                                      type: boolean
-                                      description: |
-                                        Whether [topics are required](/help/require-topics) for messages in this organization.
-                                    name:
-                                      type: string
-                                      description: |
-                                        The name of the organization, used in login pages etc.
-                                    name_changes_disabled:
-                                      type: boolean
-                                      description: |
-                                        Indicates whether users are
-                                        [allowed to change](/help/restrict-name-and-email-changes) their name
-                                        via the Zulip UI in this organization. Typically disabled
-                                        in organizations syncing this this type of account information
-                                        an external user database like LDAP.
-                                    avatar_changes_disabled:
-                                      type: boolean
-                                      description: |
-                                        Indicates whether users are
-                                        [allowed to change](/help/restrict-name-and-email-changes) their avatar
-                                        via the Zulip UI in this organization. Typically disabled
-                                        in organizations syncing this this type of account information
-                                        an external user database like LDAP.
-                                    emails_restricted_to_domains:
-                                      type: boolean
-                                      description: |
-                                        Whether [new users joining](/help/allow-anyone-to-join-without-an-invitation)
-                                        this organization are required to have an email
-                                        address in one of the `realm_domains` configured for the organization.
-                                    send_welcome_emails:
-                                      type: boolean
-                                      description: |
-                                        Whether or not this organization is configured to send the standard Zulip
-                                        [welcome emails](/help/disable-welcome-emails) to new users joining the organization.
-                                    message_content_allowed_in_email_notifications:
-                                      type: boolean
-                                      description: |
-                                        Whether notification emails in this organization are allowed to
-                                        contain Zulip the message content, or simply indicate that a new
-                                        message was sent.
-                                    video_chat_provider:
-                                      type: integer
-                                      description: |
-                                        The configured video call provider for the organization.
-                                    waiting_period_threshold:
-                                      type: integer
-                                      description: |
-                                        Members whose accounts have been created at least this many days ago
-                                        will be treated as [full members](/help/restrict-permissions-of-new-members)
-                                        for the purpose of settings that restrict access to new members.
-                                    digest_weekday:
-                                      type: integer
-                                      description: |
-                                        The day of the week when the organization will send
-                                        its weekly digest email to inactive users.
-                                    private_message_policy:
-                                      type: integer
-                                      description: |
-                                        Policy for [who can send private messages](/help/restrict-private-messages)
-                                        in this organization.
-
-                                        - 1 = Everyone
-                                        - 2 = Nobody
-                                    user_group_edit_policy:
-                                      type: integer
-                                      description: |
-                                        The organization's policy for [who can manage user groups
-                                        ](/help/restrict-user-group-management).
-
-                                        - 1 = All members can create and edit user groups
-                                        - 2 = Only organization administrators can create and edit user groups
-                                        - 3 = Only full members can create and edit user groups
-                                        - 4 = Only organization administrators and moderators can create and edit user groups
-                                    default_code_block_language:
-                                      type: string
-                                      nullable: true
-                                      description: |
-                                        The default pygments language code to be used for a code blocks
-                                        in this organization. Null if no default has been set.
-                                    message_content_delete_limit_seconds:
-                                      type: integer
-                                      nullable: true
-                                      description: |
-                                        Messages sent more than this many seconds ago cannot be deleted
-                                        with this organization's
-                                        [message deletion policy](/help/configure-message-editing-and-deletion).
-
-                                        Will not be 0. A 'null' value means no limit: messages can be deleted
-                                        regardless of how long ago they were sent.
-
-                                        **Changes**: No limit was represented using the
-                                        special value `0` before Zulip 5.0 (feature level 100).
-                                    authentication_methods:
-                                      type: object
-                                      additionalProperties:
-                                        description: |
-                                          Boolean describing whether the authentication method (i.e its key)
-                                          is enabled in this organization.
-                                        type: boolean
-                                      description: |
-                                        Dictionary of 'authentication_method_name': 'boolean' with each
-                                        entry describing whether the authentication name can be used for
-                                        authenticating into the organization.
-                                    allow_message_editing:
-                                      type: boolean
-                                      description: |
-                                        Whether this organizations [message edit policy](/help/configure-message-editing-and-deletion)
-                                        allows editing the content of messages.
-                                    edit_topic_policy:
-                                      type: integer
-                                      description: |
-                                        The policy for which users can edit topics of any message.
-
-                                        - 1 = members only
-                                        - 2 = admins only
-                                        - 3 = full members only
-                                        - 4 = moderators only
-                                        - 5 = everyone
-
-                                        **Changes**: New in Zulip 5.0 (feature level 75), replacing the
-                                        previous `allow_community_topic_editing` boolean.
-                                    message_content_edit_limit_seconds:
-                                      type: integer
-                                      description: |
-                                        Messages sent more than this many seconds ago cannot be edited
-                                        with this organization's
-                                        [message edit policy](/help/configure-message-editing-and-deletion).
-                                    community_topic_editing_limit_seconds:
-                                      type: integer
-                                      description: |
-                                        Messages sent more than this many seconds ago cannot have
-                                        their topics edited by other users with this organization's
-                                        [message edit policy](/help/configure-message-editing-and-deletion).
-
-                                        **Changes**: New in Zulip 3.0 (feature level 11). Previously this
-                                        value was hardcoded to 86400 seconds (1 day).
-                                    icon_url:
-                                      type: string
-                                      description: |
-                                        The URL of the organization's [profile icon](/help/create-your-organization-profile).
-                                    icon_source:
-                                      type: string
-                                      description: |
-                                        String indicating whether the organization's
-                                        [profile icon](/help/create-your-organization-profile) was uploaded
-                                        by a user or is the default. Useful for UI allowing editing the organization's icon.
-
-                                        - "G" means generated by Gravatar (the default).
-                                        - "U" means uploaded by an organization administrator.
-                                    logo_url:
-                                      type: string
-                                      description: |
-                                        The URL of the organization's wide logo configured in the
-                                        [organization profile](/help/create-your-organization-profile).
-                                    logo_source:
-                                      type: string
-                                      description: |
-                                        String indicating whether the organization's
-                                        [profile wide logo](/help/create-your-organization-profile) was uploaded
-                                        by a user or is the default. Useful for UI allowing editing the
-                                        organization's wide logo.
-
-                                        - "D" means the logo is the default Zulip logo.
-                                        - "U" means uploaded by an organization administrator.
-                                    night_logo_url:
-                                      type: string
-                                      description: |
-                                        The URL of the organization's night theme wide-format logo configured in the
-                                        [organization profile](/help/create-your-organization-profile).
-                                    night_logo_source:
-                                      type: string
-                                      description: |
-                                        String indicating whether the organization's night theme
-                                        [profile wide logo](/help/create-your-organization-profile) was uploaded
-                                        by a user or is the default. Useful for UI allowing editing the
-                                        organization's wide logo.
-
-                                        - "D" means the logo is the default Zulip logo.
-                                        - "U" means uploaded by an organization administrator.
-                                    presence_disabled:
-                                      type: boolean
-                                      description: |
-                                        Whether online presence of other users is shown in this
-                                        organization.
-                                    plan_type:
-                                      type: integer
-                                      description: |
-                                        The plan type of the organization.
-
-                                        - 1 = Self-hosted organization (SELF_HOSTED)
-                                        - 2 = Zulip Cloud free plan (LIMITED)
-                                        - 3 = Zulip Cloud Standard plan (STANDARD)
-                                        - 4 = Zulip Cloud Standard plan, sponsored for free (STANDARD_FREE)
-                                    notifications_stream_id:
-                                      type: integer
-                                      description: |
-                                        The ID of the stream to which notifications announcing the
-                                        creation of new streams are sent. -1 if such notifications are disabled.
-
-                                        Since these notifications are sent by the server, this field is
-                                        primarily relevant to clients containing UI for changing it.
-                                    signup_notifications_stream_id:
-                                      type: integer
-                                      description: |
-                                        The ID of the stream to which notifications announcing
-                                        that new users have joined the organization are sent.
-                                        -1 if such notifications are disabled.
-
-                                        Since these notifications are sent by the server, this field is
-                                        primarily relevant to clients containing UI for changing it.
                                   additionalProperties: false
                               example:
                                 {
