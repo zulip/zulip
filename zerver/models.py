@@ -1520,10 +1520,10 @@ class UserBaseSettings(models.Model):
         **notification_setting_types,
         **dict(
             # Add new general settings here.
-            send_stream_typing_notifications=bool,
+            escape_navigates_to_default_view=bool,
             send_private_typing_notifications=bool,
             send_read_receipts=bool,
-            escape_navigates_to_default_view=bool,
+            send_stream_typing_notifications=bool,
         ),
     }
 
