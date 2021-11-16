@@ -43,15 +43,26 @@ class zulip::postgresql_backups {
     ],
   }
 
+  # Zulip 4.x and before used the `cron` resource here, which placed
+  # this in the postgres user's crontab, which was not discoverable.
+  # Removed 2021-11 in version 5.0; these lines can be removed when we
+  # drop support for upgrading from Zulip 4 or older.
   cron { 'pg_backup_and_purge':
-    ensure      => present,
+    ensure      => absent,
     command     => '/usr/local/bin/pg_backup_and_purge',
     environment => 'PATH=/bin:/usr/bin:/usr/local/bin',
     hour        => 2,
     minute      => 0,
     target      => 'postgres',
     user        => 'postgres',
-    require     => File['/usr/local/bin/pg_backup_and_purge'],
+  }
+  file { '/etc/cron.d/pg_backup_and_purge':
+    ensure  => present,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    source  => 'puppet:///modules/zulip/cron.d/pg-backup-and-purge',
+    require => File['/usr/local/bin/pg_backup_and_purge'],
   }
 
   file { "${zulip::common::nagios_plugins_dir}/zulip_postgresql_backups":
