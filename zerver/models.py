@@ -1488,26 +1488,26 @@ class UserBaseSettings(models.Model):
     )
 
     notification_settings_legacy = dict(
+        desktop_icon_count_display=int,
+        email_notifications_batching_period_seconds=int,
         enable_desktop_notifications=bool,
         enable_digest_emails=bool,
         enable_login_emails=bool,
         enable_marketing_emails=bool,
-        email_notifications_batching_period_seconds=int,
         enable_offline_email_notifications=bool,
         enable_offline_push_notifications=bool,
         enable_online_push_notifications=bool,
         enable_sounds=bool,
+        enable_stream_audible_notifications=bool,
         enable_stream_desktop_notifications=bool,
         enable_stream_email_notifications=bool,
         enable_stream_push_notifications=bool,
-        enable_stream_audible_notifications=bool,
-        wildcard_mentions_notify=bool,
         message_content_in_email_notifications=bool,
         notification_sound=str,
         pm_content_in_desktop_notifications=bool,
-        desktop_icon_count_display=int,
-        realm_name_in_notifications=bool,
         presence_enabled=bool,
+        realm_name_in_notifications=bool,
+        wildcard_mentions_notify=bool,
     )
 
     notification_setting_types = {
