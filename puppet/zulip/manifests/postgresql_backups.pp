@@ -12,8 +12,9 @@ class zulip::postgresql_backups {
     },
   }
   file { '/usr/local/bin/wal-g':
-    ensure => 'link',
-    target => "/usr/local/bin/wal-g-${wal_g_version}",
+    ensure  => 'link',
+    target  => "/usr/local/bin/wal-g-${wal_g_version}",
+    require => Zulip::Sha256_tarball_to['wal-g'],
   }
   file { '/usr/local/bin/env-wal-g':
     ensure  => file,
@@ -21,7 +22,10 @@ class zulip::postgresql_backups {
     group   => 'postgres',
     mode    => '0750',
     source  => 'puppet:///modules/zulip/postgresql/env-wal-g',
-    require => Package[$zulip::postgresql_common::postgresql],
+    require => [
+      Package[$zulip::postgresql_common::postgresql],
+      File['/usr/local/bin/wal-g'],
+    ],
   }
 
   file { '/usr/local/bin/pg_backup_and_purge':
