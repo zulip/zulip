@@ -1303,6 +1303,8 @@ export class MessageListView {
         can_toggle_subscription,
         is_spectator,
     ) {
+        // This is not the only place we render bookends; see also the
+        // partial in message_group.hbs, which do not set is_trailing_bookend.
         const rendered_trailing_bookend = $(
             render_bookend({
                 stream_name,
@@ -1311,6 +1313,7 @@ export class MessageListView {
                 deactivated,
                 just_unsubscribed,
                 is_spectator,
+                is_trailing_bookend: true,
             }),
         );
         rows.get_table(this.table_name).append(rendered_trailing_bookend);
