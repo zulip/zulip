@@ -1,5 +1,5 @@
 {{! Client-side Mustache template for rendering the trailing bookend.}}
-<div class="{{#if can_toggle_subscription}}trailing_bookend{{/if}} bookend sub-unsub-message">
+<div class="{{#if is_trailing_bookend}}trailing_bookend {{/if}}bookend sub-unsub-message">
     {{#if is_spectator}}
         <span class="recent-topics-link">
             <a href="#recent_topics">{{t "Browse recent topics" }}</a>
