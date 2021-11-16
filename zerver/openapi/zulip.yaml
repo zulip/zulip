@@ -3463,7 +3463,7 @@ paths:
                                       type: string
                                       description: |
                                         The description of the organization, used on login and registration pages.
-                                    realm_giphy_rating:
+                                    giphy_rating:
                                       type: integer
                                       description: |
                                         Maximum rating of the GIFs that will be retrieved from GIPHY.
@@ -3513,7 +3513,7 @@ paths:
                                       type: boolean
                                       description: |
                                         Whether [topics are required](/help/require-topics) for messages in this organization.
-                                    realm_name:
+                                    name:
                                       type: string
                                       description: |
                                         The name of the organization, used in login pages etc.
