@@ -3207,8 +3207,20 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent to all users in a Zulip organization when the
-                                configuration of the organization (realm) has changed.
+                                The simpler of two possible event types sent to all users
+                                in a Zulip organization when the configuration of the
+                                organization (realm) has changed.
+
+                                Often individual settings are migrated from this format to
+                                the [realm/update_dict](#realm-update_dict) event format when additional realm
+                                settings are added whose values are coupled to each other
+                                in some way. The specific values supported by this event
+                                type are documented in the [realm/update_dict](#realm-update_dict)
+                                documentation.
+
+                                A correct client implementation should convert these
+                                events into the corresponding [realm/update_dict](#realm-update_dict)
+                                event and then process that.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -3368,11 +3380,13 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent to all users in a Zulip organization when the
-                                configuration of the organization (realm) has changed.
+                                The more general of two event types that may be used when
+                                sending an event to all users in a Zulip organization when
+                                the configuration of the organization (realm) has changed.
 
-                                Unlike realm / update, supports multiple properties being changed
-                                in a single event.
+                                Unlike the simpler [realm/update](#realm-update) event format, this
+                                event type supports multiple properties being changed in a
+                                single event.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -3387,9 +3401,12 @@ paths:
                                     - update_dict
                                 property:
                                   type: string
+                                  deprecated: true
                                   description: |
                                     Always `"default"`. Present for backwards-compatibility with older
                                     clients that predate the `update_dict` event style.
+
+                                    **Deprecated** and will be removed in a future release.
                                 data:
                                   type: object
                                   description: |
