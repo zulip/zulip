@@ -312,6 +312,7 @@ run_test("bookend", ({override}) => {
 
     override(stream_data, "is_subscribed_by_name", () => is_subscribed);
     override(stream_data, "get_sub", () => ({invite_only}));
+    override(stream_data, "can_toggle_subscription", () => true);
 
     {
         const stub = make_stub();
@@ -323,13 +324,11 @@ run_test("bookend", ({override}) => {
             "subscribed",
             "deactivated",
             "just_unsubscribed",
-            "show_button",
         );
         assert.equal(bookend.stream_name, "IceCream");
         assert.equal(bookend.subscribed, true);
         assert.equal(bookend.deactivated, false);
         assert.equal(bookend.just_unsubscribed, false);
-        assert.equal(bookend.show_button, true);
     }
 
     list.last_message_historical = false;
@@ -345,13 +344,11 @@ run_test("bookend", ({override}) => {
             "subscribed",
             "deactivated",
             "just_unsubscribed",
-            "show_button",
         );
         assert.equal(bookend.stream_name, "IceCream");
         assert.equal(bookend.subscribed, false);
         assert.equal(bookend.deactivated, false);
         assert.equal(bookend.just_unsubscribed, true);
-        assert.equal(bookend.show_button, true);
     }
 
     // Test when the stream is privates (invite only)
@@ -367,13 +364,11 @@ run_test("bookend", ({override}) => {
             "subscribed",
             "deactivated",
             "just_unsubscribed",
-            "show_button",
         );
         assert.equal(bookend.stream_name, "IceCream");
         assert.equal(bookend.subscribed, false);
         assert.equal(bookend.deactivated, false);
         assert.equal(bookend.just_unsubscribed, true);
-        assert.equal(bookend.show_button, false);
     }
 
     list.last_message_historical = true;
@@ -388,13 +383,11 @@ run_test("bookend", ({override}) => {
             "subscribed",
             "deactivated",
             "just_unsubscribed",
-            "show_button",
         );
         assert.equal(bookend.stream_name, "IceCream");
         assert.equal(bookend.subscribed, false);
         assert.equal(bookend.deactivated, false);
         assert.equal(bookend.just_unsubscribed, false);
-        assert.equal(bookend.show_button, true);
     }
 });
 
