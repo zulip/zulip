@@ -244,23 +244,21 @@ export class MessageList {
 
         let deactivated = false;
         let just_unsubscribed = false;
-        let show_button = true;
         const subscribed = stream_data.is_subscribed_by_name(stream_name);
         const sub = stream_data.get_sub(stream_name);
+        const can_toggle_subscription =
+            sub !== undefined && stream_data.can_toggle_subscription(sub);
         if (sub === undefined) {
             deactivated = true;
-            // Hide the resubscribe button for streams that no longer exist.
-            show_button = false;
         } else if (!subscribed && !this.last_message_historical) {
             just_unsubscribed = true;
-            show_button = stream_data.can_toggle_subscription(sub);
         }
         this.view.render_trailing_bookend(
             stream_name,
             subscribed,
             deactivated,
             just_unsubscribed,
-            show_button,
+            can_toggle_subscription,
             page_params.is_spectator,
         );
     }
