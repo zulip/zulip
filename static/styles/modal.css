@@ -141,6 +141,8 @@
 .dialog_submit_button {
     margin-left: 12px;
     background-color: hsl(214, 100%, 31%);
+    outline: 1px solid transparent;
+    padding: 9px 20px;
     color: hsl(0, 0%, 100%) !important;
 }
 
