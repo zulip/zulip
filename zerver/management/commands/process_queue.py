@@ -75,7 +75,7 @@ class Command(BaseCommand):
                 if not settings.DEVELOPMENT:
                     logger.info("launching queue worker thread " + queue_name)
                 cnt += 1
-                td = Threaded_worker(queue_name, logger)
+                td = ThreadedWorker(queue_name, logger)
                 td.start()
             assert len(queues) == cnt
             logger.info("%d queue worker threads were launched", cnt)
@@ -111,7 +111,7 @@ class Command(BaseCommand):
                     worker.start()
 
 
-class Threaded_worker(threading.Thread):
+class ThreadedWorker(threading.Thread):
     def __init__(self, queue_name: str, logger: logging.Logger) -> None:
         threading.Thread.__init__(self)
         self.logger = logger
