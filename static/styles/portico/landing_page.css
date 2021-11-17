@@ -410,6 +410,10 @@ nav {
 
     z-index: 2;
 
+    .gradients {
+        z-index: -1;
+    }
+
     section {
         max-width: 1440px;
         display: flex;
@@ -2636,10 +2640,6 @@ nav {
     left: 0;
     width: 100%;
     height: 1100px;
-
-    @media (width < 768px) {
-        height: 700px;
-    }
 }
 
 .gradients .gradient.dark-blue {
@@ -4003,6 +4003,10 @@ nav {
             transparent 20%,
             hsl(49, 71%, 68%) 80%
         );
+    }
+
+    .features-app .gradients .gradient {
+        height: 700px;
     }
 }
 
