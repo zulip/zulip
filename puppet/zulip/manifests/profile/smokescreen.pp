@@ -7,6 +7,7 @@ class zulip::profile::smokescreen {
 
   $version = 'dc403015f563eadc556a61870c6ad327688abe88'
   $dir = "/srv/zulip-smokescreen-src-${version}/"
+  $bin = "/usr/local/bin/smokescreen-${version}"
 
   zulip::external_dep { 'smokescreen-src':
     version        => $version,
@@ -16,17 +17,17 @@ class zulip::profile::smokescreen {
   }
 
   exec { 'compile smokescreen':
-    command     => "${zulip::golang::bin} build -o /usr/local/bin/smokescreen-${version}",
+    command     => "${zulip::golang::bin} build -o ${bin}",
     cwd         => $dir,
     # GOCACHE is required; nothing is written to GOPATH, but it is required to be set
     environment => ['GOCACHE=/tmp/gocache', 'GOPATH=/root/go'],
-    creates     => "/usr/local/bin/smokescreen-${version}",
+    creates     => $bin,
     require     => [File[$zulip::golang::bin], File[$dir]],
   }
 
   file { '/usr/local/bin/smokescreen':
     ensure  => 'link',
-    target  => "/usr/local/bin/smokescreen-${version}",
+    target  => $bin,
     require => Exec['compile smokescreen'],
     notify  => Service[supervisor],
   }
@@ -36,7 +37,7 @@ class zulip::profile::smokescreen {
     ensure  => file,
     require => [
       Package[supervisor],
-      File['/usr/local/bin/smokescreen'],
+      File[$bin],
     ],
     owner   => 'root',
     group   => 'root',
