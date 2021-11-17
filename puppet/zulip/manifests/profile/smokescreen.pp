@@ -24,12 +24,27 @@ class zulip::profile::smokescreen {
     creates     => $bin,
     require     => [File[$zulip::golang::bin], File[$dir]],
   }
-
+  file { $bin:
+    ensure  => file,
+    require => Exec['compile smokescreen'],
+  }
   file { '/usr/local/bin/smokescreen':
     ensure  => 'link',
     target  => $bin,
-    require => Exec['compile smokescreen'],
+    require => File[$bin],
     notify  => Service[supervisor],
+  }
+  unless $::operatingsystem == 'Ubuntu' and $::operatingsystemrelease == '18.04' {
+    # Puppet 5.5.0 and below make this always-noisy, as they spout out
+    # a notify line about tidying the managed file above.  Skip
+    # on Bionic, which has that old version; they'll get tidied upon
+    # upgrade to 20.04.
+    tidy { '/usr/local/bin/smokescreen-*':
+      path    => '/usr/local/bin',
+      recurse => 1,
+      matches => 'smokescreen-*',
+      require => [File[$bin], File['/usr/local/bin/smokescreen']],
+    }
   }
 
   $listen_address = zulipconf('http_proxy', 'listen_address', '127.0.0.1')
