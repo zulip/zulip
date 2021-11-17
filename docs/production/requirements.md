@@ -96,13 +96,14 @@ on hardware requirements for larger organizations.
   address as its external hostname (though we don't recommend that
   configuration).
 - Zulip supports [running behind a reverse proxy][reverse-proxy].
-- Zulip servers running inside a private network should configure the
-  [Smokescreen integration][smokescreen-proxy] to protect against
-  [SSRF attacks][ssrf], where users could make the Zulip server make
-  requests to private resources.
+- Zulip configures [Smokescreen, and outgoing HTTP
+  proxy][smokescreen-proxy], to protect against [SSRF attacks][ssrf],
+  which prevents user from making the Zulip server make requests to
+  private resources. If your network has its own outgoing HTTP proxy,
+  Zulip supports using that instead.
 
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
-[smokescreen-proxy]: ../production/deployment.html#using-an-outgoing-http-proxy
+[smokescreen-proxy]: ../production/deployment.html#customizing-the-outgoing-http-proxy
 [reverse-proxy]: ../production/deployment.html#putting-the-zulip-application-behind-a-reverse-proxy
 [email-mirror-code]: https://github.com/zulip/zulip/blob/main/zerver/management/commands/email_mirror.py
 

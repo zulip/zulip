@@ -259,15 +259,15 @@ strength allowed is controlled by two settings in
   - Mobile push notifications (must be configured to be enabled)
 
 - Notably, these first 3 features give end users (limited) control to cause
-  the Zulip server to make HTTP requests on their behalf. As a result,
-  Zulip supports routing all outgoing outgoing HTTP requests [through
+  the Zulip server to make HTTP requests on their behalf. Because of this,
+  Zulip routes all outgoing outgoing HTTP requests [through
   Smokescreen][smokescreen-setup] to ensure that Zulip cannot be
   used to execute [SSRF attacks][ssrf] against other systems on an
   internal corporate network. The default Smokescreen configuration
   denies access to all non-public IP addresses, including 127.0.0.1.
 
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
-[smokescreen-setup]: ../production/deployment.html#using-an-outgoing-http-proxy
+[smokescreen-setup]: ../production/deployment.html#customizing-the-outgoing-http-proxy
 
 ## Final notes and security response
 
