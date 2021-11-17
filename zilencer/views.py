@@ -41,6 +41,8 @@ from zilencer.models import (
     RemoteZulipServer,
 )
 
+logger = logging.getLogger(__name__)
+
 
 def validate_entity(entity: Union[UserProfile, RemoteZulipServer]) -> RemoteZulipServer:
     if not isinstance(entity, RemoteZulipServer):
@@ -192,9 +194,34 @@ def remote_server_notify_push(
         )
     )
 
-    send_android_push_notification(android_devices, gcm_payload, gcm_options, remote=True)
+    logger.info(
+        "Sending mobile push notifications for remote user %s:%s: %s via FCM devices, %s via APNs devices",
+        server.uuid,
+        user_id,
+        len(android_devices),
+        len(apple_devices),
+    )
 
-    send_apple_push_notification(user_id, apple_devices, apns_payload, remote=True)
+    # Truncate incoming pushes to 200, due to APNs maximum message
+    # sizes; see handle_remove_push_notification for the version of
+    # this for notifications generated natively on the server.  We
+    # apply this to remote-server pushes in case they predate that
+    # commit.
+    def truncate_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
+        MAX_MESSAGE_IDS = 200
+        if payload and payload.get("event") == "remove" and payload.get("zulip_message_ids"):
+            ids = [int(id) for id in payload["zulip_message_ids"].split(",")]
+            truncated_ids = list(sorted(ids))[-MAX_MESSAGE_IDS:]
+            payload["zulip_message_ids"] = ",".join(str(id) for id in truncated_ids)
+        return payload
+
+    gcm_payload = truncate_payload(gcm_payload)
+    send_android_push_notification(
+        user_id, android_devices, gcm_payload, gcm_options, remote=server
+    )
+
+    apns_payload = truncate_payload(apns_payload)
+    send_apple_push_notification(user_id, apple_devices, apns_payload, remote=server)
 
     return json_success(
         {"total_android_devices": len(android_devices), "total_apple_devices": len(apple_devices)}

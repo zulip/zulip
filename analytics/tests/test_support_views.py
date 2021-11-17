@@ -71,12 +71,10 @@ class TestSupportEndpoint(ZulipTestCase):
 
         def check_zulip_realm_query_result(result: HttpResponse) -> None:
             zulip_realm = get_realm("zulip")
-            org_type_display_name = get_org_type_display_name(zulip_realm.org_type)
             first_human_user = zulip_realm.get_first_human_user()
             assert first_human_user is not None
             self.assert_in_success_response(
                 [
-                    f"<b>Organization type</b>: {org_type_display_name}",
                     f"<b>First human user</b>: {first_human_user.delivery_email}\n",
                     f'<input type="hidden" name="realm_id" value="{zulip_realm.id}"',
                     "Zulip Dev</h3>",
@@ -85,6 +83,7 @@ class TestSupportEndpoint(ZulipTestCase):
                     'input type="number" name="discount" value="None"',
                     '<option value="active" selected>Active</option>',
                     '<option value="deactivated" >Deactivated</option>',
+                    f'<option value="{zulip_realm.org_type}" selected>',
                     'scrub-realm-button">',
                     'data-string-id="zulip"',
                 ],
@@ -357,6 +356,37 @@ class TestSupportEndpoint(ZulipTestCase):
                 ["Plan type of zulip changed from self hosted to limited"], result
             )
 
+        with mock.patch("analytics.views.support.do_change_plan_type") as m:
+            result = self.client_post(
+                "/activity/support", {"realm_id": f"{iago.realm_id}", "plan_type": "10"}
+            )
+            m.assert_called_once_with(get_realm("zulip"), 10, acting_user=iago)
+            self.assert_in_success_response(
+                ["Plan type of zulip changed from self hosted to plus"], result
+            )
+
+    def test_change_org_type(self) -> None:
+        cordelia = self.example_user("cordelia")
+        self.login_user(cordelia)
+
+        result = self.client_post(
+            "/activity/support", {"realm_id": f"{cordelia.realm_id}", "org_type": "70"}
+        )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/login/")
+
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        with mock.patch("analytics.views.support.do_change_realm_org_type") as m:
+            result = self.client_post(
+                "/activity/support", {"realm_id": f"{iago.realm_id}", "org_type": "70"}
+            )
+            m.assert_called_once_with(get_realm("zulip"), 70, acting_user=iago)
+            self.assert_in_success_response(
+                ["Org type of zulip changed from Business to Government"], result
+            )
+
     def test_attach_discount(self) -> None:
         cordelia = self.example_user("cordelia")
         lear_realm = get_realm("lear")
@@ -436,7 +466,7 @@ class TestSupportEndpoint(ZulipTestCase):
         )
         self.assert_in_success_response(["Sponsorship approved for lear"], result)
         lear_realm.refresh_from_db()
-        self.assertEqual(lear_realm.plan_type, Realm.STANDARD_FREE)
+        self.assertEqual(lear_realm.plan_type, Realm.PLAN_TYPE_STANDARD_FREE)
         customer = get_customer_by_realm(lear_realm)
         assert customer is not None
         self.assertFalse(customer.sponsorship_pending)

@@ -11,6 +11,7 @@
     margin-left: 0;
     /* We are setting a z-index so emoji popover can be visible on top of it. */
     z-index: 105;
+
     .user_status_content_wrapper {
         display: flex;
         border: 1px solid;
@@ -26,13 +27,15 @@
                 width: 92%;
             }
         }
+
         .status_emoji_wrapper {
             height: 20px;
             width: 22px;
-            padding: 8px 8px 1px 8px;
+            padding: 8px 8px 1px;
             border-right: 1px solid;
             border-color: inherit;
             cursor: pointer;
+
             .selected_emoji {
                 width: 20px;
                 height: 20px;
@@ -53,6 +56,7 @@
                 position: relative;
                 top: -2px;
                 left: 2px;
+
                 &:hover {
                     text-decoration: none;
                 }

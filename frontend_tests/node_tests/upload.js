@@ -7,17 +7,9 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
-set_global("document", {
-    location: {},
-});
 set_global("navigator", {
     userAgent: "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)",
 });
-
-// Setting these up so that we can test that links to uploads within messages are
-// automatically converted to server relative links.
-document.location.protocol = "https:";
-document.location.host = "foo.com";
 
 let uppy_stub;
 function Uppy(options) {
@@ -113,7 +105,7 @@ test("get_item", () => {
     assert.equal(upload.get_item("source", {mode: "edit", row: 123}), "message-edit-file-input");
     assert.equal(
         upload.get_item("drag_drop_container", {mode: "edit", row: 1}),
-        $(".message_edit_form"),
+        $(`#zfilt${CSS.escape(1)} .message_edit_form`),
     );
     assert.equal(
         upload.get_item("markdown_preview_hide_button", {mode: "edit", row: 65}),

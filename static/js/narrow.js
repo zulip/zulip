@@ -183,7 +183,7 @@ export function activate(raw_operators, opts) {
        * then_select_offset: Offset from the top of the page in pixels
          at which to place the then_select_id message following
          rendering.  Important to avoid what would otherwise feel like
-         visual glitches after clicking on a specific message's headig
+         visual glitches after clicking on a specific message's heading
          or rerendering due to server-side changes.
     */
 

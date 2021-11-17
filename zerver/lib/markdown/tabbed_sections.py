@@ -74,6 +74,8 @@ TAB_SECTION_LABELS = {
     "via-recent-topics": "Via recent topics",
     "via-left-sidebar": "Via left sidebar",
     "instructions-for-all-platforms": "Instructions for all platforms",
+    "public-streams": "Public streams",
+    "private-streams": "Private streams",
 }
 
 

@@ -330,6 +330,15 @@
         .on('mouseenter', 'li', this.mouseenter.bind(this))
     }
 
+  , unlisten: function () {
+      this.$container.remove();
+      var events = ["blur", "keydown", "keyup", "keypress"];
+      for (var i=0; i<events.length; i++) {
+        this.$element.off(events[i]);
+      }
+      this.$element.removeData("typeahead");
+    }
+
   , eventSupported: function(eventName) {
       var isSupported = eventName in this.$element
       if (!isSupported) {

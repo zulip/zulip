@@ -7,6 +7,7 @@ import * as channel from "./channel";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as people from "./people";
+import {user_settings} from "./user_settings";
 
 // This module handles the outbound side of typing indicators.
 // We detect changes in the compose box and notify the server
@@ -51,11 +52,15 @@ function get_current_time() {
 }
 
 function notify_server_start(user_ids_array) {
-    send_typing_notification_ajax(user_ids_array, "start");
+    if (user_settings.send_private_typing_notifications) {
+        send_typing_notification_ajax(user_ids_array, "start");
+    }
 }
 
 function notify_server_stop(user_ids_array) {
-    send_typing_notification_ajax(user_ids_array, "stop");
+    if (user_settings.send_private_typing_notifications) {
+        send_typing_notification_ajax(user_ids_array, "stop");
+    }
 }
 
 export const get_recipient = get_user_ids_array;

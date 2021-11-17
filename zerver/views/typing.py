@@ -38,6 +38,9 @@ def send_notification_backend(
         if topic is None:
             raise JsonableError(_("Missing topic"))
 
+        if not user_profile.send_stream_typing_notifications:
+            raise JsonableError(_("User has disabled typing notifications for stream messages"))
+
         stream_id = notification_to[0]
         # Verify that the user has access to the stream and has
         # permission to send messages to it.
@@ -45,6 +48,9 @@ def send_notification_backend(
         access_stream_for_send_message(user_profile, stream, forwarder_user_profile=None)
         do_send_stream_typing_notification(user_profile, operator, stream, topic)
     else:
+        if not user_profile.send_private_typing_notifications:
+            raise JsonableError(_("User has disabled typing notifications for private messages"))
+
         user_ids = notification_to
         check_send_typing_notification(user_profile, user_ids, operator)
 

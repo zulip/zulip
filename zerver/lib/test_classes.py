@@ -326,12 +326,24 @@ Output:
         self.validate_api_response_openapi(url, "patch", result, info, kwargs)
         return result
 
+    def json_patch(self, url: str, payload: Dict[str, Any] = {}, **kwargs: Any) -> HttpResponse:
+        data = orjson.dumps(payload)
+        django_client = self.client  # see WRAPPER_COMMENT
+        self.set_http_headers(kwargs)
+        return django_client.patch(url, data=data, content_type="application/json", **kwargs)
+
     @instrument_url
     def client_put(self, url: str, info: Dict[str, Any] = {}, **kwargs: Any) -> HttpResponse:
         encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
         return django_client.put(url, encoded, **kwargs)
+
+    def json_put(self, url: str, payload: Dict[str, Any] = {}, **kwargs: Any) -> HttpResponse:
+        data = orjson.dumps(payload)
+        django_client = self.client  # see WRAPPER_COMMENT
+        self.set_http_headers(kwargs)
+        return django_client.put(url, data=data, content_type="application/json", **kwargs)
 
     @instrument_url
     def client_delete(self, url: str, info: Dict[str, Any] = {}, **kwargs: Any) -> HttpResponse:
@@ -523,15 +535,6 @@ Output:
         # that we treated this request as a normal logged-in session,
         # not as a spectator.
         self.assertEqual(page_params["is_spectator"], False)
-
-    def check_rendered_spectator(self, result: HttpResponse) -> None:
-        """Verifies that a visit of / was a 200 that rendered page_params
-        for a (logged-out) spectator."""
-        self.assertEqual(result.status_code, 200)
-        page_params = self._get_page_params(result)
-        # It is important to check `is_spectator` to verify
-        # that we treated this request to render for a `spectator`
-        self.assertEqual(page_params["is_spectator"], True)
 
     def login_with_return(
         self, email: str, password: Optional[str] = None, **kwargs: Any
@@ -1243,6 +1246,7 @@ Output:
     ) -> None:
 
         realm = get_realm("zulip")
+        owner_user = self.example_user("desdemona")
         admin_user = self.example_user("iago")
         moderator_user = self.example_user("shiva")
         member_user = self.example_user("hamlet")
@@ -1260,7 +1264,24 @@ Output:
         )
         member_user.save()
 
+        do_set_realm_property(realm, policy, Realm.POLICY_NOBODY, acting_user=None)
+        self.assertFalse(validation_func(owner_user))
+        self.assertFalse(validation_func(admin_user))
+        self.assertFalse(validation_func(moderator_user))
+        self.assertFalse(validation_func(member_user))
+        self.assertFalse(validation_func(new_member_user))
+        self.assertFalse(validation_func(guest_user))
+
+        do_set_realm_property(realm, policy, Realm.POLICY_OWNERS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(owner_user))
+        self.assertFalse(validation_func(admin_user))
+        self.assertFalse(validation_func(moderator_user))
+        self.assertFalse(validation_func(member_user))
+        self.assertFalse(validation_func(new_member_user))
+        self.assertFalse(validation_func(guest_user))
+
         do_set_realm_property(realm, policy, Realm.POLICY_ADMINS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(owner_user))
         self.assertTrue(validation_func(admin_user))
         self.assertFalse(validation_func(moderator_user))
         self.assertFalse(validation_func(member_user))
@@ -1268,6 +1289,7 @@ Output:
         self.assertFalse(validation_func(guest_user))
 
         do_set_realm_property(realm, policy, Realm.POLICY_MODERATORS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(owner_user))
         self.assertTrue(validation_func(admin_user))
         self.assertTrue(validation_func(moderator_user))
         self.assertFalse(validation_func(member_user))
@@ -1275,6 +1297,7 @@ Output:
         self.assertFalse(validation_func(guest_user))
 
         do_set_realm_property(realm, policy, Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(owner_user))
         self.assertTrue(validation_func(admin_user))
         self.assertTrue(validation_func(moderator_user))
         self.assertTrue(validation_func(member_user))
@@ -1282,11 +1305,20 @@ Output:
         self.assertFalse(validation_func(guest_user))
 
         do_set_realm_property(realm, policy, Realm.POLICY_MEMBERS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(owner_user))
         self.assertTrue(validation_func(admin_user))
         self.assertTrue(validation_func(moderator_user))
         self.assertTrue(validation_func(member_user))
         self.assertTrue(validation_func(new_member_user))
         self.assertFalse(validation_func(guest_user))
+
+        do_set_realm_property(realm, policy, Realm.POLICY_EVERYONE, acting_user=None)
+        self.assertTrue(validation_func(owner_user))
+        self.assertTrue(validation_func(admin_user))
+        self.assertTrue(validation_func(moderator_user))
+        self.assertTrue(validation_func(member_user))
+        self.assertTrue(validation_func(new_member_user))
+        self.assertTrue(validation_func(guest_user))
 
     def subscribe_realm_to_manual_license_management_plan(
         self, realm: Realm, licenses: int, licenses_at_next_renewal: int, billing_schedule: int
@@ -1306,7 +1338,7 @@ Output:
             licenses=licenses,
             licenses_at_next_renewal=licenses_at_next_renewal,
         )
-        realm.plan_type = Realm.STANDARD
+        realm.plan_type = Realm.PLAN_TYPE_STANDARD
         realm.save(update_fields=["plan_type"])
         return plan, ledger
 

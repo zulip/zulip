@@ -95,6 +95,9 @@ test("draft_model add", ({override}) => {
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
 
+    const unread_count = $('<span class="unread_count"></span>');
+    $(".top_left_drafts").set_find_results(".unread_count", unread_count);
+
     override(Date, "now", () => 1);
     const expected = {...draft_1};
     expected.updatedAt = 1;
@@ -107,6 +110,9 @@ test("draft_model edit", () => {
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
     let id;
+
+    const unread_count = $('<span class="unread_count"></span>');
+    $(".top_left_drafts").set_find_results(".unread_count", unread_count);
 
     with_overrides((override) => {
         override(Date, "now", () => 1);
@@ -129,6 +135,9 @@ test("draft_model delete", ({override}) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
+
+    const unread_count = $('<span class="unread_count"></span>');
+    $(".top_left_drafts").set_find_results(".unread_count", unread_count);
 
     override(Date, "now", () => 1);
     const expected = {...draft_1};
@@ -178,6 +187,9 @@ test("initialize", ({override}) => {
         assert.ok(called);
     };
 
+    const unread_count = $('<span class="unread_count"></span>');
+    $(".top_left_drafts").set_find_results(".unread_count", unread_count);
+
     drafts.initialize();
 });
 
@@ -201,6 +213,9 @@ test("remove_old_drafts", () => {
     const data = {id3: draft_3, id4: draft_4};
     ls.set("drafts", data);
     assert.deepEqual(draft_model.get(), data);
+
+    const unread_count = $('<span class="unread_count"></span>');
+    $(".top_left_drafts").set_find_results(".unread_count", unread_count);
 
     drafts.remove_old_drafts();
     assert.deepEqual(draft_model.get(), {id3: draft_3});
@@ -334,6 +349,9 @@ test("format_drafts", ({override, mock_template}) => {
     };
 
     expected[0].stream_name = "stream-rename";
+
+    const unread_count = $('<span class="unread_count"></span>');
+    $(".top_left_drafts").set_find_results(".unread_count", unread_count);
 
     drafts.launch();
     timerender.__Rewire__("render_now", stub_render_now);

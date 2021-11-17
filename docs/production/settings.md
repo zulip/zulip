@@ -106,7 +106,7 @@ Some popular settings in `/etc/zulip/settings.py` include:
 ## Zulip announcement list
 
 If you haven't already, subscribe to the
-[zulip-announce](https://groups.google.com/forum/#!forum/zulip-announce)
+[zulip-announce](https://groups.google.com/g/zulip-announce)
 list so that you can receive important announces like new Zulip
 releases or major changes to the app ecosystem.
 

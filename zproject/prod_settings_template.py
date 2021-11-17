@@ -44,7 +44,7 @@ EXTERNAL_HOST = "zulip.example.com"
 ## representing the host/domain names that your users can enter in
 ## their browsers to access Zulip.  This is a security measure; for
 ## details, see the Django documentation:
-## https://docs.djangoproject.com/en/2.2/ref/settings/#allowed-hosts
+## https://docs.djangoproject.com/en/3.2/ref/settings/#allowed-hosts
 ##
 ## Zulip automatically adds to this list 'localhost', '127.0.0.1', and
 ## patterns representing EXTERNAL_HOST and subdomains of it.  If you are
@@ -755,6 +755,10 @@ CAMO_URI = "/external_content/"
 
 ## Controls whether Zulip will rate-limit user requests.
 # RATE_LIMITING = True
+
+## Fetch TOR exit node list every hour, and group all TOR exit nodes
+## together into one bucket when applying rate-limiting.
+# RATE_LIMIT_TOR_TOGETHER = False
 
 ## If you want to set a Terms of Service for your server, set the path
 ## to your Markdown file, and uncomment the following line.

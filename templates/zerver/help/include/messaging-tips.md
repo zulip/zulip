@@ -6,7 +6,7 @@
   your Zulip message, and see it beautifully rendered.
 - [Start a video call](/help/start-a-call) with the click of a button.
 - Make plans for later without worrying about time zones using
-  [local times](/help/format-your-message-using-markdown#mention-a-time).
+  [global times](/help/format-your-message-using-markdown#global-times).
 - Share files or images with [drag-and-drop uploads](/help/share-and-upload-files).
 - Enjoy animated GIFs with Zulip's native
   [GIPHY integration](/help/animated-gifs-from-giphy).

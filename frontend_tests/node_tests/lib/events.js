@@ -797,6 +797,13 @@ exports.fixtures = {
         value: true,
     },
 
+    user_settings__escape_navigates_to_default_view: {
+        type: "user_settings",
+        op: "update",
+        property: "escape_navigates_to_default_view",
+        value: true,
+    },
+
     user_settings__fluid_layout_width: {
         type: "user_settings",
         op: "update",

@@ -455,14 +455,12 @@ export function set_up_handlers() {
         }
 
         if (principals.length >= 50) {
-            const modal_parent = $("#subscription_overlay");
             const html_body = render_subscription_invites_warning_modal({
                 stream_name,
                 count: principals.length,
             });
 
             confirm_dialog.launch({
-                parent: modal_parent,
                 html_heading: $t_html({defaultMessage: "Large number of subscribers"}),
                 html_body,
                 on_click: () => {

@@ -696,7 +696,7 @@ test("set_up", ({override, mock_template}) => {
     test_realms_domain_modal(override, () => $("#submit-add-realm-domain").trigger("click"));
     test_submit_settings_form(
         override,
-        $(".organization").get_on_handler(
+        $(".admin-realm-form").get_on_handler(
             "click",
             ".subsection-header .subsection-changes-save button",
         ),
@@ -710,7 +710,7 @@ test("set_up", ({override, mock_template}) => {
     test_sync_realm_settings();
     test_parse_time_limit();
     test_discard_changes_button(
-        $(".organization").get_on_handler(
+        $(".admin-realm-form").get_on_handler(
             "click",
             ".subsection-header .subsection-changes-discard button",
         ),

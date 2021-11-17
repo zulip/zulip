@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-version=1.22.11
-sha256=2c320de14a6014f62d29c34fec78fdbb0bc71c9ccba48ed0668de452c1f5fe6c
+version=1.22.17
+sha256=267982c61119a055ba2b23d9cf90b02d3d16c202c03cb0c3a53b9633eae37249
 tarball="yarn-$version.tgz"
 
 check_version() {
@@ -10,7 +10,8 @@ check_version() {
     # than running yarn --version.
     link="$(command -v yarn)" \
         && bin="$(readlink -f "$link")" \
-        && current_version="$(jq -r '.version' "${bin%/*/*}/package.json")" \
+        && [ "$bin" = /srv/zulip-yarn/bin/yarn ] \
+        && current_version="$(jq -r '.version' /srv/zulip-yarn/package.json)" \
         && [ "$current_version" = "$version" ]
 }
 

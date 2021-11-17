@@ -1,0 +1,4957 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# 
+# Translators:
+# හෙළබස, 2021
+msgid ""
+msgstr ""
+"Project-Id-Version: Zulip\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-11-01 19:30+0000\n"
+"PO-Revision-Date: 2021-11-01 19:30+0000\n"
+"Last-Translator: හෙළබස\n"
+"Language-Team: Sinhala (http://www.transifex.com/zulip/zulip/language/si/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: si\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: analytics/views/stats.py:88 zerver/decorator.py:578 zerver/decorator.py:590
+msgid "Not allowed for guest users"
+msgstr ""
+
+#: analytics/views/stats.py:132
+msgid "Invalid organization"
+msgstr "සංවිධානය වලංගු නොවේ"
+
+#: analytics/views/stats.py:271
+msgid "Public streams"
+msgstr ""
+
+#: analytics/views/stats.py:272
+msgid "Private streams"
+msgstr ""
+
+#: analytics/views/stats.py:273
+msgid "Private messages"
+msgstr "පෞද්ගලික පණිවිඩ"
+
+#: analytics/views/stats.py:274
+msgid "Group private messages"
+msgstr "පෞද්ගලික පණිවිඩ සමූහගත කරන්න"
+
+#: analytics/views/stats.py:295
+msgid "Unknown chart name: {}"
+msgstr ""
+
+#: analytics/views/stats.py:305
+#, python-brace-format
+msgid "Start time is later than end time. Start: {start}, End: {end}"
+msgstr ""
+
+#: analytics/views/stats.py:327 analytics/views/stats.py:362
+msgid "No analytics data available. Please contact your server administrator."
+msgstr ""
+
+#: analytics/views/support.py:164 zerver/views/streams.py:321
+msgid "Invalid parameters"
+msgstr ""
+
+#: corporate/lib/registration.py:29
+#, python-brace-format
+msgid ""
+"Your organization has no Zulip licenses remaining and can no longer accept "
+"new users. Please [increase the number of licenses]({billing_page_link}) or "
+"[deactivate inactive users]({deactivate_user_help_page_link}) to allow new "
+"users to join."
+msgstr ""
+
+#: corporate/lib/registration.py:36
+#, python-brace-format
+msgid ""
+"Your organization has only one Zulip license remaining. You can [increase "
+"the number of licenses]({billing_page_link}) or [deactivate inactive "
+"users]({deactivate_user_help_page_link}) to allow more than one user to "
+"join."
+msgstr ""
+
+#: corporate/lib/registration.py:41
+#, python-brace-format
+msgid ""
+"Your organization has only two Zulip licenses remaining. You can [increase "
+"the number of licenses]({billing_page_link}) or [deactivate inactive "
+"users]({deactivate_user_help_page_link}) to allow more than two users to "
+"join."
+msgstr ""
+
+#: corporate/lib/registration.py:46
+#, python-brace-format
+msgid ""
+"Your organization has only three Zulip licenses remaining. You can [increase"
+" the number of licenses]({billing_page_link}) or [deactivate inactive "
+"users]({deactivate_user_help_page_link}) to allow more than three users to "
+"join."
+msgstr ""
+
+#: corporate/lib/registration.py:57
+#, python-brace-format
+msgid ""
+"A new member ({email}) was unable to join your organization because all "
+"Zulip licenses are in use. Please [increase the number of "
+"licenses]({billing_page_link}) or [deactivate inactive "
+"users]({deactivate_user_help_page_link}) to allow new members to join."
+msgstr ""
+
+#: corporate/lib/registration.py:101
+msgid "All Zulip licenses for this organization are currently in use."
+msgstr "මෙම සංවිධානය සඳහා වන සියළුම සුලිප් බලපත්‍ර දැනට භාවිතයේ ඇත."
+
+#: corporate/lib/registration.py:104
+#, python-brace-format
+msgid ""
+"Your organization does not have enough unused Zulip licenses to invite "
+"{num_invites} users."
+msgstr "පරිශීලකයින් {num_invites} කට ආරාධනා කිරීම සඳහා ප්‍රමාණවත් භාවිතා නොකරන ලද සුලිප් බලපත්‍ර ඔබගේ සංවිධානයේ නැත."
+
+#: corporate/lib/stripe.py:87
+msgid "You must invoice for at least {} users."
+msgstr "ඔබ අවම වශයෙන් පරිශීලකයින් {} සඳහා වාර්ණාවක් ගත යුතුය."
+
+#: corporate/lib/stripe.py:92
+msgid ""
+"Invoices with more than {} licenses can't be processed from this page. To "
+"complete the upgrade, please contact {}."
+msgstr ""
+
+#: corporate/lib/stripe.py:200
+#, python-brace-format
+msgid "Something went wrong. Please contact {email}."
+msgstr ""
+
+#: corporate/lib/stripe.py:201
+msgid "Something went wrong. Please reload the page."
+msgstr "යම් වැරැද්දක් සිදුවී ඇත. පිටුව නැවත පූරණය කරන්න."
+
+#: corporate/lib/stripe.py:274
+msgid "Something went wrong. Please wait a few seconds and try again."
+msgstr "යම් වැරැද්දක් සිදු වී ඇත. තත්පර කිහිපයක් රැඳී සිට යළි උත්සාහ කරන්න."
+
+#: corporate/lib/stripe.py:969
+#, python-brace-format
+msgid ""
+"Your organization's request for sponsored hosting has been approved! "
+"{emoji}.\n"
+msgstr ""
+
+#: corporate/views/billing_page.py:48
+msgid "No payment method on file"
+msgstr "ගොනුවේ ගෙවීමේ ක්‍රමයක් නැත"
+
+#: corporate/views/billing_page.py:51
+#, python-brace-format
+msgid "{brand} ending in {last4}"
+msgstr "{brand} {last4} න් අවසන් වේ"
+
+#: corporate/views/billing_page.py:59
+#, python-brace-format
+msgid "Unknown payment method. Please contact {email}."
+msgstr ""
+
+#: corporate/views/billing_page.py:184
+msgid ""
+"Unable to update the plan. The plan has been expired and replaced with a new"
+" plan."
+msgstr "සැලසුම යාවත්කාල කිරීමට නොහැකිය. සැලසුම කල් ඉකුත් වී නව සැලසුමක් සමඟ ප්‍රතිස්ථාපනය කර ඇත."
+
+#: corporate/views/billing_page.py:188
+msgid "Unable to update the plan. The plan has ended."
+msgstr "සැලසුම යාවත්කාල කිරීමට නොහැකිය. සැලසුම අවසන් වී ඇත."
+
+#: corporate/views/billing_page.py:211 corporate/views/billing_page.py:234
+msgid ""
+"Unable to update licenses manually. Your plan is on automatic license "
+"management."
+msgstr "බලපත්‍ර අතින් යාවත්කාල කිරීමට නොහැකිය. ඔබගේ සැලසුම ස්වයංක්‍රීය බලපත්‍ර කළමනාකරණය යටතේ ය."
+
+#: corporate/views/billing_page.py:217
+#, python-brace-format
+msgid ""
+"Your plan is already on {licenses} licenses in the current billing period."
+msgstr "වත්මන් ලදුපත් කාල සීමාව තුළ ඔබගේ සැලසුම දැනටමත් බලපත්‍ර {licenses} යටතේ ඇත."
+
+#: corporate/views/billing_page.py:222
+msgid "You cannot decrease the licenses in the current billing period."
+msgstr "වත්මන් ලදුපත් කාල සීමාව තුළ ඔබට බලපත්‍ර අඩු කළ නොහැකිය."
+
+#: corporate/views/billing_page.py:240
+#, python-brace-format
+msgid ""
+"Your plan is already scheduled to renew with {licenses_at_next_renewal} "
+"licenses."
+msgstr "ඔබගේ සැලසුම දැනටමත් {licenses_at_next_renewal} බලපත්‍ර සමඟ අලුත් කිරීමට නියමිතය."
+
+#: corporate/views/billing_page.py:253
+msgid "Nothing to change."
+msgstr "වෙනස් කිරීමට කිසිවක් නැත."
+
+#: templates/analytics/stats.html:10
+msgid "Analytics are fully available 24 hours after organization creation."
+msgstr "සංවිධානය සෑදීමෙන් පැය 24 කට පසු විශ්ලේෂණ සම්පූර්ණයෙන්ම ලබා ගත හැකිය."
+
+#: templates/analytics/stats.html:15
+#, python-format
+msgid "Zulip analytics for %(target_name)s"
+msgstr "%(target_name)s සඳහා සුලිප් විශ්ලේෂණ"
+
+#: templates/analytics/stats.html:19
+msgid "Messages sent over time"
+msgstr ""
+
+#: templates/analytics/stats.html:21 templates/analytics/stats.html:102
+msgid "Aggregation"
+msgstr ""
+
+#: templates/analytics/stats.html:23 templates/analytics/stats.html:104
+msgid "Daily"
+msgstr "දිනපතා"
+
+#: templates/analytics/stats.html:24 templates/analytics/stats.html:105
+msgid "Weekly"
+msgstr "සතිපතා"
+
+#: templates/analytics/stats.html:25 templates/analytics/stats.html:106
+msgid "Cumulative"
+msgstr ""
+
+#: templates/analytics/stats.html:33 templates/analytics/stats.html:49
+#: templates/analytics/stats.html:90 templates/analytics/stats.html:114
+msgid "Me"
+msgstr "මා"
+
+#: templates/analytics/stats.html:35
+msgid "Humans"
+msgstr "මනුෂ්‍යයින්"
+
+#: templates/analytics/stats.html:37
+msgid "Bots"
+msgstr "ස්වයංක්‍රමලේඛ"
+
+#: templates/analytics/stats.html:44
+msgid "Messages sent by client"
+msgstr "අනුග්‍රාහකයා යැවූ පණිවිඩ"
+
+#: templates/analytics/stats.html:50 templates/analytics/stats.html:91
+#: templates/analytics/stats.html:116
+msgid "Everyone"
+msgstr "සෑම දෙනාම"
+
+#: templates/analytics/stats.html:51 templates/analytics/stats.html:92
+msgid "Last week"
+msgstr "පසුගිය සතිය"
+
+#: templates/analytics/stats.html:52 templates/analytics/stats.html:93
+msgid "Last month"
+msgstr "පසුගිය මාසය"
+
+#: templates/analytics/stats.html:53 templates/analytics/stats.html:94
+msgid "Last year"
+msgstr "පසුගිය අවුරුද්ද"
+
+#: templates/analytics/stats.html:54 templates/analytics/stats.html:95
+msgid "All time"
+msgstr "සෑම වෙලාවෙම"
+
+#: templates/analytics/stats.html:60
+msgid "Active users"
+msgstr ""
+
+#: templates/analytics/stats.html:63
+msgid "Daily actives"
+msgstr "දෛනික ක්‍රියාකාරී"
+
+#: templates/analytics/stats.html:64
+msgid "15 day actives"
+msgstr ""
+
+#: templates/analytics/stats.html:65
+msgid "Total users"
+msgstr "මුළු පරිශීලකයින්"
+
+#: templates/analytics/stats.html:73
+msgid "Users"
+msgstr "පරිශීලකයින්"
+
+#: templates/analytics/stats.html:84
+msgid "Messages sent by recipient type"
+msgstr "ලබන්නාගේ වර්ගය අනුව යැවූ පණිවිඩ"
+
+#: templates/analytics/stats.html:100
+msgid "Messages read over time"
+msgstr ""
+
+#: templates/analytics/stats.html:124
+msgid "Last update"
+msgstr "අන්තිම යාවත්කාලය"
+
+#: templates/analytics/stats.html:125
+msgid ""
+"A full update of all the graphs happens once a day. The “messages sent over "
+"time” graph is updated once an hour."
+msgstr ""
+
+#: templates/analytics/stats.html:129
+msgid "Analytics documentation"
+msgstr "විශ්ලේෂණ ප්‍රලේඛනය"
+
+#: templates/confirmation/confirm_email_change.html:8
+msgid "Email changed!"
+msgstr "වි-තැපෑල වෙනස් කෙරිණි!"
+
+#: templates/confirmation/confirm_email_change.html:12
+#, python-format
+msgid ""
+"\n"
+"            This confirms that the email address for your Zulip account has changed\n"
+"            from %(old_email_html_tag)s to %(new_email_html_tag)s\n"
+"            "
+msgstr ""
+
+#: templates/confirmation/link_does_not_exist.html:9
+msgid "Whoops. We couldn't find your confirmation link in the system."
+msgstr ""
+
+#: templates/confirmation/link_does_not_exist.html:11
+#: templates/confirmation/link_malformed.html:12
+#, python-format
+msgid ""
+"\n"
+"                    Anyway, shoot us a line at %(support_email_html_tag)s and we'll get this resolved shortly.\n"
+"                    "
+msgstr ""
+
+#: templates/confirmation/link_expired.html:10
+msgid "Whoops. The confirmation link has expired or been deactivated."
+msgstr ""
+
+#: templates/confirmation/link_expired.html:11
+msgid "Please contact your organization administrator for a new link."
+msgstr ""
+
+#: templates/confirmation/link_malformed.html:9
+msgid "Whoops. The confirmation link is malformed."
+msgstr ""
+
+#: templates/confirmation/link_malformed.html:10
+msgid ""
+"Make sure you copied the link correctly in to your browser. If you're still "
+"encountering this page, it's probably our fault. We're sorry."
+msgstr "සබැඳිය ඔබගේ අතිරික්සුවට නිවැරදිව පිටපත් කළ බවට වග බලා ගන්න. ඔබට තවමත් මෙම පිටුව මුණ ගැසෙනවා නම් එය බොහෝ විට අපගේ වරදක් විය හැකිය. සමාවන්න."
+
+#: templates/corporate/billing.html:21
+msgid "Billing"
+msgstr "ලදුපත්"
+
+#: templates/corporate/billing.html:231
+msgid "Close"
+msgstr "වසන්න"
+
+#: templates/corporate/support_request.html:7 templates/zerver/footer.html:77
+msgid "Contact support"
+msgstr ""
+
+#: templates/corporate/support_request.html:15
+msgid "From"
+msgstr ""
+
+#: templates/corporate/support_request.html:19
+msgid "Organization"
+msgstr ""
+
+#: templates/corporate/support_request.html:23
+msgid "Subject"
+msgstr ""
+
+#: templates/corporate/support_request.html:27
+msgid "Message"
+msgstr "පණිවිඩය"
+
+#: templates/corporate/support_request.html:33
+msgid "Submit"
+msgstr ""
+
+#: templates/corporate/upgrade.html:20
+#, python-format
+msgid "Upgrade to %(plan)s"
+msgstr ""
+
+#: templates/corporate/upgrade.html:56 templates/corporate/upgrade.html:174
+msgid "Payment schedule"
+msgstr ""
+
+#: templates/corporate/upgrade.html:66
+msgid "Pay monthly"
+msgstr "මාසිකව ගෙවන්න"
+
+#: templates/corporate/upgrade.html:73 templates/corporate/upgrade.html:178
+msgid "Pay annually"
+msgstr "වාර්ෂිකව ගෙවන්න"
+
+#: templates/corporate/upgrade.html:85
+msgid "License management"
+msgstr "බලපත්‍ර කළමනාකරණය"
+
+#: templates/corporate/upgrade.html:89
+msgid "Automatic"
+msgstr "ස්වයංක්‍රීය"
+
+#: templates/corporate/upgrade.html:90
+msgid "Most convenient"
+msgstr "වඩාත් උචිත"
+
+#: templates/corporate/upgrade.html:96
+msgid "Manual"
+msgstr "අත්පොත"
+
+#: templates/corporate/upgrade.html:97
+msgid "Most control"
+msgstr ""
+
+#: templates/corporate/upgrade.html:241
+msgid "Leave blank if your organization does not have a website."
+msgstr "ඔබගේ සංවිධානයට වියමන අඩවියක් නැති නම් හිස්ව තබන්න."
+
+#: templates/two_factor/_wizard_forms.html:26
+msgid "Or, alternatively, use one of your backup phones:"
+msgstr "හෝ, ඔබගේ උපස්ථ දුරකථන වලින් එකක් භාවිතා කරන්න:"
+
+#: templates/two_factor/_wizard_forms.html:37
+msgid "As a last resort, you can use a backup token:"
+msgstr ""
+
+#: templates/two_factor/_wizard_forms.html:40
+msgid "Use backup token"
+msgstr ""
+
+#: templates/zerver/accounts_accept_terms.html:16
+msgid "Accept the new Terms of Service"
+msgstr "නව සේවා නියම පිළිගන්න"
+
+#: templates/zerver/accounts_accept_terms.html:24
+#: templates/zerver/create_realm.html:22 templates/zerver/login.html:81
+#: templates/zerver/register.html:118 templates/zerver/reset.html:19
+#: templates/zerver/reset_confirm.html:20
+msgid "Email"
+msgstr "වි-තැපෑල"
+
+#: templates/zerver/accounts_accept_terms.html:43
+#: templates/zerver/register.html:243
+#, python-format
+msgid ""
+"I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
+"rel=\"noopener noreferrer\">Terms of Service</a>."
+msgstr "<a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" rel=\"noopener noreferrer\">සේවා නියම</a> වලට මම එකඟ වෙමි."
+
+#: templates/zerver/accounts_accept_terms.html:54
+msgid "Enter"
+msgstr "ඇතුල් කරන්න"
+
+#: templates/zerver/accounts_home.html:14
+msgid "Sign up for Zulip"
+msgstr "සුලිප් සඳහා ලියාපදිංචි වන්න"
+
+#: templates/zerver/accounts_home.html:33
+msgid "You need an invitation to join this organization."
+msgstr "මෙම සංවිධානයට එක්වීමට ඔබට ඇරයුමක් අවශ්‍යයි."
+
+#: templates/zerver/accounts_home.html:68 templates/zerver/login.html:145
+#: templates/zerver/portico-header.html:40 templates/zerver/register.html:262
+msgid "Sign up"
+msgstr "ලියාපදිංචි වන්න"
+
+#: templates/zerver/accounts_home.html:72 templates/zerver/login.html:46
+#: templates/zerver/login.html:124 templates/zerver/register.html:79
+msgid "OR"
+msgstr "හෝ"
+
+#: templates/zerver/accounts_home.html:82
+#, python-format
+msgid "Sign up with %(identity_provider)s"
+msgstr "%(identity_provider)s සමඟ ලියාපදිංචි වන්න"
+
+#: templates/zerver/accounts_send_confirm.html:13
+msgid "Thanks for signing up!"
+msgstr "ලියාපදිංචි වීම ගැන ස්තුතියි!"
+
+#: templates/zerver/accounts_send_confirm.html:17
+msgid "Check your email so we can get started."
+msgstr "ආරම්භයට ඔබගේ වි-තැපෑල පරීක්‍ෂා කරන්න."
+
+#: templates/zerver/accounts_send_confirm.html:21
+msgid "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>."
+msgstr "තවමත් වි-තැපෑලක් නැද්ද? අපට <a href=\"#\" id=\"resend_email_link\">එය නැවත</a> යැවිය හැකිය."
+
+#: templates/zerver/accounts_send_confirm.html:22
+msgid "Just in case, take a look at your Spam folder."
+msgstr "ඔබගේ අයාචිත තැපැල් බහාලුම ද බලන්න."
+
+#: templates/zerver/app/index.html:60
+msgid "Loading..."
+msgstr "පූරණය වෙමින් ..."
+
+#: templates/zerver/app/index.html:63
+msgid ""
+"If this message does not go away, please wait a couple seconds and <a id"
+"=\"reload-lnk\">reload</a> the page."
+msgstr "මෙම පණිවිඩය ඉවත් නොවන්නේ නම් තත්පර කිහිපයක් රැඳී සිට පිටුව <a id=\"reload-lnk\">නැවත</a>පූරණය කරන්න."
+
+#: templates/zerver/app/index.html:98
+msgid ""
+"<strong class=\"message\">Unable to connect to\n"
+"            Zulip.</strong>  Updates may be delayed."
+msgstr "<strong class=\"message\">සුලිප් වෙත සම්බන්ධ වීමට නොහැකිය\n            </strong> යාවත්කාල වීම් ප්‍රමාද විය හැකිය."
+
+#: templates/zerver/app/index.html:99
+msgid "Retrying soon..."
+msgstr "යළි උත්සාහ කරමින්..."
+
+#: templates/zerver/app/index.html:99
+msgid "Try now."
+msgstr "උත්සාහ කරන්න."
+
+#: templates/zerver/app/index.html:164 templates/zerver/app/index.html:166
+msgid "Messages"
+msgstr "පණිවිඩ"
+
+#: templates/zerver/app/message_feed_errors.html:4
+msgid ""
+"\n"
+"        Some older messages are unavailable.\n"
+"        <a href=\"/plans/\" target=\"_blank\" rel=\"noopener noreferrer\">Upgrade your organization</a>\n"
+"        to access your full message history.\n"
+"        "
+msgstr ""
+
+#: templates/zerver/app/message_feed_errors.html:14
+msgid ""
+"\n"
+"        End of results from your\n"
+"        <a href=\"/help/search-for-messages#searching-shared-history\"\n"
+"          target=\"_blank\" rel=\"noopener noreferrer\">history</a>.\n"
+"        Consider <a class=\"search-shared-history\" href=\"\">searching all public streams</a>.\n"
+"        "
+msgstr ""
+
+#: templates/zerver/app/message_feed_errors.html:23
+msgid "Nothing's been sent here yet!"
+msgstr "කිසිවක් මෙහි තවම එවා නැත!"
+
+#: templates/zerver/app/message_feed_errors.html:26
+msgid ""
+"\n"
+"        Why not <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
+"        start the conversation</a>?\n"
+"        "
+msgstr ""
+
+#: templates/zerver/app/message_feed_errors.html:33
+msgid "You have no private messages yet!"
+msgstr "ඔබට තවම පෞද්ගලික පණිවිඩ නැත!"
+
+#: templates/zerver/app/message_feed_errors.html:36
+#: templates/zerver/app/message_feed_errors.html:46
+#: templates/zerver/app/message_feed_errors.html:66
+#: templates/zerver/app/message_feed_errors.html:76
+msgid ""
+"\n"
+"        Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
+"        start the conversation</a>?\n"
+"        "
+msgstr ""
+
+#: templates/zerver/app/message_feed_errors.html:43
+msgid "You have no private messages with this person yet!"
+msgstr "මෙම පුද්ගලයා සමඟ ඔබට තවම පෞද්ගලික පණිවිඩ නැත!"
+
+#: templates/zerver/app/message_feed_errors.html:53
+msgid "You have not sent any private messages to yourself yet!"
+msgstr "ඔබ තවම ඔබට කිසිදු පෞද්ගලික පණිවිඩයක් යවා නැත!"
+
+#: templates/zerver/app/message_feed_errors.html:56
+msgid ""
+"\n"
+"        Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
+"        start a conversation with yourself</a>?\n"
+"        "
+msgstr ""
+
+#: templates/zerver/app/message_feed_errors.html:63
+msgid "You have no group private messages with this person yet!"
+msgstr "මෙම පුද්ගලයා සමඟ ඔබට තවම සමූහ පෞද්ගලික පණිවිඩ නැත!"
+
+#: templates/zerver/app/message_feed_errors.html:73
+msgid "You have no private messages with these people yet!"
+msgstr "ඔබට තවම මෙම මිනිසුන් සමඟ පෞද්ගලික පණිවිඩ නැත!"
+
+#: templates/zerver/app/message_feed_errors.html:83
+msgid "You haven't received any messages sent by this user yet!"
+msgstr "මෙම පරිශීලකයා විසින් යැවූ කිසිදු පණිවිඩයක් ඔබට තවමත් ලැබී නැත!"
+
+#: templates/zerver/app/message_feed_errors.html:86
+msgid "This user does not exist!"
+msgstr "මෙම පරිශීලකයා නොපවතී!"
+
+#: templates/zerver/app/message_feed_errors.html:89
+msgid "One or more of these users do not exist!"
+msgstr "මෙම පරිශීලකයින්ගෙන් එක් අයකු හෝ වැඩි ගණනක් නැත!"
+
+#: templates/zerver/app/message_feed_errors.html:92
+msgid ""
+"You aren't subscribed to this stream and nobody has talked about that yet!"
+msgstr ""
+
+#: templates/zerver/app/message_feed_errors.html:95
+msgid "Subscribe"
+msgstr ""
+
+#: templates/zerver/app/message_feed_errors.html:100
+msgid "This stream does not exist or is private."
+msgstr ""
+
+#: templates/zerver/app/message_feed_errors.html:103
+msgid "You haven't starred anything yet!"
+msgstr "ඔබ තවමත් කිසිවකට තරු දමා නැත!"
+
+#: templates/zerver/app/message_feed_errors.html:106
+msgid ""
+"\n"
+"        Learn more about starring messages <a href=\"/help/star-a-message\">\n"
+"        here</a>.\n"
+"        "
+msgstr ""
+
+#: templates/zerver/app/message_feed_errors.html:113
+msgid "You have no unread messages!"
+msgstr "ඔබට නොකියවූ පණිවිඩ නැත!"
+
+#: templates/zerver/app/message_feed_errors.html:116
+msgid "You haven't been mentioned yet!"
+msgstr "ඔබ ගැන තවම සඳහන් කර නැත!"
+
+#: templates/zerver/app/message_feed_errors.html:119
+msgid ""
+"\n"
+"        Learn more about mentions <a href=\"/help/mention-a-user-or-group\">\n"
+"        here</a>.\n"
+"        "
+msgstr ""
+
+#: templates/zerver/app/message_feed_errors.html:126
+msgid "No search results"
+msgstr "සෙවුම් ප්‍රතිඵල නැත"
+
+#: templates/zerver/app/message_feed_errors.html:130
+msgid "No topics are marked as resolved."
+msgstr "කිසිදු මාතෘකාවක් විසඳූ ලෙස සලකුණු කර නැත."
+
+#: templates/zerver/billing_nav.html:4
+#: templates/zerver/development/integrations_dev_panel.html:15
+#: templates/zerver/emails/compiled/followup_day2.html:28
+#: templates/zerver/emails/followup_day2.source.html:27
+#: templates/zerver/emails/followup_day2.txt:17
+#: templates/zerver/landing_nav.html:13 templates/zerver/portico-header.html:5
+#: templates/zerver/portico-header.html:9
+msgid "Zulip"
+msgstr "සුලිප්"
+
+#: templates/zerver/config_error.html:14
+msgid ""
+"\n"
+"                        You are trying to log in using LDAP without creating an\n"
+"                        organization first. Please use EmailAuthBackend to create\n"
+"                        your organization and then try again.\n"
+"                        "
+msgstr ""
+
+#: templates/zerver/confirm_continue_registration.html:10
+msgid "Zulip account not found."
+msgstr "සුලිප් ගිණුම හමු නොවිණි."
+
+#: templates/zerver/confirm_continue_registration.html:14
+#, python-format
+msgid ""
+"\n"
+"                            No account found for %(email)s.\n"
+"                            "
+msgstr ""
+
+#: templates/zerver/confirm_continue_registration.html:26
+msgid "Log in with another account"
+msgstr "වෙනත් ගිණුමක් සමඟ ඇතුල් වන්න"
+
+#: templates/zerver/confirm_continue_registration.html:33
+msgid "Continue to registration"
+msgstr "ලියාපදිංචිය සඳහා ඉදිරියට යන්න"
+
+#: templates/zerver/confirmation_link_expired_error.html:8
+msgid "The registration link has expired or is not valid."
+msgstr "ලියාපදිංචි සබැඳිය කල් ඉකුත් වී හෝ වලංගු නොවේ."
+
+#: templates/zerver/confirmation_link_expired_error.html:9
+#: templates/zerver/log_into_subdomain_token_invalid.html:9
+#: templates/zerver/login.html:119 templates/zerver/portico-header.html:30
+#: templates/zerver/portico-header.html:36
+msgid "Log in"
+msgstr "ඇතුල් වන්න"
+
+#: templates/zerver/create_realm.html:12
+msgid "Create a new Zulip organization"
+msgstr "නව සුලිප් සංවිධානයක් සාදන්න"
+
+#: templates/zerver/create_realm.html:20 templates/zerver/reset.html:22
+msgid "Enter your email address"
+msgstr "ඔබගේ වි-තැපැල් ලිපිනය ඇතුල් කරන්න"
+
+#: templates/zerver/create_realm.html:25
+#: templates/zerver/for-communities.html:26
+#: templates/zerver/for-communities.html:49
+#: templates/zerver/for-companies.html:26
+#: templates/zerver/for-education.html:33 templates/zerver/for-events.html:32
+#: templates/zerver/for-events.html:262
+#: templates/zerver/for-open-source.html:35
+#: templates/zerver/for-open-source.html:689
+#: templates/zerver/for-research.html:32
+#: templates/zerver/for-research.html:361
+msgid "Create organization"
+msgstr "සංවිධානය සාදන්න"
+
+#: templates/zerver/deactivated.html:15
+msgid "Deactivated organization"
+msgstr ""
+
+#: templates/zerver/deactivated.html:20
+#, python-format
+msgid ""
+"\n"
+"                    The organization you are trying to join, %(deactivated_domain_name)s, has been deactivated.\n"
+"                    "
+msgstr ""
+
+#: templates/zerver/deactivated.html:24
+#, python-format
+msgid ""
+"\n"
+"                        It has moved to <a href=\"%(deactivated_redirect)s\">%(deactivated_redirect)s</a>.\n"
+"                        "
+msgstr ""
+
+#: templates/zerver/deactivated.html:28
+#, python-format
+msgid ""
+"\n"
+"                    Please contact <a href=\"mailto:%(support_email)s\">%(support_email)s</a> to reactivate\n"
+"                    this group.\n"
+"                    "
+msgstr ""
+
+#: templates/zerver/desktop_login.html:7
+msgid "Finish desktop login"
+msgstr ""
+
+#: templates/zerver/desktop_login.html:10
+msgid ""
+"Use your web browser to finish logging in, then come back here to paste in "
+"your login token."
+msgstr ""
+
+#: templates/zerver/desktop_login.html:14
+msgid "Paste token here"
+msgstr ""
+
+#: templates/zerver/desktop_login.html:16
+msgid "Finish"
+msgstr ""
+
+#: templates/zerver/desktop_login.html:20
+msgid "Incorrect token."
+msgstr ""
+
+#: templates/zerver/desktop_login.html:24
+msgid "Token accepted.  Logging you in…"
+msgstr ""
+
+#: templates/zerver/desktop_redirect.html:8
+msgid ""
+"Copy this login token and return to your Zulip app to finish logging in:"
+msgstr ""
+
+#: templates/zerver/desktop_redirect.html:13
+msgid "Copy"
+msgstr "පිටපත්"
+
+#: templates/zerver/desktop_redirect.html:15
+msgid "You may then close this window."
+msgstr "ඉන්පසු ඔබට මෙම කවුළුව වසා දැමිය හැකිය."
+
+#: templates/zerver/desktop_redirect.html:16
+msgid "Or, continue in your browser."
+msgstr "හෝ, ඔබගේ අතිරික්සුව තුළ ඉදිරියට යන්න."
+
+#: templates/zerver/developer-community.html:24
+msgid "The Zulip developer community"
+msgstr "සුලිප් සංවර්ධන ප්‍රජාව"
+
+#: templates/zerver/developer-community.html:31
+#: templates/zerver/developer-community.html:56
+msgid "Join as a user"
+msgstr "පරිශීලකයෙකු ලෙස එක්වන්න"
+
+#: templates/zerver/developer-community.html:34
+#: templates/zerver/developer-community.html:59
+msgid "Join as a self-hoster"
+msgstr ""
+
+#: templates/zerver/developer-community.html:37
+#: templates/zerver/developer-community.html:62
+msgid "Join as a contributor"
+msgstr "දායකයෙකු ලෙස එකතු වන්න"
+
+#: templates/zerver/development/dev_login.html:23
+msgid "Anonymous user"
+msgstr ""
+
+#: templates/zerver/development/dev_login.html:27
+msgid "Owners"
+msgstr "හිමිකරුවන්"
+
+#: templates/zerver/development/dev_login.html:36
+msgid "Administrators"
+msgstr "පරිපාලකයින්"
+
+#: templates/zerver/development/dev_login.html:45
+msgid "Moderators"
+msgstr ""
+
+#: templates/zerver/development/dev_login.html:54
+msgid "Guest users"
+msgstr ""
+
+#: templates/zerver/development/dev_login.html:66
+msgid "Normal users"
+msgstr "සාමාන්‍ය පරිශීලකයින්"
+
+#: templates/zerver/emails/compiled/confirm_new_email.html:9
+#: templates/zerver/emails/confirm_new_email.source.html:8
+#: templates/zerver/emails/confirm_new_email.txt:1
+#, python-format
+msgid "Hi %(user_name)s,"
+msgstr "ආයුබෝ %(user_name)s,"
+
+#: templates/zerver/emails/compiled/confirm_new_email.html:11
+#: templates/zerver/emails/confirm_new_email.source.html:10
+#: templates/zerver/emails/confirm_new_email.txt:4
+#, python-format
+msgid ""
+"We received a request to change the email address for the Zulip account on "
+"%(realm_uri)s from %(old_email)s to %(new_email)s. To confirm this change, "
+"please click below:"
+msgstr ""
+
+#: templates/zerver/emails/compiled/confirm_new_email.html:12
+#: templates/zerver/emails/confirm_new_email.source.html:11
+msgid "Confirm email change"
+msgstr ""
+
+#: templates/zerver/emails/compiled/confirm_new_email.html:14
+#: templates/zerver/emails/confirm_new_email.source.html:13
+#, python-format
+msgid ""
+"If you did not request this change, please contact us immediately at  "
+"%(support_email)s."
+msgstr ""
+
+#: templates/zerver/emails/compiled/confirm_registration.html:11
+#: templates/zerver/emails/confirm_registration.source.html:10
+#: templates/zerver/emails/confirm_registration.txt:2
+msgid "You have requested a new Zulip organization. Awesome!"
+msgstr "ඔබ නව සුලිප් සංවිධානයක් ඉල්ලා ඇත. නියමයි!"
+
+#: templates/zerver/emails/compiled/confirm_registration.html:13
+#: templates/zerver/emails/confirm_registration.source.html:12
+#: templates/zerver/emails/confirm_registration.txt:4
+msgid "You recently signed up for Zulip. Awesome!"
+msgstr "ඔබ මෑතකදී සුලිප් සඳහා ලියාපදිංචි වී ඇත. නියමයි!"
+
+#: templates/zerver/emails/compiled/confirm_registration.html:18
+#: templates/zerver/emails/confirm_registration.source.html:17
+#: templates/zerver/emails/confirm_registration.txt:8
+msgid ""
+"Click the button below to create the organization and register your account."
+msgstr "සංවිධානය සාදා ඔබගේ ගිණුම ලියාපදිංචි කිරීමට පහත බොත්තම ඔබන්න."
+
+#: templates/zerver/emails/compiled/confirm_registration.html:20
+#: templates/zerver/emails/confirm_registration.source.html:19
+#: templates/zerver/emails/confirm_registration.txt:10
+msgid "Click the button below to complete registration."
+msgstr "ලියාපදිංචිය සම්පූර්ණ කිරීම සඳහා පහත බොත්තම ඔබන්න."
+
+#: templates/zerver/emails/compiled/confirm_registration.html:22
+#: templates/zerver/emails/compiled/invitation.html:17
+#: templates/zerver/emails/compiled/invitation_reminder.html:15
+#: templates/zerver/emails/confirm_registration.source.html:21
+#: templates/zerver/emails/invitation.source.html:16
+#: templates/zerver/emails/invitation_reminder.source.html:14
+msgid "Complete registration"
+msgstr "ලියාපදිංචිය සම්පූර්ණ කරන්න"
+
+#: templates/zerver/emails/compiled/confirm_registration.html:24
+#: templates/zerver/emails/compiled/invitation.html:20
+#: templates/zerver/emails/compiled/realm_reactivation.html:20
+#: templates/zerver/emails/confirm_registration.source.html:23
+#: templates/zerver/emails/invitation.source.html:19
+#: templates/zerver/emails/realm_reactivation.source.html:19
+#: templates/zerver/emails/realm_reactivation.txt:13
+#, python-format
+msgid ""
+"Contact us any time at %(support_email)s if you run into trouble, have any "
+"feedback, or just want to chat!"
+msgstr ""
+
+#: templates/zerver/emails/compiled/custom_email_0a044db0e6751f218a47a4331c50b45c.html:4
+#: templates/zerver/emails/compiled/custom_email_323d33263c802b7a808798ed9b6b5891.html:4
+#: templates/zerver/emails/compiled/custom_email_556550265caff1cd1fc70d6c7ef85cfc.html:4
+#: templates/zerver/emails/compiled/custom_email_71be297c80227efa5868a945ab2f03d5.html:4
+#: templates/zerver/emails/compiled/custom_email_76050a3fd18b4fc53c74b18de6b3cc57.html:4
+#: templates/zerver/emails/compiled/custom_email_8a64d4c3ba4c8579f83733107016b9b0.html:4
+#: templates/zerver/emails/compiled/custom_email_bb3181f792c96e031e57a0697a9ccba6.html:4
+#: templates/zerver/emails/compiled/custom_email_ebb5a4fe863941c2b7fc04a6f169a4ec.html:4
+#: templates/zerver/emails/compiled/custom_email_ed271a34d10d853722568eb6ada75850.html:4
+#: templates/zerver/emails/compiled/markdown_email.html:4
+msgid "Zulip logo"
+msgstr "සුලිප් ලාංඡනය"
+
+#: templates/zerver/emails/compiled/digest.html:28
+#: templates/zerver/emails/digest.source.html:27
+msgid "New streams"
+msgstr ""
+
+#: templates/zerver/emails/compiled/digest.html:35
+#: templates/zerver/emails/digest.source.html:34
+msgid "Click here to log in to Zulip and catch up."
+msgstr ""
+
+#: templates/zerver/emails/compiled/digest.html:40
+#: templates/zerver/emails/compiled/followup_day2.html:34
+#: templates/zerver/emails/compiled/notify_new_login.html:48
+#: templates/zerver/emails/custom/compiled/custom_email_098e9bd71faa6c36e43c5a0ea2064778.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
+#: templates/zerver/emails/custom/compiled/custom_email_1409d92fc85cf3223f04c53f4d968b2e.html:55
+#: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
+#: templates/zerver/emails/custom/compiled/custom_email_1e4cfd33318438f830e0c3e40787ce19.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
+#: templates/zerver/emails/custom/compiled/custom_email_2670cddb12bff952186115b92e0e0001.html:97
+#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
+#: templates/zerver/emails/custom/compiled/custom_email_4d6d4d7ca23407002e70eaebadf4a4d0.html:50
+#: templates/zerver/emails/custom/compiled/custom_email_50cda0b5e48c5a77eb5df74b94d74a9d.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_5d6651a6bee23fa2ae49f64a1d0aeac0.html:66
+#: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
+#: templates/zerver/emails/custom/compiled/custom_email_7cdeb0d40275cef453ee0a2e5cbbba9c.html:57
+#: templates/zerver/emails/custom/compiled/custom_email_838c9c6ac478079cb2935d10c9f1a3c3.html:50
+#: templates/zerver/emails/custom/compiled/custom_email_8c519b0fe604b520d0453d67ff26eece.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_a9094a7113ecb4fd1472c54dfc1c8725.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
+#: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:16
+#: templates/zerver/emails/custom/compiled/custom_email_dab625ae2974493761ac9453f4022481.html:34
+#: templates/zerver/emails/custom/compiled/custom_email_e5e19063fd9915a8b2ec281fa4678a68.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_e5f90f6ce84228d69eb2e871438e0321.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_edbafec978446c47ea6c6960a29a245a.html:16
+#: templates/zerver/emails/custom/compiled/custom_email_f25fc427d4e556e25426d5d35b76e470.html:35
+#: templates/zerver/emails/custom/custom_email_098e9bd71faa6c36e43c5a0ea2064778.source.html:95
+#: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
+#: templates/zerver/emails/custom/custom_email_1409d92fc85cf3223f04c53f4d968b2e.source.html:54
+#: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
+#: templates/zerver/emails/custom/custom_email_1e4cfd33318438f830e0c3e40787ce19.source.html:95
+#: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
+#: templates/zerver/emails/custom/custom_email_2670cddb12bff952186115b92e0e0001.source.html:96
+#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
+#: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
+#: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
+#: templates/zerver/emails/custom/custom_email_4d6d4d7ca23407002e70eaebadf4a4d0.source.html:49
+#: templates/zerver/emails/custom/custom_email_50cda0b5e48c5a77eb5df74b94d74a9d.source.html:95
+#: templates/zerver/emails/custom/custom_email_5d6651a6bee23fa2ae49f64a1d0aeac0.source.html:65
+#: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
+#: templates/zerver/emails/custom/custom_email_724f2abbf3118920bfe8d10b8c520947.source.html:51
+#: templates/zerver/emails/custom/custom_email_7cdeb0d40275cef453ee0a2e5cbbba9c.source.html:56
+#: templates/zerver/emails/custom/custom_email_838c9c6ac478079cb2935d10c9f1a3c3.source.html:49
+#: templates/zerver/emails/custom/custom_email_8c519b0fe604b520d0453d67ff26eece.source.html:95
+#: templates/zerver/emails/custom/custom_email_a9094a7113ecb4fd1472c54dfc1c8725.source.html:95
+#: templates/zerver/emails/custom/custom_email_d5c63509cf008c626cdcbdde801f814c.source.html:34
+#: templates/zerver/emails/custom/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.source.html:15
+#: templates/zerver/emails/custom/custom_email_dab625ae2974493761ac9453f4022481.source.html:33
+#: templates/zerver/emails/custom/custom_email_e5e19063fd9915a8b2ec281fa4678a68.source.html:95
+#: templates/zerver/emails/custom/custom_email_e5f90f6ce84228d69eb2e871438e0321.source.html:95
+#: templates/zerver/emails/custom/custom_email_edbafec978446c47ea6c6960a29a245a.source.html:15
+#: templates/zerver/emails/custom/custom_email_f25fc427d4e556e25426d5d35b76e470.source.html:34
+#: templates/zerver/emails/custom_email_base.pre.html:15
+#: templates/zerver/emails/digest.source.html:39
+#: templates/zerver/emails/followup_day2.source.html:33
+#: templates/zerver/emails/notify_new_login.source.html:46
+msgid "Manage email preferences"
+msgstr ""
+
+#: templates/zerver/emails/compiled/digest.html:41
+#: templates/zerver/emails/digest.source.html:40
+msgid "Unsubscribe from digest emails"
+msgstr ""
+
+#: templates/zerver/emails/compiled/email_base_default.html:95
+#: templates/zerver/emails/compiled/email_base_marketing.html:95
+#: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.txt:31
+#: templates/zerver/emails/custom/custom_email_5d6651a6bee23fa2ae49f64a1d0aeac0.txt:31
+#: templates/zerver/emails/custom/custom_email_87e5498dc967c76480e0895fe3f11751.txt:30
+#: templates/zerver/emails/custom/custom_email_b4026e4b7cec0fffdb28e3155fbc7653.txt:31
+#: templates/zerver/emails/email_base_default.source.html:31
+#: templates/zerver/emails/email_base_marketing.source.html:31
+msgid "Swimming fish"
+msgstr "පිහිනුම් මාළු"
+
+#: templates/zerver/emails/compiled/find_team.html:9
+#: templates/zerver/emails/find_team.source.html:8
+#: templates/zerver/emails/find_team.txt:1
+msgid "Thanks for your request!"
+msgstr "ඔබගේ ඉල්ලීමට ස්තූතියි!"
+
+#: templates/zerver/emails/compiled/find_team.html:11
+#, python-format
+msgid ""
+"Your email address %(email)s has accounts with the following Zulip "
+"organizations hosted by <a href=\"%(external_host)s\" style=\"color:#5f5ec7;"
+" text-decoration:underline\">%(external_host)s</a>:"
+msgstr "ඔබගේ වි-තැපැල් ලිපිනය %(email)s ට <a href=\"%(external_host)s\" style=\"color:#5f5ec7; text-decoration:underline\">%(external_host)s</a> මගින් සත්කාරකත්වය දරනු ලබන පහත දැක්වෙන සුලිප් සංවිධානයන් හි ගිණුම් ඇත:"
+
+#: templates/zerver/emails/compiled/find_team.html:19
+#: templates/zerver/emails/find_team.source.html:18
+#: templates/zerver/emails/find_team.txt:10
+msgid ""
+"If you have trouble logging in, please contact Zulip support by replying to "
+"this email."
+msgstr ""
+
+#: templates/zerver/emails/compiled/find_team.html:21
+#: templates/zerver/emails/find_team.source.html:20
+#: templates/zerver/emails/find_team.txt:13
+msgid "Thanks for using Zulip!"
+msgstr "සුලිප් භාවිතා කිරීම ගැන ස්තූතියි!"
+
+#: templates/zerver/emails/compiled/followup_day1.html:9
+#: templates/zerver/emails/followup_day1.source.html:8
+#: templates/zerver/emails/followup_day1.txt:1
+msgid "Welcome to Zulip!"
+msgstr "සුලිප් වෙත සාදරයෙන් පිළිගනිමු!"
+
+#: templates/zerver/emails/compiled/followup_day1.html:14
+msgid ""
+"You've created a demo Zulip organization. Note that this organization will "
+"be automatically deleted in 30 days. Learn more about demo organizations <a "
+"href=\"https://zulip.com/help/demo-organizations\" style=\"color:#5f5ec7; "
+"text-decoration:underline\">here</a>!"
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day1.html:16
+#: templates/zerver/emails/followup_day1.source.html:15
+#, python-format
+msgid "You've created the new Zulip organization <b>%(realm_name)s</b>."
+msgstr "ඔබ නව <b>%(realm_name)s</b> සුලිප් සංවිධානය සාදා ඇත."
+
+#: templates/zerver/emails/compiled/followup_day1.html:19
+#: templates/zerver/emails/followup_day1.source.html:18
+#, python-format
+msgid "You've joined the Zulip organization <b>%(realm_name)s</b>."
+msgstr "ඔබ <b>%(realm_name)s</b> සුලිප් සංවිධානයට එක් වී ඇත."
+
+#: templates/zerver/emails/compiled/followup_day1.html:24
+#: templates/zerver/emails/followup_day1.source.html:23
+#: templates/zerver/emails/followup_day1.txt:15
+msgid "Your account details:"
+msgstr "ඔබගේ ගිණුමේ විස්තර:"
+
+#: templates/zerver/emails/compiled/followup_day1.html:27
+#: templates/zerver/emails/followup_day1.source.html:25
+#: templates/zerver/emails/followup_day1.txt:16
+#, python-format
+msgid "Organization URL: %(organization_url)s"
+msgstr "සංවිධානයේ ඒ.ස.නි.: %(organization_url)s"
+
+#: templates/zerver/emails/compiled/followup_day1.html:31
+#: templates/zerver/emails/followup_day1.source.html:28
+#: templates/zerver/emails/followup_day1.txt:19
+#, python-format
+msgid "Username: %(ldap_username)s"
+msgstr "පරිශීලක නාමය: %(ldap_username)s"
+
+#: templates/zerver/emails/compiled/followup_day1.html:34
+#: templates/zerver/emails/followup_day1.source.html:30
+#: templates/zerver/emails/followup_day1.txt:21
+msgid "Use your LDAP account to log in"
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day1.html:38
+#: templates/zerver/emails/followup_day1.source.html:33
+#: templates/zerver/emails/followup_day1.txt:24
+#, python-format
+msgid "Email: %(email)s"
+msgstr "වි-තැපෑල: %(email)s"
+
+#: templates/zerver/emails/compiled/followup_day1.html:42
+#, python-format
+msgid ""
+"(you'll need these to sign in to the <a href=\"%(apps_page_link)s\" "
+"style=\"color:#5f5ec7; text-decoration:underline\">mobile and desktop</a> "
+"apps)"
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day1.html:47
+#, python-format
+msgid ""
+"Check out our <a href=\"%(getting_started_link)s\" style=\"color:#5f5ec7; "
+"text-decoration:underline\">guide for admins</a>, become a Zulip pro with a "
+"few <a href=\"%(keyboard_shortcuts_link)s\" style=\"color:#5f5ec7; text-"
+"decoration:underline\">keyboard shortcuts</a>, or <a href=\"%(realm_uri)s\" "
+"style=\"color:#5f5ec7; text-decoration:underline\">dive right in</a>!"
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day1.html:49
+#, python-format
+msgid ""
+"<a href=\"%(getting_started_link)s\" style=\"color:#5f5ec7; text-"
+"decoration:underline\">Learn more</a> about Zulip, become a pro with a few "
+"<a href=\"%(keyboard_shortcuts_link)s\" style=\"color:#5f5ec7; text-"
+"decoration:underline\">keyboard shortcuts</a>, or <a href=\"%(realm_uri)s\" "
+"style=\"color:#5f5ec7; text-decoration:underline\">dive right in</a>!"
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day1.html:54
+#: templates/zerver/emails/followup_day1.source.html:48
+#: templates/zerver/emails/followup_day1.txt:36
+msgid "Cheers,"
+msgstr "ජයවේවා,"
+
+#: templates/zerver/emails/compiled/followup_day1.html:55
+#: templates/zerver/emails/compiled/notify_change_in_email.html:15
+#: templates/zerver/emails/followup_day1.source.html:49
+#: templates/zerver/emails/followup_day1.txt:37
+#: templates/zerver/emails/notify_change_in_email.source.html:14
+#: templates/zerver/emails/notify_change_in_email.txt:7
+msgid "Team Zulip"
+msgstr "සුලිප් කණ්ඩායම"
+
+#: templates/zerver/emails/compiled/followup_day1.html:59
+msgid ""
+"PS: Follow us on <a href=\"https://twitter.com/zulip\" "
+"style=\"color:#5f5ec7; text-decoration:underline\">Twitter</a>, star us on "
+"<a href=\"https://github.com/zulip/zulip\" style=\"color:#5f5ec7; text-"
+"decoration:underline\">GitHub</a>, or chat with us live on the <a "
+"href=\"https://zulip.com/developer-community/\" style=\"color:#5f5ec7; text-"
+"decoration:underline\">Zulip community server</a>!"
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day2.html:9
+#: templates/zerver/emails/followup_day2.source.html:8
+#: templates/zerver/emails/followup_day2.txt:1
+msgid "Hey,"
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day2.html:11
+#: templates/zerver/emails/followup_day2.source.html:10
+#: templates/zerver/emails/followup_day2.txt:3
+msgid ""
+"I wanted to share one last thing with you: a few tips about topics, since "
+"mastering topics is a key part of being a Zulip power user."
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day2.html:13
+#: templates/zerver/emails/followup_day2.source.html:12
+msgid "Examples of short topics"
+msgstr "කෙටි මාතෘකා සඳහා උදාහරණ"
+
+#: templates/zerver/emails/compiled/followup_day2.html:15
+msgid ""
+"Topics are like email subject lines. The big difference, though, is that "
+"they're really short and lightweight. Two or three words will do it. Don't "
+"overthink 'em—you can always edit the message later!"
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day2.html:18
+#: templates/zerver/emails/followup_day2.source.html:17
+#: templates/zerver/emails/followup_day2.txt:7
+msgid "Good topics: design mockup, Bug 345, acme burgers"
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day2.html:19
+#: templates/zerver/emails/followup_day2.source.html:18
+#: templates/zerver/emails/followup_day2.txt:9
+msgid ""
+"Not recommended: \"What do people think of this new design mockup?\", \"I'm "
+"looking at Bug 345\", \"Is Acme Burgers open for lunch?\""
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day2.html:22
+#: templates/zerver/emails/followup_day2.source.html:21
+msgid "Example of a topic that is too long"
+msgstr "ඉතා දිගු මාතෘකාවකට උදාහරණය"
+
+#: templates/zerver/emails/compiled/followup_day2.html:24
+msgid ""
+"Why bother with topics? Well, two reasons: it makes conversations clearer "
+"(imagine if email didn't have them!), and it lets you more efficiently catch"
+" up on what's happened while you're away—read the topics that are relevant "
+"to you, and ignore the ones that aren't!"
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day2.html:26
+#: templates/zerver/emails/followup_day2.source.html:25
+msgid "Take it for a spin now."
+msgstr ""
+
+#: templates/zerver/emails/compiled/followup_day2.html:28
+#: templates/zerver/emails/compiled/notify_new_login.html:42
+#: templates/zerver/emails/followup_day2.source.html:27
+#: templates/zerver/emails/followup_day2.txt:16
+#: templates/zerver/emails/notify_new_login.source.html:40
+#: templates/zerver/emails/notify_new_login.txt:20
+msgid "Thanks,"
+msgstr "ස්තුතියි,"
+
+#: templates/zerver/emails/compiled/followup_day2.html:35
+#: templates/zerver/emails/followup_day2.source.html:34
+msgid "Unsubscribe from welcome emails"
+msgstr ""
+
+#: templates/zerver/emails/compiled/invitation.html:10
+#: templates/zerver/emails/invitation.source.html:9
+#: templates/zerver/emails/invitation.txt:1
+msgid "Hi there,"
+msgstr "ආයුබෝවන්,"
+
+#: templates/zerver/emails/compiled/invitation.html:13
+#, python-format
+msgid ""
+"%(referrer_name)s wants you to join them on Zulip — the team communication "
+"tool designed for productivity."
+msgstr ""
+
+#: templates/zerver/emails/compiled/invitation.html:16
+#: templates/zerver/emails/compiled/invitation_reminder.html:14
+#: templates/zerver/emails/invitation.source.html:15
+#: templates/zerver/emails/invitation_reminder.source.html:13
+msgid "To get started, click the button below."
+msgstr "ආරම්භයට පහත බොත්තම ඔබන්න."
+
+#: templates/zerver/emails/compiled/invitation_reminder.html:9
+#: templates/zerver/emails/invitation_reminder.source.html:8
+#: templates/zerver/emails/invitation_reminder.txt:1
+msgid "Hi again,"
+msgstr ""
+
+#: templates/zerver/emails/compiled/invitation_reminder.html:11
+#, python-format
+msgid ""
+"This is a friendly reminder that %(referrer_name)s wants you to join them on"
+" Zulip — the team communication tool designed for productivity."
+msgstr ""
+
+#: templates/zerver/emails/compiled/invitation_reminder.html:19
+#: templates/zerver/emails/invitation_reminder.source.html:18
+#: templates/zerver/emails/invitation_reminder.txt:8
+msgid "This is the last reminder you'll receive for this invitation."
+msgstr "මෙම ආරාධනය සඳහා ඔබට ලැබෙන අවසාන සිහිකැඳවීම මෙයයි."
+
+#: templates/zerver/emails/compiled/invitation_reminder.html:23
+#: templates/zerver/emails/invitation_reminder.source.html:22
+#, python-format
+msgid ""
+"\n"
+"    This invitation expires in two days. If the invitation expires,\n"
+"    you'll need to ask %(referrer_name)s for another one.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/compiled/missed_message.html:18
+#, python-format
+msgid ""
+"This email does not include message content because your organization has "
+"disabled <a class=\"content_disabled_help_link\" href=\"%(help_url)s\" "
+"style=\"color:#15c; text-decoration:underline\">message content appearing in"
+" email notifications</a>."
+msgstr "ඔබගේ සංවිධානය <a class=\"content_disabled_help_link\" href=\"%(help_url)s\" style=\"color:#15c; text-decoration:underline\">වි-තැපැල් දැනුම්දීම් හි පණිවිඩයේ අන්තර්ගතය දිස්වීම</a> අබල කර ඇති හෙයින් මෙම වි-තැපෑලෙහි පණිවිඩයේ අන්තර්ගතය ඇතුළත් නොවේ."
+
+#: templates/zerver/emails/compiled/missed_message.html:20
+#, python-format
+msgid ""
+"This email does not include message content because you have disabled <a "
+"class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\" "
+"style=\"color:#15c; text-decoration:underline\">message content appearing in"
+" email notifications</a>."
+msgstr "ඔබ <a class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\" style=\"color:#15c; text-decoration:underline\">වි-තැපැල් දැනුම්දීම් හි පණිවිඩයේ අන්තර්ගතය දිස්වීම</a> අබල කර ඇති හෙයින් මෙම වි-තැපෑලෙහි පණිවිඩයේ අන්තර්ගතය ඇතුළත් නොවේ."
+
+#: templates/zerver/emails/compiled/missed_message.html:31
+#: templates/zerver/emails/missed_message.source.html:30
+#: templates/zerver/emails/missed_message.txt:26
+#, python-format
+msgid ""
+"You are receiving this because @%(mentioned_user_group_name)s was mentioned "
+"in %(realm_name)s."
+msgstr "ඔබට මෙය ලැබෙන්නේ %(realm_name)s හි @%(mentioned_user_group_name)s සඳහන් වූ බැවිනි."
+
+#: templates/zerver/emails/compiled/missed_message.html:33
+#: templates/zerver/emails/missed_message.source.html:32
+#: templates/zerver/emails/missed_message.txt:28
+#, python-format
+msgid "You are receiving this because you were mentioned in %(realm_name)s."
+msgstr "ඔබට මෙය ලැබෙන්නේ ඔබව %(realm_name)s හි සඳහන් වූ බැවිනි."
+
+#: templates/zerver/emails/compiled/missed_message.html:36
+#: templates/zerver/emails/missed_message.source.html:35
+#: templates/zerver/emails/missed_message.txt:31
+msgid ""
+"You are receiving this because you have email notifications enabled for this"
+" stream."
+msgstr ""
+
+#: templates/zerver/emails/compiled/missed_message.html:39
+#, python-format
+msgid ""
+"Reply to this email directly, <a href=\"%(narrow_url)s\" style=\"color:#15c;"
+" text-decoration:underline\">view it in Zulip</a>, or <a "
+"href=\"%(notif_url)s\" style=\"color:#15c; text-"
+"decoration:underline\">manage email preferences</a>."
+msgstr ""
+
+#: templates/zerver/emails/compiled/missed_message.html:41
+#, python-format
+msgid ""
+"<a href=\"%(narrow_url)s\" style=\"color:#15c; text-"
+"decoration:underline\">View or reply in Zulip</a>, or <a "
+"href=\"%(notif_url)s\" style=\"color:#15c; text-"
+"decoration:underline\">manage email preferences</a>."
+msgstr ""
+
+#: templates/zerver/emails/compiled/missed_message.html:43
+#, python-format
+msgid ""
+"<a href=\"%(narrow_url)s\" style=\"color:#15c; text-"
+"decoration:underline\">Reply in Zulip</a>, or <a href=\"%(notif_url)s\" "
+"style=\"color:#15c; text-decoration:underline\">manage email "
+"preferences</a>."
+msgstr ""
+
+#: templates/zerver/emails/compiled/missed_message.html:45
+#, python-format
+msgid ""
+"\n"
+"    Do not reply to this email. This Zulip server is not configured to accept incoming emails (<a href=\"%(url)s\" style=\"color:#15c; text-decoration:underline\">help</a>).\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/compiled/notify_change_in_email.html:9
+#: templates/zerver/emails/notify_change_in_email.source.html:8
+#: templates/zerver/emails/notify_change_in_email.txt:1
+msgid "Hi,"
+msgstr "ආයුබෝ,"
+
+#: templates/zerver/emails/compiled/notify_change_in_email.html:11
+#: templates/zerver/emails/notify_change_in_email.source.html:10
+#, python-format
+msgid ""
+"The email associated with your Zulip account was recently changed to "
+"%(new_email)s. If you did not request this change, please contact us "
+"immediately at %(support_email)s."
+msgstr ""
+
+#: templates/zerver/emails/compiled/notify_change_in_email.html:14
+#: templates/zerver/emails/notify_change_in_email.source.html:13
+#: templates/zerver/emails/notify_change_in_email.txt:6
+msgid "Best,"
+msgstr "හොඳම,"
+
+#: templates/zerver/emails/compiled/notify_new_login.html:4
+#: templates/zerver/emails/notify_new_login.source.html:4
+#, python-format
+msgid ""
+"Organization: %(organization_url)s Time: %(login_time)s Email: "
+"%(user_email)s"
+msgstr "සංවිධානය: %(organization_url)s වේලාව: %(login_time)s වි-තැපෑල: %(user_email)s"
+
+#: templates/zerver/emails/compiled/notify_new_login.html:13
+#: templates/zerver/emails/notify_new_login.source.html:12
+#: templates/zerver/emails/notify_new_login.txt:1
+msgid "We noticed a recent login for the following Zulip account."
+msgstr "පහත දැක්වෙන සුලිප් ගිණුම සඳහා මෑතකදී ඇතුල් වීමක් අපි දුටුවෙමු."
+
+#: templates/zerver/emails/compiled/notify_new_login.html:18
+#: templates/zerver/emails/notify_new_login.source.html:16
+#, python-format
+msgid "Organization: %(organization_link)s"
+msgstr "සංවිධානය: %(organization_link)s"
+
+#: templates/zerver/emails/compiled/notify_new_login.html:21
+#: templates/zerver/emails/notify_new_login.source.html:19
+#: templates/zerver/emails/notify_new_login.txt:5
+#, python-format
+msgid "Email: %(user_email)s"
+msgstr "වි-තැපෑල: %(user_email)s"
+
+#: templates/zerver/emails/compiled/notify_new_login.html:24
+#: templates/zerver/emails/notify_new_login.source.html:22
+#: templates/zerver/emails/notify_new_login.txt:7
+#, python-format
+msgid "Time: %(login_time)s"
+msgstr "වේලාව: %(login_time)s"
+
+#: templates/zerver/emails/compiled/notify_new_login.html:27
+#: templates/zerver/emails/notify_new_login.source.html:25
+#: templates/zerver/emails/notify_new_login.txt:9
+#, python-format
+msgid "Device: %(device_browser)s on %(device_os)s."
+msgstr "උපාංගය: %(device_browser)s %(device_os)s හි."
+
+#: templates/zerver/emails/compiled/notify_new_login.html:30
+#: templates/zerver/emails/notify_new_login.source.html:28
+#: templates/zerver/emails/notify_new_login.txt:11
+#, python-format
+msgid "IP address: %(device_ip)s"
+msgstr "අ.ජා.කෙ. ලිපිනය: %(device_ip)s"
+
+#: templates/zerver/emails/compiled/notify_new_login.html:35
+#: templates/zerver/emails/notify_new_login.source.html:33
+#: templates/zerver/emails/notify_new_login.txt:14
+msgid "If this was you, great! There's nothing else you need to do."
+msgstr "මේ ඔබ නම්, හොඳයි! ඔබට කළ යුතු වෙනත් කිසිවක් නැත."
+
+#: templates/zerver/emails/compiled/notify_new_login.html:38
+#, python-format
+msgid ""
+"If you do not recognize this login, or think your account may have been "
+"compromised, please <a href=\"%(reset_link)s\" style=\"color:#5f5ec7; text-"
+"decoration:underline\">reset your password</a> or contact us immediately at "
+"%(support_email)s."
+msgstr ""
+
+#: templates/zerver/emails/compiled/notify_new_login.html:43
+#: templates/zerver/emails/notify_new_login.source.html:41
+#: templates/zerver/emails/notify_new_login.txt:21
+msgid "Zulip Security"
+msgstr "සුලිප් ආරක්‍ෂාව"
+
+#: templates/zerver/emails/compiled/notify_new_login.html:48
+#: templates/zerver/emails/notify_new_login.source.html:46
+msgid "Unsubscribe from login notifications"
+msgstr ""
+
+#: templates/zerver/emails/compiled/password_reset.html:10
+#: templates/zerver/emails/password_reset.source.html:9
+#: templates/zerver/emails/password_reset.txt:1
+#, python-format
+msgid ""
+"Somebody (possibly you) requested a new password for the Zulip account "
+"%(email)s on %(realm_uri)s."
+msgstr "%(realm_uri)s හි %(email)s යන සුලිප් ගිණුම සඳහා යමෙකු (බොහෝ විට ඔබ) නව මුරපදයක් ඉල්ලා ඇත."
+
+#: templates/zerver/emails/compiled/password_reset.html:14
+#: templates/zerver/emails/password_reset.source.html:13
+msgid "Click the button below to reset your password."
+msgstr "ඔබගේ මුරපදය නැවත සැකසීමට පහත බොත්තම ඔබන්න."
+
+#: templates/zerver/emails/compiled/password_reset.html:15
+#: templates/zerver/emails/password_reset.source.html:14
+msgid "Reset password"
+msgstr "මුරපදය නැවත සකසන්න"
+
+#: templates/zerver/emails/compiled/password_reset.html:20
+#, python-format
+msgid ""
+"You previously had an account on %(organization_url)s, but it has been "
+"deactivated. You can contact an organization administrator to <a "
+"href=\"%(help_link)s\" style=\"color:#5f5ec7; text-"
+"decoration:underline\">reactivate your account</a>."
+msgstr ""
+
+#: templates/zerver/emails/compiled/password_reset.html:22
+#: templates/zerver/emails/password_reset.source.html:21
+#: templates/zerver/emails/password_reset.txt:11
+msgid "You do not have an account in that Zulip organization."
+msgstr "එම සුලිප් සංවිධානයෙහි ඔබට ගිණුමක් නැත."
+
+#: templates/zerver/emails/compiled/password_reset.html:27
+#: templates/zerver/emails/password_reset.source.html:26
+#: templates/zerver/emails/password_reset.txt:16
+msgid "You do have active accounts in the following organization(s)."
+msgstr "පහත දැක්වෙන සංවිධාන(ය) තුළ ඔබගේ ක්‍රියාත්මක ගිණුම් තිබේ."
+
+#: templates/zerver/emails/compiled/password_reset.html:34
+#: templates/zerver/emails/password_reset.source.html:32
+#: templates/zerver/emails/password_reset.txt:21
+msgid ""
+"You can try logging in or resetting your password in the organization(s) "
+"above."
+msgstr "ඉහත සංවිධාන(ය) ට ඇතුල් වීමට හෝ ඔබගේ මුරපදය නැවත සැකසීමට උත්සාහ කළ හැකිය."
+
+#: templates/zerver/emails/compiled/password_reset.html:40
+#: templates/zerver/emails/password_reset.source.html:38
+#: templates/zerver/emails/password_reset.txt:25
+msgid ""
+"If you do not recognize this activity, you can safely ignore this email."
+msgstr "ඔබට මෙම ක්‍රියාකාරකම හඳුනාගත නොහැකි නම්, මෙම වි-තැපෑල ආරක්ෂිතව නොසලකා හැරීමට හැකිය."
+
+#: templates/zerver/emails/compiled/realm_auto_downgraded.html:8
+#: templates/zerver/emails/realm_auto_downgraded.source.html:8
+#, python-format
+msgid ""
+"\n"
+"    Your organization, %(organization_name_with_link)s, has been downgraded to the Zulip Cloud\n"
+"    Free plan because of unpaid invoices. The unpaid invoices have been voided.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/compiled/realm_auto_downgraded.html:15
+#: templates/zerver/emails/realm_auto_downgraded.source.html:15
+#, python-format
+msgid ""
+"\n"
+"    To continue on the Zulip Cloud Standard plan, please upgrade again by going to %(upgrade_url)s.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/compiled/realm_auto_downgraded.html:22
+#: templates/zerver/emails/realm_auto_downgraded.source.html:22
+#, python-format
+msgid ""
+"\n"
+"    If you think this was a mistake or need more details, please reach out to us at %(support_email)s.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/compiled/realm_reactivation.html:9
+#: templates/zerver/emails/realm_reactivation.source.html:8
+#: templates/zerver/emails/realm_reactivation.txt:1
+#, python-format
+msgid "Dear former administrators of %(realm_name)s,"
+msgstr "හිතවත් %(realm_name)s හි හිටපු පරිපාලකයින් වෙත,"
+
+#: templates/zerver/emails/compiled/realm_reactivation.html:11
+#: templates/zerver/emails/realm_reactivation.source.html:10
+#: templates/zerver/emails/realm_reactivation.txt:4
+#, python-format
+msgid ""
+"One of your administrators requested reactivation of the previously "
+"deactivated Zulip organization hosted at %(realm_uri)s."
+msgstr ""
+
+#: templates/zerver/emails/compiled/realm_reactivation.html:14
+#: templates/zerver/emails/realm_reactivation.source.html:13
+msgid "Click the button below to reactivate your organization."
+msgstr ""
+
+#: templates/zerver/emails/compiled/realm_reactivation.html:15
+#: templates/zerver/emails/realm_reactivation.source.html:14
+msgid "Reactivate organization"
+msgstr ""
+
+#: templates/zerver/emails/compiled/realm_reactivation.html:18
+#: templates/zerver/emails/realm_reactivation.source.html:17
+#: templates/zerver/emails/realm_reactivation.txt:10
+msgid ""
+"If the request was in error, you can take no action and this link will "
+"expire in 24 hours."
+msgstr "ඉල්ලීම වැරදීමක් නම්, ඔබට කිසිදු ක්‍රියාමාර්ගයක් ගත නොහැකි අතර මෙම සබැඳිය පැය 24 කින් කල් ඉකුත් වේ."
+
+#: templates/zerver/emails/confirm_new_email.subject.txt:1
+msgid "Verify your new email address"
+msgstr ""
+
+#: templates/zerver/emails/confirm_new_email.txt:9
+#, python-format
+msgid ""
+"If you did not request this change, please contact us immediately at "
+"<%(support_email)s>."
+msgstr ""
+
+#: templates/zerver/emails/confirm_registration.subject.txt:2
+msgid "Create your Zulip organization"
+msgstr "ඔබගේ සුලිප් සංවිධානය සාදන්න"
+
+#: templates/zerver/emails/confirm_registration.subject.txt:4
+msgid "Activate your Zulip account"
+msgstr "ඔබගේ සුලිප් ගිණුම ක්‍රියාත්මක කරන්න"
+
+#: templates/zerver/emails/confirm_registration.txt:14
+#: templates/zerver/emails/invitation.txt:8
+#, python-format
+msgid ""
+"Contact us any time at %(support_email)s if you run into trouble,have any "
+"feedback, or just want to chat!"
+msgstr ""
+
+#: templates/zerver/emails/custom/compiled/custom_email_098e9bd71faa6c36e43c5a0ea2064778.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
+#: templates/zerver/emails/custom/compiled/custom_email_1409d92fc85cf3223f04c53f4d968b2e.html:55
+#: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
+#: templates/zerver/emails/custom/compiled/custom_email_1e4cfd33318438f830e0c3e40787ce19.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
+#: templates/zerver/emails/custom/compiled/custom_email_2670cddb12bff952186115b92e0e0001.html:97
+#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
+#: templates/zerver/emails/custom/compiled/custom_email_4d6d4d7ca23407002e70eaebadf4a4d0.html:50
+#: templates/zerver/emails/custom/compiled/custom_email_50cda0b5e48c5a77eb5df74b94d74a9d.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_5d6651a6bee23fa2ae49f64a1d0aeac0.html:66
+#: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
+#: templates/zerver/emails/custom/compiled/custom_email_7cdeb0d40275cef453ee0a2e5cbbba9c.html:57
+#: templates/zerver/emails/custom/compiled/custom_email_838c9c6ac478079cb2935d10c9f1a3c3.html:50
+#: templates/zerver/emails/custom/compiled/custom_email_8c519b0fe604b520d0453d67ff26eece.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_a9094a7113ecb4fd1472c54dfc1c8725.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
+#: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:16
+#: templates/zerver/emails/custom/compiled/custom_email_dab625ae2974493761ac9453f4022481.html:34
+#: templates/zerver/emails/custom/compiled/custom_email_e5e19063fd9915a8b2ec281fa4678a68.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_e5f90f6ce84228d69eb2e871438e0321.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_edbafec978446c47ea6c6960a29a245a.html:16
+#: templates/zerver/emails/custom/compiled/custom_email_f25fc427d4e556e25426d5d35b76e470.html:35
+#: templates/zerver/emails/custom/custom_email_098e9bd71faa6c36e43c5a0ea2064778.source.html:95
+#: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
+#: templates/zerver/emails/custom/custom_email_1409d92fc85cf3223f04c53f4d968b2e.source.html:54
+#: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
+#: templates/zerver/emails/custom/custom_email_1e4cfd33318438f830e0c3e40787ce19.source.html:95
+#: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
+#: templates/zerver/emails/custom/custom_email_2670cddb12bff952186115b92e0e0001.source.html:96
+#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
+#: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
+#: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
+#: templates/zerver/emails/custom/custom_email_4d6d4d7ca23407002e70eaebadf4a4d0.source.html:49
+#: templates/zerver/emails/custom/custom_email_50cda0b5e48c5a77eb5df74b94d74a9d.source.html:95
+#: templates/zerver/emails/custom/custom_email_5d6651a6bee23fa2ae49f64a1d0aeac0.source.html:65
+#: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
+#: templates/zerver/emails/custom/custom_email_724f2abbf3118920bfe8d10b8c520947.source.html:51
+#: templates/zerver/emails/custom/custom_email_7cdeb0d40275cef453ee0a2e5cbbba9c.source.html:56
+#: templates/zerver/emails/custom/custom_email_838c9c6ac478079cb2935d10c9f1a3c3.source.html:49
+#: templates/zerver/emails/custom/custom_email_8c519b0fe604b520d0453d67ff26eece.source.html:95
+#: templates/zerver/emails/custom/custom_email_a9094a7113ecb4fd1472c54dfc1c8725.source.html:95
+#: templates/zerver/emails/custom/custom_email_d5c63509cf008c626cdcbdde801f814c.source.html:34
+#: templates/zerver/emails/custom/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.source.html:15
+#: templates/zerver/emails/custom/custom_email_dab625ae2974493761ac9453f4022481.source.html:33
+#: templates/zerver/emails/custom/custom_email_e5e19063fd9915a8b2ec281fa4678a68.source.html:95
+#: templates/zerver/emails/custom/custom_email_e5f90f6ce84228d69eb2e871438e0321.source.html:95
+#: templates/zerver/emails/custom/custom_email_edbafec978446c47ea6c6960a29a245a.source.html:15
+#: templates/zerver/emails/custom/custom_email_f25fc427d4e556e25426d5d35b76e470.source.html:34
+#: templates/zerver/emails/custom_email_base.pre.html:15
+msgid "Unsubscribe from marketing emails"
+msgstr ""
+
+#: templates/zerver/emails/digest.subject.txt:1
+#, python-format
+msgid "Zulip digest for %(realm_name)s"
+msgstr ""
+
+#: templates/zerver/emails/digest.txt:12
+#, python-format
+msgid "Click here to log in to Zulip and catch up: %(organization_uri)s."
+msgstr ""
+
+#: templates/zerver/emails/digest.txt:15
+#: templates/zerver/emails/followup_day2.txt:19
+msgid "Manage email preferences:"
+msgstr ""
+
+#: templates/zerver/emails/digest.txt:19
+msgid "Unsubscribe from digest emails:"
+msgstr ""
+
+#: templates/zerver/emails/find_team.source.html:10
+#, python-format
+msgid ""
+"Your email address %(email)s has accounts with the following Zulip "
+"organizations hosted by <a href=\"%(external_host)s\">%(external_host)s</a>:"
+msgstr "ඔබගේ වි-තැපැල් ලිපිනය %(email)s ට <a href=\"%(external_host)s\">%(external_host)s</a> මගින් සත්කාරකත්වය දරනු ලබන පහත දැක්වෙන සුලිප් සංවිධානයන් හි ගිණුම් ඇත:"
+
+#: templates/zerver/emails/find_team.subject.txt:1
+msgid "Your Zulip accounts"
+msgstr "ඔබගේ සුලිප් ගිණුම්"
+
+#: templates/zerver/emails/find_team.txt:3
+#, python-format
+msgid ""
+"Your email address %(email)s has accounts with the following Zulip "
+"organizations hosted by %(external_host)s:"
+msgstr "ඔබගේ වි-තැපැල් ලිපිනය %(email)s ට %(external_host)s මගින් සත්කාරකත්වය දරනු ලබන පහත දැක්වෙන සුලිප් සංවිධානයන් හි ගිණුම් ඇත:"
+
+#: templates/zerver/emails/followup_day1.source.html:13
+msgid ""
+"You've created a demo Zulip organization. Note that this organization will "
+"be automatically deleted in 30 days. Learn more about demo organizations <a "
+"href=\"https://zulip.com/help/demo-organizations\">here</a>!"
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.source.html:36
+#, python-format
+msgid ""
+"(you'll need these to sign in to the <a href=\"%(apps_page_link)s\">mobile "
+"and desktop</a> apps)"
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.source.html:41
+#, python-format
+msgid ""
+"Check out our <a href=\"%(getting_started_link)s\">guide for admins</a>, "
+"become a Zulip pro with a few <a "
+"href=\"%(keyboard_shortcuts_link)s\">keyboard shortcuts</a>, or <a "
+"href=\"%(realm_uri)s\">dive right in</a>!"
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.source.html:43
+#, python-format
+msgid ""
+"<a href=\"%(getting_started_link)s\">Learn more</a> about Zulip, become a "
+"pro with a few <a href=\"%(keyboard_shortcuts_link)s\">keyboard "
+"shortcuts</a>, or <a href=\"%(realm_uri)s\">dive right in</a>!"
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.source.html:53
+msgid ""
+"PS: Follow us on <a href=\"https://twitter.com/zulip\">Twitter</a>, star us "
+"on <a href=\"https://github.com/zulip/zulip\">GitHub</a>, or chat with us "
+"live on the <a href=\"https://zulip.com/developer-community/\">Zulip "
+"community server</a>!"
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.subject.txt:2
+#, python-format
+msgid "%(realm_name)s on Zulip: Your new organization details"
+msgstr "සුලිප් හි %(realm_name)s: ඔබගේ නව සංවිධානයේ විස්තර"
+
+#: templates/zerver/emails/followup_day1.subject.txt:4
+#, python-format
+msgid "%(realm_name)s on Zulip: Your new account details"
+msgstr "සුලිප් හි %(realm_name)s: ඔබගේ නව ගිණුමේ විස්තර"
+
+#: templates/zerver/emails/followup_day1.txt:5
+msgid ""
+"You've created a demo Zulip organization. Note that this organization will "
+"be automatically deleted in 30 days. Learn more about demo organizations "
+"here: https://zulip.com/help/demo-organizations"
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.txt:7
+#: templates/zerver/emails/followup_day1.txt:9
+#, python-format
+msgid "You've created the new Zulip organization %(realm_name)s."
+msgstr "ඔබ නව %(realm_name)s සුලිප් සංවිධානය සාදා ඇත."
+
+#: templates/zerver/emails/followup_day1.txt:11
+#, python-format
+msgid "You've joined the Zulip organization %(realm_name)s."
+msgstr "ඔබ %(realm_name)s සුලිප් සංවිධානයට එක් වී ඇත."
+
+#: templates/zerver/emails/followup_day1.txt:26
+#, python-format
+msgid ""
+"(you'll need these to sign in to the mobile and desktop apps "
+"(%(apps_page_link)s))"
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.txt:30
+#, python-format
+msgid ""
+"Check out our guide (%(getting_started_link)s) for admins, become a Zulip "
+"pro with a few keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive "
+"right in to %(realm_uri)s!"
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.txt:32
+#, python-format
+msgid ""
+"Learn more (%(getting_started_link)s) about Zulip, become a pro with a few "
+"keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive right in to "
+"%(realm_uri)s!"
+msgstr ""
+
+#: templates/zerver/emails/followup_day1.txt:39
+msgid ""
+"PS: Check us out on Twitter (@zulip), star us on GitHub "
+"(https://github.com/zulip/zulip), or chat with us live on the Zulip "
+"community server (https://zulip.com/developer-community/)!"
+msgstr ""
+
+#: templates/zerver/emails/followup_day2.source.html:14
+msgid ""
+"Topics are like email subject lines. The big difference, though, is that "
+"they're really short and lightweight. Two or three words will do it. Don't "
+"overthink 'em&mdash;you can always edit the message later!"
+msgstr ""
+
+#: templates/zerver/emails/followup_day2.source.html:23
+msgid ""
+"Why bother with topics? Well, two reasons: it makes conversations clearer "
+"(imagine if email didn't have them!), and it lets you more efficiently catch"
+" up on what's happened while you're away&mdash;read the topics that are "
+"relevant to you, and ignore the ones that aren't!"
+msgstr ""
+
+#: templates/zerver/emails/followup_day2.subject.txt:1
+msgid "One last thing: using topics like a pro"
+msgstr ""
+
+#: templates/zerver/emails/followup_day2.txt:5
+msgid ""
+"Topics are like email subject lines. The big difference, though, is that "
+"they're really short and lightweight. Two or three words will do it. Don't "
+"overthink 'em -- you can always edit the message later!"
+msgstr ""
+
+#: templates/zerver/emails/followup_day2.txt:11
+msgid ""
+"Why bother with topics? Well, two reasons: it makes conversations clearer "
+"(imagine if email didn't have them!), and it lets you more efficiently catch"
+" up on what's happened while you're away -- read the topics that are "
+"relevant to you, and ignore the ones that aren't!"
+msgstr ""
+
+#: templates/zerver/emails/followup_day2.txt:13
+msgid "Take it for a spin now:"
+msgstr ""
+
+#: templates/zerver/emails/followup_day2.txt:22
+msgid "Unsubscribe from welcome emails:"
+msgstr ""
+
+#: templates/zerver/emails/invitation.source.html:12
+#, python-format
+msgid ""
+"%(referrer_name)s wants you to join them on Zulip &mdash; the team "
+"communication tool designed for productivity."
+msgstr ""
+
+#: templates/zerver/emails/invitation.subject.txt:1
+#, python-format
+msgid "%(referrer_full_name)s has invited you to join %(referrer_realm_name)s"
+msgstr "%(referrer_full_name)s ඔබට %(referrer_realm_name)s හා එක් වීමට ආරාධනා කර ඇත"
+
+#: templates/zerver/emails/invitation.txt:3
+#, python-format
+msgid ""
+"%(referrer_full_name)s (%(referrer_email)s) wants you to join them on Zulip "
+"-- the team communication tool designed for productivity."
+msgstr ""
+
+#: templates/zerver/emails/invitation.txt:5
+#: templates/zerver/emails/invitation_reminder.txt:5
+msgid "To get started, click the link below."
+msgstr "ආරම්භයට පහත සබැඳිය ඔබන්න."
+
+#: templates/zerver/emails/invitation_reminder.source.html:10
+#, python-format
+msgid ""
+"This is a friendly reminder that %(referrer_name)s wants you to join them on"
+" Zulip &mdash; the team communication tool designed for productivity."
+msgstr ""
+
+#: templates/zerver/emails/invitation_reminder.subject.txt:1
+#, python-format
+msgid "Reminder: Join %(referrer_name)s at %(referrer_realm_name)s"
+msgstr "සිහිකැඳවීම: %(referrer_realm_name)s හි %(referrer_name)s හා එක් වන්න."
+
+#: templates/zerver/emails/invitation_reminder.txt:3
+#, python-format
+msgid ""
+"This is a friendly reminder that %(referrer_name)s (%(referrer_email)s) "
+"wants you to join them on Zulip -- the team communication tool designed for "
+"productivity."
+msgstr ""
+
+#: templates/zerver/emails/invitation_reminder.txt:10
+#, python-format
+msgid ""
+"This invitation expires in two days. If the invitation expires, you'll need "
+"to ask %(referrer_name)s for another one."
+msgstr "මෙම ඇරයුම දවස් දෙකකින් කල් ඉකුත් වේ. කල් ඉකුත් වුවහොත් ඔබට වෙනත් එකක් සඳහා %(referrer_name)s න් විමසිය යුතුය."
+
+#: templates/zerver/emails/missed_message.source.html:17
+#, python-format
+msgid ""
+"This email does not include message content because your organization has "
+"disabled <a class=\"content_disabled_help_link\" "
+"href=\"%(help_url)s\">message content appearing in email notifications</a>."
+msgstr "ඔබගේ සංවිධානය <a class=\"content_disabled_help_link\" href=\"%(help_url)s\">වි-තැපැල් දැනුම්දීම් හි පණිවිඩයේ අන්තර්ගතය දිස්වීම</a> අබල කර ඇති හෙයින් මෙම වි-තැපෑලෙහි පණිවිඩයේ අන්තර්ගතය ඇතුළත් නොවේ."
+
+#: templates/zerver/emails/missed_message.source.html:19
+#, python-format
+msgid ""
+"This email does not include message content because you have disabled <a "
+"class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">message "
+"content appearing in email notifications</a>."
+msgstr "ඔබ <a class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">වි-තැපැල් දැනුම්දීම් හි පණිවිඩයේ අන්තර්ගතය දිස්වීම</a> අබල කර ඇති හෙයින් මෙම වි-තැපෑලෙහි පණිවිඩයේ අන්තර්ගතය ඇතුළත් නොවේ."
+
+#: templates/zerver/emails/missed_message.source.html:38
+#, python-format
+msgid ""
+"Reply to this email directly, <a href=\"%(narrow_url)s\">view it in "
+"Zulip</a>, or <a href=\"%(notif_url)s\">manage email preferences</a>."
+msgstr ""
+
+#: templates/zerver/emails/missed_message.source.html:40
+#, python-format
+msgid ""
+"<a href=\"%(narrow_url)s\">View or reply in Zulip</a>, or <a "
+"href=\"%(notif_url)s\">manage email preferences</a>."
+msgstr ""
+
+#: templates/zerver/emails/missed_message.source.html:42
+#, python-format
+msgid ""
+"<a href=\"%(narrow_url)s\">Reply in Zulip</a>, or <a "
+"href=\"%(notif_url)s\">manage email preferences</a>."
+msgstr ""
+
+#: templates/zerver/emails/missed_message.source.html:44
+#, python-format
+msgid ""
+"\n"
+"    Do not reply to this email. This Zulip server is not configured to accept incoming emails (<a href=\"%(url)s\">help</a>).\n"
+"    "
+msgstr ""
+
+#: templates/zerver/emails/missed_message.subject.txt:2
+#, python-format
+msgid "Group PMs with %(huddle_display_name)s"
+msgstr "%(huddle_display_name)s සමඟ සමූහ පෞ.ප."
+
+#: templates/zerver/emails/missed_message.subject.txt:3
+#, python-format
+msgid "PMs with %(sender_str)s"
+msgstr "%(sender_str)s සමඟ පෞ.ප."
+
+#: templates/zerver/emails/missed_message.subject.txt:7
+msgid "New messages"
+msgstr "නව පණිවිඩ"
+
+#: templates/zerver/emails/missed_message.txt:11
+#, python-format
+msgid ""
+"\n"
+"This email does not include message content because your organization has disabled message content appearing in email notifications.\n"
+"See %(hide_content_url)s for more details.\n"
+msgstr ""
+
+#: templates/zerver/emails/missed_message.txt:16
+#, python-format
+msgid ""
+"\n"
+"This email does not include message content because you have disabled message content appearing in email notifications.\n"
+"See %(alert_notif_url)s for more details.\n"
+msgstr ""
+
+#: templates/zerver/emails/missed_message.txt:35
+msgid "Reply to this email directly, or view it in Zulip:"
+msgstr ""
+
+#: templates/zerver/emails/missed_message.txt:39
+msgid "View or reply in Zulip:"
+msgstr ""
+
+#: templates/zerver/emails/missed_message.txt:43
+msgid "Reply in Zulip:"
+msgstr "සුලිප් හි පිළිතුරු දෙන්න:"
+
+#: templates/zerver/emails/missed_message.txt:47
+msgid ""
+"\n"
+"Do not reply to this email. This Zulip server is not configured to accept\n"
+"incoming emails. Help:\n"
+msgstr ""
+
+#: templates/zerver/emails/missed_message.txt:54
+msgid "Manage email preferences: "
+msgstr ""
+
+#: templates/zerver/emails/notify_change_in_email.subject.txt:1
+#, python-format
+msgid "Zulip email changed for %(realm_name)s"
+msgstr "%(realm_name)s සඳහා සුලිප් වි-තැපෑල වෙනස් කෙරිණි"
+
+#: templates/zerver/emails/notify_change_in_email.txt:3
+#, python-format
+msgid ""
+"The email associated with your Zulip account was recently changed to "
+"%(new_email)s. If you did not request this change, please contact us "
+"immediately at <%(support_email)s>."
+msgstr ""
+
+#: templates/zerver/emails/notify_new_login.source.html:36
+#, python-format
+msgid ""
+"If you do not recognize this login, or think your account may have been "
+"compromised, please <a href=\"%(reset_link)s\">reset your password</a> or "
+"contact us immediately at %(support_email)s."
+msgstr ""
+
+#: templates/zerver/emails/notify_new_login.subject.txt:1
+#, python-format
+msgid "New login from %(device_browser)s on %(device_os)s"
+msgstr "%(device_os)s හි %(device_browser)s මඟින් නව ඇතුල් වීමක්"
+
+#: templates/zerver/emails/notify_new_login.txt:3
+#, python-format
+msgid "Organization: %(organization_url)s"
+msgstr "සංවිධානය: %(organization_url)s"
+
+#: templates/zerver/emails/notify_new_login.txt:16
+#, python-format
+msgid ""
+"\n"
+"If you do not recognize this login, or think your account may have been compromised, please reset your password at %(reset_link)s or contact us immediately at %(support_email)s."
+msgstr ""
+
+#: templates/zerver/emails/password_reset.source.html:19
+#, python-format
+msgid ""
+"You previously had an account on %(organization_url)s, but it has been "
+"deactivated. You can contact an organization administrator to <a "
+"href=\"%(help_link)s\">reactivate your account</a>."
+msgstr ""
+
+#: templates/zerver/emails/password_reset.subject.txt:1
+#, python-format
+msgid "Password reset request for %(realm_name)s"
+msgstr "%(realm_name)s සඳහා මුරපදය යළි සැකසීමේ ඉල්ලීම"
+
+#: templates/zerver/emails/password_reset.txt:4
+msgid "Click the link below to reset your password."
+msgstr "ඔබගේ මුරපදය නැවත සැකසීමට පහත සබැඳිය ඔබන්න."
+
+#: templates/zerver/emails/password_reset.txt:8
+#, python-format
+msgid ""
+"You previously had an account on %(realm_uri)s, but it has been deactivated."
+" You can contact an organization administrator to reactivate your account."
+msgstr ""
+
+#: templates/zerver/emails/realm_reactivation.subject.txt:1
+msgid "Reactivate your Zulip organization"
+msgstr ""
+
+#: templates/zerver/emails/realm_reactivation.txt:7
+msgid "Click the link below to reactivate your organization."
+msgstr ""
+
+#: templates/zerver/find_account.html:8
+msgid "Find your Zulip accounts"
+msgstr ""
+
+#: templates/zerver/find_account.html:41
+msgid "Email addresses"
+msgstr "වි-තැපැල් ලිපින"
+
+#: templates/zerver/find_account.html:43 templates/zerver/footer.html:53
+msgid "Find accounts"
+msgstr ""
+
+#: templates/zerver/footer.html:3
+msgid "Product"
+msgstr "නිෂ්පාදනය"
+
+#: templates/zerver/footer.html:5
+msgid "Home"
+msgstr "මුල"
+
+#: templates/zerver/footer.html:6
+msgid "Why Zulip"
+msgstr "ඇයි සුලිප්"
+
+#: templates/zerver/footer.html:7
+msgid "Features"
+msgstr "විශේෂාංග"
+
+#: templates/zerver/footer.html:8
+msgid "Plans &amp; pricing"
+msgstr "සැලසුම් සහ මිලකරණය"
+
+#: templates/zerver/footer.html:9
+msgid "Desktop &amp; mobile apps"
+msgstr ""
+
+#: templates/zerver/footer.html:10
+msgid "Security"
+msgstr "ආරක්ෂාව"
+
+#: templates/zerver/footer.html:11
+msgid "Integrations"
+msgstr "අනුකලන"
+
+#: templates/zerver/footer.html:15
+msgid "Solutions"
+msgstr "විසඳුම්"
+
+#: templates/zerver/footer.html:18
+msgid "Companies"
+msgstr "සමාගම්"
+
+#: templates/zerver/footer.html:21
+msgid "Open source projects"
+msgstr "විවෘත මූලාශ්‍ර ව්‍යාපෘති"
+
+#: templates/zerver/footer.html:24
+msgid "Education"
+msgstr "අධ්යාපනය"
+
+#: templates/zerver/footer.html:27
+msgid "Events and conferences"
+msgstr ""
+
+#: templates/zerver/footer.html:30
+msgid "Research"
+msgstr "පර්යේෂණ"
+
+#: templates/zerver/footer.html:33
+msgid "Communities"
+msgstr "ප්‍රජාවන්"
+
+#: templates/zerver/footer.html:38
+msgid "Customer stories"
+msgstr "පාරිභෝගික කථා"
+
+#: templates/zerver/footer.html:41
+msgid "Technical University of Munich"
+msgstr "මියුනිච් කාර්මික සරසවිය"
+
+#: templates/zerver/footer.html:44
+msgid "University of California San Diego"
+msgstr "කැලිෆෝනියා සැන් ඩියාගෝ සරසවිය"
+
+#: templates/zerver/footer.html:49
+msgid "Accounts"
+msgstr "ගිණුම්"
+
+#: templates/zerver/footer.html:56
+msgid "New organization"
+msgstr "නව සංවිධානය"
+
+#: templates/zerver/footer.html:58 templates/zerver/terms.html:16
+msgid "Terms of Service"
+msgstr "සේවාවේ නියම"
+
+#: templates/zerver/footer.html:59 templates/zerver/privacy.html:18
+msgid "Privacy policy"
+msgstr "රහස්‍යතා ප්‍රතිපත්තිය"
+
+#: templates/zerver/footer.html:63
+msgid "For users"
+msgstr "පරිශීලකයින් සඳහා"
+
+#: templates/zerver/footer.html:66
+msgid "Getting started"
+msgstr "ආරම්භය ගන්න"
+
+#: templates/zerver/footer.html:69
+msgid "Help center"
+msgstr "උපකාරක මධ්‍යස්ථානය"
+
+#: templates/zerver/footer.html:73
+msgid "Community chat"
+msgstr "ප්‍රජා සංවාදය"
+
+#: templates/zerver/footer.html:80
+msgid "Blog"
+msgstr ""
+
+#: templates/zerver/footer.html:85
+msgid "For administrators"
+msgstr "පරිපාලකයින් සඳහා"
+
+#: templates/zerver/footer.html:89
+msgid "Setting up your organization"
+msgstr "ඔබගේ සංවිධානය පිහිටුවීම"
+
+#: templates/zerver/footer.html:94
+msgid "Installing a Zulip server"
+msgstr "සුලිප් සේවාදායකයක් ස්ථාපනය කිරීම"
+
+#: templates/zerver/footer.html:99
+msgid "Upgrading a Zulip server"
+msgstr "සුලිප් සේවාදායකයක් ශ්‍රේණිකරනය"
+
+#: templates/zerver/footer.html:104
+msgid "Modifying Zulip"
+msgstr ""
+
+#: templates/zerver/footer.html:110
+msgid "For contributors"
+msgstr "දායකයින් සඳහා"
+
+#: templates/zerver/footer.html:112
+msgid "GitHub"
+msgstr "ගිට්හබ්"
+
+#: templates/zerver/footer.html:115
+msgid "Contributing to Zulip"
+msgstr "සුලිප් සඳහා දායක වීම"
+
+#: templates/zerver/footer.html:118
+msgid "Development community"
+msgstr "සංවර්ධන ප්‍රජාව"
+
+#: templates/zerver/footer.html:121
+msgid "Translation"
+msgstr "පරිවර්තනය"
+
+#: templates/zerver/footer.html:128
+msgid "About us"
+msgstr "අපි ගැන"
+
+#: templates/zerver/footer.html:130
+msgid "Team"
+msgstr "කණ්ඩායම"
+
+#: templates/zerver/footer.html:130
+msgid "History"
+msgstr "ඉතිහාසය"
+
+#: templates/zerver/footer.html:132
+msgid "Jobs"
+msgstr "රැකියා"
+
+#: templates/zerver/footer.html:134
+msgid "Sponsor Zulip"
+msgstr ""
+
+#: templates/zerver/for-communities.html:29
+#: templates/zerver/for-communities.html:52
+#: templates/zerver/for-events.html:35 templates/zerver/for-events.html:265
+#: templates/zerver/for-open-source.html:38
+#: templates/zerver/for-open-source.html:692
+#: templates/zerver/for-research.html:35
+#: templates/zerver/for-research.html:364
+msgid "Request sponsorship"
+msgstr ""
+
+#: templates/zerver/for-communities.html:32
+#: templates/zerver/for-communities.html:55
+#: templates/zerver/for-companies.html:32
+#: templates/zerver/for-education.html:39 templates/zerver/for-events.html:38
+#: templates/zerver/for-events.html:268
+#: templates/zerver/for-open-source.html:41
+#: templates/zerver/for-open-source.html:695
+#: templates/zerver/for-research.html:38
+#: templates/zerver/for-research.html:367
+msgid "Self-host Zulip"
+msgstr ""
+
+#: templates/zerver/for-companies.html:29
+msgid "View pricing"
+msgstr ""
+
+#: templates/zerver/for-education.html:36
+msgid "Education pricing"
+msgstr "අධ්යාපනික මිලකරණය"
+
+#: templates/zerver/hello.html:56
+msgid "Streams in Zulip"
+msgstr ""
+
+#: templates/zerver/hello.html:60 templates/zerver/hello.html:75
+#: templates/zerver/hello.html:90
+msgid "Streams in Slack"
+msgstr ""
+
+#: templates/zerver/hello.html:71
+msgid "Topics in Zulip"
+msgstr "සුලිප් හි මාතෘකා"
+
+#: templates/zerver/hello.html:86
+msgid "Stream topics in Zulip"
+msgstr ""
+
+#: templates/zerver/hello.html:98 templates/zerver/hello.html:99
+#: templates/zerver/hello.html:105 templates/zerver/hello.html:107
+msgid "The Tuesday night catering topic in Zulip"
+msgstr ""
+
+#: templates/zerver/hello.html:109
+msgid "The Tuesday night catering topic in Zulip - compose box"
+msgstr ""
+
+#: templates/zerver/hello.html:116 templates/zerver/hello.html:118
+msgid "The Tuesday night catering topic in Slack"
+msgstr ""
+
+#: templates/zerver/hello.html:127 templates/zerver/hello.html:537
+msgid "See plans and pricing"
+msgstr ""
+
+#: templates/zerver/hello.html:146
+msgid "Previous"
+msgstr "කලින්"
+
+#: templates/zerver/hello.html:151 templates/zerver/realm_redirect.html:32
+msgid "Next"
+msgstr "ඊළඟ"
+
+#: templates/zerver/hello.html:399
+msgid "Travis logo"
+msgstr "ට්‍රැවිස් ලාංඡනය"
+
+#: templates/zerver/hello.html:406
+msgid "GitHub logo"
+msgstr "ගිට්හබ් ලාංඡනය"
+
+#: templates/zerver/hello.html:413
+msgid "Heroku logo"
+msgstr "හෙරෝකු ලාංඡනය"
+
+#: templates/zerver/hello.html:420
+msgid "Zendesk logo"
+msgstr "සෙන්ඩෙස්ක් ලාංඡනය"
+
+#: templates/zerver/hello.html:427
+msgid "Jira logo"
+msgstr "ජිරා ලාංඡනය"
+
+#: templates/zerver/hello.html:434
+msgid "Sentry logo"
+msgstr "සෙන්ට්‍රි ලාංඡනය"
+
+#: templates/zerver/hello.html:441
+msgid "Pagerduty logo"
+msgstr "පෙජර්ඩියුටි ලාංඡනය"
+
+#: templates/zerver/hello.html:543
+msgid "Log in now"
+msgstr "දැන් ඇතුල් වෙන්න"
+
+#: templates/zerver/hello.html:547
+msgid "Sign up now"
+msgstr "දැන් ලියාපදිංචි වන්න"
+
+#: templates/zerver/insecure_desktop_app.html:11
+msgid "Update required"
+msgstr "යාවත්කාල කිරීම අවශ්‍යයි"
+
+#: templates/zerver/insecure_desktop_app.html:13
+msgid ""
+"\n"
+"                        You are using old version of the Zulip desktop\n"
+"                        app that is no longer supported.\n"
+"                        "
+msgstr ""
+
+#: templates/zerver/insecure_desktop_app.html:21
+msgid ""
+"\n"
+"                        The auto-update feature in this old version of\n"
+"                        Zulip desktop app no longer works.\n"
+"                        "
+msgstr ""
+
+#: templates/zerver/insecure_desktop_app.html:30
+msgid "Download the latest release."
+msgstr "නවතම නිකුතුව බාගන්න."
+
+#: templates/zerver/integrations/index.html:23
+#, python-format
+msgid "Over %(integrations_count_display)s native integrations."
+msgstr ""
+
+#: templates/zerver/integrations/index.html:27
+msgid ""
+"\n"
+"                        And hundreds more through\n"
+"                        <a href=\"/integrations/doc/zapier\">Zapier</a>\n"
+"                        and\n"
+"                        <a href=\"/integrations/doc/ifttt\">IFTTT</a>.\n"
+"                        "
+msgstr ""
+
+#: templates/zerver/integrations/index.html:40
+msgid "Search integrations"
+msgstr "අනුකලන සොයන්න"
+
+#: templates/zerver/integrations/index.html:47
+msgid "Filter by category"
+msgstr "ප්‍රවර්ගය අනුව පෙරන්න"
+
+#: templates/zerver/integrations/index.html:61
+#: templates/zerver/integrations/index.html:88
+msgid "Custom integrations"
+msgstr "අභිරුචි අනුකලන"
+
+#: templates/zerver/integrations/index.html:63
+#: templates/zerver/integrations/index.html:90
+msgid "Incoming webhooks"
+msgstr ""
+
+#: templates/zerver/integrations/index.html:66
+#: templates/zerver/integrations/index.html:93 zerver/lib/integrations.py:49
+msgid "Interactive bots"
+msgstr ""
+
+#: templates/zerver/integrations/index.html:69
+#: templates/zerver/integrations/index.html:96
+msgid "REST API"
+msgstr ""
+
+#: templates/zerver/integrations/index.html:76
+msgid "Categories"
+msgstr "ප්‍රවර්ග"
+
+#: templates/zerver/integrations/index.html:78
+msgid "All"
+msgstr "සියළුම"
+
+#: templates/zerver/invalid_email.html:4
+msgid "Invalid email"
+msgstr "වි-තැපෑල වලංගු නොවේ"
+
+#: templates/zerver/invalid_email.html:6
+#: templates/zerver/invalid_realm.html:11
+msgid "Hi there! Thank you for your interest in Zulip."
+msgstr "ආයුබෝ! සුලිප් ගැන දැක්වූ උනන්දුවට ඔබට ස්තූතියි."
+
+#: templates/zerver/invalid_email.html:10
+msgid ""
+"\n"
+"        The email address you are trying to sign up with is not valid.\n"
+"        Please sign up using a valid email address.\n"
+"        "
+msgstr ""
+
+#: templates/zerver/invalid_email.html:19
+#, python-format
+msgid ""
+"\n"
+"        The organization you are trying to join, %(realm_name)s,\n"
+"        only allows users with email addresses within the\n"
+"        organization. Please sign up using appropriate email address.\n"
+"        "
+msgstr ""
+
+#: templates/zerver/invalid_email.html:29
+#, python-format
+msgid ""
+"The organization you are trying to join,\n"
+"        %(realm_name)s, does not allow signups using disposable email\n"
+"        addresses. Please sign up using a real email address.\n"
+"        "
+msgstr ""
+
+#: templates/zerver/invalid_email.html:38
+#, python-format
+msgid ""
+"The organization you are trying to join,\n"
+"        %(realm_name)s, does not allow signups using emails\n"
+"        that contains +. Please sign up using appropriate email address.\n"
+"        "
+msgstr "ඔබ එක් වීමට උත්සාහ කරන %(realm_name)s සංවිධානයට, \n        + අඩංගු වි-තැපැල් භාවිතයෙන් ලියාපදිංචි වීමට ඉඩ නොදේ\n        උචිත වි-තැපැල් ලිපිනයක් භාවිතා කර ලියාපදිංචි වන්න.\n        "
+
+#: templates/zerver/invalid_realm.html:7
+msgid "Organization does not exist"
+msgstr "සංවිධානය නොපවතී"
+
+#: templates/zerver/invalid_realm.html:13
+msgid "There is no Zulip organization hosted at this subdomain."
+msgstr ""
+
+#: templates/zerver/log_into_subdomain_token_invalid.html:8
+msgid "Invalid or expired login session."
+msgstr ""
+
+#: templates/zerver/login.html:13
+msgid "Log in to Zulip"
+msgstr "සුලිප් වෙත ඇතුල් වන්න"
+
+#: templates/zerver/login.html:40
+msgid "Access without an account"
+msgstr ""
+
+#: templates/zerver/login.html:77
+msgid "Email or username"
+msgstr "වි-තැපෑල හෝ පරිශීලක නාමය"
+
+#: templates/zerver/login.html:79
+msgid "Username"
+msgstr "පරිශීලක නාමය"
+
+#: templates/zerver/login.html:90 templates/zerver/register.html:167
+#: templates/zerver/register.html:180 templates/zerver/reset_confirm.html:27
+msgid "Password"
+msgstr "මුරපදය"
+
+#: templates/zerver/login.html:107
+msgid ""
+"You've already registered with this email address. Please log in below."
+msgstr "ඔබ දැනටමත් මෙම වි-තැපැල් ලිපිනය සමඟ ලියාපදිංචි වී ඇත. පහතින් ඇතුල් වන්න."
+
+#: templates/zerver/login.html:134
+#, python-format
+msgid "Log in with %(identity_provider)s"
+msgstr "%(identity_provider)s සමඟ ඇතුල් වන්න"
+
+#: templates/zerver/login.html:142
+msgid "Forgot your password?"
+msgstr "මුරපදය අමතක වුනාද?"
+
+#: templates/zerver/login.html:154
+msgid ""
+"Don't have an account yet? You need to be invited to join this organization."
+msgstr "තවම ගිණුමක් නැද්ද? මෙම සංවිධානයට එක්වීමට ඔබට ආරාධනා කර තිබිය යුතුය."
+
+#: templates/zerver/no_spare_licenses.html:7
+msgid "This organization cannot accept new members right now."
+msgstr "මෙම සංවිධානයට දැන් නව සාමාජිකයින් පිළිගැනීමට නොහැකිය."
+
+#: templates/zerver/no_spare_licenses.html:10
+msgid ""
+"\n"
+"    New members cannot join this organization because all Zulip licenses are currently in use. Please contact the person who\n"
+"    invited you and ask them to increase the number of licenses, then try again.\n"
+"    "
+msgstr ""
+
+#: templates/zerver/portico-header-dropdown.html:3
+msgid "Go to Zulip"
+msgstr "සුලිප් වෙත යන්න"
+
+#: templates/zerver/privacy.html:26
+#, python-format
+msgid ""
+"\n"
+"                    This installation of Zulip does not have a configured privacy policy.\n"
+"                    Contact this <a href=\"mailto:%(support_email)s\">server's administrator</a>\n"
+"                    if you have any questions.\n"
+"                    "
+msgstr ""
+
+#: templates/zerver/rate_limit_exceeded.html:11
+msgid "Rate limit exceeded."
+msgstr ""
+
+#: templates/zerver/rate_limit_exceeded.html:13
+msgid ""
+"You have exceeded the limit for how\n"
+"                        often a user can perform this action."
+msgstr "පරිශීලකයෙකුට මෙම ක්‍රියාව සිදු කළ හැකි\n                        වාර ගණනේ සීමාව ඉක්මවා ඇත."
+
+#: templates/zerver/rate_limit_exceeded.html:15
+#, python-format
+msgid "You can try again in %(retry_after)s seconds."
+msgstr "ඔබට තත්. %(retry_after)s කින් නැවත උත්සාහ කළ හැකිය."
+
+#: templates/zerver/realm_creation_failed.html:19
+msgid ""
+"This server does not allow members of the public to create new "
+"organizations."
+msgstr "මෙම සේවාදායකය ප්‍රසිද්ධ පරිශීලකයින්ට නව සංවිධාන සෑදීමට ඉඩ නොදේ."
+
+#: templates/zerver/realm_creation_failed.html:21
+#, python-format
+msgid ""
+"\n"
+"                    Zulip is open source, so you can <a href=\"%(production_install_url)s\">install your own Zulip server</a> or create a new organization on\n"
+"                    <a href=\"%(zulip_cloud_link)s\">Zulip Cloud</a>\n"
+"                    "
+msgstr ""
+
+#: templates/zerver/realm_reactivation.html:9
+msgid "Your organization has been successfully reactivated."
+msgstr ""
+
+#: templates/zerver/realm_reactivation_link_error.html:9
+msgid "The organization reactivation link has expired or is not valid."
+msgstr ""
+
+#: templates/zerver/realm_redirect.html:8
+msgid "Log in to your organization"
+msgstr "ඔබගේ සංවිධානයට ඇතුල් වන්න"
+
+#: templates/zerver/realm_redirect.html:18
+msgid "Enter your organization's Zulip URL:"
+msgstr "ඔබගේ සංවිධානයේ සුලිප් ඒ.ස.නි. ඇතුල් කරන්න:"
+
+#: templates/zerver/realm_redirect.html:21
+msgid "your-organization-url"
+msgstr "ඔබගේ-සංවිධානයේ-ඒසනි"
+
+#: templates/zerver/realm_redirect.html:34
+msgid "Don't know your organization URL?"
+msgstr "ඔබගේ සංවිධානයේ ඒ.ස.නි. නොදන්නේද?"
+
+#: templates/zerver/realm_redirect.html:35
+msgid "Find your organization."
+msgstr ""
+
+#: templates/zerver/realm_redirect.html:43
+msgid "Need to get your group started on Zulip?"
+msgstr ""
+
+#: templates/zerver/realm_redirect.html:43
+msgid "Create a new organization."
+msgstr "නව සංවිධානයක් සාදන්න."
+
+#: templates/zerver/register.html:16
+msgid "Create your organization"
+msgstr "ඔබගේ සංවිධානය සාදන්න"
+
+#: templates/zerver/register.html:18
+msgid "Create your account"
+msgstr "ඔබගේ ගිණුම සාදන්න"
+
+#: templates/zerver/register.html:21
+msgid ""
+"\n"
+"            <p>You&rsquo;re almost there! We just need you to do one last thing.</p>\n"
+"            "
+msgstr ""
+
+#: templates/zerver/register.html:38
+msgid "Organization name"
+msgstr "සංවිධානයේ නම"
+
+#: templates/zerver/register.html:46
+msgid "Shorter is better than longer."
+msgstr "දිගට වඩා කෙටි වීම හොඳය."
+
+#: templates/zerver/register.html:61
+msgid "Organization type"
+msgstr "සංවිධානයේ වර්ගය"
+
+#: templates/zerver/register.html:66
+msgid "Organization URL"
+msgstr "සංවිධානයේ ඒ.ස.නි."
+
+#: templates/zerver/register.html:73
+#, python-format
+msgid "Use %(external_host)s"
+msgstr "%(external_host)s භාවිතා කරන්න"
+
+#: templates/zerver/register.html:97
+msgid "The URL users will use to access the new organization."
+msgstr "නව සංවිධානය වෙත ප්‍රවේශ වීමට පරිශීලකයින් ඒ.ස.නි. භාවිතා කරනු ඇත."
+
+#: templates/zerver/register.html:105
+msgid "Your account"
+msgstr "ඔබගේ ගිණුම"
+
+#: templates/zerver/register.html:124
+msgid "Import settings from existing Zulip account"
+msgstr "පවතින සුලිප් ගිණුමෙන් සැකසුම් ආයාත කරන්න"
+
+#: templates/zerver/register.html:130
+msgid "Don&rsquo;t import settings"
+msgstr "සැකසුම් ආයාත නොකරන්න"
+
+#: templates/zerver/register.html:149
+msgid "Full name or 名前"
+msgstr "සම්පූර්ණ නම හෝ 名 前"
+
+#: templates/zerver/register.html:150
+msgid "Full name"
+msgstr "සම්පූර්ණ නම"
+
+#: templates/zerver/register.html:170
+msgid "Enter your LDAP/Active Directory password."
+msgstr ""
+
+#: templates/zerver/register.html:184
+msgid ""
+"This is used for mobile applications and other tools that require a "
+"password."
+msgstr "මුරපදයක් අවශ්‍ය ජංගම යෙදුම් සහ වෙනත් මෙවලම් සඳහා මෙය භාවිතා කෙරේ."
+
+#: templates/zerver/register.html:192
+msgid "Password strength"
+msgstr "මුරපදයේ ශක්තිය"
+
+#: templates/zerver/register.html:201
+msgid "What are you interested in?"
+msgstr "ඔබ උනන්දු වන්නේ කුමක් ගැනද?"
+
+#: templates/zerver/register.html:257
+msgid "Subscribe me to Zulip's low-traffic newsletter (a few emails a year)."
+msgstr ""
+
+#: templates/zerver/reset.html:7
+msgid "Reset your password"
+msgstr "ඔබගේ මුරපදය නැවත සකසන්න"
+
+#: templates/zerver/reset.html:29
+msgid "Send reset link"
+msgstr "යළි පිහිටුවීමේ සබැඳිය යවන්න"
+
+#: templates/zerver/reset_confirm.html:11
+msgid "Set a new password."
+msgstr "නව මුරපදයක් සකසන්න."
+
+#: templates/zerver/reset_confirm.html:48
+msgid "Confirm password"
+msgstr ""
+
+#: templates/zerver/reset_confirm.html:68
+msgid "Sorry, the link you provided is invalid or has already been used."
+msgstr "කණගාටුයි, ඔබ ලබා දුන් සබැඳිය වලංගු නැත හෝ දැනටමත් භාවිතා කර ඇත."
+
+#: templates/zerver/reset_done.html:9
+msgid "We've reset your password!"
+msgstr "අපි ඔබගේ මුරපදය නැවත සැකසුවෙමු!"
+
+#: templates/zerver/reset_done.html:13
+#, python-format
+msgid "Please <a href=\"%(login_url)s\">log in</a> with your new password."
+msgstr "ඔබගේ නව මුරපදය සමඟ <a href=\"%(login_url)s\">ඇතුල් වන්න</a>"
+
+#: templates/zerver/reset_emailed.html:9
+msgid "Password reset sent!"
+msgstr "මුරපදය යළි සැකසීම යවන ලදි!"
+
+#: templates/zerver/reset_emailed.html:13
+msgid "Check your email in a few minutes to finish the process."
+msgstr "ක්‍රියාවලිය අවසන් කිරීම සඳහා විනාඩි කිහිපයකින් ඔබගේ වි-තැපෑල පරීක්‍ෂා කරන්න."
+
+#: templates/zerver/social_auth_select_email.html:6
+msgid ""
+"\n"
+"        <h1 class=\"get-started\">Select account</h1>\n"
+"        "
+msgstr ""
+
+#: templates/zerver/social_auth_select_email.html:63
+msgid ""
+"\n"
+"            Your GitHub account also has unverified email addresses\n"
+"            associated with it.\n"
+"            "
+msgstr ""
+
+#: templates/zerver/social_auth_select_email.html:69
+msgid ""
+"\n"
+"            To use one of these to log in to Zulip, you must first\n"
+"            <a href=\"https://github.com/settings/emails\">verify it with GitHub.</a>\n"
+"            "
+msgstr ""
+
+#: templates/zerver/team.html:128
+msgid "Avatar"
+msgstr ""
+
+#: templates/zerver/terms.html:24
+#, python-format
+msgid ""
+"\n"
+"                    This installation of Zulip does not have a configured terms of service.\n"
+"                    Contact this <a href=\"mailto:%(support_email)s\">server's administrator</a>\n"
+"                    if you have any questions.\n"
+"                    "
+msgstr ""
+
+#: templates/zerver/unsubscribe_link_error.html:5
+msgid "Unknown email unsubscribe request"
+msgstr ""
+
+#: templates/zerver/unsubscribe_link_error.html:7
+msgid ""
+"Hi there! It looks like you tried to unsubscribe from something, but we don't\n"
+"recognize the URL."
+msgstr ""
+
+#: templates/zerver/unsubscribe_link_error.html:10
+#, python-format
+msgid ""
+"Please double-check that you have the full URL and try again, or <a "
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
+"%%20e-"
+"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
+" us</a> and we'll get this squared away!"
+msgstr ""
+
+#: templates/zerver/unsubscribe_success.html:10
+msgid "Email settings updated"
+msgstr "වි-තැපැල් සැකසුම් යාවත්කාල කෙරිණි"
+
+#: templates/zerver/unsubscribe_success.html:15
+#, python-format
+msgid ""
+"\n"
+"                    You've successfully unsubscribed from Zulip %(subscription_type)s emails.\n"
+"                    "
+msgstr ""
+
+#: templates/zerver/unsubscribe_success.html:21
+#, python-format
+msgid ""
+"\n"
+"                    You can undo this change or review your\n"
+"                    preferences in your\n"
+"                    <a href=\"%(realm_uri)s/#settings/notifications\">Zulip notification\n"
+"                    settings</a>.\n"
+"                    "
+msgstr ""
+
+#: templates/zerver/unsupported_browser.html:11
+msgid "Unsupported browser"
+msgstr "සහාය නොදක්වන අතිරික්සුවකි"
+
+#: templates/zerver/unsupported_browser.html:13
+#, python-format
+msgid ""
+"\n"
+"                        %(browser_name)s is not supported by Zulip.\n"
+"                        "
+msgstr ""
+
+#: templates/zerver/unsupported_browser.html:18
+msgid ""
+"\n"
+"                        Zulip supports modern browsers like Firefox,\n"
+"                        Chrome, and Edge.\n"
+"                        "
+msgstr ""
+
+#: templates/zerver/unsupported_browser.html:24
+#, python-format
+msgid ""
+"\n"
+"                        You can also use the <a href=\"%(apps_page_link)s\">Zulip desktop app</a>.\n"
+"                        "
+msgstr ""
+
+#: templates/zerver/zulipchat_migration_tos.html:2
+msgid ""
+"\n"
+"    <p>This organization has been migrated to new hosting on zulip.com. We just need you to do one last thing.</p>\n"
+"    <h3>Accept the Zulip Cloud terms of service</h3>\n"
+"    "
+msgstr ""
+
+#: zerver/decorator.py:171
+msgid "Must be a billing administrator or an organization owner"
+msgstr "ලදුපත් පරිපාලකයෙකු හෝ සංවිධාන හිමිකරුවෙකු විය යුතුය"
+
+#: zerver/decorator.py:245
+msgid "Invalid subdomain for push notifications bouncer"
+msgstr ""
+
+#: zerver/decorator.py:254
+msgid "This API is not available to incoming webhook bots."
+msgstr ""
+
+#: zerver/decorator.py:281
+msgid "Account is not associated with this subdomain"
+msgstr "මෙම උප වසම සමඟ ගිණුමෙහි සම්බන්ධතාවයක් නැත"
+
+#: zerver/decorator.py:477 zerver/decorator.py:592
+msgid "This endpoint does not accept bot requests."
+msgstr ""
+
+#: zerver/decorator.py:566
+msgid "Must be an server administrator"
+msgstr "සේවාදායක පරිපාලකයෙකු විය යුතුය"
+
+#: zerver/decorator.py:605 zerver/lib/streams.py:678 zerver/lib/streams.py:680
+#: zerver/lib/streams.py:695 zerver/lib/user_groups.py:18
+#: zerver/lib/user_groups.py:25 zerver/lib/users.py:240
+#: zerver/lib/users.py:269 zerver/views/invite.py:49
+#: zerver/views/realm_emoji.py:31 zerver/views/streams.py:535
+msgid "Insufficient permission"
+msgstr "ප්‍රමාණවත් අවසරයක් නැත"
+
+#: zerver/decorator.py:663
+msgid "This endpoint requires HTTP basic authentication."
+msgstr ""
+
+#: zerver/decorator.py:666
+msgid "Invalid authorization header for basic auth"
+msgstr ""
+
+#: zerver/decorator.py:668
+msgid "Missing authorization header for basic auth"
+msgstr ""
+
+#: zerver/decorator.py:771
+msgid "Webhook bots can only access webhooks"
+msgstr ""
+
+#: zerver/forms.py:88
+msgid "Subdomain needs to have length 3 or greater."
+msgstr ""
+
+#: zerver/forms.py:89
+msgid "Subdomain cannot start or end with a '-'."
+msgstr "උපවසම '-' සමඟ ආරම්භ හෝ අවසන් විය නොහැකිය."
+
+#: zerver/forms.py:90
+msgid "Subdomain can only have lowercase letters, numbers, and '-'s."
+msgstr "උපවසම් වල තිබිය හැකි වන්නේ කුඩා අකුරු, අංක සහ '-' පමණි."
+
+#: zerver/forms.py:91
+msgid "Subdomain unavailable. Please choose a different one."
+msgstr ""
+
+#: zerver/forms.py:185
+#, python-brace-format
+msgid "The organization you are trying to join using {email} does not exist."
+msgstr "ඔබ {email} භාවිතයෙන් එක් වීමට උත්සාහ කරන සංවිධානය නොපවතී."
+
+#: zerver/forms.py:193
+#, python-brace-format
+msgid ""
+"Please request an invite for {email} from the organization administrator."
+msgstr "කරුණාකර සංවිධානයේ පරිපාලකගෙන් {email} සඳහා ඇරයුමක් ඉල්ලන්න."
+
+#: zerver/forms.py:204
+#, python-brace-format
+msgid ""
+"Your email address, {email}, is not in one of the domains that are allowed "
+"to register for accounts in this organization."
+msgstr "ඔබගේ වි-තැපැල් ලිපිනය, {email}, මෙම සංවිධානයේ ගිණුම් සඳහා ලියාපදිංචි වීමට ඉඩ දී ඇති  වසම් තුළ නැත."
+
+#: zerver/forms.py:209 zerver/forms.py:234 zerver/lib/email_validation.py:108
+msgid "Please use your real email address."
+msgstr "ඔබගේ නියම වි-තැපැල් ලිපිනය භාවිතා කරන්න."
+
+#: zerver/forms.py:212
+msgid "Email addresses containing + are not allowed in this organization."
+msgstr "මෙම සංවිධානය තුළ + අඩංගු වි-තැපැල් ලිපින වලට ඉඩ නැත."
+
+#: zerver/forms.py:224
+msgid ""
+"New members cannot join this organization because all Zulip licenses are in "
+"use. Please contact the person who invited you and ask them to increase the "
+"number of licenses, then try again."
+msgstr "සියළුම සුලිප් බලපත්‍ර භාවිතා වන බැවින් නව සාමාජිකයින්ට මෙම සංවිධානයට එක් විය නොහැකිය. කරුණාකර ඔබට ආරාධනා කළ පුද්ගලයාට බලපත්‍ර ගණන වැඩි කරන ලෙස පවසා නැවත උත්සාහ කරන්න."
+
+#: zerver/forms.py:244
+msgid "New password"
+msgstr "නව මුරපදය"
+
+#: zerver/forms.py:251
+msgid "New password confirmation"
+msgstr ""
+
+#: zerver/forms.py:472
+msgid "Token"
+msgstr ""
+
+#: zerver/forms.py:492
+msgid "Add up to 10 comma-separated email addresses."
+msgstr "අල්ප විරාම වලින් වෙන් කර වි-තැපැල් ලිපින 10 ක් දක්වා එකතු කළ හැකිය."
+
+#: zerver/forms.py:497
+msgid "Please enter at most 10 emails."
+msgstr "උපරිම වශයෙන් වි-තැපැල් 10 ක් ඇතුල් කරන්න."
+
+#: zerver/forms.py:510
+msgid "We couldn't find that Zulip organization."
+msgstr ""
+
+#: zerver/lib/actions.py:360
+msgid "signups"
+msgstr "ලියාපදිංචි කිරීම්"
+
+#: zerver/lib/actions.py:377 zerver/lib/actions.py:400
+#, python-brace-format
+msgid "{user} just signed up for Zulip. (total: {user_count})"
+msgstr "{user} දැන් සුලිප් වෙත ලියාපදිංචි වී ඇත. (එකතුව: {user_count})"
+
+#: zerver/lib/actions.py:511
+#, python-brace-format
+msgid "{user} accepted your invitation to join Zulip!"
+msgstr "සුලිප් හා එක් වීමට ඔබගේ ඇරයුම {user} පිළිගෙන ඇත!"
+
+#: zerver/lib/actions.py:1508
+msgid "Unable to render message"
+msgstr "පණිවිඩය ගෙනහැර දැක්වීමට නොහැකිය"
+
+#: zerver/lib/actions.py:2316
+msgid "You cannot attach a submessage to this message."
+msgstr "ඔබට මෙම පණිවිඩයට උප පණිවිඩයක් ඇමුණිය නොහැකිය."
+
+#: zerver/lib/actions.py:2453
+msgid "Reaction already exists."
+msgstr ""
+
+#: zerver/lib/actions.py:2563 zerver/lib/addressee.py:32
+msgid "Invalid user ID {}"
+msgstr "වලංගු නොවන පරිශීලක හැඳු. {}"
+
+#: zerver/lib/actions.py:2632 zerver/lib/actions.py:7572
+#: zerver/lib/streams.py:243 zerver/lib/streams.py:251
+#: zerver/tornado/views.py:111 zerver/views/events_register.py:75
+#: zerver/views/message_send.py:233 zerver/views/message_send.py:239
+#: zerver/views/message_send.py:258 zerver/views/users.py:578
+msgid "User not authorized for this query"
+msgstr ""
+
+#: zerver/lib/actions.py:2669
+#, python-brace-format
+msgid "'{email}' is no longer using Zulip."
+msgstr "'{email}' තවදුරටත් සුලිප් භාවිතා නොකරයි."
+
+#: zerver/lib/actions.py:2676
+msgid "You can't send private messages outside of your organization."
+msgstr "ඔබගේ සංවිධානයෙන් පිටත ඔබට පෞද්ගලික පණිවිඩ යැවිය නොහැකිය."
+
+#: zerver/lib/actions.py:2742
+msgid "Expected exactly one stream"
+msgstr ""
+
+#: zerver/lib/actions.py:2753
+msgid "Invalid data type for stream"
+msgstr ""
+
+#: zerver/lib/actions.py:2769 zerver/lib/actions.py:2779
+msgid "Invalid data type for recipients"
+msgstr "ලබන්නන් සඳහා වලංගු නොවන දත්ත වර්ගයකි"
+
+#: zerver/lib/actions.py:2787 zerver/lib/actions.py:2795
+msgid "Recipient lists may contain emails or user IDs, but not both."
+msgstr "ලබන්නන්ගේ ලැයිස්තු වල වි-තැපැල් හෝ පරිශීලක හැඳු. අඩංගු විය හැකිය නමුත් දෙකම නොවේ."
+
+#: zerver/lib/actions.py:2907
+msgid "Reminders can only be set for streams."
+msgstr ""
+
+#: zerver/lib/actions.py:2923
+msgid "Nothing to change"
+msgstr "වෙනස් කිරීමට කිසිවක් නැත"
+
+#: zerver/lib/actions.py:2927
+msgid "Private messages cannot be moved to streams."
+msgstr ""
+
+#: zerver/lib/actions.py:2929
+msgid "Private messages cannot have topics."
+msgstr "පෞද්ගලික පණිවිඩ වලට මාතෘකා තිබිය නොහැකිය."
+
+#: zerver/lib/actions.py:2932
+msgid "Invalid propagate_mode without topic edit"
+msgstr ""
+
+#: zerver/lib/actions.py:2935 zerver/lib/addressee.py:41
+#: zerver/webhooks/ifttt/view.py:27 zerver/webhooks/zapier/view.py:39
+msgid "Topic can't be empty"
+msgstr "මාතෘකාව හිස් විය නොහැකිය"
+
+#: zerver/lib/actions.py:2938
+msgid "Cannot change message content while changing stream"
+msgstr ""
+
+#: zerver/lib/actions.py:2942
+msgid "Widgets cannot be edited."
+msgstr ""
+
+#: zerver/lib/actions.py:2995
+msgid "Your organization has turned off message editing"
+msgstr "ඔබගේ සංවිධානය පණිවිඩ සංස්කරණය අක්‍රිය කර ඇත"
+
+#: zerver/lib/actions.py:3014
+msgid "You don't have permission to edit this message"
+msgstr "මෙම පණිවිඩය සංස්කරණය කිරීමට ඔබට අවසර නැත"
+
+#: zerver/lib/actions.py:3025
+msgid "The time limit for editing this message has passed"
+msgstr "මෙම පණිවිඩය සංස්කරණ කාල සීමාව පසු වී ඇත"
+
+#: zerver/lib/actions.py:3040
+msgid "The time limit for editing this message's topic has passed"
+msgstr "මෙම පණිවිඩයේ මාතෘකාව සංස්කරණ කාල සීමාව පසු වී ඇත"
+
+#: zerver/lib/actions.py:3077
+msgid "You don't have permission to move this message"
+msgstr "මෙම පණිවිඩය ගෙන යාමට ඔබට අවසර නැත"
+
+#: zerver/lib/actions.py:3083
+msgid ""
+"You don't have permission to move this message due to missing access to its "
+"stream"
+msgstr ""
+
+#: zerver/lib/actions.py:3121
+msgid "Invalid default stream group name '{}'"
+msgstr ""
+
+#: zerver/lib/actions.py:3124
+msgid "Default stream group name too long (limit: {} characters)"
+msgstr ""
+
+#: zerver/lib/actions.py:3131
+msgid "Default stream group name '{}' contains NULL (0x00) characters."
+msgstr ""
+
+#: zerver/lib/actions.py:3199
+#, python-brace-format
+msgid ""
+"Your bot {bot_identity} tried to send a message to stream ID {stream_id}, "
+"but there is no stream with that ID."
+msgstr ""
+
+#: zerver/lib/actions.py:3205
+#, python-brace-format
+msgid ""
+"Your bot {bot_identity} tried to send a message to stream {stream_name}, but"
+" that stream does not exist. Click [here]({new_stream_link}) to create it."
+msgstr ""
+
+#: zerver/lib/actions.py:3213
+#, python-brace-format
+msgid ""
+"Your bot {bot_identity} tried to send a message to stream {stream_name}. The"
+" stream exists but does not have any subscribers."
+msgstr ""
+
+#: zerver/lib/actions.py:3260
+msgid "Private messages are disabled in this organization."
+msgstr "මෙම සංවිධානය තුළ පෞද්ගලික පණිවිඩ අබල කර ඇත."
+
+#: zerver/lib/actions.py:3386
+msgid "Widgets: API programmer sent invalid JSON content"
+msgstr ""
+
+#: zerver/lib/actions.py:3392
+#, python-brace-format
+msgid "Widgets: {error_msg}"
+msgstr ""
+
+#: zerver/lib/actions.py:3410
+msgid "You do not have permission to use wildcard mentions in this stream."
+msgstr ""
+
+#: zerver/lib/actions.py:3663
+msgid "Subscriber data is not available for this stream"
+msgstr ""
+
+#: zerver/lib/actions.py:3670
+msgid "Unable to retrieve subscribers for private stream"
+msgstr ""
+
+#: zerver/lib/actions.py:4983
+#, python-brace-format
+msgid "{user_name} renamed stream {old_stream_name} to {new_stream_name}."
+msgstr ""
+
+#: zerver/lib/actions.py:5145
+msgid "Signups enabled"
+msgstr "ලියාපදිංචිය සබලයි"
+
+#: zerver/lib/actions.py:5298
+msgid "Invalid default stream group {}"
+msgstr ""
+
+#: zerver/lib/actions.py:5344 zerver/lib/actions.py:5371
+#, python-brace-format
+msgid ""
+"'{stream_name}' is a default stream and cannot be added to '{group_name}'"
+msgstr ""
+
+#: zerver/lib/actions.py:5355
+#, python-brace-format
+msgid "Default stream group '{group_name}' already exists"
+msgstr ""
+
+#: zerver/lib/actions.py:5377
+#, python-brace-format
+msgid ""
+"Stream '{stream_name}' is already present in default stream group "
+"'{group_name}'"
+msgstr ""
+
+#: zerver/lib/actions.py:5393
+#, python-brace-format
+msgid ""
+"Stream '{stream_name}' is not present in default stream group '{group_name}'"
+msgstr ""
+
+#: zerver/lib/actions.py:5407
+msgid "This default stream group is already named '{}'"
+msgstr ""
+
+#: zerver/lib/actions.py:5411
+msgid "Default stream group '{}' already exists"
+msgstr ""
+
+#: zerver/lib/actions.py:5870
+msgid "Invalid flag: '{}'"
+msgstr ""
+
+#: zerver/lib/actions.py:5872
+msgid "Flag not editable: '{}'"
+msgstr ""
+
+#: zerver/lib/actions.py:5874
+msgid "Invalid message flag operation: '{}'"
+msgstr ""
+
+#: zerver/lib/actions.py:5888 zerver/lib/actions.py:5890
+#: zerver/lib/message.py:705 zerver/lib/message.py:711
+msgid "Invalid message(s)"
+msgstr "පණිවිඩ(ය) වලංගු නොවේ"
+
+#: zerver/lib/actions.py:5982
+#, python-brace-format
+msgid "{user} has marked this topic as resolved."
+msgstr "{user} මෙම මාතෘකාව විසඳා ඇති ලෙස සලකුණු කර ඇත."
+
+#: zerver/lib/actions.py:5984
+#, python-brace-format
+msgid "{user} has marked this topic as unresolved."
+msgstr "{user} මෙම මාතෘකාව නොවිසඳුනු ලෙස සලකුණු කර ඇත."
+
+#: zerver/lib/actions.py:6527
+#, python-brace-format
+msgid "This topic was moved by {user} to {new_location}"
+msgstr "මෙම මාතෘකාව {user} විසින් {new_location} වෙත ගෙන යන ලදී"
+
+#: zerver/lib/actions.py:6533
+#, python-brace-format
+msgid "This topic was moved here from {old_location} by {user}"
+msgstr "මෙම මාතෘකාව {old_location} වෙතින් මෙතැනට ගෙන එන ලද්දේ {user} විසිනි"
+
+#: zerver/lib/actions.py:7024
+#, python-brace-format
+msgid ""
+"You do not have enough remaining invites for today. Please contact {email} "
+"to have your limit raised. No invitations were sent."
+msgstr ""
+
+#: zerver/lib/actions.py:7082
+msgid ""
+"Your account is too new to send invites for this organization. Ask an "
+"organization admin, or a more experienced user."
+msgstr "මෙම සංවිධානය සඳහා ආරාධනා යැවීමට ඔබගේ ගිණුම ඉතා අළුත් ය. සංවිධාන පරිපාලකයෙකුගෙන් හෝ වඩාත් පළපුරුදු පරිශීලකයෙකුගෙන් අසන්න."
+
+#: zerver/lib/actions.py:7122
+msgid "Some emails did not validate, so we didn't send any invitations."
+msgstr ""
+
+#: zerver/lib/actions.py:7130
+msgid "We weren't able to invite anyone."
+msgstr "අපට කිසිවෙකුට ආරාධනා කිරීමට නොහැකි විය."
+
+#: zerver/lib/actions.py:7166
+msgid ""
+"Some of those addresses are already using Zulip, so we didn't send them an "
+"invitation. We did send invitations to everyone else!"
+msgstr "එම ලිපිනය වලින් සමහරක් දැනටමත් සුලිප් භාවිතා කරන බැවින් ඔවුන්ට ආරාධනා කළේ නැත. අපි අනෙක් සැම දෙනාටම ආරාධනා කළෙමු!"
+
+#: zerver/lib/actions.py:7799
+msgid "Invalid order mapping."
+msgstr ""
+
+#: zerver/lib/actions.py:7878 zerver/lib/users.py:344
+#: zerver/views/custom_profile_fields.py:137
+#: zerver/views/custom_profile_fields.py:157
+#, python-brace-format
+msgid "Field id {id} not found."
+msgstr ""
+
+#: zerver/lib/actions.py:7905 zerver/lib/actions.py:7918
+msgid "User group '{}' already exists."
+msgstr "'{}' පරිශීලක සමූහය දැනටමත් පවතී."
+
+#: zerver/lib/addressee.py:21
+msgid "Invalid email '{}'"
+msgstr "'{}' වි-තැපෑල වලංගු නොවේ"
+
+#: zerver/lib/addressee.py:69 zerver/lib/addressee.py:137
+#: zerver/views/typing.py:39
+msgid "Missing topic"
+msgstr ""
+
+#: zerver/lib/addressee.py:122 zerver/views/typing.py:36
+msgid "Cannot send to multiple streams"
+msgstr ""
+
+#: zerver/lib/addressee.py:134
+msgid "Missing stream"
+msgstr ""
+
+#: zerver/lib/addressee.py:145
+msgid "Message must have recipients"
+msgstr "පණිවිඩයට ලබන්නන් සිටිය යුතුය"
+
+#: zerver/lib/addressee.py:154 zerver/lib/outgoing_webhook.py:215
+msgid "Invalid message type"
+msgstr "පණිවිඩ වර්ගය වලංගු නොවේ"
+
+#: zerver/lib/attachments.py:24
+msgid "Invalid attachment"
+msgstr "ඇමුණුම වලංගු නොවේ"
+
+#: zerver/lib/attachments.py:33
+msgid ""
+"An error occurred while deleting the attachment. Please try again later."
+msgstr ""
+
+#: zerver/lib/bot_lib.py:105
+msgid "Message must have recipients!"
+msgstr "පණිවිඩයට ලබන්නන් සිටිය යුතුය!"
+
+#: zerver/lib/domains.py:10
+msgid "Domain can't be empty."
+msgstr "වසම හිස් විය නොහැකිය."
+
+#: zerver/lib/domains.py:12
+msgid "Domain must have at least one dot (.)"
+msgstr "වසමෙහි අවම වශයෙන් එක් තිතක් (.) තිබිය යුතුය "
+
+#: zerver/lib/domains.py:14
+msgid "Domain is too long"
+msgstr "වසම ඉතා දිගු ය"
+
+#: zerver/lib/domains.py:16
+msgid "Domain cannot start or end with a dot (.)"
+msgstr "වසම තිතකින් (.) ආරම්භ හෝ අවසන් විය නොහැකිය "
+
+#: zerver/lib/domains.py:19
+msgid "Consecutive '.' are not allowed."
+msgstr ""
+
+#: zerver/lib/domains.py:21
+msgid "Subdomains cannot start or end with a '-'."
+msgstr "උපවසම් '-' සමඟ ආරම්භ හෝ අවසන් විය නොහැකිය."
+
+#: zerver/lib/domains.py:23
+msgid "Domain can only have letters, numbers, '.' and '-'s."
+msgstr "වසමක තිබිය හැකි වන්නේ අකුරු, අංක සහ '-' පමණි."
+
+#: zerver/lib/drafts.py:61
+msgid "Timestamp must not be negative."
+msgstr ""
+
+#: zerver/lib/drafts.py:70
+msgid "Topic must not contain null bytes"
+msgstr ""
+
+#: zerver/lib/drafts.py:72
+msgid "Must specify exactly 1 stream ID for stream messages"
+msgstr ""
+
+#: zerver/lib/drafts.py:96
+msgid "User has disabled synchronizing drafts."
+msgstr ""
+
+#: zerver/lib/drafts.py:139 zerver/lib/drafts.py:156
+msgid "Draft does not exist"
+msgstr ""
+
+#: zerver/lib/email_notifications.py:121 zerver/lib/email_notifications.py:143
+msgid "Open Zulip to see the spoiler content"
+msgstr ""
+
+#: zerver/lib/email_notifications.py:529
+msgid "Zulip notifications"
+msgstr "සුලිප් දැනුම්දීම්"
+
+#: zerver/lib/email_validation.py:101
+msgid "Invalid address."
+msgstr "ලිපිනය වලංගු නොවේ."
+
+#: zerver/lib/email_validation.py:106
+msgid "Outside your domain."
+msgstr "ඔබගේ වසමෙන් පිටත."
+
+#: zerver/lib/email_validation.py:110 zerver/views/users.py:600
+msgid "Email addresses containing + are not allowed."
+msgstr "+ අඩංගු වි-තැපැල් ලිපින වලට ඉඩ නැත."
+
+#: zerver/lib/email_validation.py:155
+msgid "Reserved for system bots."
+msgstr "පද්ධතියේ ස්වයංක්‍රමලේඛ සඳහා වෙන් කර ඇත."
+
+#: zerver/lib/email_validation.py:178
+#, python-brace-format
+msgid "{email} already has an account"
+msgstr "{email} ට දැනටමත් ගිණුමක් ඇත"
+
+#: zerver/lib/email_validation.py:180
+msgid "Already has an account."
+msgstr "දැනටමත් ගිණුමක් තිබේ."
+
+#: zerver/lib/email_validation.py:182
+msgid "Account has been deactivated."
+msgstr ""
+
+#: zerver/lib/emoji.py:57 zerver/views/realm_emoji.py:60
+msgid "Emoji '{}' does not exist"
+msgstr "ඉමොජි '{}' නොපවතී"
+
+#: zerver/lib/emoji.py:67
+msgid "Invalid custom emoji."
+msgstr "වලංගු නොවන අභිරුචි ඉමොජි කි."
+
+#: zerver/lib/emoji.py:69
+msgid "Invalid custom emoji name."
+msgstr "වලංගු නොවන අභිරුචි ඉමොජි නම."
+
+#: zerver/lib/emoji.py:71
+msgid "This custom emoji has been deactivated."
+msgstr ""
+
+#: zerver/lib/emoji.py:74 zerver/lib/emoji.py:79
+msgid "Invalid emoji code."
+msgstr "වලංගු නොවන ඉමොජි කේතය."
+
+#: zerver/lib/emoji.py:76 zerver/lib/emoji.py:81
+msgid "Invalid emoji name."
+msgstr "වලංගු නොවන ඉමොජි නම."
+
+#: zerver/lib/emoji.py:84
+msgid "Invalid emoji type."
+msgstr "වලංගු නොවන ඉමොජි වර්ගය."
+
+#: zerver/lib/emoji.py:99
+msgid "Must be an organization administrator or emoji author"
+msgstr "සංවිධාන පරිපාලකයෙකු හෝ ඉමොජි කතුවරයෙකු විය යුතුය"
+
+#: zerver/lib/emoji.py:106 zerver/models.py:1019
+msgid "Invalid characters in emoji name"
+msgstr "ඉමොජි නමෙහි වලංගු නොවන අකුරු ඇත"
+
+#: zerver/lib/emoji.py:107
+msgid "Emoji name is missing"
+msgstr "ඉමොජි නම අස්ථානගත වී ඇත"
+
+#: zerver/lib/error_notify.py:203
+msgid "Invalid type parameter"
+msgstr ""
+
+#: zerver/lib/events.py:1347
+msgid "Could not allocate event queue"
+msgstr ""
+
+#: zerver/lib/exceptions.py:134
+#, python-brace-format
+msgid "Stream '{stream}' does not exist"
+msgstr ""
+
+#: zerver/lib/exceptions.py:146
+#, python-brace-format
+msgid "Stream with ID '{stream_id}' does not exist"
+msgstr ""
+
+#: zerver/lib/exceptions.py:155
+msgid "organization owner"
+msgstr "සංවිධානයේ හිමිකරු"
+
+#: zerver/lib/exceptions.py:155
+msgid "user"
+msgstr "පරිශීලක"
+
+#: zerver/lib/exceptions.py:159
+#, python-brace-format
+msgid "Cannot deactivate the only {entity}."
+msgstr ""
+
+#: zerver/lib/exceptions.py:171
+#, python-brace-format
+msgid "Invalid Markdown include statement: {include_statement}"
+msgstr ""
+
+#: zerver/lib/exceptions.py:183
+msgid "API usage exceeded rate limit"
+msgstr "යෙ.ක්‍ර.මු. භාවිතය අනුපාත සීමාව ඉක්මවා ඇත"
+
+#: zerver/lib/exceptions.py:206 zerver/lib/request.py:375
+#: zerver/webhooks/slack_incoming/view.py:35
+msgid "Malformed JSON"
+msgstr ""
+
+#: zerver/lib/exceptions.py:217
+msgid "Must be an organization member"
+msgstr "සංවිධානයේ සාමාජිකයෙකු විය යුතුය"
+
+#: zerver/lib/exceptions.py:228 zerver/views/invite.py:61
+#: zerver/views/invite.py:122 zerver/views/invite.py:166
+msgid "Must be an organization administrator"
+msgstr "සංවිධානයේ පරිපාලකයෙකු විය යුතුය"
+
+#: zerver/lib/exceptions.py:239
+msgid "Must be an organization owner"
+msgstr "සංවිධානයේ හිමිකරුවෙකු විය යුතුය"
+
+#: zerver/lib/exceptions.py:250
+msgid "Must be an organization or stream administrator"
+msgstr ""
+
+#: zerver/lib/exceptions.py:263
+msgid "Your username or password is incorrect"
+msgstr "ඔබගේ පරිශීලක නාමය හෝ මුරපදය වැරදි ය"
+
+#: zerver/lib/exceptions.py:271
+msgid "Account is deactivated"
+msgstr ""
+
+#: zerver/lib/exceptions.py:279
+msgid "This organization has been deactivated"
+msgstr ""
+
+#: zerver/lib/exceptions.py:287
+msgid "Password authentication is disabled in this organization"
+msgstr ""
+
+#: zerver/lib/exceptions.py:295
+msgid "Your password has been disabled and needs to be reset"
+msgstr "ඔබගේ මුරපදය අබල කර ඇති අතර එය නැවත සැකසිය යුතුය"
+
+#: zerver/lib/exceptions.py:311
+msgid "Invalid API key"
+msgstr "යෙ.ක්‍ර.මු. යතුර වලංගු නොවේ"
+
+#: zerver/lib/exceptions.py:317
+msgid "Malformed API key"
+msgstr ""
+
+#: zerver/lib/exceptions.py:330
+#, python-brace-format
+msgid ""
+"The '{event_type}' event isn't currently supported by the {webhook_name} "
+"webhook"
+msgstr ""
+
+#: zerver/lib/exceptions.py:353 zerver/views/auth.py:640
+#: zerver/views/auth.py:909 zerver/views/auth.py:972
+msgid "Invalid subdomain"
+msgstr "වලංගු නොවන උපවසමකි"
+
+#: zerver/lib/exceptions.py:386
+msgid "Access denied"
+msgstr ""
+
+#: zerver/lib/external_accounts.py:49
+msgid "Custom external account must define URL pattern"
+msgstr ""
+
+#: zerver/lib/external_accounts.py:51
+msgid "Invalid external account type"
+msgstr "වලංගු නොවන බාහිර ගිණුම් වර්ගයකි"
+
+#: zerver/lib/hotspots.py:13
+msgid "Reply to a message"
+msgstr "පණිවිඩයකට පිළිතුරු දෙන්න"
+
+#: zerver/lib/hotspots.py:14
+msgid "Click anywhere on a message to reply."
+msgstr "පිළිතුරු දීමට පණිවිඩයක් මත ඕනෑම තැනක ඔබන්න."
+
+#: zerver/lib/hotspots.py:17
+msgid "Catch up on a stream"
+msgstr ""
+
+#: zerver/lib/hotspots.py:19
+msgid ""
+"Messages sent to a stream are seen by everyone subscribed to that stream. "
+"Try clicking on one of the stream links below."
+msgstr ""
+
+#: zerver/lib/hotspots.py:24
+msgid "Topics"
+msgstr "මාතෘකා"
+
+#: zerver/lib/hotspots.py:26
+msgid ""
+"Every message has a topic. Topics keep conversations easy to follow, and "
+"make it easy to reply to conversations that start while you are offline."
+msgstr ""
+
+#: zerver/lib/hotspots.py:32
+msgid "Settings"
+msgstr "සැකසුම්"
+
+#: zerver/lib/hotspots.py:34
+msgid "Go to Settings to configure your notifications and display settings."
+msgstr ""
+
+#: zerver/lib/hotspots.py:38
+msgid "Compose"
+msgstr ""
+
+#: zerver/lib/hotspots.py:40
+msgid ""
+"Click here to start a new conversation. Pick a topic (2-3 words is best), "
+"and give it a go!"
+msgstr ""
+
+#: zerver/lib/integrations.py:35
+msgid "Integration frameworks"
+msgstr ""
+
+#: zerver/lib/integrations.py:36
+msgid "Continuous integration"
+msgstr ""
+
+#: zerver/lib/integrations.py:37
+msgid "Customer support"
+msgstr "පාරිභෝගික සහාය"
+
+#: zerver/lib/integrations.py:38
+msgid "Deployment"
+msgstr ""
+
+#: zerver/lib/integrations.py:39
+msgid "Entertainment"
+msgstr ""
+
+#: zerver/lib/integrations.py:40
+msgid "Communication"
+msgstr "සන්නිවේදන"
+
+#: zerver/lib/integrations.py:41
+msgid "Financial"
+msgstr ""
+
+#: zerver/lib/integrations.py:42
+msgid "HR"
+msgstr ""
+
+#: zerver/lib/integrations.py:43
+msgid "Marketing"
+msgstr "අලෙවිකරණය"
+
+#: zerver/lib/integrations.py:44
+msgid "Miscellaneous"
+msgstr ""
+
+#: zerver/lib/integrations.py:45
+msgid "Monitoring tools"
+msgstr "නිරීක්‍ෂණ මෙවලම්"
+
+#: zerver/lib/integrations.py:46
+msgid "Project management"
+msgstr "ව්යාපෘති කළමනාකරණය"
+
+#: zerver/lib/integrations.py:47
+msgid "Productivity"
+msgstr "ඵලදායිතාව"
+
+#: zerver/lib/integrations.py:48
+msgid "Version control"
+msgstr "අනුවාද පාලනය"
+
+#: zerver/lib/message.py:146
+msgid "Message must not be empty"
+msgstr "පණිවිඩය හිස් නොවිය යුතුය"
+
+#: zerver/lib/message.py:148
+msgid "Message must not contain null bytes"
+msgstr ""
+
+#: zerver/lib/narrow.py:29
+msgid "Operator {} not supported."
+msgstr ""
+
+#: zerver/lib/onboarding.py:68
+#, python-brace-format
+msgid "We also have a guide for [Setting up your organization]({help_url})."
+msgstr ""
+
+#: zerver/lib/onboarding.py:71
+msgid "Hello, and welcome to Zulip!"
+msgstr "ආයුබෝවන්, සුලිප් වෙත සාදරයෙන් පිළිගනිමු!"
+
+#: zerver/lib/onboarding.py:74
+#, python-brace-format
+msgid ""
+"Note that this is a [demo organization]({demo_org_help_url}) and will be "
+"automatically deleted in 30 days."
+msgstr ""
+
+#: zerver/lib/onboarding.py:80
+msgid "This is a private message from me, Welcome Bot."
+msgstr "මෙය මාගෙන් පෞද්ගලික පණිවිඩයකි, පිළිගැනීමේ ස්වයංක්‍රමලේඛය."
+
+#: zerver/lib/onboarding.py:83
+#, python-brace-format
+msgid ""
+"If you are new to Zulip, check out our [Getting started "
+"guide]({getting_started_url})!"
+msgstr ""
+
+#: zerver/lib/onboarding.py:86
+#, python-brace-format
+msgid "[Add a profile picture]({profile_url})."
+msgstr ""
+
+#: zerver/lib/onboarding.py:87
+#, python-brace-format
+msgid "[Browse and subscribe to streams]({streams_url})."
+msgstr ""
+
+#: zerver/lib/onboarding.py:88
+#, python-brace-format
+msgid "Download our [mobile and desktop apps]({apps_url})."
+msgstr ""
+
+#: zerver/lib/onboarding.py:89
+msgid "Zulip also works great in a browser."
+msgstr ""
+
+#: zerver/lib/onboarding.py:90
+msgid "You can type `?` to learn more about Zulip shortcuts."
+msgstr ""
+
+#: zerver/lib/onboarding.py:91
+msgid "Practice sending a few messages by replying to this conversation."
+msgstr "මෙම සංවාදයට පිළිතුරු දීමෙන් පණිවිඩ කිහිපයක් යැවීමට පුරුදු වන්න."
+
+#: zerver/lib/onboarding.py:92
+msgid "Click anywhere on this message or press `r` to reply."
+msgstr ""
+
+#: zerver/lib/onboarding.py:116
+msgid "Congratulations on your first reply!"
+msgstr "ඔබගේ පළමු පිළිතුරට සුභ පැතුම්!"
+
+#: zerver/lib/onboarding.py:121
+msgid ""
+"Feel free to continue using this space to practice your new messaging "
+"skills. Or, try clicking on some of the stream names to your left!"
+msgstr ""
+
+#: zerver/lib/onboarding.py:135
+msgid ""
+"This is a private stream, as indicated by the lock icon next to the stream "
+"name."
+msgstr ""
+
+#: zerver/lib/onboarding.py:137
+msgid "Private streams are only visible to stream members."
+msgstr ""
+
+#: zerver/lib/onboarding.py:141
+#, python-brace-format
+msgid ""
+"To manage this stream, go to [Stream settings]({stream_settings_url}) and "
+"click on `{initial_private_stream_name}`."
+msgstr ""
+
+#: zerver/lib/onboarding.py:151
+#, python-brace-format
+msgid ""
+"This is a message on stream #**{default_notification_stream_name}** with the"
+" topic `topic demonstration`."
+msgstr ""
+
+#: zerver/lib/onboarding.py:157
+msgid "Topics are a lightweight tool to keep conversations organized."
+msgstr ""
+
+#: zerver/lib/onboarding.py:159
+#, python-brace-format
+msgid ""
+"You can learn more about topics at [Streams and "
+"topics]({about_topics_help_url})."
+msgstr ""
+
+#: zerver/lib/onboarding.py:164
+#, python-brace-format
+msgid ""
+"This is a message on stream #**{default_notification_stream_name}** with the"
+" topic `swimming turtles`."
+msgstr ""
+
+#: zerver/lib/onboarding.py:173
+#, python-brace-format
+msgid ""
+"[Start a new topic]({start_topic_help_url}) any time you're not replying to "
+"a         previous message."
+msgstr ""
+
+#: zerver/lib/outgoing_webhook.py:315
+msgid "Invalid JSON in response"
+msgstr "වලංගු නොවන JSON ප්‍රතිචාරයකි"
+
+#: zerver/lib/outgoing_webhook.py:324
+msgid "Invalid response format"
+msgstr ""
+
+#: zerver/lib/push_notifications.py:280
+msgid "Invalid GCM option to bouncer: priority {!r}"
+msgstr ""
+
+#: zerver/lib/push_notifications.py:290
+msgid "Invalid GCM options to bouncer: {}"
+msgstr ""
+
+#. error
+#: zerver/lib/push_notifications.py:500 zilencer/views.py:152
+msgid "Token does not exist"
+msgstr ""
+
+#: zerver/lib/push_notifications.py:664
+msgid ""
+"This organization has disabled including message content in mobile push "
+"notifications"
+msgstr ""
+
+#: zerver/lib/push_notifications.py:752
+#, python-brace-format
+msgid "{full_name} mentioned @{user_group_name}:"
+msgstr ""
+
+#: zerver/lib/push_notifications.py:756
+#, python-brace-format
+msgid "{full_name} mentioned you:"
+msgstr "{full_name} ඔබ ගැන සඳහන් කළා:"
+
+#: zerver/lib/push_notifications.py:758
+#, python-brace-format
+msgid "{full_name} mentioned everyone:"
+msgstr "{full_name} සෑම කෙනෙකුම සඳහන් කළා:"
+
+#: zerver/lib/remote_server.py:91
+msgid "Push notifications bouncer error: {}"
+msgstr ""
+
+#: zerver/lib/request.py:88
+#, python-brace-format
+msgid "Can't decide between '{var_name1}' and '{var_name2}' arguments"
+msgstr ""
+
+#: zerver/lib/request.py:100
+#, python-brace-format
+msgid "Missing '{var_name}' argument"
+msgstr ""
+
+#: zerver/lib/request.py:113
+#, python-brace-format
+msgid "Bad value for '{var_name}': {bad_value}"
+msgstr ""
+
+#: zerver/lib/request.py:427
+msgid "Argument \"{}\" is not valid JSON."
+msgstr ""
+
+#: zerver/lib/response.py:27
+msgid "Not logged in: API authentication or user session required"
+msgstr ""
+
+#: zerver/lib/send_email.py:68
+msgid "Zulip Account Security"
+msgstr "සුලිප් ගිණුමේ ආරක්‍ෂාව"
+
+#: zerver/lib/streams.py:177 zerver/lib/streams.py:432
+#: zerver/lib/streams.py:552
+msgid "Invalid stream name '{}'"
+msgstr ""
+
+#: zerver/lib/streams.py:180
+msgid "Stream name too long (limit: {} characters)."
+msgstr ""
+
+#: zerver/lib/streams.py:185
+msgid "Stream name '{}' contains NULL (0x00) characters."
+msgstr ""
+
+#: zerver/lib/streams.py:202
+msgid "Only organization administrators can send to this stream."
+msgstr ""
+
+#: zerver/lib/streams.py:208
+msgid ""
+"Only organization administrators and moderators can send to this stream."
+msgstr ""
+
+#: zerver/lib/streams.py:211
+msgid "Guests cannot send to this stream."
+msgstr ""
+
+#: zerver/lib/streams.py:216
+msgid "New members cannot send to this stream."
+msgstr ""
+
+#: zerver/lib/streams.py:276
+msgid "Not authorized to send to stream '{}'"
+msgstr ""
+
+#: zerver/lib/streams.py:281
+msgid "Please supply 'stream'."
+msgstr ""
+
+#: zerver/lib/streams.py:284
+msgid "Please choose one: 'stream' or 'stream_id'."
+msgstr ""
+
+#: zerver/lib/streams.py:290 zerver/lib/streams.py:312
+#: zerver/lib/streams.py:382 zerver/lib/streams.py:448
+msgid "Invalid stream id"
+msgstr ""
+
+#: zerver/lib/streams.py:424
+msgid "Stream name '{}' is already taken."
+msgstr ""
+
+#: zerver/lib/streams.py:684
+msgid "Stream(s) ({}) do not exist"
+msgstr ""
+
+#: zerver/lib/streams.py:691 zerver/views/streams.py:316
+msgid "Web public streams are not enabled."
+msgstr ""
+
+#: zerver/lib/streams.py:720
+msgid "Default stream group with id '{}' does not exist."
+msgstr ""
+
+#: zerver/lib/upload.py:113 zerver/lib/upload.py:129 zerver/lib/upload.py:215
+msgid "Could not decode image; did you upload an image file?"
+msgstr ""
+
+#: zerver/lib/upload.py:115 zerver/lib/upload.py:131 zerver/lib/upload.py:217
+msgid "Image size exceeds limit."
+msgstr "රූපයේ ප්‍රමාණය සීමාව ඉක්මවයි."
+
+#: zerver/lib/upload.py:350
+msgid "Upload would exceed your organization's upload quota."
+msgstr ""
+
+#: zerver/lib/user_groups.py:27
+msgid "Invalid user group"
+msgstr "පරිශීලක සමූහය වලංගු නොවේ"
+
+#: zerver/lib/users.py:38
+msgid "Name too long!"
+msgstr "නම දිග වැඩියි!"
+
+#: zerver/lib/users.py:40
+msgid "Name too short!"
+msgstr "නම ඉතා කෙටි ය!"
+
+#: zerver/lib/users.py:43
+msgid "Invalid characters in name!"
+msgstr "නමෙහි වලංගු නොවන අකුරු ඇත!"
+
+#: zerver/lib/users.py:49
+msgid "Invalid format!"
+msgstr ""
+
+#: zerver/lib/users.py:65
+msgid "Name is already in use!"
+msgstr "නම දැනටමත් භාවිතයේ ඇත!"
+
+#: zerver/lib/users.py:71 zerver/views/users.py:409 zerver/views/users.py:583
+msgid "Bad name or username"
+msgstr ""
+
+#: zerver/lib/users.py:86
+msgid "Invalid integration '{}'."
+msgstr "වලංගු නොවන අනුකලනය '{}'."
+
+#: zerver/lib/users.py:91
+msgid "Missing configuration parameters: {}"
+msgstr ""
+
+#: zerver/lib/users.py:100
+msgid "Invalid {} value {} ({})"
+msgstr "වලංගු නොවන {} අගය {} ({})"
+
+#: zerver/lib/users.py:115
+msgid "Invalid configuration data!"
+msgstr "වින්‍යාස දත්ත වලංගු නොවේ!"
+
+#: zerver/lib/users.py:149
+msgid "Invalid bot type"
+msgstr "ස්වයංක්‍රමලේඛ වර්ගය වලංගු නොවේ"
+
+#: zerver/lib/users.py:154
+msgid "Invalid interface type"
+msgstr "අතුරු මුහුණතෙහි වර්ගය වලංගු නොවේ"
+
+#: zerver/lib/users.py:223 zerver/lib/users.py:228 zerver/models.py:3953
+msgid "Invalid user ID: {}"
+msgstr "වලංගු නොවන පරිශීලක හැඳු.: {}"
+
+#: zerver/lib/users.py:236 zerver/lib/users.py:238
+msgid "No such bot"
+msgstr "එවැනි ස්වයංක්‍රමලේඛයක් නැත"
+
+#: zerver/lib/users.py:260 zerver/lib/users.py:262 zerver/views/presence.py:43
+#: zerver/views/users.py:664
+msgid "No such user"
+msgstr "එබඳු පරිශීලකයෙකු නැත"
+
+#: zerver/lib/users.py:264
+msgid "User is deactivated"
+msgstr ""
+
+#: zerver/lib/validator.py:62 zerver/lib/validator.py:124
+#, python-brace-format
+msgid "{var_name} is not a string"
+msgstr ""
+
+#: zerver/lib/validator.py:69
+#, python-brace-format
+msgid "{item} cannot be blank."
+msgstr ""
+
+#: zerver/lib/validator.py:77 zerver/lib/validator.py:143
+#, python-brace-format
+msgid "Invalid {var_name}"
+msgstr "{var_name} වලංගු නොවේ"
+
+#: zerver/lib/validator.py:92
+#, python-brace-format
+msgid "{var_name} is too long (limit: {max_length} characters)"
+msgstr "{var_name} ඉතා දිගයි (සීමාව: අකුරු {max_length})"
+
+#: zerver/lib/validator.py:107
+#, python-brace-format
+msgid "{var_name} has incorrect length {length}; should be {target_length}"
+msgstr ""
+
+#: zerver/lib/validator.py:127 zerver/lib/validator.py:129
+#, python-brace-format
+msgid "{var_name} is not a date"
+msgstr "{var_name} දිනයක් නොවේ"
+
+#: zerver/lib/validator.py:135
+#, python-brace-format
+msgid "{var_name} is not an integer"
+msgstr "{var_name} යනු නිඛිලයක් නොවේ"
+
+#: zerver/lib/validator.py:154
+#, python-brace-format
+msgid "{var_name} is too small"
+msgstr "{var_name} ඉතා කුඩා ය"
+
+#: zerver/lib/validator.py:156
+#, python-brace-format
+msgid "{var_name} is too large"
+msgstr "{var_name} ඉතා විශාලයි"
+
+#: zerver/lib/validator.py:164
+#, python-brace-format
+msgid "{var_name} is not a float"
+msgstr ""
+
+#: zerver/lib/validator.py:170
+#, python-brace-format
+msgid "{var_name} is not a boolean"
+msgstr "{var_name} බූලියන් නොවේ"
+
+#: zerver/lib/validator.py:180
+#, python-brace-format
+msgid "{var_name} is not a valid hex color code"
+msgstr "{var_name} වලංගු හෙක්ස් වර්ණ කේතයක් නොවේ"
+
+#: zerver/lib/validator.py:200
+#, python-brace-format
+msgid "{var_name} is not a list"
+msgstr "{var_name} ලැයිස්තුවක් නොවේ"
+
+#: zerver/lib/validator.py:204
+#, python-brace-format
+msgid "{container} should have exactly {length} items"
+msgstr ""
+
+#: zerver/lib/validator.py:251
+#, python-brace-format
+msgid "{var_name} is not a dict"
+msgstr ""
+
+#: zerver/lib/validator.py:259
+#, python-brace-format
+msgid "{key_name} key is missing from {var_name}"
+msgstr ""
+
+#: zerver/lib/validator.py:284
+msgid "Unexpected arguments: {}"
+msgstr ""
+
+#: zerver/lib/validator.py:317
+#, python-brace-format
+msgid "{var_name} is not an allowed_type"
+msgstr ""
+
+#: zerver/lib/validator.py:326
+#, python-brace-format
+msgid "{variable} != {expected_value} ({value} is wrong)"
+msgstr "{variable}! = {expected_value} ({value} වැරදියි)"
+
+#: zerver/lib/validator.py:353
+#, python-brace-format
+msgid "{var_name} is not a URL"
+msgstr "{var_name} යනු ඒ.ස.නි. නොවේ"
+
+#: zerver/lib/validator.py:360
+msgid "Malformed URL pattern."
+msgstr ""
+
+#: zerver/lib/validator.py:381
+#, python-brace-format
+msgid "'{item}' cannot be blank."
+msgstr "'{item}' හිස් විය නොහැකිය."
+
+#: zerver/lib/validator.py:397
+#, python-brace-format
+msgid "'{value}' is not a valid choice for '{field_name}'."
+msgstr ""
+
+#: zerver/lib/validator.py:574
+#, python-brace-format
+msgid "{var_name} is not a string or an integer list"
+msgstr ""
+
+#: zerver/lib/validator.py:584
+#, python-brace-format
+msgid "{var_name} is not a string or integer"
+msgstr ""
+
+#: zerver/lib/webhooks/common.py:72
+#, python-brace-format
+msgid "Missing the HTTP event header '{header}'"
+msgstr ""
+
+#: zerver/lib/webhooks/common.py:230
+msgid "The {} webhook expects time in milliseconds."
+msgstr ""
+
+#: zerver/lib/zcommand.py:30
+msgid "There should be a leading slash in the zcommand."
+msgstr ""
+
+#: zerver/lib/zcommand.py:79
+msgid "No such command: {}"
+msgstr "එවැනි විධානයක් නැත: {}"
+
+#: zerver/middleware.py:464
+msgid "Internal server error"
+msgstr "අභ්යන්තර සේවාදායකයේ දෝෂයකි"
+
+#: zerver/middleware.py:491
+#, python-brace-format
+msgid "CSRF error: {reason}"
+msgstr "CSRF දෝෂයකි: {reason}"
+
+#: zerver/models.py:418
+msgid "stream events"
+msgstr ""
+
+#: zerver/models.py:535
+msgid "Available on Zulip Standard. Upgrade to access."
+msgstr ""
+
+#: zerver/models.py:1114 zerver/models.py:1116
+msgid "Bad regular expression: {}"
+msgstr ""
+
+#: zerver/models.py:1117
+msgid "Unknown regular expression error"
+msgstr ""
+
+#: zerver/models.py:1152
+msgid "Invalid format string in URL."
+msgstr ""
+
+#: zerver/models.py:1194
+#, python-format
+msgid ""
+"Group %(name)r in URL format string is not present in linkifier pattern."
+msgstr ""
+
+#: zerver/models.py:1206
+#, python-format
+msgid ""
+"Group %(name)r in linkifier pattern is not present in URL format string."
+msgstr ""
+
+#: zerver/models.py:1301 zerver/views/realm_playgrounds.py:25
+msgid "Invalid characters in pygments language"
+msgstr ""
+
+#: zerver/models.py:1746
+msgid "Organization owner"
+msgstr "සංවිධානයේ හිමිකරු"
+
+#: zerver/models.py:1747
+msgid "Organization administrator"
+msgstr "සංවිධානයේ පරිපාලක"
+
+#: zerver/models.py:1748
+msgid "Moderator"
+msgstr ""
+
+#: zerver/models.py:1749
+msgid "Member"
+msgstr "සාමාජිකයා"
+
+#: zerver/models.py:1750
+msgid "Guest"
+msgstr "අමුත්තා"
+
+#: zerver/models.py:2799
+msgid "Unicode emoji"
+msgstr "යුනිකේත ඉමොජි"
+
+#: zerver/models.py:2800
+msgid "Custom emoji"
+msgstr "අභිරුචි ඉමොජි"
+
+#: zerver/models.py:2801
+msgid "Zulip extra emoji"
+msgstr "සුලිප් අමතර ඉමොජි"
+
+#: zerver/models.py:3957
+msgid "User with ID {} is deactivated"
+msgstr ""
+
+#: zerver/models.py:3960
+msgid "User with ID {} is a bot"
+msgstr ""
+
+#: zerver/models.py:3993
+msgid "List of options"
+msgstr "විකල්ප ලැයිස්තුව"
+
+#: zerver/models.py:3996
+msgid "Person picker"
+msgstr ""
+
+#: zerver/models.py:4008
+msgid "Short text"
+msgstr ""
+
+#: zerver/models.py:4009
+msgid "Long text"
+msgstr ""
+
+#: zerver/models.py:4010
+msgid "Date picker"
+msgstr ""
+
+#: zerver/models.py:4011
+msgid "Link"
+msgstr "සබැඳිය"
+
+#: zerver/models.py:4014
+msgid "External account"
+msgstr "බාහිර ගිණුම"
+
+#: zerver/signals.py:91
+msgid "Unknown IP address"
+msgstr "නොදන්නා අ.ජා.කෙ. ලිපිනයකි"
+
+#: zerver/signals.py:92
+msgid "an unknown operating system"
+msgstr "නොදන්නා මෙහෙයුම් පද්ධතියකි"
+
+#: zerver/signals.py:93
+msgid "An unknown browser"
+msgstr "නොදන්නා අතිරික්සුවකි"
+
+#: zerver/tornado/event_queue.py:648
+msgid "Missing 'queue_id' argument"
+msgstr ""
+
+#: zerver/tornado/event_queue.py:651
+msgid "Missing 'last_event_id' argument"
+msgstr ""
+
+#: zerver/tornado/event_queue.py:654
+msgid "You are not authorized to get events from this queue"
+msgstr ""
+
+#: zerver/tornado/event_queue.py:660
+#, python-brace-format
+msgid "An event newer than {event_id} has already been pruned!"
+msgstr ""
+
+#: zerver/tornado/event_queue.py:670
+#, python-brace-format
+msgid "Event {event_id} was not in this queue"
+msgstr ""
+
+#: zerver/tornado/exceptions.py:15
+#, python-brace-format
+msgid "Bad event queue id: {queue_id}"
+msgstr ""
+
+#: zerver/tornado/views.py:38
+msgid "You are not authorized to access this queue"
+msgstr ""
+
+#: zerver/views/auth.py:454
+msgid "Auth key for this subdomain not found."
+msgstr ""
+
+#: zerver/views/auth.py:461
+msgid "No JSON web token passed in request"
+msgstr ""
+
+#: zerver/views/auth.py:463
+msgid "Bad JSON web token"
+msgstr ""
+
+#: zerver/views/auth.py:467
+msgid "No user specified in JSON web token claims"
+msgstr ""
+
+#: zerver/views/auth.py:470
+msgid "No organization specified in JSON web token claims"
+msgstr ""
+
+#: zerver/views/auth.py:477
+msgid "Wrong subdomain"
+msgstr "වැරදි උපවසමකි"
+
+#: zerver/views/auth.py:915
+msgid "Subdomain required"
+msgstr "උපවසම අවශ්‍යයි"
+
+#: zerver/views/auth.py:977
+msgid "Your username or password is incorrect."
+msgstr "ඔබගේ පරිශීලක නාමය හෝ මුරපදය වැරදි ය."
+
+#: zerver/views/compatibility.py:18
+msgid "User-Agent header missing from request"
+msgstr ""
+
+#: zerver/views/custom_profile_fields.py:50
+msgid "Label cannot be blank."
+msgstr ""
+
+#: zerver/views/custom_profile_fields.py:64
+msgid "Field must have at least one choice."
+msgstr ""
+
+#: zerver/views/custom_profile_fields.py:94
+msgid "Invalid field type."
+msgstr "ක්ෂේත්‍ර වර්ගය වලංගු නොවේ."
+
+#: zerver/views/custom_profile_fields.py:127
+#: zerver/views/custom_profile_fields.py:167
+msgid "A field with that label already exists."
+msgstr ""
+
+#: zerver/views/custom_profile_fields.py:161
+msgid "Default custom field cannot be updated."
+msgstr "පෙරනිමි අභිරුචි ක්ෂේත්‍රය යාවත්කාල කළ නොහැකිය."
+
+#: zerver/views/development/dev_login.py:98
+msgid "Endpoint not available in production."
+msgstr ""
+
+#: zerver/views/development/dev_login.py:100
+msgid "DevAuthBackend not enabled."
+msgstr ""
+
+#: zerver/views/hotspots.py:19
+msgid "Unknown hotspot: {}"
+msgstr ""
+
+#: zerver/views/invite.py:51
+msgid "Must be invited as an valid type of user"
+msgstr ""
+
+#: zerver/views/invite.py:63
+msgid "You must specify at least one email address."
+msgstr ""
+
+#: zerver/views/invite.py:65
+msgid "You must specify at least one stream for invitees to join."
+msgstr ""
+
+#: zerver/views/invite.py:75
+msgid "Stream does not exist with id: {}. No invites were sent."
+msgstr ""
+
+#: zerver/views/invite.py:114 zerver/views/invite.py:117
+#: zerver/views/invite.py:137 zerver/views/invite.py:140
+#: zerver/views/invite.py:156 zerver/views/invite.py:161
+msgid "No such invitation"
+msgstr "එවැනි ආරාධනාවක් නැත"
+
+#: zerver/views/invite.py:190
+msgid "Invalid stream id {}. No invites were sent."
+msgstr ""
+
+#: zerver/views/message_edit.py:79
+msgid "Message edit history is disabled in this organization"
+msgstr "මෙම සංවිධානය තුළ පණිවිඩ සංස්කරණ ඉතිහාසය අබල කර ඇත"
+
+#: zerver/views/message_edit.py:135 zerver/views/message_edit.py:138
+msgid "You don't have permission to delete this message"
+msgstr ""
+
+#: zerver/views/message_edit.py:146
+msgid "The time limit for deleting this message has passed"
+msgstr ""
+
+#: zerver/views/message_edit.py:166
+msgid "Message already deleted"
+msgstr ""
+
+#: zerver/views/message_fetch.py:96
+#, python-brace-format
+msgid "Invalid narrow operator: {desc}"
+msgstr ""
+
+#: zerver/views/message_fetch.py:916
+msgid "Missing 'anchor' argument."
+msgstr ""
+
+#: zerver/views/message_fetch.py:936
+msgid "Invalid anchor"
+msgstr ""
+
+#: zerver/views/message_fetch.py:956
+msgid "Too many messages requested (maximum {})."
+msgstr "බොහෝ පණිවිඩ ඉල්ලා ඇත (උපරිමය {})."
+
+#: zerver/views/message_flags.py:96
+msgid "No such topic '{}'"
+msgstr "එවැනි මාතෘකාවක් නැත '{}'"
+
+#: zerver/views/message_send.py:159
+msgid "Invalid time format"
+msgstr ""
+
+#: zerver/views/message_send.py:168
+msgid "Time must be in the future."
+msgstr ""
+
+#: zerver/views/message_send.py:256
+msgid "Missing sender"
+msgstr ""
+
+#: zerver/views/message_send.py:263
+msgid "Mirroring not allowed with recipient user IDs"
+msgstr ""
+
+#: zerver/views/message_send.py:273 zerver/views/message_send.py:280
+msgid "Invalid mirrored message"
+msgstr ""
+
+#: zerver/views/message_send.py:276
+msgid "Zephyr mirroring is not allowed in this organization"
+msgstr ""
+
+#: zerver/views/message_send.py:284
+msgid "Missing deliver_at in a request for delayed message delivery"
+msgstr ""
+
+#: zerver/views/muting.py:40
+msgid "Topic already muted"
+msgstr "මාතෘකාව දැනටමත් නිහඬ කර ඇත"
+
+#: zerver/views/muting.py:49
+msgid "Topic is not muted"
+msgstr "මාතෘකාව නිහඬ කර නැත"
+
+#: zerver/views/muting.py:95
+msgid "Cannot mute self"
+msgstr ""
+
+#: zerver/views/muting.py:103
+msgid "User already muted"
+msgstr "පරිශීලකයා දැනටමත් නිහඬ කර ඇත"
+
+#: zerver/views/muting.py:118
+msgid "User is not muted"
+msgstr "පරිශීලකයා නිහඬ කර නැත"
+
+#: zerver/views/presence.py:46
+msgid "Presence is not supported for bot users."
+msgstr ""
+
+#: zerver/views/presence.py:51
+#, python-brace-format
+msgid "No presence data for {user_id_or_email}"
+msgstr ""
+
+#: zerver/views/presence.py:85
+msgid "Client did not pass any new values."
+msgstr ""
+
+#: zerver/views/presence.py:106
+msgid ""
+"Client must pass emoji_name if they pass either emoji_code or reaction_type."
+msgstr ""
+
+#: zerver/views/presence.py:144
+msgid "Invalid status: {}"
+msgstr "වලංගු නොවන තත්ත්වය: {}"
+
+#: zerver/views/push_notifications.py:19
+msgid "Empty or invalid length token"
+msgstr ""
+
+#: zerver/views/push_notifications.py:25
+msgid "Invalid APNS token"
+msgstr ""
+
+#: zerver/views/reactions.py:49
+msgid ""
+"At least one of the following arguments must be present: emoji_name, "
+"emoji_code"
+msgstr ""
+
+#: zerver/views/reactions.py:68
+msgid "Reaction doesn't exist."
+msgstr ""
+
+#: zerver/views/realm.py:147
+msgid "Invalid language '{}'"
+msgstr "වලංගු නොවන භාෂාව '{}'"
+
+#: zerver/views/realm.py:152
+msgid "At least one authentication method must be enabled."
+msgstr ""
+
+#: zerver/views/realm.py:156
+msgid "Invalid video_chat_provider {}"
+msgstr ""
+
+#: zerver/views/realm.py:160
+msgid "Invalid giphy_rating {}"
+msgstr ""
+
+#: zerver/views/realm.py:286
+msgid "Must be a demo organization."
+msgstr ""
+
+#: zerver/views/realm_domains.py:32
+msgid "Invalid domain: {}"
+msgstr "වලංගු නොවන වසම: {}"
+
+#: zerver/views/realm_domains.py:35
+#, python-brace-format
+msgid "The domain {domain} is already a part of your organization."
+msgstr "{domain} වසම දැනටමත් ඔබගේ සංවිධානයේ කොටසකි."
+
+#: zerver/views/realm_domains.py:53 zerver/views/realm_domains.py:66
+#, python-brace-format
+msgid "No entry found for domain {domain}."
+msgstr ""
+
+#: zerver/views/realm_emoji.py:36
+msgid "A custom emoji with this name already exists."
+msgstr "මෙම නම සහිත අභිරුචි ඉමොජියක් දැනටමත් පවතී."
+
+#: zerver/views/realm_emoji.py:38
+msgid "You must upload exactly one file."
+msgstr "ඔබ හරියටම එක් ගොනුවක් උඩුගත කළ යුතුය."
+
+#: zerver/views/realm_emoji.py:41
+msgid "Only administrators can override built-in emoji."
+msgstr ""
+
+#: zerver/views/realm_emoji.py:45 zerver/views/realm_icon.py:25
+#: zerver/views/realm_logo.py:30 zerver/views/upload.py:125
+#: zerver/views/user_settings.py:316
+msgid "Uploaded file is larger than the allowed limit of {} MiB"
+msgstr "උඩුගත කළ ගොනුව ඉඩ දී ඇති මෙ.බ. {} ට වඩා විශාල ය"
+
+#: zerver/views/realm_emoji.py:52
+msgid "Image file upload failed."
+msgstr ""
+
+#: zerver/views/realm_export.py:41
+msgid "Exceeded rate limit."
+msgstr "අනුපාත සීමාව ඉක්මවිය."
+
+#: zerver/views/realm_export.py:54
+#, python-brace-format
+msgid "Please request a manual export from {email}."
+msgstr "{email} වෙතින් අතින් නිර්යාත කිරීමක් ඉල්ලන්න."
+
+#: zerver/views/realm_export.py:92
+msgid "Invalid data export ID"
+msgstr "වලංගු නොවන දත්ත නිර්යාත හැඳු."
+
+#: zerver/views/realm_export.py:96
+msgid "Export already deleted"
+msgstr ""
+
+#: zerver/views/realm_icon.py:20
+msgid "You must upload exactly one icon."
+msgstr "ඔබ හරියටම එක් නිරූපකයක් උඩුගත කළ යුතුය."
+
+#: zerver/views/realm_linkifiers.py:45 zerver/views/realm_linkifiers.py:67
+msgid "Linkifier not found."
+msgstr ""
+
+#: zerver/views/realm_logo.py:26
+msgid "You must upload exactly one logo."
+msgstr "ඔබ හරියටම එක් ලාංඡනයක් උඩුගත කළ යුතුය."
+
+#: zerver/views/realm_playgrounds.py:33
+msgid "Invalid playground"
+msgstr "වලංගු නොවන ක්‍රීඩා පිටියකි"
+
+#: zerver/views/registration.py:591
+msgid "The organization creation link has expired or is not valid."
+msgstr "සංවිධානය සෑදීමේ සබැඳිය කල් ඉකුත් වී හෝ වලංගු නොවේ."
+
+#: zerver/views/registration.py:599
+msgid "New organization creation disabled"
+msgstr "නව සංවිධාන සෑදීම අබල කර ඇත"
+
+#: zerver/views/streams.py:110
+#, python-brace-format
+msgid "User not authorized to execute queries on behalf of '{principal}'"
+msgstr ""
+
+#: zerver/views/streams.py:157
+msgid "Private streams cannot be made default."
+msgstr ""
+
+#: zerver/views/streams.py:189
+msgid "You must pass \"new_description\" or \"new_group_name\"."
+msgstr ""
+
+#: zerver/views/streams.py:219
+msgid "Invalid value for \"op\". Specify one of \"add\" or \"remove\"."
+msgstr ""
+
+#: zerver/views/streams.py:288
+msgid "Stream already has that name!"
+msgstr ""
+
+#: zerver/views/streams.py:311
+msgid "Default streams cannot be made private."
+msgstr ""
+
+#: zerver/views/streams.py:364 zerver/views/user_groups.py:96
+msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
+msgstr ""
+
+#: zerver/views/streams.py:441
+#, python-brace-format
+msgid "{user_full_name} subscribed you to the stream {stream_name}."
+msgstr ""
+
+#: zerver/views/streams.py:447
+#, python-brace-format
+msgid "{user_full_name} subscribed you to the following streams:"
+msgstr ""
+
+#: zerver/views/streams.py:520
+#, python-brace-format
+msgid "Unable to access stream ({stream_name})."
+msgstr ""
+
+#: zerver/views/streams.py:530
+msgid "You can only invite other Zephyr mirroring users to private streams."
+msgstr ""
+
+#: zerver/views/streams.py:644
+#, python-brace-format
+msgid "{user_name} created the following streams: {stream_str}."
+msgstr ""
+
+#: zerver/views/streams.py:646
+#, python-brace-format
+msgid "{user_name} created a new stream {stream_str}."
+msgstr ""
+
+#: zerver/views/streams.py:647
+msgid "new streams"
+msgstr ""
+
+#: zerver/views/streams.py:674
+#, python-brace-format
+msgid "Stream created by {user_name}."
+msgstr ""
+
+#: zerver/views/streams.py:888
+msgid "Unknown subscription property: {}"
+msgstr ""
+
+#: zerver/views/streams.py:892
+msgid "Not subscribed to stream id {}"
+msgstr ""
+
+#: zerver/views/submessage.py:38
+msgid "Invalid json for submessage"
+msgstr "උප පණිවිඩ සඳහා වලංගු නොවන json කි"
+
+#: zerver/views/thumbnail.py:32 zerver/views/upload.py:98
+msgid "<p>You are not authorized to view this file.</p>"
+msgstr ""
+
+#: zerver/views/typing.py:32
+msgid "Empty 'to' list"
+msgstr ""
+
+#: zerver/views/typing.py:42
+msgid "User has disabled typing notifications for stream messages"
+msgstr ""
+
+#: zerver/views/typing.py:52
+msgid "User has disabled typing notifications for private messages"
+msgstr ""
+
+#: zerver/views/upload.py:96
+msgid "<p>File not found.</p>"
+msgstr "<p>ගොනුව හමු නොවිණි.</p>"
+
+#: zerver/views/upload.py:108
+msgid "Invalid token"
+msgstr ""
+
+#: zerver/views/upload.py:110
+msgid "Invalid filename"
+msgstr " ගොනුවේ නම වලංගු නොවේ"
+
+#: zerver/views/upload.py:117
+msgid "You must specify a file to upload"
+msgstr ""
+
+#: zerver/views/upload.py:119 zerver/views/users.py:330
+#: zerver/views/users.py:428
+msgid "You may only upload one file at a time"
+msgstr "ඔබට වරකට එක් ගොනුවක් පමණක් උඩුගත කළ හැකිය"
+
+#: zerver/views/user_groups.py:61
+msgid "No new data supplied"
+msgstr "නව දත්ත සපයා නැත"
+
+#: zerver/views/user_groups.py:122
+#, python-brace-format
+msgid "User {user_id} is already a member of this group"
+msgstr "{user_id} පරිශීලක දැනටමත් මෙම සමූහයේ සාමාජිකයෙකි"
+
+#: zerver/views/user_groups.py:142
+msgid "There is no member '{}' in this user group"
+msgstr "මෙම පරිශීලක සමූහයේ '{}' සාමාජිකයින් නැත"
+
+#: zerver/views/user_settings.py:47
+msgid "Avatar changes are disabled in this organization."
+msgstr ""
+
+#: zerver/views/user_settings.py:61 zerver/views/user_settings.py:254
+msgid "Email address changes are disabled in this organization."
+msgstr "මෙම සංවිධානය තුළ වි-තැපැල් ලිපිනය වෙනස් කිරීම් අබල කර ඇත."
+
+#: zerver/views/user_settings.py:101
+msgid "Invalid default_language"
+msgstr "වලංගු නොවන පෙරනිමි_භාෂා"
+
+#: zerver/views/user_settings.py:108
+msgid "Invalid notification sound '{}'"
+msgstr "දැනුම් දීමේ ශබ්දය '{}' වලංගු නොවේ"
+
+#: zerver/views/user_settings.py:116
+msgid "Invalid email batching period: {} seconds"
+msgstr ""
+
+#: zerver/views/user_settings.py:211
+msgid "Your Zulip password is managed in LDAP"
+msgstr ""
+
+#: zerver/views/user_settings.py:221
+msgid "Wrong password!"
+msgstr "වැරදි මුරපදයකි!"
+
+#: zerver/views/user_settings.py:226
+msgid "You're making too many attempts! Try again in {} seconds."
+msgstr "ඔබ බොහා් තැත් කිරීම් සිදු කරනවා! තත්. {} කින් යළි උත්සාහ කරන්න."
+
+#: zerver/views/user_settings.py:232
+msgid "New password is too weak!"
+msgstr "නව මුරපදය ඉතා දුර්වලයි!"
+
+#: zerver/views/user_settings.py:308
+msgid "You must upload exactly one avatar."
+msgstr ""
+
+#: zerver/views/users.py:103
+msgid "Cannot deactivate the only organization owner"
+msgstr ""
+
+#: zerver/views/users.py:192
+msgid ""
+"The owner permission cannot be removed from the only organization owner."
+msgstr "සංවිධානයේ හිමිකරුගෙන් පමණක් හිමිකාරීත්ව අවසරය ඉවත් කළ නොහැකිය."
+
+#: zerver/views/users.py:287
+msgid "Failed to change owner, no such user"
+msgstr "හිමිකරු වෙනස් කිරීමට අසමත් විය, එවැනි පරිශීලකයෙක් නැත"
+
+#: zerver/views/users.py:289
+msgid "Failed to change owner, user is deactivated"
+msgstr ""
+
+#: zerver/views/users.py:291
+msgid "Failed to change owner, bots can't own other bots"
+msgstr "හිමිකරු වෙනස් කිරීමට අසමත් විය, ස්වයංක්‍රමලේඛ වලට වෙනත් ස්වයංක්‍රමලේඛ අයිති කර ගත නොහැකිය"
+
+#: zerver/views/users.py:395
+msgid ""
+"Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
+"Please contact your server administrator."
+msgstr ""
+
+#: zerver/views/users.py:403
+msgid "Embedded bots are not enabled."
+msgstr "එබ්බවූ ස්වයංක්‍රමලේඛ සබල කර නැත."
+
+#: zerver/views/users.py:405
+msgid "Invalid embedded bot name."
+msgstr "එබ්බවූ ස්වයංක්‍රමලේඛයේ නම වලංගු නොවේ."
+
+#: zerver/views/users.py:412
+msgid "Username already in use"
+msgstr "පරිශීලක නාමය දැනටමත් භාවිතයේ ඇත"
+
+#: zerver/views/users.py:593
+#, python-brace-format
+msgid "Email '{email}' not allowed in this organization"
+msgstr "මෙම සංවිධානය තුළ '{email}' වි-තැපෑලට ඉඩ නැත"
+
+#: zerver/views/users.py:598
+msgid "Disposable email addresses are not allowed in this organization"
+msgstr ""
+
+#: zerver/views/users.py:604
+msgid "Email '{}' already in use"
+msgstr "'{}' වි-තැපෑල දැනටමත් භාවිතයේ ඇත"
+
+#: zerver/views/video_calls.py:46
+msgid "Invalid Zoom access token"
+msgstr ""
+
+#: zerver/views/video_calls.py:51
+msgid "Zoom credentials have not been configured"
+msgstr ""
+
+#: zerver/views/video_calls.py:129
+msgid "Invalid Zoom session identifier"
+msgstr ""
+
+#: zerver/views/video_calls.py:143
+msgid "Invalid Zoom credentials"
+msgstr ""
+
+#: zerver/views/video_calls.py:164
+msgid "Failed to create Zoom call"
+msgstr "සූම් ඇමතුම සෑදීමට අසමත් විය"
+
+#: zerver/views/video_calls.py:224
+msgid "BigBlueButton is not configured."
+msgstr "බිග්බ්ලූබටන් වින්‍යාසගත කර නැත."
+
+#: zerver/views/video_calls.py:242
+msgid "Error connecting to the BigBlueButton server."
+msgstr "බිග්බ්ලූබටන් සේවාදායකයට සම්බන්ධ වීමේ දෝෂයකි."
+
+#: zerver/views/video_calls.py:246
+msgid "Error authenticating to the BigBlueButton server."
+msgstr ""
+
+#: zerver/views/video_calls.py:249
+msgid "BigBlueButton server returned an unexpected error."
+msgstr ""
+
+#: zerver/views/zephyr.py:36
+msgid "Could not find Kerberos credential"
+msgstr ""
+
+#: zerver/views/zephyr.py:38
+msgid "Webathena login not enabled"
+msgstr "වෙබ්ඇතීනා පිවිසුම සබල කර නැත"
+
+#: zerver/views/zephyr.py:59
+msgid "Invalid Kerberos cache"
+msgstr "කර්බර්ඕඑස් නිහිතය වලංගු නොවේ"
+
+#: zerver/views/zephyr.py:75
+msgid "We were unable to set up mirroring for you"
+msgstr ""
+
+#: zerver/webhooks/freshstatus/view.py:97
+#: zerver/webhooks/uptimerobot/view.py:56 zerver/webhooks/zabbix/view.py:50
+msgid "Invalid payload"
+msgstr ""
+
+#: zerver/webhooks/front/view.py:149
+msgid "Unknown webhook request"
+msgstr ""
+
+#: zerver/webhooks/ifttt/view.py:30 zerver/webhooks/zapier/view.py:42
+msgid "Content can't be empty"
+msgstr "අන්තර්ගතය හිස් විය නොහැකිය"
+
+#: zerver/webhooks/librato/view.py:173
+msgid "Malformed JSON input"
+msgstr ""
+
+#: zerver/webhooks/newrelic/view.py:52
+msgid "The newrelic webhook requires timestamp in milliseconds"
+msgstr ""
+
+#: zerver/webhooks/newrelic/view.py:69
+msgid ""
+"The newrelic webhook requires current_state be in [open|acknowledged|closed]"
+msgstr ""
+
+#: zerver/webhooks/pivotal/view.py:189
+msgid "Unable to handle Pivotal payload"
+msgstr ""
+
+#: zerver/webhooks/slack/view.py:29
+msgid "Error: channels_map_to_topics parameter other than 0 or 1"
+msgstr ""
+
+#: zerver/webhooks/slack/view.py:35
+msgid "Message from Slack"
+msgstr "ස්ලැක් වෙතින් පණිවිඩයක්"
+
+#: zerver/webhooks/wordpress/view.py:56
+msgid "Unknown WordPress webhook action: {}"
+msgstr ""
+
+#: zerver/worker/queue_processors.py:1013
+#, python-brace-format
+msgid ""
+"Your data export is complete and has been uploaded here:\n"
+"\n"
+"{public_url}"
+msgstr "ඔබගේ දත්ත නිර්යාතය සම්පුර්ණ අතර මෙහි උඩුගත කර ඇත:\n\n {public_url}"
+
+#. error
+#: zilencer/views.py:49
+msgid "Must validate with valid Zulip server API key"
+msgstr ""
+
+#. error
+#: zilencer/views.py:57
+msgid "Invalid token type"
+msgstr ""
+
+#: zilencer/views.py:85
+msgid "{} is not a valid hostname"
+msgstr "{} වලංගු සත්කාරක නාමයක් නොවේ"
+
+#: zilencer/views.py:222
+msgid "Invalid property {}"
+msgstr ""
+
+#: zilencer/views.py:224
+msgid "Data is out of order."
+msgstr ""
+
+#: zilencer/views.py:244
+msgid "Invalid data."
+msgstr "දත්ත වලංගු නොවේ."
+
+#: zproject/backends.py:465
+msgid "You need to reset your password."
+msgstr "ඔබගේ මුරපදය නැවත සැකසිය යුතුය."
+
+#: zproject/backends.py:2122
+msgid "Missing id_token parameter"
+msgstr ""
+
+#: zproject/backends.py:2655
+msgid "Invalid OTP"
+msgstr ""
+
+#: zproject/backends.py:2658
+msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
+msgstr ""

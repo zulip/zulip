@@ -12,7 +12,9 @@
                 <div class="search-container">
                     <div id="add_new_subscription">
                         {{#if can_create_streams}}
-                        <button class="create_stream_button create_stream_plus_button tippy-zulip-tooltip" data-tippy-content="{{t 'Create new stream' }} (n)" data-tippy-placement="bottom">+</button>
+                        <button class="create_stream_button create_stream_plus_button tippy-zulip-tooltip" data-tippy-content="{{t 'Create new stream' }} (n)" data-tippy-placement="bottom">
+                            <span>+</span>
+                        </button>
                         {{/if}}
                         <div class="float-clear"></div>
                     </div>

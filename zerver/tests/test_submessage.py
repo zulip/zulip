@@ -123,7 +123,7 @@ class TestBasics(ZulipTestCase):
         result = self.client_post("/json/submessage", payload)
         self.assert_json_error(result, "You cannot attach a submessage to this message.")
 
-        # Since Hamlet is actually subcribed to the stream, he is welcome
+        # Since Hamlet is actually subscribed to the stream, he is welcome
         # to send submessages to Cordelia once she initiates the "subconversation".
         do_add_submessage(
             realm=cordelia.realm,

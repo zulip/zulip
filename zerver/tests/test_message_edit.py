@@ -357,14 +357,14 @@ class EditMessageTest(EditMessageTestCase):
         self.assertEqual(result.json()["raw_content"], "web-public message")
 
         # Verify LIMITED plan type does not allow web-public access.
-        do_change_plan_type(user_profile.realm, Realm.LIMITED, acting_user=None)
+        do_change_plan_type(user_profile.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
         self.assert_json_error(
             result, "Not logged in: API authentication or user session required", 401
         )
 
         # Verify works with STANDARD_FREE plan type too.
-        do_change_plan_type(user_profile.realm, Realm.STANDARD_FREE, acting_user=None)
+        do_change_plan_type(user_profile.realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=None)
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
         self.assert_json_success(result)
         self.assertEqual(result.json()["raw_content"], "web-public message")
@@ -520,10 +520,10 @@ class EditMessageTest(EditMessageTestCase):
         self.assertEqual(
             message_history_1[1]["content_html_diff"],
             (
-                "<p>content "
+                "<div><p>content "
                 '<span class="highlight_text_inserted">after</span> '
                 '<span class="highlight_text_deleted">before</span>'
-                " edit</p>"
+                " edit</p></div>"
             ),
         )
         # Check content of message before edit.
@@ -571,15 +571,48 @@ class EditMessageTest(EditMessageTestCase):
         self.assertEqual(
             message_history_2[1]["content_html_diff"],
             (
-                "<p>content before edit, line 1<br> "
+                "<div><p>content before edit, line 1<br> "
                 'content <span class="highlight_text_inserted">after edit, line 2<br> '
-                "content</span> before edit, line 3</p>"
+                "content</span> before edit, line 3</p></div>"
             ),
         )
         self.assertEqual(
             message_history_2[1]["prev_rendered_content"],
             "<p>content before edit, line 1</p>\n<p>content before edit, line 3</p>",
         )
+
+    def test_empty_message_edit(self) -> None:
+        self.login("hamlet")
+        msg_id = self.send_stream_message(
+            self.example_user("hamlet"),
+            "Scotland",
+            topic_name="editing",
+            content="We will edit this to render as empty.",
+        )
+        # Edit that manually to simulate a rendering bug
+        message = Message.objects.get(id=msg_id)
+        message.rendered_content = ""
+        message.save(update_fields=["rendered_content"])
+
+        self.assert_json_success(
+            self.client_patch(
+                "/json/messages/" + str(msg_id),
+                {
+                    "message_id": msg_id,
+                    "content": "We will edit this to also render as empty.",
+                },
+            )
+        )
+        # And again tweak to simulate a rendering bug
+        message = Message.objects.get(id=msg_id)
+        message.rendered_content = ""
+        message.save(update_fields=["rendered_content"])
+
+        history = self.client_get("/json/messages/" + str(msg_id) + "/history")
+        message_history = orjson.loads(history.content)["message_history"]
+        self.assertEqual(message_history[0]["rendered_content"], "")
+        self.assertEqual(message_history[1]["rendered_content"], "")
+        self.assertEqual(message_history[1]["content_html_diff"], "<div></div>")
 
     def test_edit_link(self) -> None:
         # Link editing
@@ -616,11 +649,11 @@ class EditMessageTest(EditMessageTestCase):
         self.assertEqual(
             message_history_1[1]["content_html_diff"],
             (
-                '<p>Here is a link to <a href="http://www.zulipchat.com"'
+                '<div><p>Here is a link to <a href="http://www.zulipchat.com"'
                 ">zulip "
                 '<span class="highlight_text_inserted"> Link: http://www.zulipchat.com .'
                 '</span> <span class="highlight_text_deleted"> Link: http://www.zulip.org .'
-                "</span> </a></p>"
+                "</span> </a></p></div>"
             ),
         )
 

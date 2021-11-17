@@ -99,9 +99,6 @@ webpack_port = base_port + 3
 
 os.chdir(os.path.join(os.path.dirname(__file__), ".."))
 
-# Clean up stale .pyc files etc.
-subprocess.check_call("./tools/clean-repo")
-
 if options.clear_memcached:
     subprocess.check_call("./scripts/setup/flush-memcached")
 

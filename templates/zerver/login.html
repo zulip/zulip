@@ -30,6 +30,22 @@ page can be easily identified in it's respective JavaScript file. -->
             {% endif %}
 
             <div class="right-side">
+                {% if realm_web_public_access_enabled %}
+                    <div class="login-social">
+                        <form class="anonymous_access_form form-inline" action="/" method="post">
+                            {{ csrf_input }}
+                            <input type="hidden" name="prefers_web_public_view" value="true" />
+                            <input type="hidden" name="next" value="{{ next }}" />
+                            <button class="full-width">
+                                {{ _('Access without an account') }}
+                            </button>
+                        </form>
+                    </div>
+                    {% if no_auth_enabled %}
+                    {% else %}
+                    <div class="or"><span>{{ _('OR') }}</span></div>
+                    {% endif %}
+                {% endif %}
                 {% if no_auth_enabled %}
                     <div class="alert">
                         <p>No authentication backends are enabled on this

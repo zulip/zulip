@@ -1233,6 +1233,26 @@ class NormalActionsTest(BaseAction):
         assert isinstance(events[1]["person"]["avatar_url"], str)
         assert isinstance(events[1]["person"]["avatar_url_medium"], str)
 
+    def test_change_user_delivery_email_email_address_visibility_everyone(self) -> None:
+        do_set_realm_property(
+            self.user_profile.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
+        )
+        # Important: We need to refresh from the database here so that
+        # we don't have a stale UserProfile object with an old value
+        # for email being passed into this next function.
+        self.user_profile.refresh_from_db()
+        action = lambda: do_change_user_delivery_email(self.user_profile, "newhamlet@zulip.com")
+        events = self.verify_action(action, num_events=3, client_gravatar=False)
+
+        check_realm_user_update("events[0]", events[0], "delivery_email")
+        check_realm_user_update("events[1]", events[1], "avatar_fields")
+        check_realm_user_update("events[2]", events[2], "email")
+        assert isinstance(events[1]["person"]["avatar_url"], str)
+        assert isinstance(events[1]["person"]["avatar_url_medium"], str)
+
     def test_change_realm_authentication_methods(self) -> None:
         def fake_backends() -> Any:
             backends = (
@@ -1522,16 +1542,18 @@ class NormalActionsTest(BaseAction):
         realm = self.user_profile.realm
 
         state_data = fetch_initial_state_data(self.user_profile)
-        self.assertEqual(state_data["realm_plan_type"], Realm.SELF_HOSTED)
+        self.assertEqual(state_data["realm_plan_type"], Realm.PLAN_TYPE_SELF_HOSTED)
         self.assertEqual(state_data["zulip_plan_is_not_limited"], True)
 
         events = self.verify_action(
-            lambda: do_change_plan_type(realm, Realm.LIMITED, acting_user=self.user_profile)
+            lambda: do_change_plan_type(
+                realm, Realm.PLAN_TYPE_LIMITED, acting_user=self.user_profile
+            )
         )
         check_realm_update("events[0]", events[0], "plan_type")
 
         state_data = fetch_initial_state_data(self.user_profile)
-        self.assertEqual(state_data["realm_plan_type"], Realm.LIMITED)
+        self.assertEqual(state_data["realm_plan_type"], Realm.PLAN_TYPE_LIMITED)
         self.assertEqual(state_data["zulip_plan_is_not_limited"], False)
 
     def test_realm_emoji_events(self) -> None:
@@ -2129,6 +2151,7 @@ class RealmPropertyActionTest(BaseAction):
             waiting_period_threshold=[10, 20],
             create_public_stream_policy=Realm.COMMON_POLICY_TYPES,
             create_private_stream_policy=Realm.COMMON_POLICY_TYPES,
+            create_web_public_stream_policy=Realm.CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES,
             invite_to_stream_policy=Realm.COMMON_POLICY_TYPES,
             private_message_policy=Realm.PRIVATE_MESSAGE_POLICY_TYPES,
             user_group_edit_policy=Realm.COMMON_POLICY_TYPES,
@@ -2299,7 +2322,19 @@ class UserDisplayActionTest(BaseAction):
             color_scheme=[2, 3, 1],
         )
 
-        num_events = 2
+        user_settings_object = True
+        num_events = 1
+
+        legacy_setting = setting_name in UserProfile.display_settings_legacy
+        if legacy_setting:
+            # Two events:`update_display_settings` and `user_settings`.
+            # `update_display_settings` is only sent for settings added
+            # before feature level 89 which introduced `user_settings`.
+            # We send both events so that older clients that do not
+            # rely on `user_settings` don't break.
+            num_events = 2
+            user_settings_object = False
+
         values = test_changes.get(setting_name)
 
         property_type = UserProfile.property_types[setting_name]
@@ -2318,10 +2353,15 @@ class UserDisplayActionTest(BaseAction):
                     self.user_profile, setting_name, value, acting_user=self.user_profile
                 ),
                 num_events=num_events,
+                user_settings_object=user_settings_object,
             )
 
             check_user_settings_update("events[0]", events[0])
-            check_update_display_settings("events[1]", events[1])
+            if legacy_setting:
+                # Only settings added before feature level 89
+                # generate this event.
+                self.assert_length(events, 2)
+                check_update_display_settings("events[1]", events[1])
 
     def test_change_user_settings(self) -> None:
         for prop in UserProfile.property_types:

@@ -34,22 +34,22 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
         return {}
     elif command == "night":
         if user_profile.color_scheme == UserProfile.COLOR_SCHEME_NIGHT:
-            return dict(msg="You are still in night mode.")
+            return dict(msg="You are still in dark mode.")
         return dict(
             msg=change_mode_setting(
-                command=command,
-                switch_command="day",
+                command="dark",
+                switch_command="light",
                 setting="color_scheme",
                 setting_value=UserProfile.COLOR_SCHEME_NIGHT,
             )
         )
     elif command == "day":
         if user_profile.color_scheme == UserProfile.COLOR_SCHEME_LIGHT:
-            return dict(msg="You are still in day mode.")
+            return dict(msg="You are still in light mode.")
         return dict(
             msg=change_mode_setting(
-                command=command,
-                switch_command="night",
+                command="light",
+                switch_command="dark",
                 setting="color_scheme",
                 setting_value=UserProfile.COLOR_SCHEME_LIGHT,
             )

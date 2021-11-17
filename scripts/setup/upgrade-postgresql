@@ -6,7 +6,7 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-UPGRADE_TO=${1:-13}
+UPGRADE_TO=${1:-14}
 UPGRADE_FROM=$(crudini --get /etc/zulip/zulip.conf postgresql version)
 ZULIP_PATH="$(dirname "$0")/../.."
 
@@ -48,7 +48,7 @@ SCRIPTS_PATH=$(grep -o "/var/log/postgresql/pg_upgradecluster-$UPGRADE_FROM-$UPG
 crudini --set /etc/zulip/zulip.conf postgresql version "$UPGRADE_TO"
 
 # Update the statistics
-[ -n "$SCRIPTS_PATH" ] && su postgres -c "$SCRIPTS_PATH/analyze_new_cluster.sh"
+su postgres -c "/usr/lib/postgresql/$UPGRADE_TO/bin/vacuumdb --all --analyze-only --jobs 10"
 
 # Start the database up cleanly
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f

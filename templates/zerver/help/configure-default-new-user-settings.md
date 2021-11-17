@@ -4,7 +4,7 @@
 
 Organization administrators can configure the default values of
 personal preference settings for new users joining the
-organization. This can help seemlessly customize the Zulip experience
+organization. This can help seamlessly customize the Zulip experience
 to match how the organization in question is using Zulip.
 
 Existing users' preferences cannot be modified by administrators, and

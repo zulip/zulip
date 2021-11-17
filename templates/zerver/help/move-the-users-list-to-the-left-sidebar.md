@@ -13,7 +13,7 @@ You can choose to move the **User list** to the left hand side, under the
 
 {settings_tab|display-settings}
 
-2. Under **Display settings**, select **Show user list on left sidebar in narrow windows**.
+2. Under **Advanced**, select **Show user list on left sidebar in narrow windows**.
 
 3. Reload the page.
 

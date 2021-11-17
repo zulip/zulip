@@ -5,7 +5,7 @@ import path from "path";
 import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
-import webpack from "webpack";
+import type webpack from "webpack";
 import BundleTracker from "webpack-bundle-tracker";
 
 import DebugRequirePlugin from "./tools/debug-require-webpack-plugin";
@@ -195,12 +195,6 @@ export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.
                     ? "webpack-stats-production.json"
                     : "var/webpack-stats-dev.json",
             }),
-            ...(production
-                ? []
-                : [
-                      // script-loader should load sourceURL in dev
-                      new webpack.LoaderOptionsPlugin({debug: true}),
-                  ]),
             // Extract CSS from files
             new MiniCssExtractPlugin({
                 filename: production ? "[name].[contenthash].css" : "[name].css",

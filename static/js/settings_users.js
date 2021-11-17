@@ -14,7 +14,6 @@ import {DropdownListWidget} from "./dropdown_list_widget";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
-import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as presence from "./presence";
@@ -75,6 +74,10 @@ function sort_last_active(a, b) {
         presence.last_active_date(a.user_id) || 0,
         presence.last_active_date(b.user_id) || 0,
     );
+}
+
+function sort_user_id(a, b) {
+    return compare_a_b(a.user_id, b.user_id);
 }
 
 function get_user_info_row(user_id) {
@@ -273,6 +276,7 @@ section.bots.create_table = () => {
         sort_fields: {
             email: sort_bot_email,
             bot_owner: sort_bot_owner,
+            id: sort_user_id,
         },
         simplebar_container: $("#admin-bot-list .progressive-table-wrapper"),
     });
@@ -301,6 +305,7 @@ section.active.create_table = (active_users) => {
             email: sort_email,
             last_active: sort_last_active,
             role: sort_role,
+            id: sort_user_id,
         },
         simplebar_container: $("#admin-user-list .progressive-table-wrapper"),
     });
@@ -328,6 +333,7 @@ section.deactivated.create_table = (deactivated_users) => {
         sort_fields: {
             email: sort_email,
             role: sort_role,
+            id: sort_user_id,
         },
         simplebar_container: $("#admin-deactivated-users-list .progressive-table-wrapper"),
     });
@@ -420,7 +426,6 @@ function get_human_profile_data(fields_user_pills) {
 
 function confirm_deactivation(row, user_id, status_field) {
     const user = people.get_by_user_id(user_id);
-    const modal_parent = $("#settings_content .organization-box");
     const opts = {
         username: user.full_name,
         email: user.email,
@@ -444,11 +449,9 @@ function confirm_deactivation(row, user_id, status_field) {
     }
 
     confirm_dialog.launch({
-        parent: modal_parent,
         html_heading: $t_html({defaultMessage: "Deactivate {email}"}, {email: user.email}),
         html_body,
         on_click: handle_confirm,
-        fade: true,
     });
 }
 
@@ -540,7 +543,6 @@ function handle_human_form(tbody, status_field) {
             disable_role_dropdown: person.is_owner && !page_params.is_owner,
         });
 
-        const modal_parent = $("#user-info-form-modal-container");
         let fields_user_pills;
 
         function set_role_dropdown_and_fields_user_pills() {
@@ -574,22 +576,20 @@ function handle_human_form(tbody, status_field) {
 
             const url = "/json/users/" + encodeURIComponent(user_id);
             const data = {
-                full_name: JSON.stringify(full_name.val()),
+                full_name: full_name.val(),
                 role: JSON.stringify(role),
                 profile_data: JSON.stringify(profile_data),
             };
 
             settings_ui.do_settings_change(channel.patch, url, data, status_field);
-            overlays.close_modal("#dialog_widget_modal");
+            dialog_widget.close_modal();
         }
 
         dialog_widget.launch({
             html_heading: $t_html({defaultMessage: "Change user info and roles"}),
-            parent: modal_parent,
             html_body,
             on_click: submit_user_details,
             post_render: set_role_dropdown_and_fields_user_pills,
-            fade: true,
         });
     });
 }
@@ -611,8 +611,6 @@ function handle_bot_form(tbody, status_field) {
             full_name: bot.full_name,
         });
 
-        const modal_parent = $("#user-info-form-modal-container");
-
         let owner_widget;
 
         function submit_bot_details() {
@@ -632,7 +630,7 @@ function handle_bot_form(tbody, status_field) {
             }
 
             settings_ui.do_settings_change(channel.patch, url, data, status_field);
-            overlays.close_modal("#dialog_widget_modal");
+            dialog_widget.close_modal();
         }
 
         function get_bot_owner_widget() {
@@ -656,12 +654,10 @@ function handle_bot_form(tbody, status_field) {
         }
 
         dialog_widget.launch({
-            html_heading: $t({defaultMessage: "Change bot info and owner"}),
-            parent: modal_parent,
+            html_heading: $t_html({defaultMessage: "Change bot info and owner"}),
             html_body,
             on_click: submit_bot_details,
             post_render: get_bot_owner_widget,
-            fade: true,
         });
     });
 }

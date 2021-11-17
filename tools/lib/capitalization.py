@@ -75,6 +75,7 @@ IGNORED_PHRASES = [
     r"I say",
     r"I want",
     r"I'm",
+    r"I've",
     # Specific short words
     r"beta",
     r"and",
@@ -104,6 +105,7 @@ IGNORED_PHRASES = [
         '<a href="/api" target="_blank">API</a> documentation?'
     ),
     r'Most stream administration is done on the <a href="/#streams">Streams page</a>.',
+    r"Add global time<br />Everyone sees global times in their own time zone.",
     r"one or more people...",
     r"confirmation email",
     r"invites remaining",

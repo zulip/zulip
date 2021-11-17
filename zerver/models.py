@@ -36,6 +36,7 @@ from django.utils.functional import Promise
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
+from django_cte import CTEManager
 
 from confirmation import settings as confirmation_settings
 from zerver.lib import cache
@@ -119,7 +120,7 @@ def query_for_ids(query: QuerySet, user_ids: List[int], field: str) -> QuerySet:
 
 
 # Doing 1000 remote cache requests to get_display_recipient is quite slow,
-# so add a local cache as well as the remote cache cache.
+# so add a local cache as well as the remote cache.
 #
 # This local cache has a lifetime of just a single request; it is
 # cleared inside `flush_per_request_caches` in our middleware.  It
@@ -219,7 +220,7 @@ class Realm(models.Model):
     string_id: str = models.CharField(max_length=MAX_REALM_SUBDOMAIN_LENGTH, unique=True)
 
     date_created: datetime.datetime = models.DateTimeField(default=timezone_now)
-    demo_organization_scheduled_deletion_date: datetime.datetime = models.DateTimeField(
+    demo_organization_scheduled_deletion_date: Optional[datetime.datetime] = models.DateTimeField(
         default=None, null=True
     )
     deactivated: bool = models.BooleanField(default=False)
@@ -263,6 +264,7 @@ class Realm(models.Model):
     POLICY_MODERATORS_ONLY = 4
     POLICY_EVERYONE = 5
     POLICY_NOBODY = 6
+    POLICY_OWNERS_ONLY = 7
 
     COMMON_POLICY_TYPES = [
         POLICY_MEMBERS_ONLY,
@@ -287,6 +289,16 @@ class Realm(models.Model):
         POLICY_NOBODY,
     ]
 
+    # We don't allow granting roles less than Moderator access to
+    # create web-public streams, since it's a sensitive feature that
+    # can be used to send spam.
+    CREATE_WEB_PUBLIC_STREAM_POLICY_TYPES = [
+        POLICY_ADMINS_ONLY,
+        POLICY_MODERATORS_ONLY,
+        POLICY_OWNERS_ONLY,
+        POLICY_NOBODY,
+    ]
+
     DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 259200
 
     # Who in the organization is allowed to add custom emojis.
@@ -296,6 +308,9 @@ class Realm(models.Model):
     create_public_stream_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
     create_private_stream_policy: int = models.PositiveSmallIntegerField(
         default=POLICY_MEMBERS_ONLY
+    )
+    create_web_public_stream_policy: int = models.PositiveSmallIntegerField(
+        default=POLICY_OWNERS_ONLY
     )
 
     # Who in the organization is allowed to delete messages they themselves sent.
@@ -521,11 +536,12 @@ class Realm(models.Model):
     # plan_type controls various features around resource/feature
     # limitations for a Zulip organization on multi-tenant installations
     # like Zulip Cloud.
-    SELF_HOSTED = 1
-    LIMITED = 2
-    STANDARD = 3
-    STANDARD_FREE = 4
-    plan_type: int = models.PositiveSmallIntegerField(default=SELF_HOSTED)
+    PLAN_TYPE_SELF_HOSTED = 1
+    PLAN_TYPE_LIMITED = 2
+    PLAN_TYPE_STANDARD = 3
+    PLAN_TYPE_STANDARD_FREE = 4
+    PLAN_TYPE_PLUS = 10
+    plan_type: int = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED)
 
     # This value is also being used in static/js/settings_bots.bot_creation_policy_values.
     # On updating it here, update it there as well.
@@ -608,39 +624,40 @@ class Realm(models.Model):
     property_types: Dict[str, Union[type, Tuple[type, ...]]] = dict(
         add_custom_emoji_policy=int,
         allow_edit_history=bool,
+        avatar_changes_disabled=bool,
         bot_creation_policy=int,
-        create_public_stream_policy=int,
         create_private_stream_policy=int,
-        invite_to_stream_policy=int,
-        move_messages_between_streams_policy=int,
+        create_public_stream_policy=int,
+        create_web_public_stream_policy=int,
+        default_code_block_language=(str, type(None)),
         default_language=str,
+        delete_own_message_policy=int,
         description=str,
         digest_emails_enabled=bool,
+        digest_weekday=int,
         disallow_disposable_email_addresses=bool,
         email_address_visibility=int,
         email_changes_disabled=bool,
+        emails_restricted_to_domains=bool,
         giphy_rating=int,
-        invite_required=bool,
-        invite_to_realm_policy=int,
         inline_image_preview=bool,
         inline_url_embed_preview=bool,
+        invite_required=bool,
+        invite_to_realm_policy=int,
+        invite_to_stream_policy=int,
         mandatory_topics=bool,
+        message_content_allowed_in_email_notifications=bool,
+        message_content_delete_limit_seconds=(int, type(None)),
         message_retention_days=(int, type(None)),
+        move_messages_between_streams_policy=int,
         name=str,
         name_changes_disabled=bool,
-        avatar_changes_disabled=bool,
-        emails_restricted_to_domains=bool,
+        private_message_policy=int,
         send_welcome_emails=bool,
-        message_content_allowed_in_email_notifications=bool,
+        user_group_edit_policy=int,
         video_chat_provider=int,
         waiting_period_threshold=int,
-        digest_weekday=int,
-        private_message_policy=int,
-        user_group_edit_policy=int,
-        default_code_block_language=(str, type(None)),
-        message_content_delete_limit_seconds=(int, type(None)),
         wildcard_mention_policy=int,
-        delete_own_message_policy=int,
     )
 
     DIGEST_WEEKDAY_VALUES = [0, 1, 2, 3, 4, 5, 6]
@@ -681,7 +698,7 @@ class Realm(models.Model):
     night_logo_version: int = models.PositiveSmallIntegerField(default=1)
 
     def authentication_methods_dict(self) -> Dict[str, bool]:
-        """Returns the a mapping from authentication flags to their status,
+        """Returns the mapping from authentication flags to their status,
         showing only those authentication flags that are supported on
         the current server (i.e. if EmailAuthBackend is not configured
         on the server, this will not return an entry for "Email")."""
@@ -817,7 +834,7 @@ class Realm(models.Model):
         return used_space
 
     def ensure_not_on_limited_plan(self) -> None:
-        if self.plan_type == Realm.LIMITED:
+        if self.plan_type == Realm.PLAN_TYPE_LIMITED:
             raise JsonableError(self.UPGRADE_TEXT_STANDARD)
 
     @property
@@ -868,7 +885,7 @@ class Realm(models.Model):
             # the server level before it is available to users.
             return False
 
-        if self.plan_type == Realm.LIMITED:
+        if self.plan_type == Realm.PLAN_TYPE_LIMITED:
             # In Zulip Cloud, we also require a paid or sponsored
             # plan, to protect against the spam/abuse attacks that
             # target every open Internet service that can host files.
@@ -1103,10 +1120,36 @@ def filter_pattern_validator(value: str) -> Pattern[str]:
 
 
 def filter_format_validator(value: str) -> None:
-    regex = re.compile(r"^([\.\/:a-zA-Z0-9#_?=&;~-]+%\(([a-zA-Z0-9_-]+)\)s)+[/a-zA-Z0-9#_?=&;~-]*$")
+    """Verifies URL-ness, and then %(foo)s.
+
+    URLValidator is assumed to catch anything which is malformed as a
+    URL; the regex then verifies the format-string pieces.
+    """
+
+    URLValidator()(value)
+
+    regex = re.compile(
+        r"""
+            ^
+            (
+              [^%]                        # Any non-percent,
+            |                             #   OR...
+              % (                         # A %, which can mean:
+                  \( [a-zA-Z0-9_-]+ \) s  #   Interpolation group
+                |                         #     OR
+                  %                       #   %%, which is an escaped %
+                |                         #     OR
+                  [0-9a-fA-F][0-9a-fA-F]  #   URL percent-encoded bytes, which we
+                                          #   special-case in markdown translation
+                )
+            )+                            # Those happen one or more times
+            $
+        """,
+        re.VERBOSE,
+    )
 
     if not regex.match(value):
-        raise ValidationError(_("Invalid URL format string."))
+        raise ValidationError(_("Invalid format string in URL."))
 
 
 class RealmFilter(models.Model):
@@ -1117,7 +1160,7 @@ class RealmFilter(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     pattern: str = models.TextField()
-    url_format_string: str = models.TextField(validators=[URLValidator(), filter_format_validator])
+    url_format_string: str = models.TextField(validators=[filter_format_validator])
 
     class Meta:
         unique_together = ("realm", "pattern")
@@ -1336,6 +1379,7 @@ class UserBaseSettings(models.Model):
     # This setting controls which view is rendered first when Zulip loads.
     # Values for it are URL suffix after `#`.
     default_view: str = models.TextField(default="recent_topics")
+    escape_navigates_to_default_view: bool = models.BooleanField(default=True)
     dense_mode: bool = models.BooleanField(default=True)
     fluid_layout_width: bool = models.BooleanField(default=False)
     high_contrast_mode: bool = models.BooleanField(default=False)
@@ -1421,6 +1465,11 @@ class UserBaseSettings(models.Model):
     # Whether or not the user wants to sync their drafts.
     enable_drafts_synchronization = models.BooleanField(default=True)
 
+    # Privacy settings
+    send_stream_typing_notifications: bool = models.BooleanField(default=True)
+    send_private_typing_notifications: bool = models.BooleanField(default=True)
+    send_read_receipts: bool = models.BooleanField(default=True)
+
     display_settings_legacy = dict(
         color_scheme=int,
         default_language=str,
@@ -1439,26 +1488,26 @@ class UserBaseSettings(models.Model):
     )
 
     notification_settings_legacy = dict(
+        desktop_icon_count_display=int,
+        email_notifications_batching_period_seconds=int,
         enable_desktop_notifications=bool,
         enable_digest_emails=bool,
         enable_login_emails=bool,
         enable_marketing_emails=bool,
-        email_notifications_batching_period_seconds=int,
         enable_offline_email_notifications=bool,
         enable_offline_push_notifications=bool,
         enable_online_push_notifications=bool,
         enable_sounds=bool,
+        enable_stream_audible_notifications=bool,
         enable_stream_desktop_notifications=bool,
         enable_stream_email_notifications=bool,
         enable_stream_push_notifications=bool,
-        enable_stream_audible_notifications=bool,
-        wildcard_mentions_notify=bool,
         message_content_in_email_notifications=bool,
         notification_sound=str,
         pm_content_in_desktop_notifications=bool,
-        desktop_icon_count_display=int,
-        realm_name_in_notifications=bool,
         presence_enabled=bool,
+        realm_name_in_notifications=bool,
+        wildcard_mentions_notify=bool,
     )
 
     notification_setting_types = {
@@ -1466,7 +1515,17 @@ class UserBaseSettings(models.Model):
     }  # Add new notifications settings here.
 
     # Define the types of the various automatically managed properties
-    property_types = {**display_settings_legacy, **notification_setting_types}
+    property_types = {
+        **display_settings_legacy,
+        **notification_setting_types,
+        **dict(
+            # Add new general settings here.
+            escape_navigates_to_default_view=bool,
+            send_private_typing_notifications=bool,
+            send_read_receipts=bool,
+            send_stream_typing_notifications=bool,
+        ),
+    }
 
     class Meta:
         abstract = True
@@ -1536,7 +1595,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # compatibility in Zulip APIs where users are referred to by their
     # email address, not their ID; it should be used in all API use cases.
     #
-    # Both fields are unique within a realm (in a case-insensitive fashion).
+    # Both fields are unique within a realm (in a case-insensitive
+    # fashion). Since Django's unique_together is case sensitive, this
+    # is enforced via SQL indexes created by
+    # zerver/migrations/0295_case_insensitive_email_indexes.py.
     delivery_email: str = models.EmailField(blank=False, db_index=True)
     email: str = models.EmailField(blank=False, db_index=True)
 
@@ -1646,7 +1708,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     #
     # In Django, the convention is to use an empty string instead of NULL/None
     # for text-based fields. For more information, see
-    # https://docs.djangoproject.com/en/1.10/ref/models/fields/#django.db.models.Field.null.
+    # https://docs.djangoproject.com/en/3.2/ref/models/fields/#django.db.models.Field.null.
     timezone: str = models.CharField(max_length=40, default="")
 
     AVATAR_FROM_GRAVATAR = "G"
@@ -1841,6 +1903,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             "add_custom_emoji_policy",
             "create_private_stream_policy",
             "create_public_stream_policy",
+            "create_web_public_stream_policy",
             "delete_own_message_policy",
             "edit_topic_policy",
             "invite_to_stream_policy",
@@ -1856,6 +1919,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
         if policy_value == Realm.POLICY_EVERYONE:
             return True
+
+        if self.is_realm_owner:
+            return True
+
+        if policy_value == Realm.POLICY_OWNERS_ONLY:
+            return False
 
         if self.is_realm_admin:
             return True
@@ -1884,6 +1953,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     def can_create_private_streams(self) -> bool:
         return self.has_permission("create_private_stream_policy")
 
+    def can_create_web_public_streams(self) -> bool:
+        if not self.realm.web_public_streams_enabled():
+            return False
+        return self.has_permission("create_web_public_stream_policy")
+
     def can_subscribe_other_users(self) -> bool:
         return self.has_permission("invite_to_stream_policy")
 
@@ -1897,8 +1971,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         return self.has_permission("user_group_edit_policy")
 
     def can_edit_topic_of_any_message(self) -> bool:
-        if self.realm.edit_topic_policy == Realm.POLICY_EVERYONE:
-            return True
         return self.has_permission("edit_topic_policy")
 
     def can_add_custom_emoji(self) -> bool:
@@ -1937,9 +2009,19 @@ class PasswordTooWeakError(Exception):
 
 
 class UserGroup(models.Model):
+    objects = CTEManager()
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     name: str = models.CharField(max_length=100)
-    members: Manager = models.ManyToManyField(UserProfile, through="UserGroupMembership")
+    direct_members: Manager = models.ManyToManyField(
+        UserProfile, through="UserGroupMembership", related_name="direct_groups"
+    )
+    direct_subgroups: Manager = models.ManyToManyField(
+        "self",
+        symmetrical=False,
+        through="GroupGroupMembership",
+        through_fields=("supergroup", "subgroup"),
+        related_name="direct_supergroups",
+    )
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     description: str = models.TextField(default="")
     is_system_group: bool = models.BooleanField(default=False)
@@ -1950,11 +2032,24 @@ class UserGroup(models.Model):
 
 class UserGroupMembership(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
-    user_group: UserGroup = models.ForeignKey(UserGroup, on_delete=CASCADE)
-    user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
+    user_group: UserGroup = models.ForeignKey(UserGroup, on_delete=CASCADE, related_name="+")
+    user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE, related_name="+")
 
     class Meta:
         unique_together = (("user_group", "user_profile"),)
+
+
+class GroupGroupMembership(models.Model):
+    id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
+    supergroup: UserGroup = models.ForeignKey(UserGroup, on_delete=CASCADE, related_name="+")
+    subgroup: UserGroup = models.ForeignKey(UserGroup, on_delete=CASCADE, related_name="+")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["supergroup", "subgroup"], name="zerver_groupgroupmembership_uniq"
+            )
+        ]
 
 
 def remote_user_to_email(remote_user: str) -> str:
@@ -3744,6 +3839,7 @@ class AbstractRealmAuditLog(models.Model):
     REALM_SUBDOMAIN_CHANGED = 214
     REALM_CREATED = 215
     REALM_DEFAULT_USER_SETTINGS_CHANGED = 216
+    REALM_ORG_TYPE_CHANGED = 217
 
     SUBSCRIPTION_CREATED = 301
     SUBSCRIPTION_ACTIVATED = 302
@@ -3765,6 +3861,7 @@ class AbstractRealmAuditLog(models.Model):
     STREAM_CREATED = 601
     STREAM_DEACTIVATED = 602
     STREAM_NAME_CHANGED = 603
+    STREAM_REACTIVATED = 604
 
     event_type: int = models.PositiveSmallIntegerField()
 
@@ -4120,3 +4217,26 @@ def flush_alert_word(*, instance: AlertWord, **kwargs: object) -> None:
 
 post_save.connect(flush_alert_word, sender=AlertWord)
 post_delete.connect(flush_alert_word, sender=AlertWord)
+
+
+class SCIMClient(models.Model):
+    realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
+    name: str = models.TextField()
+
+    class Meta:
+        unique_together = ("realm", "name")
+
+    def __str__(self) -> str:
+        return f"<SCIMClient {self.name} for realm {self.realm_id}>"
+
+    def format_requestor_for_logs(self) -> str:
+        return f"scim-client:{self.name}:realm:{self.realm_id}"
+
+    @property
+    def is_authenticated(self) -> bool:
+        """
+        The purpose of this is to make SCIMClient behave like a UserProfile
+        when an instance is assigned to request.user - we need it to pass
+        request.user.is_authenticated verifications.
+        """
+        return True

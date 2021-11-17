@@ -32,28 +32,36 @@ h3 .fa-question-circle-o {
     .block {
         display: block;
     }
+
     .center-block {
         margin: 0 auto;
     }
+
     .center {
         text-align: center;
     }
+
     .w-70 {
         width: 70%;
     }
+
     .w-200 {
         width: 200px;
     }
+
     .m-t-20 {
         margin-top: 20px;
     }
+
     .m-t-10 {
         margin-top: 10px;
     }
+
     .grid {
         label {
             min-width: 200px;
         }
+
         .warning {
             display: inline-block;
             vertical-align: top;
@@ -62,12 +70,14 @@ h3 .fa-question-circle-o {
             text-align: left;
         }
     }
+
     #account-settings,
     #profile-field-settings {
         .grid {
             label {
                 min-width: 120px;
             }
+
             .warning {
                 display: block;
                 width: calc(100% - 20px - 5px);
@@ -75,13 +85,15 @@ h3 .fa-question-circle-o {
             }
         }
     }
+
     .warning {
         #pw_strength {
             width: 140px;
             height: 8px;
-            margin: 6px 0 0 0;
+            margin: 6px 0 0;
         }
     }
+
     .button {
         ul {
             text-align: left;
@@ -234,7 +246,7 @@ td .button {
     .settings-section-title {
         font-size: 1.4em;
         font-weight: 500;
-        margin: 10px 0 10px 0;
+        margin: 10px 0;
 
         &.transparent {
             background-color: transparent;
@@ -342,7 +354,7 @@ td .button {
         text-decoration: none;
     }
 
-    .default_language_modal {
+    #user_default_language_modal {
         table {
             width: 90%;
             margin-top: 20px;
@@ -363,6 +375,10 @@ td .button {
     button[data-dismiss="modal"] i.fa-pencil,
     .dropdown-toggle i.fa-pencil {
         margin-left: 3px;
+    }
+
+    .hidden-email {
+        font-style: italic;
     }
 }
 
@@ -414,12 +430,14 @@ td .button {
 
 .button,
 .input-group {
-    margin: 0 0 20px 0;
+    margin: 0 0 20px;
 }
 
 .input-group {
-    .thinner {
-        margin: 10px 0;
+    /* Class to use when the following input-group is related and should
+       appear just after this element. */
+    &.thinner {
+        margin: 0;
     }
 
     label.checkbox + label {
@@ -446,7 +464,7 @@ input[type="checkbox"] {
     }
 
     .inline-block {
-        margin: -2px 0 0 0;
+        margin: -2px 0 0;
     }
 }
 
@@ -466,6 +484,13 @@ input[type="checkbox"] {
 
     .subsection-header h3 {
         display: inline;
+    }
+}
+
+.display-settings-form,
+.notification-settings-form {
+    .subsection-header h3 {
+        display: inline-block;
     }
 }
 
@@ -693,10 +718,12 @@ input[type="checkbox"] {
 .profile_field_choices_table {
     .movable-profile-field-row {
         cursor: move;
+
         .fa-ellipsis-v {
             color: hsl(0, 0, 75%);
             position: relative;
             top: 1px;
+
             + i {
                 margin-right: 5px;
             }
@@ -706,7 +733,7 @@ input[type="checkbox"] {
 
 #admin-linkifier-pattern-status,
 #admin-linkifier-format-status {
-    margin: 20px 0 0 0;
+    margin: 20px 0 0;
 }
 
 .progressive-table-wrapper {
@@ -848,7 +875,7 @@ input[type="checkbox"] {
 }
 
 .bot_edit_errors {
-    margin: 20px 20px 0 20px;
+    margin: 0;
 }
 
 #bots_lists_navbar .active a {
@@ -859,8 +886,11 @@ input[type="checkbox"] {
     margin-top: 5px;
 }
 
-.edit_bot_form_container {
-    padding: 15px;
+#edit_bot_modal {
+    /* Ensure that the dropdown can overflow the modal. */
+    .modal__content {
+        overflow: visible;
+    }
 }
 
 .edit_bot_form {
@@ -876,12 +906,7 @@ input[type="checkbox"] {
     }
 
     .buttons {
-        margin: 10px 0 5px 0;
-    }
-
-    button.dropdown-toggle {
-        font-weight: 600;
-        color: hsl(0, 0%, 67%);
+        margin: 10px 0 5px;
     }
 }
 
@@ -935,6 +960,7 @@ input[type="checkbox"] {
 
     li {
         list-style-type: none;
+
         &.alert-word-item:first-child {
             background: none;
             margin-top: 8px;
@@ -991,7 +1017,7 @@ input[type="checkbox"] {
 
     label {
         border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
-        padding: 8px 0 10px 0;
+        padding: 8px 0 10px;
 
         &:last-of-type {
             border-bottom: none;
@@ -1051,6 +1077,7 @@ input[type="checkbox"] {
         span[contenteditable] {
             display: inline-block;
             word-break: break-all;
+
             &:empty::before {
                 opacity: 0.5;
                 display: inline-block;
@@ -1091,9 +1118,11 @@ input[type="checkbox"] {
 
     .ntm {
         cursor: not-allowed;
+
         h4 > .button {
             cursor: not-allowed;
             display: none;
+
             &:hover {
                 border-color: hsl(4, 56%, 82%);
             }
@@ -1237,7 +1266,7 @@ input[type="checkbox"] {
 
     input.search {
         font-size: 0.9rem;
-        margin: 10px 0 20px 0;
+        margin: 10px 0 20px;
     }
 
     .form-sidebar {
@@ -1364,7 +1393,7 @@ input[type="checkbox"] {
             .icon {
                 width: 18px;
                 height: 18px;
-                margin: 10px 10px;
+                margin: 10px;
                 text-align: center;
 
                 font-size: 1.4em;
@@ -1399,6 +1428,13 @@ input[type="checkbox"] {
         .normal-settings-list,
         .org-settings-list {
             position: relative;
+        }
+
+        .settings-sticky-bar {
+            position: sticky;
+            z-index: 1;
+            background-color: hsl(0, 0%, 100%);
+            top: 0;
         }
     }
 
@@ -1443,40 +1479,6 @@ input[type="checkbox"] {
             line-height: 1;
             font-weight: 600;
             cursor: pointer;
-        }
-    }
-
-    .custom_user_field {
-        padding-bottom: 20px;
-
-        textarea {
-            width: 320px;
-            height: 80px;
-        }
-
-        &:hover .remove_date {
-            display: inline-flex;
-        }
-
-        .remove_date {
-            opacity: 0.5;
-            display: none;
-            cursor: pointer;
-            position: relative;
-            top: 2px;
-            left: -20px;
-
-            &:hover {
-                opacity: 1;
-            }
-        }
-
-        .datepicker {
-            cursor: default;
-        }
-
-        .person_picker {
-            min-width: 206px;
         }
     }
 
@@ -1530,8 +1532,42 @@ input[type="checkbox"] {
         cursor: default;
     }
 
-    .custom_user_field .field_hint {
-        color: hsl(0, 0%, 67%);
+    .custom_user_field {
+        padding-bottom: 20px;
+
+        .field_hint {
+            color: hsl(0, 0%, 67%);
+        }
+
+        textarea {
+            width: 320px;
+            height: 80px;
+        }
+
+        &:hover .remove_date {
+            display: inline-flex;
+        }
+
+        .remove_date {
+            opacity: 0.5;
+            display: none;
+            cursor: pointer;
+            position: relative;
+            top: 2px;
+            left: -20px;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+
+        .datepicker {
+            cursor: default;
+        }
+
+        .person_picker {
+            min-width: 206px;
+        }
     }
 
     #show_my_user_profile_modal {
@@ -1543,17 +1579,6 @@ input[type="checkbox"] {
         padding-left: 2px;
         vertical-align: middle;
     }
-}
-
-/* Dialog widgets should be centered, which this roughly achieves. */
-#dialog_widget_modal {
-    top: calc(50% - 120px);
-}
-
-/* In the settings overlay, we need slightly different CSS for alignment. */
-#settings_overlay_container #dialog_widget_modal {
-    top: 50%;
-    vertical-align: center;
 }
 
 /* These have enough space for all the options in German. */
@@ -1586,19 +1611,10 @@ input[type="checkbox"] {
     margin-top: 10px;
 }
 
-.dialog_submit_button .loader {
-    display: none;
-    vertical-align: top;
-    position: relative;
-    height: 30px;
-    margin-top: -10px;
-    top: 5px;
-    width: 30px;
-}
-
 .dropdown-list-widget {
     button {
         margin: 0 5px;
+
         &.dropdown-toggle {
             /* Match settings for select elements. */
             padding: 4px 6px;
@@ -1739,7 +1755,7 @@ input[type="checkbox"] {
 @supports (-moz-appearance: none) {
     #settings_page select {
         appearance: none;
-        background: hsl(0, 0%, 100%) url(../images/dropdown.png) right / 20px
+        background: hsl(0, 0%, 100%) url("../images/dropdown.png") right / 20px
             no-repeat;
         padding-right: 20px;
     }
@@ -1836,7 +1852,7 @@ input[type="checkbox"] {
     }
 
     .subsection-failed-status p {
-        margin: 5px 0 0 0;
+        margin: 5px 0 0;
     }
 }
 
@@ -1919,7 +1935,7 @@ input[type="checkbox"] {
 
     #settings_page .save-button-controls {
         display: block;
-        margin: 10px 0 0 0;
+        margin: 10px 0 0;
     }
 }
 
@@ -1929,8 +1945,12 @@ input[type="checkbox"] {
         flex-direction: column;
         margin-top: 5px;
     }
-    #settings_page .custom_user_field textarea {
-        width: calc(100% - 25px);
+
+    #settings_page,
+    #edit-user-form {
+        .custom_user_field textarea {
+            width: calc(100% - 25px);
+        }
     }
 }
 

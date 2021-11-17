@@ -1,10 +1,12 @@
 from typing import Any, Dict, List, Optional, Union
 
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
 
+from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import require_member_or_admin, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
 from zerver.lib.actions import (
@@ -32,6 +34,7 @@ from zerver.lib.email_validation import email_allowed_for_realm
 from zerver.lib.exceptions import (
     CannotDeactivateLastUserError,
     JsonableError,
+    MissingAuthenticationError,
     OrganizationOwnerRequired,
 )
 from zerver.lib.integrations import EMBEDDED_BOTS
@@ -40,7 +43,7 @@ from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, subscribed_to_stream
 from zerver.lib.types import ProfileDataElementValue, Validator
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.url_encoding import add_query_arg_to_redirect_url
+from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import (
     access_bot_by_id,
     access_user_by_id,
@@ -163,7 +166,7 @@ def update_user_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     user_id: int,
-    full_name: Optional[str] = REQ(default=None, json_validator=check_string),
+    full_name: Optional[str] = REQ(default=None),
     role: Optional[int] = REQ(
         default=None,
         json_validator=check_int_in(
@@ -219,7 +222,10 @@ def update_user_backend(
 
 
 def avatar(
-    request: HttpRequest, user_profile: UserProfile, email_or_id: str, medium: bool = False
+    request: HttpRequest,
+    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    email_or_id: str,
+    medium: bool = False,
 ) -> HttpResponse:
     """Accepts an email address or user ID and returns the avatar"""
     is_email = False
@@ -228,8 +234,25 @@ def avatar(
     except ValueError:
         is_email = True
 
+    if not maybe_user_profile.is_authenticated:
+        # Allow anonynous access to avatars only if spectators are
+        # enabled in the organization.
+        realm = get_valid_realm_from_request(request)
+        # TODO: Replace with realm.allow_web_public_streams_access()
+        # when the method is available.
+        if not realm.has_web_public_streams():
+            raise MissingAuthenticationError()
+
+        # We only allow the ID format for accessing a user's avatar
+        # for spectators. This is mainly for defense in depth, since
+        # email_address_visibility should mean spectators only
+        # interact with fake email addresses anyway.
+        if is_email:
+            raise MissingAuthenticationError()
+    else:
+        realm = maybe_user_profile.realm
+
     try:
-        realm = user_profile.realm
         if is_email:
             avatar_user_profile = get_user_including_cross_realm(email_or_id, realm)
         else:
@@ -249,7 +272,7 @@ def avatar(
     # add query parameters to our url, get_avatar_url does '?x=x'
     # hacks to prevent us from having to jump through decode/encode hoops.
     assert url is not None
-    url = add_query_arg_to_redirect_url(url, request.META["QUERY_STRING"])
+    url = append_url_query_string(url, request.META["QUERY_STRING"])
     return redirect(url)
 
 
@@ -639,7 +662,7 @@ def get_subscription_backend(
     stream_id: int = REQ(json_validator=check_int, path_only=True),
 ) -> HttpResponse:
     target_user = access_user_by_id(user_profile, user_id, for_admin=False)
-    (stream, sub) = access_stream_by_id(user_profile, stream_id)
+    (stream, sub) = access_stream_by_id(user_profile, stream_id, allow_realm_admin=True)
 
     subscription_status = {"is_subscribed": subscribed_to_stream(target_user, stream_id)}
 

@@ -6,7 +6,7 @@ and both these terms are often user interchangeably.
 
 Currently supported slash commands are:
 
-- `/day` and `/night` to change the UI theme
+- `/light` and `/dark` to change the UI theme
 - `/ping` to ping to server and get back the time for the round
   trip. Mainly for testing.
 - `/fluid-width` and `/fixed-width` to toggle that setting
@@ -28,8 +28,8 @@ basically just acks the client. The client then computes
 the round trip time and shows a little message above
 the compose box that the user can see and then dismiss.
 
-For commands like "/day" and "/night", the server does
-a little bit of logic to toggle the user's night mode
+For commands like "/light" and "/dark", the server does
+a little bit of logic to toggle the user's dark mode
 setting, and this is largely done inside `zcommand.py`.
 The server sends a very basic response, and then
 the client actually changes the display colors. The

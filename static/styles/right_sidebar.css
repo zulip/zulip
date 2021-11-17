@@ -32,7 +32,7 @@
             font-size: 1em;
             display: none;
             text-align: center;
-            padding: 0 6px 0 6px;
+            padding: 0 6px;
 
             i {
                 padding-right: 0.25em;
@@ -76,10 +76,7 @@
     .user_circle {
         width: 8px;
         height: 8px;
-        margin-top: 0;
-        margin-bottom: 0;
-        margin-left: 5px;
-        margin-right: 5px;
+        margin: 0 5px;
         display: block;
     }
 
@@ -198,6 +195,12 @@
             opacity: 1;
             cursor: pointer;
         }
+    }
+
+    /* hovering over the userlist-header creates the same highlight effect as hovering over the user_filter_icon */
+    &:hover > #user_filter_icon {
+        opacity: 1;
+        cursor: pointer;
     }
 }
 

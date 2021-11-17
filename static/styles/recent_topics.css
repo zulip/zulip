@@ -27,7 +27,7 @@
 
         td {
             vertical-align: middle;
-            padding: 3px 8px 3px 8px;
+            padding: 3px 8px;
         }
 
         .recent_topics_focusable {
@@ -46,6 +46,7 @@
         a {
             color: hsl(205, 47%, 42%);
             text-decoration: none;
+
             &:hover {
                 color: hsl(214, 40%, 58%);
             }
@@ -60,7 +61,7 @@
 
         .fa-check-square-o,
         .fa-square-o {
-            padding: 0 2px 0 2px;
+            padding: 0 2px;
         }
 
         .fa-lock {
@@ -92,7 +93,7 @@
         }
 
         #recent_topics_filter_buttons {
-            margin: 0 10px 0 10px;
+            margin: 0 10px;
             display: flex;
             /* Search box has no height without this in safari. */
             flex: 0 0 auto;
@@ -103,7 +104,7 @@
         .search_group {
             display: flex;
             flex-grow: 1;
-            margin: 0 0 10px 0;
+            margin: 0 0 10px;
         }
 
         #recent_topics_search {
@@ -179,7 +180,7 @@
         .recent_topics_participant_item {
             height: 24px;
             margin: 0;
-            padding: 0 1.5px 0 1.5px;
+            padding: 0 1.5px;
             position: relative;
             min-width: 24px;
 
@@ -263,7 +264,7 @@
            as new messages arrive from the server. */
         .recent_topic_stream {
             width: 25%;
-            padding: 8px 8px;
+            padding: 8px;
         }
 
         .recent_topic_name {

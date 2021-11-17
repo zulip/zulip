@@ -474,8 +474,10 @@ class StreamAdminTest(ZulipTestCase):
             for (stream_name, stream_description) in zip(stream_names, stream_descriptions)
         ]
 
-        # Normal user cannot create web-public streams
-        with self.assertRaisesRegex(JsonableError, "Must be an organization owner"):
+        self.assertFalse(user_profile.can_create_web_public_streams())
+        self.assertTrue(owner.can_create_web_public_streams())
+        # As per create_web_public_stream_policy, only owners can create web-public streams by default.
+        with self.assertRaisesRegex(JsonableError, "Insufficient permission"):
             list_to_streams(
                 streams_raw,
                 user_profile,
@@ -483,6 +485,8 @@ class StreamAdminTest(ZulipTestCase):
             )
 
         with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
+            self.assertFalse(user_profile.can_create_web_public_streams())
+            self.assertFalse(owner.can_create_web_public_streams())
             with self.assertRaisesRegex(JsonableError, "Web public streams are not enabled."):
                 list_to_streams(
                     streams_raw,
@@ -1259,7 +1263,7 @@ class StreamAdminTest(ZulipTestCase):
         user_profile = self.example_user("desdemona")
         self.login_user(user_profile)
         realm = user_profile.realm
-        do_change_plan_type(realm, Realm.LIMITED, acting_user=None)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
         stream = self.subscribe(user_profile, "stream_name1")
 
         result = self.client_patch(
@@ -1267,7 +1271,7 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Available on Zulip Standard. Upgrade to access.")
 
-        do_change_plan_type(realm, Realm.SELF_HOSTED, acting_user=None)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=None)
         events: List[Mapping[str, Any]] = []
         with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.client_patch(
@@ -1433,13 +1437,13 @@ class StreamAdminTest(ZulipTestCase):
             },
         ]
 
-        do_change_plan_type(realm, Realm.LIMITED, acting_user=admin)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=admin)
         with self.assertRaisesRegex(
             JsonableError, "Available on Zulip Standard. Upgrade to access."
         ):
             list_to_streams(streams_raw, owner, autocreate=True)
 
-        do_change_plan_type(realm, Realm.SELF_HOSTED, acting_user=admin)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=admin)
         result = list_to_streams(streams_raw, owner, autocreate=True)
         self.assert_length(result[0], 0)
         self.assert_length(result[1], 3)
@@ -3225,39 +3229,12 @@ class SubscriptionAPITest(ZulipTestCase):
             result, f"Stream name '{stream_name}' contains NULL (0x00) characters."
         )
 
-    def _test_user_settings_for_adding_streams(self, stream_policy: str, invite_only: bool) -> None:
-        # TODO: This test makes excessive use of mocking and should be
-        # rewritten to be more similar to _test_user_settings_for_creating_streams.
-        method = "can_create_private_streams" if invite_only else "can_create_public_streams"
-        do_set_realm_property(
-            self.test_user.realm, stream_policy, Realm.POLICY_ADMINS_ONLY, acting_user=None
-        )
-
-        with mock.patch(f"zerver.models.UserProfile.{method}", return_value=False):
-            result = self.common_subscribe_to_streams(
-                self.test_user, ["stream1"], invite_only=invite_only, allow_fail=True
-            )
-            self.assert_json_error(result, "Insufficient permission")
-
-        with mock.patch(f"zerver.models.UserProfile.{method}", return_value=True):
-            self.common_subscribe_to_streams(self.test_user, ["stream2"], invite_only=invite_only)
-
-        # User should still be able to subscribe to an existing stream
-        with mock.patch(f"zerver.models.UserProfile.{method}", return_value=False):
-            self.common_subscribe_to_streams(self.test_user, ["stream2"], invite_only=invite_only)
-
-    def test_user_settings_for_adding_private_streams(self) -> None:
-        self._test_user_settings_for_adding_streams(
-            "create_private_stream_policy", invite_only=True
-        )
-
-    def test_user_settings_for_adding_public_streams(self) -> None:
-        self._test_user_settings_for_adding_streams(
-            "create_public_stream_policy", invite_only=False
-        )
-
     def _test_user_settings_for_creating_streams(
-        self, stream_policy: str, invite_only: bool
+        self,
+        stream_policy: str,
+        *,
+        invite_only: bool,
+        is_web_public: bool,
     ) -> None:
         user_profile = self.example_user("cordelia")
         realm = user_profile.realm
@@ -3268,6 +3245,7 @@ class SubscriptionAPITest(ZulipTestCase):
             user_profile,
             ["new_stream1"],
             invite_only=invite_only,
+            is_web_public=is_web_public,
             allow_fail=True,
         )
         self.assert_json_error(result, "Insufficient permission")
@@ -3285,6 +3263,7 @@ class SubscriptionAPITest(ZulipTestCase):
             ["new_stream2"],
             allow_fail=True,
             invite_only=invite_only,
+            is_web_public=is_web_public,
         )
         self.assert_json_error(result, "Insufficient permission")
 
@@ -3297,6 +3276,7 @@ class SubscriptionAPITest(ZulipTestCase):
             user_profile,
             ["new_stream3"],
             invite_only=invite_only,
+            is_web_public=is_web_public,
             allow_fail=True,
         )
         self.assert_json_error(result, "Not allowed for guest users")
@@ -3306,6 +3286,7 @@ class SubscriptionAPITest(ZulipTestCase):
             self.test_user,
             ["new_stream4"],
             invite_only=invite_only,
+            is_web_public=is_web_public,
         )
 
         do_set_realm_property(
@@ -3316,6 +3297,7 @@ class SubscriptionAPITest(ZulipTestCase):
             user_profile,
             ["new_stream5"],
             invite_only=invite_only,
+            is_web_public=is_web_public,
             allow_fail=True,
         )
         self.assert_json_error(result, "Insufficient permission")
@@ -3325,12 +3307,21 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def test_user_settings_for_creating_private_streams(self) -> None:
         self._test_user_settings_for_creating_streams(
-            "create_private_stream_policy", invite_only=True
+            "create_private_stream_policy",
+            invite_only=True,
+            is_web_public=False,
         )
 
     def test_user_settings_for_creating_public_streams(self) -> None:
         self._test_user_settings_for_creating_streams(
-            "create_public_stream_policy", invite_only=False
+            "create_public_stream_policy",
+            invite_only=False,
+            is_web_public=False,
+        )
+
+    def test_user_settings_for_creating_web_public_streams(self) -> None:
+        self._test_user_settings_for_creating_streams(
+            "create_web_public_stream_policy", invite_only=False, is_web_public=True
         )
 
     def _test_can_create_streams(self, stream_policy: str, invite_only: bool) -> None:
@@ -3353,6 +3344,13 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def test_can_create_public_streams(self) -> None:
         self._test_can_create_streams("create_public_stream_policy", invite_only=False)
+
+    def test_can_create_web_public_streams(self) -> None:
+        def validation_func(user_profile: UserProfile) -> bool:
+            user_profile.refresh_from_db()
+            return user_profile.can_create_web_public_streams()
+
+        self.check_has_permission_policies("create_web_public_stream_policy", validation_func)
 
     def test_user_settings_for_subscribing_other_users(self) -> None:
         """

@@ -8,7 +8,7 @@ import render_settings_tab from "../templates/settings_tab.hbs";
 import * as admin from "./admin";
 import * as blueslip from "./blueslip";
 import * as common from "./common";
-import {$t, $t_html, get_language_list_columns} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -28,7 +28,7 @@ $("body").ready(() => {
         if (!overlays.is_modal_open()) {
             return;
         }
-        if ($(e.target).closest(".modal").length > 0) {
+        if ($(e.target).closest(".modal, .micromodal").length > 0) {
             return;
         }
         e.preventDefault();
@@ -47,6 +47,15 @@ function setup_settings_label() {
         // settings_notification
         presence_enabled: $t({
             defaultMessage: "Display my availability to other users when online",
+        }),
+        send_stream_typing_notifications: $t({
+            defaultMessage: "Let subscribers see when I'm typing messages in streams",
+        }),
+        send_private_typing_notifications: $t({
+            defaultMessage: "Let recipients see when I'm typing private messages",
+        }),
+        send_read_receipts: $t({
+            defaultMessage: "Let participants see when I've read messages",
         }),
 
         ...settings_config.notification_settings_labels,
@@ -90,7 +99,6 @@ export function build_page() {
         user_can_change_avatar: settings_data.user_can_change_avatar(),
         user_role_text: people.get_user_type(page_params.user_id),
         default_language_name: settings_display.user_default_language_name,
-        language_list_dbl_col: get_language_list_columns(user_settings.default_language),
         settings_object: user_settings,
     });
 

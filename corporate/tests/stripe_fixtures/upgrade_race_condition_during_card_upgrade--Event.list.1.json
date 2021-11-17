@@ -1,0 +1,61 @@
+{
+  "data": [
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "application": null,
+          "cancellation_reason": null,
+          "client_secret": "seti_1JTqAsA4KHR4JzRv5WaDLerO_secret_K86Nbkg8OadCoA80Cap51BApJUDcMX9",
+          "created": 1000000000,
+          "customer": "cus_NORMALIZED0001",
+          "description": null,
+          "id": "seti_1JTqAsA4KHR4JzRv5WaDLerO",
+          "last_setup_error": null,
+          "latest_attempt": null,
+          "livemode": false,
+          "mandate": null,
+          "metadata": {
+            "billing_modality": "charge_automatically",
+            "billing_schedule": "1",
+            "license_management": "automatic",
+            "licenses": "6",
+            "price_per_license": "8000",
+            "realm_str": "zulip",
+            "seat_count": "6",
+            "type": "upgrade",
+            "user_email": "hamlet@zulip.com"
+          },
+          "next_action": null,
+          "object": "setup_intent",
+          "on_behalf_of": null,
+          "payment_method": null,
+          "payment_method_options": {
+            "card": {
+              "request_three_d_secure": "automatic"
+            }
+          },
+          "payment_method_types": [
+            "card"
+          ],
+          "single_use_mandate": null,
+          "status": "requires_payment_method",
+          "usage": "off_session"
+        }
+      },
+      "id": "evt_1JTqAtA4KHR4JzRvZ8u0ihQ0",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "req_NORMALIZED0001",
+        "idempotency_key": "ca5b53d9-8c11-4d52-a92f-8a93f09bc5d9"
+      },
+      "type": "setup_intent.created"
+    }
+  ],
+  "has_more": true,
+  "object": "list",
+  "url": "/v1/events"
+}

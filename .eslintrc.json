@@ -140,6 +140,13 @@
             "parserOptions": {
                 "project": "tsconfig.json"
             },
+            "settings": {
+                "import/resolver": {
+                    "node": {
+                        "extensions": [".ts", ".d.ts", ".js"] // https://github.com/import-js/eslint-plugin-import/issues/2267
+                    }
+                }
+            },
             "globals": {
                 "JQuery": false
             },
@@ -165,6 +172,7 @@
                 "@typescript-eslint/no-parameter-properties": "error",
                 "@typescript-eslint/no-unnecessary-qualifier": "error",
                 "@typescript-eslint/no-unused-vars": ["error", {"varsIgnorePattern": "^_"}],
+                "@typescript-eslint/no-unsafe-argument": "off",
                 "@typescript-eslint/no-unsafe-assignment": "off",
                 "@typescript-eslint/no-unsafe-call": "off",
                 "@typescript-eslint/no-unsafe-member-access": "off",

@@ -12,7 +12,10 @@ const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
 const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
-const dom = new JSDOM(template, {pretendToBeVisual: true});
+const dom = new JSDOM(template, {
+    pretendToBeVisual: true,
+    url: "http://zulip.zulipdev.com/upgrade/#billing",
+});
 const jquery = jQueryFactory(dom.window);
 
 const history = set_global("history", {});
@@ -20,20 +23,16 @@ const loading = mock_esm("../../static/js/loading");
 set_global("document", {
     title: "Zulip",
 });
-const location = set_global("location", {
-    pathname: "/upgrade/",
-    search: "",
-    hash: "#billing",
-});
+const location = set_global("location", dom.window.location);
 
 const helpers = zrequire("billing/helpers");
 
 run_test("create_ajax_request", ({override}) => {
-    const form_loading_indicator = "#autopay_loading_indicator";
-    const form_input_section = "#autopay-input-section";
-    const form_success = "#autopay-success";
-    const form_error = "#autopay-error";
-    const form_loading = "#autopay-loading";
+    const form_loading_indicator = "#invoice_loading_indicator";
+    const form_input_section = "#invoice-input-section";
+    const form_success = "#invoice-success";
+    const form_error = "#invoice-error";
+    const form_loading = "#invoice-loading";
     const zulip_limited_section = "#zulip-limited-section";
     const free_trial_alert_message = "#free-trial-alert-message";
 
@@ -109,7 +108,7 @@ run_test("create_ajax_request", ({override}) => {
         state.free_trial_alert_message_hide += 1;
     };
 
-    $("#autopay-form").serializeArray = () => jquery("#autopay-form").serializeArray();
+    $("#invoice-form").serializeArray = () => jquery("#invoice-form").serializeArray();
 
     let success_callback_called = false;
     const success_callback = (response) => {
@@ -129,13 +128,11 @@ run_test("create_ajax_request", ({override}) => {
         assert.equal(type, "PATCH");
         assert.equal(url, "/json/billing/upgrade");
 
-        assert.equal(Object.keys(data).length, 7);
-        assert.equal(data.stripe_token, "stripe_token_id");
-        assert.equal(data.seat_count, "{{ seat_count }}");
+        assert.equal(Object.keys(data).length, 5);
         assert.equal(data.signed_seat_count, "{{ signed_seat_count }}");
         assert.equal(data.salt, "{{ salt }}");
-        assert.equal(data.billing_modality, "charge_automatically");
-        assert.equal(data.schedule, "monthly");
+        assert.equal(data.billing_modality, "send_invoice");
+        assert.equal(data.schedule, "annual");
         assert.equal(data.licenses, "");
 
         assert.ok(!("license_management" in data));
@@ -171,8 +168,7 @@ run_test("create_ajax_request", ({override}) => {
 
     helpers.create_ajax_request(
         "/json/billing/upgrade",
-        "autopay",
-        {id: "stripe_token_id"},
+        "invoice",
         ["license_management"],
         "PATCH",
         success_callback,

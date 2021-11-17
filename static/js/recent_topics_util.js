@@ -4,8 +4,14 @@ import * as compose_state from "./compose_state";
 import * as overlays from "./overlays";
 import * as popovers from "./popovers";
 
+let is_rt_visible = false;
+
+export function set_visible(value) {
+    is_rt_visible = value;
+}
+
 export function is_visible() {
-    return $("#recent_topics_view").is(":visible");
+    return is_rt_visible;
 }
 
 export function is_in_focus() {

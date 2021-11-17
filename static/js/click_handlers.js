@@ -385,7 +385,8 @@ export function initialize() {
     $("body").on("click", "#recent_topics_table .on_hover_topic_unmute", (e) => {
         e.stopPropagation();
         const $elt = $(e.target);
-        recent_topics_ui.focus_clicked_element($elt, recent_topics_ui.COLUMNS.mute);
+        const topic_row_index = $elt.closest("tr").index();
+        recent_topics_ui.focus_clicked_element(topic_row_index, recent_topics_ui.COLUMNS.mute);
         mute_or_unmute_topic($elt, false);
     });
 
@@ -394,7 +395,8 @@ export function initialize() {
     $("body").on("click", "#recent_topics_table .on_hover_topic_mute", (e) => {
         e.stopPropagation();
         const $elt = $(e.target);
-        recent_topics_ui.focus_clicked_element($elt, recent_topics_ui.COLUMNS.mute);
+        const topic_row_index = $elt.closest("tr").index();
+        recent_topics_ui.focus_clicked_element(topic_row_index, recent_topics_ui.COLUMNS.mute);
         mute_or_unmute_topic($elt, true);
     });
 
@@ -405,7 +407,8 @@ export function initialize() {
 
     $("body").on("click", "#recent_topics_table .on_hover_topic_read", (e) => {
         e.stopPropagation();
-        recent_topics_ui.focus_clicked_element($(e.target), recent_topics_ui.COLUMNS.read);
+        const topic_row_index = $(e.target).closest("tr").index();
+        recent_topics_ui.focus_clicked_element(topic_row_index, recent_topics_ui.COLUMNS.read);
         const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-topic-name");
         unread_ops.mark_topic_as_read(stream_id, topic);
@@ -423,13 +426,23 @@ export function initialize() {
 
     $("body").on("click", "td.recent_topic_stream", (e) => {
         e.stopPropagation();
-        recent_topics_ui.focus_clicked_element($(e.target), recent_topics_ui.COLUMNS.stream);
+        const topic_row_index = $(e.target).closest("tr").index();
+        recent_topics_ui.focus_clicked_element(topic_row_index, recent_topics_ui.COLUMNS.stream);
         window.location.href = $(e.currentTarget).find("a").attr("href");
     });
 
     $("body").on("click", "td.recent_topic_name", (e) => {
         e.stopPropagation();
-        recent_topics_ui.focus_clicked_element($(e.target), recent_topics_ui.COLUMNS.topic);
+        // The element's parent may re-render while it is being passed to
+        // other functions, so, we get topic_key first.
+        const topic_row = $(e.target).closest("tr");
+        const topic_key = topic_row.attr("id").slice("recent_topics:".length - 1);
+        const topic_row_index = topic_row.index();
+        recent_topics_ui.focus_clicked_element(
+            topic_row_index,
+            recent_topics_ui.COLUMNS.topic,
+            topic_key,
+        );
         window.location.href = $(e.currentTarget).find("a").attr("href");
     });
 
@@ -657,7 +670,7 @@ export function initialize() {
         // Don't let clicks in the compose area count as
         // "unfocusing" our compose -- in other words, e.g.
         // clicking "Press Enter to send" should not
-        // trigger the composebox-closing code above.
+        // trigger the composebox-closing code in MAIN CLICK HANDLER.
         // But do allow our formatting link.
         if (!$(e.target).is("a")) {
             e.stopPropagation();
@@ -858,6 +871,13 @@ export function initialize() {
                 return;
             } else if (
                 !window.getSelection().toString() &&
+                // Clicking any input or text area should not close
+                // the compose box; this means using the sidebar
+                // filters or search widgets won't unnecessarily close
+                // compose.
+                !$(e.target).closest("input").length &&
+                !$(e.target).closest("textarea").length &&
+                !$(e.target).closest("select").length &&
                 // Clicks inside an overlay, popover, custom
                 // modal, or backdrop of one of the above
                 // should not have any effect on the compose
@@ -865,6 +885,7 @@ export function initialize() {
                 !$(e.target).closest(".overlay").length &&
                 !$(e.target).closest(".popover").length &&
                 !$(e.target).closest(".modal").length &&
+                !$(e.target).closest(".micromodal").length &&
                 !$(e.target).closest("[data-tippy-root]").length &&
                 !$(e.target).closest(".modal-backdrop").length &&
                 $(e.target).closest("body").length

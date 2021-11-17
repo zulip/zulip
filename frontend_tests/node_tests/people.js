@@ -171,7 +171,7 @@ const charles = {
     email: "charles@example.com",
     user_id: 301,
     full_name: "Charles Dickens",
-    avatar_url: "charles.com/foo.png",
+    avatar_url: "http://charles.com/foo.png",
     is_guest: false,
 };
 
@@ -710,7 +710,7 @@ test_people("message_methods", () => {
     muted_users.add_muted_user(30);
     assert.deepEqual(people.sender_info_for_recent_topics_row([30]), [
         {
-            avatar_url_small: "/avatar/30&s=50",
+            avatar_url_small: "http://zulip.zulipdev.com/avatar/30?s=50",
             is_muted: true,
             email: "me@example.com",
             full_name: me.full_name,
@@ -732,7 +732,7 @@ test_people("message_methods", () => {
     assert.equal(people.pm_with_url(message), "#narrow/pm-with/301,302-group");
     assert.equal(people.pm_perma_link(message), "#narrow/pm-with/30,301,302-group");
     assert.equal(people.pm_reply_to(message), "Athens@example.com,charles@example.com");
-    assert.equal(people.small_avatar_url(message), "charles.com/foo.png&s=50");
+    assert.equal(people.small_avatar_url(message), "http://charles.com/foo.png?s=50");
 
     message = {
         type: "private",
@@ -742,7 +742,7 @@ test_people("message_methods", () => {
     assert.equal(people.pm_with_url(message), "#narrow/pm-with/302-athens");
     assert.equal(people.pm_perma_link(message), "#narrow/pm-with/30,302-pm");
     assert.equal(people.pm_reply_to(message), "Athens@example.com");
-    assert.equal(people.small_avatar_url(message), "legacy.png&s=50");
+    assert.equal(people.small_avatar_url(message), "http://zulip.zulipdev.com/legacy.png?s=50");
 
     message = {
         avatar_url: undefined,
@@ -767,7 +767,10 @@ test_people("message_methods", () => {
     message = {
         sender_id: ashton.user_id,
     };
-    assert.equal(people.small_avatar_url(message), `/avatar/${ashton.user_id}&s=50`);
+    assert.equal(
+        people.small_avatar_url(message),
+        `http://zulip.zulipdev.com/avatar/${ashton.user_id}?s=50`,
+    );
 
     message = {
         type: "private",

@@ -74,9 +74,16 @@ def dev_direct_login(
         # This check is probably not required, since authenticate would fail without
         # an enabled DevAuthBackend.
         return config_error(request, "dev")
-    email = request.POST["direct_email"]
+
     subdomain = get_subdomain(request)
     realm = get_realm(subdomain)
+
+    if request.POST.get("prefers_web_public_view") == "Anonymous login":
+        request.session["prefers_web_public_view"] = True
+        redirect_to = get_safe_redirect_to(next, realm.uri)
+        return HttpResponseRedirect(redirect_to)
+
+    email = request.POST["direct_email"]
     user_profile = authenticate(dev_auth_username=email, realm=realm)
     if user_profile is None:
         return config_error(request, "dev")

@@ -456,9 +456,10 @@ python_rules = RuleList(
             ],
         },
         {
-            "pattern": "exit[(]1[)]",
+            "pattern": r"exit[(][1-9]\d*[)]",
             "include_only": {"/management/commands/"},
             "description": "Raise CommandError to exit with failure in management commands",
+            "exclude": {"zerver/management/commands/process_queue.py"},
         },
         {
             "pattern": ".is_realm_admin =",
@@ -617,6 +618,7 @@ html_rules: List["Rule"] = [
             "templates/corporate/billing.html",
             "templates/zerver/hello.html",
             "templates/corporate/upgrade.html",
+            "templates/corporate/event_status.html",
         },
         "bad_lines": [
             '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>'

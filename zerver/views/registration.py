@@ -51,7 +51,7 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import EmailNotDeliveredException, FromAddress, send_email
 from zerver.lib.sessions import get_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
-from zerver.lib.url_encoding import add_query_to_redirect_url
+from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import get_accounts_for_email
 from zerver.lib.validator import to_converted_or_fallback, to_non_negative_int, to_timezone_or_empty
 from zerver.lib.zephyr import compute_mit_user_fullname
@@ -405,7 +405,7 @@ def accounts_register(
                     # is hidden for most users.
                     view_url = reverse("login")
                     query = urlencode({"email": email})
-                    redirect_url = add_query_to_redirect_url(view_url, query)
+                    redirect_url = append_url_query_string(view_url, query)
                     return HttpResponseRedirect(redirect_url)
             elif not realm_creation:
                 # Since we'll have created a user, we now just log them in.
@@ -574,7 +574,7 @@ def send_confirm_registration_email(
 
 def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
     login_url = reverse("login")
-    redirect_url = add_query_to_redirect_url(
+    redirect_url = append_url_query_string(
         login_url, urlencode({"email": email, "already_registered": 1})
     )
     return HttpResponseRedirect(redirect_url)
@@ -605,7 +605,7 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
         form = RealmCreationForm(request.POST)
         if form.is_valid():
             try:
-                rate_limit_request_by_ip(request, domain="create_realm_by_ip")
+                rate_limit_request_by_ip(request, domain="sends_email_by_ip")
             except RateLimited as e:
                 assert e.secs_to_freedom is not None
                 return render(
@@ -668,6 +668,17 @@ def accounts_home(
     if request.method == "POST":
         form = HomepageForm(request.POST, realm=realm, from_multiuse_invite=from_multiuse_invite)
         if form.is_valid():
+            try:
+                rate_limit_request_by_ip(request, domain="sends_email_by_ip")
+            except RateLimited as e:
+                assert e.secs_to_freedom is not None
+                return render(
+                    request,
+                    "zerver/rate_limit_exceeded.html",
+                    context={"retry_after": int(e.secs_to_freedom)},
+                    status=429,
+                )
+
             email = form.cleaned_data["email"]
 
             try:
@@ -725,7 +736,7 @@ def find_account(
             emails = form.cleaned_data["emails"]
             for i in range(len(emails)):
                 try:
-                    rate_limit_request_by_ip(request, domain="find_account_by_ip")
+                    rate_limit_request_by_ip(request, domain="sends_email_by_ip")
                 except RateLimited as e:
                     assert e.secs_to_freedom is not None
                     return render(
@@ -775,7 +786,7 @@ def find_account(
             # feature can be used to ascertain which email addresses
             # are associated with Zulip.
             data = urllib.parse.urlencode({"emails": ",".join(emails)})
-            return redirect(add_query_to_redirect_url(url, data))
+            return redirect(append_url_query_string(url, data))
     else:
         form = FindMyTeamForm()
         # The below validation is perhaps unnecessary, in that we

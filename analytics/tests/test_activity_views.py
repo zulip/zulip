@@ -46,9 +46,10 @@ class ActivityTest(ZulipTestCase):
 
         self.assert_length(queries, 8)
 
+        iago = self.example_user("iago")
         flush_per_request_caches()
         with queries_captured() as queries:
-            result = self.client_get("/user_activity/iago@zulip.com/")
+            result = self.client_get(f"/user_activity/{iago.id}/")
             self.assertEqual(result.status_code, 200)
 
-        self.assert_length(queries, 4)
+        self.assert_length(queries, 5)

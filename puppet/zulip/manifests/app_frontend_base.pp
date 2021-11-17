@@ -199,4 +199,13 @@ class zulip::app_frontend_base {
     mode    => '0755',
     source  => 'puppet:///modules/zulip/nagios_plugins/zulip_app_frontend',
   }
+
+  # This cron job does nothing unless RATE_LIMIT_TOR_TOGETHER is enabled.
+  file { '/etc/cron.d/fetch-for-exit-nodes':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'puppet:///modules/zulip/cron.d/fetch-tor-exit-nodes',
+  }
 }

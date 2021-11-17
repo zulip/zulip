@@ -29,4 +29,4 @@ types-redis
 types-requests
 types-six
 
-importlib-metadata;python_version<"3.8"  # for sqlalchemy
+importlib-metadata;python_version<"3.10"  # for sqlalchemy

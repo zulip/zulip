@@ -1,7 +1,9 @@
 from typing import Any, Dict, List
 
 from django.db import transaction
+from django.db.models import QuerySet
 from django.utils.translation import gettext as _
+from django_cte import With
 
 from zerver.lib.exceptions import JsonableError
 from zerver.models import Realm, UserGroup, UserGroupMembership, UserProfile
@@ -14,7 +16,7 @@ def access_user_group_by_id(
         user_group = UserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
         if not for_mention and user_group.is_system_group:
             raise JsonableError(_("Insufficient permission"))
-        group_member_ids = get_user_group_members(user_group)
+        group_member_ids = get_user_group_direct_members(user_group)
         if (
             not user_profile.is_realm_admin
             and not user_profile.is_moderator
@@ -54,8 +56,8 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[Dict[str, Any]]:
     return sorted(group_dicts.values(), key=lambda group_dict: group_dict["id"])
 
 
-def get_user_groups(user_profile: UserProfile) -> List[UserGroup]:
-    return list(user_profile.usergroup_set.all())
+def get_direct_user_groups(user_profile: UserProfile) -> List[UserGroup]:
+    return list(user_profile.direct_groups.all())
 
 
 def remove_user_from_user_group(user_profile: UserProfile, user_group: UserGroup) -> int:
@@ -83,14 +85,46 @@ def create_user_group(
         return user_group
 
 
-def get_user_group_members(user_group: UserGroup) -> List[UserProfile]:
-    members = UserGroupMembership.objects.filter(user_group=user_group)
-    return [member.user_profile.id for member in members]
+def get_user_group_direct_members(user_group: UserGroup) -> List[int]:
+    return UserGroupMembership.objects.filter(user_group=user_group).values_list(
+        "user_profile_id", flat=True
+    )
 
 
-def get_memberships_of_users(user_group: UserGroup, members: List[UserProfile]) -> List[int]:
+def get_direct_memberships_of_users(user_group: UserGroup, members: List[UserProfile]) -> List[int]:
     return list(
         UserGroupMembership.objects.filter(
             user_group=user_group, user_profile__in=members
         ).values_list("user_profile_id", flat=True)
     )
+
+
+# These recursive lookups use standard PostgreSQL common table
+# expression (CTE) queries. These queries use the django-cte library,
+# because upstream Django does not yet support CTE.
+#
+# https://www.postgresql.org/docs/current/queries-with.html
+# https://pypi.org/project/django-cte/
+# https://code.djangoproject.com/ticket/28919
+
+
+def get_recursive_subgroups(user_group: UserGroup) -> "QuerySet[UserGroup]":
+    cte = With.recursive(
+        lambda cte: UserGroup.objects.filter(id=user_group.id)
+        .values("id")
+        .union(cte.join(UserGroup, direct_supergroups=cte.col.id).values("id"))
+    )
+    return cte.join(UserGroup, id=cte.col.id).with_cte(cte)
+
+
+def get_recursive_group_members(user_group: UserGroup) -> "QuerySet[UserProfile]":
+    return UserProfile.objects.filter(direct_groups__in=get_recursive_subgroups(user_group))
+
+
+def get_recursive_membership_groups(user_profile: UserProfile) -> "QuerySet[UserGroup]":
+    cte = With.recursive(
+        lambda cte: user_profile.direct_groups.values("id").union(
+            cte.join(UserGroup, direct_subgroups=cte.col.id).values("id")
+        )
+    )
+    return cte.join(UserGroup, id=cte.col.id).with_cte(cte)

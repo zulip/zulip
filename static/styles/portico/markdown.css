@@ -35,6 +35,7 @@
                 height: 30px;
             }
         }
+
         &#using-zulip,
         &#zulip-administration {
             font-size: 1.75em;
@@ -47,14 +48,14 @@
     h2 {
         font-size: 1.5em;
         line-height: 1.25;
-        margin: 20px 0 5px 0;
+        margin: 20px 0 5px;
     }
 
     h3 {
         font-size: 1.25em;
         line-height: 1.25;
         opacity: 1;
-        margin: 20px 0 5px 0;
+        margin: 20px 0 5px;
     }
 
     h1,
@@ -154,7 +155,7 @@
             .warn,
             .tip,
             .keyboard_tip {
-                margin: 5px 25px 5px;
+                margin: 5px 25px;
             }
         }
 
@@ -172,10 +173,6 @@
 
         & > li {
             margin: 5px 0;
-
-            ::before {
-                content: none;
-            }
         }
     }
 
@@ -197,7 +194,7 @@
         }
 
         i.zulip-icon {
-            margin: 0 2px 2px 2px;
+            margin: 0 2px 2px;
             vertical-align: middle;
         }
 
@@ -348,6 +345,7 @@
             margin-left: 15px;
             margin-top: 10px;
         }
+
         ul.nav {
             margin: 0;
 
@@ -384,7 +382,7 @@
         }
 
         &.has-tabs .blocks {
-            border-radius: 0 6px 6px 6px;
+            border-radius: 0 6px 6px;
         }
 
         &.no-tabs .blocks {

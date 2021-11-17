@@ -3,7 +3,8 @@ import shutil
 from io import BytesIO
 from typing import Any, Dict, Iterator, List, Set, Tuple
 from unittest import mock
-from unittest.mock import ANY, call
+from unittest.mock import ANY
+from urllib.parse import parse_qs, urlparse
 
 import orjson
 import responses
@@ -53,24 +54,101 @@ def remove_folder(path: str) -> None:
 
 
 def request_callback(request: PreparedRequest) -> Tuple[int, Dict[str, str], bytes]:
-    if request.url != "https://slack.com/api/users.list":
+    valid_endpoint = False
+    endpoints = [
+        "https://slack.com/api/users.list",
+        "https://slack.com/api/users.info",
+        "https://slack.com/api/team.info",
+    ]
+    for endpoint in endpoints:
+        if request.url and endpoint in request.url:
+            valid_endpoint = True
+            break
+    if not valid_endpoint:
         return (404, {}, b"")
 
     if request.headers.get("Authorization") != "Bearer xoxp-valid-token":
         return (200, {}, orjson.dumps({"ok": False, "error": "invalid_auth"}))
 
-    return (200, {}, orjson.dumps({"ok": True, "members": "user_data"}))
+    if request.url == "https://slack.com/api/users.list":
+        return (200, {}, orjson.dumps({"ok": True, "members": "user_data"}))
+
+    query_from_url = str(urlparse(request.url).query)
+    qs = parse_qs(query_from_url)
+    if request.url and "https://slack.com/api/users.info" in request.url:
+        user2team_dict = {
+            "U061A3E0G": "T6LARQE2Z",
+            "U061A8H1G": "T7KJRQE8Y",
+            "U8X25EBAB": "T5YFFM2QY",
+        }
+        try:
+            user_id = qs["user"][0]
+            team_id = user2team_dict[user_id]
+        except KeyError:
+            return (200, {}, orjson.dumps({"ok": False, "error": "user_not_found"}))
+        return (200, {}, orjson.dumps({"ok": True, "user": {"id": user_id, "team_id": team_id}}))
+    # Else, https://slack.com/api/team.info
+    team_not_found: Tuple[int, Dict[str, str], bytes] = (
+        200,
+        {},
+        orjson.dumps({"ok": False, "error": "team_not_found"}),
+    )
+    try:
+        team_id = qs["team"][0]
+    except KeyError:
+        return team_not_found
+
+    team_dict = {
+        "T6LARQE2Z": "foreignteam1",
+        "T7KJRQE8Y": "foreignteam2",
+    }
+    try:
+        team_domain = team_dict[team_id]
+    except KeyError:
+        return team_not_found
+    return (200, {}, orjson.dumps({"ok": True, "team": {"id": team_id, "domain": team_domain}}))
 
 
 class SlackImporter(ZulipTestCase):
     @responses.activate
     def test_get_slack_api_data(self) -> None:
         token = "xoxp-valid-token"
+
+        # Users list
         slack_user_list_url = "https://slack.com/api/users.list"
         responses.add_callback(responses.GET, slack_user_list_url, callback=request_callback)
         self.assertEqual(
             get_slack_api_data(slack_user_list_url, "members", token=token), "user_data"
         )
+
+        # Users info
+        slack_users_info_url = "https://slack.com/api/users.info"
+        user_id = "U8X25EBAB"
+        responses.add_callback(responses.GET, slack_users_info_url, callback=request_callback)
+        self.assertEqual(
+            get_slack_api_data(slack_users_info_url, "user", token=token, user=user_id),
+            {"id": user_id, "team_id": "T5YFFM2QY"},
+        )
+        # Should error if the required user argument is not specified
+        with self.assertRaises(Exception) as invalid:
+            get_slack_api_data(slack_users_info_url, "user", token=token)
+        self.assertEqual(invalid.exception.args, ("Error accessing Slack API: user_not_found",))
+        # Should error if the required user is not found
+        with self.assertRaises(Exception) as invalid:
+            get_slack_api_data(slack_users_info_url, "user", token=token, user="idontexist")
+        self.assertEqual(invalid.exception.args, ("Error accessing Slack API: user_not_found",))
+
+        # Team info
+        slack_team_info_url = "https://slack.com/api/team.info"
+        responses.add_callback(responses.GET, slack_team_info_url, callback=request_callback)
+        with self.assertRaises(Exception) as invalid:
+            get_slack_api_data(slack_team_info_url, "team", token=token, team="wedontexist")
+        self.assertEqual(invalid.exception.args, ("Error accessing Slack API: team_not_found",))
+        # Should error if the required user argument is not specified
+        with self.assertRaises(Exception) as invalid:
+            get_slack_api_data(slack_team_info_url, "team", token=token)
+        self.assertEqual(invalid.exception.args, ("Error accessing Slack API: team_not_found",))
+
         token = "xoxp-invalid-token"
         with self.assertRaises(Exception) as invalid:
             get_slack_api_data(slack_user_list_url, "members", token=token)
@@ -140,10 +218,10 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(get_user_timezone(user_no_timezone), "America/New_York")
 
     @mock.patch("zerver.data_import.slack.get_data_file")
-    @mock.patch("zerver.data_import.slack.get_slack_api_data")
     @mock.patch("zerver.data_import.slack.get_messages_iterator")
+    @responses.activate
     def test_fetch_shared_channel_users(
-        self, messages_mock: mock.Mock, api_mock: mock.Mock, data_file_mock: mock.Mock
+        self, messages_mock: mock.Mock, data_file_mock: mock.Mock
     ) -> None:
         users = [{"id": "U061A1R2R"}, {"id": "U061A5N1G"}, {"id": "U064KUGRJ"}]
         data_file_mock.side_effect = [
@@ -153,19 +231,19 @@ class SlackImporter(ZulipTestCase):
             ],
             [],
         ]
-        api_mock.side_effect = [
-            {"id": "U061A3E0G", "team_id": "T6LARQE2Z"},
-            {"domain": "foreignteam1"},
-            {"id": "U061A8H1G", "team_id": "T7KJRQE8Y"},
-            {"domain": "foreignteam2"},
-        ]
         messages_mock.return_value = [
             {"user": "U061A1R2R"},
             {"user": "U061A5N1G"},
             {"user": "U061A8H1G"},
         ]
+        # Users info
+        slack_users_info_url = "https://slack.com/api/users.info"
+        responses.add_callback(responses.GET, slack_users_info_url, callback=request_callback)
+        # Team info
+        slack_team_info_url = "https://slack.com/api/team.info"
+        responses.add_callback(responses.GET, slack_team_info_url, callback=request_callback)
         slack_data_dir = self.fixture_file_name("", type="slack_fixtures")
-        fetch_shared_channel_users(users, slack_data_dir, "token")
+        fetch_shared_channel_users(users, slack_data_dir, "xoxp-valid-token")
 
         # Normal users
         self.assert_length(users, 5)
@@ -176,20 +254,16 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(users[2]["id"], "U064KUGRJ")
 
         # Shared channel users
-        self.assertEqual(users[3]["id"], "U061A3E0G")
-        self.assertEqual(users[3]["team_domain"], "foreignteam1")
-        self.assertEqual(users[3]["is_mirror_dummy"], True)
-        self.assertEqual(users[4]["id"], "U061A8H1G")
-        self.assertEqual(users[4]["team_domain"], "foreignteam2")
-        self.assertEqual(users[4]["is_mirror_dummy"], True)
-
-        api_calls = [
-            call("https://slack.com/api/users.info", "user", token="token", user="U061A3E0G"),
-            call("https://slack.com/api/team.info", "team", token="token", team="T6LARQE2Z"),
-            call("https://slack.com/api/users.info", "user", token="token", user="U061A8H1G"),
-            call("https://slack.com/api/team.info", "team", token="token", team="T7KJRQE8Y"),
-        ]
-        api_mock.assert_has_calls(api_calls, any_order=True)
+        # We need to do this because the outcome order of `users` list is
+        # not deterministic.
+        fourth_fifth = [users[3], users[4]]
+        fourth_fifth.sort(key=lambda x: x["id"])
+        self.assertEqual(fourth_fifth[0]["id"], "U061A3E0G")
+        self.assertEqual(fourth_fifth[0]["team_domain"], "foreignteam1")
+        self.assertEqual(fourth_fifth[0]["is_mirror_dummy"], True)
+        self.assertEqual(fourth_fifth[1]["id"], "U061A8H1G")
+        self.assertEqual(fourth_fifth[1]["team_domain"], "foreignteam2")
+        self.assertEqual(fourth_fifth[1]["is_mirror_dummy"], True)
 
     @mock.patch("zerver.data_import.slack.get_data_file")
     def test_users_to_zerver_userprofile(self, mock_get_data_file: mock.Mock) -> None:

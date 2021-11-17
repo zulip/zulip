@@ -14,13 +14,13 @@ import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as confirm_dialog from "./confirm_dialog";
+import * as dialog_widget from "./dialog_widget";
 import {DropdownListWidget} from "./dropdown_list_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as muted_topics from "./muted_topics";
 import * as muted_topics_ui from "./muted_topics_ui";
-import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
@@ -370,29 +370,99 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
         notify_old_thread: message_edit.notify_old_thread_default,
     };
 
-    const streams_list = stream_data.subscribed_subs().map((stream) => ({
-        name: stream.name,
-        value: stream.stream_id.toString(),
-    }));
-    const opts = {
-        widget_name: "select_stream",
-        data: streams_list,
-        default_text: $t({defaultMessage: "No streams"}),
-        include_current_item: false,
-        value: current_stream_id,
-    };
-
     hide_topic_popover();
 
-    $("#move-a-topic-modal-holder").html(render_move_topic_to_stream(args));
+    function move_topic() {
+        function show_error_msg(msg) {
+            $("#topic_stream_edit_form_error .error-msg").text(msg);
+            $("#topic_stream_edit_form_error").show();
+        }
 
-    stream_widget = new DropdownListWidget(opts);
-    stream_header_colorblock = $("#move_topic_modal .topic_stream_edit_header").find(
-        ".stream_header_colorblock",
-    );
+        const params = Object.fromEntries(
+            $("#move_topic_form")
+                .serializeArray()
+                .map(({name, value}) => [name, value]),
+        );
 
-    stream_bar.decorate(current_stream_name, stream_header_colorblock, false);
-    overlays.open_modal("#move_topic_modal");
+        const {old_topic_name} = params;
+        const select_stream_id = stream_widget.value();
+
+        let {
+            current_stream_id,
+            new_topic_name,
+            send_notification_to_new_thread,
+            send_notification_to_old_thread,
+        } = params;
+        new_topic_name = new_topic_name.trim();
+        send_notification_to_new_thread = send_notification_to_new_thread === "on";
+        send_notification_to_old_thread = send_notification_to_old_thread === "on";
+        current_stream_id = Number.parseInt(current_stream_id, 10);
+
+        if (
+            current_stream_id === Number.parseInt(select_stream_id, 10) &&
+            new_topic_name.toLowerCase() === old_topic_name.toLowerCase()
+        ) {
+            dialog_widget.hide_dialog_spinner();
+            show_error_msg("Please select a different stream or change topic name.");
+            return;
+        }
+
+        dialog_widget.show_dialog_spinner();
+        with_first_message_id(
+            current_stream_id,
+            old_topic_name,
+            (message_id) => {
+                if (old_topic_name.trim() === new_topic_name.trim()) {
+                    // We use `undefined` to tell the server that
+                    // there has been no change in the topic name.
+                    new_topic_name = undefined;
+                }
+
+                if (old_topic_name && select_stream_id) {
+                    message_edit.move_topic_containing_message_to_stream(
+                        message_id,
+                        select_stream_id,
+                        new_topic_name,
+                        send_notification_to_new_thread,
+                        send_notification_to_old_thread,
+                    );
+                }
+            },
+            (xhr) => {
+                dialog_widget.hide_dialog_spinner();
+                show_error_msg(xhr.responseJSON.msg);
+            },
+        );
+    }
+
+    function move_topic_post_render() {
+        stream_header_colorblock = $("#dialog_widget_modal .topic_stream_edit_header").find(
+            ".stream_header_colorblock",
+        );
+        stream_bar.decorate(current_stream_name, stream_header_colorblock, false);
+        const streams_list = stream_data.subscribed_subs().map((stream) => ({
+            name: stream.name,
+            value: stream.stream_id.toString(),
+        }));
+        const opts = {
+            widget_name: "select_stream",
+            data: streams_list,
+            default_text: $t({defaultMessage: "No streams"}),
+            include_current_item: false,
+            value: current_stream_id,
+        };
+        stream_widget = new DropdownListWidget(opts);
+    }
+
+    dialog_widget.launch({
+        html_heading: $t_html({defaultMessage: "Move topic"}),
+        html_body: render_move_topic_to_stream(args),
+        html_submit_button: $t_html({defaultMessage: "Confirm"}),
+        id: "move_topic_modal",
+        on_click: move_topic,
+        loading_spinner: true,
+        post_render: move_topic_post_render,
+    });
 }
 
 function build_rename_topic_popover(e, current_stream_id, topic_name) {
@@ -559,7 +629,7 @@ export function register_stream_handlers() {
         $(this).closest(".popover").fadeOut(500).delay(500).remove();
 
         const sub = stream_popover_sub(e);
-        stream_settings_ui.sub_or_unsub(sub, true);
+        stream_settings_ui.sub_or_unsub(sub);
         e.preventDefault();
         e.stopPropagation();
     });
@@ -680,11 +750,9 @@ export function register_topic_handlers() {
 
         hide_topic_popover();
 
-        const modal_parent = $("#delete-topic-modal-holder");
         const html_body = render_delete_topic_modal(args);
 
         confirm_dialog.launch({
-            parent: modal_parent,
             html_heading: $t_html({defaultMessage: "Delete topic"}),
             help_link: "/help/delete-a-topic",
             html_body,

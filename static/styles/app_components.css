@@ -9,13 +9,6 @@
     justify-content: center;
 }
 
-/* Inserting this collapsed row between two flex items will make
- * the flex item that comes after it break to a new row */
-.break-row {
-    flex-basis: 100%;
-    height: 0;
-}
-
 .hide {
     display: none;
 }
@@ -413,6 +406,7 @@ div.overlay {
         width: calc(100% - 34px);
         margin-left: 10px;
     }
+
     .input-append .topic-list-filter {
         /* Input width = 100% - 11px margin x2 - 6px padding x2 - 1px border x2. */
         width: calc(100% - 36px);
@@ -538,7 +532,7 @@ div.overlay {
     }
 
     &.stream_create_info {
-        margin: 10px 10px 0 10px;
+        margin: 10px 10px 0;
     }
 
     .bankruptcy_unread_count {
@@ -548,7 +542,7 @@ div.overlay {
 
 .white_zulip_icon_without_text {
     display: inline-block;
-    background-image: url(../../static/images/logo/white-zulip-logo-without-text.svg);
+    background-image: url("../../static/images/logo/white-zulip-logo-without-text.svg");
     background-size: cover;
 }
 

@@ -175,7 +175,7 @@ def fetch_initial_state_data(
             state["max_message_id"] = -1
 
     if want("drafts"):
-        # Note: if a user ever disables synching drafts then all of
+        # Note: if a user ever disables syncing drafts then all of
         # their old drafts stored on the server will be deleted and
         # simply retained in local storage. In which case user_drafts
         # would just be an empty queryset.
@@ -282,7 +282,7 @@ def fetch_initial_state_data(
         state["realm_is_zephyr_mirror_realm"] = realm.is_zephyr_mirror_realm
         state["development_environment"] = settings.DEVELOPMENT
         state["realm_plan_type"] = realm.plan_type
-        state["zulip_plan_is_not_limited"] = realm.plan_type != Realm.LIMITED
+        state["zulip_plan_is_not_limited"] = realm.plan_type != Realm.PLAN_TYPE_LIMITED
         state["upgrade_text_for_wide_organization_logo"] = str(Realm.UPGRADE_TEXT_STANDARD)
 
         state["password_min_length"] = settings.PASSWORD_MIN_LENGTH
@@ -417,8 +417,11 @@ def fetch_initial_state_data(
         # 102); we can remove this once we no longer need to support
         # legacy mobile app versions that read the old property.
         state["can_create_streams"] = (
-            settings_user.can_create_private_streams() or settings_user.can_create_public_streams()
+            settings_user.can_create_private_streams()
+            or settings_user.can_create_public_streams()
+            or settings_user.can_create_web_public_streams()
         )
+        state["can_create_web_public_streams"] = settings_user.can_create_web_public_streams()
         state["can_subscribe_other_users"] = settings_user.can_subscribe_other_users()
         state["can_invite_others_to_realm"] = settings_user.can_invite_others_to_realm()
         state["is_admin"] = settings_user.is_realm_admin
@@ -752,8 +755,13 @@ def apply_event(
                     # Recompute properties based on is_admin/is_guest
                     state["can_create_private_streams"] = user_profile.can_create_private_streams()
                     state["can_create_public_streams"] = user_profile.can_create_public_streams()
+                    state[
+                        "can_create_web_public_streams"
+                    ] = user_profile.can_create_web_public_streams()
                     state["can_create_streams"] = (
-                        state["can_create_private_streams"] or state["can_create_public_streams"]
+                        state["can_create_private_streams"]
+                        or state["can_create_public_streams"]
+                        or state["can_create_web_public_streams"]
                     )
                     state["can_subscribe_other_users"] = user_profile.can_subscribe_other_users()
                     state["can_invite_others_to_realm"] = user_profile.can_invite_others_to_realm()
@@ -936,12 +944,13 @@ def apply_event(
 
             if event["property"] == "plan_type":
                 # Then there are some extra fields that also need to be set.
-                state["zulip_plan_is_not_limited"] = event["value"] != Realm.LIMITED
+                state["zulip_plan_is_not_limited"] = event["value"] != Realm.PLAN_TYPE_LIMITED
                 state["realm_upload_quota_mib"] = event["extra_data"]["upload_quota"]
 
             policy_permission_dict = {
                 "create_public_stream_policy": "can_create_public_streams",
                 "create_private_stream_policy": "can_create_private_streams",
+                "create_web_public_stream_policy": "can_create_web_public_streams",
                 "invite_to_stream_policy": "can_subscribe_other_users",
                 "invite_to_realm_policy": "can_invite_others_to_realm",
             }
@@ -962,7 +971,9 @@ def apply_event(
 
             # Finally, we need to recompute this value from its inputs.
             state["can_create_streams"] = (
-                state["can_create_private_streams"] or state["can_create_public_streams"]
+                state["can_create_private_streams"]
+                or state["can_create_public_streams"]
+                or state["can_create_web_public_streams"]
             )
         elif event["op"] == "update_dict":
             for key, value in event["data"].items():
@@ -1186,7 +1197,11 @@ def apply_event(
         # this setting is not a part of UserBaseSettings class.
         if event["property"] != "timezone":
             assert event["property"] in UserProfile.property_types
-        state[event["property"]] = event["value"]
+        if event["property"] in {
+            **UserProfile.display_settings_legacy,
+            **UserProfile.notification_settings_legacy,
+        }:
+            state[event["property"]] = event["value"]
         state["user_settings"][event["property"]] = event["value"]
     elif event["type"] == "invites_changed":
         pass

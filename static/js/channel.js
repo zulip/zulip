@@ -1,7 +1,20 @@
 import $ from "jquery";
 
 import * as blueslip from "./blueslip";
+import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
+import * as spectators from "./spectators";
+
+let password_change_in_progress = false;
+export let password_changes = 0;
+
+export function set_password_change_in_progress(value) {
+    password_change_in_progress = value;
+    if (!value) {
+        password_changes += 1;
+    }
+}
+export const xhr_password_changes = new WeakMap();
 
 const pending_requests = [];
 
@@ -52,7 +65,36 @@ function call(args, idempotent) {
             return;
         }
 
-        if (xhr.status === 403) {
+        if (xhr.status === 401) {
+            if (password_change_in_progress || xhr.password_changes !== password_changes) {
+                // The backend for handling password change API requests
+                // will replace the user's session; this results in a
+                // brief race where any API request will fail with a 401
+                // error after the old session is deactivated but before
+                // the new one has been propagated to the browser.  So we
+                // skip our normal HTTP 401 error handling if we're in the
+                // process of executing a password change.
+                return;
+            }
+
+            if (page_params.is_spectator) {
+                // In theory, the specator implementation should be
+                // designed to prevent accessing widgets that would
+                // make network requests not available to spectators.
+                //
+                // In the case that we have a bug in that logic, we
+                // prefer the user experience of offering the
+                // login_to_access widget over reloading the page.
+                spectators.login_to_access();
+            } else {
+                // We got logged out somehow, perhaps from another window
+                // changing the user's password, or a session timeout.  We
+                // could display an error message, but jumping right to
+                // the login page conveys the same information with a
+                // smoother relogin experience.
+                window.location.replace(page_params.login_page);
+            }
+        } else if (xhr.status === 403) {
             try {
                 if (
                     JSON.parse(xhr.responseText).code === "CSRF_FAILED" &&
@@ -100,6 +142,13 @@ function call(args, idempotent) {
 
     const jqXHR = $.ajax(args);
     add_pending_request(jqXHR);
+
+    // Remember the number of completed password changes when the
+    // request was initiated. This allows us to detect race
+    // situations where a password change occurred before we got a
+    // response that failed due to the ongoing password change.
+    jqXHR.password_changes = password_changes;
+
     return jqXHR;
 }
 

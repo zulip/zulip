@@ -22,12 +22,12 @@ import * as people from "./people";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
+import * as ui_util from "./ui_util";
 import * as util from "./util";
 
 function set_count(count) {
-    const draft_count = count.toString();
-    const text = $t({defaultMessage: "Drafts ({draft_count})"}, {draft_count});
-    $(".compose_drafts_button").text(text);
+    const drafts_li = $(".top_left_drafts");
+    ui_util.update_unread_count_in_dom(drafts_li, count);
 }
 
 export const draft_model = (function () {
@@ -144,19 +144,20 @@ export function restore_message(draft) {
 
 function draft_notify() {
     // Display a tooltip to notify the user about the saved draft.
-    const instance = tippy(".compose_drafts_button", {
+    const instance = tippy(".top_left_drafts .unread_count", {
         content: $t({defaultMessage: "Saved as draft"}),
         arrow: true,
-        placement: "top",
+        placement: "right",
     })[0];
     instance.show();
     function remove_instance() {
         instance.destroy();
     }
-    setTimeout(remove_instance, 1500);
+    setTimeout(remove_instance, 3000);
 }
 
-export function update_draft() {
+export function update_draft(opts = {}) {
+    const no_notify = opts.no_notify || false;
     const draft = snapshot_message();
 
     if (draft === undefined) {
@@ -174,7 +175,9 @@ export function update_draft() {
         // We don't save multiple drafts of the same message;
         // just update the existing draft.
         draft_model.editDraft(draft_id, draft);
-        draft_notify();
+        if (!no_notify) {
+            draft_notify();
+        }
         return draft_id;
     }
 
@@ -182,7 +185,9 @@ export function update_draft() {
     // one.
     const new_draft_id = draft_model.addDraft(draft);
     $("#compose-textarea").data("draft-id", new_draft_id);
-    draft_notify();
+    if (!no_notify) {
+        draft_notify();
+    }
 
     return new_draft_id;
 }

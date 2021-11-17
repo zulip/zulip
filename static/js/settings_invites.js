@@ -58,11 +58,11 @@ function populate_invites(invites_data) {
     add_invited_as_text(invites_data.invites);
 
     const invites_table = $("#admin_invites_table").expectOne();
-
     ListWidget.create(invites_table, invites_data.invites, {
         name: "admin_invites_list",
         modifier(item) {
             item.invited_absolute_time = timerender.absolute_time(item.invited * 1000);
+            item.expiry_date_absolute_time = timerender.absolute_time(item.expiry_date * 1000);
             item.is_admin = page_params.is_admin;
             item.disable_buttons =
                 item.invited_as === settings_config.user_role_values.owner.code &&
@@ -197,17 +197,14 @@ export function on_load_success(invites_data, initialize_event_handlers) {
             email,
             referred_by,
         };
-        const modal_parent = $("#admin_invites_table");
         const html_body = render_settings_revoke_invite_modal(ctx);
 
         confirm_dialog.launch({
-            parent: modal_parent,
             html_heading: ctx.is_multiuse
                 ? $t_html({defaultMessage: "Revoke invitation link"})
                 : $t_html({defaultMessage: "Revoke invitation to {email}"}, {email}),
             html_body,
             on_click: do_revoke_invite,
-            fade: true,
         });
 
         $(".dialog_submit_button").attr("data-invite-id", meta.invite_id);
@@ -224,15 +221,12 @@ export function on_load_success(invites_data, initialize_event_handlers) {
         const email = row.find(".email").text();
         meta.current_resend_invite_user_modal_row = row;
         meta.invite_id = $(e.currentTarget).attr("data-invite-id");
-        const modal_parent = $("#admin_invites_table");
         const html_body = render_settings_resend_invite_modal({email});
 
         confirm_dialog.launch({
-            parent: modal_parent,
             html_heading: $t_html({defaultMessage: "Resend invitation"}),
             html_body,
             on_click: do_resend_invite,
-            fade: true,
         });
 
         $(".dialog_submit_button").attr("data-invite-id", meta.invite_id);

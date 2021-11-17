@@ -256,14 +256,14 @@ the next time your `manage.py sync_ldap_user_data` cron job runs.
 
 Other fields you may want to sync from LDAP include:
 
-- Boolean flags; `is_realm_admin` (the organization's administrator
-  permission) is the main one. You can use the
+- Boolean flags describing the user's level of permission:
+  `is_realm_owner` (Organization owner), `is_realm_admin` (Organization administrator),
+  `is_guest` (Guest), `is_moderator` (Moderator). You can use the
   [AUTH_LDAP_USER_FLAGS_BY_GROUP][django-auth-booleans] feature of
-  `django-auth-ldap` to configure a group to get this permissions.
-  (We don't recommend using this flags feature for managing
-  `is_active` because deactivating a user this way would not disable
-  any active sessions the user might have; see the above discussion of
-  automatic deactivation for how to do that properly).
+  `django-auth-ldap` to configure a group to get any of these permissions.
+  (Don't use this to modify other boolean flags such as
+  `is_active` as that can introduce inconsistent state in the database;
+  see the above discussion of automatic deactivation for how to do that properly).
 - String fields like `default_language` (e.g. `en`) or `timezone`, if
   you have that data in the right format in your LDAP database.
 
@@ -597,6 +597,59 @@ to the root and `engineering` subdomains:
          client. Import `domainname.pfx` into Keycloak. After
          importing, only the certificate will be displayed (not the private
          key).
+
+### IdP-initiated SAML Logout
+
+Zulip 5.0 introduces beta support for IdP-initiated SAML Logout. The
+implementation has primarily been tested with Keycloak and these
+instructions are for that provider; please [contact
+us](https://zulip.com/help/contact-support) for help using this with
+another IdP.
+
+1. In the KeyCloak configuration for Zulip, enable `Force Name ID Format`
+   and set `Name ID Format` to `email`. Zulip needs to receive
+   the user's email address in the NameID to know which user's
+   sessions to terminate.
+1. Make sure `Front Channel Logout` is enabled, which it should be by default.
+   Disable `Force POST Binding`, as Zulip only supports the Redirect binding.
+1. In `Fine Grain SAML Endpoint Configuration`, set `Logout Service Redirect Binding URL`
+   to the same value you provided for `SSO URL` above.
+1. Add the IdP's `Redirect Binding URL`for `SingleLogoutService` to
+   your IdP configuration dict in `SOCIAL_AUTH_SAML_ENABLED_IDPS` in
+   `/etc/zulip/settings.py` as `slo_url`. For example it may look like
+   this:
+
+   ```
+   "your_keycloak_idp_name": {
+       "entity_id": "https://keycloak.example.com/auth/realms/yourrealm",
+       "url": "https://keycloak.example.com/auth/realms/yourrealm/protocol/saml",
+       "slo_url": "https://keycloak.example.com/auth/realms/yourrealm/protocol/saml",
+       ...
+   ```
+
+   You can find these details in your `SAML 2.0 Identity Provider Metadata` (available
+   in your `Realm Settings`).
+
+1. Because Keycloak uses the old `Name ID Format` format for
+   pre-existing sessions, each user needs to be logged out before SAML
+   Logout will work for them. Test SAML logout with your account by
+   logging out from Zulip, logging back in using SAML, and then using
+   the SAML logout feature from KeyCloak. Check
+   `/var/log/zulip/errors.log` for error output if it doesn't work.
+1. Once SAML logout is working for you, you can use the `manage.py logout_all_users` management command to logout all users so that
+   SAML logout works for everyone.
+
+   ```bash
+   /home/zulip/deployments/current/manage.py logout_all_users
+   ```
+
+#### Caveats
+
+- This beta doesn't support using `SessionIndex` to limit which
+  sessions are affected; it always terminates all logged-in sessions
+  for the user identified in the `NameID`.
+- SAML Logout in a configuration where your IdP handles authentication
+  for multiple organizations is not yet supported.
 
 ## Apache-based SSO with `REMOTE_USER`
 

@@ -312,7 +312,7 @@ class Command(BaseCommand):
                 description="The Zulip development environment default organization."
                 "  It's great for testing!",
                 invite_required=False,
-                plan_type=Realm.SELF_HOSTED,
+                plan_type=Realm.PLAN_TYPE_SELF_HOSTED,
                 org_type=Realm.ORG_TYPES["business"]["id"],
             )
             RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
@@ -327,7 +327,7 @@ class Command(BaseCommand):
                     name="MIT",
                     emails_restricted_to_domains=True,
                     invite_required=False,
-                    plan_type=Realm.SELF_HOSTED,
+                    plan_type=Realm.PLAN_TYPE_SELF_HOSTED,
                     org_type=Realm.ORG_TYPES["business"]["id"],
                 )
                 RealmDomain.objects.create(realm=mit_realm, domain="mit.edu")
@@ -337,7 +337,7 @@ class Command(BaseCommand):
                     name="Lear & Co.",
                     emails_restricted_to_domains=False,
                     invite_required=False,
-                    plan_type=Realm.SELF_HOSTED,
+                    plan_type=Realm.PLAN_TYPE_SELF_HOSTED,
                     org_type=Realm.ORG_TYPES["business"]["id"],
                 )
 
@@ -494,9 +494,8 @@ class Command(BaseCommand):
             shiva = get_user_by_delivery_email("shiva@zulip.com", zulip_realm)
             do_change_user_role(shiva, UserProfile.ROLE_MODERATOR, acting_user=None)
 
-            guest_user = get_user_by_delivery_email("polonius@zulip.com", zulip_realm)
-            guest_user.role = UserProfile.ROLE_GUEST
-            guest_user.save(update_fields=["role"])
+            polonius = get_user_by_delivery_email("polonius@zulip.com", zulip_realm)
+            do_change_user_role(polonius, UserProfile.ROLE_GUEST, acting_user=None)
 
             # These bots are directly referenced from code and thus
             # are needed for the test suite.

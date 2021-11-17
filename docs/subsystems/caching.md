@@ -262,4 +262,4 @@ cached by clients is changed. Clients are responsible for handling
 the events, updating their state, and rerendering any UI components
 that might display the modified state.
 
-[post-save-signals]: https://docs.djangoproject.com/en/2.0/ref/signals/#post-save
+[post-save-signals]: https://docs.djangoproject.com/en/3.2/ref/signals/#post-save

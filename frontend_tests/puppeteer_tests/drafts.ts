@@ -20,7 +20,7 @@ async function get_drafts_count(page: Page): Promise<number> {
     return await page.$$eval(".draft-row", (drafts) => drafts.length);
 }
 
-const drafts_button = ".compose_drafts_button";
+const drafts_button = ".top_left_drafts";
 const drafts_overlay = "#draft_overlay";
 const drafts_button_in_compose = "#below-compose-content .drafts-link";
 

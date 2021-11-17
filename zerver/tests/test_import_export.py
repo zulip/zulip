@@ -1231,7 +1231,7 @@ class ImportExportTest(ZulipTestCase):
 
     def test_plan_type(self) -> None:
         realm = get_realm("zulip")
-        do_change_plan_type(realm, Realm.LIMITED, acting_user=None)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
 
         self._setup_export_files(realm)
         self._export_realm(realm)
@@ -1240,7 +1240,7 @@ class ImportExportTest(ZulipTestCase):
             realm = do_import_realm(
                 os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip-1"
             )
-            self.assertEqual(realm.plan_type, Realm.LIMITED)
+            self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_LIMITED)
             self.assertEqual(realm.max_invites, 100)
             self.assertEqual(realm.upload_quota_gb, 5)
             self.assertEqual(realm.message_visibility_limit, 10000)
@@ -1253,7 +1253,7 @@ class ImportExportTest(ZulipTestCase):
             realm = do_import_realm(
                 os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip-2"
             )
-            self.assertEqual(realm.plan_type, Realm.SELF_HOSTED)
+            self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
             self.assertEqual(realm.max_invites, 100)
             self.assertEqual(realm.upload_quota_gb, None)
             self.assertEqual(realm.message_visibility_limit, None)

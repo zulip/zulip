@@ -60,7 +60,6 @@ from zerver.models import (
     get_stream,
 )
 from zerver.tornado.handlers import AsyncDjangoHandler, allocate_handler_id
-from zerver.worker import queue_processors
 from zilencer.models import RemoteZulipServer
 from zproject.backends import ExternalAuthDataDict, ExternalAuthResult
 
@@ -90,12 +89,6 @@ def stub_event_queue_user_events(
     with mock.patch("zerver.lib.events.request_event_queue", return_value=event_queue_return):
         with mock.patch("zerver.lib.events.get_user_events", return_value=user_events_return):
             yield
-
-
-@contextmanager
-def simulated_queue_client(client: Callable[[], object]) -> Iterator[None]:
-    with mock.patch.object(queue_processors, "SimpleQueueClient", client):
-        yield
 
 
 @contextmanager
@@ -489,6 +482,19 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "static/(?P<path>.+)",
             "flush_caches",
             "external_content/(?P<digest>[^/]+)/(?P<received_url>[^/]+)",
+            # These are SCIM2 urls overridden from django-scim2 to return Not Implemented.
+            # We actually test them, but it's not being detected as a tested pattern,
+            # possibly due to the use of re_path. TODO: Investigate and get them
+            # recognized as tested.
+            "scim/v2/",
+            "scim/v2/.search",
+            "scim/v2/Bulk",
+            "scim/v2/Me",
+            "scim/v2/ResourceTypes(?:/(?P<uuid>[^/]+))?",
+            "scim/v2/Schemas(?:/(?P<uuid>[^/]+))?",
+            "scim/v2/ServiceProviderConfig",
+            "scim/v2/Groups(?:/(?P<uuid>[^/]+))?",
+            "scim/v2/Groups/.search",
             *(webhook.url for webhook in WEBHOOK_INTEGRATIONS if not include_webhooks),
         }
 

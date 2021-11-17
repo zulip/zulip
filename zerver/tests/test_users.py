@@ -358,13 +358,14 @@ class PermissionTest(ZulipTestCase):
         # required in apps like the mobile apps.
         # delivery_email is sent for admins.
         admin.refresh_from_db()
+        user.refresh_from_db()
         self.login_user(admin)
         result = self.client_get("/json/users", {"client_gravatar": "true"})
         self.assert_json_success(result)
         members = result.json()["members"]
         hamlet = find_dict(members, "user_id", user.id)
         self.assertEqual(hamlet["email"], f"user{user.id}@zulip.testserver")
-        self.assertEqual(hamlet["avatar_url"], get_gravatar_url(user.email, 1))
+        self.assertEqual(hamlet["avatar_url"], get_gravatar_url(user.delivery_email, 1))
         self.assertEqual(hamlet["delivery_email"], self.example_email("hamlet"))
 
     def test_user_cannot_promote_to_admin(self) -> None:
@@ -377,7 +378,7 @@ class PermissionTest(ZulipTestCase):
         new_name = "new name"
         self.login("iago")
         hamlet = self.example_user("hamlet")
-        req = dict(full_name=orjson.dumps(new_name).decode())
+        req = dict(full_name=new_name)
         result = self.client_patch(f"/json/users/{hamlet.id}", req)
         self.assert_json_success(result)
         hamlet = self.example_user("hamlet")
@@ -385,21 +386,21 @@ class PermissionTest(ZulipTestCase):
 
     def test_non_admin_cannot_change_full_name(self) -> None:
         self.login("hamlet")
-        req = dict(full_name=orjson.dumps("new name").decode())
+        req = dict(full_name="new name")
         result = self.client_patch("/json/users/{}".format(self.example_user("othello").id), req)
         self.assert_json_error(result, "Insufficient permission")
 
     def test_admin_cannot_set_long_full_name(self) -> None:
         new_name = "a" * (UserProfile.MAX_NAME_LENGTH + 1)
         self.login("iago")
-        req = dict(full_name=orjson.dumps(new_name).decode())
+        req = dict(full_name=new_name)
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, "Name too long!")
 
     def test_admin_cannot_set_short_full_name(self) -> None:
         new_name = "a"
         self.login("iago")
-        req = dict(full_name=orjson.dumps(new_name).decode())
+        req = dict(full_name=new_name)
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, "Name too short!")
 
@@ -407,7 +408,7 @@ class PermissionTest(ZulipTestCase):
         # Name of format "Alice|999" breaks in Markdown
         new_name = "iago|72"
         self.login("iago")
-        req = dict(full_name=orjson.dumps(new_name).decode())
+        req = dict(full_name=new_name)
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, "Invalid format!")
 
@@ -415,21 +416,21 @@ class PermissionTest(ZulipTestCase):
         # Adding characters after r'|d+' doesn't break Markdown
         new_name = "Hello- 12iago|72k"
         self.login("iago")
-        req = dict(full_name=orjson.dumps(new_name).decode())
+        req = dict(full_name=new_name)
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_success(result)
 
     def test_not_allowed_format_complex(self) -> None:
         new_name = "Hello- 12iago|72"
         self.login("iago")
-        req = dict(full_name=orjson.dumps(new_name).decode())
+        req = dict(full_name=new_name)
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, "Invalid format!")
 
     def test_admin_cannot_set_full_name_with_invalid_characters(self) -> None:
         new_name = "Opheli*"
         self.login("iago")
-        req = dict(full_name=orjson.dumps(new_name).decode())
+        req = dict(full_name=new_name)
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, "Invalid characters in name!")
 
@@ -1319,6 +1320,26 @@ class UserProfileTest(ZulipTestCase):
             self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
         )
         self.assertTrue(result["is_subscribed"])
+
+        self.login("iago")
+        stream = self.make_stream("private_stream", invite_only=True)
+        # Unsubscribed admin can check subscription status in a private stream.
+        result = orjson.loads(
+            self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
+        )
+        self.assertFalse(result["is_subscribed"])
+
+        # Unsubscribed non-admins cannot check subscription status in a private stream.
+        self.login("shiva")
+        result = self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}")
+        self.assert_json_error(result, "Invalid stream id")
+
+        # Subscribed non-admins can check subscription status in a private stream
+        self.subscribe(self.example_user("shiva"), stream.name)
+        result = orjson.loads(
+            self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
+        )
+        self.assertFalse(result["is_subscribed"])
 
 
 class ActivateTest(ZulipTestCase):

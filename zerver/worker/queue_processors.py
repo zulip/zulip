@@ -213,9 +213,17 @@ def retry_send_email_failures(
 class QueueProcessingWorker(ABC):
     queue_name: str
     MAX_CONSUME_SECONDS: Optional[int] = 30
+    # The MAX_CONSUME_SECONDS timeout is only enabled when handling a
+    # single queue at once, with no threads.
     ENABLE_TIMEOUTS = False
     CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM = 50
     MAX_SECONDS_BEFORE_UPDATE_STATS = 30
+
+    # How many un-acknowledged events the worker should have on hand,
+    # fetched from the rabbitmq server.  Larger values may be more
+    # performant, but if queues are large, cause more network IO at
+    # startup and steady-state memory.
+    PREFETCH = 100
 
     def __init__(self) -> None:
         self.q: Optional[SimpleQueueClient] = None
@@ -232,9 +240,9 @@ class QueueProcessingWorker(ABC):
         self.idle = True
         self.last_statistics_update_time = 0.0
 
-        self.update_statistics(0)
+        self.update_statistics()
 
-    def update_statistics(self, remaining_local_queue_size: int) -> None:
+    def update_statistics(self) -> None:
         total_seconds = sum(seconds for _, seconds in self.recent_consume_times)
         total_events = sum(events_number for events_number, _ in self.recent_consume_times)
         if total_events == 0:
@@ -244,7 +252,6 @@ class QueueProcessingWorker(ABC):
         stats_dict = dict(
             update_time=time.time(),
             recent_average_consume_time=recent_average_consume_time,
-            current_queue_size=remaining_local_queue_size,
             queue_last_emptied_timestamp=self.queue_last_emptied_timestamp,
             consumed_since_last_emptied=self.consumed_since_last_emptied,
         )
@@ -294,7 +301,7 @@ class QueueProcessingWorker(ABC):
                 # that the queue started processing, in case the event we're about to process
                 # makes us freeze.
                 self.idle = False
-                self.update_statistics(self.get_remaining_local_queue_size())
+                self.update_statistics()
 
             time_start = time.time()
             if self.MAX_CONSUME_SECONDS and self.ENABLE_TIMEOUTS:
@@ -331,7 +338,7 @@ class QueueProcessingWorker(ABC):
                 # need to worry about the small overhead of doing a disk write.
                 # We take advantage of this to update the stats file to keep it fresh,
                 # especially since the queue might go idle until new events come in.
-                self.update_statistics(0)
+                self.update_statistics()
                 self.idle = True
                 return
 
@@ -342,7 +349,7 @@ class QueueProcessingWorker(ABC):
                 >= self.MAX_SECONDS_BEFORE_UPDATE_STATS
             ):
                 self.consume_iteration_counter = 0
-                self.update_statistics(remaining_local_queue_size)
+                self.update_statistics()
 
     def consume_single_event(self, event: Dict[str, Any]) -> None:
         consume_func = lambda events: self.consume(events[0])
@@ -389,7 +396,7 @@ class QueueProcessingWorker(ABC):
         check_and_send_restart_signal()
 
     def setup(self) -> None:
-        self.q = SimpleQueueClient()
+        self.q = SimpleQueueClient(prefetch=self.PREFETCH)
 
     def start(self) -> None:
         assert self.q is not None
@@ -407,6 +414,9 @@ class QueueProcessingWorker(ABC):
 class LoopQueueProcessingWorker(QueueProcessingWorker):
     sleep_delay = 1
     batch_size = 100
+
+    def setup(self) -> None:
+        self.q = SimpleQueueClient(prefetch=max(self.PREFETCH, self.batch_size))
 
     def start(self) -> None:  # nocoverage
         assert self.q is not None
@@ -718,6 +728,11 @@ class EmailSendingWorker(LoopQueueProcessingWorker):
 
 @assign_queue("missedmessage_mobile_notifications")
 class PushNotificationsWorker(QueueProcessingWorker):
+    # The use of aioapns in the backend means that we cannot use
+    # SIGALRM to limit how long a consume takes, as SIGALRM does not
+    # play well with asyncio.
+    MAX_CONSUME_SECONDS = None
+
     def start(self) -> None:
         # initialize_push_notifications doesn't strictly do anything
         # beyond printing some logging warnings if push notifications
@@ -972,7 +987,6 @@ class DeferredWorker(QueueProcessingWorker):
                     threads=6,
                     upload=True,
                     public_only=True,
-                    delete_after_upload=True,
                 )
             except Exception:
                 export_event.extra_data = orjson.dumps(
@@ -1061,7 +1075,7 @@ class NoopWorker(QueueProcessingWorker):
 class BatchNoopWorker(LoopQueueProcessingWorker):
     """Used to profile the queue processing framework, in zilencer's queue_rate."""
 
-    batch_size = 500
+    batch_size = 100
 
     def __init__(self, max_consume: int = 1000, slow_queries: Sequence[int] = []) -> None:
         self.consumed = 0

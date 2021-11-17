@@ -290,7 +290,9 @@ export function start(msg_type, opts) {
 
 export function cancel() {
     // As user closes the compose box, restore the compose box max height
-    compose_ui.make_compose_box_original_size();
+    if (compose_ui.is_full_size()) {
+        compose_ui.make_compose_box_original_size();
+    }
 
     $("#compose-textarea").height(40 + "px");
 

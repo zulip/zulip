@@ -586,7 +586,9 @@ class PasswordResetTest(ZulipTestCase):
                 self.client_post("/accounts/password/reset/", {"email": email})
             self.assertEqual(
                 info_logs.output,
-                ["INFO:root:Too many password reset attempts for email hamlet@zulip.com"],
+                [
+                    "INFO:root:Too many password reset attempts for email hamlet@zulip.com from 127.0.0.1"
+                ],
             )
             self.assert_length(outbox, 2)
 
@@ -1123,7 +1125,7 @@ class InviteUserTest(InviteUserBase):
                 return result
 
         result = try_invite()
-        self.assert_json_error_contains(result, "enough remaining invites")
+        self.assert_json_error_contains(result, "reached the limit")
 
         # Next show that aggregate limits expire once the realm is old
         # enough.
@@ -1624,9 +1626,7 @@ earl-test@zulip.com""",
         invitee_emails = ", ".join(str(i) for i in range(get_realm("zulip").max_invites - 1))
         self.assert_json_error(
             self.invite(invitee_emails, ["Denmark"]),
-            "You do not have enough remaining invites for today. "
-            "Please contact desdemona+admin@zulip.com to have your limit raised. "
-            "No invitations were sent.",
+            "To protect users, Zulip limits the number of invitations you can send in one day. Because you have reached the limit, no invitations were sent.",
         )
 
     def test_missing_or_invalid_params(self) -> None:

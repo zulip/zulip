@@ -9,7 +9,6 @@ const $ = require("../zjsunit/zjquery");
 const noop = () => {};
 
 set_global("document", {
-    location: {}, // we need this to load compose.js
     to_$: () => $("document-stub"),
 });
 
