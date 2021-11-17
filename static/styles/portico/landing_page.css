@@ -3984,7 +3984,7 @@ nav {
     .gradients .gradient.green {
         background: linear-gradient(
             -25deg,
-            transparent 10%,
+            hsla(156, 47%, 47%, 0) 10%,
             hsl(156, 47%, 47%) 80%
         );
     }
@@ -3992,7 +3992,7 @@ nav {
     .gradients .gradient.blue {
         background: linear-gradient(
             25deg,
-            transparent 10%,
+            hsla(196, 38%, 51%, 0) 10%,
             hsl(196, 38%, 51%) 80%
         );
     }
@@ -4000,7 +4000,7 @@ nav {
     .gradients .gradient.sunburst {
         background: linear-gradient(
             5deg,
-            transparent 20%,
+            hsla(49, 71%, 68%, 0) 20%,
             hsl(49, 71%, 68%) 80%
         );
     }
