@@ -7,7 +7,7 @@ class zulip::profile::smokescreen {
 
   $version = 'dc403015f563eadc556a61870c6ad327688abe88'
   $dir = "/srv/zulip-smokescreen-src-${version}/"
-  $bin = "/usr/local/bin/smokescreen-${version}"
+  $bin = "/usr/local/bin/smokescreen-${version}-go-${zulip::golang::version}"
 
   zulip::external_dep { 'smokescreen-src':
     version        => $version,
