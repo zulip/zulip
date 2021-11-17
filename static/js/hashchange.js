@@ -315,14 +315,9 @@ function do_hashchange_overlay(old_hash) {
 function hashchanged(from_reload, e) {
     const current_hash = window.location.hash;
     const old_hash = e && (e.oldURL ? new URL(e.oldURL).hash : browser_history.old_hash());
+    const is_hash_web_public_compatible = browser_history.update_web_public_hash(current_hash);
 
     const was_internal_change = browser_history.save_old_hash();
-
-    const is_hash_web_public_compatible = hash_util.is_spectator_compatible(current_hash);
-    if (is_hash_web_public_compatible) {
-        browser_history.state.spectator_old_hash = current_hash;
-    }
-
     if (was_internal_change) {
         return undefined;
     }
