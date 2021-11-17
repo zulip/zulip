@@ -54,6 +54,7 @@ function set_hash(hash) {
     if (history.pushState) {
         const url = get_full_url(hash);
         history.pushState(null, null, url);
+        browser_history.update_web_public_hash(hash);
     } else {
         blueslip.warn("browser does not support pushState");
         window.location.hash = hash;
