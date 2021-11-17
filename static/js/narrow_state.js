@@ -47,7 +47,26 @@ export function public_operators() {
 }
 
 export function search_string() {
-    return Filter.unparse(operators());
+    const all_operators = operators();
+    for (const op of all_operators) {
+        if (["group-pm-with", "pm-with", "sender", "from"].includes(op.operator)) {
+            const operand = op.operand;
+            const user_emails = operand.split(",");
+            const user_names = [];
+            for (const email of user_emails) {
+                const person = people.get_by_email(email);
+                if (person !== undefined) {
+                    let name = person.full_name;
+                    if (people.is_duplicate_full_name(name)) {
+                        name = name + "|" + person.user_id;
+                    }
+                    user_names.push(name);
+                }
+            }
+            op.operand = user_names.join(",");
+        }
+    }
+    return Filter.unparse(all_operators);
 }
 
 // Collect operators which appear only once into an object,

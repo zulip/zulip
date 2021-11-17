@@ -282,11 +282,9 @@ export class Filter {
             .replace(/"/g, "%22");
     }
 
-    static decodeOperand(encoded, operator) {
+    static decodeOperand(encoded) {
         encoded = encoded.replace(/"/g, "");
-        if (["group-pm-with", "pm-with", "sender", "from"].includes(operator) === false) {
-            encoded = encoded.replace(/\+/g, " ");
-        }
+        encoded = encoded.replace(/\+/g, " ");
         return util.robust_uri_decode(encoded).trim();
     }
 
@@ -330,7 +328,7 @@ export class Filter {
                     negated = true;
                     operator = operator.slice(1);
                 }
-                operand = Filter.decodeOperand(parts.join(":"), operator);
+                operand = Filter.decodeOperand(parts.join(":"));
 
                 // We use Filter.operator_to_prefix() checks if the
                 // operator is known.  If it is not known, then we treat

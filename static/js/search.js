@@ -5,6 +5,7 @@ import * as message_view_header from "./message_view_header";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
+import * as people from "./people";
 import * as search_pill from "./search_pill";
 import * as search_pill_widget from "./search_pill_widget";
 import * as search_suggestion from "./search_suggestion";
@@ -35,6 +36,25 @@ export function narrow_or_search_for_term(search_string) {
     } else {
         operators = Filter.parse(search_string);
     }
+
+    for (const op of operators) {
+        if (["group-pm-with", "pm-with", "sender", "from"].includes(op.operator)) {
+            const operand = op.operand;
+            const user_names = operand.split(",");
+            const user_emails = [];
+            for (const name of user_names) {
+                let user_id = people.get_user_id_from_name(name);
+                if (user_id === undefined) {
+                    const id_regex = /^(.+)\|(\d+)$/; // For user_name|id syntax
+                    const match = id_regex.exec(name);
+                    user_id = Number.parseInt(match[2], 10);
+                }
+                user_emails.push(people.get_by_user_id(user_id).email);
+            }
+            op.operand = user_emails.join(",");
+        }
+    }
+
     narrow.activate(operators, {trigger: "search"});
 
     // It's sort of annoying that this is not in a position to

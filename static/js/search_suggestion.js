@@ -152,11 +152,19 @@ function get_group_suggestions(last, operators) {
 
     // We don't suggest a person if their email is already present in the
     // operand (not including the last part).
-    const parts = all_but_last_part.split(",").concat(people.my_current_email());
+    let my_full_name = people.my_full_name();
+    if (people.is_duplicate_full_name(my_full_name)) {
+        my_full_name = my_full_name + "|" + people.my_current_user_id();
+    }
+    const parts = all_but_last_part.split(",").concat(people.my_full_name());
 
     const person_matcher = people.build_person_matcher(last_part);
     let persons = people.filter_all_persons((person) => {
-        if (parts.includes(person.email)) {
+        let person_full_name = person.full_name;
+        if (people.is_duplicate_full_name(person_full_name)) {
+            person_full_name = person_full_name + "|" + person.user_id;
+        }
+        if (parts.includes(person_full_name)) {
             return false;
         }
         return last_part === "" || person_matcher(person);
@@ -172,9 +180,13 @@ function get_group_suggestions(last, operators) {
     const highlight_person = make_person_highlighter(last_part);
 
     const suggestions = persons.map((person) => {
+        let person_name = person.full_name;
+        if (people.is_duplicate_full_name(person_name)) {
+            person_name = person.full_name + "|" + person.user_id;
+        }
         const term = {
             operator: "pm-with",
-            operand: all_but_last_part + "," + person.email,
+            operand: all_but_last_part + "," + person_name,
             negated,
         };
         const name = highlight_person(person);
@@ -255,10 +267,14 @@ function get_person_suggestions(people_getter, last, operators, autocomplete_ope
     const objs = persons.map((person) => {
         const name = highlight_person(person);
         const description = prefix + " " + name;
+        let person_name = person.full_name;
+        if (people.is_duplicate_full_name(person_name)) {
+            person_name = person.full_name + "|" + person.user_id;
+        }
         const terms = [
             {
                 operator: autocomplete_operator,
-                operand: person.email,
+                operand: person_name,
                 negated: last.negated,
             },
         ];
@@ -522,8 +538,8 @@ function get_sent_by_me_suggestions(last, operators) {
     const negated_symbol = negated ? "-" : "";
     const verb = negated ? "exclude " : "";
 
-    const sender_query = negated_symbol + "sender:" + people.my_current_email();
-    const from_query = negated_symbol + "from:" + people.my_current_email();
+    const sender_query = negated_symbol + "sender:" + people.my_full_name();
+    const from_query = negated_symbol + "from:" + people.my_full_name();
     const sender_me_query = negated_symbol + "sender:me";
     const from_me_query = negated_symbol + "from:me";
     const sent_string = negated_symbol + "sent";
