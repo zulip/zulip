@@ -14,7 +14,7 @@ class zulip::profile::smokescreen {
     },
   }
   exec { 'compile smokescreen':
-    command     => "/srv/golang/bin/go build -o /usr/local/bin/smokescreen-${version}",
+    command     => "${zulip::golang::bin} build -o /usr/local/bin/smokescreen-${version}",
     cwd         => "/srv/smokescreen-src-${version}/",
     # GOCACHE is required; nothing is written to GOPATH, but it is required to be set
     environment => ['GOCACHE=/tmp/gocache', 'GOPATH=/root/go'],
