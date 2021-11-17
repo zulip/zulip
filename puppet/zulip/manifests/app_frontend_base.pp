@@ -96,8 +96,14 @@ class zulip::app_frontend_base {
     $uwsgi_default_processes = 4
   }
   $tornado_ports = $zulip::tornado_sharding::tornado_ports
-  $proxy_host = zulipconf('http_proxy', 'host', '')
-  $proxy_port = zulipconf('http_proxy', 'port', '')
+
+  $proxy_host = zulipconf('http_proxy', 'host', 'localhost')
+  $proxy_port = zulipconf('http_proxy', 'port', '4750')
+
+  if ($proxy_host in ['localhost', '127.0.0.1', '::1']) and ($proxy_port == '4750') {
+    include zulip::smokescreen
+  }
+
   if $proxy_host != '' and $proxy_port != '' {
     $proxy = "http://${proxy_host}:${proxy_port}"
   } else {
