@@ -10,12 +10,12 @@ class zulip::profile::smokescreen {
     url     => "https://github.com/stripe/smokescreen/archive/${version}.tar.gz",
     sha256  => 'ad4b181d14adcd9425045152b903a343dbbcfcad3c1e7625d2c65d1d50e1959d',
     install => {
-      "smokescreen-${version}/" => "/srv/smokescreen-src-${version}/",
+      "smokescreen-${version}/" => "/srv/zulip-smokescreen-src-${version}/",
     },
   }
   exec { 'compile smokescreen':
     command     => "${zulip::golang::bin} build -o /usr/local/bin/smokescreen-${version}",
-    cwd         => "/srv/smokescreen-src-${version}/",
+    cwd         => "/srv/zulip-smokescreen-src-${version}/",
     # GOCACHE is required; nothing is written to GOPATH, but it is required to be set
     environment => ['GOCACHE=/tmp/gocache', 'GOPATH=/root/go'],
     creates     => "/usr/local/bin/smokescreen-${version}",
