@@ -2473,10 +2473,11 @@ class InvitationsTestCase(InviteUserBase):
         self.assertEqual(scheduledemail_filter.count(), 1)
         original_timestamp = scheduledemail_filter.values_list("scheduled_timestamp", flat=True)
 
-        invite_expires_in_days = (
-            prereg_user.confirmation.get().expiry_date - prereg_user.invited_at
-        ).days
-        print(prereg_user.confirmation.get().expiry_date, prereg_user.invited_at)
+        # Get number of valid days through the use of total seconds divided by the number of seconds in a day.
+        invite_expires_in_days = round(
+            (prereg_user.confirmation.get().expiry_date - prereg_user.invited_at).total_seconds()
+            / datetime.timedelta(days=1).total_seconds()
+        )
 
         # Resend invite 2 days later
         with patch(
@@ -2496,13 +2497,16 @@ class InvitationsTestCase(InviteUserBase):
 
         # Verify that the new invite has the same number of expiration days as the original invite.
         prereg_user = PreregistrationUser.objects.get(email=invitee)
-        print(
-            prereg_user.confirmation.get().expiry_date,
-            prereg_user.invited_at,
-            invite_expires_in_days,
-        )
+        # We need to add the same amount of additional days to prereg_user.invited_at because
+        # it is automatically set to the current time in PreregistrationUser.
+        prereg_user.invited_at = prereg_user.invited_at + datetime.timedelta(days=2)
         self.assertEqual(
-            (prereg_user.confirmation.get().expiry_date - prereg_user.invited_at).days,
+            round(
+                (
+                    prereg_user.confirmation.get().expiry_date - prereg_user.invited_at
+                ).total_seconds()
+                / datetime.timedelta(days=1).total_seconds()
+            ),
             invite_expires_in_days,
         )
         self.assertEqual(

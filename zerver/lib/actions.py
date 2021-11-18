@@ -7284,9 +7284,11 @@ def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
 
     check_invite_limit(prereg_user.referred_by.realm, 1)
 
-    invite_expires_in_days = (
-        prereg_user.confirmation.get().expiry_date - prereg_user.invited_at
-    ).days
+    # Get number of valid days through the use of total seconds divided by the number of seconds in a day.
+    invite_expires_in_days = round(
+        (prereg_user.confirmation.get().expiry_date - prereg_user.invited_at).total_seconds()
+        / datetime.timedelta(days=1).total_seconds()
+    )
 
     # Reset confirmation object and re-trigger invitation/confirmation email with an
     # expiration time with the same number of days as the original invite.
