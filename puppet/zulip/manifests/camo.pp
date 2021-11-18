@@ -1,4 +1,4 @@
-class zulip::camo {
+class zulip::camo (String $listen_address = '0.0.0.0') {
   # TODO/compatibility: Removed 2021-11 in version 5.0; these lines
   # can be removed once one must have upgraded through Zulip 5.0 or
   # higher to get to the next release.
