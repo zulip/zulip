@@ -239,7 +239,7 @@ strength allowed is controlled by two settings in
   browser is logged into a Zulip account that has received the
   uploaded file in question).
 
-- Zulip supports using the Camo image proxy to proxy content like
+- Zulip supports using the [go-camo][go-camo] image proxy to proxy content like
   inline image previews, that can be inserted into the Zulip message feed by
   other users. This ensures that clients do not make requests to external
   servers to fetch images, improving privacy.
@@ -266,6 +266,7 @@ strength allowed is controlled by two settings in
   internal corporate network. The default Smokescreen configuration
   denies access to all non-public IP addresses, including 127.0.0.1.
 
+[go-camo]: https://github.com/cactus/go-camo
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
 [smokescreen-setup]: ../production/deployment.html#customizing-the-outgoing-http-proxy
 
