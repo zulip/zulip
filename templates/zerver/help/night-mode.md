@@ -13,7 +13,7 @@ for working in a dark space.
 
 {end_tabs}
 
-The default is **Automatic**, which detects which theme to use based
+The default is **Sync with computer**, which detects which theme to use based
 on the color scheme used by your operating system.
 
 You can also specify **Night mode** or **Day mode** if you'd like
