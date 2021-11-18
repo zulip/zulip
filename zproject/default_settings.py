@@ -421,7 +421,7 @@ USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS = 100
 
 # How many days deleted messages data should be kept before being
 # permanently deleted.
-ARCHIVED_DATA_VACUUMING_DELAY_DAYS = 7
+ARCHIVED_DATA_VACUUMING_DELAY_DAYS = 30
 
 # Enables billing pages and plan-based feature gates. If False, all features
 # are available to all realms.
