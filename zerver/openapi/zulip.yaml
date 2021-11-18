@@ -7538,7 +7538,7 @@ paths:
             Controls which [color theme](/help/dark-theme) to use.
 
             - 1 - Automatic
-            - 2 - Night mode
+            - 2 - Dark theme
             - 3 - Day mode
 
             Automatic detection is implementing using the standard `prefers-color-scheme`
@@ -9477,7 +9477,7 @@ paths:
                               Controls which [color theme](/help/dark-theme) to use.
 
                               - 1 - Automatic
-                              - 2 - Night mode
+                              - 2 - Dark theme
                               - 3 - Day mode
 
                               Automatic detection is implementing using the standard `prefers-color-scheme`
@@ -11185,7 +11185,7 @@ paths:
                               Controls which [color theme](/help/dark-theme) to use.
 
                               - 1 - Automatic
-                              - 2 - Night mode
+                              - 2 - Dark theme
                               - 3 - Day mode
 
                               Automatic detection is implementing using the standard `prefers-color-scheme`
@@ -12082,7 +12082,7 @@ paths:
             Controls which [color theme](/help/dark-theme) to use.
 
             - 1 - Automatic
-            - 2 - Night mode
+            - 2 - Dark theme
             - 3 - Day mode
 
             Automatic detection is implementing using the standard `prefers-color-scheme`
