@@ -4,7 +4,7 @@ class zulip::golang {
   $version = '1.17.3'
 
   $dir = "/srv/golang-${version}/"
-  $bin = '/srv/golang/bin/go'
+  $bin = "${dir}bin/go"
 
   zulip::sha256_tarball_to { 'golang':
     url     => "https://golang.org/dl/go${version}.linux-amd64.tar.gz",
@@ -14,9 +14,8 @@ class zulip::golang {
     },
   }
 
-  file { '/srv/golang':
-    ensure  => 'link',
-    target  => $dir,
+  file { $bin:
+    ensure  => file,
     require => Zulip::Sha256_tarball_to['golang'],
   }
 }
