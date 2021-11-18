@@ -67,7 +67,15 @@
         </a>
     </li>
     {{/if}}
-
+    {{#if can_only_rename_topic}}
+    <hr />
+    <li>
+        <a tabindex="0" class="sidebar-popover-rename-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-pencil" aria-hidden="true"></i>
+            {{t "Rename topic"}}
+        </a>
+    </li>
+    {{/if}}
     {{#if is_realm_admin}}
     <li>
         <a tabindex="0" class="sidebar-popover-delete-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">

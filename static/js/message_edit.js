@@ -1099,3 +1099,48 @@ export function move_topic_containing_message_to_stream(
         },
     });
 }
+
+export function rename_topic_sidebar(message_id, new_topic_name) {
+    function reset_modal_ui() {
+        currently_topic_editing_messages = currently_topic_editing_messages.filter(
+            (id) => id !== message_id,
+        );
+
+        dialog_widget.hide_dialog_spinner();
+        dialog_widget.close_modal();
+    }
+
+    if (currently_topic_editing_messages.includes(message_id)) {
+        $("#topic_stream_edit_form_error .error-msg").text(
+            $t({defaultMessage: "A Topic Move already in progress."}),
+        );
+        $("#topic_stream_edit_form_error").show();
+        return;
+    }
+
+    currently_topic_editing_messages.push(message_id);
+
+    const request = {
+        message_id,
+        propagate_mode: "change_all",
+        topic: new_topic_name,
+    };
+    channel.patch({
+        url: "/json/messages/" + message_id,
+        data: request,
+        success() {
+            // The main UI will update via receiving the event
+            // from server_events.js.
+            reset_modal_ui();
+        },
+        error(xhr) {
+            reset_modal_ui();
+            ui_report.error(
+                $t_html({defaultMessage: "Error renaming the topic"}),
+                xhr,
+                $("#home-error"),
+                4000,
+            );
+        },
+    });
+}

@@ -5,6 +5,7 @@ import render_all_messages_sidebar_actions from "../templates/all_messages_sideb
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
 import render_drafts_sidebar_actions from "../templates/drafts_sidebar_action.hbs";
 import render_move_topic_to_stream from "../templates/move_topic_to_stream.hbs";
+import render_rename_topic from "../templates/rename_topic_modal.hbs";
 import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
 import render_stream_sidebar_actions from "../templates/stream_sidebar_actions.hbs";
 import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs";
@@ -283,12 +284,17 @@ function build_topic_popover(opts) {
     // can only edit the name within a stream.
     const can_move_topic = settings_data.user_can_move_messages_between_streams();
 
+    const can_only_rename_topic = can_move_topic
+        ? false
+        : settings_data.user_can_edit_topic_of_any_message();
+
     const content = render_topic_sidebar_actions({
         stream_name: sub.name,
         stream_id: sub.stream_id,
         topic_name,
         topic_muted,
         can_move_topic,
+        can_only_rename_topic,
         is_realm_admin: page_params.is_admin,
         topic_is_resolved: topic_name.startsWith(message_edit.RESOLVED_TOPIC_PREFIX),
         color: sub.color,
@@ -497,6 +503,63 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
         on_click: move_topic,
         loading_spinner: true,
         post_render: move_topic_post_render,
+    });
+}
+
+function build_rename_topic_popover(e, current_stream_id, topic_name) {
+    const args = {
+        topic_name,
+        current_stream_id,
+    };
+    hide_topic_popover();
+
+    function rename_topic() {
+        function show_error_msg(msg) {
+            $("#topic_stream_edit_form_error .error-msg").text(msg);
+            $("#topic_stream_edit_form_error").show();
+        }
+
+        const old_topic_name = topic_name;
+
+        let new_topic_name = $("#new_topic_name").val();
+
+        new_topic_name = new_topic_name.trim();
+        current_stream_id = Number.parseInt(current_stream_id, 10);
+
+        if (new_topic_name.toLowerCase() === old_topic_name.toLowerCase()) {
+            dialog_widget.hide_dialog_spinner();
+            show_error_msg("Please select a different topic name");
+            return;
+        }
+
+        dialog_widget.show_dialog_spinner();
+        with_first_message_id(
+            current_stream_id,
+            old_topic_name,
+            (message_id) => {
+                if (old_topic_name.trim() === new_topic_name.trim()) {
+                    new_topic_name = undefined;
+                }
+
+                if (old_topic_name) {
+                    message_edit.rename_topic_sidebar(message_id, new_topic_name);
+                }
+            },
+            (xhr) => {
+                dialog_widget.hide_dialog_spinner();
+                show_error_msg(xhr.responseJSON.msg);
+            },
+        );
+    }
+
+    dialog_widget.launch({
+        html_heading: $t_html({defaultMessage: "Rename topic"}),
+        html_body: render_rename_topic(args),
+        html_submit_button: $t_html({defaultMessage: "Confirm"}),
+        id: "rename_topic_modal",
+        on_click: rename_topic,
+        loading_spinner: true,
+        form_id: "rename_topic_form",
     });
 }
 
@@ -817,5 +880,18 @@ export function register_topic_handlers() {
         build_move_topic_to_stream_popover(e, stream_id, topic_name);
         e.stopPropagation();
         e.preventDefault();
+    });
+
+    $("body").on("click", ".sidebar-popover-rename-topic", (e) => {
+        const topic_row = $(e.currentTarget);
+        const stream_id = Number.parseInt(topic_row.attr("data-stream-id"), 10);
+        const topic_name = topic_row.attr("data-topic-name");
+        build_rename_topic_popover(e, stream_id, topic_name);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $("body").on("click", "#topic_stream_edit_form_error .send-status-close", () => {
+        $("#topic_stream_edit_form_error").hide();
     });
 }
