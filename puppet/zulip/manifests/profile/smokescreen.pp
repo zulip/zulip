@@ -28,12 +28,6 @@ class zulip::profile::smokescreen {
     ensure  => file,
     require => Exec['compile smokescreen'],
   }
-  file { '/usr/local/bin/smokescreen':
-    ensure  => 'link',
-    target  => $bin,
-    require => File[$bin],
-    notify  => Service[supervisor],
-  }
   unless $::operatingsystem == 'Ubuntu' and $::operatingsystemrelease == '18.04' {
     # Puppet 5.5.0 and below make this always-noisy, as they spout out
     # a notify line about tidying the managed file above.  Skip
@@ -43,7 +37,7 @@ class zulip::profile::smokescreen {
       path    => '/usr/local/bin',
       recurse => 1,
       matches => 'smokescreen-*',
-      require => [File[$bin], File['/usr/local/bin/smokescreen']],
+      require => File[$bin],
     }
   }
 
