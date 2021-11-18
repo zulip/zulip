@@ -3,7 +3,7 @@
 class zulip::golang {
   $version = '1.17.3'
 
-  $dir = "/srv/golang-${version}/"
+  $dir = "/srv/zulip-golang-${version}/"
   $bin = "${dir}bin/go"
 
   zulip::sha256_tarball_to { 'golang':
