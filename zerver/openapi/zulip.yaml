@@ -7535,7 +7535,7 @@ paths:
         - name: color_scheme
           in: query
           description: |
-            Controls which [color theme](/help/night-mode) to use.
+            Controls which [color theme](/help/dark-theme) to use.
 
             - 1 - Automatic
             - 2 - Night mode
@@ -9474,7 +9474,7 @@ paths:
                           color_scheme:
                             type: integer
                             description: |
-                              Controls which [color theme](/help/night-mode) to use.
+                              Controls which [color theme](/help/dark-theme) to use.
 
                               - 1 - Automatic
                               - 2 - Night mode
@@ -11182,7 +11182,7 @@ paths:
                           color_scheme:
                             type: integer
                             description: |
-                              Controls which [color theme](/help/night-mode) to use.
+                              Controls which [color theme](/help/dark-theme) to use.
 
                               - 1 - Automatic
                               - 2 - Night mode
@@ -12079,7 +12079,7 @@ paths:
         - name: color_scheme
           in: query
           description: |
-            Controls which [color theme](/help/night-mode) to use.
+            Controls which [color theme](/help/dark-theme) to use.
 
             - 1 - Automatic
             - 2 - Night mode

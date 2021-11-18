@@ -477,6 +477,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "help/troubleshooting-desktop-notifications",
             "for/working-groups-and-communities/",
             "help/only-allow-admins-to-add-emoji",
+            "help/night-mode",
             "api/delete-stream",
             "casper/(?P<path>.+)",
             "static/(?P<path>.+)",
