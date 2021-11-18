@@ -19,7 +19,7 @@ class zulip::profile::smokescreen {
     # GOCACHE is required; nothing is written to GOPATH, but it is required to be set
     environment => ['GOCACHE=/tmp/gocache', 'GOPATH=/root/go'],
     creates     => "/usr/local/bin/smokescreen-${version}",
-    require     => [Zulip::Sha256_tarball_to['golang'], Zulip::Sha256_tarball_to['smokescreen']],
+    require     => [File[$zulip::golang::bin], Zulip::Sha256_tarball_to['smokescreen']],
   }
 
   file { '/usr/local/bin/smokescreen':
