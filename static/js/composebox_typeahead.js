@@ -393,7 +393,7 @@ function should_show_custom_query(query, items) {
 
 export const slash_commands = [
     {
-        text: $t({defaultMessage: "/dark (Toggle dark mode)"}),
+        text: $t({defaultMessage: "/dark (Toggle dark theme)"}),
         name: "dark",
         aliases: "night",
     },

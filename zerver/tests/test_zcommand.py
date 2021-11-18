@@ -34,7 +34,7 @@ class ZcommandTest(ZulipTestCase):
 
         result = self.client_post("/json/zcommand", payload)
         self.assert_json_success(result)
-        self.assertIn("still in dark mode", result.json()["msg"])
+        self.assertIn("still in dark theme", result.json()["msg"])
 
     def test_day_zcommand(self) -> None:
         self.login("hamlet")

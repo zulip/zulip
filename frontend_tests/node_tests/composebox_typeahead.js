@@ -167,7 +167,7 @@ const my_slash = {
 const dark_slash = {
     name: "dark",
     aliases: "night",
-    text: "translated: /dark (Toggle dark mode)",
+    text: "translated: /dark (Toggle dark theme)",
 };
 
 const light_slash = {
