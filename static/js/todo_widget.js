@@ -137,6 +137,44 @@ export class TaskData {
                 item.completed = !item.completed;
             },
         },
+
+        change_pos: {
+            outbound: (key_start, key_end) => {
+                const event = {
+                    type: "change_pos",
+                    key_start,
+                    key_end,
+                };
+                return event;
+            },
+
+            inbound: (sender_id, data) => {
+                const key_start = data.key_start;
+                const key_end = data.key_end;
+
+                if (typeof key_start !== "string") {
+                    blueslip.warn("todo widget: bad type for inbound task key");
+                    return;
+                }
+
+                if (typeof key_end !== "string") {
+                    blueslip.warn("todo widget: bad type for inbound task key");
+                    return;
+                }
+
+                const task_start = this.task_map.get(key_start);
+                const idx_start = task_start.idx;
+                const task_end = this.task_map.get(key_end);
+
+                task_start.idx = task_end.idx;
+                task_start.key = task_end.key;
+                task_end.idx = idx_start;
+                task_end.key = key_start;
+
+                this.task_map.set(task_start.key, task_start);
+                this.task_map.set(task_end.key, task_end);
+            },
+        },
     };
 
     handle_event(sender_id, data) {
@@ -186,6 +224,7 @@ export function activate(opts) {
     function render_results() {
         const widget_data = task_data.get_widget_data();
         const html = render_widgets_todo_widget_tasks(widget_data);
+        let dragged;
         elem.find("ul.todo-widget").html(html);
         elem.find(".widget-error").text("");
 
@@ -194,6 +233,36 @@ export function activate(opts) {
             const key = $(e.target).attr("data-key");
 
             const data = task_data.handle.strike.outbound(key);
+            callback(data);
+        });
+
+        elem.find(".task-item").on("dragstart", (e) => {
+            dragged = $(e.target).attr("data-key");
+            e.target.style.opacity = 0.5;
+        });
+
+        elem.find(".task-item").on("dragend", (e) => {
+            e.target.style.opacity = "";
+        });
+
+        elem.find(".dropzone").on("dragover", (e) => {
+            e.preventDefault();
+        });
+
+        elem.find(".dropzone").on("dragenter", (e) => {
+            e.target.style.background = "hsl(0, 0%, 64%, 0.65)";
+        });
+
+        elem.find(".dropzone").on("dragleave", (e) => {
+            e.target.style.background = "";
+        });
+
+        elem.find(".dropzone").on("drop", (e) => {
+            e.target.style.background = "";
+            const data = task_data.handle.change_pos.outbound(
+                dragged,
+                $(e.target).attr("data-key"),
+            );
             callback(data);
         });
     }

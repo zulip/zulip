@@ -525,6 +525,17 @@ def validate_todo_data(todo_data: object) -> None:
         checker("todo data", todo_data)
         return
 
+    if todo_data["type"] == "change_pos":
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("key_start", check_string),
+                ("key_end", check_string),
+            ]
+        )
+        checker("todo data", todo_data)
+        return
+
     raise ValidationError(f"Unknown type for todo data: {todo_data['type']}")
 
 
