@@ -10,6 +10,7 @@ export const emojis_by_name = new Map();
 
 export const all_realm_emojis = new Map();
 export const active_realm_emojis = new Map();
+export const deactivated_emoji_name_to_code = new Map();
 
 const default_emoji_aliases = new Map();
 
@@ -169,8 +170,16 @@ export function update_emojis(realm_emojis) {
             });
         }
     }
-    // Add the Zulip emoji to the realm emojis list
+
+    // Add the special Zulip emoji as though it were a realm emoji.
+
+    // The Zulip emoji is the only emoji that uses a string ("zulip")
+    // as its ID. All other emoji use numeric IDs. This special case
+    // is confusing; ideally we'd convert the Zulip emoji to be
+    // implemented using the RealmEmoji infrastructure.
     all_realm_emojis.set("zulip", zulip_emoji);
+
+    // here "zulip" is an emoji name, which is fine.
     active_realm_emojis.set("zulip", zulip_emoji);
 
     build_emoji_data(active_realm_emojis);
