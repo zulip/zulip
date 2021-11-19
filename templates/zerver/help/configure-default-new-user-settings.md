@@ -14,7 +14,7 @@ preference settings, including the following:
 
 * Display settings, including:
     * Default view ([Recent topics](/help/recent-topics) vs. [All messages](/help/reading-strategies#all-messages))
-    * [Light mode vs. dark theme](/help/dark-theme)
+    * [Light theme vs. dark theme](/help/dark-theme)
     * [Emoji theme](/help/emoji-and-emoticons#change-your-emoji-set)
 * Notification settings, including:
     * [What types of messages trigger notifications][default-notifications]
