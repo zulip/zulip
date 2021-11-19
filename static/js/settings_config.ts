@@ -227,6 +227,29 @@ export const wildcard_mention_policy_values = {
     },
 };
 
+export const create_web_public_stream_policy_values = {
+    by_moderators_only: {
+        order: 1,
+        code: 4,
+        description: $t({defaultMessage: "Admins and moderators"}),
+    },
+    by_admins_only: {
+        order: 2,
+        code: 2,
+        description: $t({defaultMessage: "Admins only"}),
+    },
+    by_owners_only: {
+        order: 3,
+        code: 7,
+        description: $t({defaultMessage: "Owners only"}),
+    },
+    nobody: {
+        order: 4,
+        code: 6,
+        description: $t({defaultMessage: "Nobody"}),
+    },
+};
+
 export const common_message_policy_values = {
     by_everyone: {
         order: 1,
