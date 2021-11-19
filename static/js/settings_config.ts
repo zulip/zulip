@@ -56,7 +56,7 @@ export const color_scheme_values = {
     },
     day: {
         code: 3,
-        description: $t({defaultMessage: "Day mode"}),
+        description: $t({defaultMessage: "Light theme"}),
     },
 };
 

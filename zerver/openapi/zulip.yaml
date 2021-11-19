@@ -7539,7 +7539,7 @@ paths:
 
             - 1 - Automatic
             - 2 - Dark theme
-            - 3 - Day mode
+            - 3 - Light theme
 
             Automatic detection is implementing using the standard `prefers-color-scheme`
             media query.
@@ -9478,7 +9478,7 @@ paths:
 
                               - 1 - Automatic
                               - 2 - Dark theme
-                              - 3 - Day mode
+                              - 3 - Light theme
 
                               Automatic detection is implementing using the standard `prefers-color-scheme`
                               media query.
@@ -11186,7 +11186,7 @@ paths:
 
                               - 1 - Automatic
                               - 2 - Dark theme
-                              - 3 - Day mode
+                              - 3 - Light theme
 
                               Automatic detection is implementing using the standard `prefers-color-scheme`
                               media query.
@@ -12083,7 +12083,7 @@ paths:
 
             - 1 - Automatic
             - 2 - Dark theme
-            - 3 - Day mode
+            - 3 - Light theme
 
             Automatic detection is implementing using the standard `prefers-color-scheme`
             media query.
