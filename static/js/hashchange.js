@@ -349,17 +349,6 @@ function hashchanged(from_reload, e) {
     return ret;
 }
 
-export function replace_hash(hash) {
-    if (!window.history.replaceState) {
-        // We may have strange behavior with the back button.
-        blueslip.warn("browser does not support replaceState");
-        return;
-    }
-
-    const url = get_full_url(hash);
-    window.history.replaceState(null, null, url);
-}
-
 export function initialize() {
     $(window).on("hashchange", (e) => {
         hashchanged(false, e.originalEvent);
