@@ -497,6 +497,40 @@ The key configuration options are, for the `/json/events` and
    with multiple IPs for your Zulip machine; sometimes this happens with
    IPv6 configuration).
 
+## PostgreSQL warm standby
+
+Zulip's configuration allows for [warm standby database
+replicas][warm-standby] as a disaster recovery solution; see the
+linked PostgreSQL documentation for details on this type of
+deployment. Zulip's configuration leverages `wal-g`, our [database
+backup solution][wal-g], and thus requires that it be configured for
+the primary and all secondary warm standby replicas.
+
+The primary should have log-shipping enabled, with:
+
+```ini
+[postgresql]
+replication = yes
+```
+
+Warm spare replicas should have log-shipping enabled, and their
+primary replica and replication username configured:
+
+```ini
+[postgresql]
+replication = yes
+replication_user = replicator
+replication_primary = hostname-of-primary.example.com
+```
+
+The `postgres` user on the replica will need to be able to
+authenticate as the `replicator` user, which may require further
+configuration of `pg_hba.conf` and client certificates on the
+replica.
+
+[warm-standby]: https://www.postgresql.org/docs/current/warm-standby.html
+[wal-g]: ../production/export-and-import.html#backup-details
+
 ## System and deployment configuration
 
 The file `/etc/zulip/zulip.conf` is used to configure properties of
@@ -636,9 +670,23 @@ setting](https://www.postgresql.org/docs/current/runtime-config-query.html#GUC-R
 
 #### `replication`
 
-Set to non-empty to enable replication to enable [streaming
-replication between PostgreSQL
-servers](../production/export-and-import.html#postgresql-streaming-replication).
+Set to non-empty to enable replication to enable [log shipping
+replication between PostgreSQL servers](#postgresql-warm-standby).
+This should be enabled on the primary, as well as any replicas, and
+further requires configuration of
+[wal-g](../production/export-and-import.html#backup-details).
+
+#### `replication_primary`
+
+On the [warm standby replicas](#postgresql-warm-standby), set to the
+hostname of the primary PostgreSQL server that streaming replication
+should be done from.
+
+#### `replication_user`
+
+On the [warm standby replicas](#postgresql-warm-standby), set to the
+username that the host should authenticate to the primary PostgreSQL
+server as, for streaming replication.
 
 #### `ssl_ca_file`
 
