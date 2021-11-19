@@ -173,7 +173,7 @@ const dark_slash = {
 const light_slash = {
     name: "light",
     aliases: "day",
-    text: "translated: /light (Toggle light mode)",
+    text: "translated: /light (Toggle light theme)",
 };
 
 const sweden_stream = {
