@@ -1,6 +1,6 @@
 # Dark theme
 
-Zulip provides both a light theme and a night theme, which is great
+Zulip provides both a light theme and a dark theme, which is great
 for working in a dark space.
 
 ## Manage color theme

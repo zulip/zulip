@@ -3659,7 +3659,7 @@ paths:
                                     night_logo_source:
                                       type: string
                                       description: |
-                                        String indicating whether the organization's night theme
+                                        String indicating whether the organization's dark theme
                                         [profile wide logo](/help/create-your-organization-profile) was uploaded
                                         by a user or is the default. Useful for UI allowing editing the
                                         organization's wide logo.
@@ -3669,7 +3669,7 @@ paths:
                                     night_logo_url:
                                       type: string
                                       description: |
-                                        The URL of the organization's night theme wide-format logo configured in the
+                                        The URL of the organization's dark theme wide-format logo configured in the
                                         [organization profile](/help/create-your-organization-profile).
                                     notifications_stream_id:
                                       type: integer
@@ -10792,14 +10792,14 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The URL of the organization's night theme wide-format logo configured in the
+                          The URL of the organization's dark theme wide-format logo configured in the
                           [organization profile](/help/create-your-organization-profile).
                       realm_night_logo_source:
                         type: string
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          String indicating whether the organization's night theme
+                          String indicating whether the organization's dark theme
                           [profile wide logo](/help/create-your-organization-profile) was uploaded
                           by a user or is the default. Useful for UI allowing editing the
                           organization's wide logo.
