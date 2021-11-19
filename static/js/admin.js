@@ -158,6 +158,8 @@ export function build_page() {
         email_notifications_batching_period_values:
             settings_config.email_notifications_batching_period_values,
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
+        create_web_public_stream_policy_values:
+            settings_config.create_web_public_stream_policy_values,
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {

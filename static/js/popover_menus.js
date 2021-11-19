@@ -44,7 +44,8 @@ export function initialize() {
                 render_left_sidebar_stream_setting_popover({
                     can_create_streams:
                         settings_data.user_can_create_private_streams() ||
-                        settings_data.user_can_create_public_streams(),
+                        settings_data.user_can_create_public_streams() ||
+                        settings_data.user_can_create_web_public_streams(),
                 }),
             );
             left_sidebar_stream_setting_popover_displayed = true;

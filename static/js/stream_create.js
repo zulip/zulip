@@ -301,6 +301,7 @@ function clear_error_display() {
 export function show_new_stream_modal() {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
+    stream_settings_ui.hide_or_disable_stream_privacy_options_if_required($("#stream-creation"));
 
     const add_people_container = $("#people_to_add");
     add_people_container.html(

@@ -607,7 +607,8 @@ export function setup_page(callback) {
         const template_data = {
             can_create_streams:
                 settings_data.user_can_create_private_streams() ||
-                settings_data.user_can_create_public_streams(),
+                settings_data.user_can_create_public_streams() ||
+                settings_data.user_can_create_web_public_streams(),
             hide_all_streams: !should_list_all_streams(),
             max_name_length: page_params.max_stream_name_length,
             max_description_length: page_params.max_stream_description_length,
@@ -651,6 +652,7 @@ export function setup_page(callback) {
             if (
                 settings_data.user_can_create_private_streams() ||
                 settings_data.user_can_create_public_streams() ||
+                settings_data.user_can_create_web_public_streams() ||
                 page_params.realm_is_zephyr_mirror_realm
             ) {
                 open_create_stream();
@@ -983,6 +985,29 @@ export function sub_or_unsub(sub, stream_row) {
         ajaxUnsubscribe(sub, stream_row);
     } else {
         ajaxSubscribe(sub.name, sub.color, stream_row);
+    }
+}
+
+export function hide_or_disable_stream_privacy_options_if_required(container) {
+    if (!settings_data.user_can_create_web_public_streams()) {
+        const web_public_stream_elem = container.find(
+            `input[value='${CSS.escape(
+                stream_data.stream_privacy_policy_values.web_public.code,
+            )}']`,
+        );
+        if (!web_public_stream_elem.is(":checked")) {
+            if (
+                !page_params.server_web_public_streams_enabled ||
+                !page_params.realm_enable_spectator_access
+            ) {
+                web_public_stream_elem.closest(".radio-input-parent").hide();
+                container
+                    .find(".stream-privacy-values .radio-input-parent:visible:last")
+                    .css("border-bottom", "none");
+            } else {
+                web_public_stream_elem.prop("disabled", true);
+            }
+        }
     }
 }
 

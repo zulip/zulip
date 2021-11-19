@@ -685,6 +685,9 @@ test("set_up", ({override, mock_template}) => {
     $("#allowed_domains_label").set_parent($.create("<stub-allowed-domain-label-parent>"));
     const waiting_period_parent_elem = $.create("waiting-period-parent-stub");
     $("#id_realm_waiting_period_threshold").set_parent(waiting_period_parent_elem);
+    $("#id_realm_create_web_public_stream_policy").set_parent(
+        $.create("<stub-create-web-public-stream-policy-parent>"),
+    );
 
     // TEST set_up() here, but this mostly just allows us to
     // get access to the click handlers.

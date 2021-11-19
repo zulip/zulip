@@ -794,6 +794,11 @@ export function initialize() {
                     change_stream_message_retention_days_block_display_property(dropdown_value);
                 });
             },
+            on_show: () => {
+                stream_settings_ui.hide_or_disable_stream_privacy_options_if_required(
+                    $("#stream_privacy_modal"),
+                );
+            },
         });
         e.preventDefault();
         e.stopPropagation();
