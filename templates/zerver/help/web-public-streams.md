@@ -17,38 +17,29 @@ Zulip web application without needing to create an account.
 Users who wish to post content will need to create an account in order
 to do so.
 
-Web public streams are decorated in the UI by a globe (<i class="fa
-fa-globe"></i>) icon, just as private streams are decorated with a
-lock (<i class="fa fa-lock"></i>) icon.
-
-Organizations publishing web public streams are expected to ensure
-that someone on their moderation team is reading all web public
-streams in the organization. See [Managing abuse](#managing-abuse) on
-this page and the main [managing open
-organizations](/help/managing-open-organizations) article for relevant
-background.
+Web public streams are indicated with a globe (<i class="fa
+fa-globe"></i>) icon.
 
 ## Enabling web public streams in your organization
 
 Enabling web public streams makes it possible to create web public
 streams in your organization. It also makes certain information about
 your organization accessible to anyone on the Internet via the Zulip
-API (Details below).
+API (details below).
 
-To help protect closed organizations from accidentally enabling web
-public streams, creating web public streams is disabled by default for
-all organizations.
+To help protect closed organizations, creating web public streams is
+disabled by default for all organizations.
 
 ### Information that can be accessed via API when web public streams are enabled
 
 The following information about your organization can be accessed via the Zulip
-API if web public streams are enabled and at least one web public
-stream has been created.
+API if web public streams are enabled and there is currently at least one web
+public stream.
 
 * The organization's settings (linkifiers, custom emoji, permissions
-  settings, and other)
-* Names of users.
-* Names of user groups and their membership.
+  settings, etc.)
+* Names of users
+* Names of user groups and their membership
 * Names and descriptions of streams
 
 Enabling web public streams is thus primarily recommended for open
@@ -56,10 +47,11 @@ communities such as open-source projects and research communities.
 
 ### Enable or disable web public streams
 
-Note that before the below checkbox will be available, self-hosted
-Zulip servers must enable support for web public streams by setting
-`WEB_PUBLIC_STREAMS_ENABLED = True` in their [server
-settings](https://zulip.readthedocs.io/en/latest/production/settings.html).
+!!! warn ""
+    Self-hosted Zulip servers must enable support for web public streams by setting
+    `WEB_PUBLIC_STREAMS_ENABLED = True` in their [server
+    settings](https://zulip.readthedocs.io/en/latest/production/settings.html)
+    prior to proceeding.
 
 {start_tabs}
 
@@ -84,9 +76,9 @@ settings](https://zulip.readthedocs.io/en/latest/production/settings.html).
 
 {end_tabs}
 
-Note that only privileged accounts can be given permission to create
-web public streams.  See [Managing abuse](#managing-abuse) for details
-on this restriction.
+!!! tip ""
+    See [Managing abuse](#managing-abuse) to learn why only
+    trusted roles like Moderators and Administrators can create web public streams.
 
 ## Creating a web public stream
 
@@ -103,7 +95,7 @@ public** option for **Who can access the stream?**.
 
 Logged out visitors can browse all content in web public streams,
 including using Zulip's [built-in search](/help/search-for-messages)
-to find historical conversations. Logged out visitors can only access
+to find conversations. Logged out visitors can only access
 the web public streams in your organization, and the topics, messages
 (including uploaded files) and emoji reactions in those streams.
 
@@ -122,14 +114,12 @@ detailed below.
 
 ### Information about the organization
 
-* The organization settings and stream settings menus are not
-  available to logged out visitors. However, the organization's
-  settings configuration (E.g. Linkifiers or the "Organization
-  permissions" settings) are required for the web application to load,
-  and thus [may be accessed via the Zulip API][info-via-api].
+* The **Organization settings** and **Stream settings** menus are not
+  available to logged out visitors. However, organization settings data is
+  required for Zulip to load, and may thus be [accessed via the Zulip API][info-via-api].
 * Logged out visitors cannot view [organization statistics](/help/analytics).
 
-[info-via-api]: /help/web public-streams#information-that-can-be-accessed-via-api-when-web public-streams-are-enabled
+[info-via-api]: /help/web-public-streams#information-that-can-be-accessed-via-api-when-web-public-streams-are-enabled
 
 ### Information about users
 
@@ -161,11 +151,11 @@ but not to logged out visitors:
 
 ## Managing abuse
 
-The unfortunate reality of the modern Internet is that any service
-that allows hosting files visible to the Internet is a target for bad
+The unfortunate reality is that any service
+that allows hosting files visible to the Internet is a potential target for bad
 actors looking for places to distribute illegal or malicious content.
 
-In order to protect our open communities from moderation work fighting
+In order to protect Zulip organizations from
 bad actors, web public streams have a few limitations designed to make
 Zulip an inconvenient target:
 
@@ -173,19 +163,23 @@ Zulip an inconvenient target:
   to create web public streams. This is intended to make it hard for
   an attacker to host malicious content in an unadvertised web public
   stream in a legitimate organization.
-* Rate limits are present for unauthenticated access to uploaded
-  files, including avatars and custom emoji.
+* There are rate limits for unauthenticated access to uploaded
+  files, including viewing avatars and custom emoji.
 
-Our aim is to tune these anti-abuse features such that they don't
-interfere with legitimate use. We probably haven't done so perfectly,
-so please [contact us](/help/contact-support) if your organization
-encounters any problems caused by any of these anti-abuse features.
+Our aim is to tune anti-abuse protections so that they don't
+interfere with legitimate use. Please [contact us](/help/contact-support)
+if your organization encounters any problems with legitimate activity caused
+these anti-abuse features.
+
+As a reminder, Zulip Cloud organizations are expected to
+[moderate content](/help/moderating-open-organizations) to ensure compliance
+with Zulip's Rules of Use.
 
 ## Caveats
 
 The web public visitors feature is not yet integrated with Zulip's
-live-update system. As a result, new messages will not be visible in
-their browser window until a page reload.
+live-update system. As a result, a visitor will not see messages that are sent
+while Zulip is open until they reload the browser window.
 
 ## Related articles
 
