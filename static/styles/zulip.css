@@ -1046,7 +1046,7 @@ td.pointer {
     position: relative;
     text-decoration: none;
 
-    .invite-stream-icon {
+    .recipient-row-stream-icon {
         font-size: 12px;
         line-height: 17px;
     }
