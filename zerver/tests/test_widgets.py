@@ -362,6 +362,15 @@ class WidgetContentTestCase(ZulipTestCase):
         assert_error('{"type": "strike"}', "key is missing")
         assert_error('{"type": "strike", "key": 999}', 'data["key"] is not a string')
 
+        assert_error(
+            '{"type": "change_pos", "key_start": "2,7"}',
+            "key_end key is missing from todo data",
+        )
+        assert_error(
+            '{"type": "change_pos", "key_start": "2,7", "key_end": 2}',
+            'data["key_end"] is not a string',
+        )
+
         def assert_success(data: Dict[str, object]) -> None:
             content = orjson.dumps(data).decode()
             result = post_submessage(content)
@@ -369,6 +378,7 @@ class WidgetContentTestCase(ZulipTestCase):
 
         assert_success(dict(type="new_task", key=7, task="eat", desc="", completed=False))
         assert_success(dict(type="strike", key="5,9"))
+        assert_success(dict(type="change_pos", key_start="3,7", key_end="2,7"))
 
     def test_get_widget_type(self) -> None:
         sender = self.example_user("cordelia")
