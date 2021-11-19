@@ -11100,6 +11100,16 @@ paths:
                           such that the web app will display to the current user a prominent warning.
 
                           **Changes**: New in Zulip 5.0 (feature level 74).
+                      server_web_public_streams_enabled:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether web public streams are enabled in the server. Similar topic_name
+                          `realm_enable_spectator_access` but based on the `WEB_PUBLIC_STREAMS_ENABLED`
+                          Zulip server level setting.
+
+                          **Changes**: New in Zulip 5.0 (feature level 110).
                       event_queue_longpoll_timeout_seconds:
                         type: integer
                         description: |

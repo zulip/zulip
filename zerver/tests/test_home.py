@@ -190,6 +190,7 @@ class HomeTest(ZulipTestCase):
         "server_name_changes_disabled",
         "server_needs_upgrade",
         "server_timestamp",
+        "server_web_public_streams_enabled",
         "settings_send_digest_emails",
         "show_billing",
         "show_plans",
