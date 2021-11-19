@@ -195,8 +195,7 @@ li.show-more-topics {
 
 #add-stream-link {
     text-decoration: none;
-    margin-left: 10px;
-    margin-top: 5px;
+    margin: 5px auto 5.5px 10px;
 
     i {
         min-width: 19px;
