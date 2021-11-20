@@ -218,6 +218,32 @@ export function get_emoji_details_by_name(emoji_name) {
     return emoji_info;
 }
 
+export function get_emoji_details_for_rendering(opts) {
+    if (!opts.emoji_name || !opts.emoji_code || !opts.reaction_type) {
+        throw new Error("Invalid params.");
+    }
+
+    if (opts.reaction_type !== "unicode_emoji") {
+        const realm_emoji = all_realm_emojis.get(opts.emoji_code);
+        if (!realm_emoji) {
+            throw new Error(`Cannot find realm emoji for code '${opts.emoji_code}'.`);
+        }
+        return {
+            url: realm_emoji.emoji_url,
+            still_url: realm_emoji.still_url,
+            emoji_name: opts.emoji_name,
+            emoji_code: opts.emoji_code,
+            reaction_type: opts.reaction_type,
+        };
+    }
+    // else
+    return {
+        emoji_name: opts.emoji_name,
+        emoji_code: opts.emoji_code,
+        reaction_type: opts.reaction_type,
+    };
+}
+
 export function initialize(params) {
     emoji_codes = params.emoji_codes;
 
