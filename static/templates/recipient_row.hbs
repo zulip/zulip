@@ -11,6 +11,9 @@
                 {{#if invite_only}}
                 <i class="fa fa-lock recipient-row-stream-icon" title="{{t 'This is a private stream' }}" aria-label="{{t 'This is a private stream' }}"></i>
                 {{/if}}
+                {{#if is_web_public}}
+                <i class="fa fa-globe recipient-row-stream-icon" title="{{t 'This is a web public stream' }}" aria-label="{{t 'This is a web public stream' }}"></i>
+                {{/if}}
                 {{display_recipient}}</a>
 
             {{! hidden narrow icon for copy-pasting }}
