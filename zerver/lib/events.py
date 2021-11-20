@@ -143,7 +143,9 @@ def fetch_initial_state_data(
     if want("alert_words"):
         state["alert_words"] = [] if user_profile is None else user_alert_words(user_profile)
 
-    if want("custom_profile_fields"):
+    # Spectators can't access full user profiles or personal settings,
+    # so there's no need to send custom profile field data.
+    if want("custom_profile_fields") and user_profile is not None:
         fields = custom_profile_fields_for_realm(realm.id)
         state["custom_profile_fields"] = [f.as_dict() for f in fields]
         state["custom_profile_field_types"] = {
@@ -392,6 +394,8 @@ def fetch_initial_state_data(
             user_profile,
             client_gravatar=client_gravatar,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
+            # Don't send custom profile field values to spectators.
+            include_custom_profile_fields=user_profile is not None,
         )
         state["cross_realm_bots"] = list(get_cross_realm_dicts())
 
