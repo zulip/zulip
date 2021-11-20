@@ -1,6 +1,5 @@
 from datetime import timedelta
 
-import orjson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
@@ -13,7 +12,6 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.export import get_realm_exports_serialized
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.response import json_success
-from zerver.lib.utils import assert_is_not_none
 from zerver.models import RealmAuditLog, UserProfile
 
 
@@ -91,8 +89,7 @@ def delete_realm_export(request: HttpRequest, user: UserProfile, export_id: int)
     except RealmAuditLog.DoesNotExist:
         raise JsonableError(_("Invalid data export ID"))
 
-    export_data = orjson.loads(assert_is_not_none(audit_log_entry.extra_data))
-    if "deleted_timestamp" in export_data:
-        raise JsonableError(_("Export already deleted"))
+    if audit_log_entry.extra_data is None:
+        raise JsonableError(_("Export cannot be deleted until complete"))
     do_delete_realm_export(user, audit_log_entry)
     return json_success()
