@@ -240,12 +240,19 @@ test("unknown realm emojis (add)", () => {
 });
 
 test("unknown realm emojis (insert)", () => {
-    blueslip.expect("error", "Cannot find/insert realm emoji for code 'bogus'.");
-    reactions.view.insert_new_reaction({
-        reaction_type: "realm_emoji",
-        emoji_code: "bogus",
-        user_id: bob.user_id,
-    });
+    assert.throws(
+        () =>
+            reactions.view.insert_new_reaction({
+                reaction_type: "realm_emoji",
+                emoji_name: "fake_emoji",
+                emoji_code: "bogus",
+                user_id: bob.user_id,
+            }),
+        {
+            name: "Error",
+            message: "Cannot find realm emoji for code 'bogus'.",
+        },
+    );
 });
 
 test("sending", ({override}) => {
@@ -600,6 +607,8 @@ test("view.insert_new_reaction (me w/unicode emoji)", ({override, mock_template}
             class: "message_reaction reacted",
             message_id: opts.message_id,
             label: "translated: You (click to remove) reacted with :8ball:",
+            reaction_type: opts.reaction_type,
+            is_realm_emoji: false,
         });
         return "<new reaction html>";
     });
@@ -647,6 +656,8 @@ test("view.insert_new_reaction (them w/zulip emoji)", ({override, mock_template}
             class: "message_reaction",
             message_id: opts.message_id,
             label: "translated: Bob van Roberts reacted with :zulip:",
+            still_url: undefined,
+            reaction_type: opts.reaction_type,
         });
         return "<new reaction html>";
     });
