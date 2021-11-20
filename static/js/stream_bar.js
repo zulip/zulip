@@ -3,7 +3,7 @@ import $ from "jquery";
 import * as color_class from "./color_class";
 import * as stream_data from "./stream_data";
 
-function update_lock_icon_for_stream(stream_name) {
+function update_compose_stream_icon(stream_name) {
     const icon = $("#compose-lock-icon");
     const streamfield = $("#stream_message_recipient_stream");
     if (stream_data.get_invite_only(stream_name)) {
@@ -25,7 +25,7 @@ export function decorate(stream_name, element, is_compose) {
     }
     const color = stream_data.get_color(stream_name);
     if (is_compose) {
-        update_lock_icon_for_stream(stream_name);
+        update_compose_stream_icon(stream_name);
     }
     element
         .css("background-color", color)
