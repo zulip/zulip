@@ -4,14 +4,21 @@ import * as color_class from "./color_class";
 import * as stream_data from "./stream_data";
 
 function update_compose_stream_icon(stream_name) {
-    const icon = $("#compose-lock-icon");
     const streamfield = $("#stream_message_recipient_stream");
+    const globe_icon = $("#compose-globe-icon");
+    const lock_icon = $("#compose-lock-icon");
+
+    // Reset state
+    globe_icon.hide();
+    lock_icon.hide();
+    streamfield.removeClass("lock-padding");
+
     if (stream_data.get_invite_only(stream_name)) {
-        icon.show();
+        lock_icon.show();
         streamfield.addClass("lock-padding");
-    } else {
-        icon.hide();
-        streamfield.removeClass("lock-padding");
+    } else if (stream_data.is_web_public_by_stream_name(stream_name)) {
+        globe_icon.show();
+        streamfield.addClass("lock-padding");
     }
 }
 

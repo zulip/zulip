@@ -119,6 +119,9 @@ test("basics", () => {
         "invite-only-public-history",
     );
     assert.equal(stream_data.get_stream_privacy_policy(web_public_stream.stream_id), "web-public");
+    assert.ok(stream_data.is_web_public_by_stream_name(web_public_stream.name));
+    assert.ok(!stream_data.is_web_public_by_stream_name(social.name));
+    assert.ok(!stream_data.is_web_public_by_stream_name("unknown"));
 
     assert.ok(stream_data.get_invite_only("social"));
     assert.ok(!stream_data.get_invite_only("unknown"));

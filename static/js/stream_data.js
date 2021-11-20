@@ -581,6 +581,14 @@ export function get_invite_only(stream_name) {
     return sub.invite_only;
 }
 
+export function is_web_public_by_stream_name(stream_name) {
+    const sub = get_sub(stream_name);
+    if (sub === undefined) {
+        return false;
+    }
+    return sub.is_web_public;
+}
+
 export function set_realm_default_streams(realm_default_streams) {
     default_stream_ids.clear();
 

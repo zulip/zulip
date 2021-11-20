@@ -128,10 +128,17 @@
         font-weight: 600;
     }
 
-    #compose-lock-icon {
+    #compose-lock-icon,
+    #compose-globe-icon {
         position: relative;
         left: 5px;
         width: 0;
+    }
+
+    #compose-globe-icon {
+        top: 1px;
+        left: 4.5px;
+        padding-right: 2px;
     }
 
     .message_header {
