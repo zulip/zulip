@@ -71,6 +71,7 @@ def handle_checkout_session_completed_event(
 
     stripe_setup_intent = stripe.SetupIntent.retrieve(stripe_session.setup_intent)
     stripe_customer = stripe.Customer.retrieve(stripe_setup_intent.customer)
+    assert session.customer.realm is not None
     user = get_user_by_delivery_email(stripe_customer.email, session.customer.realm)
     payment_method = stripe_setup_intent.payment_method
 
@@ -116,6 +117,7 @@ def handle_payment_intent_succeeded_event(
     payment_intent.status = PaymentIntent.SUCCEEDED
     payment_intent.save()
     metadata = stripe_payment_intent.metadata
+    assert payment_intent.customer.realm is not None
     user = get_user_by_delivery_email(metadata["user_email"], payment_intent.customer.realm)
 
     description = ""
