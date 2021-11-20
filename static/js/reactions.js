@@ -507,27 +507,15 @@ export function set_clean_reactions(message) {
 }
 
 export function add_clean_reaction(opts) {
-    const r = {};
+    const r = emoji.get_emoji_details_for_rendering(opts);
 
-    r.reaction_type = opts.reaction_type;
-    r.emoji_name = opts.emoji_name;
-    r.emoji_code = opts.emoji_code;
     r.local_id = opts.local_id;
 
     r.user_ids = opts.user_ids;
     update_user_fields(r);
 
     r.emoji_alt_code = user_settings.emojiset === "text";
-
-    if (r.reaction_type !== "unicode_emoji") {
-        r.is_realm_emoji = true;
-        const emoji_info = emoji.all_realm_emojis.get(r.emoji_code);
-        if (!emoji_info) {
-            blueslip.error(`Cannot find/add realm emoji for code '${r.emoji_code}'.`);
-            return;
-        }
-        r.url = emoji_info.emoji_url;
-    }
+    r.is_realm_emoji = r.reaction_type === "realm_emoji" || r.reaction_type === "zulip_extra_emoji";
 
     opts.message.clean_reactions.set(opts.local_id, r);
 }
