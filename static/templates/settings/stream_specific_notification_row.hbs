@@ -1,4 +1,4 @@
-<tr class="stream-row" data-stream-id="{{stream.stream_id}}">
+<tr class="stream-row {{#if muted}}control-label-disabled{{/if}}" data-stream-id="{{stream.stream_id}}">
     <td>
         <span id="stream_privacy_swatch_{{stream.stream_id}}" class="stream-privacy filter-icon">
             {{> ../stream_privacy
@@ -6,12 +6,16 @@
               is_web_public=stream.is_web_public }}
         </span>
         {{stream.stream_name}}
+        <div class="fa fa-bell-slash-o unmute_stream" data-tippy-content="{{t 'Unmute' }}"
+          {{#unless muted}}style="display: none;"{{/unless}}></div>
     </td>
     {{#each stream_specific_notification_settings}}
         {{> notification_settings_checkboxes
           setting_name=this
           prefix=(lookup ../stream "stream_id")
           is_checked=(lookup ../stream this)
-          is_disabled=(lookup ../is_disabled this) }}
+          is_disabled=(lookup ../is_disabled this)
+          is_muted=../muted
+          }}
     {{/each}}
 </tr>
