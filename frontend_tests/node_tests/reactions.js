@@ -80,12 +80,6 @@ const emoji_params = {
             source_url: "/url/for/992",
             deactivated: true,
         },
-        zulip: {
-            id: "zulip",
-            name: "zulip",
-            source_url: "/url/for/zulip",
-            deactivated: false,
-        },
     },
     emoji_codes,
 };
@@ -621,14 +615,12 @@ test("view.insert_new_reaction (me w/unicode emoji)", ({override, mock_template}
 });
 
 test("view.insert_new_reaction (them w/zulip emoji)", ({override, mock_template}) => {
-    const zulip_emoji = emoji_params.realm_emoji.zulip;
     const opts = {
         message_id: 502,
         reaction_type: "realm_emoji",
         emoji_name: "zulip",
-        emoji_code: zulip_emoji.id,
+        emoji_code: "zulip",
         user_id: bob.user_id,
-        source_url: zulip_emoji.source_url,
     };
 
     const message_reactions = $.create("our-reactions");
