@@ -5,6 +5,7 @@ import * as message_util from "./message_util";
 import * as message_viewport from "./message_viewport";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
+import * as settings_notifications from "./settings_notifications";
 import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
 
@@ -58,6 +59,7 @@ export function update_is_muted(sub, value) {
         }
     }, 0);
 
+    settings_notifications.update_muted_stream_state(sub);
     stream_edit.update_muting_rendering(sub);
     stream_list.set_in_home_view(sub.stream_id, !sub.is_muted);
 }

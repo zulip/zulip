@@ -522,6 +522,16 @@ input[type="checkbox"] {
     }
 }
 
+#stream-specific-notify-table .unmute_stream {
+    position: relative;
+    left: 3px;
+
+    &:hover {
+        color: hsl(0, 0%, 20%);
+        cursor: pointer;
+    }
+}
+
 .organization-settings-parent > div:first-of-type {
     margin-top: 10px;
 }
@@ -630,6 +640,10 @@ input[type="checkbox"] {
             .stream-privacy span.hashtag,
             .filter-icon i {
                 padding-right: 0;
+            }
+
+            label {
+                cursor: default;
             }
         }
 

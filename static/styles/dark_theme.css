@@ -1211,6 +1211,12 @@ body.dark-theme {
     #id_realm_enable_spectator_access_label a {
         color: hsl(236, 33%, 90%);
     }
+
+    #stream-specific-notify-table .unmute_stream {
+        &:hover {
+            color: hsl(0, 0%, 100%);
+        }
+    }
 }
 
 @supports (-moz-appearance: none) {

@@ -380,6 +380,12 @@ export function subscribed_stream_ids() {
     return subscribed_subs().map((sub) => sub.stream_id);
 }
 
+export function muted_stream_ids() {
+    return subscribed_subs()
+        .filter((sub) => sub.is_muted)
+        .map((sub) => sub.stream_id);
+}
+
 export function get_subscribed_streams_for_user(user_id) {
     // Note that we only have access to subscribers of some streams
     // depending on our role.

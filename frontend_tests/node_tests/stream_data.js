@@ -693,6 +693,52 @@ test("is_notifications_stream_muted", () => {
     assert.ok(stream_data.is_notifications_stream_muted());
 });
 
+test("muted_stream_ids", () => {
+    const denmark = {
+        subscribed: true,
+        color: "blue",
+        name: "Denmark",
+        stream_id: 1,
+        is_muted: true,
+        invite_only: true,
+        history_public_to_subscribers: true,
+    };
+    const social = {
+        subscribed: true,
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        is_muted: false,
+        invite_only: true,
+        history_public_to_subscribers: false,
+        stream_post_policy: stream_data.stream_post_policy_values.admins.code,
+    };
+    const test = {
+        subscribed: true,
+        color: "yellow",
+        name: "test",
+        stream_id: 3,
+        is_muted: true,
+        invite_only: false,
+    };
+    const web_public_stream = {
+        subscribed: true,
+        color: "yellow",
+        name: "web_public_stream",
+        stream_id: 4,
+        is_muted: false,
+        invite_only: false,
+        history_public_to_subscribers: true,
+        is_web_public: true,
+    };
+    stream_data.add_sub(denmark);
+    stream_data.add_sub(social);
+    stream_data.add_sub(test);
+    stream_data.add_sub(web_public_stream);
+
+    assert.deepEqual(stream_data.muted_stream_ids(), [1, 3]);
+});
+
 test("realm_has_notifications_stream", () => {
     page_params.realm_notifications_stream_id = 10;
     assert.ok(stream_data.realm_has_notifications_stream());
