@@ -78,6 +78,7 @@ const emoji_params = {
             id: "992",
             name: "inactive_realm_emoji",
             source_url: "/url/for/992",
+            still_url: "/still/url/for/992",
             deactivated: true,
         },
     },
@@ -168,6 +169,7 @@ test("basics", () => {
             label: "translated: Cali reacted with :frown:",
             emoji_alt_code: false,
             class: "message_reaction",
+            is_realm_emoji: false,
         },
         {
             emoji_name: "inactive_realm_emoji",
@@ -180,6 +182,7 @@ test("basics", () => {
             emoji_alt_code: false,
             is_realm_emoji: true,
             url: "/url/for/992",
+            still_url: "/still/url/for/992",
             class: "message_reaction reacted",
         },
         {
@@ -192,6 +195,7 @@ test("basics", () => {
             label: "translated: You (click to remove) and Bob van Roberts reacted with :smile:",
             emoji_alt_code: false,
             class: "message_reaction reacted",
+            is_realm_emoji: false,
         },
         {
             emoji_name: "tada",
@@ -203,6 +207,7 @@ test("basics", () => {
             label: "translated: Cali and Alexus reacted with :tada:",
             emoji_alt_code: false,
             class: "message_reaction",
+            is_realm_emoji: false,
         },
         {
             emoji_name: "rocket",
@@ -214,6 +219,7 @@ test("basics", () => {
             label: "translated: You (click to remove), Bob van Roberts and Cali reacted with :rocket:",
             emoji_alt_code: false,
             class: "message_reaction reacted",
+            is_realm_emoji: false,
         },
         {
             emoji_name: "wave",
@@ -225,18 +231,26 @@ test("basics", () => {
             label: "translated: Bob van Roberts, Cali and Alexus reacted with :wave:",
             emoji_alt_code: false,
             class: "message_reaction",
+            is_realm_emoji: false,
         },
     ];
     assert.deepEqual(result, expected_result);
 });
 
 test("unknown realm emojis (add)", () => {
-    blueslip.expect("error", "Cannot find/add realm emoji for code 'broken'.");
-    reactions.add_clean_reaction({
-        reaction_type: "realm_emoji",
-        emoji_code: "broken",
-        user_ids: [alice.user_id],
-    });
+    assert.throws(
+        () =>
+            reactions.view.insert_new_reaction({
+                reaction_type: "realm_emoji",
+                emoji_name: "false_emoji",
+                emoji_code: "broken",
+                user_ids: [alice.user_id],
+            }),
+        {
+            name: "Error",
+            message: "Cannot find realm emoji for code 'broken'.",
+        },
+    );
 });
 
 test("unknown realm emojis (insert)", () => {
