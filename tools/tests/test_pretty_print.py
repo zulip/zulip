@@ -192,12 +192,12 @@ BAD_HTML8 = """
 GOOD_HTML8 = """
 {{#each test}}
     {{#with this}}
-        {{#if foobar}}
+    {{#if foobar}}
         <div class="anything">{{{test}}}</div>
-        {{/if}}
-        {{#if foobar2}}
-        {{> teststuff}}
-        {{/if}}
+    {{/if}}
+    {{#if foobar2}}
+    {{> teststuff}}
+    {{/if}}
     {{/with}}
 {{/each}}
 """
@@ -325,9 +325,9 @@ GOOD_HTML13 = """
         <div>&nbsp:{{this.name}}:</div>
     {{else}}
         {{#if this.is_realm_emoji}}
-        <img src="{{this.url}}" class="emoji" />
+            <img src="{{this.url}}" class="emoji" />
         {{else}}
-        <br />
+            <br />
         {{/if}}
     {{/if}}
     <div>{{this.count}}</div>
@@ -354,12 +354,12 @@ GOOD_HTML14 = """
     {{#if this.code}}
     <pre>Here goes some cool code.</pre>
     {{else}}
-    <div>
-        content of first div
         <div>
-            content of second div.
+            content of first div
+            <div>
+                content of second div.
+            </div>
         </div>
-    </div>
     {{/if}}
 </div>
 """

@@ -4,7 +4,12 @@
     <div class="button-group">
         <div class="sub_unsub_button_wrapper inline-block">
             <button class="button small rounded subscribe-button sub_unsub_button {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button" {{#if should_display_subscription_button}}title="{{t 'Toggle subscription'}} (S)" {{else}}disabled="disabled"{{/if}}>
-                {{#if subscribed }}{{#tr}}Unsubscribe{{/tr}}{{else}}{{#tr}}Subscribe{{/tr}}{{/if}}</button>
+                {{#if subscribed }}
+                    {{#tr}}Unsubscribe{{/tr}}
+                {{else}}
+                    {{#tr}}Subscribe{{/tr}}
+                {{/if}}
+            </button>
         </div>
         <a href="{{preview_url}}" class="button small rounded" id="preview-stream-button" role="button" title="{{t 'View stream'}} (V)" {{#unless should_display_preview_button }}style="display: none"{{/unless}}><i class="fa fa-eye"></i></a>
         {{#if is_realm_admin}}
