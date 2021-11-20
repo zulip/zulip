@@ -9,8 +9,11 @@ import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
+import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_settings_data from "./stream_settings_data";
+import * as stream_settings_ui from "./stream_settings_ui";
+import * as sub_store from "./sub_store";
 import * as unread_ui from "./unread_ui";
 import {user_settings} from "./user_settings";
 
@@ -28,6 +31,8 @@ function rerender_ui() {
 
     unmatched_streams_table.find(".stream-row").remove();
 
+    const muted_stream_ids = stream_data.muted_stream_ids();
+
     for (const stream of unmatched_streams) {
         unmatched_streams_table.append(
             render_stream_specific_notification_row({
@@ -37,6 +42,7 @@ function rerender_ui() {
                 is_disabled:
                     settings_config.all_notifications(user_settings)
                         .show_push_notifications_tooltip,
+                muted: muted_stream_ids.includes(stream.stream_id),
             }),
         );
     }
@@ -237,9 +243,41 @@ export function update_page(settings_panel) {
     rerender_ui();
 }
 
+export function update_muted_stream_state(sub) {
+    const row = $(
+        `#stream-specific-notify-table .stream-row[data-stream-id='${CSS.escape(sub.stream_id)}']`,
+    );
+
+    $(row).toggleClass("control-label-disabled", sub.is_muted);
+    if (sub.is_muted) {
+        $(row).find(".unmute_stream").show();
+    } else {
+        $(row).find(".unmute_stream").hide();
+    }
+    $(row).find("input").prop("disabled", sub.is_muted);
+    $(row)
+        .find('[name="push_notifications"]')
+        .prop("disabled", !page_params.realm_push_notifications_enabled || sub.is_muted);
+}
+
 export function initialize() {
     user_settings_panel.container = "#user-notification-settings";
     user_settings_panel.settings_object = user_settings;
     user_settings_panel.notification_sound_elem = "#user-notification-sound-audio";
     user_settings_panel.for_realm_settings = false;
+
+    // Set up click handler for unmuting streams via this UI.
+    $("body").on("click", "#stream-specific-notify-table .unmute_stream", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const row = $(e.currentTarget).closest(".stream-row");
+        const stream_id = Number.parseInt(row.attr("data-stream-id"), 10);
+        const sub = sub_store.get(stream_id);
+
+        stream_settings_ui.set_muted(
+            sub,
+            !sub.is_muted,
+            row.closest(".subsection-parent").find(".alert-notification"),
+        );
+    });
 }

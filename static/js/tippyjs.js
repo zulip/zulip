@@ -217,6 +217,11 @@ export function initialize() {
     });
 
     delegate("body", {
+        target: "#stream-specific-notify-table .unmute_stream",
+        appendTo: () => document.body,
+    });
+
+    delegate("body", {
         target: [
             ".rendered_markdown .copy_codeblock",
             "#compose_top_right [data-tippy-content]",
