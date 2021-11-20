@@ -308,33 +308,22 @@ view.insert_new_reaction = function (opts) {
     // before the add button.
 
     const message_id = opts.message_id;
-    const emoji_name = opts.emoji_name;
-    const emoji_code = opts.emoji_code;
     const user_id = opts.user_id;
     const user_list = [user_id];
 
     const context = {
         message_id,
-        emoji_name,
-        emoji_code,
+        ...emoji.get_emoji_details_for_rendering(opts),
     };
 
-    const new_label = generate_title(emoji_name, user_list);
-
-    if (opts.reaction_type !== "unicode_emoji") {
-        context.is_realm_emoji = true;
-        const emoji_info = emoji.all_realm_emojis.get(emoji_code);
-        if (!emoji_info) {
-            blueslip.error(`Cannot find/insert realm emoji for code '${emoji_code}'.`);
-            return;
-        }
-        context.url = emoji_info.emoji_url;
-    }
+    const new_label = generate_title(opts.emoji_name, user_list);
 
     context.count = 1;
     context.label = new_label;
     context.local_id = get_local_reaction_id(opts);
     context.emoji_alt_code = user_settings.emojiset === "text";
+    context.is_realm_emoji =
+        context.reaction_type === "realm_emoji" || context.reaction_type === "zulip_extra_emoji";
 
     if (opts.user_id === page_params.user_id) {
         context.class = "message_reaction reacted";
