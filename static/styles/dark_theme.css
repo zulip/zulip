@@ -615,7 +615,7 @@ body.night-mode {
     .subscriber-list-box .subscriber_list_container .subscriber-list tr,
     #subscription_overlay ul.grey-box li,
     #subscription_overlay .grey-box .radio-input-parent,
-    #stream_privacy_modal .grey-box .radio-input-parent,
+    #stream_privacy_modal .radio-input-parent,
     #settings_page .sidebar,
     #settings_page .sidebar *,
     table,
