@@ -1582,6 +1582,10 @@ test("navbar_helpers", () => {
     assert.equal(filter.generate_redirect_url(), complex_operators_test_case.redirect_url);
     assert.equal(filter.is_common_narrow(), false);
 
+    const pm_with_no_operand = [{operator: "pm-with", operand: ""}];
+    filter = new Filter(pm_with_no_operand);
+    assert.equal(filter.is_common_narrow(), false);
+
     const stream_topic_search_operator = [
         {operator: "stream", operand: "foo"},
         {operator: "topic", operand: "bar"},

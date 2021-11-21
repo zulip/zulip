@@ -492,6 +492,16 @@ export class Filter {
     // can_mark_messages_read, since that might gain some more complex behavior
     // with near: narrows.
     is_common_narrow() {
+        const term_types = this.sorted_term_types();
+        // check for pm-with:"" filter (because it would result in empty search results)
+        if (
+            _.isEqual(term_types, ["pm-with"]) &&
+            this.operands("pm-with").length === 1 &&
+            this.operands("pm-with")[0] === ""
+        ) {
+            return false;
+        }
+
         // can_mark_messages_read tests the following filters:
         // stream, stream + topic,
         // is: private, pm-with:,
@@ -502,7 +512,6 @@ export class Filter {
         // that leaves us with checking:
         // is: starred
         // (which can_mark_messages_read_does not check as starred messages are always read)
-        const term_types = this.sorted_term_types();
 
         if (_.isEqual(term_types, ["is-starred"])) {
             return true;
