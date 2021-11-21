@@ -250,6 +250,8 @@ def validate(
             {e}"""
         )
 
+    prevent_dangling_tags(fn, tokens)
+
     class State:
         def __init__(self, func: Callable[[Token], None]) -> None:
             self.depth = 0
@@ -363,6 +365,51 @@ def validate(
 
     if state.depth != 0:
         raise TemplateParserException("Missing end tag")
+
+
+def prevent_dangling_tags(fn: str, tokens: List[Token]) -> None:
+    """
+    Prevent this kind of HTML:
+
+        <div attr attr
+          attr attr>Stuff</div>
+
+    We prefer:
+        <div attr attr
+          attr attr>
+            Stuff
+        </div>
+
+    We may eventually have the pretty_printer code do this
+    automatically, but there are some complications with
+    legacy code.
+    """
+    min_row: Optional[int] = None
+    for token in tokens:
+        if token.kind in ("handlebars_singleton_end", "html_singleton_end"):
+            continue
+
+        # We only apply this validation for a couple tag types, because
+        # our existing templates may have some funny edge cases.  We eventually
+        # want to be more aggressive here. We may need to be extra careful
+        # with tags like <pre> that have whitespace sensitivities.
+        if token.tag not in ("div", "button", "p"):
+            continue
+        if min_row and token.line < min_row:
+            raise TemplateParserException(
+                f"""
+
+            Please fix line {token.line} at {fn} (col {token.col})
+            by moving this tag so that it closes the block at the
+            same indentation level as its start tag:
+
+                {token.s}
+                """
+            )
+        else:
+            min_row = None
+        if token.line_span > 1:
+            min_row = token.line + token.line_span
 
 
 def is_django_block_tag(tag: str) -> bool:
