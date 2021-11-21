@@ -1086,6 +1086,13 @@
     box-sizing: border-box;
 }
 
+#stream_privacy_modal .stream-message-retention-days-input input[type="text"] {
+    border-radius: 5px;
+    box-shadow: none;
+    margin: 0;
+    height: inherit;
+}
+
 @media (width < $lg_min) {
     .subscriptions-container {
         max-width: 95%;
