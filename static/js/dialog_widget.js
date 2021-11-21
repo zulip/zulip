@@ -80,6 +80,7 @@ export function launch(conf) {
     // * help_link: A help link in the heading area.
     // * id: Custom id to the container element to modify styles.
     // * single_footer_button: If true, don't include the "Cancel" button.
+    // * form_id: Id of the form element in the modal if it exists.
 
     for (const f of mandatory_fields) {
         if (conf[f] === undefined) {
@@ -110,6 +111,14 @@ export function launch(conf) {
     }
 
     const submit_button = dialog.find(".dialog_submit_button");
+
+    // This is used to link the submit button with the form, if present, in the modal.
+    // This makes it so that submitting this form by pressing Enter on an input element
+    // triggers a click on the submit button.
+    if (conf.form_id) {
+        submit_button.attr("form", conf.form_id);
+    }
+
     // Set up handlers.
     submit_button.on("click", (e) => {
         if (conf.loading_spinner) {
