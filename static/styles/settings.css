@@ -1846,7 +1846,8 @@ input[type="checkbox"] {
 }
 
 .admin_exports_table {
-    margin: 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 @media (width < $lg_min) {
