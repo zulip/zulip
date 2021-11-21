@@ -122,6 +122,11 @@ export function open_overlay(opts) {
 // If conf.autoremove is true, the modal element will be removed from the DOM
 // once the modal is hidden.
 // If conf.micromodal is true, open a micromodal modal else open a bootstrap modal
+// conf also accepts the following optional properties:
+// on_show: Callback to run when the modal is triggered to show.
+// on_shown: Callback to run when the modal is shown.
+// on_hide: Callback to run when the modal is triggered to hide.
+// on_hidden: Callback to run when the modal is hidden.
 export function open_modal(selector, conf) {
     if (selector === undefined) {
         blueslip.error("Undefined selector was passed into open_modal");
@@ -169,6 +174,10 @@ export function open_modal(selector, conf) {
                 // animation is complete.
                 micromodal.addClass("modal--open");
                 micromodal.removeClass("modal--opening");
+
+                if (conf.on_shown) {
+                    conf.on_shown();
+                }
             } else if (animation_name === "mmfadeOut") {
                 // Equivalent to bootstrap's "hidden.bs.modal" event
 
@@ -176,13 +185,17 @@ export function open_modal(selector, conf) {
                 if (conf.autoremove) {
                     micromodal.remove();
                 }
+                if (conf.on_hidden) {
+                    conf.on_hidden();
+                }
             }
         });
 
         Micromodal.show(selector, {
             disableFocus: true,
             openClass: "modal--opening",
-            ...conf.micromodal_opts,
+            onShow: conf?.on_show,
+            onClose: conf?.on_hide,
         });
         return;
     }
