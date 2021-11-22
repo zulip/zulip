@@ -808,7 +808,7 @@ class MirrorWorker(QueueProcessingWorker):
                 logger.warning(
                     "MirrorWorker: Rejecting an email from: %s to realm: %s - rate limited.",
                     msg["From"],
-                    recipient_realm.name,
+                    recipient_realm.subdomain,
                 )
                 return
 
