@@ -9,6 +9,7 @@ import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
 import {Filter} from "./filter";
+import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
 import * as message_edit from "./message_edit";
 import * as message_fetch from "./message_fetch";
@@ -29,6 +30,7 @@ import * as resize from "./resize";
 import * as search from "./search";
 import * as search_pill from "./search_pill";
 import * as search_pill_widget from "./search_pill_widget";
+import * as spectators from "./spectators";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as top_left_corner from "./top_left_corner";
@@ -198,6 +200,22 @@ export function activate(raw_operators, opts) {
     const start_time = new Date();
 
     reset_ui_state();
+
+    // Since narrow.activate is called directly from various
+    // places in our code without passing through hashchange,
+    // we need to check if the narrow is allowed for spectator here too.
+
+    if (
+        page_params.is_spectator &&
+        raw_operators.length &&
+        raw_operators.some(
+            (raw_operator) => !hash_util.allowed_web_public_narrows.includes(raw_operator.operator),
+        )
+    ) {
+        spectators.login_to_access();
+        return;
+    }
+
     if (recent_topics_util.is_visible()) {
         recent_topics_ui.hide();
     }
