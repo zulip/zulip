@@ -35,6 +35,7 @@ import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as search from "./search";
 import * as settings_data from "./settings_data";
+import * as spectators from "./spectators";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
@@ -862,6 +863,17 @@ export function process_hotkey(e, hotkey) {
         case "copy_with_c":
             copy_and_paste.copy_handler();
             return true;
+    }
+
+    if (
+        // Allow UI only features for spectators which they can perform.
+        page_params.is_spectator &&
+        !["narrow_by_topic", "narrow_by_recipient", "show_lightbox", "show_sender_info"].includes(
+            event_name,
+        )
+    ) {
+        spectators.login_to_access();
+        return true;
     }
 
     const msg = message_lists.current.selected_message();

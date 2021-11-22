@@ -764,7 +764,7 @@ export function show_sender_info() {
     const message = message_lists.current.get(rows.id($message));
     const user = people.get_by_user_id(message.sender_id);
     show_user_info_popover_for_message($sender[0], user, message);
-    if (current_message_info_popover_elem) {
+    if (current_message_info_popover_elem && !page_params.is_spectator) {
         focus_user_info_popover_item();
     }
 }
