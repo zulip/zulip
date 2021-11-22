@@ -980,7 +980,7 @@ input#terminal:checked ~ #tab-terminal {
     color: hsl(207, 89%, 54%);
 }
 
-.login-page {
+.login-page.new-style {
     text-align: center;
 
     .alert {
@@ -989,6 +989,21 @@ input#terminal:checked ~ #tab-terminal {
         margin-top: -30px;
         margin-bottom: 15px;
         text-align: center;
+    }
+
+    @media (width <= 425px) {
+        .white-box {
+            width: calc(100% - 80px);
+
+            .form-inline {
+                width: 280px;
+            }
+        }
+
+        button.full-width,
+        button.login-social-button {
+            width: 280px;
+        }
     }
 }
 
@@ -1016,6 +1031,10 @@ input.new-organization-button {
     /* plus input padding. */
     width: calc(300px - -28px);
     margin-bottom: 10px;
+
+    @media (width <= 425px) {
+        width: 280px;
+    }
 
     .direct-label {
         margin-top: 50px;
@@ -1791,7 +1810,7 @@ label.label-title {
     }
 }
 
-.portico-header {
+.header.portico-header {
     padding: 15px 0;
 
     .hamburger-portico {
@@ -1802,6 +1821,7 @@ label.label-title {
 
     .portico_nav_dropdown {
         display: inline-block;
+
         li {
             display: inline;
             list-style: none;
@@ -1851,6 +1871,5 @@ label.label-title {
                 }
             }
         }
-
     }
 }
