@@ -2497,9 +2497,6 @@ class InvitationsTestCase(InviteUserBase):
 
         # Verify that the new invite has the same number of expiration days as the original invite.
         prereg_user = PreregistrationUser.objects.get(email=invitee)
-        # We need to add the same amount of additional days to prereg_user.invited_at because
-        # it is automatically set to the current time in PreregistrationUser.
-        prereg_user.invited_at = prereg_user.invited_at + datetime.timedelta(days=2)
         self.assertEqual(
             round(
                 (

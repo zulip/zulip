@@ -2095,7 +2095,7 @@ class PreregistrationUser(models.Model):
         UserProfile, null=True, on_delete=CASCADE
     )
     streams: Manager = models.ManyToManyField("Stream")
-    invited_at: datetime.datetime = models.DateTimeField(auto_now=True)
+    invited_at: datetime.datetime = models.DateTimeField(default=timezone_now)
     realm_creation: bool = models.BooleanField(default=False)
     # Indicates whether the user needs a password.  Users who were
     # created via SSO style auth (e.g. GitHub/Google) generally do not.
