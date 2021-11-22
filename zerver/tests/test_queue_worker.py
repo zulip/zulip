@@ -565,7 +565,7 @@ class WorkerTest(ZulipTestCase):
         self.assertEqual(
             warn_logs.output,
             [
-                "WARNING:zerver.worker.queue_processors:MirrorWorker: Rejecting an email from: None to realm: Zulip Dev - rate limited."
+                "WARNING:zerver.worker.queue_processors:MirrorWorker: Rejecting an email from: None to realm: zulip - rate limited."
             ]
             * 5,
         )
