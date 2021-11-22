@@ -1009,6 +1009,28 @@ export function hide_or_disable_stream_privacy_options_if_required(container) {
             }
         }
     }
+
+    if (!settings_data.user_can_create_public_streams()) {
+        const public_stream_elem = container.find(
+            `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.public.code)}']`,
+        );
+        public_stream_elem.prop("disabled", true);
+    }
+
+    if (!settings_data.user_can_create_private_streams()) {
+        // Disable both "Private, shared history" and "Private, protected history" options.
+        const private_stream_elem = container.find(
+            `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.private.code)}']`,
+        );
+        const private_with_public_history_elem = container.find(
+            `input[value='${CSS.escape(
+                stream_data.stream_privacy_policy_values.private_with_public_history.code,
+            )}']`,
+        );
+
+        private_stream_elem.prop("disabled", true);
+        private_with_public_history_elem.prop("disabled", true);
+    }
 }
 
 export function initialize() {
