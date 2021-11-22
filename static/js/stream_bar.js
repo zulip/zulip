@@ -13,7 +13,7 @@ function update_compose_stream_icon(stream_name) {
     lock_icon.hide();
     streamfield.removeClass("lock-padding");
 
-    if (stream_data.get_invite_only(stream_name)) {
+    if (stream_data.is_invite_only_by_stream_name(stream_name)) {
         lock_icon.show();
         streamfield.addClass("lock-padding");
     } else if (stream_data.is_web_public_by_stream_name(stream_name)) {

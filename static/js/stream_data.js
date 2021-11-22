@@ -573,7 +573,7 @@ export function is_web_public(stream_id) {
     return sub !== undefined && sub.is_web_public;
 }
 
-export function get_invite_only(stream_name) {
+export function is_invite_only_by_stream_name(stream_name) {
     const sub = get_sub(stream_name);
     if (sub === undefined) {
         return false;
