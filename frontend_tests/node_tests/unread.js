@@ -318,7 +318,7 @@ test("num_unread_for_topic", ({override}) => {
 });
 
 test("home_messages", ({override}) => {
-    override(stream_data, "is_subscribed", () => true);
+    override(stream_data, "id_is_subscribed", () => true);
     override(stream_data, "is_muted", () => false);
 
     const stream_id = 401;
@@ -356,7 +356,7 @@ test("home_messages", ({override}) => {
     test_notifiable_count(counts.home_unread_messages, 0);
 
     // Now unsubscribe all our streams.
-    override(stream_data, "is_subscribed", () => false);
+    override(stream_data, "id_is_subscribed", () => false);
     counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);
     test_notifiable_count(counts.home_unread_messages, 0);
