@@ -75,7 +75,7 @@
                 <div id="stream_change_property_status{{sub.stream_id}}" class="stream_change_property_status alert-notification"></div>
             </div>
             <div class="subscription-config">
-                <ul class="grey-box">
+                <ul>
                     {{#each other_settings}}
                     <li>
                         {{> stream_settings_checkbox
@@ -97,7 +97,7 @@
                     </li>
                 </ul>
                 <h4>{{t "Notification settings" }}</h4>
-                <ul class="grey-box">
+                <ul>
                     {{#each notification_settings}}
                     <li>
                         {{> stream_settings_checkbox

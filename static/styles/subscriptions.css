@@ -1010,10 +1010,6 @@
         .stream_change_property_status {
             margin: 9px auto 3px 3px;
         }
-
-        .grey-box {
-            border: none;
-        }
     }
 
     .loading_indicator_text {
@@ -1022,26 +1018,30 @@
     }
 }
 
-#subscription_overlay ul.grey-box {
-    li {
-        border-bottom: 1px solid hsl(0, 0%, 87%);
-        padding: 5px 0;
+#subscription_overlay .stream-types,
+#subscription_overlay ul {
+    margin: 0;
+    padding: 5px 10px;
+}
 
-        input[type="checkbox"] {
-            margin-top: 0;
-        }
+#subscription_overlay ul > li {
+    border-bottom: 1px solid hsl(0, 0%, 87%);
+    padding: 5px 0;
 
-        &:last-of-type {
-            border-bottom: none;
-        }
+    input[type="checkbox"] {
+        margin-top: 0;
+    }
 
-        .sp-replacer {
-            box-shadow: none;
-        }
+    &:last-of-type {
+        border-bottom: none;
+    }
 
-        input[type="radio"] {
-            margin-right: 5px;
-        }
+    .sp-replacer {
+        box-shadow: none;
+    }
+
+    input[type="radio"] {
+        margin-right: 5px;
     }
 }
 
