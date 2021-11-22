@@ -107,10 +107,10 @@ test("basics", () => {
     assert.deepEqual(stream_data.get_colors(), ["red", "yellow"]);
     assert.deepEqual(stream_data.subscribed_stream_ids(), [social.stream_id, test.stream_id]);
 
-    assert.ok(stream_data.is_subscribed("social"));
-    assert.ok(stream_data.is_subscribed("Social"));
-    assert.ok(!stream_data.is_subscribed("Denmark"));
-    assert.ok(!stream_data.is_subscribed("Rome"));
+    assert.ok(stream_data.is_subscribed_by_name("social"));
+    assert.ok(stream_data.is_subscribed_by_name("Social"));
+    assert.ok(!stream_data.is_subscribed_by_name("Denmark"));
+    assert.ok(!stream_data.is_subscribed_by_name("Rome"));
 
     assert.equal(stream_data.get_stream_privacy_policy(test.stream_id), "public");
     assert.equal(stream_data.get_stream_privacy_policy(social.stream_id), "invite-only");
@@ -494,12 +494,12 @@ test("delete_sub", () => {
 
     stream_data.add_sub(canada);
 
-    assert.ok(stream_data.is_subscribed("Canada"));
+    assert.ok(stream_data.is_subscribed_by_name("Canada"));
     assert.equal(stream_data.get_sub("Canada").stream_id, canada.stream_id);
     assert.equal(sub_store.get(canada.stream_id).name, "Canada");
 
     stream_data.delete_sub(canada.stream_id);
-    assert.ok(!stream_data.is_subscribed("Canada"));
+    assert.ok(!stream_data.is_subscribed_by_name("Canada"));
     assert.ok(!stream_data.get_sub("Canada"));
     assert.ok(!sub_store.get(canada.stream_id));
 

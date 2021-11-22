@@ -543,7 +543,7 @@ export function can_subscribe_others(sub) {
     return !page_params.is_guest && (!sub.invite_only || sub.subscribed);
 }
 
-export function is_subscribed(stream_name) {
+export function is_subscribed_by_name(stream_name) {
     const sub = get_sub(stream_name);
     return sub !== undefined && sub.subscribed;
 }

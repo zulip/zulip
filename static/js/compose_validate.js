@@ -467,7 +467,7 @@ export function validation_error(error_type, stream_name) {
 }
 
 export function validate_stream_message_address_info(stream_name) {
-    if (stream_data.is_subscribed(stream_name)) {
+    if (stream_data.is_subscribed_by_name(stream_name)) {
         return true;
     }
     const autosubscribe = page_params.narrow_stream !== undefined;
