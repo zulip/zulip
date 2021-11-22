@@ -75,9 +75,9 @@
                 <div id="stream_change_property_status{{sub.stream_id}}" class="stream_change_property_status alert-notification"></div>
             </div>
             <div class="subscription-config">
-                <ul>
-                    {{#each other_settings}}
-                    <li>
+                <div class="subsection-parent">
+                    <div class="input-group">
+                        {{#each other_settings}}
                         {{> stream_settings_checkbox
                           setting_name=name
                           is_checked=is_checked
@@ -87,19 +87,19 @@
                           disabled_realm_setting=disabled_realm_setting
                           is_disabled=is_disabled
                           label=label}}
-                    </li>
-                    {{/each}}
-                    <li>
+                        {{/each}}
+                    </div>
+                    <div class="input-group">
                         <label for="streamcolor" class="subscription-control-label">{{t "Stream color" }}</label>
                         <span class="sub_setting_control">
                             <input stream_id="{{sub.stream_id}}" class="colorpicker" id="streamcolor" type="text" value="{{sub.color}}" tabindex="-1" />
                         </span>
-                    </li>
-                </ul>
+                    </div>
+                </div>
                 <h4>{{t "Notification settings" }}</h4>
-                <ul>
-                    {{#each notification_settings}}
-                    <li>
+                <div class="subsection-parent">
+                    <div class="input-group">
+                        {{#each notification_settings}}
                         {{> stream_settings_checkbox
                           setting_name=name
                           is_checked=is_checked
@@ -109,9 +109,9 @@
                           disabled_realm_setting=disabled_realm_setting
                           is_disabled=is_disabled
                           label=label}}
-                    </li>
-                    {{/each}}
-                </ul>
+                        {{/each}}
+                    </div>
+                </div>
             </div>
         </div>
 

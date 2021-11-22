@@ -85,10 +85,6 @@
     border-radius: 2px;
 }
 
-.subscription_settings ul {
-    list-style-type: none;
-}
-
 .stream-email {
     font-family: "Source Code Pro", monospace;
     padding: 5px;
@@ -1018,30 +1014,29 @@
     }
 }
 
-#subscription_overlay .stream-types,
-#subscription_overlay ul {
+#subscription_overlay .subsection-parent {
     margin: 0;
     padding: 5px 10px;
-}
 
-#subscription_overlay ul > li {
-    border-bottom: 1px solid hsl(0, 0%, 87%);
-    padding: 5px 0;
+    .input-group {
+        border-bottom: 1px solid hsl(0, 0%, 87%);
+        padding: 5px 0;
 
-    input[type="checkbox"] {
-        margin-top: 0;
-    }
+        input[type="checkbox"] {
+            margin-top: 0;
+        }
 
-    &:last-of-type {
-        border-bottom: none;
-    }
+        &:last-of-type {
+            border-bottom: none;
+        }
 
-    .sp-replacer {
-        box-shadow: none;
-    }
+        .sp-replacer {
+            box-shadow: none;
+        }
 
-    input[type="radio"] {
-        margin-right: 5px;
+        input[type="radio"] {
+            margin-right: 5px;
+        }
     }
 }
 

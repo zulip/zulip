@@ -613,7 +613,7 @@ body.night-mode {
     .subscriptions-container .left,
     .subscriber-list-box,
     .subscriber-list-box .subscriber_list_container .subscriber-list tr,
-    #subscription_overlay ul li,
+    #subscription_overlay .subsection-parent div,
     #subscription_overlay .radio-input-parent,
     #stream_privacy_modal .radio-input-parent,
     #settings_page .sidebar,
