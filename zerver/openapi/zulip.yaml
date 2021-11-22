@@ -7868,21 +7868,23 @@ paths:
 
             The possible values for each `property` and `value` pairs are:
 
-            - `color` (string): the hex value of the user's display color for the stream.
-            - `is_muted` (boolean): whether the stream is
-              [muted](/help/mute-a-stream). Prior to Zulip 2.1, this feature was
+            - `color` (string): The hex value of the user's display color for the stream.
+            - `is_muted` (boolean): Whether the stream is [muted](/help/mute-a-stream).<br>
+              **Changes**: Prior to Zulip 2.1, this feature was
               represented by the more confusingly named `in_home_view` (with the
               opposite value, `in_home_view=!is_muted`); for
-              backwards-compatibility, modern Zulip still accepts that value.
-            - `pin_to_top` (boolean): whether to pin the stream at the top of the stream list.
-            - `desktop_notifications` (boolean): whether to show desktop notifications
+              backwards-compatibility, modern Zulip still accepts that property.
+            - `pin_to_top` (boolean): Whether to pin the stream at the top of the stream list.
+            - `desktop_notifications` (boolean): Whether to show desktop notifications
               for all messages sent to the stream.
-            - `audible_notifications` (boolean): whether to play a sound
+            - `audible_notifications` (boolean): Whether to play a sound
               notification for all messages sent to the stream.
-            - `push_notifications` (boolean): whether to trigger a mobile push
+            - `push_notifications` (boolean): Whether to trigger a mobile push
               notification for all messages sent to the stream.
-            - `email_notifications` (boolean): whether to trigger an email
+            - `email_notifications` (boolean): Whether to trigger an email
               notification for all messages sent to the stream.
+            - `wildcard_mentions_notify` (boolean): Whether wildcard mentions trigger
+              notifications as though they were personal mentions in this stream.
           content:
             application/json:
               schema:
@@ -7914,55 +7916,48 @@ paths:
                           type: object
                           additionalProperties: false
                           properties:
+                            stream_id:
+                              description: |
+                                The unique ID of the stream.
+                              type: integer
                             property:
                               type: string
                               description: |
-                                The property to be changed. It is one of:
+                                The changed property. It is one of:
 
-                                - `color`: The hex value of the user's personal display color for the stream.<br>
+                                - `color`: The hex value of the user's personal display color for the stream.
                                 - `is_muted`: Whether the stream is [muted](/help/mute-a-stream).<br>
                                   **Changes**: Prior to Zulip 2.1, this feature was
                                   represented by the more confusingly named `in_home_view` (with the
                                   opposite value, `in_home_view=!is_muted`); for
-                                  backwards-compatibility, modern Zulip still accepts that value.<br>
+                                  backwards-compatibility, modern Zulip still accepts/returns that property.
                                 - `pin_to_top`: Whether to pin the stream at the top of the stream list.
                                 - `desktop_notifications`: Whether to show desktop notifications for all
-                                  messages sent to the stream.<br>
+                                  messages sent to the stream.
                                 - `audible_notifications`: Whether to play a sound notification for all
-                                  messages sent to the stream.<br>
+                                  messages sent to the stream.
                                 - `push_notifications`: Whether to trigger a mobile push notification for
-                                  all messages sent to the stream.<br>
+                                  all messages sent to the stream.
                                 - `email_notifications`: Whether to trigger an email notification for all
-                                  messages sent to the stream.<br>
-                                - `in_home_view`: Whether to mute the stream (legacy property)<br>
+                                  messages sent to the stream.
                                 - `wildcard_mentions_notify`: whether wildcard mentions trigger notifications
-                                  as though they were personal mentions in this stream.<br>
-                                  A null value means the value of this setting
-                                  should be inherited from the user-level default
-                                  setting, wildcard_mentions_notify, for
-                                  this stream.
-
+                                  as though they were personal mentions in this stream.
                               enum:
                                 - color
-                                - push_notifications
                                 - is_muted
                                 - pin_to_top
                                 - desktop_notifications
                                 - audible_notifications
                                 - push_notifications
                                 - email_notifications
-                                - in_home_view
                                 - wildcard_mentions_notify
+                                - in_home_view
                             value:
                               description: |
-                                The desired value of the property
+                                The desired value of the property.
                               oneOf:
                                 - type: boolean
                                 - type: string
-                            stream_id:
-                              description: |
-                                The desired value of the property
-                              type: integer
                         description: |
                           The same `subscription_data` array sent by the client for the request.
                     example:
@@ -7970,14 +7965,14 @@ paths:
                         "subscription_data":
                           [
                             {
+                              "stream_id": 1,
                               "property": "pin_to_top",
                               "value": true,
-                              "stream_id": 1,
                             },
                             {
+                              "stream_id": 3,
                               "property": "color",
                               "value": "#f00f00",
-                              "stream_id": 3,
                             },
                           ],
                         "result": "success",
