@@ -14,7 +14,7 @@
             <form method="post" class="form-horizontal" action="{{ url('password_reset') }}">
                 {{ csrf_input }}
                 <div class="new-style">
-                    <div class="input-box horizontal moving-label">
+                    <div class="input-box horizontal">
                         <div class="inline-block relative">
                             <label for="id_email" class="">{{ _('Email') }}</label>
                             <input id="id_email" class="required" type="text" name="email"
