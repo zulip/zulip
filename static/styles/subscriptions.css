@@ -1086,12 +1086,6 @@
     box-sizing: border-box;
 }
 
-#stream_privacy_modal .modal-body {
-    .grey-box {
-        margin-bottom: 20px;
-    }
-}
-
 @media (width < $lg_min) {
     .subscriptions-container {
         max-width: 95%;
