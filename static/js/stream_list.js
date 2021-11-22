@@ -394,7 +394,7 @@ export function get_sidebar_stream_topic_info(filter) {
         return result;
     }
 
-    if (!stream_data.id_is_subscribed(stream_id)) {
+    if (!stream_data.is_subscribed(stream_id)) {
         return result;
     }
 

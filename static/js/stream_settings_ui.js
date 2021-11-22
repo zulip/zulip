@@ -727,7 +727,7 @@ export function change_state(section) {
         // Guest users can not access unsubscribed streams
         // So redirect guest users to 'subscribed' tab
         // for any unsubscribed stream settings hash
-        if (page_params.is_guest && !stream_data.id_is_subscribed(stream_id)) {
+        if (page_params.is_guest && !stream_data.is_subscribed(stream_id)) {
             toggler.goto("subscribed");
         } else {
             show_right_section();

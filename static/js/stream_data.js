@@ -548,7 +548,7 @@ export function is_subscribed_by_name(stream_name) {
     return sub !== undefined && sub.subscribed;
 }
 
-export function id_is_subscribed(stream_id) {
+export function is_subscribed(stream_id) {
     const sub = sub_store.get(stream_id);
     return sub !== undefined && sub.subscribed;
 }
