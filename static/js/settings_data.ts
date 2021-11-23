@@ -181,6 +181,31 @@ export function user_can_create_public_streams(): boolean {
     return user_has_permission(page_params.realm_create_public_stream_policy);
 }
 
+export function user_can_create_web_public_streams(): boolean {
+    if (
+        !page_params.server_web_public_streams_enabled ||
+        !page_params.realm_enable_spectator_access
+    ) {
+        return false;
+    }
+
+    if (
+        page_params.realm_create_web_public_stream_policy ===
+        settings_config.create_web_public_stream_policy_values.nobody.code
+    ) {
+        return false;
+    }
+
+    if (
+        page_params.realm_create_web_public_stream_policy ===
+        settings_config.create_web_public_stream_policy_values.by_owners_only.code
+    ) {
+        return page_params.is_owner;
+    }
+
+    return user_has_permission(page_params.realm_create_web_public_stream_policy);
+}
+
 export function user_can_move_messages_between_streams(): boolean {
     return user_has_permission(page_params.realm_move_messages_between_streams_policy);
 }
