@@ -11105,9 +11105,14 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Whether web public streams are enabled in the server. Similar topic_name
-                          `realm_enable_spectator_access` but based on the `WEB_PUBLIC_STREAMS_ENABLED`
-                          Zulip server level setting.
+                          The value of the `WEB_PUBLIC_STREAMS_ENABLED` Zulip server level
+                          setting. A server that has disabled this setting intends to not offer [web
+                          public streams](/help/web-public-streams) to realms it hosts. (Zulip Cloud
+                          defaults to `True`; self-hosted servers default to `False`).
+
+                          Clients should use this to determine whether to offer UI for the
+                          realm-level setting for enabling we-public streams
+                          (`realm_enable_spectator_access`).
 
                           **Changes**: New in Zulip 5.0 (feature level 110).
                       event_queue_longpoll_timeout_seconds:
