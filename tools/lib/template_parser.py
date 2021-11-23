@@ -223,6 +223,10 @@ HTML_VOID_TAGS = {
 }
 
 
+def indent_level(s: str) -> int:
+    return len(s) - len(s.lstrip())
+
+
 def validate(
     fn: Optional[str] = None, text: Optional[str] = None, check_indent: bool = True
 ) -> None:
@@ -234,6 +238,8 @@ def validate(
     if text is None:
         with open(fn) as f:
             text = f.read()
+
+    lines = text.split("\n")
 
     try:
         tokens = tokenize(text)
@@ -294,6 +300,15 @@ def validate(
             elif check_indent and (end_line > start_line + max_lines):
                 if end_col != start_col:
                     problem = "Bad indentation."
+
+            if end_line >= start_line + 2:
+                # We have 3+ lines in the tag's block.
+                start_row_text = lines[start_line - 1]
+                start_indent = indent_level(start_row_text)
+                if start_indent != start_col - 1 and start_row_text[start_indent] not in "<{":
+                    junk = start_row_text[start_indent : start_col - 1]
+                    problem = f"There is junk before the start tag: {junk}"
+
             if problem:
                 raise TemplateParserException(
                     f"""
