@@ -14,6 +14,13 @@ export class TaskData {
     task_map = new Map();
     my_idx = 1;
 
+    constructor(task_list_name) {
+        this.task_list_name = task_list_name;
+        if (task_list_name) {
+            this.set_task_list_name(task_list_name);
+        }
+    }
+
     get_widget_data() {
         const all_tasks = Array.from(this.task_map.values());
 
@@ -44,6 +51,14 @@ export class TaskData {
         }
 
         return false;
+    }
+
+    set_task_list_name(task_list_name) {
+        this.task_list_name = task_list_name;
+    }
+
+    get_task_list_name() {
+        return this.task_list_name || "Task list";
     }
 
     handle = {
@@ -137,6 +152,27 @@ export class TaskData {
                 item.completed = !item.completed;
             },
         },
+
+        task_list_name: {
+            outbound: (task_list_name) => {
+                const event = {
+                    type: "task_list_name",
+                    task_list_name,
+                };
+                return event;
+            },
+
+            inbound: (sender_id, data) => {
+                const task_list_name = data.task_list_name;
+
+                if (typeof task_list_name !== "string") {
+                    blueslip.warn("todo widget: bad type for inbound task_list_name");
+                    return;
+                }
+
+                this.set_task_list_name(task_list_name);
+            },
+        },
     };
 
     handle_event(sender_id, data) {
@@ -153,7 +189,50 @@ export function activate(opts) {
     const elem = opts.elem;
     const callback = opts.callback;
 
-    const task_data = new TaskData();
+    const task_data = new TaskData(opts.extra_data ? opts.extra_data.name : "");
+
+    function update_edit_controls() {
+        const has_name = elem.find("input.todo-name").val().trim() !== "";
+        elem.find("button.todo-name-check").toggle(has_name);
+    }
+
+    function render_task_list_name(start_editing = false) {
+        const task_list_name = task_data.get_task_list_name();
+        elem.find(".todo-name-header").text(task_list_name);
+        elem.find(".todo-name-bar").toggle(start_editing);
+        elem.find(".todo-name-header").toggle(!start_editing);
+        elem.find(".todo-edit-name").toggle(!start_editing);
+        elem.find("input.todo-name").val(task_list_name);
+        update_edit_controls();
+    }
+
+    function start_editing() {
+        render_task_list_name(true);
+        elem.find("input.todo-name").trigger("focus");
+    }
+
+    function abort_edit() {
+        render_task_list_name();
+    }
+
+    function submit_task_list_name() {
+        let new_task_list_name = elem.find("input.todo-name").val().trim();
+        const old_task_list_name = task_data.get_task_list_name();
+
+        if (new_task_list_name === "") {
+            new_task_list_name = old_task_list_name;
+        }
+
+        task_data.set_task_list_name(new_task_list_name);
+        render_task_list_name();
+
+        if (new_task_list_name === old_task_list_name) {
+            return;
+        }
+
+        const data = task_data.handle.task_list_name.outbound(new_task_list_name);
+        callback(data);
+    }
 
     function render() {
         const html = render_widgets_todo_widget();
@@ -181,6 +260,40 @@ export function activate(opts) {
             const data = task_data.handle.new_task.outbound(task, desc);
             callback(data);
         });
+
+        elem.find("input.todo-name").on("keyup", (e) => {
+            e.stopPropagation();
+            update_edit_controls();
+        });
+
+        elem.find("input.todo-name").on("keydown", (e) => {
+            e.stopPropagation();
+
+            if (e.key === "Enter") {
+                submit_task_list_name();
+                return;
+            }
+
+            if (e.key === "Escape") {
+                abort_edit();
+                return;
+            }
+        });
+
+        elem.find(".todo-edit-name").on("click", (e) => {
+            e.stopPropagation();
+            start_editing();
+        });
+
+        elem.find("button.todo-name-check").on("click", (e) => {
+            e.stopPropagation();
+            submit_task_list_name();
+        });
+
+        elem.find("button.todo-name-remove").on("click", (e) => {
+            e.stopPropagation();
+            abort_edit();
+        });
     }
 
     function render_results() {
@@ -203,9 +316,11 @@ export function activate(opts) {
             task_data.handle_event(event.sender_id, event.data);
         }
 
+        render_task_list_name();
         render_results();
     };
 
     render();
+    render_task_list_name();
     render_results();
 }

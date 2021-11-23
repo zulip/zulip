@@ -525,6 +525,16 @@ def validate_todo_data(todo_data: object) -> None:
         checker("todo data", todo_data)
         return
 
+    if todo_data["type"] == "task_list_name":
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("task_list_name", check_string),
+            ]
+        )
+        checker("todo data", todo_data)
+        return
+
     raise ValidationError(f"Unknown type for todo data: {todo_data['type']}")
 
 

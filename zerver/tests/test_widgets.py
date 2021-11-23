@@ -97,7 +97,7 @@ class WidgetContentTestCase(ZulipTestCase):
             self.assertEqual(get_widget_data(content=message), (None, None))
 
         # Add a positive check for context
-        self.assertEqual(get_widget_data(content="/todo"), ("todo", None))
+        self.assertEqual(get_widget_data(content="/todo"), ("todo", {"name": ""}))
 
     def test_explicit_widget_content(self) -> None:
         # Users can send widget_content directly on messages
@@ -165,7 +165,31 @@ class WidgetContentTestCase(ZulipTestCase):
 
         expected_submessage_content = dict(
             widget_type="todo",
-            extra_data=None,
+            extra_data={"name": ""},
+        )
+
+        submessage = SubMessage.objects.get(message_id=message.id)
+        self.assertEqual(submessage.msg_type, "widget")
+        self.assertEqual(orjson.loads(submessage.content), expected_submessage_content)
+
+        content = "/todo Task List Name"
+
+        payload = dict(
+            type="stream",
+            to=stream_name,
+            client="test suite",
+            topic="whatever",
+            content=content,
+        )
+        result = self.api_post(sender, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+
+        message = self.get_last_message()
+        self.assertEqual(message.content, content)
+
+        expected_submessage_content = dict(
+            widget_type="todo",
+            extra_data={"name": "Task List Name"},
         )
 
         submessage = SubMessage.objects.get(message_id=message.id)
@@ -362,6 +386,12 @@ class WidgetContentTestCase(ZulipTestCase):
         assert_error('{"type": "strike"}', "key is missing")
         assert_error('{"type": "strike", "key": 999}', 'data["key"] is not a string')
 
+        assert_error('{"type": "task_list_name"}', "task_list_name key is missing")
+        assert_error(
+            '{"type": "task_list_name", "task_list_name": 999}',
+            'data["task_list_name"] is not a string',
+        )
+
         def assert_success(data: Dict[str, object]) -> None:
             content = orjson.dumps(data).decode()
             result = post_submessage(content)
@@ -369,6 +399,7 @@ class WidgetContentTestCase(ZulipTestCase):
 
         assert_success(dict(type="new_task", key=7, task="eat", desc="", completed=False))
         assert_success(dict(type="strike", key="5,9"))
+        assert_success(dict(type="task_list_name", task_list_name="name"))
 
     def test_get_widget_type(self) -> None:
         sender = self.example_user("cordelia")

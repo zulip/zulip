@@ -41,7 +41,17 @@ def get_extra_data_from_widget_type(content: str, widget_type: Optional[str]) ->
             "options": options,
         }
         return extra_data
-    return None
+    if widget_type == "todo":
+        # This is used to extract the name from the todo command.
+        # The command '/todo name' will pre-set the name in the todo
+        lines = content.splitlines()
+        name = ""
+        if lines and lines[0]:
+            name = lines.pop(0).strip()
+        extra_data = {
+            "name": name,
+        }
+        return extra_data
 
 
 def do_widget_post_save_actions(send_request: SendMessageRequest) -> None:

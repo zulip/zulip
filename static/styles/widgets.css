@@ -26,6 +26,33 @@
     }
 }
 
+.todo-name-header {
+    display: inline-block;
+}
+
+.todo-edit-name {
+    opacity: 0.4;
+    display: inline-block;
+    margin-left: 5px;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.todo-name-check,
+.todo-name-remove {
+    width: 28px !important;
+    height: 28px;
+    border-radius: 3px;
+    border: 1px solid hsl(0, 0%, 80%);
+    background-color: hsl(0, 0%, 100%);
+
+    &:hover {
+        border-color: hsl(0, 0%, 60%);
+    }
+}
+
 .todo-widget,
 .poll-widget {
     h4 {
@@ -61,7 +88,8 @@
         border-style: solid;
         border-radius: 3px;
         margin-right: 4px;
-        padding-left: 2px; /* padding for Chromium browsers */
+        padding-left: 2px;
+        /* padding for Chromium browsers */
         padding-right: 2px;
         min-width: 28px;
         background-color: hsl(0, 0%, 100%);
@@ -125,6 +153,7 @@ input,
 button {
     &.add-task,
     &.add-desc,
+    &.todo-name,
     &.poll-option,
     &.poll-question {
         padding: 4px 6px;
