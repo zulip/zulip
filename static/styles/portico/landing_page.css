@@ -242,9 +242,9 @@ nav {
 
     .hamburger {
         display: none;
-        fill: hsl(0, 0%, 100%);
         cursor: pointer;
         margin-top: 3px;
+        font-size: 30px;
     }
 
     .content {
