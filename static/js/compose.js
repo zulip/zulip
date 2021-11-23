@@ -20,6 +20,7 @@ import * as markdown from "./markdown";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as popover_menus from "./popover_menus";
 import * as reminder from "./reminder";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
@@ -535,7 +536,13 @@ export function initialize() {
 
         let target_textarea;
         let edit_message_id;
-        if ($(e.target).parents(".message_edit_form").length === 1) {
+        const compose_control_buttons_popover = popover_menus.get_compose_control_buttons_popover();
+        if (compose_control_buttons_popover) {
+            target_textarea = $(compose_control_buttons_popover.reference)
+                .closest("form")
+                .find("textarea");
+            compose_control_buttons_popover.hide();
+        } else if ($(e.target).parents(".message_edit_form").length === 1) {
             edit_message_id = rows.id($(e.target).parents(".message_row"));
             target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
         }
@@ -617,7 +624,12 @@ export function initialize() {
 
         let target_textarea;
         let edit_message_id;
-        if ($(e.target).parents(".message_edit_form").length === 1) {
+        const compose_control_buttons_popover = popover_menus.get_compose_control_buttons_popover();
+        if (compose_control_buttons_popover) {
+            target_textarea = $(compose_control_buttons_popover.reference)
+                .closest("form")
+                .find("textarea");
+        } else if ($(e.target).parents(".message_edit_form").length === 1) {
             edit_message_id = rows.id($(e.target).parents(".message_row"));
             target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
         }
@@ -688,7 +700,17 @@ export function initialize() {
 
     $("body").on("click", ".formatting_button", (e) => {
         const $elt = $(e.target);
-        const textarea = $elt.closest("form").find("textarea");
+
+        const compose_control_buttons_popover = popover_menus.get_compose_control_buttons_popover();
+        let textarea;
+        if (compose_control_buttons_popover) {
+            textarea = $(compose_control_buttons_popover.reference)
+                .closest("form")
+                .find("textarea");
+        } else {
+            textarea = $elt.closest("form").find("textarea");
+        }
+
         const format_type = $elt.attr("data-format-type");
         compose_ui.format_text(textarea, format_type);
         textarea.trigger("focus");

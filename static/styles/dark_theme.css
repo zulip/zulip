@@ -42,6 +42,18 @@ body.dark-theme {
     .tippy-box[data-theme~="light-border"] {
         .tippy-content a {
             color: hsl(236, 33%, 90%);
+
+            &.compose_control_button:hover {
+                color: hsl(200, 79%, 66%);
+            }
+
+            &.message-control-link {
+                color: hsl(200, 100%, 40%);
+
+                &:hover {
+                    color: hsl(200, 79%, 66%);
+                }
+            }
         }
 
         &[data-placement^="top"] {
