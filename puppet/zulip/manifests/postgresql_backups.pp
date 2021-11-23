@@ -13,11 +13,29 @@ class zulip::postgresql_backups {
       $package => $bin,
     },
   }
+  file { $bin:
+    ensure  => file,
+    require => Zulip::Sha256_tarball_to['wal-g'],
+  }
   file { '/usr/local/bin/wal-g':
     ensure  => 'link',
     target  => $bin,
-    require => Zulip::Sha256_tarball_to['wal-g'],
+    require => File[$bin],
   }
+  unless $::operatingsystem == 'Ubuntu' and $::operatingsystemrelease == '18.04' {
+    # Puppet 5.5.0 and below make this always-noisy, as they spout out
+    # a notify line about tidying the managed directory above.  Skip
+    # on Bionic, which has that old version; they'll get tidied upon
+    # upgrade to 20.04.
+    tidy { '/usr/local/bin/wal-g-*':
+      path    => '/usr/local/bin/',
+      recurse => 1,
+      rmdirs  => true,
+      matches => 'wal-g-*',
+      require => File[$bin],
+    }
+  }
+
   file { '/usr/local/bin/env-wal-g':
     ensure  => file,
     owner   => 'root',
