@@ -5,16 +5,23 @@
 import $ from "jquery";
 import {delegate} from "tippy.js";
 
+import render_compose_control_buttons_popover from "../templates/compose_control_buttons_popover.hbs";
 import render_left_sidebar_stream_setting_popover from "../templates/left_sidebar_stream_setting_popover.hbs";
 import render_mobile_message_buttons_popover_content from "../templates/mobile_message_buttons_popover_content.hbs";
 
 import * as compose_actions from "./compose_actions";
+import * as giphy from "./giphy";
 import * as narrow_state from "./narrow_state";
 import * as popovers from "./popovers";
 import * as settings_data from "./settings_data";
 
 let left_sidebar_stream_setting_popover_displayed = false;
 let compose_mobile_button_popover_displayed = false;
+let compose_control_buttons_popover_instance;
+
+export function get_compose_control_buttons_popover() {
+    return compose_control_buttons_popover_instance;
+}
 
 const default_popover_props = {
     delay: 0,
@@ -31,7 +38,11 @@ const default_popover_props = {
 };
 
 export function any_active() {
-    return left_sidebar_stream_setting_popover_displayed || compose_mobile_button_popover_displayed;
+    return (
+        left_sidebar_stream_setting_popover_displayed ||
+        compose_mobile_button_popover_displayed ||
+        compose_control_buttons_popover_instance
+    );
 }
 
 function on_show_prep(instance) {
@@ -87,6 +98,31 @@ export function initialize() {
             // are destroyed too.
             instance.destroy();
             compose_mobile_button_popover_displayed = false;
+        },
+    });
+
+    // We need to hide instance manually for popover due to
+    // `$("body").on("click"...` method not being triggered for
+    // the elements when when we do:
+    // `$(instance.popper).one("click", instance.hide); in onShow.
+    // Cannot reproduce it on codepen -
+    // https://codepen.io/amanagr/pen/jOLoKVg
+    // So, probably a bug on our side.
+    delegate("body", {
+        ...default_popover_props,
+        target: ".compose_control_menu_wrapper",
+        placement: "top",
+        onShow(instance) {
+            instance.setContent(
+                render_compose_control_buttons_popover({
+                    giphy_enabled: giphy.is_giphy_enabled(),
+                }),
+            );
+            compose_control_buttons_popover_instance = instance;
+            popovers.hide_all_except_sidebars(instance);
+        },
+        onHidden() {
+            compose_control_buttons_popover_instance = undefined;
         },
     });
 }

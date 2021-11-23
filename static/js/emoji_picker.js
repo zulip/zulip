@@ -12,6 +12,7 @@ import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
+import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
@@ -703,6 +704,11 @@ export function register_click_handlers() {
     $("body").on("click", ".emoji_map", function (e) {
         e.preventDefault();
         e.stopPropagation();
+        const compose_control_buttons_popover = popover_menus.get_compose_control_buttons_popover();
+        if (compose_control_buttons_popover) {
+            e.target = compose_control_buttons_popover.reference;
+        }
+
         if ($(e.target).parents(".message_edit_form").length === 1) {
             // Store message id in global variable edit_message_id so that
             // its value can be further used to correctly find the message textarea element.

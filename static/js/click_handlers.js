@@ -657,7 +657,9 @@ export function initialize() {
 
     function handle_compose_click(e) {
         // Emoji clicks should be handled by their own click handler in emoji_picker.js
-        if ($(e.target).is(".emoji_map, img.emoji, .drag, .compose_gif_icon")) {
+        if (
+            $(e.target).is(".emoji_map, img.emoji, .drag, .compose_gif_icon, .compose_control_menu")
+        ) {
             return;
         }
 

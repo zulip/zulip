@@ -8,6 +8,7 @@ import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
 import {media_breakpoints_num} from "./css_variables";
 import {page_params} from "./page_params";
+import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
 import * as rows from "./rows";
 import * as ui_util from "./ui_util";
@@ -220,12 +221,18 @@ export function initialize() {
         e.preventDefault();
         e.stopPropagation();
 
+        const compose_control_buttons_popover = popover_menus.get_compose_control_buttons_popover();
+        if (compose_control_buttons_popover) {
+            e.target = compose_control_buttons_popover.reference;
+        }
+
         if (active_popover_element && active_popover_element.get()[0] === e.target) {
             // Hide giphy popover if already active.
             hide_giphy_popover();
             return;
         }
         popovers.hide_all();
+
         const $elt = $(e.target);
         if ($elt.parents(".message_edit_form").length === 1) {
             // Store message id in global variable edit_message_id so that
