@@ -2716,7 +2716,7 @@ select.inline_select_topic_edit {
 
         &::after,
         &::before {
-            border-top-width: 0;
+            border-top-width: 0 !important;
         }
     }
 }
