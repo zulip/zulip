@@ -263,7 +263,7 @@ export class MessageList {
         }
         let trailing_bookend_content;
         let show_button = true;
-        const subscribed = stream_data.is_subscribed(stream_name);
+        const subscribed = stream_data.is_subscribed_by_name(stream_name);
         const sub = stream_data.get_sub(stream_name);
         if (sub === undefined) {
             trailing_bookend_content = this.deactivated_bookend_content();

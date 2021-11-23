@@ -238,9 +238,7 @@ def avatar(
         # Allow anonynous access to avatars only if spectators are
         # enabled in the organization.
         realm = get_valid_realm_from_request(request)
-        # TODO: Replace with realm.allow_web_public_streams_access()
-        # when the method is available.
-        if not realm.has_web_public_streams():
+        if not realm.allow_web_public_streams_access():
             raise MissingAuthenticationError()
 
         # We only allow the ID format for accessing a user's avatar

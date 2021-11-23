@@ -34,6 +34,7 @@ def reverse_make_zero_invalid_for_message_delete_limit(
 
 
 class Migration(migrations.Migration):
+    atomic = False
 
     dependencies = [
         ("zerver", "0353_remove_realm_default_twenty_four_hour_time"),

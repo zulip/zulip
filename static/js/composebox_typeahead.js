@@ -226,6 +226,7 @@ function handle_keydown(e) {
                     // typing a next message!
                     $("#compose-send-button").trigger("focus");
                     e.preventDefault();
+                    e.stopPropagation();
                 }
             } else {
                 // Enter
@@ -393,7 +394,7 @@ function should_show_custom_query(query, items) {
 
 export const slash_commands = [
     {
-        text: $t({defaultMessage: "/dark (Toggle dark mode)"}),
+        text: $t({defaultMessage: "/dark (Switch to the dark theme)"}),
         name: "dark",
         aliases: "night",
     },
@@ -408,7 +409,7 @@ export const slash_commands = [
         aliases: "",
     },
     {
-        text: $t({defaultMessage: "/light (Toggle light mode)"}),
+        text: $t({defaultMessage: "/light (Switch to light theme)"}),
         name: "light",
         aliases: "day",
     },

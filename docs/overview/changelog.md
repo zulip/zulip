@@ -307,7 +307,7 @@ log][commit-log] for an up-to-date list of raw changes.
   major release.
 
 [docker-zulip-manual]: https://github.com/zulip/docker-zulip#manual-configuration
-[smokescreen]: ../production/deployment.html#using-an-outgoing-http-proxy
+[smokescreen]: ../production/deployment.html#customizing-the-outgoing-http-proxy
 [update-settings-docs]: ../production/upgrade-or-modify.html#updating-settings-py-inline-documentation
 
 #### Full feature changelog

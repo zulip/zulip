@@ -167,13 +167,13 @@ const my_slash = {
 const dark_slash = {
     name: "dark",
     aliases: "night",
-    text: "translated: /dark (Toggle dark mode)",
+    text: "translated: /dark (Switch to the dark theme)",
 };
 
 const light_slash = {
     name: "light",
     aliases: "day",
-    text: "translated: /light (Toggle light mode)",
+    text: "translated: /light (Switch to light theme)",
 };
 
 const sweden_stream = {
@@ -1054,6 +1054,7 @@ test("initialize", ({override, mock_template}) => {
             id: "stream_message_recipient_stream",
         },
         preventDefault: noop,
+        stopPropagation: noop,
     };
 
     $("#stream_message_recipient_topic").data = () => ({typeahead: {shown: true}});

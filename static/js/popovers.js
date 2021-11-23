@@ -1283,8 +1283,7 @@ export function any_active() {
     // True if any popover (that this module manages) is currently shown.
     // Expanded sidebars on mobile view count as popovers as well.
     return (
-        popover_menus.is_left_sidebar_stream_setting_popover_displayed() ||
-        popover_menus.is_compose_mobile_button_popover_displayed() ||
+        popover_menus.any_active() ||
         actions_popped() ||
         user_sidebar_popped() ||
         stream_popover.stream_popped() ||

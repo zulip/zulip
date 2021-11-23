@@ -416,6 +416,12 @@ RATE_LIMITING_MIRROR_REALM_RULES = [
 DEBUG_RATE_LIMITING = DEBUG
 REDIS_PASSWORD = get_secret("redis_password")
 
+# See RATE_LIMIT_TOR_TOGETHER
+if DEVELOPMENT:
+    TOR_EXIT_NODE_FILE_PATH = os.path.join(DEPLOY_ROOT, "var/tor-exit-nodes.json")
+else:
+    TOR_EXIT_NODE_FILE_PATH = "/var/lib/zulip/tor-exit-nodes.json"
+
 ########################################################################
 # SECURITY SETTINGS
 ########################################################################

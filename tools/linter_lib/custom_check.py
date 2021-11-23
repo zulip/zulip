@@ -456,9 +456,10 @@ python_rules = RuleList(
             ],
         },
         {
-            "pattern": "exit[(]1[)]",
+            "pattern": r"exit[(][1-9]\d*[)]",
             "include_only": {"/management/commands/"},
             "description": "Raise CommandError to exit with failure in management commands",
+            "exclude": {"zerver/management/commands/process_queue.py"},
         },
         {
             "pattern": ".is_realm_admin =",

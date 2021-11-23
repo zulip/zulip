@@ -116,6 +116,11 @@
                 right: 0;
             }
 
+            [data-tippy-root] {
+                width: max-content;
+                word-wrap: unset;
+            }
+
             .restore-draft {
                 cursor: pointer;
                 margin-right: 5px;

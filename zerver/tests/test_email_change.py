@@ -11,7 +11,12 @@ from confirmation.models import (
     create_confirmation_link,
     generate_key,
 )
-from zerver.lib.actions import do_set_realm_property, do_start_email_change_process
+from zerver.lib.actions import (
+    do_deactivate_realm,
+    do_deactivate_user,
+    do_set_realm_property,
+    do_start_email_change_process,
+)
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
     EmailChangeStatus,
@@ -91,6 +96,35 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assertTrue(bool(user_profile))
         obj.refresh_from_db()
         self.assertEqual(obj.status, 1)
+
+    def test_change_email_deactivated_user_realm(self) -> None:
+        data = {"email": "hamlet-new@zulip.com"}
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        url = "/json/settings"
+        self.assert_length(mail.outbox, 0)
+        result = self.client_patch(url, data)
+        self.assert_length(mail.outbox, 1)
+        self.assert_json_success(result)
+        email_message = mail.outbox[0]
+        self.assertEqual(
+            email_message.subject,
+            "Verify your new email address",
+        )
+        body = email_message.body
+        self.assertIn("We received a request to change the email", body)
+
+        activation_url = [s for s in body.split("\n") if s][2]
+
+        do_deactivate_user(user_profile, acting_user=None)
+        response = self.client_get(activation_url)
+        self.assertEqual(response.status_code, 401)
+
+        do_deactivate_realm(user_profile.realm, acting_user=None)
+
+        response = self.client_get(activation_url)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response["Location"].endswith("/accounts/deactivated/"))
 
     def test_start_email_change_process(self) -> None:
         user_profile = self.example_user("hamlet")

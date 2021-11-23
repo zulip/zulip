@@ -1069,7 +1069,8 @@ export function get_people_for_stream_create() {
     for (const person of active_user_dict.values()) {
         if (!is_my_user_id(person.user_id)) {
             people_minus_you.push({
-                email: person.email,
+                email: get_visible_email(person),
+                show_email: settings_data.show_email(),
                 user_id: person.user_id,
                 full_name: person.full_name,
                 checked: false,

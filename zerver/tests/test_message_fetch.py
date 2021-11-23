@@ -1491,6 +1491,7 @@ class GetOldMessagesTest(ZulipTestCase):
         An unauthenticated call to GET /json/messages with valid parameters
         returns a 401.
         """
+        do_set_realm_property(get_realm("zulip"), "enable_spectator_access", True, acting_user=None)
         post_params = {
             "anchor": 1,
             "num_before": 1,
@@ -1517,6 +1518,7 @@ class GetOldMessagesTest(ZulipTestCase):
         An unauthenticated call to GET /json/messages without valid
         parameters in the `streams:web-public` narrow returns a 401.
         """
+        do_set_realm_property(get_realm("zulip"), "enable_spectator_access", True, acting_user=None)
         post_params: Dict[str, Union[int, str, bool]] = {
             "anchor": 1,
             "num_before": 1,
@@ -1534,10 +1536,35 @@ class GetOldMessagesTest(ZulipTestCase):
             result, "Not logged in: API authentication or user session required", status_code=401
         )
 
+    def test_unauthenticated_get_messages_disabled_spectator_login(self) -> None:
+        """
+        An unauthenticated call to GET /json/messages without valid
+        parameters in the `streams:web-public` narrow returns a 401.
+        """
+        do_set_realm_property(
+            get_realm("zulip"), "enable_spectator_access", False, acting_user=None
+        )
+        post_params: Dict[str, Union[int, str, bool]] = {
+            "anchor": 1,
+            "num_before": 1,
+            "num_after": 1,
+            "narrow": orjson.dumps(
+                [
+                    dict(operator="streams", operand="web-public"),
+                    dict(operator="stream", operand="Scotland"),
+                ]
+            ).decode(),
+        }
+        result = self.client_get("/json/messages", dict(post_params))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", status_code=401
+        )
+
     def test_unauthenticated_narrow_to_non_web_public_streams_without_web_public(self) -> None:
         """
         An unauthenticated call to GET /json/messages without `streams:web-public` narrow returns a 401.
         """
+        do_set_realm_property(get_realm("zulip"), "enable_spectator_access", True, acting_user=None)
         post_params: Dict[str, Union[int, str, bool]] = {
             "anchor": 1,
             "num_before": 1,
@@ -1555,6 +1582,7 @@ class GetOldMessagesTest(ZulipTestCase):
         parameters in the `streams:web-public` narrow + narrow to stream returns
         a 400 if the target stream is not web-public.
         """
+        do_set_realm_property(get_realm("zulip"), "enable_spectator_access", True, acting_user=None)
         post_params: Dict[str, Union[int, str, bool]] = {
             "anchor": 1,
             "num_before": 1,
@@ -1577,6 +1605,9 @@ class GetOldMessagesTest(ZulipTestCase):
         and then a private message.
         """
         user_profile = self.example_user("iago")
+        do_set_realm_property(
+            user_profile.realm, "enable_spectator_access", True, acting_user=user_profile
+        )
         self.login("iago")
         web_public_stream = self.make_stream("web-public-stream", is_web_public=True)
         non_web_public_stream = self.make_stream("non-web-public-stream")

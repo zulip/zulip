@@ -74,8 +74,8 @@ export function enter_day_mode() {
                         command: "/night",
                     });
                 },
-                title_text: $t({defaultMessage: "Light mode"}),
-                undo_button_text: $t({defaultMessage: "Dark mode"}),
+                title_text: $t({defaultMessage: "Light theme"}),
+                undo_button_text: $t({defaultMessage: "Dark theme"}),
             });
         },
     });
@@ -96,8 +96,8 @@ export function enter_night_mode() {
                         command: "/day",
                     });
                 },
-                title_text: $t({defaultMessage: "Dark mode"}),
-                undo_button_text: $t({defaultMessage: "Light mode"}),
+                title_text: $t({defaultMessage: "Dark theme"}),
+                undo_button_text: $t({defaultMessage: "Light theme"}),
             });
         },
     });

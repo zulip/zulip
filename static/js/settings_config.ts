@@ -48,15 +48,15 @@ export const default_view_values = {
 export const color_scheme_values = {
     automatic: {
         code: 1,
-        description: $t({defaultMessage: "Automatic"}),
+        description: $t({defaultMessage: "Sync with computer"}),
     },
     night: {
         code: 2,
-        description: $t({defaultMessage: "Night mode"}),
+        description: $t({defaultMessage: "Dark theme"}),
     },
     day: {
         code: 3,
-        description: $t({defaultMessage: "Day mode"}),
+        description: $t({defaultMessage: "Light theme"}),
     },
 };
 
@@ -415,6 +415,41 @@ export const user_role_values = {
         code: 100,
         description: $t({defaultMessage: "Owner"}),
     },
+};
+
+export const expires_in_values = {
+    // Backend support for this configuration is not available yet.
+    // hour: {
+    //     value: 1,
+    //     description: $t({defaultMessage: "1 hour"}),
+    //     default: false,
+    // },
+    day: {
+        value: 1,
+        description: $t({defaultMessage: "1 day"}),
+        default: false,
+    },
+    threeDays: {
+        value: 3,
+        description: $t({defaultMessage: "3 days"}),
+        default: false,
+    },
+    tenDays: {
+        value: 10,
+        description: $t({defaultMessage: "10 days"}),
+        default: true,
+    },
+    thirtyDays: {
+        value: 30,
+        description: $t({defaultMessage: "30 days"}),
+        default: false,
+    },
+    // Backend support for this configuration is not available yet.
+    // never: {
+    //     value: "never",
+    //     description: $t({defaultMessage: "Never expires"}),
+    //     default: false,
+    // }
 };
 
 const user_role_array = Object.values(user_role_values);

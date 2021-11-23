@@ -44,7 +44,7 @@
 
 ## Display settings
 * [Review your settings](/help/review-your-settings)
-* [Night mode](/help/night-mode)
+* [Dark theme](/help/dark-theme)
 * [Change your language](/help/change-your-language)
 * [Change your timezone](/help/change-your-timezone)
 * [Use 24-hour time](/help/change-the-time-format)

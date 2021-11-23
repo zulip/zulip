@@ -354,7 +354,7 @@ td .button {
         text-decoration: none;
     }
 
-    .default_language_modal {
+    #user_default_language_modal {
         table {
             width: 90%;
             margin-top: 20px;
@@ -907,11 +907,6 @@ input[type="checkbox"] {
 
     .buttons {
         margin: 10px 0 5px;
-    }
-
-    button.dropdown-toggle {
-        font-weight: 600;
-        color: hsl(0, 0%, 67%);
     }
 }
 

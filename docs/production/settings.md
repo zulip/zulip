@@ -32,8 +32,8 @@ to each new major release.
 [settings-py-template]: https://github.com/zulip/zulip/blob/main/zproject/prod_settings_template.py
 
 Since Zulip's settings file is a Python script, there are a number of
-other things that one can configure that are not documented; ask on
-[chat.zulip.org](https://zulip.com/developer-community/)
+other things that one can configure that are not documented; ask in
+[the Zulip development community](https://zulip.com/developer-community/)
 if there's something you'd like to do but can't figure out how to.
 
 ## Specific settings
