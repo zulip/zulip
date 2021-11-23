@@ -106,33 +106,7 @@ GOOD_HTML2 = """
 </html>
 """
 
-BAD_HTML3 = """
-<html>
-  <body>
-    {{# foobar area}}
-    foobarfoobar<blockquote>
-    <p>
-        FOOBAR
-    </p>
-                </blockquote>
-    {{/ foobar area}}
-  </body>
-</html>
-"""
-
-GOOD_HTML3 = """
-<html>
-    <body>
-        {{# foobar area}}
-        foobarfoobar<blockquote>
-                        <p>
-                            FOOBAR
-                        </p>
-                    </blockquote>
-        {{/ foobar area}}
-    </body>
-</html>
-"""
+# The old GOOD_HTML3 test was flawed.
 
 BAD_HTML4 = """
 <div>
@@ -478,7 +452,6 @@ class TestPrettyPrinter(unittest.TestCase):
         self.compare(pretty_print_html(BAD_HTML), GOOD_HTML)
         self.compare(pretty_print_html(BAD_HTML1), GOOD_HTML1)
         self.compare(pretty_print_html(BAD_HTML2), GOOD_HTML2)
-        self.compare(pretty_print_html(BAD_HTML3), GOOD_HTML3)
         self.compare(pretty_print_html(BAD_HTML4), GOOD_HTML4)
         self.compare(pretty_print_html(BAD_HTML5), GOOD_HTML5)
         self.compare(pretty_print_html(BAD_HTML6), GOOD_HTML6)
