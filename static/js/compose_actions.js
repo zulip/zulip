@@ -6,7 +6,6 @@ import * as fenced_code from "../shared/js/fenced_code";
 import * as channel from "./channel";
 import * as common from "./common";
 import * as compose from "./compose";
-import * as compose_actions from "./compose_actions";
 import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
@@ -330,7 +329,7 @@ export function respond_to_message(opts) {
         if (message === undefined) {
             // Open empty compose with nothing pre-filled since
             // user is not focused on any table row.
-            compose_actions.start("stream", {trigger: "recent_topics_nofocus"});
+            start("stream", {trigger: "recent_topics_nofocus"});
             return;
         }
     } else {
