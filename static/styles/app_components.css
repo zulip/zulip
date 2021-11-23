@@ -13,6 +13,26 @@
     display: none;
 }
 
+@media (width < $sm_min) {
+    .hide-sm {
+        display: none !important;
+    }
+
+    .show-sm {
+        display: block !important;
+    }
+}
+
+@media (width < $lg_min) {
+    .hide-lg {
+        display: none !important;
+    }
+
+    .show-lg {
+        display: block !important;
+    }
+}
+
 .light {
     font-weight: 300;
 }
