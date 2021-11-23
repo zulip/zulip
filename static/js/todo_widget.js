@@ -5,6 +5,7 @@ import render_widgets_todo_widget_tasks from "../templates/widgets/todo_widget_t
 
 import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
+import { can_edit } from "./settings_user_groups";
 
 // Any single user should send add a finite number of tasks
 // to a todo list. We arbitrarily pick this value.
@@ -190,12 +191,16 @@ export class TaskData {
 export function activate(opts) {
     const elem = opts.elem;
     const callback = opts.callback;
+    console.log(opts);
 
     const task_data = new TaskData();
 
     function render() {
         const html = render_widgets_todo_widget();
         elem.html(html);
+        const name = (opts.extra_data && opts.extra_data.name) ? opts.extra_data.name : "Task list";
+
+        elem.find(".todo-name-header").text(name);
 
         elem.find("button.add-task").on("click", (e) => {
             e.stopPropagation();
