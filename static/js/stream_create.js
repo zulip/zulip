@@ -344,6 +344,15 @@ export function show_new_stream_modal() {
     $("#stream_creation_form .stream-message-retention-days-input").hide();
     $("#stream_creation_form select[name=stream_message_retention_setting]").val("realm_default");
 
+    // Add listener to .show stream-message-retention-days-input that we've hidden above
+    $("#stream_creation_form .stream_message_retention_setting").on("change", (e) => {
+        if (e.target.value === "retain_for_period") {
+            $("#stream_creation_form .stream-message-retention-days-input").show();
+        } else {
+            $("#stream_creation_form .stream-message-retention-days-input").hide();
+        }
+    });
+
     update_announce_stream_state();
     if (stream_data.realm_has_notifications_stream()) {
         $("#announce-new-stream").show();
