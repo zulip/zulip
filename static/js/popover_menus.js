@@ -34,12 +34,17 @@ export function any_active() {
     return left_sidebar_stream_setting_popover_displayed || compose_mobile_button_popover_displayed;
 }
 
+function on_show_prep(instance) {
+    $(instance.popper).one("click", instance.hide);
+    popovers.hide_all_except_sidebars(instance);
+}
+
 export function initialize() {
     delegate("body", {
         ...default_popover_props,
         target: "#streams_inline_cog",
         onShow(instance) {
-            popovers.hide_all_except_sidebars(instance);
+            on_show_prep(instance);
             instance.setContent(
                 render_left_sidebar_stream_setting_popover({
                     can_create_streams:
@@ -49,7 +54,6 @@ export function initialize() {
                 }),
             );
             left_sidebar_stream_setting_popover_displayed = true;
-            $(instance.popper).one("click", instance.hide);
         },
         onHidden() {
             left_sidebar_stream_setting_popover_displayed = false;
@@ -62,7 +66,7 @@ export function initialize() {
         target: ".compose_mobile_button",
         placement: "top",
         onShow(instance) {
-            popovers.hide_all_except_sidebars(instance);
+            on_show_prep(instance);
             instance.setContent(
                 render_mobile_message_buttons_popover_content({
                     is_in_private_narrow: narrow_state.narrowed_to_pms(),
@@ -71,7 +75,6 @@ export function initialize() {
             compose_mobile_button_popover_displayed = true;
 
             const $popper = $(instance.popper);
-            $popper.one("click", instance.hide);
             $popper.one("click", ".compose_mobile_stream_button", () => {
                 compose_actions.start("stream", {trigger: "new topic button"});
             });
