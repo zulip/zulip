@@ -48,7 +48,7 @@ process.
 
 * Write a draft webhook handler under `zerver/webhooks/`. There are a lot of
   examples in that directory that you can copy. We recommend templating off
-  a short one, like `stash` or `zendesk`.
+  a short one, like `zendesk`.
 
 * Add a test for your fixture at `zerver/webhooks/<mywebhook>/tests.py`.
   Run the tests for your integration like this:
