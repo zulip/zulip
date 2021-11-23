@@ -97,13 +97,6 @@
     border-radius: 4px;
 }
 
-.subscription-control-label {
-    display: inline-block;
-    vertical-align: middle;
-    line-height: 18px;
-    padding: 5px;
-}
-
 .sp-preview {
     width: 20px;
     border: none;
@@ -127,10 +120,6 @@
 .muted-sub,
 .control-label-disabled {
     color: hsl(0, 0%, 64%);
-}
-
-.sub_setting_checkbox .checkbox span {
-    margin-top: 7px !important;
 }
 
 .sub_setting_checkbox .muted-sub label,
@@ -200,11 +189,19 @@
     color: hsl(0, 100%, 50%);
 }
 
-.stream_setting_subsection_title {
+/* TODO: Unify with settings.css definition */
+h3.stream_setting_subsection_title {
     display: inline-block;
     font-size: 1.5em;
+    font-weight: normal;
     line-height: 1.5;
-    margin: 10px 0 0;
+}
+
+h4.stream_setting_subsection_title {
+    display: inline-block;
+    font-size: 1.35em;
+    font-weight: normal;
+    line-height: 1.5;
 }
 
 .new-stream-name,
@@ -959,11 +956,6 @@
 
         .subscription-type-text {
             display: inline;
-
-            ul {
-                margin: 0 0 10px 14px;
-                list-style-type: unset;
-            }
         }
 
         b {
@@ -1015,13 +1007,7 @@
 }
 
 #subscription_overlay .subsection-parent {
-    margin: 0;
-    padding: 5px 10px;
-
     .input-group {
-        border-bottom: 1px solid hsl(0, 0%, 87%);
-        padding: 5px 0;
-
         input[type="checkbox"] {
             margin-top: 0;
         }
@@ -1036,6 +1022,10 @@
 
         input[type="radio"] {
             margin-right: 5px;
+        }
+
+        .inline {
+            display: inline !important;
         }
     }
 }
