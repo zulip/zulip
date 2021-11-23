@@ -870,6 +870,7 @@ markdown_rules = RuleList(
         },
         {
             "pattern": r"\][(][^#h]",
+            "exclude_pattern": "mailto:",
             "include_only": {"README.md", "CONTRIBUTING.md"},
             "description": "Use absolute links from docs served by GitHub",
         },
