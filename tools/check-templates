@@ -145,19 +145,10 @@ def check_handlebar_templates(templates: Iterable[str], fix: bool) -> None:
     # Check all our handlebars templates.
     templates = [fn for fn in templates if fn.endswith(".hbs")]
 
-    IGNORE_FILES = [
-        # TODO: Add some exclude mechanism for the line-wrapping issue here.
-        "static/templates/recipient_row.hbs",
-    ]
-
     for fn in templates:
-        if fn in IGNORE_FILES:
-            continue
         validate(fn=fn, check_indent=True)
 
     for fn in templates:
-        if fn in IGNORE_FILES:
-            continue
         if not validate_indent_html(fn, fix):
             sys.exit(1)
 
