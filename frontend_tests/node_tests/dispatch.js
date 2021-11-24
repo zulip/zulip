@@ -66,6 +66,7 @@ const settings_user_groups = mock_esm("../../static/js/settings_user_groups");
 const settings_users = mock_esm("../../static/js/settings_users");
 const stream_data = mock_esm("../../static/js/stream_data");
 const stream_events = mock_esm("../../static/js/stream_events");
+const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
 const submessage = mock_esm("../../static/js/submessage");
 const typing_events = mock_esm("../../static/js/typing_events");
 const ui = mock_esm("../../static/js/ui");
@@ -347,11 +348,31 @@ run_test("realm settings", ({override}) => {
         assert.equal(page_params[parameter_name], 1);
     }
 
+    let update_called = false;
     let event = event_fixtures.realm__update__create_private_stream_policy;
+    stream_settings_ui.update_stream_privacy_choices = (property) => {
+        assert_same(property, "create_private_stream_policy");
+        update_called = true;
+    };
     test_realm_integer(event, "realm_create_private_stream_policy");
 
+    update_called = false;
     event = event_fixtures.realm__update__create_public_stream_policy;
+    stream_settings_ui.update_stream_privacy_choices = (property) => {
+        assert_same(property, "create_public_stream_policy");
+        update_called = true;
+    };
     test_realm_integer(event, "realm_create_public_stream_policy");
+
+    update_called = false;
+    event = event_fixtures.realm__update__create_web_public_stream_policy;
+    stream_settings_ui.update_stream_privacy_choices = (property) => {
+        assert_same(property, "create_web_public_stream_policy");
+        update_called = true;
+    };
+    dispatch(event);
+    assert_same(page_params.realm_create_web_public_stream_policy, 2);
+    assert_same(update_called, true);
 
     event = event_fixtures.realm__update__invite_to_stream_policy;
     test_realm_integer(event, "realm_invite_to_stream_policy");
