@@ -46,6 +46,7 @@ mock_esm("../../static/js/message_lists", {
 });
 mock_esm("../../static/js/resize", {
     reset_compose_textarea_max_height: noop,
+    reset_compose_preview_area_max_height: noop,
 });
 
 const people = zrequire("people");

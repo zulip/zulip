@@ -183,6 +183,33 @@ export function reset_compose_textarea_max_height(bottom_whitespace_height) {
     );
 }
 
+export function reset_compose_preview_area_max_height(
+    bottom_whitespace_height,
+    compose_non_preview_area_height,
+) {
+    // Compute bottom_whitespace_height if not provided by caller.
+    if (bottom_whitespace_height === undefined) {
+        const h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
+        bottom_whitespace_height = h.bottom_whitespace_height;
+    }
+
+    // Compute compose_non_preview_area_height if not provided by caller.
+    if (compose_non_preview_area_height === undefined) {
+        const compose_height = Number.parseInt($("#compose").outerHeight(), 10);
+        const compose_preview_area_height = Number.parseInt(
+            $("#preview_message_area").outerHeight(),
+            10,
+        );
+        compose_non_preview_area_height = compose_height - compose_preview_area_height;
+    }
+
+    $("#preview_message_area").css(
+        "max-height",
+        // The 5 here leaves space for the selected message border.
+        bottom_whitespace_height - compose_non_preview_area_height - 5,
+    );
+}
+
 export function resize_bottom_whitespace(h) {
     $("#bottom_whitespace").height(h.bottom_whitespace_height);
 
@@ -194,6 +221,7 @@ export function resize_bottom_whitespace(h) {
     // we also resize compose every time it is opened.
     if ($(".message_comp").is(":visible")) {
         reset_compose_textarea_max_height(h.bottom_whitespace_height);
+        reset_compose_preview_area_max_height(h.bottom_whitespace_height);
     }
 }
 

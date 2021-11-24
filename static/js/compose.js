@@ -667,6 +667,8 @@ export function initialize() {
         const content = $("#compose-textarea").val();
         $("#compose-textarea").hide();
         $("#compose .markdown_preview").hide();
+        const compose_non_preview_area_height = $("#compose").height();
+        resize.reset_compose_preview_area_max_height(undefined, compose_non_preview_area_height);
         $("#compose .undo_markdown_preview").show();
         $("#compose .preview_message_area").show();
 
