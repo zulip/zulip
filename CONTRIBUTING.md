@@ -63,7 +63,7 @@ to help.
 - Read [What makes a great Zulip contributor](#what-makes-a-great-zulip-contributor).
 - [Install the development environment](https://zulip.readthedocs.io/en/latest/development/overview.html),
   getting help in
-  [#development help](https://chat.zulip.org/#narrow/stream/49-development-help)
+  [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
   if you run into any troubles.
 - Familiarize yourself with [using the development environment](https://zulip.readthedocs.io/en/latest/development/using.html).
 - Go through the [new application feature
@@ -221,9 +221,9 @@ labels.
   explains _why_ you decided to start from scratch.
 - **Can I come up with my own feature idea and work on it?** We welcome
   suggestions of features or other improvements that you feel would be valuable. If you
-  have a new feature you'd like to add, we recommend you start by posting in
-  [#new members](https://chat.zulip.org/#narrow/stream/95-new-members) with the
-  feature idea and the problem that you're hoping to solve.
+  have a new feature you'd like to add, you can start a conversation [in our
+  development community](https://zulip.com/developer-community/#where-do-i-send-my-message)
+  explaining the feature idea and the problem that you're hoping to solve.
 
 ## What makes a great Zulip contributor?
 
