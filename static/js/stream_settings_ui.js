@@ -988,22 +988,29 @@ export function sub_or_unsub(sub, stream_row) {
     }
 }
 
-export function hide_or_disable_web_public_stream_privacy_option(container) {
+export function update_web_public_stream_privacy_option_state(container) {
     const web_public_stream_elem = container.find(
         `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.web_public.code)}']`,
     );
-    if (!web_public_stream_elem.is(":checked")) {
-        if (
-            !page_params.server_web_public_streams_enabled ||
-            !page_params.realm_enable_spectator_access
-        ) {
-            web_public_stream_elem.closest(".radio-input-parent").hide();
+    if (
+        !page_params.server_web_public_streams_enabled ||
+        (!page_params.realm_enable_spectator_access && !web_public_stream_elem.is(":checked"))
+    ) {
+        web_public_stream_elem.closest(".radio-input-parent").hide();
+        container
+            .find(".stream-privacy-values .radio-input-parent:visible:last")
+            .css("border-bottom", "none");
+    } else {
+        if (!web_public_stream_elem.is(":visible")) {
             container
                 .find(".stream-privacy-values .radio-input-parent:visible:last")
-                .css("border-bottom", "none");
-        } else {
-            web_public_stream_elem.prop("disabled", true);
+                .css("border-bottom", "");
+            web_public_stream_elem.closest(".radio-input-parent").show();
         }
+        web_public_stream_elem.prop(
+            "disabled",
+            !settings_data.user_can_create_web_public_streams(),
+        );
     }
 }
 
@@ -1030,9 +1037,7 @@ export function disable_private_stream_privacy_option(container) {
 }
 
 export function hide_or_disable_stream_privacy_options_if_required(container) {
-    if (!settings_data.user_can_create_web_public_streams()) {
-        hide_or_disable_web_public_stream_privacy_option(container);
-    }
+    update_web_public_stream_privacy_option_state(container);
 
     if (!settings_data.user_can_create_public_streams()) {
         disable_public_stream_privacy_option(container);
