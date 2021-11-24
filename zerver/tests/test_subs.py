@@ -2729,6 +2729,40 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Unknown subscription property: bad")
 
+    def test_ignored_parameters_in_subscriptions_properties_endpoint(self) -> None:
+        """
+        Sending an invalid parameter with a valid parameter returns
+        an `ignored_parameters_unsupported` array.
+        """
+        test_user = self.example_user("hamlet")
+        self.login_user(test_user)
+
+        subs = gather_subscriptions(test_user)[0]
+        sub = subs[0]
+        json_result = self.api_post(
+            test_user,
+            "/api/v1/users/me/subscriptions/properties",
+            {
+                "subscription_data": orjson.dumps(
+                    [
+                        {
+                            "property": "wildcard_mentions_notify",
+                            "stream_id": sub["stream_id"],
+                            "value": True,
+                        }
+                    ]
+                ).decode(),
+                "invalid_parameter": orjson.dumps(
+                    [{"property": "pin_to_top", "stream_id": sub["stream_id"], "value": False}]
+                ).decode(),
+            },
+        )
+
+        self.assert_json_success(json_result)
+        result = orjson.loads(json_result.content)
+        self.assertIn("ignored_parameters_unsupported", result)
+        self.assertEqual(result["ignored_parameters_unsupported"], ["invalid_parameter"])
+
 
 class SubscriptionRestApiTest(ZulipTestCase):
     def test_basic_add_delete(self) -> None:

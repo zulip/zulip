@@ -877,7 +877,6 @@ def update_subscription_properties_backend(
         "pin_to_top": check_bool,
         "wildcard_mentions_notify": check_bool,
     }
-    response_data = []
 
     for change in subscription_data:
         stream_id = change["stream_id"]
@@ -900,6 +899,16 @@ def update_subscription_properties_backend(
             user_profile, sub, stream, property, value, acting_user=user_profile
         )
 
-        response_data.append({"stream_id": stream_id, "property": property, "value": value})
+    # TODO: Do this more generally, see update_realm_user_settings_defaults.realm.py
+    from zerver.lib.request import RequestNotes
 
-    return json_success({"subscription_data": response_data})
+    request_notes = RequestNotes.get_notes(request)
+    for req_var in request.POST:
+        if req_var not in request_notes.processed_parameters:
+            request_notes.ignored_parameters.add(req_var)
+
+    result: Dict[str, Any] = {}
+    if len(request_notes.ignored_parameters) > 0:
+        result["ignored_parameters_unsupported"] = list(request_notes.ignored_parameters)
+
+    return json_success(result)
