@@ -197,7 +197,7 @@ def pretty_print_html(html: str) -> str:
     return "\n".join(formatted_lines)
 
 
-def validate_indent_html(fn: str, fix: bool) -> int:
+def validate_indent_html(fn: str, fix: bool) -> bool:
     with open(fn) as f:
         html = f.read()
     phtml = pretty_print_html(html)
@@ -206,8 +206,8 @@ def validate_indent_html(fn: str, fix: bool) -> int:
             print(GREEN + "Automatically fixing problems..." + ENDC)
             with open(fn, "w") as f:
                 f.write(phtml)
-            # Since we successfully fixed the issues, we exit with status 0
-            return 0
+            # Since we successfully fixed the issues, we return True.
+            return True
         print(
             "Invalid indentation detected in file: "
             f"{fn}\nDiff for the file against expected indented file:",
@@ -216,5 +216,5 @@ def validate_indent_html(fn: str, fix: bool) -> int:
         subprocess.run(["diff", fn, "-"], input=phtml, universal_newlines=True)
         print()
         print("This problem can be fixed with the `--fix` option.")
-        return 0
-    return 1
+        return False
+    return True
