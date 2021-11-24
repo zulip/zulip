@@ -1040,10 +1040,6 @@ h4.stream_setting_subsection_title {
             margin: 5px 0 5px 5px;
             padding: 5px 0;
 
-            input[type="radio"] {
-                margin: 3.5px 0 1px;
-            }
-
             &:last-of-type {
                 border-bottom: none;
             }
@@ -1067,6 +1063,15 @@ h4.stream_setting_subsection_title {
             }
         }
     }
+}
+
+.stream-creation-body input[type="radio"] {
+    margin: 3.5px 0 1px;
+}
+
+/* we have this 2px difference due to the font size being larger in the modal */
+#stream_privacy_modal input[type="radio"] {
+    margin: 5.5px 0 1px;
 }
 
 #change_stream_description {
