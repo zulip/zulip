@@ -254,6 +254,13 @@ exports.fixtures = {
         value: 2,
     },
 
+    realm__update__create_web_public_stream_policy: {
+        type: "realm",
+        op: "update",
+        property: "create_web_public_stream_policy",
+        value: 2,
+    },
+
     realm__update__default_code_block_language: {
         type: "realm",
         op: "update",

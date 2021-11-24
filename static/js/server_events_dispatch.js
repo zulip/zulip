@@ -233,6 +233,15 @@ export function dispatch_normal_event(event) {
                         if (event.property === "name" && window.electron_bridge !== undefined) {
                             window.electron_bridge.send_event("realm_name", event.value);
                         }
+
+                        const stream_creation_settings = [
+                            "create_private_stream_policy",
+                            "create_public_stream_policy",
+                            "create_web_public_stream_policy",
+                        ];
+                        if (stream_creation_settings.includes(event.property)) {
+                            stream_settings_ui.update_stream_privacy_choices(event.property);
+                        }
                     }
                     break;
                 case "update_dict":

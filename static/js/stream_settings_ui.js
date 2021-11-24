@@ -1047,6 +1047,32 @@ export function hide_or_disable_stream_privacy_options_if_required(container) {
     update_private_stream_privacy_option_state(container);
 }
 
+export function update_stream_privacy_choices(policy) {
+    if (!overlays.streams_open()) {
+        return;
+    }
+    const change_privacy_modal_opened = $("#stream_privacy_modal").is(":visible");
+    const stream_creation_form_opened = $("#stream-creation").is(":visible");
+
+    if (!change_privacy_modal_opened && !stream_creation_form_opened) {
+        return;
+    }
+    let container = $("#stream-creation");
+    if (change_privacy_modal_opened) {
+        container = $("#stream_privacy_modal");
+    }
+
+    if (policy === "create_private_stream_policy") {
+        update_private_stream_privacy_option_state(container);
+    }
+    if (policy === "create_public_stream_policy") {
+        update_public_stream_privacy_option_state(container);
+    }
+    if (policy === "create_web_public_stream_policy") {
+        update_web_public_stream_privacy_option_state(container);
+    }
+}
+
 export function initialize() {
     $("#subscriptions_table").on("click", ".create_stream_button", (e) => {
         e.preventDefault();
