@@ -242,6 +242,12 @@ export function dispatch_normal_event(event) {
                         if (stream_creation_settings.includes(event.property)) {
                             stream_settings_ui.update_stream_privacy_choices(event.property);
                         }
+
+                        if (event.property === "enable_spectator_access") {
+                            stream_settings_ui.update_stream_privacy_choices(
+                                "create_web_public_stream_policy",
+                            );
+                        }
                     }
                     break;
                 case "update_dict":
