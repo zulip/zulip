@@ -203,7 +203,7 @@ def validate_indent_html(fn: str, fix: bool) -> bool:
     phtml = pretty_print_html(html)
     if not html.split("\n") == phtml.split("\n"):
         if fix:
-            print(GREEN + "Automatically fixing problems..." + ENDC)
+            print(GREEN + f"Automatically fixing indentation for {fn}" + ENDC)
             with open(fn, "w") as f:
                 f.write(phtml)
             # Since we successfully fixed the issues, we return True.
