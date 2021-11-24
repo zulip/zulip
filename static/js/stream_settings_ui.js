@@ -1014,11 +1014,11 @@ export function update_web_public_stream_privacy_option_state(container) {
     }
 }
 
-export function disable_public_stream_privacy_option(container) {
+export function update_public_stream_privacy_option_state(container) {
     const public_stream_elem = container.find(
         `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.public.code)}']`,
     );
-    public_stream_elem.prop("disabled", true);
+    public_stream_elem.prop("disabled", !settings_data.user_can_create_public_streams());
 }
 
 export function disable_private_stream_privacy_option(container) {
@@ -1039,9 +1039,7 @@ export function disable_private_stream_privacy_option(container) {
 export function hide_or_disable_stream_privacy_options_if_required(container) {
     update_web_public_stream_privacy_option_state(container);
 
-    if (!settings_data.user_can_create_public_streams()) {
-        disable_public_stream_privacy_option(container);
-    }
+    update_public_stream_privacy_option_state(container);
 
     if (!settings_data.user_can_create_private_streams()) {
         disable_private_stream_privacy_option(container);
