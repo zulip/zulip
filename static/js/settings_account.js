@@ -396,10 +396,8 @@ export function set_up() {
         overlays.open_modal("api_key_modal", {
             autoremove: true,
             micromodal: true,
-            micromodal_opts: {
-                onShow: () => {
-                    $("#get_api_key_password").trigger("focus");
-                },
+            on_show: () => {
+                $("#get_api_key_password").trigger("focus");
             },
         });
         e.preventDefault();
