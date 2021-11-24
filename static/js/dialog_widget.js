@@ -134,7 +134,7 @@ export function launch(conf) {
         } else if (conf.close_on_submit) {
             close_modal();
         }
-        $("#dialog_error").empty();
+        $("#dialog_error").hide();
         conf.on_click(e);
     });
 
