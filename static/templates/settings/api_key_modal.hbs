@@ -9,6 +9,7 @@
             </header>
             <main class="modal__content">
                 <div id="password_confirmation">
+                    <span class="alert-notification" id="api_key_status"></span>
                     <div id="api_key_form">
                         <p>{{t "Please re-enter your password to confirm your identity." }}
                             <a href="/accounts/password/reset/" target="_blank" rel="noopener noreferrer">
@@ -21,7 +22,6 @@
                             <i class="fa fa-eye-slash password_visibility_toggle tippy-zulip-tooltip" role="button"></i>
                         </div>
                     </div>
-                    <span class="alert-notification" id="api_key_status"></span>
                 </div>
                 <div id="show_api_key">
                     <p>{{t "Your API key:" }}</p>
