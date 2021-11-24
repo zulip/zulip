@@ -190,6 +190,7 @@ export function dispatch_normal_event(event) {
                 bot_creation_policy: settings_bots.update_bot_permissions_ui,
                 create_public_stream_policy: noop,
                 create_private_stream_policy: noop,
+                create_web_public_stream_policy: noop,
                 invite_to_stream_policy: noop,
                 default_code_block_language: noop,
                 default_language: noop,
