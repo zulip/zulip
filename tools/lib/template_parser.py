@@ -242,9 +242,7 @@ def indent_level(s: str) -> int:
     return len(s) - len(s.lstrip())
 
 
-def validate(
-    fn: Optional[str] = None, text: Optional[str] = None, check_indent: bool = True
-) -> None:
+def validate(fn: Optional[str] = None, text: Optional[str] = None) -> None:
     assert fn or text
 
     if fn is None:
@@ -318,7 +316,7 @@ def validate(
             elif start_tag != end_tag:
                 problem = "Mismatched tag."
 
-            if not problem and check_indent and (end_line > start_line + max_lines):
+            if not problem and (end_line > start_line + max_lines):
                 if end_col != start_col:
                     problem = "Bad indentation."
 
