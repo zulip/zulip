@@ -223,12 +223,6 @@ export function user_can_add_custom_emoji(): boolean {
 }
 
 export function user_can_edit_topic_of_any_message(): boolean {
-    if (
-        page_params.realm_edit_topic_policy ===
-        settings_config.common_message_policy_values.by_everyone.code
-    ) {
-        return true;
-    }
     return user_has_permission(page_params.realm_edit_topic_policy);
 }
 
