@@ -418,6 +418,16 @@ run_test("realm settings", ({override}) => {
     dispatch(event);
     assert_same(page_params.realm_default_code_block_language, "javascript");
 
+    update_called = false;
+    stream_settings_ui.update_stream_privacy_choices = (property) => {
+        assert_same(property, "create_web_public_stream_policy");
+        update_called = true;
+    };
+    event = event_fixtures.realm__update__enable_spectator_access;
+    dispatch(event);
+    assert_same(page_params.realm_enable_spectator_access, true);
+    assert_same(update_called, true);
+
     event = event_fixtures.realm__update_dict__default;
     page_params.realm_allow_message_editing = false;
     page_params.realm_message_content_edit_limit_seconds = 0;

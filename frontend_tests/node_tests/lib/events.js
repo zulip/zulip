@@ -289,6 +289,13 @@ exports.fixtures = {
         value: false,
     },
 
+    realm__update__enable_spectator_access: {
+        type: "realm",
+        op: "update",
+        property: "enable_spectator_access",
+        value: true,
+    },
+
     realm__update__invite_required: {
         type: "realm",
         op: "update",
