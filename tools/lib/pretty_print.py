@@ -8,7 +8,7 @@ from .template_parser import Token, is_django_block_tag, tokenize
 
 def requires_indent(line: str) -> bool:
     line = line.lstrip()
-    return line.startswith("<")
+    return line.startswith("<") or line.startswith("{{#each")
 
 
 def open_token(token: Token) -> bool:
