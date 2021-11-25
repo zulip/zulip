@@ -459,11 +459,28 @@ export function set_up() {
         e.preventDefault();
         e.stopPropagation();
         const change_password_error = $("#change_password_modal").find("#dialog_error");
+        change_password_error.hide();
 
         const data = {
             old_password: $("#old_password").val(),
             new_password: $("#new_password").val(),
         };
+
+        function show_error_message(rendered_error_msg) {
+            change_password_error.html(rendered_error_msg);
+            change_password_error.addClass("alert-error").show();
+            dialog_widget.hide_dialog_spinner();
+        }
+
+        if (data.old_password === "") {
+            show_error_message($t_html({defaultMessage: "Please enter your password"}));
+            return;
+        }
+
+        if (data.new_password === "") {
+            show_error_message($t_html({defaultMessage: "Please choose a new password"}));
+            return;
+        }
 
         const new_pw_field = $("#new_password");
         const new_pw = data.new_password;
