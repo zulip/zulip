@@ -37,11 +37,8 @@ function immediate(f) {
     return () => f();
 }
 
-// Find the files we need to run.
+// Find the files we need to run (argv[0] is node command, argv[1] is this file).
 const files = process.argv.slice(2);
-if (files.length === 0) {
-    throw new Error("No tests found");
-}
 
 // Set up our namespace helpers.
 const window = new Proxy(global, {

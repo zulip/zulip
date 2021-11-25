@@ -20,7 +20,7 @@ sanity_check.check_venv(__file__)
 import orjson
 from zulint.printer import BOLDRED, CYAN, ENDC, GREEN
 
-INDEX_JS = os.path.join(ROOT_DIR, "frontend_tests/zjsunit/index.js")
+PARALLEL_RUNNER_JS = os.path.join(ROOT_DIR, "frontend_tests/zjsunit/parallel_runner.js")
 NODE_COVERAGE_PATH = os.path.join(ROOT_DIR, "var/node-coverage/coverage-final.json")
 
 # Ideally, we wouldn't need this line, but it seems to be required to
@@ -223,12 +223,6 @@ options = parser.parse_args()
 individual_files = options.args
 parallel = options.parallel
 
-if options.coverage and parallel > 1:
-    parallel = 1
-    print(
-        BOLDRED + "You cannot use --coverage with parallel tests. Running in serial mode.\n" + ENDC
-    )
-
 assert_provisioning_status_ok(options.skip_provision_check)
 
 
@@ -281,11 +275,11 @@ def run_tests_via_node_js() -> int:
     os.environ["TZ"] = "UTC"
 
     # The index.js test runner is the real "driver" here, and we launch
-    # with either nyc or node, depending on whether we want coverage
-    # reports.  Running under nyc is slower and creates funny
-    # tracebacks, so you generally want to get coverage reports only
-    # after making sure tests will pass.
-    node_tests_cmd = ["node", "--stack-trace-limit=100", INDEX_JS]
+    # with either nyc or node, via parallel_runner.js, depending on
+    # whether we want coverage reports.  Running under nyc is slower and
+    # creates funny tracebacks, so you generally want to get coverage
+    # reports only after making sure tests will pass.
+    node_tests_cmd = ["node", "--stack-trace-limit=100", PARALLEL_RUNNER_JS]
     if individual_files:
         # If we passed a specific set of tests, run in serial mode.
         global parallel
@@ -300,17 +294,9 @@ def run_tests_via_node_js() -> int:
 
     # If we got this far, we can run the tests!
     ret = 0
-    if parallel > 1:
-        sub_tests = [test_files[i::parallel] for i in range(parallel)]
-        parallel_processes = [subprocess.Popen(node_tests_cmd + sub_test) for sub_test in sub_tests]
-
-        for process in parallel_processes:
-            status_code = process.wait()
-            if status_code != 0:
-                ret = status_code
-        return ret
-
+    node_tests_cmd += str(parallel)
     node_tests_cmd += test_files
+
     if options.coverage:
         coverage_dir = os.path.join(ROOT_DIR, "var/node-coverage")
 
@@ -322,7 +308,8 @@ def run_tests_via_node_js() -> int:
         command += node_tests_cmd
     else:
         # Normal testing, no coverage analysis.
-        # Run the index.js test runner, which runs all the other tests.
+        # Run the index.js test runner, via parallel_runner.js,
+        # which runs all the other tests.
         command = node_tests_cmd
 
     try:
