@@ -28,7 +28,6 @@ const activity = mock_esm("../../static/js/activity");
 const alert_words_ui = mock_esm("../../static/js/alert_words_ui");
 const attachments_ui = mock_esm("../../static/js/attachments_ui");
 const bot_data = mock_esm("../../static/js/bot_data");
-const compose = mock_esm("../../static/js/compose");
 const composebox_typeahead = mock_esm("../../static/js/composebox_typeahead");
 const dark_theme = mock_esm("../../static/js/dark_theme");
 const emoji_picker = mock_esm("../../static/js/emoji_picker");
@@ -838,8 +837,6 @@ run_test("user_settings", ({override}) => {
         assert.equal(stub.num_calls, 1);
         assert_same(user_settings.demote_inactive_streams, 2);
     }
-
-    override(compose, "toggle_enter_sends_ui", noop);
 
     event = event_fixtures.user_settings__enter_sends;
     user_settings.enter_sends = false;
