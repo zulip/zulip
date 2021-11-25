@@ -463,7 +463,6 @@ export function set_up() {
         const data = {
             old_password: $("#old_password").val(),
             new_password: $("#new_password").val(),
-            confirm_password: $("#confirm_password").val(),
         };
 
         const new_pw_field = $("#new_password");
