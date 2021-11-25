@@ -233,7 +233,6 @@ jobs:
           # the top explain how to build and upload these images.
           - docker_image: zulip/ci:buster-3.4
             name: 3.4 Version Upgrade
-            is_focal: true
             os: buster
 
     name: ${{ matrix.name  }}
