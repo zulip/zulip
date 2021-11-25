@@ -33,6 +33,7 @@ mock_esm("../../static/js/stream_popover", {
     hide_topic_popover: noop,
     hide_all_messages_popover: noop,
     hide_starred_messages_popover: noop,
+    hide_drafts_popover: noop,
     hide_streamlist_sidebar: noop,
 });
 
