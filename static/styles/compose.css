@@ -174,7 +174,6 @@
 
 #below-compose-content {
     display: flex;
-    flex-direction: column;
     width: 100%;
     margin-top: 6px;
     margin-bottom: -2px;
@@ -416,7 +415,6 @@ input.recipient_box {
 
 #compose-send-button {
     height: 25px;
-    float: right;
     padding-top: 3px;
     padding-bottom: 3px;
     margin-bottom: 0;
@@ -425,10 +423,8 @@ input.recipient_box {
 }
 
 #send_controls {
-    font-size: 0.6rem;
+    font-size: 0.8em;
     height: 2.2em;
-    display: inline;
-    float: right;
 
     .compose_checkbox_label {
         color: hsl(0, 0%, 67%);
@@ -475,8 +471,10 @@ input.recipient_box {
 }
 
 .compose_right_float_container {
+    display: flex;
     white-space: nowrap;
     gap: 4px;
+    margin-top: 10px;
 }
 
 a.compose_control_button {
