@@ -1,9 +1,32 @@
-Mirror a Slack channel in Zulip!
+You can set up a bridge to mirror messages between Slack channels and Zulip
+topics. Any message sent to the Slack channel will appear in the connected Zulip
+topic, and vice versa. This is a great option to enable inter-team communication
+for organizations where some teams
+primarily use Zulip while others primarily use Slack. 
 
-If you only want to bridge one channel in Slack with one topic in Zulip, we
-recommend using [Matterbridge](https://github.com/42wim/matterbridge).
-If you want to bridge multiple channels in Slack with multiple topics in a
-Zulip stream, you may continue reading this guide.
+Once the initial setup is complete, you can mirror additional channels/topics by simply
+subscribing the Slack bot you've created to those channels. Teams can thus
+mirror additional channels without assistance from IT/admins.
+
+Note that there are two alternative ways to bridge between Slack and Zulip:
+
+* [Matterbridge](https://github.com/42wim/matterbridge) is third-party
+  integration option with similar functionality. It requires a configuration
+  change for each additional channel/topic pair you wish to mirror, but may be
+  convenient if you also need to bridge between other pairs of chat protocols.
+
+* [Slack-to-Zulip](/integrations/doc/slack) is a one-way integration that sends
+  Slack messages to a Zulip topic. It is very easy to set up.
+
+See also our documentation for
+[importing your organization from Slack](/help/import-from-slack).
+
+### Before you start
+
+You will need a server for hosting the bridge between Slack and Zulip. If you
+do not otherwise run a server, XX or YY are easy options for setting one up.
+
+All the commands below should be run on the server you will use for hosting the bridge.
 
 ### Install the bridge software
 
