@@ -827,6 +827,11 @@ enabling `zproject.backends.GenericOpenIdConnectBackend` in
 `AUTHENTICATION_BACKENDS` and following the steps outlined in the
 comment documentation in `/etc/zulip/settings.py`.
 
+If your server was originally installed from a release in the
+`4.x` series or earlier, you will need to update your `settings.py`
+file. You can find instructions on how to do that in a
+[separate doc][update-inline-comments].
+
 Note that `SOCIAL_AUTH_OIDC_ENABLED_IDPS` only supports a single IdP currently.
 
 The Return URL to authorize with the provider is
