@@ -167,6 +167,9 @@ IGNORED_PHRASES = [
     r"University of California San Diego",
     # Used in stream creation form
     r"email hidden",
+    # Use in compose box.
+    r"to send",
+    r"to add a new line",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

@@ -317,12 +317,9 @@ test_ui("enter_with_preview_open", ({override}) => {
     // Test sending a message without content.
     $("#compose-textarea").val("");
     $("#compose .preview_message_area").show();
-    $("#enter_sends").prop("checked", true);
     user_settings.enter_sends = true;
 
     compose.enter_with_preview_open();
-
-    assert.ok($("#enter_sends").prop("checked"));
     assert.equal($("#compose-error-msg").html(), "never-been-set");
 });
 
