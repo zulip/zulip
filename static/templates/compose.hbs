@@ -3,26 +3,30 @@
         <div id="compose_buttons">
             <span class="new_message_button reply_button_container">
                 <button type="button" class="button small rounded compose_reply_button"
-                    id="left_bar_compose_reply_button_big" title="{{t 'Reply to selected message' }} (r)">
+                  id="left_bar_compose_reply_button_big"
+                  title="{{t 'Reply to selected message' }} (r)">
                     <span class="compose_reply_button_label">{{t 'Compose message' }}</span>
                 </button>
             </span>
             <span class="new_message_button mobile_button_container">
                 <button type="button" class="button small rounded compose_mobile_button"
-                    id="left_bar_compose_mobile_button_big" title="{{t 'New message' }} (c)">
+                  id="left_bar_compose_mobile_button_big"
+                  title="{{t 'New message' }} (c)">
                     <span>+</span>
                 </button>
             </span>
             <span class="new_message_button stream_button_container">
                 <button type="button" class="button small rounded compose_stream_button"
-                    id="left_bar_compose_stream_button_big" title="{{t 'New topic' }} (c)">
+                  id="left_bar_compose_stream_button_big"
+                  title="{{t 'New topic' }} (c)">
                     <span class="compose_stream_button_label">{{t 'New topic' }}</span>
                 </button>
             </span>
             {{#unless embedded }}
             <span class="new_message_button private_button_container">
                 <button type="button" class="button small rounded compose_private_button"
-                    id="left_bar_compose_private_button_big" title="{{t 'New private message' }} (x)">
+                  id="left_bar_compose_private_button_big"
+                  title="{{t 'New private message' }} (x)">
                     <span class="compose_private_button_label">{{t 'New private message' }}</span>
                 </button>
             </span>
@@ -47,12 +51,9 @@
         <div id="out-of-view-notification" class="notification-alert"></div>
         <div class="composition-area">
             <div id="compose_top_right">
-                <button type="button" class="expand_composebox_button fa fa-angle-up"
-                    aria-label="{{t 'Expand compose' }}" tabindex=0 title="{{t 'Expand compose' }}"></button>
-                <button type="button" class="collapse_composebox_button fa fa-angle-down"
-                    aria-label="{{t 'Collapse compose' }}" tabindex=0 title="{{t 'Collapse compose' }}"></button>
-                <button type="button" class="close" id='compose_close'
-                    title="{{t 'Cancel compose' }} (Esc)">&times;</button>
+                <button type="button" class="expand_composebox_button fa fa-angle-up" aria-label="{{t 'Expand compose' }}" tabindex=0 title="{{t 'Expand compose' }}"></button>
+                <button type="button" class="collapse_composebox_button fa fa-angle-down" aria-label="{{t 'Collapse compose' }}" tabindex=0 title="{{t 'Collapse compose' }}"></button>
+                <button type="button" class="close" id='compose_close' title="{{t 'Cancel compose' }} (Esc)">&times;</button>
             </div>
             <form id="send_message_form" action="/json/messages" method="post">
                 {{ csrf_input }}
@@ -63,14 +64,9 @@
                             <span id="compose-lock-icon">
                                 <i class="fa fa-lock" title="{{t 'This is a private stream' }}" aria-hidden="true"></i>
                             </span>
-                            <input type="text" class="recipient_box" name="stream_message_recipient_stream"
-                                id="stream_message_recipient_stream" maxlength="30" value=""
-                                placeholder="{{t 'Stream' }}" autocomplete="off" tabindex="0"
-                                aria-label="{{t 'Stream' }}" />
+                            <input type="text" class="recipient_box" name="stream_message_recipient_stream" id="stream_message_recipient_stream" maxlength="30" value="" placeholder="{{t 'Stream' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Stream' }}" />
                             <i class="fa fa-angle-right" aria-hidden="true"></i>
-                            <input type="text" class="recipient_box" name="stream_message_recipient_topic"
-                                id="stream_message_recipient_topic" maxlength="60" value="" placeholder="{{t 'Topic' }}"
-                                autocomplete="off" tabindex="0" aria-label="{{t 'Topic' }}" />
+                            <input type="text" class="recipient_box" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="60" value="" placeholder="{{t 'Topic' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Topic' }}" />
                         </div>
                     </div>
                     <div id="private-message">
@@ -80,20 +76,15 @@
                         <div class="right_part">
                             <div class="pm_recipient">
                                 <div class="pill-container" data-before="{{t 'You and' }}">
-                                    <div class="input" contenteditable="true" id="private_message_recipient"
-                                        data-no-recipients-text="{{t 'Add one or more users' }}"
-                                        data-some-recipients-text="{{t 'Add another user...' }}"></div>
+                                    <div class="input" contenteditable="true" id="private_message_recipient" data-no-recipients-text="{{t 'Add one or more users' }}" data-some-recipients-text="{{t 'Add another user...' }}"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="messagebox-wrapper">
                         <div class="messagebox">
-                            <textarea class="new_message_textarea" name="content" id='compose-textarea'
-                                placeholder="{{t 'Compose your message here' }}" tabindex="0"
-                                aria-label="{{t 'Compose your message here...' }}"></textarea>
-                            <div class="scrolling_list preview_message_area" data-simplebar id="preview_message_area"
-                                style="display:none;">
+                            <textarea class="new_message_textarea" name="content" id='compose-textarea' placeholder="{{t 'Compose your message here' }}" tabindex="0" aria-label="{{t 'Compose your message here...' }}"></textarea>
+                            <div class="scrolling_list preview_message_area" data-simplebar id="preview_message_area" style="display:none;">
                                 <div class="markdown_preview_spinner"></div>
                                 <div class="preview_content rendered_markdown"></div>
                             </div>
@@ -101,13 +92,11 @@
                             <div id="below-compose-content">
                                 <div>
                                     <div class="compose_right_float_container order-3">
-                                        <button type="submit" id="compose-send-button"
-                                            class="button small send_message animated-purple-button"
-                                            title="{{t 'Send' }} (Ctrl + Enter)">{{t 'Send' }}</button>
+                                        <button type="submit" id="compose-send-button" class="button small send_message animated-purple-button" title="{{t 'Send' }} (Ctrl + Enter)">{{t 'Send' }}</button>
                                         {{> compose_control_buttons }}
                                     </div>
                                 </div>
-
+                                
                                 <div class="compose_right_float_container order-2">
                                     <span id="compose_limit_indicator"></span>
                                     <div id="send_controls" class="new-style">
