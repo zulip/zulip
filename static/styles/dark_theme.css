@@ -37,7 +37,7 @@ body.dark-theme {
 
     /* Extend the 'light-border' TippyJS theme, which is intended for
        popovers/menus that should use default background colors, to use
-       our night theme colors in Zulip's night theme.
+       our dark theme colors in Zulip's dark theme.
      */
     .tippy-box[data-theme~="light-border"] {
         .tippy-content a {
