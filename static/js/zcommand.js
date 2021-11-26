@@ -59,7 +59,7 @@ export function tell_user(msg) {
     $("#compose-error-msg").text(msg);
 }
 
-export function enter_day_mode() {
+export function switch_to_light_theme() {
     send({
         command: "/day",
         on_success(data) {
@@ -168,7 +168,7 @@ export function process(message_content) {
 
     const day_commands = ["/day", "/light"];
     if (day_commands.includes(content)) {
-        enter_day_mode();
+        switch_to_light_theme();
         return true;
     }
 
