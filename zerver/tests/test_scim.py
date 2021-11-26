@@ -246,7 +246,6 @@ class TestSCIMUser(SCIMTestCase):
         )
         self.assertEqual(result.status_code, 200)
         output_data = orjson.loads(result.content)
-        output_data["Resources"].sort(key=lambda d: d["id"])
 
         user_query = UserProfile.objects.filter(
             realm=realm, is_bot=False, delivery_email__endswith="@zulip.com"
