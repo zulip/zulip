@@ -101,7 +101,7 @@ function test_helper() {
             events.push(event);
         },
         assert_events: (expected_events) => {
-            assert.deepEqual(expected_events, events);
+            assert.deepEqual(events, expected_events);
         },
     };
 }
