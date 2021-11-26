@@ -224,6 +224,12 @@ export function activate(raw_operators, opts) {
 
     if (recent_topics_util.is_visible()) {
         recent_topics_ui.hide();
+    } else {
+        // If recent topics was not visible, then we are switching
+        // from another message list view. Save the scroll position in
+        // that message list, so that we can restore it if/when we
+        // later navigate back to that view.
+        save_pre_narrow_offset_for_reload();
     }
 
     const was_narrowed_already = narrow_state.active();
@@ -297,9 +303,6 @@ export function activate(raw_operators, opts) {
     narrow_state.set_current_filter(filter);
 
     const excludes_muted_topics = narrow_state.excludes_muted_topics();
-
-    // Save how far from the pointer the top of the message list was.
-    save_pre_narrow_offset_for_reload();
 
     let msg_data = new MessageListData({
         filter: narrow_state.filter(),
