@@ -4,9 +4,9 @@ import marked from "../third/marked/lib/marked";
 
 import * as channel from "./channel";
 import * as common from "./common";
+import * as dark_theme from "./dark_theme";
 import * as feedback_widget from "./feedback_widget";
 import {$t} from "./i18n";
-import * as night_mode from "./night_mode";
 import * as scroll_bar from "./scroll_bar";
 
 /*
@@ -63,7 +63,7 @@ export function enter_day_mode() {
     send({
         command: "/day",
         on_success(data) {
-            night_mode.disable();
+            dark_theme.disable();
             feedback_widget.show({
                 populate(container) {
                     const rendered_msg = marked(data.msg).trim();
@@ -85,7 +85,7 @@ export function enter_night_mode() {
     send({
         command: "/night",
         on_success(data) {
-            night_mode.enable();
+            dark_theme.enable();
             feedback_widget.show({
                 populate(container) {
                     const rendered_msg = marked(data.msg).trim();
