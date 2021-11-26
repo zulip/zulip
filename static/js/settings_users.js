@@ -514,7 +514,7 @@ function handle_reactivation(tbody, status_field) {
     });
 }
 
-export function show_edit_user_info_modal(user_id, status_field) {
+export function show_edit_user_info_modal(user_id, from_user_info_popover, status_field) {
     const person = people.get_by_user_id(user_id);
 
     if (!person) {
@@ -573,8 +573,23 @@ export function show_edit_user_info_modal(user_id, status_field) {
             profile_data: JSON.stringify(profile_data),
         };
 
-        settings_ui.do_settings_change(channel.patch, url, data, status_field);
-        dialog_widget.close_modal();
+        if (!from_user_info_popover) {
+            settings_ui.do_settings_change(channel.patch, url, data, status_field);
+            dialog_widget.close_modal();
+            return;
+        }
+
+        channel.patch({
+            url,
+            data,
+            success() {
+                dialog_widget.close_modal();
+            },
+            error(xhr) {
+                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+                dialog_widget.hide_dialog_spinner();
+            },
+        });
     }
 
     dialog_widget.launch({
@@ -582,6 +597,7 @@ export function show_edit_user_info_modal(user_id, status_field) {
         html_body,
         on_click: submit_user_details,
         post_render: set_role_dropdown_and_fields_user_pills,
+        loading_spinner: from_user_info_popover,
     });
 }
 
@@ -590,7 +606,7 @@ function handle_human_form(tbody, status_field) {
         e.stopPropagation();
         e.preventDefault();
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
-        show_edit_user_info_modal(user_id, status_field);
+        show_edit_user_info_modal(user_id, false, status_field);
     });
 }
 

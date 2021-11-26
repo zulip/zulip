@@ -43,6 +43,7 @@ import * as reminder from "./reminder";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
+import * as settings_users from "./settings_users";
 import * as stream_popover from "./stream_popover";
 import * as user_groups from "./user_groups";
 import * as user_status from "./user_status";
@@ -243,6 +244,7 @@ function render_user_info_popover(
         user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
         date_joined,
         spectator_view,
+        show_manage_user_option: page_params.is_admin && !is_me,
     };
 
     if (user.is_bot) {
@@ -1277,6 +1279,12 @@ export function register_click_handlers() {
             last_scroll = date;
         });
     }
+
+    $("body").on("click", ".sidebar-popover-manage-user", (e) => {
+        hide_all();
+        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        settings_users.show_edit_user_info_modal(user_id, true);
+    });
 }
 
 export function any_active() {
