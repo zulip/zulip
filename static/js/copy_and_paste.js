@@ -104,7 +104,7 @@ function select_div(div, selection) {
         // exclusively here because when copying the content
         // into, say, Gmail compose box, the styles come along.
         // This is done to avoid copying the content with dark
-        // background when using the app in night mode.
+        // background when using the app in dark theme.
         // We can avoid other custom styles since they are wrapped
         // inside another parent such as `.message_content`.
         color: "#333",
