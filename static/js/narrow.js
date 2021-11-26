@@ -187,11 +187,12 @@ export function activate(raw_operators, opts) {
          or rerendering due to server-side changes.
     */
 
+    const start_time = new Date();
+
     if (recent_topics_util.is_visible()) {
         recent_topics_ui.hide();
     }
 
-    const start_time = new Date();
     const was_narrowed_already = narrow_state.active();
     // most users aren't going to send a bunch of a out-of-narrow messages
     // and expect to visit a list of narrows, so let's get these out of the way.
