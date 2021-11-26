@@ -151,6 +151,14 @@ function update_narrow_title(filter) {
     }
 }
 
+export function reset_ui_state() {
+    // Resets the state of various visual UI elements that are
+    // a function of the current narrow.
+    narrow_banner.hide_empty_narrow_message();
+    message_scroll.hide_top_of_narrow_notices();
+    message_scroll.hide_indicators();
+}
+
 export function activate(raw_operators, opts) {
     /* Main entrypoint for switching to a new view / message list.
        Note that for historical reasons related to the current
@@ -210,8 +218,7 @@ export function activate(raw_operators, opts) {
     const operators = filter.operators();
 
     update_narrow_title(filter);
-    message_scroll.hide_top_of_narrow_notices();
-    message_scroll.hide_indicators();
+    reset_ui_state();
 
     blueslip.debug("Narrowed", {
         operators: operators.map((e) => e.operator),
@@ -860,9 +867,7 @@ export function deactivate(coming_from_recent_topics = false) {
     message_lists.set_current(message_lists.home);
     condense.condense_and_collapse($("#zhome div.message_row"));
 
-    narrow_banner.hide_empty_narrow_message();
-    message_scroll.hide_indicators();
-    message_scroll.hide_top_of_narrow_notices();
+    reset_ui_state();
     hashchange.save_narrow();
 
     if (message_lists.current.selected_id() !== -1) {
