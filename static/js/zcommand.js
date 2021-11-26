@@ -81,7 +81,7 @@ export function enter_day_mode() {
     });
 }
 
-export function enter_night_mode() {
+export function switch_to_dark_theme() {
     send({
         command: "/night",
         on_success(data) {
@@ -174,7 +174,7 @@ export function process(message_content) {
 
     const night_commands = ["/night", "/dark"];
     if (night_commands.includes(content)) {
-        enter_night_mode();
+        switch_to_dark_theme();
         return true;
     }
 
