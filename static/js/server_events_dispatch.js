@@ -13,6 +13,7 @@ import * as compose_actions from "./compose_actions";
 import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as composebox_typeahead from "./composebox_typeahead";
+import * as dark_theme from "./dark_theme";
 import * as emoji_picker from "./emoji_picker";
 import * as giphy from "./giphy";
 import * as hotspots from "./hotspots";
@@ -26,7 +27,6 @@ import * as muted_topics_ui from "./muted_topics_ui";
 import * as muted_users_ui from "./muted_users_ui";
 import * as narrow_state from "./narrow_state";
 import * as navbar_alerts from "./navbar_alerts";
-import * as night_mode from "./night_mode";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -624,13 +624,13 @@ export function dispatch_normal_event(event) {
                 $("body").fadeOut(300);
                 setTimeout(() => {
                     if (event.value === settings_config.color_scheme_values.night.code) {
-                        night_mode.enable();
+                        dark_theme.enable();
                         realm_logo.render();
                     } else if (event.value === settings_config.color_scheme_values.day.code) {
-                        night_mode.disable();
+                        dark_theme.disable();
                         realm_logo.render();
                     } else {
-                        night_mode.default_preference_checker();
+                        dark_theme.default_preference_checker();
                         realm_logo.render();
                     }
                     $("body").fadeIn(300);

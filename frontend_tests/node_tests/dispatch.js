@@ -30,6 +30,7 @@ const attachments_ui = mock_esm("../../static/js/attachments_ui");
 const bot_data = mock_esm("../../static/js/bot_data");
 const compose = mock_esm("../../static/js/compose");
 const composebox_typeahead = mock_esm("../../static/js/composebox_typeahead");
+const dark_theme = mock_esm("../../static/js/dark_theme");
 const emoji_picker = mock_esm("../../static/js/emoji_picker");
 const hotspots = mock_esm("../../static/js/hotspots");
 const linkifiers = mock_esm("../../static/js/linkifiers");
@@ -39,7 +40,6 @@ const message_list = mock_esm("../../static/js/message_list");
 const message_lists = mock_esm("../../static/js/message_lists");
 const muted_topics_ui = mock_esm("../../static/js/muted_topics_ui");
 const muted_users_ui = mock_esm("../../static/js/muted_users_ui");
-const night_mode = mock_esm("../../static/js/night_mode");
 const notifications = mock_esm("../../static/js/notifications");
 const reactions = mock_esm("../../static/js/reactions");
 const realm_icon = mock_esm("../../static/js/realm_icon");
@@ -732,7 +732,7 @@ run_test("user_settings", ({override}) => {
         const stub = make_stub();
         event = event_fixtures.user_settings__color_scheme_dark;
         user_settings.color_scheme = 1;
-        override(night_mode, "enable", stub.f); // automatically checks if called
+        override(dark_theme, "enable", stub.f); // automatically checks if called
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         assert.equal(user_settings.color_scheme, 2);
@@ -742,7 +742,7 @@ run_test("user_settings", ({override}) => {
         const stub = make_stub();
         event = event_fixtures.user_settings__color_scheme_light;
         user_settings.color_scheme = 1;
-        override(night_mode, "disable", stub.f); // automatically checks if called
+        override(dark_theme, "disable", stub.f); // automatically checks if called
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         assert.equal(user_settings.color_scheme, 3);
@@ -766,7 +766,7 @@ run_test("user_settings", ({override}) => {
         const stub = make_stub();
         event = event_fixtures.user_settings__color_scheme_automatic;
         user_settings.color_scheme = 2;
-        override(night_mode, "default_preference_checker", stub.f); // automatically checks if called
+        override(dark_theme, "default_preference_checker", stub.f); // automatically checks if called
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         assert.equal(user_settings.color_scheme, 1);
