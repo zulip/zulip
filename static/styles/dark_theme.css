@@ -167,7 +167,7 @@ body.night-mode {
         }
     }
 
-    /* this one is because in the app we have blue and in night-mode it should be white. */
+    /* this one is because in the app we have blue and in dark-theme it should be white. */
     .popover a {
         color: inherit;
     }

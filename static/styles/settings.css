@@ -1651,7 +1651,7 @@ input[type="checkbox"] {
     }
 
     a.dropdown_list_reset_button {
-        /* Prevent night mode from overriding background. */
+        /* Prevent dark theme from overriding background. */
         background: unset !important;
         border: none;
         margin-left: 10px;
