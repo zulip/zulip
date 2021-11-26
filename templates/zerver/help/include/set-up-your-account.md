@@ -7,7 +7,7 @@
   [edit your profile information](https://zulip.com/help/edit-your-profile) to tell others
   about yourself.
 - [Review your display settings](/help/review-your-settings#review-your-display-settings).
-  You can [switch between day and dark theme](/help/dark-theme),
+  You can [switch between light and dark theme](/help/dark-theme),
   [pick your favorite emoji theme](/help/emoji-and-emoticons#change-your-emoji-set),
   [change your language](/help/change-your-language), and make other tweaks to your Zulip experience.
 - [Browse and subscribe to streams](/help/browse-and-subscribe-to-streams).

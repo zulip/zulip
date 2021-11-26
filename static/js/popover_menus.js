@@ -25,7 +25,7 @@ const default_popover_props = {
     hideOnClick: true,
     /* The light-border TippyJS theme is a bit of a misnomer; it
        is a popover styling similar to Bootstrap.  We've also customized
-       its CSS to support Zulip's night theme. */
+       its CSS to support Zulip's dark theme. */
     theme: "light-border",
     touch: true,
 };
