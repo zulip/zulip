@@ -197,6 +197,7 @@ export function activate(raw_operators, opts) {
 
     const start_time = new Date();
 
+    reset_ui_state();
     if (recent_topics_util.is_visible()) {
         recent_topics_ui.hide();
     }
@@ -218,7 +219,6 @@ export function activate(raw_operators, opts) {
     const operators = filter.operators();
 
     update_narrow_title(filter);
-    reset_ui_state();
 
     blueslip.debug("Narrowed", {
         operators: operators.map((e) => e.operator),
