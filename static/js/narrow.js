@@ -812,7 +812,6 @@ function handle_post_narrow_deactivate_processes() {
     message_view_header.initialize();
     narrow_title = "All messages";
     notifications.redraw_title();
-    message_scroll.hide_top_of_narrow_notices();
     message_scroll.update_top_of_narrow_notices(message_lists.home);
 }
 
@@ -855,15 +854,15 @@ export function deactivate(coming_from_recent_topics = false) {
 
     narrow_state.reset_current_filter();
 
-    narrow_banner.hide_empty_narrow_message();
-
     $("body").removeClass("narrowed_view");
     $("#zfilt").removeClass("focused_table");
     $("#zhome").addClass("focused_table");
     message_lists.set_current(message_lists.home);
     condense.condense_and_collapse($("#zhome div.message_row"));
 
+    narrow_banner.hide_empty_narrow_message();
     message_scroll.hide_indicators();
+    message_scroll.hide_top_of_narrow_notices();
     hashchange.save_narrow();
 
     if (message_lists.current.selected_id() !== -1) {
