@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 135**
+
+* [`DELETE /user/{user_id}`](/api/deactivate-user): Added
+  `deactivation_notification_comment` field controlling whether the
+  user receives a notification email about their deactivation.
+
 **Feature level 134**
 
 * [`GET /events`](/api/get-events): Added `user_topic` event type

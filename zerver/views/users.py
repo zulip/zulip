@@ -48,6 +48,7 @@ from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.rate_limiter import rate_limit_spectator_attachment_access_by_file
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, subscribed_to_stream
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementValue, Validator
 from zerver.lib.upload import upload_avatar_image
@@ -71,6 +72,7 @@ from zerver.lib.users import (
 from zerver.lib.utils import generate_api_key
 from zerver.lib.validator import (
     check_bool,
+    check_capped_string,
     check_dict,
     check_dict_only,
     check_int,
@@ -104,15 +106,28 @@ def check_last_owner(user_profile: UserProfile) -> bool:
     return user_profile.is_realm_owner and not user_profile.is_bot and len(owners) == 1
 
 
+@has_request_variables
 def deactivate_user_backend(
-    request: HttpRequest, user_profile: UserProfile, user_id: int
+    request: HttpRequest,
+    user_profile: UserProfile,
+    user_id: int,
+    deactivation_notification_comment: Optional[str] = REQ(
+        str_validator=check_capped_string(max_length=2000), default=None
+    ),
 ) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, for_admin=True)
     if target.is_realm_owner and not user_profile.is_realm_owner:
         raise OrganizationOwnerRequired()
     if check_last_owner(target):
         raise JsonableError(_("Cannot deactivate the only organization owner"))
-    return _deactivate_user_profile_backend(request, user_profile, target)
+    if deactivation_notification_comment is not None:
+        deactivation_notification_comment = deactivation_notification_comment.strip()
+    return _deactivate_user_profile_backend(
+        request,
+        user_profile,
+        target,
+        deactivation_notification_comment=deactivation_notification_comment,
+    )
 
 
 def deactivate_user_own_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
@@ -129,13 +144,33 @@ def deactivate_bot_backend(
     request: HttpRequest, user_profile: UserProfile, bot_id: int
 ) -> HttpResponse:
     target = access_bot_by_id(user_profile, bot_id)
-    return _deactivate_user_profile_backend(request, user_profile, target)
+    return _deactivate_user_profile_backend(
+        request, user_profile, target, deactivation_notification_comment=None
+    )
 
 
 def _deactivate_user_profile_backend(
-    request: HttpRequest, user_profile: UserProfile, target: UserProfile
+    request: HttpRequest,
+    user_profile: UserProfile,
+    target: UserProfile,
+    *,
+    deactivation_notification_comment: Optional[str],
 ) -> HttpResponse:
     do_deactivate_user(target, acting_user=user_profile)
+
+    # It's important that we check for None explicitly here, since ""
+    # encodes sending an email without a custom administrator comment.
+    if deactivation_notification_comment is not None:
+        send_email(
+            "zerver/emails/deactivate",
+            to_user_ids=[target.id],
+            from_address=FromAddress.NOREPLY,
+            context={
+                "deactivation_notification_comment": deactivation_notification_comment,
+                "realm_uri": target.realm.uri,
+                "realm_name": target.realm.name,
+            },
+        )
     return json_success(request)
 
 
