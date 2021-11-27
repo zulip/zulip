@@ -208,5 +208,5 @@ run_test("test_search_public_streams_notice_url", () => {
 
 run_test("test_current_hash_as_next", () => {
     window.location.hash = "#foo";
-    assert.equal(hash_util.current_hash_as_next(), "next=/#foo");
+    assert.equal(hash_util.current_hash_as_next(), "next=/%23foo");
 });
