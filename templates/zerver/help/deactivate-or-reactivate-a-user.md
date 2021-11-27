@@ -43,6 +43,29 @@ user's bots will also be deactivated. Lastly, the user will be unable to
 create a new Zulip account in your organization using their deactivated
 email address.
 
+### Notify users of their deactivation
+
+Zulip can optionally send the user an email notification that their account was deactivated.
+
+{start_tabs}
+
+{settings_tab|user-list-admin}
+
+ 2. Click the **Deactivate** button to the right of the user account that you
+want to deactivate.
+
+ 3. Check the checkbox labeled **"Notify this user by email?"**.
+
+ 4. Optional: Enter a custom message for the user in the provided textbox.
+
+ 3. Approve by clicking **Confirm**.
+
+{end_tabs}
+
+Here is a sample notification email:
+
+<img src="/static/images/help/deactivate-user-email.png" alt="view-of-admin" width="800"/>
+
 ## Reactivate a user
 
 Organization administrators can reactivate a deactivated user. The reactivated

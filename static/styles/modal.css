@@ -124,6 +124,25 @@
     margin-bottom: 10px;
 }
 
+.email_field {
+    margin-top: 10px;
+
+    .email_field_textarea {
+        width: 97%;
+        resize: vertical;
+    }
+
+    .border-top {
+        border-top: 1px solid hsla(300, 2%, 11%, 0.3);
+        padding-top: 10px;
+    }
+
+    .email-body {
+        margin-left: 20px;
+        margin-top: 20px;
+    }
+}
+
 @keyframes mmfadeIn {
     from {
         opacity: 0;

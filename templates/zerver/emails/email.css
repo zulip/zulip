@@ -21,6 +21,11 @@ body {
     -webkit-text-size-adjust: 100%;
 }
 
+pre {
+    font-family: sans-serif;
+    font-size: 14px;
+}
+
 table {
     border-collapse: separate;
     mso-table-lspace: 0;
@@ -321,6 +326,13 @@ a.button:hover {
 
 .content_disabled_help_link {
     color: #15c;
+}
+
+.deactivated-user-text {
+    padding: 0 0 0 15px;
+    margin: 0 0 20px;
+    border-left: 5px solid #eee;
+    white-space: pre-line;
 }
 
 @media only screen and (max-width: 620px) {

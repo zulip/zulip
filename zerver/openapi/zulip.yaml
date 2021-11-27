@@ -8801,6 +8801,21 @@ paths:
         given their user ID.
       parameters:
         - $ref: "#/components/parameters/UserId"
+        - name: deactivation_notification_comment
+          in: query
+          description: |
+            If not `null`, requests that the deactivated user receive
+            a notification email about their account deactivation.
+
+            If not `""`, encodes custom text written by the administrator
+            to be included in the notification email.
+
+            **Changes**: New in Zulip 5.0 (feature level 135).
+          schema:
+            type: string
+          example: |
+            Farewell!
+          required: false
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
