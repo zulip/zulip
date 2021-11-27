@@ -310,5 +310,5 @@ export function is_spectator_compatible(hash) {
 }
 
 export function current_hash_as_next() {
-    return `next=/${window.location.hash}`;
+    return `next=/${encodeURIComponent(window.location.hash)}`;
 }
