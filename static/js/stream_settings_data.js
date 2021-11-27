@@ -103,7 +103,7 @@ export function get_streams_for_settings_page() {
     }
     subscribed_rows.sort(by_name);
     unsubscribed_rows.sort(by_name);
-    const all_subs = unsubscribed_rows.concat(subscribed_rows);
+    const all_subs = subscribed_rows.concat(unsubscribed_rows);
 
     return get_subs_for_settings(all_subs);
 }
