@@ -463,7 +463,7 @@ export function quote_and_reply(opts) {
     const textarea = $("#compose-textarea");
     const message_id = message_lists.current.selected_id();
     const message = message_lists.current.selected_message();
-    const quoting_placeholder = "[Quoting…]";
+    const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
 
     if (compose_state.has_message_content()) {
         // The user already started typing a message,
