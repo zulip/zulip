@@ -65,6 +65,26 @@
               is_editable_by_current_user = user_can_change_logo
               image = realm_night_logo_url }}
         </div>
+
+        <div class="subsection-header">
+            <h3>{{t "Organization information banner" }}
+            </h3>
+            <div class = "organization-information-parent">
+                <div class="input-group admin-realm">
+                    <label for="id_organization_information_link">{{t "Organization information link" }}</label>
+                    <input type="text" id="id_organization_information_link" name="organization_information_link" class="setting-widget prop-element"
+                    autocomplete="off" data-setting-widget-type="string"
+                    value="{{ realm_information_link }}" />
+                </div>
+                <div class="input-group admin-realm">
+                    <label id="enable-information-banner-label" class="compose_checkbox_label checkbox">
+                        <input type="checkbox" id="enable_information_banner" />
+                        <span></span>{{t 'Enable organization information banner for first time members' }}
+                    </label>
+                </div>
+            </div>
+        </div>
+
         <h3 class="light">
             {{t "Deactivate organization" }}
             <i class="fa fa-info-circle settings-info-icon realm_deactivation_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Only owners can deactivate the organization.' }}"></i>
@@ -76,5 +96,6 @@
                 </button>
             </div>
         </div>
+
     </form>
 </div>

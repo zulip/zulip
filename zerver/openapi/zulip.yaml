@@ -10586,6 +10586,12 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           The description of the organization, used on login and registration pages.
+                      realm_information_link:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The URL to a page containing information on the organization, used on banner.
                       realm_digest_emails_enabled:
                         type: boolean
                         description: |
@@ -12013,6 +12019,11 @@ paths:
                         description: |
                           HTML description of the organization, as configured by the [organization
                           profile](/help/create-your-organization-profile).
+                      realm_information_link:
+                        type: string
+                        description: |
+                          The URL for the organization's information page, displayed to 
+                          new members when they join the organization for the first time.
                     example:
                       {
                         "authentication_methods":
@@ -12038,6 +12049,7 @@ paths:
                         "realm_name": "Zulip Dev",
                         "realm_icon": "https://secure.gravatar.com/avatar/62429d594b6ffc712f54aee976a18b44?d=identicon",
                         "realm_description": "<p>The Zulip development environment default organization.  It's great for testing!</p>",
+                        "realm_information_link": "<p>http://zulip.readthedocs.io/en/latest/chat-zulip-org.html</p>",
                         "result": "success",
                         "external_authentication_methods":
                           [
