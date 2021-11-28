@@ -7,6 +7,7 @@ import render_demo_organization_deadline_content from "../templates/navbar_alert
 import render_desktop_notifications_alert_content from "../templates/navbar_alerts/desktop_notifications.hbs";
 import render_insecure_desktop_app_alert_content from "../templates/navbar_alerts/insecure_desktop_app.hbs";
 import render_navbar_alert_wrapper from "../templates/navbar_alerts/navbar_alert_wrapper.hbs";
+import render_organization_information_content from "../templates/navbar_alerts/organization_information.hbs"
 import render_profile_incomplete_alert_content from "../templates/navbar_alerts/profile_incomplete.hbs";
 import render_server_needs_upgrade_alert_content from "../templates/navbar_alerts/server_needs_upgrade.hbs";
 
@@ -50,6 +51,11 @@ const show_step = function ($process, step) {
 const get_step = function ($process) {
     return $process.find("[data-step]:visible").data("step");
 };
+
+export function should_show_organization_information(ls) {
+    // TODO: change
+    return true;
+}
 
 export function should_show_notifications(ls) {
     // if the user said to never show banner on this computer again, it will
@@ -164,6 +170,11 @@ export function initialize() {
             data_process: "email-server",
             custom_class: "red",
             rendered_alert_content_html: render_configure_email_alert_content(),
+        });
+    } else if (should_show_organization_information(ls)) {
+        open({
+            data_process: "organization-information",
+            rendered_alert_content_html: render_organization_information_content(),
         });
     } else if (should_show_notifications(ls)) {
         open({
