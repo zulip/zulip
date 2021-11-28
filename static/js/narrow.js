@@ -114,6 +114,7 @@ export function save_pre_narrow_offset_for_reload() {
 }
 
 export let narrow_title = "home";
+export let has_shown_message_list_view = false;
 
 export function set_narrow_title(title) {
     narrow_title = title;
@@ -292,6 +293,7 @@ export function activate(raw_operators, opts) {
     // populating the new narrow, so we update our narrow_state.
     // From here on down, any calls to the narrow_state API will
     // reflect the upcoming narrow.
+    has_shown_message_list_view = true;
     narrow_state.set_current_filter(filter);
 
     const excludes_muted_topics = narrow_state.excludes_muted_topics();
@@ -882,6 +884,7 @@ export function deactivate(coming_from_recent_topics = false) {
     }
 
     narrow_state.reset_current_filter();
+    has_shown_message_list_view = true;
 
     $("body").removeClass("narrowed_view");
     $("#zfilt").removeClass("focused_table");

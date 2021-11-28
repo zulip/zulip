@@ -622,6 +622,10 @@ export function complete_rerender() {
 }
 
 export function show() {
+    if (narrow.has_shown_message_list_view) {
+        narrow.save_pre_narrow_offset_for_reload();
+    }
+
     if (is_visible()) {
         // If we're already visible, E.g. because the user hit Esc
         // while already in the recent topics view, do nothing.
