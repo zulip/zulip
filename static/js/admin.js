@@ -81,7 +81,7 @@ export function build_page() {
         giphy_rating_options: page_params.giphy_rating_options,
         giphy_api_key_empty: page_params.giphy_api_key === "",
         realm_description: page_params.realm_description,
-        realm_information_link: page_params.realm_information_link,
+        realm_guidelines: page_params.realm_guidelines,
         realm_inline_image_preview: page_params.realm_inline_image_preview,
         server_inline_image_preview: page_params.server_inline_image_preview,
         realm_inline_url_embed_preview: page_params.realm_inline_url_embed_preview,

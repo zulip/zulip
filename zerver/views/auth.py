@@ -957,7 +957,7 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
         "realm_name",
         "realm_icon",
         "realm_description",
-        "realm_information_link",
+        "realm_guidelines",
         "external_authentication_methods",
     ]:
         if context[settings_item] is not None:
