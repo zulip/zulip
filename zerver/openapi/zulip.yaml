@@ -14359,14 +14359,19 @@ components:
               additionalProperties: false
               deprecated: true
               description: |
-                Whether the user is a mirror dummy.
-                Dictionary with data on the user who added the reaction, including
-                the user ID as the `id` field. **Note**: In the [events
-                API](/api/get-events), this `user` dictionary
-                confusing had the user ID in a field called `user_id`
-                instead. We recommend ignoring fields other than the user
-                ID. **Deprecated** and to be removed in a future release
-                once core clients have migrated to use the `user_id` field.
+                **Deprecated** and to be removed in a future release
+                once core clients have migrated to use the adjacent
+                `user_id` field introduced in Zulip 3.0 (feature level
+                2). Clients supporting older Zulip server versions
+                should just use the user ID below as they would the
+                `user_id` field.
+
+                Dictionary with data on the user who added the
+                reaction, including the user ID as the `id`
+                field. Note that reactions data received from the
+                [events API](/api/get-events) has a slightly different
+                `user` dictionary format, with the user ID field
+                called `user_id` instead.
               properties:
                 id:
                   type: integer
