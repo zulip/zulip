@@ -3045,24 +3045,7 @@ select.inline_select_topic_edit {
 }
 
 #login_to_access_modal {
-    .spectator_go_back .fa {
-        position: fixed;
-        top: 11px;
-        left: 30px;
-    }
-
-    .login_to_access_label {
-        font-size: 1.1rem;
-        font-weight: bold;
-    }
-
-    .login_to_access_footer {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-around;
-
-        .color_animated_button {
-            width: 48%;
-        }
+    .modal__content p {
+        margin: 0;
     }
 }
