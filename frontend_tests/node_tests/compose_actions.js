@@ -338,7 +338,7 @@ test("quote_and_reply", ({override}) => {
     let expected_replacement;
     let replaced;
     override(compose_ui, "replace_syntax", (syntax, replacement) => {
-        assert.equal(syntax, "[Quoting…]");
+        assert.equal(syntax, "translated: [Quoting…]");
         assert.equal(replacement, expected_replacement);
         replaced = true;
     });
@@ -361,7 +361,7 @@ test("quote_and_reply", ({override}) => {
     override(message_lists.current, "selected_id", () => 100);
 
     override(compose_ui, "insert_syntax_and_focus", (syntax) => {
-        assert.equal(syntax, "[Quoting…]\n");
+        assert.equal(syntax, "translated: [Quoting…]\n");
     });
 
     const opts = {
