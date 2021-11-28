@@ -586,7 +586,7 @@ function handle_human_form(tbody, status_field) {
         }
 
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Change user info and roles"}),
+            html_heading: $t_html({defaultMessage: "Manage user"}),
             html_body,
             on_click: submit_user_details,
             post_render: set_role_dropdown_and_fields_user_pills,
