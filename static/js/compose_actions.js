@@ -482,8 +482,6 @@ export function quote_and_reply(opts) {
         respond_to_message(opts);
     }
 
-    const prev_caret = textarea.caret();
-
     compose_ui.insert_syntax_and_focus("[Quoting…]\n", textarea);
 
     function replace_content(message) {
@@ -492,6 +490,7 @@ export function quote_and_reply(opts) {
         //     ```quote
         //     message content
         //     ```
+        const prev_caret = textarea.caret();
         let content = $t(
             {defaultMessage: "{username} [said]({link_to_message}):"},
             {
