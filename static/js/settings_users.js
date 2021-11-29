@@ -424,7 +424,7 @@ function get_human_profile_data(fields_user_pills) {
     return new_profile_data;
 }
 
-function confirm_deactivation(user_id, handle_confirm) {
+export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
     const user = people.get_by_user_id(user_id);
     const opts = {
         username: user.full_name,
@@ -436,6 +436,7 @@ function confirm_deactivation(user_id, handle_confirm) {
         html_heading: $t_html({defaultMessage: "Deactivate {name}"}, {name: user.full_name}),
         html_body,
         on_click: handle_confirm,
+        loading_spinner,
     });
 }
 
@@ -465,7 +466,7 @@ function handle_deactivation(tbody, status_field) {
             settings_ui.do_settings_change(channel.del, url, {}, status_field, opts);
         }
 
-        confirm_deactivation(user_id, handle_confirm);
+        confirm_deactivation(user_id, handle_confirm, false);
     });
 }
 
@@ -560,6 +561,36 @@ export function show_edit_user_info_modal(user_id, from_user_info_popover, statu
             true,
             false,
         );
+
+        $("#edit-user-form").on("click", ".deactivate_user_button", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const user_id = $("#edit-user-form").data("user-id");
+            function handle_confirm() {
+                const url = "/json/users/" + encodeURIComponent(user_id);
+                channel.del({
+                    url,
+                    success() {
+                        dialog_widget.close_modal();
+                        if (!from_user_info_popover) {
+                            const row = get_user_info_row(user_id);
+                            update_view_on_deactivate(row);
+                        }
+                    },
+                    error(xhr) {
+                        ui_report.error(
+                            $t_html({defaultMessage: "Failed"}),
+                            xhr,
+                            $("#dialog_error"),
+                        );
+                        dialog_widget.hide_dialog_spinner();
+                    },
+                });
+            }
+            const open_deactivate_modal_callback = () =>
+                confirm_deactivation(user_id, handle_confirm, true);
+            dialog_widget.close_modal(open_deactivate_modal_callback);
+        });
     }
 
     function submit_user_details() {
