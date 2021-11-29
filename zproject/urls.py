@@ -126,9 +126,9 @@ from zerver.views.registration import (
     accounts_home,
     accounts_home_from_multiuse_invite,
     accounts_register,
-    check_prereg_key_and_redirect,
     create_realm,
     find_account,
+    get_prereg_key_and_redirect,
     realm_redirect,
 )
 from zerver.views.report import (
@@ -570,8 +570,8 @@ i18n_urls = [
     path("accounts/register/", accounts_register, name="accounts_register"),
     path(
         "accounts/do_confirm/<confirmation_key>",
-        check_prereg_key_and_redirect,
-        name="check_prereg_key_and_redirect",
+        get_prereg_key_and_redirect,
+        name="get_prereg_key_and_redirect",
     ),
     path(
         "accounts/confirm_new_email/<confirmation_key>",

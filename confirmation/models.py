@@ -143,9 +143,9 @@ class ConfirmationType:
 
 
 _properties = {
-    Confirmation.USER_REGISTRATION: ConfirmationType("check_prereg_key_and_redirect"),
+    Confirmation.USER_REGISTRATION: ConfirmationType("get_prereg_key_and_redirect"),
     Confirmation.INVITATION: ConfirmationType(
-        "check_prereg_key_and_redirect", validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS
+        "get_prereg_key_and_redirect", validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS
     ),
     Confirmation.EMAIL_CHANGE: ConfirmationType("confirm_email_change"),
     Confirmation.UNSUBSCRIBE: ConfirmationType(
@@ -155,7 +155,7 @@ _properties = {
     Confirmation.MULTIUSE_INVITE: ConfirmationType(
         "join", validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS
     ),
-    Confirmation.REALM_CREATION: ConfirmationType("check_prereg_key_and_redirect"),
+    Confirmation.REALM_CREATION: ConfirmationType("get_prereg_key_and_redirect"),
     Confirmation.REALM_REACTIVATION: ConfirmationType("realm_reactivation"),
 }
 

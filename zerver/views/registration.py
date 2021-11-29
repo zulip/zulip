@@ -1,6 +1,6 @@
 import logging
 import urllib
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 from urllib.parse import urlencode
 
 import pytz
@@ -87,8 +87,34 @@ from zproject.backends import (
 )
 
 
-def check_prereg_key_and_redirect(request: HttpRequest, confirmation_key: str) -> HttpResponse:
-    confirmation = Confirmation.objects.filter(confirmation_key=confirmation_key).first()
+def get_prereg_key_and_redirect(request: HttpRequest, confirmation_key: str) -> HttpResponse:
+    key_check_result = check_prereg_key(request, confirmation_key)
+    if isinstance(key_check_result, HttpResponse):
+        return key_check_result
+    # confirm_preregistrationuser.html just extracts the confirmation_key
+    # (and GET parameters) and redirects to /accounts/register, so that the
+    # user can enter their information on a cleaner URL.
+    return render(
+        request,
+        "confirmation/confirm_preregistrationuser.html",
+        context={"key": confirmation_key, "full_name": request.GET.get("full_name", None)},
+    )
+
+
+def check_prereg_key(
+    request: HttpRequest, confirmation_key: str
+) -> Union[Confirmation, HttpResponse]:
+    """
+    Checks if the Confirmation key is valid, returning the Confirmation object in case of success
+    and an appropriate error page otherwise.
+    """
+    try:
+        confirmation: Optional[Confirmation] = Confirmation.objects.get(
+            confirmation_key=confirmation_key
+        )
+    except Confirmation.DoesNotExist:
+        confirmation = None
+
     if confirmation is None or confirmation.type not in [
         Confirmation.USER_REGISTRATION,
         Confirmation.INVITATION,
@@ -107,27 +133,19 @@ def check_prereg_key_and_redirect(request: HttpRequest, confirmation_key: str) -
     except ConfirmationKeyException as exception:
         return render_confirmation_key_error(request, exception)
 
-    # confirm_preregistrationuser.html just extracts the confirmation_key
-    # (and GET parameters) and redirects to /accounts/register, so that the
-    # user can enter their information on a cleaner URL.
-    return render(
-        request,
-        "confirmation/confirm_preregistrationuser.html",
-        context={"key": confirmation_key, "full_name": request.GET.get("full_name", None)},
-    )
+    return confirmation
 
 
 @require_post
 def accounts_register(request: HttpRequest) -> HttpResponse:
-    try:
-        key = request.POST.get("key", default="")
-        confirmation = Confirmation.objects.get(confirmation_key=key)
-    except Confirmation.DoesNotExist:
-        return render(request, "zerver/confirmation_link_expired_error.html")
+    key = request.POST.get("key", default="")
 
-    prereg_user = confirmation.content_object
-    if prereg_user.status == confirmation_settings.STATUS_REVOKED:
-        return render(request, "zerver/confirmation_link_expired_error.html")
+    key_check_result = check_prereg_key(request, key)
+    if isinstance(key_check_result, HttpResponse):
+        return key_check_result
+
+    prereg_user = key_check_result.content_object
+    assert prereg_user is not None
     email = prereg_user.email
     realm_creation = prereg_user.realm_creation
     password_required = prereg_user.password_required
