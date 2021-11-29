@@ -46,7 +46,7 @@ jobs:
     # Docker images are built from 'tools/ci/Dockerfile'; the comments at
     # the top explain how to build and upload these images.
     # Ubuntu 20.04 ships with Python 3.8.10.
-    container: zulip/ci:focal
+    container: chmrr/zulip:focal
     steps:
       - name: Add required permissions
         run: |
@@ -120,15 +120,15 @@ jobs:
         include:
           # Docker images are built from 'tools/ci/Dockerfile'; the comments at
           # the top explain how to build and upload these images.
-          - docker_image: zulip/ci:focal
+          - docker_image: chmrr/zulip:focal
             name: Ubuntu 20.04 production install
             os: focal
 
-          - docker_image: zulip/ci:jammy
+          - docker_image: chmrr/zulip:jammy
             name: Ubuntu 22.04 production install
             os: jammy
 
-          - docker_image: zulip/ci:bullseye
+          - docker_image: chmrr/zulip:bullseye
             name: Debian 11 production install with custom db name and user
             os: bullseye
             extra-args: --test-custom-db
@@ -216,13 +216,13 @@ jobs:
         include:
           # Docker images are built from 'tools/ci/Dockerfile.prod'; the comments at
           # the top explain how to build and upload these images.
-          - docker_image: zulip/ci:focal-3.2
+          - docker_image: chmrr/zulip:focal-3.2
             name: 3.2 Version Upgrade
             os: focal
-          - docker_image: zulip/ci:bullseye-4.2
+          - docker_image: chmrr/zulip:bullseye-4.2
             name: 4.2 Version Upgrade
             os: bullseye
-          - docker_image: zulip/ci:bullseye-5.0
+          - docker_image: chmrr/zulip:bullseye-5.0
             name: 5.0 Version Upgrade
             os: bullseye
 

@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -eux
 cd "$(dirname "${BASH_SOURCE[0]}")"
-docker build . --build-arg=BASE_IMAGE=ubuntu:20.04 --pull --tag=zulip/ci:focal
-docker build . --build-arg=BASE_IMAGE=ubuntu:22.04 --pull --tag=zulip/ci:jammy
-docker build . --build-arg=BASE_IMAGE=debian:11 --pull --tag=zulip/ci:bullseye
+docker build . --no-cache --build-arg=BASE_IMAGE=ubuntu:20.04 --pull --tag=chmrr/zulip:focal
+docker build . --no-cache --build-arg=BASE_IMAGE=ubuntu:22.04 --pull --tag=chmrr/zulip:jammy
+docker build . --no-cache --build-arg=BASE_IMAGE=debian:11 --pull --tag=chmrr/zulip:bullseye
+docker push chmrr/zulip:focal
+docker push chmrr/zulip:jammy
+docker push chmrr/zulip:bullseye

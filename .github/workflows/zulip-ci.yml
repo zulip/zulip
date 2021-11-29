@@ -33,17 +33,17 @@ jobs:
           # Base images are built using `tools/ci/Dockerfile.prod.template`.
           # The comments at the top explain how to build and upload these images.
           # Ubuntu 20.04 ships with Python 3.8.10.
-          - docker_image: zulip/ci:focal
+          - docker_image: chmrr/zulip:focal
             name: Ubuntu 20.04 (Python 3.8, backend + frontend)
             os: focal
             include_frontend_tests: true
           # Debian 11 ships with Python 3.9.2.
-          - docker_image: zulip/ci:bullseye
+          - docker_image: chmrr/zulip:bullseye
             name: Debian 11 (Python 3.9, backend + documentation)
             os: bullseye
             include_documentation_tests: true
           # Ubuntu 22.04 ships with Python 3.10.4.
-          - docker_image: zulip/ci:jammy
+          - docker_image: chmrr/zulip:jammy
             name: Ubuntu 22.04 (Python 3.10, backend)
             os: jammy
 
