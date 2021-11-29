@@ -44,6 +44,9 @@ pyinotify
 # Needed to run tests in parallel
 tblib
 
+# For linting Git commit messages
+gitlint-core
+
 # Needed for visualising cprofile reports
 snakeviz
 
