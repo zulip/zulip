@@ -42,7 +42,9 @@ RUN apt-get update \
     puppet \
     python3-dev \
     python3-pip \
-    rabbitmq-server \
+# We do not pre-install rabbitmq-server, as doing so fixes the
+# nodename to be the current hostname, which varies.  Letting Zulip
+# install rabbitmq allows it to fix the nodename to 'localhost'.
     redis-server \
     sudo \
     supervisor \
