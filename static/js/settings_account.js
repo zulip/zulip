@@ -436,6 +436,33 @@ export function set_up() {
     $("#change_password").on("click", async (e) => {
         e.preventDefault();
         e.stopPropagation();
+
+        function validate_input(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const old_password = $("#old_password").val();
+            const new_password = $("#new_password").val();
+
+            if (old_password === "") {
+                ui_report.error(
+                    $t_html({defaultMessage: "Please enter your password"}),
+                    undefined,
+                    $("#dialog_error"),
+                );
+                return false;
+            }
+
+            if (new_password === "") {
+                ui_report.error(
+                    $t_html({defaultMessage: "Please choose a new password"}),
+                    undefined,
+                    $("#dialog_error"),
+                );
+                return false;
+            }
+            return true;
+        }
+
         dialog_widget.launch({
             html_heading: $t_html({defaultMessage: "Change password"}),
             html_body: render_dialog_change_password(),
@@ -445,6 +472,7 @@ export function set_up() {
             form_id: "change_password_container",
             post_render: change_password_post_render,
             on_click: do_change_password,
+            validate_input,
         });
         $("#pw_change_controls").show();
         if (page_params.realm_password_auth_enabled !== false) {
@@ -465,22 +493,6 @@ export function set_up() {
             old_password: $("#old_password").val(),
             new_password: $("#new_password").val(),
         };
-
-        function show_error_message(rendered_error_msg) {
-            change_password_error.html(rendered_error_msg);
-            change_password_error.addClass("alert-error").show();
-            dialog_widget.hide_dialog_spinner();
-        }
-
-        if (data.old_password === "") {
-            show_error_message($t_html({defaultMessage: "Please enter your password"}));
-            return;
-        }
-
-        if (data.new_password === "") {
-            show_error_message($t_html({defaultMessage: "Please choose a new password"}));
-            return;
-        }
 
         const new_pw_field = $("#new_password");
         const new_pw = data.new_password;
