@@ -424,29 +424,13 @@ function get_human_profile_data(fields_user_pills) {
     return new_profile_data;
 }
 
-function confirm_deactivation(row, user_id, status_field) {
+function confirm_deactivation(user_id, handle_confirm) {
     const user = people.get_by_user_id(user_id);
     const opts = {
         username: user.full_name,
         email: settings_data.email_for_user_settings(user),
     };
     const html_body = render_settings_deactivation_user_modal(opts);
-
-    function handle_confirm() {
-        const row = get_user_info_row(user_id);
-        const row_deactivate_button = row.find("button.deactivate");
-        row_deactivate_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
-        const opts = {
-            success_continuation() {
-                update_view_on_deactivate(row);
-            },
-            error_continuation() {
-                row_deactivate_button.text($t({defaultMessage: "Deactivate"}));
-            },
-        };
-        const url = "/json/users/" + encodeURIComponent(user_id);
-        settings_ui.do_settings_change(channel.del, url, {}, status_field, opts);
-    }
 
     confirm_dialog.launch({
         html_heading: $t_html({defaultMessage: "Deactivate {name}"}, {name: user.full_name}),
@@ -464,7 +448,24 @@ function handle_deactivation(tbody, status_field) {
 
         const row = $(e.target).closest(".user_row");
         const user_id = row.data("user-id");
-        confirm_deactivation(row, user_id, status_field);
+
+        function handle_confirm() {
+            const row = get_user_info_row(user_id);
+            const row_deactivate_button = row.find("button.deactivate");
+            row_deactivate_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
+            const opts = {
+                success_continuation() {
+                    update_view_on_deactivate(row);
+                },
+                error_continuation() {
+                    row_deactivate_button.text($t({defaultMessage: "Deactivate"}));
+                },
+            };
+            const url = "/json/users/" + encodeURIComponent(user_id);
+            settings_ui.do_settings_change(channel.del, url, {}, status_field, opts);
+        }
+
+        confirm_deactivation(user_id, handle_confirm);
     });
 }
 
