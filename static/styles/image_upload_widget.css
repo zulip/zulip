@@ -1,8 +1,6 @@
 /* common CSS for all image upload widget's */
 .image_upload_widget {
     position: relative;
-    border-radius: 5px;
-    box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
 
     transition: all 0.3s ease;
 
@@ -12,6 +10,7 @@
     }
 
     .image-upload-background {
+        border-radius: 5px;
         content: "";
         background-color: hsl(0, 0%, 0%);
         height: 100%;
@@ -38,9 +37,7 @@
         line-height: 20px;
     }
 
-    .image-delete-button:focus,
     .image-delete-button:hover {
-        opacity: 1;
         color: hsl(0, 0%, 100%);
     }
 
@@ -92,6 +89,10 @@
     }
 
     &:hover {
+        .image-delete-button {
+            opacity: 1;
+        }
+
         .image-upload-text {
             visibility: visible;
         }
@@ -110,16 +111,27 @@
     .inline-block {
         margin: 5px 20px 0 0;
         vertical-align: top;
-        border-radius: 4px;
+        border-radius: 5px;
+    }
+}
+
+#user-avatar-upload-widget,
+#realm-icon-upload-widget {
+    .image_file_input_error {
+        width: 200px;
+        background-color: hsl(0, 43%, 91%);
     }
 }
 
 /* CSS related to settings page user avatar upload widget only */
 #user-avatar-upload-widget {
     .image_upload_button {
-        border-radius: 5px;
-        box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
         z-index: 99;
+    }
+
+    .image-upload-background {
+        width: 200px;
+        height: 200px;
     }
 
     .image-delete-button {
@@ -152,6 +164,19 @@
     }
 }
 
+.user-avatar-section {
+    float: right;
+
+    .avatar-controls {
+        margin-top: 20px;
+        box-shadow: none;
+    }
+
+    .inline-block {
+        margin: 5px 30px 0 0;
+    }
+}
+
 #user-avatar-source {
     font-size: 1em;
     z-index: 99;
@@ -165,13 +190,24 @@
 /* CSS related to settings page realm icon upload widget only */
 #realm-icon-upload-widget {
     width: 100px;
-    height: 100px;
     border-radius: 5px;
-    box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
 
     .image-delete-text {
         top: 40px;
         right: 18px;
+    }
+
+    .image-upload-background {
+        width: 100px;
+        height: 100px;
+    }
+
+    .image-block {
+        border-radius: 5px;
+        box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
+        width: 100px;
+        height: 100px;
+        top: 0;
     }
 
     .image-upload-text {

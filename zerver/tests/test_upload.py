@@ -1255,7 +1255,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             with get_test_image_file(fname) as fp:
                 result = self.client_post("/json/users/me/avatar", {"file": fp})
 
-            self.assert_json_error(result, "Could not decode image; did you upload an image file?")
+            self.assert_json_error(result, "File type is not supported.")
             user_profile = self.example_user("hamlet")
             self.assertEqual(user_profile.avatar_version, 1)
 
@@ -1460,7 +1460,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
             with get_test_image_file(fname) as fp:
                 result = self.client_post("/json/realm/icon", {"file": fp})
 
-            self.assert_json_error(result, "Could not decode image; did you upload an image file?")
+            self.assert_json_error(result, "File type is not supported.")
 
     def test_delete_icon(self) -> None:
         """
@@ -1636,7 +1636,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
                     "/json/realm/logo", {"file": fp, "night": orjson.dumps(self.night).decode()}
                 )
 
-            self.assert_json_error(result, "Could not decode image; did you upload an image file?")
+            self.assert_json_error(result, "File type is not supported.")
 
     def test_delete_logo(self) -> None:
         """

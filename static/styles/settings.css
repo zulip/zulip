@@ -107,19 +107,6 @@ h3 .fa-question-circle-o {
     }
 }
 
-.user-avatar-section {
-    float: right;
-
-    .avatar-controls {
-        margin-top: 20px;
-        box-shadow: none;
-    }
-
-    .inline-block {
-        box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
-    }
-}
-
 #change_password_modal,
 #change_email_modal {
     max-width: 480px;

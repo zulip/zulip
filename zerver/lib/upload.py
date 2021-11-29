@@ -110,7 +110,7 @@ def resize_avatar(image_data: bytes, size: int = DEFAULT_AVATAR_SIZE) -> bytes:
         im = ImageOps.exif_transpose(im)
         im = ImageOps.fit(im, (size, size), Image.ANTIALIAS)
     except OSError:
-        raise BadImageError(_("Could not decode image; did you upload an image file?"))
+        raise BadImageError(_("File type is not supported."))
     except DecompressionBombError:
         raise BadImageError(_("Image size exceeds limit."))
     out = io.BytesIO()
@@ -126,7 +126,7 @@ def resize_logo(image_data: bytes) -> bytes:
         im = ImageOps.exif_transpose(im)
         im.thumbnail((8 * DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE), Image.ANTIALIAS)
     except OSError:
-        raise BadImageError(_("Could not decode image; did you upload an image file?"))
+        raise BadImageError(_("File type is not supported."))
     except DecompressionBombError:
         raise BadImageError(_("Image size exceeds limit."))
     out = io.BytesIO()
@@ -212,7 +212,7 @@ def resize_emoji(
             im.save(out, format=image_format)
             return out.getvalue(), False, None
     except OSError:
-        raise BadImageError(_("Could not decode image; did you upload an image file?"))
+        raise BadImageError(_("File type is not supported."))
     except DecompressionBombError:
         raise BadImageError(_("Image size exceeds limit."))
 
