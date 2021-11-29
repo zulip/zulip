@@ -855,7 +855,7 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries, cache_tries_captured() as cache_tries:
             self.register(self.nonreg_email("test"), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assert_length(queries, 89)
+        self.assert_length(queries, 91)
 
         # We can probably avoid a couple cache hits here, but there doesn't
         # seem to be any O(N) behavior.  Some of the cache hits are related
@@ -2014,8 +2014,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         # Verify that using the wrong type doesn't work in the main confirm code path
         email_change_url = create_confirmation_link(prereg_user, Confirmation.EMAIL_CHANGE)
         email_change_key = email_change_url.split("/")[-1]
-        url = "/accounts/do_confirm/" + email_change_key
-        result = self.client_get(url)
+        result = self.client_post("/accounts/register/", {"key": email_change_key})
         self.assertEqual(result.status_code, 404)
         self.assert_in_response(
             "Whoops. We couldn't find your confirmation link in the system.", result
@@ -2032,8 +2031,17 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         with patch("confirmation.models.timezone_now", return_value=date_sent):
             url = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
 
-        target_url = "/" + url.split("/", 3)[3]
-        result = self.client_get(target_url)
+        key = url.split("/")[-1]
+        confirmation_link_path = "/" + url.split("/", 3)[3]
+        # Both the confirmation link and submitting the key to the registration endpoint
+        # directly will return the appropriate error.
+        result = self.client_get(confirmation_link_path)
+        self.assertEqual(result.status_code, 404)
+        self.assert_in_response(
+            "Whoops. The confirmation link has expired or been deactivated.", result
+        )
+
+        result = self.client_post("/accounts/register/", {"key": key})
         self.assertEqual(result.status_code, 404)
         self.assert_in_response(
             "Whoops. The confirmation link has expired or been deactivated.", result
@@ -2124,7 +2132,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             url, {"key": registration_key, "from_confirmation": 1, "full_nme": "alice"}
         )
         self.assertEqual(response.status_code, 404)
-        self.assert_in_response("The registration link has expired or is not valid.", response)
+        self.assert_in_response(
+            "Whoops. We couldn't find your confirmation link in the system.", response
+        )
 
         registration_key = confirmation_link.split("/")[-1]
         response = self.client_post(
