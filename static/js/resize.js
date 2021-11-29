@@ -8,6 +8,7 @@ import * as message_viewport from "./message_viewport";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import * as popovers from "./popovers";
+import * as recent_topics_util from "./recent_topics_util";
 import * as ui from "./ui";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
@@ -282,5 +283,30 @@ export function handler() {
         }
 
         navigate.scroll_to_selected();
+    }
+}
+
+export function initialize() {
+    // Hack: If the app is loaded directly to recent topics, then we
+    // need to arrange to call navbar_alerts.resize_app when we first
+    // visit a message list. This is a workaround for bugs where the
+    // floating recipient bar will be invisible (as well as other
+    // alignment issues) when they are initially rendered in the
+    // background because recent topics is displayed.
+
+    if (recent_topics_util.is_visible()) {
+        // We bind the handler for the message_feed_container shown event, such
+        // that it will only get executed once.
+        //
+        // The selector here is based on #gear-menu, to take advantage
+        // of the Bootstrap the 'show' event handler on that legacy
+        // data-toggle element.
+        $('#gear-menu a[data-toggle="tab"][href="#message_feed_container"]').one("show", () => {
+            // We use a requestAnimationFrame here to prevent this call from
+            // causing a forced reflow.
+            window.requestAnimationFrame(() => {
+                navbar_alerts.resize_app();
+            });
+        });
     }
 }
