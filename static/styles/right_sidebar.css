@@ -93,6 +93,7 @@
         user-select: none;
         font-weight: 600;
         display: flex;
+        justify-content: space-between;
         align-items: center;
         margin: 0;
         padding: 5px;
@@ -110,6 +111,11 @@
 
     ul {
         margin: 0;
+    }
+
+    .buddy_list_count {
+        font-weight: 300;
+        font-size: 13px;
     }
 
     .fa-chevron-down {

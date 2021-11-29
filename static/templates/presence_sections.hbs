@@ -3,7 +3,8 @@
 <div>
     <h5 id="users_heading" class="buddy_list_heading {{#if users_title_collapsed}} collapsed {{/if}}" role="button"
       data-toggle="collapse" data-target="#users" aria-controls="users" aria-expanded="true">
-        <i class="fa fa-chevron-down"aria-hidden="true"></i> {{ users_title }}
+        <span> <i class="fa fa-chevron-down"aria-hidden="true"></i> {{ users_title }} </span>
+        <span class="buddy_list_count"> {{ users_count }} </span>
     </h5>
     <ul class="collapse {{#unless users_title_collapsed}} in {{/unless}}" id="users">
     </ul>
@@ -19,7 +20,10 @@
 <div>
     <h5 id="others_heading" class="buddy_list_heading {{#if others_title_collapsed}} collapsed {{/if}}" role="button"
       data-toggle="collapse" data-target="#others" aria-controls="others" aria-expanded="true">
-        <i class="fa fa-chevron-down" aria-hidden="true"></i> {{ others_title }}
+        <span>
+            <i class="fa fa-chevron-down" aria-hidden="true"></i> {{ others_title }}
+        </span>
+        <span class="buddy_list_count"> {{ others_count }} </span>
     </h5>
     <ul class="collapse {{#unless others_title_collapsed}} in {{/unless}}" id="others">
     </ul>

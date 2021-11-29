@@ -83,7 +83,10 @@ run_test("get_items", () => {
 });
 
 run_test("basics", ({override, mock_template}) => {
-    mock_template("presence_sections.hbs", false, () => "html-stub-from-sections");
+    mock_template("presence_sections.hbs", false, (data) => {
+        assert.equal(data.users_count, "translated:  2");
+        return "html-stub-from-sections";
+    });
 
     const buddy_list = new BuddyList();
     init_simulated_scrolling();
@@ -126,7 +129,11 @@ run_test("basics", ({override, mock_template}) => {
 });
 
 run_test("section_basics", ({override, mock_template}) => {
-    mock_template("presence_sections.hbs", false, () => "html-stub-from-template");
+    mock_template("presence_sections.hbs", false, (data) => {
+        assert.equal(data.users_count, "translated:  1");
+        assert.equal(data.others_count, "translated:  1");
+        return "html-stub-from-template";
+    });
 
     const buddy_list = new BuddyList();
     init_simulated_scrolling_for_sections();

@@ -225,7 +225,9 @@ test("presence_list_full_update", ({override, override_rewire, mock_template}) =
 
     mock_template("presence_sections.hbs", false, (data) => {
         assert.equal(data.users_title, "translated: PM recipients");
+        assert.equal(data.users_count, "translated:  2");
         assert.equal(data.others_title, "translated: All other users");
+        assert.equal(data.others_count, "translated:  5");
     });
 
     mock_template("presence_rows.hbs", false, (data) => {

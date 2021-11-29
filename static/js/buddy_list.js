@@ -6,6 +6,7 @@ import render_presence_sections from "../templates/presence_sections.hbs";
 
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
+import {$t} from "./i18n";
 import {localstorage} from "./localstorage";
 import * as message_viewport from "./message_viewport";
 import * as padded_widget from "./padded_widget";
@@ -29,8 +30,13 @@ class BuddyListConf {
             others_title_collapsed = Boolean(ls.get("others_title_collapsed"));
         }
         const html = render_presence_sections({
+            users_count: $t({defaultMessage: " {users_count}"}, {users_count: opts.users_count}),
             users_title: opts.user_items_title,
             users_title_collapsed,
+            others_count: $t(
+                {defaultMessage: " {others_count}"},
+                {others_count: opts.others_count},
+            ),
             others_title: opts.other_items_title,
             others_title_collapsed,
         });
@@ -93,7 +99,9 @@ export class BuddyList extends BuddyListConf {
 
         const html = this.sections_to_html({
             user_items_title: opts.user_keys_title,
+            users_count: opts.user_keys.length,
             other_items_title: opts.other_keys_title,
+            others_count: opts.other_keys.length,
         });
 
         this.$container = $(this.container_sel);
