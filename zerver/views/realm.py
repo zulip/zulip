@@ -90,6 +90,9 @@ def update_realm(
     ),
     notifications_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
     signup_notifications_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
+    signup_notifications_include_referrer: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
     message_retention_days_raw: Optional[Union[int, str]] = REQ(
         "message_retention_days", json_validator=check_string_or_int, default=None
     ),

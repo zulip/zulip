@@ -435,6 +435,9 @@ class Realm(models.Model):
         on_delete=models.SET_NULL,
     )
 
+    # Variable to indicate whether the signup notification message should include the referrer's name(if any)
+    signup_notifications_include_referrer: bool = models.BooleanField(default=True)
+
     MESSAGE_RETENTION_SPECIAL_VALUES_MAP = {
         "unlimited": -1,
     }
@@ -646,6 +649,7 @@ class Realm(models.Model):
         enable_spectator_access=bool,
         giphy_rating=int,
         inline_image_preview=bool,
+        signup_notifications_include_referrer=bool,
         inline_url_embed_preview=bool,
         invite_required=bool,
         invite_to_realm_policy=int,

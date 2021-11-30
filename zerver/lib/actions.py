@@ -367,16 +367,34 @@ def send_message_to_signup_notification_stream(
         internal_send_stream_message(sender, signup_notifications_stream, topic_name, message)
 
 
-def notify_new_user(user_profile: UserProfile) -> None:
+def notify_new_user(
+    user_profile: UserProfile, referring_user: Optional[UserProfile] = None
+) -> None:
     user_count = realm_user_count(user_profile.realm)
     sender_email = settings.NOTIFICATION_BOT
     sender = get_system_bot(sender_email, user_profile.realm_id)
+    realm = user_profile.realm
 
     is_first_user = user_count == 1
     if not is_first_user:
-        message = _("{user} just signed up for Zulip. (total: {user_count})").format(
-            user=f"@_**{user_profile.full_name}|{user_profile.id}**", user_count=user_count
-        )
+        # If referring_user exists
+        if referring_user:
+            if realm.signup_notifications_include_referrer:
+                message = _(
+                    "{user} accepted {referrer}'s invitation to join Zulip. (total: {user_count})"
+                ).format(
+                    user=f"@_**{user_profile.full_name}|{user_profile.id}**",
+                    referrer=f"@_**{referring_user.full_name}|{referring_user.id}**",
+                    user_count=user_count,
+                )
+            else:
+                message = _("{user} just signed up for Zulip. (total: {user_count})").format(
+                    user=f"@_**{user_profile.full_name}|{user_profile.id}**", user_count=user_count
+                )
+        else:
+            message = _("{user} just signed up for Zulip. (total: {user_count})").format(
+                user=f"@_**{user_profile.full_name}|{user_profile.id}**", user_count=user_count
+            )
 
         if settings.BILLING_ENABLED:
             from corporate.lib.registration import generate_licenses_low_warning_message_if_required
@@ -475,10 +493,10 @@ def process_new_human_user(
     mit_beta_user = realm.is_zephyr_mirror_realm
     if prereg_user is not None:
         streams: List[Stream] = list(prereg_user.streams.all())
-        acting_user: Optional[UserProfile] = prereg_user.referred_by
+        referring_user: Optional[UserProfile] = prereg_user.referred_by
     else:
         streams = []
-        acting_user = None
+        referring_user = None
 
     # If the user's invitation didn't explicitly list some streams, we
     # add the default streams
@@ -496,7 +514,7 @@ def process_new_human_user(
         streams,
         [user_profile],
         from_user_creation=True,
-        acting_user=acting_user,
+        acting_user=referring_user,
     )
 
     add_new_user_history(user_profile, streams)
@@ -517,7 +535,7 @@ def process_new_human_user(
     if not realm_creation and prereg_user is not None and prereg_user.referred_by is not None:
         notify_invites_changed(user_profile)
 
-    notify_new_user(user_profile)
+    notify_new_user(user_profile, referring_user)
     # Clear any scheduled invitation emails to prevent them
     # from being sent after the user is created.
     clear_scheduled_invitation_emails(user_profile.delivery_email)

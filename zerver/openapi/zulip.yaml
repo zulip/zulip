@@ -3584,6 +3584,14 @@ paths:
 
                                         **Changes**: New in Zulip 4.0 (feature level 50) replacing the
                                         previous `invite_by_admins_only` boolean.
+                                    realm_name:
+                                      type: string
+                                      description: |
+                                        The policy for which users can invite other users
+                                        to join the organization.
+
+                                        **Changes**: New in Zulip 4.0 (feature level 50) replacing the
+                                        previous `invite_by_admins_only` boolean.
                                     invite_to_stream_policy:
                                       type: integer
                                       description: |
@@ -3608,6 +3616,10 @@ paths:
                                       type: boolean
                                       description: |
                                         Whether [topics are required](/help/require-topics) for messages in this organization.
+                                    signup_notifications_include_referrer:
+                                      type: boolean
+                                      description: |
+                                        Whether the referrer's name has to be mentioned in the signup notification in the core-team stream.
                                     message_content_allowed_in_email_notifications:
                                       type: boolean
                                       description: |
@@ -10476,6 +10488,12 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Whether [topics are required](/help/require-topics) for messages in this organization.
+                      realm_signup_notifications_include_referrer:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether the referrer's name has to be mentioned in the signup notification in the core-team stream.
                       realm_message_retention_days:
                         type: integer
                         description: |

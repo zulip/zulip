@@ -22,6 +22,10 @@ const admin_settings_label = {
     realm_mandatory_topics: $t({defaultMessage: "Require topics in stream messages"}),
     realm_notifications_stream: $t({defaultMessage: "New stream notifications:"}),
     realm_signup_notifications_stream: $t({defaultMessage: "New user notifications:"}),
+    realm_signup_notifications_include_referrer: $t({
+        defaultMessage:
+            "Include referrer's name(if any) in the signup notification in the core-team stream",
+    }),
     realm_inline_image_preview: $t({defaultMessage: "Show previews of uploaded and linked images"}),
     realm_inline_url_embed_preview: $t({defaultMessage: "Show previews of linked websites"}),
     realm_send_welcome_emails: $t({defaultMessage: "Send emails introducing Zulip to new users"}),
@@ -108,6 +112,8 @@ export function build_page() {
         realm_waiting_period_threshold: page_params.realm_waiting_period_threshold,
         realm_notifications_stream_id: page_params.realm_notifications_stream_id,
         realm_signup_notifications_stream_id: page_params.realm_signup_notifications_stream_id,
+        realm_signup_notifications_include_referrer:
+            page_params.realm_signup_notifications_include_referrer,
         is_admin: page_params.is_admin,
         is_guest: page_params.is_guest,
         is_owner: page_params.is_owner,
