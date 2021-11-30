@@ -1045,7 +1045,7 @@ class InviteUserBase(ZulipTestCase):
         self,
         invitee_emails: str,
         stream_names: Sequence[str],
-        invite_expires_in_days: int = settings.INVITATION_LINK_VALIDITY_DAYS,
+        invite_expires_in_days: Optional[int] = settings.INVITATION_LINK_VALIDITY_DAYS,
         body: str = "",
         invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
     ) -> HttpResponse:
@@ -1060,11 +1060,16 @@ class InviteUserBase(ZulipTestCase):
         stream_ids = []
         for stream_name in stream_names:
             stream_ids.append(self.get_stream_id(stream_name))
+
+        invite_expires_in: Union[str, Optional[int]] = invite_expires_in_days
+        if invite_expires_in is None:
+            invite_expires_in = orjson.dumps(None).decode()
+
         return self.client_post(
             "/json/invites",
             {
                 "invitee_emails": invitee_emails,
-                "invite_expires_in_days": invite_expires_in_days,
+                "invite_expires_in_days": invite_expires_in,
                 "stream_ids": orjson.dumps(stream_ids).decode(),
                 "invite_as": invite_as,
             },
@@ -2085,6 +2090,26 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             "Whoops. The confirmation link has expired or been deactivated.", result
         )
 
+    def test_never_expire_confirmation_obejct(self) -> None:
+        email = self.nonreg_email("alice")
+        realm = get_realm("zulip")
+        inviter = self.example_user("iago")
+        prereg_user = PreregistrationUser.objects.create(
+            email=email, referred_by=inviter, realm=realm
+        )
+        activation_url = create_confirmation_link(
+            prereg_user, Confirmation.INVITATION, validity_in_days=None
+        )
+        confirmation = Confirmation.objects.last()
+        assert confirmation is not None
+        self.assertEqual(confirmation.expiry_date, None)
+        activation_key = activation_url.split("/")[-1]
+        response = self.client_post(
+            "/accounts/register/",
+            {"key": activation_key, "from_confirmation": 1, "full_nme": "alice"},
+        )
+        self.assertEqual(response.status_code, 200)
+
     def test_send_more_than_one_invite_to_same_user(self) -> None:
         self.user_profile = self.example_user("iago")
         streams = []
@@ -2348,6 +2373,53 @@ class InvitationsTestCase(InviteUserBase):
         self.assertEqual(invites[0]["email"], "TestOne@zulip.com")
         self.assertTrue(invites[1]["is_multiuse"])
         self.assertEqual(invites[1]["invited_by_user_id"], hamlet.id)
+
+    def test_get_never_expiring_invitations(self) -> None:
+        self.login("iago")
+        user_profile = self.example_user("iago")
+
+        streams = []
+        for stream_name in ["Denmark", "Scotland"]:
+            streams.append(get_stream(stream_name, user_profile.realm))
+
+        with patch(
+            "confirmation.models.timezone_now",
+            return_value=timezone_now() - datetime.timedelta(days=1000),
+        ):
+            # Testing the invitation with expiry date set to "None" exists
+            # after a large amount of days.
+            do_invite_users(
+                user_profile,
+                ["TestOne@zulip.com"],
+                streams,
+                invite_expires_in_days=None,
+            )
+            do_invite_users(
+                user_profile,
+                ["TestTwo@zulip.com"],
+                streams,
+                invite_expires_in_days=100,
+            )
+            do_create_multiuse_invite_link(
+                user_profile, PreregistrationUser.INVITE_AS["MEMBER"], None
+            )
+            do_create_multiuse_invite_link(
+                user_profile, PreregistrationUser.INVITE_AS["MEMBER"], 100
+            )
+
+        result = self.client_get("/json/invites")
+        self.assertEqual(result.status_code, 200)
+        invites = orjson.loads(result.content)["invites"]
+        # We only get invitations that will never expire because we have mocked time such
+        # that the other invitations are created in the deep past.
+        self.assert_length(invites, 2)
+
+        self.assertFalse(invites[0]["is_multiuse"])
+        self.assertEqual(invites[0]["email"], "TestOne@zulip.com")
+        self.assertEqual(invites[0]["expiry_date"], None)
+        self.assertTrue(invites[1]["is_multiuse"])
+        self.assertEqual(invites[1]["invited_by_user_id"], user_profile.id)
+        self.assertEqual(invites[1]["expiry_date"], None)
 
     def test_successful_delete_invitation(self) -> None:
         """
@@ -2634,6 +2706,23 @@ class InvitationsTestCase(InviteUserBase):
         self.assertNotEqual(
             original_timestamp, scheduledemail_filter.values_list("scheduled_timestamp", flat=True)
         )
+
+    def test_resend_never_expiring_invitation(self) -> None:
+        self.login("iago")
+        invitee = "resend@zulip.com"
+
+        self.assert_json_success(self.invite(invitee, ["Denmark"], None))
+        prereg_user = PreregistrationUser.objects.get(email=invitee)
+
+        # Verify and then clear from the outbox the original invite email
+        self.check_sent_emails([invitee])
+        from django.core.mail import outbox
+
+        outbox.pop()
+
+        result = self.client_post("/json/invites/" + str(prereg_user.id) + "/resend")
+        self.assert_json_success(result)
+        self.check_sent_emails([invitee])
 
     def test_accessing_invites_in_another_realm(self) -> None:
         inviter = UserProfile.objects.exclude(realm=get_realm("zulip")).first()

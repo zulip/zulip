@@ -21,6 +21,12 @@ format used by the Zulip server that they are interacting with.
 ## Changes in Zulip 5.0
 
 
+**Feature level 117**
+
+* `POST /invites`, `POST /invites/multiuse`: Added support for passing
+  `null` as the `invite_expires_in_days` parameter to request an
+  invitation that never expires.
+
 **Feature level 116**
 
 * [`GET /server_settings`](/api/get-server-settings): Added

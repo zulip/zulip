@@ -461,6 +461,12 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         activate_url = do_send_confirmation_email(
             invitee, referrer, email_language, invite_expires_in_days
         )
+        if invite_expires_in_days is None:
+            # We do not queue reminder email for never expiring
+            # invitations. This is probably a low importance bug; it
+            # would likely be more natural to send a reminder after 7
+            # days.
+            return
 
         # queue invitation reminder
         if invite_expires_in_days >= 4:

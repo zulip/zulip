@@ -92,7 +92,9 @@ def get_confirmations(
             link_status = ""
 
         now = timezone_now()
-        if now < expiry_date:
+        if expiry_date is None:
+            expires_in = "Never"
+        elif now < expiry_date:
             expires_in = timesince(now, expiry_date)
         else:
             expires_in = "Expired"
