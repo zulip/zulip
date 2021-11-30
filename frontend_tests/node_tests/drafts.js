@@ -271,27 +271,39 @@ test("update_draft", ({override}) => {
     override(Date, "now", () => 5);
     override(Math, "random", () => 2);
     draft_id = drafts.update_draft();
+    assert.equal(draft_id, "5-2");
     assert.ok(tippy_show_called);
     assert.ok(tippy_destroy_called);
-    assert.equal(draft_id, "5-2");
 
     override(Date, "now", () => 6);
 
+    override(compose_state, "message_content", () => "dummy content edited once");
     tippy_show_called = false;
     tippy_destroy_called = false;
     draft_id = drafts.update_draft();
+    assert.equal(draft_id, "5-2");
     assert.ok(tippy_show_called);
     assert.ok(tippy_destroy_called);
-    assert.equal(draft_id, "5-2");
 
     override(Date, "now", () => 7);
 
+    // message contents not edited
+    tippy_show_called = false;
+    tippy_destroy_called = false;
+    draft_id = drafts.update_draft();
+    assert.equal(draft_id, "5-2");
+    assert.ok(!tippy_show_called);
+    assert.ok(!tippy_destroy_called);
+
+    override(Date, "now", () => 8);
+
+    override(compose_state, "message_content", () => "dummy content edited a second time");
     tippy_show_called = false;
     tippy_destroy_called = false;
     draft_id = drafts.update_draft({no_notify: true});
+    assert.equal(draft_id, "5-2");
     assert.ok(!tippy_show_called);
     assert.ok(!tippy_destroy_called);
-    assert.equal(draft_id, "5-2");
 });
 
 test("delete_all_drafts", () => {
