@@ -332,7 +332,7 @@ type changes in the future.
   isort in check mode, or in write mode with
   `tools/lint --only=black,isort --fix`. You may find it helpful to
   [integrate
-  Black](https://black.readthedocs.io/en/stable/editor_integration.html)
+  Black](https://black.readthedocs.io/en/stable/integrations/editors.html)
   and
   [isort](https://pycqa.github.io/isort/#installing-isorts-for-your-preferred-text-editor)
   with your editor.
