@@ -1,5 +1,5 @@
 import re
-from typing import List, Sequence, Set
+from typing import List, Optional, Sequence, Set
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
@@ -18,7 +18,7 @@ from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequired
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id
-from zerver.lib.validator import check_int, check_list
+from zerver.lib.validator import check_int, check_list, check_none_or
 from zerver.models import MultiuseInvite, PreregistrationUser, Stream, UserProfile
 
 
@@ -36,8 +36,8 @@ def invite_users_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     invitee_emails_raw: str = REQ("invitee_emails"),
-    invite_expires_in_days: int = REQ(
-        json_validator=check_int, default=settings.INVITATION_LINK_VALIDITY_DAYS
+    invite_expires_in_days: Optional[int] = REQ(
+        json_validator=check_none_or(check_int), default=settings.INVITATION_LINK_VALIDITY_DAYS
     ),
     invite_as: int = REQ(json_validator=check_int, default=PreregistrationUser.INVITE_AS["MEMBER"]),
     stream_ids: List[int] = REQ(json_validator=check_list(check_int)),
@@ -174,8 +174,8 @@ def resend_user_invite_email(
 def generate_multiuse_invite_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    invite_expires_in_days: int = REQ(
-        json_validator=check_int, default=settings.INVITATION_LINK_VALIDITY_DAYS
+    invite_expires_in_days: Optional[int] = REQ(
+        json_validator=check_none_or(check_int), default=settings.INVITATION_LINK_VALIDITY_DAYS
     ),
     invite_as: int = REQ(json_validator=check_int, default=PreregistrationUser.INVITE_AS["MEMBER"]),
     stream_ids: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
