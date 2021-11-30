@@ -175,6 +175,12 @@ function draft_notify() {
     setTimeout(remove_instance, 3000);
 }
 
+function maybe_notify(no_notify) {
+    if (!no_notify) {
+        draft_notify();
+    }
+}
+
 export function update_draft(opts = {}) {
     const no_notify = opts.no_notify || false;
     const draft = snapshot_message();
@@ -194,9 +200,7 @@ export function update_draft(opts = {}) {
         // We don't save multiple drafts of the same message;
         // just update the existing draft.
         draft_model.editDraft(draft_id, draft);
-        if (!no_notify) {
-            draft_notify();
-        }
+        maybe_notify(no_notify);
         return draft_id;
     }
 
@@ -204,9 +208,7 @@ export function update_draft(opts = {}) {
     // one.
     const new_draft_id = draft_model.addDraft(draft);
     $("#compose-textarea").data("draft-id", new_draft_id);
-    if (!no_notify) {
-        draft_notify();
-    }
+    maybe_notify(no_notify);
 
     return new_draft_id;
 }
