@@ -132,7 +132,7 @@ whenever a template is changed.
 ### Translation
 
 All user-facing strings (excluding pages only visible to sysadmins or
-developers) should be tagged for [translation][].
+developers) should be tagged for [translation][trans].
 
 ### Tooltips
 
@@ -284,7 +284,7 @@ function in those scenarios, add it to `zulip_test`. This is also
 
 [jinja2]: http://jinja.pocoo.org/
 [handlebars]: https://handlebarsjs.com/
-[trans]: http://jinja.pocoo.org/docs/dev/templates/#i18n
+[trans]: https://jinja.palletsprojects.com/en/3.0.x/extensions/#i18n-extension
 [jconditionals]: http://jinja.pocoo.org/docs/2.9/templates/#list-of-control-structures
 [hconditionals]: https://handlebarsjs.com/guide/#block_helpers.html
 [translation]: ../translating/translating.md
