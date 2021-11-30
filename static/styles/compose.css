@@ -181,9 +181,19 @@
 
 #below-compose-content {
     display: flex;
+    flex-direction: column;
     width: 100%;
     margin-top: 6px;
     margin-bottom: -2px;
+
+    .compose_bottom_top_container {
+        display: flex;
+    }
+
+    .compose_bottom_bottom_container {
+        display: flex;
+        justify-content: space-between;
+    }
 }
 
 #compose_limit_indicator {
