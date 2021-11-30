@@ -93,12 +93,18 @@
                             </div>
                             <div class="drag"></div>
                             <div id="below-compose-content">
-                                <div class="compose_right_float_container order-3">
-                                    <button type="submit" id="compose-send-button" class="button small send_message animated-purple-button" title="{{t 'Send' }} (Ctrl + Enter)">
-                                        <img class="loader" alt="" src="" />
-                                        <span>{{t 'Send' }}</span>
-                                    </button>
-                                    <div class="enter_sends order-2">
+                                <div class="compose_bottom_top_container">
+                                    <div class="compose_right_float_container order-3">
+                                        <button type="submit" id="compose-send-button" class="button small send_message animated-purple-button" title="{{t 'Send' }} (Ctrl + Enter)">
+                                            <img class="loader" alt="" src="" />
+                                            <span>{{t 'Send' }}</span>
+                                        </button>
+                                    </div>
+                                    {{> compose_control_buttons }}
+                                </div>
+                                <div class="compose_bottom_bottom_container">
+                                    <span id="compose_limit_indicator"></span>
+                                    <div class="enter_sends">
                                         <label id="enter-sends-label" class="compose_checkbox_label tippy-zulip-tooltip" data-tippy-content="Click to switch">
                                             <span class="enter_sends_true">
                                                 {{t 'Enter to send' }}
@@ -115,10 +121,6 @@
                                             </span>
                                         </label>
                                     </div>
-                                </div>
-                                {{> compose_control_buttons }}
-                                <div class="compose_right_float_container order-2">
-                                    <span id="compose_limit_indicator"></span>
                                 </div>
                             </div>
                         </div>
