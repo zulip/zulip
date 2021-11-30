@@ -9,8 +9,8 @@
 # Cihan Alkan <cihanalk@gmail.com>, 2021
 # Gokdeniz.Kucukali, 2021
 # Hüseyin Fahri Uzun <mail@fahriuzun.com>, 2021
-# Oktay Altunergil, 2021
 # Tim Abbott <tabbott@kandralabs.com>, 2021
+# Oktay Altunergil, 2021
 # 
 #, fuzzy
 msgid ""
@@ -19,7 +19,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-05-26 18:04+0000\n"
 "PO-Revision-Date: 2021-04-02 21:39+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>, 2021\n"
+"Last-Translator: Oktay Altunergil, 2021\n"
 "Language-Team: Turkish (https://www.transifex.com/zulip/teams/53893/tr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -664,7 +664,7 @@ msgstr ""
 
 #: templates/zerver/app/index.html:68
 msgid "Retrying soon..."
-msgstr "Yakıda yeniden deniyor..."
+msgstr "Az sonra yeniden denenecek..."
 
 #: templates/zerver/app/index.html:68
 msgid "Try now."
@@ -836,7 +836,7 @@ msgstr "Navigasyon"
 #: templates/zerver/app/left_sidebar.html:64
 #: templates/zerver/app/left_sidebar.html:66
 msgid "Filter streams"
-msgstr "Kanalları filtrele"
+msgstr "Kanalları süz"
 
 #: templates/zerver/app/keyboard_shortcuts.html:77
 #: templates/zerver/app/right_sidebar.html:9
@@ -967,7 +967,7 @@ msgstr "Son konuları görüntüle"
 
 #: templates/zerver/app/keyboard_shortcuts.html:251
 msgid "Filter topics"
-msgstr "Konuları filtrele"
+msgstr "Konuları süz"
 
 #: templates/zerver/app/keyboard_shortcuts.html:260
 msgid "Drafts"
@@ -1287,7 +1287,7 @@ msgstr ""
 #: templates/zerver/app/right_sidebar.html:5
 #: templates/zerver/app/right_sidebar.html:6
 msgid "Filter users"
-msgstr "Kullanıcıları filtrele"
+msgstr "Kullanıcıları süz"
 
 #: templates/zerver/app/right_sidebar.html:5
 msgid "USERS"
@@ -3175,7 +3175,7 @@ msgstr "Arama entegrasyonları"
 
 #: templates/zerver/integrations/index.html:48
 msgid "Filter by category"
-msgstr "Kategorilere göre filtrele"
+msgstr "Kategorilere göre süz"
 
 #: templates/zerver/integrations/index.html:62
 #: templates/zerver/integrations/index.html:89

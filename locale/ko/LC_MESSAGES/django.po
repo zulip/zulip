@@ -17,6 +17,8 @@
 # 최진호 <jinho.choi.999@gmail.com>, 2021
 # Yeonjeong Noh <nyj2800@hanmail.net>, 2021
 # sung yong kim <hikimsy@gmail.com>, 2021
+# F4D3C0D3 0x, 2021
+# KIM JINWOO, 2021
 # 
 #, fuzzy
 msgid ""
@@ -25,7 +27,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-05-26 18:04+0000\n"
 "PO-Revision-Date: 2021-04-02 21:39+0000\n"
-"Last-Translator: sung yong kim <hikimsy@gmail.com>, 2021\n"
+"Last-Translator: KIM JINWOO, 2021\n"
 "Language-Team: Korean (https://www.transifex.com/zulip/teams/53893/ko/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -226,6 +228,7 @@ msgid ""
 "A full update of all the graphs happens once a day. The “messages sent over "
 "time” graph is updated once an hour."
 msgstr ""
+"모든 그래프의 전체 업데이트는 하루에 한 번 합니다.  \"메세지가 보내진지 시간 경과된\" 그래프는 한 시간에 한 번 업데이트 됩니다."
 
 #: templates/analytics/stats.html:129
 msgid "Analytics documentation"
@@ -243,10 +246,13 @@ msgid ""
 "            from %(old_email_html_tag)s to %(new_email_html_tag)s\n"
 "            "
 msgstr ""
+"\n"
+"이것은 너의 Zulip 계정에 있는 이메일 주소가 변경되었는지  확인한다.\n"
+"from 전 이메일%(old_email_html_tag)s to 현재 새로운 이메일%(new_email_html_tag)s "
 
 #: templates/confirmation/link_does_not_exist.html:9
 msgid "Whoops. We couldn't find your confirmation link in the system."
-msgstr ""
+msgstr "오류. 우리는 이 시스템에서 너를 확인할 만한 것을 찾지 못했습니다."
 
 #: templates/confirmation/link_does_not_exist.html:11
 #: templates/confirmation/link_malformed.html:12
@@ -256,24 +262,27 @@ msgid ""
 "                    Anyway, shoot us a line at %(support_email_html_tag)s and we'll get this resolved shortly.\n"
 "                    "
 msgstr ""
+"\n"
+"어떠한 방식으로든, 너는 우리에게 어떠한 얘기라도 보내라 %(support_email_html_tag)s으로 그러면 우리는 이것을 즉시 해결 할 것이다."
 
 #: templates/confirmation/link_expired.html:10
 msgid "Whoops. The confirmation link has expired or been deactivated."
-msgstr ""
+msgstr "오류. 확인 링크가 만료되었거나 비활성화 되었습니다."
 
 #: templates/confirmation/link_expired.html:11
 msgid "Please contact your organization administrator for a new link."
-msgstr ""
+msgstr "조직 관리자에게 새로운 링크로 연락해라"
 
 #: templates/confirmation/link_malformed.html:9
 msgid "Whoops. The confirmation link is malformed."
-msgstr ""
+msgstr "오류. 이 확인 링크는 형식화되지 않았습니다."
 
 #: templates/confirmation/link_malformed.html:10
 msgid ""
 "Make sure you copied the link correctly in to your browser. If you're still "
 "encountering this page, it's probably our fault. We're sorry."
 msgstr ""
+"너의 브라우저에 올바른 링크를 복사하는 것을 확실히 해주십시오.  이 페이지가 계속 생성될 경우, 아마도 오류가 생겼습니다. 죄송합니다."
 
 #: templates/corporate/billing.html:21 templates/zerver/app/navbar.html:140
 msgid "Billing"
@@ -298,11 +307,11 @@ msgstr "해마다 지불"
 
 #: templates/corporate/upgrade.html:85
 msgid "License management"
-msgstr ""
+msgstr "라이센스 관리"
 
 #: templates/corporate/upgrade.html:89
 msgid "Automatic"
-msgstr ""
+msgstr "자동"
 
 #: templates/corporate/upgrade.html:90
 msgid "Most convenient"
@@ -447,11 +456,11 @@ msgstr "메시지 삭제"
 
 #: templates/zerver/app/delete_message.html:13
 msgid "Are you sure you want to permanently delete this message?"
-msgstr ""
+msgstr "당신은 이 메세지를 영구적으로 삭제하시겠습니까?"
 
 #: templates/zerver/app/delete_message.html:14
 msgid "Deleting a message removes it for everyone."
-msgstr ""
+msgstr "모두를 위해 삭제된 메세지를 지움"
 
 #: templates/zerver/app/delete_message.html:19
 #: templates/zerver/app/index.html:167
@@ -461,7 +470,7 @@ msgstr "취소"
 
 #: templates/zerver/app/delete_message.html:20
 msgid "Confirm"
-msgstr ""
+msgstr "확인"
 
 #: templates/zerver/app/deprecation_notice.html:6
 msgid "Deprecation notice"
@@ -644,19 +653,19 @@ msgstr ""
 
 #: templates/zerver/app/index.html:160
 msgid "In a meeting"
-msgstr ""
+msgstr "회의 안 에서"
 
 #: templates/zerver/app/index.html:161
 msgid "Commuting"
-msgstr ""
+msgstr "출근중"
 
 #: templates/zerver/app/index.html:162
 msgid "Out sick"
-msgstr ""
+msgstr "병가"
 
 #: templates/zerver/app/index.html:163
 msgid "Vacationing"
-msgstr ""
+msgstr "휴가 중"
 
 #: templates/zerver/app/index.html:164
 msgid "Working remotely"
@@ -702,7 +711,7 @@ msgstr "회원"
 #: templates/zerver/app/invite_user.html:43
 #: templates/zerver/development/dev_login.html:40
 msgid "Moderators"
-msgstr ""
+msgstr "중재자들"
 
 #: templates/zerver/app/invite_user.html:44
 msgid "Organization administrators"
@@ -789,7 +798,7 @@ msgstr "키보드 단축키 보기"
 
 #: templates/zerver/app/keyboard_shortcuts.html:56
 msgid "Go to default view"
-msgstr ""
+msgstr "기본 보기로 돌아가기"
 
 #: templates/zerver/app/keyboard_shortcuts.html:65
 msgid "Navigation"
@@ -853,11 +862,11 @@ msgstr "선택해서 보기"
 
 #: templates/zerver/app/keyboard_shortcuts.html:159
 msgid "Narrow to stream"
-msgstr ""
+msgstr "스트림을 묶기"
 
 #: templates/zerver/app/keyboard_shortcuts.html:163
 msgid "Narrow to topic or PM conversation"
-msgstr ""
+msgstr "주제 또는 PM 대화와 묶기"
 
 #: templates/zerver/app/keyboard_shortcuts.html:167
 msgid "Narrow to all private messages"
@@ -931,7 +940,7 @@ msgstr "최근 주제들 보기"
 
 #: templates/zerver/app/keyboard_shortcuts.html:251
 msgid "Filter topics"
-msgstr ""
+msgstr "주제를 필터링"
 
 #: templates/zerver/app/keyboard_shortcuts.html:260
 msgid "Drafts"
@@ -1012,11 +1021,11 @@ msgstr "구독, 추가 혹은 스트림 구성"
 
 #: templates/zerver/app/left_sidebar.html:73
 msgid "Back to streams"
-msgstr ""
+msgstr "스트림으로 돌아가기"
 
 #: templates/zerver/app/left_sidebar.html:80
 msgid "Subscribe to more streams"
-msgstr ""
+msgstr "더 많은 스트림들을 구독"
 
 #: templates/zerver/app/lightbox_overlay.html:10
 msgid "Pan &amp; Zoom"
@@ -1079,7 +1088,7 @@ msgstr "조직 관리"
 
 #: templates/zerver/app/navbar.html:83
 msgid "Usage statistics"
-msgstr ""
+msgstr "사용 통계"
 
 #: templates/zerver/app/navbar.html:90 templates/zerver/footer.html:16
 msgid "Help center"
@@ -1100,7 +1109,7 @@ msgstr "Zulip에 대해"
 
 #: templates/zerver/app/navbar.html:117
 msgid "Contact support"
-msgstr ""
+msgstr "고객지원 연결"
 
 #: templates/zerver/app/navbar.html:124
 msgid "Desktop & mobile apps"
@@ -1116,7 +1125,7 @@ msgstr "API 문서"
 
 #: templates/zerver/app/navbar.html:147
 msgid "Support Zulip"
-msgstr ""
+msgstr "Zulip에 도움"
 
 #: templates/zerver/app/navbar.html:154
 msgid "Plans and pricing"
@@ -1193,19 +1202,19 @@ msgstr ""
 
 #: templates/zerver/app/navbar_alerts.html:43
 msgid "Download the latest version."
-msgstr ""
+msgstr "가장 최근 버전 다운로드"
 
 #: templates/zerver/app/navbar_alerts.html:50
 msgid "This Zulip server is running an old version and should be upgraded."
-msgstr ""
+msgstr "Zulip 서버가 오래된 버전으로 사용 중 입니다. 업그레이드를 진행 하십시오"
 
 #: templates/zerver/app/navbar_alerts.html:53
 msgid "Learn more"
-msgstr ""
+msgstr "좀 더 알아보기"
 
 #: templates/zerver/app/navbar_alerts.html:56
 msgid "Dismiss for a week"
-msgstr ""
+msgstr "한 주 동안 무시"
 
 #: templates/zerver/app/navbar_alerts.html:64
 #, python-format
@@ -1285,7 +1294,7 @@ msgstr "해당 메시지 ID만 보기"
 
 #: templates/zerver/app/search_operators.html:45
 msgid "Search all public streams in the organization."
-msgstr ""
+msgstr "이 조직에 있는 모든 공개 스트림들을 찾기 "
 
 #: templates/zerver/app/search_operators.html:49
 msgid "Narrow to messages with alert words."
@@ -1395,7 +1404,7 @@ msgstr "알림끈 주제"
 
 #: templates/zerver/app/settings_overlay.html:48
 msgid "Muted users"
-msgstr ""
+msgstr "음소거된 유저들"
 
 #: templates/zerver/app/settings_overlay.html:55
 msgid "Organization profile"
@@ -1440,7 +1449,7 @@ msgstr "인증 방법"
 
 #: templates/zerver/app/settings_overlay.html:95
 msgid "Only organization owners can edit these settings."
-msgstr ""
+msgstr "오직 조직 주인만 이 설정을 변경할 수 있습니다."
 
 #: templates/zerver/app/settings_overlay.html:110
 msgid "Deactivated users"
@@ -1456,7 +1465,7 @@ msgstr "링크 변환기"
 
 #: templates/zerver/app/settings_overlay.html:143
 msgid "Code playgrounds"
-msgstr ""
+msgstr "코드방"
 
 #: templates/zerver/app/settings_overlay.html:151
 msgid "Custom profile fields"
@@ -1468,11 +1477,11 @@ msgstr "초대장"
 
 #: templates/zerver/app/settings_overlay.html:163
 msgid "Data exports"
-msgstr ""
+msgstr "데이터 내보내기"
 
 #: templates/zerver/app/settings_overlay.html:169
 msgid "Show more"
-msgstr ""
+msgstr "더 보여주기"
 
 #: templates/zerver/config_error.html:14
 msgid ""
@@ -3571,7 +3580,7 @@ msgstr ""
 
 #: zerver/lib/actions.py:2991
 msgid "Private messages are disabled in this organization."
-msgstr ""
+msgstr "이 조직에서 개인 메시지는 비활성화 되었습니다."
 
 #: zerver/lib/actions.py:3116
 msgid "Widgets: API programmer sent invalid JSON content"
@@ -4562,7 +4571,7 @@ msgstr ""
 
 #: zerver/models.py:1417
 msgid "Moderator"
-msgstr ""
+msgstr "중재자"
 
 #: zerver/models.py:1418
 msgid "Member"
@@ -5122,7 +5131,7 @@ msgstr ""
 
 #: zerver/views/user_settings.py:49
 msgid "Avatar changes are disabled in this organization."
-msgstr ""
+msgstr "아바타 변경은 이 조직에서 불가능합니다."
 
 #: zerver/views/user_settings.py:63 zerver/views/user_settings.py:149
 msgid "Email address changes are disabled in this organization."

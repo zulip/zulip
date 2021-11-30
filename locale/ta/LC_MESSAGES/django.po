@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-23 19:14+0000\n"
+"POT-Creation-Date: 2021-11-30 22:59+0000\n"
 "PO-Revision-Date: 2018-04-11 21:06+0000\n"
 "Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
 "Language-Team: Tamil (http://www.transifex.com/zulip/zulip/language/ta/)\n"
@@ -1428,7 +1428,7 @@ msgstr ""
 msgid "Organization permissions"
 msgstr ""
 
-#: templates/zerver/app/settings_overlay.html:76 zerver/models.py:2390
+#: templates/zerver/app/settings_overlay.html:76 zerver/models.py:2391
 msgid "Custom emoji"
 msgstr ""
 
@@ -3863,7 +3863,7 @@ msgstr ""
 msgid "Message must have recipients"
 msgstr ""
 
-#: zerver/lib/addressee.py:154 zerver/lib/outgoing_webhook.py:193
+#: zerver/lib/addressee.py:154 zerver/lib/outgoing_webhook.py:215
 msgid "Invalid message type"
 msgstr ""
 
@@ -3979,7 +3979,7 @@ msgstr ""
 msgid "Must be an organization administrator or emoji author"
 msgstr ""
 
-#: zerver/lib/emoji.py:117 zerver/models.py:840
+#: zerver/lib/emoji.py:117 zerver/models.py:841
 msgid "Invalid characters in emoji name"
 msgstr ""
 
@@ -4307,11 +4307,11 @@ msgid ""
 "a         previous message."
 msgstr ""
 
-#: zerver/lib/outgoing_webhook.py:293
+#: zerver/lib/outgoing_webhook.py:315
 msgid "Invalid JSON in response"
 msgstr ""
 
-#: zerver/lib/outgoing_webhook.py:302
+#: zerver/lib/outgoing_webhook.py:324
 #, fuzzy
 #| msgid "Enable notifications"
 msgid "Invalid response format"
@@ -4518,7 +4518,7 @@ msgstr ""
 msgid "Invalid interface type"
 msgstr ""
 
-#: zerver/lib/users.py:223 zerver/lib/users.py:228 zerver/models.py:3469
+#: zerver/lib/users.py:223 zerver/lib/users.py:228 zerver/models.py:3470
 #, fuzzy
 #| msgid "Enable notifications"
 msgid "Invalid user ID: {}"
@@ -4697,93 +4697,97 @@ msgstr ""
 msgid "CSRF error: {reason}"
 msgstr ""
 
-#: zerver/models.py:372
+#: zerver/models.py:373
 #, fuzzy
 #| msgid "Username"
 msgid "stream events"
 msgstr "பயனர்பெயர்"
 
-#: zerver/models.py:406
+#: zerver/models.py:407
 msgid "Available on Zulip Standard. Upgrade to access."
 msgstr ""
 
-#: zerver/models.py:910
-msgid "Invalid linkifier pattern.  Valid characters are {}."
+#: zerver/models.py:919 zerver/models.py:921
+msgid "Bad regular expression: {}"
 msgstr ""
 
-#: zerver/models.py:928
+#: zerver/models.py:922
+msgid "Unknown regular expression error"
+msgstr ""
+
+#: zerver/models.py:929
 msgid "Invalid URL format string."
 msgstr ""
 
-#: zerver/models.py:1035 zerver/views/realm_playgrounds.py:24
+#: zerver/models.py:1036 zerver/views/realm_playgrounds.py:24
 msgid "Invalid characters in pygments language"
 msgstr ""
 
-#: zerver/models.py:1415
+#: zerver/models.py:1416
 #, fuzzy
 #| msgid "Administrators"
 msgid "Organization owner"
 msgstr "நிர்வாகிகள்"
 
-#: zerver/models.py:1416
+#: zerver/models.py:1417
 #, fuzzy
 #| msgid "Administrators"
 msgid "Organization administrator"
 msgstr "நிர்வாகிகள்"
 
-#: zerver/models.py:1417
+#: zerver/models.py:1418
 msgid "Moderator"
 msgstr ""
 
-#: zerver/models.py:1418
+#: zerver/models.py:1419
 msgid "Member"
 msgstr ""
 
-#: zerver/models.py:1419
+#: zerver/models.py:1420
 msgid "Guest"
 msgstr ""
 
-#: zerver/models.py:2389
+#: zerver/models.py:2390
 msgid "Unicode emoji"
 msgstr ""
 
-#: zerver/models.py:2391
+#: zerver/models.py:2392
 msgid "Zulip extra emoji"
 msgstr ""
 
-#: zerver/models.py:3473
+#: zerver/models.py:3474
 msgid "User with ID {} is deactivated"
 msgstr ""
 
-#: zerver/models.py:3476
+#: zerver/models.py:3477
 msgid "User with ID {} is a bot"
 msgstr ""
 
-#: zerver/models.py:3509
+#: zerver/models.py:3510
 msgid "List of options"
 msgstr ""
 
-#: zerver/models.py:3512
+#: zerver/models.py:3513
 msgid "Person picker"
 msgstr ""
 
-#: zerver/models.py:3524
+#: zerver/models.py:3525
 msgid "Short text"
 msgstr ""
 
-#: zerver/models.py:3525
+#: zerver/models.py:3526
 msgid "Long text"
 msgstr ""
 
-#: zerver/models.py:3526
+#: zerver/models.py:3527
 msgid "Date picker"
 msgstr ""
 
-#: zerver/models.py:3527
+#: zerver/models.py:3528
 msgid "Link"
 msgstr ""
 
-#: zerver/models.py:3530
+#: zerver/models.py:3531
 msgid "External account"
 msgstr ""
 
@@ -4799,24 +4803,24 @@ msgstr ""
 msgid "An unknown browser"
 msgstr ""
 
-#: zerver/tornado/event_queue.py:632
+#: zerver/tornado/event_queue.py:644
 msgid "Missing 'queue_id' argument"
 msgstr ""
 
-#: zerver/tornado/event_queue.py:635
+#: zerver/tornado/event_queue.py:647
 msgid "Missing 'last_event_id' argument"
 msgstr ""
 
-#: zerver/tornado/event_queue.py:638
+#: zerver/tornado/event_queue.py:650
 msgid "You are not authorized to get events from this queue"
 msgstr ""
 
-#: zerver/tornado/event_queue.py:644
+#: zerver/tornado/event_queue.py:656
 #, python-brace-format
 msgid "An event newer than {event_id} has already been pruned!"
 msgstr ""
 
-#: zerver/tornado/event_queue.py:654
+#: zerver/tornado/event_queue.py:666
 #, python-brace-format
 msgid "Event {event_id} was not in this queue"
 msgstr ""
@@ -5530,15 +5534,15 @@ msgstr ""
 msgid "Invalid data."
 msgstr ""
 
-#: zproject/backends.py:1922
+#: zproject/backends.py:1927
 msgid "Missing id_token parameter"
 msgstr ""
 
-#: zproject/backends.py:2277
+#: zproject/backends.py:2282
 msgid "Invalid OTP"
 msgstr ""
 
-#: zproject/backends.py:2280
+#: zproject/backends.py:2285
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr ""
 

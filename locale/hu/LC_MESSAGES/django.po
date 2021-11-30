@@ -9,6 +9,7 @@
 # Barna Kovács <vonbraun22@gmail.com>, 2021
 # Hrotkó Gábor <hrotko.gabor@gmail.com>, 2021
 # stuntsman, 2021
+# Eekain, 2021
 # 
 #, fuzzy
 msgid ""
@@ -17,7 +18,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-05-26 18:04+0000\n"
 "PO-Revision-Date: 2021-04-02 21:39+0000\n"
-"Last-Translator: stuntsman, 2021\n"
+"Last-Translator: Eekain, 2021\n"
 "Language-Team: Hungarian (https://www.transifex.com/zulip/teams/53893/hu/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -31,7 +32,7 @@ msgstr "Vendég felhasználóknak nem engedélyezett"
 
 #: analytics/views.py:184
 msgid "Invalid organization"
-msgstr "Hibás szervezet"
+msgstr "Érvénytelen szervezet"
 
 #: analytics/views.py:315
 msgid "Public streams"
@@ -160,7 +161,7 @@ msgstr "Emberek"
 #: templates/analytics/stats.html:37
 #: templates/zerver/app/settings_overlay.html:119
 msgid "Bots"
-msgstr "Botok"
+msgstr "Robotok"
 
 #: templates/analytics/stats.html:44
 msgid "Messages sent by client"
@@ -1445,7 +1446,7 @@ msgstr "Értesítések"
 
 #: templates/zerver/app/settings_overlay.html:29
 msgid "Your bots"
-msgstr "Saját botjaid"
+msgstr "Saját robotjaid"
 
 #: templates/zerver/app/settings_overlay.html:34
 msgid "Alert words"
@@ -3140,6 +3141,9 @@ msgid ""
 "                        app that is no longer supported.\n"
 "                        "
 msgstr ""
+"\n"
+"A Zulip asztali applikáció régi,\n"
+" már nem támogatott verzióját használod."
 
 #: templates/zerver/insecure_desktop_app.html:21
 msgid ""
@@ -3148,6 +3152,10 @@ msgid ""
 "                        Zulip desktop app no longer works.\n"
 "                        "
 msgstr ""
+"\n"
+"                        Az automatikus frissülés ezen a régi\n"
+"                        asztali Zulip appon már nem működik.\n"
+"                        "
 
 #: templates/zerver/insecure_desktop_app.html:30
 msgid "Download the latest release."
@@ -3168,6 +3176,13 @@ msgid ""
 "                        <a href=\"/integrations/doc/ifttt\">IFTTT</a>.\n"
 "                        "
 msgstr ""
+"\n"
+"                        És száz másik, hála nekik\n"
+"                        <a href=\"/integrations/doc/hubot\">Hubot</a>,\n"
+"                        <a href=\"/integrations/doc/zapier\">Zapier</a>,\n"
+"                        meg\n"
+"                        <a href=\"/integrations/doc/ifttt\">IFTTT</a>.\n"
+"                        "
 
 #: templates/zerver/integrations/index.html:41
 msgid "Search integrations"
@@ -3190,7 +3205,7 @@ msgstr "Bejövő webhookok"
 #: templates/zerver/integrations/index.html:67
 #: templates/zerver/integrations/index.html:94 zerver/lib/integrations.py:48
 msgid "Interactive bots"
-msgstr ""
+msgstr "Válaszoló robotok"
 
 #: templates/zerver/integrations/index.html:70
 #: templates/zerver/integrations/index.html:97
@@ -3221,6 +3236,9 @@ msgid ""
 "        Please sign up using a valid email address.\n"
 "        "
 msgstr ""
+"\n"
+"Az e-mail cím, amit használ, nem érvényes.\n"
+"Kérjük használjon érvényes e-mailt."
 
 #: templates/zerver/invalid_email.html:19
 #, python-format
@@ -3340,6 +3358,10 @@ msgid ""
 "                    <a href=\"%(zulip_cloud_link)s\">Zulip Cloud</a>\n"
 "                    "
 msgstr ""
+"\n"
+"                    A Zulip nyílt kódú, úgyhogy <a href=\"%(production_install_url)s\">telepíthetsz saját Zulip szervert</a>vagy kezdhetsz új szervezetet a\n"
+"                    <a href=\"%(zulip_cloud_link)s\">Zulip Cloud</a>-ban\n"
+"                    "
 
 #: templates/zerver/realm_reactivation.html:9
 msgid "Your organization has been successfully reactivated."
@@ -3652,7 +3674,7 @@ msgstr "Érvénytelen aldomain a push értesítés bouncerhez"
 
 #: zerver/decorator.py:241
 msgid "This API is not available to incoming webhook bots."
-msgstr "Ez az API nem érhető el bejövő webhook botok számára."
+msgstr "Ez az API nem érhető el bejövő webhook robotok számára."
 
 #: zerver/decorator.py:268
 msgid "Account is not associated with this subdomain"
@@ -3660,7 +3682,7 @@ msgstr "A fiók nincs ehhez az aldomainhez rendelve."
 
 #: zerver/decorator.py:455 zerver/decorator.py:552
 msgid "This endpoint does not accept bot requests."
-msgstr "Ez a végpont nem fogad el botoktól érkező kéréseket."
+msgstr "Ez a végpont nem fogad el robotoktól érkező kéréseket."
 
 #: zerver/decorator.py:526
 msgid "Must be an server administrator"
@@ -3680,7 +3702,7 @@ msgstr "Hiányzó authorizációs fejléc a basic auth során"
 
 #: zerver/decorator.py:735
 msgid "Webhook bots can only access webhooks"
-msgstr "A webhook botok csak webhookokat érhetnek el"
+msgstr "A webhook robotok csak webhookokat érhetnek el"
 
 #: zerver/decorator.py:801
 msgid "Access denied"
@@ -3896,7 +3918,7 @@ msgid ""
 "Your bot {bot_identity} tried to send a message to stream ID {stream_id}, "
 "but there is no stream with that ID."
 msgstr ""
-"A/az {bot_identity} bot megpróbált üzenetet küldeni a/az {stream_id} "
+"A/az {bot_identity} robot megpróbált üzenetet küldeni a/az {stream_id} "
 "üzenetfolyam ID-vel, de ilyen azonosítójú üzenetfolyam nem létezik."
 
 #: zerver/lib/actions.py:2936
@@ -3905,7 +3927,7 @@ msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}, but"
 " that stream does not exist. Click [here]({new_stream_link}) to create it."
 msgstr ""
-"A/az {bot_identity} bot megpróbált üzenetet küldeni a/az {stream_name} "
+"A/az {bot_identity} robot megpróbált üzenetet küldeni a/az {stream_name} "
 "üzenetfolyamba, de az nem létezik. Kattints [ide] ({new_stream_link}) a "
 "létrehozásához."
 
@@ -3915,7 +3937,7 @@ msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}. The"
 " stream exists but does not have any subscribers."
 msgstr ""
-"A/az {bot_identity} bot megpróbált üzenetet küldeni a/az {stream_name} "
+"A/az {bot_identity} robot megpróbált üzenetet küldeni a/az {stream_name} "
 "üzenetfolyamba. Az üzenetfolyam létezik, de nincsenek feliratkozói."
 
 #: zerver/lib/actions.py:2991
@@ -3978,32 +4000,36 @@ msgid ""
 "Stream '{stream_name}' is already present in default stream group "
 "'{group_name}'"
 msgstr ""
+"A folyam '{stream_name}' már az alapértelmezett folyami csoport "
+"'{group_name}' része"
 
 #: zerver/lib/actions.py:4968
 #, python-brace-format
 msgid ""
 "Stream '{stream_name}' is not present in default stream group '{group_name}'"
 msgstr ""
+"A folyam '{stream_name}' nem része az alapértelmezett folyami csoport "
+"'{group_name}'-nak"
 
 #: zerver/lib/actions.py:4982
 msgid "This default stream group is already named '{}'"
-msgstr ""
+msgstr "Az alapértelmezett folyamnak már ez a neve '{}'"
 
 #: zerver/lib/actions.py:4986
 msgid "Default stream group '{}' already exists"
-msgstr ""
+msgstr "Alapértelmezett üzenetfolyami csoport '{}' már létezik"
 
 #: zerver/lib/actions.py:5428
 msgid "Invalid flag: '{}'"
-msgstr ""
+msgstr "Érvénytelen kapcsoló: '{}'"
 
 #: zerver/lib/actions.py:5430
 msgid "Flag not editable: '{}'"
-msgstr ""
+msgstr "Kapcsoló nem szerkeszthető: '{}'"
 
 #: zerver/lib/actions.py:5432
 msgid "Invalid message flag operation: '{}'"
-msgstr ""
+msgstr "Érvénytelen kapcsolóbeállítás: '{}'"
 
 #: zerver/lib/actions.py:5446 zerver/lib/actions.py:5448
 #: zerver/lib/message.py:671 zerver/lib/message.py:677
@@ -4013,12 +4039,12 @@ msgstr "Érvénytelen üzenet(ek)"
 #: zerver/lib/actions.py:6020
 #, python-brace-format
 msgid "This topic was moved by {user} to {new_location}"
-msgstr ""
+msgstr "Ezt a témát {user} áthelyezte ide: {new_location}"
 
 #: zerver/lib/actions.py:6025
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}"
-msgstr ""
+msgstr "Ezt a témát  idehozta a régi helyről: {old_location},  {user}"
 
 #: zerver/lib/actions.py:6518
 #, python-brace-format
@@ -4026,6 +4052,8 @@ msgid ""
 "You do not have enough remaining invites for today. Please contact {email} "
 "to have your limit raised. No invitations were sent."
 msgstr ""
+"Nincs elég maradék meghívód mára. Kérjük keresd {email} hogy több meghívót "
+"küldhess. Most nem küldtünk ki egyet sem."
 
 #: zerver/lib/actions.py:6569
 msgid ""
@@ -4060,15 +4088,15 @@ msgstr "Érvénytelen sorrend megfeleltetés."
 #: zerver/views/custom_profile_fields.py:157
 #, python-brace-format
 msgid "Field id {id} not found."
-msgstr ""
+msgstr "Mező id {id} nem található."
 
 #: zerver/lib/actions.py:7357 zerver/lib/actions.py:7370
 msgid "User group '{}' already exists."
-msgstr ""
+msgstr "Felhasználó csoport '{}' már létezik."
 
 #: zerver/lib/addressee.py:21
 msgid "Invalid email '{}'"
-msgstr ""
+msgstr "Érvénytelen e-mail '{}'"
 
 #: zerver/lib/addressee.py:69 zerver/lib/addressee.py:137
 #: zerver/views/typing.py:38
@@ -4134,11 +4162,11 @@ msgstr "A domain csak betűket, számokat, pontot és kötőjelet tartalmazhat."
 
 #: zerver/lib/email_notifications.py:132 zerver/lib/email_notifications.py:160
 msgid "Open Zulip to see the spoiler content"
-msgstr ""
+msgstr "Nyisd meg a Zulipot, hogy lásd a zárolt tartalmat"
 
 #: zerver/lib/email_notifications.py:505
 msgid "Zulip notifications"
-msgstr ""
+msgstr "Zulip értesítések"
 
 #: zerver/lib/email_validation.py:101
 msgid "Invalid address."
@@ -4154,12 +4182,12 @@ msgstr "A + jeleket tartalmazó e-mail címek nem megengedettek."
 
 #: zerver/lib/email_validation.py:155
 msgid "Reserved for system bots."
-msgstr ""
+msgstr "Robotok részére fenntartva."
 
 #: zerver/lib/email_validation.py:178
 #, python-brace-format
 msgid "{email} already has an account"
-msgstr ""
+msgstr "{email} már felhasználó"
 
 #: zerver/lib/email_validation.py:180
 msgid "Already has an account."
@@ -4171,7 +4199,7 @@ msgstr "A fiók letiltásra került."
 
 #: zerver/lib/emoji.py:58 zerver/views/realm_emoji.py:52
 msgid "Emoji '{}' does not exist"
-msgstr ""
+msgstr "Ilyen hangulatjel '{}' nem létezik"
 
 #: zerver/lib/emoji.py:68
 msgid "Invalid custom emoji."
@@ -4207,7 +4235,7 @@ msgstr "Érvénytelen karakter a hangulatjel nevében."
 
 #: zerver/lib/emoji.py:118
 msgid "Emoji name is missing"
-msgstr ""
+msgstr "A hangulatjelnek nincs neve"
 
 #: zerver/lib/error_notify.py:202
 msgid "Invalid type parameter"
@@ -4225,7 +4253,7 @@ msgstr "A(z) '{stream}' üzenetfolyam nem létezik!"
 #: zerver/lib/exceptions.py:169
 #, python-brace-format
 msgid "Stream with ID '{stream_id}' does not exist"
-msgstr ""
+msgstr "ID szerinti üzenetfolyam '{stream_id}' nem létezik"
 
 #: zerver/lib/exceptions.py:178
 msgid "organization owner"
@@ -4243,7 +4271,7 @@ msgstr "Ez az egyetlen {entity}, ezért nem tiltható le."
 #: zerver/lib/exceptions.py:194
 #, python-brace-format
 msgid "Invalid Markdown include statement: {include_statement}"
-msgstr ""
+msgstr "Érvénytelen Markdown include statement: {include_statement}"
 
 #: zerver/lib/exceptions.py:206
 msgid "API usage exceeded rate limit"
@@ -4293,12 +4321,13 @@ msgid ""
 "The '{event_type}' event isn't currently supported by the {webhook_name} "
 "webhook"
 msgstr ""
+"Az eseményt '{event_type}' még nem támogatja a webhook {webhook_name} "
 
 #: zerver/lib/exceptions.py:355 zerver/views/auth.py:610
 #: zerver/views/auth.py:809 zerver/views/auth.py:870 zerver/views/auth.py:932
 #: zerver/views/development/dev_login.py:106
 msgid "Invalid subdomain"
-msgstr ""
+msgstr "Érvénytelen subdomain"
 
 #: zerver/lib/external_accounts.py:49
 msgid "Custom external account must define URL pattern"
@@ -4421,7 +4450,7 @@ msgstr "Az üzenet nem tartalmazhat null byteokat."
 
 #: zerver/lib/narrow.py:29
 msgid "Operator {} not supported."
-msgstr ""
+msgstr "A {} kapcsoló nem támogatott."
 
 #: zerver/lib/onboarding.py:68
 #, python-brace-format
@@ -4429,23 +4458,25 @@ msgid ""
 "[Read the guide]({help_url}) for getting your organization started with "
 "Zulip"
 msgstr ""
+"[Olvasd el a kézikönyvet]({help_url}) hogy megtudd, miként kezdj egy Zulip "
+"szerveződést"
 
 #: zerver/lib/onboarding.py:73
 msgid "Hello, and welcome to Zulip!"
-msgstr ""
+msgstr "Üdv, köszönt a Zulip!"
 
 #: zerver/lib/onboarding.py:75
 msgid "This is a private message from me, Welcome Bot."
-msgstr ""
+msgstr "Ez egy privát üzenet tőlem, Üdvözlő Robottól."
 
 #: zerver/lib/onboarding.py:77
 msgid "Here are some tips to get you started:"
-msgstr ""
+msgstr "Pár gyors tipp bemelegítésnek:"
 
 #: zerver/lib/onboarding.py:79
 #, python-brace-format
 msgid "Download our [Desktop and mobile apps]({apps_url})"
-msgstr ""
+msgstr "Töltsd le az [Asztali és mobil appokat]({apps_url})"
 
 #: zerver/lib/onboarding.py:81
 #, python-brace-format
@@ -4460,11 +4491,11 @@ msgstr ""
 
 #: zerver/lib/onboarding.py:85
 msgid "The most important shortcut is `r` to reply."
-msgstr ""
+msgstr "A legfontosabb gyorsgomb: `r`, mint válasz üzenet."
 
 #: zerver/lib/onboarding.py:87
 msgid "Practice sending a few messages by replying to this conversation."
-msgstr ""
+msgstr "Gyakorold az üzenetküldést ebben a beszélgetésben."
 
 #: zerver/lib/onboarding.py:90
 msgid ""
@@ -4474,23 +4505,25 @@ msgstr ""
 
 #: zerver/lib/onboarding.py:107
 msgid "Congratulations on your first reply!"
-msgstr ""
+msgstr "Gratulálunk első válaszodhoz!"
 
 #: zerver/lib/onboarding.py:112
 msgid ""
 "Feel free to continue using this space to practice your new messaging "
 "skills. Or, try clicking on some of the stream names to your left!"
 msgstr ""
+"Nyugodtan gyakorold itt új üzenetküldő technikáid. Ha kedved tartja, katt "
+"valamelyik szófolyamra baloldalt!"
 
 #: zerver/lib/onboarding.py:125
 msgid ""
 "This is a private stream, as indicated by the lock icon next to the stream "
 "name."
-msgstr ""
+msgstr "Ez privát üzenetfolyam, amit a folyam neve melletti lakat is jelez."
 
 #: zerver/lib/onboarding.py:127
 msgid "Private streams are only visible to stream members."
-msgstr ""
+msgstr "Privát üzenetfolyamokat csak a folyam tagjai tekinthetnek meg."
 
 #: zerver/lib/onboarding.py:131
 #, python-brace-format
@@ -4498,6 +4531,9 @@ msgid ""
 "To manage this stream, go to [Stream settings]({stream_settings_url}) and "
 "click on `{initial_private_stream_name}`."
 msgstr ""
+"Eme folyam kezeléséhet menj az [Üzenetfolyam "
+"beállítása]({stream_settings_url}) lehetőségre, és kattints ide: "
+"`{initial_private_stream_name}`."
 
 #: zerver/lib/onboarding.py:141
 #, python-brace-format
@@ -4508,7 +4544,7 @@ msgstr ""
 
 #: zerver/lib/onboarding.py:147
 msgid "Topics are a lightweight tool to keep conversations organized."
-msgstr ""
+msgstr "A Téma egy egyszerű eszköz, ami segít rendszerezni a beszélgetéseket."
 
 #: zerver/lib/onboarding.py:149
 #, python-brace-format
@@ -4533,11 +4569,11 @@ msgstr ""
 
 #: zerver/lib/outgoing_webhook.py:293
 msgid "Invalid JSON in response"
-msgstr ""
+msgstr "Érvénytelen JSON érkezett vissza"
 
 #: zerver/lib/outgoing_webhook.py:302
 msgid "Invalid response format"
-msgstr ""
+msgstr "Érvénytelen válasz format"
 
 #: zerver/lib/push_notifications.py:274
 msgid "Invalid GCM option to bouncer: priority {!r}"
@@ -4555,12 +4591,12 @@ msgstr "A token nem létezik"
 #: zerver/lib/push_notifications.py:702
 #, python-brace-format
 msgid "{full_name} mentioned you:"
-msgstr ""
+msgstr "{full_name} megemlített téged:"
 
 #: zerver/lib/push_notifications.py:704
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
-msgstr ""
+msgstr "{full_name} kihívott mindenkit:"
 
 #: zerver/lib/remote_server.py:84
 msgid "Push notifications bouncer error: {}"
@@ -4575,37 +4611,38 @@ msgstr ""
 #: zerver/lib/request.py:51
 #, python-brace-format
 msgid "Missing '{var_name}' argument"
-msgstr ""
+msgstr "Hiányzó '{var_name}' érték"
 
 #: zerver/lib/request.py:64
 #, python-brace-format
 msgid "Bad value for '{var_name}': {bad_value}"
-msgstr ""
+msgstr "Rossz érték megadva ennél '{var_name}': {bad_value}"
 
 #: zerver/lib/request.py:374
 msgid "Argument \"{}\" is not valid JSON."
-msgstr ""
+msgstr "Ez az érték \"{}\" nem érvényes JSON szerint."
 
 #: zerver/lib/response.py:27
 msgid "Not logged in: API authentication or user session required"
 msgstr ""
+"Nem vagy bejelentkezve: API auth vagy felhasználói folyamat szükséges."
 
 #: zerver/lib/send_email.py:67
 msgid "Zulip Account Security"
-msgstr ""
+msgstr "Zulip Fiókbiztonság"
 
 #: zerver/lib/streams.py:172 zerver/lib/streams.py:422
 #: zerver/lib/streams.py:542
 msgid "Invalid stream name '{}'"
-msgstr ""
+msgstr "Érvénytelen üzenetfolyam név '{}'"
 
 #: zerver/lib/streams.py:175
 msgid "Stream name too long (limit: {} characters)."
-msgstr ""
+msgstr "Üzenetfolyam neve túl hosszú (max: {} karakter)."
 
 #: zerver/lib/streams.py:180
 msgid "Stream name '{}' contains NULL (0x00) characters."
-msgstr ""
+msgstr "Üzenetfolyam nevében '{}' van NULL (0x00) karakter."
 
 #: zerver/lib/streams.py:197
 msgid "Only organization administrators can send to this stream."
@@ -4614,19 +4651,19 @@ msgstr "Erre az üzenetfolyamra csak szervezeti adminisztrátorok írhatnak!"
 #: zerver/lib/streams.py:203
 msgid ""
 "Only organization administrators and moderators can send to this stream."
-msgstr ""
+msgstr "Erre a folyamra csak adminok és moderátorok írhatnak."
 
 #: zerver/lib/streams.py:206
 msgid "Guests cannot send to this stream."
-msgstr ""
+msgstr "Vendégek nem írhatnak erre a folyamra."
 
 #: zerver/lib/streams.py:211
 msgid "New members cannot send to this stream."
-msgstr ""
+msgstr "Friss tagok még nem írhatnak erre az üzenetfolyamra."
 
 #: zerver/lib/streams.py:271
 msgid "Not authorized to send to stream '{}'"
-msgstr ""
+msgstr "Nincs jogosultségod erre a folyamra '{}' írni "
 
 #: zerver/lib/streams.py:276
 msgid "Please supply 'stream'."
@@ -4634,7 +4671,7 @@ msgstr "Kérlek add meg a 'stream'-et."
 
 #: zerver/lib/streams.py:279
 msgid "Please choose one: 'stream' or 'stream_id'."
-msgstr ""
+msgstr "Kérjük válassz: 'stream' vagy 'stream_id'."
 
 #: zerver/lib/streams.py:285 zerver/lib/streams.py:307
 #: zerver/lib/streams.py:377 zerver/lib/streams.py:438
@@ -4652,15 +4689,15 @@ msgstr "Elégtelen jogosultság"
 
 #: zerver/lib/streams.py:667
 msgid "Stream(s) ({}) do not exist"
-msgstr ""
+msgstr "Ezen üzenetfolyam(ok) ({}) nem valós / valósak"
 
 #: zerver/lib/streams.py:673
 msgid "User cannot create stream with this settings."
-msgstr ""
+msgstr "A felhasználó nem indíthat üzenetfolyamot ilyen beállításokkal."
 
 #: zerver/lib/streams.py:693
 msgid "Default stream group with id '{}' does not exist."
-msgstr ""
+msgstr "Ilyen azonosítós '{}' alapértelmezett üzenetfolyam nem létezik."
 
 #: zerver/lib/upload.py:134 zerver/lib/upload.py:150 zerver/lib/upload.py:210
 msgid "Could not decode image; did you upload an image file?"
@@ -4699,7 +4736,7 @@ msgstr "Érvénytelen karakter a névben!"
 
 #: zerver/lib/users.py:49
 msgid "Invalid format!"
-msgstr ""
+msgstr "Érvénytelen formátum!"
 
 #: zerver/lib/users.py:65
 msgid "Name is already in use!"
@@ -4711,15 +4748,15 @@ msgstr "Hibás név vagy felhasználói név"
 
 #: zerver/lib/users.py:86
 msgid "Invalid integration '{}'."
-msgstr ""
+msgstr "Érvénytelen integráció '{}'."
 
 #: zerver/lib/users.py:91
 msgid "Missing configuration parameters: {}"
-msgstr ""
+msgstr "Hiányzó konfigurációs parameterek: {}"
 
 #: zerver/lib/users.py:100
 msgid "Invalid {} value {} ({})"
-msgstr ""
+msgstr "Érvénytelen {} megadott érték {} ({})"
 
 #: zerver/lib/users.py:115
 msgid "Invalid configuration data!"
@@ -4727,7 +4764,7 @@ msgstr "Érvénytelen konfigurációs adat!"
 
 #: zerver/lib/users.py:149
 msgid "Invalid bot type"
-msgstr "Érvénytelen bot típus"
+msgstr "Érvénytelen robot típus"
 
 #: zerver/lib/users.py:154
 msgid "Invalid interface type"
@@ -4739,7 +4776,7 @@ msgstr "Érvénytelen felhasználó ID: {}"
 
 #: zerver/lib/users.py:236 zerver/lib/users.py:238
 msgid "No such bot"
-msgstr "Nincs ilyen bot"
+msgstr "Nincs ilyen robot"
 
 #: zerver/lib/users.py:260 zerver/lib/users.py:262 zerver/views/presence.py:40
 #: zerver/views/users.py:658
@@ -4753,7 +4790,7 @@ msgstr "A felhasználó letiltásra került"
 #: zerver/lib/validator.py:57 zerver/lib/validator.py:119
 #, python-brace-format
 msgid "{var_name} is not a string"
-msgstr ""
+msgstr "{var_name} nem string"
 
 #: zerver/lib/validator.py:64
 #, python-brace-format
@@ -4763,7 +4800,7 @@ msgstr "{item} nem lehet üres."
 #: zerver/lib/validator.py:72 zerver/lib/validator.py:138
 #, python-brace-format
 msgid "Invalid {var_name}"
-msgstr ""
+msgstr "Érvénytelen {var_name}"
 
 #: zerver/lib/validator.py:87
 #, python-brace-format
@@ -4780,42 +4817,42 @@ msgstr ""
 #: zerver/lib/validator.py:122 zerver/lib/validator.py:124
 #, python-brace-format
 msgid "{var_name} is not a date"
-msgstr ""
+msgstr "{var_name} nem dátum"
 
 #: zerver/lib/validator.py:130
 #, python-brace-format
 msgid "{var_name} is not an integer"
-msgstr ""
+msgstr "{var_name} nem integer"
 
 #: zerver/lib/validator.py:146
 #, python-brace-format
 msgid "{var_name} is not a float"
-msgstr ""
+msgstr "{var_name} nem float"
 
 #: zerver/lib/validator.py:152
 #, python-brace-format
 msgid "{var_name} is not a boolean"
-msgstr ""
+msgstr "{var_name} nem boolean"
 
 #: zerver/lib/validator.py:162
 #, python-brace-format
 msgid "{var_name} is not a valid hex color code"
-msgstr ""
+msgstr "{var_name} nem érvényes hex color code"
 
 #: zerver/lib/validator.py:182
 #, python-brace-format
 msgid "{var_name} is not a list"
-msgstr ""
+msgstr "{var_name} nem lista"
 
 #: zerver/lib/validator.py:186
 #, python-brace-format
 msgid "{container} should have exactly {length} items"
-msgstr ""
+msgstr "{container} pontosan {length} dolgot tartalmazzon"
 
 #: zerver/lib/validator.py:205
 #, python-brace-format
 msgid "{var_name} is not a tuple"
-msgstr ""
+msgstr "{var_name} nem tuple"
 
 #: zerver/lib/validator.py:210
 #, python-brace-format
@@ -4825,31 +4862,31 @@ msgstr ""
 #: zerver/lib/validator.py:256
 #, python-brace-format
 msgid "{var_name} is not a dict"
-msgstr ""
+msgstr "{var_name} nem dict"
 
 #: zerver/lib/validator.py:264
 #, python-brace-format
 msgid "{key_name} key is missing from {var_name}"
-msgstr ""
+msgstr "{key_name} kulcs hiányzik a {var_name} változóból"
 
 #: zerver/lib/validator.py:289
 msgid "Unexpected arguments: {}"
-msgstr ""
+msgstr "Váratlan értékek: {}"
 
 #: zerver/lib/validator.py:322
 #, python-brace-format
 msgid "{var_name} is not an allowed_type"
-msgstr ""
+msgstr "{var_name} nem allowed_type"
 
 #: zerver/lib/validator.py:331
 #, python-brace-format
 msgid "{variable} != {expected_value} ({value} is wrong)"
-msgstr ""
+msgstr "{variable} != {expected_value} ({value} hibás)"
 
 #: zerver/lib/validator.py:358
 #, python-brace-format
 msgid "{var_name} is not a URL"
-msgstr ""
+msgstr "{var_name} nem URL"
 
 #: zerver/lib/validator.py:365
 msgid "Malformed URL pattern."
@@ -4868,12 +4905,12 @@ msgstr "'{value}' nem érvényes választási lehetőség '{field_name}' számá
 #: zerver/lib/validator.py:486
 #, python-brace-format
 msgid "{var_name} is not a string or an integer list"
-msgstr ""
+msgstr "{var_name} nem string vagy integer lista"
 
 #: zerver/lib/validator.py:496
 #, python-brace-format
 msgid "{var_name} is not a string or integer"
-msgstr ""
+msgstr "{var_name} nem string vagy integer"
 
 #: zerver/lib/webhooks/common.py:69
 #, python-brace-format
@@ -4882,7 +4919,7 @@ msgstr "Hiányzó HTTP esemény fejléc '{header}'"
 
 #: zerver/lib/webhooks/common.py:196
 msgid "The {} webhook expects time in milliseconds."
-msgstr ""
+msgstr "A {} webhook időformátumot millisecond-ban várja."
 
 #: zerver/lib/zcommand.py:27
 msgid "There should be a leading slash in the zcommand."
@@ -4890,7 +4927,7 @@ msgstr "A zcommandban kezdő per jelnek kell szerepelnie."
 
 #: zerver/lib/zcommand.py:76
 msgid "No such command: {}"
-msgstr ""
+msgstr "Helytelen utasítás: {}"
 
 #: zerver/middleware.py:451
 msgid "Internal server error"
@@ -4899,7 +4936,7 @@ msgstr "Belső kiszolgáló hiba."
 #: zerver/middleware.py:478
 #, python-brace-format
 msgid "CSRF error: {reason}"
-msgstr ""
+msgstr "CSRF hiba: {reason}"
 
 #: zerver/models.py:372
 msgid "stream events"
@@ -4907,7 +4944,7 @@ msgstr "üzenetfolyam eseményei"
 
 #: zerver/models.py:406
 msgid "Available on Zulip Standard. Upgrade to access."
-msgstr ""
+msgstr "Elérhető a Zulip Standard csomagon. Válts csomagot, hogy te is elérd."
 
 #: zerver/models.py:910
 msgid "Invalid linkifier pattern.  Valid characters are {}."
@@ -4919,7 +4956,7 @@ msgstr "Érvénytelen URL formátum sztring."
 
 #: zerver/models.py:1035 zerver/views/realm_playgrounds.py:24
 msgid "Invalid characters in pygments language"
-msgstr ""
+msgstr "Érvénytelen karakterek a pygments nyelvben"
 
 #: zerver/models.py:1415
 msgid "Organization owner"
@@ -4955,7 +4992,7 @@ msgstr "A/z {} azonosítójú felhasználó letiltásra került."
 
 #: zerver/models.py:3458
 msgid "User with ID {} is a bot"
-msgstr ""
+msgstr "Felhasználó ID {} mögött egy robot áll"
 
 #: zerver/models.py:3491
 msgid "List of options"
@@ -5012,17 +5049,17 @@ msgstr "Nincs jogosultságod hozzáférni az eseményekhez ebben a sorban"
 #: zerver/tornado/event_queue.py:644
 #, python-brace-format
 msgid "An event newer than {event_id} has already been pruned!"
-msgstr ""
+msgstr "Egy eseményt ami újabb, mint {event_id} már töröltek!"
 
 #: zerver/tornado/event_queue.py:654
 #, python-brace-format
 msgid "Event {event_id} was not in this queue"
-msgstr ""
+msgstr "Az esemény {event_id} ebben a sorban nem található"
 
 #: zerver/tornado/exceptions.py:15
 #, python-brace-format
 msgid "Bad event queue id: {queue_id}"
-msgstr ""
+msgstr "Hibás eseménysor id: {queue_id}"
 
 #: zerver/tornado/views.py:37
 msgid "You are not authorized to access this queue"
@@ -5034,15 +5071,15 @@ msgstr "A hitelesítő kulcs nem található ehhez az aldomainhez."
 
 #: zerver/views/auth.py:433
 msgid "No JSON web token passed in request"
-msgstr ""
+msgstr "Nem lett JSON web token megadva a request-ben"
 
 #: zerver/views/auth.py:435
 msgid "Bad JSON web token"
-msgstr ""
+msgstr "Hibás JSON web token"
 
 #: zerver/views/auth.py:439
 msgid "No user specified in JSON web token claims"
-msgstr ""
+msgstr "Nincs felhasználó megadva a JSON web token igénylésben"
 
 #: zerver/views/auth.py:442
 msgid "No organization specified in JSON web token claims"
@@ -5050,7 +5087,7 @@ msgstr "Nincs szervezet megadva a JSON web token igénylésben"
 
 #: zerver/views/auth.py:449
 msgid "Wrong subdomain"
-msgstr ""
+msgstr "Hibás aldomain"
 
 #: zerver/views/auth.py:820 zerver/views/development/dev_login.py:117
 msgid "Your account has been disabled."
@@ -5066,7 +5103,7 @@ msgstr "A jelszó alapú belépés a csapatodban le van tiltva."
 
 #: zerver/views/auth.py:836 zproject/backends.py:422
 msgid "You need to reset your password."
-msgstr ""
+msgstr "Jelszóvisszaállítást kérj."
 
 #: zerver/views/auth.py:842 zerver/views/auth.py:937
 msgid "Your username or password is incorrect."
@@ -5103,11 +5140,11 @@ msgstr "Alapértelmezett egyedi mező frissítése sikertelen."
 
 #: zerver/views/development/dev_login.py:84
 msgid "Endpoint not available in production."
-msgstr ""
+msgstr "Áles környezetben hozzáférhetetlen endpoint"
 
 #: zerver/views/development/dev_login.py:86
 msgid "DevAuthBackend not enabled."
-msgstr ""
+msgstr "DevAuthBackend nincs engedélyezve."
 
 #: zerver/views/development/dev_login.py:121
 msgid "This user is not registered."
@@ -5119,19 +5156,21 @@ msgstr "Az időpont nem lehet negatív."
 
 #: zerver/views/drafts.py:69
 msgid "Topic must not contain null bytes"
-msgstr ""
+msgstr "A témakör nem tartalmazhat null byte-ot"
 
 #: zerver/views/drafts.py:71
 msgid "Must specify exactly 1 stream ID for stream messages"
 msgstr ""
+"Üzenetfolyamba való üzenet-dobáshoz pontosan 1 üzenetfolyam ID-t kell "
+"megadni"
 
 #: zerver/views/drafts.py:131 zerver/views/drafts.py:147
 msgid "Draft does not exist"
-msgstr ""
+msgstr "Piszkozat nem található"
 
 #: zerver/views/hotspots.py:18
 msgid "Unknown hotspot: {}"
-msgstr ""
+msgstr "Ismeretlen hotspot: {}"
 
 #: zerver/views/invite.py:47
 msgid "Must be invited as an valid type of user"
@@ -5150,6 +5189,8 @@ msgstr ""
 #: zerver/views/invite.py:71
 msgid "Stream does not exist with id: {}. No invites were sent."
 msgstr ""
+"Nincs ilyen id-vel ellátott üzenetfolyam: {}. Nem küldtünk ki semmi "
+"meghívót."
 
 #: zerver/views/invite.py:104 zerver/views/invite.py:107
 #: zerver/views/invite.py:127 zerver/views/invite.py:130
@@ -5177,28 +5218,28 @@ msgstr "Az üzenettörlésre rendelkezésre álló időkorlát letelt."
 
 #: zerver/views/message_edit.py:157
 msgid "Message already deleted"
-msgstr ""
+msgstr "Törölt üzenet"
 
 #: zerver/views/message_fetch.py:90
 #, python-brace-format
 msgid "Invalid narrow operator: {desc}"
-msgstr ""
+msgstr "Érvénytelen postosító kifejezés: {desc}"
 
 #: zerver/views/message_fetch.py:910
 msgid "Missing 'anchor' argument."
-msgstr ""
+msgstr "Üres az 'anchor' mező."
 
 #: zerver/views/message_fetch.py:930
 msgid "Invalid anchor"
-msgstr ""
+msgstr "Érvénytelen anchor"
 
 #: zerver/views/message_fetch.py:950
 msgid "Too many messages requested (maximum {})."
-msgstr ""
+msgstr "Túl sok üzenetet akarsz látni (maximum {})."
 
 #: zerver/views/message_flags.py:88
 msgid "No such topic '{}'"
-msgstr ""
+msgstr "Nincs ilyen téma '{}'"
 
 #: zerver/views/message_send.py:154
 msgid "Invalid time format"
@@ -5230,7 +5271,7 @@ msgstr "A deliver_at hiányzik egy késleltetett üzenetfeladási kérésben."
 
 #: zerver/views/muting.py:39
 msgid "Topic already muted"
-msgstr ""
+msgstr "Némított téma"
 
 #: zerver/views/muting.py:48
 msgid "Topic is not muted"
@@ -5238,28 +5279,28 @@ msgstr "A téma nincs lenémítva"
 
 #: zerver/views/muting.py:94
 msgid "Cannot mute self"
-msgstr ""
+msgstr "Önmagad nem némíthatod"
 
 #: zerver/views/muting.py:100
 msgid "User already muted"
-msgstr ""
+msgstr "Némított felhasználó"
 
 #: zerver/views/muting.py:113
 msgid "User is not muted"
-msgstr ""
+msgstr "Felhasználó nincs lenémítva"
 
 #: zerver/views/presence.py:43
 msgid "Presence is not supported for bot users."
-msgstr ""
+msgstr "A jelenlét nincs követve robotoknál."
 
 #: zerver/views/presence.py:48
 #, python-brace-format
 msgid "No presence data for {user_id_or_email}"
-msgstr ""
+msgstr "Jelenléti adat hiányzik {user_id_or_email} felhasználónál"
 
 #: zerver/views/presence.py:76
 msgid "Client did not pass any new values."
-msgstr ""
+msgstr "Az ügyfél nem adott meg semmi új értéket"
 
 #: zerver/views/presence.py:100
 msgid "Invalid status: {}"
@@ -5271,7 +5312,7 @@ msgstr "Üres vagy érvénytelen hosszúságú token"
 
 #: zerver/views/push_notifications.py:24
 msgid "Invalid APNS token"
-msgstr ""
+msgstr "Érvénytelen APNS token"
 
 #: zerver/views/reactions.py:44
 msgid ""
@@ -5285,23 +5326,23 @@ msgstr "Ez a reakció nem létezik."
 
 #: zerver/views/realm.py:127
 msgid "Invalid language '{}'"
-msgstr ""
+msgstr "Érvénytelen nyelv '{}'"
 
 #: zerver/views/realm.py:132
 msgid "At least one authentication method must be enabled."
-msgstr ""
+msgstr "Valamilyen authentikációs lehetőséget meg kell adni."
 
 #: zerver/views/realm.py:136
 msgid "Invalid video_chat_provider {}"
-msgstr ""
+msgstr "Érvénytelen video_chat_provider {}"
 
 #: zerver/views/realm.py:140
 msgid "Invalid giphy_rating {}"
-msgstr ""
+msgstr "Érvénytelen giphy_rating {}"
 
 #: zerver/views/realm_domains.py:31
 msgid "Invalid domain: {}"
-msgstr ""
+msgstr "Érvénytelen domain: {}"
 
 #: zerver/views/realm_domains.py:34
 #, python-brace-format
@@ -5311,7 +5352,7 @@ msgstr "A/az {domain} már része a szervezetednek."
 #: zerver/views/realm_domains.py:52 zerver/views/realm_domains.py:65
 #, python-brace-format
 msgid "No entry found for domain {domain}."
-msgstr ""
+msgstr "Nem találtunk a {domain} domain-re példát."
 
 #: zerver/views/realm_emoji.py:31
 msgid "A custom emoji with this name already exists."
@@ -5319,13 +5360,13 @@ msgstr "Ilyen nevű egyedi hangulatjel már létezik."
 
 #: zerver/views/realm_emoji.py:33
 msgid "You must upload exactly one file."
-msgstr ""
+msgstr "Pontosan egy fájlt tölts fel."
 
 #: zerver/views/realm_emoji.py:37 zerver/views/realm_icon.py:24
 #: zerver/views/realm_logo.py:29 zerver/views/upload.py:124
 #: zerver/views/user_settings.py:302
 msgid "Uploaded file is larger than the allowed limit of {} MiB"
-msgstr ""
+msgstr "A feltöltött fájl mérete meghaladja az engedett {} MiB-t"
 
 #: zerver/views/realm_emoji.py:44
 msgid "Image file upload failed."
@@ -5333,28 +5374,28 @@ msgstr "Képfeltöltés sikertelen."
 
 #: zerver/views/realm_export.py:39
 msgid "Exceeded rate limit."
-msgstr ""
+msgstr "Határtúllépés"
 
 #: zerver/views/realm_export.py:52
 #, python-brace-format
 msgid "Please request a manual export from {email}."
-msgstr ""
+msgstr "Kérjük próbálj kézi exportot kérni innen {email}."
 
 #: zerver/views/realm_export.py:90
 msgid "Invalid data export ID"
-msgstr ""
+msgstr "Érvénytelen adat export ID"
 
 #: zerver/views/realm_export.py:94
 msgid "Export already deleted"
-msgstr ""
+msgstr "Törölt export"
 
 #: zerver/views/realm_icon.py:19
 msgid "You must upload exactly one icon."
-msgstr ""
+msgstr "Pontosan egy ikont tölts fel."
 
 #: zerver/views/realm_linkifiers.py:44 zerver/views/realm_linkifiers.py:66
 msgid "Linkifier not found."
-msgstr ""
+msgstr "Linkifier nem található."
 
 #: zerver/views/realm_logo.py:25
 msgid "You must upload exactly one logo."
@@ -5362,7 +5403,7 @@ msgstr "Pontosan egy logo feltöltésére van szükség."
 
 #: zerver/views/realm_playgrounds.py:32
 msgid "Invalid playground"
-msgstr ""
+msgstr "Érvénytelen homokozó"
 
 #: zerver/views/registration.py:558
 msgid "The organization creation link has expired or is not valid."
@@ -5380,7 +5421,7 @@ msgstr ""
 
 #: zerver/views/streams.py:151
 msgid "Private streams cannot be made default."
-msgstr ""
+msgstr "Privát üzenetfolyamatok nem tehetőek alapértelmezetté."
 
 #: zerver/views/streams.py:183
 msgid "You must pass \"new_description\" or \"new_group_name\"."
@@ -5396,7 +5437,7 @@ msgstr "Az üzenetfolyamnak már ez a neve!"
 
 #: zerver/views/streams.py:304
 msgid "Default streams cannot be made private."
-msgstr ""
+msgstr "Alapértelemzett üzenetfolyamok nem alakíthatóak priváttá."
 
 #: zerver/views/streams.py:343 zerver/views/user_groups.py:96
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
@@ -5407,17 +5448,17 @@ msgstr ""
 #: zerver/views/streams.py:425
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the stream {stream_name}."
-msgstr ""
+msgstr "{user_full_name} behívott a folyamba {stream_name}."
 
 #: zerver/views/streams.py:431
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following streams:"
-msgstr ""
+msgstr "{user_full_name} behívott a következő folyamokba:"
 
 #: zerver/views/streams.py:502
 #, python-brace-format
 msgid "Unable to access stream ({stream_name})."
-msgstr ""
+msgstr "Üzenetfolyam ({stream_name}) nem elérhető."
 
 #: zerver/views/streams.py:512
 msgid "You can only invite other Zephyr mirroring users to private streams."
@@ -5427,21 +5468,21 @@ msgstr ""
 #: zerver/views/streams.py:626
 #, python-brace-format
 msgid "{user_name} created the following streams: {stream_str}."
-msgstr ""
+msgstr "{user_name} létrehozta a következő folyamokat: {stream_str}."
 
 #: zerver/views/streams.py:628
 #, python-brace-format
 msgid "{user_name} created a new stream {stream_str}."
-msgstr ""
+msgstr "{user_name} létrehozta a következő folyamot {stream_str}."
 
 #: zerver/views/streams.py:629
 msgid "new streams"
-msgstr ""
+msgstr "új folyamok"
 
 #: zerver/views/streams.py:656
 #, python-brace-format
 msgid "Stream created by {user_name}."
-msgstr ""
+msgstr "Üzenetfolyam készítője {user_name}."
 
 #: zerver/views/streams.py:865
 msgid "Unknown subscription property: {}"
@@ -5449,7 +5490,7 @@ msgstr ""
 
 #: zerver/views/streams.py:869
 msgid "Not subscribed to stream id {}"
-msgstr ""
+msgstr "Nem vagy tagja ennek az azonosítós folyamnak {}"
 
 #: zerver/views/submessage.py:26
 msgid "Invalid json for submessage"
@@ -5457,23 +5498,23 @@ msgstr "Érvénytelen json a submessage számára"
 
 #: zerver/views/thumbnail.py:32 zerver/views/upload.py:97
 msgid "<p>You are not authorized to view this file.</p>"
-msgstr ""
+msgstr "<p>Nincs jogosultságod a fálj megtekintéséhez.</p>"
 
 #: zerver/views/typing.py:31
 msgid "Empty 'to' list"
-msgstr ""
+msgstr "Nincs címzett megadva"
 
 #: zerver/views/upload.py:95
 msgid "<p>File not found.</p>"
-msgstr ""
+msgstr "<p>Nincs ilyen fájl.</p>"
 
 #: zerver/views/upload.py:107
 msgid "Invalid token"
-msgstr ""
+msgstr "Érvénytelen token"
 
 #: zerver/views/upload.py:109
 msgid "Invalid filename"
-msgstr ""
+msgstr "Érvénytelen fájlnév"
 
 #: zerver/views/upload.py:116
 msgid "You must specify a file to upload"
@@ -5486,16 +5527,16 @@ msgstr "Egyszerre csak egy állomány tölthető fel"
 
 #: zerver/views/user_groups.py:61
 msgid "No new data supplied"
-msgstr ""
+msgstr "Nincs megadva új adat"
 
 #: zerver/views/user_groups.py:122
 #, python-brace-format
 msgid "User {user_id} is already a member of this group"
-msgstr ""
+msgstr "A felhasználó {user_id} már tagja e csoportnak"
 
 #: zerver/views/user_groups.py:142
 msgid "There is no member '{}' in this user group"
-msgstr ""
+msgstr "Ez a felhasználócsoport '{}' üres"
 
 #: zerver/views/user_settings.py:49
 msgid "Avatar changes are disabled in this organization."
@@ -5519,11 +5560,11 @@ msgstr "Hibás jelszó!"
 
 #: zerver/views/user_settings.py:121
 msgid "You're making too many attempts! Try again in {} seconds."
-msgstr ""
+msgstr "Túl sokat próbálkozol! Próbáld ismét {} mp múlva."
 
 #: zerver/views/user_settings.py:127
 msgid "New password is too weak!"
-msgstr ""
+msgstr "Az új jelszó túl gyenge!"
 
 #: zerver/views/user_settings.py:168
 msgid "Check your email for a confirmation link. "
@@ -5531,11 +5572,11 @@ msgstr ""
 
 #: zerver/views/user_settings.py:218
 msgid "Invalid default_language"
-msgstr ""
+msgstr "Érvénytelen default_language"
 
 #: zerver/views/user_settings.py:278
 msgid "Invalid notification sound '{}'"
-msgstr ""
+msgstr "Érvénytelen értesítési hang '{}'"
 
 #: zerver/views/user_settings.py:294
 msgid "You must upload exactly one avatar."
@@ -5564,22 +5605,23 @@ msgstr ""
 #: zerver/views/users.py:285
 msgid "Failed to change owner, bots can't own other bots"
 msgstr ""
-"A botok nem lehetnek más botok tulajdonosai, a tulajdonos megváltoztatása "
-"sikertelen."
+"Robot nem lehet robot szolgája, a tulajdonos megváltoztatása sikertelen."
 
 #: zerver/views/users.py:389
 msgid ""
 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
 msgstr ""
+"Robotok készítése nem lehetséges, amíg FAKE_EMAIL_DOMAIN nincs helyesen beállítva.\n"
+"Kérjük szólj a szerver adminnak."
 
 #: zerver/views/users.py:397
 msgid "Embedded bots are not enabled."
-msgstr "Beágyazott botok használata nem engedélyezett."
+msgstr "Beágyazott robotok használata nem engedélyezett."
 
 #: zerver/views/users.py:399
 msgid "Invalid embedded bot name."
-msgstr "Érvénytelen beágyazott bot név."
+msgstr "Érvénytelen beágyazott robot név."
 
 #: zerver/views/users.py:406
 msgid "Username already in use"
@@ -5597,43 +5639,43 @@ msgstr ""
 
 #: zerver/views/users.py:598
 msgid "Email '{}' already in use"
-msgstr ""
+msgstr "E-mail '{}' már foglalt"
 
 #: zerver/views/video_calls.py:39
 msgid "Invalid Zoom access token"
-msgstr ""
+msgstr "Érvénytelen Zoom access token"
 
 #: zerver/views/video_calls.py:44
 msgid "Zoom credentials have not been configured"
-msgstr ""
+msgstr "Zoom jogosultsági beállítások hiányoznak"
 
 #: zerver/views/video_calls.py:112
 msgid "Invalid Zoom session identifier"
-msgstr ""
+msgstr "Érvénytelen Zoom session identifier"
 
 #: zerver/views/video_calls.py:122
 msgid "Invalid Zoom credentials"
-msgstr ""
+msgstr "Érvénytelen Zoom jogosultságok"
 
 #: zerver/views/video_calls.py:143
 msgid "Failed to create Zoom call"
-msgstr ""
+msgstr "Nem sikerült Zoom hívást kezdeményezni"
 
 #: zerver/views/video_calls.py:215
 msgid "Big Blue Button is not configured."
-msgstr ""
+msgstr "Big Blue Button nincs beállítva."
 
 #: zerver/views/video_calls.py:233
 msgid "Error connecting to the Big Blue Button server."
-msgstr ""
+msgstr "Hiba történt a Big Blue Button szerverhez való csatlakozás során."
 
 #: zerver/views/video_calls.py:237
 msgid "Error authenticating to the Big Blue Button server."
-msgstr ""
+msgstr "Hiba a Big Blue Button szerver hitelesítésekor."
 
 #: zerver/views/video_calls.py:240
 msgid "Big Blue Button server returned an unexpected error."
-msgstr ""
+msgstr "Big Blue Button szerver váratlan hibát jelez."
 
 #: zerver/views/zephyr.py:35
 msgid "Could not find Kerberos credential"
@@ -5641,7 +5683,7 @@ msgstr "Kerberos azonosítóadatok nem találhatóak"
 
 #: zerver/views/zephyr.py:37
 msgid "Webathena login not enabled"
-msgstr ""
+msgstr "Webathena belépés nem engedélyezett"
 
 #: zerver/views/zephyr.py:58
 msgid "Invalid Kerberos cache"
@@ -5657,32 +5699,34 @@ msgstr "Ismeretlen webhook kérés"
 
 #: zerver/webhooks/ifttt/view.py:29 zerver/webhooks/zapier/view.py:41
 msgid "Content can't be empty"
-msgstr ""
+msgstr "Tartalom nem maradhat üres"
 
 #: zerver/webhooks/librato/view.py:172
 msgid "Malformed JSON input"
-msgstr ""
+msgstr "Deformálódott JSON input"
 
 #: zerver/webhooks/newrelic/view.py:49
 msgid "The newrelic webhook requires timestamp in milliseconds"
-msgstr ""
+msgstr "A newrelic webhook a timestamp-et millisecond-ban megadva kéri"
 
 #: zerver/webhooks/newrelic/view.py:66
 msgid ""
 "The newrelic webhook requires current_state be in [open|acknowledged|closed]"
 msgstr ""
+"A newrelic webhook azt igényli, hogy a  current_state legyen "
+"[open|acknowledged|closed]"
 
 #: zerver/webhooks/pivotal/view.py:179
 msgid "Unable to handle Pivotal payload"
-msgstr ""
+msgstr "Nem sikerült a Pivotal payload kezelése"
 
 #: zerver/webhooks/slack/view.py:27
 msgid "Error: channels_map_to_topics parameter other than 0 or 1"
-msgstr ""
+msgstr "Hiba: channels_map_to_topics paraméter más, mint 0 vagy 1"
 
 #: zerver/webhooks/slack/view.py:33
 msgid "Message from Slack"
-msgstr ""
+msgstr "Üzenj a  Slack által"
 
 #: zerver/webhooks/uptimerobot/view.py:49 zerver/webhooks/zabbix/view.py:48
 msgid "Invalid payload"
@@ -5690,7 +5734,7 @@ msgstr "Érvénytelen payload adattartalom"
 
 #: zerver/webhooks/wordpress/view.py:49
 msgid "Unknown WordPress webhook action: {}"
-msgstr ""
+msgstr "Ismeretlen WordPress webhook lépés: {}"
 
 #: zerver/worker/queue_processors.py:904
 #, python-brace-format
@@ -5699,41 +5743,44 @@ msgid ""
 "\n"
 "{public_url}"
 msgstr ""
+"Adataid exportálása kész, elérhetőek itt:\n"
+"\n"
+"{public_url}"
 
 #. error
 #: zilencer/views.py:47
 msgid "Must validate with valid Zulip server API key"
-msgstr ""
+msgstr "Érvényesítsd a Zulip szervert érvényes API kulccsal"
 
 #. error
 #: zilencer/views.py:55
 msgid "Invalid token type"
-msgstr ""
+msgstr "Érvénytelen token típus"
 
 #: zilencer/views.py:83
 msgid "{} is not a valid hostname"
-msgstr ""
+msgstr "{} nem érvényes hostname"
 
 #: zilencer/views.py:208
 msgid "Invalid property {}"
-msgstr ""
+msgstr "Érvénytelen tulajdonság {}"
 
 #: zilencer/views.py:210
 msgid "Data is out of order."
-msgstr ""
+msgstr "Váratlan adatrend."
 
 #: zilencer/views.py:230
 msgid "Invalid data."
-msgstr ""
+msgstr "Érvénytelen adat."
 
 #: zproject/backends.py:1928
 msgid "Missing id_token parameter"
-msgstr ""
+msgstr "Hiányzó id_token paraméter"
 
 #: zproject/backends.py:2271
 msgid "Invalid OTP"
-msgstr ""
+msgstr "Érvénytelen OTP"
 
 #: zproject/backends.py:2274
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
-msgstr ""
+msgstr "Egyszerre nem használható a mobile_flow_otp és a desktop_flow_otp."

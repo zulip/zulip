@@ -11,6 +11,7 @@
 # Alessio Schreiber <alessio.schreiber@gmail.com>, 2021
 # Paolo Midali <pmidali@latek.it>, 2021
 # Andrea, 2021
+# Alya Abbott <alya@zulip.com>, 2021
 # 
 #, fuzzy
 msgid ""
@@ -19,7 +20,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-05-26 18:04+0000\n"
 "PO-Revision-Date: 2021-04-02 21:39+0000\n"
-"Last-Translator: Andrea, 2021\n"
+"Last-Translator: Alya Abbott <alya@zulip.com>, 2021\n"
 "Language-Team: Italian (https://www.transifex.com/zulip/teams/53893/it/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -3821,7 +3822,7 @@ msgstr "Non siamo riusciti a trovare questa l'organizzazione Zulip."
 #: zerver/lib/actions.py:357 zerver/lib/actions.py:369
 #, python-brace-format
 msgid "{user} just signed up for Zulip. (total: {user_count})"
-msgstr "{user}appena registrato su Zulip. (total: {user_count})"
+msgstr "{user} appena registrato su Zulip. (total: {user_count})"
 
 #: zerver/lib/actions.py:360
 msgid "signups"
@@ -4869,7 +4870,7 @@ msgstr "{var_name} è troppo lungo (limit: {max_length} characters)"
 #, python-brace-format
 msgid "{var_name} has incorrect length {length}; should be {target_length}"
 msgstr ""
-"{var_name} ha lunghezza errata{length}; dovrebbe essere {target_length}"
+"{var_name} ha lunghezza errata {length}; dovrebbe essere {target_length}"
 
 #: zerver/lib/validator.py:122 zerver/lib/validator.py:124
 #, python-brace-format
@@ -5111,7 +5112,7 @@ msgstr "Un evento più recente di {event_id} è già stato eliminato!"
 #: zerver/tornado/event_queue.py:654
 #, python-brace-format
 msgid "Event {event_id} was not in this queue"
-msgstr "Evento{event_id} non è in questa coda"
+msgstr "Evento {event_id} non è in questa coda"
 
 #: zerver/tornado/exceptions.py:15
 #, python-brace-format
