@@ -10,6 +10,7 @@ import * as channel from "./channel";
 import * as compose_error from "./compose_error";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
+import * as compose_ui from "./compose_ui";
 import {$t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
@@ -337,7 +338,7 @@ function validate_stream_message_mentions(stream_id) {
             show_all_everyone_warnings(stream_id);
 
             $("#compose-send-button").prop("disabled", false);
-            $("#sending-indicator").hide();
+            compose_ui.hide_compose_spinner();
             return false;
         }
     } else {
@@ -359,7 +360,7 @@ function validate_stream_message_announce(sub) {
             show_announce_warnings(sub.stream_id);
 
             $("#compose-send-button").prop("disabled", false);
-            $("#sending-indicator").hide();
+            compose_ui.hide_compose_spinner();
             return false;
         }
     } else {

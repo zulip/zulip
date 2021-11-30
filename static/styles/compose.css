@@ -428,6 +428,12 @@ input.recipient_box {
     margin-bottom: 0;
     font-weight: 600;
     font-size: 0.9em;
+
+    .loader {
+        display: none;
+        position: relative;
+        top: -4px;
+    }
 }
 
 .enter_sends {
@@ -459,10 +465,6 @@ input.recipient_box {
     align-items: center;
 }
 
-#sending-indicator {
-    font-weight: bold;
-}
-
 .compose_control_buttons_container {
     flex-wrap: wrap;
     margin-right: auto;
@@ -475,8 +477,7 @@ input.recipient_box {
         padding-bottom: 2px;
     }
 
-    .message-control-link,
-    #sending-indicator {
+    .message-control-link {
         padding: 0 4px;
         align-self: center;
     }

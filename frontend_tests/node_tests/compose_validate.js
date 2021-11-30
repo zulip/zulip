@@ -128,7 +128,7 @@ test_ui("validate", ({override, mock_template}) => {
 
         $("#compose-send-button").prop("disabled", false);
         $("#compose-send-button").trigger("focus");
-        $("#sending-indicator").hide();
+        $("#compose-send-button .loader").hide();
 
         const pm_pill_container = $.create("fake-pm-pill-container");
         $("#private_message_recipient")[0] = {};
@@ -151,7 +151,7 @@ test_ui("validate", ({override, mock_template}) => {
 
     initialize_pm_pill();
     assert.ok(!compose_validate.validate());
-    assert.ok(!$("#sending-indicator").visible());
+    assert.ok(!$("#compose-send-button .loader").visible());
     assert.equal($("#compose-send-button").prop("disabled"), false);
     assert.equal(
         $("#compose-error-msg").html(),

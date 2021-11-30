@@ -187,8 +187,7 @@ export function clear_compose_box() {
     $("#compose-textarea").removeData("draft-id");
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-send-status").hide(0);
-    $("#compose-send-button").prop("disabled", false);
-    $("#sending-indicator").hide();
+    compose_ui.hide_compose_spinner();
 }
 
 export function send_message_success(local_id, message_id, locally_echoed) {
@@ -269,11 +268,6 @@ export function enter_with_preview_open() {
     }
 }
 
-function show_sending_indicator(whats_happening) {
-    $("#sending-indicator").text(whats_happening);
-    $("#sending-indicator").show();
-}
-
 export function finish() {
     clear_preview_area();
     clear_invites();
@@ -291,15 +285,11 @@ export function finish() {
         return undefined;
     }
 
-    $("#compose-send-button").prop("disabled", true).trigger("blur");
-    if (reminder.is_deferred_delivery(message_content)) {
-        show_sending_indicator($t({defaultMessage: "Scheduling..."}));
-    } else {
-        show_sending_indicator($t({defaultMessage: "Sending..."}));
-    }
+    compose_ui.show_compose_spinner();
+
     if (!compose_validate.validate()) {
-        // If the message failed validation, hide the sending indicator.
-        $("#sending-indicator").hide();
+        // If the message failed validation, hide compose spinner.
+        compose_ui.hide_compose_spinner();
         return false;
     }
 

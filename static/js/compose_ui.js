@@ -4,8 +4,10 @@ import {set, wrapSelection} from "text-field-edit";
 
 import * as common from "./common";
 import {$t} from "./i18n";
+import * as loading from "./loading";
 import * as people from "./people";
 import * as rtl from "./rtl";
+import * as settings_data from "./settings_data";
 import * as user_status from "./user_status";
 
 let full_size_status = false; // true or false
@@ -385,4 +387,17 @@ export function format_text(textarea, type) {
             break;
         }
     }
+}
+
+export function hide_compose_spinner() {
+    $("#compose-send-button .loader").hide();
+    $("#compose-send-button span").show();
+    $("#compose-send-button").removeClass("disable-btn");
+}
+
+export function show_compose_spinner() {
+    const using_dark_theme = settings_data.using_dark_theme();
+    loading.show_button_spinner($("#compose-send-button .loader"), using_dark_theme);
+    $("#compose-send-button span").hide();
+    $("#compose-send-button").addClass("disable-btn");
 }
