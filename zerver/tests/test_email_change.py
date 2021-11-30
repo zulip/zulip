@@ -35,8 +35,9 @@ class EmailChangeTestCase(ZulipTestCase):
         key = generate_key()
         url = confirmation_url(key, None, Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
-        self.assert_in_success_response(
-            ["Whoops. We couldn't find your confirmation link in the system."], response
+        self.assertEqual(response.status_code, 404)
+        self.assert_in_response(
+            "Whoops. We couldn't find your confirmation link in the system.", response
         )
 
     def test_confirm_email_change_with_invalid_key(self) -> None:
@@ -44,7 +45,8 @@ class EmailChangeTestCase(ZulipTestCase):
         key = "invalid_key"
         url = confirmation_url(key, None, Confirmation.EMAIL_CHANGE)
         response = self.client_get(url)
-        self.assert_in_success_response(["Whoops. The confirmation link is malformed."], response)
+        self.assertEqual(response.status_code, 404)
+        self.assert_in_response("Whoops. The confirmation link is malformed.", response)
 
     def test_confirm_email_change_when_time_exceeded(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -62,9 +64,8 @@ class EmailChangeTestCase(ZulipTestCase):
             url = create_confirmation_link(obj, Confirmation.EMAIL_CHANGE)
 
         response = self.client_get(url)
-        self.assert_in_success_response(
-            ["The confirmation link has expired or been deactivated."], response
-        )
+        self.assertEqual(response.status_code, 404)
+        self.assert_in_response("The confirmation link has expired or been deactivated.", response)
 
     def test_confirm_email_change(self) -> None:
         user_profile = self.example_user("hamlet")

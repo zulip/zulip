@@ -43,10 +43,10 @@ def render_confirmation_key_error(
     request: HttpRequest, exception: ConfirmationKeyException
 ) -> HttpResponse:
     if exception.error_type == ConfirmationKeyException.WRONG_LENGTH:
-        return render(request, "confirmation/link_malformed.html")
+        return render(request, "confirmation/link_malformed.html", status=404)
     if exception.error_type == ConfirmationKeyException.EXPIRED:
-        return render(request, "confirmation/link_expired.html")
-    return render(request, "confirmation/link_does_not_exist.html")
+        return render(request, "confirmation/link_expired.html", status=404)
+    return render(request, "confirmation/link_does_not_exist.html", status=404)
 
 
 def generate_key() -> str:

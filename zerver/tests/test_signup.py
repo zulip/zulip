@@ -2016,8 +2016,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         email_change_key = email_change_url.split("/")[-1]
         url = "/accounts/do_confirm/" + email_change_key
         result = self.client_get(url)
-        self.assert_in_success_response(
-            ["Whoops. We couldn't find your confirmation link in the system."], result
+        self.assertEqual(result.status_code, 404)
+        self.assert_in_response(
+            "Whoops. We couldn't find your confirmation link in the system.", result
         )
 
     def test_confirmation_expired(self) -> None:
@@ -2033,8 +2034,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
         target_url = "/" + url.split("/", 3)[3]
         result = self.client_get(target_url)
-        self.assert_in_success_response(
-            ["Whoops. The confirmation link has expired or been deactivated."], result
+        self.assertEqual(result.status_code, 404)
+        self.assert_in_response(
+            "Whoops. The confirmation link has expired or been deactivated.", result
         )
 
     def test_send_more_than_one_invite_to_same_user(self) -> None:
@@ -2724,7 +2726,7 @@ class MultiuseInviteTest(ZulipTestCase):
         invite_link = self.generate_multiuse_invite_link(date_sent=date_sent)
         result = self.client_post(invite_link, {"email": email})
 
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 404)
         self.assert_in_response("The confirmation link has expired or been deactivated.", result)
 
     def test_invalid_multiuse_link(self) -> None:
@@ -2732,7 +2734,7 @@ class MultiuseInviteTest(ZulipTestCase):
         invite_link = "/join/invalid_key/"
         result = self.client_post(invite_link, {"email": email})
 
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 404)
         self.assert_in_response("Whoops. The confirmation link is malformed.", result)
 
     def test_invalid_multiuse_link_in_open_realm(self) -> None:
@@ -3955,7 +3957,7 @@ class UserSignUpTest(InviteUserBase):
 
         # Now try to to register using the first confirmation url:
         result = self.client_get(first_confirmation_url)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 404)
         result = self.client_post(
             "/accounts/register/",
             {
@@ -4205,7 +4207,8 @@ class UserSignUpTest(InviteUserBase):
             },
             subdomain="zephyr",
         )
-        self.assert_in_success_response(["We couldn't find your confirmation link"], result)
+        self.assertEqual(result.status_code, 404)
+        self.assert_in_response("We couldn't find your confirmation link", result)
 
     def test_signup_to_realm_on_manual_license_plan(self) -> None:
         realm = get_realm("zulip")

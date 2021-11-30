@@ -110,7 +110,7 @@ def check_prereg_key_and_redirect(
     prereg_user = confirmation.content_object
     assert prereg_user is not None
     if prereg_user.status == confirmation_settings.STATUS_REVOKED:
-        return render(request, "zerver/confirmation_link_expired_error.html")
+        return render(request, "zerver/confirmation_link_expired_error.html", status=404)
 
     try:
         get_object_from_key(confirmation_key, confirmation.type, activate_object=False)
