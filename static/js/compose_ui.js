@@ -1,6 +1,6 @@
 import autosize from "autosize";
 import $ from "jquery";
-import {insert, set, wrapSelection} from "text-field-edit";
+import {set, wrapSelection} from "text-field-edit";
 
 import * as common from "./common";
 import {$t} from "./i18n";
@@ -208,19 +208,20 @@ export function handle_keydown(event, textarea) {
         type = "italic";
     } else if (key === "l" && event.shiftKey) {
         type = "link";
-    } else if (key == "enter" && !user_settings.enter_sends) {
+    } else if (key === "enter" && !user_settings.enter_sends) {
         const field = textarea.get(0);
         const range = textarea.range();
         const bulleted_syntax = "* ";
         const numbered_syntax = "1. ";
         const text = textarea.val();
         const lastline = text.slice(text.lastIndexOf("\n") + 1);
+        let text_last_row = "";
 
         if (
             lastline.length > 0 &&
-            lastline.slice(0, Math.max(0, bulleted_syntax.length)) == bulleted_syntax
+            lastline.slice(0, Math.max(0, bulleted_syntax.length)) === bulleted_syntax
         ) {
-            var text_last_row = lastline.substring(bulleted_syntax.length, lastline.length);
+            text_last_row = lastline.slice(bulleted_syntax.length, lastline.length);
 
             if (!text_last_row.replace(/\s/g, "").length) {
                 type = "bulleted";
@@ -239,9 +240,9 @@ export function handle_keydown(event, textarea) {
             }
         } else if (
             lastline.length > 0 &&
-            lastline.slice(0, Math.max(0, numbered_syntax.length)) == numbered_syntax
+            lastline.slice(0, Math.max(0, numbered_syntax.length)) === numbered_syntax
         ) {
-            var text_last_row = lastline.substring(numbered_syntax.length, lastline.length);
+            text_last_row = lastline.slice(numbered_syntax.length, lastline.length);
 
             if (!text_last_row.replace(/\s/g, "").length) {
                 type = "numbered";
@@ -287,6 +288,8 @@ export function format_text(textarea, type) {
     let range = textarea.range();
     let text = textarea.val();
     const selected_text = range.text;
+    let lines = "";
+    let changed_selected_text = "";
 
     // Remove new line and space around selected text.
     const left_trim_length = range.text.length - range.text.trimStart().length;
@@ -309,20 +312,8 @@ export function format_text(textarea, type) {
         selected_text.slice(0, bold_syntax.length) === bold_syntax &&
         selected_text.slice(-bold_syntax.length) === bold_syntax;
 
-    const is_selection_bulleted = () =>
-        // First check if there are enough characters before selection.
-        range.start >= bulleted_syntax.length &&
-        // And then if the characters have bulleted_syntax around them.
-        text.slice(range.start - bulleted_syntax.length, range.start) === bulleted_syntax;
-
     const is_inner_text_bulleted = () =>
         range.length >= 1 && selected_text.slice(0, bulleted_syntax.length) === bulleted_syntax;
-
-    const is_selection_numbered = () =>
-        // First check if there are enough characters before selection.
-        range.start >= numbered_syntax.length &&
-        // And then if the characters have numbered_syntax around them.
-        text.slice(range.start - numbered_syntax.length, range.start) === numbered_syntax;
 
     const is_inner_text_numbered = () =>
         range.length > 1 && selected_text.slice(0, numbered_syntax.length) === numbered_syntax;
@@ -463,12 +454,12 @@ export function format_text(textarea, type) {
         case "bulleted": {
             if (is_inner_text_bulleted()) {
                 field.setSelectionRange(range.start, range.end);
-                var lines = selected_text.split("\n");
+                lines = selected_text.split("\n");
 
-                for (var i = 0; i < lines.length; i++) {
+                for (let i = 0; i < lines.length; i += 1) {
                     if (
                         lines[i].length > 0 &&
-                        lines[i].slice(0, Math.max(0, bulleted_syntax.length)) == bulleted_syntax
+                        lines[i].slice(0, Math.max(0, bulleted_syntax.length)) === bulleted_syntax
                     ) {
                         lines[i] = lines[i].slice(
                             bulleted_syntax.length,
@@ -476,7 +467,7 @@ export function format_text(textarea, type) {
                         );
                     }
                 }
-                var changed_selected_text = lines.join("\n");
+                changed_selected_text = lines.join("\n");
                 text =
                     text.slice(0, Math.max(0, field.selectionStart)) +
                     changed_selected_text +
@@ -485,14 +476,16 @@ export function format_text(textarea, type) {
                 field.setSelectionRange(range.start, range.end);
             } else {
                 field.setSelectionRange(range.start, range.end);
-                var lines = selected_text.split("\n");
+                lines = selected_text.split("\n");
 
-                for (var i = 0; i < lines.length; i++) {
-                    if (lines[i].slice(0, Math.max(0, bulleted_syntax.length)) != bulleted_syntax) {
+                for (let i = 0; i < lines.length; i += 1) {
+                    if (
+                        lines[i].slice(0, Math.max(0, bulleted_syntax.length)) !== bulleted_syntax
+                    ) {
                         lines[i] = bulleted_syntax + lines[i];
                     }
                 }
-                var changed_selected_text = lines.join("\n");
+                changed_selected_text = lines.join("\n");
                 text =
                     text.slice(0, Math.max(0, field.selectionStart)) +
                     changed_selected_text +
@@ -503,15 +496,14 @@ export function format_text(textarea, type) {
         }
 
         case "numbered": {
-            
             if (is_inner_text_numbered()) {
                 field.setSelectionRange(range.start, range.end);
-                var lines = selected_text.split("\n");
+                lines = selected_text.split("\n");
 
-                for (var i = 0; i < lines.length; i++) {
+                for (let i = 0; i < lines.length; i += 1) {
                     if (
                         lines[i].length > 0 &&
-                        lines[i].slice(0, Math.max(0, numbered_syntax.length)) == numbered_syntax
+                        lines[i].slice(0, Math.max(0, numbered_syntax.length)) === numbered_syntax
                     ) {
                         lines[i] = lines[i].slice(
                             numbered_syntax.length,
@@ -519,7 +511,7 @@ export function format_text(textarea, type) {
                         );
                     }
                 }
-                var changed_selected_text = lines.join("\n");
+                changed_selected_text = lines.join("\n");
                 text =
                     text.slice(0, Math.max(0, field.selectionStart)) +
                     changed_selected_text +
@@ -528,14 +520,16 @@ export function format_text(textarea, type) {
                 field.setSelectionRange(range.start, range.end);
             } else {
                 field.setSelectionRange(range.start, range.end);
-                var lines = selected_text.split("\n");
+                lines = selected_text.split("\n");
 
-                for (var i = 0; i < lines.length; i++) {
-                    if (lines[i].slice(0, Math.max(0, numbered_syntax.length)) != numbered_syntax) {
+                for (let i = 0; i < lines.length; i += 1) {
+                    if (
+                        lines[i].slice(0, Math.max(0, numbered_syntax.length)) !== numbered_syntax
+                    ) {
                         lines[i] = numbered_syntax + lines[i];
                     }
                 }
-                var changed_selected_text = lines.join("\n");
+                changed_selected_text = lines.join("\n");
                 text =
                     text.slice(0, Math.max(0, field.selectionStart)) +
                     changed_selected_text +
