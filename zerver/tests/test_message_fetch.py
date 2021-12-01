@@ -136,7 +136,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="streams", operand="public")
         self._do_add_term_test(
             term,
-            "WHERE recipient_id IN ([POSTCOMPILE_recipient_id_1])",
+            "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
         )
 
         # Add new streams
@@ -165,14 +165,14 @@ class NarrowBuilderTest(ZulipTestCase):
         # Number of recipient ids will increase by 1 and not 3
         self._do_add_term_test(
             term,
-            "WHERE recipient_id IN ([POSTCOMPILE_recipient_id_1])",
+            "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])",
         )
 
     def test_add_term_using_streams_operator_and_public_stream_operand_negated(self) -> None:
         term = dict(operator="streams", operand="public", negated=True)
         self._do_add_term_test(
             term,
-            "WHERE (recipient_id NOT IN ([POSTCOMPILE_recipient_id_1]))",
+            "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))",
         )
 
         # Add new streams
@@ -201,7 +201,7 @@ class NarrowBuilderTest(ZulipTestCase):
         # Number of recipient ids will increase by 1 and not 3
         self._do_add_term_test(
             term,
-            "WHERE (recipient_id NOT IN ([POSTCOMPILE_recipient_id_1]))",
+            "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))",
         )
 
     def test_add_term_using_is_operator_private_operand_and_negated(self) -> None:  # NEGATED
@@ -398,7 +398,7 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_group_pm_operator_and_not_the_same_user_as_operand(self) -> None:
         # Test wtihout any such group PM threads existing
         term = dict(operator="group-pm-with", operand=self.othello_email)
-        self._do_add_term_test(term, "WHERE recipient_id IN ([POSTCOMPILE_recipient_id_1])")
+        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
 
         # Test with at least one such group PM thread existing
         self.send_huddle_message(
@@ -406,13 +406,13 @@ class NarrowBuilderTest(ZulipTestCase):
         )
 
         term = dict(operator="group-pm-with", operand=self.othello_email)
-        self._do_add_term_test(term, "WHERE recipient_id IN ([POSTCOMPILE_recipient_id_1])")
+        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
 
     def test_add_term_using_group_pm_operator_not_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
         term = dict(operator="group-pm-with", operand=self.othello_email, negated=True)
-        self._do_add_term_test(term, "WHERE (recipient_id NOT IN ([POSTCOMPILE_recipient_id_1]))")
+        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
 
     def test_add_term_using_group_pm_operator_with_non_existing_user_as_operand(self) -> None:
         term = dict(operator="group-pm-with", operand="non-existing@zulip.com")
@@ -477,13 +477,13 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_in_operator(self) -> None:
         mute_stream(self.realm, self.user_profile, "Verona")
         term = dict(operator="in", operand="home")
-        self._do_add_term_test(term, "WHERE (recipient_id NOT IN ([POSTCOMPILE_recipient_id_1]))")
+        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
 
     def test_add_term_using_in_operator_and_negated(self) -> None:
         # negated = True should not change anything
         mute_stream(self.realm, self.user_profile, "Verona")
         term = dict(operator="in", operand="home", negated=True)
-        self._do_add_term_test(term, "WHERE (recipient_id NOT IN ([POSTCOMPILE_recipient_id_1]))")
+        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
 
     def test_add_term_using_in_operator_and_all_operand(self) -> None:
         mute_stream(self.realm, self.user_profile, "Verona")
@@ -3391,7 +3391,7 @@ WHERE NOT (recipient_id = %(recipient_id_1)s AND upper(subject) = upper(%(param_
         expected_query = """\
 SELECT id \n\
 FROM zerver_message \n\
-WHERE (recipient_id NOT IN ([POSTCOMPILE_recipient_id_1])) \
+WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1])) \
 AND NOT \
 (recipient_id = %(recipient_id_2)s AND upper(subject) = upper(%(param_1)s) OR \
 recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
