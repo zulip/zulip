@@ -237,9 +237,29 @@ HTML_VOID_TAGS = {
     "wbr",
 }
 
-
-def indent_level(s: str) -> int:
-    return len(s) - len(s.lstrip())
+# The following excludes some obscure tags that are never used
+# in Zulip code.
+HTML_INLINE_TAGS = {
+    "a",
+    "b",
+    "br",
+    "button",
+    "cite",
+    "code",
+    "em",
+    "i",
+    "img",
+    "input",
+    "kbd",
+    "label",
+    "object",
+    "script",
+    "select",
+    "small",
+    "span",
+    "strong",
+    "textarea",
+}
 
 
 def validate(fn: Optional[str] = None, text: Optional[str] = None) -> None:
@@ -303,10 +323,7 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> None:
             end_line = end_token.line
             end_col = end_token.col
 
-            if start_tag == "a":
-                max_lines = 3
-            else:
-                max_lines = 1
+            is_inline_tag = start_tag in HTML_INLINE_TAGS and start_token.kind == "html_start"
 
             def report_problem() -> Optional[str]:
                 if (start_tag == "code") and (end_line == start_line + 1):
@@ -321,17 +338,15 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> None:
                 elif start_tag != end_tag:
                     return f"Mismatched tags: ({start_tag} != {end_tag})"
 
-                if end_line > start_line + max_lines:
-                    if end_col != start_col:
-                        return "Indentation for start/end tags does not match."
-
-                if end_line >= start_line + 2:
-                    # We have 3+ lines in the tag's block.
-                    start_row_text = lines[start_line - 1]
-                    start_indent = indent_level(start_row_text)
-                    if start_indent != start_col - 1 and start_row_text[start_indent] not in "<{":
-                        junk = start_row_text[start_indent : start_col - 1]
-                        return f"There is junk before the start tag: {junk}"
+                if end_line > start_line + 1:
+                    if is_inline_tag:
+                        end_row_text = lines[end_line - 1]
+                        if end_row_text.lstrip().startswith(end_token.s):
+                            if end_col != start_col:
+                                return "Indentation for start/end tags does not match."
+                    else:
+                        if end_col != start_col:
+                            return "Indentation for start/end tags does not match."
 
                 return None
 
