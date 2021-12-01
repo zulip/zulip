@@ -7,5 +7,5 @@ We also highly recommend trying Zulip for yourself! You can:
 
 * [Create a Zulip Cloud organization](/new/) for free with just a few
   clicks.
-* [Join the Zulip developer community](/developer-community/) to see
+* [Join the Zulip development community](/development-community/) to see
   Zulip in action. Feel free to introduce yourself and ask questions!

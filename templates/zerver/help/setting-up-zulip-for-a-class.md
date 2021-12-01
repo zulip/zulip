@@ -13,7 +13,7 @@ class](/help/using-zulip-for-a-class) guide.
 [setting-up]: /help/getting-your-organization-started-with-zulip
 
 If you encounter any problems as you're getting started, please drop
-by our [friendly developer community](/developer-community/) and let
+by our [friendly development community](/development-community/) and let
 us know!
 
 ## Trying out Zulip
@@ -29,7 +29,7 @@ We also highly recommend trying Zulip for yourself! You can:
 
 * [Create a Zulip Cloud organization](/new/) for free with just a few
   clicks.
-* [Join the Zulip developer community](/developer-community/) to see
+* [Join the Zulip development community](/development-community/) to see
   Zulip in action. Feel free to introduce yourself and ask questions!
 
 
