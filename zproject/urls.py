@@ -608,7 +608,9 @@ i18n_urls = [
     path("apps/download/<platform>", app_download_link_redirect),
     path("apps/<platform>", apps_view),
     path(
-        "developer-community/", landing_view, {"template_name": "zerver/developer-community.html"}
+        "development-community/",
+        landing_view,
+        {"template_name": "zerver/development-community.html"},
     ),
     path("attribution/", landing_view, {"template_name": "zerver/attribution.html"}),
     path("team/", team_view),
@@ -637,6 +639,9 @@ i18n_urls = [
     # Terms of Service and privacy pages.
     path("terms/", terms_view),
     path("privacy/", privacy_view),
+    path(
+        "developer-community/", RedirectView.as_view(url="/development-community/", permanent=True)
+    ),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
