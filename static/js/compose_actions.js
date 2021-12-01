@@ -182,6 +182,8 @@ function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
         // Set default parameters based on the current narrowed view.
         ...narrow_state.set_compose_defaults(),
 
+        // Set parameters based on provided opts, overwriting
+        // those set based on current narrowed view, if necessary.
         ...opts,
     };
 }
