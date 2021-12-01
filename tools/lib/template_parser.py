@@ -355,6 +355,15 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> None:
         kind = token.kind
         tag = token.tag
 
+        if kind in (
+            "django_comment",
+            "handlebar_comment",
+            "handlebars_singleton",
+            "html_comment",
+            "html_doctype",
+        ):
+            continue
+
         if kind == "html_start":
             if not state.foreign and tag in HTML_VOID_TAGS:
                 raise TemplateParserException(
@@ -386,6 +395,8 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> None:
                 start_tag_matcher(token)
         elif kind in {"django_else", "django_end", "jinja2_whitespace_stripped_end"}:
             state.matcher(token)
+        else:
+            raise AssertionError(f"tools programmer neglected to handle {kind} tokens")
 
     if state.depth != 0:
         raise TemplateParserException("Missing end tag")
