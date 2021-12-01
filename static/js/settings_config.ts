@@ -467,12 +467,15 @@ export const expires_in_values = {
         description: $t({defaultMessage: "30 days"}),
         default: false,
     },
-    // Backend support for this configuration is not available yet.
-    // never: {
-    //     value: "never",
-    //     description: $t({defaultMessage: "Never expires"}),
-    //     default: false,
-    // }
+    never: {
+        // Ideally we'd just store `null`, not the string `"null"`, but
+        // .val() will read null back as `""`.  Custom logic in
+        // get_common_invitation_data converts this back to `null`
+        // before sending to the server.
+        value: "null",
+        description: $t({defaultMessage: "Never expires"}),
+        default: false,
+    },
 };
 
 const user_role_array = Object.values(user_role_values);
