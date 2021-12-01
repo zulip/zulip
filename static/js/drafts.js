@@ -78,7 +78,7 @@ export const draft_model = (function () {
         let changed = false;
 
         function check_if_equal(draft_a, draft_b) {
-            return _.isEqual(_.omit(draft_a, ['updatedAt']), _.omit(draft_b, ['updatedAt']));
+            return _.isEqual(_.omit(draft_a, ["updatedAt"]), _.omit(draft_b, ["updatedAt"]));
         }
 
         if (drafts[id]) {
