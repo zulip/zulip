@@ -35,12 +35,12 @@ up-to-date list of raw changes.
   hundreds of private messages or other notifiable messages as read at
   once won’t exceed Apple’s 4 KB notification size limit.
 - Slack importer improvements:
-    - Ensured that generated fake email addresses for Slack bots are
-      unique.
-    - Added support for importing Slack exports from a directory, not
-      just a .zip file.
-    - Provided better error messages with invalid Slack tokens.
-    - Added support for non-ASCII Unicode folder names on Windows.
+  - Ensured that generated fake email addresses for Slack bots are
+    unique.
+  - Added support for importing Slack exports from a directory, not
+    just a .zip file.
+  - Provided better error messages with invalid Slack tokens.
+  - Added support for non-ASCII Unicode folder names on Windows.
 - Add support for V3 Pagerduty webhook.
 - Updated documentation for Apache SSO, which now requires additional
   configuration now that Zulip uses a C extension (the `re2` module).
