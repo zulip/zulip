@@ -45,11 +45,12 @@ def else_token(token: Token) -> bool:
 
 
 def pop_unused_tokens(tokens: List[Token], row: int) -> bool:
+    was_closed = False
     while tokens and tokens[-1].line <= row:
         token = tokens.pop()
         if close_token(token):
-            return True
-    return False
+            was_closed = True
+    return was_closed
 
 
 def indent_pref(row: int, tokens: List[Token], line: str) -> str:
@@ -146,10 +147,19 @@ def pretty_print_html(html: str) -> str:
                 next_offset = open_offsets.pop()
             return tag_continuation_offset
 
+        while tokens and tokens[-1].line < row:
+            token = tokens.pop()
+
         offset = next_offset
         if tokens:
             token = tokens[-1]
-            if token.line == row and token.line_span > 1:
+            if token.kind == "indent":
+                token = tokens[-2]
+            if (
+                token.line == row
+                and token.line_span > 1
+                and token.kind not in ("template_var", "text")
+            ):
                 if token.kind in ("django_comment", "handlebar_comment", "html_comment"):
                     tag_continuation_offset = offset
                 else:

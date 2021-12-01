@@ -17,17 +17,16 @@ TEST_TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "t
 
 class TestHtmlBranches(unittest.TestCase):
     def test_get_tag_info(self) -> None:
-        html = """
-            <p id="test" class="test1 test2">foo</p>
-        """
+        html = """<p id="test" class="test1 test2">foo</p>"""
 
-        start_tag, end_tag = tools.lib.template_parser.tokenize(html)
+        start_tag, text, end_tag = tools.lib.template_parser.tokenize(html)
 
         start_tag_info = get_tag_info(start_tag)
         end_tag_info = get_tag_info(end_tag)
 
         self.assertEqual(start_tag_info.text(), "p.test1.test2#test")
         self.assertEqual(end_tag_info.text(), "p")
+        self.assertEqual(text.s, "foo")
 
     def test_html_tag_tree(self) -> None:
         html = """
