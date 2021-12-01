@@ -39,8 +39,8 @@ from zerver.lib.actions import (
     do_change_full_name,
     do_change_icon_source,
     do_change_logo_source,
-    do_change_plan_type,
     do_change_realm_domain,
+    do_change_realm_plan_type,
     do_change_stream_description,
     do_change_stream_message_retention_days,
     do_change_stream_permission,
@@ -1546,7 +1546,7 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(state_data["zulip_plan_is_not_limited"], True)
 
         events = self.verify_action(
-            lambda: do_change_plan_type(
+            lambda: do_change_realm_plan_type(
                 realm, Realm.PLAN_TYPE_LIMITED, acting_user=self.user_profile
             )
         )

@@ -20,7 +20,7 @@ from zerver.lib.actions import (
     UserMessageLite,
     bulk_insert_ums,
     do_change_avatar_fields,
-    do_change_plan_type,
+    do_change_realm_plan_type,
 )
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.bulk_create import bulk_create_users, bulk_set_users_or_streams_recipient_fields
@@ -1286,9 +1286,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     import_analytics_data(realm=realm, import_dir=import_dir)
 
     if settings.BILLING_ENABLED:
-        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
     else:
-        do_change_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=None)
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=None)
     return realm
 
 

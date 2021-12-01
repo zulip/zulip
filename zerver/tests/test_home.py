@@ -13,7 +13,7 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from corporate.models import Customer, CustomerPlan
-from zerver.lib.actions import change_user_is_active, do_change_plan_type, do_create_user
+from zerver.lib.actions import change_user_is_active, do_change_realm_plan_type, do_create_user
 from zerver.lib.compatibility import LAST_SERVER_UPGRADE_TIME, is_outdated_server
 from zerver.lib.home import (
     get_billing_info,
@@ -752,7 +752,7 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_plans)
 
         # realm owner, with inactive CustomerPlan and realm plan_type LIMITED -> show billing link and plans
-        do_change_plan_type(user.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
         with self.settings(CORPORATE_ENABLED=True):
             billing_info = get_billing_info(user)
         self.assertTrue(billing_info.show_billing)
@@ -781,7 +781,7 @@ class HomeTest(ZulipTestCase):
         # billing admin, with CustomerPlan and realm plan_type STANDARD -> show only billing link
         user.role = UserProfile.ROLE_MEMBER
         user.is_billing_admin = True
-        do_change_plan_type(user.realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
+        do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
         user.save(update_fields=["role", "is_billing_admin"])
         with self.settings(CORPORATE_ENABLED=True):
             billing_info = get_billing_info(user)
@@ -789,7 +789,7 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_plans)
 
         # billing admin, with CustomerPlan and realm plan_type PLUS -> show only billing link
-        do_change_plan_type(user.realm, Realm.PLAN_TYPE_PLUS, acting_user=None)
+        do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_PLUS, acting_user=None)
         user.save(update_fields=["role", "is_billing_admin"])
         with self.settings(CORPORATE_ENABLED=True):
             billing_info = get_billing_info(user)
@@ -797,7 +797,7 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_plans)
 
         # member, with CustomerPlan and realm plan_type STANDARD -> neither billing link or plans
-        do_change_plan_type(user.realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
+        do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
         user.is_billing_admin = False
         user.save(update_fields=["is_billing_admin"])
         with self.settings(CORPORATE_ENABLED=True):
@@ -808,7 +808,7 @@ class HomeTest(ZulipTestCase):
         # guest, with CustomerPlan and realm plan_type SELF_HOSTED -> neither billing link or plans
         user.role = UserProfile.ROLE_GUEST
         user.save(update_fields=["role"])
-        do_change_plan_type(user.realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=None)
+        do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=None)
         with self.settings(CORPORATE_ENABLED=True):
             billing_info = get_billing_info(user)
         self.assertFalse(billing_info.show_billing)
@@ -842,7 +842,7 @@ class HomeTest(ZulipTestCase):
     def test_promote_sponsoring_zulip_in_realm(self) -> None:
         realm = get_realm("zulip")
 
-        do_change_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=None)
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=None)
         promote_zulip = promote_sponsoring_zulip_in_realm(realm)
         self.assertTrue(promote_zulip)
 
@@ -850,15 +850,15 @@ class HomeTest(ZulipTestCase):
             promote_zulip = promote_sponsoring_zulip_in_realm(realm)
         self.assertFalse(promote_zulip)
 
-        do_change_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=None)
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=None)
         promote_zulip = promote_sponsoring_zulip_in_realm(realm)
         self.assertTrue(promote_zulip)
 
-        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
         promote_zulip = promote_sponsoring_zulip_in_realm(realm)
         self.assertFalse(promote_zulip)
 
-        do_change_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
         promote_zulip = promote_sponsoring_zulip_in_realm(realm)
         self.assertFalse(promote_zulip)
 

@@ -4619,7 +4619,7 @@ def do_change_realm_org_type(
     )
 
 
-def do_change_plan_type(
+def do_change_realm_plan_type(
     realm: Realm, plan_type: int, *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = realm.plan_type
@@ -5148,7 +5148,7 @@ def do_create_realm(
     realm.save(update_fields=["notifications_stream", "signup_notifications_stream"])
 
     if plan_type is None and settings.BILLING_ENABLED:
-        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
 
     admin_realm = get_realm(settings.SYSTEM_BOT_REALM)
     sender = get_system_bot(settings.NOTIFICATION_BOT, admin_realm.id)

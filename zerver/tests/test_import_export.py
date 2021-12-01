@@ -14,7 +14,7 @@ from zerver.lib.actions import (
     do_add_reaction,
     do_change_icon_source,
     do_change_logo_source,
-    do_change_plan_type,
+    do_change_realm_plan_type,
     do_create_user,
     do_deactivate_user,
     do_mute_user,
@@ -1313,7 +1313,7 @@ class ImportExportTest(ZulipTestCase):
 
     def test_plan_type(self) -> None:
         realm = get_realm("zulip")
-        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
 
         self._setup_export_files(realm)
         self._export_realm(realm)
