@@ -32,6 +32,7 @@ from zerver.lib.send_email import FromAddress, send_email_to_billing_admins_and_
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Realm, RealmAuditLog, UserProfile, get_system_bot
+from zilencer.models import RemoteZulipServer, RemoteZulipServerAuditLog
 from zproject.config import get_secret
 
 stripe.api_key = get_secret("stripe_secret_key")
@@ -617,6 +618,19 @@ def ensure_realm_does_not_have_active_plan(realm: Customer) -> None:
             realm.string_id,
         )
         raise UpgradeWithExistingPlanError()
+
+
+@transaction.atomic
+def do_change_remote_server_plan_type(remote_server: RemoteZulipServer, plan_type: int) -> None:
+    old_value = remote_server.plan_type
+    remote_server.plan_type = plan_type
+    remote_server.save(update_fields=["plan_type"])
+    RemoteZulipServerAuditLog.objects.create(
+        event_type=RealmAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED,
+        server=remote_server,
+        event_time=timezone_now(),
+        extra_data={"old_value": old_value, "new_value": plan_type},
+    )
 
 
 # Only used for cloud signups
