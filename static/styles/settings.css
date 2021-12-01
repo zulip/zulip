@@ -767,7 +767,8 @@ input[type="checkbox"] {
         white-space: pre;
     }
 
-    .copy_bot_info, .regenerate_bot_api_key {
+    .copy_bot_info,
+    .regenerate_bot_api_key {
         position: relative;
         margin-left: 5px;
         color: hsl(0, 0%, 67%);
