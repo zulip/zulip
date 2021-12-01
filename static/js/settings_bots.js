@@ -547,7 +547,30 @@ export function set_up() {
             const bot_id = Number.parseInt(bot_info.attr("data-user-id"), 10);
             const bot = bot_data.get(bot_id);
             const data = generate_zuliprc_content(bot);
-            return data;
+            const email = "" + bot.email + "";
+            return email;
+        },
+    });
+    
+    new ClipboardJS("#copy_email", {
+        text(trigger) {
+            const bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
+            const bot_id = Number.parseInt(bot_info.attr("data-user-id"), 10);
+            const bot = bot_data.get(bot_id);
+            const data = generate_zuliprc_content(bot);
+            const email = bot.email;
+            return email;
+        },
+    });
+
+    new ClipboardJS("#copy_api_key", {
+        text(trigger) {
+            const bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
+            const bot_id = Number.parseInt(bot_info.attr("data-user-id"), 10);
+            const bot = bot_data.get(bot_id);
+            const data = generate_zuliprc_content(bot);
+            const api_key = bot.api_key;
+            return api_key;
         },
     });
 
