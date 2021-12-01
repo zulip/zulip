@@ -127,18 +127,15 @@ export const stream_privacy_policy_values = {
                 "Must be invited by a subscriber; new subscribers can only see messages sent after they join; hidden from non-administrator users",
         }),
     },
-};
-
-if (page_params.development_environment) {
-    stream_privacy_policy_values.web_public = {
+    web_public: {
         code: "web-public",
         name: $t({defaultMessage: "Web public"}),
         description: $t({
             defaultMessage:
                 "Organization members can join (guests must be invited by a subscriber); anyone on the Internet can view complete message history without creating an account",
         }),
-    };
-}
+    },
+};
 
 export const stream_post_policy_values = {
     everyone: {
