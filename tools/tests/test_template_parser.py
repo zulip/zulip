@@ -84,7 +84,7 @@ class ParserTest(unittest.TestCase):
         my_html = """
             <b>foo</i>
         """
-        self._assert_validate_error("Mismatched tag.", text=my_html)
+        self._assert_validate_error(r"Mismatched tags: \(b != i\)", text=my_html)
 
     def test_validate_bad_indentation(self) -> None:
         my_html = """
@@ -92,7 +92,7 @@ class ParserTest(unittest.TestCase):
                 foo
                 </p>
         """
-        self._assert_validate_error("Bad indentation.", text=my_html)
+        self._assert_validate_error("Indentation for start/end tags does not match.", text=my_html)
 
     def test_validate_state_depth(self) -> None:
         my_html = """
