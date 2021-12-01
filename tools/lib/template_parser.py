@@ -308,26 +308,34 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> None:
             else:
                 max_lines = 1
 
-            problem = None
-            if (start_tag == "code") and (end_line == start_line + 1):
-                problem = "Code tag is split across two lines."
-            if is_else_tag:
-                pass
-            elif start_tag != end_tag:
-                problem = "Mismatched tag."
+            def report_problem() -> Optional[str]:
+                if (start_tag == "code") and (end_line == start_line + 1):
+                    return "Code tag is split across two lines."
 
-            if not problem and (end_line > start_line + max_lines):
-                if end_col != start_col:
-                    problem = "Bad indentation."
+                if is_else_tag:
+                    # We are not completely rigorous about having a sensible
+                    # order of if/elif/elif/else, but we catch obviously
+                    # mismatching else tags.
+                    if start_tag not in ("if", "else", "unless"):
+                        return f"Unexpected else/elif tag encountered after {start_tag} tag."
+                elif start_tag != end_tag:
+                    return f"Mismatched tags: ({start_tag} != {end_tag})"
 
-            if end_line >= start_line + 2:
-                # We have 3+ lines in the tag's block.
-                start_row_text = lines[start_line - 1]
-                start_indent = indent_level(start_row_text)
-                if start_indent != start_col - 1 and start_row_text[start_indent] not in "<{":
-                    junk = start_row_text[start_indent : start_col - 1]
-                    problem = f"There is junk before the start tag: {junk}"
+                if end_line > start_line + max_lines:
+                    if end_col != start_col:
+                        return "Indentation for start/end tags does not match."
 
+                if end_line >= start_line + 2:
+                    # We have 3+ lines in the tag's block.
+                    start_row_text = lines[start_line - 1]
+                    start_indent = indent_level(start_row_text)
+                    if start_indent != start_col - 1 and start_row_text[start_indent] not in "<{":
+                        junk = start_row_text[start_indent : start_col - 1]
+                        return f"There is junk before the start tag: {junk}"
+
+                return None
+
+            problem = report_problem()
             if problem:
                 raise TemplateParserException(
                     f"""
