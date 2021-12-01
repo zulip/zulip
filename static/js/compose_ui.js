@@ -1,6 +1,6 @@
 import autosize from "autosize";
 import $ from "jquery";
-import {set, wrapSelection} from "text-field-edit";
+import {set, wrapSelection, insert} from "text-field-edit";
 
 import * as common from "./common";
 import {$t} from "./i18n";
@@ -9,6 +9,7 @@ import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import * as rtl from "./rtl";
 import * as user_status from "./user_status";
+import {user_settings} from "./user_settings";
 
 let full_size_status = false; // true or false
 
@@ -205,11 +206,58 @@ export function handle_keydown(event, textarea) {
         type = "italic";
     } else if (key === "l" && event.shiftKey) {
         type = "link";
+    } else if(key == "enter" && !user_settings.enter_sends){
+
+        const field = textarea.get(0);
+        let range = textarea.range();
+        const bulleted_syntax = "* ";
+        const numbered_syntax = "1. ";
+        let text = textarea.val();
+        var lastline = text.substr(text.lastIndexOf("\n")+1);
+
+        if (lastline.length > 0 && lastline.substring(0,bulleted_syntax.length) == bulleted_syntax){
+            
+            var text_last_row = lastline.substring(bulleted_syntax.length, lastline.length);
+            
+            if(!text_last_row.replace(/\s/g, '').length){
+                type = "bulleted";
+                field.setSelectionRange(range.start - lastline.length, range.end);
+                format_text(textarea, type);
+                event.preventDefault();
+            } else {
+                
+                type = "bulleted";
+                set(field, text+ "\n");
+                format_text(textarea, type);
+                field.setSelectionRange(range.start + bulleted_syntax.length+1, range.end + bulleted_syntax.length+1);
+                event.preventDefault();
+            }
+
+        } else if (lastline.length > 0 && lastline.substring(0,numbered_syntax.length) == numbered_syntax){
+
+            var text_last_row = lastline.substring(numbered_syntax.length, lastline.length);
+            
+            if(!text_last_row.replace(/\s/g, '').length){
+
+                type = "numbered";
+                field.setSelectionRange(range.start - lastline.length, range.end);
+                format_text(textarea, type);
+                event.preventDefault();
+                
+            } else {
+                
+                type = "numbered";
+                set(field, text+ "\n");
+                format_text(textarea, type);
+                field.setSelectionRange(range.start + numbered_syntax.length+1, range.end + numbered_syntax.length+1);
+                event.preventDefault();
+            }
+        }
+
     }
 
     // detect Cmd and Ctrl key
     const isCmdOrCtrl = common.has_mac_keyboard() ? event.metaKey : event.ctrlKey;
-
     if (type && isCmdOrCtrl) {
         format_text(textarea, type);
         autosize_textarea(textarea);
@@ -226,6 +274,8 @@ export function format_text(textarea, type) {
     const italic_syntax = "*";
     const bold_syntax = "**";
     const bold_and_italic_syntax = "***";
+    const bulleted_syntax = "* ";
+    const numbered_syntax = "1. ";
     let is_selected_text_italic = false;
     let is_inner_text_italic = false;
     const field = textarea.get(0);
@@ -253,6 +303,26 @@ export function format_text(textarea, type) {
         range.length > 4 &&
         selected_text.slice(0, bold_syntax.length) === bold_syntax &&
         selected_text.slice(-bold_syntax.length) === bold_syntax;
+
+    const is_selection_bulleted = () =>
+        // First check if there are enough characters before selection.
+        range.start >=  bulleted_syntax.length &&
+        // And then if the characters have bulleted_syntax around them.
+        text.slice(range.start - bulleted_syntax.length, range.start) === bulleted_syntax;
+
+    const is_inner_text_bulleted = () =>
+        range.length >= 1 &&
+        selected_text.slice(0, bulleted_syntax.length) === bulleted_syntax
+
+    const is_selection_numbered = () =>
+        // First check if there are enough characters before selection.
+        range.start >=  numbered_syntax.length &&
+        // And then if the characters have numbered_syntax around them.
+        text.slice(range.start - numbered_syntax.length, range.start) === numbered_syntax;
+
+    const is_inner_text_numbered = () =>
+        range.length > 1 &&
+        selected_text.slice(0, numbered_syntax.length) === numbered_syntax
 
     switch (type) {
         case "bold":
@@ -384,6 +454,84 @@ export function format_text(textarea, type) {
             const new_start = range.end + "[](".length;
             const new_end = new_start + "url".length;
             field.setSelectionRange(new_start, new_end);
+            break;
+        }
+
+        case "bulleted":{
+            if(is_selection_bulleted()){
+                console.log("Section is bulleted");
+            } else if(is_inner_text_bulleted()){
+                field.setSelectionRange(
+                    range.start,
+                    range.end,
+                );
+                var lines = selected_text.split("\n");
+  
+                for(var i=0; i<lines.length; i++) {
+                    if (lines[i].length > 0 && lines[i].substring(0,bulleted_syntax.length) == bulleted_syntax){
+                        lines[i] = lines[i].substr(bulleted_syntax.length, lines[i].length);
+                    }
+                }
+                var changed_selected_text = lines.join("\n");
+                text = text.substring(0, field.selectionStart) + changed_selected_text + text.substring(field.selectionEnd);
+                set(field, text);
+                field.setSelectionRange(range.start, range.end);
+            } else{
+                field.setSelectionRange(
+                    range.start,
+                    range.end,
+                );
+                var lines = selected_text.split("\n");
+  
+                for(var i=0; i<lines.length; i++) {
+                    if (lines[i].substring(0,bulleted_syntax.length) != bulleted_syntax){
+                        lines[i] = bulleted_syntax + lines[i];
+                    }
+                }
+                var changed_selected_text = lines.join("\n");
+                text = text.substring(0, field.selectionStart) + changed_selected_text + text.substring(field.selectionEnd);
+                set(field, text);
+            }
+            break;
+        }
+
+        case "numbered":{
+            if(is_selection_numbered()){
+                console.log("Section is numbered");
+            } else if(is_inner_text_numbered()){
+
+                field.setSelectionRange(
+                    range.start,
+                    range.end,
+                );
+                var lines = selected_text.split("\n");
+  
+                for(var i=0; i<lines.length; i++) {
+                    if (lines[i].length > 0 && lines[i].substring(0,numbered_syntax.length) == numbered_syntax){
+                        lines[i] = lines[i].substr(numbered_syntax.length, lines[i].length);
+                    }
+                }
+                var changed_selected_text = lines.join("\n");
+                text = text.substring(0, field.selectionStart) + changed_selected_text + text.substring(field.selectionEnd);
+                set(field, text);
+                field.setSelectionRange(range.start, range.end);
+            } else {
+                
+                field.setSelectionRange(
+                    range.start,
+                    range.end,
+                );
+                var lines = selected_text.split("\n");
+  
+                for(var i=0; i<lines.length; i++) {
+                    if (lines[i].substring(0,numbered_syntax.length) != numbered_syntax){
+                        lines[i] = numbered_syntax + lines[i];
+                    }
+                }
+                var changed_selected_text = lines.join("\n");
+                text = text.substring(0, field.selectionStart) + changed_selected_text + text.substring(field.selectionEnd);
+                set(field, text);
+            }
             break;
         }
     }
