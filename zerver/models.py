@@ -3883,6 +3883,11 @@ class AbstractRealmAuditLog(models.Model):
     STREAM_NAME_CHANGED = 603
     STREAM_REACTIVATED = 604
 
+    # The following values are only for RemoteZulipServerAuditLog
+    # Values are chosen to be 10000 greater than the value in RealmAuditLog.
+    REMOTE_SERVER_CREATED = 10215
+    REMOTE_SERVER_PLAN_TYPE_CHANGED = 10204
+
     event_type: int = models.PositiveSmallIntegerField()
 
     # event_types synced from on-prem installations to Zulip Cloud when

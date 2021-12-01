@@ -36,6 +36,7 @@ from corporate.lib.stripe import (
     catch_stripe_errors,
     compute_plan_parameters,
     customer_has_credit_card_as_default_payment_method,
+    do_change_remote_server_plan_type,
     do_create_stripe_customer,
     downgrade_small_realms_behind_on_payments_as_needed,
     get_discount_for_realm,
@@ -97,6 +98,7 @@ from zerver.models import (
     get_realm,
     get_system_bot,
 )
+from zilencer.models import RemoteZulipServer, RemoteZulipServerAuditLog
 
 CallableT = TypeVar("CallableT", bound=Callable[..., Any])
 
@@ -4417,6 +4419,30 @@ class BillingHelpersTest(ZulipTestCase):
         realm.plan_type = Realm.PLAN_TYPE_STANDARD_FREE
         realm.save()
         self.assertTrue(is_sponsored_realm(realm))
+
+    def test_change_remote_server_plan_type(self) -> None:
+        server_uuid = "demo-1234"
+        remote_server = RemoteZulipServer.objects.create(
+            uuid=server_uuid,
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            contact_email="email@example.com",
+        )
+        self.assertEqual(remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_SELF_HOSTED)
+
+        do_change_remote_server_plan_type(remote_server, RemoteZulipServer.PLAN_TYPE_STANDARD)
+
+        remote_server = RemoteZulipServer.objects.get(uuid=server_uuid)
+        remote_realm_audit_log = RemoteZulipServerAuditLog.objects.filter(
+            event_type=RealmAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED
+        ).last()
+        assert remote_realm_audit_log is not None
+        expected_extra_data = {
+            "old_value": RemoteZulipServer.PLAN_TYPE_SELF_HOSTED,
+            "new_value": RemoteZulipServer.PLAN_TYPE_STANDARD,
+        }
+        self.assertEqual(remote_realm_audit_log.extra_data, str(expected_extra_data))
+        self.assertEqual(remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_STANDARD)
 
 
 class LicenseLedgerTest(StripeTestCase):

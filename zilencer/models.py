@@ -15,16 +15,33 @@ def get_remote_server_by_uuid(uuid: str) -> "RemoteZulipServer":
 
 
 class RemoteZulipServer(models.Model):
+    """Each object corresponds to a single remote Zulip server that is
+    registered for the Mobile Push Notifications Service via
+    `manage.py register_server`.
+    """
+
     UUID_LENGTH = 36
     API_KEY_LENGTH = 64
     HOSTNAME_MAX_LENGTH = 128
 
+    # The unique UUID (`zulip_org_id`) and API key (`zulip_org_key`)
+    # for this remote server registration.
     uuid: str = models.CharField(max_length=UUID_LENGTH, unique=True)
     api_key: str = models.CharField(max_length=API_KEY_LENGTH)
 
+    # The hostname and contact details are not verified/trusted. Thus,
+    # they primarily exist so that we can communicate with the
+    # maintainer of a server about abuse problems.
     hostname: str = models.CharField(max_length=HOSTNAME_MAX_LENGTH)
     contact_email: str = models.EmailField(blank=True, null=False)
     last_updated: datetime.datetime = models.DateTimeField("last updated", auto_now=True)
+
+    # Plan types for self-hosted customers
+    PLAN_TYPE_SELF_HOSTED = 1
+    PLAN_TYPE_STANDARD = 102
+
+    # The current billing plan for the remote server, similar to Realm.plan_type.
+    plan_type: int = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED)
 
     def __str__(self) -> str:
         return f"<RemoteZulipServer {self.hostname} {self.uuid[0:12]}>"
@@ -33,8 +50,9 @@ class RemoteZulipServer(models.Model):
         return "zulip-server:" + self.uuid
 
 
-# Variant of PushDeviceToken for a remote server.
 class RemotePushDeviceToken(AbstractPushDeviceToken):
+    """Like PushDeviceToken, but for a device connected to a remote server."""
+
     server: RemoteZulipServer = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
     # The user id on the remote server for this device device this is
     user_id: int = models.BigIntegerField(db_index=True)
@@ -44,6 +62,22 @@ class RemotePushDeviceToken(AbstractPushDeviceToken):
 
     def __str__(self) -> str:
         return f"<RemotePushDeviceToken {self.server} {self.user_id}>"
+
+
+class RemoteZulipServerAuditLog(AbstractRealmAuditLog):
+    """Audit data associated with a remote Zulip server (not specific to a
+    realm).  Used primarily for tracking registration and billing
+    changes for self-hosted customers.
+
+    In contrast with RemoteRealmAuditLog, which has a copy of data
+    that is generated on the client Zulip server, this table is the
+    authoritative storage location for the server's history.
+    """
+
+    server: RemoteZulipServer = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
+
+    def __str__(self) -> str:
+        return f"<RemoteZulipServerAuditLog: {self.server} {self.event_type} {self.event_time} {self.id}>"
 
 
 class RemoteRealmAuditLog(AbstractRealmAuditLog):
