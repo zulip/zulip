@@ -194,27 +194,6 @@ def tokenize(text: str) -> List[Token]:
         tokens.append(token)
         advance(len(s))
 
-        def add_pseudo_end_token(kind: str) -> None:
-            token = Token(
-                kind=kind,
-                s="</" + tag + ">",
-                tag=tag,
-                line=state.line,
-                col=state.col,
-                line_span=1,
-            )
-            tokens.append(token)
-
-        if kind == "html_singleton":
-            # Here we insert a Pseudo html_singleton_end tag so as to have
-            # ease of detection of end of singleton html tags which might be
-            # needed in some cases as with our html pretty printer.
-            add_pseudo_end_token("html_singleton_end")
-        if kind == "handlebars_singleton":
-            # We insert a pseudo handlbar end tag for singleton cases of
-            # handlebars like the partials. This helps in indenting multi line partials.
-            add_pseudo_end_token("handlebars_singleton_end")
-
     return tokens
 
 
@@ -431,9 +410,6 @@ def prevent_dangling_tags(fn: str, tokens: List[Token]) -> None:
     """
     min_row: Optional[int] = None
     for token in tokens:
-        if token.kind in ("handlebars_singleton_end", "html_singleton_end"):
-            continue
-
         # We only apply this validation for a couple tag types, because
         # our existing templates may have some funny edge cases.  We eventually
         # want to be more aggressive here. We may need to be extra careful
