@@ -346,7 +346,7 @@ body.night-mode {
         color: hsla(236, 33%, 90%, 0.5);
     }
 
-    /* Not that .message_row (below) needs to be more contrast on dark mode */
+    /* Not that .message_row (below) needs to be more contrast on dark theme */
     #compose-content,
     .message_list .recipient_row,
     .message_row,
