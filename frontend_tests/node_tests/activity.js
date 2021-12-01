@@ -212,10 +212,9 @@ test("huddle_data.process_loaded_messages", () => {
 
 test("presence_list_full_update", ({override, mock_template}) => {
     override(padded_widget, "update_padding", () => {});
-
-    mock_template("user_presence_rows.hbs", false, (data) => {
-        assert.equal(data.users.length, 7);
-        assert.equal(data.users[0].user_id, me.user_id);
+    mock_template("presence_rows.hbs", false, (data) => {
+        assert.equal(data.presence_rows.length, 7);
+        assert.equal(data.presence_rows[0].user_id, me.user_id);
     });
 
     $(".user-list-filter").trigger("focus");
@@ -275,7 +274,7 @@ test("PM_update_dom_counts", () => {
 test("handlers", ({override, override_rewire, mock_template}) => {
     let filter_key_handlers;
 
-    mock_template("user_presence_rows.hbs", false, () => {});
+    mock_template("presence_rows.hbs", false, () => {});
 
     override(keydown_util, "handle", (opts) => {
         filter_key_handlers = opts.handlers;
@@ -380,7 +379,7 @@ test("first/prev/next", ({override, mock_template}) => {
     let rendered_alice;
     let rendered_fred;
 
-    mock_template("user_presence_row.hbs", false, (data) => {
+    mock_template("presence_row.hbs", false, (data) => {
         switch (data.user_id) {
             case alice.user_id:
                 rendered_alice = true;
@@ -441,7 +440,7 @@ test("first/prev/next", ({override, mock_template}) => {
 });
 
 test("insert_one_user_into_empty_list", ({override, mock_template}) => {
-    mock_template("user_presence_row.hbs", true, (data, html) => {
+    mock_template("presence_row.hbs", true, (data, html) => {
         assert.deepEqual(data, {
             href: "#narrow/pm-with/1-alice",
             name: "Alice Smith",
@@ -471,7 +470,7 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
 });
 
 test("insert_alice_then_fred", ({override, mock_template}) => {
-    mock_template("user_presence_row.hbs", true, (data, html) => html);
+    mock_template("presence_row.hbs", true, (data, html) => html);
 
     let appended_html;
     override(buddy_list.$container, "append", (html) => {
@@ -489,7 +488,7 @@ test("insert_alice_then_fred", ({override, mock_template}) => {
 });
 
 test("insert_fred_then_alice_then_rename", ({override, mock_template}) => {
-    mock_template("user_presence_row.hbs", true, (data, html) => html);
+    mock_template("presence_row.hbs", true, (data, html) => html);
 
     let appended_html;
     override(buddy_list.$container, "append", (html) => {
@@ -600,7 +599,7 @@ test("update_presence_info", ({override, override_rewire}) => {
 });
 
 test("initialize", ({override, mock_template}) => {
-    mock_template("user_presence_rows.hbs", false, () => {});
+    mock_template("presence_rows.hbs", false, () => {});
     override(padded_widget, "update_padding", () => {});
     override(pm_list, "update_private_messages", () => {});
     override(watchdog, "check_for_unsuspend", () => {});
