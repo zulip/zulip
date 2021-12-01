@@ -68,13 +68,16 @@ def tokenize(text: str) -> List[Token]:
         return looking_at("</")
 
     def looking_at_handlebars_start() -> bool:
-        return looking_at("{{#") or looking_at("{{^")
+        return looking_at("{{#") or looking_at("{{^") or looking_at("{{~#")
 
     def looking_at_handlebars_else() -> bool:
         return looking_at("{{else")
 
+    def looking_at_template_var() -> bool:
+        return looking_at("{")
+
     def looking_at_handlebars_end() -> bool:
-        return looking_at("{{/")
+        return looking_at("{{/") or looking_at("{{~/")
 
     def looking_at_django_start() -> bool:
         return looking_at("{% ")
@@ -92,8 +95,11 @@ def tokenize(text: str) -> List[Token]:
         # This function detects tag like {%- if foo -%}...{% endif %}
         return looking_at("{%-") and not looking_at("{%- end")
 
+    def looking_at_whitespace() -> bool:
+        return looking_at("\n") or looking_at(" ")
+
     state = TokenizerState()
-    tokens = []
+    tokens: List[Token] = []
 
     while state.i < len(text):
         try:
@@ -142,13 +148,13 @@ def tokenize(text: str) -> List[Token]:
                 kind = "handlebars_else"
             elif looking_at_handlebars_start():
                 s = get_handlebars_tag(text, state.i)
-                tag = s[3:-2].split()[0]
+                tag = s[3:-2].split()[0].strip("#")
                 if tag.startswith("*"):
                     tag = tag[1:]
                 kind = "handlebars_start"
             elif looking_at_handlebars_end():
                 s = get_handlebars_tag(text, state.i)
-                tag = s[3:-2]
+                tag = s[3:-2].strip("/#~")
                 kind = "handlebars_end"
             elif looking_at_django_else():
                 s = get_django_tag(text, state.i)
@@ -174,15 +180,37 @@ def tokenize(text: str) -> List[Token]:
                 s = get_django_tag(text, state.i, stripped=True)
                 tag = s[3:-3].split()[0]
                 kind = "jinja2_whitespace_stripped_type2_start"
+            elif looking_at_template_var():
+                # order is important here
+                s = get_template_var(text, state.i)
+                tag = "var"
+                kind = "template_var"
+            elif looking_at("\n"):
+                s = "\n"
+                tag = "newline"
+                kind = "newline"
+            elif looking_at(" "):
+                s = get_spaces(text, state.i)
+                tag = ""
+                if not tokens or tokens[-1].kind == "newline":
+                    kind = "indent"
+                else:
+                    kind = "whitespace"
+            elif text[state.i] in "{<":
+                snippet = text[state.i :][:15]
+                raise AssertionError(f"tool cannot parse {snippet}")
             else:
-                advance(1)
-                continue
+                s = get_text(text, state.i)
+                if s == "":
+                    continue
+                tag = ""
+                kind = "text"
         except TokenizationException as e:
             raise FormattedException(
                 f'''{e.message} at line {state.line} col {state.col}:"{e.line_content}"''',
             )
 
-        line_span = len(s.split("\n"))
+        line_span = len(s.strip("\n").split("\n"))
         token = Token(
             kind=kind,
             s=s,
@@ -359,8 +387,13 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> None:
             "django_comment",
             "handlebar_comment",
             "handlebars_singleton",
+            "indent",
+            "template_var",
             "html_comment",
             "html_doctype",
+            "newline",
+            "text",
+            "whitespace",
         ):
             continue
 
@@ -471,6 +504,22 @@ def get_handlebars_tag(text: str, i: int) -> str:
     return s
 
 
+def get_spaces(text: str, i: int) -> str:
+    s = ""
+    while i < len(text) and text[i] in " ":
+        s += text[i]
+        i += 1
+    return s
+
+
+def get_text(text: str, i: int) -> str:
+    s = ""
+    while i < len(text) and text[i] not in "{<":
+        s += text[i]
+        i += 1
+    return s.strip()
+
+
 def get_django_tag(text: str, i: int, stripped: bool = False) -> str:
     end = i + 2
     if stripped:
@@ -526,6 +575,20 @@ def get_handlebar_comment(text: str, i: int) -> str:
             unclosed_end = end
         end += 1
     raise TokenizationException("Unclosed comment", text[i:unclosed_end])
+
+
+def get_template_var(text: str, i: int) -> str:
+    end = i + 3
+    unclosed_end = 0
+    while end <= len(text):
+        if text[end - 1] == "}":
+            if end < len(text) and text[end] == "}":
+                end += 1
+            return text[i:end]
+        if not unclosed_end and text[end] == "<":
+            unclosed_end = end
+        end += 1
+    raise TokenizationException("Unclosed var", text[i:unclosed_end])
 
 
 def get_django_comment(text: str, i: int) -> str:
