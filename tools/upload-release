@@ -97,8 +97,10 @@ if ordered_filenames[1] == new_basename:
 
 print("Updating SHA256SUMS.txt..")
 contents = b""
-for filename in ordered_filenames:
-    contents += f"{file_hashes[filename]}  {filename}\n".encode()
+for ordered_filename in ordered_filenames:
+    # natsorted type annotation is insufficiently generic
+    assert isinstance(ordered_filename, str)
+    contents += f"{file_hashes[ordered_filename]}  {ordered_filename}\n".encode()
 bucket.put_object(
     ACL="public-read",
     Body=contents,
