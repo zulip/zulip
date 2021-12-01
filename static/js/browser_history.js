@@ -30,6 +30,15 @@ export function set_hash_before_overlay(hash) {
     state.hash_before_overlay = hash;
 }
 
+export function update_web_public_hash(hash) {
+    // Returns true if hash is web public compatible.
+    if (hash_util.is_spectator_compatible(hash)) {
+        state.spectator_old_hash = hash;
+        return true;
+    }
+    return false;
+}
+
 export function save_old_hash() {
     state.old_hash = window.location.hash;
 

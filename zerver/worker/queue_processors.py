@@ -16,7 +16,7 @@ from abc import ABC, abstractmethod
 from collections import deque
 from email.message import EmailMessage
 from functools import wraps
-from threading import Lock, Timer
+from threading import RLock, Timer
 from types import FrameType
 from typing import (
     Any,
@@ -582,8 +582,10 @@ class MissedMessageWorker(QueueProcessingWorker):
     # This lock protects access to all of the data structures declared
     # above.  A lock is required because maybe_send_batched_emails, as
     # the argument to Timer, runs in a separate thread from the rest
-    # of the consumer.
-    lock = Lock()
+    # of the consumer.  This is a _re-entrant_ lock because we may
+    # need to take the lock when we already have it during shutdown
+    # (see the stop method).
+    lock = RLock()
 
     # Because the background `maybe_send_batched_email` thread can
     # hold the lock for an indeterminate amount of time, the `consume`
@@ -640,7 +642,10 @@ class MissedMessageWorker(QueueProcessingWorker):
             # self.timer_event just triggered execution of this
             # function in a thread, so now that we hold the lock, we
             # clear the timer_event attribute to record that no Timer
-            # is active.
+            # is active.  If it is already None, stop() is shutting us
+            # down.
+            if self.timer_event is None:
+                return
             self.timer_event = None
 
             current_time = timezone_now()
@@ -695,6 +700,29 @@ class MissedMessageWorker(QueueProcessingWorker):
             # constant CPU usage when there is no work to do.
             if ScheduledMessageNotificationEmail.objects.exists():
                 self.ensure_timer()
+
+    def stop(self) -> None:
+        # This may be called from a signal handler when we _already_
+        # have the lock.  Python doesn't give us a way to check if our
+        # thread has the lock, so we instead use a re-entrant lock to
+        # always take it.
+        with self.lock:
+            # With the lock,we can safely inspect the timer_event and
+            # cancel it if it is still pending.
+            if self.timer_event is not None:
+                # We cancel and then join the timer with a timeout to
+                # prevent deadlock, where we took the lock, the timer
+                # then ran out and started maybe_send_batched_emails,
+                # and then it started waiting for the lock.  The timer
+                # isn't running anymore so can't be canceled, and the
+                # thread is blocked on the lock, so will never join().
+                self.timer_event.cancel()
+                self.timer_event.join(timeout=1)
+                # In case we did hit this deadlock, we signal to
+                # maybe_send_batched_emails that it should abort by,
+                # before releasing the lock, unsetting the timer.
+                self.timer_event = None
+        super().stop()
 
 
 @assign_queue("email_senders")
@@ -808,7 +836,7 @@ class MirrorWorker(QueueProcessingWorker):
                 logger.warning(
                     "MirrorWorker: Rejecting an email from: %s to realm: %s - rate limited.",
                     msg["From"],
-                    recipient_realm.name,
+                    recipient_realm.subdomain,
                 )
                 return
 

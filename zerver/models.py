@@ -896,6 +896,9 @@ class Realm(models.Model):
             # target every open Internet service that can host files.
             return False
 
+        if not self.enable_spectator_access:
+            return False
+
         return True
 
     def has_web_public_streams(self) -> bool:
@@ -909,10 +912,11 @@ class Realm(models.Model):
     def allow_web_public_streams_access(self) -> bool:
         """
         If any of the streams in the realm is web
-        public and `enable_spectator_access` is True,
+        public and `enable_spectator_access` and
+        settings.WEB_PUBLIC_STREAMS_ENABLED is True,
         then the Realm is web public.
         """
-        return self.enable_spectator_access and self.has_web_public_streams()
+        return self.has_web_public_streams()
 
 
 post_save.connect(flush_realm, sender=Realm)

@@ -301,6 +301,7 @@ function clear_error_display() {
 export function show_new_stream_modal() {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
+    stream_settings_ui.hide_or_disable_stream_privacy_options_if_required($("#stream-creation"));
 
     const add_people_container = $("#people_to_add");
     add_people_container.html(
@@ -342,6 +343,15 @@ export function show_new_stream_modal() {
     $("#make-invite-only input:radio[value=public]").prop("checked", true);
     $("#stream_creation_form .stream-message-retention-days-input").hide();
     $("#stream_creation_form select[name=stream_message_retention_setting]").val("realm_default");
+
+    // Add listener to .show stream-message-retention-days-input that we've hidden above
+    $("#stream_creation_form .stream_message_retention_setting").on("change", (e) => {
+        if (e.target.value === "retain_for_period") {
+            $("#stream_creation_form .stream-message-retention-days-input").show();
+        } else {
+            $("#stream_creation_form .stream-message-retention-days-input").hide();
+        }
+    });
 
     update_announce_stream_state();
     if (stream_data.realm_has_notifications_stream()) {

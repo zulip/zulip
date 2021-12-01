@@ -57,6 +57,9 @@ su postgres -c "/usr/lib/postgresql/$UPGRADE_TO/bin/vacuumdb --all --analyze-onl
 pg_dropcluster "$UPGRADE_FROM" main
 apt remove -y "postgresql-$UPGRADE_FROM"
 if [ -n "$SCRIPTS_PATH" ]; then
+    if [ -f "$SCRIPTS_PATH/update_extensions.sql" ]; then
+        su postgres -c "psql $SCRIPTS_PATH/update_extensions.sql"
+    fi
     su postgres -c "$SCRIPTS_PATH/delete_old_cluster.sh"
     rm -rf "$SCRIPTS_PATH"
 else

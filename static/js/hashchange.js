@@ -54,6 +54,7 @@ function set_hash(hash) {
     if (history.pushState) {
         const url = get_full_url(hash);
         history.pushState(null, null, url);
+        browser_history.update_web_public_hash(hash);
     } else {
         blueslip.warn("browser does not support pushState");
         window.location.hash = hash;
@@ -315,14 +316,9 @@ function do_hashchange_overlay(old_hash) {
 function hashchanged(from_reload, e) {
     const current_hash = window.location.hash;
     const old_hash = e && (e.oldURL ? new URL(e.oldURL).hash : browser_history.old_hash());
+    const is_hash_web_public_compatible = browser_history.update_web_public_hash(current_hash);
 
     const was_internal_change = browser_history.save_old_hash();
-
-    const is_hash_web_public_compatible = hash_util.is_spectator_compatible(current_hash);
-    if (is_hash_web_public_compatible) {
-        browser_history.state.spectator_old_hash = current_hash;
-    }
-
     if (was_internal_change) {
         return undefined;
     }
@@ -352,17 +348,6 @@ function hashchanged(from_reload, e) {
     const ret = do_hashchange_normal(from_reload);
     browser_history.state.changing_hash = false;
     return ret;
-}
-
-export function replace_hash(hash) {
-    if (!window.history.replaceState) {
-        // We may have strange behavior with the back button.
-        blueslip.warn("browser does not support replaceState");
-        return;
-    }
-
-    const url = get_full_url(hash);
-    window.history.replaceState(null, null, url);
 }
 
 export function initialize() {

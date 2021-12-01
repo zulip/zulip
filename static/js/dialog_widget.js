@@ -80,6 +80,12 @@ export function launch(conf) {
     // * help_link: A help link in the heading area.
     // * id: Custom id to the container element to modify styles.
     // * single_footer_button: If true, don't include the "Cancel" button.
+    // * form_id: Id of the form element in the modal if it exists.
+    // * validate_input: Function to validate the input of the modal.
+    // * on_show: Callback to run when the modal is triggered to show.
+    // * on_shown: Callback to run when the modal is shown.
+    // * on_hide: Callback to run when the modal is triggered to hide.
+    // * on_hidden: Callback to run when the modal is hidden.
 
     for (const f of mandatory_fields) {
         if (conf[f] === undefined) {
@@ -110,8 +116,19 @@ export function launch(conf) {
     }
 
     const submit_button = dialog.find(".dialog_submit_button");
+
+    // This is used to link the submit button with the form, if present, in the modal.
+    // This makes it so that submitting this form by pressing Enter on an input element
+    // triggers a click on the submit button.
+    if (conf.form_id) {
+        submit_button.attr("form", conf.form_id);
+    }
+
     // Set up handlers.
     submit_button.on("click", (e) => {
+        if (conf.validate_input && !conf.validate_input(e)) {
+            return;
+        }
         if (conf.loading_spinner) {
             show_dialog_spinner();
         } else if (conf.close_on_submit) {
@@ -124,12 +141,16 @@ export function launch(conf) {
     overlays.open_modal("dialog_widget_modal", {
         autoremove: true,
         micromodal: true,
-        micromodal_opts: {
-            onShow: () => {
-                if (conf.focus_submit_on_open) {
-                    submit_button.trigger("focus");
-                }
-            },
+        on_show: () => {
+            if (conf.focus_submit_on_open) {
+                submit_button.trigger("focus");
+            }
+            if (conf.on_show) {
+                conf.on_show();
+            }
         },
+        on_hide: conf?.on_hide,
+        on_shown: conf?.on_shown,
+        on_hidden: conf?.on_hidden,
     });
 }

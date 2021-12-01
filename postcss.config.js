@@ -11,7 +11,7 @@ module.exports = ({file}) => ({
             // the flatpickr dark theme. We do this because flatpickr themes
             // are not scoped. See https://github.com/flatpickr/flatpickr/issues/2168.
             require("postcss-import")({
-                plugins: [require("postcss-prefixwrap")("%night-mode-block")],
+                plugins: [require("postcss-prefixwrap")("%dark-theme-block")],
             }),
         require("postcss-nested"),
         require("postcss-extend-rule"),

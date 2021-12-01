@@ -163,6 +163,7 @@ jobs:
           # Since actions/download-artifact@v2 loses all the permissions
           # of the tarball uploaded by the upload artifact fix those.
           chmod +x /tmp/production-upgrade-pg
+          chmod +x /tmp/production-pgroonga
           chmod +x /tmp/production-install
           chmod +x /tmp/production-verify
           chmod +x /tmp/send-failure-message
@@ -195,6 +196,14 @@ jobs:
       - name: Verify install
         run: sudo /tmp/production-verify
 
+      - name: Install pgroonga
+        if: ${{ matrix.is_bionic }}
+        run: sudo /tmp/production-pgroonga
+
+      - name: Verify install after installing pgroonga
+        if: ${{ matrix.is_bionic }}
+        run: sudo /tmp/production-verify
+
       - name: Upgrade postgresql
         if: ${{ matrix.is_bionic }}
         run: sudo /tmp/production-upgrade-pg
@@ -224,8 +233,11 @@ jobs:
           # the top explain how to build and upload these images.
           - docker_image: zulip/ci:buster-3.4
             name: 3.4 Version Upgrade
-            is_focal: true
             os: buster
+
+          - docker_image: zulip/ci:bullseye-4.7
+            name: 4.7 Version Upgrade
+            os: bullseye
 
     name: ${{ matrix.name  }}
     container:

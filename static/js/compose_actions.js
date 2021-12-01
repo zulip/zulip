@@ -6,7 +6,6 @@ import * as fenced_code from "../shared/js/fenced_code";
 import * as channel from "./channel";
 import * as common from "./common";
 import * as compose from "./compose";
-import * as compose_actions from "./compose_actions";
 import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
@@ -330,7 +329,7 @@ export function respond_to_message(opts) {
         if (message === undefined) {
             // Open empty compose with nothing pre-filled since
             // user is not focused on any table row.
-            compose_actions.start("stream", {trigger: "recent_topics_nofocus"});
+            start("stream", {trigger: "recent_topics_nofocus"});
             return;
         }
     } else {
@@ -351,7 +350,7 @@ export function respond_to_message(opts) {
             const first_operator = first_term.operator;
             const first_operand = first_term.operand;
 
-            if (first_operator === "stream" && !stream_data.is_subscribed(first_operand)) {
+            if (first_operator === "stream" && !stream_data.is_subscribed_by_name(first_operand)) {
                 start("stream", {trigger: "empty_narrow_compose"});
                 return;
             }
@@ -464,6 +463,7 @@ export function quote_and_reply(opts) {
     const textarea = $("#compose-textarea");
     const message_id = message_lists.current.selected_id();
     const message = message_lists.current.selected_message();
+    const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
 
     if (compose_state.has_message_content()) {
         // The user already started typing a message,
@@ -483,9 +483,7 @@ export function quote_and_reply(opts) {
         respond_to_message(opts);
     }
 
-    const prev_caret = textarea.caret();
-
-    compose_ui.insert_syntax_and_focus("[Quoting…]\n", textarea);
+    compose_ui.insert_syntax_and_focus(quoting_placeholder + "\n", textarea);
 
     function replace_content(message) {
         // Final message looks like:
@@ -493,6 +491,7 @@ export function quote_and_reply(opts) {
         //     ```quote
         //     message content
         //     ```
+        const prev_caret = textarea.caret();
         let content = $t(
             {defaultMessage: "{username} [said]({link_to_message}):"},
             {
@@ -503,10 +502,26 @@ export function quote_and_reply(opts) {
         content += "\n";
         const fence = fenced_code.get_unused_fence(message.raw_content);
         content += `${fence}quote\n${message.raw_content}\n${fence}`;
-        compose_ui.replace_syntax("[Quoting…]", content, textarea);
+
+        const placeholder_offset = $(textarea).val().indexOf(quoting_placeholder);
+        compose_ui.replace_syntax(quoting_placeholder, content, textarea);
         compose_ui.autosize_textarea($("#compose-textarea"));
-        // Update textarea caret to point to the new line after quoted message.
-        textarea.caret(prev_caret + content.length + 1);
+
+        // When replacing content in a textarea, we need to move the
+        // cursor to preserve its logical position if and only if the
+        // content we just added was before the current cursor
+        // position.  If we do, we need to move it by the increase in
+        // the length of the content before the placeholder.
+        if (prev_caret >= placeholder_offset + quoting_placeholder.length) {
+            textarea.caret(prev_caret + content.length - quoting_placeholder.length);
+        } else if (prev_caret > placeholder_offset) {
+            /* In the rare case that our cursor was inside the
+             * placeholder, we treat that as though the cursor was
+             * just after the placeholder. */
+            textarea.caret(placeholder_offset + content.length + 1);
+        } else {
+            textarea.caret(prev_caret);
+        }
     }
 
     if (message && message.raw_content) {

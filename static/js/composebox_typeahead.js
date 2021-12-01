@@ -409,7 +409,7 @@ export const slash_commands = [
         aliases: "",
     },
     {
-        text: $t({defaultMessage: "/light (Toggle light theme)"}),
+        text: $t({defaultMessage: "/light (Switch to light theme)"}),
         name: "light",
         aliases: "day",
     },

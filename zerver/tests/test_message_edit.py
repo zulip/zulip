@@ -351,6 +351,15 @@ class EditMessageTest(EditMessageTestCase):
             result, "Not logged in: API authentication or user session required", 401
         )
 
+        do_set_realm_property(
+            user_profile.realm, "enable_spectator_access", False, acting_user=None
+        )
+        result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
+        )
+        do_set_realm_property(user_profile.realm, "enable_spectator_access", True, acting_user=None)
+
         # Verify success with web-public stream and default SELF_HOSTED plan type.
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
         self.assert_json_success(result)

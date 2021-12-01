@@ -7857,6 +7857,11 @@ paths:
         per-stream notification settings.
 
         `POST {{ api_url }}/v1/users/me/subscriptions/properties`
+
+        **Changes**: Prior to Zulip 5.0 (feature level 111), response
+        object included the `subscription_data` in the the
+        request. The endpoint now returns the more ergonimic
+        `ignored_parameters_unsupported` field instead.
       parameters:
         - name: subscription_data
           in: query
@@ -7868,21 +7873,23 @@ paths:
 
             The possible values for each `property` and `value` pairs are:
 
-            - `color` (string): the hex value of the user's display color for the stream.
-            - `is_muted` (boolean): whether the stream is
-              [muted](/help/mute-a-stream). Prior to Zulip 2.1, this feature was
+            - `color` (string): The hex value of the user's display color for the stream.
+            - `is_muted` (boolean): Whether the stream is [muted](/help/mute-a-stream).<br>
+              **Changes**: Prior to Zulip 2.1, this feature was
               represented by the more confusingly named `in_home_view` (with the
               opposite value, `in_home_view=!is_muted`); for
-              backwards-compatibility, modern Zulip still accepts that value.
-            - `pin_to_top` (boolean): whether to pin the stream at the top of the stream list.
-            - `desktop_notifications` (boolean): whether to show desktop notifications
+              backwards-compatibility, modern Zulip still accepts that property.
+            - `pin_to_top` (boolean): Whether to pin the stream at the top of the stream list.
+            - `desktop_notifications` (boolean): Whether to show desktop notifications
               for all messages sent to the stream.
-            - `audible_notifications` (boolean): whether to play a sound
+            - `audible_notifications` (boolean): Whether to play a sound
               notification for all messages sent to the stream.
-            - `push_notifications` (boolean): whether to trigger a mobile push
+            - `push_notifications` (boolean): Whether to trigger a mobile push
               notification for all messages sent to the stream.
-            - `email_notifications` (boolean): whether to trigger an email
+            - `email_notifications` (boolean): Whether to trigger an email
               notification for all messages sent to the stream.
+            - `wildcard_mentions_notify` (boolean): Whether wildcard mentions trigger
+              notifications as though they were personal mentions in this stream.
           content:
             application/json:
               schema:
@@ -7908,78 +7915,11 @@ paths:
                     properties:
                       result: {}
                       msg: {}
-                      subscription_data:
-                        type: array
-                        items:
-                          type: object
-                          additionalProperties: false
-                          properties:
-                            property:
-                              type: string
-                              description: |
-                                The property to be changed. It is one of:
-
-                                - `color`: The hex value of the user's personal display color for the stream.<br>
-                                - `is_muted`: Whether the stream is [muted](/help/mute-a-stream).<br>
-                                  **Changes**: Prior to Zulip 2.1, this feature was
-                                  represented by the more confusingly named `in_home_view` (with the
-                                  opposite value, `in_home_view=!is_muted`); for
-                                  backwards-compatibility, modern Zulip still accepts that value.<br>
-                                - `pin_to_top`: Whether to pin the stream at the top of the stream list.
-                                - `desktop_notifications`: Whether to show desktop notifications for all
-                                  messages sent to the stream.<br>
-                                - `audible_notifications`: Whether to play a sound notification for all
-                                  messages sent to the stream.<br>
-                                - `push_notifications`: Whether to trigger a mobile push notification for
-                                  all messages sent to the stream.<br>
-                                - `email_notifications`: Whether to trigger an email notification for all
-                                  messages sent to the stream.<br>
-                                - `in_home_view`: Whether to mute the stream (legacy property)<br>
-                                - `wildcard_mentions_notify`: whether wildcard mentions trigger notifications
-                                  as though they were personal mentions in this stream.<br>
-                                  A null value means the value of this setting
-                                  should be inherited from the user-level default
-                                  setting, wildcard_mentions_notify, for
-                                  this stream.
-
-                              enum:
-                                - color
-                                - push_notifications
-                                - is_muted
-                                - pin_to_top
-                                - desktop_notifications
-                                - audible_notifications
-                                - push_notifications
-                                - email_notifications
-                                - in_home_view
-                                - wildcard_mentions_notify
-                            value:
-                              description: |
-                                The desired value of the property
-                              oneOf:
-                                - type: boolean
-                                - type: string
-                            stream_id:
-                              description: |
-                                The desired value of the property
-                              type: integer
-                        description: |
-                          The same `subscription_data` array sent by the client for the request.
+                      ignored_parameters_unsupported:
+                        $ref: "#/components/schemas/IgnoredParametersUnsupported"
                     example:
                       {
-                        "subscription_data":
-                          [
-                            {
-                              "property": "pin_to_top",
-                              "value": true,
-                              "stream_id": 1,
-                            },
-                            {
-                              "property": "color",
-                              "value": "#f00f00",
-                              "stream_id": 3,
-                            },
-                          ],
+                        "ignored_parameters_unsupported": ["invalid_parameter"],
                         "result": "success",
                         "msg": "",
                       }
@@ -11105,6 +11045,21 @@ paths:
                           such that the web app will display to the current user a prominent warning.
 
                           **Changes**: New in Zulip 5.0 (feature level 74).
+                      server_web_public_streams_enabled:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The value of the `WEB_PUBLIC_STREAMS_ENABLED` Zulip server level
+                          setting. A server that has disabled this setting intends to not offer [web
+                          public streams](/help/web-public-streams) to realms it hosts. (Zulip Cloud
+                          defaults to `True`; self-hosted servers default to `False`).
+
+                          Clients should use this to determine whether to offer UI for the
+                          realm-level setting for enabling we-public streams
+                          (`realm_enable_spectator_access`).
+
+                          **Changes**: New in Zulip 5.0 (feature level 110).
                       event_queue_longpoll_timeout_seconds:
                         type: integer
                         description: |
@@ -11966,13 +11921,12 @@ paths:
         backwards-compatibility, and will be removed once clients have
         migrated to use this endpoint.
 
-        **Changes**: New in Zulip 5.0 (feature level 78). Previously,
+        **Changes**: Prior to Zulip 5.0 (feature level 78),
         the `/settings` endpoint indicated which parameters it had
         processed by including in the response object `"key": value`
-        entries for values successfully changed by the request. Now the
-        `/settings` endpoint indicates which parameters sent with the
-        request were not supported by this endpoint (see
-        `ignored_parameters_unsupported` below).
+        entries for values successfully changed by the request. That
+        was replaced by the more ergonomic
+        `ignored_parameters_unsupported` response parameter.
 
         The `/settings/notifications` and `/settings/display` endpoints
         also had this behavior before they became aliases of `/settings`
@@ -13538,7 +13492,12 @@ components:
         implementation or an attempt to configure a new feature while
         connected to an older Zulip server that does not support said feature.
 
-        **Changes**: New in Zulip 5.0 (feature level 78)
+        **Changes**: Added to `POST /users/me/subscriptions/properties` in
+        Zulip 5.0 (feature level 111).
+
+        Added to `PATCH /realm/user_settings_defaults` in Zulip 5.0 (feature level 96).
+
+        Introduced in `PATCH /settings` in Zulip 5.0 (feature level 78).
     EventIdSchema:
       type: integer
       description: |
@@ -14400,14 +14359,19 @@ components:
               additionalProperties: false
               deprecated: true
               description: |
-                Whether the user is a mirror dummy.
-                Dictionary with data on the user who added the reaction, including
-                the user ID as the `id` field. **Note**: In the [events
-                API](/api/get-events), this `user` dictionary
-                confusing had the user ID in a field called `user_id`
-                instead. We recommend ignoring fields other than the user
-                ID. **Deprecated** and to be removed in a future release
-                once core clients have migrated to use the `user_id` field.
+                **Deprecated** and to be removed in a future release
+                once core clients have migrated to use the adjacent
+                `user_id` field introduced in Zulip 3.0 (feature level
+                2). Clients supporting older Zulip server versions
+                should just use the user ID below as they would the
+                `user_id` field.
+
+                Dictionary with data on the user who added the
+                reaction, including the user ID as the `id`
+                field. Note that reactions data received from the
+                [events API](/api/get-events) has a slightly different
+                `user` dictionary format, with the user ID field
+                called `user_id` instead.
               properties:
                 id:
                   type: integer

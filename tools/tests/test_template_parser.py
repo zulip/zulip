@@ -20,10 +20,9 @@ class ParserTest(unittest.TestCase):
         error: str,
         fn: Optional[str] = None,
         text: Optional[str] = None,
-        check_indent: bool = True,
     ) -> None:
         with self.assertRaisesRegex(TemplateParserException, error):
-            validate(fn=fn, text=text, check_indent=check_indent)
+            validate(fn=fn, text=text)
 
     def test_is_django_block_tag(self) -> None:
         self.assertTrue(is_django_block_tag("block"))
@@ -93,7 +92,7 @@ class ParserTest(unittest.TestCase):
                 foo
                 </p>
         """
-        self._assert_validate_error("Bad indentation.", text=my_html, check_indent=True)
+        self._assert_validate_error("Bad indentation.", text=my_html)
 
     def test_validate_state_depth(self) -> None:
         my_html = """

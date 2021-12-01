@@ -190,6 +190,7 @@ class HomeTest(ZulipTestCase):
         "server_name_changes_disabled",
         "server_needs_upgrade",
         "server_timestamp",
+        "server_web_public_streams_enabled",
         "settings_send_digest_emails",
         "show_billing",
         "show_plans",
@@ -349,6 +350,8 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
         actual_keys = sorted(str(k) for k in page_params.keys())
         removed_keys = [
+            "custom_profile_field_types",
+            "custom_profile_fields",
             "last_event_id",
             "narrow",
             "narrow_stream",

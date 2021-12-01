@@ -70,11 +70,17 @@ def tokenize(text: str) -> List[Token]:
     def looking_at_handlebars_start() -> bool:
         return looking_at("{{#") or looking_at("{{^")
 
+    def looking_at_handlebars_else() -> bool:
+        return looking_at("{{else")
+
     def looking_at_handlebars_end() -> bool:
         return looking_at("{{/")
 
     def looking_at_django_start() -> bool:
-        return looking_at("{% ") and not looking_at("{% end")
+        return looking_at("{% ")
+
+    def looking_at_django_else() -> bool:
+        return looking_at("{% else") or looking_at("{% elif")
 
     def looking_at_django_end() -> bool:
         return looking_at("{% end")
@@ -130,6 +136,10 @@ def tokenize(text: str) -> List[Token]:
                 s = get_html_tag(text, state.i)
                 tag = s[2:-1]
                 kind = "html_end"
+            elif looking_at_handlebars_else():
+                s = get_handlebars_tag(text, state.i)
+                tag = "else"
+                kind = "handlebars_else"
             elif looking_at_handlebars_start():
                 s = get_handlebars_tag(text, state.i)
                 tag = s[3:-2].split()[0]
@@ -140,17 +150,22 @@ def tokenize(text: str) -> List[Token]:
                 s = get_handlebars_tag(text, state.i)
                 tag = s[3:-2]
                 kind = "handlebars_end"
+            elif looking_at_django_else():
+                s = get_django_tag(text, state.i)
+                tag = "else"
+                kind = "django_else"
+            elif looking_at_django_end():
+                s = get_django_tag(text, state.i)
+                tag = s[6:-3]
+                kind = "django_end"
             elif looking_at_django_start():
+                # must check this after end/else
                 s = get_django_tag(text, state.i)
                 tag = s[3:-2].split()[0]
                 kind = "django_start"
 
                 if s[-3] == "-":
                     kind = "jinja2_whitespace_stripped_start"
-            elif looking_at_django_end():
-                s = get_django_tag(text, state.i)
-                tag = s[6:-3]
-                kind = "django_end"
             elif looking_at_jinja2_end_whitespace_stripped():
                 s = get_django_tag(text, state.i)
                 tag = s[7:-3]
@@ -223,9 +238,11 @@ HTML_VOID_TAGS = {
 }
 
 
-def validate(
-    fn: Optional[str] = None, text: Optional[str] = None, check_indent: bool = True
-) -> None:
+def indent_level(s: str) -> int:
+    return len(s) - len(s.lstrip())
+
+
+def validate(fn: Optional[str] = None, text: Optional[str] = None) -> None:
     assert fn or text
 
     if fn is None:
@@ -235,6 +252,8 @@ def validate(
         with open(fn) as f:
             text = f.read()
 
+    lines = text.split("\n")
+
     try:
         tokens = tokenize(text)
     except FormattedException as e:
@@ -243,6 +262,8 @@ def validate(
             fn: {fn}
             {e}"""
         )
+
+    prevent_dangling_tags(fn, tokens)
 
     class State:
         def __init__(self, func: Callable[[Token], None]) -> None:
@@ -276,6 +297,7 @@ def validate(
             state.foreign = True
 
         def f(end_token: Token) -> None:
+            is_else_tag = end_token.tag == "else"
 
             end_tag = end_token.tag.strip("~")
             end_line = end_token.line
@@ -289,16 +311,28 @@ def validate(
             problem = None
             if (start_tag == "code") and (end_line == start_line + 1):
                 problem = "Code tag is split across two lines."
-            if start_tag != end_tag:
+            if is_else_tag:
+                pass
+            elif start_tag != end_tag:
                 problem = "Mismatched tag."
-            elif check_indent and (end_line > start_line + max_lines):
+
+            if not problem and (end_line > start_line + max_lines):
                 if end_col != start_col:
                     problem = "Bad indentation."
+
+            if end_line >= start_line + 2:
+                # We have 3+ lines in the tag's block.
+                start_row_text = lines[start_line - 1]
+                start_indent = indent_level(start_row_text)
+                if start_indent != start_col - 1 and start_row_text[start_indent] not in "<{":
+                    junk = start_row_text[start_indent : start_col - 1]
+                    problem = f"There is junk before the start tag: {junk}"
+
             if problem:
                 raise TemplateParserException(
                     f"""
                     fn: {fn}
-                    {problem}
+                   {problem}
                     start:
                         {start_token.s}
                         line {start_line}, col {start_col}
@@ -307,9 +341,11 @@ def validate(
                         line {end_line}, col {end_col}
                     """
                 )
-            state.matcher = old_matcher
-            state.foreign = old_foreign
-            state.depth -= 1
+
+            if not is_else_tag:
+                state.matcher = old_matcher
+                state.foreign = old_foreign
+                state.depth -= 1
 
         state.matcher = f
 
@@ -333,21 +369,69 @@ def validate(
 
         elif kind == "handlebars_start":
             start_tag_matcher(token)
+        elif kind == "handlebars_else":
+            state.matcher(token)
         elif kind == "handlebars_end":
             state.matcher(token)
 
         elif kind in {
             "django_start",
+            "django_else",
             "jinja2_whitespace_stripped_start",
             "jinja2_whitespace_stripped_type2_start",
         }:
             if is_django_block_tag(tag):
                 start_tag_matcher(token)
-        elif kind in {"django_end", "jinja2_whitespace_stripped_end"}:
+        elif kind in {"django_else", "django_end", "jinja2_whitespace_stripped_end"}:
             state.matcher(token)
 
     if state.depth != 0:
         raise TemplateParserException("Missing end tag")
+
+
+def prevent_dangling_tags(fn: str, tokens: List[Token]) -> None:
+    """
+    Prevent this kind of HTML:
+
+        <div attr attr
+          attr attr>Stuff</div>
+
+    We prefer:
+        <div attr attr
+          attr attr>
+            Stuff
+        </div>
+
+    We may eventually have the pretty_printer code do this
+    automatically, but there are some complications with
+    legacy code.
+    """
+    min_row: Optional[int] = None
+    for token in tokens:
+        if token.kind in ("handlebars_singleton_end", "html_singleton_end"):
+            continue
+
+        # We only apply this validation for a couple tag types, because
+        # our existing templates may have some funny edge cases.  We eventually
+        # want to be more aggressive here. We may need to be extra careful
+        # with tags like <pre> that have whitespace sensitivities.
+        if token.tag not in ("div", "button", "p"):
+            continue
+        if min_row and token.line < min_row:
+            raise TemplateParserException(
+                f"""
+
+            Please fix line {token.line} at {fn} (col {token.col})
+            by moving this tag so that it closes the block at the
+            same indentation level as its start tag:
+
+                {token.s}
+                """
+            )
+        else:
+            min_row = None
+        if token.line_span > 1:
+            min_row = token.line + token.line_span
 
 
 def is_django_block_tag(tag: str) -> bool:

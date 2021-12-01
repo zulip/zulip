@@ -227,6 +227,29 @@ export const wildcard_mention_policy_values = {
     },
 };
 
+export const create_web_public_stream_policy_values = {
+    by_moderators_only: {
+        order: 1,
+        code: 4,
+        description: $t({defaultMessage: "Admins and moderators"}),
+    },
+    by_admins_only: {
+        order: 2,
+        code: 2,
+        description: $t({defaultMessage: "Admins only"}),
+    },
+    by_owners_only: {
+        order: 3,
+        code: 7,
+        description: $t({defaultMessage: "Owners only"}),
+    },
+    nobody: {
+        order: 4,
+        code: 6,
+        description: $t({defaultMessage: "Nobody"}),
+    },
+};
+
 export const common_message_policy_values = {
     by_everyone: {
         order: 1,
@@ -415,6 +438,41 @@ export const user_role_values = {
         code: 100,
         description: $t({defaultMessage: "Owner"}),
     },
+};
+
+export const expires_in_values = {
+    // Backend support for this configuration is not available yet.
+    // hour: {
+    //     value: 1,
+    //     description: $t({defaultMessage: "1 hour"}),
+    //     default: false,
+    // },
+    day: {
+        value: 1,
+        description: $t({defaultMessage: "1 day"}),
+        default: false,
+    },
+    threeDays: {
+        value: 3,
+        description: $t({defaultMessage: "3 days"}),
+        default: false,
+    },
+    tenDays: {
+        value: 10,
+        description: $t({defaultMessage: "10 days"}),
+        default: true,
+    },
+    thirtyDays: {
+        value: 30,
+        description: $t({defaultMessage: "30 days"}),
+        default: false,
+    },
+    // Backend support for this configuration is not available yet.
+    // never: {
+    //     value: "never",
+    //     description: $t({defaultMessage: "Never expires"}),
+    //     default: false,
+    // }
 };
 
 const user_role_array = Object.values(user_role_values);

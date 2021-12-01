@@ -1313,6 +1313,7 @@ export function hide_all_except_sidebars(opts) {
     stream_popover.hide_topic_popover();
     stream_popover.hide_all_messages_popover();
     stream_popover.hide_starred_messages_popover();
+    stream_popover.hide_drafts_popover();
     hide_user_sidebar_popover();
     hide_user_info_popover();
     hide_playground_links_popover();

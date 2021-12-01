@@ -847,6 +847,14 @@ class RealmTest(ZulipTestCase):
             self.assertEqual(realm.has_web_public_streams(), False)
             self.assertEqual(realm.web_public_streams_enabled(), False)
 
+        realm.enable_spectator_access = False
+        realm.save()
+        self.assertEqual(realm.has_web_public_streams(), False)
+        self.assertEqual(realm.web_public_streams_enabled(), False)
+
+        realm.enable_spectator_access = True
+        realm.save()
+
         # Convert Rome to a public stream
         rome.is_web_public = False
         rome.save()

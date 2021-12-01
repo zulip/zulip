@@ -27,6 +27,10 @@ argon2-cffi==21.1.0 \
     --hash=sha256:f710b61103d1a1f692ca3ecbd1373e28aa5e545ac625ba067ff2feca1b2bb870 \
     --hash=sha256:fa7e7d1fc22514a32b1761fdfa1882b6baa5c36bb3ef557bdd69e6fc9ba14a41
     # via django
+arrow==1.2.1 \
+    --hash=sha256:6b2914ef3997d1fd7b37a71ce9dd61a6e329d09e1c7b44f4d3099ca4a5c0933e \
+    --hash=sha256:c2dde3c382d9f7e6922ce636bf0b318a7a853df40ecb383b29192e6c5cc82840
+    # via gitlint-core
 asgiref==3.4.1 \
     --hash=sha256:4ef1ab46b484e3c706329cedeff284a5d40824200638503f5768edb6de7d58e9 \
     --hash=sha256:ffc141aa908e6f175673e7b1b3b7af4fdb0ecb738fc5c8b88f69f055c2415214
@@ -223,6 +227,7 @@ click==8.0.3 \
     # via
     #   black
     #   click-option-group
+    #   gitlint-core
     #   pip-tools
     #   pyre-check
     #   semgrep
@@ -450,6 +455,10 @@ fakeldap==0.6.2 \
 future==0.18.2 \
     --hash=sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d
     # via python-twitter
+gitlint-core==0.17.0 \
+    --hash=sha256:772dfd33effaa8515ca73e901466aa938c19ced894bec6783d19691f57429691 \
+    --hash=sha256:cb99ccd736a698b910385211203bda94bf4ce29086d0c08f8f58a18c40a98377
+    # via -r requirements/dev.in
 google-re2==0.2.20211101 \
     --hash=sha256:07cc08c067156c8fc13d5cb074a4ad2496f3fc73d2b83b80cdfaa2c873edada6 \
     --hash=sha256:0be575a2204257eee3e2767415d4c2043ffc31b272a10ce64f1e013151f25927 \
@@ -1395,6 +1404,7 @@ python-dateutil==2.8.2 \
     --hash=sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9
     # via
     #   -r requirements/common.in
+    #   arrow
     #   botocore
     #   django-scim2
     #   moto
@@ -1642,6 +1652,10 @@ service-identity==21.1.0 \
     --hash=sha256:6e6c6086ca271dc11b033d17c3a8bea9f24ebff920c587da090afc9519419d34 \
     --hash=sha256:f0b0caac3d40627c3c04d7a51b6e06721857a0e10a8775f2d1d7e72901b3a7db
     # via scrapy
+sh==1.14.2 \
+    --hash=sha256:4921ac9c1a77ec8084bdfaf152fe14138e2b3557cc740002c1a97076321fce8a \
+    --hash=sha256:9d7bd0334d494b2a4609fe521b2107438cdb21c0e469ffeeb191489883d6fe0d
+    # via gitlint-core
 six==1.16.0 \
     --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926 \
     --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254
@@ -1968,6 +1982,7 @@ typing-extensions==3.10.0.2 \
     --hash=sha256:f1d25edafde516b146ecd0613dabcc61409817af4766fbbcfb8d1ad4ec441a34
     # via
     #   -r requirements/common.in
+    #   arrow
     #   asgiref
     #   black
     #   boto3-stubs

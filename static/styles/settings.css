@@ -983,6 +983,22 @@ input[type="checkbox"] {
     }
 }
 
+#change_password_modal {
+    .change_password_info,
+    #change_password_container {
+        margin: 0;
+    }
+}
+
+#api_key_status {
+    margin: 0;
+}
+
+#download_zuliprc {
+    color: hsl(0, 0%, 100%);
+    text-decoration: none;
+}
+
 #api_key_form,
 #change_password_modal {
     .password-div {
@@ -994,8 +1010,8 @@ input[type="checkbox"] {
 
         .password_visibility_toggle {
             position: absolute;
-            left: 190px;
-            top: 28px;
+            left: 194px;
+            top: 32px;
             width: 14px;
             opacity: 0.6;
 
@@ -1519,9 +1535,7 @@ input[type="checkbox"] {
         width: 245px;
     }
 
-    #change_email_modal .change_email_info,
-    #change_password_modal .change_password_info,
-    #api_key_modal #api_key_status {
+    #change_email_modal .change_email_info {
         margin-top: 3px;
     }
 }
@@ -1637,7 +1651,7 @@ input[type="checkbox"] {
     }
 
     a.dropdown_list_reset_button {
-        /* Prevent night mode from overriding background. */
+        /* Prevent dark theme from overriding background. */
         background: unset !important;
         border: none;
         margin-left: 10px;
@@ -1832,7 +1846,8 @@ input[type="checkbox"] {
 }
 
 .admin_exports_table {
-    margin: 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 @media (width < $lg_min) {

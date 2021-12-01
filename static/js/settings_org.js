@@ -218,6 +218,7 @@ function get_subsection_property_elements(element) {
 const simple_dropdown_properties = [
     "realm_create_private_stream_policy",
     "realm_create_public_stream_policy",
+    "realm_create_web_public_stream_policy",
     "realm_invite_to_stream_policy",
     "realm_user_group_edit_policy",
     "realm_private_message_policy",
@@ -349,6 +350,13 @@ function set_digest_emails_weekday_visibility() {
     );
 }
 
+function set_create_web_public_stream_dropdown_visibility() {
+    change_element_block_display_property(
+        "id_realm_create_web_public_stream_policy",
+        page_params.server_web_public_streams_enabled && page_params.realm_enable_spectator_access,
+    );
+}
+
 export function populate_realm_domains(realm_domains) {
     if (!meta.loaded) {
         return;
@@ -444,6 +452,9 @@ function update_dependent_subsettings(property_name) {
                 settings_realm_user_settings_defaults.realm_default_settings_panel,
             );
             set_digest_emails_weekday_visibility();
+            break;
+        case "realm_enable_spectator_access":
+            set_create_web_public_stream_dropdown_visibility();
             break;
     }
 }
@@ -988,6 +999,7 @@ export function build_page() {
     set_org_join_restrictions_dropdown();
     set_message_content_in_email_notifications_visiblity();
     set_digest_emails_weekday_visibility();
+    set_create_web_public_stream_dropdown_visibility();
 
     register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
 

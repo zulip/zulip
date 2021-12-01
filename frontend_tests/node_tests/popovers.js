@@ -33,13 +33,13 @@ mock_esm("../../static/js/stream_popover", {
     hide_topic_popover: noop,
     hide_all_messages_popover: noop,
     hide_starred_messages_popover: noop,
+    hide_drafts_popover: noop,
     hide_streamlist_sidebar: noop,
 });
 
 const people = zrequire("people");
 const user_status = zrequire("user_status");
 const message_edit = zrequire("message_edit");
-const emoji = zrequire("../shared/js/emoji");
 
 // Bypass some scary code that runs when we import the module.
 const popovers = with_field($.fn, "popover", noop, () => zrequire("popovers"));
@@ -114,7 +114,6 @@ function test_ui(label, f) {
 test_ui("sender_hover", ({override, mock_template}) => {
     page_params.is_spectator = false;
     override($.fn, "popover", noop);
-    override(emoji, "get_emoji_details_by_name", noop);
 
     const selection = ".sender_name, .sender_name-in-status, .inline_profile_picture";
     const handler = $("#main_div").get_on_handler("click", selection);
