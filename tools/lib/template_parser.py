@@ -290,6 +290,7 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> None:
             {e}"""
         )
 
+    prevent_whitespace_violations(fn, tokens)
     prevent_dangling_tags(fn, tokens)
 
     class State:
@@ -433,6 +434,38 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> None:
 
     if state.depth != 0:
         raise TemplateParserException("Missing end tag")
+
+
+def prevent_whitespace_violations(fn: str, tokens: List[Token]) -> None:
+    if tokens[0].kind in ("indent", "whitespace"):
+        raise TemplateParserException(f" Please remove the whitespace at the beginning of {fn}.")
+
+    for i in range(1, len(tokens) - 1):
+        token = tokens[i]
+        next_token = tokens[i + 1]
+
+        if token.kind == "indent":
+            if next_token.kind in ("indent", "whitespace"):
+                raise AssertionError("programming error parsing indents")
+
+            if next_token.kind == "newline":
+                raise TemplateParserException(
+                    f"""Please just make row {token.line} in {fn} a truly blank line (no spaces)."""
+                )
+
+        if token.kind == "whitespace":
+            if len(token.s) > 1:
+                raise TemplateParserException(
+                    f"""
+                        We did not expect this much whitespace at row {token.line} column {token.col} in {fn}.
+                    """
+                )
+            if next_token.kind == "newline":
+                raise TemplateParserException(
+                    f"""
+                        Unexpected trailing whitespace at row {token.line} column {token.col} in {fn}.
+                    """
+                )
 
 
 def prevent_dangling_tags(fn: str, tokens: List[Token]) -> None:
