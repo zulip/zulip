@@ -767,6 +767,7 @@ input[type="checkbox"] {
         white-space: pre;
     }
 
+    .copy_bot_info,
     .regenerate_bot_api_key {
         position: relative;
         margin-left: 5px;
@@ -850,6 +851,10 @@ input[type="checkbox"] {
     .api_key .api-key-value-and-button {
         font-family: "Source Code Pro", monospace;
         font-size: 0.85em;
+        display: flex;
+    }
+
+    .email .email-value-and-button {
         display: flex;
     }
 
