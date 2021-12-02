@@ -384,10 +384,23 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> None:
         kind = token.kind
         tag = token.tag
 
+        if not state.foreign:
+            if kind == "html_start":
+                if tag in HTML_VOID_TAGS:
+                    raise TemplateParserException(
+                        f"Tag must be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
+                    )
+            elif kind == "html_singleton":
+                if not state.foreign and tag not in HTML_VOID_TAGS:
+                    raise TemplateParserException(
+                        f"Tag must not be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
+                    )
+
         if kind in (
             "django_comment",
             "handlebar_comment",
             "handlebars_singleton",
+            "html_singleton",
             "indent",
             "template_var",
             "html_comment",
@@ -399,16 +412,7 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> None:
             continue
 
         if kind == "html_start":
-            if not state.foreign and tag in HTML_VOID_TAGS:
-                raise TemplateParserException(
-                    f"Tag must be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
-                )
             start_tag_matcher(token)
-        elif kind == "html_singleton":
-            if not state.foreign and tag not in HTML_VOID_TAGS:
-                raise TemplateParserException(
-                    f"Tag must not be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
-                )
         elif kind == "html_end":
             state.matcher(token)
 
