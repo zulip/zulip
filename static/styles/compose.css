@@ -449,6 +449,10 @@ input.recipient_box {
     opacity: 0.7;
     margin-bottom: 5px;
 
+    @media (width < $mm_min) {
+        font-size: 11px;
+    }
+
     kbd {
         height: 16px;
     }
