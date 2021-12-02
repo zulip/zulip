@@ -2,6 +2,7 @@
 
 const {strict: assert} = require("assert");
 
+// const {buddy_list} = require("../../static/js/buddy_list");
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
@@ -120,4 +121,57 @@ run_test("scroll_element_into_container", () => {
     };
     scroll_util.scroll_element_into_container($elem2, $container);
     assert.equal($container.scrollTop(), 250 - 100 + 3 + 15);
+});
+
+run_test("scroll_element_into_container_for_buddy_list", () => {
+    const container = (function () {
+        return {
+            height: () => 100,
+        };
+    })();
+
+    let called = false;
+    const elem1 = {
+        innerHeight: () => 25,
+        position: () => ({
+            top: 0,
+        }),
+        0: {
+            scrollIntoView: () => {
+                /* istanbul ignore next */
+                called = true;
+            },
+        }
+    };
+    scroll_util.scroll_element_into_container_for_buddy_list(elem1, container);
+    assert.ok(!called);
+
+    const elem2 = {
+        innerHeight: () => 25,
+        position: () => ({
+            top: -10,
+        }),
+        0: {
+            scrollIntoView: (align_to_top) => {
+                const expected_align_to_top = true;
+                assert.equal(align_to_top, expected_align_to_top);
+                return this;
+            },
+        }
+    };
+    scroll_util.scroll_element_into_container_for_buddy_list(elem2, container);
+
+    const elem3 = {
+        innerHeight: () => 15,
+        position: () => ({
+            top: 250,
+        }),
+        0: {
+            scrollIntoView: (align_to_top) => {
+                const expected_align_to_top = false;
+                assert.equal(align_to_top, expected_align_to_top);
+            },
+        }
+    };
+    scroll_util.scroll_element_into_container_for_buddy_list(elem3, container);
 });

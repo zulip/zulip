@@ -16,7 +16,7 @@ import * as buddy_data from "./buddy_data";
 import {buddy_list} from "./buddy_list";
 import * as channel from "./channel";
 import * as keydown_util from "./keydown_util";
-import {ListCursor} from "./list_cursor";
+import {ListCursorWithScrollOverride} from "./list_cursor";
 import * as narrow from "./narrow";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -318,7 +318,7 @@ function keydown_enter_key() {
 }
 
 export function set_cursor_and_filter() {
-    user_cursor = new ListCursor({
+    user_cursor = new ListCursorWithScrollOverride({
         list: buddy_list,
         highlight_class: "highlighted_user",
     });

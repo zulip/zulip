@@ -278,7 +278,7 @@ test("handlers", ({override, mock_template}) => {
     override(keydown_util, "handle", (opts) => {
         filter_key_handlers = opts.handlers;
     });
-    override(scroll_util, "scroll_element_into_container", () => {});
+    override(scroll_util, "scroll_element_into_container_for_buddy_list", () => {});
     override(padded_widget, "update_padding", () => {});
     override(popovers, "hide_all", () => {});
     override(popovers, "hide_all_except_sidebars", () => {});
@@ -328,6 +328,7 @@ test("handlers", ({override, mock_template}) => {
         };
 
         const handler = $(".user-list-filter").get_on_handler("focus");
+        override(activity.user_cursor, "adjust_scroll", () => {});
         handler(e);
     })();
 
@@ -335,6 +336,7 @@ test("handlers", ({override, mock_template}) => {
         init();
         const e = {};
         const handler = $("#userlist-header").get_on_handler("click");
+        override(activity.user_cursor, "adjust_scroll", () => {});
 
         simulate_right_column_buddy_list();
 
@@ -348,6 +350,7 @@ test("handlers", ({override, mock_template}) => {
 
         $(".user-list-filter").val("al");
         narrowed = false;
+        override(activity.user_cursor, "adjust_scroll", () => {});
         activity.user_cursor.go_to(alice.user_id);
         filter_key_handlers.Enter();
         assert.ok(narrowed);
