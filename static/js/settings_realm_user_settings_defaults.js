@@ -35,6 +35,11 @@ export function update_page(property) {
         return;
     }
 
+    if (property === "email_notifications_batching_period_seconds") {
+        settings_notifications.set_notification_batching_ui(container, value);
+        return;
+    }
+
     // The twenty_four_hour_time setting is represented as a boolean
     // in the API, but a dropdown with "true"/"false" as strings in
     // the UI, so we need to convert its format here.
