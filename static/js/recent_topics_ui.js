@@ -5,6 +5,7 @@ import render_recent_topic_row from "../templates/recent_topic_row.hbs";
 import render_recent_topics_filters from "../templates/recent_topics_filters.hbs";
 import render_recent_topics_body from "../templates/recent_topics_table.hbs";
 
+import * as activity from "./activity";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
@@ -663,6 +664,10 @@ export function show() {
     narrow.set_narrow_title("Recent topics");
     message_view_header.render_title_area();
     narrow.handle_middle_pane_transition();
+
+    // Trigger redraw to render all users for buddy list.
+    // Note that this depends on narrow_state being correct.
+    activity.redraw();
 
     complete_rerender();
 }

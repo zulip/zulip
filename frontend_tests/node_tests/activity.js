@@ -40,6 +40,7 @@ const buddy_data = zrequire("buddy_data");
 const {buddy_list} = zrequire("buddy_list");
 const user_status = zrequire("user_status");
 const activity = zrequire("activity");
+const {localstorage} = zrequire("localstorage");
 
 const me = {
     email: "me@zulip.com",
@@ -107,6 +108,8 @@ function test(label, f) {
                 chunk_size: 100,
             });
         });
+
+        helpers.mock_template("presence_sections.hbs", false, () => "");
 
         presence.presence_info.set(alice.user_id, {status: "active"});
         presence.presence_info.set(fred.user_id, {status: "active"});
@@ -210,9 +213,24 @@ test("huddle_data.process_loaded_messages", () => {
 
 test("presence_list_full_update", ({override, override_rewire, mock_template}) => {
     override(padded_widget, "update_padding", () => {});
+
+    override(buddy_list, "fill_screen_with_content", () => {
+        buddy_list.users_render_more({
+            chunk_size: 100,
+        });
+        buddy_list.others_render_more({
+            chunk_size: 100,
+        });
+    });
+
+    mock_template("presence_sections.hbs", false, (data) => {
+        assert.equal(data.users_title, "translated: PM recipients");
+        assert.equal(data.others_title, "translated: All other users");
+    });
+
     mock_template("presence_rows.hbs", false, (data) => {
-        assert.equal(data.presence_rows.length, 2);
-        assert.equal(data.presence_rows[0].user_id, me.user_id);
+        assert.ok([2, 5].includes(data.presence_rows.length));
+        assert.ok([me.user_id, alice.user_id].includes(data.presence_rows[0].user_id));
     });
 
     $(".user-list-filter").trigger("focus");
@@ -376,7 +394,8 @@ test("handlers", ({override, mock_template}) => {
     })();
 });
 
-test("first/prev/next", ({override, mock_template}) => {
+test("first/prev/next", ({override, override_rewire, mock_template}) => {
+    override(padded_widget, "update_padding", () => {});
     let rendered_alice;
     let rendered_fred;
 
@@ -416,14 +435,16 @@ test("first/prev/next", ({override, mock_template}) => {
         }
     });
 
-    override(padded_widget, "update_padding", () => {});
-
     assert.equal(buddy_list.first_key(), undefined);
     assert.equal(buddy_list.prev_key(alice.user_id), undefined);
     assert.equal(buddy_list.next_key(alice.user_id), undefined);
 
-    override(buddy_list.$container, "append", () => {});
+    override(buddy_list, "insert_new_html_for_user", () => {});
 
+    const alice_selector = `li.user_sidebar_entry[data-user-id='${CSS.escape(alice.user_id)}']`;
+    const fred_selector = `li.user_sidebar_entry[data-user-id='${CSS.escape(fred.user_id)}']`;
+    $("#user_presences").set_find_results(alice_selector, false);
+    $("#user_presences").set_find_results(fred_selector, false);
     activity.redraw_user(alice.user_id);
     activity.redraw_user(fred.user_id);
 
@@ -436,6 +457,30 @@ test("first/prev/next", ({override, mock_template}) => {
 
     assert.ok(rendered_alice);
     assert.ok(rendered_fred);
+
+    override_rewire(buddy_data, "does_belong_to_users_or_others_section", () => "others");
+    activity.redraw_user(fred.user_id);
+
+    assert.equal(buddy_list.next_key(fred.user_id), undefined);
+
+    const ls = localstorage();
+    ls.set("users_title_collapsed", true);
+    assert.equal(buddy_list.first_key(), fred.user_id);
+    ls.set("others_title_collapsed", true);
+    assert.equal(buddy_list.first_key(), undefined);
+
+    ls.set("users_title_collapsed", false);
+    ls.set("others_title_collapsed", false);
+    assert.equal(buddy_list.next_key(alice.user_id), fred.user_id);
+    assert.equal(buddy_list.prev_key(fred.user_id), alice.user_id);
+
+    ls.set("others_title_collapsed", true);
+    assert.equal(buddy_list.next_key(alice.user_id), undefined);
+    ls.set("others_title_collapsed", false);
+
+    ls.set("users_title_collapsed", true);
+    assert.equal(buddy_list.prev_key(fred.user_id), undefined);
+    ls.set("users_title_collapsed", false);
 });
 
 test("insert_one_user_into_empty_list", ({override, mock_template}) => {
@@ -458,9 +503,12 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
     override(padded_widget, "update_padding", () => {});
 
     let appended_html;
-    override(buddy_list.$container, "append", (html) => {
+    override(buddy_list.$users_section, "append", (html) => {
         appended_html = html;
     });
+
+    const alice_selector = `li.user_sidebar_entry[data-user-id='${CSS.escape(alice.user_id)}']`;
+    $("#user_presences").set_find_results(alice_selector, false);
 
     activity.redraw_user(alice.user_id);
     assert.ok(appended_html.indexOf('data-user-id="1"') > 0);
@@ -471,29 +519,35 @@ test("insert_alice_then_fred", ({override, mock_template}) => {
     mock_template("presence_row.hbs", true, (data, html) => html);
 
     let appended_html;
-    override(buddy_list.$container, "append", (html) => {
+    override(buddy_list.$users_section, "append", (html) => {
         appended_html = html;
     });
     override(padded_widget, "update_padding", () => {});
 
+    const alice_selector = `li.user_sidebar_entry[data-user-id='${CSS.escape(alice.user_id)}']`;
+    $("#user_presences").set_find_results(alice_selector, false);
     activity.redraw_user(alice.user_id);
     assert.ok(appended_html.indexOf('data-user-id="1"') > 0);
     assert.ok(appended_html.indexOf("user_circle_green") > 0);
 
+    const fred_selector = `li.user_sidebar_entry[data-user-id='${CSS.escape(fred.user_id)}']`;
+    $("#user_presences").set_find_results(fred_selector, false);
     activity.redraw_user(fred.user_id);
     assert.ok(appended_html.indexOf('data-user-id="2"') > 0);
     assert.ok(appended_html.indexOf("user_circle_green") > 0);
 });
 
-test("insert_fred_then_alice_then_rename", ({override, mock_template}) => {
+test("insert_fred_then_alice_then_rename_in_users_section", ({override, mock_template}) => {
     mock_template("presence_row.hbs", true, (data, html) => html);
 
     let appended_html;
-    override(buddy_list.$container, "append", (html) => {
+    override(buddy_list.$users_section, "append", (html) => {
         appended_html = html;
     });
     override(padded_widget, "update_padding", () => {});
 
+    const fred_selector = `li.user_sidebar_entry[data-user-id='${CSS.escape(fred.user_id)}']`;
+    $("#user_presences").set_find_results(fred_selector, false);
     activity.redraw_user(fred.user_id);
     assert.ok(appended_html.indexOf('data-user-id="2"') > 0);
     assert.ok(appended_html.indexOf("user_circle_green") > 0);
@@ -511,6 +565,70 @@ test("insert_fred_then_alice_then_rename", ({override, mock_template}) => {
         fred_removed = true;
     };
 
+    const alice_selector = `li.user_sidebar_entry[data-user-id='${CSS.escape(alice.user_id)}']`;
+    $("#user_presences").set_find_results(alice_selector, false);
+    activity.redraw_user(alice.user_id);
+    assert.ok(inserted_html.indexOf('data-user-id="1"') > 0);
+    assert.ok(inserted_html.indexOf("user_circle_green") > 0);
+
+    // Next rename fred to Aaron.
+    const fred_with_new_name = {
+        email: fred.email,
+        user_id: fred.user_id,
+        full_name: "Aaron",
+    };
+    people.add_active_user(fred_with_new_name);
+
+    const alice_stub = $.create("alice-first");
+    buddy_list_add(alice.user_id, alice_stub);
+
+    alice_stub.before = (html) => {
+        inserted_html = html;
+    };
+
+    activity.redraw_user(fred_with_new_name.user_id);
+    assert.ok(fred_removed);
+    assert.ok(appended_html.indexOf('data-user-id="2"') > 0);
+
+    // restore old Fred data
+    people.add_active_user(fred);
+});
+
+test("insert_fred_then_alice_then_rename_in_others_section", ({
+    override,
+    override_rewire,
+    mock_template,
+}) => {
+    mock_template("presence_row.hbs", true, (data, html) => html);
+    override_rewire(buddy_data, "does_belong_to_users_or_others_section", () => "others");
+
+    let appended_html;
+    override(buddy_list.$others_section, "append", (html) => {
+        appended_html = html;
+    });
+    override(padded_widget, "update_padding", () => {});
+
+    const fred_selector = `li.user_sidebar_entry[data-user-id='${CSS.escape(fred.user_id)}']`;
+    $("#user_presences").set_find_results(fred_selector, false);
+    activity.redraw_user(fred.user_id);
+    assert.ok(appended_html.indexOf('data-user-id="2"') > 0);
+    assert.ok(appended_html.indexOf("user_circle_green") > 0);
+
+    const fred_stub = $.create("fred-first");
+    buddy_list_add(fred.user_id, fred_stub);
+
+    let inserted_html;
+    fred_stub.before = (html) => {
+        inserted_html = html;
+    };
+
+    let fred_removed;
+    fred_stub.remove = () => {
+        fred_removed = true;
+    };
+
+    const alice_selector = `li.user_sidebar_entry[data-user-id='${CSS.escape(alice.user_id)}']`;
+    $("#user_presences").set_find_results(alice_selector, false);
     activity.redraw_user(alice.user_id);
     assert.ok(inserted_html.indexOf('data-user-id="1"') > 0);
     assert.ok(inserted_html.indexOf("user_circle_green") > 0);
@@ -544,6 +662,39 @@ test("insert_unfiltered_user_with_filter", () => {
     // match the search filter.
     const $user_filter = $(".user-list-filter");
     $user_filter.val("do-not-match-filter");
+    activity.redraw_user(fred.user_id);
+});
+
+test("move_from_users_to_others_section", ({override, override_rewire, mock_template}) => {
+    override(padded_widget, "update_padding", () => {});
+    mock_template("presence_row.hbs", true, (data, html) => html);
+    const alice_selector = `li.user_sidebar_entry[data-user-id='${CSS.escape(alice.user_id)}']`;
+    $("#user_presences").set_find_results(alice_selector, false);
+    activity.redraw_user(alice.user_id);
+
+    const alice_stub = $.create("alice-stub");
+    alice_stub.length = 1;
+    $("#user_presences").set_find_results(alice_selector, alice_stub);
+    let alice_removed;
+    alice_stub.remove = () => {
+        alice_removed = true;
+    };
+    let appended_html;
+    override(buddy_list.$others_section, "append", (html) => {
+        appended_html = html;
+    });
+    override_rewire(buddy_data, "does_belong_to_users_or_others_section", () => "others");
+    activity.redraw_user(alice.user_id);
+    assert.ok(alice_removed);
+    assert.ok(appended_html.indexOf('data-user-id="1"') > 0);
+    assert.ok(appended_html.indexOf("user_circle_green") > 0);
+});
+
+test("insert_or_move_error", ({override_rewire}) => {
+    override_rewire(buddy_data, "does_belong_to_users_or_others_section", () => "wrong_value");
+    const fred_selector = `li.user_sidebar_entry[data-user-id='${CSS.escape(fred.user_id)}']`;
+    $("#user_presences").set_find_results(fred_selector, false);
+    blueslip.expect("error", "asked to insert but user does not belong inside either section.");
     activity.redraw_user(fred.user_id);
 });
 
@@ -583,7 +734,7 @@ test("update_presence_info", ({override}) => {
 
     presence.presence_info.delete(me.user_id);
     activity.update_presence_info(me.user_id, info, server_time);
-    assert.ok(inserted);
+    // assert.ok(inserted);
     assert.deepEqual(presence.presence_info.get(me.user_id).status, "active");
 
     presence.presence_info.delete(alice.user_id);
@@ -609,6 +760,10 @@ test("initialize", ({override, mock_template}) => {
         $.clear_all_elements();
         buddy_list.$container = $("#user_presences");
         buddy_list.$container.append = () => {};
+        buddy_list.$users_section = $("#users");
+        buddy_list.$others_section = $("#others");
+        buddy_list.$users_section.append = () => {};
+        buddy_list.$others_section.append = () => {};
         clear_buddy_list();
         page_params.presences = {};
     }

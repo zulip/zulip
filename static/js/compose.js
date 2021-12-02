@@ -2,6 +2,7 @@ import autosize from "autosize";
 import $ from "jquery";
 import _ from "lodash";
 
+import * as activity from "./activity";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
@@ -103,7 +104,6 @@ export function update_fade() {
 }
 
 function update_on_recipient_change() {
-    update_fade();
     compose_actions.update_narrow_to_recipient_visibility();
 }
 
@@ -402,7 +402,11 @@ export function initialize() {
     ).on("keyup", update_on_recipient_change);
     $(
         "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient",
-    ).on("change", update_on_recipient_change);
+    ).on("change", () => {
+        //  Update the buddy list with the mentioed stream.
+        activity.redraw();
+        update_on_recipient_change();
+    });
     $("#compose-textarea").on("keydown", (event) => {
         compose_ui.handle_keydown(event, $("#compose-textarea").expectOne());
     });

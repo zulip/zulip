@@ -655,11 +655,11 @@ export function initialize_everything() {
     about_zulip.initialize();
 
     // All overlays must be initialized before hashchange.js
+    activity.initialize();
     hashchange.initialize();
     resize.initialize();
 
     unread_ui.initialize();
-    activity.initialize();
     emoji_picker.initialize();
     topic_list.initialize();
     topic_zoom.initialize();

@@ -2,8 +2,10 @@
 
 const {strict: assert} = require("assert");
 
+const {buddy_list} = require("../../static/js/buddy_list");
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
 mock_esm("../../static/js/ui", {
     get_scroll_element: (element) => element,
@@ -124,53 +126,102 @@ run_test("scroll_element_into_container", () => {
 
 run_test("scroll_element_into_container_for_buddy_list", () => {
     const container = (function () {
+        let top = 3;
         return {
+            scrollTop: (arg) => {
+                if (arg === undefined) {
+                    return top;
+                }
+                top = arg;
+                return this;
+            },
             height: () => 100,
+            offset: () => ({
+                top: 0,
+            }),
         };
     })();
+
+    $("#users_heading")[0] = {
+        getBoundingClientRect: () => ({}),
+    };
+
+    $("#users_heading").innerHeight = () => 25;
+
+    buddy_list.other_keys = [1, 2, 3];
+
+    $("#others_heading")[0] = {
+        getBoundingClientRect: () => ({}),
+    };
+
+    $("#others_heading").innerHeight = () => 25;
 
     let called = false;
     const elem1 = {
         innerHeight: () => 25,
-        position: () => ({
+        offset: () => ({
             top: 0,
         }),
         0: {
+            getBoundingClientRect: () => ({}),
             scrollIntoView: () => {
                 /* istanbul ignore next */
                 called = true;
             },
-        }
+        },
+        expectOne() {
+            return elem1;
+        },
+        attr: (tag) => {
+            assert.ok(tag === "data-user-id");
+            return 1;
+        },
     };
     scroll_util.scroll_element_into_container_for_buddy_list(elem1, container);
     assert.ok(!called);
 
     const elem2 = {
         innerHeight: () => 25,
-        position: () => ({
+        offset: () => ({
             top: -10,
         }),
         0: {
+            getBoundingClientRect: () => ({}),
             scrollIntoView: (align_to_top) => {
                 const expected_align_to_top = true;
                 assert.equal(align_to_top, expected_align_to_top);
                 return this;
             },
-        }
+        },
+        expectOne() {
+            return elem2;
+        },
+        attr: (tag) => {
+            assert.ok(tag === "data-user-id");
+            return 2;
+        },
     };
     scroll_util.scroll_element_into_container_for_buddy_list(elem2, container);
 
     const elem3 = {
         innerHeight: () => 15,
-        position: () => ({
+        offset: () => ({
             top: 250,
         }),
         0: {
+            getBoundingClientRect: () => ({}),
             scrollIntoView: (align_to_top) => {
                 const expected_align_to_top = false;
                 assert.equal(align_to_top, expected_align_to_top);
             },
-        }
+        },
+        expectOne() {
+            return elem3;
+        },
+        attr: (tag) => {
+            assert.ok(tag === "data-user-id");
+            return 3;
+        },
     };
     scroll_util.scroll_element_into_container_for_buddy_list(elem3, container);
 });

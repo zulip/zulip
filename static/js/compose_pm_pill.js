@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as activity from "./activity";
 import * as compose_actions from "./compose_actions";
 import * as input_pill from "./input_pill";
 import * as people from "./people";
@@ -34,6 +35,7 @@ export function initialize() {
 
     widget.onPillRemove(() => {
         compose_actions.update_placeholder_text();
+        activity.redraw();
     });
 }
 

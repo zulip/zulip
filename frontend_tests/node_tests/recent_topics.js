@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -38,6 +38,12 @@ const topic9 = "topic-9";
 const topic10 = "topic-10";
 
 let expected_data_to_replace_in_list_widget;
+
+const _document = {
+    hasFocus() {
+        return true;
+    },
+};
 
 const ListWidget = mock_esm("../../static/js/list_widget", {
     modifier: noop,
@@ -153,6 +159,9 @@ mock_esm("../../static/js/unread", {
     },
 });
 
+set_global("document", _document);
+
+const activity = zrequire("activity");
 const {all_messages_data} = zrequire("all_messages_data");
 const people = zrequire("people");
 const rt = zrequire("recent_topics_ui");
@@ -332,9 +341,8 @@ function test(label, f) {
     });
 }
 
-test("test_recent_topics_show", ({mock_template, override}) => {
+test("test_recent_topics_show", ({mock_template, override, override_rewire}) => {
     override(narrow, "save_pre_narrow_offset_for_reload", () => {});
-
     // Note: unread count and urls are fake,
     // since they are generated in external libraries
     // and are not to be tested here.
@@ -360,6 +368,8 @@ test("test_recent_topics_show", ({mock_template, override}) => {
 
     rt.clear_for_tests();
     rt.process_messages(messages);
+
+    override_rewire(activity, "build_user_sidebar", noop);
 
     rt.show();
 

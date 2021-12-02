@@ -13,6 +13,7 @@ const events = require("./lib/events");
 const event_fixtures = events.fixtures;
 const test_user = events.test_user;
 
+const activity = mock_esm("../../static/js/activity");
 const message_lists = mock_esm("../../static/js/message_lists");
 const narrow_state = mock_esm("../../static/js/narrow_state");
 const overlays = mock_esm("../../static/js/overlays");
@@ -63,8 +64,11 @@ test("add", ({override}) => {
 
     const subscription_stub = make_stub();
     override(stream_events, "mark_subscribed", subscription_stub.f);
+    const activity_stub = make_stub();
+    override(activity, "redraw_user", activity_stub.f);
     dispatch(event);
     assert.equal(subscription_stub.num_calls, 1);
+    assert.equal(activity_stub.num_calls, 1);
     const args = subscription_stub.get_args("sub", "subscribers");
     assert.deepEqual(args.sub.stream_id, stream_id);
     assert.deepEqual(args.subscribers, event.subscriptions[0].subscribers);
@@ -80,14 +84,18 @@ test("peer add/remove", ({override}) => {
 
     const subs_stub = make_stub();
     override(stream_settings_ui, "update_subscribers_ui", subs_stub.f);
+    const activity_stub = make_stub();
+    override(activity, "redraw_user", activity_stub.f);
     dispatch(event);
     assert.equal(subs_stub.num_calls, 1);
+    assert.equal(activity_stub.num_calls, 1);
 
     assert.ok(peer_data.is_user_subscribed(event.stream_ids[0], event.user_ids[0]));
 
     event = event_fixtures.subscription__peer_remove;
     dispatch(event);
     assert.equal(subs_stub.num_calls, 2);
+    assert.equal(activity_stub.num_calls, 2);
 
     assert.ok(!peer_data.is_user_subscribed(event.stream_ids[0], event.user_ids[0]));
 });
@@ -104,11 +112,14 @@ test("remove", ({override}) => {
 
     stream_data.add_sub(sub);
 
-    const stub = make_stub();
-    override(stream_events, "mark_unsubscribed", stub.f);
+    const stream_events_stub = make_stub();
+    const activity_stub = make_stub();
+    override(activity, "redraw_user", activity_stub.f);
+    override(stream_events, "mark_unsubscribed", stream_events_stub.f);
     dispatch(event);
-    assert.equal(stub.num_calls, 1);
-    const args = stub.get_args("sub");
+    assert.equal(stream_events_stub.num_calls, 1);
+    assert.equal(activity_stub.num_calls, 1);
+    const args = stream_events_stub.get_args("sub");
     assert.deepEqual(args.sub, sub);
 });
 

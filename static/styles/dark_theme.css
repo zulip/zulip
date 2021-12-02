@@ -134,9 +134,14 @@ body.dark-theme {
         }
     }
 
+    #user_presences .buddy_list_heading {
+        color: hsla(217, 19%, 89%, 0.6);
+    }
+
     .app-main,
     .header-main,
     #message_view_header_underpadding,
+    #user_presences .buddy_list_heading,
     .floating_recipient .message-header-wrapper,
     .column-middle,
     #compose,

@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as activity from "./activity";
 import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
@@ -439,6 +440,8 @@ export function activate(raw_operators, opts) {
     // reflect the upcoming narrow.
     has_shown_message_list_view = true;
     narrow_state.set_current_filter(filter);
+
+    activity.redraw();
 
     const excludes_muted_topics = narrow_state.excludes_muted_topics();
 
@@ -973,6 +976,9 @@ export function to_compose_target() {
 
 function handle_post_narrow_deactivate_processes() {
     compose_fade.update_message_list();
+
+    // When we are in interleaved view, trigger redraw to render all users for buddy list.
+    activity.redraw();
 
     // clear existing search pills
     if (page_params.search_pills_enabled) {

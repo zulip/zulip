@@ -6,6 +6,7 @@ const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
+const activity = mock_esm("../../static/js/activity");
 const compose_actions = mock_esm("../../static/js/compose_actions");
 const input_pill = mock_esm("../../static/js/input_pill");
 const people = zrequire("people");
@@ -18,6 +19,7 @@ let pills = {
 
 run_test("pills", ({override}) => {
     override(compose_actions, "update_placeholder_text", () => {});
+    override(activity, "redraw", () => {});
 
     const othello = {
         user_id: 1,

@@ -8,11 +8,14 @@
     position: relative;
     margin-left: 0;
     overflow: auto;
+
+    .simplebar-content-wrapper:focus-visible {
+        outline: 0;
+    }
 }
 
 #user_presences {
     max-width: 95%;
-    overflow-x: hidden;
     list-style-position: inside; /* Draw the bullets inside our box */
 
     li {
@@ -83,6 +86,38 @@
     a {
         color: inherit;
         margin-left: 0;
+    }
+
+    .buddy_list_heading {
+        cursor: pointer;
+        user-select: none;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        margin: 0;
+        padding: 5px;
+        background-color: hsl(0, 0%, 100%);
+        line-height: 1;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        color: hsl(0, 0%, 20%);
+    }
+
+    ul {
+        margin: 0;
+    }
+
+    .fa-chevron-down {
+        margin: 0 4px 0 1.25px;
+        font-size: 8px;
+        position: relative;
+        top: -1px;
+        transition: transform 200ms ease-in-out;
+    }
+
+    .collapsed .fa-chevron-down {
+        transform: rotate(-90deg);
     }
 }
 

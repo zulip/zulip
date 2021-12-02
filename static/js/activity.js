@@ -285,7 +285,14 @@ export function on_revoke_away(user_id) {
 
 export function redraw() {
     build_user_sidebar();
-    user_cursor.redraw();
+    // todo: figure out how to avoid.
+    // this is a hack to make sure nothing breaks if we call redraw
+    // before complete init, if we investigate our calls to redraw
+    // we should be able to get rid of this conditional
+    // (run puppeteer test realm-creation to verify nothing breaks)
+    if (user_cursor) {
+        user_cursor.redraw();
+    }
     pm_list.update_private_messages();
 }
 

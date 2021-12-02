@@ -12,6 +12,9 @@ const events = require("./lib/events");
 const channel = mock_esm("../../static/js/channel");
 const compose_ui = mock_esm("../../static/js/compose_ui");
 const upload = mock_esm("../../static/js/upload");
+mock_esm("../../static/js/activity", {
+    redraw() {},
+});
 mock_esm("../../static/js/resize", {
     watch_manual_resize() {},
 });

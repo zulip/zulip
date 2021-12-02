@@ -493,6 +493,7 @@ export function dispatch_normal_event(event) {
                             page_params.realm_signup_notifications_stream_id = -1;
                             settings_org.sync_realm_settings("signup_notifications_stream_id");
                         }
+                        // redraw buddy_list if we happen to be composing / narrrowed to this stream?
                     }
                     break;
                 default:
@@ -524,6 +525,9 @@ export function dispatch_normal_event(event) {
                         if (sub) {
                             stream_data.update_stream_email_address(sub, rec.email_address);
                             stream_events.mark_subscribed(sub, rec.subscribers, rec.color);
+                            // we could probably be smarter here and avoid
+                            // making this call when we don't need it
+                            activity.redraw_user(page_params.user_id);
                         } else {
                             blueslip.error(
                                 "Subscribing to unknown stream with ID " + rec.stream_id,
@@ -541,6 +545,10 @@ export function dispatch_normal_event(event) {
                         const sub = sub_store.get(stream_id);
                         stream_settings_ui.update_subscribers_ui(sub);
                     }
+
+                    for (const user_id of user_ids) {
+                        activity.redraw_user(user_id);
+                    }
                     break;
                 }
                 case "peer_remove": {
@@ -553,12 +561,19 @@ export function dispatch_normal_event(event) {
                         const sub = sub_store.get(stream_id);
                         stream_settings_ui.update_subscribers_ui(sub);
                     }
+
+                    for (const user_id of user_ids) {
+                        activity.redraw_user(user_id);
+                    }
                     break;
                 }
                 case "remove":
                     for (const rec of event.subscriptions) {
                         const sub = sub_store.get(rec.stream_id);
                         stream_events.mark_unsubscribed(sub);
+                        // we could probably be smarter here and avoid
+                        // making this call when we don't need it
+                        activity.redraw_user(page_params.user_id);
                     }
                     break;
                 case "update":
