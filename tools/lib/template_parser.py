@@ -35,6 +35,10 @@ class Token:
         self.col = col
         self.line_span = line_span
 
+        # These get set during the validation pass.
+        self.start_token: Optional[Token] = None
+        self.end_token: Optional[Token] = None
+
 
 def tokenize(text: str) -> List[Token]:
     def advance(n: int) -> None:
@@ -374,8 +378,6 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> None:
             end_line = end_token.line
             end_col = end_token.col
 
-            is_inline_tag = start_tag in HTML_INLINE_TAGS and start_token.kind == "html_start"
-
             def report_problem() -> Optional[str]:
                 if (start_tag == "code") and (end_line == start_line + 1):
                     return "Code tag is split across two lines."
@@ -388,16 +390,6 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> None:
                         return f"Unexpected else/elif tag encountered after {start_tag} tag."
                 elif start_tag != end_tag:
                     return f"Mismatched tags: ({start_tag} != {end_tag})"
-
-                if end_line > start_line + 1:
-                    if is_inline_tag:
-                        end_row_text = lines[end_line - 1]
-                        if end_row_text.lstrip().startswith(end_token.s):
-                            if end_col != start_col:
-                                return "Indentation for start/end tags does not match."
-                    else:
-                        if end_col != start_col:
-                            return "Indentation for start/end tags does not match."
 
                 return None
 
@@ -420,6 +412,10 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> None:
                 state.matcher = old_matcher
                 state.foreign = old_foreign
                 state.depth -= 1
+
+            # TODO: refine this for the else/elif use cases
+            end_token.start_token = start_token
+            start_token.end_token = end_token
 
         state.matcher = f
 
@@ -447,6 +443,54 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> None:
 
     if state.depth != 0:
         raise TemplateParserException("Missing end tag")
+
+    ensure_matching_indentation(fn, tokens, lines)
+
+
+def ensure_matching_indentation(fn: str, tokens: List[Token], lines: List[str]) -> None:
+    for token in tokens:
+        if token.start_token is None:
+            continue
+
+        end_token = token
+
+        start_token = token.start_token
+        start_line = start_token.line
+        start_col = start_token.col
+        start_tag = start_token.tag
+        end_tag = end_token.tag.strip("~")
+        end_line = end_token.line
+        end_col = end_token.col
+
+        def has_bad_indentation() -> bool:
+            is_inline_tag = start_tag in HTML_INLINE_TAGS and start_token.kind == "html_start"
+
+            if end_line > start_line + 1:
+                if is_inline_tag:
+                    end_row_text = lines[end_line - 1]
+                    if end_row_text.lstrip().startswith(end_token.s):
+                        if end_col != start_col:
+                            return True
+                else:
+                    if end_col != start_col:
+                        return True
+
+            return False
+
+        if has_bad_indentation():
+            raise TemplateParserException(
+                f"""
+                fn: {fn}
+                Indentation for start/end tags does not match.
+                start tag: {start_token.s}
+
+                start:
+                    line {start_line}, col {start_col}
+                end:
+                    {end_tag}
+                    line {end_line}, col {end_col}
+                """
+            )
 
 
 def prevent_whitespace_violations(fn: str, tokens: List[Token]) -> None:
