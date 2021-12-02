@@ -8,13 +8,13 @@
           "account_country": "US",
           "account_name": "NORMALIZED-1",
           "account_tax_ids": null,
-          "amount_due": 136000,
+          "amount_due": 0,
           "amount_paid": 0,
-          "amount_remaining": 136000,
+          "amount_remaining": 0,
           "application_fee_amount": null,
           "attempt_count": 0,
-          "attempted": false,
-          "auto_advance": true,
+          "attempted": true,
+          "auto_advance": false,
           "automatic_tax": {
             "enabled": false,
             "status": null
@@ -42,9 +42,9 @@
           "due_date": null,
           "ending_balance": 0,
           "footer": null,
-          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/invst_NORMALIZED0000000000000001cMgL8",
+          "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01cDVIU2FXWHl2RnBLLF9LaG9EV3hrSGhyUzNjMG1TRXIxNHBNWjdDeFRjODFO0100TjUxVg7G",
           "id": "in_NORMALIZED00000000000001",
-          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/invst_NORMALIZED0000000000000001cMgL8/pdf",
+          "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01cDVIU2FXWHl2RnBLLF9LaG9EV3hrSGhyUzNjMG1TRXIxNHBNWjdDeFRjODFO0100TjUxVg7G/pdf",
           "last_finalization_error": null,
           "lines": {
             "data": [
@@ -93,7 +93,7 @@
                 "type": "invoiceitem"
               },
               {
-                "amount": -48000,
+                "amount": -184000,
                 "currency": "usd",
                 "description": "Payment (Card ending in 4242)",
                 "discount_amounts": [],
@@ -126,8 +126,8 @@
                   "tiers_mode": null,
                   "transform_quantity": null,
                   "type": "one_time",
-                  "unit_amount": -48000,
-                  "unit_amount_decimal": "-48000"
+                  "unit_amount": -184000,
+                  "unit_amount_decimal": "-184000"
                 },
                 "proration": false,
                 "quantity": 1,
@@ -144,12 +144,12 @@
           },
           "livemode": false,
           "metadata": {},
-          "next_payment_attempt": 1000000000,
+          "next_payment_attempt": null,
           "number": "NORMALI-0001",
           "object": "invoice",
           "on_behalf_of": null,
-          "paid": false,
-          "payment_intent": "pi_NORMALIZED00000000000002",
+          "paid": true,
+          "payment_intent": null,
           "payment_settings": {
             "payment_method_options": null,
             "payment_method_types": null
@@ -162,32 +162,32 @@
           "receipt_number": null,
           "starting_balance": 0,
           "statement_descriptor": "Zulip Standard",
-          "status": "open",
+          "status": "paid",
           "status_transitions": {
             "finalized_at": 1000000000,
             "marked_uncollectible_at": null,
-            "paid_at": null,
+            "paid_at": 1000000000,
             "voided_at": null
           },
           "subscription": null,
-          "subtotal": 136000,
+          "subtotal": 0,
           "tax": null,
-          "total": 136000,
+          "total": 0,
           "total_discount_amounts": [],
           "total_tax_amounts": [],
           "transfer_data": null,
           "webhooks_delivered_at": null
         }
       },
-      "id": "evt_1JTqAMA4KHR4JzRvIhV64ycG",
+      "id": "evt_1K2ObOHSaWXyvFpKdA2vTfkZ",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0001",
-        "idempotency_key": "4886d91f-396a-46c5-94da-382fdc497108"
+        "idempotency_key": "e0fc11e0-88c1-484b-9fa8-f17bbcbe489b"
       },
-      "type": "invoice.finalized"
+      "type": "invoice.payment_succeeded"
     }
   ],
   "has_more": true,

@@ -21,7 +21,7 @@
   "custom_fields": null,
   "customer": "cus_NORMALIZED0006",
   "customer_address": null,
-  "customer_email": "user-0-realm_971149@zulip.com",
+  "customer_email": "user-0-realm_257744@zulip.com",
   "customer_name": null,
   "customer_phone": null,
   "customer_shipping": null,
@@ -36,9 +36,9 @@
   "due_date": 1000000000,
   "ending_balance": 0,
   "footer": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/invst_NORMALIZED00000000000000062S6Lr",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01cDVIU2FXWHl2RnBLLF9LaG9BT0xsRmQ0QjhuN1REbEtsMURlVWxFUFkxaDVH0100BkLU57Z3",
   "id": "in_NORMALIZED00000000000006",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/invst_NORMALIZED00000000000000062S6Lr/pdf",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01cDVIU2FXWHl2RnBLLF9LaG9BT0xsRmQ0QjhuN1REbEtsMURlVWxFUFkxaDVH0100BkLU57Z3/pdf",
   "last_finalization_error": null,
   "lines": {
     "data": [
@@ -126,5 +126,5 @@
   "total_discount_amounts": [],
   "total_tax_amounts": [],
   "transfer_data": null,
-  "webhooks_delivered_at": 1000000000
+  "webhooks_delivered_at": null
 }
