@@ -237,7 +237,7 @@ function set_property_dropdown_value(property_name) {
     $(`#id_${CSS.escape(property_name)}`).val(get_property_value(property_name));
 }
 
-function change_element_block_display_property(elem_id, show_element) {
+export function change_element_block_display_property(elem_id, show_element) {
     const elem = $(`#${CSS.escape(elem_id)}`);
     if (show_element) {
         elem.parent().show();
