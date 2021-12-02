@@ -202,15 +202,13 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
     await page.click(save_btn_selector);
 
     // The form should not get closed on saving. Errors should be visible on the form.
-    await page.waitForSelector("#edit_bot_modal", {visible: true});
+    await common.wait_for_micromodal_to_open(page);
     await page.waitForSelector(".bot_edit_errors", {visible: true});
     assert.strictEqual(
         await common.get_text_from_selector(page, "div.bot_edit_errors"),
         "Name is already in use!",
     );
     await page.click("#edit_bot_modal .dialog_cancel_button");
-    await page.waitForSelector("#edit_bot_modal", {hidden: true});
-
     await page.waitForXPath(
         `//*[@class="btn open_edit_bot_form" and @data-email="${bot1_email}"]/ancestor::*[@class="details"]/*[@class="name" and text()="Bot one"]`,
     );
