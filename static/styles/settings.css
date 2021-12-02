@@ -641,11 +641,6 @@ input[type="checkbox"] {
     }
 }
 
-.disableable {
-    margin-left: 22px;
-    margin-top: -10px;
-}
-
 .admin-realm-message-content-delete-limit-minutes {
     width: 5ch;
     text-align: right;
