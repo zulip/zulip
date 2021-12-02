@@ -142,7 +142,7 @@ class TutorialTests(ZulipTestCase):
             self.send_personal_message(user, bot, content)
             expected_response = (
                 "Here are a few messages I understand: "
-                "`apps`, `edit profile`, `theme`, "
+                "`apps`, `profile`, `theme`, "
                 "`streams`, `topics`, `message formatting`, `keyboard shortcuts`.\n\n"
                 "Check out our [Getting started guide](/help/getting-started-with-zulip), "
                 "or browse the [Help center](/help/) to learn more!"
@@ -158,7 +158,7 @@ class TutorialTests(ZulipTestCase):
             self.send_personal_message(user, bot, content)
             expected_response = (
                 "I’m sorry, I did not understand your message. Please try one of the following commands: "
-                "`apps`, `edit profile`, `theme`, `streams`, "
+                "`apps`, `profile`, `theme`, `streams`, "
                 "`topics`, `message formatting`, `keyboard shortcuts`."
             )
             self.assertEqual(most_recent_message(user).content, expected_response)
