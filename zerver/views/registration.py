@@ -1,6 +1,6 @@
 import logging
 import urllib
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -98,9 +98,11 @@ if settings.BILLING_ENABLED:
 def get_prereg_key_and_redirect(
     request: HttpRequest, confirmation_key: str, full_name: Optional[str] = REQ(default=None)
 ) -> HttpResponse:
-    key_check_result = check_prereg_key(request, confirmation_key)
-    if isinstance(key_check_result, HttpResponse):
-        return key_check_result
+    try:
+        check_prereg_key(request, confirmation_key)
+    except ConfirmationKeyException as e:
+        return render_confirmation_key_error(request, e)
+
     # confirm_preregistrationuser.html just extracts the confirmation_key
     # (and GET parameters) and redirects to /accounts/register, so that the
     # user can enter their information on a cleaner URL.
@@ -111,12 +113,10 @@ def get_prereg_key_and_redirect(
     )
 
 
-def check_prereg_key(
-    request: HttpRequest, confirmation_key: str
-) -> Union[HttpResponse, PreregistrationUser]:
+def check_prereg_key(request: HttpRequest, confirmation_key: str) -> PreregistrationUser:
     """
     Checks if the Confirmation key is valid, returning the PreregistrationUser object in case of success
-    and an appropriate error page otherwise.
+    and raising an appropriate ConfirmationKeyException otherwise.
     """
     confirmation_types = [
         Confirmation.USER_REGISTRATION,
@@ -124,15 +124,10 @@ def check_prereg_key(
         Confirmation.REALM_CREATION,
     ]
 
-    try:
-        prereg_user = get_object_from_key(
-            confirmation_key, confirmation_types, activate_object=False
-        )
-    except ConfirmationKeyException as exception:
-        return render_confirmation_key_error(request, exception)
+    prereg_user = get_object_from_key(confirmation_key, confirmation_types, activate_object=False)
 
     if prereg_user.status == confirmation_settings.STATUS_REVOKED:
-        return render(request, "confirmation/link_expired.html", status=404)
+        raise ConfirmationKeyException(ConfirmationKeyException.EXPIRED)
 
     return prereg_user
 
@@ -149,11 +144,11 @@ def accounts_register(
         default=None, converter=to_converted_or_fallback(to_non_negative_int, None)
     ),
 ) -> HttpResponse:
-    key_check_result = check_prereg_key(request, key)
-    if isinstance(key_check_result, HttpResponse):
-        return key_check_result
+    try:
+        prereg_user = check_prereg_key(request, key)
+    except ConfirmationKeyException as e:
+        return render_confirmation_key_error(request, e)
 
-    prereg_user = key_check_result
     email = prereg_user.email
     realm_creation = prereg_user.realm_creation
     password_required = prereg_user.password_required
