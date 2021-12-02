@@ -451,6 +451,11 @@ input.recipient_box {
     height: 14px;
     padding-left: 4px;
     opacity: 0.7;
+    margin-bottom: 5px;
+
+    kbd {
+        height: 16px;
+    }
 
     &:hover {
         opacity: 1;
