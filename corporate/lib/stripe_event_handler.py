@@ -12,7 +12,7 @@ from corporate.lib.stripe import (
     update_or_create_stripe_customer,
 )
 from corporate.models import Event, PaymentIntent, Session
-from zerver.models import get_user_by_delivery_email
+from zerver.models import get_active_user_profile_by_id_in_realm, get_user_by_delivery_email
 
 billing_logger = logging.getLogger("corporate.stripe")
 
@@ -70,9 +70,10 @@ def handle_checkout_session_completed_event(
     session.save()
 
     stripe_setup_intent = stripe.SetupIntent.retrieve(stripe_session.setup_intent)
-    stripe_customer = stripe.Customer.retrieve(stripe_setup_intent.customer)
     assert session.customer.realm is not None
-    user = get_user_by_delivery_email(stripe_customer.email, session.customer.realm)
+    user_id = stripe_session.metadata.get("user_id")
+    assert user_id is not None
+    user = get_active_user_profile_by_id_in_realm(user_id, session.customer.realm)
     payment_method = stripe_setup_intent.payment_method
 
     if session.type in [
