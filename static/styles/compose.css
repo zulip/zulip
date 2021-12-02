@@ -418,7 +418,7 @@ input.recipient_box {
 
 #stream_message_recipient_topic.recipient_box {
     width: calc(20% + 14px);
-    min-width: 140px;
+    min-width: 120px;
     max-width: 165px;
 }
 
@@ -640,8 +640,8 @@ a.compose_control_button.hide {
 
 @media (width < $mm_min) {
     #stream_message_recipient_topic.recipient_box {
-        width: calc(100% - 175px);
-        min-width: 95px;
+        width: calc(100% - 192px);
+        min-width: 75px;
     }
 
     #compose-content {
