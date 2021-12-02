@@ -988,48 +988,88 @@ export function sub_or_unsub(sub, stream_row) {
     }
 }
 
-export function hide_or_disable_stream_privacy_options_if_required(container) {
-    if (!settings_data.user_can_create_web_public_streams()) {
-        const web_public_stream_elem = container.find(
-            `input[value='${CSS.escape(
-                stream_data.stream_privacy_policy_values.web_public.code,
-            )}']`,
-        );
-        if (!web_public_stream_elem.is(":checked")) {
-            if (
-                !page_params.server_web_public_streams_enabled ||
-                !page_params.realm_enable_spectator_access
-            ) {
-                web_public_stream_elem.closest(".radio-input-parent").hide();
-                container
-                    .find(".stream-privacy-values .radio-input-parent:visible:last")
-                    .css("border-bottom", "none");
-            } else {
-                web_public_stream_elem.prop("disabled", true);
-            }
+export function update_web_public_stream_privacy_option_state(container) {
+    const web_public_stream_elem = container.find(
+        `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.web_public.code)}']`,
+    );
+    if (
+        !page_params.server_web_public_streams_enabled ||
+        (!page_params.realm_enable_spectator_access && !web_public_stream_elem.is(":checked"))
+    ) {
+        web_public_stream_elem.closest(".radio-input-parent").hide();
+        container
+            .find(".stream-privacy-values .radio-input-parent:visible:last")
+            .css("border-bottom", "none");
+    } else {
+        if (!web_public_stream_elem.is(":visible")) {
+            container
+                .find(".stream-privacy-values .radio-input-parent:visible:last")
+                .css("border-bottom", "");
+            web_public_stream_elem.closest(".radio-input-parent").show();
         }
+        web_public_stream_elem.prop(
+            "disabled",
+            !settings_data.user_can_create_web_public_streams(),
+        );
+    }
+}
+
+export function update_public_stream_privacy_option_state(container) {
+    const public_stream_elem = container.find(
+        `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.public.code)}']`,
+    );
+    public_stream_elem.prop("disabled", !settings_data.user_can_create_public_streams());
+}
+
+export function update_private_stream_privacy_option_state(container) {
+    // Disable both "Private, shared history" and "Private, protected history" options.
+    const private_stream_elem = container.find(
+        `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.private.code)}']`,
+    );
+    const private_with_public_history_elem = container.find(
+        `input[value='${CSS.escape(
+            stream_data.stream_privacy_policy_values.private_with_public_history.code,
+        )}']`,
+    );
+
+    private_stream_elem.prop("disabled", !settings_data.user_can_create_private_streams());
+    private_with_public_history_elem.prop(
+        "disabled",
+        !settings_data.user_can_create_private_streams(),
+    );
+}
+
+export function hide_or_disable_stream_privacy_options_if_required(container) {
+    update_web_public_stream_privacy_option_state(container);
+
+    update_public_stream_privacy_option_state(container);
+
+    update_private_stream_privacy_option_state(container);
+}
+
+export function update_stream_privacy_choices(policy) {
+    if (!overlays.streams_open()) {
+        return;
+    }
+    const change_privacy_modal_opened = $("#stream_privacy_modal").is(":visible");
+    const stream_creation_form_opened = $("#stream-creation").is(":visible");
+
+    if (!change_privacy_modal_opened && !stream_creation_form_opened) {
+        return;
+    }
+    let container = $("#stream-creation");
+    if (change_privacy_modal_opened) {
+        container = $("#stream_privacy_modal");
     }
 
-    if (!settings_data.user_can_create_public_streams()) {
-        const public_stream_elem = container.find(
-            `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.public.code)}']`,
-        );
-        public_stream_elem.prop("disabled", true);
+    if (policy === "create_private_stream_policy") {
+        update_private_stream_privacy_option_state(container);
     }
-
-    if (!settings_data.user_can_create_private_streams()) {
-        // Disable both "Private, shared history" and "Private, protected history" options.
-        const private_stream_elem = container.find(
-            `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.private.code)}']`,
-        );
-        const private_with_public_history_elem = container.find(
-            `input[value='${CSS.escape(
-                stream_data.stream_privacy_policy_values.private_with_public_history.code,
-            )}']`,
-        );
-
-        private_stream_elem.prop("disabled", true);
-        private_with_public_history_elem.prop("disabled", true);
+    if (policy === "create_public_stream_policy") {
+        update_public_stream_privacy_option_state(container);
+    }
+    if (policy === "create_web_public_stream_policy") {
+        update_web_public_stream_privacy_option_state(container);
     }
 }
 

@@ -161,6 +161,10 @@ ul {
         max-height: 200px;
         overflow-y: auto;
     }
+
+    &.info_popover_actions i.fa-edit {
+        vertical-align: middle;
+    }
 }
 
 .user_popover {

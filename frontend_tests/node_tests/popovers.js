@@ -199,6 +199,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
             user_mention_syntax: "@**Alice Smith**",
             date_joined: undefined,
             spectator_view: false,
+            show_manage_user_option: false,
         });
         return "content-html";
     });

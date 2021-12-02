@@ -182,6 +182,8 @@ function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
         // Set default parameters based on the current narrowed view.
         ...narrow_state.set_compose_defaults(),
 
+        // Set parameters based on provided opts, overwriting
+        // those set based on current narrowed view, if necessary.
         ...opts,
     };
 }
@@ -272,6 +274,10 @@ export function start(msg_type, opts) {
     // different stream/topic, we want to keep the text in the compose box
     if (opts.content !== undefined) {
         compose_state.message_content(opts.content);
+    }
+
+    if (opts.draft_id) {
+        $("#compose-textarea").data("draft-id", opts.draft_id);
     }
 
     compose_state.set_message_type(msg_type);

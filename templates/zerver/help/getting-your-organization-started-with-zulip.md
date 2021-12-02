@@ -10,7 +10,7 @@ our guide to [Getting started with Zulip][getting-started].
 [getting-started]: /help/getting-started-with-zulip
 
 If you encounter any problems as you're getting started, please drop
-by our [friendly developer community](/developer-community/) and let
+by our [friendly development community](/development-community/) and let
 us know!
 
 ## Trying out Zulip

@@ -1,6 +1,7 @@
 import {subDays} from "date-fns";
 import Handlebars from "handlebars/runtime";
 import $ from "jquery";
+import _ from "lodash";
 import tippy from "tippy.js";
 
 import render_confirm_delete_all_drafts from "../templates/confirm_dialog/confirm_delete_all_drafts.hbs";
@@ -74,12 +75,19 @@ export const draft_model = (function () {
 
     exports.editDraft = function (id, draft) {
         const drafts = get();
+        let changed = false;
+
+        function check_if_equal(draft_a, draft_b) {
+            return _.isEqual(_.omit(draft_a, ["updatedAt"]), _.omit(draft_b, ["updatedAt"]));
+        }
 
         if (drafts[id]) {
+            changed = !check_if_equal(drafts[id], draft);
             draft.updatedAt = getTimestamp();
             drafts[id] = draft;
             save(drafts);
         }
+        return changed;
     };
 
     exports.deleteDraft = function (id) {
@@ -175,6 +183,12 @@ function draft_notify() {
     setTimeout(remove_instance, 3000);
 }
 
+function maybe_notify(no_notify) {
+    if (!no_notify) {
+        draft_notify();
+    }
+}
+
 export function update_draft(opts = {}) {
     const no_notify = opts.no_notify || false;
     const draft = snapshot_message();
@@ -193,9 +207,9 @@ export function update_draft(opts = {}) {
     if (draft_id !== undefined) {
         // We don't save multiple drafts of the same message;
         // just update the existing draft.
-        draft_model.editDraft(draft_id, draft);
-        if (!no_notify) {
-            draft_notify();
+        const changed = draft_model.editDraft(draft_id, draft);
+        if (changed) {
+            maybe_notify(no_notify);
         }
         return draft_id;
     }
@@ -204,9 +218,7 @@ export function update_draft(opts = {}) {
     // one.
     const new_draft_id = draft_model.addDraft(draft);
     $("#compose-textarea").data("draft-id", new_draft_id);
-    if (!no_notify) {
-        draft_notify();
-    }
+    maybe_notify(no_notify);
 
     return new_draft_id;
 }

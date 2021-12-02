@@ -43,10 +43,10 @@ def render_confirmation_key_error(
     request: HttpRequest, exception: ConfirmationKeyException
 ) -> HttpResponse:
     if exception.error_type == ConfirmationKeyException.WRONG_LENGTH:
-        return render(request, "confirmation/link_malformed.html")
+        return render(request, "confirmation/link_malformed.html", status=404)
     if exception.error_type == ConfirmationKeyException.EXPIRED:
-        return render(request, "confirmation/link_expired.html")
-    return render(request, "confirmation/link_does_not_exist.html")
+        return render(request, "confirmation/link_expired.html", status=404)
+    return render(request, "confirmation/link_does_not_exist.html", status=404)
 
 
 def generate_key() -> str:
@@ -170,9 +170,9 @@ class ConfirmationType:
 
 
 _properties = {
-    Confirmation.USER_REGISTRATION: ConfirmationType("check_prereg_key_and_redirect"),
+    Confirmation.USER_REGISTRATION: ConfirmationType("get_prereg_key_and_redirect"),
     Confirmation.INVITATION: ConfirmationType(
-        "check_prereg_key_and_redirect", validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS
+        "get_prereg_key_and_redirect", validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS
     ),
     Confirmation.EMAIL_CHANGE: ConfirmationType("confirm_email_change"),
     Confirmation.UNSUBSCRIBE: ConfirmationType(
@@ -182,7 +182,7 @@ _properties = {
     Confirmation.MULTIUSE_INVITE: ConfirmationType(
         "join", validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS
     ),
-    Confirmation.REALM_CREATION: ConfirmationType("check_prereg_key_and_redirect"),
+    Confirmation.REALM_CREATION: ConfirmationType("get_prereg_key_and_redirect"),
     Confirmation.REALM_REACTIVATION: ConfirmationType("realm_reactivation"),
 }
 

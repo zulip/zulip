@@ -6,6 +6,7 @@ import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import {csrf_token} from "./csrf";
+import * as drafts from "./drafts";
 import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
 import {localstorage} from "./localstorage";
@@ -49,6 +50,10 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
 
         if (msg_type) {
             url += "+msg=" + encodeURIComponent(compose_state.message_content());
+            const draft_id = drafts.update_draft();
+            if (draft_id) {
+                url += "+draft_id=" + encodeURIComponent(draft_id);
+            }
         }
     }
 
@@ -147,6 +152,7 @@ export function initialize() {
                 topic: topic || "",
                 private_message_recipient: vars.recipient || "",
                 content: vars.msg || "",
+                draft_id: vars.draft_id || "",
             });
             if (send_now) {
                 compose.finish();

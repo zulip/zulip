@@ -338,9 +338,10 @@ export function show_new_stream_modal() {
         html_selector: (user) => $(`#${CSS.escape("user_checkbox_" + user.user_id)}`),
     });
 
+    // Select the first enabled choice for stream privacy.
+    $("#make-invite-only input:not([disabled]):first").prop("checked", true);
     // Make the options default to the same each time:
-    // public, "announce stream" on.
-    $("#make-invite-only input:radio[value=public]").prop("checked", true);
+    // "announce stream" on.
     $("#stream_creation_form .stream-message-retention-days-input").hide();
     $("#stream_creation_form select[name=stream_message_retention_setting]").val("realm_default");
 

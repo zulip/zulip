@@ -190,6 +190,7 @@ export function dispatch_normal_event(event) {
                 bot_creation_policy: settings_bots.update_bot_permissions_ui,
                 create_public_stream_policy: noop,
                 create_private_stream_policy: noop,
+                create_web_public_stream_policy: noop,
                 invite_to_stream_policy: noop,
                 default_code_block_language: noop,
                 default_language: noop,
@@ -231,6 +232,21 @@ export function dispatch_normal_event(event) {
 
                         if (event.property === "name" && window.electron_bridge !== undefined) {
                             window.electron_bridge.send_event("realm_name", event.value);
+                        }
+
+                        const stream_creation_settings = [
+                            "create_private_stream_policy",
+                            "create_public_stream_policy",
+                            "create_web_public_stream_policy",
+                        ];
+                        if (stream_creation_settings.includes(event.property)) {
+                            stream_settings_ui.update_stream_privacy_choices(event.property);
+                        }
+
+                        if (event.property === "enable_spectator_access") {
+                            stream_settings_ui.update_stream_privacy_choices(
+                                "create_web_public_stream_policy",
+                            );
                         }
                     }
                     break;
