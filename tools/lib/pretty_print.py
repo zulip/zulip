@@ -1,7 +1,7 @@
 import subprocess
 from typing import List, Optional, Set
 
-from zulint.printer import ENDC, GREEN
+from zulint.printer import BOLDRED, CYAN, ENDC, GREEN
 
 from .template_parser import Token, is_django_block_tag
 
@@ -205,6 +205,10 @@ def pretty_print_html(html: str, tokens: List[Token]) -> str:
     return "\n".join(formatted_lines)
 
 
+def numbered_lines(s: str) -> str:
+    return "".join(f"{i + 1: >5} {line}\n" for i, line in enumerate(s.split("\n")))
+
+
 def validate_indent_html(fn: str, tokens: List[Token], fix: bool) -> bool:
     with open(fn) as f:
         html = f.read()
@@ -217,12 +221,37 @@ def validate_indent_html(fn: str, tokens: List[Token], fix: bool) -> bool:
             # Since we successfully fixed the issues, we return True.
             return True
         print(
-            "Invalid indentation detected in file: "
-            f"{fn}\nDiff for the file against expected indented file:",
+            f"""
+{BOLDRED}PROBLEM{ENDC}: formatting errors in {fn}
+
+Here is how we would like you to format
+{CYAN}{fn}{ENDC}:
+---
+{numbered_lines(phtml)}
+---
+
+Here is the diff that you should either execute in your editor
+or apply automatically with the --fix option.
+
+({CYAN}Scroll up{ENDC} to see how we would like the file formatted.)
+
+Proposed {BOLDRED}diff{ENDC} for {CYAN}{fn}{ENDC}:
+            """,
             flush=True,
         )
         subprocess.run(["diff", fn, "-"], input=phtml, universal_newlines=True)
-        print()
-        print("This problem can be fixed with the `--fix` option.")
+        print(
+            f"""
+---
+
+{BOLDRED}PROBLEM!!!{ENDC}
+
+    You have formatting errors in {CYAN}{fn}{ENDC}
+    (Usually these messages are related to indentation.)
+
+This problem can be fixed with the {CYAN}`--fix`{ENDC} option.
+Scroll up for more details about {BOLDRED}what you need to fix ^^^{ENDC}.
+            """
+        )
         return False
     return True
