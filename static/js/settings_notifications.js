@@ -65,7 +65,7 @@ function update_desktop_icon_count_display(settings_panel) {
     }
 }
 
-function set_notification_batching_ui(container, setting_seconds, force_custom) {
+export function set_notification_batching_ui(container, setting_seconds, force_custom) {
     const edit_elem = container.find(".email_notification_batching_period_edit_minutes");
     const valid_period_values = settings_config.email_notifications_batching_period_values.map(
         (x) => x.value,
