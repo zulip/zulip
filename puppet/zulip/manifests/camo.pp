@@ -18,13 +18,13 @@ class zulip::camo (String $listen_address = '0.0.0.0') {
     bin            => 'bin/go-camo',
   }
 
-  $camo_key = zulipsecret('secrets', 'camo_key', '')
   file { "${zulip::common::supervisor_conf_dir}/go-camo.conf":
     ensure  => file,
     require => [
       Package['camo'],
       Package[supervisor],
       File[$bin],
+      File['/usr/local/bin/secret-env-wrapper'],
     ],
     owner   => 'root',
     group   => 'root',
