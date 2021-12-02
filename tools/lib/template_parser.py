@@ -269,6 +269,49 @@ HTML_INLINE_TAGS = {
 }
 
 
+def tag_flavor(token: Token) -> Optional[str]:
+    kind = token.kind
+    tag = token.tag
+    if kind in (
+        "django_comment",
+        "handlebar_comment",
+        "handlebars_singleton",
+        "html_comment",
+        "html_doctype",
+        "html_singleton",
+        "indent",
+        "newline",
+        "template_var",
+        "text",
+        "whitespace",
+    ):
+        return None
+
+    if kind in ("handlebars_start", "html_start"):
+        return "start"
+    elif kind in (
+        "django_else",
+        "django_end",
+        "handlebars_else",
+        "handlebars_end",
+        "html_end",
+        "jinja2_whitespace_stripped_end",
+    ):
+        return "end"
+    elif kind in {
+        "django_start",
+        "django_else",
+        "jinja2_whitespace_stripped_start",
+        "jinja2_whitespace_stripped_type2_start",
+    }:
+        if is_django_block_tag(tag):
+            return "start"
+        else:
+            return None
+    else:
+        raise AssertionError(f"tools programmer neglected to handle {kind} tokens")
+
+
 def validate(fn: Optional[str] = None, text: Optional[str] = None) -> None:
     assert fn or text
 
@@ -396,45 +439,11 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> None:
                         f"Tag must not be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
                     )
 
-        if kind in (
-            "django_comment",
-            "handlebar_comment",
-            "handlebars_singleton",
-            "html_singleton",
-            "indent",
-            "template_var",
-            "html_comment",
-            "html_doctype",
-            "newline",
-            "text",
-            "whitespace",
-        ):
-            continue
-
-        if kind == "html_start":
+        flavor = tag_flavor(token)
+        if flavor == "start":
             start_tag_matcher(token)
-        elif kind == "html_end":
+        elif flavor == "end":
             state.matcher(token)
-
-        elif kind == "handlebars_start":
-            start_tag_matcher(token)
-        elif kind == "handlebars_else":
-            state.matcher(token)
-        elif kind == "handlebars_end":
-            state.matcher(token)
-
-        elif kind in {
-            "django_start",
-            "django_else",
-            "jinja2_whitespace_stripped_start",
-            "jinja2_whitespace_stripped_type2_start",
-        }:
-            if is_django_block_tag(tag):
-                start_tag_matcher(token)
-        elif kind in {"django_else", "django_end", "jinja2_whitespace_stripped_end"}:
-            state.matcher(token)
-        else:
-            raise AssertionError(f"tools programmer neglected to handle {kind} tokens")
 
     if state.depth != 0:
         raise TemplateParserException("Missing end tag")
