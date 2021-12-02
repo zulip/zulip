@@ -57,11 +57,8 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
         template_id_dict = build_id_dict(templates)
         # TODO: Clean up these cases of duplicate ids in the code
         IGNORE_IDS = [
-            "api-example-tabs",
             "errors",
-            "error-message-box",
             "email",
-            "messages",
             "registration",
             "pw_strength",
             "id_password",
@@ -70,17 +67,8 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
             "id_terms",
             "logout_form",
             "send_confirm",
-            "register",
-            "footer",
             "charged_amount",
             "change-plan-status",
-            # Temporary while we have searchbox forked
-            "search_exit",
-            "search_query",
-            "message_view_header",
-            "search_arrows",
-            "searchbox_form",
-            "searchbox",
         ]
         bad_ids_dict = {
             ids: fns
