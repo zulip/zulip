@@ -115,10 +115,8 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
         sys.exit(1)
 
     for fn in templates:
-        validate(fn)
-
-    for fn in templates:
-        if not validate_indent_html(fn, fix):
+        tokens = validate(fn)
+        if not validate_indent_html(fn, tokens, fix):
             sys.exit(1)
 
 
@@ -127,10 +125,8 @@ def check_handlebar_templates(templates: Iterable[str], fix: bool) -> None:
     templates = [fn for fn in templates if fn.endswith(".hbs")]
 
     for fn in templates:
-        validate(fn)
-
-    for fn in templates:
-        if not validate_indent_html(fn, fix):
+        tokens = validate(fn)
+        if not validate_indent_html(fn, tokens, fix):
             sys.exit(1)
 
 

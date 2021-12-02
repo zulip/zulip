@@ -3,7 +3,7 @@ from typing import List, Optional, Set
 
 from zulint.printer import ENDC, GREEN
 
-from .template_parser import Token, is_django_block_tag, tokenize
+from .template_parser import Token, is_django_block_tag
 
 
 def requires_indent(line: str) -> bool:
@@ -122,9 +122,7 @@ def get_exempted_lines(tokens: List[Token]) -> Set[int]:
     return exempted
 
 
-def pretty_print_html(html: str) -> str:
-    tokens = tokenize(html)
-
+def pretty_print_html(html: str, tokens: List[Token]) -> str:
     exempted_lines = get_exempted_lines(tokens)
 
     tokens.reverse()
@@ -207,10 +205,10 @@ def pretty_print_html(html: str) -> str:
     return "\n".join(formatted_lines)
 
 
-def validate_indent_html(fn: str, fix: bool) -> bool:
+def validate_indent_html(fn: str, tokens: List[Token], fix: bool) -> bool:
     with open(fn) as f:
         html = f.read()
-    phtml = pretty_print_html(html)
+    phtml = pretty_print_html(html, tokens)
     if not html.split("\n") == phtml.split("\n"):
         if fix:
             print(GREEN + f"Automatically fixing indentation for {fn}" + ENDC)

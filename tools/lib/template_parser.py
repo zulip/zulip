@@ -316,7 +316,7 @@ def tag_flavor(token: Token) -> Optional[str]:
         raise AssertionError(f"tools programmer neglected to handle {kind} tokens")
 
 
-def validate(fn: Optional[str] = None, text: Optional[str] = None) -> None:
+def validate(fn: Optional[str] = None, text: Optional[str] = None) -> List[Token]:
     assert fn or text
 
     if fn is None:
@@ -444,6 +444,8 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> None:
         raise TemplateParserException("Missing end tag")
 
     ensure_matching_indentation(fn, tokens, lines)
+
+    return tokens
 
 
 def ensure_matching_indentation(fn: str, tokens: List[Token], lines: List[str]) -> None:
