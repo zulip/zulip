@@ -112,7 +112,7 @@ def send_initial_pms(user: UserProfile) -> None:
 def bot_commands(is_initial_pm: bool = False) -> str:
     commands = [
         "apps",
-        "edit profile",
+        "profile",
         "theme",
         "streams",
         "topics",
