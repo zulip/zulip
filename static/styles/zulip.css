@@ -2568,11 +2568,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     .edit-controls {
         margin-left: 0;
         margin-top: 0;
-
-        .message-control-link {
-            position: relative;
-            top: -1px;
-        }
     }
 
     /* Override the default border-radius to properly align
