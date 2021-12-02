@@ -16,7 +16,7 @@ set_global("setTimeout", (f, delay) => {
 
 const xhr_401 = {
     status: 401,
-    responseText: '{"msg": "Use cannnot access XYZ"}',
+    responseText: '{"msg": "Use cannot access XYZ"}',
 };
 
 let login_to_access_shown = false;

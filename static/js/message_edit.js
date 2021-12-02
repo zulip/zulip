@@ -24,7 +24,6 @@ import * as markdown from "./markdown";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
-import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as resize from "./resize";
 import * as rows from "./rows";
@@ -219,18 +218,6 @@ export function show_topic_edit_spinner(row) {
     $(".topic_edit_spinner").show();
 }
 
-export function hide_topic_move_spinner() {
-    const spinner = $("#move_topic_modal .topic_move_spinner");
-    loading.destroy_indicator(spinner);
-    $("#move_topic_modal .modal-footer").show();
-}
-
-export function show_topic_move_spinner() {
-    const spinner = $("#move_topic_modal .topic_move_spinner");
-    loading.make_indicator(spinner);
-    $("#move_topic_modal .modal-footer").hide();
-}
-
 export function end_if_focused_on_inline_topic_edit() {
     const focused_elem = $(".topic_edit_form").find(":focus");
     if (focused_elem.length === 1) {
@@ -418,7 +405,6 @@ function edit_message(row, raw_content) {
             notify_new_thread: notify_new_thread_default,
             notify_old_thread: notify_old_thread_default,
             giphy_enabled: giphy.is_giphy_enabled(),
-            hide_drafts_link: true,
         }),
     );
 
@@ -1008,7 +994,6 @@ export function edit_last_sent_message() {
 
 export function delete_message(msg_id) {
     const html_body = render_delete_message_modal();
-    const modal_parent = $("#main_div");
 
     function do_delete_message() {
         currently_deleting_messages.push(msg_id);
@@ -1019,7 +1004,7 @@ export function delete_message(msg_id) {
                     (id) => id !== msg_id,
                 );
                 dialog_widget.hide_dialog_spinner();
-                overlays.close_modal("#dialog_widget_modal");
+                dialog_widget.close_modal();
             },
             error(xhr) {
                 currently_deleting_messages = currently_deleting_messages.filter(
@@ -1037,7 +1022,6 @@ export function delete_message(msg_id) {
     }
 
     confirm_dialog.launch({
-        parent: modal_parent,
         html_heading: $t_html({defaultMessage: "Delete message"}),
         html_body,
         help_link: "/help/edit-or-delete-a-message#delete-a-message",
@@ -1075,11 +1059,10 @@ export function move_topic_containing_message_to_stream(
         currently_topic_editing_messages = currently_topic_editing_messages.filter(
             (id) => id !== message_id,
         );
-        hide_topic_move_spinner();
-        overlays.close_modal("#move_topic_modal");
+        dialog_widget.hide_dialog_spinner();
+        dialog_widget.close_modal();
     }
     if (currently_topic_editing_messages.includes(message_id)) {
-        hide_topic_move_spinner();
         $("#topic_stream_edit_form_error .error-msg").text(
             $t({defaultMessage: "A Topic Move already in progress."}),
         );

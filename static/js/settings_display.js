@@ -1,8 +1,11 @@
 import $ from "jquery";
 
+import render_dialog_default_language from "../templates/default_language_modal.hbs";
+
 import * as channel from "./channel";
+import * as dialog_widget from "./dialog_widget";
 import * as emojisets from "./emojisets";
-import {$t_html, get_language_name} from "./i18n";
+import {$t_html, get_language_list_columns, get_language_name} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
 import * as settings_org from "./settings_org";
@@ -45,18 +48,16 @@ export function set_up(settings_panel) {
     const settings_object = settings_panel.settings_object;
     const for_realm_settings = settings_panel.for_realm_settings;
 
-    container.find(".display-settings-status").hide();
+    container.find(".advanced-settings-status").hide();
 
+    // Select current values for enum/select type fields. For boolean
+    // fields, the current value is set automatically in the template.
     container.find(".setting_demote_inactive_streams").val(settings_object.demote_inactive_streams);
-
     container.find(".setting_color_scheme").val(settings_object.color_scheme);
-
     container.find(".setting_default_view").val(settings_object.default_view);
-
     container
         .find(".setting_twenty_four_hour_time")
         .val(JSON.stringify(settings_object.twenty_four_hour_time));
-
     container
         .find(`.setting_emojiset_choice[value="${CSS.escape(settings_object.emojiset)}"]`)
         .prop("checked", true);
@@ -66,10 +67,6 @@ export function set_up(settings_panel) {
         // settings_org.js handlers, so we can return early here.
         return;
     }
-
-    $("#user_default_language_modal [data-dismiss]").on("click", () => {
-        overlays.close_modal("#user_default_language_modal");
-    });
 
     // Common handler for sending requests to the server when an input
     // element is changed.
@@ -98,38 +95,55 @@ export function set_up(settings_panel) {
         }
     });
 
-    $("#user_default_language_modal")
-        .find(".language")
-        .on("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            overlays.close_modal("#user_default_language_modal");
+    function default_language_modal_post_render() {
+        $("#user_default_language_modal")
+            .find(".language")
+            .on("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dialog_widget.close_modal();
 
-            const $link = $(e.target).closest("a[data-code]");
-            const setting_value = $link.attr("data-code");
-            const data = {default_language: setting_value};
+                const $link = $(e.target).closest("a[data-code]");
+                const setting_value = $link.attr("data-code");
+                const data = {default_language: setting_value};
 
-            const new_language = $link.attr("data-name");
-            container.find(".default_language_name").text(new_language);
+                const new_language = $link.attr("data-name");
+                container.find(".default_language_name").text(new_language);
 
-            change_display_setting(
-                data,
-                container.find(".language-settings-status"),
-                $t_html(
-                    {
-                        defaultMessage:
-                            "Saved. Please <z-link>reload</z-link> for the change to take effect.",
-                    },
-                    {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
-                ),
-                true,
-            );
-        });
+                change_display_setting(
+                    data,
+                    container.find(".lang-time-settings-status"),
+                    $t_html(
+                        {
+                            defaultMessage:
+                                "Saved. Please <z-link>reload</z-link> for the change to take effect.",
+                        },
+                        {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
+                    ),
+                    true,
+                );
+            });
+    }
 
     container.find(".setting_default_language").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        overlays.open_modal("#user_default_language_modal");
+
+        const html_body = render_dialog_default_language({
+            language_list: get_language_list_columns(user_settings.default_language),
+        });
+
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Select default language"}),
+            html_body,
+            html_submit_button: $t_html({defaultMessage: "Close"}),
+            id: "user_default_language_modal",
+            close_on_submit: true,
+            focus_submit_on_open: true,
+            single_footer_button: true,
+            post_render: default_language_modal_post_render,
+            on_click: () => {},
+        });
     });
 
     $("body").on("click", ".reload_link", () => {
@@ -142,7 +156,7 @@ export function set_up(settings_panel) {
         if (current_emojiset === data.emojiset) {
             return;
         }
-        const spinner = container.find(".emoji-settings-status").expectOne();
+        const spinner = container.find(".theme-settings-status").expectOne();
         loading.make_indicator(spinner, {text: settings_ui.strings.saving});
 
         channel.patch({
@@ -153,7 +167,7 @@ export function set_up(settings_panel) {
                 ui_report.error(
                     settings_ui.strings.failure_html,
                     xhr,
-                    container.find(".emoji-settings-status").expectOne(),
+                    container.find(".theme-settings-status").expectOne(),
                 );
             },
         });
@@ -169,7 +183,7 @@ export async function report_emojiset_change(settings_panel) {
     // update in all active browser windows.
     await emojisets.select(settings_panel.settings_object.emojiset);
 
-    const spinner = $(settings_panel.container).find(".emoji-settings-status");
+    const spinner = $(settings_panel.container).find(".theme-settings-status");
     if (spinner.length) {
         loading.destroy_indicator(spinner);
         ui_report.success(
@@ -181,22 +195,36 @@ export async function report_emojiset_change(settings_panel) {
     }
 }
 
-export function update_page(settings_panel) {
-    const default_language_name = user_default_language_name;
-    const container = $(settings_panel.container);
-    const settings_object = settings_panel.settings_object;
+export function update_page(property) {
+    if (!overlays.settings_open()) {
+        return;
+    }
+    const container = $(user_settings_panel.container);
+    let value = user_settings[property];
 
-    container.find(".left_side_userlist").prop("checked", settings_object.left_side_userlist);
-    container.find(".default_language_name").text(default_language_name);
-    container.find(".translate_emoticons").prop("checked", settings_object.translate_emoticons);
-    container
-        .find(".setting_twenty_four_hour_time")
-        .val(JSON.stringify(settings_object.twenty_four_hour_time));
-    container.find(".setting_color_scheme").val(JSON.stringify(settings_object.color_scheme));
-    container.find(".setting_default_view").val(settings_object.default_view);
+    // The default_language button text updates to the language
+    // name and not the value of the user_settings property.
+    if (property === "default_language") {
+        container.find(".default_language_name").text(user_default_language_name);
+        return;
+    }
 
-    // TODO: Set emoji set selector here.
-    // Longer term, we'll want to automate this function
+    // settings_org.set_input_element_value doesn't support radio
+    // button widgets like this one.
+    if (property === "emojiset") {
+        container.find(`input[value=${CSS.escape(value)}]`).prop("checked", true);
+        return;
+    }
+
+    // The twenty_four_hour_time setting is represented as a boolean
+    // in the API, but a dropdown with "true"/"false" as strings in
+    // the UI, so we need to convert its format here.
+    if (property === "twenty_four_hour_time") {
+        value = value.toString();
+    }
+
+    const input_elem = container.find(`[name=${CSS.escape(property)}]`);
+    settings_org.set_input_element_value(input_elem, value);
 }
 
 export function initialize() {

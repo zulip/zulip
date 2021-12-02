@@ -4,9 +4,11 @@ import logging
 import urllib
 from functools import wraps
 from io import BytesIO
-from typing import Callable, Dict, Optional, Sequence, Tuple, TypeVar, Union, cast, overload
+from typing import Callable, Dict, Optional, Sequence, Set, Tuple, TypeVar, Union, cast, overload
 
 import django_otp
+import orjson
+from circuitbreaker import CircuitBreakerError, circuit
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth import login as django_login
@@ -23,6 +25,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django_otp import user_has_device
 from two_factor.utils import default_device
 
+from zerver.lib.cache import cache_with_key
 from zerver.lib.exceptions import (
     AccessDeniedError,
     ErrorCode,
@@ -211,7 +214,7 @@ class InvalidZulipServerError(JsonableError):
 
     @staticmethod
     def msg_format() -> str:
-        return "Zulip server auth failure: {role} is not registered"
+        return "Zulip server auth failure: {role} is not registered -- did you run `manage.py register_server`?"
 
 
 class InvalidZulipServerKeyError(InvalidZulipServerError):
@@ -884,6 +887,30 @@ def rate_limit_user(request: HttpRequest, user: UserProfile, domain: str) -> Non
     RateLimitedUser(user, domain=domain).rate_limit_request(request)
 
 
+@cache_with_key(lambda: "tor_ip_addresses:", timeout=60 * 60)
+@circuit(failure_threshold=2, recovery_timeout=60 * 10)
+def get_tor_ips() -> Set[str]:
+    if not settings.RATE_LIMIT_TOR_TOGETHER:
+        return set()
+
+    # Cron job in /etc/cron.d/fetch-for-exit-nodes fetches this
+    # hourly; we cache it in memcached to prevent going to disk on
+    # every unauth'd request.  In case of failures to read, we
+    # circuit-break so 2 failures cause a 10-minute backoff.
+
+    with open(settings.TOR_EXIT_NODE_FILE_PATH, "rb") as f:
+        exit_node_list = orjson.loads(f.read())
+
+    # This should always be non-empty; if it's empty, assume something
+    # went wrong with writing and treat it as a non-existent file.
+    # Circuit-breaking will ensure that we back off on re-reading the
+    # file.
+    if len(exit_node_list) == 0:
+        raise IOError("File is empty")
+
+    return set(exit_node_list)
+
+
 def rate_limit_ip(request: HttpRequest, ip_addr: str, domain: str) -> None:
     RateLimitedIPAddr(ip_addr, domain=domain).rate_limit_request(request)
 
@@ -894,6 +921,24 @@ def rate_limit_request_by_ip(request: HttpRequest, domain: str) -> None:
     # IP address to use - without worrying we'll grab the IP of a proxy.
     ip_addr = request.META["REMOTE_ADDR"]
     assert ip_addr
+
+    try:
+        # We lump all TOR exit nodes into one bucket; this prevents
+        # abuse from TOR, while still allowing some access to these
+        # endpoints for legitimate users.  Checking for local
+        # addresses is a shortcut somewhat for ease of testing without
+        # mocking the TOR endpoint in every test.
+        if is_local_addr(ip_addr):
+            pass
+        elif ip_addr in get_tor_ips():
+            ip_addr = "tor-exit-node"
+    except (IOError, CircuitBreakerError) as err:
+        # In the event that we can't get an updated list of TOR exit
+        # nodes, assume the IP is _not_ one, and leave it unchanged.
+        # We log a warning so that this endpoint being taken out of
+        # service doesn't silently remove this functionality.
+        rate_limiter_logger.warning("Failed to fetch TOR exit node list: %s", err)
+        pass
     rate_limit_ip(request, ip_addr, domain=domain)
 
 

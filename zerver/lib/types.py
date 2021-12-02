@@ -59,6 +59,7 @@ class LinkifierDict(TypedDict):
 class SAMLIdPConfigDict(TypedDict, total=False):
     entity_id: str
     url: str
+    slo_url: str
     attr_user_permanent_id: str
     attr_first_name: str
     attr_last_name: str

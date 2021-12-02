@@ -55,7 +55,7 @@ application.
 ## Django routes the request to a view in urls.py files
 
 There are various
-[urls.py](https://docs.djangoproject.com/en/1.8/topics/http/urls/)
+[urls.py](https://docs.djangoproject.com/en/3.2/topics/http/urls/)
 files throughout the server codebase, which are covered in more detail
 in
 [the directory structure doc](../overview/directory-structure.md).
@@ -180,7 +180,7 @@ PUT=create_user_backend
 ```
 
 are supplied as arguments to `rest_path`, along with the
-[HTTPRequest](https://docs.djangoproject.com/en/1.8/ref/request-response/).
+[HTTPRequest](https://docs.djangoproject.com/en/3.2/ref/request-response/).
 The request has the HTTP verb `PUT`, which `rest_dispatch` can use to
 find the correct view to show:
 `zerver.views.users.create_user_backend`.
@@ -199,7 +199,7 @@ Our API works on JSON requests and responses. Every API endpoint should
 ```
 
 in a
-[HTTP response](https://docs.djangoproject.com/en/1.8/ref/request-response/)
+[HTTP response](https://docs.djangoproject.com/en/3.2/ref/request-response/)
 with a content type of 'application/json'.
 
 To pass back data from the server to the calling client, in the event of

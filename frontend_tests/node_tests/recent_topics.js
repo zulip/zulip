@@ -108,7 +108,7 @@ mock_esm("../../static/js/stream_data", {
         // We only test via muted topics for now.
         // TODO: Make muted streams and test them.
         false,
-    id_is_subscribed: () => true,
+    is_subscribed: () => true,
 });
 mock_esm("../../static/js/stream_list", {
     handle_narrow_deactivated: noop,
@@ -414,6 +414,7 @@ test("test_filter_all", ({override, mock_template}) => {
     row_data = generate_topic_data([[1, "topic-1", 0, false, true]]);
     i = row_data.length;
     rt.set_default_focus();
+    override(rt, "is_in_focus", () => false);
     assert.equal(rt.inplace_rerender("1:topic-1"), true);
 });
 
@@ -464,6 +465,7 @@ test("test_filter_unread", ({override, mock_template}) => {
 
     stub_out_filter_buttons();
     rt.process_messages(messages);
+    override(rt, "is_in_focus", () => false);
     assert.equal(rt.inplace_rerender("1:topic-1"), true);
 
     $("#recent_topics_filter_buttons").removeClass("btn-recent-selected");
@@ -571,6 +573,7 @@ test("test_filter_participated", ({override, mock_template}) => {
     expected_filter_participated = false;
     rt.process_messages(messages);
 
+    override(rt, "is_in_focus", () => false);
     assert.equal(rt.inplace_rerender("1:topic-4"), true);
 
     // Set muted filter
@@ -630,7 +633,8 @@ test("test_filter_participated", ({override, mock_template}) => {
     rt.set_filter("all");
 });
 
-test("test_update_unread_count", () => {
+test("test_update_unread_count", ({override}) => {
+    override(rt, "is_visible", () => false);
     rt.clear_for_tests();
     stub_out_filter_buttons();
     rt.set_filter("all");
@@ -758,6 +762,7 @@ test("basic assertions", ({override, mock_template}) => {
     // update_topic_is_muted now relies on external libraries completely
     // so we don't need to check anythere here.
     generate_topic_data([[1, topic1, 0, false, true]]);
+    override(rt, "is_in_focus", () => false);
     assert.equal(rt.update_topic_is_muted(stream1, topic1), true);
     // a topic gets muted which we are not tracking
     assert.equal(rt.update_topic_is_muted(stream1, "topic-10"), false);
@@ -816,6 +821,7 @@ test("test_reify_local_echo_message", ({override, mock_template}) => {
 });
 
 test("test_delete_messages", ({override}) => {
+    override(rt, "is_visible", () => false);
     rt.clear_for_tests();
     stub_out_filter_buttons();
     rt.set_filter("all");
@@ -855,6 +861,7 @@ test("test_delete_messages", ({override}) => {
 
 test("test_topic_edit", ({override}) => {
     override(all_messages_data, "all_messages", () => messages);
+    override(rt, "is_visible", () => false);
 
     // NOTE: This test should always run in the end as it modified the messages data.
     rt.clear_for_tests();

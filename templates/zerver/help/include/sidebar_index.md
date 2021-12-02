@@ -44,13 +44,12 @@
 
 ## Display settings
 * [Review your settings](/help/review-your-settings)
-* [Night mode](/help/night-mode)
+* [Dark theme](/help/dark-theme)
 * [Change your language](/help/change-your-language)
-* [Change default view](/help/change-default-view)
 * [Change your timezone](/help/change-your-timezone)
 * [Use 24-hour time](/help/change-the-time-format)
 * [Enable emoticon translations](/help/enable-emoticon-translations)
-* [View emoji as text](/help/view-emoji-as-text)
+* [Configure default view](/help/configure-default-view)
 * [Enable full width display](/help/enable-full-width-display)
 * [Display the buddy list on narrow screens](/help/move-the-users-list-to-the-left-sidebar)
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
@@ -132,6 +131,7 @@
 * [Import from Rocket.Chat](/help/import-from-rocketchat)
 * [Configure authentication methods](/help/configure-authentication-methods)
 * [SAML authentication](/help/saml-authentication)
+* [SCIM provisioning](/help/scim)
 * [Export your organization](/help/export-your-organization)
 * [Change organization URL](/help/change-organization-url)
 * [Deactivate your organization](/help/deactivate-your-organization)

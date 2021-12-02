@@ -29,6 +29,10 @@ from zerver.models import UserProfile
 
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GITHUB_EVENT")
 
+TOPIC_FOR_DISCUSSION = "{repo} discussion #{number}: {title}"
+DISCUSSION_TEMPLATE = "{author} created [discussion #{discussion_id}]({url}) in {category}:\n```quote\n### {title}\n{body}\n```"
+DISCUSSION_COMMENT_TEMPLATE = "{author} [commented]({comment_url}) on [discussion #{discussion_id}]({discussion_url}):\n```quote\n{body}\n```"
+
 
 class Helper:
     def __init__(
@@ -251,6 +255,29 @@ def get_push_commits_body(helper: Helper) -> str:
         get_branch_name_from_ref(payload["ref"]),
         commits_data,
         deleted=payload["deleted"],
+    )
+
+
+def get_discussion_body(helper: Helper) -> str:
+    payload = helper.payload
+    return DISCUSSION_TEMPLATE.format(
+        author=get_sender_name(payload),
+        url=payload["discussion"]["html_url"],
+        body=payload["discussion"]["body"],
+        category=payload["discussion"]["category"]["name"],
+        discussion_id=payload["discussion"]["number"],
+        title=payload["discussion"]["title"],
+    )
+
+
+def get_discussion_comment_body(helper: Helper) -> str:
+    payload = helper.payload
+    return DISCUSSION_COMMENT_TEMPLATE.format(
+        author=get_sender_name(payload),
+        body=payload["comment"]["body"],
+        discussion_url=payload["discussion"]["html_url"],
+        comment_url=payload["comment"]["html_url"],
+        discussion_id=payload["discussion"]["number"],
     )
 
 
@@ -602,6 +629,12 @@ def get_subject_based_on_type(payload: Dict[str, Any], event: str) -> str:
             return get_organization_name(payload)
     elif event == "check_run":
         return f"{get_repository_name(payload)} / checks"
+    elif event.startswith("discussion"):
+        return TOPIC_FOR_DISCUSSION.format(
+            repo=get_repository_name(payload),
+            number=payload["discussion"]["number"],
+            title=payload["discussion"]["title"],
+        )
 
     return get_repository_name(payload)
 
@@ -614,6 +647,8 @@ EVENT_FUNCTION_MAPPER: Dict[str, Callable[[Helper], str]] = {
     "delete": partial(get_create_or_delete_body, action="deleted"),
     "deployment": get_deployment_body,
     "deployment_status": get_change_deployment_status_body,
+    "discussion": get_discussion_body,
+    "discussion_comment": get_discussion_comment_body,
     "fork": get_fork_body,
     "gollum": get_wiki_pages_body,
     "issue_comment": get_issue_comment_body,

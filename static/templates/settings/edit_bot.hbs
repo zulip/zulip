@@ -1,12 +1,8 @@
-<div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
-    <h3 class="inline-block">{{t "Edit bot" }}</h3>
-</div>
-<form class="edit_bot_form form-horizontal" data-target="edit-bot" data-title="{{t 'Edit bot' }}" data-user-id="{{bot.user_id}}"
+<form id="edit_bot_form" class="new-style edit_bot_form form-horizontal" data-target="edit-bot" data-title="{{t 'Edit bot' }}" data-user-id="{{bot.user_id}}"
   data-email="{{bot.email}}" data-type="{{bot.bot_type}}">
     <div class="bot_edit_errors alert alert-error hide"></div>
-    <div class="edit_bot_form_container">
-        <div class="">
+    <div>
+        <div>
             <label>{{t "Bot email" }}</label>
             <div class="edit_bot_email">{{bot.email}}</div>
         </div>
@@ -33,13 +29,6 @@
                 <button type="button" class="button white rounded edit_bot_avatar_clear_button" style="display: none;">{{t "Clear profile picture" }}</button>
                 <div><label for="edit_bot_avatar_file" generated="true" class="edit_bot_avatar_error text-error"></label></div>
             </div>
-        </div>
-    </div>
-    <div>
-        <div class="modal-footer">
-            <div class="edit_bot_spinner"></div>
-            <button class="button white rounded cancel_bot_button" type="button" data-dismiss="modal">{{t "Cancel" }}</button>
-            <input type="submit" class="button rounded sea-green edit_bot_button" value="{{t 'Save' }}" />
         </div>
     </div>
 </form>

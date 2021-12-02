@@ -254,6 +254,13 @@ exports.fixtures = {
         value: 2,
     },
 
+    realm__update__create_web_public_stream_policy: {
+        type: "realm",
+        op: "update",
+        property: "create_web_public_stream_policy",
+        value: 2,
+    },
+
     realm__update__default_code_block_language: {
         type: "realm",
         op: "update",
@@ -280,6 +287,13 @@ exports.fixtures = {
         op: "update",
         property: "emails_restricted_to_domains",
         value: false,
+    },
+
+    realm__update__enable_spectator_access: {
+        type: "realm",
+        op: "update",
+        property: "enable_spectator_access",
+        value: true,
     },
 
     realm__update__invite_required: {
@@ -794,6 +808,13 @@ exports.fixtures = {
         type: "user_settings",
         op: "update",
         property: "enter_sends",
+        value: true,
+    },
+
+    user_settings__escape_navigates_to_default_view: {
+        type: "user_settings",
+        op: "update",
+        property: "escape_navigates_to_default_view",
         value: true,
     },
 

@@ -30,6 +30,7 @@ const attachments_ui = mock_esm("../../static/js/attachments_ui");
 const bot_data = mock_esm("../../static/js/bot_data");
 const compose = mock_esm("../../static/js/compose");
 const composebox_typeahead = mock_esm("../../static/js/composebox_typeahead");
+const dark_theme = mock_esm("../../static/js/dark_theme");
 const emoji_picker = mock_esm("../../static/js/emoji_picker");
 const hotspots = mock_esm("../../static/js/hotspots");
 const linkifiers = mock_esm("../../static/js/linkifiers");
@@ -39,7 +40,6 @@ const message_list = mock_esm("../../static/js/message_list");
 const message_lists = mock_esm("../../static/js/message_lists");
 const muted_topics_ui = mock_esm("../../static/js/muted_topics_ui");
 const muted_users_ui = mock_esm("../../static/js/muted_users_ui");
-const night_mode = mock_esm("../../static/js/night_mode");
 const notifications = mock_esm("../../static/js/notifications");
 const reactions = mock_esm("../../static/js/reactions");
 const realm_icon = mock_esm("../../static/js/realm_icon");
@@ -66,6 +66,7 @@ const settings_user_groups = mock_esm("../../static/js/settings_user_groups");
 const settings_users = mock_esm("../../static/js/settings_users");
 const stream_data = mock_esm("../../static/js/stream_data");
 const stream_events = mock_esm("../../static/js/stream_events");
+const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
 const submessage = mock_esm("../../static/js/submessage");
 const typing_events = mock_esm("../../static/js/typing_events");
 const ui = mock_esm("../../static/js/ui");
@@ -347,11 +348,31 @@ run_test("realm settings", ({override}) => {
         assert.equal(page_params[parameter_name], 1);
     }
 
+    let update_called = false;
     let event = event_fixtures.realm__update__create_private_stream_policy;
+    stream_settings_ui.update_stream_privacy_choices = (property) => {
+        assert_same(property, "create_private_stream_policy");
+        update_called = true;
+    };
     test_realm_integer(event, "realm_create_private_stream_policy");
 
+    update_called = false;
     event = event_fixtures.realm__update__create_public_stream_policy;
+    stream_settings_ui.update_stream_privacy_choices = (property) => {
+        assert_same(property, "create_public_stream_policy");
+        update_called = true;
+    };
     test_realm_integer(event, "realm_create_public_stream_policy");
+
+    update_called = false;
+    event = event_fixtures.realm__update__create_web_public_stream_policy;
+    stream_settings_ui.update_stream_privacy_choices = (property) => {
+        assert_same(property, "create_web_public_stream_policy");
+        update_called = true;
+    };
+    dispatch(event);
+    assert_same(page_params.realm_create_web_public_stream_policy, 2);
+    assert_same(update_called, true);
 
     event = event_fixtures.realm__update__invite_to_stream_policy;
     test_realm_integer(event, "realm_invite_to_stream_policy");
@@ -396,6 +417,16 @@ run_test("realm settings", ({override}) => {
     event = event_fixtures.realm__update__default_code_block_language;
     dispatch(event);
     assert_same(page_params.realm_default_code_block_language, "javascript");
+
+    update_called = false;
+    stream_settings_ui.update_stream_privacy_choices = (property) => {
+        assert_same(property, "create_web_public_stream_policy");
+        update_called = true;
+    };
+    event = event_fixtures.realm__update__enable_spectator_access;
+    dispatch(event);
+    assert_same(page_params.realm_enable_spectator_access, true);
+    assert_same(update_called, true);
 
     event = event_fixtures.realm__update_dict__default;
     page_params.realm_allow_message_editing = false;
@@ -667,6 +698,16 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.left_side_userlist, true);
 
+    event = event_fixtures.user_settings__escape_navigates_to_default_view;
+    user_settings.escape_navigates_to_default_view = false;
+    let toggled = [];
+    $("#go-to-default-view-hotkey-help").toggleClass = (cls) => {
+        toggled.push(cls);
+    };
+    dispatch(event);
+    assert_same(user_settings.escape_navigates_to_default_view, true);
+    assert_same(toggled, ["notdisplayed"]);
+
     // We alias message_list.narrowed to message_lists.current
     // to make sure we get line coverage on re-rendering
     // the current message list.  The actual code tests
@@ -694,7 +735,7 @@ run_test("user_settings", ({override}) => {
 
     event = event_fixtures.user_settings__high_contrast_mode;
     user_settings.high_contrast_mode = false;
-    let toggled = [];
+    toggled = [];
     $("body").toggleClass = (cls) => {
         toggled.push(cls);
     };
@@ -722,7 +763,7 @@ run_test("user_settings", ({override}) => {
         const stub = make_stub();
         event = event_fixtures.user_settings__color_scheme_dark;
         user_settings.color_scheme = 1;
-        override(night_mode, "enable", stub.f); // automatically checks if called
+        override(dark_theme, "enable", stub.f); // automatically checks if called
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         assert.equal(user_settings.color_scheme, 2);
@@ -732,7 +773,7 @@ run_test("user_settings", ({override}) => {
         const stub = make_stub();
         event = event_fixtures.user_settings__color_scheme_light;
         user_settings.color_scheme = 1;
-        override(night_mode, "disable", stub.f); // automatically checks if called
+        override(dark_theme, "disable", stub.f); // automatically checks if called
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         assert.equal(user_settings.color_scheme, 3);
@@ -756,7 +797,7 @@ run_test("user_settings", ({override}) => {
         const stub = make_stub();
         event = event_fixtures.user_settings__color_scheme_automatic;
         user_settings.color_scheme = 2;
-        override(night_mode, "default_preference_checker", stub.f); // automatically checks if called
+        override(dark_theme, "default_preference_checker", stub.f); // automatically checks if called
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         assert.equal(user_settings.color_scheme, 1);

@@ -6,7 +6,7 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-UPGRADE_TO=${1:-13}
+UPGRADE_TO=${1:-14}
 UPGRADE_FROM=$(crudini --get /etc/zulip/zulip.conf postgresql version)
 ZULIP_PATH="$(dirname "$0")/../.."
 
@@ -48,7 +48,7 @@ SCRIPTS_PATH=$(grep -o "/var/log/postgresql/pg_upgradecluster-$UPGRADE_FROM-$UPG
 crudini --set /etc/zulip/zulip.conf postgresql version "$UPGRADE_TO"
 
 # Update the statistics
-[ -n "$SCRIPTS_PATH" ] && su postgres -c "$SCRIPTS_PATH/analyze_new_cluster.sh"
+su postgres -c "/usr/lib/postgresql/$UPGRADE_TO/bin/vacuumdb --all --analyze-only --jobs 10"
 
 # Start the database up cleanly
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f
@@ -57,6 +57,9 @@ crudini --set /etc/zulip/zulip.conf postgresql version "$UPGRADE_TO"
 pg_dropcluster "$UPGRADE_FROM" main
 apt remove -y "postgresql-$UPGRADE_FROM"
 if [ -n "$SCRIPTS_PATH" ]; then
+    if [ -f "$SCRIPTS_PATH/update_extensions.sql" ]; then
+        su postgres -c "psql $SCRIPTS_PATH/update_extensions.sql"
+    fi
     su postgres -c "$SCRIPTS_PATH/delete_old_cluster.sh"
     rm -rf "$SCRIPTS_PATH"
 else

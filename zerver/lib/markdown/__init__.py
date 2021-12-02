@@ -24,7 +24,7 @@ from typing import (
     TypeVar,
     Union,
 )
-from urllib.parse import urlencode, urlsplit
+from urllib.parse import urlencode, urljoin, urlsplit
 from xml.etree import ElementTree as etree
 from xml.etree.ElementTree import Element, SubElement
 
@@ -43,6 +43,7 @@ import requests
 from django.conf import settings
 from markdown.blockparser import BlockParser
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
+from soupsieve import escape as css_escape
 from tlds import tld_set
 from typing_extensions import TypedDict
 
@@ -148,7 +149,7 @@ EMOJI_REGEX = r"(?P<syntax>:[\w\-\+]+:)"
 def verbose_compile(pattern: str) -> Pattern[str]:
     return re.compile(
         f"^(.*?){pattern}(.*?)$",
-        re.DOTALL | re.UNICODE | re.VERBOSE,
+        re.DOTALL | re.VERBOSE,
     )
 
 
@@ -169,7 +170,7 @@ def get_compiled_stream_link_regex() -> Pattern[str]:
     # are not required.
     return re.compile(
         STREAM_LINK_REGEX,
-        re.DOTALL | re.UNICODE | re.VERBOSE,
+        re.DOTALL | re.VERBOSE,
     )
 
 
@@ -192,7 +193,7 @@ def get_compiled_stream_topic_link_regex() -> Pattern[str]:
     # are not required.
     return re.compile(
         STREAM_TOPIC_LINK_REGEX,
-        re.DOTALL | re.UNICODE | re.VERBOSE,
+        re.DOTALL | re.VERBOSE,
     )
 
 
@@ -504,7 +505,7 @@ class OpenGraphSession(OutgoingSession):
 
 
 def fetch_open_graph_image(url: str) -> Optional[Dict[str, Any]]:
-    og = {"image": None, "title": None, "desc": None}
+    og: Dict[str, Optional[str]] = {"image": None, "title": None, "desc": None}
 
     try:
         with OpenGraphSession().get(
@@ -532,7 +533,9 @@ def fetch_open_graph_image(url: str) -> Optional[Dict[str, Any]]:
                     break
                 elif element.tag in ("meta", "{http://www.w3.org/1999/xhtml}meta"):
                     if element.get("property") == "og:image":
-                        og["image"] = element.get("content")
+                        content = element.get("content")
+                        if content is not None:
+                            og["image"] = urljoin(res.url, content)
                     elif element.get("property") == "og:title":
                         og["title"] = element.get("content")
                     elif element.get("property") == "og:description":
@@ -710,14 +713,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         container = SubElement(root, "div")
         container.set("class", "message_embed")
 
-        parsed_img_link = urllib.parse.urlparse(img_link)
-        # Append domain where relative img_link url is given
-        if not parsed_img_link.netloc:
-            parsed_url = urllib.parse.urlparse(link)
-            domain = "{url.scheme}://{url.netloc}/".format(url=parsed_url)
-            img_link = urllib.parse.urljoin(domain, img_link)
+        img_link = get_camo_url(img_link)
         img = SubElement(container, "a")
-        img.set("style", "background-image: url(" + img_link + ")")
+        img.set("style", "background-image: url(" + css_escape(img_link) + ")")
         img.set("href", link)
         img.set("class", "message_embed_image")
 
@@ -1799,7 +1797,22 @@ class LinkifierPattern(CompiledInlineProcessor):
         options.log_errors = False
 
         compiled_re2 = re2.compile(prepare_linkifier_pattern(source_pattern), options=options)
-        self.format_string = format_string
+
+        # Find percent-encoded bytes and escape them from the python
+        # interpolation.  That is:
+        #     %(foo)s -> %(foo)s
+        #     %%      -> %%
+        #     %ab     -> %%ab
+        #     %%ab    -> %%ab
+        #     %%%ab   -> %%%%ab
+        #
+        # We do this here, rather than before storing, to make edits
+        # to the underlying linkifier more straightforward, and
+        # because JS does not have a real formatter.
+        self.format_string = re.sub(
+            r"(?<!%)(%%)*%([a-fA-F0-9][a-fA-F0-9])", r"\1%%\2", format_string
+        )
+
         super().__init__(compiled_re2, md)
 
     def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
@@ -2404,7 +2417,7 @@ def maybe_update_markdown_engines(linkifiers_key: int, email_gateway: bool) -> N
 #
 # We also use repr() to improve reproducibility, and to escape terminal control
 # codes, which can do surprisingly nasty things.
-_privacy_re = re.compile("\\w", flags=re.UNICODE)
+_privacy_re = re.compile("\\w")
 
 
 def privacy_clean_markdown(content: str) -> str:

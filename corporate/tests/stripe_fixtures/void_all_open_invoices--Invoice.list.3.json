@@ -2,7 +2,7 @@
   "data": [
     {
       "account_country": "US",
-      "account_name": null,
+      "account_name": "NORMALIZED-1",
       "account_tax_ids": null,
       "amount_due": 6400,
       "amount_paid": 0,
@@ -38,9 +38,9 @@
       "due_date": 1000000000,
       "ending_balance": 0,
       "footer": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/invst_NORMALIZED0000000000000001pYxjh",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/invst_NORMALIZED0000000000000001OUZwi",
       "id": "in_NORMALIZED00000000000001",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/invst_NORMALIZED0000000000000001pYxjh/pdf",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/invst_NORMALIZED0000000000000001OUZwi/pdf",
       "last_finalization_error": null,
       "lines": {
         "data": [
@@ -74,6 +74,7 @@
               "object": "price",
               "product": "prod_NORMALIZED0001",
               "recurring": null,
+              "tax_behavior": "unspecified",
               "tiers_mode": null,
               "transform_quantity": null,
               "type": "one_time",

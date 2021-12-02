@@ -54,6 +54,7 @@
 * [Set "typing" status](/api/set-typing-status)
 * [Get user presence](/api/get-user-presence)
 * [Get attachments](/api/get-attachments)
+* [Delete an attachment](/api/remove-attachment)
 * [Update settings](/api/update-settings)
 * [Get user groups](/api/get-user-groups)
 * [Create a user group](/api/create-user-group)
@@ -77,7 +78,7 @@
 * [Get all custom profile fields](/api/get-custom-profile-fields)
 * [Reorder custom profile fields](/api/reorder-custom-profile-fields)
 * [Create a custom profile field](/api/create-custom-profile-field)
-* [Change default values of user preferences](/api/update-realm-user-settings-defaults)
+* [Update realm-level defaults of user settings](/api/update-realm-user-settings-defaults)
 
 #### Real-time events
 

@@ -12,6 +12,7 @@ TOPIC_DEPLOYMENT = "public-repo / Deployment on production"
 TOPIC_ORGANIZATION = "baxterandthehackers organization"
 TOPIC_BRANCH = "public-repo / changes"
 TOPIC_WIKI = "public-repo / wiki pages"
+TOPIC_DISCUSSION = "public-repo discussion #90: Welcome to discussions!"
 
 
 class GitHubWebhookTest(WebhookTestCase):
@@ -483,3 +484,11 @@ A temporary team so that I can get some webhook fixtures!
             msg,
         )
         self.assertTrue(stack_info)
+
+    def test_discussion_msg(self) -> None:
+        expected_message = "Codertocat created [discussion #90](https://github.com/baxterthehacker/public-repo/discussions/90) in General:\n```quote\n### Welcome to discussions!\nWe're glad to have you here!\n```"
+        self.check_webhook("discussion", TOPIC_DISCUSSION, expected_message)
+
+    def test_discussion_comment_msg(self) -> None:
+        expected_message = "Codertocat [commented](https://github.com/baxterthehacker/public-repo/discussions/90#discussioncomment-544078) on [discussion #90](https://github.com/baxterthehacker/public-repo/discussions/90):\n```quote\nI have so many questions to ask you!\n```"
+        self.check_webhook("discussion_comment", TOPIC_DISCUSSION, expected_message)

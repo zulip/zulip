@@ -105,7 +105,7 @@ test("get_item", () => {
     assert.equal(upload.get_item("source", {mode: "edit", row: 123}), "message-edit-file-input");
     assert.equal(
         upload.get_item("drag_drop_container", {mode: "edit", row: 1}),
-        $(".message_edit_form"),
+        $(`#zfilt${CSS.escape(1)} .message_edit_form`),
     );
     assert.equal(
         upload.get_item("markdown_preview_hide_button", {mode: "edit", row: 65}),

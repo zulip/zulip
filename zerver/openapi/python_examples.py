@@ -610,7 +610,6 @@ def get_subscribers(client: Client) -> None:
     # {code_example|start}
     # Get the subscribers to a stream
     result = client.get_subscribers(stream="new stream")
-    print(result)
     # {code_example|end}
     assert result["subscribers"] == [11, 26]
 
@@ -862,13 +861,28 @@ def get_raw_message(client: Client, message_id: int) -> None:
 
 
 @openapi_test_function("/attachments:get")
-def get_attachments(client: Client) -> None:
+def get_attachments(client: Client) -> int:
     # {code_example|start}
     # Get your attachments.
 
     result = client.get_attachments()
     # {code_example|end}
     validate_against_openapi_schema(result, "/attachments", "get", "200")
+    return result["attachments"][0]["id"]
+
+
+@openapi_test_function("/attachments/{attachment_id}:delete")
+def remove_attachment(client: Client, attachment_id: int) -> None:
+    # {code_example|start}
+    # Delete the attachment with given attachment_id.
+
+    url = "attachments/" + str(attachment_id)
+    result = client.call_endpoint(
+        url=url,
+        method="DELETE",
+    )
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/attachments/{attachment_id}", "delete", "200")
 
 
 @openapi_test_function("/messages:post")
@@ -1466,7 +1480,8 @@ def test_users(client: Client, owner_client: Client) -> None:
     get_profile(client)
     update_settings(client)
     upload_file(client)
-    get_attachments(client)
+    attachment_id = get_attachments(client)
+    remove_attachment(client, attachment_id)
     set_typing_status(client)
     update_presence(client)
     get_user_presence(client)

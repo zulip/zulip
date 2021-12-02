@@ -104,11 +104,6 @@ class Command(ZulipBaseCommand):
             action="store_true",
             help="Whether to upload resulting tarball to s3 or LOCAL_UPLOADS_DIR",
         )
-        parser.add_argument(
-            "--delete-after-upload",
-            action="store_true",
-            help="Automatically delete the local tarball after a successful export",
-        )
         self.add_realm_args(parser, required=True)
 
     def handle(self, *args: Any, **options: Any) -> None:
@@ -215,7 +210,6 @@ class Command(ZulipBaseCommand):
             threads=num_threads,
             upload=options["upload"],
             public_only=public_only,
-            delete_after_upload=options["delete_after_upload"],
             percent_callback=percent_callback,
             consent_message_id=consent_message_id,
         )

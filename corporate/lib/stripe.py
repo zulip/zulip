@@ -34,7 +34,6 @@ from zerver.lib.utils import assert_is_not_none
 from zerver.models import Realm, RealmAuditLog, UserProfile, get_system_bot
 from zproject.config import get_secret
 
-STRIPE_PUBLISHABLE_KEY = get_secret("stripe_publishable_key")
 stripe.api_key = get_secret("stripe_secret_key")
 
 BILLING_LOG_PATH = os.path.join(
@@ -50,6 +49,9 @@ CallableT = TypeVar("CallableT", bound=Callable[..., object])
 MIN_INVOICED_LICENSES = 30
 MAX_INVOICED_LICENSES = 1000
 DEFAULT_INVOICE_DAYS_UNTIL_DUE = 30
+
+# The version of Stripe API the billing system supports.
+STRIPE_API_VERSION = "2020-08-27"
 
 
 def get_latest_seat_count(realm: Realm) -> int:
@@ -220,6 +222,14 @@ class StripeConnectionError(BillingError):
     pass
 
 
+class UpgradeWithExistingPlanError(BillingError):
+    def __init__(self) -> None:
+        super().__init__(
+            "subscribing with existing subscription",
+            "The organization is already subscribed to a plan. Please reload the billing page.",
+        )
+
+
 class InvalidBillingSchedule(Exception):
     def __init__(self, billing_schedule: int) -> None:
         self.message = f"Unknown billing_schedule: {billing_schedule}"
@@ -235,13 +245,6 @@ class InvalidTier(Exception):
 def catch_stripe_errors(func: CallableT) -> CallableT:
     @wraps(func)
     def wrapped(*args: object, **kwargs: object) -> object:
-        if settings.DEVELOPMENT and not settings.TEST_SUITE:  # nocoverage
-            if STRIPE_PUBLISHABLE_KEY is None:
-                raise BillingError(
-                    "missing stripe config",
-                    "Missing Stripe config. "
-                    "See https://zulip.readthedocs.io/en/latest/subsystems/billing.html.",
-                )
         try:
             return func(*args, **kwargs)
         # See https://stripe.com/docs/api/python#error_handling, though
@@ -280,11 +283,13 @@ def catch_stripe_errors(func: CallableT) -> CallableT:
 
 @catch_stripe_errors
 def stripe_get_customer(stripe_customer_id: str) -> stripe.Customer:
-    return stripe.Customer.retrieve(stripe_customer_id, expand=["default_source", "sources"])
+    return stripe.Customer.retrieve(
+        stripe_customer_id, expand=["invoice_settings", "invoice_settings.default_payment_method"]
+    )
 
 
 @catch_stripe_errors
-def do_create_stripe_customer(user: UserProfile, stripe_token: Optional[str] = None) -> Customer:
+def do_create_stripe_customer(user: UserProfile, payment_method: Optional[str] = None) -> Customer:
     realm = user.realm
     # We could do a better job of handling race conditions here, but if two
     # people from a realm try to upgrade at exactly the same time, the main
@@ -294,7 +299,10 @@ def do_create_stripe_customer(user: UserProfile, stripe_token: Optional[str] = N
         description=f"{realm.string_id} ({realm.name})",
         email=user.delivery_email,
         metadata={"realm_id": realm.id, "realm_str": realm.string_id},
-        source=stripe_token,
+        payment_method=payment_method,
+    )
+    stripe.Customer.modify(
+        stripe_customer.id, invoice_settings={"default_payment_method": payment_method}
     )
     event_time = timestamp_to_datetime(stripe_customer.created)
     with transaction.atomic():
@@ -304,7 +312,7 @@ def do_create_stripe_customer(user: UserProfile, stripe_token: Optional[str] = N
             event_type=RealmAuditLog.STRIPE_CUSTOMER_CREATED,
             event_time=event_time,
         )
-        if stripe_token is not None:
+        if payment_method is not None:
             RealmAuditLog.objects.create(
                 realm=user.realm,
                 acting_user=user,
@@ -321,17 +329,17 @@ def do_create_stripe_customer(user: UserProfile, stripe_token: Optional[str] = N
 
 
 @catch_stripe_errors
-def do_replace_payment_source(
-    user: UserProfile, stripe_token: str, pay_invoices: bool = False
-) -> stripe.Customer:
+def do_replace_payment_method(
+    user: UserProfile, payment_method: str, pay_invoices: bool = False
+) -> None:
     customer = get_customer_by_realm(user.realm)
     assert customer is not None  # for mypy
     assert customer.stripe_customer_id is not None  # for mypy
 
-    stripe_customer = stripe_get_customer(customer.stripe_customer_id)
-    stripe_customer.source = stripe_token
-    # Deletes existing card: https://stripe.com/docs/api#update_customer-source
-    updated_stripe_customer = stripe.Customer.save(stripe_customer)
+    stripe.Customer.modify(
+        customer.stripe_customer_id, invoice_settings={"default_payment_method": payment_method}
+    )
+
     RealmAuditLog.objects.create(
         realm=user.realm,
         acting_user=user,
@@ -340,27 +348,30 @@ def do_replace_payment_source(
     )
     if pay_invoices:
         for stripe_invoice in stripe.Invoice.list(
-            collection_method="charge_automatically", customer=stripe_customer.id, status="open"
+            collection_method="charge_automatically",
+            customer=customer.stripe_customer_id,
+            status="open",
         ):
             # The user will get either a receipt or a "failed payment" email, but the in-app
             # messaging could be clearer here (e.g. it could explicitly tell the user that there
             # were payment(s) and that they succeeded or failed).
             # Worth fixing if we notice that a lot of cards end up failing at this step.
             stripe.Invoice.pay(stripe_invoice)
-    return updated_stripe_customer
 
 
-def stripe_customer_has_credit_card_as_default_source(stripe_customer: stripe.Customer) -> bool:
-    if not stripe_customer.default_source:
+def stripe_customer_has_credit_card_as_default_payment_method(
+    stripe_customer: stripe.Customer,
+) -> bool:
+    if not stripe_customer.invoice_settings.default_payment_method:
         return False
-    return stripe_customer.default_source.object == "card"
+    return stripe_customer.invoice_settings.default_payment_method.type == "card"
 
 
-def customer_has_credit_card_as_default_source(customer: Customer) -> bool:
+def customer_has_credit_card_as_default_payment_method(customer: Customer) -> bool:
     if not customer.stripe_customer_id:
         return False
     stripe_customer = stripe_get_customer(customer.stripe_customer_id)
-    return stripe_customer_has_credit_card_as_default_source(stripe_customer)
+    return stripe_customer_has_credit_card_as_default_payment_method(stripe_customer)
 
 
 # event_time should roughly be timezone_now(). Not designed to handle
@@ -443,8 +454,11 @@ def make_end_of_cycle_updates_if_needed(
                 licenses_at_next_renewal=licenses_at_next_renewal,
             )
 
+            realm = new_plan.customer.realm
+            assert realm is not None
+
             RealmAuditLog.objects.create(
-                realm=new_plan.customer.realm,
+                realm=realm,
                 event_time=event_time,
                 event_type=RealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN,
                 extra_data=orjson.dumps(
@@ -505,15 +519,16 @@ def make_end_of_cycle_updates_if_needed(
 
 # Returns Customer instead of stripe_customer so that we don't make a Stripe
 # API call if there's nothing to update
+@catch_stripe_errors
 def update_or_create_stripe_customer(
-    user: UserProfile, stripe_token: Optional[str] = None
+    user: UserProfile, payment_method: Optional[str] = None
 ) -> Customer:
     realm = user.realm
     customer = get_customer_by_realm(realm)
     if customer is None or customer.stripe_customer_id is None:
-        return do_create_stripe_customer(user, stripe_token=stripe_token)
-    if stripe_token is not None:
-        do_replace_payment_source(user, stripe_token)
+        return do_create_stripe_customer(user, payment_method=payment_method)
+    if payment_method is not None:
+        do_replace_payment_method(user, payment_method, True)
     return customer
 
 
@@ -592,6 +607,18 @@ def is_free_trial_offer_enabled() -> bool:
     return settings.FREE_TRIAL_DAYS not in (None, 0)
 
 
+def ensure_realm_does_not_have_active_plan(realm: Customer) -> None:
+    if get_current_plan_by_realm(realm) is not None:
+        # Unlikely race condition from two people upgrading (clicking "Make payment")
+        # at exactly the same time. Doesn't fully resolve the race condition, but having
+        # a check here reduces the likelihood.
+        billing_logger.warning(
+            "Upgrade of %s failed because of existing active plan.",
+            realm.string_id,
+        )
+        raise UpgradeWithExistingPlanError()
+
+
 # Only used for cloud signups
 @catch_stripe_errors
 def process_initial_upgrade(
@@ -599,27 +626,14 @@ def process_initial_upgrade(
     licenses: int,
     automanage_licenses: bool,
     billing_schedule: int,
-    stripe_token: Optional[str],
+    charge_automatically: bool,
+    free_trial: bool,
 ) -> None:
     realm = user.realm
-    customer = update_or_create_stripe_customer(user, stripe_token=stripe_token)
+    customer = update_or_create_stripe_customer(user)
     assert customer.stripe_customer_id is not None  # for mypy
-
-    charge_automatically = stripe_token is not None
-    free_trial = is_free_trial_offer_enabled()
-
-    if get_current_plan_by_customer(customer) is not None:
-        # Unlikely race condition from two people upgrading (clicking "Make payment")
-        # at exactly the same time. Doesn't fully resolve the race condition, but having
-        # a check here reduces the likelihood.
-        billing_logger.warning(
-            "Customer %s trying to upgrade, but has an active subscription",
-            customer,
-        )
-        raise BillingError(
-            "subscribing with existing subscription", str(BillingError.TRY_RELOADING)
-        )
-
+    assert customer.realm is not None
+    ensure_realm_does_not_have_active_plan(customer.realm)
     (
         billing_cycle_anchor,
         next_invoice_date,
@@ -632,32 +646,6 @@ def process_initial_upgrade(
         customer.default_discount,
         free_trial,
     )
-    # The main design constraint in this function is that if you upgrade with a credit card, and the
-    # charge fails, everything should be rolled back as if nothing had happened. This is because we
-    # expect frequent card failures on initial signup.
-    # Hence, if we're going to charge a card, do it at the beginning, even if we later may have to
-    # adjust the number of licenses.
-    if charge_automatically:
-        if not free_trial:
-            stripe_charge = stripe.Charge.create(
-                amount=price_per_license * licenses,
-                currency="usd",
-                customer=customer.stripe_customer_id,
-                description=f"Upgrade to Zulip Standard, ${price_per_license/100} x {licenses}",
-                receipt_email=user.delivery_email,
-                statement_descriptor="Zulip Standard",
-            )
-            # Not setting a period start and end, but maybe we should? Unclear what will make things
-            # most similar to the renewal case from an accounting perspective.
-            assert isinstance(stripe_charge.source, stripe.Card)
-            description = f"Payment (Card ending in {stripe_charge.source.last4})"
-            stripe.InvoiceItem.create(
-                amount=price_per_license * licenses * -1,
-                currency="usd",
-                customer=customer.stripe_customer_id,
-                description=description,
-                discountable=False,
-            )
 
     # TODO: The correctness of this relies on user creation, deactivation, etc being
     # in a transaction.atomic() with the relevant RealmAuditLog entries
@@ -728,7 +716,7 @@ def process_initial_upgrade(
 
     from zerver.lib.actions import do_change_plan_type
 
-    do_change_plan_type(realm, Realm.STANDARD, acting_user=user)
+    do_change_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=user)
 
 
 def update_license_ledger_for_manual_plan(
@@ -738,12 +726,14 @@ def update_license_ledger_for_manual_plan(
     licenses_at_next_renewal: Optional[int] = None,
 ) -> None:
     if licenses is not None:
+        assert plan.customer.realm is not None
         assert get_latest_seat_count(plan.customer.realm) <= licenses
         assert licenses > plan.licenses()
         LicenseLedger.objects.create(
             plan=plan, event_time=event_time, licenses=licenses, licenses_at_next_renewal=licenses
         )
     elif licenses_at_next_renewal is not None:
+        assert plan.customer.realm is not None
         assert get_latest_seat_count(plan.customer.realm) <= licenses_at_next_renewal
         LicenseLedger.objects.create(
             plan=plan,
@@ -795,6 +785,7 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
     if plan.invoicing_status == CustomerPlan.STARTED:
         raise NotImplementedError("Plan with invoicing_status==STARTED needs manual resolution.")
     if not plan.customer.stripe_customer_id:
+        assert plan.customer.realm is not None
         raise BillingError(
             f"Realm {plan.customer.realm.string_id} has a paid plan without a Stripe customer."
         )
@@ -948,7 +939,7 @@ def update_sponsorship_status(
 def approve_sponsorship(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
     from zerver.lib.actions import do_change_plan_type, internal_send_private_message
 
-    do_change_plan_type(realm, Realm.STANDARD_FREE, acting_user=acting_user)
+    do_change_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=acting_user)
     customer = get_customer_by_realm(realm)
     if customer is not None and customer.sponsorship_pending:
         customer.sponsorship_pending = False
@@ -973,7 +964,7 @@ def approve_sponsorship(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
 
 
 def is_sponsored_realm(realm: Realm) -> bool:
-    return realm.plan_type == Realm.STANDARD_FREE
+    return realm.plan_type == Realm.PLAN_TYPE_STANDARD_FREE
 
 
 def get_discount_for_realm(realm: Realm) -> Optional[Decimal]:
@@ -997,7 +988,8 @@ def do_change_plan_status(plan: CustomerPlan, status: int) -> None:
 def process_downgrade(plan: CustomerPlan) -> None:
     from zerver.lib.actions import do_change_plan_type
 
-    do_change_plan_type(plan.customer.realm, Realm.LIMITED, acting_user=None)
+    assert plan.customer.realm is not None
+    do_change_plan_type(plan.customer.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
     plan.status = CustomerPlan.ENDED
     plan.save(update_fields=["status"])
 

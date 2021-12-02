@@ -100,10 +100,7 @@ li.show-more-topics {
             margin-left: 0;
 
             &.topic-list li {
-                padding-top: 2px;
-                padding-right: 0;
-                padding-bottom: 2px;
-                padding-left: calc($topic_indent - $topic_resolve_width);
+                padding: 2px 0 2px calc($topic_indent - $topic_resolve_width);
 
                 &.filter-topics {
                     padding-bottom: 0;
@@ -198,8 +195,7 @@ li.show-more-topics {
 
 #add-stream-link {
     text-decoration: none;
-    margin-left: 10px;
-    margin-top: 5px;
+    margin: 5px auto 5.5px 10px;
 
     i {
         min-width: 19px;
@@ -266,7 +262,8 @@ li.active-sub-filter {
         display: none;
     }
 
-    .top_left_starred_messages .unread_count {
+    .top_left_starred_messages .unread_count,
+    .top_left_drafts .unread_count {
         background-color: inherit;
         color: inherit;
         border: 0.5px solid hsl(105, 2%, 50%);
@@ -291,6 +288,7 @@ li.top_left_all_messages,
 .private_messages_header,
 li.top_left_mentions,
 li.top_left_starred_messages,
+li.top_left_drafts,
 li.top_left_recent_topics {
     position: relative;
     padding-top: 1px;
@@ -367,6 +365,7 @@ li.top_left_recent_topics {
 .all-messages-sidebar-menu-icon,
 .stream-sidebar-menu-icon,
 .starred-messages-sidebar-menu-icon,
+.drafts-sidebar-menu-icon,
 .topic-sidebar-menu-icon {
     position: absolute;
     display: none;
@@ -406,12 +405,13 @@ li.top_left_recent_topics {
 */
 .all-messages-sidebar-menu-icon,
 .starred-messages-sidebar-menu-icon,
+.drafts-sidebar-menu-icon,
 .stream-sidebar-menu-icon {
     top: 1px;
     right: 0;
     font-size: 1em;
     text-align: center;
-    padding: 0 6px 0 6px;
+    padding: 0 6px;
 }
 
 /*
@@ -424,7 +424,7 @@ li.top_left_recent_topics {
     right: 0;
     font-size: 0.9em;
     text-align: center;
-    padding: 1px 6px 0 6px;
+    padding: 1px 6px 0;
 }
 
 /*
@@ -433,6 +433,7 @@ li.top_left_recent_topics {
 */
 li.top_left_all_messages:hover .all-messages-sidebar-menu-icon,
 li.top_left_starred_messages:hover .starred-messages-sidebar-menu-icon,
+li.top_left_drafts:hover .drafts-sidebar-menu-icon,
 #stream_filters li:hover .stream-sidebar-menu-icon,
 li.topic-list-item:hover .topic-sidebar-menu-icon {
     display: inline;

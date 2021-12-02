@@ -1,5 +1,6 @@
 import autosize from "autosize";
 import ClipboardJS from "clipboard";
+import {addDays} from "date-fns";
 import $ from "jquery";
 
 import copy_invite_link from "../templates/copy_invite_link.hbs";
@@ -33,6 +34,7 @@ function reset_error_messages() {
 
 function get_common_invitation_data() {
     const invite_as = Number.parseInt($("#invite_as").val(), 10);
+    const expires_in = Number.parseFloat($("#expires_in").val());
     const stream_ids = [];
     $("#invite-stream-checkboxes input:checked").each(function () {
         const stream_id = Number.parseInt($(this).val(), 10);
@@ -42,6 +44,7 @@ function get_common_invitation_data() {
         csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').attr("value"),
         invite_as,
         stream_ids: JSON.stringify(stream_ids),
+        invite_expires_in_days: expires_in,
     };
     return data;
 }
@@ -109,6 +112,7 @@ function submit_invitation_form() {
                     is_invitee_deactivated,
                     license_limit_reached: arr.license_limit_reached,
                     has_billing_access: page_params.is_owner || page_params.is_billing_admin,
+                    daily_limit_reached: arr.daily_limit_reached,
                 });
                 ui_report.message(error_response, invite_status, "alert-warning");
                 invitee_emails_group.addClass("warning");
@@ -191,12 +195,22 @@ export function launch() {
     });
 }
 
+function valid_to() {
+    const time_valid = Number.parseFloat($("#expires_in").val());
+    if (!time_valid) {
+        return $t({defaultMessage: "Never expires"});
+    }
+    const valid_to = addDays(new Date(), time_valid);
+    return $t({defaultMessage: "Expires on {date}"}, {date: valid_to.toLocaleDateString()});
+}
+
 export function initialize() {
     const rendered = render_invite_user({
         is_admin: page_params.is_admin,
         is_owner: page_params.is_owner,
         development_environment: page_params.development_environment,
         invite_as_options: settings_config.user_role_values,
+        expires_in_options: settings_config.expires_in_values,
     });
 
     $(".app").append(rendered);
@@ -235,5 +249,10 @@ export function initialize() {
         $("#multiuse_radio_section").hide();
         $("#invite-method-choice").show();
         reset_error_messages();
+    });
+
+    $("#expires_on").text(valid_to());
+    $("#expires_in").on("change", () => {
+        $("#expires_on").text(valid_to());
     });
 }

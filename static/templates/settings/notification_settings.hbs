@@ -119,16 +119,27 @@
             {{> settings_save_discard_widget section_name="email-message-settings" show_only_indicator=(not for_realm_settings) }}
         </div>
 
-        <label for="email_notifications_batching_period">
-            {{t "Delay before sending message notification emails" }}
-        </label>
+        <div class="input-group form-horizontal">
 
-        <div class="input-group">
+            <label for="email_notifications_batching_period">
+                {{t "Delay before sending message notification emails" }}
+            </label>
             <select name="email_notifications_batching_period_seconds" class="setting_email_notifications_batching_period_seconds prop-element" data-setting-widget-type="number">
                 {{#each email_notifications_batching_period_values}}
                 <option value="{{ this.value }}">{{ this.description }}</option>
                 {{/each}}
             </select>
+            <div class="dependent-inline-block">
+                <label for="email_notification_batching_period_edit_minutes" class="inline-block">
+                    {{t 'N' }}:
+                </label>
+                <input type="text"
+                  name="email_notification_batching_period_edit_minutes"
+                  class="email_notification_batching_period_edit_minutes admin-realm-time-limit-input prop-element"
+                  data-setting-widget-type="number"
+                  autocomplete="off"
+                  value="{{ email_notifications_batching_period_seconds }}"/>
+            </div>
         </div>
 
         {{#each notification_settings.email_message_notification_settings}}

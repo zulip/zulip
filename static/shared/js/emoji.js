@@ -10,6 +10,7 @@ export const emojis_by_name = new Map();
 
 export const all_realm_emojis = new Map();
 export const active_realm_emojis = new Map();
+export const deactivated_emoji_name_to_code = new Map();
 
 const default_emoji_aliases = new Map();
 
@@ -169,8 +170,16 @@ export function update_emojis(realm_emojis) {
             });
         }
     }
-    // Add the Zulip emoji to the realm emojis list
+
+    // Add the special Zulip emoji as though it were a realm emoji.
+
+    // The Zulip emoji is the only emoji that uses a string ("zulip")
+    // as its ID. All other emoji use numeric IDs. This special case
+    // is confusing; ideally we'd convert the Zulip emoji to be
+    // implemented using the RealmEmoji infrastructure.
     all_realm_emojis.set("zulip", zulip_emoji);
+
+    // here "zulip" is an emoji name, which is fine.
     active_realm_emojis.set("zulip", zulip_emoji);
 
     build_emoji_data(active_realm_emojis);
@@ -207,6 +216,32 @@ export function get_emoji_details_by_name(emoji_name) {
         emoji_info.emoji_code = codepoint;
     }
     return emoji_info;
+}
+
+export function get_emoji_details_for_rendering(opts) {
+    if (!opts.emoji_name || !opts.emoji_code || !opts.reaction_type) {
+        throw new Error("Invalid params.");
+    }
+
+    if (opts.reaction_type !== "unicode_emoji") {
+        const realm_emoji = all_realm_emojis.get(opts.emoji_code);
+        if (!realm_emoji) {
+            throw new Error(`Cannot find realm emoji for code '${opts.emoji_code}'.`);
+        }
+        return {
+            url: realm_emoji.emoji_url,
+            still_url: realm_emoji.still_url,
+            emoji_name: opts.emoji_name,
+            emoji_code: opts.emoji_code,
+            reaction_type: opts.reaction_type,
+        };
+    }
+    // else
+    return {
+        emoji_name: opts.emoji_name,
+        emoji_code: opts.emoji_code,
+        reaction_type: opts.reaction_type,
+    };
 }
 
 export function initialize(params) {

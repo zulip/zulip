@@ -25,17 +25,13 @@ const default_popover_props = {
     hideOnClick: true,
     /* The light-border TippyJS theme is a bit of a misnomer; it
        is a popover styling similar to Bootstrap.  We've also customized
-       its CSS to support Zulip's night theme. */
+       its CSS to support Zulip's dark theme. */
     theme: "light-border",
     touch: true,
 };
 
-export function is_left_sidebar_stream_setting_popover_displayed() {
-    return left_sidebar_stream_setting_popover_displayed;
-}
-
-export function is_compose_mobile_button_popover_displayed() {
-    return compose_mobile_button_popover_displayed;
+export function any_active() {
+    return left_sidebar_stream_setting_popover_displayed || compose_mobile_button_popover_displayed;
 }
 
 export function initialize() {
@@ -48,7 +44,8 @@ export function initialize() {
                 render_left_sidebar_stream_setting_popover({
                     can_create_streams:
                         settings_data.user_can_create_private_streams() ||
-                        settings_data.user_can_create_public_streams(),
+                        settings_data.user_can_create_public_streams() ||
+                        settings_data.user_can_create_web_public_streams(),
                 }),
             );
             left_sidebar_stream_setting_popover_displayed = true;

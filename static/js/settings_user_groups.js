@@ -353,19 +353,14 @@ export function set_up() {
             });
         }
 
-        // This is mostly important for styling concerns.
-        const modal_parent = $("#settings_content");
-
         const html_body = render_confirm_delete_user({
             group_name: user_group.name,
         });
 
         confirm_dialog.launch({
-            parent: modal_parent,
             html_heading: $t_html({defaultMessage: "Delete user group"}),
             html_body,
             on_click: delete_user_group,
-            fade: true,
         });
     });
 

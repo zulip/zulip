@@ -5,9 +5,9 @@ import render_message_edit_history from "../templates/message_edit_history.hbs";
 import render_message_history_modal from "../templates/message_history_modal.hbs";
 
 import * as channel from "./channel";
+import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import * as message_lists from "./message_lists";
-import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popovers from "./popovers";
@@ -72,7 +72,7 @@ export function fetch_and_render_message_history(message) {
             ui_report.error(
                 $t_html({defaultMessage: "Error fetching message edit history"}),
                 xhr,
-                $("#message-history-error"),
+                $("#dialog_error"),
             );
         },
     });
@@ -80,10 +80,20 @@ export function fetch_and_render_message_history(message) {
 
 export function show_history(message) {
     const rendered_message_history = render_message_history_modal();
-    $("#message_feed_container").append(rendered_message_history);
 
-    fetch_and_render_message_history(message);
-    overlays.open_modal("#message-edit-history", {autoremove: true});
+    dialog_widget.launch({
+        html_heading: $t_html({defaultMessage: "Message edit history"}),
+        html_body: rendered_message_history,
+        html_submit_button: $t_html({defaultMessage: "Close"}),
+        id: "message-edit-history",
+        on_click: () => {},
+        close_on_submit: true,
+        focus_submit_on_open: true,
+        single_footer_button: true,
+        post_render: () => {
+            fetch_and_render_message_history(message);
+        },
+    });
 }
 
 export function initialize() {

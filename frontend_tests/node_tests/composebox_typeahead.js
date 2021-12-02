@@ -154,12 +154,26 @@ const emoji_list = Array.from(emojis_by_name.values(), (emoji_dict) => {
 
 const me_slash = {
     name: "me",
+    aliases: "",
     text: "translated: /me is excited (Display action text)",
 };
 
 const my_slash = {
     name: "my",
+    aliases: "",
     text: "translated: /my (Test)",
+};
+
+const dark_slash = {
+    name: "dark",
+    aliases: "night",
+    text: "translated: /dark (Switch to the dark theme)",
+};
+
+const light_slash = {
+    name: "light",
+    aliases: "day",
+    text: "translated: /light (Switch to light theme)",
 };
 
 const sweden_stream = {
@@ -483,6 +497,30 @@ test("content_typeahead_selected", ({override}) => {
     fake_this.completing = "slash";
     actual_value = ct.content_typeahead_selected.call(fake_this, me_slash);
     expected_value = "/me ";
+    assert.equal(actual_value, expected_value);
+
+    fake_this.query = "/da";
+    fake_this.completing = "slash";
+    actual_value = ct.content_typeahead_selected.call(fake_this, dark_slash);
+    expected_value = "/dark ";
+    assert.equal(actual_value, expected_value);
+
+    fake_this.query = "/ni";
+    fake_this.completing = "slash";
+    actual_value = ct.content_typeahead_selected.call(fake_this, dark_slash);
+    expected_value = "/dark ";
+    assert.equal(actual_value, expected_value);
+
+    fake_this.query = "/li";
+    fake_this.completing = "slash";
+    actual_value = ct.content_typeahead_selected.call(fake_this, light_slash);
+    expected_value = "/light ";
+    assert.equal(actual_value, expected_value);
+
+    fake_this.query = "/da";
+    fake_this.completing = "slash";
+    actual_value = ct.content_typeahead_selected.call(fake_this, light_slash);
+    expected_value = "/light ";
     assert.equal(actual_value, expected_value);
 
     // stream
@@ -948,6 +986,11 @@ test("initialize", ({override, mock_template}) => {
         expected_value = [me_slash, my_slash];
         assert.deepEqual(actual_value, expected_value);
 
+        fake_this = {completing: "slash", token: "da"};
+        actual_value = sort_items(fake_this, [dark_slash, light_slash]);
+        expected_value = [dark_slash, light_slash];
+        assert.deepEqual(actual_value, expected_value);
+
         fake_this = {completing: "stream", token: "de"};
         actual_value = sort_items(fake_this, [sweden_stream, denmark_stream]);
         expected_value = [denmark_stream, sweden_stream];
@@ -1011,6 +1054,7 @@ test("initialize", ({override, mock_template}) => {
             id: "stream_message_recipient_stream",
         },
         preventDefault: noop,
+        stopPropagation: noop,
     };
 
     $("#stream_message_recipient_topic").data = () => ({typeahead: {shown: true}});
@@ -1520,6 +1564,10 @@ test("typeahead_results", () => {
 
     // Autocomplete by slash commands.
     assert_slash_matches("me", [me_slash]);
+    assert_slash_matches("dark", [dark_slash]);
+    assert_slash_matches("night", [dark_slash]);
+    assert_slash_matches("light", [light_slash]);
+    assert_slash_matches("day", [light_slash]);
 
     // Autocomplete stream by stream name or stream description.
     assert_stream_matches("den", [denmark_stream, sweden_stream]);

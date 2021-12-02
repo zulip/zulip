@@ -1,12 +1,10 @@
 import os
 import sys
 import time
-import warnings
 from copy import deepcopy
 from typing import Any, Dict, List, Tuple, Union
 from urllib.parse import urljoin
 
-from cryptography.utils import CryptographyDeprecationWarning
 from django.template.loaders import app_directories
 
 import zerver.lib.logging_util
@@ -240,7 +238,7 @@ SILENCED_SYSTEM_CHECKS = [
     # `unique=True`.  For us this is `email`, and it's unique only per-realm.
     # Per Django docs, this is perfectly fine so long as our authentication
     # backends support the username not being unique; and they do.
-    # See: https://docs.djangoproject.com/en/2.2/topics/auth/customizing/#django.contrib.auth.models.CustomUser.USERNAME_FIELD
+    # See: https://docs.djangoproject.com/en/3.2/topics/auth/customizing/#django.contrib.auth.models.CustomUser.USERNAME_FIELD
     "auth.W004",
     # models.E034 limits index names to 30 characters for Oracle compatibility.
     # We aren't using Oracle.
@@ -385,15 +383,16 @@ RATE_LIMITING_RULES = {
     "authenticate_by_username": [
         (1800, 5),  # 5 login attempts within 30 minutes
     ],
-    "create_realm_by_ip": [
-        (1800, 5),
-    ],
-    "find_account_by_ip": [
-        (3600, 10),
+    "email_change_by_user": [
+        (3600, 2),  # 2 per hour
+        (86400, 5),  # 5 per day
     ],
     "password_reset_form_by_email": [
         (3600, 2),  # 2 reset emails per hour
         (86400, 5),  # 5 per day
+    ],
+    "sends_email_by_ip": [
+        (86400, 5),
     ],
 }
 
@@ -414,6 +413,12 @@ RATE_LIMITING_MIRROR_REALM_RULES = [
 
 DEBUG_RATE_LIMITING = DEBUG
 REDIS_PASSWORD = get_secret("redis_password")
+
+# See RATE_LIMIT_TOR_TOGETHER
+if DEVELOPMENT:
+    TOR_EXIT_NODE_FILE_PATH = os.path.join(DEPLOY_ROOT, "var/tor-exit-nodes.json")
+else:
+    TOR_EXIT_NODE_FILE_PATH = "/var/lib/zulip/tor-exit-nodes.json"
 
 ########################################################################
 # SECURITY SETTINGS
@@ -1001,11 +1006,6 @@ LOGGING: Dict[str, Any] = {
     },
 }
 
-# Silence CryptographyDeprecationWarning spam from a dependency:
-# /srv/zulip-py3-venv/lib/python3.6/site-packages/jose/backends/cryptography_backend.py:18: CryptographyDeprecationWarning: int_from_bytes is deprecated, use int.from_bytes instead
-# TODO: Clean this up when possible after future dependency upgrades.
-warnings.filterwarnings("ignore", category=CryptographyDeprecationWarning, module="jose.*")
-
 if DEVELOPMENT:
     CONTRIBUTOR_DATA_FILE_PATH = os.path.join(DEPLOY_ROOT, "var/github-contributors.json")
 else:
@@ -1129,6 +1129,13 @@ if "signatureAlgorithm" not in SOCIAL_AUTH_SAML_SECURITY_CONFIG:
     default_signature_alg = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"
     SOCIAL_AUTH_SAML_SECURITY_CONFIG["signatureAlgorithm"] = default_signature_alg
 
+if "wantMessagesSigned" not in SOCIAL_AUTH_SAML_SECURITY_CONFIG:
+    # This setting controls whether LogoutRequests delivered to us
+    # need to be signed. The default of False is not acceptable,
+    # because we don't want anyone to be able to submit a request
+    # to get other users logged out.
+    SOCIAL_AUTH_SAML_SECURITY_CONFIG["wantMessagesSigned"] = True
+
 for idp_name, idp_dict in SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
     if DEVELOPMENT:
         idp_dict["entity_id"] = get_secret("saml_entity_id", "")
@@ -1212,7 +1219,7 @@ if SENTRY_DSN:
 SCIM_SERVICE_PROVIDER = {
     "USER_ADAPTER": "zerver.lib.scim.ZulipSCIMUser",
     "USER_FILTER_PARSER": "zerver.lib.scim_filter.ZulipUserFilterQuery",
-    # NETLOC is actually overriden by the behavior of base_scim_location_getter,
+    # NETLOC is actually overridden by the behavior of base_scim_location_getter,
     # but django-scim2 requires it to be set, even though it ends up not being used.
     # So we need to give it some value here, and EXTERNAL_HOST is the most generic.
     "NETLOC": EXTERNAL_HOST,

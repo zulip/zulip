@@ -351,20 +351,29 @@ class EditMessageTest(EditMessageTestCase):
             result, "Not logged in: API authentication or user session required", 401
         )
 
+        do_set_realm_property(
+            user_profile.realm, "enable_spectator_access", False, acting_user=None
+        )
+        result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
+        )
+        do_set_realm_property(user_profile.realm, "enable_spectator_access", True, acting_user=None)
+
         # Verify success with web-public stream and default SELF_HOSTED plan type.
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
         self.assert_json_success(result)
         self.assertEqual(result.json()["raw_content"], "web-public message")
 
         # Verify LIMITED plan type does not allow web-public access.
-        do_change_plan_type(user_profile.realm, Realm.LIMITED, acting_user=None)
+        do_change_plan_type(user_profile.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
         self.assert_json_error(
             result, "Not logged in: API authentication or user session required", 401
         )
 
         # Verify works with STANDARD_FREE plan type too.
-        do_change_plan_type(user_profile.realm, Realm.STANDARD_FREE, acting_user=None)
+        do_change_plan_type(user_profile.realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=None)
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
         self.assert_json_success(result)
         self.assertEqual(result.json()["raw_content"], "web-public message")

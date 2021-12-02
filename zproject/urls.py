@@ -128,9 +128,9 @@ from zerver.views.registration import (
     accounts_home,
     accounts_home_from_multiuse_invite,
     accounts_register,
-    check_prereg_key_and_redirect,
     create_realm,
     find_account,
+    get_prereg_key_and_redirect,
     realm_redirect,
 )
 from zerver.views.report import (
@@ -559,8 +559,8 @@ i18n_urls = [
     path("accounts/register/", accounts_register, name="accounts_register"),
     path(
         "accounts/do_confirm/<confirmation_key>",
-        check_prereg_key_and_redirect,
-        name="check_prereg_key_and_redirect",
+        get_prereg_key_and_redirect,
+        name="get_prereg_key_and_redirect",
     ),
     path(
         "accounts/confirm_new_email/<confirmation_key>",
@@ -608,7 +608,9 @@ i18n_urls = [
     path("apps/download/<platform>", app_download_link_redirect),
     path("apps/<platform>", apps_view),
     path(
-        "developer-community/", landing_view, {"template_name": "zerver/developer-community.html"}
+        "development-community/",
+        landing_view,
+        {"template_name": "zerver/development-community.html"},
     ),
     path("attribution/", landing_view, {"template_name": "zerver/attribution.html"}),
     path("team/", team_view),
@@ -621,6 +623,8 @@ i18n_urls = [
     path("for/companies/", landing_view, {"template_name": "zerver/for-companies.html"}),
     path("case-studies/tum/", landing_view, {"template_name": "zerver/tum-case-study.html"}),
     path("case-studies/ucsd/", landing_view, {"template_name": "zerver/ucsd-case-study.html"}),
+    path("case-studies/rust/", landing_view, {"template_name": "zerver/rust-case-study.html"}),
+    path("case-studies/lean/", landing_view, {"template_name": "zerver/lean-case-study.html"}),
     path(
         "for/communities/",
         landing_view,
@@ -635,6 +639,9 @@ i18n_urls = [
     # Terms of Service and privacy pages.
     path("terms/", terms_view),
     path("privacy/", privacy_view),
+    path(
+        "developer-community/", RedirectView.as_view(url="/development-community/", permanent=True)
+    ),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
@@ -669,9 +676,14 @@ urls += [
     rest_path("thumbnail", GET=(backend_serve_thumbnail, {"override_api_url_scheme"})),
     # Avatars have the same constraint because their URLs are included
     # in API data structures used by both the mobile and web clients.
-    rest_path("avatar/<email_or_id>", GET=(avatar, {"override_api_url_scheme"})),
     rest_path(
-        "avatar/<email_or_id>/medium", {"medium": True}, GET=(avatar, {"override_api_url_scheme"})
+        "avatar/<email_or_id>",
+        GET=(avatar, {"override_api_url_scheme", "allow_anonymous_user_web"}),
+    ),
+    rest_path(
+        "avatar/<email_or_id>/medium",
+        {"medium": True},
+        GET=(avatar, {"override_api_url_scheme", "allow_anonymous_user_web"}),
     ),
 ]
 
@@ -860,6 +872,10 @@ urls += [
     path(
         "help/add-custom-emoji",
         RedirectView.as_view(url="/help/custom-emoji", permanent=True),
+    ),
+    path(
+        "help/night-mode",
+        RedirectView.as_view(url="/help/dark-theme", permanent=True),
     ),
     path("help/", help_documentation_view),
     path("help/<path:article>", help_documentation_view),

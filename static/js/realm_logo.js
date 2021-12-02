@@ -69,10 +69,10 @@ export function render() {
     $("#realm-day-logo-upload-widget .image-block").attr("src", page_params.realm_logo_url);
 
     if (page_params.realm_night_logo_source === "D" && page_params.realm_logo_source !== "D") {
-        // If no night mode logo is uploaded but a day mode one
-        // is, use the day mode one; this handles the common case
+        // If no dark theme logo is uploaded but a light theme one
+        // is, use the light theme one; this handles the common case
         // of transparent background logos that look good on both
-        // night and day themes.  See also similar code in admin.js.
+        // dark and light themes.  See also similar code in admin.js.
 
         $("#realm-night-logo-upload-widget .image-block").attr("src", page_params.realm_logo_url);
     } else {

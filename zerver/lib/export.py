@@ -689,13 +689,6 @@ def get_realm_config() -> Config:
         custom_fetch=fetch_user_profile,
     )
 
-    Config(
-        table="zerver_alertword",
-        model=AlertWord,
-        normal_parent=user_profile_config,
-        parent_key="user_profile__in",
-    )
-
     user_groups_config = Config(
         table="zerver_usergroup",
         model=UserGroup,
@@ -723,55 +716,6 @@ def get_realm_config() -> Config:
         ],
         virtual_parent=user_profile_config,
         custom_fetch=fetch_user_profile_cross_realm,
-    )
-
-    Config(
-        table="zerver_userpresence",
-        model=UserPresence,
-        normal_parent=user_profile_config,
-        parent_key="user_profile__in",
-    )
-
-    Config(
-        table="zerver_customprofilefieldvalue",
-        model=CustomProfileFieldValue,
-        normal_parent=user_profile_config,
-        parent_key="user_profile__in",
-    )
-
-    Config(
-        table="zerver_useractivity",
-        model=UserActivity,
-        normal_parent=user_profile_config,
-        parent_key="user_profile__in",
-    )
-
-    Config(
-        table="zerver_useractivityinterval",
-        model=UserActivityInterval,
-        normal_parent=user_profile_config,
-        parent_key="user_profile__in",
-    )
-
-    Config(
-        table="zerver_realmauditlog",
-        model=RealmAuditLog,
-        normal_parent=user_profile_config,
-        parent_key="modified_user__in",
-    )
-
-    Config(
-        table="zerver_userhotspot",
-        model=UserHotspot,
-        normal_parent=user_profile_config,
-        parent_key="user__in",
-    )
-
-    Config(
-        table="zerver_usertopic",
-        model=UserTopic,
-        normal_parent=user_profile_config,
-        parent_key="user_profile__in",
     )
 
     Config(
@@ -871,7 +815,81 @@ def get_realm_config() -> Config:
         ],
     )
 
+    add_user_profile_child_configs(user_profile_config)
+
     return realm_config
+
+
+def add_user_profile_child_configs(user_profile_config: Config) -> None:
+    """
+    We add tables here that are keyed by user, and for which
+    we fetch rows using the same scheme whether we are
+    exporting a realm or a single user.
+
+    For any table where there is nuance between how you
+    fetch for realms vs. single users, it's best to just
+    keep things simple and have each caller maintain its
+    own slightly different 4/5 line Config (while still
+    possibly calling common code deeper in the stack).
+
+    As of now, we do NOT include bot tables like Service.
+    """
+
+    Config(
+        table="zerver_useractivity",
+        model=UserActivity,
+        normal_parent=user_profile_config,
+        parent_key="user_profile__in",
+    )
+
+    Config(
+        table="zerver_useractivityinterval",
+        model=UserActivityInterval,
+        normal_parent=user_profile_config,
+        parent_key="user_profile__in",
+    )
+
+    Config(
+        table="zerver_alertword",
+        model=AlertWord,
+        normal_parent=user_profile_config,
+        parent_key="user_profile__in",
+    )
+
+    Config(
+        table="zerver_customprofilefieldvalue",
+        model=CustomProfileFieldValue,
+        normal_parent=user_profile_config,
+        parent_key="user_profile__in",
+    )
+
+    Config(
+        table="zerver_realmauditlog",
+        model=RealmAuditLog,
+        normal_parent=user_profile_config,
+        parent_key="modified_user__in",
+    )
+
+    Config(
+        table="zerver_userhotspot",
+        model=UserHotspot,
+        normal_parent=user_profile_config,
+        parent_key="user__in",
+    )
+
+    Config(
+        table="zerver_userpresence",
+        model=UserPresence,
+        normal_parent=user_profile_config,
+        parent_key="user_profile__in",
+    )
+
+    Config(
+        table="zerver_usertopic",
+        model=UserTopic,
+        normal_parent=user_profile_config,
+        parent_key="user_profile__in",
+    )
 
 
 def fetch_user_profile(response: TableData, config: Config, context: Context) -> None:
@@ -1835,6 +1853,15 @@ def get_single_user_config() -> Config:
         exclude=["email_token"],
     )
 
+    Config(
+        table="analytics_usercount",
+        model=UserCount,
+        normal_parent=user_profile_config,
+        parent_key="user__in",
+    )
+
+    add_user_profile_child_configs(user_profile_config)
+
     return user_profile_config
 
 
@@ -1947,7 +1974,6 @@ def export_realm_wrapper(
     threads: int,
     upload: bool,
     public_only: bool,
-    delete_after_upload: bool,
     percent_callback: Optional[Callable[[Any], None]] = None,
     consent_message_id: Optional[int] = None,
 ) -> Optional[str]:
@@ -1958,9 +1984,8 @@ def export_realm_wrapper(
         public_only=public_only,
         consent_message_id=consent_message_id,
     )
-    print(f"Finished exporting to {output_dir}")
+    shutil.rmtree(output_dir)
     print(f"Tarball written to {tarball_path}")
-
     if not upload:
         return None
 
@@ -1971,12 +1996,10 @@ def export_realm_wrapper(
     public_url = zerver.lib.upload.upload_backend.upload_export_tarball(
         realm, tarball_path, percent_callback=percent_callback
     )
-    print()
-    print(f"Uploaded to {public_url}")
+    print(f"\nUploaded to {public_url}")
 
-    if delete_after_upload:
-        os.remove(tarball_path)
-        print(f"Successfully deleted the tarball at {tarball_path}")
+    os.remove(tarball_path)
+    print(f"Successfully deleted the tarball at {tarball_path}")
     return public_url
 
 

@@ -944,15 +944,17 @@ test("parse", () => {
 
     string = "text stream:foo more text";
     operators = [
+        {operator: "search", operand: "text"},
         {operator: "stream", operand: "foo"},
-        {operator: "search", operand: "text more text"},
+        {operator: "search", operand: "more text"},
     ];
     _test();
 
     string = "text streams:public more text";
     operators = [
+        {operator: "search", operand: "text"},
         {operator: "streams", operand: "public"},
-        {operator: "search", operand: "text more text"},
+        {operator: "search", operand: "more text"},
     ];
     _test();
 
@@ -973,15 +975,17 @@ test("parse", () => {
 
     string = ":stream: stream:foo :emoji: are cool";
     operators = [
+        {operator: "search", operand: ":stream:"},
         {operator: "stream", operand: "foo"},
-        {operator: "search", operand: ":stream: :emoji: are cool"},
+        {operator: "search", operand: ":emoji: are cool"},
     ];
     _test();
 
     string = ":stream: stream:foo -:emoji: are cool";
     operators = [
+        {operator: "search", operand: ":stream:"},
         {operator: "stream", operand: "foo"},
-        {operator: "search", operand: ":stream: -:emoji: are cool"},
+        {operator: "search", operand: "-:emoji: are cool"},
     ];
     _test();
 

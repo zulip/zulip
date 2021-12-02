@@ -76,6 +76,11 @@ preparing a new release.
 
 ### Post-release
 
+- Update the CI targets in `.github/workflows/production-suite.yml` to
+  include upgrades from the most recent point releases from the last
+  two series -- e.g after releasing 4.8, both `main` and `4.x` should
+  should test upgrades from 3.4 and 4.8, and after releasing 5.0 both
+  `main` and `5.x` should test upgrades from 4.8 and 5.0.
 - Following a major release (e.g. 4.0):
   - Create a release branch (e.g. `4.x`).
   - On the release branch, update `ZULIP_VERSION` in `version.py` to

@@ -63,9 +63,11 @@ If the script gives an error, consult [Troubleshooting](#troubleshooting) below.
   suitable for production use, but may be convenient for testing.
 
 - `--certbot`: With this option, the Zulip installer automatically
-  obtains an SSL certificate for the server [using Certbot][doc-certbot].
-  If you'd prefer to acquire an SSL certificate yourself in any other
-  way, it's easy to [provide it to Zulip][doc-ssl-manual].
+  obtains an SSL certificate for the server [using
+  Certbot][doc-certbot], and configures a cron job to renew the
+  certificate automatically. If you'd prefer to acquire an SSL
+  certificate yourself in any other way, it's easy to [provide it to
+  Zulip][doc-ssl-manual].
 
 You can see the more advanced installer options in our [deployment options][doc-deployment-options]
 documentation.

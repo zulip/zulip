@@ -38,6 +38,7 @@
         "import/extensions": "error",
         "import/first": "error",
         "import/newline-after-import": "error",
+        "import/no-self-import": "error",
         "import/no-useless-path-segments": "error",
         "import/order": [
             "error",

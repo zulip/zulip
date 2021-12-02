@@ -20,7 +20,7 @@ tests, use Django's tooling.
 Zulip's [directory structure](../overview/directory-structure.md)
 will also be helpful to review when creating a new feature. Many
 aspects of the structure will be familiar to Django developers. Visit
-[Django's documentation](https://docs.djangoproject.com/en/2.2/#index-first-steps)
+[Django's documentation](https://docs.djangoproject.com/en/3.2/#index-first-steps)
 for more information about how Django projects are typically
 organized. And finally, the
 [message sending](../subsystems/sending-messages.md) documentation on
@@ -63,6 +63,12 @@ organization in Zulip). The following files are involved in the process:
 - `frontend_tests/puppeteer_tests/admin.ts`: end-to-end tests for the organization
   admin settings pages.
 - `frontend_tests/node_tests/dispatch.js`
+
+**Documentation**
+
+- `zerver/openapi/zulip.yaml`: OpenAPI definitions for the Zulip REST API.
+- `templates/zerver/api/changelog.md`: documentation listing all changes to the Zulip Server API.
+- `templates/zerver/help/...`: end user facing documentation (Help Center) for the application.
 
 ### Adding a field to the database
 
@@ -145,10 +151,22 @@ information on writing and running tests, see the
 
 ### Documentation changes
 
-After implementing the new feature, you should
-document it and update any existing documentation that might be
-relevant to the new feature. For more information on the kinds of
-documentation Zulip has, see [Documentation](../documentation/overview.md).
+After implementing the new feature, you should document it and update
+any existing documentation that might be relevant to the new feature.
+For detailed information on the kinds of documentation Zulip has, see
+[Documentation](../documentation/overview.md).
+
+**End user documentation:** You will likely need to at least update,
+extend and link to `/help` articles that are related to your new
+feature. See [User documentation](../documentation/user.md) for more
+detailed information about writing and editing feature `/help` articles.
+
+**API documentation:** A new feature will probably impact the REST API
+documentation as well, which will mean updating `zerver/openapi/zulip.yaml`
+and modifying `templates/zerver/api/changelog.md` for a new feature
+level. [Documenting REST API endpoints](../documentation/api.md)
+explains Zulip's API documentation system and provides a step by step
+guide to adding or updating documentation for an API endpoint.
 
 ## Example feature
 
@@ -222,7 +240,7 @@ Create the migration file using the Django `makemigrations` command:
 (NNNN is a number that is equal to the number of migrations.)
 
 If you run into problems, the
-[Django migration documentation](https://docs.djangoproject.com/en/1.8/topics/migrations/)
+[Django migration documentation](https://docs.djangoproject.com/en/3.2/topics/migrations/)
 is helpful.
 
 ### Test your migration changes
@@ -556,7 +574,8 @@ in. For example in this case of `mandatory_topics` it will lie in
 "Other settings" (`other_settings`) subsection.
 
 _If you're not sure in which section your feature belongs, it's
-better to discuss it in the [community](https://chat.zulip.org/)
+better to discuss it in
+[the Zulip development community](https://zulip.com/developer-community/)
 before implementing it._
 
 Note that some settings, like `realm_msg_edit_limit_setting`,
@@ -660,15 +679,38 @@ behavior of the setting you just created.
 
 ### Update documentation
 
-After you add a new view, you should document your feature. This
-feature adds new functionality that requires messages to have topics
-if the setting is enabled. A recommended way to document this feature
-would be to update and/or augment [Zulip's user
-documentation](https://zulip.com/help/) to reflect your changes and
-additions.
+Nice job! You've added a new feature to Zulip that will improve user
+and contributor experiences with the app, which is why it's really
+important to make sure that your new feature is well documented.
 
-At the very least, this will involve adding (or modifying) a Markdown file
-documenting the feature to `templates/zerver/help/` in the main Zulip
-server repository, where the source for Zulip's user documentation is
-stored. For information on writing user documentation, see
-[Zulip's general user guide documentation](../documentation/user.md).
+This example feature adds new functionality that requires messages to
+have topics if the setting is enabled. A recommended way to document
+this feature would be to update and/or augment Zulip's existing
+[end user documentation (Help Center)](https://zulip.com/help/)
+to reflect your changes and additions.
+
+At the very least, this will involve modifying (or adding) a Markdown
+file documenting the feature to `templates/zerver/help/` in the main
+Zulip server repository, where the source for Zulip's end user
+documentation is stored. Details about writing, editing and testing
+these Markdown files can be found in:
+[User documentation](../documentation/user.md).
+
+Also, new features will often impact Zulip's REST API documentation,
+which is found in `zerver/openapi/zulip.yaml`. You may have noticed
+this during the testing process as the Zulip test suite should fail if
+there is a change to the API without a corresponding update to the
+documentation.
+
+The best way to understand writing and updating Zulip's API
+documentation is to read more about Zulip's
+[REST API documentation process](../documentation/api.md)
+and [OpenAPI configuration](../documentation/openapi.md).
+
+In particular, if there is an API change, **make sure** you document
+your new feature in `templates/zerver/api/changelog.md` and bump the
+`API_FEATURE_LEVEL` in `version.py`. The API feature level allows the
+developers of mobile clients and other tools using the Zulip API to
+programmatically determine whether the Zulip server they are
+interacting with supports a given feature; see the
+[Zulip release lifecycle](../overview/release-lifecycle.md).

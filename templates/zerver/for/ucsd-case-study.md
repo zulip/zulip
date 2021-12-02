@@ -67,8 +67,8 @@ the benefits of just a few of Zulip’s features:
   are a great way to answer questions about homework without depriving
   students of a chance to keep thinking about the problem on their
   own.”
-- **Scheduling**: “With [**local
-  times**](/help/format-your-message-using-markdown#mention-a-time),
+- **Scheduling**: “With [**global
+  times**](/help/format-your-message-using-markdown#global-times),
   I could announce office hours or outside lectures without having to
   worry about confusion for students in different time zones.”
 

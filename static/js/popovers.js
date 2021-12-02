@@ -1,5 +1,5 @@
 import ClipboardJS from "clipboard";
-import {add, formatISO, set} from "date-fns";
+import {add, formatISO, parseISO, set} from "date-fns";
 import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
 import tippy, {hideAll} from "tippy.js";
@@ -43,6 +43,7 @@ import * as reminder from "./reminder";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
+import * as settings_users from "./settings_users";
 import * as stream_popover from "./stream_popover";
 import * as user_groups from "./user_groups";
 import * as user_status from "./user_status";
@@ -208,6 +209,13 @@ function render_user_info_popover(
     const status_text = user_status.get_status_text(user.user_id);
     const status_emoji_info = user_status.get_status_emoji(user.user_id);
 
+    const spectator_view = page_params.is_spectator;
+    let date_joined;
+    if (spectator_view) {
+        const dateFormat = new Intl.DateTimeFormat("default", {dateStyle: "long"});
+        date_joined = dateFormat.format(parseISO(user.date_joined));
+    }
+
     const args = {
         can_revoke_away,
         can_set_away,
@@ -234,6 +242,9 @@ function render_user_info_popover(
         status_text,
         status_emoji_info,
         user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
+        date_joined,
+        spectator_view,
+        show_manage_user_option: page_params.is_admin && !is_me,
     };
 
     if (user.is_bot) {
@@ -256,7 +267,8 @@ function render_user_info_popover(
         placement: popover_placement,
         template: render_no_arrow_popover({class: template_class}),
         title: render_user_info_popover_title({
-            user_avatar: "avatar/" + user.email,
+            // See the load_medium_avatar comment for important background.
+            user_avatar: people.small_avatar_url_for_person(user),
             user_is_guest: user.is_guest,
         }),
         html: true,
@@ -269,6 +281,13 @@ function render_user_info_popover(
     init_email_clipboard();
     init_email_tooltip(user);
 
+    // Note: We pass the normal-size avatar in initial rendering, and
+    // then query the server to replace it with the medium-size
+    // avatar.  The purpose of this double-fetch approach is to take
+    // advantage of the fact that the browser should already have the
+    // low-resolution image cached and thus display a low-resolution
+    // avatar rather than a blank area during the network delay for
+    // fetching the medium-size one.
     load_medium_avatar(user, $(".popover-avatar"));
 }
 
@@ -1260,14 +1279,19 @@ export function register_click_handlers() {
             last_scroll = date;
         });
     }
+
+    $("body").on("click", ".sidebar-popover-manage-user", (e) => {
+        hide_all();
+        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        settings_users.show_edit_user_info_modal(user_id, true);
+    });
 }
 
 export function any_active() {
     // True if any popover (that this module manages) is currently shown.
     // Expanded sidebars on mobile view count as popovers as well.
     return (
-        popover_menus.is_left_sidebar_stream_setting_popover_displayed() ||
-        popover_menus.is_compose_mobile_button_popover_displayed() ||
+        popover_menus.any_active() ||
         actions_popped() ||
         user_sidebar_popped() ||
         stream_popover.stream_popped() ||
@@ -1297,6 +1321,7 @@ export function hide_all_except_sidebars(opts) {
     stream_popover.hide_topic_popover();
     stream_popover.hide_all_messages_popover();
     stream_popover.hide_starred_messages_popover();
+    stream_popover.hide_drafts_popover();
     hide_user_sidebar_popover();
     hide_user_info_popover();
     hide_playground_links_popover();

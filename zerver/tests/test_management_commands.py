@@ -525,7 +525,6 @@ class TestExport(ZulipTestCase):
                 realm=realm,
                 public_only=False,
                 consent_message_id=message.id,
-                delete_after_upload=False,
                 threads=mock.ANY,
                 output_dir=mock.ANY,
                 percent_callback=mock.ANY,

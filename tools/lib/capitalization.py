@@ -72,6 +72,7 @@ IGNORED_PHRASES = [
     r".zuliprc",
     r"__\w+\.\w+__",
     # Things using "I"
+    r"I understand",
     r"I say",
     r"I want",
     r"I'm",
@@ -105,6 +106,7 @@ IGNORED_PHRASES = [
         '<a href="/api" target="_blank">API</a> documentation?'
     ),
     r'Most stream administration is done on the <a href="/#streams">Streams page</a>.',
+    r"Add global time<br />Everyone sees global times in their own time zone.",
     r"one or more people...",
     r"confirmation email",
     r"invites remaining",
@@ -164,6 +166,8 @@ IGNORED_PHRASES = [
     # Used in our case studies
     r"Technical University of Munich",
     r"University of California San Diego",
+    # Used in stream creation form
+    r"email hidden",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

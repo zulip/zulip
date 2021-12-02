@@ -154,13 +154,15 @@ class DocPageTest(ZulipTestCase):
             self._test("/apps/", "Apps for every platform.")
         self._test("/features/", "Beautiful messaging")
         self._test("/hello/", "Chat for distributed teams", landing_missing_strings=["Log in"])
-        self._test("/developer-community/", "Zulip developer community")
+        self._test("/development-community/", "Zulip development community")
         self._test("/why-zulip/", "Why Zulip?")
         self._test("/for/open-source/", "for open source projects")
         self._test("/for/events/", "for conferences and events")
         self._test("/for/education/", "education pricing")
         self._test("/case-studies/tum/", "Technical University of Munich")
         self._test("/case-studies/ucsd/", "UCSD")
+        self._test("/case-studies/rust/", "Rust programming language")
+        self._test("/case-studies/lean/", "Lean theorem prover")
         self._test("/for/research/", "for research")
         self._test("/for/companies/", "Communication efficiency represents")
         self._test("/for/communities/", "Zulip for communities")
@@ -182,6 +184,10 @@ class DocPageTest(ZulipTestCase):
         result = self.client_get("/new-user/")
         self.assertEqual(result.status_code, 301)
         self.assertIn("hello", result["Location"])
+
+        result = self.client_get("/developer-community/")
+        self.assertEqual(result.status_code, 301)
+        self.assertIn("development-community", result["Location"])
 
     def test_portico_pages_open_graph_metadata(self) -> None:
         # Why Zulip
@@ -395,7 +401,7 @@ class PlansPageTest(ZulipTestCase):
         self.assert_in_response("does not exist", result)
 
         realm = get_realm("zulip")
-        realm.plan_type = Realm.STANDARD_FREE
+        realm.plan_type = Realm.PLAN_TYPE_STANDARD_FREE
         realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
         self.assertEqual(result.status_code, 302)
@@ -431,7 +437,7 @@ class PlansPageTest(ZulipTestCase):
         self.assert_not_in_success_response([current_plan, sponsorship_pending], result)
 
         realm = get_realm("zulip")
-        realm.plan_type = Realm.SELF_HOSTED
+        realm.plan_type = Realm.PLAN_TYPE_SELF_HOSTED
         realm.save(update_fields=["plan_type"])
 
         with self.settings(PRODUCTION=True):
@@ -451,7 +457,7 @@ class PlansPageTest(ZulipTestCase):
         self.assert_in_success_response([sign_up_now, upgrade_to_standard], result)
         self.assert_not_in_success_response([current_plan, sponsorship_pending], result)
 
-        realm.plan_type = Realm.LIMITED
+        realm.plan_type = Realm.PLAN_TYPE_LIMITED
         realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response([current_plan, upgrade_to_standard], result)
@@ -464,7 +470,7 @@ class PlansPageTest(ZulipTestCase):
                 [sign_up_now, sponsorship_pending, upgrade_to_standard], result
             )
 
-        realm.plan_type = Realm.STANDARD_FREE
+        realm.plan_type = Realm.PLAN_TYPE_STANDARD_FREE
         realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response([current_plan], result)
@@ -472,7 +478,7 @@ class PlansPageTest(ZulipTestCase):
             [sign_up_now, upgrade_to_standard, sponsorship_pending], result
         )
 
-        realm.plan_type = Realm.STANDARD
+        realm.plan_type = Realm.PLAN_TYPE_STANDARD
         realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response([current_plan], result)
@@ -494,7 +500,7 @@ class PlansPageTest(ZulipTestCase):
             [sign_up_now, upgrade_to_standard, sponsorship_pending], result
         )
 
-        realm.plan_type = Realm.LIMITED
+        realm.plan_type = Realm.PLAN_TYPE_LIMITED
         realm.save()
         customer.sponsorship_pending = True
         customer.save()

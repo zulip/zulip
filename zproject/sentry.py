@@ -68,6 +68,10 @@ def setup_sentry(dsn: Optional[str], environment: str) -> None:
             SqlalchemyIntegration(),
         ],
         before_send=add_context,
+        # Increase possible max wait to send exceptions during
+        # shutdown, from 2 to 10; potentially-large exceptions are of
+        # value to catch during shutdown.
+        shutdown_timeout=10,
         # Because we strip the email/username from the Sentry data
         # above, the effect of this flag is that the requests/users
         # involved in exceptions will be identified in Sentry only by
@@ -79,7 +83,7 @@ def setup_sentry(dsn: Optional[str], environment: str) -> None:
     )
 
     # Ignore all of the loggers from django.security that are for user
-    # errors; see https://docs.djangoproject.com/en/3.0/ref/exceptions/#suspiciousoperation
+    # errors; see https://docs.djangoproject.com/en/3.2/ref/exceptions/#suspiciousoperation
     ignore_logger("django.security.SuspiciousOperation")
     ignore_logger("django.security.DisallowedHost")
     ignore_logger("django.security.DisallowedModelAdminLookup")

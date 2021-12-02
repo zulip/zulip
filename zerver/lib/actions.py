@@ -1118,7 +1118,7 @@ def do_change_realm_subdomain(
 ) -> None:
     """Changing a realm's subdomain is a highly disruptive operation,
     because all existing clients will need to be updated to point to
-    the new URL.  Further, requests to fetch data frmo existing event
+    the new URL.  Further, requests to fetch data from existing event
     queues will fail with an authentication error when this change
     happens (because the old subdomain is no longer associated with
     the realm), making it hard for us to provide a graceful update
@@ -1689,7 +1689,7 @@ def get_recipient_info(
     )
 
     # We deal with only the users who have disabled this setting, since that
-    # will ususally be much smaller a set than those who have enabled it (which
+    # will usually be much smaller a set than those who have enabled it (which
     # is the default)
     pm_mention_email_disabled_user_ids = get_ids_for(
         lambda r: not r["enable_offline_email_notifications"]
@@ -4625,23 +4625,23 @@ def do_change_plan_type(
         extra_data={"old_value": old_value, "new_value": plan_type},
     )
 
-    if plan_type == Realm.PLUS:
+    if plan_type == Realm.PLAN_TYPE_PLUS:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
         realm.message_visibility_limit = None
         realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD
-    elif plan_type == Realm.STANDARD:
+    elif plan_type == Realm.PLAN_TYPE_STANDARD:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
         realm.message_visibility_limit = None
         realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD
-    elif plan_type == Realm.SELF_HOSTED:
+    elif plan_type == Realm.PLAN_TYPE_SELF_HOSTED:
         realm.max_invites = None  # type: ignore[assignment] # Apparent mypy bug with Optional[int] setter.
         realm.message_visibility_limit = None
         realm.upload_quota_gb = None
-    elif plan_type == Realm.STANDARD_FREE:
+    elif plan_type == Realm.PLAN_TYPE_STANDARD_FREE:
         realm.max_invites = Realm.INVITES_STANDARD_REALM_DAILY_MAX
         realm.message_visibility_limit = None
         realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD
-    elif plan_type == Realm.LIMITED:
+    elif plan_type == Realm.PLAN_TYPE_LIMITED:
         realm.max_invites = settings.INVITES_DEFAULT_REALM_DAILY_MAX
         realm.message_visibility_limit = Realm.MESSAGE_VISIBILITY_LIMITED
         realm.upload_quota_gb = Realm.UPLOAD_QUOTA_LIMITED
@@ -5067,6 +5067,7 @@ def do_create_realm(
     org_type: Optional[int] = None,
     date_created: Optional[datetime.datetime] = None,
     is_demo_organization: Optional[bool] = False,
+    enable_spectator_access: Optional[bool] = False,
 ) -> Realm:
     if string_id == settings.SOCIAL_AUTH_SUBDOMAIN:
         raise AssertionError("Creating a realm on SOCIAL_AUTH_SUBDOMAIN is not allowed!")
@@ -5089,6 +5090,8 @@ def do_create_realm(
         kwargs["plan_type"] = plan_type
     if org_type is not None:
         kwargs["org_type"] = org_type
+    if enable_spectator_access is not None:
+        kwargs["enable_spectator_access"] = enable_spectator_access
 
     if date_created is not None:
         # The date_created parameter is intended only for use by test
@@ -5137,7 +5140,7 @@ def do_create_realm(
     realm.save(update_fields=["notifications_stream", "signup_notifications_stream"])
 
     if plan_type is None and settings.BILLING_ENABLED:
-        do_change_plan_type(realm, Realm.LIMITED, acting_user=None)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
 
     admin_realm = get_realm(settings.SYSTEM_BOT_REALM)
     sender = get_system_bot(settings.NOTIFICATION_BOT, admin_realm.id)
@@ -7021,16 +7024,19 @@ def estimate_recent_invites(realms: Collection[Realm], *, days: int) -> int:
 def check_invite_limit(realm: Realm, num_invitees: int) -> None:
     """Discourage using invitation emails as a vector for carrying spam."""
     msg = _(
-        "You do not have enough remaining invites for today. "
-        "Please contact {email} to have your limit raised. "
-        "No invitations were sent."
-    ).format(email=settings.ZULIP_ADMINISTRATOR)
+        "To protect users, Zulip limits the number of invitations you can send in one day. Because you have reached the limit, no invitations were sent."
+    )
     if not settings.OPEN_REALM_CREATION:
         return
 
     recent_invites = estimate_recent_invites([realm], days=1)
     if num_invitees + recent_invites > realm.max_invites:
-        raise InvitationError(msg, [], sent_invitations=False)
+        raise InvitationError(
+            msg,
+            [],
+            sent_invitations=False,
+            daily_limit_reached=True,
+        )
 
     default_max = settings.INVITES_DEFAULT_REALM_DAILY_MAX
     newrealm_age = datetime.timedelta(days=settings.INVITES_NEW_REALM_DAYS)
@@ -7053,7 +7059,12 @@ def check_invite_limit(realm: Realm, num_invitees: int) -> None:
     for days, count in settings.INVITES_NEW_REALM_LIMIT_DAYS:
         recent_invites = estimate_recent_invites(new_realms, days=days)
         if num_invitees + recent_invites > count:
-            raise InvitationError(msg, [], sent_invitations=False)
+            raise InvitationError(
+                msg,
+                [],
+                sent_invitations=False,
+                daily_limit_reached=True,
+            )
 
 
 def do_invite_users(

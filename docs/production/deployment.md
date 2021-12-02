@@ -52,7 +52,7 @@ as well as those mentioned in the
 [install](../production/install.html#installer-options) documentation:
 
 - `--postgresql-version`: Sets the version of PostgreSQL that will be
-  installed. We currently support PostgreSQL 10, 11, 12, and 13.
+  installed. We currently support PostgreSQL 10, 11, 12, 13, and 14.
 
 - `--postgresql-database-name=exampledbname`: With this option, you
   can customize the default database name. If you do not set this. The
@@ -223,28 +223,14 @@ behind reverse proxies.
 
 [using-http]: ../production/deployment.html#configuring-zulip-to-allow-http
 
-## Using an outgoing HTTP proxy
+## Customizing the outgoing HTTP proxy
 
-Zulip supports routing all of its outgoing HTTP and HTTPS traffic
-through an HTTP `CONNECT` proxy, such as [Smokescreen][smokescreen];
-this includes outgoing webhooks, image and website previews, and
-mobile push notifications. You may wish to enable this feature to
-provide a consistent egress point, or enforce access control on URLs
-to prevent [SSRF][ssrf] against internal resources.
+To protect against [SSRF][ssrf], Zulip 4.8 and above default to
+routing all outgoing HTTP and HTTPS traffic through
+[Smokescreen][smokescreen], an HTTP `CONNECT` proxy; this includes
+outgoing webhooks, website previews, and mobile push notifications.
 
-To use Smokescreen:
-
-1. Add `, zulip::profile::smokescreen` to the list of `puppet_classes`
-   in `/etc/zulip/zulip.conf`. A typical value after this change is:
-
-   ```ini
-   puppet_classes = zulip::profile::standalone, zulip::profile::smokescreen
-   ```
-
-1. Optionally, configure the [smokescreen ACLs][smokescreen-acls]. By
-   default, Smokescreen denies access to all [non-public IP
-   addresses](https://en.wikipedia.org/wiki/Private_network), including
-   127.0.0.1.
+To use a custom outgoing proxy:
 
 1. Add the following block to `/etc/zulip/zulip.conf`, substituting in
    your proxy's hostname/IP and port:
@@ -255,19 +241,28 @@ To use Smokescreen:
    port = 4750
    ```
 
-1. If you intend to also make the Smokescreen install available to
-   other hosts, set `listen_address` in the same block. Note that you
-   must control access to the Smokescreen port if you do this, as
-   failing to do so opens a public HTTP proxy!
-
 1. As root, run
    `/home/zulip/deployments/current/scripts/zulip-puppet-apply`. This
-   will compile and install Smokescreen, reconfigure services to use
-   it, and restart Zulip.
+   will reconfigure and restart Zulip.
 
-If you would like to use an already-installed HTTP proxy, omit the
-first step, and adjust the IP address and port in the second step
-accordingly.
+If you have a deployment with multiple frontend servers, or wish to
+install Smokescreen on a separate host, you can apply the
+`zulip::profile::smokescreen` Puppet class on that host, and follow
+the above steps, setting the `[http_proxy]` block to point to that
+host.
+
+If you wish to disable the outgoing proxy entirely, follow the above
+steps, configuring an empty `host` value.
+
+Optionally, you can also configure the [Smokescreen ACL
+list][smokescreen-acls]. By default, Smokescreen denies access to all
+[non-public IP
+addresses](https://en.wikipedia.org/wiki/Private_network), including
+127.0.0.1, but allows traffic to all public Internet hosts.
+
+In Zulip 4.7 and older, to enable SSRF protection via Smokescreen, you
+will need to explicitly add the `zulip::profile::smokescreen` Puppet
+class, and configure the `[http_proxy]` block as above.
 
 [smokescreen]: https://github.com/stripe/smokescreen
 [smokescreen-acls]: https://github.com/stripe/smokescreen#acls
@@ -651,11 +646,13 @@ load balancers whose `X-Forwarded-For` should be respected.
 #### `host`
 
 The hostname or IP address of an [outgoing HTTP `CONNECT`
-proxy](#using-an-outgoing-http-proxy).
+proxy](#customizing-the-outgoing-http-proxy). Defaults to `localhost`
+if unspecified.
 
 #### `port`
 
 The TCP port of the HTTP `CONNECT` proxy on the host specified above.
+Defaults to `4750` if unspecified.
 
 #### `listen_address`
 

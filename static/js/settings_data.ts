@@ -113,6 +113,24 @@ export function user_can_change_logo(): boolean {
 }
 
 function user_has_permission(policy_value: number): boolean {
+    /* At present, nobody and by_owners_only is not present in
+     * common_policy_values, but we include a check for it here,
+     * so that code using create_web_public_stream_policy_values
+     * or other supersets can use this function. */
+    if (policy_value === settings_config.create_web_public_stream_policy_values.nobody.code) {
+        return false;
+    }
+
+    if (page_params.is_owner) {
+        return true;
+    }
+
+    if (
+        policy_value === settings_config.create_web_public_stream_policy_values.by_owners_only.code
+    ) {
+        return false;
+    }
+
     if (page_params.is_admin) {
         return true;
     }
@@ -181,6 +199,17 @@ export function user_can_create_public_streams(): boolean {
     return user_has_permission(page_params.realm_create_public_stream_policy);
 }
 
+export function user_can_create_web_public_streams(): boolean {
+    if (
+        !page_params.server_web_public_streams_enabled ||
+        !page_params.realm_enable_spectator_access
+    ) {
+        return false;
+    }
+
+    return user_has_permission(page_params.realm_create_web_public_stream_policy);
+}
+
 export function user_can_move_messages_between_streams(): boolean {
     return user_has_permission(page_params.realm_move_messages_between_streams_policy);
 }
@@ -194,12 +223,6 @@ export function user_can_add_custom_emoji(): boolean {
 }
 
 export function user_can_edit_topic_of_any_message(): boolean {
-    if (
-        page_params.realm_edit_topic_policy ===
-        settings_config.common_message_policy_values.by_everyone.code
-    ) {
-        return true;
-    }
     return user_has_permission(page_params.realm_edit_topic_policy);
 }
 

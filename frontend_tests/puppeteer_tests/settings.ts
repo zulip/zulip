@@ -50,22 +50,17 @@ async function test_change_password(page: Page): Promise<void> {
     await page.click('[data-section="account-and-privacy"]');
     await page.click("#change_password");
 
-    const change_password_button_selector = "#change_password_button";
+    const change_password_button_selector = "#change_password_modal .dialog_submit_button";
     await page.waitForSelector(change_password_button_selector, {visible: true});
 
-    // For some strange reason #change_password_modal:focus is not working with Firefox.
-    // The below line is an alternative to that.
-    // TODO: Replace the below line with `await page.waitForSelector("#change_password_modal:focus", {visible: true})`
-    // when the above issue is resolved.
-    await page.waitForFunction(() => document.activeElement!.id === "change_password_modal");
+    await common.wait_for_micromodal_to_open(page);
     await page.type("#old_password", test_credentials.default_user.password);
     test_credentials.default_user.password = "new_password";
     await page.type("#new_password", test_credentials.default_user.password);
     await page.click(change_password_button_selector);
 
     // On success the change password modal gets closed.
-    await page.waitForFunction(() => $("#change_password_modal").attr("aria-hidden") === "true");
-    await common.wait_for_modal_to_close(page);
+    await common.wait_for_micromodal_to_close(page);
 }
 
 async function test_get_api_key(page: Page): Promise<void> {
@@ -74,7 +69,7 @@ async function test_get_api_key(page: Page): Promise<void> {
 
     const get_api_key_button_selector = "#get_api_key_button";
     await page.waitForSelector(get_api_key_button_selector, {visible: true});
-    await page.waitForFunction(() => $(":focus").attr("id") === "api_key_modal");
+    await common.wait_for_micromodal_to_open(page);
     await common.fill_form(page, "#api_key_form", {
         password: test_credentials.default_user.password,
     });
@@ -94,8 +89,8 @@ async function test_get_api_key(page: Page): Promise<void> {
     await page.click(download_zuliprc_selector);
     const zuliprc_decoded_url = await get_decoded_url_in_selector(page, download_zuliprc_selector);
     assert.match(zuliprc_decoded_url, zuliprc_regex, "Incorrect zuliprc file");
-    await page.click("#api_key_modal .close");
-    await common.wait_for_modal_to_close(page);
+    await page.click("#api_key_modal .modal__close");
+    await common.wait_for_micromodal_to_close(page);
 }
 
 async function test_webhook_bot_creation(page: Page): Promise<void> {
@@ -176,7 +171,7 @@ async function test_edit_bot_form(page: Page): Promise<void> {
     );
 
     await common.fill_form(page, edit_form_selector, {bot_name: "Bot one"});
-    const save_btn_selector = edit_form_selector + " .edit_bot_button";
+    const save_btn_selector = "#edit_bot_modal .dialog_submit_button";
     await page.click(save_btn_selector);
 
     // The form gets closed on saving. So, assert it's closed by waiting for it to be hidden.
@@ -186,7 +181,7 @@ async function test_edit_bot_form(page: Page): Promise<void> {
         `//*[@class="btn open_edit_bot_form" and @data-email="${bot1_email}"]/ancestor::*[@class="details"]/*[@class="name" and text()="Bot one"]`,
     );
 
-    await common.wait_for_modal_to_close(page);
+    await common.wait_for_micromodal_to_close(page);
 }
 
 async function test_invalid_edit_bot_form(page: Page): Promise<void> {
@@ -203,7 +198,7 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
     );
 
     await common.fill_form(page, edit_form_selector, {bot_name: "Bot 2"});
-    const save_btn_selector = edit_form_selector + " .edit_bot_button";
+    const save_btn_selector = "#edit_bot_modal .dialog_submit_button";
     await page.click(save_btn_selector);
 
     // The form should not get closed on saving. Errors should be visible on the form.
@@ -213,14 +208,14 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
         await common.get_text_from_selector(page, "div.bot_edit_errors"),
         "Name is already in use!",
     );
-    await page.click("button.cancel_bot_button");
+    await page.click("#edit_bot_modal .dialog_cancel_button");
     await page.waitForSelector("#edit_bot_modal", {hidden: true});
 
     await page.waitForXPath(
         `//*[@class="btn open_edit_bot_form" and @data-email="${bot1_email}"]/ancestor::*[@class="details"]/*[@class="name" and text()="Bot one"]`,
     );
 
-    await common.wait_for_modal_to_close(page);
+    await common.wait_for_micromodal_to_close(page);
 }
 
 async function test_your_bots_section(page: Page): Promise<void> {
@@ -301,13 +296,13 @@ async function test_alert_words_section(page: Page): Promise<void> {
 async function change_language(page: Page, language_data_code: string): Promise<void> {
     await page.waitForSelector("#user-display-settings .setting_default_language", {visible: true});
     await page.click("#user-display-settings .setting_default_language");
-    await page.waitForSelector("#user_default_language_modal", {visible: true});
+    await common.wait_for_micromodal_to_open(page);
     const language_selector = `a[data-code="${CSS.escape(language_data_code)}"]`;
     await page.click(language_selector);
 }
 
 async function check_language_setting_status(page: Page): Promise<void> {
-    await page.waitForSelector("#user-display-settings .language-settings-status .reload_link", {
+    await page.waitForSelector("#user-display-settings .lang-time-settings-status .reload_link", {
         visible: true,
     });
 }
@@ -356,7 +351,9 @@ async function test_default_language_setting(page: Page): Promise<void> {
     await page.goto("http://zulip.zulipdev.com:9981/#settings"); // get back to normal language.
     await page.waitForSelector(display_settings_section, {visible: true});
     await page.click(display_settings_section);
-    await page.waitForSelector("#user-display-settings .language-settings-status", {visible: true});
+    await page.waitForSelector("#user-display-settings .lang-time-settings-status", {
+        visible: true,
+    });
     await page.waitForSelector("#user-display-settings .setting_default_language", {visible: true});
 }
 

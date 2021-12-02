@@ -2,8 +2,8 @@
 # in a cluster.
 
 class zulip::app_frontend_once {
-  $proxy_host = zulipconf('http_proxy', 'host', '')
-  $proxy_port = zulipconf('http_proxy', 'port', '')
+  $proxy_host = zulipconf('http_proxy', 'host', 'localhost')
+  $proxy_port = zulipconf('http_proxy', 'port', '4750')
   if $proxy_host != '' and $proxy_port != '' {
     $proxy = "http://${proxy_host}:${proxy_port}"
   } else {

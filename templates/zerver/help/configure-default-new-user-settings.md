@@ -4,7 +4,7 @@
 
 Organization administrators can configure the default values of
 personal preference settings for new users joining the
-organization. This can help seemlessly customize the Zulip experience
+organization. This can help seamlessly customize the Zulip experience
 to match how the organization in question is using Zulip.
 
 Existing users' preferences cannot be modified by administrators, and
@@ -14,7 +14,7 @@ preference settings, including the following:
 
 * Display settings, including:
     * Default view ([Recent topics](/help/recent-topics) vs. [All messages](/help/reading-strategies#all-messages))
-    * [Light mode vs. dark mode](/help/night-mode)
+    * [Light theme vs. dark theme](/help/dark-theme)
     * [Emoji theme](/help/emoji-and-emoticons#change-your-emoji-set)
 * Notification settings, including:
     * [What types of messages trigger notifications][default-notifications]

@@ -7,6 +7,18 @@ import favicon_font_url from "./favicon_font_url!=!url-loader!font-subset-loader
 
 let favicon_state;
 
+function load_and_set_favicon(rendered_favicon) {
+    favicon_state = {
+        url: URL.createObjectURL(new Blob([rendered_favicon], {type: "image/svg+xml"})),
+        image: new Image(),
+    };
+
+    // Without loading the SVG in an Image first, Chrome mysteriously fails to
+    // render the webfont (https://crbug.com/1140920).
+    favicon_state.image.src = favicon_state.url;
+    favicon_state.image.addEventListener("load", set_favicon);
+}
+
 function set_favicon() {
     $("#favicon").attr("href", favicon_state.url);
 }
@@ -47,15 +59,7 @@ export function update_favicon(new_message_count, pm_count) {
             favicon_font_url,
         });
 
-        favicon_state = {
-            url: URL.createObjectURL(new Blob([rendered_favicon], {type: "image/svg+xml"})),
-            image: new Image(),
-        };
-
-        // Without loading the SVG in an Image first, Chrome mysteriously fails to
-        // render the webfont (https://crbug.com/1140920).
-        favicon_state.image.src = favicon_state.url;
-        favicon_state.image.addEventListener("load", set_favicon);
+        load_and_set_favicon(rendered_favicon);
     } catch (error) {
         blueslip.error("Failed to update favicon", undefined, error.stack);
     }

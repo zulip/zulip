@@ -143,7 +143,9 @@ def fetch_initial_state_data(
     if want("alert_words"):
         state["alert_words"] = [] if user_profile is None else user_alert_words(user_profile)
 
-    if want("custom_profile_fields"):
+    # Spectators can't access full user profiles or personal settings,
+    # so there's no need to send custom profile field data.
+    if want("custom_profile_fields") and user_profile is not None:
         fields = custom_profile_fields_for_realm(realm.id)
         state["custom_profile_fields"] = [f.as_dict() for f in fields]
         state["custom_profile_field_types"] = {
@@ -175,7 +177,7 @@ def fetch_initial_state_data(
             state["max_message_id"] = -1
 
     if want("drafts"):
-        # Note: if a user ever disables synching drafts then all of
+        # Note: if a user ever disables syncing drafts then all of
         # their old drafts stored on the server will be deleted and
         # simply retained in local storage. In which case user_drafts
         # would just be an empty queryset.
@@ -282,7 +284,7 @@ def fetch_initial_state_data(
         state["realm_is_zephyr_mirror_realm"] = realm.is_zephyr_mirror_realm
         state["development_environment"] = settings.DEVELOPMENT
         state["realm_plan_type"] = realm.plan_type
-        state["zulip_plan_is_not_limited"] = realm.plan_type != Realm.LIMITED
+        state["zulip_plan_is_not_limited"] = realm.plan_type != Realm.PLAN_TYPE_LIMITED
         state["upgrade_text_for_wide_organization_logo"] = str(Realm.UPGRADE_TEXT_STANDARD)
 
         state["password_min_length"] = settings.PASSWORD_MIN_LENGTH
@@ -291,6 +293,7 @@ def fetch_initial_state_data(
         state["server_inline_url_embed_preview"] = settings.INLINE_URL_EMBED_PREVIEW
         state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
         state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
+        state["server_web_public_streams_enabled"] = settings.WEB_PUBLIC_STREAMS_ENABLED
         state["giphy_rating_options"] = realm.GIPHY_RATING_OPTIONS
 
         state["server_needs_upgrade"] = is_outdated_server(user_profile)
@@ -392,6 +395,8 @@ def fetch_initial_state_data(
             user_profile,
             client_gravatar=client_gravatar,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
+            # Don't send custom profile field values to spectators.
+            include_custom_profile_fields=user_profile is not None,
         )
         state["cross_realm_bots"] = list(get_cross_realm_dicts())
 
@@ -944,7 +949,7 @@ def apply_event(
 
             if event["property"] == "plan_type":
                 # Then there are some extra fields that also need to be set.
-                state["zulip_plan_is_not_limited"] = event["value"] != Realm.LIMITED
+                state["zulip_plan_is_not_limited"] = event["value"] != Realm.PLAN_TYPE_LIMITED
                 state["realm_upload_quota_mib"] = event["extra_data"]["upload_quota"]
 
             policy_permission_dict = {

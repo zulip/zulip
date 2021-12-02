@@ -135,7 +135,7 @@ html {
             border: 2px inset hsl(213, 23%, 25%);
             background-color: hsl(0, 0%, 100%);
             color: hsl(213, 23%, 25%);
-            padding: 13px 20px 11px 20px;
+            padding: 13px 20px 11px;
 
             &:hover {
                 background-color: hsl(213, 65%, 97%);
@@ -337,7 +337,7 @@ html {
     button {
         display: inline-block;
         vertical-align: top;
-        padding: 13px 22px 13px 22px;
+        padding: 13px 22px;
 
         font-family: "Source Sans 3", sans-serif;
 
@@ -464,7 +464,7 @@ html {
             input[type="text"]:invalid + label,
             input[type="email"]:invalid + label,
             input[type="password"]:invalid + label {
-                transform: translateY(35px) translateX(14px);
+                transform: translateY(39px) translateX(14px);
                 font-size: 1.2rem;
                 font-weight: 400;
                 color: hsl(0, 0%, 67%);
@@ -1045,7 +1045,7 @@ button#register_auth_button_gitlab {
 
     .white-box {
         min-width: 450px;
-        padding: 30px 0 50px 0;
+        padding: 30px 0 50px;
     }
 
     form {

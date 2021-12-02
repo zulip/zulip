@@ -1,7 +1,7 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#soft-deactivation
 import logging
 from collections import defaultdict
-from typing import Any, DefaultDict, Dict, List, Optional, Union
+from typing import Any, DefaultDict, Dict, List, Optional, Set, Union
 
 from django.conf import settings
 from django.db import transaction
@@ -33,10 +33,13 @@ def filter_by_subscription_history(
     all_stream_subscription_logs: DefaultDict[int, List[RealmAuditLog]],
 ) -> List[UserMessage]:
     user_messages_to_insert: List[UserMessage] = []
+    seen_message_ids: Set[int] = set()
 
     def store_user_message_to_insert(message: Message) -> None:
-        message = UserMessage(user_profile=user_profile, message_id=message["id"], flags=0)
-        user_messages_to_insert.append(message)
+        if message["id"] not in seen_message_ids:
+            user_message = UserMessage(user_profile=user_profile, message_id=message["id"], flags=0)
+            user_messages_to_insert.append(user_message)
+            seen_message_ids.add(message["id"])
 
     for (stream_id, stream_messages_raw) in all_stream_messages.items():
         stream_subscription_logs = all_stream_subscription_logs[stream_id]

@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block content %}
-<p>{% trans %}Hi {{ user_name }},{% endtrans %}</p>
+<p>{% trans %}Hi,{% endtrans %}</p>
 
 <p>{% trans realm_uri=macros.link_tag(realm_uri), old_email=macros.email_tag(old_email), new_email=macros.email_tag(new_email) %}We received a request to change the email address for the Zulip account on {{ realm_uri }} from {{ old_email }} to {{ new_email }}. To confirm this change, please click below:{% endtrans %}
 <a class="button" href="{{ activate_url }}">{{_('Confirm email change') }}</a></p>

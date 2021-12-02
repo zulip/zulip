@@ -90,7 +90,7 @@ h3 .fa-question-circle-o {
         #pw_strength {
             width: 140px;
             height: 8px;
-            margin: 6px 0 0 0;
+            margin: 6px 0 0;
         }
     }
 
@@ -246,7 +246,7 @@ td .button {
     .settings-section-title {
         font-size: 1.4em;
         font-weight: 500;
-        margin: 10px 0 10px 0;
+        margin: 10px 0;
 
         &.transparent {
             background-color: transparent;
@@ -354,7 +354,7 @@ td .button {
         text-decoration: none;
     }
 
-    .default_language_modal {
+    #user_default_language_modal {
         table {
             width: 90%;
             margin-top: 20px;
@@ -375,6 +375,10 @@ td .button {
     button[data-dismiss="modal"] i.fa-pencil,
     .dropdown-toggle i.fa-pencil {
         margin-left: 3px;
+    }
+
+    .hidden-email {
+        font-style: italic;
     }
 }
 
@@ -426,12 +430,14 @@ td .button {
 
 .button,
 .input-group {
-    margin: 0 0 20px 0;
+    margin: 0 0 20px;
 }
 
 .input-group {
-    .thinner {
-        margin: 10px 0;
+    /* Class to use when the following input-group is related and should
+       appear just after this element. */
+    &.thinner {
+        margin: 0;
     }
 
     label.checkbox + label {
@@ -458,7 +464,7 @@ input[type="checkbox"] {
     }
 
     .inline-block {
-        margin: -2px 0 0 0;
+        margin: -2px 0 0;
     }
 }
 
@@ -727,7 +733,7 @@ input[type="checkbox"] {
 
 #admin-linkifier-pattern-status,
 #admin-linkifier-format-status {
-    margin: 20px 0 0 0;
+    margin: 20px 0 0;
 }
 
 .progressive-table-wrapper {
@@ -869,7 +875,7 @@ input[type="checkbox"] {
 }
 
 .bot_edit_errors {
-    margin: 20px 20px 0 20px;
+    margin: 0;
 }
 
 #bots_lists_navbar .active a {
@@ -880,8 +886,11 @@ input[type="checkbox"] {
     margin-top: 5px;
 }
 
-.edit_bot_form_container {
-    padding: 15px;
+#edit_bot_modal {
+    /* Ensure that the dropdown can overflow the modal. */
+    .modal__content {
+        overflow: visible;
+    }
 }
 
 .edit_bot_form {
@@ -897,12 +906,7 @@ input[type="checkbox"] {
     }
 
     .buttons {
-        margin: 10px 0 5px 0;
-    }
-
-    button.dropdown-toggle {
-        font-weight: 600;
-        color: hsl(0, 0%, 67%);
+        margin: 10px 0 5px;
     }
 }
 
@@ -979,6 +983,22 @@ input[type="checkbox"] {
     }
 }
 
+#change_password_modal {
+    .change_password_info,
+    #change_password_container {
+        margin: 0;
+    }
+}
+
+#api_key_status {
+    margin: 0;
+}
+
+#download_zuliprc {
+    color: hsl(0, 0%, 100%);
+    text-decoration: none;
+}
+
 #api_key_form,
 #change_password_modal {
     .password-div {
@@ -990,8 +1010,8 @@ input[type="checkbox"] {
 
         .password_visibility_toggle {
             position: absolute;
-            left: 190px;
-            top: 28px;
+            left: 194px;
+            top: 32px;
             width: 14px;
             opacity: 0.6;
 
@@ -1013,7 +1033,7 @@ input[type="checkbox"] {
 
     label {
         border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
-        padding: 8px 0 10px 0;
+        padding: 8px 0 10px;
 
         &:last-of-type {
             border-bottom: none;
@@ -1262,7 +1282,7 @@ input[type="checkbox"] {
 
     input.search {
         font-size: 0.9rem;
-        margin: 10px 0 20px 0;
+        margin: 10px 0 20px;
     }
 
     .form-sidebar {
@@ -1389,7 +1409,7 @@ input[type="checkbox"] {
             .icon {
                 width: 18px;
                 height: 18px;
-                margin: 10px 10px;
+                margin: 10px;
                 text-align: center;
 
                 font-size: 1.4em;
@@ -1478,40 +1498,6 @@ input[type="checkbox"] {
         }
     }
 
-    .custom_user_field {
-        padding-bottom: 20px;
-
-        textarea {
-            width: 320px;
-            height: 80px;
-        }
-
-        &:hover .remove_date {
-            display: inline-flex;
-        }
-
-        .remove_date {
-            opacity: 0.5;
-            display: none;
-            cursor: pointer;
-            position: relative;
-            top: 2px;
-            left: -20px;
-
-            &:hover {
-                opacity: 1;
-            }
-        }
-
-        .datepicker {
-            cursor: default;
-        }
-
-        .person_picker {
-            min-width: 206px;
-        }
-    }
-
     .content-wrapper {
         position: absolute;
         left: 251px;
@@ -1549,9 +1535,7 @@ input[type="checkbox"] {
         width: 245px;
     }
 
-    #change_email_modal .change_email_info,
-    #change_password_modal .change_password_info,
-    #api_key_modal #api_key_status {
+    #change_email_modal .change_email_info {
         margin-top: 3px;
     }
 }
@@ -1562,8 +1546,42 @@ input[type="checkbox"] {
         cursor: default;
     }
 
-    .custom_user_field .field_hint {
-        color: hsl(0, 0%, 67%);
+    .custom_user_field {
+        padding-bottom: 20px;
+
+        .field_hint {
+            color: hsl(0, 0%, 67%);
+        }
+
+        textarea {
+            width: 320px;
+            height: 80px;
+        }
+
+        &:hover .remove_date {
+            display: inline-flex;
+        }
+
+        .remove_date {
+            opacity: 0.5;
+            display: none;
+            cursor: pointer;
+            position: relative;
+            top: 2px;
+            left: -20px;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+
+        .datepicker {
+            cursor: default;
+        }
+
+        .person_picker {
+            min-width: 206px;
+        }
     }
 
     #show_my_user_profile_modal {
@@ -1575,17 +1593,6 @@ input[type="checkbox"] {
         padding-left: 2px;
         vertical-align: middle;
     }
-}
-
-/* Dialog widgets should be centered, which this roughly achieves. */
-#dialog_widget_modal {
-    top: calc(50% - 120px);
-}
-
-/* In the settings overlay, we need slightly different CSS for alignment. */
-#settings_overlay_container #dialog_widget_modal {
-    top: 50%;
-    vertical-align: center;
 }
 
 /* These have enough space for all the options in German. */
@@ -1618,19 +1625,18 @@ input[type="checkbox"] {
     margin-top: 10px;
 }
 
-.dialog_submit_button .loader {
-    display: none;
-    vertical-align: top;
-    position: relative;
-    height: 30px;
-    margin-top: -10px;
-    top: 5px;
-    width: 30px;
-}
-
 .dropdown-list-widget {
-    button {
-        margin: 0 5px;
+    button.dropdown-toggle {
+        text-align: left;
+
+        .fa-chevron-down {
+            float: right;
+            position: relative;
+            top: 2px;
+            padding-left: 5px;
+            color: hsl(0, 0%, 58%);
+            font-weight: lighter;
+        }
 
         &.dropdown-toggle {
             /* Match settings for select elements. */
@@ -1654,7 +1660,7 @@ input[type="checkbox"] {
     }
 
     a.dropdown_list_reset_button {
-        /* Prevent night mode from overriding background. */
+        /* Prevent dark theme from overriding background. */
         background: unset !important;
         border: none;
         margin-left: 10px;
@@ -1772,7 +1778,7 @@ input[type="checkbox"] {
 @supports (-moz-appearance: none) {
     #settings_page select {
         appearance: none;
-        background: hsl(0, 0%, 100%) url(../images/dropdown.png) right / 20px
+        background: hsl(0, 0%, 100%) url("../images/dropdown.png") right / 20px
             no-repeat;
         padding-right: 20px;
     }
@@ -1849,7 +1855,8 @@ input[type="checkbox"] {
 }
 
 .admin_exports_table {
-    margin: 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 @media (width < $lg_min) {
@@ -1869,7 +1876,7 @@ input[type="checkbox"] {
     }
 
     .subsection-failed-status p {
-        margin: 5px 0 0 0;
+        margin: 5px 0 0;
     }
 }
 
@@ -1952,7 +1959,7 @@ input[type="checkbox"] {
 
     #settings_page .save-button-controls {
         display: block;
-        margin: 10px 0 0 0;
+        margin: 10px 0 0;
     }
 }
 
@@ -1963,8 +1970,11 @@ input[type="checkbox"] {
         margin-top: 5px;
     }
 
-    #settings_page .custom_user_field textarea {
-        width: calc(100% - 25px);
+    #settings_page,
+    #edit-user-form {
+        .custom_user_field textarea {
+            width: calc(100% - 25px);
+        }
     }
 }
 

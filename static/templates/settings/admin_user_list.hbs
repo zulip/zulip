@@ -7,7 +7,14 @@
     <td>
         <span class="email">{{display_email}}</span>
     </td>
+    {{else}}
+    <td>
+        <span class="hidden-email">{{t "(hidden)"}}</span>
+    </td>
     {{/if}}
+    <td>
+        <span class="user_id">{{user_id}}</span>
+    </td>
     {{#unless is_bot}}
     <td>
         <span class="user_role">{{user_role_text}}</span>

@@ -958,6 +958,7 @@ def get_messages_backend(
             )
         )
 
+    realm = get_valid_realm_from_request(request)
     if not maybe_user_profile.is_authenticated:
         # If user is not authenticated, clients must include
         # `streams:web-public` in their narrow query to indicate this
@@ -969,13 +970,14 @@ def get_messages_backend(
         # GetOldMessagesTest.test_unauthenticated_* tests ensure
         # that we are not leaking any secure data (private messages and
         # non web-public-stream messages) via this path.
+        if not realm.allow_web_public_streams_access():
+            raise MissingAuthenticationError()
         if not is_web_public_narrow(narrow):
             raise MissingAuthenticationError()
         assert narrow is not None
         if not is_spectator_compatible(narrow):
             raise MissingAuthenticationError()
 
-        realm = get_valid_realm_from_request(request)
         # We use None to indicate unauthenticated requests as it's more
         # readable than using AnonymousUser, and the lack of Django
         # stubs means that mypy can't check AnonymousUser well.
@@ -985,7 +987,6 @@ def get_messages_backend(
         assert isinstance(maybe_user_profile, UserProfile)
         user_profile = maybe_user_profile
         assert user_profile is not None
-        realm = user_profile.realm
         is_web_public_query = False
 
     assert realm is not None

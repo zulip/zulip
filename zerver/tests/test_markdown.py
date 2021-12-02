@@ -412,6 +412,20 @@ class MarkdownTest(ZulipTestCase):
             is_ignored = test.get("ignore", False)
             self.assertFalse(is_ignored, message)
 
+    def test_markdown_fixtures_unique_names(self) -> None:
+        # All markdown fixtures must have unique names.
+        found_names: Set[str] = set()
+        with open(
+            os.path.join(os.path.dirname(__file__), "fixtures/markdown_test_cases.json"), "rb"
+        ) as f:
+            data = orjson.loads(f.read())
+        for test in data["regular_tests"]:
+            test_name = test["name"]
+            message = f'Test name: "{test_name}" must be unique.'
+            is_unique = test_name not in found_names
+            self.assertTrue(is_unique, message)
+            found_names.add(test_name)
+
     def test_markdown_fixtures(self) -> None:
         format_tests, linkify_tests = self.load_markdown_tests()
         valid_keys = {
@@ -1399,6 +1413,20 @@ class MarkdownTest(ZulipTestCase):
                 {"url": "https://trac.example.com/ticket/234", "text": "#234"},
                 {"url": "https://google.com", "text": "https://google.com"},
             ],
+        )
+
+        # Test URI escaping
+        RealmFilter(
+            realm=realm,
+            pattern=r"url-(?P<id>[0-9]+)",
+            url_format_string="https://example.com/%%%ba/%(id)s",
+        ).save()
+        msg = Message(sender=self.example_user("hamlet"))
+        content = "url-123 is well-escaped"
+        converted = markdown_convert(content, message_realm=realm, message=msg)
+        self.assertEqual(
+            converted.rendered_content,
+            '<p><a href="https://example.com/%%ba/123">url-123</a> is well-escaped</p>',
         )
 
     def test_multiple_matching_realm_patterns(self) -> None:
