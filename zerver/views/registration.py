@@ -132,7 +132,7 @@ def check_prereg_key(
         return render_confirmation_key_error(request, exception)
 
     if prereg_user.status == confirmation_settings.STATUS_REVOKED:
-        return render(request, "zerver/confirmation_link_expired_error.html", status=404)
+        return render(request, "confirmation/link_expired.html", status=404)
 
     return prereg_user
 

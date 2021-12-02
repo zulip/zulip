@@ -2115,7 +2115,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         """Since the key is a param input by the user to the registration endpoint,
         if it inserts an invalid value, the confirmation object won't be found. This
         tests if, in that scenario, we handle the exception by redirecting the user to
-        the confirmation_link_expired_error page.
+        the link_expired page.
         """
         email = self.nonreg_email("alice")
         password = "password"
@@ -3980,7 +3980,9 @@ class UserSignUpTest(InviteUserBase):
         )
         # Error page should be displayed
         self.assertEqual(result.status_code, 404)
-        self.assert_in_response("The registration link has expired or is not valid.", result)
+        self.assert_in_response(
+            "Whoops. The confirmation link has expired or been deactivated.", result
+        )
 
     def test_signup_with_multiple_default_stream_groups(self) -> None:
         # Check if user is subscribed to the streams of default
