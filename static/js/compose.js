@@ -5,6 +5,7 @@ import render_compose from "../templates/compose.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import * as common from "./common";
 import * as compose_actions from "./compose_actions";
 import * as compose_error from "./compose_error";
 import * as compose_fade from "./compose_fade";
@@ -396,6 +397,7 @@ export function render_compose_box() {
         }),
     );
     $(`.enter_sends_${user_settings.enter_sends}`).show();
+    common.adjust_mac_shortcuts(".enter_sends kbd");
 }
 
 export function initialize() {
