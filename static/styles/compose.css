@@ -20,10 +20,6 @@
                 line-height: 1em;
             }
         }
-
-        .message-control-link {
-            float: left;
-        }
     }
 
     .reply_button_container {
@@ -482,7 +478,7 @@ input.recipient_box {
 
 .tippy-content .compose_control_buttons_container .message-control-link {
     /* Override tippy theme. */
-    padding: 0;
+    padding: 4px 4px 0;
     color: hsl(200, 100%, 40%);
     font-size: 14px;
 
@@ -523,7 +519,6 @@ input.recipient_box {
     }
 
     .message-control-link {
-        padding: 4px 4px 0;
         align-self: center;
     }
 
