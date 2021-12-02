@@ -453,6 +453,19 @@ def prevent_whitespace_violations(fn: str, tokens: List[Token]) -> None:
                     f"""Please just make row {token.line} in {fn} a truly blank line (no spaces)."""
                 )
 
+            if len(token.s) % 4 != 0:
+                raise TemplateParserException(
+                    f"""
+                        Please use 4-space indents for template files. Most of our
+                        codebase (including Python and JavaScript) uses 4-space indents,
+                        so it's worth investing in configuring your editor to use
+                        4-space indents for files like
+                        {fn}
+
+                        The line at row {token.line} is indented with {len(token.s)} spaces.
+                    """
+                )
+
         if token.kind == "whitespace":
             if len(token.s) > 1:
                 raise TemplateParserException(
