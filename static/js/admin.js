@@ -160,6 +160,7 @@ export function build_page() {
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
         create_web_public_stream_policy_values:
             settings_config.create_web_public_stream_policy_values,
+        disable_enable_spectator_access_setting: !page_params.server_web_public_streams_enabled,
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
