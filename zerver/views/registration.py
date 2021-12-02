@@ -118,31 +118,21 @@ def check_prereg_key(
     Checks if the Confirmation key is valid, returning the PreregistrationUser object in case of success
     and an appropriate error page otherwise.
     """
-    try:
-        confirmation: Optional[Confirmation] = Confirmation.objects.get(
-            confirmation_key=confirmation_key
-        )
-    except Confirmation.DoesNotExist:
-        confirmation = None
-
-    if confirmation is None or confirmation.type not in [
+    confirmation_types = [
         Confirmation.USER_REGISTRATION,
         Confirmation.INVITATION,
         Confirmation.REALM_CREATION,
-    ]:
-        return render_confirmation_key_error(
-            request, ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST)
-        )
-
-    prereg_user = confirmation.content_object
-    assert prereg_user is not None
-    if prereg_user.status == confirmation_settings.STATUS_REVOKED:
-        return render(request, "zerver/confirmation_link_expired_error.html", status=404)
+    ]
 
     try:
-        get_object_from_key(confirmation_key, confirmation.type, activate_object=False)
+        prereg_user = get_object_from_key(
+            confirmation_key, confirmation_types, activate_object=False
+        )
     except ConfirmationKeyException as exception:
         return render_confirmation_key_error(request, exception)
+
+    if prereg_user.status == confirmation_settings.STATUS_REVOKED:
+        return render(request, "zerver/confirmation_link_expired_error.html", status=404)
 
     return prereg_user
 
@@ -730,7 +720,7 @@ def accounts_home(
 def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     multiuse_object = None
     try:
-        multiuse_object = get_object_from_key(confirmation_key, Confirmation.MULTIUSE_INVITE)
+        multiuse_object = get_object_from_key(confirmation_key, [Confirmation.MULTIUSE_INVITE])
         # Required for OAuth 2
     except ConfirmationKeyException as exception:
         realm = get_realm_from_request(request)

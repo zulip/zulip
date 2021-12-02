@@ -4,7 +4,7 @@ __revision__ = "$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $"
 import datetime
 import secrets
 from base64 import b32encode
-from typing import Mapping, Optional, Union
+from typing import List, Mapping, Optional, Union
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -58,14 +58,14 @@ ConfirmationObjT = Union[MultiuseInvite, PreregistrationUser, EmailChangeStatus]
 
 
 def get_object_from_key(
-    confirmation_key: str, confirmation_type: int, activate_object: bool = True
+    confirmation_key: str, confirmation_types: List[int], activate_object: bool = True
 ) -> ConfirmationObjT:
     # Confirmation keys used to be 40 characters
     if len(confirmation_key) not in (24, 40):
         raise ConfirmationKeyException(ConfirmationKeyException.WRONG_LENGTH)
     try:
         confirmation = Confirmation.objects.get(
-            confirmation_key=confirmation_key, type=confirmation_type
+            confirmation_key=confirmation_key, type__in=confirmation_types
         )
     except Confirmation.DoesNotExist:
         raise ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST)

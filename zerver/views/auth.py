@@ -186,7 +186,7 @@ def maybe_send_to_registration(
     if multiuse_object_key:
         from_multiuse_invite = True
         try:
-            multiuse_obj = get_object_from_key(multiuse_object_key, Confirmation.MULTIUSE_INVITE)
+            multiuse_obj = get_object_from_key(multiuse_object_key, [Confirmation.MULTIUSE_INVITE])
         except ConfirmationKeyException:
             return render(request, "zerver/confirmation_link_expired_error.html", status=404)
 
