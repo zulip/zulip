@@ -203,7 +203,7 @@
     align-self: center;
 
     &.over_limit {
-        color: hsl(0, 100%, 50%);
+        color: hsl(0, 76%, 65%);
         font-weight: bold;
     }
 }
@@ -373,13 +373,13 @@ textarea.new_message_textarea {
         }
 
         100% {
-            box-shadow: 0 0 0 1pt hsl(0, 100%, 50%);
+            box-shadow: 0 0 0 1pt hsl(0, 76%, 65%);
         }
     }
 
     &.over_limit,
     &.over_limit:focus {
-        box-shadow: 0 0 0 1pt hsl(0, 100%, 50%);
+        box-shadow: 0 0 0 1pt hsl(0, 76%, 65%);
 
         &.flash {
             animation: flash 0.5s ease-in-out infinite;
