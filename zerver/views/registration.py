@@ -98,14 +98,26 @@ if settings.BILLING_ENABLED:
 def get_prereg_key_and_redirect(
     request: HttpRequest, confirmation_key: str, full_name: Optional[str] = REQ(default=None)
 ) -> HttpResponse:
+    """
+    The purpose of this little endpoint is primarily to take a GET
+    request to a long URL containing a confirmation key, and render
+    a page that will via JavaScript immediately do a POST request to
+    /accounts/register, so that the user can create their account on
+    a page with a cleaner URL (and with the browser security and UX
+    benefits of an HTTP POST having generated the page).
+
+    The only thing it does before rendering that page is to check
+    the validity of the confirmation link. This is redundant with a
+    similar check in accounts_register, but it provides a slightly nicer
+    user-facing error handling experience if the URL you visited is
+    displayed in the browser. (E.g. you can debug that you
+    accidentally adding an extra character after pasting).
+    """
     try:
         check_prereg_key(request, confirmation_key)
     except ConfirmationKeyException as e:
         return render_confirmation_key_error(request, e)
 
-    # confirm_preregistrationuser.html just extracts the confirmation_key
-    # (and GET parameters) and redirects to /accounts/register, so that the
-    # user can enter their information on a cleaner URL.
     return render(
         request,
         "confirmation/confirm_preregistrationuser.html",
