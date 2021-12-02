@@ -281,8 +281,9 @@ GOOD_HTML11 = """
 
 
 def pretty_print(html: str) -> str:
-    tokens = validate(fn=None, text=html)
-    return pretty_print_html(html, tokens)
+    fn = "<test str>"
+    tokens = validate(fn=fn, text=html)
+    return pretty_print_html(tokens, fn=fn)
 
 
 class TestPrettyPrinter(unittest.TestCase):
