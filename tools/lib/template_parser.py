@@ -493,9 +493,26 @@ def ensure_matching_indentation(fn: str, tokens: List[Token], lines: List[str]) 
             )
 
 
+def prevent_extra_newlines(fn: str, tokens: List[Token]) -> None:
+    count = 0
+
+    for token in tokens:
+        if token.kind != "newline":
+            count = 0
+            continue
+
+        count += 1
+        if count >= 4:
+            raise TemplateParserException(
+                f"""Please avoid so many blank lines near row {token.line} in {fn}."""
+            )
+
+
 def prevent_whitespace_violations(fn: str, tokens: List[Token]) -> None:
     if tokens[0].kind in ("indent", "whitespace"):
         raise TemplateParserException(f" Please remove the whitespace at the beginning of {fn}.")
+
+    prevent_extra_newlines(fn, tokens)
 
     for i in range(1, len(tokens) - 1):
         token = tokens[i]
