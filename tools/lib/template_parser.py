@@ -39,6 +39,14 @@ class Token:
         self.start_token: Optional[Token] = None
         self.end_token: Optional[Token] = None
 
+        # These get set during the pretty-print phase.
+        self.new_s = ""
+        self.indent: Optional[str] = None
+        self.orig_indent: Optional[str] = None
+        self.child_indent: Optional[str] = None
+        self.indent_is_final = False
+        self.parent_token: Optional[Token] = None
+
 
 def tokenize(text: str) -> List[Token]:
     in_code_block = False
