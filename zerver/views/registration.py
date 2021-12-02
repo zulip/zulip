@@ -60,6 +60,7 @@ from zerver.models import (
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
     MultiuseInvite,
+    PreregistrationUser,
     Realm,
     Stream,
     UserProfile,
@@ -112,9 +113,9 @@ def get_prereg_key_and_redirect(
 
 def check_prereg_key(
     request: HttpRequest, confirmation_key: str
-) -> Union[Confirmation, HttpResponse]:
+) -> Union[HttpResponse, PreregistrationUser]:
     """
-    Checks if the Confirmation key is valid, returning the Confirmation object in case of success
+    Checks if the Confirmation key is valid, returning the PreregistrationUser object in case of success
     and an appropriate error page otherwise.
     """
     try:
@@ -143,7 +144,7 @@ def check_prereg_key(
     except ConfirmationKeyException as exception:
         return render_confirmation_key_error(request, exception)
 
-    return confirmation
+    return prereg_user
 
 
 @require_post
@@ -162,8 +163,7 @@ def accounts_register(
     if isinstance(key_check_result, HttpResponse):
         return key_check_result
 
-    prereg_user = key_check_result.content_object
-    assert prereg_user is not None
+    prereg_user = key_check_result
     email = prereg_user.email
     realm_creation = prereg_user.realm_creation
     password_required = prereg_user.password_required
@@ -181,6 +181,7 @@ def accounts_register(
         # For creating a new realm, there is no existing realm or domain
         realm = None
     else:
+        assert prereg_user.realm is not None
         if get_subdomain(request) != prereg_user.realm.string_id:
             return render_confirmation_key_error(
                 request, ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST)
@@ -458,6 +459,7 @@ def accounts_register(
             )
 
         if realm_creation:
+            assert realm.signup_notifications_stream is not None
             bulk_add_subscriptions(
                 realm, [realm.signup_notifications_stream], [user_profile], acting_user=None
             )
