@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Callable, Union
+from typing import Any, Callable, Dict, Union
 
 import stripe
 from django.conf import settings
@@ -12,7 +12,7 @@ from corporate.lib.stripe import (
     update_or_create_stripe_customer,
 )
 from corporate.models import Event, PaymentIntent, Session
-from zerver.models import get_active_user_profile_by_id_in_realm, get_user_by_delivery_email
+from zerver.models import get_active_user_profile_by_id_in_realm
 
 billing_logger = logging.getLogger("corporate.stripe")
 
@@ -117,9 +117,11 @@ def handle_payment_intent_succeeded_event(
 ) -> None:
     payment_intent.status = PaymentIntent.SUCCEEDED
     payment_intent.save()
-    metadata = stripe_payment_intent.metadata
+    metadata: Dict[str, Any] = stripe_payment_intent.metadata
     assert payment_intent.customer.realm is not None
-    user = get_user_by_delivery_email(metadata["user_email"], payment_intent.customer.realm)
+    user_id = metadata.get("user_id")
+    assert user_id is not None
+    user = get_active_user_profile_by_id_in_realm(user_id, payment_intent.customer.realm)
 
     description = ""
     for charge in stripe_payment_intent.charges:
