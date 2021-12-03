@@ -269,7 +269,6 @@ def fetch_initial_state_data(
 
         state["realm_uri"] = realm.uri
         state["realm_bot_domain"] = realm.get_bot_domain()
-        state["realm_guidelines_url"] = realm.guidelines_url
         state["realm_available_video_chat_providers"] = realm.VIDEO_CHAT_PROVIDERS
         state["settings_send_digest_emails"] = settings.SEND_DIGEST_EMAILS
 

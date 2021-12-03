@@ -138,6 +138,7 @@ class HomeTest(ZulipTestCase):
         "realm_emoji",
         "realm_filters",
         "realm_giphy_rating",
+        "realm_guidelines_url",
         "realm_icon_source",
         "realm_icon_url",
         "realm_incoming_webhook_bots",
@@ -862,8 +863,8 @@ class HomeTest(ZulipTestCase):
 
         with patch("zerver.lib.compatibility.timezone_now", return_value=now + timedelta(days=380)):
             self.assertEqual(is_outdated_server(iago), True)
-            self.assertEqual(is_outdated_server(hamlet), False)
-            self.assertEqual(is_outdated_server(None), False)
+            self.assertEqual(is_outdated_server(hamlet), True)
+            self.assertEqual(is_outdated_server(None), True)
 
     def test_furthest_read_time(self) -> None:
         msg_id = self.send_test_message("hello!", sender_name="iago")

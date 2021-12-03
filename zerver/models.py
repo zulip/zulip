@@ -213,6 +213,7 @@ class Realm(models.Model):
     # User-visible display name and description used on e.g. the organization homepage
     name: str = models.CharField(max_length=MAX_REALM_NAME_LENGTH)
     description: str = models.TextField(default="")
+    guidelines_url: str = models.TextField(default="")
 
     # A short, identifier-like name for the organization.  Used in subdomains;
     # e.g. on a server at example.com, an org with string_id `foo` is reached
@@ -250,7 +251,6 @@ class Realm(models.Model):
     digest_weekday: int = models.SmallIntegerField(default=1)
 
     send_welcome_emails: bool = models.BooleanField(default=True)
-    guidelines_url: bool = models.URLField(null=True)
     message_content_allowed_in_email_notifications: bool = models.BooleanField(default=True)
 
     mandatory_topics: bool = models.BooleanField(default=False)
@@ -646,6 +646,7 @@ class Realm(models.Model):
         message_retention_days=(int, type(None)),
         name=str,
         name_changes_disabled=bool,
+        guidelines_url=str,
         avatar_changes_disabled=bool,
         emails_restricted_to_domains=bool,
         send_welcome_emails=bool,

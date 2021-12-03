@@ -19,7 +19,7 @@ import * as settings_toggle from "./settings_toggle";
 const admin_settings_label = {
     // Organization settings
     realm_allow_edit_history: $t({defaultMessage: "Enable message edit history"}),
-    realm_guidelines: $t({defaultMessage: "Enable new member guidelines display"}),
+    realm_guidelines_url: $t({defaultMessage: "Enable new member guidelines display"}),
     realm_mandatory_topics: $t({defaultMessage: "Require topics in stream messages"}),
     realm_notifications_stream: $t({defaultMessage: "New stream notifications:"}),
     realm_signup_notifications_stream: $t({defaultMessage: "New user notifications:"}),
@@ -82,7 +82,7 @@ export function build_page() {
         giphy_rating_options: page_params.giphy_rating_options,
         giphy_api_key_empty: page_params.giphy_api_key === "",
         realm_description: page_params.realm_description,
-        realm_guidelines: page_params.realm_guidelines,
+        realm_guidelines_url: page_params.realm_guidelines_url,
         realm_inline_image_preview: page_params.realm_inline_image_preview,
         server_inline_image_preview: page_params.server_inline_image_preview,
         realm_inline_url_embed_preview: page_params.realm_inline_url_embed_preview,

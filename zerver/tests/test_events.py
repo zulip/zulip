@@ -2148,6 +2148,7 @@ class RealmPropertyActionTest(BaseAction):
             digest_weekday=[0, 1, 2],
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
+            guidelines_url=["http://zulip.readthedocs.io/en/latest/chat-zulip-org.html"],
             waiting_period_threshold=[10, 20],
             create_public_stream_policy=Realm.COMMON_POLICY_TYPES,
             create_private_stream_policy=Realm.COMMON_POLICY_TYPES,

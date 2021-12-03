@@ -95,10 +95,12 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     if realm is None:
         realm_uri = settings.ROOT_DOMAIN_URI
         realm_name = None
+        realm_guidelines_url = None
         realm_icon = None
     else:
         realm_uri = realm.uri
         realm_name = realm.name
+        realm_guidelines_url = realm.guidelines_url
         realm_icon = get_realm_icon_url(realm)
 
     register_link_disabled = settings.REGISTER_LINK_DISABLED
@@ -153,6 +155,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "external_uri_scheme": settings.EXTERNAL_URI_SCHEME,
         "realm_uri": realm_uri,
         "realm_name": realm_name,
+        "realm_guidelines_url": realm_guidelines_url,
         "realm_icon": realm_icon,
         "root_domain_uri": settings.ROOT_DOMAIN_URI,
         "apps_page_url": get_apps_page_url(),
