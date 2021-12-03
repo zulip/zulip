@@ -46,8 +46,7 @@ export function narrow_or_search_for_term(search_string) {
     // so leave the current text in.
     if (!page_params.search_pills_enabled && !used_typeahead) {
         search_query_box.trigger("blur");
-    }
-    if (used_typeahead) {
+    } else if (used_typeahead) {
         search_query_box.trigger("focus");
     }
     return search_string;
@@ -169,9 +168,7 @@ export function initialize() {
                 // Pill is already added during keydown event of input pills.
                 narrow_or_search_for_term(search_query_box.val());
 
-                if (used_typeahead) {
-                    search_query_box.trigger("focus");
-                } else {
+                if (!used_typeahead) {
                     search_query_box.trigger("blur");
                     update_buttons_with_focus(false);
                 }
