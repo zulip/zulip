@@ -7385,9 +7385,13 @@ def notify_realm_emoji(realm: Realm) -> None:
 def check_add_realm_emoji(
     realm: Realm, name: str, author: UserProfile, image_file: IO[bytes]
 ) -> Optional[RealmEmoji]:
-    realm_emoji = RealmEmoji(realm=realm, name=name, author=author)
-    realm_emoji.full_clean()
-    realm_emoji.save()
+    try:
+        realm_emoji = RealmEmoji(realm=realm, name=name, author=author)
+        realm_emoji.full_clean()
+        realm_emoji.save()
+    except django.db.utils.IntegrityError:
+        # Match the string in upload_emoji.
+        raise JsonableError(_("A custom emoji with this name already exists."))
 
     emoji_file_name = get_emoji_file_name(image_file.name, realm_emoji.id)
 

@@ -1048,6 +1048,15 @@ class RealmEmoji(models.Model):
     def __str__(self) -> str:
         return f"<RealmEmoji({self.realm.string_id}): {self.id} {self.name} {self.deactivated} {self.file_name}>"
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["realm", "name"],
+                condition=Q(deactivated=False),
+                name="unique_realm_emoji_when_false_deactivated",
+            ),
+        ]
+
 
 def get_realm_emoji_dicts(
     realm: Realm, only_active_emojis: bool = False
