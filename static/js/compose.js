@@ -538,13 +538,7 @@ export function initialize() {
 
         let target_textarea;
         let edit_message_id;
-        const compose_control_buttons_popover = popover_menus.get_compose_control_buttons_popover();
-        if (compose_control_buttons_popover) {
-            target_textarea = $(compose_control_buttons_popover.reference)
-                .closest("form")
-                .find("textarea");
-            compose_control_buttons_popover.hide();
-        } else if ($(e.target).parents(".message_edit_form").length === 1) {
+        if ($(e.target).parents(".message_edit_form").length === 1) {
             edit_message_id = rows.id($(e.target).parents(".message_row"));
             target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
         }
