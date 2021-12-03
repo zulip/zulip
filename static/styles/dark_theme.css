@@ -875,6 +875,7 @@ body.dark-theme {
         box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.4);
     }
 
+    .upgrade-tip,
     .tip {
         color: inherit;
         background-color: hsla(46, 28%, 38%, 0.27);
