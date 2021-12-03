@@ -319,6 +319,24 @@ test("initialize", () => {
     search_button.prop("disabled", true);
     search_query_box.trigger("focus");
     assert.ok(!search_button.prop("disabled"));
+
+    _setup("ver");
+    ev.key = "ArrowDown";
+    search_query_box.is = () => false;
+    searchbox_form.trigger(ev);
+    searchbox_form.trigger(ev);
+    ev.key = "Enter";
+    searchbox_form.trigger(ev);
+    assert.ok(!is_blurred);
+    
+
+    _setup("ver");
+    ev.key = "ArrowDown";
+    search_query_box.is = () => true;
+    searchbox_form.trigger(ev);
+    ev.key = "Enter";
+    searchbox_form.trigger(ev);
+    assert.ok(is_blurred);
 });
 
 test("initiate_search", () => {
