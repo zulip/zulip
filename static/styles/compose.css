@@ -484,15 +484,21 @@ input.recipient_box {
     align-items: center;
 }
 
-.tippy-content .compose_control_buttons_container .message-control-link {
-    /* Override tippy theme. */
-    padding: 4px 4px 0;
-    color: hsl(200, 100%, 40%);
-    font-size: 14px;
+.tippy-content .compose_control_buttons_container {
+    .message-control-link {
+        /* Override tippy theme. */
+        padding: 4px 4px 0;
+        color: hsl(200, 100%, 40%);
+        font-size: 14px;
 
-    &:hover,
-    &:focus {
-        color: hsl(200, 100%, 25%);
+        &:hover,
+        &:focus {
+            color: hsl(200, 100%, 25%);
+        }
+    }
+
+    .compose_gif_icon {
+        bottom: 5px;
     }
 }
 
@@ -504,7 +510,9 @@ input.recipient_box {
 
     .compose_gif_icon {
         font-size: 22px;
-        padding-bottom: 2px;
+        height: 18px;
+        position: relative;
+        bottom: 6px;
     }
 
     .compose_control_menu {
