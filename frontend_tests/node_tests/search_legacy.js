@@ -141,7 +141,7 @@ run_test("initialize", () => {
             ];
             _setup("ver");
             assert.equal(opts.updater("ver"), "ver");
-            assert.ok(is_blurred);
+            assert.ok(!is_blurred);
 
             operators = [
                 {
@@ -152,7 +152,7 @@ run_test("initialize", () => {
             ];
             _setup("stream:Verona");
             assert.equal(opts.updater("stream:Verona"), "stream:Verona");
-            assert.ok(is_blurred);
+            assert.ok(!is_blurred);
 
             search.__Rewire__("is_using_input_method", true);
             _setup("stream:Verona");
@@ -171,7 +171,6 @@ run_test("initialize", () => {
 
     search_query_box.val("test string");
     narrow_state.search_string = () => "ver";
-    search_query_box.trigger("blur");
     assert.equal(search_query_box.val(), "test string");
 
     search.__Rewire__("is_using_input_method", false);
@@ -251,7 +250,7 @@ run_test("initialize", () => {
     ev.key = "Enter";
     search_query_box.is = () => true;
     searchbox_form.trigger(ev);
-    assert.ok(is_blurred);
+    assert.ok(!is_blurred);
 
     _setup("ver");
     search.__Rewire__("is_using_input_method", true);
@@ -264,7 +263,7 @@ run_test("initialize", () => {
     ev.key = "Enter";
     search_query_box.is = () => true;
     searchbox_form.trigger(ev);
-    assert.ok(is_blurred);
+    assert.ok(!is_blurred);
     assert.ok(!search_button.prop("disabled"));
 });
 
