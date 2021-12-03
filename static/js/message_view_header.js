@@ -129,7 +129,7 @@ function build_message_view_header(filter) {
         bind_title_area_handlers();
         if (page_params.search_pills_enabled && $("#search_query").is(":focus")) {
             open_search_bar_and_close_narrow_description();
-        } else {
+        } else if (!search.used_typeahead) {
             close_search_bar_and_open_narrow_description();
         }
     }
