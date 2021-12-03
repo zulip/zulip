@@ -530,11 +530,14 @@ export function initialize() {
 
     $("#compose").on("click", ".compose_upload_file", (e) => {
         e.preventDefault();
+        e.stopPropagation();
+
         $("#compose .file_input").trigger("click");
     });
 
     $("body").on("click", ".video_link", (e) => {
         e.preventDefault();
+        e.stopPropagation();
 
         let target_textarea;
         let edit_message_id;
@@ -654,6 +657,8 @@ export function initialize() {
 
     $("#compose").on("click", ".markdown_preview", (e) => {
         e.preventDefault();
+        e.stopPropagation();
+
         const content = $("#compose-textarea").val();
         $("#compose-textarea").hide();
         $("#compose .markdown_preview").hide();
@@ -669,16 +674,22 @@ export function initialize() {
 
     $("#compose").on("click", ".undo_markdown_preview", (e) => {
         e.preventDefault();
+        e.stopPropagation();
+
         clear_preview_area();
     });
 
     $("#compose").on("click", ".expand_composebox_button", (e) => {
         e.preventDefault();
+        e.stopPropagation();
+
         compose_ui.make_compose_box_full_size();
     });
 
     $("#compose").on("click", ".collapse_composebox_button", (e) => {
         e.preventDefault();
+        e.stopPropagation();
+
         compose_ui.make_compose_box_original_size();
     });
 

@@ -568,6 +568,7 @@ test_ui("on_events", ({override}) => {
 
         const event = {
             preventDefault: noop,
+            stopPropagation: noop,
             target,
         };
 
@@ -751,6 +752,7 @@ test_ui("on_events", ({override}) => {
 
         const event = {
             preventDefault: noop,
+            stopPropagation: noop,
         };
 
         handler(event);
@@ -836,6 +838,7 @@ test_ui("on_events", ({override}) => {
 
         const event = {
             preventDefault: noop,
+            stopPropagation: noop,
         };
 
         handler(event);
@@ -892,6 +895,7 @@ test_ui("on_events", ({override}) => {
 
         const event = {
             preventDefault: noop,
+            stopPropagation: noop,
         };
 
         handler(event);
