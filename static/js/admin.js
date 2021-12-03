@@ -19,6 +19,7 @@ import * as settings_toggle from "./settings_toggle";
 const admin_settings_label = {
     // Organization settings
     realm_allow_edit_history: $t({defaultMessage: "Enable message edit history"}),
+    realm_guidelines: $t({defaultMessage: "Enable new member guidelines display"}),
     realm_mandatory_topics: $t({defaultMessage: "Require topics in stream messages"}),
     realm_notifications_stream: $t({defaultMessage: "New stream notifications:"}),
     realm_signup_notifications_stream: $t({defaultMessage: "New user notifications:"}),

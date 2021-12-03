@@ -19,6 +19,7 @@ from zerver.lib.actions import (
     do_set_realm_property,
     do_set_realm_signup_notifications_stream,
     do_set_realm_user_default_setting,
+    do_set_realm_guidelines,
 )
 from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequired
 from zerver.lib.i18n import get_available_language_codes
@@ -33,6 +34,7 @@ from zerver.lib.validator import (
     check_dict,
     check_int,
     check_int_in,
+    check_string,
     check_string_in,
     check_string_or_int,
     to_non_negative_int,
@@ -52,6 +54,7 @@ def update_realm(
     description: Optional[str] = REQ(
         str_validator=check_capped_string(Realm.MAX_REALM_DESCRIPTION_LENGTH), default=None
     ),
+    guidelines_url: Optional[str]=REQ(str_validator=check_string, default=None),
     emails_restricted_to_domains: Optional[bool] = REQ(json_validator=check_bool, default=None),
     disallow_disposable_email_addresses: Optional[bool] = REQ(
         json_validator=check_bool, default=None
@@ -237,6 +240,13 @@ def update_realm(
         data["allow_message_editing"] = allow_message_editing
         data["message_content_edit_limit_seconds"] = message_content_edit_limit_seconds
         data["edit_topic_policy"] = edit_topic_policy
+
+    if guidelines_url is not None:
+        if realm.guidelines_url is None or (
+            realm.guidelines_url != guidelines_url
+        ):
+            do_set_realm_guidelines(realm, guidelines_url)
+            data["guidelines_url"] = guidelines_url
 
     # Realm.notifications_stream and Realm.signup_notifications_stream are not boolean,
     # str or integer field, and thus doesn't fit into the do_set_realm_property framework.

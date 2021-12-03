@@ -811,6 +811,22 @@ def active_humans_in_realm(realm: Realm) -> Sequence[UserProfile]:
     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
 
 
+def do_set_realm_guidelines(realm: Realm, realm_guidelines: str) -> None:
+    """
+    Takes in a realm object and the new realm guidelines url
+    Sets the property on the realm object and sends an event
+    """
+    realm.guidelines_url = realm_guidelines
+    realm.save(update_fields=['guidelines_url'])
+    event = dict(
+        type="realm",
+        op="update",
+        property="guidelines_url",
+        value=realm_guidelines
+    )
+    send_event(event, active_user_ids(realm.id))
+
+
 def do_set_realm_property(
     realm: Realm, name: str, value: Any, *, acting_user: Optional[UserProfile]
 ) -> None:

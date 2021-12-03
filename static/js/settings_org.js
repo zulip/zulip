@@ -403,6 +403,13 @@ export function populate_auth_methods(auth_methods) {
     auth_methods_table.html(rendered_auth_method_rows);
 }
 
+export function update_realm_guidelines() {
+    if (!meta.loaded) {
+        return;
+    }
+    $('#id_realm_guidelines').val(page_params.realm_guidelines);
+}
+
 function update_dependent_subsettings(property_name) {
     if (simple_dropdown_properties.includes(property_name)) {
         set_property_dropdown_value(property_name);

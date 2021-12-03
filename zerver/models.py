@@ -250,6 +250,7 @@ class Realm(models.Model):
     digest_weekday: int = models.SmallIntegerField(default=1)
 
     send_welcome_emails: bool = models.BooleanField(default=True)
+    guidelines_url: bool = models.URLField(null=True)
     message_content_allowed_in_email_notifications: bool = models.BooleanField(default=True)
 
     mandatory_topics: bool = models.BooleanField(default=False)
