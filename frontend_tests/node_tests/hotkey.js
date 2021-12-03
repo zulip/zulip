@@ -215,7 +215,7 @@ run_test("mappings", () => {
 
 function process(s) {
     const e = {
-        which: s.charCodeAt(0),
+        which: s.codePointAt(0),
     };
     try {
         return hotkey.process_keypress(e);
