@@ -767,6 +767,19 @@ input[type="checkbox"] {
         white-space: pre;
     }
 
+    .copy_email {
+        font-size: 0.85em;
+        position: relative;
+        margin-left: 5px;
+        color: hsl(0, 0%, 67%);
+        transition: all 0.3s ease;
+
+        &:hover {
+            color: hsl(0, 0%, 27%);
+        }
+    }
+
+    .copy_api_key,
     .regenerate_bot_api_key {
         position: relative;
         margin-left: 5px;
@@ -850,6 +863,10 @@ input[type="checkbox"] {
     .api_key .api-key-value-and-button {
         font-family: "Source Code Pro", monospace;
         font-size: 0.85em;
+        display: flex;
+    }
+
+    .email .email-value-and-button {
         display: flex;
     }
 
