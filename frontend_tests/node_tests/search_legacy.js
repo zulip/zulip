@@ -12,7 +12,9 @@ page_params.search_pills_enabled = false;
 const noop = () => {};
 
 const narrow = mock_esm("../../static/js/narrow");
-const narrow_state = mock_esm("../../static/js/narrow_state");
+const narrow_state = mock_esm("../../static/js/narrow_state", {
+    filter: () => false,
+});
 const search_suggestion = mock_esm("../../static/js/search_suggestion");
 mock_esm("../../static/js/ui_util", {
     change_tab_to: noop,
@@ -171,6 +173,7 @@ run_test("initialize", () => {
 
     search_query_box.val("test string");
     narrow_state.search_string = () => "ver";
+    search_query_box.trigger("blur");
     assert.equal(search_query_box.val(), "test string");
 
     search.__Rewire__("is_using_input_method", false);
@@ -250,7 +253,7 @@ run_test("initialize", () => {
     ev.key = "Enter";
     search_query_box.is = () => true;
     searchbox_form.trigger(ev);
-    assert.ok(!is_blurred);
+    assert.ok(is_blurred);
 
     _setup("ver");
     search.__Rewire__("is_using_input_method", true);
@@ -263,7 +266,7 @@ run_test("initialize", () => {
     ev.key = "Enter";
     search_query_box.is = () => true;
     searchbox_form.trigger(ev);
-    assert.ok(!is_blurred);
+    assert.ok(is_blurred);
     assert.ok(!search_button.prop("disabled"));
 });
 
