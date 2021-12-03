@@ -707,5 +707,11 @@ ul {
             margin: 0 5px 5px -10px;
             text-indent: 10px;
         }
+
+        .dropdown-menu {
+            position: fixed;
+            top: 125px;
+            left: 40px;
+        }
     }
 }
