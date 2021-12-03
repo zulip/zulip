@@ -6,6 +6,7 @@ import * as common from "./common";
 import {$t} from "./i18n";
 import * as loading from "./loading";
 import * as people from "./people";
+import * as popover_menus from "./popover_menus";
 import * as rtl from "./rtl";
 import * as settings_data from "./settings_data";
 import * as user_status from "./user_status";
@@ -400,4 +401,12 @@ export function show_compose_spinner() {
     loading.show_button_spinner($("#compose-send-button .loader"), using_dark_theme);
     $("#compose-send-button span").hide();
     $("#compose-send-button").addClass("disable-btn");
+}
+
+export function get_compose_click_target(e) {
+    const compose_control_buttons_popover = popover_menus.get_compose_control_buttons_popover();
+    if (compose_control_buttons_popover) {
+        return compose_control_buttons_popover.reference;
+    }
+    return e.target;
 }
