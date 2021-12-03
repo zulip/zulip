@@ -78,6 +78,7 @@ test("videos", ({override, mock_template}) => {
 
         const ev = {
             preventDefault: () => {},
+            stopPropagation: () => {},
             target: {
                 to_$: () => textarea,
             },
@@ -103,6 +104,7 @@ test("videos", ({override, mock_template}) => {
 
         const ev = {
             preventDefault: () => {},
+            stopPropagation: () => {},
             target: {
                 to_$: () => textarea,
             },
@@ -140,6 +142,7 @@ test("videos", ({override, mock_template}) => {
 
         const ev = {
             preventDefault: () => {},
+            stopPropagation: () => {},
             target: {
                 to_$: () => textarea,
             },
@@ -185,6 +188,7 @@ test("videos", ({override, mock_template}) => {
 
         const ev = {
             preventDefault: () => {},
+            stopPropagation: () => {},
             target: {
                 to_$: () => textarea,
             },
