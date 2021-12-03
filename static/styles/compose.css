@@ -465,6 +465,10 @@ input.recipient_box {
     .enter_sends_false {
         display: none;
     }
+
+    .fa-exchange {
+        margin: 0 4px;
+    }
 }
 
 .compose_left_wrapper {
