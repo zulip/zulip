@@ -12,6 +12,7 @@ import * as ui_util from "./ui_util";
 
 // Exported for unit testing
 export let is_using_input_method = false;
+export let used_typeahead = false;
 
 export function narrow_or_search_for_term(search_string) {
     const search_query_box = $("#search_query");
@@ -43,10 +44,13 @@ export function narrow_or_search_for_term(search_string) {
 
     // Narrowing will have already put some operators in the search box,
     // so leave the current text in.
-    if (!page_params.search_pills_enabled) {
+    if (!page_params.search_pills_enabled && !used_typeahead) {
         search_query_box.trigger("blur");
     }
-    return search_query_box.val();
+    if (used_typeahead) {
+        search_query_box.trigger("focus");
+    }
+    return search_string;
 }
 
 function update_buttons_with_focus(focused) {
@@ -100,6 +104,13 @@ export function initialize() {
             return true;
         },
         updater(search_string) {
+            // If the user searches via one of the suggestions,
+            // we want to keep the search bar in focus.
+            // This ensures that the user can continue their query.
+            const original_query = search_map.keys().next().value;
+            if (search_map.has(search_string) && search_string !== original_query) {
+                used_typeahead = true;
+            }
             if (page_params.search_pills_enabled) {
                 search_pill.append_search_string(search_string, search_pill_widget.widget);
                 return search_query_box.val();
@@ -157,8 +168,13 @@ export function initialize() {
 
                 // Pill is already added during keydown event of input pills.
                 narrow_or_search_for_term(search_query_box.val());
-                search_query_box.trigger("blur");
-                update_buttons_with_focus(false);
+
+                if (used_typeahead) {
+                    search_query_box.trigger("focus");
+                } else {
+                    search_query_box.trigger("blur");
+                    update_buttons_with_focus(false);
+                }
             }
         });
 
@@ -182,6 +198,7 @@ export function initialize() {
         // enough for the search to have gone through, but
         // short enough that the user won't notice (though
         // really it would be OK if they did).
+        used_typeahead = false;
 
         if (page_params.search_pills_enabled) {
             const pill_id = $(e.relatedTarget).closest(".pill").data("id");
@@ -197,6 +214,9 @@ export function initialize() {
         }
         setTimeout(() => {
             update_button_visibility();
+            if (!used_typeahead) {
+                message_view_header.close_search_bar_and_open_narrow_description();
+            }
         }, 100);
     });
 
