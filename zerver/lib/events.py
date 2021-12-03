@@ -177,15 +177,18 @@ def fetch_initial_state_data(
             state["max_message_id"] = -1
 
     if want("drafts"):
-        # Note: if a user ever disables syncing drafts then all of
-        # their old drafts stored on the server will be deleted and
-        # simply retained in local storage. In which case user_drafts
-        # would just be an empty queryset.
-        user_draft_objects = Draft.objects.filter(user_profile=user_profile).order_by(
-            "-last_edit_time"
-        )[: settings.MAX_DRAFTS_IN_REGISTER_RESPONSE]
-        user_draft_dicts = [draft.to_dict() for draft in user_draft_objects]
-        state["drafts"] = user_draft_dicts
+        if user_profile is None:
+            state["drafts"] = []
+        else:
+            # Note: if a user ever disables syncing drafts then all of
+            # their old drafts stored on the server will be deleted and
+            # simply retained in local storage. In which case user_drafts
+            # would just be an empty queryset.
+            user_draft_objects = Draft.objects.filter(user_profile=user_profile).order_by(
+                "-last_edit_time"
+            )[: settings.MAX_DRAFTS_IN_REGISTER_RESPONSE]
+            user_draft_dicts = [draft.to_dict() for draft in user_draft_objects]
+            state["drafts"] = user_draft_dicts
 
     if want("muted_topics"):
         state["muted_topics"] = [] if user_profile is None else get_topic_mutes(user_profile)
