@@ -328,7 +328,6 @@ test("initialize", () => {
     ev.key = "Enter";
     searchbox_form.trigger(ev);
     assert.ok(!is_blurred);
-    
 
     _setup("ver");
     ev.key = "ArrowDown";
