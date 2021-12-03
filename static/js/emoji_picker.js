@@ -540,7 +540,7 @@ function process_keypress(e) {
             new_query = old_query.slice(0, -1);
         } else {
             // Handles any printable character.
-            const key_str = String.fromCharCode(e.which);
+            const key_str = String.fromCodePoint(e.which);
             new_query = old_query + key_str;
         }
 

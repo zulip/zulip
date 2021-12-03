@@ -832,7 +832,7 @@ test("initialize", ({override, mock_template}) => {
         // Adds a `no break-space` at the end. This should fail
         // if there wasn't any logic replacing `no break-space`
         // with normal space.
-        query = "cordelia, lear's" + String.fromCharCode(160);
+        query = "cordelia, lear's\u00A0";
         assert.equal(matcher(query, cordelia), true);
         assert.equal(matcher(query, othello), false);
 
