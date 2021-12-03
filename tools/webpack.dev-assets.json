@@ -12,5 +12,19 @@
         "./static/js/portico/email_log",
         "./static/js/reload_state",
         "./static/js/channel"
+    ],
+    "dev-markdown-panel": [
+        "./static/js/bundles/portico",
+        "./static/js/portico/markdown_dev_panel",
+        "./static/styles/portico/markdown_dev_panel.css",
+        "./static/js/channel",
+        "./static/js/markdown",
+        "./static/js/stream_data",
+        "./static/js/markdown_config",
+        "diff2html/bundles/js/diff2html.min.js",
+        "diff2html/bundles/css/diff2html.min.css",
+        "highlight.js/lib/core.js",
+        "highlight.js/lib/languages/xml",
+        "highlight.js/styles/github.css"
     ]
 }

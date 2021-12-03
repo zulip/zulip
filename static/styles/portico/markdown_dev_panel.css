@@ -1,0 +1,140 @@
+.top-navbar {
+    display: grid;
+    grid-template-columns: 1fr 5fr 1fr;
+}
+
+.centerpiece {
+    font-size: 30px;
+    text-align: center;
+}
+
+.pad-small {
+    height: 100px;
+    width: 100%;
+}
+
+.pad-tiny {
+    height: 50px;
+    width: 100%;
+}
+
+#markdown-panel {
+    margin-left: 3%;
+    margin-right: 3%;
+    padding-bottom: 15px;
+    padding-top: 20px;
+    padding-left: 10px;
+    padding-right: 10px;
+    background-color: hsl(173, 100%, 98%);
+    box-shadow: 8px 4px 8px 0 hsla(0, 0%, 0%, 0.2),
+        0 6px 20px 0 hsla(0, 0%, 0%, 0.19);
+
+    button {
+        background-color: hsl(152, 52%, 91%);
+        color: hsl(146, 50%, 36%);
+    }
+
+    .nav {
+        li {
+            cursor: pointer;
+        }
+
+        li.active {
+            background-color: hsl(0, 0%, 98%);
+        }
+    }
+
+    .row1,
+    .row2 {
+        display: grid;
+        grid-template-columns: 50% 50%;
+        margin-left: 2%;
+        margin-right: 2%;
+        ::-webkit-scrollbar {
+            appearance: none;
+        }
+        ::-webkit-scrollbar:vertical ::-webkit-scrollbar:horizontal {
+            width: 11px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            border-radius: 8px;
+            border: 2px solid hsl(0, 0%, 100%);
+            background-color: hsla(0, 0%, 0%, 0.5);
+        }
+
+        .col1 {
+            width: 100%;
+            &:first-child {
+                width: 95%;
+            }
+        }
+    }
+    .row2 {
+        flex-wrap: wrap;
+        justify-content: space-between;
+
+        .raw_content_wrapper {
+            .raw_content_title {
+                display: flex;
+                flex-wrap: nowrap;
+                justify-content: space-between;
+                margin-right: 2px;
+                margin-top: 13px;
+                border-bottom: 1px solid hsl(0, 0%, 87%);
+
+                .error {
+                    display: none;
+                    color: hsl(0, 100%, 50%);
+                }
+            }
+            #raw_content {
+                width: 100%;
+                height: 500px;
+                resize: vertical;
+                margin-top: 20px;
+                box-sizing: border-box;
+            }
+            .buttons {
+                display: flex;
+                justify-content: space-between;
+                margin-right: 2px;
+
+                .rendering {
+                    display: none;
+                }
+            }
+        }
+        .rendered_content_wrapper {
+            .code-block-wrapper {
+                height: 500px;
+                resize: vertical;
+                overflow: scroll;
+                background-color: hsl(0, 0%, 100%);
+                border: 1px solid hsla(0, 0, 0, 0.15);
+                border-radius: 4px;
+                padding: 4px 6px;
+                box-shadow: inset 0 1px 1px hsla(0, 0, 0, 0.08);
+                white-space: pre;
+            }
+            #diff_data {
+                padding: 0;
+                height: auto;
+                max-height: 500px;
+                white-space: unset;
+
+                /* We are overriding the default style of diff2html because the */
+                /* line number column is overflowing when its height is larger than the parent element. */
+                /* Upstream Issue: https://github.com/rtfpessoa/diff2html/issues/381. */
+                /* TODO: Remove this block when the above issue is resolved. */
+
+                .d2h-code-wrapper .d2h-diff-table .d2h-diff-tbody {
+                    .d2h-code-linenumber,
+                    .d2h-code-side-linenumber {
+                        position: relative;
+                    }
+                }
+            }
+        }
+    }
+}
