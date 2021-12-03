@@ -41,6 +41,8 @@ class Token:
 
 
 def tokenize(text: str) -> List[Token]:
+    in_code_block = False
+
     def advance(n: int) -> None:
         for _ in range(n):
             state.i += 1
@@ -107,7 +109,14 @@ def tokenize(text: str) -> List[Token]:
 
     while state.i < len(text):
         try:
-            if looking_at_htmlcomment():
+            if in_code_block:
+                in_code_block = False
+                s = get_code(text, state.i)
+                if s == "":
+                    continue
+                tag = ""
+                kind = "code"
+            elif looking_at_htmlcomment():
                 s = get_html_comment(text, state.i)
                 tag = s[4:-3]
                 kind = "html_comment"
@@ -142,6 +151,8 @@ def tokenize(text: str) -> List[Token]:
                     kind = "html_singleton"
                 else:
                     kind = "html_start"
+                if tag in ("code", "pre", "script"):
+                    in_code_block = True
             elif looking_at_html_end():
                 s = get_html_tag(text, state.i)
                 tag = s[2:-1]
@@ -277,6 +288,7 @@ def tag_flavor(token: Token) -> Optional[str]:
     kind = token.kind
     tag = token.tag
     if kind in (
+        "code",
         "django_comment",
         "handlebar_comment",
         "handlebars_singleton",
@@ -586,6 +598,14 @@ def get_handlebars_tag(text: str, i: int) -> str:
 def get_spaces(text: str, i: int) -> str:
     s = ""
     while i < len(text) and text[i] in " ":
+        s += text[i]
+        i += 1
+    return s
+
+
+def get_code(text: str, i: int) -> str:
+    s = ""
+    while i < len(text) and text[i] not in "<":
         s += text[i]
         i += 1
     return s
