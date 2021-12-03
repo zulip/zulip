@@ -29,15 +29,9 @@
             <div class = "organization-guidelines-parent">
                 <div class="input-group admin-realm">
                     <label for="id_realm_guidelines">{{t "Organization guidelines" }}</label>
-                    <input type="text" id="id_realm_guidelines" name="realm_guidelines" class="setting-widget prop-element"
+                    <input type="url" id="id_realm_guidelines" name="realm_guidelines" class="setting-widget prop-element"
                     autocomplete="off" data-setting-widget-type="string"
                     value="{{ realm_guidelines }}" />
-                </div>
-                <div class="input-group admin-realm">
-                    <label id="enable-guidelines-label" class="compose_checkbox_label checkbox">
-                        <input type="checkbox" id="enable_guidelines_banner" />
-                        <span></span>{{t 'Enable organization guidelines banner for first time members' }}
-                    </label>
                 </div>
             </div>
         </div>
