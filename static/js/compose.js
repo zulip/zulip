@@ -21,7 +21,6 @@ import * as markdown from "./markdown";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as popover_menus from "./popover_menus";
 import * as reminder from "./reminder";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
@@ -623,14 +622,12 @@ export function initialize() {
 
         let target_textarea;
         let edit_message_id;
-        const compose_control_buttons_popover = popover_menus.get_compose_control_buttons_popover();
-        if (compose_control_buttons_popover) {
-            target_textarea = $(compose_control_buttons_popover.reference)
-                .closest("form")
-                .find("textarea");
-        } else if ($(e.target).parents(".message_edit_form").length === 1) {
-            edit_message_id = rows.id($(e.target).parents(".message_row"));
+        const compose_click_target = compose_ui.get_compose_click_target(e);
+        if ($(compose_click_target).parents(".message_edit_form").length === 1) {
+            edit_message_id = rows.id($(compose_click_target).parents(".message_row"));
             target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
+        } else {
+            target_textarea = $(compose_click_target).closest("form").find("textarea");
         }
 
         if (!instance.calendarContainer) {
@@ -640,7 +637,7 @@ export function initialize() {
             };
 
             instance = composebox_typeahead.show_flatpickr(
-                $(e.target)[0],
+                $(compose_click_target)[0],
                 on_timestamp_selection,
                 new Date(),
                 {
@@ -706,19 +703,9 @@ export function initialize() {
     });
 
     $("body").on("click", ".formatting_button", (e) => {
-        const $elt = $(e.target);
-
-        const compose_control_buttons_popover = popover_menus.get_compose_control_buttons_popover();
-        let textarea;
-        if (compose_control_buttons_popover) {
-            textarea = $(compose_control_buttons_popover.reference)
-                .closest("form")
-                .find("textarea");
-        } else {
-            textarea = $elt.closest("form").find("textarea");
-        }
-
-        const format_type = $elt.attr("data-format-type");
+        const $compose_click_target = $(compose_ui.get_compose_click_target(e));
+        const textarea = $compose_click_target.closest("form").find("textarea");
+        const format_type = $(e.target).attr("data-format-type");
         compose_ui.format_text(textarea, format_type);
         textarea.trigger("focus");
         e.preventDefault();
