@@ -31,7 +31,6 @@ import * as drafts from "./drafts";
 import * as echo from "./echo";
 import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
-import * as emoji_ui from "./emoji_ui";
 import * as emojisets from "./emojisets";
 import * as gear_menu from "./gear_menu";
 import * as giphy from "./giphy";
@@ -189,14 +188,6 @@ function initialize_right_sidebar() {
             $(".right-sidebar .realm-description .rendered_markdown"),
         );
     }
-
-    $("#user_presences").on("mouseenter", ".user_sidebar_entry", (e) => {
-        emoji_ui.handle_mouseenter_for_status_emoji(e);
-    });
-
-    $("#user_presences").on("mouseleave", ".user_sidebar_entry", (e) => {
-        emoji_ui.handle_mouseleave_for_status_emoji(e);
-    });
 }
 
 function initialize_navbar() {

@@ -39,6 +39,7 @@ const people = zrequire("people");
 const buddy_data = zrequire("buddy_data");
 const {buddy_list} = zrequire("buddy_list");
 const activity = zrequire("activity");
+zrequire("emoji_ui");
 
 const me = {
     email: "me@zulip.com",
@@ -77,6 +78,16 @@ const zoe = {
     user_id: 6,
     full_name: "Zoe Yang",
 };
+
+const empty_elem = {
+    addEventListener() {},
+};
+
+const $empty_elem = $("#empty_elem");
+$empty_elem[0] = empty_elem;
+
+const fake_$html = $.create("fake $html");
+const to_$_fake_html = {to_$: () => fake_$html};
 
 people.add_active_user(alice);
 people.add_active_user(fred);
@@ -208,14 +219,18 @@ test("huddle_data.process_loaded_messages", () => {
 
 test("presence_list_full_update", ({override, mock_template}) => {
     override(padded_widget, "update_padding", () => {});
+
     mock_template("presence_rows.hbs", false, (data) => {
         assert.equal(data.presence_rows.length, 7);
         assert.equal(data.presence_rows[0].user_id, me.user_id);
+        return to_$_fake_html;
     });
 
     $(".user-list-filter").trigger("focus");
     compose_state.private_message_recipient = () => fred.email;
     compose_fade.set_focused_recipient("private");
+
+    override(buddy_list, "bind_handlers", () => {});
 
     const user_ids = activity.build_user_sidebar();
 
@@ -270,7 +285,7 @@ test("PM_update_dom_counts", () => {
 test("handlers", ({override, mock_template}) => {
     let filter_key_handlers;
 
-    mock_template("presence_rows.hbs", false, () => {});
+    mock_template("presence_rows.hbs", false, () => to_$_fake_html);
 
     override(keydown_util, "handle", (opts) => {
         filter_key_handlers = opts.handlers;
@@ -297,6 +312,9 @@ test("handlers", ({override, mock_template}) => {
 
     function init() {
         $.clear_all_elements();
+
+        override(buddy_list, "bind_handlers", () => {});
+
         buddy_list.populate({
             keys: [me.user_id, alice.user_id, fred.user_id],
         });
@@ -372,6 +390,41 @@ test("handlers", ({override, mock_template}) => {
     })();
 });
 
+test("mouseenter/mouseleave handlers", () => {
+    const alice_stub = $.create("alice stub");
+    alice_stub[0] = {
+        to_$: () => alice_stub,
+        addEventListener: (type, handler) => alice_stub.on(type, handler),
+    };
+    const fred_stub = $.create("fred stub");
+    fred_stub[0] = {
+        to_$: () => fred_stub,
+        // no add event listener stub, because fred has no emoji
+    };
+
+    const fake_still_url = "fake/still/url";
+    const fake_animated_url = "fake/animated/url";
+    const fake_emoji = $.create("fake emoji");
+    fake_emoji.length = 1;
+    fake_emoji.attr("src", "initial_src/url");
+    fake_emoji.attr("data-still-url", fake_still_url);
+    fake_emoji.attr("data-animated-url", fake_animated_url);
+    alice_stub.set_find_results("img.status_emoji[data-still-url]", fake_emoji);
+    fred_stub.set_find_results("img.status_emoji[data-still-url]", []);
+
+    const $html = {};
+    $html.filter = () => [alice_stub[0], fred_stub[0]];
+
+    buddy_list.bind_handlers($html);
+
+    let handler = alice_stub.get_on_handler("mouseenter");
+    handler({target: alice_stub});
+    assert.equal(fake_emoji.attr("src"), CSS.escape(fake_animated_url));
+    handler = alice_stub.get_on_handler("mouseleave");
+    handler({target: alice_stub});
+    assert.equal(fake_emoji.attr("src"), CSS.escape(fake_still_url));
+});
+
 test("first/prev/next", ({override, mock_template}) => {
     let rendered_alice;
     let rendered_fred;
@@ -421,6 +474,7 @@ test("first/prev/next", ({override, mock_template}) => {
             default:
                 throw new Error(`we did not expect to have to render a row for  ${data.name}`);
         }
+        return to_$_fake_html;
     });
 
     override(padded_widget, "update_padding", () => {});
@@ -430,6 +484,8 @@ test("first/prev/next", ({override, mock_template}) => {
     assert.equal(buddy_list.next_key(alice.user_id), undefined);
 
     override(buddy_list.$container, "append", () => {});
+
+    override(buddy_list, "bind_handlers", () => {});
 
     activity.redraw_user(alice.user_id);
     activity.redraw_user(fred.user_id);
@@ -468,11 +524,12 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
         return html;
     });
 
+    override(buddy_list, "bind_handlers", () => {});
     override(padded_widget, "update_padding", () => {});
 
     let appended_html;
-    override(buddy_list.$container, "append", (html) => {
-        appended_html = html;
+    override(buddy_list.$container, "append", ($html) => {
+        appended_html = $html.html();
     });
 
     activity.redraw_user(alice.user_id);
@@ -483,9 +540,10 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
 test("insert_alice_then_fred", ({override, mock_template}) => {
     mock_template("presence_row.hbs", true, (data, html) => html);
 
+    override(buddy_list, "bind_handlers", () => {});
     let appended_html;
-    override(buddy_list.$container, "append", (html) => {
-        appended_html = html;
+    override(buddy_list.$container, "append", ($html) => {
+        appended_html = $html.html();
     });
     override(padded_widget, "update_padding", () => {});
 
@@ -501,9 +559,10 @@ test("insert_alice_then_fred", ({override, mock_template}) => {
 test("insert_fred_then_alice_then_rename", ({override, mock_template}) => {
     mock_template("presence_row.hbs", true, (data, html) => html);
 
+    override(buddy_list, "bind_handlers", () => {});
     let appended_html;
-    override(buddy_list.$container, "append", (html) => {
-        appended_html = html;
+    override(buddy_list.$container, "append", ($html) => {
+        appended_html = $html.html();
     });
     override(padded_widget, "update_padding", () => {});
 
@@ -515,8 +574,8 @@ test("insert_fred_then_alice_then_rename", ({override, mock_template}) => {
     buddy_list_add(fred.user_id, $fred_stub);
 
     let inserted_html;
-    $fred_stub.before = (html) => {
-        inserted_html = html;
+    $fred_stub.before = ($html) => {
+        inserted_html = $html.html();
     };
 
     let fred_removed;
@@ -610,10 +669,11 @@ test("update_presence_info", ({override}) => {
 });
 
 test("initialize", ({override, mock_template}) => {
-    mock_template("presence_rows.hbs", false, () => {});
+    mock_template("presence_rows.hbs", false, () => to_$_fake_html);
     override(padded_widget, "update_padding", () => {});
     override(pm_list, "update_private_messages", () => {});
     override(watchdog, "check_for_unsuspend", () => {});
+    override(buddy_list, "bind_handlers", () => {});
 
     let payload;
     override(channel, "post", (arg) => {

@@ -5,6 +5,7 @@ import render_presence_rows from "../templates/presence_rows.hbs";
 
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
+import * as emoji_ui from "./emoji_ui";
 import * as message_viewport from "./message_viewport";
 import * as padded_widget from "./padded_widget";
 import * as ui from "./ui";
@@ -84,11 +85,14 @@ export class BuddyList extends BuddyListConf {
             keys: more_keys,
         });
 
-        const html = this.items_to_html({
-            items,
-        });
+        const $html = $(
+            this.items_to_html({
+                items,
+            }),
+        );
         this.$container = $(this.container_sel);
-        this.$container.append(html);
+        this.bind_handlers($html);
+        this.$container.append($html);
 
         // Invariant: more_keys.length >= items.length.
         // (Usually they're the same, but occasionally keys
@@ -98,6 +102,13 @@ export class BuddyList extends BuddyListConf {
 
         this.render_count += more_keys.length;
         this.update_padding();
+    }
+
+    bind_handlers($html) {
+        const $elems = $html.filter("li.user_sidebar_entry");
+        for (const elem of $elems) {
+            emoji_ui.bind_handlers_for_status_emoji(elem);
+        }
     }
 
     get_items() {
@@ -217,6 +228,7 @@ export class BuddyList extends BuddyListConf {
     insert_new_html(opts) {
         const new_key = opts.new_key;
         const $html = $(opts.html);
+        this.bind_handlers($html);
         const pos = opts.pos;
 
         if (new_key === undefined) {

@@ -66,17 +66,22 @@ run_test("basics", ({override}) => {
     override(buddy_list, "items_to_html", (opts) => {
         const items = opts.items;
         assert.equal(items, "data-stub");
-        return "html-stub";
+        const $html_stub = $.create("html stub");
+        $html_stub.html("html-stub");
+        const to_$_html_stub = {to_$: () => $html_stub};
+        return to_$_html_stub;
     });
 
     override(message_viewport, "height", () => 550);
     override(padded_widget, "update_padding", () => {});
 
     let appended;
-    $("#user_presences").append = (html) => {
-        assert.equal(html, "html-stub");
+    $("#user_presences").append = ($html) => {
+        assert.equal($html.html(), "html-stub");
         appended = true;
     };
+
+    override(buddy_list, "bind_handlers", () => {});
 
     buddy_list.populate({
         keys: [alice.user_id],
