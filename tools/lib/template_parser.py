@@ -360,12 +360,13 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> List[Token
     prevent_whitespace_violations(fn, tokens)
 
     class State:
-        def __init__(self, func: Callable[[Token], None]) -> None:
+        def __init__(self, func: Callable[[Optional[Token]], None]) -> None:
             self.depth = 0
             self.foreign = False
             self.matcher = func
 
-    def no_start_tag(token: Token) -> None:
+    def no_start_tag(token: Optional[Token]) -> None:
+        assert token
         raise TemplateParserException(
             f"""
             No start tag
@@ -390,7 +391,21 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> List[Token
         if start_tag in ["math", "svg"]:
             state.foreign = True
 
-        def f(end_token: Token) -> None:
+        def f(end_token: Optional[Token]) -> None:
+            if end_token is None:
+                raise TemplateParserException(
+                    f"""
+
+    Problem with {fn}
+    Missing end tag for the token at row {start_line} {start_col}!
+
+{start_token.s}
+
+    It's possible you have a typo in a token that you think is
+    matching this tag.
+                    """
+                )
+
             is_else_tag = end_token.tag == "else"
 
             end_tag = end_token.tag.strip("~")
@@ -461,7 +476,7 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> List[Token
             state.matcher(token)
 
     if state.depth != 0:
-        raise TemplateParserException("Missing end tag")
+        state.matcher(None)
 
     ensure_matching_indentation(fn, tokens, lines)
 
