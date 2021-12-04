@@ -8,8 +8,6 @@ class zulip::profile::rabbitmq {
     $erlang,
     'rabbitmq-server',
   ]
-  package { $rabbitmq_packages: ensure => 'installed' }
-
   # Removed 2020-09 in version 4.0; these lines can be removed in
   # Zulip version 5.0 and later.
   file { ['/etc/cron.d/rabbitmq-queuesize', '/etc/cron.d/rabbitmq-numconsumers']:
@@ -21,14 +19,20 @@ class zulip::profile::rabbitmq {
     owner  => 'root',
     group  => 'root',
     mode   => '0755',
+    before => Package['rabbitmq-server'],
   }
   file { '/etc/rabbitmq/rabbitmq.config':
-    ensure  => file,
-    require => Package[rabbitmq-server],
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    source  => 'puppet:///modules/zulip/rabbitmq/rabbitmq.config',
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'puppet:///modules/zulip/rabbitmq/rabbitmq.config',
+    # This config file must be installed before the package, so that
+    # port 25672 is not even briefly open to the Internet world, which
+    # would be a security risk, due to insecure defaults in the
+    # RabbitMQ package.
+    before => Package['rabbitmq-server'],
+    notify => Service['rabbitmq-server'],
   }
   exec { 'warn-rabbitmq-nodename-change':
     command   => "${::zulip_scripts_path}/lib/warn-rabbitmq-nodename-change",
@@ -52,6 +56,9 @@ class zulip::profile::rabbitmq {
       Exec['configure-rabbitmq'],
     ],
   }
+  package { $rabbitmq_packages:
+    ensure  => 'installed',
+  }
   # epmd doesn't have an init script, so we just check if it is
   # running, and if it isn't, start it.  Even in case of a race, this
   # won't leak epmd processes, because epmd checks if one is already
@@ -65,9 +72,10 @@ class zulip::profile::rabbitmq {
 
   service { 'rabbitmq-server':
     ensure  => running,
-    require => [Exec['epmd'],
-                File['/etc/rabbitmq/rabbitmq.config'],
-                File['/etc/default/rabbitmq-server']],
+    require => [
+      Exec['epmd'],
+      Package['rabbitmq-server'],
+    ],
   }
 
   exec { 'configure-rabbitmq':
