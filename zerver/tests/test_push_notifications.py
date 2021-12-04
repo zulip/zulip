@@ -1622,8 +1622,10 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "message_ids": [message.id],
                     "recipient_type": "private",
                     "pm_users": ",".join(
-                        str(s.user_profile_id)
-                        for s in Subscription.objects.filter(recipient=message.recipient)
+                        sorted(
+                            str(s.user_profile_id)
+                            for s in Subscription.objects.filter(recipient=message.recipient)
+                        )
                     ),
                     "sender_email": self.sender.email,
                     "sender_id": self.sender.id,
@@ -1786,8 +1788,10 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "message_ids": [message.id],
                     "recipient_type": "private",
                     "pm_users": ",".join(
-                        str(s.user_profile_id)
-                        for s in Subscription.objects.filter(recipient=message.recipient)
+                        sorted(
+                            str(s.user_profile_id)
+                            for s in Subscription.objects.filter(recipient=message.recipient)
+                        )
                     ),
                     "sender_email": self.sender.email,
                     "sender_id": self.sender.id,
