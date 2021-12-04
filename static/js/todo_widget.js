@@ -239,6 +239,7 @@ export function activate(opts) {
         elem.find(".todo-name-header").text(task_list_name);
         elem.find(".todo-name-bar").toggle(start_editing);
         elem.find(".todo-name-header").toggle(!start_editing);
+        elem.find(".todo-edit-name").toggle(!start_editing);
         elem.find("input.todo-name").val(task_list_name);
         update_edit_controls();
     }

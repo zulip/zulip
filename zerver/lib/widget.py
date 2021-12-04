@@ -46,21 +46,12 @@ def get_extra_data_from_widget_type(content: str, widget_type: Optional[str]) ->
         # The command '/todo name' will pre-set the name in the todo
         lines = content.splitlines()
         name = ""
-        options = []
         if lines and lines[0]:
             name = lines.pop(0).strip()
-        for line in lines:
-            # If someone is using the list syntax, we remove it
-            # before adding an option.
-            option = re.sub(r"(\s*[-*]?\s*)", "", line.strip(), 1)
-            if len(option) > 0:
-                options.append(option)
         extra_data = {
             "name": name,
-            "options": options,
         }
         return extra_data
-    return None
 
 
 def do_widget_post_save_actions(send_request: SendMessageRequest) -> None:
