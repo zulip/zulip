@@ -62,6 +62,7 @@ const emoji = zrequire("emoji");
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 const people = zrequire("people");
 const reactions = zrequire("reactions");
+const settings_config = zrequire("settings_config");
 
 const emoji_params = {
     realm_emoji: {
@@ -111,6 +112,8 @@ people.add_active_user(alexus);
 
 function test(label, f) {
     run_test(label, (helpers) => {
+        user_settings.emoji_animation_config =
+            settings_config.emoji_animation_config_values.always.code;
         page_params.user_id = alice_user_id;
         f(helpers);
     });
@@ -817,6 +820,21 @@ test("view.insert_new_reaction (me w/unicode emoji)", ({mock_template}) => {
     mock_template("message_reaction.hbs", false, (data) => {
         assert.deepEqual(data, {
             count: 1,
+            emoji_animation_config: 3,
+            emoji_animation_config_values: {
+                always: {
+                    code: 3,
+                    description: "translated: Always (inefficient)",
+                },
+                never: {
+                    code: 1,
+                    description: "translated: Never",
+                },
+                on_hover: {
+                    code: 2,
+                    description: "translated: On hover",
+                },
+            },
             emoji_alt_code: false,
             emoji_name: "8ball",
             emoji_code: "1f3b1",
@@ -882,6 +900,21 @@ test("view.insert_new_reaction (them w/zulip emoji)", ({mock_template}) => {
             count: 1,
             url: "/static/generated/emoji/images/emoji/unicode/zulip.png",
             is_realm_emoji: true,
+            emoji_animation_config: 3,
+            emoji_animation_config_values: {
+                always: {
+                    code: 3,
+                    description: "translated: Always (inefficient)",
+                },
+                never: {
+                    code: 1,
+                    description: "translated: Never",
+                },
+                on_hover: {
+                    code: 2,
+                    description: "translated: On hover",
+                },
+            },
             emoji_alt_code: false,
             emoji_name: "zulip",
             emoji_code: "zulip",

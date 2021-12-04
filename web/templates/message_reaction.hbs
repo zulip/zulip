@@ -2,7 +2,15 @@
     {{#if this.emoji_alt_code}}
         <div class="emoji_alt_code">&nbsp:{{this.emoji_name}}:</div>
     {{else if this.is_realm_emoji}}
-        <img src="{{this.url}}" class="emoji" />
+        {{#if this.still_url}}
+            {{#if (eq this.emoji_animation_config this.emoji_animation_config_values.always.code)}}
+                <img src="{{this.url}}" class="emoji" data-animated-url="{{this.url}}" data-still-url="{{this.still_url}}" />
+            {{else}}
+                <img src="{{this.still_url}}" class="emoji" data-animated-url="{{this.url}}" data-still-url="{{this.still_url}}" />
+            {{/if}}
+        {{else}}
+            <img src="{{this.url}}" class="emoji" />
+        {{/if}}
     {{else}}
         <div class="emoji emoji-{{this.emoji_code}}"></div>
     {{/if}}

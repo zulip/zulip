@@ -11,6 +11,7 @@ import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as settings_config from "./settings_config";
 import * as spectators from "./spectators";
 import {user_settings} from "./user_settings";
 
@@ -322,6 +323,9 @@ view.insert_new_reaction = function (clean_reaction_object, message, user_id) {
     } else {
         context.class = "message_reaction";
     }
+
+    context.emoji_animation_config = user_settings.emoji_animation_config;
+    context.emoji_animation_config_values = settings_config.emoji_animation_config_values;
 
     const $new_reaction = $(render_message_reaction(context));
 

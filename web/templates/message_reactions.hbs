@@ -1,5 +1,5 @@
 {{#each this/msg/message_reactions}}
-    {{> message_reaction}}
+    {{> message_reaction emoji_animation_config=../this.emoji_animation_config emoji_animation_config_values=../this.emoji_animation_config_values}}
 {{/each}}
 <div class="reaction_button" data-tippy-content="{{t 'Add emoji reaction' }}" aria-label="{{t 'Add emoji reaction' }} (:)">
     <i class="fa fa-smile-o" role="button" aria-haspopup="true" tabindex="0" aria-label="{{t 'Add emoji reaction' }} (:)"></i>

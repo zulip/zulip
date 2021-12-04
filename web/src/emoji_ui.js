@@ -3,7 +3,6 @@ import $ from "jquery";
 import {emoji_animation_config_values} from "./settings_config";
 import {user_settings} from "./user_settings";
 
-// exported for testing
 export function stop_animation($emoji) {
     if ($emoji.length) {
         const still_url = CSS.escape($emoji.attr("data-still-url"));
@@ -13,7 +12,6 @@ export function stop_animation($emoji) {
     }
 }
 
-// exported for testing
 export function animate($emoji) {
     if ($emoji.length) {
         const animated_url = CSS.escape($emoji.attr("data-animated-url"));
