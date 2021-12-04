@@ -7,6 +7,9 @@ up-to-date list of raw changes.
 
 ## Zulip 4.x series
 
+- Closed access to RabbitMQ port 25672; initial installs tried to
+  close this port, but failed to restart RabbitMQ for the
+  configuration.
 - Removed the `rabbitmq.nodename` configuration in `zulip.conf`; all
   RabbitMQ instances will be reconfigured to have a nodename of
   `zulip@localhost`. You can remove this setting from your
