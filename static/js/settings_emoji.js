@@ -232,10 +232,7 @@ export function set_up() {
             }
 
             if (emoji.name.trim() === "") {
-                ui_report.client_error(
-                    $t_html({defaultMessage: "Failed: Emoji name is required."}),
-                    emoji_status,
-                );
+                $("#emoji_name").val($("#emoji-file-name").html());
                 return;
             }
 
