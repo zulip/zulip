@@ -437,7 +437,7 @@ input.recipient_box {
     .loader {
         display: none;
         position: relative;
-        top: -4px;
+        top: -6px;
     }
 }
 
