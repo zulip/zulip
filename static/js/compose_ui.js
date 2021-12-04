@@ -404,7 +404,10 @@ export function show_compose_spinner() {
 
 export function get_compose_click_target(e) {
     const compose_control_buttons_popover = popover_menus.get_compose_control_buttons_popover();
-    if (compose_control_buttons_popover) {
+    if (
+        compose_control_buttons_popover &&
+        $(compose_control_buttons_popover.popper).has(e.target).length
+    ) {
         return compose_control_buttons_popover.reference;
     }
     return e.target;
