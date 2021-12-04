@@ -28,6 +28,9 @@ def shift_indents_to_the_next_tokens(tokens: List[Token]) -> None:
 
 def token_allows_children_to_skip_indents(token: Token) -> bool:
     # For legacy reasons we don't always indent blocks.
+    if token.tag == "each":
+        return False
+
     return token.kind in ("django_start", "handlebars_start") or token.tag == "a"
 
 

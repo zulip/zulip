@@ -24,7 +24,7 @@
             <label for="twenty_four_hour_time" class="dropdown-title">{{ settings_label.twenty_four_hour_time }}</label>
             <select name="twenty_four_hour_time" class="setting_twenty_four_hour_time prop-element" data-setting-widget-type="string">
                 {{#each twenty_four_hour_time_values}}
-                <option value='{{ this.value }}'>{{ this.description }}</option>
+                    <option value='{{ this.value }}'>{{ this.description }}</option>
                 {{/each}}
             </select>
         </div>
@@ -49,20 +49,20 @@
             <label class="emoji-theme title">{{t "Emoji theme" }}</label>
             <div class="emojiset_choices grey-box">
                 {{#each settings_object.emojiset_choices}}
-                <label>
-                    <input type="radio" class="setting_emojiset_choice prop-element" name="emojiset" value="{{this.key}}" data-setting-widget-type="radio-group"/>
-                    <span>{{this.text}}</span>
-                    <span class="right">
-                        {{#if (eq this.key "text") }}
-                        <div class="emoji_alt_code">&nbsp;:relaxed:</div>
-                        {{else}}
-                        <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f642.png" />
-                        <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f44d.png" />
-                        <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f680.png" />
-                        <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f389.png" />
-                        {{/if}}
-                    </span>
-                </label>
+                    <label>
+                        <input type="radio" class="setting_emojiset_choice prop-element" name="emojiset" value="{{this.key}}" data-setting-widget-type="radio-group"/>
+                        <span>{{this.text}}</span>
+                        <span class="right">
+                            {{#if (eq this.key "text") }}
+                            <div class="emoji_alt_code">&nbsp;:relaxed:</div>
+                            {{else}}
+                            <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f642.png" />
+                            <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f44d.png" />
+                            <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f680.png" />
+                            <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f389.png" />
+                            {{/if}}
+                        </span>
+                    </label>
                 {{/each}}
             </div>
         </div>
@@ -106,12 +106,12 @@
         </div>
 
         {{#each display_settings.settings.user_display_settings}}
-        {{> settings_checkbox
-          setting_name=this
-          is_checked=(lookup ../settings_object this)
-          label=(lookup ../settings_label this)
-          render_only=(lookup ../display_settings.render_only this)
-          prefix=../prefix}}
+            {{> settings_checkbox
+              setting_name=this
+              is_checked=(lookup ../settings_object this)
+              label=(lookup ../settings_label this)
+              render_only=(lookup ../display_settings.render_only this)
+              prefix=../prefix}}
         {{/each}}
 
     </div>

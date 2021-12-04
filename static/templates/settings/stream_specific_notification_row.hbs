@@ -8,10 +8,10 @@
         {{stream.stream_name}}
     </td>
     {{#each stream_specific_notification_settings}}
-    {{> notification_settings_checkboxes
-      setting_name=this
-      prefix=(lookup ../stream "stream_id")
-      is_checked=(lookup ../stream this)
-      is_disabled=(lookup ../is_disabled this) }}
+        {{> notification_settings_checkboxes
+          setting_name=this
+          prefix=(lookup ../stream "stream_id")
+          is_checked=(lookup ../stream this)
+          is_disabled=(lookup ../is_disabled this) }}
     {{/each}}
 </tr>
