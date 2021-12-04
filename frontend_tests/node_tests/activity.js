@@ -6,7 +6,7 @@ const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespa
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
-const {page_params} = require("../zjsunit/zpage_params");
+const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 const window_stub = $.create("window-stub");
 set_global("to_$", () => window_stub);
@@ -98,6 +98,7 @@ let presence_info;
 
 function test(label, f) {
     run_test(label, (helpers) => {
+        user_settings.presence_enabled = true;
         // Simulate a small window by having the
         // fill_screen_with_content render the entire
         // list in one pass.  We will do more refined
@@ -143,6 +144,11 @@ test("get_status", () => {
     assert.equal(presence.get_status(alice.user_id), "active");
     assert.equal(presence.get_status(mark.user_id), "idle");
     assert.equal(presence.get_status(fred.user_id), "active");
+
+    user_settings.presence_enabled = false;
+    assert.equal(presence.get_status(page_params.user_id), "offline");
+    user_settings.presence_enabled = true;
+    assert.equal(presence.get_status(page_params.user_id), "active");
 
     presence_info.delete(zoe.user_id);
     assert.equal(presence.get_status(zoe.user_id), "offline");

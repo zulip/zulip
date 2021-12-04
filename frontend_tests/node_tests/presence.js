@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
+const {user_settings} = require("../zjsunit/zpage_params");
 
 const reload_state = mock_esm("../../static/js/reload_state", {
     is_in_progress: () => false,
@@ -77,6 +78,7 @@ people.initialize_current_user(me.user_id);
 
 function test(label, f) {
     run_test(label, ({override}) => {
+        user_settings.presence_enabled = true;
         presence.clear_internal_data();
         f({override});
     });
