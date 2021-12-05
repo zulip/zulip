@@ -7,7 +7,7 @@
                     <div class="input-group inline-block grid user-name-parent">
                         <div class="user-name-section inline-block">
                             <label for="full_name" class="title inline-block">{{t "Full name" }}</label>
-                            <i class="fa fa-question-circle change_name_tooltip tippy-zulip-tooltip settings-info-icon"
+                            <i class="fa fa-question-circle change_name_tooltip tippy-zulip-tooltip settings-question-icon"
                               {{#if user_can_change_name}}style="display:none"{{/if}}
                               data-tippy-content="{{t 'Name changes are disabled in this organization. Contact an administrator to change your name.' }}">
                             </i>
@@ -55,7 +55,7 @@
         <div class="inline-block user-avatar-section">
             <h3>
                 {{t "Profile picture" }}
-                <i class="fa fa-question-circle change_name_tooltip tippy-zulip-tooltip settings-info-icon"
+                <i class="fa fa-question-circle change_name_tooltip tippy-zulip-tooltip settings-question-icon"
                   {{#if user_can_change_avatar}}style="display:none"{{/if}}
                   data-tippy-content="{{t 'Avatar changes are disabled in this organization.' }}">
                 </i>

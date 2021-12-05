@@ -15,7 +15,7 @@ h3 {
 
     .fa-question-circle-o {
         top: 1px;
-        opacity: 0.4;
+        opacity: 0.6;
         position: relative;
 
         &:hover {
@@ -212,14 +212,14 @@ td .button {
     box-shadow: none;
 }
 
-.settings-info-icon {
+.settings-question-icon {
     padding-left: 3px;
     opacity: 0.9;
 }
 
 .email-change-form,
 .user-name-section {
-    .settings-info-icon {
+    .settings-question-icon {
         position: relative;
         top: 2px;
         left: 1px;
@@ -2004,5 +2004,17 @@ input[type="checkbox"] {
     #edit-linkifier-pattern-status,
     #edit-linkifier-format-status {
         margin-top: 10px;
+    }
+}
+
+div.settings-section-title a {
+    color: inherit;
+
+    i {
+        opacity: 0.6;
+
+        &:hover {
+            opacity: 1;
+        }
     }
 }

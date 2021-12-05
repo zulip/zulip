@@ -70,10 +70,10 @@ export function update_avatar_change_display() {
     if (!settings_data.user_can_change_avatar()) {
         // We disable this widget by simply hiding its edit UI.
         $("#user-avatar-upload-widget .image_upload_button").hide();
-        $(".user-avatar-section .settings-info-icon").show();
+        $(".user-avatar-section .settings-question-icon").show();
     } else {
         $("#user-avatar-upload-widget .image_upload_button").show();
-        $(".user-avatar-section .settings-info-icon").hide();
+        $(".user-avatar-section .settings-question-icon").hide();
     }
 }
 
