@@ -66,6 +66,7 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
+    UserStatus,
     UserTopic,
     get_huddle_hash,
     get_realm,
@@ -108,6 +109,7 @@ ID_MAP: Dict[str, Dict[int, int]] = {
     "realmplayground": {},
     "message": {},
     "user_presence": {},
+    "userstatus": {},
     "useractivity": {},
     "useractivityinterval": {},
     "usermessage": {},
@@ -1259,6 +1261,14 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         else:
             stream.first_message_id = first_message.id
         stream.save(update_fields=["first_message_id"])
+
+    if "zerver_userstatus" in data:
+        fix_datetime_fields(data, "zerver_userstatus")
+        re_map_foreign_keys(data, "zerver_userstatus", "user_profile", related_table="user_profile")
+        re_map_foreign_keys(data, "zerver_userstatus", "client", related_table="client")
+        update_model_ids(UserStatus, data, "userstatus")
+        re_map_realm_emoji_codes(data, table_name="zerver_userstatus")
+        bulk_import_model(data, UserStatus)
 
     # Do attachments AFTER message data is loaded.
     # TODO: de-dup how we read these json files.

@@ -62,6 +62,7 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
+    UserStatus,
     UserTopic,
     get_display_recipient,
     get_realm,
@@ -238,8 +239,6 @@ NON_EXPORTED_TABLES = {
     "zerver_defaultstreamgroup",
     "zerver_defaultstreamgroup_streams",
     "zerver_submessage",
-    # This is low priority, since users can easily just reset themselves to away.
-    "zerver_userstatus",
     # Drafts don't need to be exported as they are supposed to be more ephemeral.
     "zerver_draft",
     # For any tables listed below here, it's a bug that they are not present in the export.
@@ -296,6 +295,7 @@ DATE_FIELDS: Dict[TableName, List[Field]] = {
     "zerver_userpresence": ["timestamp"],
     "zerver_userprofile": ["date_joined", "last_login", "last_reminder"],
     "zerver_userprofile_mirrordummy": ["date_joined", "last_login", "last_reminder"],
+    "zerver_userstatus": ["timestamp"],
     "zerver_usertopic": ["last_updated"],
 }
 
@@ -888,6 +888,13 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
     Config(
         table="zerver_userpresence",
         model=UserPresence,
+        normal_parent=user_profile_config,
+        parent_key="user_profile__in",
+    )
+
+    Config(
+        table="zerver_userstatus",
+        model=UserStatus,
         normal_parent=user_profile_config,
         parent_key="user_profile__in",
     )

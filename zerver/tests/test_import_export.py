@@ -19,6 +19,7 @@ from zerver.lib.actions import (
     do_deactivate_user,
     do_mute_user,
     do_update_user_presence,
+    do_update_user_status,
 )
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.bot_config import set_bot_config
@@ -64,6 +65,7 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
+    UserStatus,
     UserTopic,
     get_active_streams,
     get_client,
@@ -735,9 +737,26 @@ class ImportExportTest(ZulipTestCase):
         do_mute_user(cordelia, hamlet)
         do_mute_user(cordelia, othello)
 
-        do_update_user_presence(
-            sample_user, get_client("website"), timezone_now(), UserPresence.ACTIVE
+        client = get_client("website")
+
+        do_update_user_presence(sample_user, client, timezone_now(), UserPresence.ACTIVE)
+
+        # send Cordelia to the islands
+        do_update_user_status(
+            user_profile=cordelia,
+            away=True,
+            status_text="in Hawaii",
+            client_id=client.id,
+            emoji_name="hawaii",
+            emoji_code=str(realm_emoji.id),
+            reaction_type=Reaction.REALM_EMOJI,
         )
+
+        user_status = UserStatus.objects.order_by("id").last()
+        assert user_status
+
+        # Verify strange invariant for UserStatus/RealmEmoji.
+        self.assertEqual(user_status.emoji_code, str(realm_emoji.id))
 
         # data to test import of botstoragedata and botconfigdata
         bot_profile = do_create_user(
@@ -913,6 +932,16 @@ class ImportExportTest(ZulipTestCase):
             return names
 
         assert_realm_values(get_realm_emoji_names)
+
+        def get_realm_user_statuses(r: Realm) -> Set[Tuple[str, str, int, str]]:
+            tups = {
+                (rec.user_profile.full_name, rec.emoji_name, rec.status, rec.status_text)
+                for rec in UserStatus.objects.filter(user_profile__realm_id=r.id)
+            }
+            assert (cordelia.full_name, "hawaii", UserStatus.AWAY, "in Hawaii") in tups
+            return tups
+
+        assert_realm_values(get_realm_user_statuses)
 
         def get_realm_emoji_reactions(r: Realm) -> Set[Tuple[str, str]]:
             tups = {

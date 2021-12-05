@@ -89,6 +89,7 @@ from zerver.models import (
     Stream,
     Subscription,
     UserProfile,
+    UserStatus,
     clear_supported_auth_backends_cache,
     flush_per_request_caches,
     get_display_recipient,
@@ -1433,6 +1434,13 @@ Output:
 
         count = 0
         for row in Reaction.objects.filter(reaction_type=Reaction.REALM_EMOJI):
+            realm_emoji_id = int(row.emoji_code)
+            assert realm_emoji_id in dct
+            self.assertEqual(dct[realm_emoji_id].name, row.emoji_name)
+            self.assertEqual(dct[realm_emoji_id].realm_id, row.user_profile.realm_id)
+            count += 1
+
+        for row in UserStatus.objects.filter(reaction_type=UserStatus.REALM_EMOJI):
             realm_emoji_id = int(row.emoji_code)
             assert realm_emoji_id in dct
             self.assertEqual(dct[realm_emoji_id].name, row.emoji_name)
