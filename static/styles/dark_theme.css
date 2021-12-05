@@ -27,6 +27,19 @@ body.dark-theme {
         color: inherit;
     }
 
+    /************************* MODAL DARK THEME *******************/
+    .dialog_cancel_button {
+        background-color: hsl(211, 29%, 14%);
+        color: hsl(0, 0%, 100%);
+        border: 1px solid hsla(0, 0%, 0%, 0.6);
+    }
+
+    .modal__btn:disabled {
+        opacity: 1;
+        background-color: hsla(0, 0%, 83%, 0.5);
+    }
+
+
     .enter_sends kbd {
         background-color: hsl(211, 29%, 14%);
         border-color: hsl(211, 29%, 14%);
