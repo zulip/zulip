@@ -280,23 +280,23 @@ ANALYTICS_TABLES = {
 # TODO: This data structure could likely eventually be replaced by
 # inspecting the corresponding Django models
 DATE_FIELDS: Dict[TableName, List[Field]] = {
+    "analytics_installationcount": ["end_time"],
+    "analytics_realmcount": ["end_time"],
+    "analytics_streamcount": ["end_time"],
+    "analytics_usercount": ["end_time"],
     "zerver_attachment": ["create_time"],
     "zerver_message": ["last_edit_time", "date_sent"],
     "zerver_muteduser": ["date_muted"],
-    "zerver_usertopic": ["last_updated"],
+    "zerver_realmauditlog": ["event_time"],
     "zerver_realm": ["date_created"],
     "zerver_stream": ["date_created"],
-    "zerver_useractivity": ["last_visit"],
     "zerver_useractivityinterval": ["start", "end"],
+    "zerver_useractivity": ["last_visit"],
+    "zerver_userhotspot": ["timestamp"],
     "zerver_userpresence": ["timestamp"],
     "zerver_userprofile": ["date_joined", "last_login", "last_reminder"],
     "zerver_userprofile_mirrordummy": ["date_joined", "last_login", "last_reminder"],
-    "zerver_realmauditlog": ["event_time"],
-    "zerver_userhotspot": ["timestamp"],
-    "analytics_installationcount": ["end_time"],
-    "analytics_realmcount": ["end_time"],
-    "analytics_usercount": ["end_time"],
-    "analytics_streamcount": ["end_time"],
+    "zerver_usertopic": ["last_updated"],
 }
 
 BITHANDLER_FIELDS: Dict[TableName, List[Field]] = {
