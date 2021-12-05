@@ -946,13 +946,17 @@ class ImportExportTest(ZulipTestCase):
 
         assert_realm_values(get_muted_topics)
 
-        def get_muted_users(r: Realm) -> Set[Tuple[int, int]]:
-            mute_objects = MutedUser.objects.all()
-            muter_mutee_pairs = {
-                (mute_object.user_profile.id, mute_object.muted_user.id)
+        def get_muted_users(r: Realm) -> Set[Tuple[str, str, str]]:
+            mute_objects = MutedUser.objects.filter(user_profile__realm=r)
+            muter_tuples = {
+                (
+                    mute_object.user_profile.full_name,
+                    mute_object.muted_user.full_name,
+                    str(mute_object.date_muted),
+                )
                 for mute_object in mute_objects
             }
-            return muter_mutee_pairs
+            return muter_tuples
 
         assert_realm_values(get_muted_users)
 

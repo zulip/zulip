@@ -41,6 +41,7 @@ from zerver.models import (
     GroupGroupMembership,
     Huddle,
     Message,
+    MutedUser,
     Reaction,
     Realm,
     RealmAuditLog,
@@ -236,7 +237,6 @@ NON_EXPORTED_TABLES = {
     # export before they reach full production status.
     "zerver_defaultstreamgroup",
     "zerver_defaultstreamgroup_streams",
-    "zerver_muteduser",
     "zerver_submessage",
     # This is low priority, since users can easily just reset themselves to away.
     "zerver_userstatus",
@@ -282,6 +282,7 @@ ANALYTICS_TABLES = {
 DATE_FIELDS: Dict[TableName, List[Field]] = {
     "zerver_attachment": ["create_time"],
     "zerver_message": ["last_edit_time", "date_sent"],
+    "zerver_muteduser": ["date_muted"],
     "zerver_usertopic": ["last_updated"],
     "zerver_realm": ["date_created"],
     "zerver_stream": ["date_created"],
@@ -859,6 +860,13 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
     Config(
         table="zerver_customprofilefieldvalue",
         model=CustomProfileFieldValue,
+        normal_parent=user_profile_config,
+        parent_key="user_profile__in",
+    )
+
+    Config(
+        table="zerver_muteduser",
+        model=MutedUser,
         normal_parent=user_profile_config,
         parent_key="user_profile__in",
     )
