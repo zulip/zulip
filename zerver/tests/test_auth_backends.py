@@ -4788,7 +4788,6 @@ class FetchAuthBackends(ZulipTestCase):
             [
                 ("realm_name", check_string),
                 ("realm_description", check_string),
-                ("realm_guidelines_url", check_string),
                 ("realm_icon", check_string),
             ],
         )
