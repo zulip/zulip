@@ -9,6 +9,8 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib import upload
 from zerver.lib.actions import (
+    check_add_reaction,
+    check_add_realm_emoji,
     do_add_reaction,
     do_change_icon_source,
     do_change_logo_source,
@@ -25,7 +27,12 @@ from zerver.lib.export import do_export_realm, do_export_user, export_usermessag
 from zerver.lib.import_realm import do_import_realm, get_incoming_message_ids
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import create_s3_buckets, get_test_image_file, use_s3_backend
+from zerver.lib.test_helpers import (
+    create_s3_buckets,
+    get_test_image_file,
+    most_recent_message,
+    use_s3_backend,
+)
 from zerver.lib.topic_mutes import add_topic_mute
 from zerver.lib.upload import (
     claim_attachment,
@@ -655,6 +662,17 @@ class ImportExportTest(ZulipTestCase):
         original_realm = Realm.objects.get(string_id="zulip")
         RealmEmoji.objects.get(realm=original_realm).delete()
 
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+
+        with get_test_image_file("img.png") as img_file:
+            realm_emoji = check_add_realm_emoji(
+                realm=hamlet.realm, name="hawaii", author=hamlet, image_file=img_file
+            )
+            assert realm_emoji
+            self.assertEqual(realm_emoji.name, "hawaii")
+
         # Deactivate a user to ensure such a case is covered.
         do_deactivate_user(self.example_user("aaron"), acting_user=None)
         # data to test import of huddles
@@ -682,6 +700,19 @@ class ImportExportTest(ZulipTestCase):
 
         sample_user = self.example_user("hamlet")
 
+        check_add_reaction(
+            user_profile=cordelia,
+            message_id=most_recent_message(hamlet).id,
+            emoji_name="hawaii",
+            emoji_code=None,
+            reaction_type=None,
+        )
+        reaction = Reaction.objects.order_by("id").last()
+        assert reaction
+
+        # Verify strange invariant for Reaction/RealmEmoji.
+        self.assertEqual(reaction.emoji_code, str(realm_emoji.id))
+
         # data to test import of hotspots
         UserHotspot.objects.create(
             user=sample_user,
@@ -700,9 +731,6 @@ class ImportExportTest(ZulipTestCase):
         )
 
         # data to test import of muted users
-        hamlet = self.example_user("hamlet")
-        cordelia = self.example_user("cordelia")
-        othello = self.example_user("othello")
         do_mute_user(hamlet, cordelia)
         do_mute_user(cordelia, hamlet)
         do_mute_user(cordelia, othello)
@@ -742,6 +770,8 @@ class ImportExportTest(ZulipTestCase):
         self.assertTrue(Realm.objects.filter(string_id="test-zulip").exists())
         imported_realm = Realm.objects.get(string_id="test-zulip")
         self.assertNotEqual(imported_realm.id, original_realm.id)
+
+        self.verify_emoji_code_foreign_keys()
 
         def assert_realm_values(f: Callable[[Realm], Any], equal: bool = True) -> None:
             orig_realm_result = f(original_realm)
@@ -876,6 +906,25 @@ class ImportExportTest(ZulipTestCase):
             return {rec.word for rec in AlertWord.objects.filter(realm_id=r.id)}
 
         assert_realm_values(get_alertwords)
+
+        def get_realm_emoji_names(r: Realm) -> Set[str]:
+            names = {rec.name for rec in RealmEmoji.objects.filter(realm_id=r.id)}
+            assert "hawaii" in names
+            return names
+
+        assert_realm_values(get_realm_emoji_names)
+
+        def get_realm_emoji_reactions(r: Realm) -> Set[Tuple[str, str]]:
+            tups = {
+                (rec.emoji_name, rec.user_profile.full_name)
+                for rec in Reaction.objects.filter(
+                    user_profile__realm_id=r.id, reaction_type=Reaction.REALM_EMOJI
+                )
+            }
+            self.assertEqual(tups, {("hawaii", cordelia.full_name)})
+            return tups
+
+        assert_realm_values(get_realm_emoji_reactions)
 
         # test userhotspot
         def get_user_hotspots(r: Realm) -> Set[str]:
