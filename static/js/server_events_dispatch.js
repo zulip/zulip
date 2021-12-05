@@ -200,7 +200,7 @@ export function dispatch_normal_event(event) {
                 email_address_visibility: noop,
                 email_changes_disabled: settings_account.update_email_change_display,
                 disallow_disposable_email_addresses: noop,
-                realm_guidelines_url: settings_org.update_realm_guidelines,
+                guidelines_url: noop,
                 inline_image_preview: noop,
                 inline_url_embed_preview: noop,
                 invite_to_realm_policy: noop,

@@ -210,10 +210,10 @@ class Realm(models.Model):
 
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
 
-    # User-visible display name and description used on e.g. the organization homepage
+    # User-visible display name, description, guidelines used on e.g. the organization homepage
     name: str = models.CharField(max_length=MAX_REALM_NAME_LENGTH)
     description: str = models.TextField(default="")
-    guidelines_url: str = models.TextField(default="")
+    guidelines_url: str = models.URLField(null=True)
 
     # A short, identifier-like name for the organization.  Used in subdomains;
     # e.g. on a server at example.com, an org with string_id `foo` is reached
@@ -638,6 +638,7 @@ class Realm(models.Model):
         email_address_visibility=int,
         email_changes_disabled=bool,
         giphy_rating=int,
+        guidelines_url=str,
         invite_required=bool,
         invite_to_realm_policy=int,
         inline_image_preview=bool,
@@ -646,7 +647,6 @@ class Realm(models.Model):
         message_retention_days=(int, type(None)),
         name=str,
         name_changes_disabled=bool,
-        guidelines_url=str,
         avatar_changes_disabled=bool,
         emails_restricted_to_domains=bool,
         send_welcome_emails=bool,
