@@ -171,6 +171,45 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
         self.assertNotEqual(realm.description, new_description)
 
+    def test_update_realm_guidelines_events(self) -> None:
+        realm = get_realm("zulip")
+        new_guidelines = "http://www.zulip.org/guidelines"
+        events: List[Mapping[str, Any]] = []
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
+            do_set_realm_property(realm, "guidelines_url", new_guidelines, acting_user=None)
+        event = events[0]["event"]
+        self.assertEqual(
+            event,
+            dict(
+                type="realm",
+                op="update",
+                property="guidelines_url",
+                value=new_guidelines,
+            ),
+        )
+
+    def test_update_realm_guidelines(self) -> None:
+        self.login("iago")
+        new_guidelines = "http://www.zulip.org/guidelines"
+        data = dict(guidelines_url=new_guidelines)
+        events: List[Mapping[str, Any]] = []
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
+            result = self.client_patch("/json/realm", data)
+            self.assert_json_success(result)
+            realm = get_realm("zulip")
+            self.assertEqual(realm.guidelines_url, new_guidelines)
+
+        event = events[0]["event"]
+        self.assertEqual(
+            event,
+            dict(
+                type="realm",
+                op="update",
+                property="guidelines_url",
+                value=new_guidelines,
+            ),
+        )
+
     def test_realm_convert_demo_realm(self) -> None:
         data = dict(string_id="coolrealm")
 
