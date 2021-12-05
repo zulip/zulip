@@ -1,5 +1,15 @@
 <div data-step="1">
-    {{#tr}}Just joined? <z-link>Click to learn more about this organization.</z-link>
+    {{#tr}}<z-link>Click to view this organization's guidelines.</z-link>
         {{#*inline "z-link"}}<a class="organization-information alert-link" role="button" tabindex=0>{{> @partial-block}}</a>{{/inline}}
     {{/tr}}
+</div>
+<div data-step="2" style="display: none">
+    {{t "We strongly recommend enabling desktop notifications. They help Zulip keep your team connected." }}
+    <span class="buttons">
+        <a class="alert-link request-desktop-notifications" role="button" tabindex=0>{{t "Enable notifications" }}</a>
+        &bull;
+        <a class="alert-link exit" role="button" tabindex=0>{{t "Ask me later" }}</a>
+        &bull;
+        <a class="alert-link reject-notifications" role="button" tabindex=0>{{t "Never ask on this computer" }}</a>
+    </span>
 </div>

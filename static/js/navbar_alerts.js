@@ -53,8 +53,19 @@ const get_step = function ($process) {
 };
 
 export function should_show_organization_information(ls) {
-    // TODO: change
-    return true;
+
+    if ((localstorage.supported() && ls.get("viewedGuidelines") === true) ||
+        page_params.realm_guidelines_url === "") {
+        return false;
+    }
+
+    return (
+        // It doesn't make sense for an admin to need to view
+        // the organization deadlines.
+        !page_params.is_admin &&
+        // Notifications don't work well on mobile platforms.
+        !util.is_mobile()
+    );
 }
 
 export function should_show_notifications(ls) {
@@ -206,6 +217,14 @@ export function initialize() {
     $(".reject-notifications").on("click", function () {
         $(this).closest(".alert").hide();
         ls.set("dontAskForNotifications", true);
+        $(window).trigger("resize");
+    });
+
+    $(".organization-information").on("click", function (e) {
+        e.preventDefault();
+        $(this).closest(".alert").hide();
+        ls.set("viewedGuidelines", true);
+        window.open(page_params.realm_guidelines_url, "_blank");
         $(window).trigger("resize");
     });
 
