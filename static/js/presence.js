@@ -1,6 +1,7 @@
 import * as blueslip from "./blueslip";
 import * as people from "./people";
 import * as reload_state from "./reload_state";
+import {user_settings} from "./user_settings";
 import * as watchdog from "./watchdog";
 
 // This module just manages data.  See activity.js for
@@ -40,7 +41,12 @@ export function is_active(user_id) {
 
 export function get_status(user_id) {
     if (people.is_my_user_id(user_id)) {
-        return "active";
+        if (user_settings.presence_enabled) {
+            // if the current user is sharing presence, they always see themselves as online.
+            return "active";
+        }
+        // if the current user is not sharing presence, they always see themselves as offline.
+        return "offline";
     }
     if (presence_info.has(user_id)) {
         return presence_info.get(user_id).status;

@@ -48,8 +48,8 @@ service (or back):
   decommissioning a Zulip organization.
 
 - It's possible to set up [PostgreSQL streaming
-  replication](#postgresql-streaming-replication) and the [S3 file
-  upload
+  replication](../production/deployment.html#postgresql-warm-standby)
+  and the [S3 file upload
   backend](../production/upload-backends.html#s3-backend-configuration)
   as part of a high availability environment.
 
@@ -228,19 +228,6 @@ We recommend running a disaster recovery after setting up your backups to
 confirm that your backups are working. You may also want to monitor
 that they are up to date using the Nagios plugin at:
 `puppet/zulip/files/nagios_plugins/zulip_postgresql_backups/check_postgresql_backup`.
-
-## PostgreSQL streaming replication
-
-Zulip has database configuration for using PostgreSQL streaming
-replication. You can see the configuration in these files:
-
-- `puppet/zulip_ops/manifests/profile/postgresql.pp`
-- `puppet/zulip_ops/files/postgresql/*`
-
-We use this configuration for Zulip Cloud, and it works well in
-production, but it's not fully generic. Contributions to make it a
-supported and documented option for other installations are
-appreciated.
 
 ## Data export
 

@@ -65,8 +65,7 @@ function update_desktop_icon_count_display(settings_panel) {
     }
 }
 
-function set_notification_batching_ui(container, setting_seconds, force_custom) {
-    const select_elem = container.find(".setting_email_notifications_batching_period_seconds");
+export function set_notification_batching_ui(container, setting_seconds, force_custom) {
     const edit_elem = container.find(".email_notification_batching_period_edit_minutes");
     const valid_period_values = settings_config.email_notifications_batching_period_values.map(
         (x) => x.value,
@@ -75,15 +74,12 @@ function set_notification_batching_ui(container, setting_seconds, force_custom) 
     // We display the custom widget if either the user just selected
     // custom_period, or the current value cannot be represented with
     // the existing set of values.
-    if (force_custom || !valid_period_values.includes(setting_seconds)) {
-        const setting_minutes = setting_seconds / 60;
-        select_elem.val("custom_period");
-        edit_elem.val(setting_minutes);
-        edit_elem.parent().show();
-    } else {
-        select_elem.val(setting_seconds);
-        edit_elem.parent().hide();
-    }
+    const show_edit_elem = force_custom || !valid_period_values.includes(setting_seconds);
+    const select_elem_val = show_edit_elem ? "custom_period" : setting_seconds;
+
+    container.find(".setting_email_notifications_batching_period_seconds").val(select_elem_val);
+    edit_elem.val(setting_seconds / 60);
+    settings_org.change_element_block_display_property(edit_elem.attr("id"), show_edit_elem);
 }
 
 export function set_enable_digest_emails_visibility(settings_panel) {
