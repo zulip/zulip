@@ -339,6 +339,9 @@ function create_copy_to_clipboard_handler(row, source, message_id) {
 }
 
 function edit_message(row, raw_content) {
+    console.log("edit_message() called");
+    console.log(row);
+    console.log(raw_content);
     let stream_widget;
     row.find(".message_reactions").hide();
     condense.hide_message_expander(row);
