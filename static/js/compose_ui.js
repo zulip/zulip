@@ -9,7 +9,6 @@ import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import * as rtl from "./rtl";
 
-import * as settings_data from "./settings_data";
 import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 
