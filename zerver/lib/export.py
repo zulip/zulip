@@ -1310,15 +1310,32 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
     else:
         # Some bigger installations will have their data stored on S3.
         export_files_from_s3(
-            realm, settings.S3_AVATAR_BUCKET, output_dir=avatars_output_dir, processing_avatars=True
+            realm,
+            bucket_name=settings.S3_AUTH_UPLOADS_BUCKET,
+            object_prefix=f"{realm.id}/",
+            output_dir=uploads_output_dir,
         )
-        export_files_from_s3(realm, settings.S3_AUTH_UPLOADS_BUCKET, output_dir=uploads_output_dir)
-        export_files_from_s3(
-            realm, settings.S3_AVATAR_BUCKET, output_dir=emoji_output_dir, processing_emoji=True
-        )
+
         export_files_from_s3(
             realm,
-            settings.S3_AVATAR_BUCKET,
+            bucket_name=settings.S3_AVATAR_BUCKET,
+            object_prefix=f"{realm.id}/",
+            output_dir=avatars_output_dir,
+            processing_avatars=True,
+        )
+
+        export_files_from_s3(
+            realm,
+            bucket_name=settings.S3_AVATAR_BUCKET,
+            object_prefix=f"{realm.id}/emoji/images/",
+            output_dir=emoji_output_dir,
+            processing_emoji=True,
+        )
+
+        export_files_from_s3(
+            realm,
+            bucket_name=settings.S3_AVATAR_BUCKET,
+            object_prefix=f"{realm.id}/realm/",
             output_dir=realm_icons_output_dir,
             processing_realm_icon_and_logo=True,
         )
@@ -1422,6 +1439,7 @@ def _save_s3_object_to_file(
 def export_files_from_s3(
     realm: Realm,
     bucket_name: str,
+    object_prefix: str,
     output_dir: Path,
     processing_avatars: bool = False,
     processing_emoji: bool = False,
@@ -1440,13 +1458,6 @@ def export_files_from_s3(
             avatar_hash_values.add(avatar_path)
             avatar_hash_values.add(avatar_path + ".original")
             user_ids.add(user_profile.id)
-
-    if processing_realm_icon_and_logo:
-        object_prefix = f"{realm.id}/realm/"
-    elif processing_emoji:
-        object_prefix = f"{realm.id}/emoji/images/"
-    else:
-        object_prefix = f"{realm.id}/"
 
     if settings.EMAIL_GATEWAY_BOT is not None:
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
