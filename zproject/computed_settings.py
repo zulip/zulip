@@ -1,12 +1,10 @@
 import os
 import sys
 import time
-import warnings
 from copy import deepcopy
 from typing import Any, Dict, List, Tuple, Union
 from urllib.parse import urljoin
 
-from cryptography.utils import CryptographyDeprecationWarning
 from django.template.loaders import app_directories
 
 import zerver.lib.logging_util
@@ -415,6 +413,12 @@ RATE_LIMITING_MIRROR_REALM_RULES = [
 
 DEBUG_RATE_LIMITING = DEBUG
 REDIS_PASSWORD = get_secret("redis_password")
+
+# See RATE_LIMIT_TOR_TOGETHER
+if DEVELOPMENT:
+    TOR_EXIT_NODE_FILE_PATH = os.path.join(DEPLOY_ROOT, "var/tor-exit-nodes.json")
+else:
+    TOR_EXIT_NODE_FILE_PATH = "/var/lib/zulip/tor-exit-nodes.json"
 
 ########################################################################
 # SECURITY SETTINGS
@@ -1001,11 +1005,6 @@ LOGGING: Dict[str, Any] = {
         },
     },
 }
-
-# Silence CryptographyDeprecationWarning spam from a dependency:
-# /srv/zulip-py3-venv/lib/python3.6/site-packages/jose/backends/cryptography_backend.py:18: CryptographyDeprecationWarning: int_from_bytes is deprecated, use int.from_bytes instead
-# TODO: Clean this up when possible after future dependency upgrades.
-warnings.filterwarnings("ignore", category=CryptographyDeprecationWarning, module="jose.*")
 
 if DEVELOPMENT:
     CONTRIBUTOR_DATA_FILE_PATH = os.path.join(DEPLOY_ROOT, "var/github-contributors.json")

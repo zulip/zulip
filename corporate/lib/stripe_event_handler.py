@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Callable, Union
+from typing import Any, Callable, Dict, Union
 
 import stripe
 from django.conf import settings
@@ -12,7 +12,7 @@ from corporate.lib.stripe import (
     update_or_create_stripe_customer,
 )
 from corporate.models import Event, PaymentIntent, Session
-from zerver.models import get_user_by_delivery_email
+from zerver.models import get_active_user_profile_by_id_in_realm
 
 billing_logger = logging.getLogger("corporate.stripe")
 
@@ -70,8 +70,10 @@ def handle_checkout_session_completed_event(
     session.save()
 
     stripe_setup_intent = stripe.SetupIntent.retrieve(stripe_session.setup_intent)
-    stripe_customer = stripe.Customer.retrieve(stripe_setup_intent.customer)
-    user = get_user_by_delivery_email(stripe_customer.email, session.customer.realm)
+    assert session.customer.realm is not None
+    user_id = stripe_session.metadata.get("user_id")
+    assert user_id is not None
+    user = get_active_user_profile_by_id_in_realm(user_id, session.customer.realm)
     payment_method = stripe_setup_intent.payment_method
 
     if session.type in [
@@ -115,8 +117,11 @@ def handle_payment_intent_succeeded_event(
 ) -> None:
     payment_intent.status = PaymentIntent.SUCCEEDED
     payment_intent.save()
-    metadata = stripe_payment_intent.metadata
-    user = get_user_by_delivery_email(metadata["user_email"], payment_intent.customer.realm)
+    metadata: Dict[str, Any] = stripe_payment_intent.metadata
+    assert payment_intent.customer.realm is not None
+    user_id = metadata.get("user_id")
+    assert user_id is not None
+    user = get_active_user_profile_by_id_in_realm(user_id, payment_intent.customer.realm)
 
     description = ""
     for charge in stripe_payment_intent.charges:

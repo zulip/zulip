@@ -44,15 +44,6 @@ import * as user_profile from "./user_profile";
 import * as util from "./util";
 
 export function initialize() {
-    // SPECTATORS LOGIN TO ACCESS MODAL
-
-    $("body").on("click hide", ".spectator_go_back", (e) => {
-        browser_history.return_to_web_public_hash();
-        $("#login_to_access_modal").modal("hide");
-        e.preventDefault();
-        e.stopPropagation();
-    });
-
     // MESSAGE CLICKING
 
     function initialize_long_tap() {
@@ -385,7 +376,8 @@ export function initialize() {
     $("body").on("click", "#recent_topics_table .on_hover_topic_unmute", (e) => {
         e.stopPropagation();
         const $elt = $(e.target);
-        recent_topics_ui.focus_clicked_element($elt, recent_topics_ui.COLUMNS.mute);
+        const topic_row_index = $elt.closest("tr").index();
+        recent_topics_ui.focus_clicked_element(topic_row_index, recent_topics_ui.COLUMNS.mute);
         mute_or_unmute_topic($elt, false);
     });
 
@@ -394,7 +386,8 @@ export function initialize() {
     $("body").on("click", "#recent_topics_table .on_hover_topic_mute", (e) => {
         e.stopPropagation();
         const $elt = $(e.target);
-        recent_topics_ui.focus_clicked_element($elt, recent_topics_ui.COLUMNS.mute);
+        const topic_row_index = $elt.closest("tr").index();
+        recent_topics_ui.focus_clicked_element(topic_row_index, recent_topics_ui.COLUMNS.mute);
         mute_or_unmute_topic($elt, true);
     });
 
@@ -405,7 +398,8 @@ export function initialize() {
 
     $("body").on("click", "#recent_topics_table .on_hover_topic_read", (e) => {
         e.stopPropagation();
-        recent_topics_ui.focus_clicked_element($(e.target), recent_topics_ui.COLUMNS.read);
+        const topic_row_index = $(e.target).closest("tr").index();
+        recent_topics_ui.focus_clicked_element(topic_row_index, recent_topics_ui.COLUMNS.read);
         const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-topic-name");
         unread_ops.mark_topic_as_read(stream_id, topic);
@@ -423,13 +417,23 @@ export function initialize() {
 
     $("body").on("click", "td.recent_topic_stream", (e) => {
         e.stopPropagation();
-        recent_topics_ui.focus_clicked_element($(e.target), recent_topics_ui.COLUMNS.stream);
+        const topic_row_index = $(e.target).closest("tr").index();
+        recent_topics_ui.focus_clicked_element(topic_row_index, recent_topics_ui.COLUMNS.stream);
         window.location.href = $(e.currentTarget).find("a").attr("href");
     });
 
     $("body").on("click", "td.recent_topic_name", (e) => {
         e.stopPropagation();
-        recent_topics_ui.focus_clicked_element($(e.target), recent_topics_ui.COLUMNS.topic);
+        // The element's parent may re-render while it is being passed to
+        // other functions, so, we get topic_key first.
+        const topic_row = $(e.target).closest("tr");
+        const topic_key = topic_row.attr("id").slice("recent_topics:".length - 1);
+        const topic_row_index = topic_row.index();
+        recent_topics_ui.focus_clicked_element(
+            topic_row_index,
+            recent_topics_ui.COLUMNS.topic,
+            topic_key,
+        );
         window.location.href = $(e.currentTarget).find("a").attr("href");
     });
 
@@ -644,7 +648,9 @@ export function initialize() {
 
     function handle_compose_click(e) {
         // Emoji clicks should be handled by their own click handler in emoji_picker.js
-        if ($(e.target).is(".emoji_map, img.emoji, .drag, .compose_gif_icon")) {
+        if (
+            $(e.target).is(".emoji_map, img.emoji, .drag, .compose_gif_icon, .compose_control_menu")
+        ) {
             return;
         }
 

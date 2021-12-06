@@ -2164,11 +2164,101 @@ class ZulipSAMLIdentityProvider(SAMLIdentityProvider):
         return result
 
 
+class SAMLDocument:
+    """
+    Parent class, subclassed by SAMLRequest and SAMLResponse,
+    for wrapping the fiddly logic of handling these SAML XML documents.
+    """
+
+    SAML_PARSING_EXCEPTIONS = (OneLogin_Saml2_Error, binascii.Error, XMLSyntaxError)
+
+    def __init__(self, encoded_saml_message: str, backend: "SAMLAuthBackend") -> None:
+        """
+        encoded_saml_message is the base64-encoded XML string that's received
+        in the SAMLRequest or SAMLResponse params. The underlying XML
+        can be either deflated or not, both cases should be handled fine by the class.
+
+        backend is an instance of the SAMLAuthBackend class, which is handling
+        the HTTP request in which the SAMLRequest or SAMLResponse was delivered.
+        """
+        self.encoded_saml_message = encoded_saml_message
+        self.backend = backend
+
+    @property
+    def logger(self) -> logging.Logger:
+        return self.backend.logger
+
+    def document_type(self) -> str:
+        """
+        Returns whether the instance is a SAMLRequest or SAMLResponse.
+        """
+        return type(self).__name__
+
+    def get_issuing_idp(self) -> Optional[str]:
+        """
+        Given a SAMLResponse or SAMLRequest, returns which of the configured IdPs
+        is declared as the issuer.
+        This value MUST NOT be trusted as the true issuer!
+        The signatures are not validated, so it can be tampered with by the user.
+        That's not a problem for this function,
+        and true validation happens later in the underlying libraries, but it's important
+        to note this detail. The purpose of this function is merely as a helper to figure out which
+        of the configured IdPs' information to use for parsing and validating the request.
+        """
+
+        issuers = self.get_issuers()
+
+        for idp_name, idp_config in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
+            if idp_config["entity_id"] in issuers:
+                return idp_name
+
+        return None
+
+    @abstractmethod
+    def get_issuers(self) -> List[str]:
+        """
+        Returns a list of the issuers of the SAML document.
+        """
+        pass
+
+
+class SAMLRequest(SAMLDocument):
+    def get_issuers(self) -> List[str]:
+        config = self.backend.generate_saml_config()
+        saml_settings = OneLogin_Saml2_Settings(config, sp_validation_only=True)
+
+        try:
+            # The only valid SAMLRequest we can receive is a LogoutRequest.
+            logout_request_xml = OneLogin_Saml2_Logout_Request(
+                saml_settings, self.encoded_saml_message
+            ).get_xml()
+            issuers = [OneLogin_Saml2_Logout_Request.get_issuer(logout_request_xml)]
+            return issuers
+        except self.SAML_PARSING_EXCEPTIONS as e:
+            self.logger.error("Error parsing SAMLRequest: %s", str(e))
+            return []
+
+
+class SAMLResponse(SAMLDocument):
+    def get_issuers(self) -> List[str]:
+        config = self.backend.generate_saml_config()
+        saml_settings = OneLogin_Saml2_Settings(config, sp_validation_only=True)
+
+        try:
+            resp = OneLogin_Saml2_Response(
+                settings=saml_settings, response=self.encoded_saml_message
+            )
+            return resp.get_issuers()
+        except self.SAML_PARSING_EXCEPTIONS as e:
+            self.logger.error("Error parsing SAMLResponse: %s", str(e))
+            return []
+
+
 @external_auth_method
 class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     auth_backend_name = "SAML"
     REDIS_EXPIRATION_SECONDS = 60 * 15
-    SAMLRESPONSE_PARSING_EXCEPTIONS = (OneLogin_Saml2_Error, binascii.Error, XMLSyntaxError)
+
     name = "saml"
     # Organization which go through the trouble of setting up SAML are most likely
     # to have it as their main authentication method, so it seems appropriate to have
@@ -2254,43 +2344,6 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             data = get_dict_from_redis(redis_client, "saml_token_{token}", key)
 
         return data
-
-    def get_issuing_idp(self, saml_response_or_request: Tuple[str, str]) -> Optional[str]:
-        """
-        Given a SAMLResponse or SAMLRequest, returns which of the configured IdPs
-        is declared as the issuer.
-        This value MUST NOT be trusted as the true issuer!
-        The signatures are not validated, so it can be tampered with by the user.
-        That's not a problem for this function,
-        and true validation happens later in the underlying libraries, but it's important
-        to note this detail. The purpose of this function is merely as a helper to figure out which
-        of the configured IdPs' information to use for parsing and validating the request.
-        """
-        try:
-            config = self.generate_saml_config()
-            saml_settings = OneLogin_Saml2_Settings(config, sp_validation_only=True)
-            if saml_response_or_request[1] == "SAMLResponse":
-                resp = OneLogin_Saml2_Response(
-                    settings=saml_settings, response=saml_response_or_request[0]
-                )
-                issuers = resp.get_issuers()
-            else:
-                assert saml_response_or_request[1] == "SAMLRequest"
-
-                # The only valid SAMLRequest we can receive is a LogoutRequest.
-                logout_request_xml = OneLogin_Saml2_Logout_Request(
-                    config, saml_response_or_request[0]
-                ).get_xml()
-                issuers = [OneLogin_Saml2_Logout_Request.get_issuer(logout_request_xml)]
-        except self.SAMLRESPONSE_PARSING_EXCEPTIONS:
-            self.logger.info("Error while parsing SAMLResponse:", exc_info=True)
-            return None
-
-        for idp_name, idp_config in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
-            if idp_config["entity_id"] in issuers:
-                return idp_name
-
-        return None
 
     def get_relayed_params(self) -> Dict[str, Any]:
         request_data = self.strategy.request_data()
@@ -2455,15 +2508,15 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         Additionally, this handles incoming LogoutRequests for IdP-initated logout.
         """
 
-        SAMLRequest = self.strategy.request_data().get("SAMLRequest")
-        SAMLResponse = self.strategy.request_data().get("SAMLResponse")
-        if SAMLResponse is None and SAMLRequest is None:
+        encoded_saml_request = self.strategy.request_data().get("SAMLRequest")
+        encoded_saml_response = self.strategy.request_data().get("SAMLResponse")
+        if encoded_saml_response is None and encoded_saml_request is None:
             self.logger.info("/complete/saml/: No SAMLResponse or SAMLRequest in request.")
             return None
-        elif SAMLRequest is not None:
-            saml_response_or_request = (SAMLRequest, "SAMLRequest")
-        elif SAMLResponse is not None:
-            saml_response_or_request = (SAMLResponse, "SAMLResponse")
+        elif encoded_saml_request is not None:
+            saml_document: SAMLDocument = SAMLRequest(encoded_saml_request, self)
+        elif encoded_saml_response is not None:
+            saml_document = SAMLResponse(encoded_saml_response, self)
 
         relayed_params = self.get_relayed_params()
 
@@ -2472,13 +2525,13 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             error_msg = (
                 "/complete/saml/: Can't figure out subdomain for this %s. " + "relayed_params: %s"
             )
-            self.logger.info(error_msg, saml_response_or_request[1], relayed_params)
+            self.logger.info(error_msg, saml_document.document_type(), relayed_params)
             return None
 
-        idp_name = self.get_issuing_idp(saml_response_or_request)
+        idp_name = saml_document.get_issuing_idp()
         if idp_name is None:
             self.logger.info(
-                "/complete/saml/: No valid IdP as issuer of the %s.", saml_response_or_request[1]
+                "/complete/saml/: No valid IdP as issuer of the %s.", saml_document.document_type()
             )
             return None
 
@@ -2491,7 +2544,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             self.logger.info(error_msg, idp_name, subdomain)
             return None
 
-        if saml_response_or_request[1] == "SAMLRequest":
+        if isinstance(saml_document, SAMLRequest):
             return self.process_logout(subdomain, idp_name)
 
         result = None
@@ -2513,7 +2566,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
             # Call the auth_complete method of SocialAuthMixIn
             result = super().auth_complete(*args, **kwargs)
-        except self.SAMLRESPONSE_PARSING_EXCEPTIONS:
+        except SAMLResponse.SAML_PARSING_EXCEPTIONS:
             # These can be raised if SAMLResponse is missing or badly formatted.
             self.logger.info("/complete/saml/: error while parsing SAMLResponse:", exc_info=True)
             # Fall through to returning None.

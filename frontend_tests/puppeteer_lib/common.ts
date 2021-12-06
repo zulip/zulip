@@ -265,9 +265,10 @@ class CommonUtils {
     }
 
     async ensure_enter_does_not_send(page: Page): Promise<void> {
-        await page.$eval("#enter_sends", (el) => {
-            if ((el as HTMLInputElement).checked) {
-                (el as HTMLInputElement).click();
+        await page.$eval(".enter_sends_false", (el) => {
+            if ((el as HTMLElement).style.display !== "none") {
+                // Click events gets propagated to `.enter_sends` which toggles the value.
+                (el as HTMLElement).click();
             }
         });
     }

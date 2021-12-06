@@ -146,7 +146,7 @@ can use the `_()` function in the templates like this:
 If a piece of text contains both a literal string component and variables,
 you can use a block translation, which makes use of placeholders to
 help translators to translate an entire sentence. To translate a
-block, Jinja2 uses the [trans][] tag. So rather than writing
+block, Jinja2 uses the [trans][trans] tag. So rather than writing
 something ugly and confusing for translators like this:
 
 ```jinja
@@ -333,7 +333,7 @@ organizations from the command line.
 
 [jinja2]: http://jinja.pocoo.org/
 [handlebars]: https://handlebarsjs.com/
-[trans]: http://jinja.pocoo.org/docs/dev/templates/#i18n
+[trans]: https://jinja.palletsprojects.com/en/3.0.x/extensions/#i18n-extension
 [formatjs]: https://formatjs.io/
 [icu messageformat]: https://formatjs.io/docs/intl-messageformat
 [helpers]: https://handlebarsjs.com/guide/block-helpers.html

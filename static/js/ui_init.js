@@ -439,7 +439,7 @@ export function initialize_everything() {
             - I changed my 24-hour time preference.
             - The realm admin changed who can edit topics.
             - The team's realm icon has changed.
-            - I switched from day mode to night mode.
+            - I switched from light theme to dark theme.
 
         Especially for things that are settings-related,
         we rarely abstract away the data from `page_params`.

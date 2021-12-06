@@ -3,6 +3,7 @@ import $ from "jquery";
 
 import render_all_messages_sidebar_actions from "../templates/all_messages_sidebar_actions.hbs";
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
+import render_drafts_sidebar_actions from "../templates/drafts_sidebar_action.hbs";
 import render_move_topic_to_stream from "../templates/move_topic_to_stream.hbs";
 import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
 import render_stream_sidebar_actions from "../templates/stream_sidebar_actions.hbs";
@@ -14,6 +15,7 @@ import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
+import * as drafts from "./drafts";
 import {DropdownListWidget} from "./dropdown_list_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
@@ -31,6 +33,7 @@ import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
+import * as ui_report from "./ui_report";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 
@@ -40,6 +43,7 @@ let current_stream_sidebar_elem;
 let current_topic_sidebar_elem;
 let all_messages_sidebar_elem;
 let starred_messages_sidebar_elem;
+let drafts_sidebar_elem;
 let stream_widget;
 let stream_header_colorblock;
 
@@ -107,6 +111,10 @@ export function starred_messages_popped() {
     return starred_messages_sidebar_elem !== undefined;
 }
 
+export function drafts_popped() {
+    return drafts_sidebar_elem !== undefined;
+}
+
 export function hide_stream_popover() {
     if (stream_popped()) {
         $(current_stream_sidebar_elem).popover("destroy");
@@ -132,6 +140,13 @@ export function hide_starred_messages_popover() {
     if (starred_messages_popped()) {
         $(starred_messages_sidebar_elem).popover("destroy");
         starred_messages_sidebar_elem = undefined;
+    }
+}
+
+export function hide_drafts_popover() {
+    if (drafts_popped()) {
+        $(drafts_sidebar_elem).popover("destroy");
+        drafts_sidebar_elem = undefined;
     }
 }
 
@@ -348,6 +363,30 @@ function build_starred_messages_popover(e) {
     e.stopPropagation();
 }
 
+function build_drafts_popover(e) {
+    const elt = e.target;
+
+    if (drafts_popped() && drafts_sidebar_elem === elt) {
+        hide_drafts_popover();
+        e.stopPropagation();
+        return;
+    }
+
+    popovers.hide_all();
+    show_streamlist_sidebar();
+    const content = render_drafts_sidebar_actions({});
+    $(elt).popover({
+        content,
+        html: true,
+        trigger: "manual",
+        fixed: true,
+    });
+
+    $(elt).popover("show");
+    drafts_sidebar_elem = elt;
+    e.stopPropagation();
+}
+
 function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
     // TODO: Add support for keyboard-alphabet navigation. Some orgs
     // many streams and scrolling can be a painful process in that
@@ -367,11 +406,6 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
     hide_topic_popover();
 
     function move_topic() {
-        function show_error_msg(msg) {
-            $("#topic_stream_edit_form_error .error-msg").text(msg);
-            $("#topic_stream_edit_form_error").show();
-        }
-
         const params = Object.fromEntries(
             $("#move_topic_form")
                 .serializeArray()
@@ -397,7 +431,10 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
             new_topic_name.toLowerCase() === old_topic_name.toLowerCase()
         ) {
             dialog_widget.hide_dialog_spinner();
-            show_error_msg("Please select a different stream or change topic name.");
+            ui_report.client_error(
+                $t_html({defaultMessage: "Please select a different stream or change topic name."}),
+                $("#move_topic_modal #dialog_error"),
+            );
             return;
         }
 
@@ -424,7 +461,11 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
             },
             (xhr) => {
                 dialog_widget.hide_dialog_spinner();
-                show_error_msg(xhr.responseJSON.msg);
+                ui_report.error(
+                    $t_html({defaultMessage: "Error moving topic"}),
+                    xhr,
+                    $("#move_topic_modal #dialog_error"),
+                );
             },
         );
     }
@@ -499,6 +540,8 @@ export function register_click_handlers() {
         build_starred_messages_popover,
     );
 
+    $("#global_filters").on("click", ".drafts-sidebar-menu-icon", build_drafts_popover);
+
     $("body").on("click keypress", ".move-topic-dropdown .list_item", (e) => {
         // We want the dropdown to collapse once any of the list item is pressed
         // and thus don't want to kill the natural bubbling of event.
@@ -557,6 +600,12 @@ export function register_stream_handlers() {
         e.preventDefault();
         e.stopPropagation();
         starred_messages_ui.confirm_unstar_all_messages();
+    });
+
+    $("body").on("click", "#delete_all_drafts_sidebar", (e) => {
+        hide_drafts_popover();
+        e.stopPropagation();
+        drafts.confirm_delete_all_drafts();
     });
 
     // Unstar all messages in topic
@@ -676,7 +725,7 @@ function with_first_message_id(stream_id, topic_name, success_cb, error_cb) {
             const message_id = data.messages[0].id;
             success_cb(message_id);
         },
-        error_cb,
+        error: error_cb,
     });
 }
 
@@ -768,9 +817,5 @@ export function register_topic_handlers() {
         build_move_topic_to_stream_popover(e, stream_id, topic_name);
         e.stopPropagation();
         e.preventDefault();
-    });
-
-    $("body").on("click", "#topic_stream_edit_form_error .send-status-close", () => {
-        $("#topic_stream_edit_form_error").hide();
     });
 }

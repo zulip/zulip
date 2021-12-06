@@ -36,11 +36,6 @@
                     {{t 'Log in to send messages' }}
                 </a>
             </span>
-            <span class="new_message_button hidden-for-spectators">
-                <a class="drafts-link no-underline button small rounded compose_drafts_button" href="#drafts" title="{{t 'Drafts' }} (d)">
-                    {{t 'Drafts' }}
-                </a>
-            </span>
         </div>
     </div>
     <div class="message_comp">
@@ -69,6 +64,9 @@
                             <span id="compose-lock-icon">
                                 <i class="fa fa-lock" title="{{t 'This is a private stream' }}" aria-hidden="true"></i>
                             </span>
+                            <span id="compose-globe-icon">
+                                <i class="fa fa-globe" title="{{t 'This is a web public stream' }}" aria-hidden="true"></i>
+                            </span>
                             <input type="text" class="recipient_box" name="stream_message_recipient_stream" id="stream_message_recipient_stream" maxlength="30" value="" placeholder="{{t 'Stream' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Stream' }}" />
                             <i class="fa fa-angle-right" aria-hidden="true"></i>
                             <input type="text" class="recipient_box" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="60" value="" placeholder="{{t 'Topic' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Topic' }}" />
@@ -95,16 +93,35 @@
                             </div>
                             <div class="drag"></div>
                             <div id="below-compose-content">
-                                <button type="submit" id="compose-send-button" class="button small send_message animated-purple-button" title="{{t 'Send' }} (Ctrl + Enter)">{{t 'Send' }}</button>
-                                {{> compose_control_buttons }}
-                                <span id="sending-indicator"></span>
-                                <div id="send_controls" class="new-style">
-                                    <label id="enter-sends-label" class="compose_checkbox_label checkbox">
-                                        <input type="checkbox" id="enter_sends" />
-                                        <span></span>{{t 'Press Enter to send' }}
-                                    </label>
+                                <div class="compose_bottom_top_container">
+                                    <div class="compose_right_float_container order-3">
+                                        <button type="submit" id="compose-send-button" class="button small send_message animated-purple-button" title="{{t 'Send' }} (Ctrl + Enter)">
+                                            <img class="loader" alt="" src="" />
+                                            <span>{{t 'Send' }}</span>
+                                        </button>
+                                    </div>
+                                    {{> compose_control_buttons }}
                                 </div>
-                                <span id="compose_limit_indicator"></span>
+                                <div class="compose_bottom_bottom_container">
+                                    <span id="compose_limit_indicator"></span>
+                                    <div class="enter_sends">
+                                        <label id="enter-sends-label" class="compose_checkbox_label tippy-zulip-tooltip" data-tippy-content="Click to switch">
+                                            <span class="enter_sends_true">
+                                                <kbd>Enter</kbd> {{t 'to send' }}
+                                            </span>
+                                            <span class="enter_sends_false">
+                                                <kbd>Ctrl</kbd> + <kbd>Enter</kbd> {{t 'to send' }}
+                                            </span>
+                                            <i class="fa fa-exchange" aria-hidden="true"></i>
+                                            <span class="enter_sends_true">
+                                                <kbd>Ctrl</kbd> + <kbd>Enter</kbd> {{t 'to add a new line' }}
+                                            </span>
+                                            <span class="enter_sends_false">
+                                                <kbd>Enter</kbd> {{t 'to add a new line' }}
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

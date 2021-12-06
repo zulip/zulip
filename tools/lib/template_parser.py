@@ -35,8 +35,22 @@ class Token:
         self.col = col
         self.line_span = line_span
 
+        # These get set during the validation pass.
+        self.start_token: Optional[Token] = None
+        self.end_token: Optional[Token] = None
+
+        # These get set during the pretty-print phase.
+        self.new_s = ""
+        self.indent: Optional[str] = None
+        self.orig_indent: Optional[str] = None
+        self.child_indent: Optional[str] = None
+        self.indent_is_final = False
+        self.parent_token: Optional[Token] = None
+
 
 def tokenize(text: str) -> List[Token]:
+    in_code_block = False
+
     def advance(n: int) -> None:
         for _ in range(n):
             state.i += 1
@@ -68,13 +82,22 @@ def tokenize(text: str) -> List[Token]:
         return looking_at("</")
 
     def looking_at_handlebars_start() -> bool:
-        return looking_at("{{#") or looking_at("{{^")
+        return looking_at("{{#") or looking_at("{{^") or looking_at("{{~#")
+
+    def looking_at_handlebars_else() -> bool:
+        return looking_at("{{else")
+
+    def looking_at_template_var() -> bool:
+        return looking_at("{")
 
     def looking_at_handlebars_end() -> bool:
-        return looking_at("{{/")
+        return looking_at("{{/") or looking_at("{{~/")
 
     def looking_at_django_start() -> bool:
-        return looking_at("{% ") and not looking_at("{% end")
+        return looking_at("{% ")
+
+    def looking_at_django_else() -> bool:
+        return looking_at("{% else") or looking_at("{% elif")
 
     def looking_at_django_end() -> bool:
         return looking_at("{% end")
@@ -86,12 +109,22 @@ def tokenize(text: str) -> List[Token]:
         # This function detects tag like {%- if foo -%}...{% endif %}
         return looking_at("{%-") and not looking_at("{%- end")
 
+    def looking_at_whitespace() -> bool:
+        return looking_at("\n") or looking_at(" ")
+
     state = TokenizerState()
-    tokens = []
+    tokens: List[Token] = []
 
     while state.i < len(text):
         try:
-            if looking_at_htmlcomment():
+            if in_code_block:
+                in_code_block = False
+                s = get_code(text, state.i)
+                if s == "":
+                    continue
+                tag = ""
+                kind = "code"
+            elif looking_at_htmlcomment():
                 s = get_html_comment(text, state.i)
                 tag = s[4:-3]
                 kind = "html_comment"
@@ -126,31 +159,42 @@ def tokenize(text: str) -> List[Token]:
                     kind = "html_singleton"
                 else:
                     kind = "html_start"
+                if tag in ("code", "pre", "script"):
+                    in_code_block = True
             elif looking_at_html_end():
                 s = get_html_tag(text, state.i)
                 tag = s[2:-1]
                 kind = "html_end"
+            elif looking_at_handlebars_else():
+                s = get_handlebars_tag(text, state.i)
+                tag = "else"
+                kind = "handlebars_else"
             elif looking_at_handlebars_start():
                 s = get_handlebars_tag(text, state.i)
-                tag = s[3:-2].split()[0]
+                tag = s[3:-2].split()[0].strip("#")
                 if tag.startswith("*"):
                     tag = tag[1:]
                 kind = "handlebars_start"
             elif looking_at_handlebars_end():
                 s = get_handlebars_tag(text, state.i)
-                tag = s[3:-2]
+                tag = s[3:-2].strip("/#~")
                 kind = "handlebars_end"
+            elif looking_at_django_else():
+                s = get_django_tag(text, state.i)
+                tag = "else"
+                kind = "django_else"
+            elif looking_at_django_end():
+                s = get_django_tag(text, state.i)
+                tag = s[6:-3]
+                kind = "django_end"
             elif looking_at_django_start():
+                # must check this after end/else
                 s = get_django_tag(text, state.i)
                 tag = s[3:-2].split()[0]
                 kind = "django_start"
 
                 if s[-3] == "-":
                     kind = "jinja2_whitespace_stripped_start"
-            elif looking_at_django_end():
-                s = get_django_tag(text, state.i)
-                tag = s[6:-3]
-                kind = "django_end"
             elif looking_at_jinja2_end_whitespace_stripped():
                 s = get_django_tag(text, state.i)
                 tag = s[7:-3]
@@ -159,15 +203,37 @@ def tokenize(text: str) -> List[Token]:
                 s = get_django_tag(text, state.i, stripped=True)
                 tag = s[3:-3].split()[0]
                 kind = "jinja2_whitespace_stripped_type2_start"
+            elif looking_at_template_var():
+                # order is important here
+                s = get_template_var(text, state.i)
+                tag = "var"
+                kind = "template_var"
+            elif looking_at("\n"):
+                s = "\n"
+                tag = "newline"
+                kind = "newline"
+            elif looking_at(" "):
+                s = get_spaces(text, state.i)
+                tag = ""
+                if not tokens or tokens[-1].kind == "newline":
+                    kind = "indent"
+                else:
+                    kind = "whitespace"
+            elif text[state.i] in "{<":
+                snippet = text[state.i :][:15]
+                raise AssertionError(f"tool cannot parse {snippet}")
             else:
-                advance(1)
-                continue
+                s = get_text(text, state.i)
+                if s == "":
+                    continue
+                tag = ""
+                kind = "text"
         except TokenizationException as e:
             raise FormattedException(
                 f'''{e.message} at line {state.line} col {state.col}:"{e.line_content}"''',
             )
 
-        line_span = len(s.split("\n"))
+        line_span = len(s.strip("\n").split("\n"))
         token = Token(
             kind=kind,
             s=s,
@@ -178,27 +244,6 @@ def tokenize(text: str) -> List[Token]:
         )
         tokens.append(token)
         advance(len(s))
-
-        def add_pseudo_end_token(kind: str) -> None:
-            token = Token(
-                kind=kind,
-                s="</" + tag + ">",
-                tag=tag,
-                line=state.line,
-                col=state.col,
-                line_span=1,
-            )
-            tokens.append(token)
-
-        if kind == "html_singleton":
-            # Here we insert a Pseudo html_singleton_end tag so as to have
-            # ease of detection of end of singleton html tags which might be
-            # needed in some cases as with our html pretty printer.
-            add_pseudo_end_token("html_singleton_end")
-        if kind == "handlebars_singleton":
-            # We insert a pseudo handlbar end tag for singleton cases of
-            # handlebars like the partials. This helps in indenting multi line partials.
-            add_pseudo_end_token("handlebars_singleton_end")
 
     return tokens
 
@@ -222,10 +267,76 @@ HTML_VOID_TAGS = {
     "wbr",
 }
 
+# The following excludes some obscure tags that are never used
+# in Zulip code.
+HTML_INLINE_TAGS = {
+    "a",
+    "b",
+    "br",
+    "button",
+    "cite",
+    "code",
+    "em",
+    "i",
+    "img",
+    "input",
+    "kbd",
+    "label",
+    "object",
+    "script",
+    "select",
+    "small",
+    "span",
+    "strong",
+    "textarea",
+}
 
-def validate(
-    fn: Optional[str] = None, text: Optional[str] = None, check_indent: bool = True
-) -> None:
+
+def tag_flavor(token: Token) -> Optional[str]:
+    kind = token.kind
+    tag = token.tag
+    if kind in (
+        "code",
+        "django_comment",
+        "handlebar_comment",
+        "handlebars_singleton",
+        "html_comment",
+        "html_doctype",
+        "html_singleton",
+        "indent",
+        "newline",
+        "template_var",
+        "text",
+        "whitespace",
+    ):
+        return None
+
+    if kind in ("handlebars_start", "html_start"):
+        return "start"
+    elif kind in (
+        "django_else",
+        "django_end",
+        "handlebars_else",
+        "handlebars_end",
+        "html_end",
+        "jinja2_whitespace_stripped_end",
+    ):
+        return "end"
+    elif kind in {
+        "django_start",
+        "django_else",
+        "jinja2_whitespace_stripped_start",
+        "jinja2_whitespace_stripped_type2_start",
+    }:
+        if is_django_block_tag(tag):
+            return "start"
+        else:
+            return None
+    else:
+        raise AssertionError(f"tools programmer neglected to handle {kind} tokens")
+
+
+def validate(fn: Optional[str] = None, text: Optional[str] = None) -> List[Token]:
     assert fn or text
 
     if fn is None:
@@ -234,6 +345,8 @@ def validate(
     if text is None:
         with open(fn) as f:
             text = f.read()
+
+    lines = text.split("\n")
 
     try:
         tokens = tokenize(text)
@@ -244,13 +357,16 @@ def validate(
             {e}"""
         )
 
+    prevent_whitespace_violations(fn, tokens)
+
     class State:
-        def __init__(self, func: Callable[[Token], None]) -> None:
+        def __init__(self, func: Callable[[Optional[Token]], None]) -> None:
             self.depth = 0
             self.foreign = False
             self.matcher = func
 
-    def no_start_tag(token: Token) -> None:
+    def no_start_tag(token: Optional[Token]) -> None:
+        assert token
         raise TemplateParserException(
             f"""
             No start tag
@@ -275,30 +391,48 @@ def validate(
         if start_tag in ["math", "svg"]:
             state.foreign = True
 
-        def f(end_token: Token) -> None:
+        def f(end_token: Optional[Token]) -> None:
+            if end_token is None:
+                raise TemplateParserException(
+                    f"""
+
+    Problem with {fn}
+    Missing end tag for the token at row {start_line} {start_col}!
+
+{start_token.s}
+
+    It's possible you have a typo in a token that you think is
+    matching this tag.
+                    """
+                )
+
+            is_else_tag = end_token.tag == "else"
 
             end_tag = end_token.tag.strip("~")
             end_line = end_token.line
             end_col = end_token.col
 
-            if start_tag == "a":
-                max_lines = 3
-            else:
-                max_lines = 1
+            def report_problem() -> Optional[str]:
+                if (start_tag == "code") and (end_line == start_line + 1):
+                    return "Code tag is split across two lines."
 
-            problem = None
-            if (start_tag == "code") and (end_line == start_line + 1):
-                problem = "Code tag is split across two lines."
-            if start_tag != end_tag:
-                problem = "Mismatched tag."
-            elif check_indent and (end_line > start_line + max_lines):
-                if end_col != start_col:
-                    problem = "Bad indentation."
+                if is_else_tag:
+                    # We are not completely rigorous about having a sensible
+                    # order of if/elif/elif/else, but we catch obviously
+                    # mismatching else tags.
+                    if start_tag not in ("if", "else", "unless"):
+                        return f"Unexpected else/elif tag encountered after {start_tag} tag."
+                elif start_tag != end_tag:
+                    return f"Mismatched tags: ({start_tag} != {end_tag})"
+
+                return None
+
+            problem = report_problem()
             if problem:
                 raise TemplateParserException(
                     f"""
                     fn: {fn}
-                    {problem}
+                   {problem}
                     start:
                         {start_token.s}
                         line {start_line}, col {start_col}
@@ -307,9 +441,15 @@ def validate(
                         line {end_line}, col {end_col}
                     """
                 )
-            state.matcher = old_matcher
-            state.foreign = old_foreign
-            state.depth -= 1
+
+            if not is_else_tag:
+                state.matcher = old_matcher
+                state.foreign = old_foreign
+                state.depth -= 1
+
+            # TODO: refine this for the else/elif use cases
+            end_token.start_token = start_token
+            start_token.end_token = end_token
 
         state.matcher = f
 
@@ -317,37 +457,138 @@ def validate(
         kind = token.kind
         tag = token.tag
 
-        if kind == "html_start":
-            if not state.foreign and tag in HTML_VOID_TAGS:
-                raise TemplateParserException(
-                    f"Tag must be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
-                )
-            start_tag_matcher(token)
-        elif kind == "html_singleton":
-            if not state.foreign and tag not in HTML_VOID_TAGS:
-                raise TemplateParserException(
-                    f"Tag must not be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
-                )
-        elif kind == "html_end":
-            state.matcher(token)
+        if not state.foreign:
+            if kind == "html_start":
+                if tag in HTML_VOID_TAGS:
+                    raise TemplateParserException(
+                        f"Tag must be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
+                    )
+            elif kind == "html_singleton":
+                if not state.foreign and tag not in HTML_VOID_TAGS:
+                    raise TemplateParserException(
+                        f"Tag must not be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
+                    )
 
-        elif kind == "handlebars_start":
+        flavor = tag_flavor(token)
+        if flavor == "start":
             start_tag_matcher(token)
-        elif kind == "handlebars_end":
-            state.matcher(token)
-
-        elif kind in {
-            "django_start",
-            "jinja2_whitespace_stripped_start",
-            "jinja2_whitespace_stripped_type2_start",
-        }:
-            if is_django_block_tag(tag):
-                start_tag_matcher(token)
-        elif kind in {"django_end", "jinja2_whitespace_stripped_end"}:
+        elif flavor == "end":
             state.matcher(token)
 
     if state.depth != 0:
-        raise TemplateParserException("Missing end tag")
+        state.matcher(None)
+
+    ensure_matching_indentation(fn, tokens, lines)
+
+    return tokens
+
+
+def ensure_matching_indentation(fn: str, tokens: List[Token], lines: List[str]) -> None:
+    for token in tokens:
+        if token.start_token is None:
+            continue
+
+        end_token = token
+
+        start_token = token.start_token
+        start_line = start_token.line
+        start_col = start_token.col
+        start_tag = start_token.tag
+        end_tag = end_token.tag.strip("~")
+        end_line = end_token.line
+        end_col = end_token.col
+
+        def has_bad_indentation() -> bool:
+            is_inline_tag = start_tag in HTML_INLINE_TAGS and start_token.kind == "html_start"
+
+            if end_line > start_line + 1:
+                if is_inline_tag:
+                    end_row_text = lines[end_line - 1]
+                    if end_row_text.lstrip().startswith(end_token.s):
+                        if end_col != start_col:
+                            return True
+                else:
+                    if end_col != start_col:
+                        return True
+
+            return False
+
+        if has_bad_indentation():
+            raise TemplateParserException(
+                f"""
+                fn: {fn}
+                Indentation for start/end tags does not match.
+                start tag: {start_token.s}
+
+                start:
+                    line {start_line}, col {start_col}
+                end:
+                    {end_tag}
+                    line {end_line}, col {end_col}
+                """
+            )
+
+
+def prevent_extra_newlines(fn: str, tokens: List[Token]) -> None:
+    count = 0
+
+    for token in tokens:
+        if token.kind != "newline":
+            count = 0
+            continue
+
+        count += 1
+        if count >= 4:
+            raise TemplateParserException(
+                f"""Please avoid so many blank lines near row {token.line} in {fn}."""
+            )
+
+
+def prevent_whitespace_violations(fn: str, tokens: List[Token]) -> None:
+    if tokens[0].kind in ("indent", "whitespace"):
+        raise TemplateParserException(f" Please remove the whitespace at the beginning of {fn}.")
+
+    prevent_extra_newlines(fn, tokens)
+
+    for i in range(1, len(tokens) - 1):
+        token = tokens[i]
+        next_token = tokens[i + 1]
+
+        if token.kind == "indent":
+            if next_token.kind in ("indent", "whitespace"):
+                raise AssertionError("programming error parsing indents")
+
+            if next_token.kind == "newline":
+                raise TemplateParserException(
+                    f"""Please just make row {token.line} in {fn} a truly blank line (no spaces)."""
+                )
+
+            if len(token.s) % 4 != 0:
+                raise TemplateParserException(
+                    f"""
+                        Please use 4-space indents for template files. Most of our
+                        codebase (including Python and JavaScript) uses 4-space indents,
+                        so it's worth investing in configuring your editor to use
+                        4-space indents for files like
+                        {fn}
+
+                        The line at row {token.line} is indented with {len(token.s)} spaces.
+                    """
+                )
+
+        if token.kind == "whitespace":
+            if len(token.s) > 1:
+                raise TemplateParserException(
+                    f"""
+                        We did not expect this much whitespace at row {token.line} column {token.col} in {fn}.
+                    """
+                )
+            if next_token.kind == "newline":
+                raise TemplateParserException(
+                    f"""
+                        Unexpected trailing whitespace at row {token.line} column {token.col} in {fn}.
+                    """
+                )
 
 
 def is_django_block_tag(tag: str) -> bool:
@@ -375,6 +616,30 @@ def get_handlebars_tag(text: str, i: int) -> str:
         raise TokenizationException('Tag missing "}}"', text[i : end + 2])
     s = text[i : end + 2]
     return s
+
+
+def get_spaces(text: str, i: int) -> str:
+    s = ""
+    while i < len(text) and text[i] in " ":
+        s += text[i]
+        i += 1
+    return s
+
+
+def get_code(text: str, i: int) -> str:
+    s = ""
+    while i < len(text) and text[i] not in "<":
+        s += text[i]
+        i += 1
+    return s
+
+
+def get_text(text: str, i: int) -> str:
+    s = ""
+    while i < len(text) and text[i] not in "{<":
+        s += text[i]
+        i += 1
+    return s.strip()
 
 
 def get_django_tag(text: str, i: int, stripped: bool = False) -> str:
@@ -432,6 +697,20 @@ def get_handlebar_comment(text: str, i: int) -> str:
             unclosed_end = end
         end += 1
     raise TokenizationException("Unclosed comment", text[i:unclosed_end])
+
+
+def get_template_var(text: str, i: int) -> str:
+    end = i + 3
+    unclosed_end = 0
+    while end <= len(text):
+        if text[end - 1] == "}":
+            if end < len(text) and text[end] == "}":
+                end += 1
+            return text[i:end]
+        if not unclosed_end and text[end] == "<":
+            unclosed_end = end
+        end += 1
+    raise TokenizationException("Unclosed var", text[i:unclosed_end])
 
 
 def get_django_comment(text: str, i: int) -> str:

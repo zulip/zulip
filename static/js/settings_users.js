@@ -514,83 +514,99 @@ function handle_reactivation(tbody, status_field) {
     });
 }
 
+export function show_edit_user_info_modal(user_id, from_user_info_popover, status_field) {
+    const person = people.get_by_user_id(user_id);
+
+    if (!person) {
+        return;
+    }
+
+    let user_email = settings_data.email_for_user_settings(person);
+    if (!user_email) {
+        // When email_address_visibility is "Nobody", we still
+        // want to show the fake email address in the edit form.
+        //
+        // We may in the future want to just hide the form field
+        // for this situation, once we display user IDs.
+        user_email = person.email;
+    }
+
+    const html_body = render_admin_human_form({
+        user_id,
+        email: user_email,
+        full_name: person.full_name,
+        user_role_values: settings_config.user_role_values,
+        disable_role_dropdown: person.is_owner && !page_params.is_owner,
+    });
+
+    let fields_user_pills;
+
+    function set_role_dropdown_and_fields_user_pills() {
+        $("#user-role-select").val(person.role);
+        if (!page_params.is_owner) {
+            $("#user-role-select")
+                .find(`option[value="${CSS.escape(settings_config.user_role_values.owner.code)}"]`)
+                .hide();
+        }
+
+        const element = "#edit-user-form .custom-profile-field-form";
+        $(element).html("");
+        settings_account.append_custom_profile_fields(element, user_id);
+        settings_account.initialize_custom_date_type_fields(element);
+        fields_user_pills = settings_account.initialize_custom_user_type_fields(
+            element,
+            user_id,
+            true,
+            false,
+        );
+    }
+
+    function submit_user_details() {
+        const role = Number.parseInt($("#user-role-select").val().trim(), 10);
+        const full_name = $("#edit-user-form").find("input[name='full_name']");
+        const profile_data = get_human_profile_data(fields_user_pills);
+
+        const url = "/json/users/" + encodeURIComponent(user_id);
+        const data = {
+            full_name: full_name.val(),
+            role: JSON.stringify(role),
+            profile_data: JSON.stringify(profile_data),
+        };
+
+        if (!from_user_info_popover) {
+            settings_ui.do_settings_change(channel.patch, url, data, status_field);
+            dialog_widget.close_modal();
+            return;
+        }
+
+        channel.patch({
+            url,
+            data,
+            success() {
+                dialog_widget.close_modal();
+            },
+            error(xhr) {
+                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+                dialog_widget.hide_dialog_spinner();
+            },
+        });
+    }
+
+    dialog_widget.launch({
+        html_heading: $t_html({defaultMessage: "Manage user"}),
+        html_body,
+        on_click: submit_user_details,
+        post_render: set_role_dropdown_and_fields_user_pills,
+        loading_spinner: from_user_info_popover,
+    });
+}
+
 function handle_human_form(tbody, status_field) {
     tbody.on("click", ".open-user-form", (e) => {
         e.stopPropagation();
         e.preventDefault();
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
-        const person = people.get_by_user_id(user_id);
-
-        if (!person) {
-            return;
-        }
-
-        let user_email = settings_data.email_for_user_settings(person);
-        if (!user_email) {
-            // When email_address_visibility is "Nobody", we still
-            // want to show the fake email address in the edit form.
-            //
-            // We may in the future want to just hide the form field
-            // for this situation, once we display user IDs.
-            user_email = person.email;
-        }
-
-        const html_body = render_admin_human_form({
-            user_id,
-            email: user_email,
-            full_name: person.full_name,
-            user_role_values: settings_config.user_role_values,
-            disable_role_dropdown: person.is_owner && !page_params.is_owner,
-        });
-
-        let fields_user_pills;
-
-        function set_role_dropdown_and_fields_user_pills() {
-            $("#user-role-select").val(person.role);
-            if (!page_params.is_owner) {
-                $("#user-role-select")
-                    .find(
-                        `option[value="${CSS.escape(
-                            settings_config.user_role_values.owner.code,
-                        )}"]`,
-                    )
-                    .hide();
-            }
-
-            const element = "#edit-user-form .custom-profile-field-form";
-            $(element).html("");
-            settings_account.append_custom_profile_fields(element, user_id);
-            settings_account.initialize_custom_date_type_fields(element);
-            fields_user_pills = settings_account.initialize_custom_user_type_fields(
-                element,
-                user_id,
-                true,
-                false,
-            );
-        }
-
-        function submit_user_details() {
-            const role = Number.parseInt($("#user-role-select").val().trim(), 10);
-            const full_name = $("#edit-user-form").find("input[name='full_name']");
-            const profile_data = get_human_profile_data(fields_user_pills);
-
-            const url = "/json/users/" + encodeURIComponent(user_id);
-            const data = {
-                full_name: full_name.val(),
-                role: JSON.stringify(role),
-                profile_data: JSON.stringify(profile_data),
-            };
-
-            settings_ui.do_settings_change(channel.patch, url, data, status_field);
-            dialog_widget.close_modal();
-        }
-
-        dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Change user info and roles"}),
-            html_body,
-            on_click: submit_user_details,
-            post_render: set_role_dropdown_and_fields_user_pills,
-        });
+        show_edit_user_info_modal(user_id, false, status_field);
     });
 }
 

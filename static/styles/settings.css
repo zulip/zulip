@@ -354,7 +354,7 @@ td .button {
         text-decoration: none;
     }
 
-    .default_language_modal {
+    #user_default_language_modal {
         table {
             width: 90%;
             margin-top: 20px;
@@ -379,6 +379,14 @@ td .button {
 
     .hidden-email {
         font-style: italic;
+    }
+
+    /* Originally the icon inherits the color of label, but when the setting
+    is disabled, the color of the label is changed and thus the icon becomes
+    too light. So, we set the color explicitly to original color of label to
+    keep the color of the icon same even when the setting is disabled. */
+    #id_realm_enable_spectator_access_label a {
+        color: hsl(0, 0%, 20%);
     }
 }
 
@@ -639,11 +647,6 @@ input[type="checkbox"] {
     &.enabled {
         color: hsl(0, 0%, 20%);
     }
-}
-
-.disableable {
-    margin-left: 22px;
-    margin-top: -10px;
 }
 
 .admin-realm-message-content-delete-limit-minutes {
@@ -908,11 +911,6 @@ input[type="checkbox"] {
     .buttons {
         margin: 10px 0 5px;
     }
-
-    button.dropdown-toggle {
-        font-weight: 600;
-        color: hsl(0, 0%, 67%);
-    }
 }
 
 .edit_bot_email {
@@ -988,6 +986,22 @@ input[type="checkbox"] {
     }
 }
 
+#change_password_modal {
+    .change_password_info,
+    #change_password_container {
+        margin: 0;
+    }
+}
+
+#api_key_status {
+    margin: 0;
+}
+
+#download_zuliprc {
+    color: hsl(0, 0%, 100%);
+    text-decoration: none;
+}
+
 #api_key_form,
 #change_password_modal {
     .password-div {
@@ -999,8 +1013,8 @@ input[type="checkbox"] {
 
         .password_visibility_toggle {
             position: absolute;
-            left: 190px;
-            top: 28px;
+            left: 194px;
+            top: 32px;
             width: 14px;
             opacity: 0.6;
 
@@ -1524,9 +1538,7 @@ input[type="checkbox"] {
         width: 245px;
     }
 
-    #change_email_modal .change_email_info,
-    #change_password_modal .change_password_info,
-    #api_key_modal #api_key_status {
+    #change_email_modal .change_email_info {
         margin-top: 3px;
     }
 }
@@ -1617,8 +1629,17 @@ input[type="checkbox"] {
 }
 
 .dropdown-list-widget {
-    button {
-        margin: 0 5px;
+    button.dropdown-toggle {
+        text-align: left;
+
+        .fa-chevron-down {
+            float: right;
+            position: relative;
+            top: 2px;
+            padding-left: 5px;
+            color: hsl(0, 0%, 58%);
+            font-weight: lighter;
+        }
 
         &.dropdown-toggle {
             /* Match settings for select elements. */
@@ -1642,7 +1663,7 @@ input[type="checkbox"] {
     }
 
     a.dropdown_list_reset_button {
-        /* Prevent night mode from overriding background. */
+        /* Prevent dark theme from overriding background. */
         background: unset !important;
         border: none;
         margin-left: 10px;
@@ -1837,7 +1858,8 @@ input[type="checkbox"] {
 }
 
 .admin_exports_table {
-    margin: 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 @media (width < $lg_min) {

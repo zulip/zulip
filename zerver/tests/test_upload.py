@@ -1689,7 +1689,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
 
 class RealmNightLogoTest(RealmLogoTest):
-    # Run the same tests as for RealmLogoTest, just with night mode enabled
+    # Run the same tests as for RealmLogoTest, just with dark theme enabled
     night = True
 
 

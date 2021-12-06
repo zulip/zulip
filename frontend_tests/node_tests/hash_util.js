@@ -16,8 +16,6 @@ const ui_report = mock_esm("../../static/js/ui_report", {
 const hash_util = zrequire("hash_util");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
-const {Filter} = zrequire("../js/filter");
-const narrow_state = zrequire("narrow_state");
 
 const hamlet = {
     user_id: 15,
@@ -185,28 +183,29 @@ run_test("test_by_conversation_and_time_uri", () => {
 });
 
 run_test("test_search_public_streams_notice_url", () => {
-    function set_uri(uri) {
-        const operators = hash_util.parse_narrow(uri.split("/"));
-        narrow_state.set_current_filter(new Filter(operators));
+    function get_operators(uri) {
+        return hash_util.parse_narrow(uri.split("/"));
     }
 
-    set_uri("#narrow/search/abc");
-    assert.equal(hash_util.search_public_streams_notice_url(), "#narrow/streams/public/search/abc");
-
-    set_uri("#narrow/has/link/has/image/has/attachment");
     assert.equal(
-        hash_util.search_public_streams_notice_url(),
+        hash_util.search_public_streams_notice_url(get_operators("#narrow/search/abc")),
+        "#narrow/streams/public/search/abc",
+    );
+
+    assert.equal(
+        hash_util.search_public_streams_notice_url(
+            get_operators("#narrow/has/link/has/image/has/attachment"),
+        ),
         "#narrow/streams/public/has/link/has/image/has/attachment",
     );
 
-    set_uri("#narrow/sender/15");
     assert.equal(
-        hash_util.search_public_streams_notice_url(),
+        hash_util.search_public_streams_notice_url(get_operators("#narrow/sender/15")),
         "#narrow/streams/public/sender/15-hamlet",
     );
 });
 
 run_test("test_current_hash_as_next", () => {
     window.location.hash = "#foo";
-    assert.equal(hash_util.current_hash_as_next(), "next=/#foo");
+    assert.equal(hash_util.current_hash_as_next(), "next=/%23foo");
 });

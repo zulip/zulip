@@ -279,28 +279,36 @@ class PushBouncerNotificationTest(BouncerTestCase):
         hamlet = self.example_user("hamlet")
         server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
         token = "aaaa"
+        android_tokens = []
         for i in ["aa", "bb"]:
-            RemotePushDeviceToken.objects.create(
-                kind=RemotePushDeviceToken.GCM,
-                token=hex_to_b64(token + i),
-                user_id=hamlet.id,
-                server=server,
+            android_tokens.append(
+                RemotePushDeviceToken.objects.create(
+                    kind=RemotePushDeviceToken.GCM,
+                    token=hex_to_b64(token + i),
+                    user_id=hamlet.id,
+                    server=server,
+                )
             )
-        RemotePushDeviceToken.objects.create(
+        apple_token = RemotePushDeviceToken.objects.create(
             kind=RemotePushDeviceToken.APNS,
             token=hex_to_b64(token),
             user_id=hamlet.id,
             server=server,
         )
+        many_ids = ",".join(str(i) for i in range(1, 250))
         payload = {
             "user_id": hamlet.id,
-            "gcm_payload": "test",
-            "apns_payload": "test",
+            "gcm_payload": {"event": "remove", "zulip_message_ids": many_ids},
+            "apns_payload": {"event": "remove", "zulip_message_ids": many_ids},
             "gcm_options": {},
         }
-        with mock.patch("zilencer.views.send_android_push_notification"), mock.patch(
+        with mock.patch(
+            "zilencer.views.send_android_push_notification"
+        ) as android_push, mock.patch(
             "zilencer.views.send_apple_push_notification"
-        ), self.assertLogs("zilencer.views", level="INFO") as logger:
+        ) as apple_push, self.assertLogs(
+            "zilencer.views", level="INFO"
+        ) as logger:
             result = self.uuid_post(
                 self.server_uuid,
                 "/api/v1/remotes/push/notify",
@@ -320,6 +328,19 @@ class PushBouncerNotificationTest(BouncerTestCase):
                 f"Sending mobile push notifications for remote user 1234-abcd:{hamlet.id}: "
                 "2 via FCM devices, 1 via APNs devices"
             ],
+        )
+        apple_push.assert_called_once_with(
+            hamlet.id,
+            [apple_token],
+            {"event": "remove", "zulip_message_ids": ",".join(str(i) for i in range(50, 250))},
+            remote=server,
+        )
+        android_push.assert_called_once_with(
+            hamlet.id,
+            list(reversed(android_tokens)),
+            {"event": "remove", "zulip_message_ids": ",".join(str(i) for i in range(50, 250))},
+            {},
+            remote=server,
         )
 
     def test_remote_push_unregister_all(self) -> None:
@@ -1601,8 +1622,11 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "message_ids": [message.id],
                     "recipient_type": "private",
                     "pm_users": ",".join(
-                        str(s.user_profile_id)
-                        for s in Subscription.objects.filter(recipient=message.recipient)
+                        str(user_profile_id)
+                        for user_profile_id in sorted(
+                            s.user_profile_id
+                            for s in Subscription.objects.filter(recipient=message.recipient)
+                        )
                     ),
                     "sender_email": self.sender.email,
                     "sender_id": self.sender.id,
@@ -1765,8 +1789,11 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "message_ids": [message.id],
                     "recipient_type": "private",
                     "pm_users": ",".join(
-                        str(s.user_profile_id)
-                        for s in Subscription.objects.filter(recipient=message.recipient)
+                        str(user_profile_id)
+                        for user_profile_id in sorted(
+                            s.user_profile_id
+                            for s in Subscription.objects.filter(recipient=message.recipient)
+                        )
                     ),
                     "sender_email": self.sender.email,
                     "sender_id": self.sender.id,

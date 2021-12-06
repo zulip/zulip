@@ -1,7 +1,6 @@
 import $ from "jquery";
 
 import {$t_html} from "./i18n";
-import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
 import * as ui_report from "./ui_report";
@@ -195,9 +194,7 @@ export function stream_edit_uri(sub) {
     return hash;
 }
 
-export function search_public_streams_notice_url() {
-    // Computes the URL of the current narrow if streams:public were added.
-    const operators = narrow_state.filter().operators();
+export function search_public_streams_notice_url(operators) {
     const public_operator = {operator: "streams", operand: "public"};
     return operators_to_hash([public_operator].concat(operators));
 }
@@ -310,5 +307,5 @@ export function is_spectator_compatible(hash) {
 }
 
 export function current_hash_as_next() {
-    return `next=/${window.location.hash}`;
+    return `next=/${encodeURIComponent(window.location.hash)}`;
 }

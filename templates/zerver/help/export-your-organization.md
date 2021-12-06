@@ -11,16 +11,16 @@ Zulip has high quality export tools that can be used to migrate from the
 hosted Zulip Cloud service (zulip.com) to your own servers. There are
 three types of Zulip Cloud exports.
 
-* **Public export**: An export of all users, settings, and all the data that
+* **Export of public data**: An export of all users, settings, and all the data that
   appears in public streams.
-* **Full export with member consent**: Everything in public export, plus all
+* **Full export with member consent**: Everything in export of public data, plus all
   the private data of members that opt-in to the export.
 * **Full export without member consent**: All the data in the organization.
 
 All organizations have access to the first two kinds of export. Only corporate
 Zulip Standard customers have access to **full export without member consent**.
 
-## Public export
+## Export of public data
 
 {!admin-only.md!}
 
@@ -28,7 +28,7 @@ Zulip Standard customers have access to **full export without member consent**.
 
 {settings_tab|data-exports-admin}
 
-1. Click **Start public export**.
+1. Click **Start export of public data**.
 
 1. After a few minutes, you'll be able to download the export as a `.tar.gz`
 file from that page.
@@ -54,7 +54,7 @@ with lots of messages or uploaded files.
    instructions on how to collect member consent.
 
 1. The end result of that process with be an archive in the same
-   format as the public exports discussed above, including extra
+   format as the exports of public data discussed above, including extra
    private stream and private message data for users who gave consent.
 
 1. Import the tarball using [Zulip's logical data import tool][import-only].

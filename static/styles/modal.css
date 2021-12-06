@@ -117,6 +117,11 @@
     backface-visibility: hidden;
     transform: translateZ(0);
     transition: transform 0.25s ease-out;
+
+    &:disabled {
+        background-color: hsl(0, 0%, 83%);
+        cursor: not-allowed;
+    }
 }
 
 .modal__btn:focus,
@@ -136,7 +141,11 @@
 .dialog_submit_button {
     margin-left: 12px;
     background-color: hsl(214, 100%, 31%);
-    color: hsl(0, 0%, 100%);
+    color: hsl(0, 0%, 100%) !important;
+}
+
+#dialog_error {
+    margin-bottom: 10px;
 }
 
 @keyframes mmfadeIn {

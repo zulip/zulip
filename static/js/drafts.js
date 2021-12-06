@@ -1,8 +1,10 @@
 import {subDays} from "date-fns";
 import Handlebars from "handlebars/runtime";
 import $ from "jquery";
+import _ from "lodash";
 import tippy from "tippy.js";
 
+import render_confirm_delete_all_drafts from "../templates/confirm_dialog/confirm_delete_all_drafts.hbs";
 import render_draft_table_body from "../templates/draft_table_body.hbs";
 
 import * as blueslip from "./blueslip";
@@ -13,7 +15,8 @@ import * as compose_actions from "./compose_actions";
 import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
-import {$t} from "./i18n";
+import * as confirm_dialog from "./confirm_dialog";
+import {$t, $t_html} from "./i18n";
 import {localstorage} from "./localstorage";
 import * as markdown from "./markdown";
 import * as narrow from "./narrow";
@@ -22,12 +25,12 @@ import * as people from "./people";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
+import * as ui_util from "./ui_util";
 import * as util from "./util";
 
 function set_count(count) {
-    const draft_count = count.toString();
-    const text = $t({defaultMessage: "Drafts ({draft_count})"}, {draft_count});
-    $(".compose_drafts_button").text(text);
+    const drafts_li = $(".top_left_drafts");
+    ui_util.update_unread_count_in_dom(drafts_li, count);
 }
 
 export const draft_model = (function () {
@@ -72,12 +75,19 @@ export const draft_model = (function () {
 
     exports.editDraft = function (id, draft) {
         const drafts = get();
+        let changed = false;
+
+        function check_if_equal(draft_a, draft_b) {
+            return _.isEqual(_.omit(draft_a, ["updatedAt"]), _.omit(draft_b, ["updatedAt"]));
+        }
 
         if (drafts[id]) {
+            changed = !check_if_equal(drafts[id], draft);
             draft.updatedAt = getTimestamp();
             drafts[id] = draft;
             save(drafts);
         }
+        return changed;
     };
 
     exports.deleteDraft = function (id) {
@@ -89,6 +99,23 @@ export const draft_model = (function () {
 
     return exports;
 })();
+
+export function delete_all_drafts() {
+    const drafts = draft_model.get();
+    for (const [id] of Object.entries(drafts)) {
+        draft_model.deleteDraft(id);
+    }
+}
+
+export function confirm_delete_all_drafts() {
+    const html_body = render_confirm_delete_all_drafts();
+
+    confirm_dialog.launch({
+        html_heading: $t_html({defaultMessage: "Delete all drafts"}),
+        html_body,
+        on_click: delete_all_drafts,
+    });
+}
 
 export function snapshot_message() {
     if (!compose_state.composing() || compose_state.message_content().length <= 2) {
@@ -144,16 +171,22 @@ export function restore_message(draft) {
 
 function draft_notify() {
     // Display a tooltip to notify the user about the saved draft.
-    const instance = tippy(".compose_drafts_button", {
+    const instance = tippy(".top_left_drafts .unread_count", {
         content: $t({defaultMessage: "Saved as draft"}),
         arrow: true,
-        placement: "top",
+        placement: "right",
     })[0];
     instance.show();
     function remove_instance() {
         instance.destroy();
     }
-    setTimeout(remove_instance, 1500);
+    setTimeout(remove_instance, 3000);
+}
+
+function maybe_notify(no_notify) {
+    if (!no_notify) {
+        draft_notify();
+    }
 }
 
 export function update_draft(opts = {}) {
@@ -174,9 +207,9 @@ export function update_draft(opts = {}) {
     if (draft_id !== undefined) {
         // We don't save multiple drafts of the same message;
         // just update the existing draft.
-        draft_model.editDraft(draft_id, draft);
-        if (!no_notify) {
-            draft_notify();
+        const changed = draft_model.editDraft(draft_id, draft);
+        if (changed) {
+            maybe_notify(no_notify);
         }
         return draft_id;
     }
@@ -185,9 +218,7 @@ export function update_draft(opts = {}) {
     // one.
     const new_draft_id = draft_model.addDraft(draft);
     $("#compose-textarea").data("draft-id", new_draft_id);
-    if (!no_notify) {
-        draft_notify();
-    }
+    maybe_notify(no_notify);
 
     return new_draft_id;
 }

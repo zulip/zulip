@@ -4,6 +4,7 @@
   "amount_received": 0,
   "application": null,
   "application_fee_amount": null,
+  "automatic_payment_methods": null,
   "canceled_at": null,
   "cancellation_reason": null,
   "capture_method": "automatic",
@@ -51,10 +52,12 @@
           "license_management": "automatic",
           "licenses": "6",
           "price_per_license": "8000",
+          "realm_id": "1",
           "realm_str": "zulip",
           "seat_count": "6",
           "type": "upgrade",
-          "user_email": "hamlet@zulip.com"
+          "user_email": "hamlet@zulip.com",
+          "user_id": "10"
         },
         "object": "charge",
         "on_behalf_of": null,
@@ -69,7 +72,7 @@
         },
         "paid": false,
         "payment_intent": "pi_NORMALIZED00000000000001",
-        "payment_method": "pm_1JTqAOA4KHR4JzRvKUkGvxS0",
+        "payment_method": "pm_1K2ObQHSaWXyvFpK01Q0QnWB",
         "payment_method_details": {
           "card": {
             "brand": "visa",
@@ -118,7 +121,7 @@
     "total_count": 1,
     "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
   },
-  "client_secret": "pi_NORMALIZED00000000000001_secret_xVxt33T2UJomjdIlY6iKdiBvU",
+  "client_secret": "pi_NORMALIZED00000000000001_secret_TAWVF7EwKF9ozYSoyU5qfiPcE",
   "confirmation_method": "automatic",
   "created": 1000000000,
   "currency": "usd",
@@ -173,7 +176,7 @@
       },
       "created": 1000000000,
       "customer": "cus_NORMALIZED0001",
-      "id": "pm_1JTqAOA4KHR4JzRvKUkGvxS0",
+      "id": "pm_1K2ObQHSaWXyvFpK01Q0QnWB",
       "livemode": false,
       "metadata": {},
       "object": "payment_method",
@@ -188,10 +191,12 @@
     "license_management": "automatic",
     "licenses": "6",
     "price_per_license": "8000",
+    "realm_id": "1",
     "realm_str": "zulip",
     "seat_count": "6",
     "type": "upgrade",
-    "user_email": "hamlet@zulip.com"
+    "user_email": "hamlet@zulip.com",
+    "user_id": "10"
   },
   "next_action": null,
   "object": "payment_intent",

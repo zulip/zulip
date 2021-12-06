@@ -26,7 +26,7 @@ but also as an interested spectator,” wrote Peter Scholze in a [blog post
 describing the
 project](https://xenaproject.wordpress.com/2021/06/05/half-a-year-of-the-liquid-tensor-experiment-amazing-developments/).
 “It was exactly the interactions via the Zulip chat that convinced me that a
-proper verification was going on," he commented.
+proper verification was going on,” he commented.
 
 
 > “It was exactly the interactions via the Zulip chat that convinced me that a
@@ -129,3 +129,9 @@ jump in to help newer community members as time allows.
 > — [Robert Y. Lewis](https://robertylewis.com/), Brown University lecturer and
 > [mathlib](https://github.com/leanprover-community/mathlib)
 > [maintainer](https://github.com/leanprover-community/mathlib#maintainers)
+
+---
+
+Check out our guides on using Zulip for [research](/for/research)
+and [open source](/for/open-source), and learn how Zulip
+[helps communities grow](/for/communities)!

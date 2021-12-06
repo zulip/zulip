@@ -93,6 +93,13 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.user_group_edit_policy, Realm.POLICY_MODERATORS_ONLY)
         self.assertEqual(realm.invite_to_stream_policy, Realm.POLICY_MODERATORS_ONLY)
 
+    def test_realm_enable_spectator_access(self) -> None:
+        realm = do_create_realm("test_web_public_true", "Foo", enable_spectator_access=True)
+        self.assertEqual(realm.enable_spectator_access, True)
+
+        realm = do_create_realm("test_web_public_false", "Boo", enable_spectator_access=False)
+        self.assertEqual(realm.enable_spectator_access, False)
+
     def test_do_set_realm_name_caching(self) -> None:
         """The main complicated thing about setting realm names is fighting the
         cache, and we start by populating the cache for Hamlet, and we end
@@ -839,6 +846,14 @@ class RealmTest(ZulipTestCase):
         with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
             self.assertEqual(realm.has_web_public_streams(), False)
             self.assertEqual(realm.web_public_streams_enabled(), False)
+
+        realm.enable_spectator_access = False
+        realm.save()
+        self.assertEqual(realm.has_web_public_streams(), False)
+        self.assertEqual(realm.web_public_streams_enabled(), False)
+
+        realm.enable_spectator_access = True
+        realm.save()
 
         # Convert Rome to a public stream
         rome.is_web_public = False

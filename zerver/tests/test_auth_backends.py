@@ -112,6 +112,7 @@ from zproject.backends import (
     PopulateUserLDAPError,
     RateLimitedAuthenticationByUsername,
     SAMLAuthBackend,
+    SAMLDocument,
     SocialAuthMixin,
     ZulipAuthMixin,
     ZulipDummyBackend,
@@ -1199,7 +1200,10 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
     def test_social_auth_mobile_success(self) -> None:
         mobile_flow_otp = "1234abcd" * 8
-        account_data_dict = self.get_account_data_dict(email=self.email, name="Full Name")
+        hamlet = self.example_user("hamlet")
+        account_data_dict = self.get_account_data_dict(
+            email=hamlet.delivery_email, name="Full Name"
+        )
         self.assert_length(mail.outbox, 0)
         self.user_profile.date_joined = timezone_now() - datetime.timedelta(
             seconds=JUST_CREATED_THRESHOLD + 1
@@ -1230,7 +1234,9 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         query_params = urllib.parse.parse_qs(parsed_url.query)
         self.assertEqual(parsed_url.scheme, "zulip")
         self.assertEqual(query_params["realm"], ["http://zulip.testserver"])
-        self.assertEqual(query_params["email"], [self.example_email("hamlet")])
+        self.assertEqual(query_params["email"], [hamlet.delivery_email])
+        self.assertEqual(query_params["user_id"], [str(hamlet.id)])
+
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
         hamlet_api_keys = get_all_api_keys(self.example_user("hamlet"))
         self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
@@ -1520,7 +1526,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         result = self.client_get(result.url)
 
         self.assertEqual(result.status_code, 404)
-        self.assert_in_response("The registration link has expired or is not valid.", result)
+        self.assert_in_response("Whoops. The confirmation link is malformed.", result)
 
     @override_settings(TERMS_OF_SERVICE=None)
     def test_social_auth_registration_using_multiuse_invite(self) -> None:
@@ -2084,6 +2090,19 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/")
 
+    def test_saml_idp_initiate_logout_invalid_logout_response(self) -> None:
+        parameters = {"SAMLRequest": "this is not a valid SAMLRequest string."}
+        with self.assertLogs("zulip.auth.saml") as mock_logger:
+            result = self.client_get("http://zulip.testserver/complete/saml/", parameters)
+
+        self.assertIn(
+            "ERROR:zulip.auth.saml:Error parsing SAMLRequest: Start tag expected, '<' not found",
+            mock_logger.output[0],
+        )
+
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/login/")
+
     def test_auth_registration_with_no_name_provided(self) -> None:
         """
         The SAMLResponse may not actually provide name values, which is considered
@@ -2365,7 +2384,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         """
 
         with self.assertLogs(self.logger_string, level="INFO") as m, mock.patch.object(
-            SAMLAuthBackend, "get_issuing_idp", return_value="test_idp"
+            SAMLDocument, "get_issuing_idp", return_value="test_idp"
         ):
             relay_state = orjson.dumps(
                 dict(

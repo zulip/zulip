@@ -85,10 +85,6 @@
     border-radius: 2px;
 }
 
-.subscription_settings ul {
-    list-style-type: none;
-}
-
 .stream-email {
     font-family: "Source Code Pro", monospace;
     padding: 5px;
@@ -99,13 +95,6 @@
     background-color: hsl(0, 0%, 98%);
     border: 1px solid hsl(0, 0%, 87%);
     border-radius: 4px;
-}
-
-.subscription-control-label {
-    display: inline-block;
-    vertical-align: middle;
-    line-height: 18px;
-    padding: 5px;
 }
 
 .sp-preview {
@@ -131,10 +120,6 @@
 .muted-sub,
 .control-label-disabled {
     color: hsl(0, 0%, 64%);
-}
-
-.sub_setting_checkbox .checkbox span {
-    margin-top: 7px !important;
 }
 
 .sub_setting_checkbox .muted-sub label,
@@ -204,11 +189,19 @@
     color: hsl(0, 100%, 50%);
 }
 
-.stream_setting_subsection_title {
+/* TODO: Unify with settings.css definition */
+h3.stream_setting_subsection_title {
     display: inline-block;
     font-size: 1.5em;
+    font-weight: normal;
     line-height: 1.5;
-    margin: 10px 0 0;
+}
+
+h4.stream_setting_subsection_title {
+    display: inline-block;
+    font-size: 1.35em;
+    font-weight: normal;
+    line-height: 1.5;
 }
 
 .new-stream-name,
@@ -510,7 +503,7 @@
         }
 
         .display-type {
-            padding: 6px;
+            padding: 2px;
             text-align: center;
             font-weight: 600;
             border-bottom: 1px solid hsl(0, 0%, 87%);
@@ -963,11 +956,6 @@
 
         .subscription-type-text {
             display: inline;
-
-            ul {
-                margin: 0 0 10px 14px;
-                list-style-type: unset;
-            }
         }
 
         b {
@@ -1010,10 +998,6 @@
         .stream_change_property_status {
             margin: 9px auto 3px 3px;
         }
-
-        .grey-box {
-            border: none;
-        }
     }
 
     .loading_indicator_text {
@@ -1022,11 +1006,8 @@
     }
 }
 
-#subscription_overlay ul.grey-box {
-    li {
-        border-bottom: 1px solid hsl(0, 0%, 87%);
-        padding: 5px 0;
-
+#subscription_overlay .subsection-parent {
+    .input-group {
         input[type="checkbox"] {
             margin-top: 0;
         }
@@ -1042,6 +1023,10 @@
         input[type="radio"] {
             margin-right: 5px;
         }
+
+        .inline {
+            display: inline !important;
+        }
     }
 }
 
@@ -1054,10 +1039,6 @@
             border-bottom: 1px solid hsl(0, 0%, 87%);
             margin: 5px 0 5px 5px;
             padding: 5px 0;
-
-            input[type="radio"] {
-                margin: 3.5px 0 1px;
-            }
 
             &:last-of-type {
                 border-bottom: none;
@@ -1084,6 +1065,15 @@
     }
 }
 
+.stream-creation-body input[type="radio"] {
+    margin: 3.5px 0 1px;
+}
+
+/* we have this 2px difference due to the font size being larger in the modal */
+#stream_privacy_modal input[type="radio"] {
+    margin: 5.5px 0 1px;
+}
+
 #change_stream_description {
     width: 100%;
     height: 80px;
@@ -1091,10 +1081,11 @@
     box-sizing: border-box;
 }
 
-#stream_privacy_modal .modal-body {
-    .grey-box {
-        margin-bottom: 20px;
-    }
+#stream_privacy_modal .stream-message-retention-days-input input[type="text"] {
+    border-radius: 5px;
+    box-shadow: none;
+    margin: 0;
+    height: inherit;
 }
 
 @media (width < $lg_min) {

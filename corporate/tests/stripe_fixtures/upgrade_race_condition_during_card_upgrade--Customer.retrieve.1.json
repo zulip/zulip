@@ -1,8 +1,8 @@
 {
   "address": null,
-  "balance": 0,
+  "balance": -48000,
   "created": 1000000000,
-  "currency": null,
+  "currency": "usd",
   "default_source": null,
   "delinquent": false,
   "description": "zulip (Zulip Dev)",
@@ -12,7 +12,7 @@
   "invoice_prefix": "NORMA01",
   "invoice_settings": {
     "custom_fields": null,
-    "default_payment_method": null,
+    "default_payment_method": "pm_1K2OblHSaWXyvFpKUnIu7yFe",
     "footer": null
   },
   "livemode": false,
@@ -21,7 +21,7 @@
     "realm_str": "zulip"
   },
   "name": null,
-  "next_invoice_sequence": 1,
+  "next_invoice_sequence": 3,
   "object": "customer",
   "phone": null,
   "preferred_locales": [],

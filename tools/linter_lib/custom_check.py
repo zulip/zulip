@@ -456,9 +456,10 @@ python_rules = RuleList(
             ],
         },
         {
-            "pattern": "exit[(]1[)]",
+            "pattern": r"exit[(][1-9]\d*[)]",
             "include_only": {"/management/commands/"},
             "description": "Raise CommandError to exit with failure in management commands",
+            "exclude": {"zerver/management/commands/process_queue.py"},
         },
         {
             "pattern": ".is_realm_admin =",
@@ -696,7 +697,7 @@ html_rules: List["Rule"] = [
             "templates/zerver/accounts_home.html",
             "templates/zerver/login.html",
             # Needs the width cleaned up; display: none is fine
-            "static/templates/settings/account_settings.hbs",
+            "static/templates/dialog_change_password.hbs",
             # background image property is dynamically generated
             "static/templates/user_profile_modal.hbs",
             "static/templates/pm_list_item.hbs",
@@ -869,6 +870,7 @@ markdown_rules = RuleList(
         },
         {
             "pattern": r"\][(][^#h]",
+            "exclude_pattern": "mailto:",
             "include_only": {"README.md", "CONTRIBUTING.md"},
             "description": "Use absolute links from docs served by GitHub",
         },

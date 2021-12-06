@@ -4,6 +4,7 @@
   "amount_received": 0,
   "application": null,
   "application_fee_amount": null,
+  "automatic_payment_methods": null,
   "canceled_at": null,
   "cancellation_reason": null,
   "capture_method": "automatic",
@@ -14,9 +15,9 @@
     "total_count": 0,
     "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
   },
-  "client_secret": "pi_NORMALIZED00000000000001_secret_r4mnrb7dDRt8bljkSzB1gs0N3",
+  "client_secret": "pi_NORMALIZED00000000000001_secret_AEjbzSMlD1c0k4B5GAFiSJaGR",
   "confirmation_method": "automatic",
-  "created": 1010000007,
+  "created": 1010000008,
   "currency": "usd",
   "customer": "cus_NORMALIZED0001",
   "description": "Upgrade to Zulip Standard, $80.0 x 6",
@@ -30,10 +31,12 @@
     "license_management": "automatic",
     "licenses": "6",
     "price_per_license": "8000",
+    "realm_id": "1",
     "realm_str": "zulip",
     "seat_count": "6",
     "type": "upgrade",
-    "user_email": "hamlet@zulip.com"
+    "user_email": "hamlet@zulip.com",
+    "user_id": "10"
   },
   "next_action": null,
   "object": "payment_intent",

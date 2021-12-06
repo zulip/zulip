@@ -14,8 +14,7 @@ run_test("compose_error_test", () => {
 
     assert.ok($("#compose-send-status").hasClass("alert-error"));
     assert.equal($("#compose-error-msg").html(), $t({defaultMessage: "You have nothing to send!"}));
-    assert.equal($("#compose-send-button").prop("disabled"), false);
-    assert.ok(!$("#sending-indicator").visible());
+    assert.ok(!$("#compose-send-button .loader").visible());
     assert.ok($("#compose-textarea").is_focused());
 
     $("#compose-send-status").fadeOut = (prop) => {

@@ -5,9 +5,9 @@
   "currency": null,
   "default_source": null,
   "delinquent": false,
-  "description": "realm_662230 (None)",
+  "description": "realm_313439 ()",
   "discount": null,
-  "email": "user-0-realm_662230@zulip.com",
+  "email": "user-0-realm_313439@zulip.com",
   "id": "cus_NORMALIZED0003",
   "invoice_prefix": "NORMA03",
   "invoice_settings": {
@@ -18,7 +18,7 @@
   "livemode": false,
   "metadata": {
     "realm_id": "3",
-    "realm_str": "realm_662230"
+    "realm_str": "realm_313439"
   },
   "name": null,
   "next_invoice_sequence": 1,

@@ -593,7 +593,7 @@ function populate_messages_sent_by_message_type(data) {
         for (let i = 0; i < plot_data.labels.length; i += 1) {
             labels.push(plot_data.labels[i] + " (" + plot_data.percentages[i] + ")");
         }
-        const total_string = plot_data.total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        const total_string = plot_data.total.toLocaleString();
         return {
             trace: {
                 values: plot_data.values,

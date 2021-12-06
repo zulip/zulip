@@ -68,38 +68,40 @@ def send_initial_pms(user: UserProfile) -> None:
             " " + _("We also have a guide for [Setting up your organization]({help_url}).")
         ).format(help_url=help_url)
 
-    welcome_msg = _("Hello, and welcome to Zulip!")
+    welcome_msg = _("Hello, and welcome to Zulip!") + "👋"
+    demo_org_warning = ""
     if user.realm.demo_organization_scheduled_deletion_date is not None:
-        welcome_msg += " " + _(
-            "Note that this is a [demo organization]({demo_org_help_url}) and will be automatically deleted in 30 days."
+        demo_org_warning = (
+            _(
+                "Note that this is a [demo organization]({demo_org_help_url}) and will be "
+                "**automatically deleted** in 30 days."
+            )
+            + "\n\n"
         )
 
     content = "".join(
         [
             welcome_msg + " ",
             _("This is a private message from me, Welcome Bot.") + "\n\n",
-            "* "
-            + _(
+            _(
                 "If you are new to Zulip, check out our [Getting started guide]({getting_started_url})!"
+            ),
+            "{organization_setup_text}" + "\n\n",
+            "{demo_org_warning}",
+            _(
+                "I can also help you get set up! Just click anywhere on this message or press `r` to reply."
             )
-            + "{organization_setup_text}\n",
-            "* " + _("[Add a profile picture]({profile_url}).") + "\n",
-            "* " + _("[Browse and subscribe to streams]({streams_url}).") + "\n",
-            "* " + _("Download our [mobile and desktop apps]({apps_url}).") + " ",
-            _("Zulip also works great in a browser.") + "\n",
-            "* " + _("You can type `?` to learn more about Zulip shortcuts.") + "\n\n",
-            _("Practice sending a few messages by replying to this conversation.") + " ",
-            _("Click anywhere on this message or press `r` to reply."),
+            + "\n\n",
+            _("Here are a few messages I understand:") + " ",
+            bot_commands(is_initial_pm=True),
         ]
     )
 
     content = content.format(
-        getting_started_url="/help/getting-started-with-zulip",
-        apps_url="/apps",
-        profile_url="#settings/profile",
-        streams_url="#streams/all",
         organization_setup_text=organization_setup_text,
+        demo_org_warning=demo_org_warning,
         demo_org_help_url="/help/demo-organizations",
+        getting_started_url="/help/getting-started-with-zulip",
     )
 
     internal_send_private_message(
@@ -107,22 +109,124 @@ def send_initial_pms(user: UserProfile) -> None:
     )
 
 
-def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
-    welcome_bot = get_system_bot(settings.WELCOME_BOT, send_request.message.sender.realm_id)
-    human_recipient_id = send_request.message.sender.recipient_id
-    assert human_recipient_id is not None
-    if Message.objects.filter(sender=welcome_bot, recipient_id=human_recipient_id).count() < 2:
-        content = (
-            _("Congratulations on your first reply!") + " "
-            ":tada:"
-            "\n"
-            "\n"
-            + _(
-                "Feel free to continue using this space to practice your new messaging "
-                "skills. Or, try clicking on some of the stream names to your left!"
-            )
+def bot_commands(is_initial_pm: bool = False) -> str:
+    commands = [
+        "apps",
+        "profile",
+        "theme",
+        "streams",
+        "topics",
+        "message formatting",
+        "keyboard shortcuts",
+    ]
+    if is_initial_pm:
+        commands.append("help")
+    return ", ".join(["`" + command + "`" for command in commands]) + "."
+
+
+def select_welcome_bot_response(human_response_lower: str) -> str:
+    # Given the raw (pre-markdown-rendering) content for a private
+    # message from the user to Welcome Bot, select the appropriate reply.
+    if human_response_lower in ["app", "apps"]:
+        return _(
+            "You can [download](/apps) the [mobile and desktop apps](/apps). "
+            "Zulip also works great in a browser."
         )
-        internal_send_private_message(welcome_bot, send_request.message.sender, content)
+    elif human_response_lower == "profile":
+        return _(
+            "Go to [Profile settings](#settings/profile) "
+            "to add a [profile picture](/help/change-your-profile-picture) "
+            "and edit your [profile information](/help/edit-your-profile)."
+        )
+    elif human_response_lower == "theme":
+        return _(
+            "Go to [Display settings](#settings/display-settings) "
+            "to [switch between the light and dark themes](/help/dark-theme), "
+            "[pick your favorite emoji theme](/help/emoji-and-emoticons#change-your-emoji-set), "
+            "[change your language](/help/change-your-language), "
+            "and make other tweaks to your Zulip experience."
+        )
+    elif human_response_lower in ["stream", "streams", "channel", "channels"]:
+        return "".join(
+            [
+                _(
+                    "In Zulip, streams [determine who gets a message](/help/streams-and-topics). "
+                    "They are similar to channels in other chat apps."
+                )
+                + "\n\n",
+                _("[Browse and subscribe to streams](#streams/all)."),
+            ]
+        )
+    elif human_response_lower in ["topic", "topics"]:
+        return "".join(
+            [
+                _(
+                    "In Zulip, topics [tell you what a message is about](/help/streams-and-topics). "
+                    "They are light-weight subjects, very similar to the subject line of an email."
+                )
+                + "\n\n",
+                _(
+                    "Check out [Recent topics](#recent_topics) to see what's happening! "
+                    'You can return to this conversation by clicking "Private messages" in the upper left.'
+                ),
+            ]
+        )
+    elif human_response_lower in ["keyboard", "shortcuts", "keyboard shortcuts"]:
+        return "".join(
+            [
+                _(
+                    "Zulip's [keyboard shortcuts](#keyboard-shortcuts) "
+                    "let you navigate the app quickly and efficiently."
+                )
+                + "\n\n",
+                _("Press `?` any time to see a [cheat sheet](#keyboard-shortcuts)."),
+            ]
+        )
+    elif human_response_lower in ["formatting", "message formatting"]:
+        return "".join(
+            [
+                _(
+                    "Zulip uses [Markdown](/help/format-your-message-using-markdown), "
+                    "an intuitive format for **bold**, *italics*, bulleted lists, and more. "
+                    "Click [here](#message-formatting) for a cheat sheet."
+                )
+                + "\n\n",
+                _(
+                    "Check out our [messaging tips](/help/messaging-tips) "
+                    "to learn about emoji reactions, code blocks and much more!"
+                ),
+            ]
+        )
+    elif human_response_lower in ["help", "?"]:
+        return "".join(
+            [
+                _("Here are a few messages I understand:") + " ",
+                bot_commands() + "\n\n",
+                _(
+                    "Check out our [Getting started guide](/help/getting-started-with-zulip), "
+                    "or browse the [Help center](/help/) to learn more!"
+                ),
+            ]
+        )
+    else:
+        return "".join(
+            [
+                _(
+                    "I’m sorry, I did not understand your message. Please try one of the following commands:"
+                )
+                + " ",
+                bot_commands(),
+            ]
+        )
+
+
+def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
+    """Given the send_request object for a private message from the user
+    to welcome-bot, trigger the welcome-bot reply."""
+    welcome_bot = get_system_bot(settings.WELCOME_BOT, send_request.message.sender.realm_id)
+    human_response_lower = send_request.message.content.lower()
+    content = select_welcome_bot_response(human_response_lower)
+    internal_send_private_message(welcome_bot, send_request.message.sender, content)
 
 
 @transaction.atomic
