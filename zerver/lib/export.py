@@ -41,6 +41,7 @@ from zerver.models import (
     GroupGroupMembership,
     Huddle,
     Message,
+    MutedUser,
     Reaction,
     Realm,
     RealmAuditLog,
@@ -61,6 +62,7 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
+    UserStatus,
     UserTopic,
     get_display_recipient,
     get_realm,
@@ -236,10 +238,7 @@ NON_EXPORTED_TABLES = {
     # export before they reach full production status.
     "zerver_defaultstreamgroup",
     "zerver_defaultstreamgroup_streams",
-    "zerver_muteduser",
     "zerver_submessage",
-    # This is low priority, since users can easily just reset themselves to away.
-    "zerver_userstatus",
     # Drafts don't need to be exported as they are supposed to be more ephemeral.
     "zerver_draft",
     # For any tables listed below here, it's a bug that they are not present in the export.
@@ -280,22 +279,24 @@ ANALYTICS_TABLES = {
 # TODO: This data structure could likely eventually be replaced by
 # inspecting the corresponding Django models
 DATE_FIELDS: Dict[TableName, List[Field]] = {
+    "analytics_installationcount": ["end_time"],
+    "analytics_realmcount": ["end_time"],
+    "analytics_streamcount": ["end_time"],
+    "analytics_usercount": ["end_time"],
     "zerver_attachment": ["create_time"],
     "zerver_message": ["last_edit_time", "date_sent"],
-    "zerver_usertopic": ["last_updated"],
+    "zerver_muteduser": ["date_muted"],
+    "zerver_realmauditlog": ["event_time"],
     "zerver_realm": ["date_created"],
     "zerver_stream": ["date_created"],
-    "zerver_useractivity": ["last_visit"],
     "zerver_useractivityinterval": ["start", "end"],
+    "zerver_useractivity": ["last_visit"],
+    "zerver_userhotspot": ["timestamp"],
     "zerver_userpresence": ["timestamp"],
     "zerver_userprofile": ["date_joined", "last_login", "last_reminder"],
     "zerver_userprofile_mirrordummy": ["date_joined", "last_login", "last_reminder"],
-    "zerver_realmauditlog": ["event_time"],
-    "zerver_userhotspot": ["timestamp"],
-    "analytics_installationcount": ["end_time"],
-    "analytics_realmcount": ["end_time"],
-    "analytics_usercount": ["end_time"],
-    "analytics_streamcount": ["end_time"],
+    "zerver_userstatus": ["timestamp"],
+    "zerver_usertopic": ["last_updated"],
 }
 
 BITHANDLER_FIELDS: Dict[TableName, List[Field]] = {
@@ -864,6 +865,13 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
     )
 
     Config(
+        table="zerver_muteduser",
+        model=MutedUser,
+        normal_parent=user_profile_config,
+        parent_key="user_profile__in",
+    )
+
+    Config(
         table="zerver_realmauditlog",
         model=RealmAuditLog,
         normal_parent=user_profile_config,
@@ -880,6 +888,13 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
     Config(
         table="zerver_userpresence",
         model=UserPresence,
+        normal_parent=user_profile_config,
+        parent_key="user_profile__in",
+    )
+
+    Config(
+        table="zerver_userstatus",
+        model=UserStatus,
         normal_parent=user_profile_config,
         parent_key="user_profile__in",
     )
