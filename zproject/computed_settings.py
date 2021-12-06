@@ -1129,13 +1129,6 @@ if "signatureAlgorithm" not in SOCIAL_AUTH_SAML_SECURITY_CONFIG:
     default_signature_alg = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"
     SOCIAL_AUTH_SAML_SECURITY_CONFIG["signatureAlgorithm"] = default_signature_alg
 
-if "wantMessagesSigned" not in SOCIAL_AUTH_SAML_SECURITY_CONFIG:
-    # This setting controls whether LogoutRequests delivered to us
-    # need to be signed. The default of False is not acceptable,
-    # because we don't want anyone to be able to submit a request
-    # to get other users logged out.
-    SOCIAL_AUTH_SAML_SECURITY_CONFIG["wantMessagesSigned"] = True
-
 for idp_name, idp_dict in SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
     if DEVELOPMENT:
         idp_dict["entity_id"] = get_secret("saml_entity_id", "")
