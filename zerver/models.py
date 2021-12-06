@@ -2820,8 +2820,15 @@ class AbstractEmoji(models.Model):
         default=UNICODE_EMOJI, choices=REACTION_TYPES, max_length=30
     )
 
-    # A string that uniquely identifies a particular emoji.  The format varies
-    # by type:
+    # A string with the property that (realm, reaction_type,
+    # emoji_code) uniquely determines the emoji glyph.
+    #
+    # We cannot use `emoji_name` for this purpose, since the
+    # name-to-glyph mappings for unicode emoji change with time as we
+    # update our emoji database, and multiple custom emoji can have
+    # the same `emoji_name` in a realm (at most one can have
+    # `deactivated=False`). The format for `emoji_code` varies by
+    # `reaction_type`:
     #
     # * For Unicode emoji, a dash-separated hex encoding of the sequence of
     #   Unicode codepoints that define this emoji in the Unicode
@@ -2829,10 +2836,10 @@ class AbstractEmoji(models.Model):
     #   following data, with "non_qualified" taking precedence when both present:
     #     https://raw.githubusercontent.com/iamcal/emoji-data/master/emoji_pretty.json
     #
-    # * For realm emoji (aka user uploaded custom emoji), the ID
-    #   (in ASCII decimal) of the RealmEmoji object.
+    # * For user uploaded custom emoji (`reaction_type="realm_emoji"`), the stringified ID
+    #   of the RealmEmoji object, computed as `str(realm_emoji.id)`.
     #
-    # * For "Zulip extra emoji" (like :zulip:), the filename of the emoji.
+    # * For "Zulip extra emoji" (like :zulip:), the name of the emoji (e.g. "zulip").
     emoji_code: str = models.TextField()
 
     class Meta:
