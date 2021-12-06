@@ -213,7 +213,7 @@ class Realm(models.Model):
     # User-visible display name, description, guidelines used on e.g. the organization homepage
     name: str = models.CharField(max_length=MAX_REALM_NAME_LENGTH)
     description: str = models.TextField(default="")
-    guidelines_url: str = models.URLField(null=True)
+    guidelines_url: Optional[str] = models.URLField(null=True)
 
     # A short, identifier-like name for the organization.  Used in subdomains;
     # e.g. on a server at example.com, an org with string_id `foo` is reached

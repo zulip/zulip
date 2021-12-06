@@ -12022,7 +12022,7 @@ paths:
                       realm_guidelines_url:
                         type: string
                         description: |
-                          The URL for the organization's information page, displayed to 
+                          The URL for the organization's information page, displayed to
                           new members when they join the organization for the first time.
                     example:
                       {

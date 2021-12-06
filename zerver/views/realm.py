@@ -53,7 +53,7 @@ def update_realm(
     description: Optional[str] = REQ(
         str_validator=check_capped_string(Realm.MAX_REALM_DESCRIPTION_LENGTH), default=None
     ),
-    guidelines_url: Optional[str]=REQ(str_validator=check_string, default=None),
+    guidelines_url: Optional[str] = REQ(str_validator=check_string, default=None),
     emails_restricted_to_domains: Optional[bool] = REQ(json_validator=check_bool, default=None),
     disallow_disposable_email_addresses: Optional[bool] = REQ(
         json_validator=check_bool, default=None

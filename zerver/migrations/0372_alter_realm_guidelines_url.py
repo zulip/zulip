@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0371_alter_realm_guidelines_url'),
+        ("zerver", "0371_alter_realm_guidelines_url"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='realm',
-            name='guidelines_url',
+            model_name="realm",
+            name="guidelines_url",
             field=models.URLField(null=True),
         ),
     ]

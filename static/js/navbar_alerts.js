@@ -7,7 +7,7 @@ import render_demo_organization_deadline_content from "../templates/navbar_alert
 import render_desktop_notifications_alert_content from "../templates/navbar_alerts/desktop_notifications.hbs";
 import render_insecure_desktop_app_alert_content from "../templates/navbar_alerts/insecure_desktop_app.hbs";
 import render_navbar_alert_wrapper from "../templates/navbar_alerts/navbar_alert_wrapper.hbs";
-import render_organization_information_content from "../templates/navbar_alerts/organization_information.hbs"
+import render_organization_information_content from "../templates/navbar_alerts/organization_information.hbs";
 import render_profile_incomplete_alert_content from "../templates/navbar_alerts/profile_incomplete.hbs";
 import render_server_needs_upgrade_alert_content from "../templates/navbar_alerts/server_needs_upgrade.hbs";
 
@@ -53,9 +53,10 @@ const get_step = function ($process) {
 };
 
 export function should_show_organization_information(ls) {
-
-    if ((localstorage.supported() && ls.get("viewedGuidelines") === true) ||
-        page_params.realm_guidelines_url === "") {
+    if (
+        (localstorage.supported() && ls.get("viewedGuidelines") === true) ||
+        page_params.realm_guidelines_url === ""
+    ) {
         return false;
     }
 
