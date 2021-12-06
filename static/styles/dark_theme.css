@@ -645,7 +645,7 @@ body.dark-theme {
     .modal-footer,
     .modal-bg .modal-header {
         border-color: hsla(0, 0%, 0%, 0.2);
-        background-color: hsla(0, 0%, 0%, 0.2);
+        background-color: hsl(211, 28%, 14%);
     }
 
     .table-striped tbody tr:nth-child(odd) td {
