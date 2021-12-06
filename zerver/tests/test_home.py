@@ -863,8 +863,8 @@ class HomeTest(ZulipTestCase):
 
         with patch("zerver.lib.compatibility.timezone_now", return_value=now + timedelta(days=380)):
             self.assertEqual(is_outdated_server(iago), True)
-            self.assertEqual(is_outdated_server(hamlet), True)
-            self.assertEqual(is_outdated_server(None), True)
+            self.assertEqual(is_outdated_server(hamlet), False)
+            self.assertEqual(is_outdated_server(None), False)
 
     def test_furthest_read_time(self) -> None:
         msg_id = self.send_test_message("hello!", sender_name="iago")
