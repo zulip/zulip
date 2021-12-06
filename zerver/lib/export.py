@@ -1342,30 +1342,6 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
         )
 
 
-def _check_key_metadata(
-    email_gateway_bot: Optional[UserProfile],
-    key: Object,
-    processing_avatars: bool,
-    realm: Realm,
-    user_ids: Set[int],
-) -> None:
-    # Helper function for export_files_from_s3
-    if "realm_id" in key.metadata and key.metadata["realm_id"] != str(realm.id):
-        if email_gateway_bot is None or key.metadata["user_profile_id"] != str(
-            email_gateway_bot.id
-        ):
-            raise AssertionError(f"Key metadata problem: {key.key} / {key.metadata} / {realm.id}")
-        # Email gateway bot sends messages, potentially including attachments, cross-realm.
-        print(f"File uploaded by email gateway bot: {key.key} / {key.metadata}")
-    elif processing_avatars:
-        if "user_profile_id" not in key.metadata:
-            raise AssertionError(f"Missing user_profile_id in key metadata: {key.metadata}")
-        if int(key.metadata["user_profile_id"]) not in user_ids:
-            raise AssertionError(f"Wrong user_profile_id in key metadata: {key.metadata}")
-    elif "realm_id" not in key.metadata:
-        raise AssertionError(f"Missing realm_id in key metadata: {key.metadata}")
-
-
 def _get_exported_s3_record(
     bucket_name: str, key: Object, processing_emoji: bool
 ) -> Dict[str, Any]:
@@ -1474,8 +1450,23 @@ def export_files_from_s3(
             continue
 
         key = bucket.Object(bkey.key)
+
         # This can happen if an email address has moved realms
-        _check_key_metadata(email_gateway_bot, key, processing_avatars, realm, user_ids)
+        if "realm_id" in key.metadata and key.metadata["realm_id"] != str(realm.id):
+            if email_gateway_bot is None or key.metadata["user_profile_id"] != str(
+                email_gateway_bot.id
+            ):
+                raise AssertionError(f"Key metadata problem: {key.key} / {key.metadata} / {realm.id}")
+            # Email gateway bot sends messages, potentially including attachments, cross-realm.
+            print(f"File uploaded by email gateway bot: {key.key} / {key.metadata}")
+        elif processing_avatars:
+            if "user_profile_id" not in key.metadata:
+                raise AssertionError(f"Missing user_profile_id in key metadata: {key.metadata}")
+            if int(key.metadata["user_profile_id"]) not in user_ids:
+                raise AssertionError(f"Wrong user_profile_id in key metadata: {key.metadata}")
+        elif "realm_id" not in key.metadata:
+            raise AssertionError(f"Missing realm_id in key metadata: {key.metadata}")
+
         record = _get_exported_s3_record(bucket_name, key, processing_emoji)
 
         record["path"] = key.key
