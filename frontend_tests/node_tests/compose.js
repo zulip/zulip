@@ -105,8 +105,7 @@ test_ui("send_message_success", ({override}) => {
     $("#compose-textarea").val("foobarfoobar");
     $("#compose-textarea").trigger("blur");
     $("#compose-send-status").show();
-    $("#compose-send-button").prop("disabled", true);
-    $("#sending-indicator").show();
+    $("#compose-send-button .loader").show();
 
     let reify_message_id_checked;
     override(echo, "reify_message_id", (local_id, message_id) => {
@@ -120,8 +119,7 @@ test_ui("send_message_success", ({override}) => {
     assert.equal($("#compose-textarea").val(), "");
     assert.ok($("#compose-textarea").is_focused());
     assert.ok(!$("#compose-send-status").visible());
-    assert.equal($("#compose-send-button").prop("disabled"), false);
-    assert.ok(!$("#sending-indicator").visible());
+    assert.ok(!$("#compose-send-button .loader").visible());
 
     assert.ok(reify_message_id_checked);
 });
@@ -202,8 +200,7 @@ test_ui("send_message", ({override}) => {
         $("#compose-textarea").val("[foobar](/user_uploads/123456)");
         $("#compose-textarea").trigger("blur");
         $("#compose-send-status").show();
-        $("#compose-send-button").prop("disabled", true);
-        $("#sending-indicator").show();
+        $("#compose-send-button .loader").show();
 
         compose.send_message();
 
@@ -216,8 +213,7 @@ test_ui("send_message", ({override}) => {
         assert.equal($("#compose-textarea").val(), "");
         assert.ok($("#compose-textarea").is_focused());
         assert.ok(!$("#compose-send-status").visible());
-        assert.equal($("#compose-send-button").prop("disabled"), false);
-        assert.ok(!$("#sending-indicator").visible());
+        assert.ok(!$("#compose-send-button .loader").visible());
     })();
 
     // This is the additional setup which is common to both the tests below.
@@ -254,8 +250,7 @@ test_ui("send_message", ({override}) => {
         $("#compose-textarea").val("foobarfoobar");
         $("#compose-textarea").trigger("blur");
         $("#compose-send-status").show();
-        $("#compose-send-button").prop("disabled", true);
-        $("#sending-indicator").show();
+        $("#compose-send-button .loader").show();
         $("#compose-textarea").off("select");
         echo_error_msg_checked = false;
         override(echo, "try_deliver_locally", () => {});
@@ -271,13 +266,11 @@ test_ui("send_message", ({override}) => {
         };
         assert.deepEqual(stub_state, state);
         assert.ok(!echo_error_msg_checked);
-        assert.equal($("#compose-send-button").prop("disabled"), false);
         assert.equal($("#compose-error-msg").html(), "Error sending message: Server says 408");
         assert.equal($("#compose-textarea").val(), "foobarfoobar");
         assert.ok($("#compose-textarea").is_focused());
         assert.ok($("#compose-send-status").visible());
-        assert.equal($("#compose-send-button").prop("disabled"), false);
-        assert.ok(!$("#sending-indicator").visible());
+        assert.ok(!$("#compose-send-button .loader").visible());
     })();
 });
 
@@ -285,6 +278,11 @@ test_ui("enter_with_preview_open", ({override}) => {
     override(notifications, "clear_compose_notifications", () => {});
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
+    let show_button_spinner_called = false;
+    override(loading, "show_button_spinner", (spinner) => {
+        assert.equal(spinner.selector, "#compose-send-button .loader");
+        show_button_spinner_called = true;
+    });
 
     page_params.user_id = new_user.user_id;
 
@@ -308,6 +306,7 @@ test_ui("enter_with_preview_open", ({override}) => {
     assert.ok(!$("#compose .preview_message_area").visible());
     assert.ok($("#compose .markdown_preview").visible());
     assert.ok(send_message_called);
+    assert.ok(show_button_spinner_called);
 
     user_settings.enter_sends = false;
     $("#compose-textarea").trigger("blur");
@@ -317,12 +316,9 @@ test_ui("enter_with_preview_open", ({override}) => {
     // Test sending a message without content.
     $("#compose-textarea").val("");
     $("#compose .preview_message_area").show();
-    $("#enter_sends").prop("checked", true);
     user_settings.enter_sends = true;
 
     compose.enter_with_preview_open();
-
-    assert.ok($("#enter_sends").prop("checked"));
     assert.equal($("#compose-error-msg").html(), "never-been-set");
 });
 
@@ -330,24 +326,28 @@ test_ui("finish", ({override}) => {
     override(notifications, "clear_compose_notifications", () => {});
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
+    let show_button_spinner_called = false;
+    override(loading, "show_button_spinner", (spinner) => {
+        assert.equal(spinner.selector, "#compose-send-button .loader");
+        show_button_spinner_called = true;
+    });
 
     (function test_when_compose_validation_fails() {
         $("#compose_invite_users").show();
         $("#compose-send-button").prop("disabled", false);
         $("#compose-send-button").trigger("focus");
-        $("#sending-indicator").hide();
+        $("#compose-send-button .loader").hide();
         $("#compose-textarea").off("select");
         $("#compose-textarea").val("");
         const res = compose.finish();
         assert.equal(res, false);
         assert.ok(!$("#compose_invite_users").visible());
-        assert.ok(!$("#sending-indicator").visible());
-        assert.ok(!$("#compose-send-button").is_focused());
-        assert.equal($("#compose-send-button").prop("disabled"), false);
+        assert.ok(!$("#compose-send-button .loader").visible());
         assert.equal(
             $("#compose-error-msg").html(),
             $t_html({defaultMessage: "You have nothing to send!"}),
         );
+        assert.ok(show_button_spinner_called);
     })();
 
     (function test_when_compose_validation_succeed() {
@@ -369,7 +369,6 @@ test_ui("finish", ({override}) => {
             send_message_called = true;
         });
         assert.ok(compose.finish());
-        assert.equal($("#sending-indicator").text(), "translated: Sending...");
         assert.ok($("#compose-textarea").visible());
         assert.ok(!$("#compose .undo_markdown_preview").visible());
         assert.ok(!$("#compose .preview_message_area").visible());
@@ -392,7 +391,6 @@ test_ui("finish", ({override}) => {
         });
         reminder.is_deferred_delivery = () => true;
         assert.ok(compose.finish());
-        assert.equal($("#sending-indicator").text(), "translated: Scheduling...");
         assert.ok($("#compose-textarea").visible());
         assert.ok(!$("#compose .undo_markdown_preview").visible());
         assert.ok(!$("#compose .preview_message_area").visible());
@@ -489,8 +487,6 @@ test_ui("initialize", ({override, mock_template}) => {
     })();
 
     (function test_abort_xhr() {
-        $("#compose-send-button").prop("disabled", true);
-
         reset_jquery();
         compose.initialize();
 
@@ -572,6 +568,7 @@ test_ui("on_events", ({override}) => {
 
         const event = {
             preventDefault: noop,
+            stopPropagation: noop,
             target,
         };
 
@@ -755,6 +752,7 @@ test_ui("on_events", ({override}) => {
 
         const event = {
             preventDefault: noop,
+            stopPropagation: noop,
         };
 
         handler(event);
@@ -840,6 +838,7 @@ test_ui("on_events", ({override}) => {
 
         const event = {
             preventDefault: noop,
+            stopPropagation: noop,
         };
 
         handler(event);
@@ -896,6 +895,7 @@ test_ui("on_events", ({override}) => {
 
         const event = {
             preventDefault: noop,
+            stopPropagation: noop,
         };
 
         handler(event);

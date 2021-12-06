@@ -338,11 +338,21 @@ export function show_new_stream_modal() {
         html_selector: (user) => $(`#${CSS.escape("user_checkbox_" + user.user_id)}`),
     });
 
+    // Select the first enabled choice for stream privacy.
+    $("#make-invite-only input:not([disabled]):first").prop("checked", true);
     // Make the options default to the same each time:
-    // public, "announce stream" on.
-    $("#make-invite-only input:radio[value=public]").prop("checked", true);
+    // "announce stream" on.
     $("#stream_creation_form .stream-message-retention-days-input").hide();
     $("#stream_creation_form select[name=stream_message_retention_setting]").val("realm_default");
+
+    // Add listener to .show stream-message-retention-days-input that we've hidden above
+    $("#stream_creation_form .stream_message_retention_setting").on("change", (e) => {
+        if (e.target.value === "retain_for_period") {
+            $("#stream_creation_form .stream-message-retention-days-input").show();
+        } else {
+            $("#stream_creation_form .stream-message-retention-days-input").hide();
+        }
+    });
 
     update_announce_stream_state();
     if (stream_data.realm_has_notifications_stream()) {

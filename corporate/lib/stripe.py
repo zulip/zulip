@@ -454,8 +454,11 @@ def make_end_of_cycle_updates_if_needed(
                 licenses_at_next_renewal=licenses_at_next_renewal,
             )
 
+            realm = new_plan.customer.realm
+            assert realm is not None
+
             RealmAuditLog.objects.create(
-                realm=new_plan.customer.realm,
+                realm=realm,
                 event_time=event_time,
                 event_type=RealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN,
                 extra_data=orjson.dumps(
@@ -629,6 +632,7 @@ def process_initial_upgrade(
     realm = user.realm
     customer = update_or_create_stripe_customer(user)
     assert customer.stripe_customer_id is not None  # for mypy
+    assert customer.realm is not None
     ensure_realm_does_not_have_active_plan(customer.realm)
     (
         billing_cycle_anchor,
@@ -722,12 +726,14 @@ def update_license_ledger_for_manual_plan(
     licenses_at_next_renewal: Optional[int] = None,
 ) -> None:
     if licenses is not None:
+        assert plan.customer.realm is not None
         assert get_latest_seat_count(plan.customer.realm) <= licenses
         assert licenses > plan.licenses()
         LicenseLedger.objects.create(
             plan=plan, event_time=event_time, licenses=licenses, licenses_at_next_renewal=licenses
         )
     elif licenses_at_next_renewal is not None:
+        assert plan.customer.realm is not None
         assert get_latest_seat_count(plan.customer.realm) <= licenses_at_next_renewal
         LicenseLedger.objects.create(
             plan=plan,
@@ -779,6 +785,7 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
     if plan.invoicing_status == CustomerPlan.STARTED:
         raise NotImplementedError("Plan with invoicing_status==STARTED needs manual resolution.")
     if not plan.customer.stripe_customer_id:
+        assert plan.customer.realm is not None
         raise BillingError(
             f"Realm {plan.customer.realm.string_id} has a paid plan without a Stripe customer."
         )
@@ -981,6 +988,7 @@ def do_change_plan_status(plan: CustomerPlan, status: int) -> None:
 def process_downgrade(plan: CustomerPlan) -> None:
     from zerver.lib.actions import do_change_plan_type
 
+    assert plan.customer.realm is not None
     do_change_plan_type(plan.customer.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
     plan.status = CustomerPlan.ENDED
     plan.save(update_fields=["status"])

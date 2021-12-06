@@ -13,6 +13,7 @@ import * as compose_actions from "./compose_actions";
 import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as composebox_typeahead from "./composebox_typeahead";
+import * as dark_theme from "./dark_theme";
 import * as emoji_picker from "./emoji_picker";
 import * as giphy from "./giphy";
 import * as hotspots from "./hotspots";
@@ -26,7 +27,6 @@ import * as muted_topics_ui from "./muted_topics_ui";
 import * as muted_users_ui from "./muted_users_ui";
 import * as narrow_state from "./narrow_state";
 import * as navbar_alerts from "./navbar_alerts";
-import * as night_mode from "./night_mode";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -190,6 +190,7 @@ export function dispatch_normal_event(event) {
                 bot_creation_policy: settings_bots.update_bot_permissions_ui,
                 create_public_stream_policy: noop,
                 create_private_stream_policy: noop,
+                create_web_public_stream_policy: noop,
                 invite_to_stream_policy: noop,
                 default_code_block_language: noop,
                 default_language: noop,
@@ -231,6 +232,21 @@ export function dispatch_normal_event(event) {
 
                         if (event.property === "name" && window.electron_bridge !== undefined) {
                             window.electron_bridge.send_event("realm_name", event.value);
+                        }
+
+                        const stream_creation_settings = [
+                            "create_private_stream_policy",
+                            "create_public_stream_policy",
+                            "create_web_public_stream_policy",
+                        ];
+                        if (stream_creation_settings.includes(event.property)) {
+                            stream_settings_ui.update_stream_privacy_choices(event.property);
+                        }
+
+                        if (event.property === "enable_spectator_access") {
+                            stream_settings_ui.update_stream_privacy_choices(
+                                "create_web_public_stream_policy",
+                            );
                         }
                     }
                     break;
@@ -624,13 +640,13 @@ export function dispatch_normal_event(event) {
                 $("body").fadeOut(300);
                 setTimeout(() => {
                     if (event.value === settings_config.color_scheme_values.night.code) {
-                        night_mode.enable();
+                        dark_theme.enable();
                         realm_logo.render();
                     } else if (event.value === settings_config.color_scheme_values.day.code) {
-                        night_mode.disable();
+                        dark_theme.disable();
                         realm_logo.render();
                     } else {
-                        night_mode.default_preference_checker();
+                        dark_theme.default_preference_checker();
                         realm_logo.render();
                     }
                     $("body").fadeIn(300);
@@ -669,13 +685,14 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "enter_sends") {
                 user_settings.enter_sends = event.value;
-                $("#enter_sends").prop("checked", user_settings.enter_sends);
-                compose.toggle_enter_sends_ui();
+                $(`.enter_sends_${!user_settings.enter_sends}`).hide();
+                $(`.enter_sends_${user_settings.enter_sends}`).show();
                 break;
             }
             if (event.property === "presence_enabled") {
                 user_settings.presence_enabled = event.value;
                 $("#user_presence_enabled").prop("checked", user_settings.presence_enabled);
+                activity.redraw_user(page_params.user_id);
                 break;
             }
             settings_display.update_page(event.property);

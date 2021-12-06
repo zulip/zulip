@@ -59,4 +59,7 @@ class ZulipUserFilterQuery(UserFilterQuery):
         realm = RequestNotes.get_notes(request).realm
         assert realm is not None
 
-        return "AND zerver_realm.id = %s AND zerver_userprofile.is_bot = False", [realm.id]
+        return (
+            "AND zerver_realm.id = %s AND zerver_userprofile.is_bot = False ORDER BY zerver_userprofile.id",
+            [realm.id],
+        )

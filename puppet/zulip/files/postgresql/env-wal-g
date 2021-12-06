@@ -14,5 +14,5 @@ if ! s3_backups_bucket=$(crudini --get "$ZULIP_SECRETS_CONF" secrets s3_backups_
     echo "Could not determine which s3 bucket to use:" "$s3_backups_bucket"
     exit 1
 fi
-export WALE_S3_PREFIX=s3://$s3_backups_bucket
+export WALE_S3_PREFIX="s3://$s3_backups_bucket"
 exec /usr/local/bin/wal-g "$@"

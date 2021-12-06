@@ -93,16 +93,32 @@
                             </div>
                             <div class="drag"></div>
                             <div id="below-compose-content">
-                                <div class="compose_right_float_container order-3">
-                                    <button type="submit" id="compose-send-button" class="button small send_message animated-purple-button" title="{{t 'Send' }} (Ctrl + Enter)">{{t 'Send' }}</button>
+                                <div class="compose_bottom_top_container">
+                                    <div class="compose_right_float_container order-3">
+                                        <button type="submit" id="compose-send-button" class="button small send_message animated-purple-button" title="{{t 'Send' }} (Ctrl + Enter)">
+                                            <img class="loader" alt="" src="" />
+                                            <span>{{t 'Send' }}</span>
+                                        </button>
+                                    </div>
+                                    {{> compose_control_buttons }}
                                 </div>
-                                {{> compose_control_buttons }}
-                                <div class="compose_right_float_container order-2">
+                                <div class="compose_bottom_bottom_container">
                                     <span id="compose_limit_indicator"></span>
-                                    <div id="send_controls" class="new-style">
-                                        <label id="enter-sends-label" class="compose_checkbox_label checkbox">
-                                            <input type="checkbox" tabindex="0" id="enter_sends" />
-                                            <span></span>{{t 'Press Enter to send' }}
+                                    <div class="enter_sends">
+                                        <label id="enter-sends-label" class="compose_checkbox_label tippy-zulip-tooltip" data-tippy-content="Click to switch">
+                                            <span class="enter_sends_true">
+                                                <kbd>Enter</kbd> {{t 'to send' }}
+                                            </span>
+                                            <span class="enter_sends_false">
+                                                <kbd>Ctrl</kbd> + <kbd>Enter</kbd> {{t 'to send' }}
+                                            </span>
+                                            <i class="fa fa-exchange" aria-hidden="true"></i>
+                                            <span class="enter_sends_true">
+                                                <kbd>Ctrl</kbd> + <kbd>Enter</kbd> {{t 'to add a new line' }}
+                                            </span>
+                                            <span class="enter_sends_false">
+                                                <kbd>Enter</kbd> {{t 'to add a new line' }}
+                                            </span>
                                         </label>
                                     </div>
                                 </div>

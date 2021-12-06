@@ -34,6 +34,7 @@ from confirmation.models import (
     ConfirmationKeyException,
     create_confirmation_link,
     get_object_from_key,
+    render_confirmation_key_error,
 )
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.context_processors import get_realm_from_request, login_context, zulip_default_context
@@ -186,9 +187,9 @@ def maybe_send_to_registration(
     if multiuse_object_key:
         from_multiuse_invite = True
         try:
-            multiuse_obj = get_object_from_key(multiuse_object_key, Confirmation.MULTIUSE_INVITE)
-        except ConfirmationKeyException:
-            return render(request, "zerver/confirmation_link_expired_error.html", status=404)
+            multiuse_obj = get_object_from_key(multiuse_object_key, [Confirmation.MULTIUSE_INVITE])
+        except ConfirmationKeyException as exception:
+            return render_confirmation_key_error(request, exception)
 
         assert multiuse_obj is not None
         realm = multiuse_obj.realm

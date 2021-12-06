@@ -639,16 +639,20 @@ function filter_buttons() {
 }
 
 export function hide() {
+    // On firefox (and flaky on other browsers), focus
+    // remains on the focused element even after it is hidden. We
+    // forcefully blur it so that focus returns to the visible
+    // focused element.
+    const focused_element = $(document.activeElement);
+    if ($("#recent_topics_view").has(focused_element)) {
+        focused_element.trigger("blur");
+    }
+
+    $("#message_view_header_underpadding").show();
     $("#message_feed_container").show();
     $("#recent_topics_view").hide();
     set_visible(false);
-    // On firefox (and flaky on other browsers), focus
-    // remains on search box even after it is hidden. We
-    // forcefully blur it so that focus returns to the visible
-    // focused element.
-    $("#recent_topics_search").trigger("blur");
 
-    $("#message_view_header_underpadding").show();
     $(".header").css("padding-bottom", "10px");
 
     // This solves a bug with message_view_header

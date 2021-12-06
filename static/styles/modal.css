@@ -144,6 +144,10 @@
     color: hsl(0, 0%, 100%) !important;
 }
 
+#dialog_error {
+    margin-bottom: 10px;
+}
+
 @keyframes mmfadeIn {
     from {
         opacity: 0;

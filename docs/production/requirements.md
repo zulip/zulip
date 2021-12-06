@@ -205,9 +205,9 @@ installing Zulip with a dedicated database server.
   single-server installation with 16GB of RAM, 4 cores (essentially
   always idle), and its database was using about 100GB of disk.
 
-- **Disaster recovery:** One can easily run a hot spare application
-  server and a hot spare database (using [PostgreSQL streaming
-  replication][streaming-replication]). Make sure the hot spare
+- **Disaster recovery:** One can easily run a warm spare application
+  server and a warm spare database (using [PostgreSQL warm standby
+  replicas][streaming-replication]). Make sure the warm spare
   application server has copies of `/etc/zulip` and you're either
   syncing `LOCAL_UPLOADS_DIR` or using the [S3 file uploads
   backend][s3-uploads].
@@ -233,5 +233,5 @@ impact Zulip's scalability, this [performance and scalability design
 document](../subsystems/performance.md) may also be of interest.
 
 [s3-uploads]: ../production/upload-backends.html#s3-backend-configuration
-[streaming-replication]: ../production/export-and-import.html#postgresql-streaming-replication
+[streaming-replication]: ../production/deployment.html#postgresql-warm-standby
 [contact-support]: https://zulip.com/help/contact-support

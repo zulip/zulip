@@ -775,7 +775,13 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         enableTime: true,
         clickOpens: false,
         defaultDate: default_timestamp,
-        plugins: [new ConfirmDatePlugin({showAlways: true})],
+        plugins: [
+            new ConfirmDatePlugin({
+                showAlways: true,
+                confirmText: $t({defaultMessage: "Confirm"}),
+                confirmIcon: "",
+            }),
+        ],
         positionElement: element,
         dateFormat: "Z",
         formatDate: (date) => formatISO(date),
@@ -1097,9 +1103,10 @@ export function initialize() {
     $("form#send_message_form").on("keydown", handle_keydown);
     $("form#send_message_form").on("keyup", handle_keyup);
 
-    $("#enter_sends").on("click", () => {
-        user_settings.enter_sends = $("#enter_sends").is(":checked");
-        compose.toggle_enter_sends_ui();
+    $(".enter_sends").on("click", () => {
+        user_settings.enter_sends = !user_settings.enter_sends;
+        $(`.enter_sends_${!user_settings.enter_sends}`).hide();
+        $(`.enter_sends_${user_settings.enter_sends}`).show();
 
         // Refocus in the content box so you can continue typing or
         // press Enter to send.
@@ -1111,10 +1118,6 @@ export function initialize() {
             data: {enter_sends: user_settings.enter_sends},
         });
     });
-    $("#enter_sends").prop("checked", user_settings.enter_sends);
-    if (user_settings.enter_sends) {
-        $("#compose-send-button").hide();
-    }
 
     // limit number of items so the list doesn't fall off the screen
     $("#stream_message_recipient_stream").typeahead({

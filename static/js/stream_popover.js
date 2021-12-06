@@ -33,6 +33,7 @@ import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
+import * as ui_report from "./ui_report";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 
@@ -405,11 +406,6 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
     hide_topic_popover();
 
     function move_topic() {
-        function show_error_msg(msg) {
-            $("#topic_stream_edit_form_error .error-msg").text(msg);
-            $("#topic_stream_edit_form_error").show();
-        }
-
         const params = Object.fromEntries(
             $("#move_topic_form")
                 .serializeArray()
@@ -435,7 +431,10 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
             new_topic_name.toLowerCase() === old_topic_name.toLowerCase()
         ) {
             dialog_widget.hide_dialog_spinner();
-            show_error_msg("Please select a different stream or change topic name.");
+            ui_report.client_error(
+                $t_html({defaultMessage: "Please select a different stream or change topic name."}),
+                $("#move_topic_modal #dialog_error"),
+            );
             return;
         }
 
@@ -462,7 +461,11 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
             },
             (xhr) => {
                 dialog_widget.hide_dialog_spinner();
-                show_error_msg(xhr.responseJSON.msg);
+                ui_report.error(
+                    $t_html({defaultMessage: "Error moving topic"}),
+                    xhr,
+                    $("#move_topic_modal #dialog_error"),
+                );
             },
         );
     }
@@ -722,7 +725,7 @@ function with_first_message_id(stream_id, topic_name, success_cb, error_cb) {
             const message_id = data.messages[0].id;
             success_cb(message_id);
         },
-        error_cb,
+        error: error_cb,
     });
 }
 
@@ -814,9 +817,5 @@ export function register_topic_handlers() {
         build_move_topic_to_stream_popover(e, stream_id, topic_name);
         e.stopPropagation();
         e.preventDefault();
-    });
-
-    $("body").on("click", "#topic_stream_edit_form_error .send-status-close", () => {
-        $("#topic_stream_edit_form_error").hide();
     });
 }

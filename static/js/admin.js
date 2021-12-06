@@ -160,11 +160,12 @@ export function build_page() {
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
         create_web_public_stream_policy_values:
             settings_config.create_web_public_stream_policy_values,
+        disable_enable_spectator_access_setting: !page_params.server_web_public_streams_enabled,
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
-        // If no night mode logo is specified but a day mode one is,
-        // use the day mode one.  See also similar code in realm_logo.js.
+        // If no dark theme logo is specified but a light theme one is,
+        // use the light theme one.  See also similar code in realm_logo.js.
         options.realm_night_logo_url = options.realm_logo_url;
     }
 

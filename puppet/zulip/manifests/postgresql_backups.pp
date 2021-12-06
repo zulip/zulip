@@ -3,19 +3,39 @@
 class zulip::postgresql_backups {
   include zulip::postgresql_common
 
-  $wal_g_version = '0.2.15'
+  $wal_g_version = '1.1.1'
+  $bin = "/usr/local/bin/wal-g-${wal_g_version}"
+  $package = 'wal-g-pg-ubuntu-20.04-amd64'
   zulip::sha256_tarball_to { 'wal-g':
-    url     => "https://github.com/wal-g/wal-g/releases/download/v${wal_g_version}/wal-g.linux-amd64.tar.gz",
-    sha256  => 'ea33c2341d7bfb203c6948590c29834c013ab06a28c7a2b236a73d906f785c84',
+    url     => "https://github.com/wal-g/wal-g/releases/download/v${wal_g_version}/${package}.tar.gz",
+    sha256  => '159e66a8e70254783a6a16676f1a663c795950e7e6f526726411a5111a520d1a',
     install => {
-      'wal-g' => "/usr/local/bin/wal-g-${wal_g_version}",
+      $package => $bin,
     },
+  }
+  file { $bin:
+    ensure  => file,
+    require => Zulip::Sha256_tarball_to['wal-g'],
   }
   file { '/usr/local/bin/wal-g':
     ensure  => 'link',
-    target  => "/usr/local/bin/wal-g-${wal_g_version}",
-    require => Zulip::Sha256_tarball_to['wal-g'],
+    target  => $bin,
+    require => File[$bin],
   }
+  unless $::operatingsystem == 'Ubuntu' and $::operatingsystemrelease == '18.04' {
+    # Puppet 5.5.0 and below make this always-noisy, as they spout out
+    # a notify line about tidying the managed directory above.  Skip
+    # on Bionic, which has that old version; they'll get tidied upon
+    # upgrade to 20.04.
+    tidy { '/usr/local/bin/wal-g-*':
+      path    => '/usr/local/bin/',
+      recurse => 1,
+      rmdirs  => true,
+      matches => 'wal-g-*',
+      require => File[$bin],
+    }
+  }
+
   file { '/usr/local/bin/env-wal-g':
     ensure  => file,
     owner   => 'root',

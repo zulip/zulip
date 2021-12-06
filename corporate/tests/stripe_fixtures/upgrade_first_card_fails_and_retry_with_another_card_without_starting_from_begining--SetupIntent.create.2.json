@@ -1,13 +1,13 @@
 {
   "application": null,
   "cancellation_reason": null,
-  "client_secret": "seti_1JTqAeA4KHR4JzRvwvsjxBOb_secret_K86NUkPVA7e7fEiqm9ow0FviRNNSpzb",
+  "client_secret": "seti_1K2ObZHSaWXyvFpKnwLIVIoC_secret_KhoElBCfKGqjPy43I1hUNlvw7fbM1b7",
   "created": 1000000000,
   "customer": "cus_NORMALIZED0001",
   "description": null,
-  "id": "seti_1JTqAeA4KHR4JzRvwvsjxBOb",
+  "id": "seti_1K2ObZHSaWXyvFpKnwLIVIoC",
   "last_setup_error": null,
-  "latest_attempt": "setatt_1JTqAfA4KHR4JzRvctBUYVVz",
+  "latest_attempt": "setatt_1K2ObaHSaWXyvFpKNgtW4MiJ",
   "livemode": false,
   "mandate": null,
   "metadata": {
@@ -16,15 +16,17 @@
     "license_management": "automatic",
     "licenses": "6",
     "price_per_license": "8000",
+    "realm_id": "1",
     "realm_str": "zulip",
     "seat_count": "6",
     "type": "upgrade",
-    "user_email": "hamlet@zulip.com"
+    "user_email": "hamlet@zulip.com",
+    "user_id": "10"
   },
   "next_action": null,
   "object": "setup_intent",
   "on_behalf_of": null,
-  "payment_method": "pm_1JTqAdA4KHR4JzRvkF8mCZXf",
+  "payment_method": "pm_1K2ObZHSaWXyvFpKxF81RnmR",
   "payment_method_options": {
     "card": {
       "request_three_d_secure": "automatic"

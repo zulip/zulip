@@ -119,4 +119,12 @@ class zulip::supervisor {
     content => template('zulip/supervisor/supervisord.conf.erb'),
     notify  => Exec['supervisor-restart'],
   }
+
+  file { '/usr/local/bin/secret-env-wrapper':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+    source => 'puppet:///modules/zulip/secret-env-wrapper',
+  }
 }

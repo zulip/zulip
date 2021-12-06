@@ -66,6 +66,13 @@ function create_reaction(message_id, reaction_info) {
 }
 
 function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
+    if (page_params.is_spectator) {
+        // Spectators can't react, since they don't have accounts.  We
+        // stop here to avoid a confusing reaction local echo.
+        spectators.login_to_access();
+        return;
+    }
+
     const message = get_message(message_id);
     const local_id = get_local_reaction_id(reaction_info);
     const has_reacted = current_user_has_reacted_to_emoji(message, local_id);
@@ -111,13 +118,6 @@ export function toggle_emoji_reaction(message_id, emoji_name) {
 }
 
 export function process_reaction_click(message_id, local_id) {
-    if (page_params.is_spectator) {
-        // Spectators can't react, since they don't have accounts.  We
-        // stop here to avoid a confusing reaction local echo.
-        spectators.login_to_access();
-        return;
-    }
-
     const message = get_message(message_id);
 
     if (!message) {

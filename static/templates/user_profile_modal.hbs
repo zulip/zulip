@@ -15,7 +15,8 @@
                 <div class="tab-data">
                     <div class="tabcontent active" id="profile-tab">
                         <div id="avatar" {{#if user_is_guest}} class="guest-avatar" {{/if}}
-                          style="background-image: url('{{user_avatar}}');"></div>
+                          style="background-image: url('{{user_avatar}}');">
+                        </div>
                         <div id="default-section">
                             {{#if show_email}}
                             <div id="email" class="default-field">
@@ -47,9 +48,9 @@
                                     <div class="pill-container not-editable" data-field-id="{{this.id}}">
                                         <div class="input" contenteditable="false" style="display: none;"></div>
                                     </div>
-                                    {{else if this.is_link}}
+                                {{else if this.is_link}}
                                     <a href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="value">{{this.value}}</a>
-                                    {{else if this.is_external_account}}
+                                {{else if this.is_external_account}}
                                     <a href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value">{{this.value}}</a>
                                 {{else}}
                                     {{#if this.rendered_value}}

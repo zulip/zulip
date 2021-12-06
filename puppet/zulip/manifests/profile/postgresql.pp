@@ -10,8 +10,12 @@ class zulip::profile::postgresql {
 
   $random_page_cost = zulipconf('postgresql', 'random_page_cost', undef)
   $effective_io_concurrency = zulipconf('postgresql', 'effective_io_concurrency', undef)
-  $replication = zulipconf('postgresql', 'replication', undef)
+
   $listen_addresses = zulipconf('postgresql', 'listen_addresses', undef)
+
+  $replication = zulipconf('postgresql', 'replication', undef)
+  $replication_primary = zulipconf('postgresql', 'replication_primary', undef)
+  $replication_user = zulipconf('postgresql', 'replication_user', undef)
 
   $ssl_cert_file = zulipconf('postgresql', 'ssl_cert_file', undef)
   $ssl_key_file = zulipconf('postgresql', 'ssl_key_file', undef)
@@ -31,6 +35,31 @@ class zulip::profile::postgresql {
     group   => 'postgres',
     mode    => '0644',
     content => template("zulip/postgresql/${zulip::postgresql_common::version}/postgresql.conf.template.erb"),
+  }
+
+  if $replication_primary != '' and $replication_user != '' {
+    if $zulip::postgresql_common::version in ['10', '11'] {
+      # PostgreSQL 11 and below used a recovery.conf file for replication
+      file { "${zulip::postgresql_base::postgresql_confdir}/recovery.conf":
+        ensure  => file,
+        require => Package[$zulip::postgresql_base::postgresql],
+        owner   => 'postgres',
+        group   => 'postgres',
+        mode    => '0644',
+        content => template('zulip/postgresql/recovery.conf.template.erb'),
+      }
+    } else {
+      # PostgreSQL 12 and above use the presence of a standby.signal
+      # file to trigger replication
+      file { "${zulip::postgresql_base::postgresql_confdir}/standby.signal":
+        ensure  => file,
+        require => Package[$zulip::postgresql_base::postgresql],
+        owner   => 'postgres',
+        group   => 'postgres',
+        mode    => '0644',
+        content => '',
+      }
+    }
   }
 
   exec { $zulip::postgresql_base::postgresql_restart:

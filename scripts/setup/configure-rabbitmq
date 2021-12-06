@@ -22,7 +22,7 @@ try_ping() {
     # `rabbitmqctl ping` requires 3.7.6 or newer
     out="$("${rabbitmqctl[@]}" eval 'net_adm:ping(node()).')" && [ "$out" = 'pong' ]
 }
-retries=9
+retries=29
 while ! try_ping 2>/dev/null; do
     sleep 1
     if ! ((retries -= 1)); then

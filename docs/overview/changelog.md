@@ -117,6 +117,54 @@ log][commit-log] for an up-to-date list of raw changes.
 
 ## Zulip 4.x series
 
+## Zulip 4.8 -- 2021-12-01
+
+- CVE-2021-43791: Zulip could fail to enforce expiration dates
+  on confirmation keys, allowing users to potentially use expired
+  invitations, self-registrations, or realm creation links.
+- Began installing Smokescreen to harden Zulip against SSRF attacks by
+  default. Zulip has offered Smokescreen as an option since Zulip
+  4.0. Existing installs which configured an outgoing proxy which is
+  not on `localhost:4750` will continue to use that; all other
+  installations will begin having a Smokescreen installation listening
+  on 127.0.0.1, which Zulip will proxy traffic through. The version of
+  Smokescreen was also upgraded.
+- Replaced the camo image proxy with go-camo, a maintained
+  reimplementation that also protects against SSRF attacks. This
+  server now listens only on 127.0.0.1 when it is deployed as part of
+  a standalone deployment.
+- Began using camo for images displayed in URL previews. This improves
+  privacy and also resolves an issue where an image link to a third
+  party server with an expired or otherwise invalid SSL certificate
+  would trigger a confusing pop-up window for Zulip Desktop users.
+- Fixed a bug which could cause Tornado to shut down improperly
+  (causing an immediate full-page reload for their clients) when
+  restarting a heavily loaded Zulip server.
+- Updated Python dependencies.
+- Truncated large “remove” mobile notification events so that marking
+  hundreds of private messages or other notifiable messages as read at
+  once won’t exceed Apple’s 4 KB notification size limit.
+- Slack importer improvements:
+  - Ensured that generated fake email addresses for Slack bots are
+    unique.
+  - Added support for importing Slack exports from a directory, not
+    just a .zip file.
+  - Provided better error messages with invalid Slack tokens.
+  - Added support for non-ASCII Unicode folder names on Windows.
+- Add support for V3 Pagerduty webhook.
+- Updated documentation for Apache SSO, which now requires additional
+  configuration now that Zulip uses a C extension (the `re2` module).
+- Fixed a bug where an empty name in a SAML response would raise an
+  error.
+- Ensured that `deliver_scheduled_emails` and
+  `deliver_scheduled_messages` did not double-deliver if run on
+  multiple servers at once.
+- Extended Certbot troubleshooting documentation.
+- Fixed a bug in soft deactivation catch-up code, in cases where a
+  race condition had created multiple subscription deactivation
+  entries for a single user and single stream in the audit log.
+- Updated translations, including adding a Sinhala translation.
+
 ### 4.7 -- 2021-10-04
 
 - CVE-2021-41115: Prevent organization administrators from affecting

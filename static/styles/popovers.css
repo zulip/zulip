@@ -161,6 +161,10 @@ ul {
         max-height: 200px;
         overflow-y: auto;
     }
+
+    &.info_popover_actions i.fa-edit {
+        vertical-align: middle;
+    }
 }
 
 .user_popover {
@@ -691,11 +695,6 @@ ul {
         margin-bottom: 10px;
     }
 
-    #topic_stream_edit_form_error {
-        background-color: hsla(0, 70%, 87%, 0.7);
-        color: hsl(0, 100%, 50%);
-    }
-
     .topic_stream_edit_header {
         display: flex;
         flex-wrap: wrap;
@@ -707,6 +706,12 @@ ul {
             border-radius: 3px;
             margin: 0 5px 5px -10px;
             text-indent: 10px;
+        }
+
+        .dropdown-menu {
+            position: fixed;
+            top: 125px;
+            left: 40px;
         }
     }
 }

@@ -5,6 +5,7 @@ import render_compose from "../templates/compose.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import * as common from "./common";
 import * as compose_actions from "./compose_actions";
 import * as compose_error from "./compose_error";
 import * as compose_fade from "./compose_fade";
@@ -119,15 +120,6 @@ export function empty_topic_placeholder() {
     return $t({defaultMessage: "(no topic)"});
 }
 
-export function toggle_enter_sends_ui() {
-    const send_button = $("#compose-send-button");
-    if (user_settings.enter_sends) {
-        send_button.fadeOut();
-    } else {
-        send_button.fadeIn();
-    }
-}
-
 export function create_message_object() {
     // Topics are optional, and we provide a placeholder if one isn't given.
     let topic = compose_state.topic();
@@ -196,8 +188,7 @@ export function clear_compose_box() {
     $("#compose-textarea").removeData("draft-id");
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-send-status").hide(0);
-    $("#compose-send-button").prop("disabled", false);
-    $("#sending-indicator").hide();
+    compose_ui.hide_compose_spinner();
 }
 
 export function send_message_success(local_id, message_id, locally_echoed) {
@@ -278,11 +269,6 @@ export function enter_with_preview_open() {
     }
 }
 
-function show_sending_indicator(whats_happening) {
-    $("#sending-indicator").text(whats_happening);
-    $("#sending-indicator").show();
-}
-
 export function finish() {
     clear_preview_area();
     clear_invites();
@@ -300,15 +286,11 @@ export function finish() {
         return undefined;
     }
 
-    $("#compose-send-button").prop("disabled", true).trigger("blur");
-    if (reminder.is_deferred_delivery(message_content)) {
-        show_sending_indicator($t({defaultMessage: "Scheduling..."}));
-    } else {
-        show_sending_indicator($t({defaultMessage: "Sending..."}));
-    }
+    compose_ui.show_compose_spinner();
+
     if (!compose_validate.validate()) {
-        // If the message failed validation, hide the sending indicator.
-        $("#sending-indicator").hide();
+        // If the message failed validation, hide compose spinner.
+        compose_ui.hide_compose_spinner();
         return false;
     }
 
@@ -413,6 +395,8 @@ export function render_compose_box() {
             giphy_enabled: giphy.is_giphy_enabled(),
         }),
     );
+    $(`.enter_sends_${user_settings.enter_sends}`).show();
+    common.adjust_mac_shortcuts(".enter_sends kbd");
 }
 
 export function initialize() {
@@ -545,11 +529,14 @@ export function initialize() {
 
     $("#compose").on("click", ".compose_upload_file", (e) => {
         e.preventDefault();
+        e.stopPropagation();
+
         $("#compose .file_input").trigger("click");
     });
 
     $("body").on("click", ".video_link", (e) => {
         e.preventDefault();
+        e.stopPropagation();
 
         let target_textarea;
         let edit_message_id;
@@ -635,9 +622,12 @@ export function initialize() {
 
         let target_textarea;
         let edit_message_id;
-        if ($(e.target).parents(".message_edit_form").length === 1) {
-            edit_message_id = rows.id($(e.target).parents(".message_row"));
+        const compose_click_target = compose_ui.get_compose_click_target(e);
+        if ($(compose_click_target).parents(".message_edit_form").length === 1) {
+            edit_message_id = rows.id($(compose_click_target).parents(".message_row"));
             target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
+        } else {
+            target_textarea = $(compose_click_target).closest("form").find("textarea");
         }
 
         if (!instance.calendarContainer) {
@@ -647,7 +637,7 @@ export function initialize() {
             };
 
             instance = composebox_typeahead.show_flatpickr(
-                $(e.target)[0],
+                $(compose_click_target)[0],
                 on_timestamp_selection,
                 new Date(),
                 {
@@ -664,6 +654,8 @@ export function initialize() {
 
     $("#compose").on("click", ".markdown_preview", (e) => {
         e.preventDefault();
+        e.stopPropagation();
+
         const content = $("#compose-textarea").val();
         $("#compose-textarea").hide();
         $("#compose .markdown_preview").hide();
@@ -679,16 +671,22 @@ export function initialize() {
 
     $("#compose").on("click", ".undo_markdown_preview", (e) => {
         e.preventDefault();
+        e.stopPropagation();
+
         clear_preview_area();
     });
 
     $("#compose").on("click", ".expand_composebox_button", (e) => {
         e.preventDefault();
+        e.stopPropagation();
+
         compose_ui.make_compose_box_full_size();
     });
 
     $("#compose").on("click", ".collapse_composebox_button", (e) => {
         e.preventDefault();
+        e.stopPropagation();
+
         compose_ui.make_compose_box_original_size();
     });
 
@@ -705,9 +703,9 @@ export function initialize() {
     });
 
     $("body").on("click", ".formatting_button", (e) => {
-        const $elt = $(e.target);
-        const textarea = $elt.closest("form").find("textarea");
-        const format_type = $elt.attr("data-format-type");
+        const $compose_click_target = $(compose_ui.get_compose_click_target(e));
+        const textarea = $compose_click_target.closest("form").find("textarea");
+        const format_type = $(e.target).attr("data-format-type");
         compose_ui.format_text(textarea, format_type);
         textarea.trigger("focus");
         e.preventDefault();

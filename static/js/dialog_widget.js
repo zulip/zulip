@@ -81,6 +81,7 @@ export function launch(conf) {
     // * id: Custom id to the container element to modify styles.
     // * single_footer_button: If true, don't include the "Cancel" button.
     // * form_id: Id of the form element in the modal if it exists.
+    // * validate_input: Function to validate the input of the modal.
     // * on_show: Callback to run when the modal is triggered to show.
     // * on_shown: Callback to run when the modal is shown.
     // * on_hide: Callback to run when the modal is triggered to hide.
@@ -125,12 +126,15 @@ export function launch(conf) {
 
     // Set up handlers.
     submit_button.on("click", (e) => {
+        if (conf.validate_input && !conf.validate_input(e)) {
+            return;
+        }
         if (conf.loading_spinner) {
             show_dialog_spinner();
         } else if (conf.close_on_submit) {
             close_modal();
         }
-        $("#dialog_error").empty();
+        $("#dialog_error").hide();
         conf.on_click(e);
     });
 

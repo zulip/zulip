@@ -24,6 +24,11 @@ const localStorage = set_global("localStorage", {
         ls_container.clear();
     },
 });
+const setTimeout_delay = 3000;
+set_global("setTimeout", (f, delay) => {
+    assert.equal(delay, setTimeout_delay);
+    f();
+});
 const compose_state = mock_esm("../../static/js/compose_state");
 mock_esm("../../static/js/markdown", {
     apply_markdown: noop,
@@ -35,6 +40,26 @@ mock_esm("../../static/js/stream_data", {
     get_sub(stream_name) {
         assert.equal(stream_name, "stream");
         return {stream_id: 30};
+    },
+});
+const tippy_sel = ".top_left_drafts .unread_count";
+let tippy_args;
+let tippy_show_called;
+let tippy_destroy_called;
+mock_esm("tippy.js", {
+    default: (sel, opts) => {
+        assert.equal(sel, tippy_sel);
+        assert.deepEqual(opts, tippy_args);
+        return [
+            {
+                show: () => {
+                    tippy_show_called = true;
+                },
+                destroy: () => {
+                    tippy_destroy_called = true;
+                },
+            },
+        ];
     },
 });
 const sub_store = mock_esm("../../static/js/sub_store");
@@ -219,6 +244,66 @@ test("remove_old_drafts", () => {
 
     drafts.remove_old_drafts();
     assert.deepEqual(draft_model.get(), {id3: draft_3});
+});
+
+test("update_draft", ({override}) => {
+    override(compose_state, "composing", () => false);
+    let draft_id = drafts.update_draft();
+    assert.equal(draft_id, undefined);
+
+    override(compose_state, "composing", () => true);
+    override(compose_state, "message_content", () => "dummy content");
+    override(compose_state, "get_message_type", () => "private");
+    override(compose_state, "private_message_recipient", () => "aaron@zulip.com");
+
+    const container = $(".top_left_drafts");
+    const child = $(".unread_count");
+    container.set_find_results(".unread_count", child);
+
+    tippy_args = {
+        content: "translated: Saved as draft",
+        arrow: true,
+        placement: "right",
+    };
+    tippy_show_called = false;
+    tippy_destroy_called = false;
+
+    override(Date, "now", () => 5);
+    override(Math, "random", () => 2);
+    draft_id = drafts.update_draft();
+    assert.equal(draft_id, "5-2");
+    assert.ok(tippy_show_called);
+    assert.ok(tippy_destroy_called);
+
+    override(Date, "now", () => 6);
+
+    override(compose_state, "message_content", () => "dummy content edited once");
+    tippy_show_called = false;
+    tippy_destroy_called = false;
+    draft_id = drafts.update_draft();
+    assert.equal(draft_id, "5-2");
+    assert.ok(tippy_show_called);
+    assert.ok(tippy_destroy_called);
+
+    override(Date, "now", () => 7);
+
+    // message contents not edited
+    tippy_show_called = false;
+    tippy_destroy_called = false;
+    draft_id = drafts.update_draft();
+    assert.equal(draft_id, "5-2");
+    assert.ok(!tippy_show_called);
+    assert.ok(!tippy_destroy_called);
+
+    override(Date, "now", () => 8);
+
+    override(compose_state, "message_content", () => "dummy content edited a second time");
+    tippy_show_called = false;
+    tippy_destroy_called = false;
+    draft_id = drafts.update_draft({no_notify: true});
+    assert.equal(draft_id, "5-2");
+    assert.ok(!tippy_show_called);
+    assert.ok(!tippy_destroy_called);
 });
 
 test("delete_all_drafts", () => {

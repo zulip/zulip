@@ -33,6 +33,7 @@ mock_esm("../../static/js/stream_popover", {
     hide_topic_popover: noop,
     hide_all_messages_popover: noop,
     hide_starred_messages_popover: noop,
+    hide_drafts_popover: noop,
     hide_streamlist_sidebar: noop,
 });
 
@@ -198,18 +199,17 @@ test_ui("sender_hover", ({override, mock_template}) => {
             user_mention_syntax: "@**Alice Smith**",
             date_joined: undefined,
             spectator_view: false,
+            show_manage_user_option: false,
         });
         return "content-html";
     });
 
     $.create(".user_popover_email", {children: []});
     const image_stubber = make_image_stubber();
-    const base_url = window.location.href;
     handler.call(target, e);
 
     const avatar_img = image_stubber.get(0);
-    const expected_url = new URL("avatar/42/medium?v=" + alice.avatar_version, base_url);
-    assert.equal(avatar_img.src.toString(), expected_url.toString());
+    assert.equal(avatar_img.src.toString(), "/avatar/42/medium");
 
     // todo: load image
 });
