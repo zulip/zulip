@@ -10,8 +10,8 @@ import * as popover_menus from "./popover_menus";
 import * as rtl from "./rtl";
 
 import * as settings_data from "./settings_data";
-import * as user_status from "./user_status";
 import {user_settings} from "./user_settings";
+import * as user_status from "./user_status";
 
 let full_size_status = false; // true or false
 
@@ -462,9 +462,9 @@ export function format_text(textarea, type) {
                         lines[i].slice(0, Math.max(0, bulleted_syntax.length)) === bulleted_syntax
                     ) {
                         text_line = lines[i].slice(bulleted_syntax.length, lines[i].length);
-                        if(!text_line.replace(/\s/g, "").length){
+                        if (!text_line.replace(/\s/g, "").length) {
                             lines[i] = lines[i].slice(lines[i].length);
-                        } else{
+                        } else {
                             lines[i] = lines[i].slice(
                                 bulleted_syntax.length,
                                 bulleted_syntax.length + lines[i].length,
@@ -479,7 +479,6 @@ export function format_text(textarea, type) {
                     text.slice(Math.max(0, field.selectionEnd));
                 set(field, text);
                 field.setSelectionRange(range.end, range.end);
-                
             } else {
                 field.setSelectionRange(range.start, range.end);
                 lines = selected_text.split("\n");
