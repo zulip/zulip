@@ -272,10 +272,12 @@ def update_stream_backend(
         if not user_profile.is_realm_owner:
             raise OrganizationOwnerRequired()
         user_profile.realm.ensure_not_on_limited_plan()
-        message_retention_days_value = parse_message_retention_days(
+        new_message_retention_days_value = parse_message_retention_days(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
-        do_change_stream_message_retention_days(stream, message_retention_days_value)
+        do_change_stream_message_retention_days(
+            stream, user_profile, new_message_retention_days_value
+        )
 
     if description is not None:
         if "\n" in description:

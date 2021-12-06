@@ -36,6 +36,7 @@ from zerver.lib.actions import (
     gather_subscriptions_helper,
     get_average_weekly_stream_traffic,
     get_default_streams_for_realm,
+    get_topic_messages,
     lookup_default_stream_groups,
     round_to_2_significant_digits,
     validate_user_access_to_subscribers_helper,
@@ -1272,6 +1273,55 @@ class StreamAdminTest(ZulipTestCase):
             stream = get_stream("stream_name1", user_profile.realm)
             self.assertEqual(stream.stream_post_policy, policy)
 
+    def test_change_stream_message_retention_days_notifications(self) -> None:
+        user_profile = self.example_user("desdemona")
+        self.login_user(user_profile)
+        realm = user_profile.realm
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=None)
+        stream = self.subscribe(user_profile, "stream_name1")
+
+        # Go from realm default (forever) to 2 days
+        result = self.client_patch(
+            f"/json/streams/{stream.id}", {"message_retention_days": orjson.dumps(2).decode()}
+        )
+        self.assert_json_success(result)
+        messages = get_topic_messages(user_profile, stream, "stream events")
+        self.assert_length(messages, 1)
+        expected_notification = (
+            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) "
+            "for this stream from **Forever** to **2 days**. Messages will be automatically "
+            "deleted after 2 days."
+        )
+        self.assertEqual(messages[0].content, expected_notification)
+
+        # Go from 2 days to 8 days
+        result = self.client_patch(
+            f"/json/streams/{stream.id}", {"message_retention_days": orjson.dumps(8).decode()}
+        )
+        self.assert_json_success(result)
+        messages = get_topic_messages(user_profile, stream, "stream events")
+        self.assert_length(messages, 2)
+        expected_notification = (
+            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) "
+            "for this stream from **2 days** to **8 days**. Messages will be automatically "
+            "deleted after 8 days."
+        )
+        self.assertEqual(messages[1].content, expected_notification)
+
+        # Go from 2 days to realm default (None on stream, forever/-1 on realm)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"message_retention_days": orjson.dumps("realm_default").decode()},
+        )
+        self.assert_json_success(result)
+        messages = get_topic_messages(user_profile, stream, "stream events")
+        self.assert_length(messages, 3)
+        expected_notification = (
+            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) "
+            "for this stream from **8 days** to **Forever**."
+        )
+        self.assertEqual(messages[2].content, expected_notification)
+
     def test_change_stream_message_retention_days(self) -> None:
         user_profile = self.example_user("desdemona")
         self.login_user(user_profile)
@@ -1286,7 +1336,7 @@ class StreamAdminTest(ZulipTestCase):
 
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=None)
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=2):
             result = self.client_patch(
                 f"/json/streams/{stream.id}", {"message_retention_days": orjson.dumps(2).decode()}
             )
@@ -1313,7 +1363,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
         self.assertEqual(stream.message_retention_days, 2)
 
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=2):
             result = self.client_patch(
                 f"/json/streams/{stream.id}",
                 {"message_retention_days": orjson.dumps("unlimited").decode()},
@@ -1335,7 +1385,7 @@ class StreamAdminTest(ZulipTestCase):
         stream = get_stream("stream_name1", realm)
         self.assertEqual(stream.message_retention_days, -1)
 
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=2):
             result = self.client_patch(
                 f"/json/streams/{stream.id}",
                 {"message_retention_days": orjson.dumps("realm_default").decode()},
