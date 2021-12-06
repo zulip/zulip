@@ -1441,13 +1441,12 @@ def export_files_from_s3(
             avatar_hash_values.add(avatar_path)
             avatar_hash_values.add(avatar_path + ".original")
 
+    email_gateway_bot: Optional[UserProfile] = None
+
     if settings.EMAIL_GATEWAY_BOT is not None:
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
-        email_gateway_bot: Optional[UserProfile] = get_system_bot(
-            settings.EMAIL_GATEWAY_BOT, internal_realm.id
-        )
-    else:
-        email_gateway_bot = None
+        email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
+        user_ids.add(email_gateway_bot.id)
 
     count = 0
     for bkey in bucket.objects.filter(Prefix=object_prefix):
@@ -1461,6 +1460,9 @@ def export_files_from_s3(
 
         if "user_profile_id" not in key.metadata:
             raise AssertionError(f"Missing user_profile_id in key metadata: {key.metadata}")
+
+        if int(key.metadata["user_profile_id"]) not in user_ids:
+            continue
 
         # This can happen if an email address has moved realms
         if key.metadata["realm_id"] != str(realm.id):
