@@ -89,6 +89,17 @@ test("initialize", () => {
     const search_button = $(".search_button");
     const searchbox = $("#searchbox");
 
+    mock_template("search_list_item.hbs", true, (data, html) => {
+        assert.equal(typeof data.description_html, "string");
+        if (data.is_person) {
+            assert.equal(typeof data.user_pill_context.id, "string");
+            assert.equal(typeof data.user_pill_context.display_value, "string");
+            assert.equal(typeof data.user_pill_context.has_image, "boolean");
+            assert.equal(typeof data.user_pill_context.img_src, "string");
+        }
+        return html;
+    });
+
     search_query_box[0] = "stub";
 
     search_pill.get_search_string_for_current_filter = () => "is:starred";
@@ -108,14 +119,14 @@ test("initialize", () => {
                     [
                         "stream:Verona",
                         {
-                            description: "Stream <strong>Ver</strong>ona",
+                            description_html: "Stream&nbsp;<strong>Ver</strong>ona",
                             search_string: "stream:Verona",
                         },
                     ],
                     [
                         "ver",
                         {
-                            description: "Search for ver",
+                            description_html: "Search for ver",
                             search_string: "ver",
                         },
                     ],

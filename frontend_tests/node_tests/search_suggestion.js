@@ -402,7 +402,7 @@ test("empty_query_suggestions", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
-        return suggestions.lookup_table.get(q).description;
+        return suggestions.lookup_table.get(q).description_html;
     }
     assert.equal(describe("is:private"), "Private messages");
     assert.equal(describe("is:starred"), "Starred messages");
@@ -428,7 +428,7 @@ test("has_suggestions", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
-        return suggestions.lookup_table.get(q).description;
+        return suggestions.lookup_table.get(q).description_html;
     }
 
     assert.equal(describe("has:link"), "Messages with one or more link");
@@ -494,7 +494,7 @@ test("check_is_suggestions", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
-        return suggestions.lookup_table.get(q).description;
+        return suggestions.lookup_table.get(q).description_html;
     }
 
     assert.equal(describe("is:private"), "Private messages");
@@ -604,7 +604,10 @@ test("sent_by_me_suggestions", ({override}) => {
     let query = "";
     let suggestions = get_suggestions("", query);
     assert.ok(suggestions.strings.includes("sender:myself@zulip.com"));
-    assert.equal(suggestions.lookup_table.get("sender:myself@zulip.com").description, "Sent by me");
+    assert.equal(
+        suggestions.lookup_table.get("sender:myself@zulip.com").description_html,
+        "Sent by me",
+    );
 
     query = "sender";
     suggestions = get_suggestions("", query);
@@ -727,7 +730,7 @@ test("topic_suggestions", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
-        return suggestions.lookup_table.get(q).description;
+        return suggestions.lookup_table.get(q).description_html;
     }
     assert.equal(describe("te"), "Search for te");
     assert.equal(describe("stream:office topic:team"), "Stream office &gt; team");
@@ -835,7 +838,28 @@ test("people_suggestions", ({override}) => {
 
     assert.deepEqual(suggestions.strings, expected);
 
-    const describe = (q) => suggestions.lookup_table.get(q).description;
+    const is_person = (q) => suggestions.lookup_table.get(q).is_person;
+    assert.equal(is_person("pm-with:ted@zulip.com"), true);
+    assert.equal(is_person("sender:ted@zulip.com"), true);
+    assert.equal(is_person("group-pm-with:ted@zulip.com"), true);
+
+    const has_image = (q) => suggestions.lookup_table.get(q).user_pill_context.has_image;
+    assert.equal(has_image("pm-with:bob@zulip.com"), true);
+    assert.equal(has_image("sender:bob@zulip.com"), true);
+    assert.equal(has_image("group-pm-with:bob@zulip.com"), true);
+
+    const describe = (q) => suggestions.lookup_table.get(q).description_html;
+    assert.equal(describe("pm-with:ted@zulip.com"), "Private messages with");
+    assert.equal(describe("sender:ted@zulip.com"), "Sent by");
+    assert.equal(describe("group-pm-with:ted@zulip.com"), "Group private messages including");
+
+    let expectedString = "<strong>Te</strong>d Smith";
+
+    const get_full_name = (q) =>
+        suggestions.lookup_table.get(q).user_pill_context.display_value.string;
+    assert.equal(get_full_name("sender:ted@zulip.com"), expectedString);
+    assert.equal(get_full_name("pm-with:ted@zulip.com"), expectedString);
+    assert.equal(get_full_name("group-pm-with:ted@zulip.com"), expectedString);
 
     assert.equal(
         describe("pm-with:ted@zulip.com"),

@@ -66,6 +66,17 @@ run_test("initialize", () => {
     const searchbox_form = $("#searchbox_form");
     const search_button = $(".search_button");
 
+    mock_template("search_list_item.hbs", true, (data, html) => {
+        assert.equal(typeof data.description_html, "string");
+        if (data.is_person) {
+            assert.equal(typeof data.user_pill_context.id, "string");
+            assert.equal(typeof data.user_pill_context.display_value, "string");
+            assert.equal(typeof data.user_pill_context.has_image, "boolean");
+            assert.equal(typeof data.user_pill_context.img_src, "string");
+        }
+        return html;
+    });
+
     search_suggestion.max_num_of_search_results = 999;
     search_query_box.typeahead = (opts) => {
         assert.equal(opts.fixed, true);
@@ -80,14 +91,14 @@ run_test("initialize", () => {
                     [
                         "stream:Verona",
                         {
-                            description: "Stream <strong>Ver</strong>ona",
+                            description_html: "Stream&nbsp;<strong>Ver</strong>ona",
                             search_string: "stream:Verona",
                         },
                     ],
                     [
                         "ver",
                         {
-                            description: "Search for ver",
+                            description_html: "Search for ver",
                             search_string: "ver",
                         },
                     ],
