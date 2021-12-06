@@ -929,7 +929,8 @@ h4.stream_setting_subsection_title {
         display: flex;
 
         .stream_permission_change_info {
-            margin: 12px auto 0 3px;
+            /* TODO: Deduplicate with .save-discard-widget-button. */
+            margin: 12px auto 12px 3px;
         }
 
         .button-group {
