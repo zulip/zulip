@@ -278,6 +278,7 @@ RawSubscriptionDict = Dict[str, Any]
 
 ONBOARDING_TOTAL_MESSAGES = 1000
 ONBOARDING_UNREAD_MESSAGES = 20
+ONBOARDING_RECENT_TIMEDELTA = datetime.timedelta(weeks=1)
 
 STREAM_ASSIGNMENT_COLORS = [
     "#76ce90",
@@ -422,7 +423,7 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
     you finish the tutorial.  The most recent ONBOARDING_UNREAD_MESSAGES
     are marked unread.
     """
-    one_week_ago = timezone_now() - datetime.timedelta(weeks=1)
+    one_week_ago = timezone_now() - ONBOARDING_RECENT_TIMEDELTA
 
     recipient_ids = [stream.recipient_id for stream in streams if not stream.invite_only]
     recent_messages = Message.objects.filter(
