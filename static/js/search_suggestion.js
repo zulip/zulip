@@ -6,7 +6,6 @@ import * as huddle_data from "./huddle_data";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
@@ -22,12 +21,19 @@ function make_person_highlighter(query) {
     const highlight_query = typeahead_helper.make_query_highlighter(query);
 
     return function (person) {
-        if (settings_data.show_email()) {
-            return (
-                highlight_query(person.full_name) + " &lt;" + highlight_query(person.email) + "&gt;"
-            );
-        }
         return highlight_query(person.full_name);
+    };
+}
+
+function highlight_person(person, highlighter) {
+    const avatar_url = people.small_avatar_url_for_person(person);
+    const highlighted_name = highlighter(person);
+
+    return {
+        id: person.user_id,
+        display_value: new Handlebars.SafeString(highlighted_name),
+        has_image: true,
+        img_src: avatar_url,
     };
 }
 
@@ -115,7 +121,7 @@ function get_stream_suggestions(last, operators) {
         const prefix = "stream";
         const highlighted_stream = highlight_query(regex, stream);
         const verb = last.negated ? "exclude " : "";
-        const description_html = verb + prefix + " " + highlighted_stream;
+        const description_html = verb + prefix + "&nbsp;" + highlighted_stream;
         const term = {
             operator: "stream",
             operand: stream,
@@ -178,15 +184,24 @@ function get_group_suggestions(last, operators) {
             operand: all_but_last_part + "," + person.email,
             negated,
         };
-        const name = person_highlighter(person);
+
+        // Note that description_html won't contain the user's
+        // identity; that instead will be rendered in the separate
+        // user pill.
         const description_html =
-            prefix + " " + Handlebars.Utils.escapeExpression(all_but_last_part) + "," + name;
+            prefix + Handlebars.Utils.escapeExpression(" " + all_but_last_part + ",");
+
         let terms = [term];
         if (negated) {
             terms = [{operator: "is", operand: "private"}, term];
         }
-        const search_string = Filter.unparse(terms);
-        return {description_html, search_string};
+
+        return {
+            description_html,
+            search_string: Filter.unparse(terms),
+            is_person: true,
+            user_pill_context: highlight_person(person, person_highlighter),
+        };
     });
 
     return suggestions;
@@ -254,8 +269,6 @@ function get_person_suggestions(people_getter, last, operators, autocomplete_ope
     const person_highlighter = make_person_highlighter(query);
 
     const objs = persons.map((person) => {
-        const name = person_highlighter(person);
-        const description_html = prefix + " " + name;
         const terms = [
             {
                 operator: autocomplete_operator,
@@ -268,8 +281,13 @@ function get_person_suggestions(people_getter, last, operators, autocomplete_ope
             // because we assume the user still wants to narrow to PMs
             terms.unshift({operator: "is", operand: "private"});
         }
-        const search_string = Filter.unparse(terms);
-        return {description_html, search_string};
+
+        return {
+            description_html: prefix,
+            search_string: Filter.unparse(terms),
+            is_person: true,
+            user_pill_context: highlight_person(person, person_highlighter),
+        };
     });
 
     return objs;

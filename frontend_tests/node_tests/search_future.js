@@ -30,9 +30,9 @@ const search_pill = zrequire("search_pill");
 const {Filter} = zrequire("../js/filter");
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, mock_template}) => {
         page_params.search_pills_enabled = true;
-        f({override});
+        f({override, mock_template});
     });
 }
 
@@ -81,11 +81,22 @@ test("update_button_visibility", () => {
     assert.ok(!$search_button.prop("disabled"));
 });
 
-test("initialize", () => {
+test("initialize", ({mock_template}) => {
     const $search_query_box = $("#search_query");
     const $searchbox_form = $("#searchbox_form");
     const $search_button = $(".search_button");
     const $searchbox = $("#searchbox");
+
+    mock_template("search_list_item.hbs", true, (data, html) => {
+        assert.equal(typeof data.description_html, "string");
+        if (data.is_person) {
+            assert.equal(typeof data.user_pill_context.id, "number");
+            assert.equal(typeof data.user_pill_context.display_value, "string");
+            assert.equal(typeof data.user_pill_context.has_image, "boolean");
+            assert.equal(typeof data.user_pill_context.img_src, "string");
+        }
+        return html;
+    });
 
     $search_query_box[0] = "stub";
 
@@ -106,7 +117,7 @@ test("initialize", () => {
                     [
                         "stream:Verona",
                         {
-                            description_html: "Stream <strong>Ver</strong>ona",
+                            description_html: "Stream&nbsp;<strong>Ver</strong>ona",
                             search_string: "stream:Verona",
                         },
                     ],
@@ -128,11 +139,93 @@ test("initialize", () => {
             assert.equal(source, expected_source_value);
 
             /* Test highlighter */
-            let expected_value = "Search for ver";
+            let expected_value = `<div class="search_list_item">\n    Search for ver\n</div>\n`;
             assert.equal(opts.highlighter(source[0]), expected_value);
 
-            expected_value = "Stream <strong>Ver</strong>ona";
+            expected_value = `<div class="search_list_item">\n    Stream&nbsp;<strong>Ver</strong>ona\n</div>\n`;
             assert.equal(opts.highlighter(source[1]), expected_value);
+
+            /* Test sorter */
+            assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);
+        }
+
+        {
+            const search_suggestions = {
+                lookup_table: new Map([
+                    [
+                        "group-pm-with:zo",
+                        {
+                            description_html: "group private messages including",
+                            is_person: true,
+                            search_string: "group-pm-with:user7@zulipdev.com",
+                            user_pill_context: {
+                                display_value: "<strong>Zo</strong>e",
+                                has_image: true,
+                                id: 7,
+                                img_src:
+                                    "https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1&s=50",
+                            },
+                        },
+                    ],
+                    [
+                        "pm-with:zo",
+                        {
+                            description_html: "private messages with",
+                            is_person: true,
+                            search_string: "pm-with:user7@zulipdev.com",
+                            user_pill_context: {
+                                display_value: "<strong>Zo</strong>e",
+                                has_image: true,
+                                id: 7,
+                                img_src:
+                                    "https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1&s=50",
+                            },
+                        },
+                    ],
+                    [
+                        "sender:zo",
+                        {
+                            description_html: "sent by",
+                            is_person: true,
+                            search_string: "sender:user7@zulipdev.com",
+                            user_pill_context: {
+                                display_value: "<strong>Zo</strong>e",
+                                has_image: true,
+                                id: 7,
+                                img_src:
+                                    "https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d=identicon&version=1&s=50",
+                            },
+                        },
+                    ],
+                    [
+                        "zo",
+                        {
+                            description_html: "Search for zo",
+                            search_string: "zo",
+                        },
+                    ],
+                ]),
+                strings: ["zo", "sender:zo", "pm-with:zo", "group-pm-with:zo"],
+            };
+
+            /* Test source */
+            search_suggestion.get_suggestions = () => search_suggestions;
+            const expected_source_value = search_suggestions.strings;
+            const source = opts.source("zo");
+            assert.equal(source, expected_source_value);
+
+            /* Test highlighter */
+            let expected_value = `<div class="search_list_item">\n    Search for zo\n</div>\n`;
+            assert.equal(opts.highlighter(source[0]), expected_value);
+
+            expected_value = `<div class="search_list_item">\n    sent by\n    <span class="pill-container pill-container-btn">\n        <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n    </span>\n</div>\n`;
+            assert.equal(opts.highlighter(source[1]), expected_value);
+
+            expected_value = `<div class="search_list_item">\n    private messages with\n    <span class="pill-container pill-container-btn">\n        <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n    </span>\n</div>\n`;
+            assert.equal(opts.highlighter(source[2]), expected_value);
+
+            expected_value = `<div class="search_list_item">\n    group private messages including\n    <span class="pill-container pill-container-btn">\n        <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n    </span>\n</div>\n`;
+            assert.equal(opts.highlighter(source[3]), expected_value);
 
             /* Test sorter */
             assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);

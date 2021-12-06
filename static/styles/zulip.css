@@ -751,6 +751,16 @@ strong {
                     hsl(200, 100%, 35%)
                 );
             }
+
+            .search_list_item {
+                display: flex;
+                align-items: center;
+            }
+
+            .search_list_item .pill-container {
+                margin-left: 5px;
+            }
+
             /* styles defined for user_circle here only deal with positioning of user_presence_circle
             in typeahead list in order to ensure they are rendered correctly in in all screen sizes.
             Most of the style rules related to color, gradient etc. which are generally common throughout

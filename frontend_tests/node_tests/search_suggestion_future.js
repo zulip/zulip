@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, with_overrides, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {page_params} = require("../zjsunit/zpage_params");
 
@@ -51,6 +51,7 @@ const jeff = {
 };
 
 const noop = () => {};
+const example_avatar_url = "http://example.com/example.png";
 
 function init() {
     page_params.is_admin = true;
@@ -831,6 +832,7 @@ function people_suggestion_setup() {
         email: "bob@zulip.com",
         user_id: 202,
         full_name: "Bob Térry",
+        avatar_url: example_avatar_url,
     };
 
     people.add_active_user(bob);
@@ -860,16 +862,35 @@ test("people_suggestions", ({override}) => {
 
     assert.deepEqual(suggestions.strings, expected);
 
-    const describe = (q) => suggestions.lookup_table.get(q).description_html;
+    const is_person = (q) => suggestions.lookup_table.get(q).is_person;
+    assert.equal(is_person("pm-with:ted@zulip.com"), true);
+    assert.equal(is_person("sender:ted@zulip.com"), true);
+    assert.equal(is_person("group-pm-with:ted@zulip.com"), true);
 
-    assert.equal(
-        describe("pm-with:ted@zulip.com"),
-        "Private messages with <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;",
-    );
-    assert.equal(
-        describe("sender:ted@zulip.com"),
-        "Sent by <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;",
-    );
+    const has_image = (q) => suggestions.lookup_table.get(q).user_pill_context.has_image;
+    assert.equal(has_image("pm-with:bob@zulip.com"), true);
+    assert.equal(has_image("sender:bob@zulip.com"), true);
+    assert.equal(has_image("group-pm-with:bob@zulip.com"), true);
+
+    const describe = (q) => suggestions.lookup_table.get(q).description_html;
+    assert.equal(describe("pm-with:ted@zulip.com"), "Private messages with");
+    assert.equal(describe("sender:ted@zulip.com"), "Sent by");
+    assert.equal(describe("group-pm-with:ted@zulip.com"), "Group private messages including");
+
+    let expectedString = "<strong>Te</strong>d Smith";
+
+    const get_full_name = (q) =>
+        suggestions.lookup_table.get(q).user_pill_context.display_value.string;
+    assert.equal(get_full_name("sender:ted@zulip.com"), expectedString);
+    assert.equal(get_full_name("pm-with:ted@zulip.com"), expectedString);
+    assert.equal(get_full_name("group-pm-with:ted@zulip.com"), expectedString);
+
+    expectedString = `${example_avatar_url}?s=50`;
+
+    const get_avatar_url = (q) => suggestions.lookup_table.get(q).user_pill_context.img_src;
+    assert.equal(get_avatar_url("pm-with:bob@zulip.com"), expectedString);
+    assert.equal(get_avatar_url("sender:bob@zulip.com"), expectedString);
+    assert.equal(get_avatar_url("group-pm-with:bob@zulip.com"), expectedString);
 
     suggestions = get_suggestions("", "Ted "); // note space
     expected = [
@@ -904,39 +925,6 @@ test("people_suggestions", ({override}) => {
     expected = ["new"];
     suggestions = get_suggestions(base_query, query);
     assert.deepEqual(suggestions.strings, expected);
-});
-
-test("people_suggestion (Admin only email visibility)", ({override}) => {
-    /* Suggestions when realm_email_address_visibility is set to admin
-    only */
-    override(narrow_state, "stream", noop);
-    people_suggestion_setup();
-
-    const query = "te";
-    const suggestions = with_overrides(({override}) => {
-        override(page_params, "is_admin", false);
-        return get_suggestions("", query);
-    });
-
-    const expected = [
-        "te",
-        "sender:bob@zulip.com",
-        "sender:ted@zulip.com",
-        "pm-with:bob@zulip.com", // bob térry
-        "pm-with:ted@zulip.com",
-        "group-pm-with:bob@zulip.com",
-        "group-pm-with:ted@zulip.com",
-    ];
-
-    assert.deepEqual(suggestions.strings, expected);
-
-    const describe = (q) => suggestions.lookup_table.get(q).description_html;
-
-    assert.equal(
-        describe("pm-with:ted@zulip.com"),
-        "Private messages with <strong>Te</strong>d Smith",
-    );
-    assert.equal(describe("sender:ted@zulip.com"), "Sent by <strong>Te</strong>d Smith");
 });
 
 test("operator_suggestions", ({override}) => {

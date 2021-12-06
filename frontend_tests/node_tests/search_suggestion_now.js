@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, with_overrides, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {page_params} = require("../zjsunit/zpage_params");
 
@@ -49,6 +49,8 @@ const jeff = {
     user_id: 103,
     full_name: "Jeff Zoolipson",
 };
+
+const example_avatar_url = "http://example.com/example.png";
 
 function init() {
     page_params.is_admin = true;
@@ -805,6 +807,7 @@ test("people_suggestions", ({override}) => {
         email: "bob@zulip.com",
         user_id: 202,
         full_name: "Bob Térry",
+        avatar_url: example_avatar_url,
     };
 
     const alice = {
@@ -829,17 +832,45 @@ test("people_suggestions", ({override}) => {
     ];
 
     assert.deepEqual(suggestions.strings, expected);
+
+    function is_person(q) {
+        return suggestions.lookup_table.get(q).is_person;
+    }
+    assert.equal(is_person("pm-with:ted@zulip.com"), true);
+    assert.equal(is_person("sender:ted@zulip.com"), true);
+    assert.equal(is_person("group-pm-with:ted@zulip.com"), true);
+
+    function has_image(q) {
+        return suggestions.lookup_table.get(q).user_pill_context.has_image;
+    }
+    assert.equal(has_image("pm-with:bob@zulip.com"), true);
+    assert.equal(has_image("sender:bob@zulip.com"), true);
+    assert.equal(has_image("group-pm-with:bob@zulip.com"), true);
+
     function describe(q) {
         return suggestions.lookup_table.get(q).description_html;
     }
-    assert.equal(
-        describe("pm-with:ted@zulip.com"),
-        "Private messages with <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;",
-    );
-    assert.equal(
-        describe("sender:ted@zulip.com"),
-        "Sent by <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;",
-    );
+    assert.equal(describe("pm-with:ted@zulip.com"), "Private messages with");
+    assert.equal(describe("sender:ted@zulip.com"), "Sent by");
+    assert.equal(describe("group-pm-with:ted@zulip.com"), "Group private messages including");
+
+    let expectedString = "<strong>Te</strong>d Smith";
+
+    function get_full_name(q) {
+        return suggestions.lookup_table.get(q).user_pill_context.display_value.string;
+    }
+    assert.equal(get_full_name("sender:ted@zulip.com"), expectedString);
+    assert.equal(get_full_name("pm-with:ted@zulip.com"), expectedString);
+    assert.equal(get_full_name("group-pm-with:ted@zulip.com"), expectedString);
+
+    expectedString = example_avatar_url + "?s=50";
+
+    function get_avatar_url(q) {
+        return suggestions.lookup_table.get(q).user_pill_context.img_src;
+    }
+    assert.equal(get_avatar_url("pm-with:bob@zulip.com"), expectedString);
+    assert.equal(get_avatar_url("sender:bob@zulip.com"), expectedString);
+    assert.equal(get_avatar_url("group-pm-with:bob@zulip.com"), expectedString);
 
     suggestions = get_suggestions("", "Ted "); // note space
 
@@ -925,60 +956,4 @@ test("queries_with_spaces", () => {
     suggestions = get_suggestions("", query);
     expected = ["stream:offi", "stream:office"];
     assert.deepEqual(suggestions.strings, expected);
-});
-
-function people_suggestion_setup() {
-    const ted = {
-        email: "ted@zulip.com",
-        user_id: 201,
-        full_name: "Ted Smith",
-    };
-    people.add_active_user(ted);
-
-    const bob = {
-        email: "bob@zulip.com",
-        user_id: 202,
-        full_name: "Bob Térry",
-    };
-
-    people.add_active_user(bob);
-    const alice = {
-        email: "alice@zulip.com",
-        user_id: 203,
-        full_name: "Alice Ignore",
-    };
-    people.add_active_user(alice);
-}
-
-test("people_suggestion (Admin only email visibility)", ({override}) => {
-    /* Suggestions when realm_email_address_visibility is set to admin
-    only */
-    override(narrow_state, "stream", () => {});
-    people_suggestion_setup();
-
-    const query = "te";
-    const suggestions = with_overrides(({override}) => {
-        override(page_params, "is_admin", false);
-        return get_suggestions("", query);
-    });
-
-    const expected = [
-        "te",
-        "sender:bob@zulip.com",
-        "sender:ted@zulip.com",
-        "pm-with:bob@zulip.com", // bob térry
-        "pm-with:ted@zulip.com",
-        "group-pm-with:bob@zulip.com",
-        "group-pm-with:ted@zulip.com",
-    ];
-
-    assert.deepEqual(suggestions.strings, expected);
-
-    const describe = (q) => suggestions.lookup_table.get(q).description_html;
-
-    assert.equal(
-        describe("pm-with:ted@zulip.com"),
-        "Private messages with <strong>Te</strong>d Smith",
-    );
-    assert.equal(describe("sender:ted@zulip.com"), "Sent by <strong>Te</strong>d Smith");
 });

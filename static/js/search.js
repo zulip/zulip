@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import render_search_list_item from "../templates/search_list_item.hbs";
+
 import {Filter} from "./filter";
 import * as message_view_header from "./message_view_header";
 import * as narrow from "./narrow";
@@ -94,7 +96,7 @@ export function initialize() {
         naturalSearch: true,
         highlighter(item) {
             const obj = search_map.get(item);
-            return obj.description_html;
+            return render_search_list_item(obj);
         },
         matcher() {
             return true;

@@ -73,6 +73,20 @@
         }
     }
 
+    &.pill-container-btn {
+        cursor: pointer;
+        padding: 0;
+
+        .pill {
+            margin: 0;
+            border: none;
+
+            .exit {
+                display: none;
+            }
+        }
+    }
+
     .input {
         display: inline-block;
         padding: 2px 4px;
