@@ -5016,9 +5016,49 @@ def do_change_stream_description(stream: Stream, new_description: str) -> None:
     send_event(stream.realm, event, can_access_stream_user_ids(stream))
 
 
-def do_change_stream_message_retention_days(
-    stream: Stream, message_retention_days: Optional[int] = None
+def send_change_stream_message_retention_days_notification(
+    user_profile: UserProfile, stream: Stream, old_value: Optional[int], new_value: Optional[int]
 ) -> None:
+    sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
+    user_mention = f"@_**{user_profile.full_name}|{user_profile.id}**"
+
+    # If switching from or to the organization's default retention policy,
+    # we want to take the realm's default into account.
+    if old_value is None:
+        old_value = stream.realm.message_retention_days
+    if new_value is None:
+        new_value = stream.realm.message_retention_days
+
+    with override_language(stream.realm.default_language):
+        if old_value == Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP["unlimited"]:
+            notification_string = _(
+                "{user} has changed the [message retention period](/help/message-retention-policy) for this stream from "
+                "**Forever** to **{new_value} days**. Messages will be automatically deleted after {new_value} days."
+            )
+            notification_string = notification_string.format(user=user_mention, new_value=new_value)
+        elif new_value == Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP["unlimited"]:
+            notification_string = _(
+                "{user} has changed the [message retention period](/help/message-retention-policy) for this stream from "
+                "**{old_value} days** to **Forever**."
+            )
+            notification_string = notification_string.format(user=user_mention, old_value=old_value)
+        else:
+            notification_string = _(
+                "{user} has changed the [message retention period](/help/message-retention-policy) for this stream from "
+                "**{old_value} days** to **{new_value} days**. Messages will be automatically deleted after {new_value} days."
+            )
+            notification_string = notification_string.format(
+                user=user_mention, old_value=old_value, new_value=new_value
+            )
+        internal_send_stream_message(
+            sender, stream, Realm.STREAM_EVENTS_NOTIFICATION_TOPIC, notification_string
+        )
+
+
+def do_change_stream_message_retention_days(
+    stream: Stream, acting_user: UserProfile, message_retention_days: Optional[int] = None
+) -> None:
+    old_message_retention_days_value = stream.message_retention_days
     stream.message_retention_days = message_retention_days
     stream.save(update_fields=["message_retention_days"])
 
@@ -5031,6 +5071,12 @@ def do_change_stream_message_retention_days(
         name=stream.name,
     )
     send_event(stream.realm, event, can_access_stream_user_ids(stream))
+    send_change_stream_message_retention_days_notification(
+        user_profile=acting_user,
+        stream=stream,
+        old_value=old_message_retention_days_value,
+        new_value=message_retention_days,
+    )
 
 
 def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
