@@ -1428,13 +1428,11 @@ def export_files_from_s3(
     logging.info("Downloading %s files from %s", flavor, bucket_name)
 
     avatar_hash_values = set()
-    user_ids = set()
     if processing_avatars:
         for user_profile in UserProfile.objects.filter(realm=realm):
             avatar_path = user_avatar_path_from_ids(user_profile.id, realm.id)
             avatar_hash_values.add(avatar_path)
             avatar_hash_values.add(avatar_path + ".original")
-            user_ids.add(user_profile.id)
 
     if settings.EMAIL_GATEWAY_BOT is not None:
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
@@ -1467,9 +1465,6 @@ def export_files_from_s3(
                 )
             # Email gateway bot sends messages, potentially including attachments, cross-realm.
             print(f"File uploaded by email gateway bot: {key.key} / {key.metadata}")
-        elif processing_avatars:
-            if int(key.metadata["user_profile_id"]) not in user_ids:
-                raise AssertionError(f"Wrong user_profile_id in key metadata: {key.metadata}")
 
         record = _get_exported_s3_record(bucket_name, key, processing_emoji)
 
