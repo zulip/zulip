@@ -1311,6 +1311,7 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
         # Some bigger installations will have their data stored on S3.
         export_files_from_s3(
             realm,
+            flavor="upload",
             bucket_name=settings.S3_AUTH_UPLOADS_BUCKET,
             object_prefix=f"{realm.id}/",
             output_dir=uploads_output_dir,
@@ -1318,26 +1319,26 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
 
         export_files_from_s3(
             realm,
+            flavor="avatar",
             bucket_name=settings.S3_AVATAR_BUCKET,
             object_prefix=f"{realm.id}/",
             output_dir=avatars_output_dir,
-            processing_avatars=True,
         )
 
         export_files_from_s3(
             realm,
+            flavor="emoji",
             bucket_name=settings.S3_AVATAR_BUCKET,
             object_prefix=f"{realm.id}/emoji/images/",
             output_dir=emoji_output_dir,
-            processing_emoji=True,
         )
 
         export_files_from_s3(
             realm,
+            flavor="realm_icon_or_logo",
             bucket_name=settings.S3_AVATAR_BUCKET,
             object_prefix=f"{realm.id}/realm/",
             output_dir=realm_icons_output_dir,
-            processing_realm_icon_and_logo=True,
         )
 
 
@@ -1410,12 +1411,10 @@ def _get_exported_s3_record(
 def _save_s3_object_to_file(
     key: Object,
     output_dir: str,
-    processing_avatars: bool,
-    processing_emoji: bool,
-    processing_realm_icon_and_logo: bool,
+    processing_uploads: bool,
 ) -> None:
     # Helper function for export_files_from_s3
-    if processing_avatars or processing_emoji or processing_realm_icon_and_logo:
+    if not processing_uploads:
         filename = os.path.join(output_dir, key.key)
     else:
         fields = key.key.split("/")
@@ -1438,17 +1437,19 @@ def _save_s3_object_to_file(
 
 def export_files_from_s3(
     realm: Realm,
+    flavor: str,
     bucket_name: str,
     object_prefix: str,
     output_dir: Path,
-    processing_avatars: bool = False,
-    processing_emoji: bool = False,
-    processing_realm_icon_and_logo: bool = False,
 ) -> None:
+    processing_uploads = flavor == "upload"
+    processing_avatars = flavor == "avatar"
+    processing_emoji = flavor == "emoji"
+
     bucket = get_bucket(bucket_name)
     records = []
 
-    logging.info("Downloading uploaded files from %s", bucket_name)
+    logging.info("Downloading %s files from %s", flavor, bucket_name)
 
     avatar_hash_values = set()
     user_ids = set()
@@ -1478,9 +1479,7 @@ def export_files_from_s3(
         record = _get_exported_s3_record(bucket_name, key, processing_emoji)
 
         record["path"] = key.key
-        _save_s3_object_to_file(
-            key, output_dir, processing_avatars, processing_emoji, processing_realm_icon_and_logo
-        )
+        _save_s3_object_to_file(key, output_dir, processing_uploads)
 
         records.append(record)
         count += 1
