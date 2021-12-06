@@ -2821,6 +2821,13 @@ def check_update_message(
 
         mention_user_ids = message.mentions_user_ids
 
+        if message.is_stream_message() and message.mentions_wildcard:
+            stream = access_stream_by_id(user_profile, message.recipient.type_id)[0]
+            if not wildcard_mention_allowed(message.sender, stream):
+                raise JsonableError(
+                    _("You do not have permission to use wildcard mentions in this stream.")
+                )
+
     new_stream = None
     number_changed = 0
 

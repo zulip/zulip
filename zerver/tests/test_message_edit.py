@@ -907,6 +907,57 @@ class EditMessageTest(ZulipTestCase):
                 called = True
         self.assertTrue(called)
 
+    def test_wildcard_mention_restrictions_when_editing(self) -> None:
+        cordelia = self.example_user("cordelia")
+        shiva = self.example_user("shiva")
+        self.login("cordelia")
+        stream_name = "Macbeth"
+        self.make_stream(stream_name, history_public_to_subscribers=True)
+        self.subscribe(cordelia, stream_name)
+        message_id = self.send_stream_message(cordelia, stream_name, "Hello everyone")
+
+        realm = cordelia.realm
+        do_set_realm_property(
+            realm,
+            "wildcard_mention_policy",
+            Realm.WILDCARD_MENTION_POLICY_MODERATORS,
+            acting_user=None,
+        )
+
+        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=17):
+            result = self.client_patch(
+                "/json/messages/" + str(message_id),
+                {
+                    "message_id": message_id,
+                    "content": "Hello @**everyone**",
+                },
+            )
+        self.assert_json_error(
+            result, "You do not have permission to use wildcard mentions in this stream."
+        )
+
+        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=14):
+            result = self.client_patch(
+                "/json/messages/" + str(message_id),
+                {
+                    "message_id": message_id,
+                    "content": "Hello @**everyone**",
+                },
+            )
+        self.assert_json_success(result)
+
+        self.login("shiva")
+        message_id = self.send_stream_message(shiva, stream_name, "Hi everyone")
+        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=17):
+            result = self.client_patch(
+                "/json/messages/" + str(message_id),
+                {
+                    "message_id": message_id,
+                    "content": "Hello @**everyone**",
+                },
+            )
+        self.assert_json_success(result)
+
     def test_topic_edit_history_saved_in_all_message(self) -> None:
         self.login("hamlet")
         id1 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic1")
