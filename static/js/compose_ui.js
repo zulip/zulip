@@ -222,7 +222,6 @@ export function handle_keydown(event, textarea) {
             lastline.slice(0, Math.max(0, bulleted_syntax.length)) === bulleted_syntax
         ) {
             text_last_row = lastline.slice(bulleted_syntax.length, lastline.length);
-
             if (!text_last_row.replace(/\s/g, "").length) {
                 type = "bulleted";
                 field.setSelectionRange(range.start - lastline.length, range.end);
@@ -290,6 +289,7 @@ export function format_text(textarea, type) {
     const selected_text = range.text;
     let lines = "";
     let changed_selected_text = "";
+    let text_line = "";
 
     // Remove new line and space around selected text.
     const left_trim_length = range.text.length - range.text.trimStart().length;
@@ -461,10 +461,15 @@ export function format_text(textarea, type) {
                         lines[i].length > 0 &&
                         lines[i].slice(0, Math.max(0, bulleted_syntax.length)) === bulleted_syntax
                     ) {
-                        lines[i] = lines[i].slice(
-                            bulleted_syntax.length,
-                            bulleted_syntax.length + lines[i].length,
-                        );
+                        text_line = lines[i].slice(bulleted_syntax.length, lines[i].length);
+                        if(!text_line.replace(/\s/g, "").length){
+                            lines[i] = lines[i].slice(lines[i].length);
+                        } else{
+                            lines[i] = lines[i].slice(
+                                bulleted_syntax.length,
+                                bulleted_syntax.length + lines[i].length,
+                            );
+                        }
                     }
                 }
                 changed_selected_text = lines.join("\n");
@@ -473,7 +478,8 @@ export function format_text(textarea, type) {
                     changed_selected_text +
                     text.slice(Math.max(0, field.selectionEnd));
                 set(field, text);
-                field.setSelectionRange(range.start, range.end);
+                field.setSelectionRange(range.end, range.end);
+                
             } else {
                 field.setSelectionRange(range.start, range.end);
                 lines = selected_text.split("\n");
