@@ -543,12 +543,12 @@ export function can_subscribe_others(sub) {
     return !page_params.is_guest && (!sub.invite_only || sub.subscribed);
 }
 
-export function is_subscribed(stream_name) {
+export function is_subscribed_by_name(stream_name) {
     const sub = get_sub(stream_name);
     return sub !== undefined && sub.subscribed;
 }
 
-export function id_is_subscribed(stream_id) {
+export function is_subscribed(stream_id) {
     const sub = sub_store.get(stream_id);
     return sub !== undefined && sub.subscribed;
 }
@@ -573,12 +573,20 @@ export function is_web_public(stream_id) {
     return sub !== undefined && sub.is_web_public;
 }
 
-export function get_invite_only(stream_name) {
+export function is_invite_only_by_stream_name(stream_name) {
     const sub = get_sub(stream_name);
     if (sub === undefined) {
         return false;
     }
     return sub.invite_only;
+}
+
+export function is_web_public_by_stream_name(stream_name) {
+    const sub = get_sub(stream_name);
+    if (sub === undefined) {
+        return false;
+    }
+    return sub.is_web_public;
 }
 
 export function set_realm_default_streams(realm_default_streams) {

@@ -163,6 +163,7 @@ jobs:
           # Since actions/download-artifact@v2 loses all the permissions
           # of the tarball uploaded by the upload artifact fix those.
           chmod +x /tmp/production-upgrade-pg
+          chmod +x /tmp/production-pgroonga
           chmod +x /tmp/production-install
           chmod +x /tmp/production-verify
           chmod +x /tmp/send-failure-message
@@ -193,6 +194,14 @@ jobs:
           sudo ${{ matrix.install-command }}
 
       - name: Verify install
+        run: sudo /tmp/production-verify
+
+      - name: Install pgroonga
+        if: ${{ matrix.is_bionic }}
+        run: sudo /tmp/production-pgroonga
+
+      - name: Verify install after installing pgroonga
+        if: ${{ matrix.is_bionic }}
         run: sudo /tmp/production-verify
 
       - name: Upgrade postgresql

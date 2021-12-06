@@ -510,7 +510,7 @@
         }
 
         .display-type {
-            padding: 6px;
+            padding: 2px;
             text-align: center;
             font-weight: 600;
             border-bottom: 1px solid hsl(0, 0%, 87%);

@@ -41,6 +41,18 @@
     visibility: hidden;
 }
 
+.order-1 {
+    order: 1;
+}
+
+.order-2 {
+    order: 2;
+}
+
+.order-3 {
+    order: 3;
+}
+
 /*
 Consistent placeholder styling, introduced to allow us to style the
 Reply box like a placeholder.  Chrome uses color to set placeholder,

@@ -10349,10 +10349,10 @@ tinyqueue@^2.0.3:
   resolved "https://registry.yarnpkg.com/tinyqueue/-/tinyqueue-2.0.3.tgz#64d8492ebf39e7801d7bd34062e29b45b2035f08"
   integrity sha512-ppJZNDuKGgxzkHihX8v9v9G5f+18gzaTfrukGrq6ueg0lmH4nqVnA2IPG0AEH3jKEk2GRJCUhDoqpoiw3PHLBA==
 
-tippy.js@^6.2.7:
-  version "6.3.4"
-  resolved "https://registry.yarnpkg.com/tippy.js/-/tippy.js-6.3.4.tgz#e5de7067db148824fe370578722cc56c7ae7ee9f"
-  integrity sha512-ZXkQeJQTgDXOt3x6DehdqhpbFDG6b784t7LH0ugMpQSrnbOPi+MGkYQdrd13kzp1jwUPzdCT/95Ce5kw2PPAUQ==
+tippy.js@^6.3.7:
+  version "6.3.7"
+  resolved "https://registry.yarnpkg.com/tippy.js/-/tippy.js-6.3.7.tgz#8ccfb651d642010ed9a32ff29b0e9e19c5b8c61c"
+  integrity sha512-E1d3oP2emgJ9dRQZdf3Kkn0qJgI6ZLpyS5z6ZkY1DF3kaQaBsGZsndEpHwx+eC+tYM41HaSNvNtLx8tU57FzTQ==
   dependencies:
     "@popperjs/core" "^2.9.0"
 

@@ -1,6 +1,6 @@
-# Night mode
+# Dark theme
 
-Zulip provides both a light theme and a night theme, which is great
+Zulip provides both a light theme and a dark theme, which is great
 for working in a dark space.
 
 ## Manage color theme
@@ -13,9 +13,9 @@ for working in a dark space.
 
 {end_tabs}
 
-The default is **Automatic**, which detects which theme to use based
+The default is **Sync with computer**, which detects which theme to use based
 on the color scheme used by your operating system.
 
-You can also specify **Night mode** or **Day mode** if you'd like
+You can also specify **Dark theme** or **Light theme** if you'd like
 Zulip to use the same color scheme regardless of your operating system
 configuration.

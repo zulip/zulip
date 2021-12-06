@@ -108,7 +108,7 @@ mock_esm("../../static/js/stream_data", {
         // We only test via muted topics for now.
         // TODO: Make muted streams and test them.
         false,
-    id_is_subscribed: () => true,
+    is_subscribed: () => true,
 });
 mock_esm("../../static/js/stream_list", {
     handle_narrow_deactivated: noop,

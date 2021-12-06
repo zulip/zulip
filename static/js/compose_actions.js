@@ -351,7 +351,7 @@ export function respond_to_message(opts) {
             const first_operator = first_term.operator;
             const first_operand = first_term.operand;
 
-            if (first_operator === "stream" && !stream_data.is_subscribed(first_operand)) {
+            if (first_operator === "stream" && !stream_data.is_subscribed_by_name(first_operand)) {
                 start("stream", {trigger: "empty_narrow_compose"});
                 return;
             }

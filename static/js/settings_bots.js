@@ -433,14 +433,11 @@ export function set_up() {
                 $(".edit_bot_form").trigger("submit");
             },
             post_render: edit_bot_post_render,
+            form_id: "edit_bot_form",
             loading_spinner: true,
         });
 
         function edit_bot_post_render() {
-            // This links the submit button to the edit bot form, so submitting this form
-            // by pressing Enter on an input element triggers a click on the submit button.
-            $("#edit_bot_modal .dialog_submit_button").attr("form", "edit_bot_form");
-
             const avatar_widget = avatar.build_bot_edit_widget($(".edit_bot_form"));
             const form = $(".edit_bot_form");
             const image = li.find(".image");

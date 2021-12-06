@@ -628,7 +628,7 @@ export function initialize() {
         }
     });
 
-    let instance = null;
+    let instance = {};
     $("body").on("click", ".time_pick", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -640,11 +640,10 @@ export function initialize() {
             target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
         }
 
-        if (instance === null) {
+        if (!instance.calendarContainer) {
             const on_timestamp_selection = (val) => {
                 const timestr = `<time:${val}> `;
                 compose_ui.insert_syntax_and_focus(timestr, target_textarea);
-                instance = null;
             };
 
             instance = composebox_typeahead.show_flatpickr(
@@ -656,16 +655,11 @@ export function initialize() {
                     position: "above center",
                 },
             );
-
-            $(document).one("compose_canceled.zulip compose_finished.zulip", () => {
-                instance = null;
-            });
             return;
         }
 
         instance.close();
         instance.destroy();
-        instance = null;
     });
 
     $("#compose").on("click", ".markdown_preview", (e) => {
@@ -708,6 +702,16 @@ export function initialize() {
 
     $("#stream_message_recipient_topic").on("focus", () => {
         compose_actions.update_placeholder_text();
+    });
+
+    $("body").on("click", ".formatting_button", (e) => {
+        const $elt = $(e.target);
+        const textarea = $elt.closest("form").find("textarea");
+        const format_type = $elt.attr("data-format-type");
+        compose_ui.format_text(textarea, format_type);
+        textarea.trigger("focus");
+        e.preventDefault();
+        e.stopPropagation();
     });
 
     if (page_params.narrow !== undefined) {

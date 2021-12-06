@@ -13,6 +13,7 @@ import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
+import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as stream_settings_data from "./stream_settings_data";
 import * as stream_settings_ui from "./stream_settings_ui";
@@ -300,6 +301,7 @@ function clear_error_display() {
 export function show_new_stream_modal() {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
+    stream_settings_ui.hide_or_disable_stream_privacy_options_if_required($("#stream-creation"));
 
     const add_people_container = $("#people_to_add");
     add_people_container.html(
@@ -312,7 +314,8 @@ export function show_new_stream_modal() {
     // Add current user on top of list
     const current_user = people.get_by_user_id(page_params.user_id);
     all_users.unshift({
-        email: current_user.email,
+        show_email: settings_data.show_email(),
+        email: people.get_visible_email(current_user),
         user_id: current_user.user_id,
         full_name: current_user.full_name,
         checked: true,

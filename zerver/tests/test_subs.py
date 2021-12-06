@@ -563,10 +563,23 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_error(result, "Must be an organization or stream administrator")
 
+        do_set_realm_property(
+            realm, "create_web_public_stream_policy", Realm.POLICY_OWNERS_ONLY, acting_user=None
+        )
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         result = self.client_patch(f"/json/streams/{stream_id}", params)
-        self.assert_json_error(result, "Must be an organization owner")
+        self.assert_json_error(result, "Insufficient permission")
 
+        do_set_realm_property(
+            realm, "create_web_public_stream_policy", Realm.POLICY_NOBODY, acting_user=None
+        )
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        result = self.client_patch(f"/json/streams/{stream_id}", params)
+        self.assert_json_error(result, "Insufficient permission")
+
+        do_set_realm_property(
+            realm, "create_web_public_stream_policy", Realm.POLICY_OWNERS_ONLY, acting_user=None
+        )
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
         with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
             result = self.client_patch(f"/json/streams/{stream_id}", params)
