@@ -31,6 +31,7 @@ from scripts.lib.zulip_tools import (
     get_config,
     get_config_file,
     get_tornado_ports,
+    listening_publicly,
     parse_os_release,
     su_to_zulip,
 )
@@ -99,6 +100,21 @@ config_file = get_config_file()
 tornado_processes = len(get_tornado_ports(config_file))
 
 IS_SERVER_UP = True
+
+
+# Check if rabbitmq port 25672 is listening on anything except 127.0.0.1
+rabbitmq_dist_listen = listening_publicly(25672)
+if args.skip_puppet and rabbitmq_dist_listen:
+    logging.error(
+        "RabbitMQ is publicly-accessible on %s; this is a security vulnerability!",
+        ", ".join(rabbitmq_dist_listen),
+    )
+    logging.error(
+        "To fix the above security issue, re-run the upgrade without --skip-puppet "
+        "(which may be set in /etc/zulip/zulip.conf), in order to restart the "
+        "necessary services.  Running zulip-puppet-apply by itself is not sufficient."
+    )
+    sys.exit(1)
 
 
 def shutdown_server() -> None:
@@ -274,6 +290,11 @@ if (not args.skip_puppet or migrations_needed) and IS_SERVER_UP:
     # Puppet changes, to minimize risk of issues due to inconsistent
     # state.
     shutdown_server()
+
+if rabbitmq_dist_listen:
+    shutdown_server()
+    logging.info("Shutting down rabbitmq to adjust its ports...")
+    subprocess.check_call(["/usr/sbin/service", "rabbitmq-server", "stop"])
 
 # Adjust Puppet class names for the manifest renames in the 4.0 release
 class_renames = {
