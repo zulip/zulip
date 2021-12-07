@@ -1288,6 +1288,7 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
     handle_system_bots = True
     users = list(UserProfile.objects.filter(realm=realm))
     attachments = list(Attachment.objects.filter(realm_id=realm.id))
+    realm_emojis = list(RealmEmoji.objects.filter(realm_id=realm.id))
 
     if settings.LOCAL_UPLOADS_DIR:
         # Small installations and developers will usually just store files locally.
@@ -1308,6 +1309,7 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
             realm,
             local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"),
             output_dir=emoji_output_dir,
+            realm_emojis=realm_emojis,
         )
         export_realm_icons(
             realm,
@@ -1349,6 +1351,8 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
             valid_hashes=avatar_hash_values,
         )
 
+        emoji_paths = {get_emoji_path(realm_emoji) for realm_emoji in realm_emojis}
+
         export_files_from_s3(
             realm,
             handle_system_bots=handle_system_bots,
@@ -1357,7 +1361,7 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
             object_prefix=f"{realm.id}/emoji/images/",
             output_dir=emoji_output_dir,
             user_ids=user_ids,
-            valid_hashes=None,
+            valid_hashes=emoji_paths,
         )
 
         export_files_from_s3(
@@ -1635,11 +1639,13 @@ def get_emoji_path(realm_emoji: RealmEmoji) -> str:
     )
 
 
-def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> None:
+def export_emoji_from_local(
+    realm: Realm, local_dir: Path, output_dir: Path, realm_emojis: List[RealmEmoji]
+) -> None:
 
     count = 0
     records = []
-    for realm_emoji in RealmEmoji.objects.filter(realm_id=realm.id):
+    for realm_emoji in realm_emojis:
         emoji_path = get_emoji_path(realm_emoji)
 
         # Use 'mark_sanitized' to work around false positive caused by Pysa
