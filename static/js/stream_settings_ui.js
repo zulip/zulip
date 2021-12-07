@@ -994,8 +994,15 @@ export function update_web_public_stream_privacy_option_state(container) {
     );
     if (
         !page_params.server_web_public_streams_enabled ||
-        (!page_params.realm_enable_spectator_access && !web_public_stream_elem.is(":checked"))
+        !page_params.realm_enable_spectator_access
     ) {
+        const for_change_privacy_modal = container.attr("id") === "stream_privacy_modal";
+        if (for_change_privacy_modal && web_public_stream_elem.is(":checked")) {
+            // We do not hide web-public option in the "Change privacy" modal if
+            // stream is web-public already. The option is disabled in this case.
+            web_public_stream_elem.prop("disabled", true);
+            return;
+        }
         web_public_stream_elem.closest(".radio-input-parent").hide();
         container
             .find(".stream-privacy-values .radio-input-parent:visible:last")
