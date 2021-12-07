@@ -100,7 +100,7 @@ from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.i18n import get_language_name
 from zerver.lib.markdown import MessageRenderingResult, topic_links
 from zerver.lib.markdown import version as markdown_version
-from zerver.lib.mention import MentionData
+from zerver.lib.mention import MentionData, silent_mention_syntax_for_user
 from zerver.lib.message import (
     MessageDict,
     SendMessageRequest,
@@ -376,7 +376,7 @@ def notify_new_user(user_profile: UserProfile) -> None:
     is_first_user = user_count == 1
     if not is_first_user:
         message = _("{user} just signed up for Zulip. (total: {user_count})").format(
-            user=f"@_**{user_profile.full_name}|{user_profile.id}**", user_count=user_count
+            user=silent_mention_syntax_for_user(user_profile), user_count=user_count
         )
 
         if settings.BILLING_ENABLED:
@@ -4989,7 +4989,7 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
             stream,
             Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
             _("{user_name} renamed stream {old_stream_name} to {new_stream_name}.").format(
-                user_name=f"@_**{user_profile.full_name}|{user_profile.id}**",
+                user_name=silent_mention_syntax_for_user(user_profile),
                 old_stream_name=f"**{old_name}**",
                 new_stream_name=f"**{new_name}**",
             ),
@@ -5020,7 +5020,7 @@ def send_change_stream_message_retention_days_notification(
     user_profile: UserProfile, stream: Stream, old_value: Optional[int], new_value: Optional[int]
 ) -> None:
     sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
-    user_mention = f"@_**{user_profile.full_name}|{user_profile.id}**"
+    user_mention = silent_mention_syntax_for_user(user_profile)
 
     # If switching from or to the organization's default retention policy,
     # we want to take the realm's default into account.
@@ -6048,7 +6048,7 @@ def maybe_send_resolve_topic_notifications(
         return
 
     sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
-    user_mention = f"@_**{user_profile.full_name}|{user_profile.id}**"
+    user_mention = silent_mention_syntax_for_user(user_profile)
     with override_language(stream.realm.default_language):
         if topic_resolved:
             notification_string = _("{user} has marked this topic as resolved.")
@@ -6082,7 +6082,7 @@ def send_message_moved_breadcrumbs(
     if new_topic is None:
         new_topic = old_topic
 
-    user_mention = f"@_**{user_profile.full_name}|{user_profile.id}**"
+    user_mention = silent_mention_syntax_for_user(user_profile)
     old_topic_link = f"#**{old_stream.name}>{old_topic}**"
     new_topic_link = f"#**{new_stream.name}>{new_topic}**"
 
