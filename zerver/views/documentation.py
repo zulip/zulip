@@ -145,6 +145,8 @@ class MarkdownDirectoryView(ApiURLView):
         # The following is a somewhat hacky approach to extract titles from articles.
         # Hack: `context["article"] has a leading `/`, so we use + to add directories.
         article_path = os.path.join(settings.DEPLOY_ROOT, "templates") + context["article"]
+        endpoint_name = None
+        endpoint_method = None
         if os.path.exists(article_path):
             with open(article_path) as article_file:
                 first_line = article_file.readlines()[0]
