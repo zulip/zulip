@@ -242,7 +242,7 @@ body.dark-theme {
 
     /* these are converting grey things to "new grey" */
     :disabled,
-    input:read-only,
+    input:not([type="radio"]):read-only,
     textarea:read-only,
     .sidebar-title,
     .recipient_row_date {
