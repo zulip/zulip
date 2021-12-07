@@ -1308,44 +1308,44 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
             output_dir=realm_icons_output_dir,
         )
     else:
+        user_ids = {user.id for user in UserProfile.objects.filter(realm=realm)}
+
         # Some bigger installations will have their data stored on S3.
         export_files_from_s3(
-            realm, settings.S3_AVATAR_BUCKET, output_dir=avatars_output_dir, processing_avatars=True
+            realm,
+            flavor="upload",
+            bucket_name=settings.S3_AUTH_UPLOADS_BUCKET,
+            object_prefix=f"{realm.id}/",
+            output_dir=uploads_output_dir,
+            user_ids=user_ids,
         )
-        export_files_from_s3(realm, settings.S3_AUTH_UPLOADS_BUCKET, output_dir=uploads_output_dir)
-        export_files_from_s3(
-            realm, settings.S3_AVATAR_BUCKET, output_dir=emoji_output_dir, processing_emoji=True
-        )
+
         export_files_from_s3(
             realm,
-            settings.S3_AVATAR_BUCKET,
-            output_dir=realm_icons_output_dir,
-            processing_realm_icon_and_logo=True,
+            flavor="avatar",
+            bucket_name=settings.S3_AVATAR_BUCKET,
+            object_prefix=f"{realm.id}/",
+            output_dir=avatars_output_dir,
+            user_ids=user_ids,
         )
 
+        export_files_from_s3(
+            realm,
+            flavor="emoji",
+            bucket_name=settings.S3_AVATAR_BUCKET,
+            object_prefix=f"{realm.id}/emoji/images/",
+            output_dir=emoji_output_dir,
+            user_ids=user_ids,
+        )
 
-def _check_key_metadata(
-    email_gateway_bot: Optional[UserProfile],
-    key: Object,
-    processing_avatars: bool,
-    realm: Realm,
-    user_ids: Set[int],
-) -> None:
-    # Helper function for export_files_from_s3
-    if "realm_id" in key.metadata and key.metadata["realm_id"] != str(realm.id):
-        if email_gateway_bot is None or key.metadata["user_profile_id"] != str(
-            email_gateway_bot.id
-        ):
-            raise AssertionError(f"Key metadata problem: {key.key} / {key.metadata} / {realm.id}")
-        # Email gateway bot sends messages, potentially including attachments, cross-realm.
-        print(f"File uploaded by email gateway bot: {key.key} / {key.metadata}")
-    elif processing_avatars:
-        if "user_profile_id" not in key.metadata:
-            raise AssertionError(f"Missing user_profile_id in key metadata: {key.metadata}")
-        if int(key.metadata["user_profile_id"]) not in user_ids:
-            raise AssertionError(f"Wrong user_profile_id in key metadata: {key.metadata}")
-    elif "realm_id" not in key.metadata:
-        raise AssertionError(f"Missing realm_id in key metadata: {key.metadata}")
+        export_files_from_s3(
+            realm,
+            flavor="realm_icon_or_logo",
+            bucket_name=settings.S3_AVATAR_BUCKET,
+            object_prefix=f"{realm.id}/realm/",
+            output_dir=realm_icons_output_dir,
+            user_ids=user_ids,
+        )
 
 
 def _get_exported_s3_record(
@@ -1393,12 +1393,10 @@ def _get_exported_s3_record(
 def _save_s3_object_to_file(
     key: Object,
     output_dir: str,
-    processing_avatars: bool,
-    processing_emoji: bool,
-    processing_realm_icon_and_logo: bool,
+    processing_uploads: bool,
 ) -> None:
     # Helper function for export_files_from_s3
-    if processing_avatars or processing_emoji or processing_realm_icon_and_logo:
+    if not processing_uploads:
         filename = os.path.join(output_dir, key.key)
     else:
         fields = key.key.split("/")
@@ -1421,40 +1419,34 @@ def _save_s3_object_to_file(
 
 def export_files_from_s3(
     realm: Realm,
+    flavor: str,
     bucket_name: str,
+    object_prefix: str,
     output_dir: Path,
-    processing_avatars: bool = False,
-    processing_emoji: bool = False,
-    processing_realm_icon_and_logo: bool = False,
+    user_ids: Set[int],
 ) -> None:
+    processing_uploads = flavor == "upload"
+    processing_avatars = flavor == "avatar"
+    processing_emoji = flavor == "emoji"
+
     bucket = get_bucket(bucket_name)
     records = []
 
-    logging.info("Downloading uploaded files from %s", bucket_name)
+    logging.info("Downloading %s files from %s", flavor, bucket_name)
 
     avatar_hash_values = set()
-    user_ids = set()
     if processing_avatars:
-        for user_profile in UserProfile.objects.filter(realm=realm):
-            avatar_path = user_avatar_path_from_ids(user_profile.id, realm.id)
+        for user_id in user_ids:
+            avatar_path = user_avatar_path_from_ids(user_id, realm.id)
             avatar_hash_values.add(avatar_path)
             avatar_hash_values.add(avatar_path + ".original")
-            user_ids.add(user_profile.id)
 
-    if processing_realm_icon_and_logo:
-        object_prefix = f"{realm.id}/realm/"
-    elif processing_emoji:
-        object_prefix = f"{realm.id}/emoji/images/"
-    else:
-        object_prefix = f"{realm.id}/"
+    email_gateway_bot: Optional[UserProfile] = None
 
     if settings.EMAIL_GATEWAY_BOT is not None:
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
-        email_gateway_bot: Optional[UserProfile] = get_system_bot(
-            settings.EMAIL_GATEWAY_BOT, internal_realm.id
-        )
-    else:
-        email_gateway_bot = None
+        email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
+        user_ids.add(email_gateway_bot.id)
 
     count = 0
     for bkey in bucket.objects.filter(Prefix=object_prefix):
@@ -1462,14 +1454,37 @@ def export_files_from_s3(
             continue
 
         key = bucket.Object(bkey.key)
-        # This can happen if an email address has moved realms
-        _check_key_metadata(email_gateway_bot, key, processing_avatars, realm, user_ids)
+
+        """
+        For very old realms we may not have proper metadata. If you really need
+        an export to bypass these checks, flip the following flag.
+        """
+        checking_metadata = True
+        if checking_metadata:
+            if "realm_id" not in key.metadata:
+                raise AssertionError(f"Missing realm_id in key metadata: {key.metadata}")
+
+            if "user_profile_id" not in key.metadata:
+                raise AssertionError(f"Missing user_profile_id in key metadata: {key.metadata}")
+
+            if int(key.metadata["user_profile_id"]) not in user_ids:
+                continue
+
+            # This can happen if an email address has moved realms
+            if key.metadata["realm_id"] != str(realm.id):
+                if email_gateway_bot is None or key.metadata["user_profile_id"] != str(
+                    email_gateway_bot.id
+                ):
+                    raise AssertionError(
+                        f"Key metadata problem: {key.key} / {key.metadata} / {realm.id}"
+                    )
+                # Email gateway bot sends messages, potentially including attachments, cross-realm.
+                print(f"File uploaded by email gateway bot: {key.key} / {key.metadata}")
+
         record = _get_exported_s3_record(bucket_name, key, processing_emoji)
 
         record["path"] = key.key
-        _save_s3_object_to_file(
-            key, output_dir, processing_avatars, processing_emoji, processing_realm_icon_and_logo
-        )
+        _save_s3_object_to_file(key, output_dir, processing_uploads)
 
         records.append(record)
         count += 1

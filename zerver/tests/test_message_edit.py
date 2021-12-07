@@ -9,7 +9,7 @@ from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import (
-    do_change_plan_type,
+    do_change_realm_plan_type,
     do_change_stream_post_policy,
     do_change_user_role,
     do_deactivate_stream,
@@ -366,14 +366,16 @@ class EditMessageTest(EditMessageTestCase):
         self.assertEqual(result.json()["raw_content"], "web-public message")
 
         # Verify LIMITED plan type does not allow web-public access.
-        do_change_plan_type(user_profile.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        do_change_realm_plan_type(user_profile.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
         self.assert_json_error(
             result, "Not logged in: API authentication or user session required", 401
         )
 
         # Verify works with STANDARD_FREE plan type too.
-        do_change_plan_type(user_profile.realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=None)
+        do_change_realm_plan_type(
+            user_profile.realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=None
+        )
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
         self.assert_json_success(result)
         self.assertEqual(result.json()["raw_content"], "web-public message")

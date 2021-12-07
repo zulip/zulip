@@ -19,8 +19,8 @@ from confirmation.settings import STATUS_ACTIVE
 from zerver.decorator import require_server_admin
 from zerver.forms import check_subdomain_available
 from zerver.lib.actions import (
-    do_change_plan_type,
     do_change_realm_org_type,
+    do_change_realm_plan_type,
     do_change_realm_subdomain,
     do_deactivate_realm,
     do_scrub_realm,
@@ -169,7 +169,7 @@ def support(
         assert isinstance(acting_user, UserProfile)
         if plan_type is not None:
             current_plan_type = realm.plan_type
-            do_change_plan_type(realm, plan_type, acting_user=acting_user)
+            do_change_realm_plan_type(realm, plan_type, acting_user=acting_user)
             msg = f"Plan type of {realm.string_id} changed from {get_plan_name(current_plan_type)} to {get_plan_name(plan_type)} "
             context["success_message"] = msg
         elif org_type is not None:

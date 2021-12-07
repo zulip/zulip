@@ -848,6 +848,17 @@ class LoginTest(ZulipTestCase):
             stream = self.make_stream(stream_name, realm=realm)
             DefaultStream.objects.create(stream=stream, realm=realm)
 
+        # Make sure there's at least one recent message to be mark
+        # unread.  This prevents a bug where this test would start
+        # failing the test database was generated more than
+        # ONBOARDING_RECENT_TIMEDELTA ago.
+        self.send_stream_message(
+            self.example_user("hamlet"),
+            stream_names[0],
+            topic_name="test topic",
+            content="test message",
+        )
+
         # Clear all the caches.
         flush_per_request_caches()
         ContentType.objects.clear_cache()

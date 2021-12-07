@@ -714,9 +714,9 @@ def process_initial_upgrade(
         )
         stripe.Invoice.finalize_invoice(stripe_invoice)
 
-    from zerver.lib.actions import do_change_plan_type
+    from zerver.lib.actions import do_change_realm_plan_type
 
-    do_change_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=user)
+    do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=user)
 
 
 def update_license_ledger_for_manual_plan(
@@ -937,9 +937,9 @@ def update_sponsorship_status(
 
 
 def approve_sponsorship(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
-    from zerver.lib.actions import do_change_plan_type, internal_send_private_message
+    from zerver.lib.actions import do_change_realm_plan_type, internal_send_private_message
 
-    do_change_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=acting_user)
+    do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=acting_user)
     customer = get_customer_by_realm(realm)
     if customer is not None and customer.sponsorship_pending:
         customer.sponsorship_pending = False
@@ -986,10 +986,10 @@ def do_change_plan_status(plan: CustomerPlan, status: int) -> None:
 
 
 def process_downgrade(plan: CustomerPlan) -> None:
-    from zerver.lib.actions import do_change_plan_type
+    from zerver.lib.actions import do_change_realm_plan_type
 
     assert plan.customer.realm is not None
-    do_change_plan_type(plan.customer.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+    do_change_realm_plan_type(plan.customer.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
     plan.status = CustomerPlan.ENDED
     plan.save(update_fields=["status"])
 

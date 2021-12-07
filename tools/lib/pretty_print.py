@@ -27,7 +27,15 @@ def shift_indents_to_the_next_tokens(tokens: List[Token]) -> None:
 
 
 def token_allows_children_to_skip_indents(token: Token) -> bool:
-    # For legacy reasons we don't always indent blocks.
+    # To avoid excessive indentation in templates with other
+    # conditionals, we don't require extra indentation for template
+    # logic blocks don't contain further logic as direct children.
+
+    # Each blocks are excluded from this rule, since we want loops to
+    # stand out.
+    if token.tag == "each":
+        return False
+
     return token.kind in ("django_start", "handlebars_start") or token.tag == "a"
 
 
