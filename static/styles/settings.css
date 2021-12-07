@@ -15,8 +15,9 @@ h3 {
 
     .fa-question-circle-o {
         top: 1px;
-        opacity: 0.4;
+        opacity: 0.6;
         position: relative;
+        color: hsl(0, 0%, 58%);
 
         &:hover {
             opacity: 1;
@@ -212,14 +213,14 @@ td .button {
     box-shadow: none;
 }
 
-.settings-info-icon {
+.settings-question-icon {
     padding-left: 3px;
     opacity: 0.9;
 }
 
 .email-change-form,
 .user-name-section {
-    .settings-info-icon {
+    .settings-question-icon {
         position: relative;
         top: 2px;
         left: 1px;
