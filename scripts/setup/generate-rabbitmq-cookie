@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+#
+# rabbitmq sets an insecure "magic cookie" which is used for auth;
+# reset it to be longer.
+set -eu
+
+cookiefile=/var/lib/rabbitmq/.erlang.cookie
+# If the RabbitMQ distribution cookie is insecure, reset it
+if [ ! -f "$cookiefile" ] || ! size="$(wc -c "$cookiefile")" || [ "${size%% *}" -le 20 ]; then
+    running=0
+    if service rabbitmq-server status >/dev/null; then
+        running=1
+        service rabbitmq-server stop
+    fi
+
+    echo "Setting a more secure RabbitMQ distribution magic cookie"
+    cookie="$(LC_ALL=C tr -dc '[:alnum:]' </dev/urandom | head -c255)"
+    [ "${#cookie}" -eq 255 ] # make sure tr wasn’t OOM-killed
+    tmpfile="$(mktemp "$cookiefile.XXXXXXXXXX")"
+    chown rabbitmq: "$tmpfile"
+    printf '%s' "$cookie" >"$tmpfile"
+    mv "$tmpfile" "$cookiefile"
+
+    if [ "$running" == "1" ]; then
+        service rabbitmq-server start
+    fi
+fi

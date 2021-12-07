@@ -7,6 +7,7 @@ up-to-date list of raw changes.
 
 ## Zulip 4.x series
 
+- CVE-2021-43799: Remote execution of code involving RabbitMQ.
 - Closed access to RabbitMQ port 25672; initial installs tried to
   close this port, but failed to restart RabbitMQ for the
   configuration.
