@@ -800,19 +800,20 @@ class ImportExportTest(ZulipTestCase):
             assert orig_realm_result
             self.assertEqual(orig_realm_result, imported_realm_result)
 
-        # test users
-        assert_realm_values(
-            lambda r: {user.email for user in r.get_admin_users_and_bots()},
-        )
+        def get_admin_bot_emails(r: Realm) -> Set[str]:
+            return {user.email for user in r.get_admin_users_and_bots()}
 
-        assert_realm_values(
-            lambda r: {user.email for user in r.get_active_users()},
-        )
+        assert_realm_values(get_admin_bot_emails)
 
-        # test stream
-        assert_realm_values(
-            lambda r: {stream.name for stream in get_active_streams(r)},
-        )
+        def get_active_emails(r: Realm) -> Set[str]:
+            return {user.email for user in r.get_active_users()}
+
+        assert_realm_values(get_active_emails)
+
+        def get_active_stream_names(r: Realm) -> Set[str]:
+            return {stream.name for stream in get_active_streams(r)}
+
+        assert_realm_values(get_active_stream_names)
 
         # test recipients
         def get_recipient_stream(r: Realm) -> Recipient:
@@ -821,8 +822,15 @@ class ImportExportTest(ZulipTestCase):
         def get_recipient_user(r: Realm) -> Recipient:
             return UserProfile.objects.get(full_name="Iago", realm=r).recipient
 
-        assert_realm_values(lambda r: get_recipient_stream(r).type)
-        assert_realm_values(lambda r: get_recipient_user(r).type)
+        def get_stream_recipient_type(r: Realm) -> int:
+            return get_recipient_stream(r).type
+
+        assert_realm_values(get_stream_recipient_type)
+
+        def get_user_recipient_type(r: Realm) -> int:
+            return get_recipient_user(r).type
+
+        assert_realm_values(get_user_recipient_type)
 
         # test subscription
         def get_subscribers(recipient: Recipient) -> Set[str]:
@@ -830,13 +838,15 @@ class ImportExportTest(ZulipTestCase):
             users = {sub.user_profile.email for sub in subscriptions}
             return users
 
-        assert_realm_values(
-            lambda r: get_subscribers(get_recipient_stream(r)),
-        )
+        def get_stream_subscribers(r: Realm) -> Set[str]:
+            return get_subscribers(get_recipient_stream(r))
 
-        assert_realm_values(
-            lambda r: get_subscribers(get_recipient_user(r)),
-        )
+        assert_realm_values(get_stream_subscribers)
+
+        def get_user_subscribers(r: Realm) -> Set[str]:
+            return get_subscribers(get_recipient_user(r))
+
+        assert_realm_values(get_user_subscribers)
 
         # test custom profile fields
         def get_custom_profile_field_names(r: Realm) -> Set[str]:
@@ -987,10 +997,10 @@ class ImportExportTest(ZulipTestCase):
 
         assert_realm_values(get_muted_users)
 
-        # test usergroups
-        assert_realm_values(
-            lambda r: {group.name for group in UserGroup.objects.filter(realm=r)},
-        )
+        def get_user_group_names(r: Realm) -> Set[str]:
+            return {group.name for group in UserGroup.objects.filter(realm=r)}
+
+        assert_realm_values(get_user_group_names)
 
         def get_user_membership(r: Realm) -> Set[str]:
             usergroup = UserGroup.objects.get(realm=r, name="hamletcharacters")
