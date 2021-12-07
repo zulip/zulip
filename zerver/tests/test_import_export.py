@@ -80,6 +80,23 @@ class ImportExportTest(ZulipTestCase):
         super().setUp()
         self.rm_tree(settings.LOCAL_UPLOADS_DIR)
 
+    def get_user_id(self, r: Realm, full_name: str) -> int:
+        return UserProfile.objects.get(realm=r, full_name=full_name).id
+
+    def get_huddle_hashes(self, r: Realm) -> str:
+        cordelia_full_name = "Cordelia, Lear's daughter"
+        hamlet_full_name = "King Hamlet"
+        othello_full_name = "Othello, the Moor of Venice"
+
+        user_id_list = [
+            self.get_user_id(r, cordelia_full_name),
+            self.get_user_id(r, hamlet_full_name),
+            self.get_user_id(r, othello_full_name),
+        ]
+
+        huddle_hash = get_huddle_hash(user_id_list)
+        return huddle_hash
+
     def _make_output_dir(self) -> str:
         output_dir = os.path.join(settings.TEST_WORKER_DIR, "test-export")
         self.rm_tree(output_dir)
@@ -780,23 +797,6 @@ class ImportExportTest(ZulipTestCase):
 
         self._export_realm(original_realm)
 
-        def get_user_id(r: Realm, full_name: str) -> int:
-            return UserProfile.objects.get(realm=r, full_name=full_name).id
-
-        cordelia_full_name = "Cordelia, Lear's daughter"
-        hamlet_full_name = "King Hamlet"
-        othello_full_name = "Othello, the Moor of Venice"
-
-        def get_huddle_hashes(r: Realm) -> str:
-            user_id_list = [
-                get_user_id(r, cordelia_full_name),
-                get_user_id(r, hamlet_full_name),
-                get_user_id(r, othello_full_name),
-            ]
-
-            huddle_hash = get_huddle_hash(user_id_list)
-            return huddle_hash
-
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
             do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
 
@@ -896,7 +896,7 @@ class ImportExportTest(ZulipTestCase):
 
         @getter
         def get_huddle_message(r: Realm) -> str:
-            huddle_hash = get_huddle_hashes(r)
+            huddle_hash = self.get_huddle_hashes(r)
             huddle_id = Huddle.objects.get(huddle_hash=huddle_hash).id
             huddle_recipient = Recipient.objects.get(type_id=huddle_id, type=3)
             huddle_message = Message.objects.get(recipient=huddle_recipient)
@@ -936,7 +936,7 @@ class ImportExportTest(ZulipTestCase):
         # test userhotspot
         @getter
         def get_user_hotspots(r: Realm) -> Set[str]:
-            user_id = get_user_id(r, hamlet_full_name)
+            user_id = self.get_user_id(r, "King Hamlet")
             hotspots = UserHotspot.objects.filter(user_id=user_id)
             user_hotspots = {hotspot.hotspot for hotspot in hotspots}
             return user_hotspots
@@ -944,7 +944,7 @@ class ImportExportTest(ZulipTestCase):
         # test muted topics
         @getter
         def get_muted_topics(r: Realm) -> Set[str]:
-            user_profile_id = get_user_id(r, hamlet_full_name)
+            user_profile_id = self.get_user_id(r, "King Hamlet")
             muted_topics = UserTopic.objects.filter(
                 user_profile_id=user_profile_id, visibility_policy=UserTopic.MUTED
             )
@@ -1075,7 +1075,9 @@ class ImportExportTest(ZulipTestCase):
         self.verify_emoji_code_foreign_keys()
 
         # Our huddle hashes change, because hashes use ids that change.
-        self.assertNotEqual(get_huddle_hashes(original_realm), get_huddle_hashes(imported_realm))
+        self.assertNotEqual(
+            self.get_huddle_hashes(original_realm), self.get_huddle_hashes(imported_realm)
+        )
 
         # test to highlight that bs4 which we use to do data-**id
         # replacements modifies the HTML sometimes. eg replacing <br>
