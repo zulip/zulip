@@ -206,8 +206,8 @@ elif args.from_git:
     # Ideally, we'd have 2 thresholds here, depending on whether the
     # system is running queue workers multithreaded or multiprocess.
     # See puppet/zulip/manifests/app_frontend_base.pp for background.
-    if mem_gib < 3.8:
-        logging.info("Shutting down server to build static assets on a low-RAM system.")
+    if mem_gib < 4.2:
+        logging.info("Shutting down server to ensure sufficient free RAM for webpack.")
         shutdown_server()
 
     # Note: The fact that this is before we apply Puppet changes means
