@@ -1200,10 +1200,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
     def test_social_auth_mobile_success(self) -> None:
         mobile_flow_otp = "1234abcd" * 8
-        hamlet = self.example_user("hamlet")
-        account_data_dict = self.get_account_data_dict(
-            email=hamlet.delivery_email, name="Full Name"
-        )
+        account_data_dict = self.get_account_data_dict(email=self.email, name="Full Name")
         self.assert_length(mail.outbox, 0)
         self.user_profile.date_joined = timezone_now() - datetime.timedelta(
             seconds=JUST_CREATED_THRESHOLD + 1
@@ -1234,9 +1231,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         query_params = urllib.parse.parse_qs(parsed_url.query)
         self.assertEqual(parsed_url.scheme, "zulip")
         self.assertEqual(query_params["realm"], ["http://zulip.testserver"])
-        self.assertEqual(query_params["email"], [hamlet.delivery_email])
-        self.assertEqual(query_params["user_id"], [str(hamlet.id)])
-
+        self.assertEqual(query_params["email"], [self.example_email("hamlet")])
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
         hamlet_api_keys = get_all_api_keys(self.example_user("hamlet"))
         self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
@@ -1526,7 +1521,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         result = self.client_get(result.url)
 
         self.assertEqual(result.status_code, 404)
-        self.assert_in_response("Whoops. The confirmation link is malformed.", result)
+        self.assert_in_response("The registration link has expired or is not valid.", result)
 
     @override_settings(TERMS_OF_SERVICE=None)
     def test_social_auth_registration_using_multiuse_invite(self) -> None:

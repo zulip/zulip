@@ -133,7 +133,7 @@ function pick_empty_narrow_banner() {
             // fallthrough to default case if no match is found
             break;
         case "stream":
-            if (!stream_data.is_subscribed_by_name(first_operand)) {
+            if (!stream_data.is_subscribed(first_operand)) {
                 // You are narrowed to a stream which does not exist or is a private stream
                 // in which you were never subscribed.
 

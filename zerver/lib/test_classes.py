@@ -82,14 +82,11 @@ from zerver.lib.webhooks.common import (
 from zerver.models import (
     Client,
     Message,
-    Reaction,
     Realm,
-    RealmEmoji,
     Recipient,
     Stream,
     Subscription,
     UserProfile,
-    UserStatus,
     clear_supported_auth_backends_cache,
     flush_per_request_caches,
     get_display_recipient,
@@ -1414,41 +1411,6 @@ Output:
                 "already_notified", {"email_notified": False, "push_notified": False}
             ),
         )
-
-    def verify_emoji_code_foreign_keys(self) -> None:
-        """
-        DB tables that refer to RealmEmoji use int(emoji_code) as the
-        foreign key. Those tables tend to de-normalize emoji_name due
-        to our inherintance-based setup. This helper makes sure those
-        invariants are intact, which is particularly tricky during
-        the import/export process (or during conversions from things
-        like Slack/RocketChat/MatterMost/etc.).
-        """
-        dct = {}
-
-        for row in RealmEmoji.objects.all():
-            dct[row.id] = row
-
-        if not dct:
-            raise AssertionError("test needs RealmEmoji rows")
-
-        count = 0
-        for row in Reaction.objects.filter(reaction_type=Reaction.REALM_EMOJI):
-            realm_emoji_id = int(row.emoji_code)
-            assert realm_emoji_id in dct
-            self.assertEqual(dct[realm_emoji_id].name, row.emoji_name)
-            self.assertEqual(dct[realm_emoji_id].realm_id, row.user_profile.realm_id)
-            count += 1
-
-        for row in UserStatus.objects.filter(reaction_type=UserStatus.REALM_EMOJI):
-            realm_emoji_id = int(row.emoji_code)
-            assert realm_emoji_id in dct
-            self.assertEqual(dct[realm_emoji_id].name, row.emoji_name)
-            self.assertEqual(dct[realm_emoji_id].realm_id, row.user_profile.realm_id)
-            count += 1
-
-        if count == 0:
-            raise AssertionError("test is meaningless without any pertinent rows")
 
 
 class WebhookTestCase(ZulipTestCase):

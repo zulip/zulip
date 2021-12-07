@@ -13,6 +13,10 @@ class zulip::profile::standalone {
   include zulip::profile::redis
   include zulip::profile::memcached
   include zulip::profile::rabbitmq
-  include zulip::localhost_camo
+  if $::osfamily == debian {
+    # camo is only required on Debian-based systems as part of
+    # our migration towards not including camo at all.
+    include zulip::localhost_camo
+  }
   include zulip::static_asset_compiler
 }

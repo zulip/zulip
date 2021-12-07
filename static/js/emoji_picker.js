@@ -540,7 +540,7 @@ function process_keypress(e) {
             new_query = old_query.slice(0, -1);
         } else {
             // Handles any printable character.
-            const key_str = String.fromCodePoint(e.which);
+            const key_str = String.fromCharCode(e.which);
             new_query = old_query + key_str;
         }
 
@@ -700,19 +700,17 @@ export function register_click_handlers() {
         hide_emoji_popover();
     });
 
-    $("body").on("click", ".emoji_map", (e) => {
+    $("body").on("click", ".emoji_map", function (e) {
         e.preventDefault();
         e.stopPropagation();
-
-        const compose_click_target = compose_ui.get_compose_click_target(e);
-        if ($(compose_click_target).parents(".message_edit_form").length === 1) {
+        if ($(e.target).parents(".message_edit_form").length === 1) {
             // Store message id in global variable edit_message_id so that
             // its value can be further used to correctly find the message textarea element.
-            edit_message_id = rows.get_message_id(compose_click_target);
+            edit_message_id = rows.get_message_id(e.target);
         } else {
             edit_message_id = null;
         }
-        toggle_emoji_popover(compose_click_target);
+        toggle_emoji_popover(this);
     });
 
     $("#main_div").on("click", ".reaction_button", function (e) {

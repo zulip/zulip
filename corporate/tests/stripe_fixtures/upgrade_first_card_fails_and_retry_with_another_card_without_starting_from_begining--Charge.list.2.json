@@ -42,12 +42,10 @@
         "license_management": "automatic",
         "licenses": "6",
         "price_per_license": "8000",
-        "realm_id": "1",
         "realm_str": "zulip",
         "seat_count": "6",
         "type": "upgrade",
-        "user_email": "hamlet@zulip.com",
-        "user_id": "10"
+        "user_email": "hamlet@zulip.com"
       },
       "object": "charge",
       "on_behalf_of": null,
@@ -62,7 +60,7 @@
       },
       "paid": true,
       "payment_intent": "pi_NORMALIZED00000000000001",
-      "payment_method": "pm_1K2ObZHSaWXyvFpKxF81RnmR",
+      "payment_method": "pm_1JTqAdA4KHR4JzRvkF8mCZXf",
       "payment_method_details": {
         "card": {
           "brand": "visa",
@@ -147,12 +145,10 @@
         "license_management": "automatic",
         "licenses": "6",
         "price_per_license": "8000",
-        "realm_id": "1",
         "realm_str": "zulip",
         "seat_count": "6",
         "type": "upgrade",
-        "user_email": "hamlet@zulip.com",
-        "user_id": "10"
+        "user_email": "hamlet@zulip.com"
       },
       "object": "charge",
       "on_behalf_of": null,
@@ -167,7 +163,7 @@
       },
       "paid": false,
       "payment_intent": "pi_NORMALIZED00000000000001",
-      "payment_method": "pm_1K2ObQHSaWXyvFpK01Q0QnWB",
+      "payment_method": "pm_1JTqAOA4KHR4JzRvKUkGvxS0",
       "payment_method_details": {
         "card": {
           "brand": "visa",

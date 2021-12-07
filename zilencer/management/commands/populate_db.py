@@ -314,7 +314,6 @@ class Command(BaseCommand):
                 invite_required=False,
                 plan_type=Realm.PLAN_TYPE_SELF_HOSTED,
                 org_type=Realm.ORG_TYPES["business"]["id"],
-                enable_spectator_access=True,
             )
             RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
             assert zulip_realm.notifications_stream is not None

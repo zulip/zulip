@@ -5,7 +5,7 @@ html {
 
 body {
     margin: 0;
-    background-color: hsl(0, 0%, 100%) !important;
+    background-color: hsl(0, 0%, 100%);
     color: hsl(0, 0%, 27%);
     line-height: normal;
 
@@ -409,10 +409,6 @@ nav {
     padding-top: 0;
 
     z-index: 2;
-
-    .gradients {
-        z-index: -1;
-    }
 
     section {
         max-width: 1440px;
@@ -3984,7 +3980,7 @@ nav {
     .gradients .gradient.green {
         background: linear-gradient(
             -25deg,
-            hsla(156, 47%, 47%, 0) 10%,
+            transparent 10%,
             hsl(156, 47%, 47%) 80%
         );
     }
@@ -3992,7 +3988,7 @@ nav {
     .gradients .gradient.blue {
         background: linear-gradient(
             25deg,
-            hsla(196, 38%, 51%, 0) 10%,
+            transparent 10%,
             hsl(196, 38%, 51%) 80%
         );
     }
@@ -4000,13 +3996,9 @@ nav {
     .gradients .gradient.sunburst {
         background: linear-gradient(
             5deg,
-            hsla(49, 71%, 68%, 0) 20%,
+            transparent 20%,
             hsl(49, 71%, 68%) 80%
         );
-    }
-
-    .features-app .gradients .gradient {
-        height: 700px;
     }
 }
 

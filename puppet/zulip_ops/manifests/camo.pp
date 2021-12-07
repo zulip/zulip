@@ -1,7 +1,13 @@
 class zulip_ops::camo {
-  class { 'zulip::camo':
-    listen_address => '0.0.0.0',
-  }
+  include zulip::camo
 
   zulip_ops::firewall_allow { 'camo': port => '9292' }
+
+  file { '/etc/cron.d/camo':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'puppet:///modules/zulip_ops/cron.d/camo',
+  }
 }

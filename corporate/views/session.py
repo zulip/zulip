@@ -1,5 +1,4 @@
 import logging
-from typing import Any, Dict
 
 import stripe
 from django.http import HttpRequest, HttpResponse
@@ -25,7 +24,6 @@ def start_card_update_stripe_session(request: HttpRequest, user: UserProfile) ->
         customer=customer.stripe_customer_id,
         metadata={
             "type": "card_update",
-            "user_id": user.id,
         },
         mode="setup",
         payment_method_types=["card"],
@@ -70,10 +68,7 @@ def start_retry_payment_intent_session(
     ):  # nocoverage: Hard to arrive at this state using card
         raise JsonableError(_("Payment processing."))
 
-    metadata: Dict[str, Any] = {
-        "user_id": user.id,
-    }
-    metadata.update(stripe_payment_intent.metadata)
+    metadata = stripe_payment_intent.metadata
     stripe_session = stripe.checkout.Session.create(
         cancel_url=f"{user.realm.uri}/upgrade/",
         customer=customer.stripe_customer_id,

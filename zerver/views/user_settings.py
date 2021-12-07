@@ -34,7 +34,7 @@ from zerver.lib.email_validation import (
     validate_email_is_valid,
     validate_email_not_already_in_realm,
 )
-from zerver.lib.exceptions import JsonableError, RateLimited, UserDeactivatedError
+from zerver.lib.exceptions import JsonableError, RateLimited
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.rate_limiter import RateLimitedUser
 from zerver.lib.request import REQ, has_request_variables
@@ -43,7 +43,6 @@ from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_int, check_int_in, check_string_in
 from zerver.models import UserProfile, avatar_changes_disabled, name_changes_disabled
-from zerver.views.auth import redirect_to_deactivation_notice
 from zproject.backends import check_password_strength, email_belongs_to_ldap
 
 AVATAR_CHANGES_DISABLED_ERROR = gettext_lazy("Avatar changes are disabled in this organization.")
@@ -51,20 +50,13 @@ AVATAR_CHANGES_DISABLED_ERROR = gettext_lazy("Avatar changes are disabled in thi
 
 def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     try:
-        email_change_object = get_object_from_key(confirmation_key, [Confirmation.EMAIL_CHANGE])
+        email_change_object = get_object_from_key(confirmation_key, Confirmation.EMAIL_CHANGE)
     except ConfirmationKeyException as exception:
         return render_confirmation_key_error(request, exception)
 
     new_email = email_change_object.new_email
     old_email = email_change_object.old_email
     user_profile = email_change_object.user_profile
-
-    if user_profile.realm.deactivated:
-        return redirect_to_deactivation_notice()
-
-    if not user_profile.is_active:
-        # TODO: Make this into a user-facing error, not JSON
-        raise UserDeactivatedError()
 
     if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
         raise JsonableError(_("Email address changes are disabled in this organization."))

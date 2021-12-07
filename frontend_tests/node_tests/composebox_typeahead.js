@@ -167,13 +167,13 @@ const my_slash = {
 const dark_slash = {
     name: "dark",
     aliases: "night",
-    text: "translated: /dark (Switch to the dark theme)",
+    text: "translated: /dark (Toggle dark mode)",
 };
 
 const light_slash = {
     name: "light",
     aliases: "day",
-    text: "translated: /light (Switch to light theme)",
+    text: "translated: /light (Toggle light mode)",
 };
 
 const sweden_stream = {
@@ -832,7 +832,7 @@ test("initialize", ({override, mock_template}) => {
         // Adds a `no break-space` at the end. This should fail
         // if there wasn't any logic replacing `no break-space`
         // with normal space.
-        query = "cordelia, lear's\u00A0";
+        query = "cordelia, lear's" + String.fromCharCode(160);
         assert.equal(matcher(query, cordelia), true);
         assert.equal(matcher(query, othello), false);
 
@@ -1054,7 +1054,6 @@ test("initialize", ({override, mock_template}) => {
             id: "stream_message_recipient_stream",
         },
         preventDefault: noop,
-        stopPropagation: noop,
     };
 
     $("#stream_message_recipient_topic").data = () => ({typeahead: {shown: true}});
@@ -1144,6 +1143,7 @@ test("initialize", ({override, mock_template}) => {
 
     // select_on_focus()
 
+    override(compose, "toggle_enter_sends_ui", noop);
     let channel_patch_called = false;
     override(channel, "patch", (params) => {
         assert.equal(params.url, "/json/settings");
@@ -1152,22 +1152,20 @@ test("initialize", ({override, mock_template}) => {
 
         channel_patch_called = true;
     });
-    user_settings.enter_sends = false;
-    $(".enter_sends").trigger("click");
-    assert.equal(user_settings.enter_sends, true);
+    $("#enter_sends").is = () => false;
+    $("#enter_sends").trigger("click");
 
     // Now we re-run both .initialize() and the click handler, this time
     // with enter_sends: user_settings.enter_sends being true
-    user_settings.enter_sends = true;
-    $(".enter_sends").trigger("click");
-    assert.equal(user_settings.enter_sends, false);
+    $("#enter_sends").is = () => true;
+    $("#enter_sends").trigger("click");
 
     $("#stream_message_recipient_stream").off("focus");
     $("#stream_message_recipient_topic").off("focus");
     $("#private_message_recipient").off("focus");
     $("form#send_message_form").off("keydown");
     $("form#send_message_form").off("keyup");
-    $(".enter_sends").off("click");
+    $("#enter_sends").off("click");
     $("#private_message_recipient").off("blur");
     ct.initialize();
 

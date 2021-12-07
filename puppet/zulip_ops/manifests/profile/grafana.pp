@@ -6,7 +6,7 @@ class zulip_ops::profile::grafana {
 
   $version = '8.0.1'
   zulip::sha256_tarball_to { 'grafana':
-    url     => "https://dl.grafana.com/oss/release/grafana-${version}.linux-${::architecture}.tar.gz",
+    url     => "https://dl.grafana.com/oss/release/grafana-${version}.linux-amd64.tar.gz",
     sha256  => '6f4e67500a4b8dd416e6f6d2e7a1d42befc65ca707a365001f26df7ba653af75',
     install => {
       "grafana-${version}/" => "/srv/grafana-${version}/",

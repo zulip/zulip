@@ -124,7 +124,12 @@ class OpenGraphTest(ZulipTestCase):
         self.check_title_and_description(
             "/help/",
             "Zulip Help Center",
-            [("Welcome to the Zulip")],
+            [
+                (
+                    "Zulip is a group chat app. Its most distinctive characteristic is that "
+                    "conversation within an organization is divided into “streams” and further "
+                )
+            ],
             [],
         )
 

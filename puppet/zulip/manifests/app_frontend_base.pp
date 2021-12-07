@@ -96,14 +96,8 @@ class zulip::app_frontend_base {
     $uwsgi_default_processes = 4
   }
   $tornado_ports = $zulip::tornado_sharding::tornado_ports
-
-  $proxy_host = zulipconf('http_proxy', 'host', 'localhost')
-  $proxy_port = zulipconf('http_proxy', 'port', '4750')
-
-  if ($proxy_host in ['localhost', '127.0.0.1', '::1']) and ($proxy_port == '4750') {
-    include zulip::smokescreen
-  }
-
+  $proxy_host = zulipconf('http_proxy', 'host', '')
+  $proxy_port = zulipconf('http_proxy', 'port', '')
   if $proxy_host != '' and $proxy_port != '' {
     $proxy = "http://${proxy_host}:${proxy_port}"
   } else {
@@ -204,14 +198,5 @@ class zulip::app_frontend_base {
     group   => 'root',
     mode    => '0755',
     source  => 'puppet:///modules/zulip/nagios_plugins/zulip_app_frontend',
-  }
-
-  # This cron job does nothing unless RATE_LIMIT_TOR_TOGETHER is enabled.
-  file { '/etc/cron.d/fetch-for-exit-nodes':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/fetch-tor-exit-nodes',
   }
 }

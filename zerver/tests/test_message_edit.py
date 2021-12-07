@@ -9,7 +9,7 @@ from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import (
-    do_change_realm_plan_type,
+    do_change_plan_type,
     do_change_stream_post_policy,
     do_change_user_role,
     do_deactivate_stream,
@@ -351,31 +351,20 @@ class EditMessageTest(EditMessageTestCase):
             result, "Not logged in: API authentication or user session required", 401
         )
 
-        do_set_realm_property(
-            user_profile.realm, "enable_spectator_access", False, acting_user=None
-        )
-        result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
-        self.assert_json_error(
-            result, "Not logged in: API authentication or user session required", 401
-        )
-        do_set_realm_property(user_profile.realm, "enable_spectator_access", True, acting_user=None)
-
         # Verify success with web-public stream and default SELF_HOSTED plan type.
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
         self.assert_json_success(result)
         self.assertEqual(result.json()["raw_content"], "web-public message")
 
         # Verify LIMITED plan type does not allow web-public access.
-        do_change_realm_plan_type(user_profile.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        do_change_plan_type(user_profile.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
         self.assert_json_error(
             result, "Not logged in: API authentication or user session required", 401
         )
 
         # Verify works with STANDARD_FREE plan type too.
-        do_change_realm_plan_type(
-            user_profile.realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=None
-        )
+        do_change_plan_type(user_profile.realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=None)
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
         self.assert_json_success(result)
         self.assertEqual(result.json()["raw_content"], "web-public message")
@@ -1171,57 +1160,6 @@ class EditMessageTest(EditMessageTestCase):
                 )
                 called = True
         self.assertTrue(called)
-
-    def test_wildcard_mention_restrictions_when_editing(self) -> None:
-        cordelia = self.example_user("cordelia")
-        shiva = self.example_user("shiva")
-        self.login("cordelia")
-        stream_name = "Macbeth"
-        self.make_stream(stream_name, history_public_to_subscribers=True)
-        self.subscribe(cordelia, stream_name)
-        message_id = self.send_stream_message(cordelia, stream_name, "Hello everyone")
-
-        realm = cordelia.realm
-        do_set_realm_property(
-            realm,
-            "wildcard_mention_policy",
-            Realm.WILDCARD_MENTION_POLICY_MODERATORS,
-            acting_user=None,
-        )
-
-        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=17):
-            result = self.client_patch(
-                "/json/messages/" + str(message_id),
-                {
-                    "message_id": message_id,
-                    "content": "Hello @**everyone**",
-                },
-            )
-        self.assert_json_error(
-            result, "You do not have permission to use wildcard mentions in this stream."
-        )
-
-        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=14):
-            result = self.client_patch(
-                "/json/messages/" + str(message_id),
-                {
-                    "message_id": message_id,
-                    "content": "Hello @**everyone**",
-                },
-            )
-        self.assert_json_success(result)
-
-        self.login("shiva")
-        message_id = self.send_stream_message(shiva, stream_name, "Hi everyone")
-        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=17):
-            result = self.client_patch(
-                "/json/messages/" + str(message_id),
-                {
-                    "message_id": message_id,
-                    "content": "Hello @**everyone**",
-                },
-            )
-        self.assert_json_success(result)
 
     def test_topic_edit_history_saved_in_all_message(self) -> None:
         self.login("hamlet")

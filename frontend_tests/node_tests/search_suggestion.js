@@ -982,6 +982,6 @@ test("multiple_operators_without_pills", () => {
     query = "abc is:alerted sender:ted@zulip.com";
     base_query = "";
     suggestions = get_suggestions(base_query, query);
-    expected = ["abc is:alerted sender:ted@zulip.com"];
+    expected = ["is:alerted sender:ted@zulip.com abc"];
     assert.deepEqual(suggestions.strings, expected);
 });

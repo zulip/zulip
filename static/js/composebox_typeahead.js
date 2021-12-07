@@ -226,7 +226,6 @@ function handle_keydown(e) {
                     // typing a next message!
                     $("#compose-send-button").trigger("focus");
                     e.preventDefault();
-                    e.stopPropagation();
                 }
             } else {
                 // Enter
@@ -394,7 +393,7 @@ function should_show_custom_query(query, items) {
 
 export const slash_commands = [
     {
-        text: $t({defaultMessage: "/dark (Switch to the dark theme)"}),
+        text: $t({defaultMessage: "/dark (Toggle dark mode)"}),
         name: "dark",
         aliases: "night",
     },
@@ -409,7 +408,7 @@ export const slash_commands = [
         aliases: "",
     },
     {
-        text: $t({defaultMessage: "/light (Switch to light theme)"}),
+        text: $t({defaultMessage: "/light (Toggle light mode)"}),
         name: "light",
         aliases: "day",
     },
@@ -775,13 +774,7 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         enableTime: true,
         clickOpens: false,
         defaultDate: default_timestamp,
-        plugins: [
-            new ConfirmDatePlugin({
-                showAlways: true,
-                confirmText: $t({defaultMessage: "Confirm"}),
-                confirmIcon: "",
-            }),
-        ],
+        plugins: [new ConfirmDatePlugin({showAlways: true})],
         positionElement: element,
         dateFormat: "Z",
         formatDate: (date) => formatISO(date),
@@ -1103,10 +1096,9 @@ export function initialize() {
     $("form#send_message_form").on("keydown", handle_keydown);
     $("form#send_message_form").on("keyup", handle_keyup);
 
-    $(".enter_sends").on("click", () => {
-        user_settings.enter_sends = !user_settings.enter_sends;
-        $(`.enter_sends_${!user_settings.enter_sends}`).hide();
-        $(`.enter_sends_${user_settings.enter_sends}`).show();
+    $("#enter_sends").on("click", () => {
+        user_settings.enter_sends = $("#enter_sends").is(":checked");
+        compose.toggle_enter_sends_ui();
 
         // Refocus in the content box so you can continue typing or
         // press Enter to send.
@@ -1118,6 +1110,10 @@ export function initialize() {
             data: {enter_sends: user_settings.enter_sends},
         });
     });
+    $("#enter_sends").prop("checked", user_settings.enter_sends);
+    if (user_settings.enter_sends) {
+        $("#compose-send-button").hide();
+    }
 
     // limit number of items so the list doesn't fall off the screen
     $("#stream_message_recipient_stream").typeahead({

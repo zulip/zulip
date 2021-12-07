@@ -4,12 +4,7 @@
     <div class="button-group">
         <div class="sub_unsub_button_wrapper inline-block">
             <button class="button small rounded subscribe-button sub_unsub_button {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button" {{#if should_display_subscription_button}}title="{{t 'Toggle subscription'}} (S)" {{else}}disabled="disabled"{{/if}}>
-                {{#if subscribed }}
-                    {{#tr}}Unsubscribe{{/tr}}
-                {{else}}
-                    {{#tr}}Subscribe{{/tr}}
-                {{/if}}
-            </button>
+                {{#if subscribed }}{{#tr}}Unsubscribe{{/tr}}{{else}}{{#tr}}Subscribe{{/tr}}{{/if}}</button>
         </div>
         <a href="{{preview_url}}" class="button small rounded" id="preview-stream-button" role="button" title="{{t 'View stream'}} (V)" {{#unless should_display_preview_button }}style="display: none"{{/unless}}><i class="fa fa-eye"></i></a>
         {{#if is_realm_admin}}
@@ -46,12 +41,14 @@
                 <h3 class="stream_setting_subsection_title">
                     {{t "Stream permissions" }}
                 </h3>
+                {{#if can_change_stream_permissions}}
                 <div class="stream_permission_change_info alert-notification"></div>
                 <div class="button-group">
-                    <a class="change-stream-privacy button rounded small btn-warning" {{#unless can_change_stream_permissions}}style="display:none"{{/unless}} role="button">
+                    <a class="change-stream-privacy button rounded small btn-warning" role="button">
                         <i class="fa fa-pencil" aria-hidden="true"></i>
                     </a>
                 </div>
+                {{/if}}
             </div>
             <div class="subscription-type">
                 <div class="subscription-type-text">
@@ -78,44 +75,43 @@
                 <div id="stream_change_property_status{{sub.stream_id}}" class="stream_change_property_status alert-notification"></div>
             </div>
             <div class="subscription-config">
-                <div class="subsection-parent">
+                <ul class="grey-box">
                     {{#each other_settings}}
-                        <div class="input-group">
-                            {{> stream_settings_checkbox
-                              setting_name=name
-                              is_checked=is_checked
-                              is_muted=(lookup ../sub "is_muted")
-                              stream_id=(lookup ../sub "stream_id")
-                              notification_setting=false
-                              disabled_realm_setting=disabled_realm_setting
-                              is_disabled=is_disabled
-                              label=label}}
-                        </div>
+                    <li>
+                        {{> stream_settings_checkbox
+                          setting_name=name
+                          is_checked=is_checked
+                          is_muted=(lookup ../sub "is_muted")
+                          stream_id=(lookup ../sub "stream_id")
+                          notification_setting=false
+                          disabled_realm_setting=disabled_realm_setting
+                          is_disabled=is_disabled
+                          label=label}}
+                    </li>
                     {{/each}}
-
-                    <div class="input-group">
-                        <label for="streamcolor">{{t "Stream color" }}</label>
+                    <li>
+                        <label for="streamcolor" class="subscription-control-label">{{t "Stream color" }}</label>
                         <span class="sub_setting_control">
                             <input stream_id="{{sub.stream_id}}" class="colorpicker" id="streamcolor" type="text" value="{{sub.color}}" tabindex="-1" />
                         </span>
-                    </div>
-                </div>
-                <h4 class="stream_setting_subsection_title">{{t "Notification settings" }}</h4>
-                <div class="subsection-parent">
+                    </li>
+                </ul>
+                <h4>{{t "Notification settings" }}</h4>
+                <ul class="grey-box">
                     {{#each notification_settings}}
-                        <div class="input-group">
-                            {{> stream_settings_checkbox
-                              setting_name=name
-                              is_checked=is_checked
-                              is_muted=(lookup ../sub "is_muted")
-                              stream_id=(lookup ../sub "stream_id")
-                              notification_setting=true
-                              disabled_realm_setting=disabled_realm_setting
-                              is_disabled=is_disabled
-                              label=label}}
-                        </div>
+                    <li>
+                        {{> stream_settings_checkbox
+                          setting_name=name
+                          is_checked=is_checked
+                          is_muted=(lookup ../sub "is_muted")
+                          stream_id=(lookup ../sub "stream_id")
+                          notification_setting=true
+                          disabled_realm_setting=disabled_realm_setting
+                          is_disabled=is_disabled
+                          label=label}}
+                    </li>
                     {{/each}}
-                </div>
+                </ul>
             </div>
         </div>
 

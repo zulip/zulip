@@ -1025,5 +1025,3 @@ class RocketChatImporter(ZulipTestCase):
             personal_messages[0].content,
             "Hey @**Hermione Granger** :grin:, how's everything going?",
         )
-
-        self.verify_emoji_code_foreign_keys()

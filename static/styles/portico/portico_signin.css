@@ -464,7 +464,7 @@ html {
             input[type="text"]:invalid + label,
             input[type="email"]:invalid + label,
             input[type="password"]:invalid + label {
-                transform: translateY(39px) translateX(14px);
+                transform: translateY(35px) translateX(14px);
                 font-size: 1.2rem;
                 font-weight: 400;
                 color: hsl(0, 0%, 67%);

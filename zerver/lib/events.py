@@ -143,9 +143,7 @@ def fetch_initial_state_data(
     if want("alert_words"):
         state["alert_words"] = [] if user_profile is None else user_alert_words(user_profile)
 
-    # Spectators can't access full user profiles or personal settings,
-    # so there's no need to send custom profile field data.
-    if want("custom_profile_fields") and user_profile is not None:
+    if want("custom_profile_fields"):
         fields = custom_profile_fields_for_realm(realm.id)
         state["custom_profile_fields"] = [f.as_dict() for f in fields]
         state["custom_profile_field_types"] = {
@@ -177,18 +175,15 @@ def fetch_initial_state_data(
             state["max_message_id"] = -1
 
     if want("drafts"):
-        if user_profile is None:
-            state["drafts"] = []
-        else:
-            # Note: if a user ever disables syncing drafts then all of
-            # their old drafts stored on the server will be deleted and
-            # simply retained in local storage. In which case user_drafts
-            # would just be an empty queryset.
-            user_draft_objects = Draft.objects.filter(user_profile=user_profile).order_by(
-                "-last_edit_time"
-            )[: settings.MAX_DRAFTS_IN_REGISTER_RESPONSE]
-            user_draft_dicts = [draft.to_dict() for draft in user_draft_objects]
-            state["drafts"] = user_draft_dicts
+        # Note: if a user ever disables syncing drafts then all of
+        # their old drafts stored on the server will be deleted and
+        # simply retained in local storage. In which case user_drafts
+        # would just be an empty queryset.
+        user_draft_objects = Draft.objects.filter(user_profile=user_profile).order_by(
+            "-last_edit_time"
+        )[: settings.MAX_DRAFTS_IN_REGISTER_RESPONSE]
+        user_draft_dicts = [draft.to_dict() for draft in user_draft_objects]
+        state["drafts"] = user_draft_dicts
 
     if want("muted_topics"):
         state["muted_topics"] = [] if user_profile is None else get_topic_mutes(user_profile)
@@ -296,7 +291,6 @@ def fetch_initial_state_data(
         state["server_inline_url_embed_preview"] = settings.INLINE_URL_EMBED_PREVIEW
         state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
         state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
-        state["server_web_public_streams_enabled"] = settings.WEB_PUBLIC_STREAMS_ENABLED
         state["giphy_rating_options"] = realm.GIPHY_RATING_OPTIONS
 
         state["server_needs_upgrade"] = is_outdated_server(user_profile)
@@ -398,8 +392,6 @@ def fetch_initial_state_data(
             user_profile,
             client_gravatar=client_gravatar,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
-            # Don't send custom profile field values to spectators.
-            include_custom_profile_fields=user_profile is not None,
         )
         state["cross_realm_bots"] = list(get_cross_realm_dicts())
 

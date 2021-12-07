@@ -18,7 +18,7 @@ support forwarding push notifications to a central push notification
 forwarding service. Accessing this service requires outgoing HTTPS
 access to the public Internet; if that is restricted by a proxy, you
 will need to [configure Zulip to use your outgoing HTTP
-proxy](../production/deployment.html#customizing-the-outgoing-http-proxy)
+proxy](../production/deployment.html#using-an-outgoing-http-proxy)
 first.
 
 You can enable this for your Zulip server as follows:

@@ -574,8 +574,7 @@ in. For example in this case of `mandatory_topics` it will lie in
 "Other settings" (`other_settings`) subsection.
 
 _If you're not sure in which section your feature belongs, it's
-better to discuss it in
-[the Zulip development community](https://zulip.com/developer-community/)
+better to discuss it in the [community](https://chat.zulip.org/)
 before implementing it._
 
 Note that some settings, like `realm_msg_edit_limit_setting`,

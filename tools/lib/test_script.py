@@ -22,11 +22,10 @@ def get_version_file() -> str:
 
 
 PREAMBLE = """
-Provisioning state check failed! This check compares
-`var/provision_version` (currently {}) to the version in
-source control (`version.py`), which is {}, to see if you
-likely need to provision before this command can run
-properly.
+Before we run tests, we make sure your provisioning version
+is correct by looking at var/provision_version, which is at
+version {}, and we compare it to the version in source
+control (version.py), which is {}.
 """
 
 
@@ -37,18 +36,18 @@ def preamble(version: str) -> str:
 
 
 NEED_TO_DOWNGRADE = """
-The branch you are currently on expects an older version of
-dependencies than the version you provisioned last. This may
-be ok, but it's likely that you either want to rebase your
-branch on top of upstream/main or re-provision your machine.
+It looks like you checked out a branch that expects an older
+version of dependencies than the version you provisioned last.
+This may be ok, but it's likely that you either want to rebase
+your branch on top of upstream/main or re-provision your VM.
 
 Do this: `./tools/provision`
 """
 
 NEED_TO_UPGRADE = """
-The branch you are currently on has added dependencies beyond
-what you last provisioned. Your command is likely to fail
-until you add dependencies by provisioning.
+It looks like you checked out a branch that has added
+dependencies beyond what you last provisioned. Your command
+is likely to fail until you add dependencies by provisioning.
 
 Do this: `./tools/provision`
 """

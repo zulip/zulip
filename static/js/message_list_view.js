@@ -147,8 +147,7 @@ function populate_group_from_message_container(group, message_container) {
     if (group.is_stream) {
         group.background_color = stream_data.get_color(message_container.msg.stream);
         group.color_class = color_class.get_css_class(group.background_color);
-        group.invite_only = stream_data.is_invite_only_by_stream_name(message_container.msg.stream);
-        group.is_web_public = stream_data.is_web_public(message_container.msg.stream_id);
+        group.invite_only = stream_data.get_invite_only(message_container.msg.stream);
         group.topic = message_container.msg.topic;
         group.match_topic = util.get_match_topic(message_container.msg);
         group.stream_url = message_container.stream_url;
