@@ -741,6 +741,8 @@ function get_user_sidebar_popover_items() {
     return $("li:not(.divider):visible > a", current_user_sidebar_popover.$tip);
 }
 
+function show_poll_popover() {}
+
 export function user_sidebar_popover_handle_keyboard(key) {
     const items = get_user_sidebar_popover_items();
     popover_items_handle_keyboard(key, items);
@@ -889,6 +891,11 @@ export function register_click_handlers() {
             }
             toggle_playground_link_popover(this, playground_info);
         }
+    });
+
+    $("body").on("click", ".send_poll", (e) => {
+        show_poll_popover();
+        e.preventDefault();
     });
 
     $("body").on("click", ".popover_playground_link", (e) => {
