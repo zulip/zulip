@@ -800,11 +800,106 @@ class ImportExportTest(ZulipTestCase):
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
             do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
 
+        getters = self.get_realm_getters()
+
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+
+        # test realm
+        self.assertTrue(Realm.objects.filter(string_id="test-zulip").exists())
+        self.assertNotEqual(imported_realm.id, original_realm.id)
+
+        def assert_realm_values(f: Callable[[Realm], Any]) -> None:
+            orig_realm_result = f(original_realm)
+            imported_realm_result = f(imported_realm)
+            # orig_realm_result should be truthy and have some values, otherwise
+            # the test is kind of meaningless
+            assert orig_realm_result
+
+            # It may be helpful to do print(f.__name__) if you are having
+            # trouble debugging this.
+
+            # print(f.__name__, orig_realm_result, imported_realm_result)
+            self.assertEqual(orig_realm_result, imported_realm_result)
+
+        for f in getters:
+            assert_realm_values(f)
+
+        self.verify_emoji_code_foreign_keys()
+
+        # Our huddle hashes change, because hashes use ids that change.
+        self.assertNotEqual(
+            self.get_huddle_hashes(original_realm), self.get_huddle_hashes(imported_realm)
+        )
+
+        # test to highlight that bs4 which we use to do data-**id
+        # replacements modifies the HTML sometimes. eg replacing <br>
+        # with </br>, &#39; with \' etc. The modifications doesn't
+        # affect how the browser displays the rendered_content so we
+        # are okay with using bs4 for this.  lxml package also has
+        # similar behavior.
+        orig_polonius_user = self.example_user("polonius")
+        original_msg = Message.objects.get(
+            content=special_characters_message, sender__realm=original_realm
+        )
+        self.assertEqual(
+            original_msg.rendered_content,
+            '<div class="codehilite"><pre><span></span><code>&#39;\n</code></pre></div>\n'
+            f'<p><span class="user-mention" data-user-id="{orig_polonius_user.id}">@Polonius</span></p>',
+        )
+        imported_polonius_user = UserProfile.objects.get(
+            delivery_email=self.example_email("polonius"), realm=imported_realm
+        )
+        imported_msg = Message.objects.get(
+            content=special_characters_message, sender__realm=imported_realm
+        )
+        self.assertEqual(
+            imported_msg.rendered_content,
+            '<div class="codehilite"><pre><span></span><code>\'\n</code></pre></div>\n'
+            f'<p><span class="user-mention" data-user-id="{imported_polonius_user.id}">@Polonius</span></p>',
+        )
+
+        # Check recipient_id was generated correctly for the imported users and streams.
+        for user_profile in UserProfile.objects.filter(realm=imported_realm):
+            self.assertEqual(
+                user_profile.recipient_id,
+                Recipient.objects.get(type=Recipient.PERSONAL, type_id=user_profile.id).id,
+            )
+        for stream in Stream.objects.filter(realm=imported_realm):
+            self.assertEqual(
+                stream.recipient_id,
+                Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id).id,
+            )
+
+        for huddle_object in Huddle.objects.all():
+            # Huddles don't have a realm column, so we just test all Huddles for simplicity.
+            self.assertEqual(
+                huddle_object.recipient_id,
+                Recipient.objects.get(type=Recipient.HUDDLE, type_id=huddle_object.id).id,
+            )
+
+        for user_profile in UserProfile.objects.filter(realm=imported_realm):
+            # Check that all Subscriptions have the correct is_user_active set.
+            self.assertEqual(
+                Subscription.objects.filter(
+                    user_profile=user_profile, is_user_active=user_profile.is_active
+                ).count(),
+                Subscription.objects.filter(user_profile=user_profile).count(),
+            )
+        # Verify that we've actually tested something meaningful instead of a blind import
+        # with is_user_active=True used for everything.
+        self.assertTrue(Subscription.objects.filter(is_user_active=False).exists())
+
+    def get_realm_getters(self) -> List[Callable[[Realm], Any]]:
+        names = set()
         getters: List[Callable[[Realm], Any]] = []
 
         def getter(f: Callable[[Realm], Any]) -> Callable[[Realm], Any]:
             getters.append(f)
             assert f.__name__.startswith("get_")
+
+            # Avoid dups
+            assert f.__name__ not in names
+            names.add(f.__name__)
             return f
 
         @getter
@@ -915,6 +1010,7 @@ class ImportExportTest(ZulipTestCase):
 
         @getter
         def get_realm_user_statuses(r: Realm) -> Set[Tuple[str, str, int, str]]:
+            cordelia = self.example_user("cordelia")
             tups = {
                 (rec.user_profile.full_name, rec.emoji_name, rec.status, rec.status_text)
                 for rec in UserStatus.objects.filter(user_profile__realm_id=r.id)
@@ -924,6 +1020,7 @@ class ImportExportTest(ZulipTestCase):
 
         @getter
         def get_realm_emoji_reactions(r: Realm) -> Set[Tuple[str, str]]:
+            cordelia = self.example_user("cordelia")
             tups = {
                 (rec.emoji_name, rec.user_profile.full_name)
                 for rec in Reaction.objects.filter(
@@ -1050,92 +1147,7 @@ class ImportExportTest(ZulipTestCase):
                 "twenty_four_hour_time": realm_user_default.twenty_four_hour_time,
             }
 
-        imported_realm = Realm.objects.get(string_id="test-zulip")
-
-        # test realm
-        self.assertTrue(Realm.objects.filter(string_id="test-zulip").exists())
-        self.assertNotEqual(imported_realm.id, original_realm.id)
-
-        def assert_realm_values(f: Callable[[Realm], Any]) -> None:
-            orig_realm_result = f(original_realm)
-            imported_realm_result = f(imported_realm)
-            # orig_realm_result should be truthy and have some values, otherwise
-            # the test is kind of meaningless
-            assert orig_realm_result
-
-            # It may be helpful to do print(f.__name__) if you are having
-            # trouble debugging this.
-
-            # print(f.__name__, orig_realm_result, imported_realm_result)
-            self.assertEqual(orig_realm_result, imported_realm_result)
-
-        for f in getters:
-            assert_realm_values(f)
-
-        self.verify_emoji_code_foreign_keys()
-
-        # Our huddle hashes change, because hashes use ids that change.
-        self.assertNotEqual(
-            self.get_huddle_hashes(original_realm), self.get_huddle_hashes(imported_realm)
-        )
-
-        # test to highlight that bs4 which we use to do data-**id
-        # replacements modifies the HTML sometimes. eg replacing <br>
-        # with </br>, &#39; with \' etc. The modifications doesn't
-        # affect how the browser displays the rendered_content so we
-        # are okay with using bs4 for this.  lxml package also has
-        # similar behavior.
-        orig_polonius_user = self.example_user("polonius")
-        original_msg = Message.objects.get(
-            content=special_characters_message, sender__realm=original_realm
-        )
-        self.assertEqual(
-            original_msg.rendered_content,
-            '<div class="codehilite"><pre><span></span><code>&#39;\n</code></pre></div>\n'
-            f'<p><span class="user-mention" data-user-id="{orig_polonius_user.id}">@Polonius</span></p>',
-        )
-        imported_polonius_user = UserProfile.objects.get(
-            delivery_email=self.example_email("polonius"), realm=imported_realm
-        )
-        imported_msg = Message.objects.get(
-            content=special_characters_message, sender__realm=imported_realm
-        )
-        self.assertEqual(
-            imported_msg.rendered_content,
-            '<div class="codehilite"><pre><span></span><code>\'\n</code></pre></div>\n'
-            f'<p><span class="user-mention" data-user-id="{imported_polonius_user.id}">@Polonius</span></p>',
-        )
-
-        # Check recipient_id was generated correctly for the imported users and streams.
-        for user_profile in UserProfile.objects.filter(realm=imported_realm):
-            self.assertEqual(
-                user_profile.recipient_id,
-                Recipient.objects.get(type=Recipient.PERSONAL, type_id=user_profile.id).id,
-            )
-        for stream in Stream.objects.filter(realm=imported_realm):
-            self.assertEqual(
-                stream.recipient_id,
-                Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id).id,
-            )
-
-        for huddle_object in Huddle.objects.all():
-            # Huddles don't have a realm column, so we just test all Huddles for simplicity.
-            self.assertEqual(
-                huddle_object.recipient_id,
-                Recipient.objects.get(type=Recipient.HUDDLE, type_id=huddle_object.id).id,
-            )
-
-        for user_profile in UserProfile.objects.filter(realm=imported_realm):
-            # Check that all Subscriptions have the correct is_user_active set.
-            self.assertEqual(
-                Subscription.objects.filter(
-                    user_profile=user_profile, is_user_active=user_profile.is_active
-                ).count(),
-                Subscription.objects.filter(user_profile=user_profile).count(),
-            )
-        # Verify that we've actually tested something meaningful instead of a blind import
-        # with is_user_active=True used for everything.
-        self.assertTrue(Subscription.objects.filter(is_user_active=False).exists())
+        return getters
 
     def test_import_realm_with_no_realm_user_default_table(self) -> None:
         original_realm = Realm.objects.get(string_id="zulip")
