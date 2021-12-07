@@ -612,6 +612,10 @@ i18n_urls = [
         landing_view,
         {"template_name": "zerver/development-community.html"},
     ),
+    # Renamed to have a cleared URL.
+    path(
+        "developer-community/", RedirectView.as_view(url="/development-community/", permanent=True)
+    ),
     path("attribution/", landing_view, {"template_name": "zerver/attribution.html"}),
     path("team/", team_view),
     path("history/", landing_view, {"template_name": "zerver/history.html"}),
@@ -621,6 +625,7 @@ i18n_urls = [
     path("for/open-source/", landing_view, {"template_name": "zerver/for-open-source.html"}),
     path("for/research/", landing_view, {"template_name": "zerver/for-research.html"}),
     path("for/business/", landing_view, {"template_name": "zerver/for-business.html"}),
+    path("for/companies/", RedirectView.as_view(url="/for/business/", permanent=True)),
     path("case-studies/tum/", landing_view, {"template_name": "zerver/tum-case-study.html"}),
     path("case-studies/ucsd/", landing_view, {"template_name": "zerver/ucsd-case-study.html"}),
     path("case-studies/rust/", landing_view, {"template_name": "zerver/rust-case-study.html"}),
@@ -639,10 +644,6 @@ i18n_urls = [
     # Terms of Service and privacy pages.
     path("terms/", terms_view),
     path("privacy/", privacy_view),
-    path(
-        "developer-community/", RedirectView.as_view(url="/development-community/", permanent=True)
-    ),
-    path("for/companies/", RedirectView.as_view(url="/for/business/", permanent=True)),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
