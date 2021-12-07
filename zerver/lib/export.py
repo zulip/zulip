@@ -1270,7 +1270,9 @@ def write_message_partial_for_query(
     return dump_file_id
 
 
-def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
+def export_uploads_and_avatars(
+    realm: Realm, *, user: Optional[UserProfile], output_dir: Path
+) -> None:
     uploads_output_dir = os.path.join(output_dir, "uploads")
     avatars_output_dir = os.path.join(output_dir, "avatars")
     realm_icons_output_dir = os.path.join(output_dir, "realm_icons")
@@ -1285,22 +1287,37 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
 
+    if user is None:
+        handle_system_bots = True
+        users = list(UserProfile.objects.filter(realm=realm))
+        attachments = list(Attachment.objects.filter(realm_id=realm.id))
+        realm_emojis = list(RealmEmoji.objects.filter(realm_id=realm.id))
+    else:
+        handle_system_bots = False
+        users = [user]
+        attachments = list(Attachment.objects.filter(owner_id=user.id))
+        realm_emojis = list(RealmEmoji.objects.filter(author_id=user.id))
+
     if settings.LOCAL_UPLOADS_DIR:
         # Small installations and developers will usually just store files locally.
         export_uploads_from_local(
             realm,
             local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "files"),
             output_dir=uploads_output_dir,
+            attachments=attachments,
         )
         export_avatars_from_local(
             realm,
             local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"),
             output_dir=avatars_output_dir,
+            users=users,
+            handle_system_bots=handle_system_bots,
         )
         export_emoji_from_local(
             realm,
             local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"),
             output_dir=emoji_output_dir,
+            realm_emojis=realm_emojis,
         )
         export_realm_icons(
             realm,
@@ -1308,43 +1325,62 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
             output_dir=realm_icons_output_dir,
         )
     else:
-        user_ids = {user.id for user in UserProfile.objects.filter(realm=realm)}
+        user_ids = {user.id for user in users}
 
         # Some bigger installations will have their data stored on S3.
+
+        path_ids = {attachment.path_id for attachment in attachments}
+
         export_files_from_s3(
             realm,
+            handle_system_bots=handle_system_bots,
             flavor="upload",
             bucket_name=settings.S3_AUTH_UPLOADS_BUCKET,
             object_prefix=f"{realm.id}/",
             output_dir=uploads_output_dir,
             user_ids=user_ids,
+            valid_hashes=path_ids,
         )
+
+        avatar_hash_values = set()
+        for user_id in user_ids:
+            avatar_path = user_avatar_path_from_ids(user_id, realm.id)
+            avatar_hash_values.add(avatar_path)
+            avatar_hash_values.add(avatar_path + ".original")
 
         export_files_from_s3(
             realm,
+            handle_system_bots=handle_system_bots,
             flavor="avatar",
             bucket_name=settings.S3_AVATAR_BUCKET,
             object_prefix=f"{realm.id}/",
             output_dir=avatars_output_dir,
             user_ids=user_ids,
+            valid_hashes=avatar_hash_values,
         )
+
+        emoji_paths = {get_emoji_path(realm_emoji) for realm_emoji in realm_emojis}
 
         export_files_from_s3(
             realm,
+            handle_system_bots=handle_system_bots,
             flavor="emoji",
             bucket_name=settings.S3_AVATAR_BUCKET,
             object_prefix=f"{realm.id}/emoji/images/",
             output_dir=emoji_output_dir,
             user_ids=user_ids,
+            valid_hashes=emoji_paths,
         )
 
         export_files_from_s3(
             realm,
+            handle_system_bots=handle_system_bots,
             flavor="realm_icon_or_logo",
             bucket_name=settings.S3_AVATAR_BUCKET,
             object_prefix=f"{realm.id}/realm/",
             output_dir=realm_icons_output_dir,
             user_ids=user_ids,
+            valid_hashes=None,
         )
 
 
@@ -1419,14 +1455,15 @@ def _save_s3_object_to_file(
 
 def export_files_from_s3(
     realm: Realm,
+    handle_system_bots: bool,
     flavor: str,
     bucket_name: str,
     object_prefix: str,
     output_dir: Path,
     user_ids: Set[int],
+    valid_hashes: Optional[Set[str]],
 ) -> None:
     processing_uploads = flavor == "upload"
-    processing_avatars = flavor == "avatar"
     processing_emoji = flavor == "emoji"
 
     bucket = get_bucket(bucket_name)
@@ -1434,24 +1471,18 @@ def export_files_from_s3(
 
     logging.info("Downloading %s files from %s", flavor, bucket_name)
 
-    avatar_hash_values = set()
-    if processing_avatars:
-        for user_id in user_ids:
-            avatar_path = user_avatar_path_from_ids(user_id, realm.id)
-            avatar_hash_values.add(avatar_path)
-            avatar_hash_values.add(avatar_path + ".original")
-
     email_gateway_bot: Optional[UserProfile] = None
 
-    if settings.EMAIL_GATEWAY_BOT is not None:
+    if handle_system_bots and settings.EMAIL_GATEWAY_BOT is not None:
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
         user_ids.add(email_gateway_bot.id)
 
     count = 0
     for bkey in bucket.objects.filter(Prefix=object_prefix):
-        if processing_avatars and bkey.Object().key not in avatar_hash_values:
-            continue
+        if valid_hashes is not None:
+            if bkey.Object().key not in valid_hashes:
+                continue
 
         key = bucket.Object(bkey.key)
 
@@ -1496,11 +1527,13 @@ def export_files_from_s3(
         records_file.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
 
 
-def export_uploads_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> None:
+def export_uploads_from_local(
+    realm: Realm, local_dir: Path, output_dir: Path, attachments: List[Attachment]
+) -> None:
 
     count = 0
     records = []
-    for attachment in Attachment.objects.filter(realm_id=realm.id):
+    for attachment in attachments:
         # Use 'mark_sanitized' to work around false positive caused by Pysa
         # thinking that 'realm' (and thus 'attachment' and 'attachment.path_id')
         # are user controlled
@@ -1532,19 +1565,25 @@ def export_uploads_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
         records_file.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
 
 
-def export_avatars_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> None:
+def export_avatars_from_local(
+    realm: Realm,
+    local_dir: Path,
+    output_dir: Path,
+    users: List[UserProfile],
+    handle_system_bots: bool,
+) -> None:
 
     count = 0
     records = []
 
-    users = list(UserProfile.objects.filter(realm=realm))
+    if handle_system_bots:
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        users += [
+            get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id),
+            get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id),
+            get_system_bot(settings.WELCOME_BOT, internal_realm.id),
+        ]
 
-    internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
-    users += [
-        get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id),
-        get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id),
-        get_system_bot(settings.WELCOME_BOT, internal_realm.id),
-    ]
     for user in users:
         if user.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
             continue
@@ -1601,15 +1640,21 @@ def export_realm_icons(realm: Realm, local_dir: Path, output_dir: Path) -> None:
         records_file.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
 
 
-def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> None:
+def get_emoji_path(realm_emoji: RealmEmoji) -> str:
+    return RealmEmoji.PATH_ID_TEMPLATE.format(
+        realm_id=realm_emoji.realm_id,
+        emoji_file_name=realm_emoji.file_name,
+    )
+
+
+def export_emoji_from_local(
+    realm: Realm, local_dir: Path, output_dir: Path, realm_emojis: List[RealmEmoji]
+) -> None:
 
     count = 0
     records = []
-    for realm_emoji in RealmEmoji.objects.filter(realm_id=realm.id):
-        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
-            realm_id=realm.id,
-            emoji_file_name=realm_emoji.file_name,
-        )
+    for realm_emoji in realm_emojis:
+        emoji_path = get_emoji_path(realm_emoji)
 
         # Use 'mark_sanitized' to work around false positive caused by Pysa
         # thinking that 'realm' (and thus 'attachment' and 'attachment.path_id')
@@ -1705,7 +1750,7 @@ def do_export_realm(
     sanity_check_output(response)
 
     logging.info("Exporting uploaded files and avatars")
-    export_uploads_and_avatars(realm, output_dir)
+    export_uploads_and_avatars(realm, user=None, output_dir=output_dir)
 
     # We (sort of) export zerver_message rows here.  We write
     # them to .partial files that are subsequently fleshed out
@@ -1823,6 +1868,9 @@ def do_export_user(user_profile: UserProfile, output_dir: Path) -> None:
     write_data_to_file(output_file=export_file, data=response)
     logging.info("Exporting messages")
     export_messages_single_user(user_profile, output_dir)
+
+    logging.info("Exporting images")
+    export_uploads_and_avatars(user_profile.realm, user=user_profile, output_dir=output_dir)
 
 
 def export_single_user(user_profile: UserProfile, response: TableData) -> None:
