@@ -22,6 +22,12 @@
                     <textarea id="id_realm_description" name="realm_description" class="admin-realm-description setting-widget prop-element"
                       maxlength="1000" data-setting-widget-type="string">{{ realm_description }}</textarea>
                 </div>
+                <div class="input-group admin-realm">
+                    <label for="id_realm_guidelines_url">{{t "Organization guidelines" }}</label>
+                    <input type="url" id="id_realm_guidelines_url" name="realm_guidelines_url" class="setting-widget prop-element"
+                      autocomplete="off" data-setting-widget-type="string"
+                      value="{{ realm_guidelines_url }}" />
+                </div>
             </div>
         </div>
 
@@ -65,6 +71,7 @@
               is_editable_by_current_user = user_can_change_logo
               image = realm_night_logo_url }}
         </div>
+
         <h3 class="light">
             {{t "Deactivate organization" }}
             <i class="fa fa-info-circle settings-info-icon realm_deactivation_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Only owners can deactivate the organization.' }}"></i>
@@ -76,5 +83,6 @@
                 </button>
             </div>
         </div>
+
     </form>
 </div>

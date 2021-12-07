@@ -19,6 +19,7 @@ import * as settings_toggle from "./settings_toggle";
 const admin_settings_label = {
     // Organization settings
     realm_allow_edit_history: $t({defaultMessage: "Enable message edit history"}),
+    realm_guidelines_url: $t({defaultMessage: "Enable new member guidelines display"}),
     realm_mandatory_topics: $t({defaultMessage: "Require topics in stream messages"}),
     realm_notifications_stream: $t({defaultMessage: "New stream notifications:"}),
     realm_signup_notifications_stream: $t({defaultMessage: "New user notifications:"}),
@@ -27,9 +28,6 @@ const admin_settings_label = {
     realm_send_welcome_emails: $t({defaultMessage: "Send emails introducing Zulip to new users"}),
     realm_message_content_allowed_in_email_notifications: $t({
         defaultMessage: "Allow message content in message notification emails",
-    }),
-    realm_enable_spectator_access: $t({
-        defaultMessage: "Allow creating web-public streams (visible to anyone on the Internet)",
     }),
     realm_digest_emails_enabled: $t({
         defaultMessage: "Send weekly digest emails to inactive users",
@@ -84,6 +82,7 @@ export function build_page() {
         giphy_rating_options: page_params.giphy_rating_options,
         giphy_api_key_empty: page_params.giphy_api_key === "",
         realm_description: page_params.realm_description,
+        realm_guidelines_url: page_params.realm_guidelines_url,
         realm_inline_image_preview: page_params.realm_inline_image_preview,
         server_inline_image_preview: page_params.server_inline_image_preview,
         realm_inline_url_embed_preview: page_params.realm_inline_url_embed_preview,
@@ -122,7 +121,6 @@ export function build_page() {
         realm_send_welcome_emails: page_params.realm_send_welcome_emails,
         realm_message_content_allowed_in_email_notifications:
             page_params.realm_message_content_allowed_in_email_notifications,
-        realm_enable_spectator_access: page_params.realm_enable_spectator_access,
         settings_send_digest_emails: page_params.settings_send_digest_emails,
         realm_digest_emails_enabled: page_params.realm_digest_emails_enabled,
         realm_digest_weekday: page_params.realm_digest_weekday,
@@ -158,14 +156,11 @@ export function build_page() {
         email_notifications_batching_period_values:
             settings_config.email_notifications_batching_period_values,
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
-        create_web_public_stream_policy_values:
-            settings_config.create_web_public_stream_policy_values,
-        disable_enable_spectator_access_setting: !page_params.server_web_public_streams_enabled,
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
-        // If no dark theme logo is specified but a light theme one is,
-        // use the light theme one.  See also similar code in realm_logo.js.
+        // If no night mode logo is specified but a day mode one is,
+        // use the day mode one.  See also similar code in realm_logo.js.
         options.realm_night_logo_url = options.realm_logo_url;
     }
 

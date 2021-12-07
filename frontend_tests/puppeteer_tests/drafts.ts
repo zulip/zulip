@@ -22,6 +22,7 @@ async function get_drafts_count(page: Page): Promise<number> {
 
 const drafts_button = ".top_left_drafts";
 const drafts_overlay = "#draft_overlay";
+const drafts_button_in_compose = "#below-compose-content .drafts-link";
 
 async function test_empty_drafts(page: Page): Promise<void> {
     await page.waitForSelector(drafts_button, {visible: true});
@@ -67,10 +68,10 @@ async function open_compose_markdown_preview(page: Page): Promise<void> {
     await page.click(markdown_preview_button);
 }
 
-async function open_drafts_after_markdown_preview(page: Page): Promise<void> {
+async function open_drafts_through_compose(page: Page): Promise<void> {
     await open_compose_markdown_preview(page);
-    await page.waitForSelector(drafts_button, {visible: true});
-    await page.click(drafts_button);
+    await page.waitForSelector(drafts_button_in_compose, {visible: true});
+    await page.click(drafts_button_in_compose);
     await wait_for_drafts_to_appear(page);
 }
 
@@ -249,7 +250,7 @@ async function drafts_test(page: Page): Promise<void> {
 
     await create_stream_message_draft(page);
     await create_private_message_draft(page);
-    await open_drafts_after_markdown_preview(page);
+    await open_drafts_through_compose(page);
     await test_previously_created_drafts_rendered(page);
 
     await test_restore_message_draft(page);

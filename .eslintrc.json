@@ -38,7 +38,6 @@
         "import/extensions": "error",
         "import/first": "error",
         "import/newline-after-import": "error",
-        "import/no-self-import": "error",
         "import/no-useless-path-segments": "error",
         "import/order": [
             "error",
@@ -104,7 +103,6 @@
         "unicorn/consistent-function-scoping": "off",
         "unicorn/explicit-length-check": "off",
         "unicorn/filename-case": "off",
-        "unicorn/no-await-expression-member": "off",
         "unicorn/no-nested-ternary": "off",
         "unicorn/no-null": "off",
         "unicorn/no-process-exit": "off",

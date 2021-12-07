@@ -1,11 +1,8 @@
 import $ from "jquery";
 
-import render_dialog_default_language from "../templates/default_language_modal.hbs";
-
 import * as channel from "./channel";
-import * as dialog_widget from "./dialog_widget";
 import * as emojisets from "./emojisets";
-import {$t_html, get_language_list_columns, get_language_name} from "./i18n";
+import {$t_html, get_language_name} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
 import * as settings_org from "./settings_org";
@@ -68,6 +65,10 @@ export function set_up(settings_panel) {
         return;
     }
 
+    $("#user_default_language_modal [data-dismiss]").on("click", () => {
+        overlays.close_modal("#user_default_language_modal");
+    });
+
     // Common handler for sending requests to the server when an input
     // element is changed.
     container.on("change", "input[type=checkbox], select", function (e) {
@@ -95,55 +96,38 @@ export function set_up(settings_panel) {
         }
     });
 
-    function default_language_modal_post_render() {
-        $("#user_default_language_modal")
-            .find(".language")
-            .on("click", (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                dialog_widget.close_modal();
+    $("#user_default_language_modal")
+        .find(".language")
+        .on("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            overlays.close_modal("#user_default_language_modal");
 
-                const $link = $(e.target).closest("a[data-code]");
-                const setting_value = $link.attr("data-code");
-                const data = {default_language: setting_value};
+            const $link = $(e.target).closest("a[data-code]");
+            const setting_value = $link.attr("data-code");
+            const data = {default_language: setting_value};
 
-                const new_language = $link.attr("data-name");
-                container.find(".default_language_name").text(new_language);
+            const new_language = $link.attr("data-name");
+            container.find(".default_language_name").text(new_language);
 
-                change_display_setting(
-                    data,
-                    container.find(".lang-time-settings-status"),
-                    $t_html(
-                        {
-                            defaultMessage:
-                                "Saved. Please <z-link>reload</z-link> for the change to take effect.",
-                        },
-                        {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
-                    ),
-                    true,
-                );
-            });
-    }
+            change_display_setting(
+                data,
+                container.find(".lang-time-settings-status"),
+                $t_html(
+                    {
+                        defaultMessage:
+                            "Saved. Please <z-link>reload</z-link> for the change to take effect.",
+                    },
+                    {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
+                ),
+                true,
+            );
+        });
 
     container.find(".setting_default_language").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-
-        const html_body = render_dialog_default_language({
-            language_list: get_language_list_columns(user_settings.default_language),
-        });
-
-        dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Select default language"}),
-            html_body,
-            html_submit_button: $t_html({defaultMessage: "Close"}),
-            id: "user_default_language_modal",
-            close_on_submit: true,
-            focus_submit_on_open: true,
-            single_footer_button: true,
-            post_render: default_language_modal_post_render,
-            on_click: () => {},
-        });
+        overlays.open_modal("#user_default_language_modal");
     });
 
     $("body").on("click", ".reload_link", () => {

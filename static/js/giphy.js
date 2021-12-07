@@ -46,9 +46,9 @@ export function update_giphy_rating() {
         page_params.realm_giphy_rating === page_params.giphy_rating_options.disabled.id ||
         page_params.giphy_api_key === ""
     ) {
-        $(".compose_gif_icon").hide();
+        $(".compose_giphy_link").hide();
     } else {
-        $(".compose_gif_icon").show();
+        $(".compose_giphy_link").show();
     }
 }
 
@@ -220,15 +220,13 @@ export function initialize() {
         e.preventDefault();
         e.stopPropagation();
 
-        const compose_click_target = compose_ui.get_compose_click_target(e);
-        if (active_popover_element && active_popover_element.get()[0] === compose_click_target) {
+        if (active_popover_element && $.contains(active_popover_element.get()[0], e.target)) {
             // Hide giphy popover if already active.
             hide_giphy_popover();
             return;
         }
         popovers.hide_all();
-
-        const $elt = $(compose_click_target);
+        const $elt = $(e.target);
         if ($elt.parents(".message_edit_form").length === 1) {
             // Store message id in global variable edit_message_id so that
             // its value can be further used to correctly find the message textarea element.
@@ -237,7 +235,7 @@ export function initialize() {
             edit_message_id = undefined;
         }
 
-        active_popover_element = $elt;
+        active_popover_element = $elt.closest(".compose_giphy_link");
         active_popover_element.popover({
             animation: true,
             placement: get_popover_placement(),

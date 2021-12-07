@@ -314,8 +314,8 @@ def update_stream_backend(
         # Enforce restrictions on creating web-public streams.
         if not user_profile.realm.web_public_streams_enabled():
             raise JsonableError(_("Web public streams are not enabled."))
-        if not user_profile.can_create_web_public_streams():
-            raise JsonableError(_("Insufficient permission"))
+        if not user_profile.is_realm_owner:
+            raise OrganizationOwnerRequired()
         # Forbid parameter combinations that are inconsistent
         if is_private or history_public_to_subscribers is False:
             raise JsonableError(_("Invalid parameters"))
@@ -877,6 +877,7 @@ def update_subscription_properties_backend(
         "pin_to_top": check_bool,
         "wildcard_mentions_notify": check_bool,
     }
+    response_data = []
 
     for change in subscription_data:
         stream_id = change["stream_id"]
@@ -899,16 +900,6 @@ def update_subscription_properties_backend(
             user_profile, sub, stream, property, value, acting_user=user_profile
         )
 
-    # TODO: Do this more generally, see update_realm_user_settings_defaults.realm.py
-    from zerver.lib.request import RequestNotes
+        response_data.append({"stream_id": stream_id, "property": property, "value": value})
 
-    request_notes = RequestNotes.get_notes(request)
-    for req_var in request.POST:
-        if req_var not in request_notes.processed_parameters:
-            request_notes.ignored_parameters.add(req_var)
-
-    result: Dict[str, Any] = {}
-    if len(request_notes.ignored_parameters) > 0:
-        result["ignored_parameters_unsupported"] = list(request_notes.ignored_parameters)
-
-    return json_success(result)
+    return json_success({"subscription_data": response_data})

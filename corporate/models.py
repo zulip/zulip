@@ -8,7 +8,6 @@ from django.db import models
 from django.db.models import CASCADE
 
 from zerver.models import Realm, UserProfile
-from zilencer.models import RemoteZulipServer
 
 
 class Customer(models.Model):
@@ -18,10 +17,7 @@ class Customer(models.Model):
     and the active plan, if any.
     """
 
-    realm: Optional[Realm] = models.OneToOneField(Realm, on_delete=CASCADE, null=True)
-    remote_server: Optional[RemoteZulipServer] = models.OneToOneField(
-        RemoteZulipServer, on_delete=CASCADE, null=True
-    )
+    realm: Realm = models.OneToOneField(Realm, on_delete=CASCADE)
     stripe_customer_id: Optional[str] = models.CharField(max_length=255, null=True, unique=True)
     sponsorship_pending: bool = models.BooleanField(default=False)
     # A percentage, like 85.
@@ -33,20 +29,6 @@ class Customer(models.Model):
     # organizations from adding more users than the number of licenses
     # they purchased.
     exempt_from_from_license_number_check: bool = models.BooleanField(default=False)
-
-    @property
-    def is_self_hosted(self) -> bool:
-        is_self_hosted = self.remote_server is not None
-        if is_self_hosted:
-            assert self.realm is None
-        return is_self_hosted
-
-    @property
-    def is_cloud(self) -> bool:
-        is_cloud = self.realm is not None
-        if is_cloud:
-            assert self.remote_server is None
-        return is_cloud
 
     def __str__(self) -> str:
         return f"<Customer {self.realm} {self.stripe_customer_id}>"

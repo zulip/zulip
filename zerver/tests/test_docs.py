@@ -154,15 +154,14 @@ class DocPageTest(ZulipTestCase):
             self._test("/apps/", "Apps for every platform.")
         self._test("/features/", "Beautiful messaging")
         self._test("/hello/", "Chat for distributed teams", landing_missing_strings=["Log in"])
-        self._test("/development-community/", "Zulip development community")
+        self._test("/developer-community/", "Zulip developer community")
         self._test("/why-zulip/", "Why Zulip?")
         self._test("/for/open-source/", "for open source projects")
         self._test("/for/events/", "for conferences and events")
         self._test("/for/education/", "education pricing")
+        self._test("/case-studies/lean/", "Lean theorem prover")
         self._test("/case-studies/tum/", "Technical University of Munich")
         self._test("/case-studies/ucsd/", "UCSD")
-        self._test("/case-studies/rust/", "Rust programming language")
-        self._test("/case-studies/lean/", "Lean theorem prover")
         self._test("/for/research/", "for research")
         self._test("/for/companies/", "Communication efficiency represents")
         self._test("/for/communities/", "Zulip for communities")
@@ -184,10 +183,6 @@ class DocPageTest(ZulipTestCase):
         result = self.client_get("/new-user/")
         self.assertEqual(result.status_code, 301)
         self.assertIn("hello", result["Location"])
-
-        result = self.client_get("/developer-community/")
-        self.assertEqual(result.status_code, 301)
-        self.assertIn("development-community", result["Location"])
 
     def test_portico_pages_open_graph_metadata(self) -> None:
         # Why Zulip

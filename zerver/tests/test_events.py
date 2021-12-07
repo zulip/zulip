@@ -39,8 +39,8 @@ from zerver.lib.actions import (
     do_change_full_name,
     do_change_icon_source,
     do_change_logo_source,
+    do_change_plan_type,
     do_change_realm_domain,
-    do_change_realm_plan_type,
     do_change_stream_description,
     do_change_stream_message_retention_days,
     do_change_stream_permission,
@@ -1546,7 +1546,7 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(state_data["zulip_plan_is_not_limited"], True)
 
         events = self.verify_action(
-            lambda: do_change_realm_plan_type(
+            lambda: do_change_plan_type(
                 realm, Realm.PLAN_TYPE_LIMITED, acting_user=self.user_profile
             )
         )
@@ -1691,14 +1691,14 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(action, state_change_expected=True)
         check_realm_update_dict("events[0]", events[0])
 
-    def test_change_realm_light_theme_logo_source(self) -> None:
+    def test_change_realm_day_mode_logo_source(self) -> None:
         action = lambda: do_change_logo_source(
             self.user_profile.realm, Realm.LOGO_UPLOADED, False, acting_user=self.user_profile
         )
         events = self.verify_action(action, state_change_expected=True)
         check_realm_update_dict("events[0]", events[0])
 
-    def test_change_realm_dark_theme_logo_source(self) -> None:
+    def test_change_realm_night_mode_logo_source(self) -> None:
         action = lambda: do_change_logo_source(
             self.user_profile.realm, Realm.LOGO_UPLOADED, True, acting_user=self.user_profile
         )
@@ -2148,6 +2148,7 @@ class RealmPropertyActionTest(BaseAction):
             digest_weekday=[0, 1, 2],
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
+            guidelines_url=["https://zulip.readthedocs.io/en/latest/chat-zulip-org.html"],
             waiting_period_threshold=[10, 20],
             create_public_stream_policy=Realm.COMMON_POLICY_TYPES,
             create_private_stream_policy=Realm.COMMON_POLICY_TYPES,

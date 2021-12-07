@@ -178,7 +178,7 @@ def get_bigbluebutton_url(request: HttpRequest, user_profile: UserProfile) -> Ht
     # https://docs.bigbluebutton.org/dev/api.html#usage for reference for checksum
     id = "zulip-" + str(random.randint(100000000000, 999999999999))
     password = b32encode(secrets.token_bytes(7))[:10].decode()
-    checksum = hashlib.sha256(
+    checksum = hashlib.sha1(
         (
             "create"
             + "meetingID="
@@ -257,7 +257,7 @@ def join_bigbluebutton(
             quote_via=quote,
         )
 
-        checksum = hashlib.sha256(
+        checksum = hashlib.sha1(
             ("join" + join_params + settings.BIG_BLUE_BUTTON_SECRET).encode()
         ).hexdigest()
         redirect_url_base = append_url_query_string(

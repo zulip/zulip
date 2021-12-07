@@ -9,12 +9,12 @@ from zerver.models import UserProfile
 
 def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]:
     def change_mode_setting(
-        setting_name: str, switch_command: str, setting: str, setting_value: int
+        command: str, switch_command: str, setting: str, setting_value: int
     ) -> str:
         msg = (
-            "Changed to {setting_name}! To revert "
-            "{setting_name}, type `/{switch_command}`.".format(
-                setting_name=setting_name,
+            "Changed to {command} mode! To revert "
+            "{command} mode, type `/{switch_command}`.".format(
+                command=command,
                 switch_command=switch_command,
             )
         )
@@ -34,10 +34,10 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
         return {}
     elif command == "night":
         if user_profile.color_scheme == UserProfile.COLOR_SCHEME_NIGHT:
-            return dict(msg="You are still in dark theme.")
+            return dict(msg="You are still in dark mode.")
         return dict(
             msg=change_mode_setting(
-                setting_name="dark theme",
+                command="dark",
                 switch_command="light",
                 setting="color_scheme",
                 setting_value=UserProfile.COLOR_SCHEME_NIGHT,
@@ -45,10 +45,10 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
         )
     elif command == "day":
         if user_profile.color_scheme == UserProfile.COLOR_SCHEME_LIGHT:
-            return dict(msg="You are still in light theme.")
+            return dict(msg="You are still in light mode.")
         return dict(
             msg=change_mode_setting(
-                setting_name="light theme",
+                command="light",
                 switch_command="dark",
                 setting="color_scheme",
                 setting_value=UserProfile.COLOR_SCHEME_LIGHT,
@@ -59,7 +59,7 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
             return dict(msg="You are still in fluid width mode.")
         return dict(
             msg=change_mode_setting(
-                setting_name="fluid-width mode",
+                command=command,
                 switch_command="fixed-width",
                 setting="fluid_layout_width",
                 setting_value=True,
@@ -70,7 +70,7 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
             return dict(msg="You are still in fixed width mode.")
         return dict(
             msg=change_mode_setting(
-                setting_name="fixed-width mode",
+                command=command,
                 switch_command="fluid-width",
                 setting="fluid_layout_width",
                 setting_value=False,

@@ -29,7 +29,7 @@ the round trip time and shows a little message above
 the compose box that the user can see and then dismiss.
 
 For commands like "/light" and "/dark", the server does
-a little bit of logic to toggle the user's dark theme
+a little bit of logic to toggle the user's dark mode
 setting, and this is largely done inside `zcommand.py`.
 The server sends a very basic response, and then
 the client actually changes the display colors. The

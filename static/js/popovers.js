@@ -43,7 +43,6 @@ import * as reminder from "./reminder";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
-import * as settings_users from "./settings_users";
 import * as stream_popover from "./stream_popover";
 import * as user_groups from "./user_groups";
 import * as user_status from "./user_status";
@@ -158,7 +157,8 @@ function init_email_tooltip(user) {
 }
 
 function load_medium_avatar(user, elt) {
-    const user_avatar_url = people.medium_avatar_url_for_person(user);
+    const avatar_path = "avatar/" + user.user_id + "/medium?v=" + user.avatar_version;
+    const user_avatar_url = new URL(avatar_path, window.location.href);
     const sender_avatar_medium = new Image();
 
     sender_avatar_medium.src = user_avatar_url;
@@ -243,7 +243,6 @@ function render_user_info_popover(
         user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
         date_joined,
         spectator_view,
-        show_manage_user_option: page_params.is_admin && !is_me,
     };
 
     if (user.is_bot) {
@@ -763,7 +762,7 @@ export function show_sender_info() {
     const message = message_lists.current.get(rows.id($message));
     const user = people.get_by_user_id(message.sender_id);
     show_user_info_popover_for_message($sender[0], user, message);
-    if (current_message_info_popover_elem && !page_params.is_spectator) {
+    if (current_message_info_popover_elem) {
         focus_user_info_popover_item();
     }
 }
@@ -1278,12 +1277,6 @@ export function register_click_handlers() {
             last_scroll = date;
         });
     }
-
-    $("body").on("click", ".sidebar-popover-manage-user", (e) => {
-        hide_all();
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
-        settings_users.show_edit_user_info_modal(user_id, true);
-    });
 }
 
 export function any_active() {
@@ -1320,7 +1313,6 @@ export function hide_all_except_sidebars(opts) {
     stream_popover.hide_topic_popover();
     stream_popover.hide_all_messages_popover();
     stream_popover.hide_starred_messages_popover();
-    stream_popover.hide_drafts_popover();
     hide_user_sidebar_popover();
     hide_user_info_popover();
     hide_playground_links_popover();

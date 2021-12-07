@@ -41,7 +41,6 @@ from zerver.models import (
     GroupGroupMembership,
     Huddle,
     Message,
-    MutedUser,
     Reaction,
     Realm,
     RealmAuditLog,
@@ -62,7 +61,6 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
-    UserStatus,
     UserTopic,
     get_display_recipient,
     get_realm,
@@ -238,7 +236,10 @@ NON_EXPORTED_TABLES = {
     # export before they reach full production status.
     "zerver_defaultstreamgroup",
     "zerver_defaultstreamgroup_streams",
+    "zerver_muteduser",
     "zerver_submessage",
+    # This is low priority, since users can easily just reset themselves to away.
+    "zerver_userstatus",
     # Drafts don't need to be exported as they are supposed to be more ephemeral.
     "zerver_draft",
     # For any tables listed below here, it's a bug that they are not present in the export.
@@ -279,24 +280,22 @@ ANALYTICS_TABLES = {
 # TODO: This data structure could likely eventually be replaced by
 # inspecting the corresponding Django models
 DATE_FIELDS: Dict[TableName, List[Field]] = {
-    "analytics_installationcount": ["end_time"],
-    "analytics_realmcount": ["end_time"],
-    "analytics_streamcount": ["end_time"],
-    "analytics_usercount": ["end_time"],
     "zerver_attachment": ["create_time"],
     "zerver_message": ["last_edit_time", "date_sent"],
-    "zerver_muteduser": ["date_muted"],
-    "zerver_realmauditlog": ["event_time"],
+    "zerver_usertopic": ["last_updated"],
     "zerver_realm": ["date_created"],
     "zerver_stream": ["date_created"],
-    "zerver_useractivityinterval": ["start", "end"],
     "zerver_useractivity": ["last_visit"],
-    "zerver_userhotspot": ["timestamp"],
+    "zerver_useractivityinterval": ["start", "end"],
     "zerver_userpresence": ["timestamp"],
     "zerver_userprofile": ["date_joined", "last_login", "last_reminder"],
     "zerver_userprofile_mirrordummy": ["date_joined", "last_login", "last_reminder"],
-    "zerver_userstatus": ["timestamp"],
-    "zerver_usertopic": ["last_updated"],
+    "zerver_realmauditlog": ["event_time"],
+    "zerver_userhotspot": ["timestamp"],
+    "analytics_installationcount": ["end_time"],
+    "analytics_realmcount": ["end_time"],
+    "analytics_usercount": ["end_time"],
+    "analytics_streamcount": ["end_time"],
 }
 
 BITHANDLER_FIELDS: Dict[TableName, List[Field]] = {
@@ -690,6 +689,13 @@ def get_realm_config() -> Config:
         custom_fetch=fetch_user_profile,
     )
 
+    Config(
+        table="zerver_alertword",
+        model=AlertWord,
+        normal_parent=user_profile_config,
+        parent_key="user_profile__in",
+    )
+
     user_groups_config = Config(
         table="zerver_usergroup",
         model=UserGroup,
@@ -717,6 +723,55 @@ def get_realm_config() -> Config:
         ],
         virtual_parent=user_profile_config,
         custom_fetch=fetch_user_profile_cross_realm,
+    )
+
+    Config(
+        table="zerver_userpresence",
+        model=UserPresence,
+        normal_parent=user_profile_config,
+        parent_key="user_profile__in",
+    )
+
+    Config(
+        table="zerver_customprofilefieldvalue",
+        model=CustomProfileFieldValue,
+        normal_parent=user_profile_config,
+        parent_key="user_profile__in",
+    )
+
+    Config(
+        table="zerver_useractivity",
+        model=UserActivity,
+        normal_parent=user_profile_config,
+        parent_key="user_profile__in",
+    )
+
+    Config(
+        table="zerver_useractivityinterval",
+        model=UserActivityInterval,
+        normal_parent=user_profile_config,
+        parent_key="user_profile__in",
+    )
+
+    Config(
+        table="zerver_realmauditlog",
+        model=RealmAuditLog,
+        normal_parent=user_profile_config,
+        parent_key="modified_user__in",
+    )
+
+    Config(
+        table="zerver_userhotspot",
+        model=UserHotspot,
+        normal_parent=user_profile_config,
+        parent_key="user__in",
+    )
+
+    Config(
+        table="zerver_usertopic",
+        model=UserTopic,
+        normal_parent=user_profile_config,
+        parent_key="user_profile__in",
     )
 
     Config(
@@ -816,95 +871,7 @@ def get_realm_config() -> Config:
         ],
     )
 
-    add_user_profile_child_configs(user_profile_config)
-
     return realm_config
-
-
-def add_user_profile_child_configs(user_profile_config: Config) -> None:
-    """
-    We add tables here that are keyed by user, and for which
-    we fetch rows using the same scheme whether we are
-    exporting a realm or a single user.
-
-    For any table where there is nuance between how you
-    fetch for realms vs. single users, it's best to just
-    keep things simple and have each caller maintain its
-    own slightly different 4/5 line Config (while still
-    possibly calling common code deeper in the stack).
-
-    As of now, we do NOT include bot tables like Service.
-    """
-
-    Config(
-        table="zerver_useractivity",
-        model=UserActivity,
-        normal_parent=user_profile_config,
-        parent_key="user_profile__in",
-    )
-
-    Config(
-        table="zerver_useractivityinterval",
-        model=UserActivityInterval,
-        normal_parent=user_profile_config,
-        parent_key="user_profile__in",
-    )
-
-    Config(
-        table="zerver_alertword",
-        model=AlertWord,
-        normal_parent=user_profile_config,
-        parent_key="user_profile__in",
-    )
-
-    Config(
-        table="zerver_customprofilefieldvalue",
-        model=CustomProfileFieldValue,
-        normal_parent=user_profile_config,
-        parent_key="user_profile__in",
-    )
-
-    Config(
-        table="zerver_muteduser",
-        model=MutedUser,
-        normal_parent=user_profile_config,
-        parent_key="user_profile__in",
-    )
-
-    Config(
-        table="zerver_realmauditlog",
-        model=RealmAuditLog,
-        normal_parent=user_profile_config,
-        parent_key="modified_user__in",
-    )
-
-    Config(
-        table="zerver_userhotspot",
-        model=UserHotspot,
-        normal_parent=user_profile_config,
-        parent_key="user__in",
-    )
-
-    Config(
-        table="zerver_userpresence",
-        model=UserPresence,
-        normal_parent=user_profile_config,
-        parent_key="user_profile__in",
-    )
-
-    Config(
-        table="zerver_userstatus",
-        model=UserStatus,
-        normal_parent=user_profile_config,
-        parent_key="user_profile__in",
-    )
-
-    Config(
-        table="zerver_usertopic",
-        model=UserTopic,
-        normal_parent=user_profile_config,
-        parent_key="user_profile__in",
-    )
 
 
 def fetch_user_profile(response: TableData, config: Config, context: Context) -> None:
@@ -1308,44 +1275,44 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
             output_dir=realm_icons_output_dir,
         )
     else:
-        user_ids = {user.id for user in UserProfile.objects.filter(realm=realm)}
-
         # Some bigger installations will have their data stored on S3.
         export_files_from_s3(
-            realm,
-            flavor="upload",
-            bucket_name=settings.S3_AUTH_UPLOADS_BUCKET,
-            object_prefix=f"{realm.id}/",
-            output_dir=uploads_output_dir,
-            user_ids=user_ids,
+            realm, settings.S3_AVATAR_BUCKET, output_dir=avatars_output_dir, processing_avatars=True
         )
-
+        export_files_from_s3(realm, settings.S3_AUTH_UPLOADS_BUCKET, output_dir=uploads_output_dir)
+        export_files_from_s3(
+            realm, settings.S3_AVATAR_BUCKET, output_dir=emoji_output_dir, processing_emoji=True
+        )
         export_files_from_s3(
             realm,
-            flavor="avatar",
-            bucket_name=settings.S3_AVATAR_BUCKET,
-            object_prefix=f"{realm.id}/",
-            output_dir=avatars_output_dir,
-            user_ids=user_ids,
-        )
-
-        export_files_from_s3(
-            realm,
-            flavor="emoji",
-            bucket_name=settings.S3_AVATAR_BUCKET,
-            object_prefix=f"{realm.id}/emoji/images/",
-            output_dir=emoji_output_dir,
-            user_ids=user_ids,
-        )
-
-        export_files_from_s3(
-            realm,
-            flavor="realm_icon_or_logo",
-            bucket_name=settings.S3_AVATAR_BUCKET,
-            object_prefix=f"{realm.id}/realm/",
+            settings.S3_AVATAR_BUCKET,
             output_dir=realm_icons_output_dir,
-            user_ids=user_ids,
+            processing_realm_icon_and_logo=True,
         )
+
+
+def _check_key_metadata(
+    email_gateway_bot: Optional[UserProfile],
+    key: Object,
+    processing_avatars: bool,
+    realm: Realm,
+    user_ids: Set[int],
+) -> None:
+    # Helper function for export_files_from_s3
+    if "realm_id" in key.metadata and key.metadata["realm_id"] != str(realm.id):
+        if email_gateway_bot is None or key.metadata["user_profile_id"] != str(
+            email_gateway_bot.id
+        ):
+            raise AssertionError(f"Key metadata problem: {key.key} / {key.metadata} / {realm.id}")
+        # Email gateway bot sends messages, potentially including attachments, cross-realm.
+        print(f"File uploaded by email gateway bot: {key.key} / {key.metadata}")
+    elif processing_avatars:
+        if "user_profile_id" not in key.metadata:
+            raise AssertionError(f"Missing user_profile_id in key metadata: {key.metadata}")
+        if int(key.metadata["user_profile_id"]) not in user_ids:
+            raise AssertionError(f"Wrong user_profile_id in key metadata: {key.metadata}")
+    elif "realm_id" not in key.metadata:
+        raise AssertionError(f"Missing realm_id in key metadata: {key.metadata}")
 
 
 def _get_exported_s3_record(
@@ -1393,10 +1360,12 @@ def _get_exported_s3_record(
 def _save_s3_object_to_file(
     key: Object,
     output_dir: str,
-    processing_uploads: bool,
+    processing_avatars: bool,
+    processing_emoji: bool,
+    processing_realm_icon_and_logo: bool,
 ) -> None:
     # Helper function for export_files_from_s3
-    if not processing_uploads:
+    if processing_avatars or processing_emoji or processing_realm_icon_and_logo:
         filename = os.path.join(output_dir, key.key)
     else:
         fields = key.key.split("/")
@@ -1419,34 +1388,40 @@ def _save_s3_object_to_file(
 
 def export_files_from_s3(
     realm: Realm,
-    flavor: str,
     bucket_name: str,
-    object_prefix: str,
     output_dir: Path,
-    user_ids: Set[int],
+    processing_avatars: bool = False,
+    processing_emoji: bool = False,
+    processing_realm_icon_and_logo: bool = False,
 ) -> None:
-    processing_uploads = flavor == "upload"
-    processing_avatars = flavor == "avatar"
-    processing_emoji = flavor == "emoji"
-
     bucket = get_bucket(bucket_name)
     records = []
 
-    logging.info("Downloading %s files from %s", flavor, bucket_name)
+    logging.info("Downloading uploaded files from %s", bucket_name)
 
     avatar_hash_values = set()
+    user_ids = set()
     if processing_avatars:
-        for user_id in user_ids:
-            avatar_path = user_avatar_path_from_ids(user_id, realm.id)
+        for user_profile in UserProfile.objects.filter(realm=realm):
+            avatar_path = user_avatar_path_from_ids(user_profile.id, realm.id)
             avatar_hash_values.add(avatar_path)
             avatar_hash_values.add(avatar_path + ".original")
+            user_ids.add(user_profile.id)
 
-    email_gateway_bot: Optional[UserProfile] = None
+    if processing_realm_icon_and_logo:
+        object_prefix = f"{realm.id}/realm/"
+    elif processing_emoji:
+        object_prefix = f"{realm.id}/emoji/images/"
+    else:
+        object_prefix = f"{realm.id}/"
 
     if settings.EMAIL_GATEWAY_BOT is not None:
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
-        email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
-        user_ids.add(email_gateway_bot.id)
+        email_gateway_bot: Optional[UserProfile] = get_system_bot(
+            settings.EMAIL_GATEWAY_BOT, internal_realm.id
+        )
+    else:
+        email_gateway_bot = None
 
     count = 0
     for bkey in bucket.objects.filter(Prefix=object_prefix):
@@ -1454,37 +1429,14 @@ def export_files_from_s3(
             continue
 
         key = bucket.Object(bkey.key)
-
-        """
-        For very old realms we may not have proper metadata. If you really need
-        an export to bypass these checks, flip the following flag.
-        """
-        checking_metadata = True
-        if checking_metadata:
-            if "realm_id" not in key.metadata:
-                raise AssertionError(f"Missing realm_id in key metadata: {key.metadata}")
-
-            if "user_profile_id" not in key.metadata:
-                raise AssertionError(f"Missing user_profile_id in key metadata: {key.metadata}")
-
-            if int(key.metadata["user_profile_id"]) not in user_ids:
-                continue
-
-            # This can happen if an email address has moved realms
-            if key.metadata["realm_id"] != str(realm.id):
-                if email_gateway_bot is None or key.metadata["user_profile_id"] != str(
-                    email_gateway_bot.id
-                ):
-                    raise AssertionError(
-                        f"Key metadata problem: {key.key} / {key.metadata} / {realm.id}"
-                    )
-                # Email gateway bot sends messages, potentially including attachments, cross-realm.
-                print(f"File uploaded by email gateway bot: {key.key} / {key.metadata}")
-
+        # This can happen if an email address has moved realms
+        _check_key_metadata(email_gateway_bot, key, processing_avatars, realm, user_ids)
         record = _get_exported_s3_record(bucket_name, key, processing_emoji)
 
         record["path"] = key.key
-        _save_s3_object_to_file(key, output_dir, processing_uploads)
+        _save_s3_object_to_file(
+            key, output_dir, processing_avatars, processing_emoji, processing_realm_icon_and_logo
+        )
 
         records.append(record)
         count += 1
@@ -1882,15 +1834,6 @@ def get_single_user_config() -> Config:
         source_filter=lambda r: r["type"] == Recipient.STREAM,
         exclude=["email_token"],
     )
-
-    Config(
-        table="analytics_usercount",
-        model=UserCount,
-        normal_parent=user_profile_config,
-        parent_key="user__in",
-    )
-
-    add_user_profile_child_configs(user_profile_config)
 
     return user_profile_config
 

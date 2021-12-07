@@ -103,19 +103,6 @@
                         {{> dropdown_options_widget option_values=common_policy_values}}
                     </select>
                 </div>
-                {{> settings_checkbox
-                  setting_name="realm_enable_spectator_access"
-                  prefix="id_"
-                  is_checked=realm_enable_spectator_access
-                  label=admin_settings_label.realm_enable_spectator_access
-                  is_disabled=disable_enable_spectator_access_setting
-                  help_link="help/web-public-streams"}}
-                <div class="input-group realm_create_web_public_stream_policy">
-                    <label for="realm_create_web_public_stream_policy" class="dropdown-title">{{t "Who can create web-public streams" }}</label>
-                    <select name="realm_create_web_public_stream_policy" id="id_realm_create_web_public_stream_policy" class="prop-element" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=create_web_public_stream_policy_values}}
-                    </select>
-                </div>
                 <div class="input-group">
                     <label for="realm_create_private_stream_policy" class="dropdown-title">{{t "Who can create private streams" }}</label>
                     <select name="realm_create_private_stream_policy" id="id_realm_create_private_stream_policy" class="prop-element" data-setting-widget-type="number">
@@ -151,7 +138,7 @@
                     <label for="realm_msg_edit_limit_setting" class="dropdown-title">{{t "Allow message editing" }}</label>
                     <select name="realm_msg_edit_limit_setting" id="id_realm_msg_edit_limit_setting" class="prop-element">
                         {{#each msg_edit_limit_dropdown_values}}
-                            <option value="{{0}}">{{1.text}}</option>
+                        <option value="{{0}}">{{1.text}}</option>
                         {{/each}}
                     </select>
                     <div class="dependent-inline-block">
@@ -197,7 +184,7 @@
                     </label>
                     <select name="realm_msg_delete_limit_setting" id="id_realm_msg_delete_limit_setting" class="prop-element">
                         {{#each msg_delete_limit_dropdown_values}}
-                            <option value="{{0}}">{{1.text}}</option>
+                        <option value="{{0}}">{{1.text}}</option>
                         {{/each}}
                     </select>
                     <div class="dependent-inline-block">

@@ -4,9 +4,9 @@ import marked from "../third/marked/lib/marked";
 
 import * as channel from "./channel";
 import * as common from "./common";
-import * as dark_theme from "./dark_theme";
 import * as feedback_widget from "./feedback_widget";
 import {$t} from "./i18n";
+import * as night_mode from "./night_mode";
 import * as scroll_bar from "./scroll_bar";
 
 /*
@@ -59,11 +59,11 @@ export function tell_user(msg) {
     $("#compose-error-msg").text(msg);
 }
 
-export function switch_to_light_theme() {
+export function enter_day_mode() {
     send({
         command: "/day",
         on_success(data) {
-            dark_theme.disable();
+            night_mode.disable();
             feedback_widget.show({
                 populate(container) {
                     const rendered_msg = marked(data.msg).trim();
@@ -74,18 +74,18 @@ export function switch_to_light_theme() {
                         command: "/night",
                     });
                 },
-                title_text: $t({defaultMessage: "Light theme"}),
-                undo_button_text: $t({defaultMessage: "Dark theme"}),
+                title_text: $t({defaultMessage: "Light mode"}),
+                undo_button_text: $t({defaultMessage: "Dark mode"}),
             });
         },
     });
 }
 
-export function switch_to_dark_theme() {
+export function enter_night_mode() {
     send({
         command: "/night",
         on_success(data) {
-            dark_theme.enable();
+            night_mode.enable();
             feedback_widget.show({
                 populate(container) {
                     const rendered_msg = marked(data.msg).trim();
@@ -96,8 +96,8 @@ export function switch_to_dark_theme() {
                         command: "/day",
                     });
                 },
-                title_text: $t({defaultMessage: "Dark theme"}),
-                undo_button_text: $t({defaultMessage: "Light theme"}),
+                title_text: $t({defaultMessage: "Dark mode"}),
+                undo_button_text: $t({defaultMessage: "Light mode"}),
             });
         },
     });
@@ -168,13 +168,13 @@ export function process(message_content) {
 
     const day_commands = ["/day", "/light"];
     if (day_commands.includes(content)) {
-        switch_to_light_theme();
+        enter_day_mode();
         return true;
     }
 
     const night_commands = ["/night", "/dark"];
     if (night_commands.includes(content)) {
-        switch_to_dark_theme();
+        enter_night_mode();
         return true;
     }
 

@@ -84,9 +84,7 @@ export function show_end_of_results_notice() {
     // It's a bit hacky to use the href, but
     // !filter.includes_full_stream_history() implies streams:public
     // wasn't already present.
-    // Computes the URL of the current narrow if streams:public were added.
-    const operators = narrow_state.filter().operators();
-    const update_hash = hash_util.search_public_streams_notice_url(operators);
+    const update_hash = hash_util.search_public_streams_notice_url();
     $(".all-messages-search-caution a.search-shared-history").attr("href", update_hash);
 }
 

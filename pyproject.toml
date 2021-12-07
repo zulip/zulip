@@ -54,7 +54,6 @@ module = [
     "bs4.*",
     "bson.*",
     "cairosvg.*",
-    "circuitbreaker.*",
     "coverage.*",
     "cssutils.*",
     "defusedxml.*",

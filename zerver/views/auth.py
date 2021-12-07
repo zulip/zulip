@@ -34,7 +34,6 @@ from confirmation.models import (
     ConfirmationKeyException,
     create_confirmation_link,
     get_object_from_key,
-    render_confirmation_key_error,
 )
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.context_processors import get_realm_from_request, login_context, zulip_default_context
@@ -187,9 +186,9 @@ def maybe_send_to_registration(
     if multiuse_object_key:
         from_multiuse_invite = True
         try:
-            multiuse_obj = get_object_from_key(multiuse_object_key, [Confirmation.MULTIUSE_INVITE])
-        except ConfirmationKeyException as exception:
-            return render_confirmation_key_error(request, exception)
+            multiuse_obj = get_object_from_key(multiuse_object_key, Confirmation.MULTIUSE_INVITE)
+        except ConfirmationKeyException:
+            return render(request, "zerver/confirmation_link_expired_error.html", status=404)
 
         assert multiuse_obj is not None
         realm = multiuse_obj.realm
@@ -383,7 +382,6 @@ def create_response_for_otp_flow(
     params = {
         encrypted_key_field_name: otp_encrypt_api_key(key, otp),
         "email": user_profile.delivery_email,
-        "user_id": user_profile.id,
         "realm": realm_uri,
     }
     # We can't use HttpResponseRedirect, since it only allows HTTP(S) URLs
@@ -959,6 +957,7 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
         "realm_name",
         "realm_icon",
         "realm_description",
+        "realm_guidelines_url",
         "external_authentication_methods",
     ]:
         if context[settings_item] is not None:

@@ -50,17 +50,22 @@ async function test_change_password(page: Page): Promise<void> {
     await page.click('[data-section="account-and-privacy"]');
     await page.click("#change_password");
 
-    const change_password_button_selector = "#change_password_modal .dialog_submit_button";
+    const change_password_button_selector = "#change_password_button";
     await page.waitForSelector(change_password_button_selector, {visible: true});
 
-    await common.wait_for_micromodal_to_open(page);
+    // For some strange reason #change_password_modal:focus is not working with Firefox.
+    // The below line is an alternative to that.
+    // TODO: Replace the below line with `await page.waitForSelector("#change_password_modal:focus", {visible: true})`
+    // when the above issue is resolved.
+    await page.waitForFunction(() => document.activeElement!.id === "change_password_modal");
     await page.type("#old_password", test_credentials.default_user.password);
     test_credentials.default_user.password = "new_password";
     await page.type("#new_password", test_credentials.default_user.password);
     await page.click(change_password_button_selector);
 
     // On success the change password modal gets closed.
-    await common.wait_for_micromodal_to_close(page);
+    await page.waitForFunction(() => $("#change_password_modal").attr("aria-hidden") === "true");
+    await common.wait_for_modal_to_close(page);
 }
 
 async function test_get_api_key(page: Page): Promise<void> {
@@ -69,7 +74,7 @@ async function test_get_api_key(page: Page): Promise<void> {
 
     const get_api_key_button_selector = "#get_api_key_button";
     await page.waitForSelector(get_api_key_button_selector, {visible: true});
-    await common.wait_for_micromodal_to_open(page);
+    await page.waitForFunction(() => $(":focus").attr("id") === "api_key_modal");
     await common.fill_form(page, "#api_key_form", {
         password: test_credentials.default_user.password,
     });
@@ -89,8 +94,8 @@ async function test_get_api_key(page: Page): Promise<void> {
     await page.click(download_zuliprc_selector);
     const zuliprc_decoded_url = await get_decoded_url_in_selector(page, download_zuliprc_selector);
     assert.match(zuliprc_decoded_url, zuliprc_regex, "Incorrect zuliprc file");
-    await page.click("#api_key_modal .modal__close");
-    await common.wait_for_micromodal_to_close(page);
+    await page.click("#api_key_modal .close");
+    await common.wait_for_modal_to_close(page);
 }
 
 async function test_webhook_bot_creation(page: Page): Promise<void> {
@@ -202,13 +207,15 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
     await page.click(save_btn_selector);
 
     // The form should not get closed on saving. Errors should be visible on the form.
-    await common.wait_for_micromodal_to_open(page);
+    await page.waitForSelector("#edit_bot_modal", {visible: true});
     await page.waitForSelector(".bot_edit_errors", {visible: true});
     assert.strictEqual(
         await common.get_text_from_selector(page, "div.bot_edit_errors"),
         "Name is already in use!",
     );
     await page.click("#edit_bot_modal .dialog_cancel_button");
+    await page.waitForSelector("#edit_bot_modal", {hidden: true});
+
     await page.waitForXPath(
         `//*[@class="btn open_edit_bot_form" and @data-email="${bot1_email}"]/ancestor::*[@class="details"]/*[@class="name" and text()="Bot one"]`,
     );
@@ -294,7 +301,7 @@ async function test_alert_words_section(page: Page): Promise<void> {
 async function change_language(page: Page, language_data_code: string): Promise<void> {
     await page.waitForSelector("#user-display-settings .setting_default_language", {visible: true});
     await page.click("#user-display-settings .setting_default_language");
-    await common.wait_for_micromodal_to_open(page);
+    await page.waitForSelector("#user_default_language_modal", {visible: true});
     const language_selector = `a[data-code="${CSS.escape(language_data_code)}"]`;
     await page.click(language_selector);
 }

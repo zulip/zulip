@@ -3,7 +3,7 @@
 General and technical support for Zulip is available through three
 channels:
 
-* [The Zulip development community][development-community].
+* [chat.zulip.org][chat-zulip-org], the Zulip development community.
   Depending on the time of day/week of your query and the complexity
   of your question, you may get complete responses immediately or up
   to a couple days later, but Zulip's threading makes it easy for us
@@ -17,16 +17,15 @@ channels:
   app](https://github.com/zulip/zulip-mobile/issues/new), [desktop
   app](https://github.com/zulip/zulip-desktop/issues/new). If you
   aren't able to provide a clear bug report or are otherwise
-  uncertain, it can be helpful to discuss in
-  [the Zulip development community][development-community]
-  first to help create a better GitHub issue.
+  uncertain, it can be helpful to discuss in chat.zulip.org first to
+  help create a better GitHub issue.
 * We don't offer phone support except as part of enterprise contracts.
 
 We love hearing feedback! Please reach out if you have feedback,
 questions, or just want to brainstorm how to make Zulip work for your
 organization.
 
-[development-community]: https://zulip.com/developer-community/
+[chat-zulip-org]: /developer-community/
 
 ## Billing and commercial questions
 

@@ -84,6 +84,31 @@ test("allow_notification_alert", () => {
     assert.equal(navbar_alerts.should_show_notifications(ls), false);
 });
 
+test("allow_organization_information_alert", () => {
+    const ls = localstorage();
+
+    // Show alert.
+    assert.equal(ls.get("viewedGuidelines"), undefined);
+    util.is_mobile = () => false;
+    page_params.is_admin = false;
+    assert.equal(navbar_alerts.should_show_organization_information(ls), true);
+
+    // Avoid showing if the user has already viewed guidelines.
+    ls.set("viewedGuidelines", true);
+    assert.equal(navbar_alerts.should_show_organization_information(ls), false);
+
+    // Avoid showing if device is mobile.
+    ls.set("viewedGuidelines", undefined);
+    assert.equal(navbar_alerts.should_show_organization_information(ls), true);
+    util.is_mobile = () => true;
+    assert.equal(navbar_alerts.should_show_organization_information(ls), false);
+
+    // Don't show guidelines to admins.
+    util.is_mobile = () => false;
+    page_params.is_admin = true;
+    assert.equal(navbar_alerts.should_show_organization_information(ls), false);
+});
+
 test("profile_incomplete_alert", () => {
     // Show alert.
     page_params.is_admin = true;

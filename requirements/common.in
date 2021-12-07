@@ -194,6 +194,3 @@ django-scim2
 
 # CSS manipulation
 soupsieve
-
-# Circuit-breaking for outgoing services
-circuitbreaker

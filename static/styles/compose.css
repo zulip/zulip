@@ -20,6 +20,10 @@
                 line-height: 1em;
             }
         }
+
+        .message-control-link {
+            float: left;
+        }
     }
 
     .reply_button_container {
@@ -73,7 +77,7 @@
 
 .message_comp {
     display: none;
-    padding: 10px 10px 0 5px;
+    padding: 10px 10px 8px 5px;
 }
 
 .autocomplete_secondary {
@@ -124,17 +128,10 @@
         font-weight: 600;
     }
 
-    #compose-lock-icon,
-    #compose-globe-icon {
+    #compose-lock-icon {
         position: relative;
         left: 5px;
         width: 0;
-    }
-
-    #compose-globe-icon {
-        top: 1px;
-        left: 4.5px;
-        padding-right: 2px;
     }
 
     .message_header {
@@ -147,6 +144,12 @@
 
     .messagebox {
         box-shadow: none !important;
+    }
+
+    .message-control-link {
+        position: relative;
+        margin-right: 5px;
+        top: 3px;
     }
 }
 
@@ -176,30 +179,20 @@
 }
 
 #below-compose-content {
-    display: flex;
-    flex-direction: column;
     width: 100%;
     margin-top: 6px;
-    margin-bottom: -2px;
-
-    .compose_bottom_top_container {
-        display: flex;
-    }
-
-    .compose_bottom_bottom_container {
-        display: flex;
-        justify-content: space-between;
-    }
 }
 
 #compose_limit_indicator {
+    position: relative;
     margin-right: 8px;
+    top: 3px;
+    float: right;
     font-size: 12px;
     color: hsl(39, 100%, 50%);
-    align-self: center;
 
     &.over_limit {
-        color: hsl(0, 76%, 65%);
+        color: hsl(0, 100%, 50%);
         font-weight: bold;
     }
 }
@@ -369,13 +362,13 @@ textarea.new_message_textarea {
         }
 
         100% {
-            box-shadow: 0 0 0 1pt hsl(0, 76%, 65%);
+            box-shadow: 0 0 0 1pt hsl(0, 100%, 50%);
         }
     }
 
     &.over_limit,
     &.over_limit:focus {
-        box-shadow: 0 0 0 1pt hsl(0, 76%, 65%);
+        box-shadow: 0 0 0 1pt hsl(0, 100%, 50%);
 
         &.flash {
             animation: flash 0.5s ease-in-out infinite;
@@ -418,7 +411,7 @@ input.recipient_box {
 
 #stream_message_recipient_topic.recipient_box {
     width: calc(20% + 14px);
-    min-width: 120px;
+    min-width: 140px;
     max-width: 165px;
 }
 
@@ -427,51 +420,28 @@ input.recipient_box {
 }
 
 #compose-send-button {
-    height: 24px;
+    /* To arrange the right tab order for the compose box keyboard UI,
+       this element appears before its proper position in the DOM and is configured
+       to float right, so that tabbing from the compose box goes here and then
+       to the message controls to its left, to ensure "Tab then Enter" sends messages. */
     padding-top: 3px;
     padding-bottom: 3px;
     margin-bottom: 0;
     font-weight: 600;
+    float: right;
     font-size: 0.9em;
-
-    .loader {
-        display: none;
-        position: relative;
-        top: -6px;
-    }
 }
 
-.enter_sends {
-    font-size: 12px;
-    height: 14px;
-    padding-left: 4px;
-    opacity: 0.7;
-    margin-bottom: 5px;
+#send_controls {
+    float: right;
+    position: relative;
+    font-size: 0.8em;
+    height: 2.2em;
 
-    @media (width < $mm_min) {
-        font-size: 11px;
+    .compose_checkbox_label {
+        color: hsl(0, 0%, 67%);
+        margin: 4px;
     }
-
-    kbd {
-        height: 16px;
-    }
-
-    &:hover {
-        opacity: 1;
-    }
-
-    .enter_sends_true,
-    .enter_sends_false {
-        display: none;
-    }
-
-    .fa-exchange {
-        margin: 0 4px;
-    }
-}
-
-.compose_left_wrapper {
-    margin-right: auto;
 }
 
 #stream-message,
@@ -483,83 +453,31 @@ input.recipient_box {
     align-items: center;
 }
 
-.tippy-content .compose_control_buttons_container {
-    .message-control-link {
-        /* Override tippy theme. */
-        padding: 4px 4px 0;
-        color: hsl(200, 100%, 40%);
-        font-size: 14px;
-
-        &:hover,
-        &:focus {
-            color: hsl(200, 100%, 25%);
-        }
-    }
-
-    .compose_gif_icon {
-        bottom: 5px;
-    }
+#sending-indicator {
+    top: 2px;
+    position: relative;
+    font-weight: bold;
+    display: inline-block;
 }
 
-.compose_control_buttons_container {
-    margin-right: auto;
-    display: flex;
-    gap: 4px;
-    align-items: center;
-
-    .compose_gif_icon {
-        font-size: 22px;
-        height: 18px;
-        position: relative;
-        bottom: 6px;
-    }
-
-    .compose_control_menu {
-        padding: 3px 7px 0;
-        font-size: 15px;
-    }
-
-    .compose_control_menu_wrapper {
-        padding: 0;
-        margin: 0;
-    }
-
-    .hide-sm,
-    .hide-lg {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        padding: 0;
-        margin: 0;
-    }
-
-    .message-control-link {
-        align-self: center;
-    }
-
-    .divider {
-        color: hsl(0, 0%, 88%);
-        font-size: 20px;
-        margin: 0 3px;
-    }
-}
-
-.compose_right_float_container {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    white-space: nowrap;
-    gap: 4px;
-    margin-top: 2px;
+.compose_giphy_link .compose_gif_icon {
+    position: relative;
+    font-size: 23px;
+    top: -4px;
 }
 
 a.compose_control_button {
-    padding: 5px;
+    display: block;
     opacity: 0.7;
     color: inherit;
     text-decoration: none;
-    font-size: 17px;
+    font-size: 15px;
+    width: auto;
+    height: 15px;
+    margin-right: 8px;
+    padding-top: 5px;
     text-align: center;
+    float: left;
 
     &:hover {
         opacity: 1;
@@ -581,6 +499,12 @@ a.compose_control_button.hide {
     top: 23px;
     position: relative;
     cursor: ns-resize;
+}
+
+#enter_sends {
+    vertical-align: middle;
+    margin-top: -2px;
+    margin-right: 4px;
 }
 
 .inline-subscribe-error {
@@ -655,8 +579,8 @@ a.compose_control_button.hide {
 
 @media (width < $mm_min) {
     #stream_message_recipient_topic.recipient_box {
-        width: calc(100% - 192px);
-        min-width: 75px;
+        width: calc(100% - 175px);
+        min-width: 95px;
     }
 
     #compose-content {

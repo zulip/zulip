@@ -10,8 +10,8 @@ from django.utils.timezone import now as timezone_now
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.actions import (
     do_add_deactivated_redirect,
+    do_change_plan_type,
     do_change_realm_org_type,
-    do_change_realm_plan_type,
     do_change_realm_subdomain,
     do_create_realm,
     do_deactivate_realm,
@@ -93,13 +93,6 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.user_group_edit_policy, Realm.POLICY_MODERATORS_ONLY)
         self.assertEqual(realm.invite_to_stream_policy, Realm.POLICY_MODERATORS_ONLY)
 
-    def test_realm_enable_spectator_access(self) -> None:
-        realm = do_create_realm("test_web_public_true", "Foo", enable_spectator_access=True)
-        self.assertEqual(realm.enable_spectator_access, True)
-
-        realm = do_create_realm("test_web_public_false", "Boo", enable_spectator_access=False)
-        self.assertEqual(realm.enable_spectator_access, False)
-
     def test_do_set_realm_name_caching(self) -> None:
         """The main complicated thing about setting realm names is fighting the
         cache, and we start by populating the cache for Hamlet, and we end
@@ -177,6 +170,45 @@ class RealmTest(ZulipTestCase):
         self.assert_json_error(result, "description is too long (limit: 1000 characters)")
         realm = get_realm("zulip")
         self.assertNotEqual(realm.description, new_description)
+
+    def test_update_realm_guidelines_events(self) -> None:
+        realm = get_realm("zulip")
+        new_guidelines = "http://www.zulip.org/guidelines"
+        events: List[Mapping[str, Any]] = []
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
+            do_set_realm_property(realm, "guidelines_url", new_guidelines, acting_user=None)
+        event = events[0]["event"]
+        self.assertEqual(
+            event,
+            dict(
+                type="realm",
+                op="update",
+                property="guidelines_url",
+                value=new_guidelines,
+            ),
+        )
+
+    def test_update_realm_guidelines(self) -> None:
+        self.login("iago")
+        new_guidelines = "http://www.zulip.org/guidelines"
+        data = dict(guidelines_url=new_guidelines)
+        events: List[Mapping[str, Any]] = []
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
+            result = self.client_patch("/json/realm", data)
+            self.assert_json_success(result)
+            realm = get_realm("zulip")
+            self.assertEqual(realm.guidelines_url, new_guidelines)
+
+        event = events[0]["event"]
+        self.assertEqual(
+            event,
+            dict(
+                type="realm",
+                op="update",
+                property="guidelines_url",
+                value=new_guidelines,
+            ),
+        )
 
     def test_realm_convert_demo_realm(self) -> None:
         data = dict(string_id="coolrealm")
@@ -671,7 +703,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm_audit_log.acting_user, iago)
         self.assertEqual(realm.org_type, Realm.ORG_TYPES["government"]["id"])
 
-    def test_change_realm_plan_type(self) -> None:
+    def test_change_plan_type(self) -> None:
         realm = get_realm("zulip")
         iago = self.example_user("iago")
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
@@ -679,7 +711,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.message_visibility_limit, None)
         self.assertEqual(realm.upload_quota_gb, None)
 
-        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=iago)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=iago)
         realm = get_realm("zulip")
         realm_audit_log = RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
@@ -696,29 +728,29 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.message_visibility_limit, None)
         self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_STANDARD)
 
-        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=iago)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=iago)
         realm = get_realm("zulip")
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_LIMITED)
         self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, Realm.MESSAGE_VISIBILITY_LIMITED)
         self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_LIMITED)
 
-        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=iago)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=iago)
         realm = get_realm("zulip")
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD_FREE)
         self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)
         self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_STANDARD)
 
-        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=iago)
-        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_PLUS, acting_user=iago)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=iago)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_PLUS, acting_user=iago)
         realm = get_realm("zulip")
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_PLUS)
         self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)
         self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_STANDARD)
 
-        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=iago)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=iago)
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
         self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, None)
@@ -759,12 +791,12 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
 
-        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
         req = dict(message_retention_days=orjson.dumps(10).decode())
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(result, "Available on Zulip Standard. Upgrade to access.")
 
-        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
+        do_change_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
         req = dict(message_retention_days=orjson.dumps(10).decode())
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
@@ -847,14 +879,6 @@ class RealmTest(ZulipTestCase):
             self.assertEqual(realm.has_web_public_streams(), False)
             self.assertEqual(realm.web_public_streams_enabled(), False)
 
-        realm.enable_spectator_access = False
-        realm.save()
-        self.assertEqual(realm.has_web_public_streams(), False)
-        self.assertEqual(realm.web_public_streams_enabled(), False)
-
-        realm.enable_spectator_access = True
-        realm.save()
-
         # Convert Rome to a public stream
         rome.is_web_public = False
         rome.save()
@@ -923,6 +947,7 @@ class RealmAPITest(ZulipTestCase):
             digest_weekday=[0, 1, 2],
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
+            guidelines_url=["https://zulip.readthedocs.io/en/latest/chat-zulip-org.html"],
             waiting_period_threshold=[10, 20],
             create_private_stream_policy=Realm.COMMON_POLICY_TYPES,
             create_public_stream_policy=Realm.COMMON_POLICY_TYPES,
