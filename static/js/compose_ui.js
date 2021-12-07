@@ -3,6 +3,7 @@ import $ from "jquery";
 import {set, wrapSelection} from "text-field-edit";
 
 import * as common from "./common";
+import {clear_compose_box} from "./compose";
 import {$t} from "./i18n";
 import * as loading from "./loading";
 import * as people from "./people";
@@ -208,10 +209,10 @@ export function handle_keydown(event, textarea) {
         type = "link";
     } else if (key === "enter" && !user_settings.enter_sends) {
         const field = textarea.get(0);
-        const range = textarea.range();
         const bulleted_syntax = "* ";
         const numbered_syntax = "1. ";
-        const text = textarea.val();
+        const range = textarea.range();
+        let text = textarea.val();
         const lastline = text.slice(text.lastIndexOf("\n") + 1);
         let text_last_row = "";
 
@@ -221,18 +222,22 @@ export function handle_keydown(event, textarea) {
         ) {
             text_last_row = lastline.slice(bulleted_syntax.length, lastline.length);
             if (!text_last_row.replace(/\s/g, "").length) {
-                type = "bulleted";
-                field.setSelectionRange(range.start - lastline.length, range.end);
-                format_text(textarea, type);
+                if (text.lastIndexOf("\n") > 0) {
+                    text = text.slice(0, Math.max(0, text.lastIndexOf("\n") + 1));
+                    set(field, text);
+                    field.setSelectionRange(
+                        range.start + bulleted_syntax.length,
+                        range.start + bulleted_syntax.length,
+                    );
+                } else {
+                    clear_compose_box();
+                }
+
                 event.preventDefault();
             } else {
                 type = "bulleted";
                 set(field, text + "\n");
                 format_text(textarea, type);
-                field.setSelectionRange(
-                    range.start + bulleted_syntax.length + 1,
-                    range.end + bulleted_syntax.length + 1,
-                );
                 event.preventDefault();
             }
         } else if (
@@ -242,18 +247,22 @@ export function handle_keydown(event, textarea) {
             text_last_row = lastline.slice(numbered_syntax.length, lastline.length);
 
             if (!text_last_row.replace(/\s/g, "").length) {
-                type = "numbered";
-                field.setSelectionRange(range.start - lastline.length, range.end);
-                format_text(textarea, type);
+                if (text.lastIndexOf("\n") > 0) {
+                    text = text.slice(0, Math.max(0, text.lastIndexOf("\n") + 1));
+                    set(field, text);
+                    field.setSelectionRange(
+                        range.start + numbered_syntax.length,
+                        range.start + numbered_syntax.length,
+                    );
+                } else {
+                    clear_compose_box();
+                }
+
                 event.preventDefault();
             } else {
                 type = "numbered";
                 set(field, text + "\n");
                 format_text(textarea, type);
-                field.setSelectionRange(
-                    range.start + numbered_syntax.length + 1,
-                    range.end + numbered_syntax.length + 1,
-                );
                 event.preventDefault();
             }
         }
@@ -287,6 +296,7 @@ export function format_text(textarea, type) {
     const selected_text = range.text;
     let lines = "";
     let changed_selected_text = "";
+    let number_deleted_added_syntax = 0;
 
     // Remove new line and space around selected text.
     const left_trim_length = range.text.length - range.text.trimStart().length;
@@ -458,6 +468,7 @@ export function format_text(textarea, type) {
                         lines[i].length > 0 &&
                         lines[i].slice(0, Math.max(0, bulleted_syntax.length)) === bulleted_syntax
                     ) {
+                        number_deleted_added_syntax += 1;
                         lines[i] = lines[i].slice(
                             bulleted_syntax.length,
                             bulleted_syntax.length + lines[i].length,
@@ -466,11 +477,14 @@ export function format_text(textarea, type) {
                 }
                 changed_selected_text = lines.join("\n");
                 text =
-                    text.slice(0, Math.max(0, field.selectionStart)) +
+                    text.slice(0, Math.max(0, range.start)) +
                     changed_selected_text +
-                    text.slice(Math.max(0, field.selectionEnd));
+                    text.slice(Math.max(0, range.end));
                 set(field, text);
-                field.setSelectionRange(range.start, range.end);
+                field.setSelectionRange(
+                    range.end - bulleted_syntax.length * number_deleted_added_syntax,
+                    range.end - bulleted_syntax.length * number_deleted_added_syntax,
+                );
             } else {
                 field.setSelectionRange(range.start, range.end);
                 lines = selected_text.split("\n");
@@ -479,6 +493,7 @@ export function format_text(textarea, type) {
                     if (
                         lines[i].slice(0, Math.max(0, bulleted_syntax.length)) !== bulleted_syntax
                     ) {
+                        number_deleted_added_syntax += 1;
                         lines[i] = bulleted_syntax + lines[i];
                     }
                 }
@@ -488,6 +503,10 @@ export function format_text(textarea, type) {
                     changed_selected_text +
                     text.slice(Math.max(0, field.selectionEnd));
                 set(field, text);
+                field.setSelectionRange(
+                    range.end + bulleted_syntax.length * number_deleted_added_syntax,
+                    range.end + bulleted_syntax.length * number_deleted_added_syntax,
+                );
             }
             break;
         }
@@ -502,6 +521,7 @@ export function format_text(textarea, type) {
                         lines[i].length > 0 &&
                         lines[i].slice(0, Math.max(0, numbered_syntax.length)) === numbered_syntax
                     ) {
+                        number_deleted_added_syntax += 1;
                         lines[i] = lines[i].slice(
                             numbered_syntax.length,
                             numbered_syntax.length + lines[i].length,
@@ -514,7 +534,10 @@ export function format_text(textarea, type) {
                     changed_selected_text +
                     text.slice(Math.max(0, field.selectionEnd));
                 set(field, text);
-                field.setSelectionRange(range.start, range.end);
+                field.setSelectionRange(
+                    range.end - numbered_syntax.length * number_deleted_added_syntax,
+                    range.end - numbered_syntax.length * number_deleted_added_syntax,
+                );
             } else {
                 field.setSelectionRange(range.start, range.end);
                 lines = selected_text.split("\n");
@@ -523,6 +546,7 @@ export function format_text(textarea, type) {
                     if (
                         lines[i].slice(0, Math.max(0, numbered_syntax.length)) !== numbered_syntax
                     ) {
+                        number_deleted_added_syntax += 1;
                         lines[i] = numbered_syntax + lines[i];
                     }
                 }
@@ -532,6 +556,10 @@ export function format_text(textarea, type) {
                     changed_selected_text +
                     text.slice(Math.max(0, field.selectionEnd));
                 set(field, text);
+                field.setSelectionRange(
+                    range.end + numbered_syntax.length * number_deleted_added_syntax,
+                    range.end + numbered_syntax.length * number_deleted_added_syntax,
+                );
             }
             break;
         }
