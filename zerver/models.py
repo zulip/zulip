@@ -3882,6 +3882,7 @@ class AbstractRealmAuditLog(models.Model):
     STREAM_DEACTIVATED = 602
     STREAM_NAME_CHANGED = 603
     STREAM_REACTIVATED = 604
+    STREAM_MESSAGE_RETENTION_DAYS_CHANGED = 605
 
     # The following values are only for RemoteZulipServerAuditLog
     # Values are chosen to be 10000 greater than the value in RealmAuditLog.
