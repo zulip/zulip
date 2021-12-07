@@ -780,30 +780,25 @@ class ImportExportTest(ZulipTestCase):
 
         self._export_realm(original_realm)
 
+        def get_user_id(r: Realm, full_name: str) -> int:
+            return UserProfile.objects.get(realm=r, full_name=full_name).id
+
+        cordelia_full_name = "Cordelia, Lear's daughter"
+        hamlet_full_name = "King Hamlet"
+        othello_full_name = "Othello, the Moor of Venice"
+
+        def get_huddle_hashes(r: Realm) -> str:
+            user_id_list = [
+                get_user_id(r, cordelia_full_name),
+                get_user_id(r, hamlet_full_name),
+                get_user_id(r, othello_full_name),
+            ]
+
+            huddle_hash = get_huddle_hash(user_id_list)
+            return huddle_hash
+
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
             do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
-
-        # sanity checks
-
-        # test realm
-        self.assertTrue(Realm.objects.filter(string_id="test-zulip").exists())
-        imported_realm = Realm.objects.get(string_id="test-zulip")
-        self.assertNotEqual(imported_realm.id, original_realm.id)
-
-        self.verify_emoji_code_foreign_keys()
-
-        def assert_realm_values(f: Callable[[Realm], Any]) -> None:
-            orig_realm_result = f(original_realm)
-            imported_realm_result = f(imported_realm)
-            # orig_realm_result should be truthy and have some values, otherwise
-            # the test is kind of meaningless
-            assert orig_realm_result
-
-            # It may be helpful to do print(f.__name__) if you are having
-            # trouble debugging this.
-
-            # print(f.__name__, orig_realm_result, imported_realm_result)
-            self.assertEqual(orig_realm_result, imported_realm_result)
 
         getters: List[Callable[[Realm], Any]] = []
 
@@ -899,36 +894,14 @@ class ImportExportTest(ZulipTestCase):
             realmauditlog_event_type = {log.event_type for log in realmauditlogs}
             return realmauditlog_event_type
 
-        cordelia_full_name = "Cordelia, Lear's daughter"
-        hamlet_full_name = "King Hamlet"
-        othello_full_name = "Othello, the Moor of Venice"
-
-        def get_user_id(r: Realm, full_name: str) -> int:
-            return UserProfile.objects.get(realm=r, full_name=full_name).id
-
-        # test huddles
-        def get_huddle_hashes(r: Realm) -> str:
-            user_id_list = [
-                get_user_id(r, cordelia_full_name),
-                get_user_id(r, hamlet_full_name),
-                get_user_id(r, othello_full_name),
-            ]
-
-            huddle_hash = get_huddle_hash(user_id_list)
-            return huddle_hash
-
-        # Our huddle hashes change, because hashes use ids that change.
-        self.assertNotEqual(get_huddle_hashes(original_realm), get_huddle_hashes(imported_realm))
-
         @getter
         def get_huddle_message(r: Realm) -> str:
             huddle_hash = get_huddle_hashes(r)
             huddle_id = Huddle.objects.get(huddle_hash=huddle_hash).id
             huddle_recipient = Recipient.objects.get(type_id=huddle_id, type=3)
             huddle_message = Message.objects.get(recipient=huddle_recipient)
+            self.assertEqual(huddle_message.content, "test huddle message")
             return huddle_message.content
-
-        self.assertEqual(get_huddle_message(imported_realm), "test huddle message")
 
         @getter
         def get_alertwords(r: Realm) -> Set[str]:
@@ -1077,8 +1050,32 @@ class ImportExportTest(ZulipTestCase):
                 "twenty_four_hour_time": realm_user_default.twenty_four_hour_time,
             }
 
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+
+        # test realm
+        self.assertTrue(Realm.objects.filter(string_id="test-zulip").exists())
+        self.assertNotEqual(imported_realm.id, original_realm.id)
+
+        def assert_realm_values(f: Callable[[Realm], Any]) -> None:
+            orig_realm_result = f(original_realm)
+            imported_realm_result = f(imported_realm)
+            # orig_realm_result should be truthy and have some values, otherwise
+            # the test is kind of meaningless
+            assert orig_realm_result
+
+            # It may be helpful to do print(f.__name__) if you are having
+            # trouble debugging this.
+
+            # print(f.__name__, orig_realm_result, imported_realm_result)
+            self.assertEqual(orig_realm_result, imported_realm_result)
+
         for f in getters:
             assert_realm_values(f)
+
+        self.verify_emoji_code_foreign_keys()
+
+        # Our huddle hashes change, because hashes use ids that change.
+        self.assertNotEqual(get_huddle_hashes(original_realm), get_huddle_hashes(imported_realm))
 
         # test to highlight that bs4 which we use to do data-**id
         # replacements modifies the HTML sometimes. eg replacing <br>
