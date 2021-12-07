@@ -1628,15 +1628,19 @@ def export_realm_icons(realm: Realm, local_dir: Path, output_dir: Path) -> None:
         records_file.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
 
 
+def get_emoji_path(realm_emoji: RealmEmoji) -> str:
+    return RealmEmoji.PATH_ID_TEMPLATE.format(
+        realm_id=realm_emoji.realm_id,
+        emoji_file_name=realm_emoji.file_name,
+    )
+
+
 def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> None:
 
     count = 0
     records = []
     for realm_emoji in RealmEmoji.objects.filter(realm_id=realm.id):
-        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
-            realm_id=realm.id,
-            emoji_file_name=realm_emoji.file_name,
-        )
+        emoji_path = get_emoji_path(realm_emoji)
 
         # Use 'mark_sanitized' to work around false positive caused by Pysa
         # thinking that 'realm' (and thus 'attachment' and 'attachment.path_id')
