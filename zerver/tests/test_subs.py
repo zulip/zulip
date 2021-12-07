@@ -73,6 +73,7 @@ from zerver.models import (
     DefaultStreamGroup,
     Message,
     Realm,
+    RealmAuditLog,
     Recipient,
     Stream,
     Subscription,
@@ -1293,6 +1294,14 @@ class StreamAdminTest(ZulipTestCase):
             "deleted after 2 days."
         )
         self.assertEqual(messages[0].content, expected_notification)
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.STREAM_MESSAGE_RETENTION_DAYS_CHANGED
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = orjson.dumps(
+            {RealmAuditLog.OLD_VALUE: None, RealmAuditLog.NEW_VALUE: 2}
+        ).decode()
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
         # Go from 2 days to 8 days
         result = self.client_patch(
@@ -1307,8 +1316,16 @@ class StreamAdminTest(ZulipTestCase):
             "deleted after 8 days."
         )
         self.assertEqual(messages[1].content, expected_notification)
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.STREAM_MESSAGE_RETENTION_DAYS_CHANGED
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = orjson.dumps(
+            {RealmAuditLog.OLD_VALUE: 2, RealmAuditLog.NEW_VALUE: 8}
+        ).decode()
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
-        # Go from 2 days to realm default (None on stream, forever/-1 on realm)
+        # Go from 8 days to realm default (None on stream, forever/-1 on realm)
         result = self.client_patch(
             f"/json/streams/{stream.id}",
             {"message_retention_days": orjson.dumps("realm_default").decode()},
@@ -1321,6 +1338,17 @@ class StreamAdminTest(ZulipTestCase):
             "for this stream from **8 days** to **Forever**."
         )
         self.assertEqual(messages[2].content, expected_notification)
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.STREAM_MESSAGE_RETENTION_DAYS_CHANGED
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = orjson.dumps(
+            {
+                RealmAuditLog.OLD_VALUE: 8,
+                RealmAuditLog.NEW_VALUE: None,
+            }
+        ).decode()
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
     def test_change_stream_message_retention_days(self) -> None:
         user_profile = self.example_user("desdemona")

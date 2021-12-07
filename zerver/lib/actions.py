@@ -5059,8 +5059,23 @@ def do_change_stream_message_retention_days(
     stream: Stream, acting_user: UserProfile, message_retention_days: Optional[int] = None
 ) -> None:
     old_message_retention_days_value = stream.message_retention_days
-    stream.message_retention_days = message_retention_days
-    stream.save(update_fields=["message_retention_days"])
+
+    with transaction.atomic():
+        stream.message_retention_days = message_retention_days
+        stream.save(update_fields=["message_retention_days"])
+        RealmAuditLog.objects.create(
+            realm=stream.realm,
+            acting_user=acting_user,
+            modified_stream=stream,
+            event_type=RealmAuditLog.STREAM_MESSAGE_RETENTION_DAYS_CHANGED,
+            event_time=timezone_now(),
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.OLD_VALUE: old_message_retention_days_value,
+                    RealmAuditLog.NEW_VALUE: message_retention_days,
+                }
+            ).decode(),
+        )
 
     event = dict(
         op="update",
