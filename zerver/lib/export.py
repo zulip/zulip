@@ -1286,6 +1286,7 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
             os.makedirs(dir_path)
 
     users = list(UserProfile.objects.filter(realm=realm))
+    attachments = list(Attachment.objects.filter(realm_id=realm.id))
 
     if settings.LOCAL_UPLOADS_DIR:
         # Small installations and developers will usually just store files locally.
@@ -1293,6 +1294,7 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
             realm,
             local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "files"),
             output_dir=uploads_output_dir,
+            attachments=attachments,
         )
         export_avatars_from_local(
             realm,
@@ -1503,11 +1505,13 @@ def export_files_from_s3(
         records_file.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
 
 
-def export_uploads_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> None:
+def export_uploads_from_local(
+    realm: Realm, local_dir: Path, output_dir: Path, attachments: List[Attachment]
+) -> None:
 
     count = 0
     records = []
-    for attachment in Attachment.objects.filter(realm_id=realm.id):
+    for attachment in attachments:
         # Use 'mark_sanitized' to work around false positive caused by Pysa
         # thinking that 'realm' (and thus 'attachment' and 'attachment.path_id')
         # are user controlled
