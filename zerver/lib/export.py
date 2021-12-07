@@ -1285,6 +1285,8 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
 
+    users = list(UserProfile.objects.filter(realm=realm))
+
     if settings.LOCAL_UPLOADS_DIR:
         # Small installations and developers will usually just store files locally.
         export_uploads_from_local(
@@ -1296,6 +1298,7 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
             realm,
             local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"),
             output_dir=avatars_output_dir,
+            users=users,
         )
         export_emoji_from_local(
             realm,
@@ -1308,7 +1311,7 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
             output_dir=realm_icons_output_dir,
         )
     else:
-        user_ids = {user.id for user in UserProfile.objects.filter(realm=realm)}
+        user_ids = {user.id for user in users}
 
         # Some bigger installations will have their data stored on S3.
         export_files_from_s3(
@@ -1532,12 +1535,12 @@ def export_uploads_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
         records_file.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
 
 
-def export_avatars_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> None:
+def export_avatars_from_local(
+    realm: Realm, local_dir: Path, output_dir: Path, users: List[UserProfile]
+) -> None:
 
     count = 0
     records = []
-
-    users = list(UserProfile.objects.filter(realm=realm))
 
     internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
     users += [
