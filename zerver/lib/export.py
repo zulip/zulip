@@ -1321,7 +1321,14 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
             object_prefix=f"{realm.id}/",
             output_dir=uploads_output_dir,
             user_ids=user_ids,
+            valid_hashes=None,
         )
+
+        avatar_hash_values = set()
+        for user_id in user_ids:
+            avatar_path = user_avatar_path_from_ids(user_id, realm.id)
+            avatar_hash_values.add(avatar_path)
+            avatar_hash_values.add(avatar_path + ".original")
 
         export_files_from_s3(
             realm,
@@ -1330,6 +1337,7 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
             object_prefix=f"{realm.id}/",
             output_dir=avatars_output_dir,
             user_ids=user_ids,
+            valid_hashes=avatar_hash_values,
         )
 
         export_files_from_s3(
@@ -1339,6 +1347,7 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
             object_prefix=f"{realm.id}/emoji/images/",
             output_dir=emoji_output_dir,
             user_ids=user_ids,
+            valid_hashes=None,
         )
 
         export_files_from_s3(
@@ -1348,6 +1357,7 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
             object_prefix=f"{realm.id}/realm/",
             output_dir=realm_icons_output_dir,
             user_ids=user_ids,
+            valid_hashes=None,
         )
 
 
@@ -1427,22 +1437,15 @@ def export_files_from_s3(
     object_prefix: str,
     output_dir: Path,
     user_ids: Set[int],
+    valid_hashes: Optional[Set[str]],
 ) -> None:
     processing_uploads = flavor == "upload"
-    processing_avatars = flavor == "avatar"
     processing_emoji = flavor == "emoji"
 
     bucket = get_bucket(bucket_name)
     records = []
 
     logging.info("Downloading %s files from %s", flavor, bucket_name)
-
-    avatar_hash_values = set()
-    if processing_avatars:
-        for user_id in user_ids:
-            avatar_path = user_avatar_path_from_ids(user_id, realm.id)
-            avatar_hash_values.add(avatar_path)
-            avatar_hash_values.add(avatar_path + ".original")
 
     email_gateway_bot: Optional[UserProfile] = None
 
@@ -1453,8 +1456,9 @@ def export_files_from_s3(
 
     count = 0
     for bkey in bucket.objects.filter(Prefix=object_prefix):
-        if processing_avatars and bkey.Object().key not in avatar_hash_values:
-            continue
+        if valid_hashes is not None:
+            if bkey.Object().key not in valid_hashes:
+                continue
 
         key = bucket.Object(bkey.key)
 
