@@ -798,22 +798,31 @@ class ImportExportTest(ZulipTestCase):
             # orig_realm_result should be truthy and have some values, otherwise
             # the test is kind of meaningless
             assert orig_realm_result
+
+            # It may be helpful to do print(f.__name__) if you are having
+            # trouble debugging this.
+
+            # print(f.__name__, orig_realm_result, imported_realm_result)
             self.assertEqual(orig_realm_result, imported_realm_result)
 
+        getters: List[Callable[[Realm], Any]] = []
+
+        def getter(f: Callable[[Realm], Any]) -> Callable[[Realm], Any]:
+            getters.append(f)
+            assert f.__name__.startswith("get_")
+            return f
+
+        @getter
         def get_admin_bot_emails(r: Realm) -> Set[str]:
             return {user.email for user in r.get_admin_users_and_bots()}
 
-        assert_realm_values(get_admin_bot_emails)
-
+        @getter
         def get_active_emails(r: Realm) -> Set[str]:
             return {user.email for user in r.get_active_users()}
 
-        assert_realm_values(get_active_emails)
-
+        @getter
         def get_active_stream_names(r: Realm) -> Set[str]:
             return {stream.name for stream in get_active_streams(r)}
-
-        assert_realm_values(get_active_stream_names)
 
         # test recipients
         def get_recipient_stream(r: Realm) -> Recipient:
@@ -822,15 +831,13 @@ class ImportExportTest(ZulipTestCase):
         def get_recipient_user(r: Realm) -> Recipient:
             return UserProfile.objects.get(full_name="Iago", realm=r).recipient
 
+        @getter
         def get_stream_recipient_type(r: Realm) -> int:
             return get_recipient_stream(r).type
 
-        assert_realm_values(get_stream_recipient_type)
-
+        @getter
         def get_user_recipient_type(r: Realm) -> int:
             return get_recipient_user(r).type
-
-        assert_realm_values(get_user_recipient_type)
 
         # test subscription
         def get_subscribers(recipient: Recipient) -> Set[str]:
@@ -838,24 +845,22 @@ class ImportExportTest(ZulipTestCase):
             users = {sub.user_profile.email for sub in subscriptions}
             return users
 
+        @getter
         def get_stream_subscribers(r: Realm) -> Set[str]:
             return get_subscribers(get_recipient_stream(r))
 
-        assert_realm_values(get_stream_subscribers)
-
+        @getter
         def get_user_subscribers(r: Realm) -> Set[str]:
             return get_subscribers(get_recipient_user(r))
 
-        assert_realm_values(get_user_subscribers)
-
         # test custom profile fields
+        @getter
         def get_custom_profile_field_names(r: Realm) -> Set[str]:
             custom_profile_fields = CustomProfileField.objects.filter(realm=r)
             custom_profile_field_names = {field.name for field in custom_profile_fields}
             return custom_profile_field_names
 
-        assert_realm_values(get_custom_profile_field_names)
-
+        @getter
         def get_custom_profile_with_field_type_user(
             r: Realm,
         ) -> Tuple[Set[Any], Set[Any], Set[FrozenSet[str]]]:
@@ -885,17 +890,14 @@ class ImportExportTest(ZulipTestCase):
 
             return (field_hints, field_names, custom_profile_field_values_for(fields))
 
-        assert_realm_values(get_custom_profile_with_field_type_user)
-
         # test realmauditlog
+        @getter
         def get_realm_audit_log_event_type(r: Realm) -> Set[str]:
             realmauditlogs = RealmAuditLog.objects.filter(realm=r).exclude(
                 event_type__in=[RealmAuditLog.REALM_PLAN_TYPE_CHANGED, RealmAuditLog.STREAM_CREATED]
             )
             realmauditlog_event_type = {log.event_type for log in realmauditlogs}
             return realmauditlog_event_type
-
-        assert_realm_values(get_realm_audit_log_event_type)
 
         cordelia_full_name = "Cordelia, Lear's daughter"
         hamlet_full_name = "King Hamlet"
@@ -918,6 +920,7 @@ class ImportExportTest(ZulipTestCase):
         # Our huddle hashes change, because hashes use ids that change.
         self.assertNotEqual(get_huddle_hashes(original_realm), get_huddle_hashes(imported_realm))
 
+        @getter
         def get_huddle_message(r: Realm) -> str:
             huddle_hash = get_huddle_hashes(r)
             huddle_id = Huddle.objects.get(huddle_hash=huddle_hash).id
@@ -925,22 +928,19 @@ class ImportExportTest(ZulipTestCase):
             huddle_message = Message.objects.get(recipient=huddle_recipient)
             return huddle_message.content
 
-        assert_realm_values(get_huddle_message)
         self.assertEqual(get_huddle_message(imported_realm), "test huddle message")
 
-        # test alertword
+        @getter
         def get_alertwords(r: Realm) -> Set[str]:
             return {rec.word for rec in AlertWord.objects.filter(realm_id=r.id)}
 
-        assert_realm_values(get_alertwords)
-
+        @getter
         def get_realm_emoji_names(r: Realm) -> Set[str]:
             names = {rec.name for rec in RealmEmoji.objects.filter(realm_id=r.id)}
             assert "hawaii" in names
             return names
 
-        assert_realm_values(get_realm_emoji_names)
-
+        @getter
         def get_realm_user_statuses(r: Realm) -> Set[Tuple[str, str, int, str]]:
             tups = {
                 (rec.user_profile.full_name, rec.emoji_name, rec.status, rec.status_text)
@@ -949,8 +949,7 @@ class ImportExportTest(ZulipTestCase):
             assert (cordelia.full_name, "hawaii", UserStatus.AWAY, "in Hawaii") in tups
             return tups
 
-        assert_realm_values(get_realm_user_statuses)
-
+        @getter
         def get_realm_emoji_reactions(r: Realm) -> Set[Tuple[str, str]]:
             tups = {
                 (rec.emoji_name, rec.user_profile.full_name)
@@ -961,18 +960,16 @@ class ImportExportTest(ZulipTestCase):
             self.assertEqual(tups, {("hawaii", cordelia.full_name)})
             return tups
 
-        assert_realm_values(get_realm_emoji_reactions)
-
         # test userhotspot
+        @getter
         def get_user_hotspots(r: Realm) -> Set[str]:
             user_id = get_user_id(r, hamlet_full_name)
             hotspots = UserHotspot.objects.filter(user_id=user_id)
             user_hotspots = {hotspot.hotspot for hotspot in hotspots}
             return user_hotspots
 
-        assert_realm_values(get_user_hotspots)
-
         # test muted topics
+        @getter
         def get_muted_topics(r: Realm) -> Set[str]:
             user_profile_id = get_user_id(r, hamlet_full_name)
             muted_topics = UserTopic.objects.filter(
@@ -981,8 +978,7 @@ class ImportExportTest(ZulipTestCase):
             topic_names = {muted_topic.topic_name for muted_topic in muted_topics}
             return topic_names
 
-        assert_realm_values(get_muted_topics)
-
+        @getter
         def get_muted_users(r: Realm) -> Set[Tuple[str, str, str]]:
             mute_objects = MutedUser.objects.filter(user_profile__realm=r)
             muter_tuples = {
@@ -995,35 +991,29 @@ class ImportExportTest(ZulipTestCase):
             }
             return muter_tuples
 
-        assert_realm_values(get_muted_users)
-
+        @getter
         def get_user_group_names(r: Realm) -> Set[str]:
             return {group.name for group in UserGroup.objects.filter(realm=r)}
 
-        assert_realm_values(get_user_group_names)
-
+        @getter
         def get_user_membership(r: Realm) -> Set[str]:
             usergroup = UserGroup.objects.get(realm=r, name="hamletcharacters")
             usergroup_membership = UserGroupMembership.objects.filter(user_group=usergroup)
             users = {membership.user_profile.email for membership in usergroup_membership}
             return users
 
-        assert_realm_values(get_user_membership)
-
         # test botstoragedata and botconfigdata
+        @getter
         def get_botstoragedata(r: Realm) -> Dict[str, Any]:
             bot_profile = UserProfile.objects.get(full_name="bot", realm=r)
             bot_storage_data = BotStorageData.objects.get(bot_profile=bot_profile)
             return {"key": bot_storage_data.key, "data": bot_storage_data.value}
 
-        assert_realm_values(get_botstoragedata)
-
+        @getter
         def get_botconfigdata(r: Realm) -> Dict[str, Any]:
             bot_profile = UserProfile.objects.get(full_name="bot", realm=r)
             bot_config_data = BotConfigData.objects.get(bot_profile=bot_profile)
             return {"key": bot_config_data.key, "data": bot_config_data.value}
-
-        assert_realm_values(get_botconfigdata)
 
         # test messages
         def get_stream_messages(r: Realm) -> Message:
@@ -1031,25 +1021,24 @@ class ImportExportTest(ZulipTestCase):
             messages = Message.objects.filter(recipient=recipient)
             return messages
 
+        @getter
         def get_stream_topics(r: Realm) -> Set[str]:
             messages = get_stream_messages(r)
             topics = {m.topic_name() for m in messages}
             return topics
 
-        assert_realm_values(get_stream_topics)
-
         # test usermessages
+        @getter
         def get_usermessages_user(r: Realm) -> Set[Any]:
             messages = get_stream_messages(r).order_by("content")
             usermessage = UserMessage.objects.filter(message=messages[0])
             usermessage_user = {um.user_profile.email for um in usermessage}
             return usermessage_user
 
-        assert_realm_values(get_usermessages_user)
-
         # tests to make sure that various data-*-ids in rendered_content
         # are replaced correctly with the values of newer realm.
 
+        @getter
         def get_user_mention(r: Realm) -> Set[Any]:
             mentioned_user = UserProfile.objects.get(
                 delivery_email=self.example_email("hamlet"), realm=r
@@ -1058,16 +1047,14 @@ class ImportExportTest(ZulipTestCase):
             mention_message = get_stream_messages(r).get(rendered_content__contains=data_user_id)
             return mention_message.content
 
-        assert_realm_values(get_user_mention)
-
+        @getter
         def get_stream_mention(r: Realm) -> Set[Any]:
             mentioned_stream = get_stream("Denmark", r)
             data_stream_id = f'data-stream-id="{mentioned_stream.id}"'
             mention_message = get_stream_messages(r).get(rendered_content__contains=data_stream_id)
             return mention_message.content
 
-        assert_realm_values(get_stream_mention)
-
+        @getter
         def get_user_group_mention(r: Realm) -> Set[Any]:
             user_group = UserGroup.objects.get(realm=r, name="hamletcharacters")
             data_usergroup_id = f'data-user-group-id="{user_group.id}"'
@@ -1076,15 +1063,13 @@ class ImportExportTest(ZulipTestCase):
             )
             return mention_message.content
 
-        assert_realm_values(get_user_group_mention)
-
+        @getter
         def get_userpresence_timestamp(r: Realm) -> Set[Any]:
             # It should be sufficient to compare UserPresence timestamps to verify
             # they got exported/imported correctly.
             return set(UserPresence.objects.filter(realm=r).values_list("timestamp", flat=True))
 
-        assert_realm_values(get_userpresence_timestamp)
-
+        @getter
         def get_realm_user_default_values(r: Realm) -> Dict[str, Any]:
             realm_user_default = RealmUserDefault.objects.get(realm=r)
             return {
@@ -1092,7 +1077,8 @@ class ImportExportTest(ZulipTestCase):
                 "twenty_four_hour_time": realm_user_default.twenty_four_hour_time,
             }
 
-        assert_realm_values(get_realm_user_default_values)
+        for f in getters:
+            assert_realm_values(f)
 
         # test to highlight that bs4 which we use to do data-**id
         # replacements modifies the HTML sometimes. eg replacing <br>
