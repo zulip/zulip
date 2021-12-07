@@ -795,12 +795,33 @@ class ImportExportTest(ZulipTestCase):
         realm_user_default.twenty_four_hour_time = True
         realm_user_default.save()
 
+        getters = self.get_realm_getters()
+
+        snapshots: Dict[str, Any] = {}
+
+        for f in getters:
+            snapshots[f.__name__] = f(original_realm)
+
         self._export_realm(original_realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
             do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
 
-        getters = self.get_realm_getters()
+        # Make sure our export/import didn't somehow leak info into the
+        # original realm.
+        for f in getters:
+            # One way this will fail is if you make a getter that doesn't
+            # properly restrict its results to a single realm.
+            if f(original_realm) != snapshots[f.__name__]:
+                raise AssertionError(
+                    f"""
+                    The export/import process is corrupting your
+                    original realm according to {f.__name__}!
+
+                    If you wrote that getter, are you sure you
+                    are only grabbing objects from one realm?
+                    """
+                )
 
         imported_realm = Realm.objects.get(string_id="test-zulip")
 
