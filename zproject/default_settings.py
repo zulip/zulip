@@ -358,8 +358,8 @@ REALM_CREATION_LINK_VALIDITY_DAYS = 7
 # Version number for ToS.  Change this if you want to force every
 # user to click through to re-accept terms of service before using
 # Zulip again on the web.
-TOS_VERSION: Optional[str] = None
-# Template to use when bumping TOS_VERSION to explain situation.
+TERMS_OF_SERVICE_VERSION: Optional[str] = None
+# Template to use when bumping TERMS_OF_SERVICE_VERSION to explain situation.
 FIRST_TIME_TOS_TEMPLATE: Optional[str] = None
 
 # Hostname used for Zulip's statsd logging integration.

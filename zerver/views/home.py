@@ -29,10 +29,10 @@ def need_accept_tos(user_profile: Optional[UserProfile]) -> bool:
     if settings.TERMS_OF_SERVICE is None:  # nocoverage
         return False
 
-    if settings.TOS_VERSION is None:
+    if settings.TERMS_OF_SERVICE_VERSION is None:
         return False
 
-    return int(settings.TOS_VERSION.split(".")[0]) > user_profile.major_tos_version()
+    return int(settings.TERMS_OF_SERVICE_VERSION.split(".")[0]) > user_profile.major_tos_version()
 
 
 @zulip_login_required
@@ -42,7 +42,7 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         form = ToSForm(request.POST)
         if form.is_valid():
-            do_change_tos_version(request.user, settings.TOS_VERSION)
+            do_change_tos_version(request.user, settings.TERMS_OF_SERVICE_VERSION)
             return redirect(home)
     else:
         form = ToSForm()
