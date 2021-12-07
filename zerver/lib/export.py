@@ -1285,6 +1285,7 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
 
+    handle_system_bots = True
     users = list(UserProfile.objects.filter(realm=realm))
     attachments = list(Attachment.objects.filter(realm_id=realm.id))
 
@@ -1301,6 +1302,7 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
             local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"),
             output_dir=avatars_output_dir,
             users=users,
+            handle_system_bots=handle_system_bots,
         )
         export_emoji_from_local(
             realm,
@@ -1321,6 +1323,7 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
 
         export_files_from_s3(
             realm,
+            handle_system_bots=handle_system_bots,
             flavor="upload",
             bucket_name=settings.S3_AUTH_UPLOADS_BUCKET,
             object_prefix=f"{realm.id}/",
@@ -1337,6 +1340,7 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
 
         export_files_from_s3(
             realm,
+            handle_system_bots=handle_system_bots,
             flavor="avatar",
             bucket_name=settings.S3_AVATAR_BUCKET,
             object_prefix=f"{realm.id}/",
@@ -1347,6 +1351,7 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
 
         export_files_from_s3(
             realm,
+            handle_system_bots=handle_system_bots,
             flavor="emoji",
             bucket_name=settings.S3_AVATAR_BUCKET,
             object_prefix=f"{realm.id}/emoji/images/",
@@ -1357,6 +1362,7 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
 
         export_files_from_s3(
             realm,
+            handle_system_bots=handle_system_bots,
             flavor="realm_icon_or_logo",
             bucket_name=settings.S3_AVATAR_BUCKET,
             object_prefix=f"{realm.id}/realm/",
@@ -1437,6 +1443,7 @@ def _save_s3_object_to_file(
 
 def export_files_from_s3(
     realm: Realm,
+    handle_system_bots: bool,
     flavor: str,
     bucket_name: str,
     object_prefix: str,
@@ -1454,7 +1461,7 @@ def export_files_from_s3(
 
     email_gateway_bot: Optional[UserProfile] = None
 
-    if settings.EMAIL_GATEWAY_BOT is not None:
+    if handle_system_bots and settings.EMAIL_GATEWAY_BOT is not None:
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
         user_ids.add(email_gateway_bot.id)
@@ -1547,18 +1554,24 @@ def export_uploads_from_local(
 
 
 def export_avatars_from_local(
-    realm: Realm, local_dir: Path, output_dir: Path, users: List[UserProfile]
+    realm: Realm,
+    local_dir: Path,
+    output_dir: Path,
+    users: List[UserProfile],
+    handle_system_bots: bool,
 ) -> None:
 
     count = 0
     records = []
 
-    internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
-    users += [
-        get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id),
-        get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id),
-        get_system_bot(settings.WELCOME_BOT, internal_realm.id),
-    ]
+    if handle_system_bots:
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        users += [
+            get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id),
+            get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id),
+            get_system_bot(settings.WELCOME_BOT, internal_realm.id),
+        ]
+
     for user in users:
         if user.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
             continue
