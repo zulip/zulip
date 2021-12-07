@@ -135,7 +135,7 @@ your email and other data). Your domain administrator may be able to:
     * receive your account information in order to satisfy applicable
     law, regulation, legal process or enforceable governmental
     request.
-    * restrict your ability to delete or edit information or settings.</li>
+    * restrict your ability to delete or edit information or settings.
 
     Please refer to your domain administrator’s privacy policy for
     more information.
