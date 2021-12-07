@@ -16,15 +16,6 @@ class zulip::profile::rabbitmq {
     ensure => absent,
   }
 
-  file { '/etc/default/rabbitmq-server':
-    ensure  => file,
-    require => Package[rabbitmq-server],
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    source  => 'puppet:///modules/zulip/rabbitmq/rabbitmq-server',
-  }
-
   file { '/etc/rabbitmq/rabbitmq.config':
     ensure  => file,
     require => Package[rabbitmq-server],
