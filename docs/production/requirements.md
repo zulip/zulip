@@ -84,6 +84,11 @@ on hardware requirements for larger organizations.
   HTTPS, and will redirect HTTP requests to HTTPS.
 - Incoming port 25 if you plan to enable Zulip's [incoming email
   integration](../production/email-gateway.md).
+- Incoming port 4369 should be protected by a firewall to prevent
+  exposing `epmd`, an Erlang service which does not support binding
+  only to localhost. Leaving this exposed will allow unauthenticated
+  remote users to determine that the server is running RabbitMQ, and
+  on which port, though no further information is leaked.
 - Outgoing HTTP(S) access (ports 80 and 443) to the public Internet so
   that Zulip can properly manage image and website previews and mobile
   push notifications. Outgoing Internet access is not required if you
