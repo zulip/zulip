@@ -1316,6 +1316,9 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
         user_ids = {user.id for user in users}
 
         # Some bigger installations will have their data stored on S3.
+
+        path_ids = {attachment.path_id for attachment in attachments}
+
         export_files_from_s3(
             realm,
             flavor="upload",
@@ -1323,7 +1326,7 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
             object_prefix=f"{realm.id}/",
             output_dir=uploads_output_dir,
             user_ids=user_ids,
-            valid_hashes=None,
+            valid_hashes=path_ids,
         )
 
         avatar_hash_values = set()
