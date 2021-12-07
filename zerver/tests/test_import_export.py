@@ -792,16 +792,13 @@ class ImportExportTest(ZulipTestCase):
 
         self.verify_emoji_code_foreign_keys()
 
-        def assert_realm_values(f: Callable[[Realm], Any], equal: bool = True) -> None:
+        def assert_realm_values(f: Callable[[Realm], Any]) -> None:
             orig_realm_result = f(original_realm)
             imported_realm_result = f(imported_realm)
             # orig_realm_result should be truthy and have some values, otherwise
             # the test is kind of meaningless
             assert orig_realm_result
-            if equal:
-                self.assertEqual(orig_realm_result, imported_realm_result)
-            else:
-                self.assertNotEqual(orig_realm_result, imported_realm_result)
+            self.assertEqual(orig_realm_result, imported_realm_result)
 
         # test users
         assert_realm_values(
@@ -908,7 +905,8 @@ class ImportExportTest(ZulipTestCase):
             huddle_hash = get_huddle_hash(user_id_list)
             return huddle_hash
 
-        assert_realm_values(get_huddle_hashes, equal=False)
+        # Our huddle hashes change, because hashes use ids that change.
+        self.assertNotEqual(get_huddle_hashes(original_realm), get_huddle_hashes(imported_realm))
 
         def get_huddle_message(r: Realm) -> str:
             huddle_hash = get_huddle_hashes(r)
