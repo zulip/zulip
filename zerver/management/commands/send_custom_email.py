@@ -106,7 +106,7 @@ class Command(ZulipBaseCommand):
                 raise error
 
         # Only email users who've agreed to the terms of service.
-        if settings.TOS_VERSION is not None:
+        if settings.TERMS_OF_SERVICE_VERSION is not None:
             # We need to do a new query because the `get_users` path
             # passes us a list rather than a QuerySet.
             users = (

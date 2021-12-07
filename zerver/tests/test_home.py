@@ -457,7 +457,9 @@ class HomeTest(ZulipTestCase):
             user.tos_version = user_tos_version
             user.save()
 
-            with self.settings(TERMS_OF_SERVICE="whatever"), self.settings(TOS_VERSION="99.99"):
+            with self.settings(TERMS_OF_SERVICE="whatever"), self.settings(
+                TERMS_OF_SERVICE_VERSION="99.99"
+            ):
 
                 result = self.client_get("/", dict(stream="Denmark"))
 
@@ -495,7 +497,7 @@ class HomeTest(ZulipTestCase):
         user.save()
 
         with self.settings(FIRST_TIME_TOS_TEMPLATE="hello.html"), self.settings(
-            TOS_VERSION="99.99"
+            TERMS_OF_SERVICE_VERSION="99.99"
         ):
             result = self.client_post("/accounts/accept_terms/")
             self.assertEqual(result.status_code, 200)

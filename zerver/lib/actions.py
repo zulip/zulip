@@ -745,7 +745,7 @@ def do_activate_mirror_dummy_user(
         user_profile.is_mirror_dummy = False
         user_profile.set_unusable_password()
         user_profile.date_joined = timezone_now()
-        user_profile.tos_version = settings.TOS_VERSION
+        user_profile.tos_version = settings.TERMS_OF_SERVICE_VERSION
         user_profile.save(
             update_fields=["date_joined", "password", "is_mirror_dummy", "tos_version"]
         )
@@ -4438,7 +4438,7 @@ def do_change_tos_version(user_profile: UserProfile, tos_version: str) -> None:
         realm=user_profile.realm,
         acting_user=user_profile,
         modified_user=user_profile,
-        event_type=RealmAuditLog.USER_TOS_VERSION_CHANGED,
+        event_type=RealmAuditLog.USER_TERMS_OF_SERVICE_VERSION_CHANGED,
         event_time=event_time,
     )
 
