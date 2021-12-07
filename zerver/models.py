@@ -2022,9 +2022,11 @@ class PasswordTooWeakError(Exception):
 
 
 class UserGroup(models.Model):
+    MAX_NAME_LENGTH = 100
+
     objects = CTEManager()
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
-    name: str = models.CharField(max_length=100)
+    name: str = models.CharField(max_length=MAX_NAME_LENGTH)
     direct_members: Manager = models.ManyToManyField(
         UserProfile, through="UserGroupMembership", related_name="direct_groups"
     )

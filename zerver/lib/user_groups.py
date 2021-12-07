@@ -7,6 +7,7 @@ from django_cte import With
 
 from zerver.lib.exceptions import JsonableError
 from zerver.models import Realm, UserGroup, UserGroupMembership, UserProfile
+import unicodedata
 
 
 def access_user_group_by_id(
@@ -67,6 +68,17 @@ def remove_user_from_user_group(user_profile: UserProfile, user_group: UserGroup
     return num_deleted
 
 
+def check_user_group_name(group_name: str) -> None:
+    if group_name.strip() == "":
+        raise JsonableError(_("Group name can't be empty!"))
+    if len(group_name) > UserGroup.MAX_NAME_LENGTH:
+        raise JsonableError(_("Group name too long (limit: {} characters).").format(UserGroup.MAX_NAME_LENGTH))
+    for i in group_name: 
+        unicode_category = unicodedata.category(i)
+        if unicode_category in ["Cc", "Cs", "Cn"]:
+            raise JsonableError(_("Invalid unicode characters in group name!"))
+
+
 def create_user_group(
     name: str,
     members: List[UserProfile],
@@ -75,7 +87,8 @@ def create_user_group(
     description: str = "",
     is_system_group: bool = False,
 ) -> UserGroup:
-    with transaction.atomic():
+    check_user_group_name(name)
+    with transaction.atomic(): 
         user_group = UserGroup.objects.create(
             name=name, realm=realm, description=description, is_system_group=is_system_group
         )

@@ -52,6 +52,11 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[1]["name"], "newgroup")
         self.assertEqual(user_groups[1]["description"], "")
         self.assertEqual(user_groups[1]["members"], [])
+    
+    def test_invalid_user_group_name(self) -> None:
+        realm = get_realm("zulip")
+        result = self.create_user_group_for_test("")
+        self.assert_json_error(result, "Group name can't be empty!")
 
     def test_get_direct_user_groups(self) -> None:
         othello = self.example_user("othello")
