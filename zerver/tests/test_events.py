@@ -1806,7 +1806,7 @@ class NormalActionsTest(BaseAction):
         self.user_profile.save(update_fields=["tutorial_status"])
 
         events = self.verify_action(
-            lambda: do_mark_hotspot_as_read(self.user_profile, "intro_reply")
+            lambda: do_mark_hotspot_as_read(self.user_profile, "intro_streams")
         )
         check_hotspots("events[0]", events[0])
 
