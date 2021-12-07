@@ -50,6 +50,7 @@ from zerver.lib.exceptions import (
     OrganizationOwnerRequired,
     ResourceNotFoundError,
 )
+from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.retention import parse_message_retention_days
@@ -649,7 +650,7 @@ def send_messages_for_new_subscribers(
                 topic = _("new streams")
 
             content = content.format(
-                user_name=f"@_**{user_profile.full_name}|{user_profile.id}**",
+                user_name=silent_mention_syntax_for_user(user_profile),
                 stream_str=", ".join(f"#**{s.name}**" for s in created_streams),
             )
 
@@ -674,7 +675,7 @@ def send_messages_for_new_subscribers(
                         stream=stream,
                         topic=Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
                         content=_("Stream created by {user_name}.").format(
-                            user_name=f"@_**{user_profile.full_name}|{user_profile.id}**",
+                            user_name=silent_mention_syntax_for_user(user_profile),
                         ),
                     ),
                 )
