@@ -787,15 +787,15 @@ effective_io_concurrency = <%= @effective_io_concurrency %>
 listen_addresses = <%= @listen_addresses %>
 <% end -%>
 
-<% if @replication != '' -%>
-# Primary replication settings (ignored on replica)
-wal_level = hot_standby
+<% if @replication != '' || (@replication_primary != '' && @replication_user != '') -%>
+# Replication
 max_wal_senders = 5
 archive_mode = on
 archive_command = '/usr/bin/timeout 10m /usr/local/bin/env-wal-g wal-push %p'
-
-# Replica settings (ignored on primary)
-hot_standby = on
+restore_command = '/usr/local/bin/env-wal-g wal-fetch "%f" "%p"'
+<% if @replication_primary != '' && @replication_user != '' -%>
+primary_conninfo = 'host=<%= @replication_primary %> user=<%= @replication_user %>'
+<% end -%>
 <% end -%>
 
 <% if @ssl_cert_file != '' -%>

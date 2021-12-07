@@ -423,9 +423,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         stream_name="opbeat",
         function="zerver.webhooks.opbeat.view.api_opbeat_webhook",
     ),
-    WebhookIntegration(
-        "opencollective", ["communication"], display_name="Open Collective Incoming Webhook"
-    ),
+    WebhookIntegration("opencollective", ["communication"], display_name="Open Collective"),
     WebhookIntegration("opsgenie", ["meta-integration", "monitoring"]),
     WebhookIntegration("pagerduty", ["monitoring"], display_name="PagerDuty"),
     WebhookIntegration("papertrail", ["monitoring"]),

@@ -3,11 +3,11 @@
     {
       "application": null,
       "cancellation_reason": null,
-      "client_secret": "seti_1JTq8uA4KHR4JzRv8cWRyqIJ_secret_K86LYZeSenSPj4sdidbGdL6Ai7oaJ73",
+      "client_secret": "seti_1K2OZhHSaWXyvFpKqBoyOQPu_secret_KhoCe8fXNtAKG5CYpbp88rVKLz3cMV4",
       "created": 1000000000,
       "customer": "cus_NORMALIZED0001",
       "description": null,
-      "id": "seti_1JTq8uA4KHR4JzRv8cWRyqIJ",
+      "id": "seti_1K2OZhHSaWXyvFpKqBoyOQPu",
       "last_setup_error": null,
       "latest_attempt": null,
       "livemode": false,

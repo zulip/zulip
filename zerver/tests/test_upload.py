@@ -21,7 +21,7 @@ import zerver.lib.upload
 from zerver.lib.actions import (
     do_change_icon_source,
     do_change_logo_source,
-    do_change_plan_type,
+    do_change_realm_plan_type,
     do_create_realm,
     do_delete_old_unclaimed_attachments,
     do_set_realm_property,
@@ -1544,7 +1544,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_upload_limited_plan_type(self) -> None:
         user_profile = self.example_user("iago")
-        do_change_plan_type(user_profile.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        do_change_realm_plan_type(user_profile.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
         self.login_user(user_profile)
         with get_test_image_file(self.correct_files[0][0]) as fp:
             result = self.client_post(
@@ -1588,7 +1588,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
             f"/user_avatars/{realm.id}/realm/{file_name}?version=2&night={is_night_str}",
         )
 
-        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=user_profile)
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=user_profile)
         if self.night:
             self.assertEqual(realm.night_logo_source, Realm.LOGO_UPLOADED)
         else:
@@ -1689,7 +1689,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
 
 class RealmNightLogoTest(RealmLogoTest):
-    # Run the same tests as for RealmLogoTest, just with night mode enabled
+    # Run the same tests as for RealmLogoTest, just with dark theme enabled
     night = True
 
 

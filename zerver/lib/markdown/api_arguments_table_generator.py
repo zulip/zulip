@@ -191,4 +191,6 @@ def generate_data_type(schema: Mapping[str, Any]) -> str:
         data_type = "(" + generate_data_type(schema["items"]) + ")[]"
     else:
         data_type = schema["type"]
+        if "nullable" in schema and schema["nullable"]:
+            data_type = data_type + " | null"
     return data_type

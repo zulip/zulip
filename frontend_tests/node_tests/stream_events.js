@@ -342,12 +342,12 @@ test("marked_subscribed (emails)", ({override}) => {
     const subs_stub = make_stub();
     override(stream_settings_ui, "update_settings_for_subscribed", subs_stub.f);
 
-    assert.ok(!stream_data.is_subscribed(sub.name));
+    assert.ok(!stream_data.is_subscribed_by_name(sub.name));
 
     const user_ids = [15, 20, 25, me.user_id];
     stream_events.mark_subscribed(sub, user_ids, "");
     assert.deepEqual(new Set(peer_data.get_subscribers(sub.stream_id)), new Set(user_ids));
-    assert.ok(stream_data.is_subscribed(sub.name));
+    assert.ok(stream_data.is_subscribed_by_name(sub.name));
 
     const args = subs_stub.get_args("sub");
     assert.deepEqual(sub, args.sub);

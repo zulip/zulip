@@ -19,7 +19,7 @@ page can be easily identified in it's respective JavaScript file -->
                 {% include 'zerver/dev_env_email_access_details.html' %}
 
                 <p>{% trans %}Still no email? We can <a href="#" id="resend_email_link">resend it</a>.{% endtrans %}
-                <i class="grey">({{ _("Just in case, take a look at your Spam folder.") }})</i></p>
+                    <i class="grey">({{ _("Just in case, take a look at your Spam folder.") }})</i></p>
                 {% if realm_creation %}
                 <form class="resend_confirm" action="/new/" method="post" style="position: absolute;">
                     {{ csrf_input }}

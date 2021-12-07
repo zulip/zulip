@@ -278,6 +278,7 @@ RawSubscriptionDict = Dict[str, Any]
 
 ONBOARDING_TOTAL_MESSAGES = 1000
 ONBOARDING_UNREAD_MESSAGES = 20
+ONBOARDING_RECENT_TIMEDELTA = datetime.timedelta(weeks=1)
 
 STREAM_ASSIGNMENT_COLORS = [
     "#76ce90",
@@ -422,7 +423,7 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
     you finish the tutorial.  The most recent ONBOARDING_UNREAD_MESSAGES
     are marked unread.
     """
-    one_week_ago = timezone_now() - datetime.timedelta(weeks=1)
+    one_week_ago = timezone_now() - ONBOARDING_RECENT_TIMEDELTA
 
     recipient_ids = [stream.recipient_id for stream in streams if not stream.invite_only]
     recent_messages = Message.objects.filter(
@@ -3068,6 +3069,13 @@ def check_update_message(
         )
         links_for_embed |= rendering_result.links_for_preview
 
+        if message.is_stream_message() and rendering_result.mentions_wildcard:
+            stream = access_stream_by_id(user_profile, message.recipient.type_id)[0]
+            if not wildcard_mention_allowed(message.sender, stream):
+                raise JsonableError(
+                    _("You do not have permission to use wildcard mentions in this stream.")
+                )
+
     new_stream = None
     number_changed = 0
 
@@ -4611,7 +4619,7 @@ def do_change_realm_org_type(
     )
 
 
-def do_change_plan_type(
+def do_change_realm_plan_type(
     realm: Realm, plan_type: int, *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = realm.plan_type
@@ -5067,6 +5075,7 @@ def do_create_realm(
     org_type: Optional[int] = None,
     date_created: Optional[datetime.datetime] = None,
     is_demo_organization: Optional[bool] = False,
+    enable_spectator_access: Optional[bool] = False,
 ) -> Realm:
     if string_id == settings.SOCIAL_AUTH_SUBDOMAIN:
         raise AssertionError("Creating a realm on SOCIAL_AUTH_SUBDOMAIN is not allowed!")
@@ -5089,6 +5098,8 @@ def do_create_realm(
         kwargs["plan_type"] = plan_type
     if org_type is not None:
         kwargs["org_type"] = org_type
+    if enable_spectator_access is not None:
+        kwargs["enable_spectator_access"] = enable_spectator_access
 
     if date_created is not None:
         # The date_created parameter is intended only for use by test
@@ -5137,7 +5148,7 @@ def do_create_realm(
     realm.save(update_fields=["notifications_stream", "signup_notifications_stream"])
 
     if plan_type is None and settings.BILLING_ENABLED:
-        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
 
     admin_realm = get_realm(settings.SYSTEM_BOT_REALM)
     sender = get_system_bot(settings.NOTIFICATION_BOT, admin_realm.id)

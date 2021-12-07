@@ -57,11 +57,8 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
         template_id_dict = build_id_dict(templates)
         # TODO: Clean up these cases of duplicate ids in the code
         IGNORE_IDS = [
-            "api-example-tabs",
             "errors",
-            "error-message-box",
             "email",
-            "messages",
             "registration",
             "pw_strength",
             "id_password",
@@ -70,17 +67,8 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
             "id_terms",
             "logout_form",
             "send_confirm",
-            "register",
-            "footer",
             "charged_amount",
             "change-plan-status",
-            # Temporary while we have searchbox forked
-            "search_exit",
-            "search_query",
-            "message_view_header",
-            "search_arrows",
-            "searchbox_form",
-            "searchbox",
         ]
         bad_ids_dict = {
             ids: fns
@@ -115,50 +103,18 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
         sys.exit(1)
 
     for fn in templates:
-        # Many of our Django templates have strange indentation.  The
-        # indentation errors are often harmless, even stylistically
-        # harmless, but they tend to be in files that might be old
-        # and might eventually require more scrutiny for things like
-        # localization.  See GitHub #1236.
-        bad_files = [
-            # These use various whitespace-dependent formatting that
-            # prevent cleaning them.
-            "templates/corporate/zephyr-mirror.html",
-        ]
-        validate(fn=fn, check_indent=(fn not in bad_files))
-
-    # Ignore these files since these have not been cleaned yet :/
-    IGNORE_FILES = [
-        # zephyr-mirror.html has some whitespace-dependent formatting
-        # for code blocks that prevent cleaning it.  Might make sense
-        # to convert it to a /help/ Markdown article.
-        "templates/corporate/zephyr-mirror.html",
-    ]
-    # TODO: Clean these files
-    for fn in templates:
-        if fn not in IGNORE_FILES:
-            if not validate_indent_html(fn, fix):
-                sys.exit(1)
+        tokens = validate(fn)
+        if not validate_indent_html(fn, tokens, fix):
+            sys.exit(1)
 
 
 def check_handlebar_templates(templates: Iterable[str], fix: bool) -> None:
     # Check all our handlebars templates.
     templates = [fn for fn in templates if fn.endswith(".hbs")]
 
-    IGNORE_FILES = [
-        # TODO: Add some exclude mechanism for the line-wrapping issue here.
-        "static/templates/recipient_row.hbs",
-    ]
-
     for fn in templates:
-        if fn in IGNORE_FILES:
-            continue
-        validate(fn=fn, check_indent=True)
-
-    for fn in templates:
-        if fn in IGNORE_FILES:
-            continue
-        if not validate_indent_html(fn, fix):
+        tokens = validate(fn)
+        if not validate_indent_html(fn, tokens, fix):
             sys.exit(1)
 
 

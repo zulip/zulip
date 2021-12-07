@@ -13,6 +13,7 @@ import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
+import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as stream_settings_data from "./stream_settings_data";
 import * as stream_settings_ui from "./stream_settings_ui";
@@ -300,6 +301,7 @@ function clear_error_display() {
 export function show_new_stream_modal() {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
+    stream_settings_ui.hide_or_disable_stream_privacy_options_if_required($("#stream-creation"));
 
     const add_people_container = $("#people_to_add");
     add_people_container.html(
@@ -312,7 +314,8 @@ export function show_new_stream_modal() {
     // Add current user on top of list
     const current_user = people.get_by_user_id(page_params.user_id);
     all_users.unshift({
-        email: current_user.email,
+        show_email: settings_data.show_email(),
+        email: people.get_visible_email(current_user),
         user_id: current_user.user_id,
         full_name: current_user.full_name,
         checked: true,
@@ -335,11 +338,21 @@ export function show_new_stream_modal() {
         html_selector: (user) => $(`#${CSS.escape("user_checkbox_" + user.user_id)}`),
     });
 
+    // Select the first enabled choice for stream privacy.
+    $("#make-invite-only input:not([disabled]):first").prop("checked", true);
     // Make the options default to the same each time:
-    // public, "announce stream" on.
-    $("#make-invite-only input:radio[value=public]").prop("checked", true);
+    // "announce stream" on.
     $("#stream_creation_form .stream-message-retention-days-input").hide();
     $("#stream_creation_form select[name=stream_message_retention_setting]").val("realm_default");
+
+    // Add listener to .show stream-message-retention-days-input that we've hidden above
+    $("#stream_creation_form .stream_message_retention_setting").on("change", (e) => {
+        if (e.target.value === "retain_for_period") {
+            $("#stream_creation_form .stream-message-retention-days-input").show();
+        } else {
+            $("#stream_creation_form .stream-message-retention-days-input").hide();
+        }
+    });
 
     update_announce_stream_state();
     if (stream_data.realm_has_notifications_stream()) {

@@ -97,6 +97,7 @@ function add_canned_users() {
 
 function test(label, f) {
     run_test(label, ({override}) => {
+        user_settings.presence_enabled = true;
         compose_fade_helper.clear_focused_recipient();
         stream_data.clear_subscriptions();
         peer_data.clear_for_testing();

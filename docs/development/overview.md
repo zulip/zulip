@@ -11,12 +11,15 @@ megabytes of dependencies, so you will need an **active, reasonably fast,
 internet connection throughout the entire installation processes.** You can
 [configure a proxy][configure-proxy] if you need one.
 
-## Recommended setup (Vagrant)
+## Recommended setup
 
 **For first-time contributors, we recommend using the
-[Vagrant development environment][install-vagrant]**.
+[Vagrant development environment][install-vagrant]** on
+macOS and Linux based OS and [WSL 2 setup][install-via-wsl] on Windows.
 
-This method creates a virtual machine (for Windows and macOS) or a
+## Vagrant setup
+
+[Vagrant setup][install-vagrant] creates a virtual machine (for Windows and macOS) or a
 Linux container (otherwise) inside which the Zulip server and all
 related services will run. Vagrant adds a bit of overhead to using the
 Zulip development server, but provides an isolated environment that is

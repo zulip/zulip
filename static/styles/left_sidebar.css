@@ -195,8 +195,7 @@ li.show-more-topics {
 
 #add-stream-link {
     text-decoration: none;
-    margin-left: 10px;
-    margin-top: 5px;
+    margin: 5px auto 5.5px 10px;
 
     i {
         min-width: 19px;
@@ -366,6 +365,7 @@ li.top_left_recent_topics {
 .all-messages-sidebar-menu-icon,
 .stream-sidebar-menu-icon,
 .starred-messages-sidebar-menu-icon,
+.drafts-sidebar-menu-icon,
 .topic-sidebar-menu-icon {
     position: absolute;
     display: none;
@@ -405,6 +405,7 @@ li.top_left_recent_topics {
 */
 .all-messages-sidebar-menu-icon,
 .starred-messages-sidebar-menu-icon,
+.drafts-sidebar-menu-icon,
 .stream-sidebar-menu-icon {
     top: 1px;
     right: 0;
@@ -432,6 +433,7 @@ li.top_left_recent_topics {
 */
 li.top_left_all_messages:hover .all-messages-sidebar-menu-icon,
 li.top_left_starred_messages:hover .starred-messages-sidebar-menu-icon,
+li.top_left_drafts:hover .drafts-sidebar-menu-icon,
 #stream_filters li:hover .stream-sidebar-menu-icon,
 li.topic-list-item:hover .topic-sidebar-menu-icon {
     display: inline;

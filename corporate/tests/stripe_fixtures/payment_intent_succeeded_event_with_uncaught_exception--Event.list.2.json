@@ -10,6 +10,7 @@
           "amount_received": 48000,
           "application": null,
           "application_fee_amount": null,
+          "automatic_payment_methods": null,
           "canceled_at": null,
           "cancellation_reason": null,
           "capture_method": "automatic",
@@ -57,10 +58,12 @@
                   "license_management": "automatic",
                   "licenses": "6",
                   "price_per_license": "8000",
+                  "realm_id": "1",
                   "realm_str": "zulip",
                   "seat_count": "6",
                   "type": "upgrade",
-                  "user_email": "hamlet@zulip.com"
+                  "user_email": "hamlet@zulip.com",
+                  "user_id": "10"
                 },
                 "object": "charge",
                 "on_behalf_of": null,
@@ -74,8 +77,8 @@
                   "type": "authorized"
                 },
                 "paid": true,
-                "payment_intent": "pi_NORMALIZED00000000000001",
-                "payment_method": "pm_1JTq8EA4KHR4JzRvxKmoXvNQ",
+                "payment_intent": "pi_NORMALIZED00000000000002",
+                "payment_method": "pm_1K2OZEHSaWXyvFpKE7FzDmR6",
                 "payment_method_details": {
                   "card": {
                     "brand": "visa",
@@ -122,15 +125,15 @@
             "has_more": false,
             "object": "list",
             "total_count": 1,
-            "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
+            "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000002"
           },
-          "client_secret": "pi_NORMALIZED00000000000001_secret_1OOXeQTEcrsuD7SV3hJ0o6Wma",
+          "client_secret": "pi_NORMALIZED00000000000002_secret_QA6b3xFUyi1EO19yzwUpyknKO",
           "confirmation_method": "automatic",
           "created": 1000000000,
           "currency": "usd",
           "customer": "cus_NORMALIZED0001",
           "description": "Upgrade to Zulip Standard, $80.0 x 6",
-          "id": "pi_NORMALIZED00000000000001",
+          "id": "pi_NORMALIZED00000000000002",
           "invoice": null,
           "last_payment_error": null,
           "livemode": false,
@@ -140,15 +143,17 @@
             "license_management": "automatic",
             "licenses": "6",
             "price_per_license": "8000",
+            "realm_id": "1",
             "realm_str": "zulip",
             "seat_count": "6",
             "type": "upgrade",
-            "user_email": "hamlet@zulip.com"
+            "user_email": "hamlet@zulip.com",
+            "user_id": "10"
           },
           "next_action": null,
           "object": "payment_intent",
           "on_behalf_of": null,
-          "payment_method": "pm_1JTq8EA4KHR4JzRvxKmoXvNQ",
+          "payment_method": "pm_1K2OZEHSaWXyvFpKE7FzDmR6",
           "payment_method_options": {
             "card": {
               "installments": null,
@@ -171,13 +176,13 @@
           "transfer_group": null
         }
       },
-      "id": "evt_3JTq8DA4KHR4JzRv1ZdIve0r",
+      "id": "evt_3K2OZDHSaWXyvFpK0v4tjbv5",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 1,
+      "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0002",
-        "idempotency_key": "646330c4-73e6-4e8c-bedd-ce984fe681fb"
+        "idempotency_key": "686baf7e-4b2e-4802-8761-5c451a38ef20"
       },
       "type": "payment_intent.succeeded"
     },
@@ -227,10 +232,12 @@
             "license_management": "automatic",
             "licenses": "6",
             "price_per_license": "8000",
+            "realm_id": "1",
             "realm_str": "zulip",
             "seat_count": "6",
             "type": "upgrade",
-            "user_email": "hamlet@zulip.com"
+            "user_email": "hamlet@zulip.com",
+            "user_id": "10"
           },
           "object": "charge",
           "on_behalf_of": null,
@@ -244,8 +251,8 @@
             "type": "authorized"
           },
           "paid": true,
-          "payment_intent": "pi_NORMALIZED00000000000001",
-          "payment_method": "pm_1JTq8EA4KHR4JzRvxKmoXvNQ",
+          "payment_intent": "pi_NORMALIZED00000000000002",
+          "payment_method": "pm_1K2OZEHSaWXyvFpKE7FzDmR6",
           "payment_method_details": {
             "card": {
               "brand": "visa",
@@ -289,13 +296,13 @@
           "transfer_group": null
         }
       },
-      "id": "evt_3JTq8DA4KHR4JzRv1VLWveOM",
+      "id": "evt_3K2OZDHSaWXyvFpK06gox2NG",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 1,
+      "pending_webhooks": 2,
       "request": {
         "id": "req_NORMALIZED0002",
-        "idempotency_key": "646330c4-73e6-4e8c-bedd-ce984fe681fb"
+        "idempotency_key": "686baf7e-4b2e-4802-8761-5c451a38ef20"
       },
       "type": "charge.succeeded"
     },
@@ -317,7 +324,7 @@
           "invoice_prefix": "NORMA01",
           "invoice_settings": {
             "custom_fields": null,
-            "default_payment_method": "pm_1JTq8EA4KHR4JzRvxKmoXvNQ",
+            "default_payment_method": "pm_1K2OZEHSaWXyvFpKE7FzDmR6",
             "footer": null
           },
           "livemode": false,
@@ -339,13 +346,13 @@
           }
         }
       },
-      "id": "evt_1JTq8IA4KHR4JzRvl7o61FSE",
+      "id": "evt_1K2OZHHSaWXyvFpK0l3fUdtV",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0003",
-        "idempotency_key": "03fdb684-989d-4751-b819-4804de28c8d7"
+        "idempotency_key": "3c021d5d-e29c-4ddb-8009-dd8bf67d5deb"
       },
       "type": "customer.updated"
     },
@@ -356,13 +363,13 @@
         "object": {
           "application": null,
           "cancellation_reason": null,
-          "client_secret": "seti_1JTq8FA4KHR4JzRvhhZKDLtU_secret_K86KGPUd3c82tOqsHiySKxBjYknXkIE",
+          "client_secret": "seti_1K2OZFHSaWXyvFpKdD8GAShf_secret_KhoBW3K0aXODey5tkRu8xw1RGEUWN6Q",
           "created": 1000000000,
           "customer": "cus_NORMALIZED0001",
           "description": null,
-          "id": "seti_1JTq8FA4KHR4JzRvhhZKDLtU",
+          "id": "seti_1K2OZFHSaWXyvFpKdD8GAShf",
           "last_setup_error": null,
-          "latest_attempt": "setatt_1JTq8FA4KHR4JzRvvJfoMjkz",
+          "latest_attempt": "setatt_1K2OZFHSaWXyvFpKVqnlNRin",
           "livemode": false,
           "mandate": null,
           "metadata": {
@@ -371,15 +378,17 @@
             "license_management": "automatic",
             "licenses": "6",
             "price_per_license": "8000",
+            "realm_id": "1",
             "realm_str": "zulip",
             "seat_count": "6",
             "type": "upgrade",
-            "user_email": "hamlet@zulip.com"
+            "user_email": "hamlet@zulip.com",
+            "user_id": "10"
           },
           "next_action": null,
           "object": "setup_intent",
           "on_behalf_of": null,
-          "payment_method": "pm_1JTq8EA4KHR4JzRvxKmoXvNQ",
+          "payment_method": "pm_1K2OZEHSaWXyvFpKE7FzDmR6",
           "payment_method_options": {
             "card": {
               "request_three_d_secure": "automatic"
@@ -393,13 +402,13 @@
           "usage": "off_session"
         }
       },
-      "id": "evt_1JTq8GA4KHR4JzRv2hs7vohT",
+      "id": "evt_1K2OZGHSaWXyvFpK8t7zT0nu",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0004",
-        "idempotency_key": "a92fa037-cb41-4afc-b3bf-c79b78852845"
+        "idempotency_key": "3eef5aa2-c65a-4fba-829e-1540c1c4c6a5"
       },
       "type": "setup_intent.succeeded"
     },
@@ -448,20 +457,20 @@
           },
           "created": 1000000000,
           "customer": "cus_NORMALIZED0001",
-          "id": "pm_1JTq8EA4KHR4JzRvxKmoXvNQ",
+          "id": "pm_1K2OZEHSaWXyvFpKE7FzDmR6",
           "livemode": false,
           "metadata": {},
           "object": "payment_method",
           "type": "card"
         }
       },
-      "id": "evt_1JTq8GA4KHR4JzRvjB7TJMAz",
+      "id": "evt_1K2OZGHSaWXyvFpKGjGcPCAI",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0004",
-        "idempotency_key": "a92fa037-cb41-4afc-b3bf-c79b78852845"
+        "idempotency_key": "3eef5aa2-c65a-4fba-829e-1540c1c4c6a5"
       },
       "type": "payment_method.attached"
     },
@@ -472,13 +481,13 @@
         "object": {
           "application": null,
           "cancellation_reason": null,
-          "client_secret": "seti_1JTq8FA4KHR4JzRvhhZKDLtU_secret_K86KGPUd3c82tOqsHiySKxBjYknXkIE",
+          "client_secret": "seti_1K2OZFHSaWXyvFpKdD8GAShf_secret_KhoBW3K0aXODey5tkRu8xw1RGEUWN6Q",
           "created": 1000000000,
           "customer": "cus_NORMALIZED0001",
           "description": null,
-          "id": "seti_1JTq8FA4KHR4JzRvhhZKDLtU",
+          "id": "seti_1K2OZFHSaWXyvFpKdD8GAShf",
           "last_setup_error": null,
-          "latest_attempt": "setatt_1JTq8FA4KHR4JzRvvJfoMjkz",
+          "latest_attempt": "setatt_1K2OZFHSaWXyvFpKVqnlNRin",
           "livemode": false,
           "mandate": null,
           "metadata": {
@@ -487,15 +496,17 @@
             "license_management": "automatic",
             "licenses": "6",
             "price_per_license": "8000",
+            "realm_id": "1",
             "realm_str": "zulip",
             "seat_count": "6",
             "type": "upgrade",
-            "user_email": "hamlet@zulip.com"
+            "user_email": "hamlet@zulip.com",
+            "user_id": "10"
           },
           "next_action": null,
           "object": "setup_intent",
           "on_behalf_of": null,
-          "payment_method": "pm_1JTq8EA4KHR4JzRvxKmoXvNQ",
+          "payment_method": "pm_1K2OZEHSaWXyvFpKE7FzDmR6",
           "payment_method_options": {
             "card": {
               "request_three_d_secure": "automatic"
@@ -509,13 +520,13 @@
           "usage": "off_session"
         }
       },
-      "id": "evt_1JTq8GA4KHR4JzRv5AxbabWA",
+      "id": "evt_1K2OZGHSaWXyvFpKBuNazDB0",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0004",
-        "idempotency_key": "a92fa037-cb41-4afc-b3bf-c79b78852845"
+        "idempotency_key": "3eef5aa2-c65a-4fba-829e-1540c1c4c6a5"
       },
       "type": "setup_intent.created"
     },
@@ -526,11 +537,11 @@
         "object": {
           "application": null,
           "cancellation_reason": null,
-          "client_secret": "seti_1JTq8DA4KHR4JzRvlqNYzOw3_secret_K86KrCShpY15vRzz2uUtXdgF8PLSrSX",
+          "client_secret": "seti_1K2OZEHSaWXyvFpKvC2VITtI_secret_KhoBIbYt4Zf0P9R3AzlvXJEcsXZxav2",
           "created": 1000000000,
           "customer": "cus_NORMALIZED0001",
           "description": null,
-          "id": "seti_1JTq8DA4KHR4JzRvlqNYzOw3",
+          "id": "seti_1K2OZEHSaWXyvFpKvC2VITtI",
           "last_setup_error": null,
           "latest_attempt": null,
           "livemode": false,
@@ -541,10 +552,12 @@
             "license_management": "automatic",
             "licenses": "6",
             "price_per_license": "8000",
+            "realm_id": "1",
             "realm_str": "zulip",
             "seat_count": "6",
             "type": "upgrade",
-            "user_email": "hamlet@zulip.com"
+            "user_email": "hamlet@zulip.com",
+            "user_id": "10"
           },
           "next_action": null,
           "object": "setup_intent",
@@ -563,13 +576,13 @@
           "usage": "off_session"
         }
       },
-      "id": "evt_1JTq8DA4KHR4JzRvAW36i2X6",
+      "id": "evt_1K2OZEHSaWXyvFpKiy71EmXG",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0005",
-        "idempotency_key": "988fc708-25fb-49b1-b81f-2a7b8bb61a84"
+        "idempotency_key": "239f43c6-5284-4886-9609-4c086365d725"
       },
       "type": "setup_intent.created"
     },
@@ -583,6 +596,7 @@
           "amount_received": 0,
           "application": null,
           "application_fee_amount": null,
+          "automatic_payment_methods": null,
           "canceled_at": null,
           "cancellation_reason": null,
           "capture_method": "automatic",
@@ -591,15 +605,15 @@
             "has_more": false,
             "object": "list",
             "total_count": 0,
-            "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
+            "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000002"
           },
-          "client_secret": "pi_NORMALIZED00000000000001_secret_1OOXeQTEcrsuD7SV3hJ0o6Wma",
+          "client_secret": "pi_NORMALIZED00000000000002_secret_QA6b3xFUyi1EO19yzwUpyknKO",
           "confirmation_method": "automatic",
           "created": 1000000000,
           "currency": "usd",
           "customer": "cus_NORMALIZED0001",
           "description": "Upgrade to Zulip Standard, $80.0 x 6",
-          "id": "pi_NORMALIZED00000000000001",
+          "id": "pi_NORMALIZED00000000000002",
           "invoice": null,
           "last_payment_error": null,
           "livemode": false,
@@ -609,10 +623,12 @@
             "license_management": "automatic",
             "licenses": "6",
             "price_per_license": "8000",
+            "realm_id": "1",
             "realm_str": "zulip",
             "seat_count": "6",
             "type": "upgrade",
-            "user_email": "hamlet@zulip.com"
+            "user_email": "hamlet@zulip.com",
+            "user_id": "10"
           },
           "next_action": null,
           "object": "payment_intent",
@@ -640,13 +656,13 @@
           "transfer_group": null
         }
       },
-      "id": "evt_3JTq8DA4KHR4JzRv1gwIJPyC",
+      "id": "evt_3K2OZDHSaWXyvFpK0F76vs8q",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0006",
-        "idempotency_key": "57798c93-6028-405c-a075-2a6582fe9ce6"
+        "idempotency_key": "0427ad5f-3e8e-4b00-9dd4-a0de4d9e3981"
       },
       "type": "payment_intent.created"
     },
@@ -685,13 +701,13 @@
           "tax_exempt": "none"
         }
       },
-      "id": "evt_1JTq8CA4KHR4JzRvhkVCYCWW",
+      "id": "evt_1K2OZDHSaWXyvFpKzJj2LlTx",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0007",
-        "idempotency_key": "a661cd93-1312-41ad-a70c-6215bf380424"
+        "idempotency_key": "70324845-ca00-49aa-a86a-ca40ad381cd8"
       },
       "type": "customer.created"
     }

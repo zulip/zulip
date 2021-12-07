@@ -66,19 +66,19 @@ test("unsubscribe", () => {
     stream_data.add_sub(devel);
 
     // verify clean slate
-    assert.ok(!stream_data.is_subscribed("devel"));
+    assert.ok(!stream_data.is_subscribed_by_name("devel"));
 
     // set up our subscription
     devel.subscribed = true;
     peer_data.set_subscribers(devel.stream_id, [me.user_id]);
 
     // ensure our setup is accurate
-    assert.ok(stream_data.is_subscribed("devel"));
+    assert.ok(stream_data.is_subscribed_by_name("devel"));
 
     // DO THE UNSUBSCRIBE HERE
     stream_data.unsubscribe_myself(devel);
     assert.ok(!devel.subscribed);
-    assert.ok(!stream_data.is_subscribed("devel"));
+    assert.ok(!stream_data.is_subscribed_by_name("devel"));
     assert.ok(!contains_sub(stream_data.subscribed_subs(), devel));
     assert.ok(contains_sub(stream_data.unsubscribed_subs(), devel));
 
@@ -96,7 +96,7 @@ test("subscribers", () => {
     people.add_active_user(george);
 
     // verify setup
-    assert.ok(stream_data.is_subscribed(sub.name));
+    assert.ok(stream_data.is_subscribed_by_name(sub.name));
 
     const stream_id = sub.stream_id;
 

@@ -44,15 +44,6 @@ import * as user_profile from "./user_profile";
 import * as util from "./util";
 
 export function initialize() {
-    // SPECTATORS LOGIN TO ACCESS MODAL
-
-    $("body").on("click hide", ".spectator_go_back", (e) => {
-        browser_history.return_to_web_public_hash();
-        $("#login_to_access_modal").modal("hide");
-        e.preventDefault();
-        e.stopPropagation();
-    });
-
     // MESSAGE CLICKING
 
     function initialize_long_tap() {
@@ -657,7 +648,9 @@ export function initialize() {
 
     function handle_compose_click(e) {
         // Emoji clicks should be handled by their own click handler in emoji_picker.js
-        if ($(e.target).is(".emoji_map, img.emoji, .drag, .compose_gif_icon")) {
+        if (
+            $(e.target).is(".emoji_map, img.emoji, .drag, .compose_gif_icon, .compose_control_menu")
+        ) {
             return;
         }
 

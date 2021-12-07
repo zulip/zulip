@@ -405,7 +405,6 @@ function edit_message(row, raw_content) {
             notify_new_thread: notify_new_thread_default,
             notify_old_thread: notify_old_thread_default,
             giphy_enabled: giphy.is_giphy_enabled(),
-            hide_drafts_link: true,
         }),
     );
 
@@ -1064,10 +1063,10 @@ export function move_topic_containing_message_to_stream(
         dialog_widget.close_modal();
     }
     if (currently_topic_editing_messages.includes(message_id)) {
-        $("#topic_stream_edit_form_error .error-msg").text(
-            $t({defaultMessage: "A Topic Move already in progress."}),
+        ui_report.client_error(
+            $t_html({defaultMessage: "A Topic Move already in progress."}),
+            $("#move_topic_modal #dialog_error"),
         );
-        $("#topic_stream_edit_form_error").show();
         return;
     }
     currently_topic_editing_messages.push(message_id);

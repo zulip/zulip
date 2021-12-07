@@ -659,6 +659,26 @@ export function small_avatar_url_for_person(person) {
     return format_small_avatar_url("/avatar/" + person.user_id);
 }
 
+function medium_gravatar_url_for_email(email) {
+    const hash = md5(email.toLowerCase());
+    const avatar_url = "https://secure.gravatar.com/avatar/" + hash + "?d=identicon";
+    const url = new URL(avatar_url, location);
+    url.search += (url.search ? "&" : "") + "s=500";
+    return url.href;
+}
+
+export function medium_avatar_url_for_person(person) {
+    /* Unlike the small avatar URL case, we don't generally have a
+     * medium avatar URL included in person objects. So only have the
+     * gravatar and server endpoints here. */
+
+    if (person.avatar_url === null) {
+        return medium_gravatar_url_for_email(person.email);
+    }
+
+    return "/avatar/" + person.user_id + "/medium";
+}
+
 export function sender_info_for_recent_topics_row(sender_ids) {
     const senders_info = [];
     for (const id of sender_ids) {
@@ -1069,7 +1089,8 @@ export function get_people_for_stream_create() {
     for (const person of active_user_dict.values()) {
         if (!is_my_user_id(person.user_id)) {
             people_minus_you.push({
-                email: person.email,
+                email: get_visible_email(person),
+                show_email: settings_data.show_email(),
                 user_id: person.user_id,
                 full_name: person.full_name,
                 checked: false,

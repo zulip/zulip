@@ -4,7 +4,7 @@ __revision__ = "$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $"
 import datetime
 import secrets
 from base64 import b32encode
-from typing import Mapping, Optional, Union
+from typing import List, Mapping, Optional, Union
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -43,10 +43,10 @@ def render_confirmation_key_error(
     request: HttpRequest, exception: ConfirmationKeyException
 ) -> HttpResponse:
     if exception.error_type == ConfirmationKeyException.WRONG_LENGTH:
-        return render(request, "confirmation/link_malformed.html")
+        return render(request, "confirmation/link_malformed.html", status=404)
     if exception.error_type == ConfirmationKeyException.EXPIRED:
-        return render(request, "confirmation/link_expired.html")
-    return render(request, "confirmation/link_does_not_exist.html")
+        return render(request, "confirmation/link_expired.html", status=404)
+    return render(request, "confirmation/link_does_not_exist.html", status=404)
 
 
 def generate_key() -> str:
@@ -58,14 +58,14 @@ ConfirmationObjT = Union[MultiuseInvite, PreregistrationUser, EmailChangeStatus]
 
 
 def get_object_from_key(
-    confirmation_key: str, confirmation_type: int, activate_object: bool = True
+    confirmation_key: str, confirmation_types: List[int], activate_object: bool = True
 ) -> ConfirmationObjT:
     # Confirmation keys used to be 40 characters
     if len(confirmation_key) not in (24, 40):
         raise ConfirmationKeyException(ConfirmationKeyException.WRONG_LENGTH)
     try:
         confirmation = Confirmation.objects.get(
-            confirmation_key=confirmation_key, type=confirmation_type
+            confirmation_key=confirmation_key, type__in=confirmation_types
         )
     except Confirmation.DoesNotExist:
         raise ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST)
@@ -170,9 +170,9 @@ class ConfirmationType:
 
 
 _properties = {
-    Confirmation.USER_REGISTRATION: ConfirmationType("check_prereg_key_and_redirect"),
+    Confirmation.USER_REGISTRATION: ConfirmationType("get_prereg_key_and_redirect"),
     Confirmation.INVITATION: ConfirmationType(
-        "check_prereg_key_and_redirect", validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS
+        "get_prereg_key_and_redirect", validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS
     ),
     Confirmation.EMAIL_CHANGE: ConfirmationType("confirm_email_change"),
     Confirmation.UNSUBSCRIBE: ConfirmationType(
@@ -182,7 +182,7 @@ _properties = {
     Confirmation.MULTIUSE_INVITE: ConfirmationType(
         "join", validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS
     ),
-    Confirmation.REALM_CREATION: ConfirmationType("check_prereg_key_and_redirect"),
+    Confirmation.REALM_CREATION: ConfirmationType("get_prereg_key_and_redirect"),
     Confirmation.REALM_REACTIVATION: ConfirmationType("realm_reactivation"),
 }
 

@@ -60,6 +60,7 @@ from zerver.models import (
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
     MultiuseInvite,
+    PreregistrationUser,
     Realm,
     Stream,
     UserProfile,
@@ -94,37 +95,53 @@ if settings.BILLING_ENABLED:
 
 
 @has_request_variables
-def check_prereg_key_and_redirect(
+def get_prereg_key_and_redirect(
     request: HttpRequest, confirmation_key: str, full_name: Optional[str] = REQ(default=None)
 ) -> HttpResponse:
-    confirmation = Confirmation.objects.filter(confirmation_key=confirmation_key).first()
-    if confirmation is None or confirmation.type not in [
-        Confirmation.USER_REGISTRATION,
-        Confirmation.INVITATION,
-        Confirmation.REALM_CREATION,
-    ]:
-        return render_confirmation_key_error(
-            request, ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST)
-        )
+    """
+    The purpose of this little endpoint is primarily to take a GET
+    request to a long URL containing a confirmation key, and render
+    a page that will via JavaScript immediately do a POST request to
+    /accounts/register, so that the user can create their account on
+    a page with a cleaner URL (and with the browser security and UX
+    benefits of an HTTP POST having generated the page).
 
-    prereg_user = confirmation.content_object
-    assert prereg_user is not None
-    if prereg_user.status == confirmation_settings.STATUS_REVOKED:
-        return render(request, "zerver/confirmation_link_expired_error.html")
-
+    The only thing it does before rendering that page is to check
+    the validity of the confirmation link. This is redundant with a
+    similar check in accounts_register, but it provides a slightly nicer
+    user-facing error handling experience if the URL you visited is
+    displayed in the browser. (E.g. you can debug that you
+    accidentally adding an extra character after pasting).
+    """
     try:
-        get_object_from_key(confirmation_key, confirmation.type, activate_object=False)
-    except ConfirmationKeyException as exception:
-        return render_confirmation_key_error(request, exception)
+        check_prereg_key(request, confirmation_key)
+    except ConfirmationKeyException as e:
+        return render_confirmation_key_error(request, e)
 
-    # confirm_preregistrationuser.html just extracts the confirmation_key
-    # (and GET parameters) and redirects to /accounts/register, so that the
-    # user can enter their information on a cleaner URL.
     return render(
         request,
         "confirmation/confirm_preregistrationuser.html",
         context={"key": confirmation_key, "full_name": full_name},
     )
+
+
+def check_prereg_key(request: HttpRequest, confirmation_key: str) -> PreregistrationUser:
+    """
+    Checks if the Confirmation key is valid, returning the PreregistrationUser object in case of success
+    and raising an appropriate ConfirmationKeyException otherwise.
+    """
+    confirmation_types = [
+        Confirmation.USER_REGISTRATION,
+        Confirmation.INVITATION,
+        Confirmation.REALM_CREATION,
+    ]
+
+    prereg_user = get_object_from_key(confirmation_key, confirmation_types, activate_object=False)
+
+    if prereg_user.status == confirmation_settings.STATUS_REVOKED:
+        raise ConfirmationKeyException(ConfirmationKeyException.EXPIRED)
+
+    return prereg_user
 
 
 @require_post
@@ -140,14 +157,10 @@ def accounts_register(
     ),
 ) -> HttpResponse:
     try:
-        confirmation = Confirmation.objects.get(confirmation_key=key)
-    except Confirmation.DoesNotExist:
-        return render(request, "zerver/confirmation_link_expired_error.html", status=404)
+        prereg_user = check_prereg_key(request, key)
+    except ConfirmationKeyException as e:
+        return render_confirmation_key_error(request, e)
 
-    prereg_user = confirmation.content_object
-    assert prereg_user is not None
-    if prereg_user.status == confirmation_settings.STATUS_REVOKED:
-        return render(request, "zerver/confirmation_link_expired_error.html", status=404)
     email = prereg_user.email
     realm_creation = prereg_user.realm_creation
     password_required = prereg_user.password_required
@@ -165,6 +178,7 @@ def accounts_register(
         # For creating a new realm, there is no existing realm or domain
         realm = None
     else:
+        assert prereg_user.realm is not None
         if get_subdomain(request) != prereg_user.realm.string_id:
             return render_confirmation_key_error(
                 request, ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST)
@@ -442,6 +456,7 @@ def accounts_register(
             )
 
         if realm_creation:
+            assert realm.signup_notifications_stream is not None
             bulk_add_subscriptions(
                 realm, [realm.signup_notifications_stream], [user_profile], acting_user=None
             )
@@ -712,7 +727,7 @@ def accounts_home(
 def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     multiuse_object = None
     try:
-        multiuse_object = get_object_from_key(confirmation_key, Confirmation.MULTIUSE_INVITE)
+        multiuse_object = get_object_from_key(confirmation_key, [Confirmation.MULTIUSE_INVITE])
         # Required for OAuth 2
     except ConfirmationKeyException as exception:
         realm = get_realm_from_request(request)

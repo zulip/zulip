@@ -105,6 +105,7 @@ def setup_upgrade_checkout_session_and_payment_intent(
         "user_email": user.delivery_email,
         "realm_id": user.realm.id,
         "realm_str": user.realm.string_id,
+        "user_id": user.id,
     }
     if free_trial:
         if onboarding:

@@ -283,3 +283,49 @@ run_test("user_can_invite_others_to_realm_nobody_case", () => {
         settings_config.invite_to_realm_policy_values.nobody.code;
     assert.equal(settings_data.user_can_invite_others_to_realm(), false);
 });
+
+run_test("user_can_create_web_public_streams", () => {
+    page_params.is_owner = true;
+    page_params.server_web_public_streams_enabled = true;
+    page_params.realm_enable_spectator_access = true;
+    page_params.realm_create_web_public_stream_policy =
+        settings_config.create_web_public_stream_policy_values.nobody.code;
+    assert.equal(settings_data.user_can_create_web_public_streams(), false);
+
+    page_params.realm_create_web_public_stream_policy =
+        settings_config.create_web_public_stream_policy_values.by_owners_only.code;
+    assert.equal(settings_data.user_can_create_web_public_streams(), true);
+
+    page_params.realm_enable_spectator_access = false;
+    page_params.server_web_public_streams_enabled = true;
+    assert.equal(settings_data.user_can_create_web_public_streams(), false);
+
+    page_params.realm_enable_spectator_access = true;
+    page_params.server_web_public_streams_enabled = false;
+    assert.equal(settings_data.user_can_create_web_public_streams(), false);
+
+    page_params.realm_enable_spectator_access = false;
+    page_params.server_web_public_streams_enabled = false;
+    assert.equal(settings_data.user_can_create_web_public_streams(), false);
+
+    page_params.realm_enable_spectator_access = true;
+    page_params.server_web_public_streams_enabled = true;
+    page_params.is_owner = false;
+    page_params.is_admin = true;
+    assert.equal(settings_data.user_can_create_web_public_streams(), false);
+
+    page_params.realm_create_web_public_stream_policy =
+        settings_config.create_web_public_stream_policy_values.by_admins_only.code;
+    assert.equal(settings_data.user_can_create_web_public_streams(), true);
+
+    page_params.is_admin = false;
+    page_params.is_moderator = true;
+    assert.equal(settings_data.user_can_create_web_public_streams(), false);
+
+    page_params.realm_create_web_public_stream_policy =
+        settings_config.create_web_public_stream_policy_values.by_moderators_only.code;
+    assert.equal(settings_data.user_can_create_web_public_streams(), true);
+
+    page_params.is_moderator = false;
+    assert.equal(settings_data.user_can_create_web_public_streams(), false);
+});
