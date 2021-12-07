@@ -968,8 +968,7 @@ body.dark-theme {
     }
 
     /* Popover: */
-    .hotspot.overlay .hotspot-popover,
-    #hotspot_intro_reply_icon {
+    .hotspot.overlay .hotspot-popover {
         border-color: hsla(0, 0%, 0%, 0.2) !important;
         /* Based on the `.hotspot-popover` shadow in `hotspots.css`, but with a new
     color. */
@@ -1038,7 +1037,6 @@ body.dark-theme {
 
     /* Content: */
     .hotspot.overlay .hotspot-popover .hotspot-popover-content,
-    #hotspot_intro_reply_icon,
     .hotspot.overlay .hotspot-popover .hotspot-popover-bottom {
         background-color: hsl(212, 28%, 18%);
     }
