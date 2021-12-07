@@ -1270,7 +1270,9 @@ def write_message_partial_for_query(
     return dump_file_id
 
 
-def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
+def export_uploads_and_avatars(
+    realm: Realm, *, user: Optional[UserProfile], output_dir: Path
+) -> None:
     uploads_output_dir = os.path.join(output_dir, "uploads")
     avatars_output_dir = os.path.join(output_dir, "avatars")
     realm_icons_output_dir = os.path.join(output_dir, "realm_icons")
@@ -1285,10 +1287,16 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
 
-    handle_system_bots = True
-    users = list(UserProfile.objects.filter(realm=realm))
-    attachments = list(Attachment.objects.filter(realm_id=realm.id))
-    realm_emojis = list(RealmEmoji.objects.filter(realm_id=realm.id))
+    if user is None:
+        handle_system_bots = True
+        users = list(UserProfile.objects.filter(realm=realm))
+        attachments = list(Attachment.objects.filter(realm_id=realm.id))
+        realm_emojis = list(RealmEmoji.objects.filter(realm_id=realm.id))
+    else:
+        handle_system_bots = False
+        users = [user]
+        attachments = list(Attachment.objects.filter(owner_id=user.id))
+        realm_emojis = list(RealmEmoji.objects.filter(author_id=user.id))
 
     if settings.LOCAL_UPLOADS_DIR:
         # Small installations and developers will usually just store files locally.
@@ -1742,7 +1750,7 @@ def do_export_realm(
     sanity_check_output(response)
 
     logging.info("Exporting uploaded files and avatars")
-    export_uploads_and_avatars(realm, output_dir)
+    export_uploads_and_avatars(realm, user=None, output_dir=output_dir)
 
     # We (sort of) export zerver_message rows here.  We write
     # them to .partial files that are subsequently fleshed out
@@ -1860,6 +1868,9 @@ def do_export_user(user_profile: UserProfile, output_dir: Path) -> None:
     write_data_to_file(output_file=export_file, data=response)
     logging.info("Exporting messages")
     export_messages_single_user(user_profile, output_dir)
+
+    logging.info("Exporting images")
+    export_uploads_and_avatars(user_profile.realm, user=user_profile, output_dir=output_dir)
 
 
 def export_single_user(user_profile: UserProfile, response: TableData) -> None:
