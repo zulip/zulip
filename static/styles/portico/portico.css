@@ -169,15 +169,6 @@ html {
             margin-bottom: 0;
             border-bottom: 1px solid hsla(0, 0, 100%, 0.6);
 
-            &:not(:first-of-type) {
-                margin-top: 0;
-            }
-
-            &:first-of-type,
-            &.home-link {
-                border-bottom: none;
-            }
-
             &.home-link {
                 font-size: 1em;
                 margin-top: 20px;
@@ -192,6 +183,19 @@ html {
                     margin-right: 10px;
                 }
             }
+        }
+
+        h1,
+        h2,
+        h3 {
+            &:not(:first-of-type) {
+                margin-top: 0;
+            }
+
+            &:first-of-type,
+            &.home-link {
+                border-bottom: none;
+            }
 
             a {
                 color: inherit;
@@ -201,7 +205,7 @@ html {
 
         h2 {
             font-weight: 400;
-            font-size: 1.2em;
+            font-size: 1.1em;
             line-height: 1.05;
             margin-bottom: 5px;
         }
