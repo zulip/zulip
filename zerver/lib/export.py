@@ -359,6 +359,12 @@ def write_data_to_file(output_file: Path, data: Any) -> None:
 
 
 def write_table_data(output_file: str, data: Dict[str, Any]) -> None:
+    # We sort by ids mostly so that humans can quickly do diffs
+    # on two export jobs to see what changed (either due to new
+    # data arriving or new code being deployed).
+    for table in data.values():
+        table.sort(key=lambda row: row["id"])
+
     assert output_file.endswith(".json")
 
     write_data_to_file(output_file, data)
