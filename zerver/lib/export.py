@@ -81,7 +81,7 @@ FilterArgs = Dict[str, Any]
 IdSource = Tuple[TableName, Field]
 SourceFilter = Callable[[Record], bool]
 
-CustomFetch = Callable[[TableData, "Config", Context], None]
+CustomFetch = Callable[[TableData, Context], None]
 
 # The keys of our MessageOutput variables are normally
 # List[Record], but when we write partials, we can get
@@ -536,7 +536,6 @@ def export_from_config(
     elif config.custom_fetch:
         config.custom_fetch(
             response,
-            config,
             context,
         )
         if config.custom_tables:
@@ -925,7 +924,7 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
     )
 
 
-def custom_fetch_user_profile(response: TableData, config: Config, context: Context) -> None:
+def custom_fetch_user_profile(response: TableData, context: Context) -> None:
     realm = context["realm"]
     exportable_user_ids = context["exportable_user_ids"]
 
@@ -955,9 +954,7 @@ def custom_fetch_user_profile(response: TableData, config: Config, context: Cont
     response["zerver_userprofile_mirrordummy"] = dummy_rows
 
 
-def custom_fetch_user_profile_cross_realm(
-    response: TableData, config: Config, context: Context
-) -> None:
+def custom_fetch_user_profile_cross_realm(response: TableData, context: Context) -> None:
     realm = context["realm"]
     response["zerver_userprofile_crossrealm"] = []
 
@@ -1023,12 +1020,10 @@ def fetch_reaction_data(response: TableData, message_ids: Set[int]) -> None:
     response["zerver_reaction"] = make_raw(list(query))
 
 
-def custom_fetch_huddle_objects(response: TableData, config: Config, context: Context) -> None:
+def custom_fetch_huddle_objects(response: TableData, context: Context) -> None:
 
     realm = context["realm"]
-    assert config.parent is not None
-    assert config.parent.table is not None
-    user_profile_ids = {r["id"] for r in response[config.parent.table]}
+    user_profile_ids = {r["id"] for r in response["zerver_userprofile"]}
 
     # First we get all huddles involving someone in the realm.
     realm_huddle_subs = Subscription.objects.select_related("recipient").filter(
