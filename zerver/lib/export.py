@@ -572,7 +572,22 @@ def export_from_config(
         if config.filter_args is not None:
             filter_parms.update(config.filter_args)
         assert model is not None
-        query = model.objects.filter(**filter_parms)
+        try:
+            query = model.objects.filter(**filter_parms)
+        except Exception:
+            print(
+                f"""
+                Something about your Config seems to make it difficult
+                to construct a query.
+
+                table: {table}
+                parent: {parent.table}
+
+                filter_parms: {filter_parms}
+                """
+            )
+            raise
+
         rows = list(query)
 
     elif config.id_source:
