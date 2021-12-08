@@ -358,6 +358,14 @@ def write_data_to_file(output_file: Path, data: Any) -> None:
         f.write(orjson.dumps(data, option=orjson.OPT_INDENT_2 | orjson.OPT_PASSTHROUGH_DATETIME))
 
 
+def write_records_json_file(output_dir: str, records: List[Dict[str, Any]]) -> None:
+    output_file = os.path.join(output_dir, "records.json")
+    with open(output_file, "wb") as f:
+        # For legacy reasons we allow datetime objects here, unlike
+        # write_data_to_file.
+        f.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
+
+
 def make_raw(query: Any, exclude: Optional[List[Field]] = None) -> List[Record]:
     """
     Takes a Django query and returns a JSONable list
@@ -1557,8 +1565,7 @@ def export_files_from_s3(
         if count % 100 == 0:
             logging.info("Finished %s", count)
 
-    with open(os.path.join(output_dir, "records.json"), "wb") as records_file:
-        records_file.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
+    write_records_json_file(output_dir, records)
 
 
 def export_uploads_from_local(
@@ -1595,8 +1602,8 @@ def export_uploads_from_local(
 
         if count % 100 == 0:
             logging.info("Finished %s", count)
-    with open(os.path.join(output_dir, "records.json"), "wb") as records_file:
-        records_file.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
+
+    write_records_json_file(output_dir, records)
 
 
 def export_avatars_from_local(
@@ -1653,8 +1660,7 @@ def export_avatars_from_local(
             if count % 100 == 0:
                 logging.info("Finished %s", count)
 
-    with open(os.path.join(output_dir, "records.json"), "wb") as records_file:
-        records_file.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
+    write_records_json_file(output_dir, records)
 
 
 def export_realm_icons(realm: Realm, local_dir: Path, output_dir: Path) -> None:
@@ -1670,8 +1676,7 @@ def export_realm_icons(realm: Realm, local_dir: Path, output_dir: Path) -> None:
         record = dict(realm_id=realm.id, path=icon_relative_path, s3_path=icon_relative_path)
         records.append(record)
 
-    with open(os.path.join(output_dir, "records.json"), "wb") as records_file:
-        records_file.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
+    write_records_json_file(output_dir, records)
 
 
 def get_emoji_path(realm_emoji: RealmEmoji) -> str:
@@ -1719,8 +1724,8 @@ def export_emoji_from_local(
         count += 1
         if count % 100 == 0:
             logging.info("Finished %s", count)
-    with open(os.path.join(output_dir, "records.json"), "wb") as records_file:
-        records_file.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
+
+    write_records_json_file(output_dir, records)
 
 
 def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
