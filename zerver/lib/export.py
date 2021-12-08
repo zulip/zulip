@@ -433,7 +433,7 @@ class Config:
         concat_and_destroy: Optional[List[TableName]] = None,
         id_source: Optional[IdSource] = None,
         source_filter: Optional[SourceFilter] = None,
-        parent_key: Optional[Field] = None,
+        include_rows: Optional[Field] = None,
         use_all: bool = False,
         is_seeded: bool = False,
         exclude: Optional[List[Field]] = None,
@@ -444,7 +444,7 @@ class Config:
         self.normal_parent = normal_parent
         self.virtual_parent = virtual_parent
         self.filter_args = filter_args
-        self.parent_key = parent_key
+        self.include_rows = include_rows
         self.use_all = use_all
         self.is_seeded = is_seeded
         self.exclude = exclude
@@ -454,6 +454,9 @@ class Config:
         self.id_source = id_source
         self.source_filter = source_filter
         self.children: List[Config] = []
+
+        if self.include_rows:
+            assert self.include_rows.endswith("_id__in")
 
         if normal_parent is not None:
             self.parent: Optional[Config] = normal_parent
@@ -566,9 +569,9 @@ def export_from_config(
         model = config.model
         assert parent is not None
         assert parent.table is not None
-        assert config.parent_key is not None
+        assert config.include_rows is not None
         parent_ids = [r["id"] for r in response[parent.table]]
-        filter_parms: Dict[str, Any] = {config.parent_key: parent_ids}
+        filter_parms: Dict[str, Any] = {config.include_rows: parent_ids}
         if config.filter_args is not None:
             filter_parms.update(config.filter_args)
         assert model is not None
@@ -642,42 +645,42 @@ def get_realm_config() -> Config:
         table="zerver_defaultstream",
         model=DefaultStream,
         normal_parent=realm_config,
-        parent_key="realm_id__in",
+        include_rows="realm_id__in",
     )
 
     Config(
         table="zerver_customprofilefield",
         model=CustomProfileField,
         normal_parent=realm_config,
-        parent_key="realm_id__in",
+        include_rows="realm_id__in",
     )
 
     Config(
         table="zerver_realmemoji",
         model=RealmEmoji,
         normal_parent=realm_config,
-        parent_key="realm_id__in",
+        include_rows="realm_id__in",
     )
 
     Config(
         table="zerver_realmdomain",
         model=RealmDomain,
         normal_parent=realm_config,
-        parent_key="realm_id__in",
+        include_rows="realm_id__in",
     )
 
     Config(
         table="zerver_realmfilter",
         model=RealmFilter,
         normal_parent=realm_config,
-        parent_key="realm_id__in",
+        include_rows="realm_id__in",
     )
 
     Config(
         table="zerver_realmplayground",
         model=RealmPlayground,
         normal_parent=realm_config,
-        parent_key="realm_id__in",
+        include_rows="realm_id__in",
     )
 
     Config(
@@ -691,7 +694,7 @@ def get_realm_config() -> Config:
         table="zerver_realmuserdefault",
         model=RealmUserDefault,
         normal_parent=realm_config,
-        parent_key="realm_id__in",
+        include_rows="realm_id__in",
     )
 
     user_profile_config = Config(
@@ -709,21 +712,21 @@ def get_realm_config() -> Config:
         table="zerver_usergroup",
         model=UserGroup,
         normal_parent=realm_config,
-        parent_key="realm__in",
+        include_rows="realm_id__in",
     )
 
     Config(
         table="zerver_usergroupmembership",
         model=UserGroupMembership,
         normal_parent=user_groups_config,
-        parent_key="user_group__in",
+        include_rows="user_group_id__in",
     )
 
     Config(
         table="zerver_groupgroupmembership",
         model=GroupGroupMembership,
         normal_parent=user_groups_config,
-        parent_key="supergroup__in",
+        include_rows="supergroup_id__in",
     )
 
     Config(
@@ -738,21 +741,21 @@ def get_realm_config() -> Config:
         table="zerver_service",
         model=Service,
         normal_parent=user_profile_config,
-        parent_key="user_profile__in",
+        include_rows="user_profile_id__in",
     )
 
     Config(
         table="zerver_botstoragedata",
         model=BotStorageData,
         normal_parent=user_profile_config,
-        parent_key="bot_profile__in",
+        include_rows="bot_profile_id__in",
     )
 
     Config(
         table="zerver_botconfigdata",
         model=BotConfigData,
         normal_parent=user_profile_config,
-        parent_key="bot_profile__in",
+        include_rows="bot_profile_id__in",
     )
 
     # Some of these tables are intermediate "tables" that we
@@ -763,7 +766,7 @@ def get_realm_config() -> Config:
         model=Subscription,
         normal_parent=user_profile_config,
         filter_args={"recipient__type": Recipient.PERSONAL},
-        parent_key="user_profile__in",
+        include_rows="user_profile_id__in",
     )
 
     Config(
@@ -780,14 +783,14 @@ def get_realm_config() -> Config:
         model=Stream,
         exclude=["email_token"],
         normal_parent=realm_config,
-        parent_key="realm_id__in",
+        include_rows="realm_id__in",
     )
 
     stream_recipient_config = Config(
         table="_stream_recipient",
         model=Recipient,
         normal_parent=stream_config,
-        parent_key="type_id__in",
+        include_rows="type_id__in",
         filter_args={"type": Recipient.STREAM},
     )
 
@@ -795,7 +798,7 @@ def get_realm_config() -> Config:
         table="_stream_subscription",
         model=Subscription,
         normal_parent=stream_recipient_config,
-        parent_key="recipient_id__in",
+        include_rows="recipient_id__in",
     )
 
     #
@@ -855,70 +858,70 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
         table="zerver_alertword",
         model=AlertWord,
         normal_parent=user_profile_config,
-        parent_key="user_profile__in",
+        include_rows="user_profile_id__in",
     )
 
     Config(
         table="zerver_customprofilefieldvalue",
         model=CustomProfileFieldValue,
         normal_parent=user_profile_config,
-        parent_key="user_profile__in",
+        include_rows="user_profile_id__in",
     )
 
     Config(
         table="zerver_muteduser",
         model=MutedUser,
         normal_parent=user_profile_config,
-        parent_key="user_profile__in",
+        include_rows="user_profile_id__in",
     )
 
     Config(
         table="zerver_realmauditlog",
         model=RealmAuditLog,
         normal_parent=user_profile_config,
-        parent_key="modified_user__in",
+        include_rows="modified_user_id__in",
     )
 
     Config(
         table="zerver_useractivity",
         model=UserActivity,
         normal_parent=user_profile_config,
-        parent_key="user_profile_id__in",
+        include_rows="user_profile_id__in",
     )
 
     Config(
         table="zerver_useractivityinterval",
         model=UserActivityInterval,
         normal_parent=user_profile_config,
-        parent_key="user_profile_id__in",
+        include_rows="user_profile_id__in",
     )
 
     Config(
         table="zerver_userhotspot",
         model=UserHotspot,
         normal_parent=user_profile_config,
-        parent_key="user__in",
+        include_rows="user_id__in",
     )
 
     Config(
         table="zerver_userpresence",
         model=UserPresence,
         normal_parent=user_profile_config,
-        parent_key="user_profile__in",
+        include_rows="user_profile_id__in",
     )
 
     Config(
         table="zerver_userstatus",
         model=UserStatus,
         normal_parent=user_profile_config,
-        parent_key="user_profile__in",
+        include_rows="user_profile_id__in",
     )
 
     Config(
         table="zerver_usertopic",
         model=UserTopic,
         normal_parent=user_profile_config,
-        parent_key="user_profile__in",
+        include_rows="user_profile_id__in",
     )
 
 
@@ -1915,7 +1918,7 @@ def get_single_user_config() -> Config:
         table="zerver_subscription",
         model=Subscription,
         normal_parent=user_profile_config,
-        parent_key="user_profile__in",
+        include_rows="user_profile_id__in",
     )
 
     # zerver_recipient
@@ -1950,7 +1953,7 @@ def get_single_user_config() -> Config:
         table="analytics_usercount",
         model=UserCount,
         normal_parent=user_profile_config,
-        parent_key="user__in",
+        include_rows="user_id__in",
     )
 
     add_user_profile_child_configs(user_profile_config)
@@ -2030,21 +2033,21 @@ def get_analytics_config() -> Config:
         table="analytics_realmcount",
         model=RealmCount,
         normal_parent=analytics_config,
-        parent_key="realm_id__in",
+        include_rows="realm_id__in",
     )
 
     Config(
         table="analytics_usercount",
         model=UserCount,
         normal_parent=analytics_config,
-        parent_key="realm_id__in",
+        include_rows="realm_id__in",
     )
 
     Config(
         table="analytics_streamcount",
         model=StreamCount,
         normal_parent=analytics_config,
-        parent_key="realm_id__in",
+        include_rows="realm_id__in",
     )
 
     return analytics_config
