@@ -358,6 +358,12 @@ def write_data_to_file(output_file: Path, data: Any) -> None:
         f.write(orjson.dumps(data, option=orjson.OPT_INDENT_2 | orjson.OPT_PASSTHROUGH_DATETIME))
 
 
+def write_table_data(output_file: str, data: Dict[str, Any]) -> None:
+    assert output_file.endswith(".json")
+
+    write_data_to_file(output_file, data)
+
+
 def write_records_json_file(output_dir: str, records: List[Dict[str, Any]]) -> None:
     # We want a somewhat determistic sorting order here. All of our
     # versions of records.json include a "path" field in each element,
@@ -1823,7 +1829,7 @@ def do_export_realm(
 
     # Write realm data
     export_file = os.path.join(output_dir, "realm.json")
-    write_data_to_file(output_file=export_file, data=response)
+    write_table_data(output_file=export_file, data=response)
     logging.info("Writing realm data to %s", export_file)
 
     # Write analytics data
@@ -1858,7 +1864,7 @@ def export_attachment_table(realm: Realm, output_dir: Path, message_ids: Set[int
     fetch_attachment_data(response=response, realm_id=realm.id, message_ids=message_ids)
     output_file = os.path.join(output_dir, "attachment.json")
     logging.info("Writing attachment table data to %s", output_file)
-    write_data_to_file(output_file=output_file, data=response)
+    write_table_data(output_file=output_file, data=response)
 
 
 def create_soft_link(source: Path, in_progress: bool = True) -> None:
@@ -1914,7 +1920,7 @@ def do_export_user(user_profile: UserProfile, output_dir: Path) -> None:
 
     export_single_user(user_profile, response)
     export_file = os.path.join(output_dir, "user.json")
-    write_data_to_file(output_file=export_file, data=response)
+    write_table_data(output_file=export_file, data=response)
     logging.info("Exporting messages")
     export_messages_single_user(user_profile, output_dir)
 
@@ -2057,7 +2063,7 @@ def export_analytics_tables(realm: Realm, output_dir: Path) -> None:
     # before writing to disk.
     del response["zerver_realm"]
 
-    write_data_to_file(output_file=export_file, data=response)
+    write_table_data(output_file=export_file, data=response)
 
 
 def get_analytics_config() -> Config:
