@@ -367,8 +367,11 @@ elif [ "$package_system" = yum ]; then
 fi
 
 if [ -n "$USE_CERTBOT" ]; then
+    # Puppet, which is run below, installs the post-deploy hook to
+    # reload nginx -- but it also installs nginx itself, so we're fine
+    # to run this now.
     "$ZULIP_PATH"/scripts/setup/setup-certbot \
-        --no-zulip-conf --method=standalone \
+        --method=standalone \
         "$EXTERNAL_HOST" --email "$ZULIP_ADMINISTRATOR"
 elif [ -n "$SELF_SIGNED_CERT" ]; then
     "$ZULIP_PATH"/scripts/setup/generate-self-signed-cert \
@@ -409,10 +412,6 @@ deploy_type = production
 [postgresql]
 version = $POSTGRESQL_VERSION
 EOF
-
-    if [ -n "$USE_CERTBOT" ]; then
-        crudini --set /etc/zulip/zulip.conf certbot auto_renew yes
-    fi
 
     if [ -n "$POSTGRESQL_MISSING_DICTIONARIES" ]; then
         crudini --set /etc/zulip/zulip.conf postgresql missing_dictionaries true
