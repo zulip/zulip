@@ -852,20 +852,6 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
     """
 
     Config(
-        table="zerver_useractivity",
-        model=UserActivity,
-        normal_parent=user_profile_config,
-        parent_key="user_profile__in",
-    )
-
-    Config(
-        table="zerver_useractivityinterval",
-        model=UserActivityInterval,
-        normal_parent=user_profile_config,
-        parent_key="user_profile__in",
-    )
-
-    Config(
         table="zerver_alertword",
         model=AlertWord,
         normal_parent=user_profile_config,
@@ -891,6 +877,20 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
         model=RealmAuditLog,
         normal_parent=user_profile_config,
         parent_key="modified_user__in",
+    )
+
+    Config(
+        table="zerver_useractivity",
+        model=UserActivity,
+        normal_parent=user_profile_config,
+        parent_key="user_profile_id__in",
+    )
+
+    Config(
+        table="zerver_useractivityinterval",
+        model=UserActivityInterval,
+        normal_parent=user_profile_config,
+        parent_key="user_profile_id__in",
     )
 
     Config(
