@@ -359,6 +359,16 @@ def write_data_to_file(output_file: Path, data: Any) -> None:
 
 
 def write_records_json_file(output_dir: str, records: List[Dict[str, Any]]) -> None:
+    # We want a somewhat determistic sorting order here. All of our
+    # versions of records.json include a "path" field in each element,
+    # even though there's some variation among avatars/emoji/realm_icons/uploads
+    # in other fields that get written.
+    #
+    # The sorting order of paths isn't entirely sensical to humans,
+    # because they include ids and even some random numbers,
+    # but if you export the same realm twice, you should get identical results.
+    records.sort(key=lambda record: record["path"])
+
     output_file = os.path.join(output_dir, "records.json")
     with open(output_file, "wb") as f:
         # For legacy reasons we allow datetime objects here, unlike
