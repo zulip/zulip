@@ -81,11 +81,7 @@ FilterArgs = Dict[str, Any]
 IdSource = Tuple[TableName, Field]
 SourceFilter = Callable[[Record], bool]
 
-# This next type is a callback, which mypy does not
-# support well, because PEP 484 says "using callbacks
-# with keyword arguments is not perceived as a common use case."
-# CustomFetch = Callable[[TableData, Config, Context], None]
-CustomFetch = Any  # TODO: make more specific, see above
+CustomFetch = Callable[[TableData, "Config", Context], None]
 
 # The keys of our MessageOutput variables are normally
 # List[Record], but when we write partials, we can get
@@ -539,9 +535,9 @@ def export_from_config(
 
     elif config.custom_fetch:
         config.custom_fetch(
-            response=response,
-            config=config,
-            context=context,
+            response,
+            config,
+            context,
         )
         if config.custom_tables:
             for t in config.custom_tables:
