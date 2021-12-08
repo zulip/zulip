@@ -81,6 +81,7 @@ EXEMPT_FILES = make_set(
         "static/js/emojisets.js",
         "static/js/favicon.js",
         "static/js/feedback_widget.js",
+        "static/js/flatpickr.js",
         "static/js/floating_recipient_bar.js",
         "static/js/gear_menu.js",
         "static/js/giphy.js",
