@@ -1145,13 +1145,13 @@ def export_usermessages_batch(
     management command)."""
     with open(input_path, "rb") as input_file:
         output = orjson.loads(input_file.read())
-    message_ids = [item["id"] for item in output["zerver_message"]]
+    message_ids = {item["id"] for item in output["zerver_message"]}
     user_profile_ids = set(output["zerver_userprofile_ids"])
     del output["zerver_userprofile_ids"]
     realm = Realm.objects.get(id=output["realm_id"])
     del output["realm_id"]
     output["zerver_usermessage"] = fetch_usermessages(
-        realm, set(message_ids), user_profile_ids, output_path, consent_message_id
+        realm, message_ids, user_profile_ids, output_path, consent_message_id
     )
     write_message_export(output_path, output)
     os.unlink(input_path)
