@@ -647,16 +647,15 @@ export function initialize() {
     });
 
     function handle_compose_click(e) {
+        const $target = $(e.target);
         // Emoji clicks should be handled by their own click handler in emoji_picker.js
-        if (
-            $(e.target).is(".emoji_map, img.emoji, .drag, .compose_gif_icon, .compose_control_menu")
-        ) {
+        if ($target.is(".emoji_map, img.emoji, .drag, .compose_gif_icon, .compose_control_menu")) {
             return;
         }
 
         // The mobile compose button has its own popover when clicked, so it already.
         // hides other popovers.
-        if ($(e.target).is(".compose_mobile_button, .compose_mobile_button *")) {
+        if ($target.is(".compose_mobile_button, .compose_mobile_button *")) {
             return;
         }
 
@@ -670,7 +669,7 @@ export function initialize() {
         // clicking "Press Enter to send" should not
         // trigger the composebox-closing code in MAIN CLICK HANDLER.
         // But do allow our formatting link.
-        if (!$(e.target).is("a")) {
+        if (!$target.is("a")) {
             e.stopPropagation();
         }
         // Still hide the popovers, however
