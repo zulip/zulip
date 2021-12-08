@@ -4,11 +4,7 @@ from unittest import mock
 import orjson
 from django.http import HttpResponse
 
-from zerver.lib.actions import (
-    do_change_stream_invite_only,
-    do_make_stream_web_public,
-    notify_reaction_update,
-)
+from zerver.lib.actions import do_change_stream_permission, notify_reaction_update
 from zerver.lib.cache import cache_get, to_dict_cache_key_id
 from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.exceptions import JsonableError
@@ -547,7 +543,7 @@ class ReactionEventTest(ZulipTestCase):
         self.assert_json_success(remove)
 
         # Make stream history public to subscribers
-        do_change_stream_invite_only(stream, False, history_public_to_subscribers=True)
+        do_change_stream_permission(stream, invite_only=False, history_public_to_subscribers=True)
         # Since stream history is public to subscribers, reacting to
         # message_before_id should notify all subscribers:
         # Iago and Hamlet.
@@ -566,7 +562,7 @@ class ReactionEventTest(ZulipTestCase):
         self.assert_json_success(remove)
 
         # Make stream web_public as well.
-        do_make_stream_web_public(stream)
+        do_change_stream_permission(stream, is_web_public=True)
         # For is_web_public streams, events even on old messages
         # should go to all subscribers, including guests like polonius.
         with self.tornado_redirected_to_list(events, expected_num_events=1):

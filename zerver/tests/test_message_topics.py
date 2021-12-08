@@ -1,6 +1,6 @@
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import do_change_stream_invite_only
+from zerver.lib.actions import do_change_stream_permission
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, UserMessage, get_client, get_realm, get_stream
 
@@ -132,7 +132,7 @@ class TopicHistoryTest(ZulipTestCase):
         )
 
         # Now make stream private, but subscribe cordelia
-        do_change_stream_invite_only(stream, True)
+        do_change_stream_permission(stream, invite_only=True)
         self.subscribe(self.example_user("cordelia"), stream.name)
 
         result = self.client_get(endpoint, {})
@@ -234,7 +234,7 @@ class TopicDeleteTest(ZulipTestCase):
         self.assertEqual(self.get_last_message().id, last_msg_id)
 
         # Make stream private with limited history
-        do_change_stream_invite_only(stream, invite_only=True, history_public_to_subscribers=False)
+        do_change_stream_permission(stream, invite_only=True, history_public_to_subscribers=False)
 
         # ADMIN USER subscribed now
         user_profile = self.example_user("iago")
@@ -266,7 +266,7 @@ class TopicDeleteTest(ZulipTestCase):
         self.assertEqual(self.get_last_message().id, last_msg_id)
 
         # Make the stream's history public to subscribers
-        do_change_stream_invite_only(stream, invite_only=True, history_public_to_subscribers=True)
+        do_change_stream_permission(stream, invite_only=True, history_public_to_subscribers=True)
         # Delete the topic should now remove all messages
         result = self.client_post(
             endpoint,
