@@ -61,7 +61,7 @@ run_test("update_button_visibility", () => {
     assert.ok(!search_button.prop("disabled"));
 });
 
-run_test("initialize", () => {
+run_test("initialize", ({mock_template}) => {
     const search_query_box = $("#search_query");
     const searchbox_form = $("#searchbox_form");
     const search_button = $(".search_button");
@@ -113,10 +113,10 @@ run_test("initialize", () => {
             assert.equal(source, expected_source_value);
 
             /* Test highlighter */
-            let expected_value = "Search for ver";
+            let expected_value = `<div class="search_list_item">\n    Search for ver\n</div>\n`;
             assert.equal(opts.highlighter(source[0]), expected_value);
 
-            expected_value = "Stream <strong>Ver</strong>ona";
+            expected_value = `<div class="search_list_item">\n    Stream&nbsp;<strong>Ver</strong>ona\n</div>\n`;
             assert.equal(opts.highlighter(source[1]), expected_value);
 
             /* Test sorter */

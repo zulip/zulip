@@ -32,9 +32,9 @@ const search_pill = zrequire("search_pill");
 const {Filter} = zrequire("../js/filter");
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, mock_template}) => {
         page_params.search_pills_enabled = true;
-        f({override});
+        f({override, mock_template});
     });
 }
 
@@ -83,7 +83,7 @@ test("update_button_visibility", () => {
     assert.ok(!search_button.prop("disabled"));
 });
 
-test("initialize", () => {
+test("initialize", ({mock_template}) => {
     const search_query_box = $("#search_query");
     const searchbox_form = $("#searchbox_form");
     const search_button = $(".search_button");
@@ -141,10 +141,10 @@ test("initialize", () => {
             assert.equal(source, expected_source_value);
 
             /* Test highlighter */
-            let expected_value = "Search for ver";
+            let expected_value = `<div class="search_list_item">\n    Search for ver\n</div>\n`;
             assert.equal(opts.highlighter(source[0]), expected_value);
 
-            expected_value = "Stream <strong>Ver</strong>ona";
+            expected_value = `<div class="search_list_item">\n    Stream&nbsp;<strong>Ver</strong>ona\n</div>\n`;
             assert.equal(opts.highlighter(source[1]), expected_value);
 
             /* Test sorter */

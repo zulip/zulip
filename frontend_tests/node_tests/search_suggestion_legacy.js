@@ -50,6 +50,8 @@ const jeff = {
     full_name: "Jeff Zoolipson",
 };
 
+const example_avatar_url = "http://example.com/example.png";
+
 function init() {
     page_params.is_admin = true;
     page_params.search_pills_enabled = false;
@@ -762,6 +764,7 @@ test("people_suggestions", ({override}) => {
         email: "bob@zulip.com",
         user_id: 202,
         full_name: "Bob Térry",
+        avatar_url: example_avatar_url,
     };
 
     const alice = {
@@ -786,17 +789,45 @@ test("people_suggestions", ({override}) => {
     ];
 
     assert.deepEqual(suggestions.strings, expected);
+
+    function is_person(q) {
+        return suggestions.lookup_table.get(q).is_person;
+    }
+    assert.equal(is_person("pm-with:ted@zulip.com"), true);
+    assert.equal(is_person("sender:ted@zulip.com"), true);
+    assert.equal(is_person("group-pm-with:ted@zulip.com"), true);
+
+    function has_image(q) {
+        return suggestions.lookup_table.get(q).user_pill_context.has_image;
+    }
+    assert.equal(has_image("pm-with:bob@zulip.com"), true);
+    assert.equal(has_image("sender:bob@zulip.com"), true);
+    assert.equal(has_image("group-pm-with:bob@zulip.com"), true);
+
     function describe(q) {
         return suggestions.lookup_table.get(q).description_html;
     }
-    assert.equal(
-        describe("pm-with:ted@zulip.com"),
-        "Private messages with <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;",
-    );
-    assert.equal(
-        describe("sender:ted@zulip.com"),
-        "Sent by <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;",
-    );
+    assert.equal(describe("pm-with:ted@zulip.com"), "Private messages with");
+    assert.equal(describe("sender:ted@zulip.com"), "Sent by");
+    assert.equal(describe("group-pm-with:ted@zulip.com"), "Group private messages including");
+
+    let expectedString = "<strong>Te</strong>d Smith";
+
+    function get_full_name(q) {
+        return suggestions.lookup_table.get(q).user_pill_context.display_value.string;
+    }
+    assert.equal(get_full_name("sender:ted@zulip.com"), expectedString);
+    assert.equal(get_full_name("pm-with:ted@zulip.com"), expectedString);
+    assert.equal(get_full_name("group-pm-with:ted@zulip.com"), expectedString);
+
+    expectedString = example_avatar_url + "?s=50";
+
+    function get_avatar_url(q) {
+        return suggestions.lookup_table.get(q).user_pill_context.img_src;
+    }
+    assert.equal(get_avatar_url("pm-with:bob@zulip.com"), expectedString);
+    assert.equal(get_avatar_url("sender:bob@zulip.com"), expectedString);
+    assert.equal(get_avatar_url("group-pm-with:bob@zulip.com"), expectedString);
 
     suggestions = get_suggestions("", "Ted "); // note space
 
