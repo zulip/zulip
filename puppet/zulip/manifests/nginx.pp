@@ -124,14 +124,9 @@ class zulip::nginx {
     mode    => '0644',
     source  => 'puppet:///modules/zulip/logrotate/nginx',
   }
-
-  $certbot_auto_renew = zulipconf('certbot', 'auto_renew', '')
-  if $certbot_auto_renew == 'yes' {
-    package { 'certbot':
-      ensure => 'installed',
-    }
+  package { 'certbot':
+    ensure => 'installed',
   }
-
   file { ['/var/lib/zulip', '/var/lib/zulip/certbot-webroot']:
     ensure => 'directory',
     owner  => 'zulip',
