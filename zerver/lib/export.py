@@ -457,6 +457,13 @@ class Config:
         if self.custom_fetch:
             # enforce a naming convention
             assert self.custom_fetch.__name__.startswith("custom_fetch_")
+            if self.normal_parent is not None:
+                raise AssertionError(
+                    """
+                    If you have a custom fetcher, then specify
+                    your parent as a virtual_parent.
+                    """
+                )
 
         if normal_parent is not None:
             self.parent: Optional[Config] = normal_parent
@@ -815,7 +822,7 @@ def get_realm_config() -> Config:
             "_huddle_subscription",
             "zerver_huddle",
         ],
-        normal_parent=user_profile_config,
+        virtual_parent=user_profile_config,
         custom_fetch=custom_fetch_huddle_objects,
     )
 
