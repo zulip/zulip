@@ -12,8 +12,8 @@ import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
-import * as composebox_typeahead from "./composebox_typeahead";
 import * as echo from "./echo";
+import * as flatpickr from "./flatpickr";
 import * as giphy from "./giphy";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
@@ -637,7 +637,7 @@ export function initialize() {
                 compose_ui.insert_syntax_and_focus(timestr, target_textarea);
             };
 
-            composebox_typeahead.show_flatpickr(
+            flatpickr.show_flatpickr(
                 $(compose_click_target)[0],
                 on_timestamp_selection,
                 new Date(),
