@@ -18,6 +18,7 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 import orjson
 from django.apps import apps
 from django.conf import settings
+from django.db.models import Q
 from django.forms.models import model_to_dict
 from django.utils.timezone import is_naive as timezone_is_naive
 from django.utils.timezone import make_aware as timezone_make_aware
@@ -1022,6 +1023,17 @@ def fetch_attachment_data(response: TableData, realm_id: int, message_ids: Set[i
     ]
 
 
+def custom_fetch_realm_audit_logs_for_user(response: TableData, context: Context) -> None:
+    """To be expansive, we include audit log entries for events that
+    either modified the target user or where the target user modified
+    something (E.g. if they changed the settings for a stream).
+    """
+    user = context["user"]
+    query = RealmAuditLog.objects.filter(Q(modified_user_id=user.id) | Q(acting_user_id=user.id))
+    rows = make_raw(list(query))
+    response["zerver_realmauditlog"] = rows
+
+
 def fetch_reaction_data(response: TableData, message_ids: Set[int]) -> None:
     query = Reaction.objects.filter(message_id__in=list(message_ids))
     response["zerver_reaction"] = make_raw(list(query))
@@ -1902,6 +1914,7 @@ def export_single_user(user_profile: UserProfile, response: TableData) -> None:
         response=response,
         config=config,
         seed_object=user_profile,
+        context=dict(user=user_profile),
     )
 
 
@@ -1963,8 +1976,9 @@ def get_single_user_config() -> Config:
     Config(
         table="zerver_realmauditlog",
         model=RealmAuditLog,
-        normal_parent=user_profile_config,
-        include_rows="modified_user_id__in",
+        virtual_parent=user_profile_config,
+        # See the docstring for why we use a custom fetch here.
+        custom_fetch=custom_fetch_realm_audit_logs_for_user,
     )
 
     add_user_profile_child_configs(user_profile_config)
