@@ -458,6 +458,10 @@ class Config:
         if self.include_rows:
             assert self.include_rows.endswith("_id__in")
 
+        if self.custom_fetch:
+            # enforce a naming convention
+            assert self.custom_fetch.__name__.startswith("custom_fetch_")
+
         if normal_parent is not None:
             self.parent: Optional[Config] = normal_parent
         else:
@@ -712,7 +716,7 @@ def get_realm_config() -> Config:
         # set table for children who treat us as normal parent
         table="zerver_userprofile",
         virtual_parent=realm_config,
-        custom_fetch=fetch_user_profile,
+        custom_fetch=custom_fetch_user_profile,
     )
 
     user_groups_config = Config(
@@ -741,7 +745,7 @@ def get_realm_config() -> Config:
             "zerver_userprofile_crossrealm",
         ],
         virtual_parent=user_profile_config,
-        custom_fetch=fetch_user_profile_cross_realm,
+        custom_fetch=custom_fetch_user_profile_cross_realm,
     )
 
     Config(
@@ -817,7 +821,7 @@ def get_realm_config() -> Config:
             "zerver_huddle",
         ],
         normal_parent=user_profile_config,
-        custom_fetch=fetch_huddle_objects,
+        custom_fetch=custom_fetch_huddle_objects,
     )
 
     # Now build permanent tables from our temp tables.
@@ -925,7 +929,7 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
     )
 
 
-def fetch_user_profile(response: TableData, config: Config, context: Context) -> None:
+def custom_fetch_user_profile(response: TableData, config: Config, context: Context) -> None:
     realm = context["realm"]
     exportable_user_ids = context["exportable_user_ids"]
 
@@ -955,7 +959,9 @@ def fetch_user_profile(response: TableData, config: Config, context: Context) ->
     response["zerver_userprofile_mirrordummy"] = dummy_rows
 
 
-def fetch_user_profile_cross_realm(response: TableData, config: Config, context: Context) -> None:
+def custom_fetch_user_profile_cross_realm(
+    response: TableData, config: Config, context: Context
+) -> None:
     realm = context["realm"]
     response["zerver_userprofile_crossrealm"] = []
 
@@ -1021,7 +1027,7 @@ def fetch_reaction_data(response: TableData, message_ids: Set[int]) -> None:
     response["zerver_reaction"] = make_raw(list(query))
 
 
-def fetch_huddle_objects(response: TableData, config: Config, context: Context) -> None:
+def custom_fetch_huddle_objects(response: TableData, config: Config, context: Context) -> None:
 
     realm = context["realm"]
     assert config.parent is not None
