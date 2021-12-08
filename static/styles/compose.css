@@ -243,9 +243,13 @@
     }
 }
 
-.collapse_composebox_button,
-#compose_close {
+.collapse_composebox_button{
     display: none;
+}
+
+#compose_close {
+    font-size: 14px !important;
+    margin-top: -1px;
 }
 
 .compose_invite_user,
