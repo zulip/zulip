@@ -9,7 +9,7 @@ from django.test import override_settings
 from zulip_bots.custom_exceptions import ConfigValidationError
 
 from zerver.lib.actions import (
-    do_change_stream_invite_only,
+    do_change_stream_permission,
     do_deactivate_user,
     do_set_realm_property,
 )
@@ -420,7 +420,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         user_profile = self.example_user("hamlet")
         stream = get_stream("Denmark", user_profile.realm)
         self.subscribe(user_profile, stream.name)
-        do_change_stream_invite_only(stream, True)
+        do_change_stream_permission(stream, invite_only=True)
 
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
@@ -464,7 +464,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         realm = self.example_user("hamlet").realm
         stream = get_stream("Denmark", realm)
         self.unsubscribe(self.example_user("hamlet"), "Denmark")
-        do_change_stream_invite_only(stream, True)
+        do_change_stream_permission(stream, invite_only=True)
 
         bot_info = {
             "full_name": "The Bot of Hamlet",
@@ -492,7 +492,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login("hamlet")
         user_profile = self.example_user("hamlet")
         stream = self.subscribe(user_profile, "Denmark")
-        do_change_stream_invite_only(stream, True)
+        do_change_stream_permission(stream, invite_only=True)
 
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
@@ -536,7 +536,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         realm = self.example_user("hamlet").realm
         stream = get_stream("Denmark", realm)
         self.unsubscribe(self.example_user("hamlet"), "Denmark")
-        do_change_stream_invite_only(stream, True)
+        do_change_stream_permission(stream, invite_only=True)
 
         self.assert_num_bots_equal(0)
         bot_info = {
@@ -1132,7 +1132,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login("hamlet")
         user_profile = self.example_user("hamlet")
         stream = self.subscribe(user_profile, "Denmark")
-        do_change_stream_invite_only(stream, True)
+        do_change_stream_permission(stream, invite_only=True)
 
         bot_info = {
             "full_name": "The Bot of Hamlet",
@@ -1158,7 +1158,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         realm = self.example_user("hamlet").realm
         stream = get_stream("Denmark", realm)
         self.unsubscribe(self.example_user("hamlet"), "Denmark")
-        do_change_stream_invite_only(stream, True)
+        do_change_stream_permission(stream, invite_only=True)
 
         bot_info = {
             "full_name": "The Bot of Hamlet",
@@ -1239,7 +1239,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login("hamlet")
         user_profile = self.example_user("hamlet")
         stream = self.subscribe(user_profile, "Denmark")
-        do_change_stream_invite_only(stream, True)
+        do_change_stream_permission(stream, invite_only=True)
 
         bot_info = {
             "full_name": "The Bot of Hamlet",
@@ -1264,7 +1264,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         realm = self.example_user("hamlet").realm
         stream = get_stream("Denmark", realm)
         self.unsubscribe(self.example_user("hamlet"), "Denmark")
-        do_change_stream_invite_only(stream, True)
+        do_change_stream_permission(stream, invite_only=True)
 
         bot_info = {
             "full_name": "The Bot of Hamlet",

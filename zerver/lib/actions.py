@@ -5007,65 +5007,52 @@ def do_change_can_create_users(user_profile: UserProfile, value: bool) -> None:
     user_profile.save(update_fields=["can_create_users"])
 
 
-def do_change_stream_invite_only(
-    stream: Stream, invite_only: bool, history_public_to_subscribers: Optional[bool] = None
-) -> None:
-    history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
-        stream.realm,
-        invite_only,
-        history_public_to_subscribers,
-    )
-    stream.invite_only = invite_only
-    stream.history_public_to_subscribers = history_public_to_subscribers
-    stream.is_web_public = False
-    stream.save(update_fields=["invite_only", "history_public_to_subscribers", "is_web_public"])
-    event = dict(
-        op="update",
-        type="stream",
-        property="invite_only",
-        value=invite_only,
-        history_public_to_subscribers=history_public_to_subscribers,
-        is_web_public=False,
-        stream_id=stream.id,
-        name=stream.name,
-    )
-    send_event(stream.realm, event, can_access_stream_user_ids(stream))
-
-
-def do_make_stream_web_public(stream: Stream) -> None:
-    stream.is_web_public = True
-    stream.invite_only = False
-    stream.history_public_to_subscribers = True
-    stream.save(update_fields=["invite_only", "history_public_to_subscribers", "is_web_public"])
-
-    # We reuse "invite_only" stream update API route here because
-    # both are similar events and similar UI updates will be required
-    # by the client to update this property for the user.
-    event = dict(
-        op="update",
-        type="stream",
-        property="invite_only",
-        value=False,
-        history_public_to_subscribers=True,
-        is_web_public=True,
-        stream_id=stream.id,
-        name=stream.name,
-    )
-    send_event(stream.realm, event, can_access_stream_user_ids(stream))
-
-
 def do_change_stream_permission(
     stream: Stream,
+    *,
     invite_only: Optional[bool] = None,
     history_public_to_subscribers: Optional[bool] = None,
     is_web_public: Optional[bool] = None,
 ) -> None:
-    # TODO: Ideally this would be just merged with do_change_stream_invite_only.
+    # A note on these assertions: It's possible we'd be better off
+    # making all callers of this function pass the full set of
+    # parameters, rather than having default values.  Doing so would
+    # allow us to remove the messy logic below, where we sometimes
+    # ignore the passed parameters.
+    #
+    # But absent such a refactoring, it's important to assert that
+    # we're not requesting an unsupported configurations.
     if is_web_public:
-        do_make_stream_web_public(stream)
+        assert history_public_to_subscribers is not False
+        assert invite_only is not True
+        stream.is_web_public = True
+        stream.invite_only = False
+        stream.history_public_to_subscribers = True
     else:
         assert invite_only is not None
-        do_change_stream_invite_only(stream, invite_only, history_public_to_subscribers)
+        # is_web_public is Falsey
+        history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
+            stream.realm,
+            invite_only,
+            history_public_to_subscribers,
+        )
+        stream.invite_only = invite_only
+        stream.history_public_to_subscribers = history_public_to_subscribers
+        stream.is_web_public = False
+
+    stream.save(update_fields=["invite_only", "history_public_to_subscribers", "is_web_public"])
+
+    event = dict(
+        op="update",
+        type="stream",
+        property="invite_only",
+        value=stream.invite_only,
+        history_public_to_subscribers=stream.history_public_to_subscribers,
+        is_web_public=stream.is_web_public,
+        stream_id=stream.id,
+        name=stream.name,
+    )
+    send_event(stream.realm, event, can_access_stream_user_ids(stream))
 
 
 def send_change_stream_post_policy_notification(
