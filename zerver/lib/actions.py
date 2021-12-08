@@ -655,61 +655,61 @@ def do_create_user(
     acting_user: Optional[UserProfile],
     enable_marketing_emails: bool = True,
 ) -> UserProfile:
-
-    user_profile = create_user(
-        email=email,
-        password=password,
-        realm=realm,
-        full_name=full_name,
-        role=role,
-        bot_type=bot_type,
-        bot_owner=bot_owner,
-        tos_version=tos_version,
-        timezone=timezone,
-        avatar_source=avatar_source,
-        default_sending_stream=default_sending_stream,
-        default_events_register_stream=default_events_register_stream,
-        default_all_public_streams=default_all_public_streams,
-        source_profile=source_profile,
-        enable_marketing_emails=enable_marketing_emails,
-    )
-
-    event_time = user_profile.date_joined
-    if not acting_user:
-        acting_user = user_profile
-    RealmAuditLog.objects.create(
-        realm=user_profile.realm,
-        acting_user=acting_user,
-        modified_user=user_profile,
-        event_type=RealmAuditLog.USER_CREATED,
-        event_time=event_time,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-            }
-        ).decode(),
-    )
-
-    if realm_creation:
-        # If this user just created a realm, make sure they are
-        # properly tagged as the creator of the realm.
-        realm_creation_audit_log = (
-            RealmAuditLog.objects.filter(event_type=RealmAuditLog.REALM_CREATED, realm=realm)
-            .order_by("id")
-            .last()
+    with transaction.atomic():
+        user_profile = create_user(
+            email=email,
+            password=password,
+            realm=realm,
+            full_name=full_name,
+            role=role,
+            bot_type=bot_type,
+            bot_owner=bot_owner,
+            tos_version=tos_version,
+            timezone=timezone,
+            avatar_source=avatar_source,
+            default_sending_stream=default_sending_stream,
+            default_events_register_stream=default_events_register_stream,
+            default_all_public_streams=default_all_public_streams,
+            source_profile=source_profile,
+            enable_marketing_emails=enable_marketing_emails,
         )
-        assert realm_creation_audit_log is not None
-        realm_creation_audit_log.acting_user = user_profile
-        realm_creation_audit_log.save(update_fields=["acting_user"])
 
-    do_increment_logging_stat(
-        user_profile.realm,
-        COUNT_STATS["active_users_log:is_bot:day"],
-        user_profile.is_bot,
-        event_time,
-    )
-    if settings.BILLING_ENABLED:
-        update_license_ledger_if_needed(user_profile.realm, event_time)
+        event_time = user_profile.date_joined
+        if not acting_user:
+            acting_user = user_profile
+        RealmAuditLog.objects.create(
+            realm=user_profile.realm,
+            acting_user=acting_user,
+            modified_user=user_profile,
+            event_type=RealmAuditLog.USER_CREATED,
+            event_time=event_time,
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+                }
+            ).decode(),
+        )
+
+        if realm_creation:
+            # If this user just created a realm, make sure they are
+            # properly tagged as the creator of the realm.
+            realm_creation_audit_log = (
+                RealmAuditLog.objects.filter(event_type=RealmAuditLog.REALM_CREATED, realm=realm)
+                .order_by("id")
+                .last()
+            )
+            assert realm_creation_audit_log is not None
+            realm_creation_audit_log.acting_user = user_profile
+            realm_creation_audit_log.save(update_fields=["acting_user"])
+
+        do_increment_logging_stat(
+            user_profile.realm,
+            COUNT_STATS["active_users_log:is_bot:day"],
+            user_profile.is_bot,
+            event_time,
+        )
+        if settings.BILLING_ENABLED:
+            update_license_ledger_if_needed(user_profile.realm, event_time)
 
     # Note that for bots, the caller will send an additional event
     # with bot-specific info like services.
