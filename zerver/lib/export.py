@@ -656,6 +656,13 @@ def get_realm_config() -> Config:
     )
 
     Config(
+        table="zerver_realmauditlog",
+        model=RealmAuditLog,
+        normal_parent=realm_config,
+        include_rows="realm_id__in",
+    )
+
+    Config(
         table="zerver_realmemoji",
         model=RealmEmoji,
         normal_parent=realm_config,
@@ -873,13 +880,6 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
         model=MutedUser,
         normal_parent=user_profile_config,
         include_rows="user_profile_id__in",
-    )
-
-    Config(
-        table="zerver_realmauditlog",
-        model=RealmAuditLog,
-        normal_parent=user_profile_config,
-        include_rows="modified_user_id__in",
     )
 
     Config(
@@ -1954,6 +1954,13 @@ def get_single_user_config() -> Config:
         model=UserCount,
         normal_parent=user_profile_config,
         include_rows="user_id__in",
+    )
+
+    Config(
+        table="zerver_realmauditlog",
+        model=RealmAuditLog,
+        normal_parent=user_profile_config,
+        include_rows="modified_user_id__in",
     )
 
     add_user_profile_child_configs(user_profile_config)
