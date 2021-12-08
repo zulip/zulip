@@ -4800,6 +4800,7 @@ def do_change_default_all_public_streams(
         )
 
 
+@transaction.atomic
 def do_change_user_role(
     user_profile: UserProfile, value: int, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -4823,7 +4824,9 @@ def do_change_user_role(
     event = dict(
         type="realm_user", op="update", person=dict(user_id=user_profile.id, role=user_profile.role)
     )
-    send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+    transaction.on_commit(
+        lambda: send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+    )
 
 
 def do_make_user_billing_admin(user_profile: UserProfile) -> None:
