@@ -4,10 +4,10 @@ class zulip_ops::profile::grafana {
   include zulip_ops::profile::base
   include zulip::supervisor
 
-  $version = '8.0.1'
+  $version = '8.3.1'
   zulip::sha256_tarball_to { 'grafana':
     url     => "https://dl.grafana.com/oss/release/grafana-${version}.linux-${::architecture}.tar.gz",
-    sha256  => '6f4e67500a4b8dd416e6f6d2e7a1d42befc65ca707a365001f26df7ba653af75',
+    sha256  => '097d85eb2ca6982becea8eccb72855ac11abf43e894af6a46d64bbc77922339b',
     install => {
       "grafana-${version}/" => "/srv/grafana-${version}/",
     },
