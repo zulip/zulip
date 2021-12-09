@@ -34,7 +34,6 @@ import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
 import * as timerender from "./timerender";
 import * as util from "./util";
-import { message } from "./ui_report";
 
 function same_day(earlier_msg, later_msg) {
     if (earlier_msg === undefined || later_msg === undefined) {
@@ -201,20 +200,20 @@ export class MessageListView {
     _RENDER_THRESHOLD = 50;
 
     topic_or_stream_edited(message) {
+        let edited = false;
         if (message.edit_history !== undefined) {
-            let edited = false;
             for (const msg of message.edit_history) {
                 if (msg.prev_content) {
                     // If content was edited, will display "EDITED" and
                     // not "MOVED"
                     return false;
                 }
-                if (msg.prev_topic || msg.prev_stream) {
+                if (msg.prev_subject || msg.prev_stream) {
                     edited = true;
                 }
             }
-            return edited;
         }
+        return edited;
     }
 
     _get_msg_timestring(message_container) {
@@ -248,19 +247,18 @@ export class MessageListView {
         const include_sender = message_container.include_sender;
         const is_hidden = message_container.is_hidden;
         const status_message = Boolean(message_container.status_message);
-        
+
         // Check if topic or stream was edited - if one/both was but content
         // was not, message will display "MOVED" rather than "EDITED"
-        const topic_edited = this.topic_or_stream_edited(message_container.msg)
+        const topic_edited = this.topic_or_stream_edited(message_container.msg);
 
         if (last_edit_timestr !== undefined) {
             message_container.last_edit_timestr = last_edit_timestr;
             message_container.edited_in_left_col = !include_sender && !is_hidden;
             message_container.edited_alongside_sender = include_sender && !status_message;
             message_container.edited_status_msg = include_sender && status_message;
-        
-            message_container.moved = topic_edited;
-            
+
+            message_container.moved = topic_edited || message_container.msg.moved;
         } else {
             delete message_container.last_edit_timestr;
             message_container.edited_in_left_col = false;

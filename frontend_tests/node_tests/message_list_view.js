@@ -112,7 +112,7 @@ test("msg_moved_var", () => {
             }),
             // topic changed
             build_message_context({
-                edit_history: [{prev_topic: "test_topic", timestamp: 1000, user_id: 1}],
+                edit_history: [{prev_subject: "test_topic", timestamp: 1000, user_id: 1}],
             }),
             // content edited
             build_message_context({
