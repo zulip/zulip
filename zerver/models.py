@@ -2870,7 +2870,10 @@ class Reaction(AbstractReaction):
             "user_profile_id",
             "user_profile__full_name",
         ]
-        return Reaction.objects.filter(message_id__in=needed_ids).values(*fields)
+        # The ordering is important here, as it makes it convenient
+        # for clients to display reactions in order without
+        # client-side sorting code.
+        return Reaction.objects.filter(message_id__in=needed_ids).values(*fields).order_by("id")
 
     def __str__(self) -> str:
         return f"{self.user_profile.email} / {self.message.id} / {self.emoji_name}"
@@ -3882,6 +3885,7 @@ class AbstractRealmAuditLog(models.Model):
     STREAM_DEACTIVATED = 602
     STREAM_NAME_CHANGED = 603
     STREAM_REACTIVATED = 604
+    STREAM_MESSAGE_RETENTION_DAYS_CHANGED = 605
 
     # The following values are only for RemoteZulipServerAuditLog
     # Values are chosen to be 10000 greater than the value in RealmAuditLog.

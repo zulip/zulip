@@ -80,6 +80,23 @@ class ImportExportTest(ZulipTestCase):
         super().setUp()
         self.rm_tree(settings.LOCAL_UPLOADS_DIR)
 
+    def get_user_id(self, r: Realm, full_name: str) -> int:
+        return UserProfile.objects.get(realm=r, full_name=full_name).id
+
+    def get_huddle_hashes(self, r: Realm) -> str:
+        cordelia_full_name = "Cordelia, Lear's daughter"
+        hamlet_full_name = "King Hamlet"
+        othello_full_name = "Othello, the Moor of Venice"
+
+        user_id_list = [
+            self.get_user_id(r, cordelia_full_name),
+            self.get_user_id(r, hamlet_full_name),
+            self.get_user_id(r, othello_full_name),
+        ]
+
+        huddle_hash = get_huddle_hash(user_id_list)
+        return huddle_hash
+
     def _make_output_dir(self) -> str:
         output_dir = os.path.join(settings.TEST_WORKER_DIR, "test-export")
         self.rm_tree(output_dir)
@@ -778,313 +795,62 @@ class ImportExportTest(ZulipTestCase):
         realm_user_default.twenty_four_hour_time = True
         realm_user_default.save()
 
+        getters = self.get_realm_getters()
+
+        snapshots: Dict[str, Any] = {}
+
+        for f in getters:
+            snapshots[f.__name__] = f(original_realm)
+
         self._export_realm(original_realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
             do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
 
-        # sanity checks
+        # Make sure our export/import didn't somehow leak info into the
+        # original realm.
+        for f in getters:
+            # One way this will fail is if you make a getter that doesn't
+            # properly restrict its results to a single realm.
+            if f(original_realm) != snapshots[f.__name__]:
+                raise AssertionError(
+                    f"""
+                    The export/import process is corrupting your
+                    original realm according to {f.__name__}!
+
+                    If you wrote that getter, are you sure you
+                    are only grabbing objects from one realm?
+                    """
+                )
+
+        imported_realm = Realm.objects.get(string_id="test-zulip")
 
         # test realm
         self.assertTrue(Realm.objects.filter(string_id="test-zulip").exists())
-        imported_realm = Realm.objects.get(string_id="test-zulip")
         self.assertNotEqual(imported_realm.id, original_realm.id)
 
-        self.verify_emoji_code_foreign_keys()
-
-        def assert_realm_values(f: Callable[[Realm], Any], equal: bool = True) -> None:
+        def assert_realm_values(f: Callable[[Realm], Any]) -> None:
             orig_realm_result = f(original_realm)
             imported_realm_result = f(imported_realm)
             # orig_realm_result should be truthy and have some values, otherwise
             # the test is kind of meaningless
             assert orig_realm_result
-            if equal:
-                self.assertEqual(orig_realm_result, imported_realm_result)
-            else:
-                self.assertNotEqual(orig_realm_result, imported_realm_result)
 
-        # test users
-        assert_realm_values(
-            lambda r: {user.email for user in r.get_admin_users_and_bots()},
+            # It may be helpful to do print(f.__name__) if you are having
+            # trouble debugging this.
+
+            # print(f.__name__, orig_realm_result, imported_realm_result)
+            self.assertEqual(orig_realm_result, imported_realm_result)
+
+        for f in getters:
+            assert_realm_values(f)
+
+        self.verify_emoji_code_foreign_keys()
+
+        # Our huddle hashes change, because hashes use ids that change.
+        self.assertNotEqual(
+            self.get_huddle_hashes(original_realm), self.get_huddle_hashes(imported_realm)
         )
-
-        assert_realm_values(
-            lambda r: {user.email for user in r.get_active_users()},
-        )
-
-        # test stream
-        assert_realm_values(
-            lambda r: {stream.name for stream in get_active_streams(r)},
-        )
-
-        # test recipients
-        def get_recipient_stream(r: Realm) -> Recipient:
-            return Stream.objects.get(name="Verona", realm=r).recipient
-
-        def get_recipient_user(r: Realm) -> Recipient:
-            return UserProfile.objects.get(full_name="Iago", realm=r).recipient
-
-        assert_realm_values(lambda r: get_recipient_stream(r).type)
-        assert_realm_values(lambda r: get_recipient_user(r).type)
-
-        # test subscription
-        def get_subscribers(recipient: Recipient) -> Set[str]:
-            subscriptions = Subscription.objects.filter(recipient=recipient)
-            users = {sub.user_profile.email for sub in subscriptions}
-            return users
-
-        assert_realm_values(
-            lambda r: get_subscribers(get_recipient_stream(r)),
-        )
-
-        assert_realm_values(
-            lambda r: get_subscribers(get_recipient_user(r)),
-        )
-
-        # test custom profile fields
-        def get_custom_profile_field_names(r: Realm) -> Set[str]:
-            custom_profile_fields = CustomProfileField.objects.filter(realm=r)
-            custom_profile_field_names = {field.name for field in custom_profile_fields}
-            return custom_profile_field_names
-
-        assert_realm_values(get_custom_profile_field_names)
-
-        def get_custom_profile_with_field_type_user(
-            r: Realm,
-        ) -> Tuple[Set[Any], Set[Any], Set[FrozenSet[str]]]:
-            fields = CustomProfileField.objects.filter(field_type=CustomProfileField.USER, realm=r)
-
-            def get_email(user_id: int) -> str:
-                return UserProfile.objects.get(id=user_id).email
-
-            def get_email_from_value(field_value: CustomProfileFieldValue) -> Set[str]:
-                user_id_list = orjson.loads(field_value.value)
-                return {get_email(user_id) for user_id in user_id_list}
-
-            def custom_profile_field_values_for(
-                fields: List[CustomProfileField],
-            ) -> Set[FrozenSet[str]]:
-                user_emails: Set[FrozenSet[str]] = set()
-                for field in fields:
-                    values = CustomProfileFieldValue.objects.filter(field=field)
-                    for value in values:
-                        user_emails.add(frozenset(get_email_from_value(value)))
-                return user_emails
-
-            field_names, field_hints = (set() for i in range(2))
-            for field in fields:
-                field_names.add(field.name)
-                field_hints.add(field.hint)
-
-            return (field_hints, field_names, custom_profile_field_values_for(fields))
-
-        assert_realm_values(get_custom_profile_with_field_type_user)
-
-        # test realmauditlog
-        def get_realm_audit_log_event_type(r: Realm) -> Set[str]:
-            realmauditlogs = RealmAuditLog.objects.filter(realm=r).exclude(
-                event_type__in=[RealmAuditLog.REALM_PLAN_TYPE_CHANGED, RealmAuditLog.STREAM_CREATED]
-            )
-            realmauditlog_event_type = {log.event_type for log in realmauditlogs}
-            return realmauditlog_event_type
-
-        assert_realm_values(get_realm_audit_log_event_type)
-
-        cordelia_full_name = "Cordelia, Lear's daughter"
-        hamlet_full_name = "King Hamlet"
-        othello_full_name = "Othello, the Moor of Venice"
-
-        def get_user_id(r: Realm, full_name: str) -> int:
-            return UserProfile.objects.get(realm=r, full_name=full_name).id
-
-        # test huddles
-        def get_huddle_hashes(r: Realm) -> str:
-            user_id_list = [
-                get_user_id(r, cordelia_full_name),
-                get_user_id(r, hamlet_full_name),
-                get_user_id(r, othello_full_name),
-            ]
-
-            huddle_hash = get_huddle_hash(user_id_list)
-            return huddle_hash
-
-        assert_realm_values(get_huddle_hashes, equal=False)
-
-        def get_huddle_message(r: Realm) -> str:
-            huddle_hash = get_huddle_hashes(r)
-            huddle_id = Huddle.objects.get(huddle_hash=huddle_hash).id
-            huddle_recipient = Recipient.objects.get(type_id=huddle_id, type=3)
-            huddle_message = Message.objects.get(recipient=huddle_recipient)
-            return huddle_message.content
-
-        assert_realm_values(get_huddle_message)
-        self.assertEqual(get_huddle_message(imported_realm), "test huddle message")
-
-        # test alertword
-        def get_alertwords(r: Realm) -> Set[str]:
-            return {rec.word for rec in AlertWord.objects.filter(realm_id=r.id)}
-
-        assert_realm_values(get_alertwords)
-
-        def get_realm_emoji_names(r: Realm) -> Set[str]:
-            names = {rec.name for rec in RealmEmoji.objects.filter(realm_id=r.id)}
-            assert "hawaii" in names
-            return names
-
-        assert_realm_values(get_realm_emoji_names)
-
-        def get_realm_user_statuses(r: Realm) -> Set[Tuple[str, str, int, str]]:
-            tups = {
-                (rec.user_profile.full_name, rec.emoji_name, rec.status, rec.status_text)
-                for rec in UserStatus.objects.filter(user_profile__realm_id=r.id)
-            }
-            assert (cordelia.full_name, "hawaii", UserStatus.AWAY, "in Hawaii") in tups
-            return tups
-
-        assert_realm_values(get_realm_user_statuses)
-
-        def get_realm_emoji_reactions(r: Realm) -> Set[Tuple[str, str]]:
-            tups = {
-                (rec.emoji_name, rec.user_profile.full_name)
-                for rec in Reaction.objects.filter(
-                    user_profile__realm_id=r.id, reaction_type=Reaction.REALM_EMOJI
-                )
-            }
-            self.assertEqual(tups, {("hawaii", cordelia.full_name)})
-            return tups
-
-        assert_realm_values(get_realm_emoji_reactions)
-
-        # test userhotspot
-        def get_user_hotspots(r: Realm) -> Set[str]:
-            user_id = get_user_id(r, hamlet_full_name)
-            hotspots = UserHotspot.objects.filter(user_id=user_id)
-            user_hotspots = {hotspot.hotspot for hotspot in hotspots}
-            return user_hotspots
-
-        assert_realm_values(get_user_hotspots)
-
-        # test muted topics
-        def get_muted_topics(r: Realm) -> Set[str]:
-            user_profile_id = get_user_id(r, hamlet_full_name)
-            muted_topics = UserTopic.objects.filter(
-                user_profile_id=user_profile_id, visibility_policy=UserTopic.MUTED
-            )
-            topic_names = {muted_topic.topic_name for muted_topic in muted_topics}
-            return topic_names
-
-        assert_realm_values(get_muted_topics)
-
-        def get_muted_users(r: Realm) -> Set[Tuple[str, str, str]]:
-            mute_objects = MutedUser.objects.filter(user_profile__realm=r)
-            muter_tuples = {
-                (
-                    mute_object.user_profile.full_name,
-                    mute_object.muted_user.full_name,
-                    str(mute_object.date_muted),
-                )
-                for mute_object in mute_objects
-            }
-            return muter_tuples
-
-        assert_realm_values(get_muted_users)
-
-        # test usergroups
-        assert_realm_values(
-            lambda r: {group.name for group in UserGroup.objects.filter(realm=r)},
-        )
-
-        def get_user_membership(r: Realm) -> Set[str]:
-            usergroup = UserGroup.objects.get(realm=r, name="hamletcharacters")
-            usergroup_membership = UserGroupMembership.objects.filter(user_group=usergroup)
-            users = {membership.user_profile.email for membership in usergroup_membership}
-            return users
-
-        assert_realm_values(get_user_membership)
-
-        # test botstoragedata and botconfigdata
-        def get_botstoragedata(r: Realm) -> Dict[str, Any]:
-            bot_profile = UserProfile.objects.get(full_name="bot", realm=r)
-            bot_storage_data = BotStorageData.objects.get(bot_profile=bot_profile)
-            return {"key": bot_storage_data.key, "data": bot_storage_data.value}
-
-        assert_realm_values(get_botstoragedata)
-
-        def get_botconfigdata(r: Realm) -> Dict[str, Any]:
-            bot_profile = UserProfile.objects.get(full_name="bot", realm=r)
-            bot_config_data = BotConfigData.objects.get(bot_profile=bot_profile)
-            return {"key": bot_config_data.key, "data": bot_config_data.value}
-
-        assert_realm_values(get_botconfigdata)
-
-        # test messages
-        def get_stream_messages(r: Realm) -> Message:
-            recipient = get_recipient_stream(r)
-            messages = Message.objects.filter(recipient=recipient)
-            return messages
-
-        def get_stream_topics(r: Realm) -> Set[str]:
-            messages = get_stream_messages(r)
-            topics = {m.topic_name() for m in messages}
-            return topics
-
-        assert_realm_values(get_stream_topics)
-
-        # test usermessages
-        def get_usermessages_user(r: Realm) -> Set[Any]:
-            messages = get_stream_messages(r).order_by("content")
-            usermessage = UserMessage.objects.filter(message=messages[0])
-            usermessage_user = {um.user_profile.email for um in usermessage}
-            return usermessage_user
-
-        assert_realm_values(get_usermessages_user)
-
-        # tests to make sure that various data-*-ids in rendered_content
-        # are replaced correctly with the values of newer realm.
-
-        def get_user_mention(r: Realm) -> Set[Any]:
-            mentioned_user = UserProfile.objects.get(
-                delivery_email=self.example_email("hamlet"), realm=r
-            )
-            data_user_id = f'data-user-id="{mentioned_user.id}"'
-            mention_message = get_stream_messages(r).get(rendered_content__contains=data_user_id)
-            return mention_message.content
-
-        assert_realm_values(get_user_mention)
-
-        def get_stream_mention(r: Realm) -> Set[Any]:
-            mentioned_stream = get_stream("Denmark", r)
-            data_stream_id = f'data-stream-id="{mentioned_stream.id}"'
-            mention_message = get_stream_messages(r).get(rendered_content__contains=data_stream_id)
-            return mention_message.content
-
-        assert_realm_values(get_stream_mention)
-
-        def get_user_group_mention(r: Realm) -> Set[Any]:
-            user_group = UserGroup.objects.get(realm=r, name="hamletcharacters")
-            data_usergroup_id = f'data-user-group-id="{user_group.id}"'
-            mention_message = get_stream_messages(r).get(
-                rendered_content__contains=data_usergroup_id
-            )
-            return mention_message.content
-
-        assert_realm_values(get_user_group_mention)
-
-        def get_userpresence_timestamp(r: Realm) -> Set[Any]:
-            # It should be sufficient to compare UserPresence timestamps to verify
-            # they got exported/imported correctly.
-            return set(UserPresence.objects.filter(realm=r).values_list("timestamp", flat=True))
-
-        assert_realm_values(get_userpresence_timestamp)
-
-        def get_realm_user_default_values(r: Realm) -> Dict[str, Any]:
-            realm_user_default = RealmUserDefault.objects.get(realm=r)
-            return {
-                "default_language": realm_user_default.default_language,
-                "twenty_four_hour_time": realm_user_default.twenty_four_hour_time,
-            }
-
-        assert_realm_values(get_realm_user_default_values)
 
         # test to highlight that bs4 which we use to do data-**id
         # replacements modifies the HTML sometimes. eg replacing <br>
@@ -1143,6 +909,266 @@ class ImportExportTest(ZulipTestCase):
         # Verify that we've actually tested something meaningful instead of a blind import
         # with is_user_active=True used for everything.
         self.assertTrue(Subscription.objects.filter(is_user_active=False).exists())
+
+    def get_realm_getters(self) -> List[Callable[[Realm], Any]]:
+        names = set()
+        getters: List[Callable[[Realm], Any]] = []
+
+        def getter(f: Callable[[Realm], Any]) -> Callable[[Realm], Any]:
+            getters.append(f)
+            assert f.__name__.startswith("get_")
+
+            # Avoid dups
+            assert f.__name__ not in names
+            names.add(f.__name__)
+            return f
+
+        @getter
+        def get_admin_bot_emails(r: Realm) -> Set[str]:
+            return {user.email for user in r.get_admin_users_and_bots()}
+
+        @getter
+        def get_active_emails(r: Realm) -> Set[str]:
+            return {user.email for user in r.get_active_users()}
+
+        @getter
+        def get_active_stream_names(r: Realm) -> Set[str]:
+            return {stream.name for stream in get_active_streams(r)}
+
+        # test recipients
+        def get_recipient_stream(r: Realm) -> Recipient:
+            return Stream.objects.get(name="Verona", realm=r).recipient
+
+        def get_recipient_user(r: Realm) -> Recipient:
+            return UserProfile.objects.get(full_name="Iago", realm=r).recipient
+
+        @getter
+        def get_stream_recipient_type(r: Realm) -> int:
+            return get_recipient_stream(r).type
+
+        @getter
+        def get_user_recipient_type(r: Realm) -> int:
+            return get_recipient_user(r).type
+
+        # test subscription
+        def get_subscribers(recipient: Recipient) -> Set[str]:
+            subscriptions = Subscription.objects.filter(recipient=recipient)
+            users = {sub.user_profile.email for sub in subscriptions}
+            return users
+
+        @getter
+        def get_stream_subscribers(r: Realm) -> Set[str]:
+            return get_subscribers(get_recipient_stream(r))
+
+        @getter
+        def get_user_subscribers(r: Realm) -> Set[str]:
+            return get_subscribers(get_recipient_user(r))
+
+        # test custom profile fields
+        @getter
+        def get_custom_profile_field_names(r: Realm) -> Set[str]:
+            custom_profile_fields = CustomProfileField.objects.filter(realm=r)
+            custom_profile_field_names = {field.name for field in custom_profile_fields}
+            return custom_profile_field_names
+
+        @getter
+        def get_custom_profile_with_field_type_user(
+            r: Realm,
+        ) -> Tuple[Set[Any], Set[Any], Set[FrozenSet[str]]]:
+            fields = CustomProfileField.objects.filter(field_type=CustomProfileField.USER, realm=r)
+
+            def get_email(user_id: int) -> str:
+                return UserProfile.objects.get(id=user_id).email
+
+            def get_email_from_value(field_value: CustomProfileFieldValue) -> Set[str]:
+                user_id_list = orjson.loads(field_value.value)
+                return {get_email(user_id) for user_id in user_id_list}
+
+            def custom_profile_field_values_for(
+                fields: List[CustomProfileField],
+            ) -> Set[FrozenSet[str]]:
+                user_emails: Set[FrozenSet[str]] = set()
+                for field in fields:
+                    values = CustomProfileFieldValue.objects.filter(field=field)
+                    for value in values:
+                        user_emails.add(frozenset(get_email_from_value(value)))
+                return user_emails
+
+            field_names, field_hints = (set() for i in range(2))
+            for field in fields:
+                field_names.add(field.name)
+                field_hints.add(field.hint)
+
+            return (field_hints, field_names, custom_profile_field_values_for(fields))
+
+        # test realmauditlog
+        @getter
+        def get_realm_audit_log_event_type(r: Realm) -> Set[str]:
+            realmauditlogs = RealmAuditLog.objects.filter(realm=r).exclude(
+                event_type__in=[RealmAuditLog.REALM_PLAN_TYPE_CHANGED, RealmAuditLog.STREAM_CREATED]
+            )
+            realmauditlog_event_type = {log.event_type for log in realmauditlogs}
+            return realmauditlog_event_type
+
+        @getter
+        def get_huddle_message(r: Realm) -> str:
+            huddle_hash = self.get_huddle_hashes(r)
+            huddle_id = Huddle.objects.get(huddle_hash=huddle_hash).id
+            huddle_recipient = Recipient.objects.get(type_id=huddle_id, type=3)
+            huddle_message = Message.objects.get(recipient=huddle_recipient)
+            self.assertEqual(huddle_message.content, "test huddle message")
+            return huddle_message.content
+
+        @getter
+        def get_alertwords(r: Realm) -> Set[str]:
+            return {rec.word for rec in AlertWord.objects.filter(realm_id=r.id)}
+
+        @getter
+        def get_realm_emoji_names(r: Realm) -> Set[str]:
+            names = {rec.name for rec in RealmEmoji.objects.filter(realm_id=r.id)}
+            assert "hawaii" in names
+            return names
+
+        @getter
+        def get_realm_user_statuses(r: Realm) -> Set[Tuple[str, str, int, str]]:
+            cordelia = self.example_user("cordelia")
+            tups = {
+                (rec.user_profile.full_name, rec.emoji_name, rec.status, rec.status_text)
+                for rec in UserStatus.objects.filter(user_profile__realm_id=r.id)
+            }
+            assert (cordelia.full_name, "hawaii", UserStatus.AWAY, "in Hawaii") in tups
+            return tups
+
+        @getter
+        def get_realm_emoji_reactions(r: Realm) -> Set[Tuple[str, str]]:
+            cordelia = self.example_user("cordelia")
+            tups = {
+                (rec.emoji_name, rec.user_profile.full_name)
+                for rec in Reaction.objects.filter(
+                    user_profile__realm_id=r.id, reaction_type=Reaction.REALM_EMOJI
+                )
+            }
+            self.assertEqual(tups, {("hawaii", cordelia.full_name)})
+            return tups
+
+        # test userhotspot
+        @getter
+        def get_user_hotspots(r: Realm) -> Set[str]:
+            user_id = self.get_user_id(r, "King Hamlet")
+            hotspots = UserHotspot.objects.filter(user_id=user_id)
+            user_hotspots = {hotspot.hotspot for hotspot in hotspots}
+            return user_hotspots
+
+        # test muted topics
+        @getter
+        def get_muted_topics(r: Realm) -> Set[str]:
+            user_profile_id = self.get_user_id(r, "King Hamlet")
+            muted_topics = UserTopic.objects.filter(
+                user_profile_id=user_profile_id, visibility_policy=UserTopic.MUTED
+            )
+            topic_names = {muted_topic.topic_name for muted_topic in muted_topics}
+            return topic_names
+
+        @getter
+        def get_muted_users(r: Realm) -> Set[Tuple[str, str, str]]:
+            mute_objects = MutedUser.objects.filter(user_profile__realm=r)
+            muter_tuples = {
+                (
+                    mute_object.user_profile.full_name,
+                    mute_object.muted_user.full_name,
+                    str(mute_object.date_muted),
+                )
+                for mute_object in mute_objects
+            }
+            return muter_tuples
+
+        @getter
+        def get_user_group_names(r: Realm) -> Set[str]:
+            return {group.name for group in UserGroup.objects.filter(realm=r)}
+
+        @getter
+        def get_user_membership(r: Realm) -> Set[str]:
+            usergroup = UserGroup.objects.get(realm=r, name="hamletcharacters")
+            usergroup_membership = UserGroupMembership.objects.filter(user_group=usergroup)
+            users = {membership.user_profile.email for membership in usergroup_membership}
+            return users
+
+        # test botstoragedata and botconfigdata
+        @getter
+        def get_botstoragedata(r: Realm) -> Dict[str, Any]:
+            bot_profile = UserProfile.objects.get(full_name="bot", realm=r)
+            bot_storage_data = BotStorageData.objects.get(bot_profile=bot_profile)
+            return {"key": bot_storage_data.key, "data": bot_storage_data.value}
+
+        @getter
+        def get_botconfigdata(r: Realm) -> Dict[str, Any]:
+            bot_profile = UserProfile.objects.get(full_name="bot", realm=r)
+            bot_config_data = BotConfigData.objects.get(bot_profile=bot_profile)
+            return {"key": bot_config_data.key, "data": bot_config_data.value}
+
+        # test messages
+        def get_stream_messages(r: Realm) -> Message:
+            recipient = get_recipient_stream(r)
+            messages = Message.objects.filter(recipient=recipient)
+            return messages
+
+        @getter
+        def get_stream_topics(r: Realm) -> Set[str]:
+            messages = get_stream_messages(r)
+            topics = {m.topic_name() for m in messages}
+            return topics
+
+        # test usermessages
+        @getter
+        def get_usermessages_user(r: Realm) -> Set[Any]:
+            messages = get_stream_messages(r).order_by("content")
+            usermessage = UserMessage.objects.filter(message=messages[0])
+            usermessage_user = {um.user_profile.email for um in usermessage}
+            return usermessage_user
+
+        # tests to make sure that various data-*-ids in rendered_content
+        # are replaced correctly with the values of newer realm.
+
+        @getter
+        def get_user_mention(r: Realm) -> Set[Any]:
+            mentioned_user = UserProfile.objects.get(
+                delivery_email=self.example_email("hamlet"), realm=r
+            )
+            data_user_id = f'data-user-id="{mentioned_user.id}"'
+            mention_message = get_stream_messages(r).get(rendered_content__contains=data_user_id)
+            return mention_message.content
+
+        @getter
+        def get_stream_mention(r: Realm) -> Set[Any]:
+            mentioned_stream = get_stream("Denmark", r)
+            data_stream_id = f'data-stream-id="{mentioned_stream.id}"'
+            mention_message = get_stream_messages(r).get(rendered_content__contains=data_stream_id)
+            return mention_message.content
+
+        @getter
+        def get_user_group_mention(r: Realm) -> Set[Any]:
+            user_group = UserGroup.objects.get(realm=r, name="hamletcharacters")
+            data_usergroup_id = f'data-user-group-id="{user_group.id}"'
+            mention_message = get_stream_messages(r).get(
+                rendered_content__contains=data_usergroup_id
+            )
+            return mention_message.content
+
+        @getter
+        def get_userpresence_timestamp(r: Realm) -> Set[Any]:
+            # It should be sufficient to compare UserPresence timestamps to verify
+            # they got exported/imported correctly.
+            return set(UserPresence.objects.filter(realm=r).values_list("timestamp", flat=True))
+
+        @getter
+        def get_realm_user_default_values(r: Realm) -> Dict[str, Any]:
+            realm_user_default = RealmUserDefault.objects.get(realm=r)
+            return {
+                "default_language": realm_user_default.default_language,
+                "twenty_four_hour_time": realm_user_default.twenty_four_hour_time,
+            }
+
+        return getters
 
     def test_import_realm_with_no_realm_user_default_table(self) -> None:
         original_realm = Realm.objects.get(string_id="zulip")
