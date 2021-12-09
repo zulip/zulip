@@ -28,6 +28,7 @@ from typing_extensions import TypedDict
 import zerver.lib.upload
 from analytics.models import RealmCount, StreamCount, UserCount
 from scripts.lib.zulip_tools import overwrite_symlink
+from zerver.decorator import cachify
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.upload import get_bucket
@@ -66,7 +67,6 @@ from zerver.models import (
     UserProfile,
     UserStatus,
     UserTopic,
-    get_display_recipient,
     get_realm,
     get_system_bot,
     get_user_profile_by_id,
@@ -2096,6 +2096,23 @@ def chunkify(lst: List[int], chunk_size: int) -> List[List[int]]:
 def export_messages_single_user(
     user_profile: UserProfile, *, output_dir: Path, reaction_message_ids: Set[int]
 ) -> None:
+    @cachify
+    def get_recipient(recipient_id: int) -> str:
+        recipient = Recipient.objects.get(id=recipient_id)
+
+        if recipient.type == Recipient.STREAM:
+            stream = Stream.objects.values("name").get(id=recipient.type_id)
+            return stream["name"]
+
+        user_names = (
+            UserProfile.objects.filter(
+                subscription__recipient_id=recipient.id,
+            )
+            .order_by("full_name")
+            .values_list("full_name", flat=True)
+        )
+
+        return ", ".join(user_names)
 
     messages_from_me = Message.objects.filter(sender=user_profile)
 
@@ -2130,7 +2147,7 @@ def export_messages_single_user(
             item["flags_mask"] = user_message.flags.mask
             # Add a few nice, human-readable details
             item["sending_client_name"] = user_message.message.sending_client.name
-            item["display_recipient"] = get_display_recipient(user_message.message.recipient)
+            item["recipient_name"] = get_recipient(user_message.message.recipient_id)
             message_chunk.append(item)
 
         message_filename = os.path.join(output_dir, f"messages-{dump_file_id:06}.json")

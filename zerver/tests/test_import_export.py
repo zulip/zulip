@@ -707,18 +707,23 @@ class ImportExportTest(ZulipTestCase):
         exported_messages_recipient = self.get_set(messages["zerver_message"], "recipient")
         self.assertIn(list(exported_messages_recipient)[0], exported_recipient_id)
 
-        excerpt = [(rec["id"], rec["content"]) for rec in messages["zerver_message"][-8:]]
+        huddle_name = "Cordelia, Lear's daughter, King Hamlet, Othello, the Moor of Venice"
+
+        excerpt = [
+            (rec["id"], rec["content"], rec["recipient_name"])
+            for rec in messages["zerver_message"][-8:]
+        ]
         self.assertEqual(
             excerpt,
             [
-                (smile_message_id, "SMILE!"),
-                (hi_stream_message_id, "hi stream"),
-                (hi_hamlet_message_id, "hi hamlet"),
-                (hi_peeps_message_id, "hi peeps"),
-                (bye_peeps_message_id, "bye peeps"),
-                (bye_hamlet_message_id, "bye hamlet"),
-                (hi_myself_message_id, "hi myself"),
-                (bye_stream_message_id, "bye stream"),
+                (smile_message_id, "SMILE!", "Denmark"),
+                (hi_stream_message_id, "hi stream", "Denmark"),
+                (hi_hamlet_message_id, "hi hamlet", hamlet.full_name),
+                (hi_peeps_message_id, "hi peeps", huddle_name),
+                (bye_peeps_message_id, "bye peeps", huddle_name),
+                (bye_hamlet_message_id, "bye hamlet", hamlet.full_name),
+                (hi_myself_message_id, "hi myself", cordelia.full_name),
+                (bye_stream_message_id, "bye stream", "Denmark"),
             ],
         )
 
