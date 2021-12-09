@@ -58,6 +58,115 @@ function test(label, f) {
     });
 }
 
+test("msg_moved_var", () => {
+    // This is a test to verify that when the stream or topic is changed
+    // (and the content is not), the message says "MOVED" rather than "EDITED."
+    // See the end of the test for the list of cases verified.
+
+    function build_message_context(message = {}, message_context = {}) {
+        message_context = {
+            ...message_context,
+        };
+        message_context.msg = {
+            last_edit_timestamp: (next_timestamp += 1),
+            ...message,
+        };
+        return message_context;
+    }
+
+    function build_message_group(messages) {
+        return {message_containers: messages};
+    }
+
+    function build_list(message_groups) {
+        const list = new MessageListView(undefined, undefined, true);
+        list._message_groups = message_groups;
+        return list;
+    }
+
+    function assert_moved_true(message_container) {
+        assert.equal(message_container.moved, true);
+    }
+    function assert_moved_false(message_container) {
+        assert.equal(message_container.moved, false);
+    }
+
+    (function test_msg_moved_var() {
+        const messages = [
+            // no edits: Not moved.
+            build_message_context(),
+            // stream changed: Move
+            build_message_context({
+                edit_history: [{prev_stream: "test_stream", timestamp: 1000, user_id: 1}],
+            }),
+            // topic changed: Move
+            build_message_context({
+                edit_history: [{prev_subject: "test_topic", timestamp: 1000, user_id: 1}],
+            }),
+            // content edited: Edit
+            build_message_context({
+                edit_history: [{prev_content: "test_content", timestamp: 1000, user_id: 1}],
+            }),
+            // stream and topic edited: Move
+            build_message_context({
+                edit_history: [
+                    {prev_stream: "test_stream", timestamp: 1000, user_id: 1},
+                    {prev_topic: "test_topic", timestamp: 1000, user_id: 1},
+                ],
+            }),
+            // topic and content changed: Edit
+            build_message_context({
+                edit_history: [
+                    {prev_topic: "test_topic", timestamp: 1000, user_id: 1},
+                    {prev_content: "test_content", timestamp: 1001, user_id: 1},
+                ],
+            }),
+            // stream and content changed: Edit
+            build_message_context({
+                edit_history: [
+                    {prev_content: "test_content", timestamp: 1000, user_id: 1},
+                    {prev_stream: "test_stream", timestamp: 1001, user_id: 1},
+                ],
+            }),
+            // topic, stream, and content changed: Edit
+            build_message_context({
+                edit_history: [
+                    {prev_topic: "test_topic", timestamp: 1000, user_id: 1},
+                    {prev_stream: "test_stream", timestamp: 1001, user_id: 1},
+                    {prev_content: "test_content", timestamp: 1002, user_id: 1},
+                ],
+            }),
+        ];
+
+        const message_group = build_message_group(messages);
+        const list = build_list([message_group]);
+
+        for (const message_container of messages) {
+            list._maybe_format_me_message(message_container);
+            list._add_msg_edited_vars(message_container);
+        }
+
+        const result = list._message_groups[0].message_containers;
+
+        // no edits: false
+        assert_moved_false(result[0]);
+        // stream changed: true
+        assert_moved_true(result[1]);
+        // topic changed: true
+        assert_moved_true(result[2]);
+        // content edited: false
+        assert_moved_false(result[3]);
+        // stream and topic edited: true
+        assert_moved_true(result[4]);
+        // topic and content changed: false
+        assert_moved_false(result[5]);
+        // stream and content changed: false
+        assert_moved_false(result[6]);
+        // topic, stream, and content changed: false
+        assert_moved_false(result[7]);
+    })();
+});
+
 test("msg_edited_vars", () => {
     // This is a test to verify that only one of the three bools,
     // `edited_in_left_col`, `edited_alongside_sender`, `edited_status_msg`

@@ -13,6 +13,7 @@ import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
+import {get_keydown_hotkey} from "./hotkey";
 import {$t} from "./i18n";
 import * as message_store from "./message_store";
 import * as muted_users from "./muted_users";
@@ -786,13 +787,66 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         dateFormat: "Z",
         formatDate: (date) => formatISO(date),
         disableMobile: true,
+        onKeyDown: (selectedDates, dateStr, instance, event) => {
+            const hotkey = get_keydown_hotkey(event);
+
+            if (["tab", "shift_tab"].includes(hotkey.name)) {
+                const elems = [
+                    instance.selectedDateElem,
+                    instance.hourElement,
+                    instance.minuteElement,
+                    instance.amPM,
+                    $(".flatpickr-confirm")[0],
+                ];
+                const i = elems.indexOf(event.target);
+                const n = elems.length;
+                const remain = (i + (event.shiftKey ? -1 : 1)) % n;
+                const target = elems[Math.floor(remain >= 0 ? remain : remain + n)];
+                event.preventDefault();
+                event.stopPropagation();
+                target.focus();
+            }
+
+            event.stopPropagation();
+        },
         ...options,
     });
 
     const container = $($(instance.innerContainer).parent());
-    container.on("click", ".flatpickr-calendar", (e) => {
+
+    container.on("keydown", (e) => {
+        const hotkey = get_keydown_hotkey(e);
+
+        if (!hotkey) {
+            return false;
+        }
+
+        if (hotkey.name === "enter") {
+            if (e.target.classList[0] === "flatpickr-day") {
+                return true; // use flatpickr default implementation
+            }
+            $(element).toggleClass("has_popover");
+            container.find(".flatpickr-confirm").trigger("click");
+        }
+
+        if (hotkey.name === "escape") {
+            $(element).toggleClass("has_popover");
+            instance.close();
+            instance.destroy();
+        }
+
+        if (["tab", "shift_tab"].includes(hotkey.name)) {
+            return true; // use flatpickr default implementation
+        }
+
+        if (["right_arrow", "up_arrow", "left_arrow", "down_arrow"].includes(hotkey.name)) {
+            return true; // use flatpickr default implementation
+        }
+
         e.stopPropagation();
         e.preventDefault();
+
+        return true;
     });
 
     container.on("click", ".flatpickr-confirm", () => {
@@ -801,7 +855,7 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         instance.destroy();
     });
     instance.open();
-    container.find(".flatpickr-monthDropdown-months").trigger("focus");
+    instance.selectedDateElem.focus();
 
     return instance;
 }

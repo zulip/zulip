@@ -702,6 +702,10 @@ nav {
 .portico-landing.hello {
     background-color: transparent;
     color: hsl(219, 23%, 33%);
+
+    .hero-buttons {
+        margin-top: 40px;
+    }
 }
 
 .portico-landing.hello .hero {
@@ -2112,10 +2116,14 @@ nav {
 .portico-landing.hello .call-to-action-bottom {
     position: relative;
     padding: 50px 100px 0;
+
+    @media (width <= 768px) {
+        padding: 50px 10px 0;
+    }
     margin-top: 0;
 }
 
-.portico-landing.hello .call-to-action-bottom .button {
+.portico-landing.hello .call-to-action-bottom .styled-button {
     display: table;
     margin: 20px auto 0;
     padding: 10px 20px;
@@ -2331,6 +2339,10 @@ nav {
 
 .portico-landing.why-page .hero {
     padding: 200px 50px 100px;
+
+    @media (width < 900px) {
+        padding: 200px 0 100px;
+    }
 
     &.empty-hero {
         padding: 50px 50px 70px;
@@ -4531,4 +4543,66 @@ nav {
 
 .mirror-image {
     transform: scaleX(-1);
+}
+
+.why-zulip {
+    .discounts-section {
+        margin: 30px;
+
+        h1 {
+            font-weight: 700 !important;
+            font-size: 26px !important;
+        }
+    }
+}
+
+.portico-landing.why-page .hero.why-zulip {
+    padding-bottom: 120px;
+
+    .bg-dimmer {
+        background-color: hsla(224, 52%, 12%, 0.85);
+    }
+
+    .padded-content {
+        padding-top: 0;
+        padding-bottom: 10px;
+    }
+
+    @media (width <= 768px) {
+        .register-buttons {
+            display: none;
+        }
+    }
+
+    .discounts-section .register-buttons a {
+        color: hsl(169, 71%, 64%);
+
+        &:hover {
+            color: hsl(0, 0%, 100%);
+        }
+    }
+}
+
+.why-zulip,
+.hello {
+    .register-buttons {
+        max-width: 800px;
+        margin: auto;
+        margin-top: 30px;
+
+        a {
+            min-height: 40px;
+            padding: 7px 0;
+        }
+    }
+
+    @media (width <= 768px) {
+        .register-buttons {
+            a {
+                margin: 10px calc(5vw - 10px);
+                width: clamp(130px, 40vw, 200px);
+                font-size: 13px;
+            }
+        }
+    }
 }

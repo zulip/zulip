@@ -13,7 +13,7 @@ import os
 import shutil
 import subprocess
 import tempfile
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 import orjson
 from django.apps import apps
@@ -23,6 +23,7 @@ from django.forms.models import model_to_dict
 from django.utils.timezone import is_naive as timezone_is_naive
 from django.utils.timezone import make_aware as timezone_make_aware
 from mypy_boto3_s3.service_resource import Object
+from typing_extensions import TypedDict
 
 import zerver.lib.upload
 from analytics.models import RealmCount, StreamCount, UserCount
@@ -84,11 +85,12 @@ SourceFilter = Callable[[Record], bool]
 
 CustomFetch = Callable[[TableData, Context], None]
 
-# The keys of our MessageOutput variables are normally
-# List[Record], but when we write partials, we can get
-# lists of integers or a single integer.
-# TODO: This could maybe be improved using TypedDict?
-MessageOutput = Dict[str, Union[List[Record], List[int], int]]
+
+class MessagePartial(TypedDict):
+    zerver_message: List[Record]
+    zerver_userprofile_ids: List[int]
+    realm_id: int
+
 
 MESSAGE_BATCH_CHUNK_SIZE = 1000
 
@@ -349,6 +351,16 @@ def sanity_check_output(data: TableData) -> None:
 
 
 def write_data_to_file(output_file: Path, data: Any) -> None:
+    """
+    IMPORTANT: You generally don't want to call this directly.
+
+    Instead use one of the higher level helpers:
+
+        write_table_data
+        write_records_json_file
+
+    The one place we call this directly is for message partials.
+    """
     with open(output_file, "wb") as f:
         # Because we don't pass a default handler, OPT_PASSTHROUGH_DATETIME
         # actually causes orjson to raise a TypeError on datetime objects. This
@@ -356,6 +368,7 @@ def write_data_to_file(output_file: Path, data: Any) -> None:
         # post-processed them to serialize to UNIX timestamps rather than ISO
         # 8601 strings for historical reasons.
         f.write(orjson.dumps(data, option=orjson.OPT_INDENT_2 | orjson.OPT_PASSTHROUGH_DATETIME))
+    logging.info("Finished writing %s", output_file)
 
 
 def write_table_data(output_file: str, data: Dict[str, Any]) -> None:
@@ -386,6 +399,7 @@ def write_records_json_file(output_dir: str, records: List[Dict[str, Any]]) -> N
         # For legacy reasons we allow datetime objects here, unlike
         # write_data_to_file.
         f.write(orjson.dumps(records, option=orjson.OPT_INDENT_2))
+    logging.info("Finished writing %s", output_file)
 
 
 def make_raw(query: Any, exclude: Optional[List[Field]] = None) -> List[Record]:
@@ -1142,24 +1156,28 @@ def export_usermessages_batch(
     """As part of the system for doing parallel exports, this runs on one
     batch of Message objects and adds the corresponding UserMessage
     objects. (This is called by the export_usermessage_batch
-    management command)."""
+    management command).
+
+    See write_message_partial_for_query for more context."""
+    assert input_path.endswith(".partial") or input_path.endswith(".locked")
+    assert output_path.endswith(".json")
+
     with open(input_path, "rb") as input_file:
-        output = orjson.loads(input_file.read())
-    message_ids = {item["id"] for item in output["zerver_message"]}
-    user_profile_ids = set(output["zerver_userprofile_ids"])
-    del output["zerver_userprofile_ids"]
-    realm = Realm.objects.get(id=output["realm_id"])
-    del output["realm_id"]
-    output["zerver_usermessage"] = fetch_usermessages(
+        input_data: MessagePartial = orjson.loads(input_file.read())
+
+    message_ids = {item["id"] for item in input_data["zerver_message"]}
+    user_profile_ids = set(input_data["zerver_userprofile_ids"])
+    realm = Realm.objects.get(id=input_data["realm_id"])
+    zerver_usermessage_data = fetch_usermessages(
         realm, message_ids, user_profile_ids, output_path, consent_message_id
     )
-    write_message_export(output_path, output)
+
+    output_data: TableData = dict(
+        zerver_message=input_data["zerver_message"],
+        zerver_usermessage=zerver_usermessage_data,
+    )
+    write_table_data(output_path, output_data)
     os.unlink(input_path)
-
-
-def write_message_export(message_filename: Path, output: MessageOutput) -> None:
-    write_data_to_file(output_file=message_filename, data=output)
-    logging.info("Dumped to %s", message_filename)
 
 
 def export_partial_message_files(
@@ -1321,13 +1339,14 @@ def write_message_partial_for_query(
         # Build up our output for the .partial file, which needs
         # a list of user_profile_ids to search for (as well as
         # the realm id).
-        output: MessageOutput = {}
-        output["zerver_message"] = table_data["zerver_message"]
-        output["zerver_userprofile_ids"] = list(user_profile_ids)
-        output["realm_id"] = realm.id
+        output: MessagePartial = dict(
+            zerver_message=table_data["zerver_message"],
+            zerver_userprofile_ids=list(user_profile_ids),
+            realm_id=realm.id,
+        )
 
         # And write the data.
-        write_message_export(message_filename, output)
+        write_data_to_file(message_filename, output)
         min_id = max(message_ids)
         dump_file_id += 1
 
@@ -1836,7 +1855,6 @@ def do_export_realm(
     # Write realm data
     export_file = os.path.join(output_dir, "realm.json")
     write_table_data(output_file=export_file, data=response)
-    logging.info("Writing realm data to %s", export_file)
 
     # Write analytics data
     export_analytics_tables(realm=realm, output_dir=output_dir)
@@ -1869,7 +1887,6 @@ def export_attachment_table(realm: Realm, output_dir: Path, message_ids: Set[int
     response: TableData = {}
     fetch_attachment_data(response=response, realm_id=realm.id, message_ids=message_ids)
     output_file = os.path.join(output_dir, "attachment.json")
-    logging.info("Writing attachment table data to %s", output_file)
     write_table_data(output_file=output_file, data=response)
 
 
@@ -1927,6 +1944,7 @@ def do_export_user(user_profile: UserProfile, output_dir: Path) -> None:
     export_single_user(user_profile, response)
     export_file = os.path.join(output_dir, "user.json")
     write_table_data(output_file=export_file, data=response)
+
     logging.info("Exporting messages")
     export_messages_single_user(user_profile, output_dir)
 
@@ -2044,9 +2062,8 @@ def export_messages_single_user(
 
         output = {"zerver_message": message_chunk}
         floatify_datetime_fields(output, "zerver_message")
-        message_output: MessageOutput = dict(output)
 
-        write_message_export(message_filename, message_output)
+        write_table_data(message_filename, output)
         min_id = max(user_message_ids)
         dump_file_id += 1
 
@@ -2054,8 +2071,7 @@ def export_messages_single_user(
 def export_analytics_tables(realm: Realm, output_dir: Path) -> None:
     response: TableData = {}
 
-    export_file = os.path.join(output_dir, "analytics.json")
-    logging.info("Writing analytics table data to %s", (export_file))
+    logging.info("Fetching analytics table data")
     config = get_analytics_config()
     export_from_config(
         response=response,
@@ -2069,6 +2085,7 @@ def export_analytics_tables(realm: Realm, output_dir: Path) -> None:
     # before writing to disk.
     del response["zerver_realm"]
 
+    export_file = os.path.join(output_dir, "analytics.json")
     write_table_data(output_file=export_file, data=response)
 
 
