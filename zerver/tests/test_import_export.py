@@ -32,6 +32,7 @@ from zerver.lib.test_helpers import (
     create_s3_buckets,
     get_test_image_file,
     most_recent_message,
+    most_recent_usermessage,
     use_s3_backend,
 )
 from zerver.lib.topic_mutes import add_topic_mute
@@ -637,6 +638,10 @@ class ImportExportTest(ZulipTestCase):
     def test_export_single_user(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        polonius = self.example_user("polonius")
+
+        self.subscribe(cordelia, "Denmark")
 
         smile_message_id = self.send_stream_message(hamlet, "Denmark", "SMILE!")
 
@@ -649,6 +654,26 @@ class ImportExportTest(ZulipTestCase):
         )
         reaction = Reaction.objects.order_by("id").last()
         assert reaction
+
+        # Send a message that Cordelia should not have in the export.
+        self.send_stream_message(othello, "Denmark", "bogus")
+
+        hi_stream_message_id = self.send_stream_message(cordelia, "Denmark", "hi stream")
+        assert most_recent_usermessage(cordelia).message_id == hi_stream_message_id
+
+        # Try to fool the export again
+        self.send_personal_message(othello, hamlet)
+        self.send_huddle_message(othello, [hamlet, polonius])
+
+        hi_hamlet_message_id = self.send_personal_message(cordelia, hamlet, "hi hamlet")
+
+        hi_peeps_message_id = self.send_huddle_message(cordelia, [hamlet, othello], "hi peeps")
+        bye_peeps_message_id = self.send_huddle_message(othello, [cordelia, hamlet], "bye peeps")
+
+        bye_hamlet_message_id = self.send_personal_message(cordelia, hamlet, "bye hamlet")
+
+        hi_myself_message_id = self.send_personal_message(cordelia, cordelia, "hi myself")
+        bye_stream_message_id = self.send_stream_message(cordelia, "Denmark", "bye stream")
 
         output_dir = self._make_output_dir()
         cordelia = self.example_user("cordelia")
@@ -681,6 +706,21 @@ class ImportExportTest(ZulipTestCase):
 
         exported_messages_recipient = self.get_set(messages["zerver_message"], "recipient")
         self.assertIn(list(exported_messages_recipient)[0], exported_recipient_id)
+
+        excerpt = [(rec["id"], rec["content"]) for rec in messages["zerver_message"][-8:]]
+        self.assertEqual(
+            excerpt,
+            [
+                (smile_message_id, "SMILE!"),
+                (hi_stream_message_id, "hi stream"),
+                (hi_hamlet_message_id, "hi hamlet"),
+                (hi_peeps_message_id, "hi peeps"),
+                (bye_peeps_message_id, "bye peeps"),
+                (bye_hamlet_message_id, "bye hamlet"),
+                (hi_myself_message_id, "hi myself"),
+                (bye_stream_message_id, "bye stream"),
+            ],
+        )
 
         (exported_reaction,) = user["zerver_reaction"]
         self.assertEqual(
