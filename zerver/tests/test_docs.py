@@ -164,7 +164,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/case-studies/rust/", "Rust programming language")
         self._test("/case-studies/lean/", "Lean theorem prover")
         self._test("/for/research/", "for research")
-        self._test("/for/companies/", "Communication efficiency represents")
+        self._test("/for/business/", "Communication efficiency represents")
         self._test("/for/communities/", "Zulip for communities")
         self._test("/security/", "TLS encryption")
         self._test("/attribution/", "Attributions")
@@ -188,6 +188,9 @@ class DocPageTest(ZulipTestCase):
         result = self.client_get("/developer-community/")
         self.assertEqual(result.status_code, 301)
         self.assertIn("development-community", result["Location"])
+
+        result = self.client_get("/for/companies/", follow=True)
+        self.assert_in_success_response(["Communication efficiency represents"], result)
 
     def test_portico_pages_open_graph_metadata(self) -> None:
         # Why Zulip

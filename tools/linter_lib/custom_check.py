@@ -547,7 +547,7 @@ html_rules: List["Rule"] = [
         "exclude": {
             "templates/zerver/email.html",
             "zerver/tests/fixtures/email",
-            "templates/zerver/for-companies.html",
+            "templates/zerver/for-business.html",
             "templates/corporate/support_request.html",
             "templates/corporate/support_request_thanks.html",
             "templates/zerver/emails/support_request.html",
