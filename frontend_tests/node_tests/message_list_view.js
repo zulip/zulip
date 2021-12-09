@@ -160,7 +160,7 @@ test("msg_moved_var", () => {
         const result = list._message_groups[0].message_containers;
 
         // no edits: false
-        assert_moved_undefined(result[0]);
+        assert_moved_false(result[0]);
         // stream changed: true
         assert_moved_true(result[1]);
         // topic changed: true

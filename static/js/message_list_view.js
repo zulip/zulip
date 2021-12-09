@@ -200,6 +200,9 @@ export class MessageListView {
     _RENDER_THRESHOLD = 50;
 
     topic_or_stream_edited(message) {
+        if (message.moved) {
+            return true;
+        }
         let edited = false;
         if (message.edit_history !== undefined) {
             for (const msg of message.edit_history) {
@@ -258,7 +261,7 @@ export class MessageListView {
             message_container.edited_alongside_sender = include_sender && !status_message;
             message_container.edited_status_msg = include_sender && status_message;
 
-            message_container.moved = topic_edited || message_container.msg.moved;
+            message_container.moved = topic_edited;
         } else {
             delete message_container.last_edit_timestr;
             message_container.edited_in_left_col = false;
