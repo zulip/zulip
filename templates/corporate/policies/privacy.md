@@ -1,6 +1,6 @@
 # Privacy Policy
 
-Effective date: December 20, 2021
+Effective date: January 1, 2022
 
 At Kandra Labs, Inc. (“Zulip”), we take your privacy seriously. Please read this
 Privacy Policy to learn how we treat your personal data. **By using or accessing
@@ -295,7 +295,8 @@ would not identify you personally.
 
 As noted in the Terms of Service, we do not knowingly collect or solicit
 personally identifiable information from children under thirteen (13) years of
-age and children below the minimum age of consent in their country; if you are a
+age and children below the [minimum age of consent in their
+country](/policies/age-of-consent); if you are a
 child under the age of thirteen (13) or below the minimum age of consent in your
 country, please do not attempt to register for or otherwise use the Services or
 send us any personal information. If we learn we have collected personal
@@ -565,10 +566,10 @@ changes by placing a notice on the Zulip website, by sending you an email and/or
 by some other means. Please note that if you’ve opted not to receive legal
 notice emails from us (or you haven’t provided us with your email address),
 those legal notices will still govern your use of the Services, and you are
-still responsible for reading and understanding them. We will generally provide
-such notice about Privacy Policy changes at least 14 days in advance of the new
-Privacy Policy taking effect. If you use the Services after any changes to the
-Privacy Policy have come into effect, that means you agree to all of the
+still responsible for reading and understanding them. We will generally aim to
+provide such notice about Privacy Policy changes at least 14 days in advance of
+the new Privacy Policy taking effect. If you use the Services after any changes
+to the Privacy Policy have come into effect, that means you agree to all of the
 changes. Use of information we collect is subject to the Privacy Policy in
 effect at the time such information is collected.
 
