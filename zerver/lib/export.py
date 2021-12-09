@@ -1398,11 +1398,13 @@ def export_uploads_and_avatars(
             output_dir=emoji_output_dir,
             realm_emojis=realm_emojis,
         )
-        export_realm_icons(
-            realm,
-            local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR),
-            output_dir=realm_icons_output_dir,
-        )
+
+        if user is None:
+            export_realm_icons(
+                realm,
+                local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR),
+                output_dir=realm_icons_output_dir,
+            )
     else:
         user_ids = {user.id for user in users}
 
@@ -1451,16 +1453,17 @@ def export_uploads_and_avatars(
             valid_hashes=emoji_paths,
         )
 
-        export_files_from_s3(
-            realm,
-            handle_system_bots=handle_system_bots,
-            flavor="realm_icon_or_logo",
-            bucket_name=settings.S3_AVATAR_BUCKET,
-            object_prefix=f"{realm.id}/realm/",
-            output_dir=realm_icons_output_dir,
-            user_ids=user_ids,
-            valid_hashes=None,
-        )
+        if user is None:
+            export_files_from_s3(
+                realm,
+                handle_system_bots=handle_system_bots,
+                flavor="realm_icon_or_logo",
+                bucket_name=settings.S3_AVATAR_BUCKET,
+                object_prefix=f"{realm.id}/realm/",
+                output_dir=realm_icons_output_dir,
+                user_ids=user_ids,
+                valid_hashes=None,
+            )
 
 
 def _get_exported_s3_record(
