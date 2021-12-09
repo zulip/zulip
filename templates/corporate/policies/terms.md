@@ -1,6 +1,6 @@
 # Terms of Service
 
-Effective date: January 1, 2022
+**Effective date: January 1, 2022**
 
 Welcome to Zulip. Please read on to learn the rules and restrictions that govern
 your use of our website(s), products, services and applications (the
@@ -39,7 +39,7 @@ ARBITRATION.
 We are constantly trying to improve our Services, so these Terms may need to
 change along with our Services. We reserve the right to change the Terms at any
 time, but if we do, we will place a notice on our site located at
-<https://zulip.com/policies/terms/>, send you an email, and/or notify you by
+<https://zulip.com/policies/terms>, send you an email, and/or notify you by
 some other means. We will generally aim to provide such notice about changes to
 the Terms at least 14 days in advance of the new Terms taking effect.
 
@@ -55,7 +55,7 @@ us.
 ## What about my privacy?
 
 Zulip takes the privacy of its users very seriously; see our [Privacy
-Policy](https://zulip.com/privacy/) for details.
+Policy](/policies/privacy) for details.
 
 ### Children’s Online Privacy Protection Act
 
@@ -72,7 +72,8 @@ personal information from a child under thirteen (13) years of age or below the
 minimum age of consent in their country, we will delete that information as
 quickly as possible. If you believe that a child under the age of thirteen (13)
 or below the minimum age of consent in their country may have provided us
-personal information, please contact us at privacy@zulip.com.
+personal information, please contact us at
+[privacy@zulip.com]((mailto:privacy@zulip.com)).
 
 ## What are the basics of using Zulip?
 
@@ -314,9 +315,9 @@ discretion.
 
 Please contact Zulip's Designated Agent at the following address:
 
-Kandra Labs, Inc.
-Attn: DMCA Designated Agent
-450 Townsend Street
+Kandra Labs, Inc.<br/>
+Attn: DMCA Designated Agent<br/>
+450 Townsend Street<br/>
 San Francisco, CA 94107
 
 ## Who is responsible for what I see and do on the Services?
@@ -408,7 +409,7 @@ or costs may apply to your use of the Services.
    Payment Processor in addition to these Terms. Currently, we use Stripe, Inc.
    as our Payment Processor. You can access Stripe’s Terms of Service at
    <https://stripe.com/us/checkout/legal> and their Privacy Policy at
-   [<https://stripe.com/us/privacy>. We are not responsible for any error by, or
+   <https://stripe.com/us/privacy>. We are not responsible for any error by, or
    other acts or omissions of, the Payment Processor. By choosing to use Paid
    Services, you agree to pay us, through the Payment Processor, all charges at
    the prices then in effect for any use of such Paid Services in accordance

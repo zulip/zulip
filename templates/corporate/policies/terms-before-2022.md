@@ -1,8 +1,8 @@
 # Terms of Service for the Zulip service by Kandra Labs (prior to 2022)
 
-!!! warn
-    Starting January 1, 2022 these terms are replaced by the new [Zulip
-    Terms of Service](/policies/terms).
+!!! warn ""
+    Starting January 1, 2022, these terms are replaced by the updated
+    [Terms of Service](/policies/terms).
 
 ### Welcome to Zulip!
 

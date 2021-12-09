@@ -1,5 +1,9 @@
 # Privacy Policy
 
+!!! warn ""
+    Starting January 1, 2022, this policy is replaced by the updated
+    [Privacy Policy](/policies/privacy).
+
 As you use our services, we want you to be clear how we’re using
 information.
 

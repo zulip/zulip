@@ -1,6 +1,6 @@
 # Privacy Policy
 
-Effective date: January 1, 2022
+**Effective date: January 1, 2022**
 
 At Kandra Labs, Inc. (“Zulip”), we take your privacy seriously. Please read this
 Privacy Policy to learn how we treat your personal data. **By using or accessing
@@ -14,7 +14,7 @@ Any terms we use in this Policy without defining them have the definitions given
 to them in the Terms of Service.
 
 You may print a copy of this Privacy Policy by clicking
-[here](/privacy/print/).
+[here](/policies/privacy/print).
 
 ## Summary of our Privacy Policy
 
@@ -176,7 +176,7 @@ parties listed in this section. We do not sell Personal Data.
       be accessible to the general
       public](/help/stream-permissions), in addition to the
       stream’s current subscribers. For more information, please review our
-      [Terms of Service](/policies/terms/).
+      [Terms of Service](/policies/terms).
     - Zulip Organization Administrators may export all Zulip data for a Zulip
       Organization for archival/backup purposes, to import the data into a
       self-hosted Zulip server, or for any other purpose consistent with the

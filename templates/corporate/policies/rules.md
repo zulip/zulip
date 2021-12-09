@@ -1,6 +1,6 @@
 # Zulip Rules of Use
 
-**Last updated: December 7, 2021**
+**Last updated: December 13, 2021**
 
 Zulip is designed to help thoughtful people work on difficult problems together,
 whether they work from a shared office or from all over the world. Zulip offers
@@ -28,8 +28,8 @@ these rules have the meaning set forth in the [Terms of Service](/policies/terms
 You may not engage in, promote, organize, incite, induce, encourage, or support
 any of the following:
 
-- **Violence**, including **terrorism, violent extremism, animal cruelty,
-  suicide,** and **self-harm**.
+- **Violence, including terrorism, violent extremism, animal cruelty,
+  suicide, and self-harm**.
 - **Bullying, abuse, or harassment** of any individual or group of people. This
   includes threatening anyone or wishing or hoping that someone experiences
   physical harm.
@@ -124,17 +124,17 @@ chat services from a single client. Developers of third-party clients marketed
 as working with the Zulip Cloud service are required to follow these additional
 rules to protect our users:
 
-- Third-party clients must comply with global privacy laws, including GDPR and
+- **Third-party clients must comply with global privacy laws**, including GDPR and
   CCPA, in their processing of any user data, including telemetry and
   error-reporting data.
-- Use security best practices to protect Zulip users who use your client. For
+- **Use security best practices** to protect Zulip users who use your client. For
   example, if your client uses the Electron browser framework, you should
   implement the [Electron Security
   guidelines](https://www.electronjs.org/docs/latest/tutorial/security).
   Projects that are early in development and potentially not yet secure must be
   advertised as insecure and not intended for general use.
-- Do not sell data collected from Zulip users to third parties.
-- Do not sell third-party advertisements for display within a Zulip client.
+- **Do not sell data** collected from Zulip users to third parties.
+- **Do not sell third-party advertisements** for display within a Zulip client.
 
 If you have any questions about the Zulip Rules of Use or would like to report a
 violation, please contact us at [support@zulip.com](mailto:support@zulip.com).

@@ -1,9 +1,10 @@
 # Age of consent by country
 
-As indicated in our [Terms of Service](/policies/terms/), if you are a child
-under the age of thirteen (13) or below the minimum age of consent in your
-country, please do not attempt to register for or otherwise use the Services or
-send us any personal information.
+Our [Terms of Service](/policies/terms) state, in part:
+
+> “if you are a child under the age of thirteen (13) or below the minimum age of
+> consent in your country, please do not attempt to register for or otherwise
+> use the Services or send us any personal information”
 
 As a convenience, we provide a reference below of age of consent by country where it
 is higher than our minimal requirement of 13 years of age.
