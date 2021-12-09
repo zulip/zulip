@@ -98,9 +98,6 @@ test("msg_moved_var", () => {
     function assert_moved_false(message_container) {
         assert.equal(message_container.moved, false);
     }
-    function assert_moved_undefined(message_container) {
-        assert.equal(message_container.moved, undefined);
-    }
 
     (function test_msg_moved_var() {
         const messages = [
