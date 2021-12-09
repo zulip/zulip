@@ -208,7 +208,7 @@ export class MessageListView {
                     // not "MOVED"
                     return false;
                 }
-                if (msg.prev_subject || msg.prev_stream) {
+                if (util.get_edit_event_prev_topic(msg) || msg.prev_stream) {
                     edited = true;
                 }
             }

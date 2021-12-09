@@ -187,7 +187,7 @@ export function update_messages(events) {
         stream_archived = old_stream === undefined;
         if (topic_edited || stream_changed) {
             msg.moved = true;
-            
+
             const going_forward_change = ["change_later", "change_all"].includes(
                 event.propagate_mode,
             );
