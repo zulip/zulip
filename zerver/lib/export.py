@@ -1156,18 +1156,27 @@ def export_usermessages_batch(
     """As part of the system for doing parallel exports, this runs on one
     batch of Message objects and adds the corresponding UserMessage
     objects. (This is called by the export_usermessage_batch
-    management command)."""
+    management command).
+
+    See write_message_partial_for_query for more context."""
+    assert input_path.endswith(".partial") or input_path.endswith(".locked")
+    assert output_path.endswith(".json")
+
     with open(input_path, "rb") as input_file:
-        output = orjson.loads(input_file.read())
-    message_ids = {item["id"] for item in output["zerver_message"]}
-    user_profile_ids = set(output["zerver_userprofile_ids"])
-    del output["zerver_userprofile_ids"]
-    realm = Realm.objects.get(id=output["realm_id"])
-    del output["realm_id"]
-    output["zerver_usermessage"] = fetch_usermessages(
+        input_data: MessagePartial = orjson.loads(input_file.read())
+
+    message_ids = {item["id"] for item in input_data["zerver_message"]}
+    user_profile_ids = set(input_data["zerver_userprofile_ids"])
+    realm = Realm.objects.get(id=input_data["realm_id"])
+    zerver_usermessage_data = fetch_usermessages(
         realm, message_ids, user_profile_ids, output_path, consent_message_id
     )
-    write_table_data(output_path, output)
+
+    output_data: TableData = dict(
+        zerver_message=input_data["zerver_message"],
+        zerver_usermessage=zerver_usermessage_data,
+    )
+    write_table_data(output_path, output_data)
     os.unlink(input_path)
 
 
