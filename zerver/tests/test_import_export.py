@@ -640,6 +640,21 @@ class ImportExportTest(ZulipTestCase):
         self.assertIn(pm_d_msg_id, exported_msg_ids)
 
     def test_export_single_user(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        smile_message_id = self.send_stream_message(hamlet, "Denmark", "SMILE!")
+
+        check_add_reaction(
+            user_profile=cordelia,
+            message_id=smile_message_id,
+            emoji_name="smile",
+            emoji_code=None,
+            reaction_type=None,
+        )
+        reaction = Reaction.objects.order_by("id").last()
+        assert reaction
+
         output_dir = self._make_output_dir()
         cordelia = self.example_user("cordelia")
 
@@ -671,6 +686,19 @@ class ImportExportTest(ZulipTestCase):
 
         exported_messages_recipient = self.get_set(messages["zerver_message"], "recipient")
         self.assertIn(list(exported_messages_recipient)[0], exported_recipient_id)
+
+        (exported_reaction,) = user["zerver_reaction"]
+        self.assertEqual(
+            exported_reaction,
+            dict(
+                id=reaction.id,
+                user_profile=cordelia.id,
+                emoji_name="smile",
+                reaction_type="unicode_emoji",
+                emoji_code=reaction.emoji_code,
+                message=smile_message_id,
+            ),
+        )
 
     """
     Tests for import_realm

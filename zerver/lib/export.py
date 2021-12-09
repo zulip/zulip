@@ -2026,6 +2026,13 @@ def get_single_user_config() -> Config:
         custom_fetch=custom_fetch_realm_audit_logs_for_user,
     )
 
+    Config(
+        table="zerver_reaction",
+        model=Reaction,
+        normal_parent=user_profile_config,
+        include_rows="user_profile_id__in",
+    )
+
     add_user_profile_child_configs(user_profile_config)
 
     return user_profile_config
