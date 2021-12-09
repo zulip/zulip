@@ -13,7 +13,7 @@ import os
 import shutil
 import subprocess
 import tempfile
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 import orjson
 from django.apps import apps
@@ -23,6 +23,7 @@ from django.forms.models import model_to_dict
 from django.utils.timezone import is_naive as timezone_is_naive
 from django.utils.timezone import make_aware as timezone_make_aware
 from mypy_boto3_s3.service_resource import Object
+from typing_extensions import TypedDict
 
 import zerver.lib.upload
 from analytics.models import RealmCount, StreamCount, UserCount
@@ -84,11 +85,12 @@ SourceFilter = Callable[[Record], bool]
 
 CustomFetch = Callable[[TableData, Context], None]
 
-# The keys of our MessageOutput variables are normally
-# List[Record], but when we write partials, we can get
-# lists of integers or a single integer.
-# TODO: This could maybe be improved using TypedDict?
-MessageOutput = Dict[str, Union[List[Record], List[int], int]]
+
+class MessagePartial(TypedDict):
+    zerver_message: List[Record]
+    zerver_userprofile_ids: List[int]
+    realm_id: int
+
 
 MESSAGE_BATCH_CHUNK_SIZE = 1000
 
@@ -1328,10 +1330,11 @@ def write_message_partial_for_query(
         # Build up our output for the .partial file, which needs
         # a list of user_profile_ids to search for (as well as
         # the realm id).
-        output: MessageOutput = {}
-        output["zerver_message"] = table_data["zerver_message"]
-        output["zerver_userprofile_ids"] = list(user_profile_ids)
-        output["realm_id"] = realm.id
+        output: MessagePartial = dict(
+            zerver_message=table_data["zerver_message"],
+            zerver_userprofile_ids=list(user_profile_ids),
+            realm_id=realm.id,
+        )
 
         # And write the data.
         write_data_to_file(message_filename, output)
