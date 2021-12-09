@@ -142,12 +142,7 @@ class ImportExportTest(ZulipTestCase):
         result["realm"] = read_file("realm.json")
         result["attachment"] = read_file("attachment.json")
         result["message"] = read_file("messages-000001.json")
-        try:
-            message = read_file("messages-000002.json")
-            result["message"]["zerver_usermessage"].extend(message["zerver_usermessage"])
-            result["message"]["zerver_message"].extend(message["zerver_message"])
-        except FileNotFoundError:
-            pass
+        # TODO: generate 1001+ test messages to exercise messages-000002.json
         result["uploads_dir"] = os.path.join(output_dir, "uploads")
         result["uploads_dir_records"] = read_file(os.path.join("uploads", "records.json"))
         result["emoji_dir"] = os.path.join(output_dir, "emoji")
