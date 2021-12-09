@@ -5,17 +5,15 @@ class zulip_ops::profile::grafana {
   include zulip::supervisor
 
   $version = '8.3.1'
-  zulip::sha256_tarball_to { 'grafana':
-    url     => "https://dl.grafana.com/oss/release/grafana-${version}.linux-${::architecture}.tar.gz",
-    sha256  => '097d85eb2ca6982becea8eccb72855ac11abf43e894af6a46d64bbc77922339b',
-    install => {
-      "grafana-${version}/" => "/srv/grafana-${version}/",
-    },
-  }
-  file { '/srv/grafana':
-    ensure  => 'link',
-    target  => "/srv/grafana-${version}/",
-    require => Zulip::Sha256_tarball_to['grafana'],
+  $dir = "/srv/zulip-grafana-${version}/"
+  $bin = "${dir}bin/grafana-server"
+
+  zulip::external_dep { 'grafana':
+    version        => $version,
+    url            => "https://dl.grafana.com/oss/release/grafana-${version}.linux-${::architecture}.tar.gz",
+    sha256         => '097d85eb2ca6982becea8eccb72855ac11abf43e894af6a46d64bbc77922339b',
+    tarball_prefix => "grafana-${version}/",
+    bin            => 'bin/grafana-server',
   }
 
   group { 'grafana':
@@ -27,7 +25,7 @@ class zulip_ops::profile::grafana {
     uid        => '1070',
     gid        => '1070',
     shell      => '/bin/bash',
-    home       => '/srv/grafana',
+    home       => $dir,
     managehome => false,
   }
   file { '/var/lib/grafana':
@@ -48,14 +46,14 @@ class zulip_ops::profile::grafana {
     ensure  => file,
     require => [
       Package[supervisor],
-      File['/srv/grafana'],
+      File[$bin],
       File['/var/lib/grafana'],
       File['/var/log/grafana'],
     ],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    source  => 'puppet:///modules/zulip_ops/supervisor/conf.d/grafana.conf',
+    content => template('zulip_ops/supervisor/conf.d/grafana.conf.erb'),
     notify  => Service[supervisor],
   }
 
