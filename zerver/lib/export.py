@@ -2038,21 +2038,42 @@ def get_single_user_config() -> Config:
     return user_profile_config
 
 
+def chunkify(lst: List[int], chunk_size: int) -> List[List[int]]:
+    # chunkify([1,2,3,4,5], 2) == [[1,2], [3,4], [5]]
+    result = []
+    i = 0
+    while True:
+        chunk = lst[i : i + chunk_size]
+        if len(chunk) == 0:
+            break
+        else:
+            result.append(chunk)
+            i += chunk_size
+
+    return result
+
+
 def export_messages_single_user(
     user_profile: UserProfile, output_dir: Path, chunk_size: int = MESSAGE_BATCH_CHUNK_SIZE
 ) -> None:
-    user_message_query = UserMessage.objects.filter(user_profile=user_profile).order_by("id")
-    min_id = -1
-    dump_file_id = 1
-    while True:
-        actual_query = user_message_query.select_related(
-            "message", "message__sending_client"
-        ).filter(id__gt=min_id)[0:chunk_size]
-        user_message_chunk = list(actual_query)
-        user_message_ids = {um.id for um in user_message_chunk}
 
-        if len(user_message_chunk) == 0:
-            break
+    # Do a slim query to find all message ids that pertain to us.
+    # TODO: be more selective about which message ids we export.
+    all_message_ids = (
+        UserMessage.objects.filter(user_profile=user_profile)
+        .values_list("message_id", flat=True)
+        .order_by("message_id")
+    )
+
+    dump_file_id = 1
+    for message_id_chunk in chunkify(all_message_ids, chunk_size):
+        fat_query = (
+            UserMessage.objects.select_related("message", "message__sending_client")
+            .filter(user_profile=user_profile, message_id__in=message_id_chunk)
+            .order_by("message_id")
+        )
+
+        user_message_chunk = list(fat_query)
 
         message_chunk = []
         for user_message in user_message_chunk:
@@ -2071,7 +2092,6 @@ def export_messages_single_user(
         floatify_datetime_fields(output, "zerver_message")
 
         write_table_data(message_filename, output)
-        min_id = max(user_message_ids)
         dump_file_id += 1
 
 
