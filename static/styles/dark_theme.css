@@ -484,6 +484,7 @@ body.dark-theme {
     .clear_search_button,
     .clear_search_button:focus,
     .clear_search_button:active,
+    .compose_close_button,
     .clear_search_button:disabled:hover,
     #user-groups .save-instructions,
     .close,

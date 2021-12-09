@@ -241,6 +241,10 @@
             opacity: 1;
         }
     }
+
+    .compose_close_button {
+        font-size: 22px;
+    }
 }
 
 .collapse_composebox_button,
