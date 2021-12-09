@@ -2038,6 +2038,43 @@ def get_single_user_config() -> Config:
     return user_profile_config
 
 
+def get_id_list_gently_from_database(*, base_query: Any, id_field: str) -> List[int]:
+    """
+    Use this function if you need a HUGE number of ids from
+    the database, and you don't mind a few extra trips.  Particularly
+    for exports, we don't really care about a little extra time
+    to finish the export--the much bigger concern is that we don't
+    want to overload our database all at once, nor do we want to
+    keep a whole bunch of Django objects around in memory.
+
+    So our general process is to call this function first, and then
+    we call chunkify to break our ids into small chunks for "fat query"
+    batches.
+
+    Even if you are not working at huge scale, this function can
+    also be used for the convenience of its API.
+    """
+    min_id = -1
+    all_ids = []
+    batch_size = 10000  # we are just getting ints
+
+    assert id_field.endswith("_id")
+
+    while True:
+        filter_args = {f"{id_field}__gt": min_id}
+        new_ids = list(
+            base_query.values_list(id_field, flat=True)
+            .filter(**filter_args)
+            .order_by(id_field)[:batch_size]
+        )
+        if len(new_ids) == 0:
+            break
+        all_ids += new_ids
+        min_id = new_ids[-1]
+
+    return all_ids
+
+
 def chunkify(lst: List[int], chunk_size: int) -> List[List[int]]:
     # chunkify([1,2,3,4,5], 2) == [[1,2], [3,4], [5]]
     result = []
@@ -2059,10 +2096,9 @@ def export_messages_single_user(
 
     # Do a slim query to find all message ids that pertain to us.
     # TODO: be more selective about which message ids we export.
-    all_message_ids = (
-        UserMessage.objects.filter(user_profile=user_profile)
-        .values_list("message_id", flat=True)
-        .order_by("message_id")
+    all_message_ids = get_id_list_gently_from_database(
+        base_query=UserMessage.objects.filter(user_profile=user_profile),
+        id_field="message_id",
     )
 
     dump_file_id = 1
