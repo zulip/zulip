@@ -1178,7 +1178,7 @@ class UserProfileTest(ZulipTestCase):
 
         UserHotspot.objects.filter(user=cordelia).delete()
         UserHotspot.objects.filter(user=iago).delete()
-        hotspots_completed = {"intro_reply", "intro_streams", "intro_topics"}
+        hotspots_completed = {"intro_streams", "intro_topics"}
         for hotspot in hotspots_completed:
             UserHotspot.objects.create(user=cordelia, hotspot=hotspot)
 

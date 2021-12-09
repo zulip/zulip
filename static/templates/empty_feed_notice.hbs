@@ -1,0 +1,23 @@
+<div class="empty_feed_notice">
+    <h4> {{ title }} </h4>
+    {{#if (or search_data.query_words search.topic_query search_data.stream_query)}}
+    <div>
+        {{#if search_data.has_stop_word}}{{#tr}}Some common words were excluded from your search.{{/tr}} <br/>{{/if}}{{#tr}}You searched for:{{/tr}}
+        {{#if search_data.stream_query}}
+        <span>stream: {{search_data.stream_query}}</span>
+        {{/if}}
+        {{#if search_data.topic_query}}
+        <span>topic: {{search_data.topic_query}}</span>
+        {{/if}}
+        {{#each search_data.query_words}}
+            {{#if is_stop_word}}
+            <del>{{query_word}}</del>
+            {{else}}
+            <span>{{query_word}}</span>
+            {{/if}}
+        {{/each}}
+    </div>
+    {{else}}
+    {{{ html }}}
+    {{/if}}
+</div>

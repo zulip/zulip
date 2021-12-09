@@ -1806,7 +1806,7 @@ class NormalActionsTest(BaseAction):
         self.user_profile.save(update_fields=["tutorial_status"])
 
         events = self.verify_action(
-            lambda: do_mark_hotspot_as_read(self.user_profile, "intro_reply")
+            lambda: do_mark_hotspot_as_read(self.user_profile, "intro_streams")
         )
         check_hotspots("events[0]", events[0])
 
@@ -2492,8 +2492,10 @@ class SubscribeActionTest(BaseAction):
         events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
         check_stream_update("events[0]", events[0])
 
-        action = lambda: do_change_stream_message_retention_days(stream, -1)
-        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=1)
+        action = lambda: do_change_stream_message_retention_days(
+            stream, self.example_user("hamlet"), -1
+        )
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
         check_stream_update("events[0]", events[0])
 
         # Subscribe to a totally new invite-only stream, so it's just Hamlet on it
