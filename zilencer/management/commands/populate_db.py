@@ -50,6 +50,7 @@ from zerver.models import (
     Realm,
     RealmAuditLog,
     RealmDomain,
+    RealmUserDefault,
     Recipient,
     Service,
     Stream,
@@ -328,6 +329,10 @@ class Command(BaseCommand):
             zulip_realm.notifications_stream.name = "Verona"
             zulip_realm.notifications_stream.description = "A city in Italy"
             zulip_realm.notifications_stream.save(update_fields=["name", "description"])
+
+            realm_user_default = RealmUserDefault.objects.get(realm=zulip_realm)
+            realm_user_default.enter_sends = True
+            realm_user_default.save()
 
             if options["test_suite"]:
                 mit_realm = do_create_realm(

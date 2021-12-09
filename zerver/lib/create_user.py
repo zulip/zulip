@@ -86,7 +86,6 @@ def create_user_profile(
     timezone: Optional[str],
     default_language: str = "en",
     tutorial_status: str = UserProfile.TUTORIAL_WAITING,
-    enter_sends: bool = False,
     force_id: Optional[int] = None,
     force_date_joined: Optional[datetime] = None,
 ) -> UserProfile:
@@ -115,7 +114,6 @@ def create_user_profile(
         tos_version=tos_version,
         timezone=timezone,
         tutorial_status=tutorial_status,
-        enter_sends=enter_sends,
         onboarding_steps=orjson.dumps([]).decode(),
         default_language=default_language,
         delivery_email=email,

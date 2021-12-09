@@ -5,7 +5,15 @@ from django.db.models import Model
 from zerver.lib.create_user import create_user_profile, get_display_email_address
 from zerver.lib.initial_password import initial_password
 from zerver.lib.streams import render_stream_description
-from zerver.models import Realm, RealmAuditLog, Recipient, Stream, Subscription, UserProfile
+from zerver.models import (
+    Realm,
+    RealmAuditLog,
+    RealmUserDefault,
+    Recipient,
+    Stream,
+    Subscription,
+    UserProfile,
+)
 
 
 def bulk_create_users(
@@ -24,6 +32,7 @@ def bulk_create_users(
         UserProfile.objects.filter(realm=realm).values_list("email", flat=True)
     )
     users = sorted(user_raw for user_raw in users_raw if user_raw[0] not in existing_users)
+    realm_user_default = RealmUserDefault.objects.get(realm=realm)
 
     # Now create user_profiles
     profiles_to_create: List[UserProfile] = []
@@ -40,8 +49,20 @@ def bulk_create_users(
             tos_version,
             timezone,
             tutorial_status=UserProfile.TUTORIAL_FINISHED,
-            enter_sends=True,
         )
+
+        if bot_type is None:
+            # This block simulates copy_default_settings from
+            # zerver/lib/create_user.py.
+            #
+            # We cannot use 'copy_default_settings' directly here
+            # because it calls '.save' after copying the settings, and
+            # we are bulk creating the objects here instead.
+            for settings_name in RealmUserDefault.property_types:
+                if settings_name in ["default_language", "enable_login_emails"]:
+                    continue
+                value = getattr(realm_user_default, settings_name)
+                setattr(profile, settings_name, value)
         profiles_to_create.append(profile)
 
     if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
