@@ -5,11 +5,11 @@ Welcome to the Zulip community!
 ## Community
 
 The
-[Zulip community server](https://zulip.com/developer-community/)
+[Zulip community server](https://zulip.com/development-community/)
 is the primary communication forum for the Zulip community. It is a good
 place to start whether you have a question, are a new contributor, are a new
 user, or anything else. Please review our
-[community norms](https://zulip.com/developer-community/#community-norms)
+[community norms](https://zulip.com/development-community/#community-norms)
 before posting. The Zulip community is also governed by a
 [code of conduct](https://zulip.readthedocs.io/en/latest/code-of-conduct.html).
 
@@ -53,7 +53,7 @@ no one gets it right the first time, and there are a lot of people available
 to help.
 
 - First, make an account on the
-  [Zulip community server](https://zulip.com/developer-community/),
+  [Zulip community server](https://zulip.com/development-community/),
   paying special attention to the community norms. If you'd like, introduce
   yourself in
   [#new members](https://chat.zulip.org/#narrow/stream/95-new-members), using
@@ -178,7 +178,7 @@ start with.
 - You're encouraged to ask questions on how to best implement or debug your
   changes -- the Zulip maintainers are excited to answer questions to help
   you stay unblocked and working efficiently. You can ask questions in the
-  [Zulip development community](https://zulip.com/developer-community/),
+  [Zulip development community](https://zulip.com/development-community/),
   or on the GitHub issue or pull request.
 - We encourage early pull requests for work in progress. Prefix the title of
   work in progress pull requests with `[WIP]`, and remove the prefix when
@@ -222,7 +222,7 @@ labels.
 - **Can I come up with my own feature idea and work on it?** We welcome
   suggestions of features or other improvements that you feel would be valuable. If you
   have a new feature you'd like to add, you can start a conversation [in our
-  development community](https://zulip.com/developer-community/#where-do-i-send-my-message)
+  development community](https://zulip.com/development-community/#where-do-i-send-my-message)
   explaining the feature idea and the problem that you're hoping to solve.
 
 ## What makes a great Zulip contributor?
@@ -235,7 +235,7 @@ experience, these are the best predictors of success:
   your current understanding, including what you've done or tried so far and where
   you got stuck. Post tracebacks or other error messages if appropriate. For
   more information, check out the ["Getting help" section of our community
-  guidelines](https://zulip.com/developer-community/#getting-help) and
+  guidelines](https://zulip.com/development-community/#getting-help) and
   [this essay][good-questions-blog] for some good advice.
 - Learning and practicing
   [Git commit discipline](https://zulip.readthedocs.io/en/latest/contributing/version-control.html#commit-discipline).
@@ -271,7 +271,7 @@ is, the best place to post issues is
 [#issues](https://chat.zulip.org/#narrow/stream/9-issues) (or
 [#mobile](https://chat.zulip.org/#narrow/stream/48-mobile) or
 [#desktop](https://chat.zulip.org/#narrow/stream/16-desktop)) on the
-[Zulip community server](https://zulip.com/developer-community/).
+[Zulip community server](https://zulip.com/development-community/).
 This allows us to interactively figure out what is going on, let you know if
 a similar issue has already been opened, and collect any other information
 we need. Choose a 2-4 word topic that describes the issue, explain the issue

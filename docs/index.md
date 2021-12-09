@@ -14,7 +14,7 @@ Welcome! Zulip's documentation is split into four parts:
 
 Zulip has well over 150,000 words of documentation. If you can't find
 what you're looking for, please [let us
-know](https://zulip.com/developer-community/)! Further information on
+know](https://zulip.com/development-community/)! Further information on
 the Zulip project and its features can be found at
 <https://zulip.com>.
 

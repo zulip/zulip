@@ -28,7 +28,7 @@ errors](#troubleshooting-and-common-errors). If that doesn't help,
 please visit [#provision
 help](https://chat.zulip.org/#narrow/stream/21-provision-help) in the
 [Zulip development community
-server](https://zulip.com/developer-community/) for real-time help or
+server](https://zulip.com/development-community/) for real-time help or
 [file an issue](https://github.com/zulip/zulip/issues).
 
 When reporting your issue, please include the following information:
@@ -306,7 +306,7 @@ documented in the
 [Troubleshooting and common errors](#troubleshooting-and-common-errors)
 section. If that doesn't help, please visit
 [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
-in the [Zulip development community server](https://zulip.com/developer-community/) for
+in the [Zulip development community server](https://zulip.com/development-community/) for
 real-time help.
 
 On Windows, you will see the message
@@ -449,7 +449,7 @@ After provisioning, you'll want to
 If you run into any trouble, [#provision
 help](https://chat.zulip.org/#narrow/stream/21-provision-help) in the
 [Zulip development community
-server](https://zulip.com/developer-community/) is a great place to ask for
+server](https://zulip.com/development-community/) is a great place to ask for
 help.
 
 #### Rebuilding the development environment
@@ -548,7 +548,7 @@ If these solutions aren't working for you or you encounter an issue not
 documented below, there are a few ways to get further help:
 
 - Ask in [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
-  in the [Zulip development community server](https://zulip.com/developer-community/).
+  in the [Zulip development community server](https://zulip.com/development-community/).
 - [File an issue](https://github.com/zulip/zulip/issues).
 
 When reporting your issue, please include the following information:
