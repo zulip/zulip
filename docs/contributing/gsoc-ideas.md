@@ -81,7 +81,7 @@ tasks that are great for first-time contributors. Use
 to get your Zulip development environment set up and to find your first issue. If you have any
 trouble, please speak up in
 [#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) on
-[the Zulip development community server](https://zulip.com/developer-community/)
+[the Zulip development community server](https://zulip.com/development-community/)
 (use your name as the topic).
 
 ## Application tips, and how to be a strong candidate
@@ -126,7 +126,7 @@ application deadline.
 
 We are more interested in candidates if we see them submitting good
 contributions to Zulip projects, helping other applicants on [GitHub](https://github.com/zulip/zulip)
-and on [chat.zulip.org](https://zulip.com/developer-community),
+and on [chat.zulip.org](https://zulip.com/development-community),
 learning from our suggestions, [trying to solve their own obstacles and
 then asking well-formed questions](https://www.mattringel.com/2013/09/30/you-must-try-and-then-you-must-ask/),
 and developing and sharing project ideas and project proposals which
@@ -147,14 +147,14 @@ providing everyone the personal help they need, and maintains balance
 between stream discussion and documentation. Becoming familiar and
 comfortable with this rhythm will be helpful to you as you interact
 with other developers on
-[chat.zulip.org](https://zulip.com/developer-community). It is always
+[chat.zulip.org](https://zulip.com/development-community). It is always
 better (and Zulip’s strong preference) to ask questions and have
 conversation through a public stream rather than a private message or
 an email. This benefits you by giving you faster response times and
 the benefit of many minds, as well as benefiting the community as
 other contributors learn from reading the conversation.
 
-- Stick to the [community norms](https://zulip.com/developer-community/).
+- Stick to the [community norms](https://zulip.com/development-community/).
 - Read these three blog posts
   - [Try, Then Ask](https://www.mattringel.com/2013/09/30/you-must-try-and-then-you-must-ask/)
   - [We Aren’t Just Making Code, We’re Making History](https://www.harihareswara.net/sumana/2016/10/12/0)
@@ -193,7 +193,7 @@ part on who is a good fit for the needs of each student as well as
 technical expertise as well as who has available time during the
 summer. You can reach us via
 [#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) on [the Zulip
-development community server](https://zulip.com/developer-community/),
+development community server](https://zulip.com/development-community/),
 (compose a new stream message with your name as the topic).
 
 Zulip operates under group mentorship. That means you should generally

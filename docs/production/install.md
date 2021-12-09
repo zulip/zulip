@@ -178,6 +178,6 @@ out! Please provide details like the full traceback from the bottom
 of `/var/log/zulip/errors.log` in your report (ideally in a [code
 block][code-block]).
 
-[chat-zulip-org]: https://zulip.com/developer-community/
+[chat-zulip-org]: https://zulip.com/development-community/
 [production-help]: https://chat.zulip.org/#narrow/stream/31-production-help
 [code-block]: https://zulip.com/help/code-blocks
