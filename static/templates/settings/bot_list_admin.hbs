@@ -4,6 +4,7 @@
     <input type="text" class="search" placeholder="{{t 'Filter bots' }}" aria-label="{{t 'Filter bots' }}"/>
     <div class="alert-notification" id="bot-field-status"></div>
     <div class="clear-float"></div>
+    <button class="add-a-new-bot-tab button rounded" {{#unless can_create_new_bots}}hide{{/unless}}>{{t "Add a new bot" }}</button>
     <div class="progressive-table-wrapper" data-simplebar>
         <table class="table table-condensed table-striped wrapped-table">
             <thead class="table-sticky-headers">

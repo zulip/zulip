@@ -714,4 +714,5 @@ export function set_up_humans() {
 export function set_up_bots() {
     section.bots.handle_events();
     section.bots.create_table();
+    settings_bots.setup_create_bot_handler("admin-bot-list");
 }

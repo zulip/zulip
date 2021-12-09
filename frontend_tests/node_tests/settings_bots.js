@@ -135,7 +135,10 @@ test("test tab clicks", ({override}) => {
 
     settings_bots.set_up();
 
-    test_create_bot_type_input_box_toggle(() => $("#create_bot_type").trigger("change"));
+    test_create_bot_type_input_box_toggle(() => {
+        $(`#${CSS.escape("bot-settings")} .add-a-new-bot-tab`).trigger("click");
+        $("#create_bot_type").trigger("change");
+    });
 
     function click_on_tab(tab_elem) {
         tab_elem.trigger("click");

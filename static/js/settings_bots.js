@@ -1,6 +1,7 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
 
+import render_add_a_new_bot_modal from "../templates/settings/add_a_new_bot_model.hbs";
 import render_bot_avatar_row from "../templates/settings/bot_avatar_row.hbs";
 import render_edit_bot from "../templates/settings/edit_bot.hbs";
 import render_settings_edit_embedded_bot_service from "../templates/settings/edit_embedded_bot_service.hbs";
@@ -217,14 +218,7 @@ export function update_bot_permissions_ui() {
 }
 
 export function set_up() {
-    $("#payload_url_inputbox").hide();
-    $("#create_payload_url").val("");
-    $("#service_name_list").hide();
-    $("#config_inputbox").hide();
-    const selected_embedded_bot = "converter";
-    $("#select_service_name").val(selected_embedded_bot); // TODO: Use 'select a bot'.
-    $("#config_inputbox").children().hide();
-    $(`[name*='${CSS.escape(selected_embedded_bot)}']`).show();
+    setup_create_bot_handler("bot-settings");
 
     $("#download_botserverrc").on("click", function () {
         const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
@@ -256,111 +250,8 @@ export function set_up() {
         "Please only use characters that are valid in an email address",
     );
 
-    const create_avatar_widget = avatar.build_bot_create_widget();
     const OUTGOING_WEBHOOK_BOT_TYPE = "3";
-    const GENERIC_BOT_TYPE = "1";
     const EMBEDDED_BOT_TYPE = "4";
-
-    const GENERIC_INTERFACE = "1";
-
-    $("#create_bot_form").validate({
-        errorClass: "text-error",
-        success() {
-            hide_errors();
-        },
-        submitHandler() {
-            const bot_type = $("#create_bot_type :selected").val();
-            const full_name = $("#create_bot_name").val();
-            const short_name =
-                $("#create_bot_short_name").val() || $("#create_bot_short_name").text();
-            const payload_url = $("#create_payload_url").val();
-            const interface_type = $("#create_interface_type").val();
-            const service_name = $("#select_service_name :selected").val();
-            const formData = new FormData();
-            const spinner = $(".create_bot_spinner");
-
-            formData.append("csrfmiddlewaretoken", csrf_token);
-            formData.append("bot_type", bot_type);
-            formData.append("full_name", full_name);
-            formData.append("short_name", short_name);
-
-            // If the selected bot_type is Outgoing webhook
-            if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
-                formData.append("payload_url", JSON.stringify(payload_url));
-                formData.append("interface_type", interface_type);
-            } else if (bot_type === EMBEDDED_BOT_TYPE) {
-                formData.append("service_name", service_name);
-                const config_data = {};
-                $(`#config_inputbox [name*='${CSS.escape(service_name)}'] input`).each(function () {
-                    config_data[$(this).attr("name")] = $(this).val();
-                });
-                formData.append("config_data", JSON.stringify(config_data));
-            }
-            for (const [i, file] of Array.prototype.entries.call(
-                $("#bot_avatar_file_input")[0].files,
-            )) {
-                formData.append("file-" + i, file);
-            }
-            loading.make_indicator(spinner, {text: $t({defaultMessage: "Creating bot"})});
-            channel.post({
-                url: "/json/bots",
-                data: formData,
-                cache: false,
-                processData: false,
-                contentType: false,
-                success() {
-                    hide_errors();
-                    $("#create_bot_name").val("");
-                    $("#create_bot_short_name").val("");
-                    $("#create_payload_url").val("");
-                    $("#payload_url_inputbox").hide();
-                    $("#config_inputbox").hide();
-                    $(`[name*='${CSS.escape(service_name)}'] input`).each(function () {
-                        $(this).val("");
-                    });
-                    $("#create_bot_type").val(GENERIC_BOT_TYPE);
-                    $("#select_service_name").val("converter"); // TODO: Later we can change this to hello bot or similar
-                    $("#service_name_list").hide();
-                    $("#create_bot_button").show();
-                    $("#create_interface_type").val(GENERIC_INTERFACE);
-                    create_avatar_widget.clear();
-                    focus_tab.active_bots_tab();
-                },
-                error(xhr) {
-                    $("#bot_table_error").text(JSON.parse(xhr.responseText).msg).show();
-                },
-                complete() {
-                    loading.destroy_indicator(spinner);
-                },
-            });
-        },
-    });
-
-    $("#create_bot_type").on("change", () => {
-        const bot_type = $("#create_bot_type :selected").val();
-        // For "generic bot" or "incoming webhook" both these fields need not be displayed.
-        $("#service_name_list").hide();
-        $("#select_service_name").removeClass("required");
-        $("#config_inputbox").hide();
-
-        $("#payload_url_inputbox").hide();
-        $("#create_payload_url").removeClass("required");
-        if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
-            $("#payload_url_inputbox").show();
-            $("#create_payload_url").addClass("required");
-        } else if (bot_type === EMBEDDED_BOT_TYPE) {
-            $("#service_name_list").show();
-            $("#select_service_name").addClass("required");
-            $("#select_service_name").trigger("change");
-            $("#config_inputbox").show();
-        }
-    });
-
-    $("#select_service_name").on("change", () => {
-        $("#config_inputbox").children().hide();
-        const selected_bot = $("#select_service_name :selected").val();
-        $(`[name*='${CSS.escape(selected_bot)}']`).show();
-    });
 
     $("#active_bots_list").on("click", "button.delete_bot", (e) => {
         const bot_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
@@ -567,5 +458,150 @@ export function set_up() {
         e.preventDefault();
         e.stopPropagation();
         focus_tab.inactive_bots_tab();
+    });
+}
+
+export function setup_create_bot_handler(section_id) {
+    $(`#${CSS.escape(section_id)} .add-a-new-bot-tab`).on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Add a new bot"}),
+            html_body: render_add_a_new_bot_modal({page_params}),
+            html_submit_button: $t_html({defaultMessage: "Create bot"}),
+            on_click: () => {
+                $("#create_bot_form").trigger("submit");
+            },
+            post_render: create_bot_post_render,
+            close_on_submit: true,
+            focus_submit_on_open: true,
+            help_link: "/help/add-a-bot-or-integration",
+            loading_spinner: true,
+        });
+
+        function create_bot_post_render() {
+            $("#payload_url_inputbox").hide();
+            $("#create_payload_url").val("");
+            $("#service_name_list").hide();
+            $("#config_inputbox").hide();
+            const selected_embedded_bot = "converter";
+            $("#select_service_name").val(selected_embedded_bot); // TODO: Use 'select a bot'.
+            $("#config_inputbox").children().hide();
+            $(`[name*='${CSS.escape(selected_embedded_bot)}']`).show();
+
+            const create_avatar_widget = avatar.build_bot_create_widget();
+            const OUTGOING_WEBHOOK_BOT_TYPE = "3";
+            const GENERIC_BOT_TYPE = "1";
+            const EMBEDDED_BOT_TYPE = "4";
+
+            const GENERIC_INTERFACE = "1";
+
+            $("#create_bot_form").validate({
+                errorClass: "text-error",
+                success() {
+                    hide_errors();
+                },
+                submitHandler() {
+                    const bot_type = $("#create_bot_type :selected").val();
+                    const full_name = $("#create_bot_name").val();
+                    const short_name =
+                        $("#create_bot_short_name").val() || $("#create_bot_short_name").text();
+                    const payload_url = $("#create_payload_url").val();
+                    const interface_type = $("#create_interface_type").val();
+                    const service_name = $("#select_service_name :selected").val();
+                    const formData = new FormData();
+                    const spinner = $(".create_bot_spinner");
+
+                    formData.append("csrfmiddlewaretoken", csrf_token);
+                    formData.append("bot_type", bot_type);
+                    formData.append("full_name", full_name);
+                    formData.append("short_name", short_name);
+
+                    // If the selected bot_type is Outgoing webhook
+                    if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
+                        formData.append("payload_url", JSON.stringify(payload_url));
+                        formData.append("interface_type", interface_type);
+                    } else if (bot_type === EMBEDDED_BOT_TYPE) {
+                        formData.append("service_name", service_name);
+                        const config_data = {};
+                        $(`#config_inputbox [name*='${CSS.escape(service_name)}'] input`).each(
+                            function () {
+                                config_data[$(this).attr("name")] = $(this).val();
+                            },
+                        );
+                        formData.append("config_data", JSON.stringify(config_data));
+                    }
+                    for (const [i, file] of Array.prototype.entries.call(
+                        $("#bot_avatar_file_input")[0].files,
+                    )) {
+                        formData.append("file-" + i, file);
+                    }
+                    loading.make_indicator(spinner, {text: $t({defaultMessage: "Creating bot"})});
+                    channel.post({
+                        url: "/json/bots",
+                        data: formData,
+                        cache: false,
+                        processData: false,
+                        contentType: false,
+                        success() {
+                            hide_errors();
+                            $("#create_bot_name").val("");
+                            $("#create_bot_short_name").val("");
+                            $("#create_payload_url").val("");
+                            $("#payload_url_inputbox").hide();
+                            $("#config_inputbox").hide();
+                            $(`[name*='${CSS.escape(service_name)}'] input`).each(function () {
+                                $(this).val("");
+                            });
+                            $("#create_bot_type").val(GENERIC_BOT_TYPE);
+                            $("#select_service_name").val("converter"); // TODO: Later we can change this to hello bot or similar
+                            $("#service_name_list").hide();
+                            $("#create_bot_button").show();
+                            $("#create_interface_type").val(GENERIC_INTERFACE);
+                            create_avatar_widget.clear();
+                            focus_tab.active_bots_tab();
+                        },
+                        error(xhr) {
+                            $("#bot_table_error").text(JSON.parse(xhr.responseText).msg).show();
+                        },
+                        complete() {
+                            loading.destroy_indicator(spinner);
+                        },
+                    });
+
+                    dialog_widget.hide_dialog_spinner();
+                    dialog_widget.close_modal();
+                },
+            });
+
+            $("#create_bot_type").on("change", () => {
+                const bot_type = $("#create_bot_type :selected").val();
+                // For "generic bot" or "incoming webhook" both these fields need not be displayed.
+                $("#service_name_list").hide();
+                $("#select_service_name").removeClass("required");
+                $("#config_inputbox").hide();
+
+                $("#payload_url_inputbox").hide();
+                $("#create_payload_url").removeClass("required");
+                if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
+                    $("#payload_url_inputbox").show();
+                    $("#create_payload_url").addClass("required");
+                } else if (bot_type === EMBEDDED_BOT_TYPE) {
+                    $("#service_name_list").show();
+                    $("#select_service_name").addClass("required");
+                    $("#select_service_name").trigger("change");
+                    $("#config_inputbox").show();
+                }
+            });
+
+            $("#select_service_name").on("change", () => {
+                $("#config_inputbox").children().hide();
+                const selected_bot = $("#select_service_name :selected").val();
+                $(`[name*='${CSS.escape(selected_bot)}']`).show();
+            });
+
+            update_bot_permissions_ui();
+        }
     });
 }
