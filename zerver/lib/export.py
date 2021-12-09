@@ -1944,8 +1944,12 @@ def do_export_user(user_profile: UserProfile, output_dir: Path) -> None:
     export_file = os.path.join(output_dir, "user.json")
     write_table_data(output_file=export_file, data=response)
 
+    reaction_message_ids: Set[int] = {row["message"] for row in response["zerver_reaction"]}
+
     logging.info("Exporting messages")
-    export_messages_single_user(user_profile, output_dir)
+    export_messages_single_user(
+        user_profile, output_dir=output_dir, reaction_message_ids=reaction_message_ids
+    )
 
     logging.info("Exporting images")
     export_uploads_and_avatars(user_profile.realm, user=user_profile, output_dir=output_dir)
@@ -2090,18 +2094,27 @@ def chunkify(lst: List[int], chunk_size: int) -> List[List[int]]:
 
 
 def export_messages_single_user(
-    user_profile: UserProfile, output_dir: Path, chunk_size: int = MESSAGE_BATCH_CHUNK_SIZE
+    user_profile: UserProfile, *, output_dir: Path, reaction_message_ids: Set[int]
 ) -> None:
 
-    # Do a slim query to find all message ids that pertain to us.
-    # TODO: be more selective about which message ids we export.
-    all_message_ids = get_id_list_gently_from_database(
-        base_query=UserMessage.objects.filter(user_profile=user_profile),
-        id_field="message_id",
+    messages_from_me = Message.objects.filter(sender=user_profile)
+
+    my_subscriptions = Subscription.objects.filter(
+        user_profile=user_profile, recipient__type__in=[Recipient.PERSONAL, Recipient.HUDDLE]
     )
+    my_recipient_ids = [sub.recipient_id for sub in my_subscriptions]
+    messages_to_me = Message.objects.filter(recipient_id__in=my_recipient_ids)
+
+    # Find all message ids that pertain to us.
+    all_message_ids: Set[int] = set()
+
+    for query in [messages_from_me, messages_to_me]:
+        all_message_ids |= set(get_id_list_gently_from_database(base_query=query, id_field="id"))
+
+    all_message_ids |= reaction_message_ids
 
     dump_file_id = 1
-    for message_id_chunk in chunkify(all_message_ids, chunk_size):
+    for message_id_chunk in chunkify(sorted(list(all_message_ids)), MESSAGE_BATCH_CHUNK_SIZE):
         fat_query = (
             UserMessage.objects.select_related("message", "message__sending_client")
             .filter(user_profile=user_profile, message_id__in=message_id_chunk)
