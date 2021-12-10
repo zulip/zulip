@@ -1360,11 +1360,14 @@ def export_uploads_and_avatars(
     for dir_path in (
         uploads_output_dir,
         avatars_output_dir,
-        realm_icons_output_dir,
         emoji_output_dir,
     ):
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
+
+    # Avoid creating realm_icons_output_dir for single user exports
+    if user is None and not os.path.exists(realm_icons_output_dir):
+        os.makedirs(realm_icons_output_dir)
 
     if user is None:
         handle_system_bots = True
