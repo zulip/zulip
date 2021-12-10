@@ -660,6 +660,11 @@ export function initialize() {
             return;
         }
 
+        if ($(".enter_sends").has(e.target).length) {
+            e.preventDefault();
+            return;
+        }
+
         // Don't let clicks in the compose area count as
         // "unfocusing" our compose -- in other words, e.g.
         // clicking "Press Enter to send" should not
@@ -872,6 +877,7 @@ export function initialize() {
                 !$(e.target).closest(".micromodal").length &&
                 !$(e.target).closest("[data-tippy-root]").length &&
                 !$(e.target).closest(".modal-backdrop").length &&
+                !$(e.target).closest(".enter_sends").length &&
                 $(e.target).closest("body").length
             ) {
                 // Unfocus our compose area if we click out of it. Don't let exits out

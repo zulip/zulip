@@ -63,12 +63,21 @@ body.dark-theme {
         background-color: hsl(211, 28%, 14%);
     }
 
-    .enter_sends kbd {
-        background-color: hsl(211, 29%, 14%);
-        border-color: hsl(211, 29%, 14%);
-        box-shadow: inset 0 -1px 0 hsl(210, 5%, 34%, 0.2);
-        text-shadow: none;
+    .enter_sends,
+    .enter_sends_choices {
         color: hsl(236, 33%, 90%);
+
+        kbd {
+            background-color: hsl(211, 29%, 14%);
+            border-color: hsl(211, 29%, 14%);
+            box-shadow: inset 0 -1px 0 hsl(210, 5%, 34%, 0.2);
+            text-shadow: none;
+            color: hsl(236, 33%, 90%);
+        }
+
+        .enter_sends_minor {
+            color: hsl(0, 0%, 80%);
+        }
     }
 
     table.table-striped thead.table-sticky-headers th {

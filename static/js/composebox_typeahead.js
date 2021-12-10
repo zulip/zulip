@@ -7,7 +7,6 @@ import pygments_data from "../generated/pygments_data.json";
 import * as emoji from "../shared/js/emoji";
 import * as typeahead from "../shared/js/typeahead";
 
-import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
@@ -1156,22 +1155,6 @@ export function initialize() {
     // These handlers are at the "form" level so that they are called after typeahead
     $("form#send_message_form").on("keydown", handle_keydown);
     $("form#send_message_form").on("keyup", handle_keyup);
-
-    $(".enter_sends").on("click", () => {
-        user_settings.enter_sends = !user_settings.enter_sends;
-        $(`.enter_sends_${!user_settings.enter_sends}`).hide();
-        $(`.enter_sends_${user_settings.enter_sends}`).show();
-
-        // Refocus in the content box so you can continue typing or
-        // press Enter to send.
-        $("#compose-textarea").trigger("focus");
-
-        return channel.patch({
-            url: "/json/settings",
-            idempotent: true,
-            data: {enter_sends: user_settings.enter_sends},
-        });
-    });
 
     // limit number of items so the list doesn't fall off the screen
     $("#stream_message_recipient_stream").typeahead({
