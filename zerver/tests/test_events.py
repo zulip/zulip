@@ -2578,17 +2578,27 @@ class SubscribeActionTest(BaseAction):
 
         # Update stream privacy - make stream web public
         action = lambda: do_change_stream_permission(
-            stream, invite_only=False, history_public_to_subscribers=True, is_web_public=True
+            stream,
+            invite_only=False,
+            history_public_to_subscribers=True,
+            is_web_public=True,
+            acting_user=self.example_user("hamlet"),
         )
-        events = self.verify_action(action, include_subscribers=include_subscribers)
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
         check_stream_update("events[0]", events[0])
+        check_message("events[1]", events[1])
 
         # Update stream privacy - make stream private
         action = lambda: do_change_stream_permission(
-            stream, invite_only=True, history_public_to_subscribers=True, is_web_public=False
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=True,
+            is_web_public=False,
+            acting_user=self.example_user("hamlet"),
         )
-        events = self.verify_action(action, include_subscribers=include_subscribers)
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
         check_stream_update("events[0]", events[0])
+        check_message("events[1]", events[1])
 
         # Update stream stream_post_policy property
         action = lambda: do_change_stream_post_policy(

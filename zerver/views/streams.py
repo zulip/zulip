@@ -329,6 +329,7 @@ def update_stream_backend(
             invite_only=is_private,
             history_public_to_subscribers=history_public_to_subscribers,
             is_web_public=is_web_public,
+            acting_user=user_profile,
         )
     return json_success()
 
