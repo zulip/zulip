@@ -441,12 +441,45 @@ input.recipient_box {
     }
 }
 
+.enter_sends_choices {
+    .enter_sends_choice {
+        display: flex;
+        gap: 8px;
+        padding-top: 4px;
+
+        input[type="radio"] {
+            position: relative;
+            top: 5px;
+        }
+
+        &:first-child {
+            padding: 0 0 4px;
+            border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
+        }
+    }
+
+    .enter_sends_choice_text {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .enter_sends_minor,
+    .enter_sends_minor kbd {
+        opacity: 0.9;
+        font-size: 11px;
+        color: hsl(0, 0%, 50%);
+    }
+}
+
 .enter_sends {
     font-size: 12px;
     height: 14px;
     padding-left: 4px;
     opacity: 0.7;
     margin-bottom: 5px;
+    position: relative;
+    top: -2px;
+    cursor: pointer;
 
     @media (width < $mm_min) {
         font-size: 11px;
@@ -454,6 +487,7 @@ input.recipient_box {
 
     kbd {
         height: 16px;
+        padding: 0 4px;
     }
 
     &:hover {
@@ -465,8 +499,10 @@ input.recipient_box {
         display: none;
     }
 
-    .fa-exchange {
-        margin: 0 4px;
+    i {
+        padding-left: 3px;
+        font-size: 12px;
+        font-weight: 600;
     }
 }
 

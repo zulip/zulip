@@ -9,7 +9,6 @@ const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
-const channel = mock_esm("../../static/js/channel");
 const compose = mock_esm("../../static/js/compose", {
     finish: noop,
 });
@@ -1142,32 +1141,11 @@ test("initialize", ({override, mock_template}) => {
     event.key = "a";
     $("form#send_message_form").trigger(event);
 
-    // select_on_focus()
-
-    let channel_patch_called = false;
-    override(channel, "patch", (params) => {
-        assert.equal(params.url, "/json/settings");
-        assert.equal(params.idempotent, true);
-        assert.deepEqual(params.data, {enter_sends: user_settings.enter_sends});
-
-        channel_patch_called = true;
-    });
-    user_settings.enter_sends = false;
-    $(".enter_sends").trigger("click");
-    assert.equal(user_settings.enter_sends, true);
-
-    // Now we re-run both .initialize() and the click handler, this time
-    // with enter_sends: user_settings.enter_sends being true
-    user_settings.enter_sends = true;
-    $(".enter_sends").trigger("click");
-    assert.equal(user_settings.enter_sends, false);
-
     $("#stream_message_recipient_stream").off("focus");
     $("#stream_message_recipient_topic").off("focus");
     $("#private_message_recipient").off("focus");
     $("form#send_message_form").off("keydown");
     $("form#send_message_form").off("keyup");
-    $(".enter_sends").off("click");
     $("#private_message_recipient").off("blur");
     ct.initialize();
 
@@ -1176,7 +1154,6 @@ test("initialize", ({override, mock_template}) => {
     assert.ok(stream_typeahead_called);
     assert.ok(subject_typeahead_called);
     assert.ok(pm_recipient_typeahead_called);
-    assert.ok(channel_patch_called);
     assert.ok(compose_textarea_typeahead_called);
 });
 

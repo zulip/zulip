@@ -265,12 +265,18 @@ class CommonUtils {
     }
 
     async ensure_enter_does_not_send(page: Page): Promise<void> {
+        let enter_sends = false;
         await page.$eval(".enter_sends_false", (el) => {
             if ((el as HTMLElement).style.display !== "none") {
-                // Click events gets propagated to `.enter_sends` which toggles the value.
-                (el as HTMLElement).click();
+                enter_sends = true;
             }
         });
+
+        if (enter_sends) {
+            const enter_sends_false_selector = ".enter_sends_choice input[value='false']";
+            await page.waitForSelector(enter_sends_false_selector);
+            await page.click(enter_sends_false_selector);
+        }
     }
 
     async assert_compose_box_content(page: Page, expected_value: string): Promise<void> {
