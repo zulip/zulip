@@ -184,6 +184,11 @@ body.dark-theme {
         border-color: hsla(0, 0%, 100%, 0.4);
     }
 
+    .new-style label.checkbox_todo input[type="checkbox"] ~ span {
+        border-color: hsl(185, 40%, 45%);
+        opacity: 0.7;
+    }
+
     .streams_popover .sp-container {
         background-color: transparent;
 

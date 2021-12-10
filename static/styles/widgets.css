@@ -20,9 +20,11 @@
 
 .todo-widget {
     /* For the box-shadow to be visible on the left */
-    input.add-task,
-    input.add-desc {
-        margin-left: 2px;
+    .add-task,
+    .add-desc {
+        font-size: 12pt;
+        font-weight: 600;
+        margin-right: 4px;
     }
 }
 
@@ -47,7 +49,7 @@
 .poll-widget {
     /* For the box-shadow to be visible on the left */
     input.poll-option {
-        margin-left: 2px;
+        margin-right: 4px;
     }
 
     .poll-option {
@@ -90,7 +92,7 @@ button {
         background-color: transparent;
         border-color: hsl(156, 28%, 70%);
         margin-right: 4px;
-        border-radius: 3px;
+        border-radius: 3px;       
 
         &:hover {
             border: 1px solid hsl(194, 60%, 40%);
@@ -105,11 +107,11 @@ button {
     &.add-task,
     &.add-desc,
     &.poll-option,
-    &.poll-question {
+    &.poll-question{
         border-radius: 3px;
         border: 1px solid hsl(0, 0%, 80%);
         background-color: hsl(0, 0%, 100%);
-        width: 100px;
+        width: 100px;        
 
         &:hover {
             border-color: hsl(0, 0%, 60%);

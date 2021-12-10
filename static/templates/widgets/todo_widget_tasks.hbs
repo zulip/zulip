@@ -1,7 +1,7 @@
 <br />
 {{#each pending_tasks}}
     <li>
-        <label class="checkbox">
+        <label class="checkbox_todo">
             <input type="checkbox" class="task" data-key="{{ key }}" />
             <span></span>
             <strong>{{ task }}</strong>{{#if desc }} - {{ desc }}{{/if}}
@@ -11,7 +11,7 @@
 {{/each}}
 {{#each completed_tasks}}
     <li>
-        <label class="checkbox">
+        <label class="checkbox_todo">
             <input type="checkbox" class="task" data-key="{{ key }}" checked="checked"/>
             <span></span>
             <strike><em><strong>{{ task }}</strong>{{#if desc }} - {{ desc }}{{/if}}</em></strike>
