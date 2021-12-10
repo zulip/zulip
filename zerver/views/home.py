@@ -49,8 +49,11 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
 
     email = request.user.delivery_email
     special_message_template = None
-    if request.user.tos_version is None and settings.FIRST_TIME_TOS_TEMPLATE is not None:
-        special_message_template = "zerver/" + settings.FIRST_TIME_TOS_TEMPLATE
+    if (
+        request.user.tos_version is None
+        and settings.FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE is not None
+    ):
+        special_message_template = settings.FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE
     return render(
         request,
         "zerver/accounts_accept_terms.html",
