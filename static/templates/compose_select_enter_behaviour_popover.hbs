@@ -1,0 +1,36 @@
+<div class="enter_sends_choices grey-box">
+    <label class="enter_sends_choice">
+        <input type="radio" class="prop-element" value="true"{{#if enter_sends_true }} checked{{/if}} />
+        <div class="enter_sends_choice_text">
+            <span>
+                {{#tr}}
+                    <z-button><kbd>Enter</kbd></z-button>
+                    <span>to send</span>
+                {{/tr}}
+            </span>
+            <span class="enter_sends_minor">
+                {{#tr}}
+                    <z-button><kbd>Ctrl</kbd> + <kbd>Enter</kbd></z-button>
+                    <span>to add a new line</span>
+                {{/tr}}
+            </span>
+        </div>
+    </label>
+    <label class="enter_sends_choice">
+        <input type="radio" class="prop-element" value="false"{{#unless enter_sends_true }} checked{{/unless}} />
+        <div class="enter_sends_choice_text">
+            <span>
+                {{#tr}}
+                    <z-button><kbd>Ctrl</kbd> + <kbd>Enter</kbd></z-button>
+                    <span>to send</span>
+                {{/tr}}
+            </span>
+            <span class="enter_sends_minor">
+                {{#tr}}
+                    <z-button><kbd>Enter</kbd></z-button>
+                    <span>to add a new line</span>
+                {{/tr}}
+            </span>
+        </div>
+    </label>
+</div>
