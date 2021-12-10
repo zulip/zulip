@@ -496,7 +496,7 @@ class HomeTest(ZulipTestCase):
         user.tos_version = None
         user.save()
 
-        with self.settings(FIRST_TIME_TOS_TEMPLATE="hello.html"), self.settings(
+        with self.settings(FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE="zerver/hello.html"), self.settings(
             TERMS_OF_SERVICE_VERSION="99.99"
         ):
             result = self.client_post("/accounts/accept_terms/")
