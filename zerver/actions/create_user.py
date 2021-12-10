@@ -315,7 +315,7 @@ def notify_created_user(user_profile: UserProfile) -> None:
         send_event(user_profile.realm, event, user_ids_with_real_email_access)
 
     if user_ids_without_real_email_access:
-        del person["delivery_email"]
+        person["delivery_email"] = None
         event = dict(type="realm_user", op="add", person=person)
         send_event(user_profile.realm, event, user_ids_without_real_email_access)
 

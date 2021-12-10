@@ -22,7 +22,7 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.upload import delete_avatar_image
-from zerver.lib.users import check_bot_name_available, check_full_name
+from zerver.lib.users import can_access_delivery_email, check_bot_name_available, check_full_name
 from zerver.lib.utils import generate_api_key
 from zerver.models import (
     Draft,
@@ -52,6 +52,42 @@ def send_user_email_update_event(user_profile: UserProfile) -> None:
     )
 
 
+def send_event_for_updating_delivery_email_fields(
+    user_profile: UserProfile, old_visibility_setting: int, visibility_setting: int
+) -> None:
+    active_users = user_profile.realm.get_active_users()
+    delivery_email_visible_user_ids = []
+    delivery_email_not_visible_user_ids = []
+
+    for user in active_users:
+        if can_access_delivery_email(
+            user, user_profile.id, old_visibility_setting
+        ) != can_access_delivery_email(user, user_profile.id, visibility_setting):
+            if can_access_delivery_email(user, user_profile.id, visibility_setting):
+                delivery_email_visible_user_ids.append(user.id)
+            else:
+                delivery_email_not_visible_user_ids.append(user.id)
+
+    if delivery_email_visible_user_ids:
+        person = dict(user_id=user_profile.id, delivery_email=user_profile.delivery_email)
+        transaction.on_commit(
+            lambda: send_event(
+                user_profile.realm,
+                dict(type="realm_user", op="update", person=person),
+                delivery_email_visible_user_ids,
+            )
+        )
+    if delivery_email_not_visible_user_ids:
+        person = dict(user_id=user_profile.id, delivery_email=None)
+        transaction.on_commit(
+            lambda: send_event(
+                user_profile.realm,
+                dict(type="realm_user", op="update", person=person),
+                delivery_email_not_visible_user_ids,
+            )
+        )
+
+
 @transaction.atomic(savepoint=False)
 def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> None:
     delete_user_profile_caches([user_profile])
@@ -63,12 +99,19 @@ def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> 
     else:
         user_profile.save(update_fields=["delivery_email"])
 
-    # We notify just the target user (and eventually org admins, only
-    # when email_address_visibility=EMAIL_ADDRESS_VISIBILITY_ADMINS)
-    # about their new delivery email, since that field is private.
+    # We notify all the users who have access to delivery email.
     payload = dict(user_id=user_profile.id, delivery_email=new_email)
     event = dict(type="realm_user", op="update", person=payload)
-    transaction.on_commit(lambda: send_event(user_profile.realm, event, [user_profile.id]))
+    active_users = user_profile.realm.get_active_users()
+    delivery_email_visible_user_ids = [
+        user.id
+        for user in active_users
+        if can_access_delivery_email(user, user_profile.id, user_profile.email_address_visibility)
+    ]
+
+    transaction.on_commit(
+        lambda: send_event(user_profile.realm, event, delivery_email_visible_user_ids)
+    )
 
     if user_profile.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
         # If the user is using Gravatar to manage their email address,
@@ -456,6 +499,10 @@ def do_change_user_setting(
         )
 
     if setting_name == "email_address_visibility":
+        send_event_for_updating_delivery_email_fields(
+            user_profile, old_value, user_profile.email_address_visibility
+        )
+
         if UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE not in [old_value, setting_value]:
             # We use real email addresses on UserProfile.email only if
             # EMAIL_ADDRESS_VISIBILITY_EVERYONE is configured, so

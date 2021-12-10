@@ -30,6 +30,14 @@ format used by the Zulip server that they are interacting with.
 * [`GET /events`](/api/get-events): Added user `email_address_visibility` field
   to the person object in the events sent when adding a user and when user changes
   their avatar.
+* [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
+  [`GET /users/{email}`](/api/get-user-by-email) and
+  [`GET /users/me`](/api/get-own-user): `delivery_email` field is passed in user
+  objects always with value being `None` if user does not have access to real email
+  and also when `email_address_visibility` is set to `EMAIL_ADDRESS_VISIBILITY_EVERYONE`.
+* [`GET /events`](/api/get-events): Event for updating `delivery_email`  is now sent to
+  all users who have access to it and is also sent when `email_address_visibility` setting
+  changes.
 
 **Feature level 145**
 

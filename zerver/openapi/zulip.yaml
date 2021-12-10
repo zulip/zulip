@@ -519,9 +519,11 @@ paths:
                                     - type: object
                                       additionalProperties: false
                                       description: |
-                                        When the delivery email of a user changes.
+                                        When the delivery email of a user changes or `email_address_visibility`
+                                        setting of a user changes.
 
-                                        Note: This event is only visible to admins.
+                                        **Changes**: Prior to Zulip 6.0 (feature level 146), this event was sent
+                                        to the target user only and only when delivery email of the user was changed.
                                       properties:
                                         user_id:
                                           type: integer
@@ -529,6 +531,7 @@ paths:
                                             The ID of the user affected by this change.
                                         delivery_email:
                                           type: string
+                                          nullable: true
                                           description: |
                                             The new delivery email of the user.
                                     - type: object
@@ -6963,11 +6966,15 @@ paths:
                         example: 1
                       delivery_email:
                         type: string
+                        nullable: true
                         description: |
-                          The user's real email address. This field is present only if
-                          [email address visibility](/help/restrict-visibility-of-email-addresses) is
-                          limited and you are an administrator with access to real email addresses
-                          under the configured policy.
+                          The user's real email address. This field is present only if you have access
+                          to real email addresses under the [configured policy](/help/restrict-visibility-of-email-addresses).
+
+                          **Changes**: Prior to Zulip 6.0 (feature level 146), this field was present only
+                          when `email_address_visibility` was restricted and you had access to real email address.
+                          Now, this field is present always with value being `None` if you do not have access to
+                          real email and also when `email_address_visibility` is set to `EMAIL_ADDRESS_VISIBILITY_EVERYONE`.
                       profile_data:
                         $ref: "#/components/schemas/profile_data"
                     example:
@@ -16461,7 +16468,8 @@ components:
         - additionalProperties: false
           properties:
             user_id: {}
-            delivery_email: {}
+            delivery_email:
+              nullable: true
             email: {}
             full_name: {}
             date_joined: {}
@@ -16492,11 +16500,15 @@ components:
             The unique ID of the user.
         delivery_email:
           type: string
+          nullable: true
           description: |
-            The user's real email address. This field is present only if
-            [email address visibility](/help/restrict-visibility-of-email-addresses) is
-            limited and you are an administrator with access to real email addresses
-            under the configured policy.
+            The user's real email address. This field is present only if you have access
+            to real email addresses under the [configured policy](/help/restrict-visibility-of-email-addresses).
+
+            **Changes**: Prior to Zulip 6.0 (feature level 146), this field was present only
+            when `email_address_visibility` was restricted and you had access to real email address.
+            Now, this field is present always with value being `None` if you do not have access to
+            real email and also when `email_address_visibility` is set to `EMAIL_ADDRESS_VISIBILITY_EVERYONE`.
         email:
           type: string
           description: |

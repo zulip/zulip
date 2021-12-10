@@ -531,6 +531,7 @@ exports.fixtures = {
             timezone: "America/New_York",
             date_joined: "2020-01-01",
             email_address_visibility: 4,
+            delivery_email: "test-delivery@example.com",
         },
     },
 

@@ -2756,6 +2756,40 @@ class UserDisplayActionTest(BaseAction):
             check_update_display_settings("events[1]", events[1])
             check_realm_user_update("events[2]", events[2], "timezone")
 
+    def test_delivery_email_events_on_changing_email_address_visibility(self) -> None:
+        cordelia = self.example_user("cordelia")
+        do_change_user_role(self.user_profile, UserProfile.ROLE_MODERATOR, acting_user=None)
+        do_change_user_setting(
+            cordelia,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+            acting_user=None,
+        )
+
+        events = self.verify_action(
+            lambda: do_change_user_setting(
+                cordelia,
+                "email_address_visibility",
+                UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+                acting_user=self.user_profile,
+            ),
+            user_settings_object=True,
+        )
+        check_realm_user_update("events[0]", events[0], "delivery_email")
+        self.assertIsNone(events[0]["person"]["delivery_email"])
+
+        events = self.verify_action(
+            lambda: do_change_user_setting(
+                cordelia,
+                "email_address_visibility",
+                UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+                acting_user=self.user_profile,
+            ),
+            user_settings_object=True,
+        )
+        check_realm_user_update("events[0]", events[0], "delivery_email")
+        self.assertEqual(events[0]["person"]["delivery_email"], cordelia.delivery_email)
+
 
 class SubscribeActionTest(BaseAction):
     def test_subscribe_events(self) -> None:

@@ -400,6 +400,9 @@ def can_access_delivery_email(
     if target_user_id == user_profile.id:
         return True
 
+    if email_address_visibility == UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+        return True
+
     if email_address_visibility == UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS:
         return user_profile.is_realm_admin
 
@@ -481,6 +484,7 @@ def format_user_row(
             client_gravatar=client_gravatar,
         )
 
+    result["delivery_email"] = None
     if acting_user is not None and can_access_delivery_email(
         acting_user, row["id"], row["email_address_visibility"]
     ):

@@ -502,7 +502,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         result = fetch_initial_state_data(user_profile)
 
         (hamlet_obj,) = (value for key, value in result["raw_users"].items() if key == hamlet.id)
-        self.assertNotIn("delivery_email", hamlet_obj)
+        self.assertEqual(hamlet_obj["delivery_email"], hamlet.delivery_email)
 
         do_change_user_setting(
             hamlet,
@@ -513,7 +513,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         result = fetch_initial_state_data(user_profile)
 
         (hamlet_obj,) = (value for key, value in result["raw_users"].items() if key == hamlet.id)
-        self.assertNotIn("delivery_email", hamlet_obj)
+        self.assertIsNone(hamlet_obj["delivery_email"])
 
     def test_delivery_email_presence_for_admins(self) -> None:
         user_profile = self.example_user("iago")
@@ -529,7 +529,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         result = fetch_initial_state_data(user_profile)
 
         (hamlet_obj,) = (value for key, value in result["raw_users"].items() if key == hamlet.id)
-        self.assertNotIn("delivery_email", hamlet_obj)
+        self.assertEqual(hamlet_obj["delivery_email"], hamlet.delivery_email)
 
         do_change_user_setting(
             hamlet,

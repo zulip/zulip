@@ -128,6 +128,7 @@ class TestFullStack(ZulipTestCase):
                 avatar_url=content["user"]["avatar_url"],
                 avatar_version=1,
                 date_joined=content["user"]["date_joined"],
+                delivery_email=None,
                 email=cordelia.email,
                 full_name=cordelia.full_name,
                 is_active=True,

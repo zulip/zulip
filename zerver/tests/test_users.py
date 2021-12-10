@@ -2209,17 +2209,17 @@ class GetProfileTest(ZulipTestCase):
         # is set to EMAIL_ADDRESS_VISIBILITY_EVERYONE.
         self.login("shiva")
         result = orjson.loads(self.client_get(f"/json/users/{hamlet.id}").content)
-        self.assertEqual(result["user"].get("delivery_email"), None)
+        self.assertEqual(result["user"].get("delivery_email"), hamlet.delivery_email)
         self.assertEqual(result["user"].get("email"), hamlet.delivery_email)
 
         self.login("cordelia")
         result = orjson.loads(self.client_get(f"/json/users/{hamlet.id}").content)
-        self.assertEqual(result["user"].get("delivery_email"), None)
+        self.assertEqual(result["user"].get("delivery_email"), hamlet.delivery_email)
         self.assertEqual(result["user"].get("email"), hamlet.delivery_email)
 
         self.login("polonius")
         result = orjson.loads(self.client_get(f"/json/users/{hamlet.id}").content)
-        self.assertEqual(result["user"].get("delivery_email"), None)
+        self.assertEqual(result["user"].get("delivery_email"), hamlet.delivery_email)
         self.assertEqual(result["user"].get("email"), hamlet.delivery_email)
 
 
