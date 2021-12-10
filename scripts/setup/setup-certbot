@@ -125,4 +125,12 @@ if [ -z "$skip_symlink" ]; then
     symlink_with_backup "$CERT_DIR"/fullchain.pem /etc/ssl/certs/zulip.combined-chain.crt
 fi
 
+# "certbot certonly" does not run deploy hooks, so reload nginx if
+# need be to pick up the new certificate.
+case "$method" in
+    webroot)
+        service nginx reload
+        ;;
+esac
+
 echo "Certbot SSL certificate configuration succeeded."
