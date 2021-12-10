@@ -1307,6 +1307,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         not have received the message in the first place"""
         self.make_stream("public_stream")
         sender = self.example_user("iago")
+        self.subscribe(sender, "public_stream")
         message_id = self.send_stream_message(sender, "public_stream", "test")
         missed_message = {"message_id": message_id}
         with self.assertLogs("zerver.lib.push_notifications", level="ERROR") as logger, mock.patch(
@@ -1328,7 +1329,9 @@ class HandlePushNotificationTest(PushNotificationTest):
         self.setup_apns_tokens()
         self.setup_gcm_tokens()
         self.make_stream("public_stream")
+        sender = self.example_user("iago")
         self.subscribe(self.user_profile, "public_stream")
+        self.subscribe(sender, "public_stream")
         logger_string = "zulip.soft_deactivation"
         with self.assertLogs(logger_string, level="INFO") as info_logs:
             do_soft_deactivate_users([self.user_profile])
@@ -1339,7 +1342,6 @@ class HandlePushNotificationTest(PushNotificationTest):
                 f"INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process",
             ],
         )
-        sender = self.example_user("iago")
         message_id = self.send_stream_message(sender, "public_stream", "test")
         missed_message = {
             "message_id": message_id,

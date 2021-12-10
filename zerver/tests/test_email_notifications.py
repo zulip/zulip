@@ -573,8 +573,11 @@ class TestMissedMessages(ZulipTestCase):
     def _extra_context_in_missed_stream_messages_mention_two_senders(
         self, send_as_user: bool
     ) -> None:
+        cordelia = self.example_user("cordelia")
+        self.subscribe(cordelia, "Denmark")
+
         for i in range(0, 3):
-            self.send_stream_message(self.example_user("cordelia"), "Denmark", str(i))
+            self.send_stream_message(cordelia, "Denmark", str(i))
         msg_id = self.send_stream_message(
             self.example_user("othello"), "Denmark", "@**King Hamlet**"
         )
@@ -1213,15 +1216,17 @@ class TestMissedMessages(ZulipTestCase):
     def test_stream_mentions_multiple_people(self) -> None:
         """Subject should be stream name and topic as usual."""
         hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        self.subscribe(cordelia, "Denmark")
+
         msg_id_1 = self.send_stream_message(
             self.example_user("iago"), "Denmark", "@**King Hamlet**"
         )
         msg_id_2 = self.send_stream_message(
             self.example_user("othello"), "Denmark", "@**King Hamlet**"
         )
-        msg_id_3 = self.send_stream_message(
-            self.example_user("cordelia"), "Denmark", "Regular message"
-        )
+        msg_id_3 = self.send_stream_message(cordelia, "Denmark", "Regular message")
 
         handle_missedmessage_emails(
             hamlet.id,

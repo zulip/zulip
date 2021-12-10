@@ -2054,10 +2054,10 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # We need to send a message here to ensure that we actually
         # have a stream message in this narrow view.
-        self.send_stream_message(hamlet, "Scotland")
-        self.send_stream_message(othello, "Scotland")
+        self.send_stream_message(hamlet, "Denmark")
+        self.send_stream_message(othello, "Denmark")
         self.send_personal_message(othello, hamlet)
-        self.send_stream_message(iago, "Scotland")
+        self.send_stream_message(iago, "Denmark")
 
         test_operands = [othello.email, othello.id]
         for operand in test_operands:
@@ -3012,6 +3012,7 @@ class GetOldMessagesTest(ZulipTestCase):
         othello = self.example_user("othello")
 
         self.make_stream("England")
+        self.subscribe(cordelia, "England")
 
         # Send a few messages that Hamlet won't have UserMessage rows for.
         unsub_message_id = self.send_stream_message(cordelia, "England")

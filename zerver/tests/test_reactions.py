@@ -1109,7 +1109,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
         into a problem.
         """
         hamlet = self.example_user("hamlet")
-        self.send_stream_message(hamlet, "Scotland")
+        self.send_stream_message(hamlet, "Denmark")
         message = self.get_last_message()
         reaction = Reaction(
             user_profile=hamlet,

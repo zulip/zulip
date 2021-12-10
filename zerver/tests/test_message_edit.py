@@ -112,7 +112,7 @@ class EditMessagePayloadTest(EditMessageTestCase):
     def test_edit_message_no_changes(self) -> None:
         self.login("hamlet")
         msg_id = self.send_stream_message(
-            self.example_user("hamlet"), "Scotland", topic_name="editing", content="before edit"
+            self.example_user("hamlet"), "Denmark", topic_name="editing", content="before edit"
         )
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
@@ -158,7 +158,7 @@ class EditMessagePayloadTest(EditMessageTestCase):
 
     def test_propagate_invalid(self) -> None:
         self.login("hamlet")
-        id1 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic1")
+        id1 = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="topic1")
 
         result = self.client_patch(
             "/json/messages/" + str(id1),
@@ -183,7 +183,7 @@ class EditMessagePayloadTest(EditMessageTestCase):
     def test_edit_message_no_topic(self) -> None:
         self.login("hamlet")
         msg_id = self.send_stream_message(
-            self.example_user("hamlet"), "Scotland", topic_name="editing", content="before edit"
+            self.example_user("hamlet"), "Denmark", topic_name="editing", content="before edit"
         )
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
@@ -221,7 +221,7 @@ class EditMessagePayloadTest(EditMessageTestCase):
         self.login("hamlet")
         msg_id = self.send_stream_message(
             self.example_user("hamlet"),
-            "Scotland",
+            "Denmark",
             topic_name="editing",
             content="/poll Games?\nYES\nNO",
         )
@@ -277,7 +277,7 @@ class EditMessageTest(EditMessageTestCase):
         the cache against the database"""
         self.login("hamlet")
         msg_id = self.send_stream_message(
-            self.example_user("hamlet"), "Scotland", topic_name="editing", content="before edit"
+            self.example_user("hamlet"), "Denmark", topic_name="editing", content="before edit"
         )
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
@@ -333,6 +333,7 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         non_web_public_stream = self.make_stream("non-web-public-stream")
+        self.subscribe(user_profile, non_web_public_stream.name)
         non_web_public_stream_msg_id = self.send_stream_message(
             user_profile, non_web_public_stream.name, content="non web-public message"
         )
@@ -438,7 +439,7 @@ class EditMessageTest(EditMessageTestCase):
     def test_edit_message_no_permission(self) -> None:
         self.login("hamlet")
         msg_id = self.send_stream_message(
-            self.example_user("iago"), "Scotland", topic_name="editing", content="before edit"
+            self.example_user("iago"), "Denmark", topic_name="editing", content="before edit"
         )
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
@@ -452,7 +453,7 @@ class EditMessageTest(EditMessageTestCase):
     def test_edit_message_no_content(self) -> None:
         self.login("hamlet")
         msg_id = self.send_stream_message(
-            self.example_user("hamlet"), "Scotland", topic_name="editing", content="before edit"
+            self.example_user("hamlet"), "Denmark", topic_name="editing", content="before edit"
         )
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
@@ -507,7 +508,7 @@ class EditMessageTest(EditMessageTestCase):
         # Single-line edit
         msg_id_1 = self.send_stream_message(
             self.example_user("hamlet"),
-            "Scotland",
+            "Denmark",
             topic_name="editing",
             content="content before edit",
         )
@@ -545,7 +546,7 @@ class EditMessageTest(EditMessageTestCase):
         # Edits on new lines
         msg_id_2 = self.send_stream_message(
             self.example_user("hamlet"),
-            "Scotland",
+            "Denmark",
             topic_name="editing",
             content="content before edit, line 1\n\ncontent before edit, line 3",
         )
@@ -596,7 +597,7 @@ class EditMessageTest(EditMessageTestCase):
         self.login("hamlet")
         msg_id = self.send_stream_message(
             self.example_user("hamlet"),
-            "Scotland",
+            "Denmark",
             topic_name="editing",
             content="We will edit this to render as empty.",
         )
@@ -630,7 +631,7 @@ class EditMessageTest(EditMessageTestCase):
         self.login("hamlet")
         msg_id_1 = self.send_stream_message(
             self.example_user("hamlet"),
-            "Scotland",
+            "Denmark",
             topic_name="editing",
             content="Here is a link to [zulip](www.zulip.org).",
         )
@@ -673,7 +674,7 @@ class EditMessageTest(EditMessageTestCase):
 
         msg_id = self.send_stream_message(
             self.example_user("hamlet"),
-            "Scotland",
+            "Denmark",
             topic_name="editing",
             content="This message has not been edited.",
         )
@@ -690,11 +691,11 @@ class EditMessageTest(EditMessageTestCase):
         cordelia = self.example_user("cordelia")
 
         self.login_user(hamlet)
-        self.subscribe(hamlet, "Scotland")
-        self.subscribe(cordelia, "Scotland")
+        self.subscribe(hamlet, "Denmark")
+        self.subscribe(cordelia, "Denmark")
 
         msg_id = self.send_stream_message(
-            hamlet, "Scotland", content="@**Cordelia, Lear's daughter**"
+            hamlet, "Denmark", content="@**Cordelia, Lear's daughter**"
         )
 
         user_info = get_user_info_for_message_updates(msg_id)
@@ -711,7 +712,7 @@ class EditMessageTest(EditMessageTestCase):
         self.login("hamlet")
         hamlet = self.example_user("hamlet")
         msg_id = self.send_stream_message(
-            self.example_user("hamlet"), "Scotland", topic_name="topic 1", content="content 1"
+            self.example_user("hamlet"), "Denmark", topic_name="topic 1", content="content 1"
         )
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
@@ -900,7 +901,7 @@ class EditMessageTest(EditMessageTestCase):
         self.login("iago")
         # send a message in the past
         id_ = self.send_stream_message(
-            self.example_user("iago"), "Scotland", content="content", topic_name="topic"
+            self.example_user("iago"), "Denmark", content="content", topic_name="topic"
         )
         message = Message.objects.get(id=id_)
         message.date_sent = message.date_sent - datetime.timedelta(seconds=180)
@@ -977,7 +978,7 @@ class EditMessageTest(EditMessageTestCase):
 
         # send a message in the past
         id_ = self.send_stream_message(
-            self.example_user("hamlet"), "Scotland", content="content", topic_name="topic"
+            self.example_user("hamlet"), "Denmark", content="content", topic_name="topic"
         )
         message = Message.objects.get(id=id_)
         message.date_sent = message.date_sent - datetime.timedelta(seconds=180)
@@ -985,7 +986,7 @@ class EditMessageTest(EditMessageTestCase):
 
         # Guest user must be subscribed to the stream to access the message.
         polonius = self.example_user("polonius")
-        self.subscribe(polonius, "Scotland")
+        self.subscribe(polonius, "Denmark")
 
         # any user can edit the topic of a message
         set_message_editing_params(True, 0, Realm.POLICY_EVERYONE)
@@ -1179,6 +1180,7 @@ class EditMessageTest(EditMessageTestCase):
         stream_name = "Macbeth"
         self.make_stream(stream_name, history_public_to_subscribers=True)
         self.subscribe(cordelia, stream_name)
+        self.subscribe(shiva, stream_name)
         message_id = self.send_stream_message(cordelia, stream_name, "Hello everyone")
 
         realm = cordelia.realm
@@ -1225,11 +1227,11 @@ class EditMessageTest(EditMessageTestCase):
 
     def test_topic_edit_history_saved_in_all_message(self) -> None:
         self.login("hamlet")
-        id1 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic1")
-        id2 = self.send_stream_message(self.example_user("iago"), "Scotland", topic_name="topic1")
-        id3 = self.send_stream_message(self.example_user("iago"), "Rome", topic_name="topic1")
-        id4 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic2")
-        id5 = self.send_stream_message(self.example_user("iago"), "Scotland", topic_name="topic1")
+        id1 = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="topic1")
+        id2 = self.send_stream_message(self.example_user("iago"), "Denmark", topic_name="topic1")
+        id3 = self.send_stream_message(self.example_user("iago"), "Verona", topic_name="topic1")
+        id4 = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="topic2")
+        id5 = self.send_stream_message(self.example_user("iago"), "Denmark", topic_name="topic1")
 
         def verify_edit_history(new_topic: str, len_edit_history: int) -> None:
             for msg_id in [id1, id2, id5]:
@@ -1276,13 +1278,9 @@ class EditMessageTest(EditMessageTestCase):
 
     def test_topic_and_content_edit(self) -> None:
         self.login("hamlet")
-        id1 = self.send_stream_message(
-            self.example_user("hamlet"), "Scotland", "message 1", "topic"
-        )
-        id2 = self.send_stream_message(self.example_user("iago"), "Scotland", "message 2", "topic")
-        id3 = self.send_stream_message(
-            self.example_user("hamlet"), "Scotland", "message 3", "topic"
-        )
+        id1 = self.send_stream_message(self.example_user("hamlet"), "Denmark", "message 1", "topic")
+        id2 = self.send_stream_message(self.example_user("iago"), "Denmark", "message 2", "topic")
+        id3 = self.send_stream_message(self.example_user("hamlet"), "Denmark", "message 3", "topic")
 
         new_topic = "edited"
         result = self.client_patch(
@@ -1318,11 +1316,11 @@ class EditMessageTest(EditMessageTestCase):
 
     def test_propagate_topic_forward(self) -> None:
         self.login("hamlet")
-        id1 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic1")
-        id2 = self.send_stream_message(self.example_user("iago"), "Scotland", topic_name="topic1")
-        id3 = self.send_stream_message(self.example_user("iago"), "Rome", topic_name="topic1")
-        id4 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic2")
-        id5 = self.send_stream_message(self.example_user("iago"), "Scotland", topic_name="topic1")
+        id1 = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="topic1")
+        id2 = self.send_stream_message(self.example_user("iago"), "Denmark", topic_name="topic1")
+        id3 = self.send_stream_message(self.example_user("iago"), "Verona", topic_name="topic1")
+        id4 = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="topic2")
+        id5 = self.send_stream_message(self.example_user("iago"), "Denmark", topic_name="topic1")
 
         result = self.client_patch(
             "/json/messages/" + str(id1),
@@ -1342,12 +1340,12 @@ class EditMessageTest(EditMessageTestCase):
 
     def test_propagate_all_topics(self) -> None:
         self.login("hamlet")
-        id1 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic1")
-        id2 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic1")
-        id3 = self.send_stream_message(self.example_user("iago"), "Rome", topic_name="topic1")
-        id4 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic2")
-        id5 = self.send_stream_message(self.example_user("iago"), "Scotland", topic_name="topic1")
-        id6 = self.send_stream_message(self.example_user("iago"), "Scotland", topic_name="topic3")
+        id1 = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="topic1")
+        id2 = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="topic1")
+        id3 = self.send_stream_message(self.example_user("iago"), "Verona", topic_name="topic1")
+        id4 = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="topic2")
+        id5 = self.send_stream_message(self.example_user("iago"), "Denmark", topic_name="topic1")
+        id6 = self.send_stream_message(self.example_user("iago"), "Denmark", topic_name="topic3")
 
         result = self.client_patch(
             "/json/messages/" + str(id2),
@@ -1368,10 +1366,10 @@ class EditMessageTest(EditMessageTestCase):
 
     def test_propagate_all_topics_with_different_uppercase_letters(self) -> None:
         self.login("hamlet")
-        id1 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic1")
-        id2 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="Topic1")
-        id3 = self.send_stream_message(self.example_user("iago"), "Rome", topic_name="topiC1")
-        id4 = self.send_stream_message(self.example_user("iago"), "Scotland", topic_name="toPic1")
+        id1 = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="topic1")
+        id2 = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="Topic1")
+        id3 = self.send_stream_message(self.example_user("iago"), "Verona", topic_name="topiC1")
+        id4 = self.send_stream_message(self.example_user("iago"), "Denmark", topic_name="toPic1")
 
         result = self.client_patch(
             "/json/messages/" + str(id2),
@@ -2144,16 +2142,18 @@ class EditMessageTest(EditMessageTestCase):
     def test_mark_topic_as_resolved(self) -> None:
         self.login("iago")
         admin_user = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+
         # Set the user's translation language to German to test that
         # it is overridden by the realm's default language.
         admin_user.default_language = "de"
         admin_user.save()
         stream = self.make_stream("new")
         self.subscribe(admin_user, stream.name)
+        self.subscribe(hamlet, stream.name)
+
         original_topic = "topic 1"
-        id1 = self.send_stream_message(
-            self.example_user("hamlet"), "new", topic_name=original_topic
-        )
+        id1 = self.send_stream_message(hamlet, "new", topic_name=original_topic)
         id2 = self.send_stream_message(admin_user, "new", topic_name=original_topic)
 
         # Check that we don't incorrectly send "unresolve topic"
@@ -2250,7 +2250,7 @@ class DeleteMessageTest(ZulipTestCase):
     def test_delete_message_invalid_request_format(self) -> None:
         self.login("iago")
         hamlet = self.example_user("hamlet")
-        msg_id = self.send_stream_message(hamlet, "Scotland")
+        msg_id = self.send_stream_message(hamlet, "Denmark")
         result = self.client_delete(f"/json/messages/{msg_id + 1}", {"message_id": msg_id})
         self.assert_json_error(result, "Invalid message(s)")
         result = self.client_delete(f"/json/messages/{msg_id}")
@@ -2291,7 +2291,7 @@ class DeleteMessageTest(ZulipTestCase):
         set_message_deleting_params(Realm.POLICY_ADMINS_ONLY, "unlimited")
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
-        msg_id = self.send_stream_message(hamlet, "Scotland")
+        msg_id = self.send_stream_message(hamlet, "Denmark")
 
         result = test_delete_message_by_owner(msg_id=msg_id)
         self.assert_json_error(result, "You don't have permission to delete this message")
@@ -2305,7 +2305,7 @@ class DeleteMessageTest(ZulipTestCase):
         # Test if message deleting is allowed.
         # Test if time limit is None(no limit).
         set_message_deleting_params(Realm.POLICY_EVERYONE, "unlimited")
-        msg_id = self.send_stream_message(hamlet, "Scotland")
+        msg_id = self.send_stream_message(hamlet, "Denmark")
         message = Message.objects.get(id=msg_id)
         message.date_sent = message.date_sent - datetime.timedelta(seconds=600)
         message.save()
@@ -2318,12 +2318,12 @@ class DeleteMessageTest(ZulipTestCase):
 
         # Test if time limit is non-zero.
         set_message_deleting_params(Realm.POLICY_EVERYONE, 240)
-        msg_id_1 = self.send_stream_message(hamlet, "Scotland")
+        msg_id_1 = self.send_stream_message(hamlet, "Denmark")
         message = Message.objects.get(id=msg_id_1)
         message.date_sent = message.date_sent - datetime.timedelta(seconds=120)
         message.save()
 
-        msg_id_2 = self.send_stream_message(hamlet, "Scotland")
+        msg_id_2 = self.send_stream_message(hamlet, "Denmark")
         message = Message.objects.get(id=msg_id_2)
         message.date_sent = message.date_sent - datetime.timedelta(seconds=360)
         message.save()
@@ -2341,7 +2341,7 @@ class DeleteMessageTest(ZulipTestCase):
         self.assert_json_success(result)
 
         # Test multiple delete requests with no latency issues
-        msg_id = self.send_stream_message(hamlet, "Scotland")
+        msg_id = self.send_stream_message(hamlet, "Denmark")
         result = test_delete_message_by_owner(msg_id=msg_id)
         self.assert_json_success(result)
         result = test_delete_message_by_owner(msg_id=msg_id)
@@ -2423,7 +2423,7 @@ class DeleteMessageTest(ZulipTestCase):
         into a problem.
         """
         hamlet = self.example_user("hamlet")
-        self.send_stream_message(hamlet, "Scotland")
+        self.send_stream_message(hamlet, "Denmark")
         message = self.get_last_message()
 
         with self.tornado_redirected_to_list([], expected_num_events=1):

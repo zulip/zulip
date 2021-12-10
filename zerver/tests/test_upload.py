@@ -410,7 +410,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         body = f"Illegal message ...[zulip.txt](http://{host}/user_uploads/" + d1_path_id + ")"
         cordelia = self.example_user("cordelia")
         with self.assertLogs(level="WARNING") as warn_log:
-            self.send_stream_message(cordelia, "Denmark", body, "test")
+            self.send_stream_message(cordelia, "Verona", body, "test")
         self.assertTrue(
             f"WARNING:root:User {cordelia.id} tried to share upload" in warn_log.output[0]
             and "but lacks permission" in warn_log.output[0]
@@ -428,13 +428,14 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Then, have that new recipient user publish it.
         body = f"Third message ...[zulip.txt](http://{host}/user_uploads/" + d1_path_id + ")"
-        self.send_stream_message(self.example_user("othello"), "Denmark", body, "test")
+        self.send_stream_message(self.example_user("othello"), "Verona", body, "test")
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 3)
         self.assertTrue(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
         self.assertFalse(Attachment.objects.get(path_id=d1_path_id).is_web_public)
 
         # Finally send to Rome, the web-public stream, and confirm it's now web-public
         body = f"Fourth message ...[zulip.txt](http://{host}/user_uploads/" + d1_path_id + ")"
+        self.subscribe(self.example_user("othello"), "Rome")
         self.send_stream_message(self.example_user("othello"), "Rome", body, "test")
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 4)
         self.assertTrue(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
