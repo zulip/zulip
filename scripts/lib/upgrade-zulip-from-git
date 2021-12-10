@@ -41,7 +41,7 @@ parser.add_argument("refname", help="Git reference, e.g. a branch, tag, or commi
 parser.add_argument(
     "--remote-url", help="Override the Git remote URL configured in /etc/zulip/zulip.conf."
 )
-args = parser.parse_args()
+args, extra_options = parser.parse_known_args()
 
 refname = args.refname
 # Command line remote URL will be given preference above the one
@@ -108,6 +108,7 @@ try:
                 deploy_path,
                 "--from-git",
                 *deploy_options,
+                *extra_options,
             ]
         )
     except subprocess.CalledProcessError:
