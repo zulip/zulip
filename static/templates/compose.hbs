@@ -53,7 +53,7 @@
             <div id="compose_top_right">
                 <button type="button" class="expand_composebox_button fa fa-angle-up" aria-label="{{t 'Expand compose' }}" tabindex=0 title="{{t 'Expand compose' }}"></button>
                 <button type="button" class="collapse_composebox_button fa fa-angle-down" aria-label="{{t 'Collapse compose' }}" tabindex=0 title="{{t 'Collapse compose' }}"></button>
-                <button type="button" class="close" id='compose_close' title="{{t 'Cancel compose' }} (Esc)">&times;</button>
+                <button type="button" class="close fa fa-remove" id='compose_close' title="{{t 'Cancel compose' }} (Esc)"></button>
             </div>
             <form id="send_message_form" action="/json/messages" method="post">
                 {{ csrf_input }}

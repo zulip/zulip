@@ -228,24 +228,31 @@
 
     button {
         background: transparent;
-        font-size: 20px;
-        font-weight: bold;
-        line-height: 20px;
         opacity: 0.6;
-        border: 0;
-        padding: 0;
         margin-left: 4px;
-        vertical-align: unset;
+        border: 0;
 
         &:hover {
             opacity: 1;
         }
     }
+
+    #compose_close {
+        font-weight: lighter !important;
+        text-shadow: none;
+        font-size: 15px;
+    }
 }
 
-.collapse_composebox_button,
-#compose_close {
+.collapse_composebox_button {
     display: none;
+}
+
+.expand_composebox_button,
+.collapse_composebox_button {
+    font-size: 20px;
+    margin-top: -1px;
+    font-weight: bold;
 }
 
 .compose_invite_user,
