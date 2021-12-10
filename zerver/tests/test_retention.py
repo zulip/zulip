@@ -1004,7 +1004,7 @@ class TestRestoreStreamMessages(ArchiveMessagesTestingBase):
         hamlet = self.example_user("hamlet")
 
         realm = get_realm("zulip")
-        stream_name = "Denmark"
+        stream_name = "Verona"
         stream = get_stream(stream_name, realm)
 
         message_ids_to_archive_manually = [
@@ -1052,7 +1052,7 @@ class TestDoDeleteMessages(ZulipTestCase):
     def test_do_delete_messages_multiple(self) -> None:
         realm = get_realm("zulip")
         cordelia = self.example_user("cordelia")
-        message_ids = [self.send_stream_message(cordelia, "Denmark", str(i)) for i in range(0, 10)]
+        message_ids = [self.send_stream_message(cordelia, "Verona", str(i)) for i in range(0, 10)]
         messages = Message.objects.filter(id__in=message_ids)
 
         with queries_captured() as queries:

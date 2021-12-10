@@ -88,6 +88,7 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    UserMessage,
     UserProfile,
     UserStatus,
     clear_supported_auth_backends_cache,
@@ -818,10 +819,11 @@ Output:
         topic_name: str = "test",
         recipient_realm: Optional[Realm] = None,
         sending_client_name: str = "test suite",
+        allow_unsubscribed_sender: bool = False,
     ) -> int:
         (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
 
-        return check_send_stream_message(
+        message_id = check_send_stream_message(
             sender=sender,
             client=sending_client,
             stream_name=stream_name,
@@ -829,6 +831,24 @@ Output:
             body=content,
             realm=recipient_realm,
         )
+        if not UserMessage.objects.filter(user_profile=sender, message_id=message_id).exists():
+            if not sender.is_bot and not allow_unsubscribed_sender:
+                raise AssertionError(
+                    f"""
+    It appears that the sender did not get a UserMessage row, which is
+    almost certainly an artificial symptom that in your test setup you
+    have decided to send a message to a stream without the sender being
+    subscribed.
+
+    Please do self.subscribe(<user for {sender.full_name}>, {repr(stream_name)}) first.
+
+    Or choose a stream that the user is already subscribed to:
+
+{self.subscribed_stream_name_list(sender)}
+        """
+                )
+
+        return message_id
 
     def get_messages_response(
         self,
@@ -1041,6 +1061,12 @@ Output:
         if not allow_fail:
             self.assert_json_success(result)
         return result
+
+    def subscribed_stream_name_list(self, user: UserProfile) -> str:
+        # This is currently only used for producing error messages.
+        subscribed_streams = gather_subscriptions(user)[0]
+
+        return "".join(sorted(f"        * {stream['name']}\n" for stream in subscribed_streams))
 
     def check_user_subscribed_only_to_streams(self, user_name: str, streams: List[Stream]) -> None:
         streams = sorted(streams, key=lambda x: x.name)

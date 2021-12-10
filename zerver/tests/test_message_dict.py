@@ -110,7 +110,7 @@ class MessageDictTest(ZulipTestCase):
             self.login_user(hamlet)
             msg_id = self.send_stream_message(
                 hamlet,
-                "Scotland",
+                "Denmark",
                 topic_name="editing",
                 content="before edit",
             )
@@ -262,6 +262,7 @@ class MessageDictTest(ZulipTestCase):
             stream_name = "Denmark"
             if not Stream.objects.filter(realm=realm, name=stream_name).exists():
                 self.make_stream(stream_name, realm)
+            self.subscribe(sender, stream_name)
             msg_id = self.send_stream_message(sender, "Denmark", "hello world", topic_name, realm)
             return Message.objects.get(id=msg_id)
 
@@ -522,6 +523,8 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
 
     def test_display_recipient_stream(self) -> None:
         cordelia = self.example_user("cordelia")
+        self.subscribe(cordelia, "Denmark")
+
         message_ids = [
             self.send_stream_message(cordelia, "Verona", content="test"),
             self.send_stream_message(cordelia, "Denmark", content="test"),
@@ -574,6 +577,10 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
         iago = self.example_user("iago")
+
+        self.subscribe(cordelia, "Denmark")
+        self.subscribe(hamlet, "Scotland")
+
         message_ids = [
             self.send_huddle_message(hamlet, [cordelia, othello], "test"),
             self.send_stream_message(cordelia, "Verona", content="test"),

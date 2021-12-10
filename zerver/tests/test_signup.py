@@ -843,6 +843,7 @@ class LoginTest(ZulipTestCase):
         reset_emails_in_zulip_realm()
 
         realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
         stream_names = [f"stream_{i}" for i in range(40)]
         for stream_name in stream_names:
             stream = self.make_stream(stream_name, realm=realm)
@@ -852,9 +853,10 @@ class LoginTest(ZulipTestCase):
         # unread.  This prevents a bug where this test would start
         # failing the test database was generated more than
         # ONBOARDING_RECENT_TIMEDELTA ago.
+        self.subscribe(hamlet, "stream_0")
         self.send_stream_message(
-            self.example_user("hamlet"),
-            stream_names[0],
+            hamlet,
+            "stream_0",
             topic_name="test topic",
             content="test message",
         )

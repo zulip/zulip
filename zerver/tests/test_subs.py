@@ -91,6 +91,12 @@ from zerver.views.streams import compose_views
 
 
 class TestMiscStuff(ZulipTestCase):
+    def test_test_helper(self) -> None:
+        cordelia = self.example_user("cordelia")
+        s = self.subscribed_stream_name_list(cordelia)
+        self.assertIn("* Verona", s)
+        self.assertNotIn("* Denmark", s)
+
     def test_empty_results(self) -> None:
         # These are essentially just tests to ensure line
         # coverage for codepaths that won't ever really be

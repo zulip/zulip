@@ -452,6 +452,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         message_ids = []  # List[int]
         for sender_name in senders:
             sender = self.example_user(sender_name)
+            self.subscribe(sender, stream)
             content = f"some content for {stream} from {sender_name}"
             message_id = self.send_stream_message(sender, stream, content)
             message_ids.append(message_id)
