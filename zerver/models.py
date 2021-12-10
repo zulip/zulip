@@ -2239,6 +2239,41 @@ class Stream(models.Model):
     # Foreign key to the Recipient object for STREAM type messages to this stream.
     recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
 
+    # Various permission policy configurations
+    PERMISSION_POLICIES: Dict[str, Dict[str, Any]] = {
+        "web_public": {
+            "invite_only": False,
+            "history_public_to_subscribers": True,
+            "is_web_public": True,
+            "policy_name": gettext_lazy("Web public"),
+        },
+        "public": {
+            "invite_only": False,
+            "history_public_to_subscribers": True,
+            "is_web_public": False,
+            "policy_name": gettext_lazy("Public"),
+        },
+        "private_shared_history": {
+            "invite_only": True,
+            "history_public_to_subscribers": True,
+            "is_web_public": False,
+            "policy_name": gettext_lazy("Private, shared history"),
+        },
+        "private_protected_history": {
+            "invite_only": True,
+            "history_public_to_subscribers": False,
+            "is_web_public": False,
+            "policy_name": gettext_lazy("Private, protected history"),
+        },
+        # Public streams with protected history are currently only
+        # available in Zephyr realms
+        "public_protected_history": {
+            "invite_only": False,
+            "history_public_to_subscribers": False,
+            "is_web_public": False,
+            "policy_name": gettext_lazy("Public, protected history"),
+        },
+    }
     invite_only: Optional[bool] = models.BooleanField(null=True, default=False)
     history_public_to_subscribers: bool = models.BooleanField(default=False)
 

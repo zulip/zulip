@@ -132,7 +132,9 @@ class TopicHistoryTest(ZulipTestCase):
         )
 
         # Now make stream private, but subscribe cordelia
-        do_change_stream_permission(stream, invite_only=True)
+        do_change_stream_permission(
+            stream, invite_only=True, acting_user=self.example_user("cordelia")
+        )
         self.subscribe(self.example_user("cordelia"), stream.name)
 
         result = self.client_get(endpoint, {})
@@ -231,10 +233,12 @@ class TopicDeleteTest(ZulipTestCase):
             },
         )
         self.assert_json_error(result, "Must be an organization administrator")
-        self.assertEqual(self.get_last_message().id, last_msg_id)
+        self.assertTrue(Message.objects.filter(id=last_msg_id).exists())
 
         # Make stream private with limited history
-        do_change_stream_permission(stream, invite_only=True, history_public_to_subscribers=False)
+        do_change_stream_permission(
+            stream, invite_only=True, history_public_to_subscribers=False, acting_user=user_profile
+        )
 
         # ADMIN USER subscribed now
         user_profile = self.example_user("iago")
@@ -252,7 +256,7 @@ class TopicDeleteTest(ZulipTestCase):
             },
         )
         self.assert_json_success(result)
-        self.assertEqual(self.get_last_message().id, last_msg_id)
+        self.assertTrue(Message.objects.filter(id=last_msg_id).exists())
 
         # Try to delete all messages in the topic again. There are no messages accessible
         # to the administrator, so this should do nothing.
@@ -263,10 +267,12 @@ class TopicDeleteTest(ZulipTestCase):
             },
         )
         self.assert_json_success(result)
-        self.assertEqual(self.get_last_message().id, last_msg_id)
+        self.assertTrue(Message.objects.filter(id=last_msg_id).exists())
 
         # Make the stream's history public to subscribers
-        do_change_stream_permission(stream, invite_only=True, history_public_to_subscribers=True)
+        do_change_stream_permission(
+            stream, invite_only=True, history_public_to_subscribers=True, acting_user=user_profile
+        )
         # Delete the topic should now remove all messages
         result = self.client_post(
             endpoint,
@@ -275,7 +281,8 @@ class TopicDeleteTest(ZulipTestCase):
             },
         )
         self.assert_json_success(result)
-        self.assertEqual(self.get_last_message().id, initial_last_msg_id)
+        self.assertFalse(Message.objects.filter(id=last_msg_id).exists())
+        self.assertTrue(Message.objects.filter(id=initial_last_msg_id).exists())
 
         # Delete again, to test the edge case of deleting an empty topic.
         result = self.client_post(
@@ -285,4 +292,5 @@ class TopicDeleteTest(ZulipTestCase):
             },
         )
         self.assert_json_success(result)
-        self.assertEqual(self.get_last_message().id, initial_last_msg_id)
+        self.assertFalse(Message.objects.filter(id=last_msg_id).exists())
+        self.assertTrue(Message.objects.filter(id=initial_last_msg_id).exists())

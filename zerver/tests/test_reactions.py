@@ -543,7 +543,9 @@ class ReactionEventTest(ZulipTestCase):
         self.assert_json_success(remove)
 
         # Make stream history public to subscribers
-        do_change_stream_permission(stream, invite_only=False, history_public_to_subscribers=True)
+        do_change_stream_permission(
+            stream, invite_only=False, history_public_to_subscribers=True, acting_user=iago
+        )
         # Since stream history is public to subscribers, reacting to
         # message_before_id should notify all subscribers:
         # Iago and Hamlet.
@@ -562,7 +564,7 @@ class ReactionEventTest(ZulipTestCase):
         self.assert_json_success(remove)
 
         # Make stream web_public as well.
-        do_change_stream_permission(stream, is_web_public=True)
+        do_change_stream_permission(stream, is_web_public=True, acting_user=iago)
         # For is_web_public streams, events even on old messages
         # should go to all subscribers, including guests like polonius.
         with self.tornado_redirected_to_list(events, expected_num_events=1):
