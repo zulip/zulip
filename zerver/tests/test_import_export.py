@@ -85,6 +85,12 @@ def make_export_output_dir() -> str:
     return output_dir
 
 
+def read_file(output_dir: str, fn: str) -> Any:
+    full_fn = os.path.join(output_dir, fn)
+    with open(full_fn, "rb") as f:
+        return orjson.loads(f.read())
+
+
 class RealmImportExportTest(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
@@ -1343,7 +1349,7 @@ class SingleUserExportTest(ZulipTestCase):
         super().setUp()
         self.rm_tree(settings.LOCAL_UPLOADS_DIR)
 
-    def test_export_single_user(self) -> None:
+    def test_message_data(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
@@ -1389,31 +1395,7 @@ class SingleUserExportTest(ZulipTestCase):
         with self.assertLogs(level="INFO"):
             do_export_user(cordelia, output_dir)
 
-        def read_file(fn: str) -> Any:
-            full_fn = os.path.join(output_dir, fn)
-            with open(full_fn, "rb") as f:
-                return orjson.loads(f.read())
-
-        messages = read_file("messages-000001.json")
-        user = read_file("user.json")
-
-        exported_user_id = self.get_set(user["zerver_userprofile"], "id")
-        self.assertEqual(exported_user_id, {cordelia.id})
-        exported_user_email = self.get_set(user["zerver_userprofile"], "email")
-        self.assertEqual(exported_user_email, {cordelia.email})
-
-        exported_recipient_type_id = self.get_set(user["zerver_recipient"], "type_id")
-        self.assertIn(cordelia.id, exported_recipient_type_id)
-
-        exported_stream_id = self.get_set(user["zerver_stream"], "id")
-        self.assertIn(list(exported_stream_id)[0], exported_recipient_type_id)
-
-        exported_recipient_id = self.get_set(user["zerver_recipient"], "id")
-        exported_subscription_recipient = self.get_set(user["zerver_subscription"], "recipient")
-        self.assertEqual(exported_recipient_id, exported_subscription_recipient)
-
-        exported_messages_recipient = self.get_set(messages["zerver_message"], "recipient")
-        self.assertIn(list(exported_messages_recipient)[0], exported_recipient_id)
+        messages = read_file(output_dir, "messages-000001.json")
 
         huddle_name = "Cordelia, Lear's daughter, King Hamlet, Othello, the Moor of Venice"
 
@@ -1434,6 +1416,44 @@ class SingleUserExportTest(ZulipTestCase):
                 (bye_stream_message_id, "bye stream", "Denmark"),
             ],
         )
+
+    def test_user_data(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        smile_message_id = self.send_stream_message(hamlet, "Denmark")
+
+        check_add_reaction(
+            user_profile=cordelia,
+            message_id=smile_message_id,
+            emoji_name="smile",
+            emoji_code=None,
+            reaction_type=None,
+        )
+        reaction = Reaction.objects.order_by("id").last()
+        assert reaction
+
+        output_dir = make_export_output_dir()
+
+        with self.assertLogs(level="INFO"):
+            do_export_user(cordelia, output_dir)
+
+        user = read_file(output_dir, "user.json")
+
+        exported_user_id = self.get_set(user["zerver_userprofile"], "id")
+        self.assertEqual(exported_user_id, {cordelia.id})
+        exported_user_email = self.get_set(user["zerver_userprofile"], "email")
+        self.assertEqual(exported_user_email, {cordelia.email})
+
+        exported_recipient_type_id = self.get_set(user["zerver_recipient"], "type_id")
+        self.assertIn(cordelia.id, exported_recipient_type_id)
+
+        exported_stream_id = self.get_set(user["zerver_stream"], "id")
+        self.assertIn(list(exported_stream_id)[0], exported_recipient_type_id)
+
+        exported_recipient_id = self.get_set(user["zerver_recipient"], "id")
+        exported_subscription_recipient = self.get_set(user["zerver_subscription"], "recipient")
+        self.assertEqual(exported_recipient_id, exported_subscription_recipient)
 
         (exported_reaction,) = user["zerver_reaction"]
         self.assertEqual(
