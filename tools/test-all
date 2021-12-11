@@ -58,7 +58,7 @@ run ./tools/test-migrations
 # ./tools/setup/generate_integration_bots_avatars.py --check-missing
 # Not running documentation tests since it takes 20s and only tests documentation
 # run ./tools/test-documentation
-# run ./tools/test-help-documentation $FORCEARG
+run ./tools/test-help-documentation $FORCEARG
 run ./tools/test-api
 # Not running requirements check locally, because slow and low-churn
 # run ./tools/test-locked-requirements
