@@ -1,3 +1,4 @@
+import datetime
 import os
 import shutil
 from typing import Any, Callable, Dict, FrozenSet, List, Optional, Set, Tuple
@@ -8,19 +9,26 @@ from django.conf import settings
 from django.db.models import Q
 from django.utils.timezone import now as timezone_now
 
+from analytics.models import UserCount
 from zerver.lib import upload
 from zerver.lib.actions import (
     check_add_reaction,
     check_add_realm_emoji,
+    do_add_alert_words,
     do_add_reaction,
     do_change_icon_source,
     do_change_logo_source,
     do_change_realm_plan_type,
     do_create_user,
     do_deactivate_user,
+    do_mute_topic,
     do_mute_user,
+    do_update_user_activity,
+    do_update_user_activity_interval,
+    do_update_user_custom_profile_data_if_changed,
     do_update_user_presence,
     do_update_user_status,
+    try_add_realm_custom_profile_field,
 )
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.bot_config import set_bot_config
@@ -75,6 +83,10 @@ from zerver.models import (
     get_realm,
     get_stream,
 )
+
+
+def make_datetime(val: float) -> datetime.datetime:
+    return datetime.datetime.fromtimestamp(val, tz=datetime.timezone.utc)
 
 
 def make_export_output_dir() -> str:
@@ -1422,29 +1434,69 @@ class SingleUserExportTest(ZulipTestCase):
         checkers = {}
 
         def checker(f: Callable[[List[Record]], None]) -> Callable[[List[Record]], None]:
+            # Every checker function that gets decorated here should be named
+            # after one of the tables that we export in the single-user
+            # export. The table name then is used by code toward the end of the
+            # test to determine which portion of the data from users.json
+            # to pass into the checker.
             table_name = f.__name__
-            assert table_name.startswith("zerver_")
             assert table_name not in checkers
             checkers[table_name] = f
             return f
 
-        hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        realm = cordelia.realm
+        scotland = get_stream("Scotland", realm)
+        client = get_client("some_app")
+        now = timezone_now()
 
         @checker
         def zerver_userprofile(records: List[Record]) -> None:
             (rec,) = records
             self.assertEqual(rec["id"], cordelia.id)
             self.assertEqual(rec["email"], cordelia.email)
+            self.assertEqual(rec["full_name"], cordelia.full_name)
+
+        """
+        Try to set up the test data roughly in order of table name, where
+        possible, just to make it a bit easier to read the test.
+        """
+
+        do_add_alert_words(cordelia, ["pizza"])
+        do_add_alert_words(hamlet, ["bogus"])
 
         @checker
-        def zerver_recipient(records: List[Record]) -> None:
-            self.assertIn(cordelia.id, self.get_set(records, "type_id"))
+        def zerver_alertword(records: List[Record]) -> None:
+            self.assertEqual(records[-1]["word"], "pizza")
+
+        favorite_city = try_add_realm_custom_profile_field(
+            realm,
+            "Favorite city",
+            CustomProfileField.SHORT_TEXT,
+        )
+
+        def set_favorite_city(user: UserProfile, city: str) -> None:
+            do_update_user_custom_profile_data_if_changed(
+                user, [dict(id=favorite_city.id, value=city)]
+            )
+
+        set_favorite_city(cordelia, "Seattle")
+        set_favorite_city(othello, "Moscow")
 
         @checker
-        def zerver_stream(records: List[Record]) -> None:
-            streams = {rec["name"] for rec in records}
-            self.assertEqual(streams, {"Verona"})
+        def zerver_customprofilefieldvalue(records: List[Record]) -> None:
+            (rec,) = records
+            self.assertEqual(rec["field"], favorite_city.id)
+            self.assertEqual(rec["rendered_value"], "<p>Seattle</p>")
+
+        do_mute_user(cordelia, othello)
+        do_mute_user(hamlet, cordelia)  # should be ignored
+
+        @checker
+        def zerver_muteduser(records: List[Record]) -> None:
+            self.assertEqual(records[-1]["muted_user"], othello.id)
 
         smile_message_id = self.send_stream_message(hamlet, "Denmark")
 
@@ -1473,6 +1525,135 @@ class SingleUserExportTest(ZulipTestCase):
                 ),
             )
 
+        self.subscribe(cordelia, "Scotland")
+
+        create_stream_if_needed(realm, "bogus")
+        self.subscribe(othello, "bogus")
+
+        @checker
+        def zerver_recipient(records: List[Record]) -> None:
+            last_recipient = Recipient.objects.get(id=records[-1]["id"])
+            self.assertEqual(last_recipient.type, Recipient.STREAM)
+            stream_id = last_recipient.type_id
+            self.assertEqual(stream_id, get_stream("Scotland", realm).id)
+
+        @checker
+        def zerver_stream(records: List[Record]) -> None:
+            streams = {rec["name"] for rec in records}
+            self.assertEqual(streams, {"Scotland", "Verona"})
+
+        @checker
+        def zerver_subscription(records: List[Record]) -> None:
+            last_recipient = Recipient.objects.get(id=records[-1]["recipient"])
+            self.assertEqual(last_recipient.type, Recipient.STREAM)
+            stream_id = last_recipient.type_id
+            self.assertEqual(stream_id, get_stream("Scotland", realm).id)
+
+        do_update_user_activity(cordelia.id, client.id, "/some/endpoint", 2, now)
+        do_update_user_activity(cordelia.id, client.id, "/some/endpoint", 3, now)
+        do_update_user_activity(othello.id, client.id, "/bogus", 20, now)
+
+        @checker
+        def zerver_useractivity(records: List[Record]) -> None:
+            (rec,) = records
+            self.assertEqual(
+                rec,
+                dict(
+                    client=client.id,
+                    count=5,
+                    id=rec["id"],
+                    last_visit=rec["last_visit"],
+                    query="/some/endpoint",
+                    user_profile=cordelia.id,
+                ),
+            )
+            self.assertEqual(make_datetime(rec["last_visit"]), now)
+
+        do_update_user_activity_interval(cordelia, now)
+        do_update_user_activity_interval(othello, now)
+
+        @checker
+        def zerver_useractivityinterval(records: List[Record]) -> None:
+            (rec,) = records
+            self.assertEqual(rec["user_profile"], cordelia.id)
+            self.assertEqual(make_datetime(rec["start"]), now)
+
+        do_update_user_presence(cordelia, client, now, UserPresence.ACTIVE)
+        do_update_user_presence(othello, client, now, UserPresence.IDLE)
+
+        @checker
+        def zerver_userpresence(records: List[Record]) -> None:
+            self.assertEqual(records[-1]["status"], UserPresence.ACTIVE)
+            self.assertEqual(records[-1]["client"], client.id)
+            self.assertEqual(make_datetime(records[-1]["timestamp"]), now)
+
+        do_update_user_status(
+            user_profile=cordelia,
+            away=True,
+            status_text="on vacation",
+            client_id=client.id,
+            emoji_name=None,
+            emoji_code=None,
+            reaction_type=None,
+        )
+
+        do_update_user_status(
+            user_profile=othello,
+            away=False,
+            status_text="at my desk",
+            client_id=client.id,
+            emoji_name=None,
+            emoji_code=None,
+            reaction_type=None,
+        )
+
+        @checker
+        def zerver_userstatus(records: List[Record]) -> None:
+            rec = records[-1]
+            self.assertEqual(rec["status_text"], "on vacation")
+            self.assertEqual(rec["status"], UserStatus.AWAY)
+
+        do_mute_topic(cordelia, scotland, "bagpipe music")
+        do_mute_topic(othello, scotland, "nessie")
+
+        @checker
+        def zerver_usertopic(records: List[Record]) -> None:
+            rec = records[-1]
+            self.assertEqual(rec["topic_name"], "bagpipe music")
+            self.assertEqual(rec["visibility_policy"], UserTopic.MUTED)
+
+        """
+        For some tables we don't bother with super realistic test data
+        setup.
+        """
+        UserCount.objects.create(
+            user=cordelia, realm=realm, property="whatever", value=42, end_time=now
+        )
+        UserCount.objects.create(
+            user=othello, realm=realm, property="bogus", value=999999, end_time=now
+        )
+
+        @checker
+        def analytics_usercount(records: List[Record]) -> None:
+            (rec,) = records
+            self.assertEqual(rec["value"], 42)
+
+        UserHotspot.objects.create(user=cordelia, hotspot="topics")
+        UserHotspot.objects.create(user=othello, hotspot="bogus")
+
+        @checker
+        def zerver_userhotspot(records: List[Record]) -> None:
+            self.assertEqual(records[-1]["hotspot"], "topics")
+
+        """
+        The zerver_realmauditlog checker basically assumes that
+        we subscribed Cordelia to Scotland.
+        """
+
+        @checker
+        def zerver_realmauditlog(records: List[Record]) -> None:
+            self.assertEqual(records[-1]["modified_stream"], scotland.id)
+
         output_dir = make_export_output_dir()
 
         with self.assertLogs(level="INFO"):
@@ -1480,9 +1661,19 @@ class SingleUserExportTest(ZulipTestCase):
 
         user = read_file(output_dir, "user.json")
 
-        exported_recipient_id = self.get_set(user["zerver_recipient"], "id")
-        exported_subscription_recipient = self.get_set(user["zerver_subscription"], "recipient")
-        self.assertEqual(exported_recipient_id, exported_subscription_recipient)
-
         for table_name, f in checkers.items():
             f(user[table_name])
+
+        for table_name in user:
+            if table_name not in checkers:
+                raise AssertionError(
+                    f"""
+                    Please create a checker called "{table_name}"
+                    to check the user["{table_name}"] data in users.json.
+
+                    Please be thoughtful about where you introduce
+                    the new code--if you read the test, the patterns
+                    for how to test table data should be clear.
+                    Try to mostly keep checkers in alphabetical order.
+                    """
+                )
