@@ -25,7 +25,7 @@ from zerver.lib.actions import (
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.bot_lib import StateHandler
-from zerver.lib.export import do_export_realm, do_export_user, export_usermessages_batch
+from zerver.lib.export import Record, do_export_realm, do_export_user, export_usermessages_batch
 from zerver.lib.import_realm import do_import_realm, get_incoming_message_ids
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
@@ -1418,8 +1418,33 @@ class SingleUserExportTest(ZulipTestCase):
         )
 
     def test_user_data(self) -> None:
+        # We register checkers during test setup, and then we call them at the end.
+        checkers = {}
+
+        def checker(f: Callable[[List[Record]], None]) -> Callable[[List[Record]], None]:
+            table_name = f.__name__
+            assert table_name.startswith("zerver_")
+            assert table_name not in checkers
+            checkers[table_name] = f
+            return f
+
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
+
+        @checker
+        def zerver_userprofile(records: List[Record]) -> None:
+            (rec,) = records
+            self.assertEqual(rec["id"], cordelia.id)
+            self.assertEqual(rec["email"], cordelia.email)
+
+        @checker
+        def zerver_recipient(records: List[Record]) -> None:
+            self.assertIn(cordelia.id, self.get_set(records, "type_id"))
+
+        @checker
+        def zerver_stream(records: List[Record]) -> None:
+            streams = {rec["name"] for rec in records}
+            self.assertEqual(streams, {"Verona"})
 
         smile_message_id = self.send_stream_message(hamlet, "Denmark")
 
@@ -1433,6 +1458,21 @@ class SingleUserExportTest(ZulipTestCase):
         reaction = Reaction.objects.order_by("id").last()
         assert reaction
 
+        @checker
+        def zerver_reaction(records: List[Record]) -> None:
+            (exported_reaction,) = records
+            self.assertEqual(
+                exported_reaction,
+                dict(
+                    id=reaction.id,
+                    user_profile=cordelia.id,
+                    emoji_name="smile",
+                    reaction_type="unicode_emoji",
+                    emoji_code=reaction.emoji_code,
+                    message=smile_message_id,
+                ),
+            )
+
         output_dir = make_export_output_dir()
 
         with self.assertLogs(level="INFO"):
@@ -1440,30 +1480,9 @@ class SingleUserExportTest(ZulipTestCase):
 
         user = read_file(output_dir, "user.json")
 
-        exported_user_id = self.get_set(user["zerver_userprofile"], "id")
-        self.assertEqual(exported_user_id, {cordelia.id})
-        exported_user_email = self.get_set(user["zerver_userprofile"], "email")
-        self.assertEqual(exported_user_email, {cordelia.email})
-
-        exported_recipient_type_id = self.get_set(user["zerver_recipient"], "type_id")
-        self.assertIn(cordelia.id, exported_recipient_type_id)
-
-        streams = {rec["name"] for rec in user["zerver_stream"]}
-        self.assertEqual(streams, {"Verona"})
-
         exported_recipient_id = self.get_set(user["zerver_recipient"], "id")
         exported_subscription_recipient = self.get_set(user["zerver_subscription"], "recipient")
         self.assertEqual(exported_recipient_id, exported_subscription_recipient)
 
-        (exported_reaction,) = user["zerver_reaction"]
-        self.assertEqual(
-            exported_reaction,
-            dict(
-                id=reaction.id,
-                user_profile=cordelia.id,
-                emoji_name="smile",
-                reaction_type="unicode_emoji",
-                emoji_code=reaction.emoji_code,
-                message=smile_message_id,
-            ),
-        )
+        for table_name, f in checkers.items():
+            f(user[table_name])
