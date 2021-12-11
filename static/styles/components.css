@@ -86,10 +86,11 @@
             }
 
             &:checked ~ span {
-                background-image: url("../images/checkbox-green.svg");
+                background-image: url("../images/checkbox-white.svg");
                 background-size: 75%;
                 background-position: 50% 50%;
                 background-repeat: no-repeat;
+                background-color: hsl(156, 41%, 40%);
             }
 
             &:disabled ~ span {
