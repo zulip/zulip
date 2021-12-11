@@ -99,9 +99,16 @@ Environment=SASL_CONF_PATH=/etc/sasl2
     mode    => '0644',
     content => template('zulip/memcached.conf.template.erb'),
   }
+  file { '/run/memcached':
+    ensure  => 'directory',
+    owner   => 'memcache',
+    group   => 'memcache',
+    mode    => '0755',
+    require => Package[$memcached_packages],
+  }
   service { 'memcached':
     ensure    => running,
     subscribe => File['/etc/memcached.conf'],
-    require   => Class['zulip::systemd_daemon_reload'];
+    require   => [File['/run/memcached'], Class['zulip::systemd_daemon_reload']],
   }
 }
