@@ -1448,8 +1448,8 @@ class SingleUserExportTest(ZulipTestCase):
         exported_recipient_type_id = self.get_set(user["zerver_recipient"], "type_id")
         self.assertIn(cordelia.id, exported_recipient_type_id)
 
-        exported_stream_id = self.get_set(user["zerver_stream"], "id")
-        self.assertIn(list(exported_stream_id)[0], exported_recipient_type_id)
+        streams = {rec["name"] for rec in user["zerver_stream"]}
+        self.assertEqual(streams, {"Verona"})
 
         exported_recipient_id = self.get_set(user["zerver_recipient"], "id")
         exported_subscription_recipient = self.get_set(user["zerver_subscription"], "recipient")
