@@ -961,22 +961,23 @@ def do_set_realm_notifications_stream(
 ) -> None:
     old_value = realm.notifications_stream_id
     realm.notifications_stream = stream
-    realm.save(update_fields=["notifications_stream"])
+    with transaction.atomic():
+        realm.save(update_fields=["notifications_stream"])
 
-    event_time = timezone_now()
-    RealmAuditLog.objects.create(
-        realm=realm,
-        event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
-        event_time=event_time,
-        acting_user=acting_user,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: stream_id,
-                "property": "notifications_stream",
-            }
-        ).decode(),
-    )
+        event_time = timezone_now()
+        RealmAuditLog.objects.create(
+            realm=realm,
+            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+            event_time=event_time,
+            acting_user=acting_user,
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.OLD_VALUE: old_value,
+                    RealmAuditLog.NEW_VALUE: stream_id,
+                    "property": "notifications_stream",
+                }
+            ).decode(),
+        )
 
     event = dict(
         type="realm",
