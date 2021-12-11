@@ -459,7 +459,10 @@ class FetchInitialStateDataTest(ZulipTestCase):
         result = fetch_initial_state_data(user_profile)
 
         for key, value in result["raw_users"].items():
-            self.assertNotIn("delivery_email", value)
+            if key == user_profile.id:
+                self.assertEqual(value["delivery_email"], user_profile.delivery_email)
+            else:
+                self.assertNotIn("delivery_email", value)
 
         do_set_realm_property(
             user_profile.realm,
@@ -470,7 +473,10 @@ class FetchInitialStateDataTest(ZulipTestCase):
         result = fetch_initial_state_data(user_profile)
 
         for key, value in result["raw_users"].items():
-            self.assertNotIn("delivery_email", value)
+            if key == user_profile.id:
+                self.assertEqual(value["delivery_email"], user_profile.delivery_email)
+            else:
+                self.assertNotIn("delivery_email", value)
 
     def test_delivery_email_presence_for_admins(self) -> None:
         user_profile = self.example_user("iago")
@@ -483,8 +489,12 @@ class FetchInitialStateDataTest(ZulipTestCase):
             acting_user=None,
         )
         result = fetch_initial_state_data(user_profile)
+
         for key, value in result["raw_users"].items():
-            self.assertNotIn("delivery_email", value)
+            if key == user_profile.id:
+                self.assertEqual(value["delivery_email"], user_profile.delivery_email)
+            else:
+                self.assertNotIn("delivery_email", value)
 
         do_set_realm_property(
             user_profile.realm,

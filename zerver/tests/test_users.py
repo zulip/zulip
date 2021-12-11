@@ -316,7 +316,7 @@ class PermissionTest(ZulipTestCase):
         hamlet = find_dict(members, "user_id", user.id)
         self.assertEqual(hamlet["email"], user.email)
         self.assertIsNone(hamlet["avatar_url"])
-        self.assertNotIn("delivery_email", hamlet)
+        self.assertEqual(hamlet["delivery_email"], user.delivery_email)
 
         # Also verify the /events code path.  This is a bit hacky, but
         # we need to verify client_gravatar is not being overridden.
@@ -346,7 +346,7 @@ class PermissionTest(ZulipTestCase):
         # `delivery_email`; otherwise, we won't be able to serve the
         # user's Gravatar.
         self.assertEqual(hamlet["avatar_url"], get_gravatar_url(user.delivery_email, 1))
-        self.assertNotIn("delivery_email", hamlet)
+        self.assertEqual(hamlet["delivery_email"], user.delivery_email)
 
         # Also verify the /events code path.  This is a bit hacky, but
         # basically we want to verify client_gravatar is being
@@ -809,7 +809,7 @@ class QueryCountTest(ZulipTestCase):
 
         with queries_captured() as queries:
             with cache_tries_captured() as cache_tries:
-                with self.tornado_redirected_to_list(events, expected_num_events=10):
+                with self.tornado_redirected_to_list(events, expected_num_events=11):
                     fred = do_create_user(
                         email="fred@zulip.com",
                         password="password",
@@ -819,9 +819,9 @@ class QueryCountTest(ZulipTestCase):
                         acting_user=None,
                     )
 
-        self.assert_length(queries, 90)
-        self.assert_length(cache_tries, 29)
+        self.assert_length(queries, 91)
 
+        self.assert_length(cache_tries, 28)
         peer_add_events = [event for event in events if event["event"].get("op") == "peer_add"]
 
         notifications = set()
@@ -2008,7 +2008,7 @@ class GetProfileTest(ZulipTestCase):
         self.assertFalse(result["is_owner"])
         self.assertFalse(result["is_guest"])
         self.assertEqual(result["role"], UserProfile.ROLE_MEMBER)
-        self.assertFalse("delivery_email" in result)
+        self.assertEqual(result["delivery_email"], hamlet.delivery_email)
         self.login("iago")
         result = orjson.loads(self.client_get("/json/users/me").content)
         self.assertEqual(result["email"], iago.email)

@@ -26,7 +26,12 @@ from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
 from zerver.lib.streams import get_signups_stream
 from zerver.lib.user_counts import realm_user_count, realm_user_count_by_role
 from zerver.lib.user_groups import get_system_user_group_for_user
-from zerver.lib.users import format_user_row, get_api_key, user_profile_to_user_row
+from zerver.lib.users import (
+    can_access_delivery_email,
+    format_user_row,
+    get_api_key,
+    user_profile_to_user_row,
+)
 from zerver.models import (
     DefaultStreamGroup,
     Message,
@@ -40,7 +45,6 @@ from zerver.models import (
     UserGroupMembership,
     UserMessage,
     UserProfile,
-    active_user_ids,
     bot_owner_user_ids,
     get_realm,
     get_system_bot,
@@ -292,8 +296,27 @@ def notify_created_user(user_profile: UserProfile) -> None:
         # later event.
         custom_profile_field_data={},
     )
-    event: Dict[str, Any] = dict(type="realm_user", op="add", person=person)
-    send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+
+    active_users = user_profile.realm.get_active_users()
+    user_ids_with_real_email_access = []
+    user_ids_without_real_email_access = []
+    for user in active_users:
+        if can_access_delivery_email(
+            user, user_profile.id, user_profile.realm.email_address_visibility
+        ):
+            user_ids_with_real_email_access.append(user.id)
+        else:
+            user_ids_without_real_email_access.append(user.id)
+
+    if user_ids_with_real_email_access:
+        person["delivery_email"] = user_profile.delivery_email
+        event: Dict[str, Any] = dict(type="realm_user", op="add", person=person)
+        send_event(user_profile.realm, event, user_ids_with_real_email_access)
+
+    if user_ids_without_real_email_access:
+        del person["delivery_email"]
+        event = dict(type="realm_user", op="add", person=person)
+        send_event(user_profile.realm, event, user_ids_without_real_email_access)
 
 
 def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:

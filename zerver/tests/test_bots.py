@@ -164,7 +164,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login("hamlet")
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=4):
+        with self.tornado_redirected_to_list(events, expected_num_events=5):
             result = self.create_bot()
         self.assert_num_bots_equal(1)
 
@@ -330,7 +330,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login_user(user)
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=4):
+        with self.tornado_redirected_to_list(events, expected_num_events=5):
             result = self.create_bot()
         self.assert_num_bots_equal(1)
 
@@ -422,7 +422,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=4):
+        with self.tornado_redirected_to_list(events, expected_num_events=5):
             result = self.create_bot(default_sending_stream="Denmark")
         self.assert_num_bots_equal(1)
         self.assertEqual(result["default_sending_stream"], "Denmark")
@@ -496,7 +496,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=4):
+        with self.tornado_redirected_to_list(events, expected_num_events=5):
             result = self.create_bot(default_events_register_stream="Denmark")
         self.assert_num_bots_equal(1)
         self.assertEqual(result["default_events_register_stream"], "Denmark")
