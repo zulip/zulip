@@ -1105,19 +1105,20 @@ def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
 
 def do_reactivate_realm(realm: Realm) -> None:
     realm.deactivated = False
-    realm.save(update_fields=["deactivated"])
+    with transaction.atomic():
+        realm.save(update_fields=["deactivated"])
 
-    event_time = timezone_now()
-    RealmAuditLog.objects.create(
-        realm=realm,
-        event_type=RealmAuditLog.REALM_REACTIVATED,
-        event_time=event_time,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
-            }
-        ).decode(),
-    )
+        event_time = timezone_now()
+        RealmAuditLog.objects.create(
+            realm=realm,
+            event_type=RealmAuditLog.REALM_REACTIVATED,
+            event_time=event_time,
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
+                }
+            ).decode(),
+        )
 
 
 def do_change_realm_subdomain(
