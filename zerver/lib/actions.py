@@ -1138,21 +1138,25 @@ def do_change_realm_subdomain(
     # deleting, clear that state.
     realm.demo_organization_scheduled_deletion_date = None
     realm.string_id = new_subdomain
-    realm.save(update_fields=["string_id", "demo_organization_scheduled_deletion_date"])
-    RealmAuditLog.objects.create(
-        realm=realm,
-        event_type=RealmAuditLog.REALM_SUBDOMAIN_CHANGED,
-        event_time=timezone_now(),
-        acting_user=acting_user,
-        extra_data={"old_subdomain": old_subdomain, "new_subdomain": new_subdomain},
-    )
+    with transaction.atomic():
+        realm.save(update_fields=["string_id", "demo_organization_scheduled_deletion_date"])
+        RealmAuditLog.objects.create(
+            realm=realm,
+            event_type=RealmAuditLog.REALM_SUBDOMAIN_CHANGED,
+            event_time=timezone_now(),
+            acting_user=acting_user,
+            extra_data={"old_subdomain": old_subdomain, "new_subdomain": new_subdomain},
+        )
 
-    # If a realm if being renamed multiple times, we should find all the placeholder
-    # realms and reset their deactivated_redirect field to point to the new realm uri
-    placeholder_realms = Realm.objects.filter(deactivated_redirect=old_uri, deactivated=True)
-    for placeholder_realm in placeholder_realms:
-        do_add_deactivated_redirect(placeholder_realm, realm.uri)
+        # If a realm if being renamed multiple times, we should find all the placeholder
+        # realms and reset their deactivated_redirect field to point to the new realm uri
+        placeholder_realms = Realm.objects.filter(deactivated_redirect=old_uri, deactivated=True)
+        for placeholder_realm in placeholder_realms:
+            do_add_deactivated_redirect(placeholder_realm, realm.uri)
 
+    # The below block isn't executed in a transaction with the earlier code due to
+    # the functions called below being complex and potentially sending events,
+    # which we don't want to do in atomic blocks.
     # When we change a realm's subdomain the realm with old subdomain is basically
     # deactivated. We are creating a deactivated realm using old subdomain and setting
     # it's deactivated redirect to new_subdomain so that we can tell the users that
