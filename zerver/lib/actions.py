@@ -873,24 +873,26 @@ def do_set_realm_authentication_methods(
     realm: Realm, authentication_methods: Dict[str, bool], *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = realm.authentication_methods_dict()
-    for key, value in list(authentication_methods.items()):
-        index = getattr(realm.authentication_methods, key).number
-        realm.authentication_methods.set_bit(index, int(value))
-    realm.save(update_fields=["authentication_methods"])
-    updated_value = realm.authentication_methods_dict()
-    RealmAuditLog.objects.create(
-        realm=realm,
-        event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
-        event_time=timezone_now(),
-        acting_user=acting_user,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: updated_value,
-                "property": "authentication_methods",
-            }
-        ).decode(),
-    )
+    with transaction.atomic():
+        for key, value in list(authentication_methods.items()):
+            index = getattr(realm.authentication_methods, key).number
+            realm.authentication_methods.set_bit(index, int(value))
+        realm.save(update_fields=["authentication_methods"])
+        updated_value = realm.authentication_methods_dict()
+        RealmAuditLog.objects.create(
+            realm=realm,
+            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+            event_time=timezone_now(),
+            acting_user=acting_user,
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.OLD_VALUE: old_value,
+                    RealmAuditLog.NEW_VALUE: updated_value,
+                    "property": "authentication_methods",
+                }
+            ).decode(),
+        )
+
     event = dict(
         type="realm",
         op="update_dict",
