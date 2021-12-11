@@ -927,24 +927,26 @@ def do_set_realm_message_editing(
         edit_topic_policy=edit_topic_policy,
     )
 
-    for updated_property, updated_value in updated_properties.items():
-        if updated_value == old_values[updated_property]:
-            continue
-        RealmAuditLog.objects.create(
-            realm=realm,
-            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
-            event_time=event_time,
-            acting_user=acting_user,
-            extra_data=orjson.dumps(
-                {
-                    RealmAuditLog.OLD_VALUE: old_values[updated_property],
-                    RealmAuditLog.NEW_VALUE: updated_value,
-                    "property": updated_property,
-                }
-            ).decode(),
-        )
+    with transaction.atomic():
+        for updated_property, updated_value in updated_properties.items():
+            if updated_value == old_values[updated_property]:
+                continue
+            RealmAuditLog.objects.create(
+                realm=realm,
+                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_time=event_time,
+                acting_user=acting_user,
+                extra_data=orjson.dumps(
+                    {
+                        RealmAuditLog.OLD_VALUE: old_values[updated_property],
+                        RealmAuditLog.NEW_VALUE: updated_value,
+                        "property": updated_property,
+                    }
+                ).decode(),
+            )
 
-    realm.save(update_fields=list(updated_properties.keys()))
+        realm.save(update_fields=list(updated_properties.keys()))
+
     event = dict(
         type="realm",
         op="update_dict",
