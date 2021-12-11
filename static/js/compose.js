@@ -712,6 +712,10 @@ export function initialize() {
         e.stopPropagation();
     });
 
+    $("body").on("mousedown", "div.message_controls, a.respond_button", (e) => {
+        e.preventDefault();
+    });
+
     if (page_params.narrow !== undefined) {
         if (page_params.narrow_topic !== undefined) {
             compose_actions.start("stream", {topic: page_params.narrow_topic});

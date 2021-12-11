@@ -466,13 +466,13 @@ export function on_topic_narrow() {
 }
 
 export function quote_and_reply(opts) {
-    const is_message_edit_open = $(".message_edit_content").length > 0
-    const textarea = is_message_edit_open == true ? $(".message_edit_content").eq(0) : $("#compose-textarea"); 
+    const active_ele = document.activeElement;
+    const is_message_edit_open = active_ele && active_ele.className === "message_edit_content";
+    const textarea = is_message_edit_open ? $(active_ele) : $("#compose-textarea");
     const message_id = message_lists.current.selected_id();
     const message = message_lists.current.selected_message();
     const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
-
-    if (is_message_edit_open == true || compose_state.has_message_content()) {
+    if (is_message_edit_open || compose_state.has_message_content()) {
         // The user already started typing a message,
         // so we won't re-open the compose box.
         // (If you did re-open the compose box, you
@@ -513,7 +513,7 @@ export function quote_and_reply(opts) {
         const placeholder_offset = $(textarea).val().indexOf(quoting_placeholder);
         compose_ui.replace_syntax(quoting_placeholder, content, textarea);
         compose_ui.autosize_textarea(textarea);
-        
+
         // When replacing content in a textarea, we need to move the
         // cursor to preserve its logical position if and only if the
         // content we just added was before the current cursor
