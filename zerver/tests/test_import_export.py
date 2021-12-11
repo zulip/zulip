@@ -1,4 +1,5 @@
 import os
+import shutil
 from typing import Any, Callable, Dict, FrozenSet, List, Optional, Set, Tuple
 from unittest.mock import patch
 
@@ -76,7 +77,15 @@ from zerver.models import (
 )
 
 
-class ImportExportTest(ZulipTestCase):
+def make_export_output_dir() -> str:
+    output_dir = os.path.join(settings.TEST_WORKER_DIR, "test-export")
+    if os.path.exists(output_dir):
+        shutil.rmtree(output_dir)
+    os.makedirs(output_dir)
+    return output_dir
+
+
+class RealmImportExportTest(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.rm_tree(settings.LOCAL_UPLOADS_DIR)
@@ -98,19 +107,13 @@ class ImportExportTest(ZulipTestCase):
         huddle_hash = get_huddle_hash(user_id_list)
         return huddle_hash
 
-    def _make_output_dir(self) -> str:
-        output_dir = os.path.join(settings.TEST_WORKER_DIR, "test-export")
-        self.rm_tree(output_dir)
-        os.makedirs(output_dir, exist_ok=True)
-        return output_dir
-
     def _export_realm(
         self,
         realm: Realm,
         exportable_user_ids: Optional[Set[int]] = None,
         consent_message_id: Optional[int] = None,
     ) -> Dict[str, Any]:
-        output_dir = self._make_output_dir()
+        output_dir = make_export_output_dir()
         with patch("zerver.lib.export.create_soft_link"), self.assertLogs(level="INFO"):
             do_export_realm(
                 realm=realm,
@@ -634,111 +637,6 @@ class ImportExportTest(ZulipTestCase):
         self.assertIn(pm_b_msg_id, exported_msg_ids)
         self.assertIn(pm_c_msg_id, exported_msg_ids)
         self.assertIn(pm_d_msg_id, exported_msg_ids)
-
-    def test_export_single_user(self) -> None:
-        hamlet = self.example_user("hamlet")
-        cordelia = self.example_user("cordelia")
-        othello = self.example_user("othello")
-        polonius = self.example_user("polonius")
-
-        self.subscribe(cordelia, "Denmark")
-
-        smile_message_id = self.send_stream_message(hamlet, "Denmark", "SMILE!")
-
-        check_add_reaction(
-            user_profile=cordelia,
-            message_id=smile_message_id,
-            emoji_name="smile",
-            emoji_code=None,
-            reaction_type=None,
-        )
-        reaction = Reaction.objects.order_by("id").last()
-        assert reaction
-
-        # Send a message that Cordelia should not have in the export.
-        self.send_stream_message(othello, "Denmark", "bogus")
-
-        hi_stream_message_id = self.send_stream_message(cordelia, "Denmark", "hi stream")
-        assert most_recent_usermessage(cordelia).message_id == hi_stream_message_id
-
-        # Try to fool the export again
-        self.send_personal_message(othello, hamlet)
-        self.send_huddle_message(othello, [hamlet, polonius])
-
-        hi_hamlet_message_id = self.send_personal_message(cordelia, hamlet, "hi hamlet")
-
-        hi_peeps_message_id = self.send_huddle_message(cordelia, [hamlet, othello], "hi peeps")
-        bye_peeps_message_id = self.send_huddle_message(othello, [cordelia, hamlet], "bye peeps")
-
-        bye_hamlet_message_id = self.send_personal_message(cordelia, hamlet, "bye hamlet")
-
-        hi_myself_message_id = self.send_personal_message(cordelia, cordelia, "hi myself")
-        bye_stream_message_id = self.send_stream_message(cordelia, "Denmark", "bye stream")
-
-        output_dir = self._make_output_dir()
-        cordelia = self.example_user("cordelia")
-
-        with self.assertLogs(level="INFO"):
-            do_export_user(cordelia, output_dir)
-
-        def read_file(fn: str) -> Any:
-            full_fn = os.path.join(output_dir, fn)
-            with open(full_fn, "rb") as f:
-                return orjson.loads(f.read())
-
-        messages = read_file("messages-000001.json")
-        user = read_file("user.json")
-
-        exported_user_id = self.get_set(user["zerver_userprofile"], "id")
-        self.assertEqual(exported_user_id, {cordelia.id})
-        exported_user_email = self.get_set(user["zerver_userprofile"], "email")
-        self.assertEqual(exported_user_email, {cordelia.email})
-
-        exported_recipient_type_id = self.get_set(user["zerver_recipient"], "type_id")
-        self.assertIn(cordelia.id, exported_recipient_type_id)
-
-        exported_stream_id = self.get_set(user["zerver_stream"], "id")
-        self.assertIn(list(exported_stream_id)[0], exported_recipient_type_id)
-
-        exported_recipient_id = self.get_set(user["zerver_recipient"], "id")
-        exported_subscription_recipient = self.get_set(user["zerver_subscription"], "recipient")
-        self.assertEqual(exported_recipient_id, exported_subscription_recipient)
-
-        exported_messages_recipient = self.get_set(messages["zerver_message"], "recipient")
-        self.assertIn(list(exported_messages_recipient)[0], exported_recipient_id)
-
-        huddle_name = "Cordelia, Lear's daughter, King Hamlet, Othello, the Moor of Venice"
-
-        excerpt = [
-            (rec["id"], rec["content"], rec["recipient_name"])
-            for rec in messages["zerver_message"][-8:]
-        ]
-        self.assertEqual(
-            excerpt,
-            [
-                (smile_message_id, "SMILE!", "Denmark"),
-                (hi_stream_message_id, "hi stream", "Denmark"),
-                (hi_hamlet_message_id, "hi hamlet", hamlet.full_name),
-                (hi_peeps_message_id, "hi peeps", huddle_name),
-                (bye_peeps_message_id, "bye peeps", huddle_name),
-                (bye_hamlet_message_id, "bye hamlet", hamlet.full_name),
-                (hi_myself_message_id, "hi myself", cordelia.full_name),
-                (bye_stream_message_id, "bye stream", "Denmark"),
-            ],
-        )
-
-        (exported_reaction,) = user["zerver_reaction"]
-        self.assertEqual(
-            exported_reaction,
-            dict(
-                id=reaction.id,
-                user_profile=cordelia.id,
-                emoji_name="smile",
-                reaction_type="unicode_emoji",
-                emoji_code=reaction.emoji_code,
-                message=smile_message_id,
-            ),
-        )
 
     """
     Tests for import_realm
@@ -1438,3 +1336,114 @@ class ImportExportTest(ZulipTestCase):
                     realm=realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
                 ).exists()
             )
+
+
+class SingleUserExportTest(ZulipTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.rm_tree(settings.LOCAL_UPLOADS_DIR)
+
+    def test_export_single_user(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        polonius = self.example_user("polonius")
+
+        self.subscribe(cordelia, "Denmark")
+
+        smile_message_id = self.send_stream_message(hamlet, "Denmark", "SMILE!")
+
+        check_add_reaction(
+            user_profile=cordelia,
+            message_id=smile_message_id,
+            emoji_name="smile",
+            emoji_code=None,
+            reaction_type=None,
+        )
+        reaction = Reaction.objects.order_by("id").last()
+        assert reaction
+
+        # Send a message that Cordelia should not have in the export.
+        self.send_stream_message(othello, "Denmark", "bogus")
+
+        hi_stream_message_id = self.send_stream_message(cordelia, "Denmark", "hi stream")
+        assert most_recent_usermessage(cordelia).message_id == hi_stream_message_id
+
+        # Try to fool the export again
+        self.send_personal_message(othello, hamlet)
+        self.send_huddle_message(othello, [hamlet, polonius])
+
+        hi_hamlet_message_id = self.send_personal_message(cordelia, hamlet, "hi hamlet")
+
+        hi_peeps_message_id = self.send_huddle_message(cordelia, [hamlet, othello], "hi peeps")
+        bye_peeps_message_id = self.send_huddle_message(othello, [cordelia, hamlet], "bye peeps")
+
+        bye_hamlet_message_id = self.send_personal_message(cordelia, hamlet, "bye hamlet")
+
+        hi_myself_message_id = self.send_personal_message(cordelia, cordelia, "hi myself")
+        bye_stream_message_id = self.send_stream_message(cordelia, "Denmark", "bye stream")
+
+        output_dir = make_export_output_dir()
+        cordelia = self.example_user("cordelia")
+
+        with self.assertLogs(level="INFO"):
+            do_export_user(cordelia, output_dir)
+
+        def read_file(fn: str) -> Any:
+            full_fn = os.path.join(output_dir, fn)
+            with open(full_fn, "rb") as f:
+                return orjson.loads(f.read())
+
+        messages = read_file("messages-000001.json")
+        user = read_file("user.json")
+
+        exported_user_id = self.get_set(user["zerver_userprofile"], "id")
+        self.assertEqual(exported_user_id, {cordelia.id})
+        exported_user_email = self.get_set(user["zerver_userprofile"], "email")
+        self.assertEqual(exported_user_email, {cordelia.email})
+
+        exported_recipient_type_id = self.get_set(user["zerver_recipient"], "type_id")
+        self.assertIn(cordelia.id, exported_recipient_type_id)
+
+        exported_stream_id = self.get_set(user["zerver_stream"], "id")
+        self.assertIn(list(exported_stream_id)[0], exported_recipient_type_id)
+
+        exported_recipient_id = self.get_set(user["zerver_recipient"], "id")
+        exported_subscription_recipient = self.get_set(user["zerver_subscription"], "recipient")
+        self.assertEqual(exported_recipient_id, exported_subscription_recipient)
+
+        exported_messages_recipient = self.get_set(messages["zerver_message"], "recipient")
+        self.assertIn(list(exported_messages_recipient)[0], exported_recipient_id)
+
+        huddle_name = "Cordelia, Lear's daughter, King Hamlet, Othello, the Moor of Venice"
+
+        excerpt = [
+            (rec["id"], rec["content"], rec["recipient_name"])
+            for rec in messages["zerver_message"][-8:]
+        ]
+        self.assertEqual(
+            excerpt,
+            [
+                (smile_message_id, "SMILE!", "Denmark"),
+                (hi_stream_message_id, "hi stream", "Denmark"),
+                (hi_hamlet_message_id, "hi hamlet", hamlet.full_name),
+                (hi_peeps_message_id, "hi peeps", huddle_name),
+                (bye_peeps_message_id, "bye peeps", huddle_name),
+                (bye_hamlet_message_id, "bye hamlet", hamlet.full_name),
+                (hi_myself_message_id, "hi myself", cordelia.full_name),
+                (bye_stream_message_id, "bye stream", "Denmark"),
+            ],
+        )
+
+        (exported_reaction,) = user["zerver_reaction"]
+        self.assertEqual(
+            exported_reaction,
+            dict(
+                id=reaction.id,
+                user_profile=cordelia.id,
+                emoji_name="smile",
+                reaction_type="unicode_emoji",
+                emoji_code=reaction.emoji_code,
+                message=smile_message_id,
+            ),
+        )
