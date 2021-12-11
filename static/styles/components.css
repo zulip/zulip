@@ -1,60 +1,6 @@
 /* Reusable, object-oriented CSS base components for all Zulip pages
    (both web app and portico). */
 
-   .new-style {
-    label.checkbox_todo {
-        padding: 0;
-        display: inline-block;
-        position: relative;
-        vertical-align: top;
-
-        input[type="checkbox"] {
-            position: absolute;
-            clip: rect(0, 0, 0, 0);
-
-            ~ span {
-                display: inline-block;
-                vertical-align: middle;
-                position: relative;
-                top: -2px;
-
-                padding: 2px;
-                margin: 0 5px 0 0;
-                height: 18px;
-                width: 18px;
-
-                font-weight: 300;
-                line-height: 0.8;
-                font-size: 1.3rem;
-                text-align: center;
-                border: 2px solid hsl(156, 28%, 70%);
-
-                border-radius: 4px;
-                
-
-                cursor: pointer;
-            }
-
-            &:checked ~ span {
-                background-image: url("../images/checkbox-green.svg");
-                background-size: 75%;
-                background-position: 50% 50%;
-                background-repeat: no-repeat;
-            }
-
-            &:disabled ~ span {
-                opacity: 0.5;
-                cursor: not-allowed;
-            }
-        }
-        
-    }
-
-    a.no-style {
-        color: inherit;
-    }
-}
-
 .new-style {
     label.checkbox {
         padding: 0;
@@ -101,14 +47,58 @@
                 cursor: not-allowed;
             }
         }
-        
     }
 
     a.no-style {
         color: inherit;
     }
-}
 
+    label.checkbox_todo {
+        padding: 0;
+        display: inline-block;
+        position: relative;
+        vertical-align: top;
+
+        input[type="checkbox"] {
+            position: absolute;
+            clip: rect(0, 0, 0, 0);
+
+            ~ span {
+                display: inline-block;
+                vertical-align: middle;
+                position: relative;
+                top: -2px;
+
+                padding: 2px;
+                margin: 0 5px 0 0;
+                height: 18px;
+                width: 18px;
+
+                font-weight: 300;
+                line-height: 0.8;
+                font-size: 1.3rem;
+                text-align: center;
+                border: 2px solid hsl(156, 28%, 70%);
+
+                border-radius: 4px;
+
+                cursor: pointer;
+            }
+
+            &:checked ~ span {
+                background-image: url("../images/checkbox-green.svg");
+                background-size: 75%;
+                background-position: 50% 50%;
+                background-repeat: no-repeat;
+            }
+
+            &:disabled ~ span {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+        }
+    }
+}
 
 a.no-underline,
 a.no-underline:hover {
