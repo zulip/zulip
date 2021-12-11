@@ -24,6 +24,10 @@
     input.add-desc {
         margin-left: 2px;
     }
+
+    label.checkbox {
+        display: flex;
+    }
 }
 
 .todo-widget,
