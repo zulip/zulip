@@ -1328,7 +1328,31 @@ class RealmImportExportTest(ExportFile):
             )
 
 
-class SingleUserExportTest(ZulipTestCase):
+class SingleUserExportTest(ExportFile):
+    def do_files_test(self, is_s3: bool) -> None:
+        output_dir = make_export_output_dir()
+
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+
+        self.upload_files_for_user(cordelia)
+        self.upload_files_for_user(othello, emoji_name="bogus")  # try to pollute export
+
+        with self.assertLogs(level="INFO"):
+            do_export_user(cordelia, output_dir)
+
+        self.verify_uploads(cordelia, is_s3=is_s3)
+        self.verify_avatars(cordelia)
+        self.verify_emojis(cordelia, is_s3=is_s3)
+
+    def test_local_files(self) -> None:
+        self.do_files_test(is_s3=False)
+
+    @use_s3_backend
+    def test_s3_files(self) -> None:
+        create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET, settings.S3_AVATAR_BUCKET)
+        self.do_files_test(is_s3=True)
+
     def test_message_data(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
