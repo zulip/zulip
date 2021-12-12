@@ -223,10 +223,14 @@ class RealmImportExportTest(ZulipTestCase):
         self.assert_length(random_hash, 24)
         self.assertEqual(file_name, "dummy.txt")
 
-        # Test avatars
+        # Test other stuff
         self.verify_avatars(user)
+        self.verify_emojis(user, is_s3=False)
+        self.verify_realm_logo_and_icon()
 
-        # Test emojis
+    def verify_emojis(self, user: UserProfile, is_s3: bool) -> None:
+        realm = user.realm
+
         emoji_path = f"{realm.id}/emoji/images/1.png"
         emoji_dir = export_fn(f"emoji/{realm.id}/emoji/images")
         self.assertEqual(os.listdir(emoji_dir), ["1.png"])
@@ -236,8 +240,9 @@ class RealmImportExportTest(ZulipTestCase):
         self.assertEqual(record["path"], emoji_path)
         self.assertEqual(record["s3_path"], emoji_path)
 
-        # Test realm logo and icon
-        self.verify_realm_logo_and_icon()
+        if is_s3:
+            self.assertEqual(record["realm_id"], realm.id)
+            self.assertEqual(record["user_profile_id"], user.id)
 
     def verify_realm_logo_and_icon(self) -> None:
         records = read_json("realm_icons/records.json")
@@ -327,22 +332,9 @@ class RealmImportExportTest(ZulipTestCase):
         self.assertEqual(records[0]["s3_path"], attachment_path_id)
         check_types(records[0]["user_profile_id"], records[0]["realm_id"])
 
-        # Test avatars
+        # Test other stuff
         self.verify_avatars(user)
-
-        # Test emojis
-        emoji_path = f"{realm.id}/emoji/images/1.png"
-        emoji_dir = export_fn(f"emoji/{realm.id}/emoji/images")
-        self.assertEqual(os.listdir(emoji_dir), ["1.png"])
-
-        (record,) = read_json("emoji/records.json")
-        self.assertEqual(record["file_name"], "1.png")
-        self.assertTrue("last_modified" in records[0])
-        self.assertEqual(record["path"], emoji_path)
-        self.assertEqual(record["s3_path"], emoji_path)
-        check_types(record["user_profile_id"], record["realm_id"])
-
-        # Test realm logo and icon
+        self.verify_emojis(user, is_s3=True)
         self.verify_realm_logo_and_icon()
 
     def test_zulip_realm(self) -> None:
