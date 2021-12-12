@@ -158,7 +158,7 @@ class RealmImportExportTest(ZulipTestCase):
                 consent_message_id=consent_message_id,
             )
 
-    def _setup_export_files(self, user_profile: UserProfile) -> Tuple[str, str]:
+    def _setup_export_files(self, user_profile: UserProfile) -> str:
         realm = user_profile.realm
         message = most_recent_message(user_profile)
         url = upload_message_file(
@@ -170,11 +170,6 @@ class RealmImportExportTest(ZulipTestCase):
             path_id=attachment_path_id,
             message=message,
             is_message_realm_public=True,
-        )
-
-        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
-            realm_id=realm.id,
-            emoji_file_name="1.png",
         )
 
         with get_test_image_file("img.png") as img_file:
@@ -198,7 +193,7 @@ class RealmImportExportTest(ZulipTestCase):
 
         realm.refresh_from_db()
 
-        return attachment_path_id, emoji_path
+        return attachment_path_id
 
     """
     Tests for export
@@ -207,7 +202,7 @@ class RealmImportExportTest(ZulipTestCase):
     def test_export_files_from_local(self) -> None:
         user = self.example_user("hamlet")
         realm = user.realm
-        path_id, emoji_path = self._setup_export_files(user)
+        path_id = self._setup_export_files(user)
         self._export_realm(realm)
 
         data = read_json("attachment.json")
@@ -232,13 +227,14 @@ class RealmImportExportTest(ZulipTestCase):
         self.assertEqual(file_name, "dummy.txt")
 
         # Test emojis
-        fn = export_fn(f"emoji/{emoji_path}")
-        fn = fn.replace("1.png", "")
-        self.assertEqual("1.png", os.listdir(fn)[0])
-        records = read_json("emoji/records.json")
-        self.assertEqual(records[0]["file_name"], "1.png")
-        self.assertEqual(records[0]["path"], "2/emoji/images/1.png")
-        self.assertEqual(records[0]["s3_path"], "2/emoji/images/1.png")
+        emoji_path = f"{realm.id}/emoji/images/1.png"
+        emoji_dir = export_fn(f"emoji/{realm.id}/emoji/images")
+        self.assertEqual(os.listdir(emoji_dir), ["1.png"])
+
+        (record,) = read_json("emoji/records.json")
+        self.assertEqual(record["file_name"], "1.png")
+        self.assertEqual(record["path"], emoji_path)
+        self.assertEqual(record["s3_path"], emoji_path)
 
         # Test realm logo and icon
         records = read_json("realm_icons/records.json")
@@ -284,10 +280,7 @@ class RealmImportExportTest(ZulipTestCase):
         user = self.example_user("hamlet")
         realm = user.realm
 
-        (
-            attachment_path_id,
-            emoji_path,
-        ) = self._setup_export_files(user)
+        attachment_path_id = self._setup_export_files(user)
         self._export_realm(realm)
 
         data = read_json("attachment.json")
@@ -313,15 +306,16 @@ class RealmImportExportTest(ZulipTestCase):
         check_types(records[0]["user_profile_id"], records[0]["realm_id"])
 
         # Test emojis
-        fn = export_fn(f"emoji/{emoji_path}")
-        fn = fn.replace("1.png", "")
-        self.assertIn("1.png", os.listdir(fn))
-        records = read_json("emoji/records.json")
-        self.assertEqual(records[0]["file_name"], "1.png")
+        emoji_path = f"{realm.id}/emoji/images/1.png"
+        emoji_dir = export_fn(f"emoji/{realm.id}/emoji/images")
+        self.assertEqual(os.listdir(emoji_dir), ["1.png"])
+
+        (record,) = read_json("emoji/records.json")
+        self.assertEqual(record["file_name"], "1.png")
         self.assertTrue("last_modified" in records[0])
-        self.assertEqual(records[0]["path"], "2/emoji/images/1.png")
-        self.assertEqual(records[0]["s3_path"], "2/emoji/images/1.png")
-        check_types(records[0]["user_profile_id"], records[0]["realm_id"])
+        self.assertEqual(record["path"], emoji_path)
+        self.assertEqual(record["s3_path"], emoji_path)
+        check_types(record["user_profile_id"], record["realm_id"])
 
         # Test realm logo and icon
         records = read_json("realm_icons/records.json")
