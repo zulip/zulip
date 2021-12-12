@@ -158,7 +158,7 @@ class RealmImportExportTest(ZulipTestCase):
                 consent_message_id=consent_message_id,
             )
 
-    def _setup_export_files(self, user_profile: UserProfile) -> Tuple[str, str, str]:
+    def _setup_export_files(self, user_profile: UserProfile) -> Tuple[str, str]:
         realm = user_profile.realm
         message = most_recent_message(user_profile)
         url = upload_message_file(
@@ -171,8 +171,6 @@ class RealmImportExportTest(ZulipTestCase):
             message=message,
             is_message_realm_public=True,
         )
-        avatar_path_id = user_avatar_path(user_profile)
-        original_avatar_path_id = avatar_path_id + ".original"
 
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=realm.id,
@@ -200,7 +198,7 @@ class RealmImportExportTest(ZulipTestCase):
 
         realm.refresh_from_db()
 
-        return attachment_path_id, emoji_path, original_avatar_path_id
+        return attachment_path_id, emoji_path
 
     """
     Tests for export
@@ -209,7 +207,7 @@ class RealmImportExportTest(ZulipTestCase):
     def test_export_files_from_local(self) -> None:
         user = self.example_user("hamlet")
         realm = user.realm
-        path_id, emoji_path, original_avatar_path_id = self._setup_export_files(user)
+        path_id, emoji_path = self._setup_export_files(user)
         self._export_realm(realm)
 
         data = read_json("attachment.json")
@@ -268,6 +266,7 @@ class RealmImportExportTest(ZulipTestCase):
         )
 
         # Test avatars
+        original_avatar_path_id = user_avatar_path(user) + ".original"
         fn = export_fn(f"avatars/{original_avatar_path_id}")
         with open(fn, "rb") as fb:
             fn_data = fb.read()
@@ -288,7 +287,6 @@ class RealmImportExportTest(ZulipTestCase):
         (
             attachment_path_id,
             emoji_path,
-            original_avatar_path_id,
         ) = self._setup_export_files(user)
         self._export_realm(realm)
 
@@ -351,6 +349,7 @@ class RealmImportExportTest(ZulipTestCase):
         )
 
         # Test avatars
+        original_avatar_path_id = user_avatar_path(user) + ".original"
         fn = export_fn(f"avatars/{original_avatar_path_id}")
         with open(fn, "rb") as file:
             fn_data = file.read()
