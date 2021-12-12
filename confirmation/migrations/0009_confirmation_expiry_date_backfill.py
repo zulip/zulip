@@ -21,7 +21,7 @@ def set_expiry_date_for_existing_confirmations(
     UNSUBSCRIBE = 4
     MULTIUSE_INVITE = 6
 
-    @transaction.atomic()
+    @transaction.atomic
     def backfill_confirmations_between(lower_bound: int, upper_bound: int) -> None:
         confirmations = Confirmation.objects.filter(id__gte=lower_bound, id__lte=upper_bound)
         for confirmation in confirmations:

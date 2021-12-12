@@ -481,6 +481,10 @@ python_rules = RuleList(
             "pattern": "\\.(called(_once|_with|_once_with)?|not_called|has_calls|not_called)[(]",
             "description": 'A mock function is missing a leading "assert_"',
         },
+        {
+            "pattern": "@transaction.atomic\\(\\)",
+            "description": "Use @transaction.atomic as function decorator for consistency.",
+        },
         *whitespace_rules,
     ],
     max_length=110,
