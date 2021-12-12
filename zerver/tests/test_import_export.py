@@ -158,8 +158,7 @@ class RealmImportExportTest(ZulipTestCase):
                 consent_message_id=consent_message_id,
             )
 
-    def _setup_export_files(self, user_profile: UserProfile) -> None:
-        realm = user_profile.realm
+    def upload_files_for_user(self, user_profile: UserProfile) -> None:
         message = most_recent_message(user_profile)
         url = upload_message_file(
             "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
@@ -173,9 +172,16 @@ class RealmImportExportTest(ZulipTestCase):
         )
 
         with get_test_image_file("img.png") as img_file:
-            upload_emoji_image(img_file, "1.png", user_profile)
-        with get_test_image_file("img.png") as img_file:
             upload_avatar_image(img_file, user_profile, user_profile)
+
+        user_profile.avatar_source = "U"
+        user_profile.save()
+
+        with get_test_image_file("img.png") as img_file:
+            upload_emoji_image(img_file, "1.png", user_profile)
+
+    def upload_files_for_realm(self, user_profile: UserProfile) -> None:
+        realm = user_profile.realm
 
         with get_test_image_file("img.png") as img_file:
             upload.upload_backend.upload_realm_icon_image(img_file, user_profile)
@@ -188,11 +194,6 @@ class RealmImportExportTest(ZulipTestCase):
             upload.upload_backend.upload_realm_logo_image(img_file, user_profile, night=True)
             do_change_logo_source(realm, Realm.LOGO_UPLOADED, True, acting_user=user_profile)
 
-        user_profile.avatar_source = "U"
-        user_profile.save()
-
-        realm.refresh_from_db()
-
     """
     Tests for export
     """
@@ -200,7 +201,8 @@ class RealmImportExportTest(ZulipTestCase):
     def test_export_files_from_local(self) -> None:
         user = self.example_user("hamlet")
         realm = user.realm
-        self._setup_export_files(user)
+        self.upload_files_for_user(user)
+        self.upload_files_for_realm(user)
         self._export_realm(realm)
 
         self.verify_uploads(user, is_s3=False)
@@ -319,7 +321,8 @@ class RealmImportExportTest(ZulipTestCase):
         user = self.example_user("hamlet")
         realm = user.realm
 
-        self._setup_export_files(user)
+        self.upload_files_for_user(user)
+        self.upload_files_for_realm(user)
         self._export_realm(realm)
 
         self.verify_uploads(user, is_s3=True)
@@ -1135,7 +1138,9 @@ class RealmImportExportTest(ZulipTestCase):
     def test_import_files_from_local(self) -> None:
         user = self.example_user("hamlet")
         realm = user.realm
-        self._setup_export_files(user)
+
+        self.upload_files_for_user(user)
+        self.upload_files_for_realm(user)
 
         self._export_realm(realm)
 
@@ -1197,9 +1202,11 @@ class RealmImportExportTest(ZulipTestCase):
 
         user = self.example_user("hamlet")
         realm = user.realm
-        self._setup_export_files(user)
 
+        self.upload_files_for_realm(user)
+        self.upload_files_for_user(user)
         self._export_realm(realm)
+
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
             do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
 
@@ -1281,7 +1288,7 @@ class RealmImportExportTest(ZulipTestCase):
         realm = user.realm
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
 
-        self._setup_export_files(user)
+        self.upload_files_for_user(user)
         self._export_realm(realm)
 
         with self.settings(BILLING_ENABLED=True), self.assertLogs(level="INFO"):
