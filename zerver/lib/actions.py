@@ -843,6 +843,7 @@ def active_humans_in_realm(realm: Realm) -> Sequence[UserProfile]:
     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
 
 
+@transaction.atomic(savepoint=False)
 def do_set_realm_property(
     realm: Realm, name: str, value: Any, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -864,7 +865,7 @@ def do_set_realm_property(
         property=name,
         value=value,
     )
-    send_event(realm, event, active_user_ids(realm.id))
+    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
@@ -892,12 +893,14 @@ def do_set_realm_property(
         user_profiles = UserProfile.objects.filter(realm=realm, is_bot=False)
         for user_profile in user_profiles:
             user_profile.email = get_display_email_address(user_profile)
-            # TODO: Design a bulk event for this or force-reload all clients
-            send_user_email_update_event(user_profile)
         UserProfile.objects.bulk_update(user_profiles, ["email"])
 
         for user_profile in user_profiles:
-            flush_user_profile(sender=UserProfile, instance=user_profile)
+            transaction.on_commit(
+                lambda: flush_user_profile(sender=UserProfile, instance=user_profile)
+            )
+            # TODO: Design a bulk event for this or force-reload all clients
+            send_user_email_update_event(user_profile)
 
 
 def do_set_realm_authentication_methods(
