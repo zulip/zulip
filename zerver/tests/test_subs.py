@@ -1136,7 +1136,8 @@ class StreamAdminTest(ZulipTestCase):
         self.assertFalse(new_stream_usermessage.flags.read)
         self.assertFalse(denmark_usermessage.flags.read)
 
-        do_deactivate_stream(stream, acting_user=None)
+        with self.captureOnCommitCallbacks(execute=True):
+            do_deactivate_stream(stream, acting_user=None)
         new_stream_usermessage.refresh_from_db()
         denmark_usermessage.refresh_from_db()
         self.assertTrue(new_stream_usermessage.flags.read)
