@@ -89,18 +89,28 @@ def make_datetime(val: float) -> datetime.datetime:
     return datetime.datetime.fromtimestamp(val, tz=datetime.timezone.utc)
 
 
+def get_output_dir() -> str:
+    return os.path.join(settings.TEST_WORKER_DIR, "test-export")
+
+
 def make_export_output_dir() -> str:
-    output_dir = os.path.join(settings.TEST_WORKER_DIR, "test-export")
+    output_dir = get_output_dir()
     if os.path.exists(output_dir):
         shutil.rmtree(output_dir)
     os.makedirs(output_dir)
     return output_dir
 
 
-def read_file(output_dir: str, fn: str) -> Any:
+def read_json(fn: str) -> Any:
+    output_dir = get_output_dir()
     full_fn = os.path.join(output_dir, fn)
     with open(full_fn, "rb") as f:
         return orjson.loads(f.read())
+
+
+def export_fn(fn: str) -> str:
+    output_dir = get_output_dir()
+    return os.path.join(output_dir, fn)
 
 
 def get_user_id(r: Realm, full_name: str) -> int:
@@ -132,7 +142,7 @@ class RealmImportExportTest(ZulipTestCase):
         realm: Realm,
         exportable_user_ids: Optional[Set[int]] = None,
         consent_message_id: Optional[int] = None,
-    ) -> Dict[str, Any]:
+    ) -> None:
         output_dir = make_export_output_dir()
         with patch("zerver.lib.export.create_soft_link"), self.assertLogs(level="INFO"):
             do_export_realm(
@@ -147,26 +157,6 @@ class RealmImportExportTest(ZulipTestCase):
                 output_path=os.path.join(output_dir, "messages-000001.json"),
                 consent_message_id=consent_message_id,
             )
-
-        def read_file(fn: str) -> Any:
-            full_fn = os.path.join(output_dir, fn)
-            with open(full_fn, "rb") as f:
-                return orjson.loads(f.read())
-
-        result = {}
-        result["realm"] = read_file("realm.json")
-        result["attachment"] = read_file("attachment.json")
-        result["message"] = read_file("messages-000001.json")
-        # TODO: generate 1001+ test messages to exercise messages-000002.json
-        result["uploads_dir"] = os.path.join(output_dir, "uploads")
-        result["uploads_dir_records"] = read_file(os.path.join("uploads", "records.json"))
-        result["emoji_dir"] = os.path.join(output_dir, "emoji")
-        result["emoji_dir_records"] = read_file(os.path.join("emoji", "records.json"))
-        result["avatar_dir"] = os.path.join(output_dir, "avatars")
-        result["avatar_dir_records"] = read_file(os.path.join("avatars", "records.json"))
-        result["realm_icons_dir"] = os.path.join(output_dir, "realm_icons")
-        result["realm_icons_dir_records"] = read_file(os.path.join("realm_icons", "records.json"))
-        return result
 
     def _setup_export_files(self, realm: Realm) -> Tuple[str, str, str, bytes]:
         message = Message.objects.all()[0]
@@ -221,35 +211,35 @@ class RealmImportExportTest(ZulipTestCase):
     def test_export_files_from_local(self) -> None:
         realm = Realm.objects.get(string_id="zulip")
         path_id, emoji_path, original_avatar_path_id, test_image = self._setup_export_files(realm)
-        full_data = self._export_realm(realm)
+        self._export_realm(realm)
 
-        data = full_data["attachment"]
+        data = read_json("attachment.json")
         self.assert_length(data["zerver_attachment"], 1)
         record = data["zerver_attachment"][0]
         self.assertEqual(record["path_id"], path_id)
 
         # Test uploads
-        fn = os.path.join(full_data["uploads_dir"], path_id)
+        fn = export_fn(f"uploads/{path_id}")
         with open(fn) as f:
             self.assertEqual(f.read(), "zulip!")
-        records = full_data["uploads_dir_records"]
+        records = read_json("uploads/records.json")
         self.assertEqual(records[0]["path"], path_id)
         self.assertEqual(records[0]["s3_path"], path_id)
 
         # Test emojis
-        fn = os.path.join(full_data["emoji_dir"], emoji_path)
+        fn = export_fn(f"emoji/{emoji_path}")
         fn = fn.replace("1.png", "")
         self.assertEqual("1.png", os.listdir(fn)[0])
-        records = full_data["emoji_dir_records"]
+        records = read_json("emoji/records.json")
         self.assertEqual(records[0]["file_name"], "1.png")
         self.assertEqual(records[0]["path"], "2/emoji/images/1.png")
         self.assertEqual(records[0]["s3_path"], "2/emoji/images/1.png")
 
         # Test realm logo and icon
-        records = full_data["realm_icons_dir_records"]
+        records = read_json("realm_icons/records.json")
         image_files = set()
         for record in records:
-            image_path = os.path.join(full_data["realm_icons_dir"], record["path"])
+            image_path = export_fn(f"realm_icons/{record['path']}")
             if image_path[-9:] == ".original":
                 with open(image_path, "rb") as image_file:
                     image_data = image_file.read()
@@ -271,11 +261,11 @@ class RealmImportExportTest(ZulipTestCase):
         )
 
         # Test avatars
-        fn = os.path.join(full_data["avatar_dir"], original_avatar_path_id)
+        fn = export_fn(f"avatars/{original_avatar_path_id}")
         with open(fn, "rb") as fb:
             fn_data = fb.read()
         self.assertEqual(fn_data, test_image)
-        records = full_data["avatar_dir_records"]
+        records = read_json("avatars/records.json")
         record_path = [record["path"] for record in records]
         record_s3_path = [record["s3_path"] for record in records]
         self.assertIn(original_avatar_path_id, record_path)
@@ -292,9 +282,9 @@ class RealmImportExportTest(ZulipTestCase):
             original_avatar_path_id,
             test_image,
         ) = self._setup_export_files(realm)
-        full_data = self._export_realm(realm)
+        self._export_realm(realm)
 
-        data = full_data["attachment"]
+        data = read_json("attachment.json")
         self.assert_length(data["zerver_attachment"], 1)
         record = data["zerver_attachment"][0]
         self.assertEqual(record["path_id"], attachment_path_id)
@@ -305,19 +295,19 @@ class RealmImportExportTest(ZulipTestCase):
 
         # Test uploads
         fields = attachment_path_id.split("/")
-        fn = os.path.join(full_data["uploads_dir"], os.path.join(fields[0], fields[1], fields[2]))
+        fn = export_fn(os.path.join("uploads", fields[0], fields[1], fields[2]))
         with open(fn) as f:
             self.assertEqual(f.read(), "zulip!")
-        records = full_data["uploads_dir_records"]
+        records = read_json("uploads/records.json")
         self.assertEqual(records[0]["path"], os.path.join(fields[0], fields[1], fields[2]))
         self.assertEqual(records[0]["s3_path"], attachment_path_id)
         check_types(records[0]["user_profile_id"], records[0]["realm_id"])
 
         # Test emojis
-        fn = os.path.join(full_data["emoji_dir"], emoji_path)
+        fn = export_fn(f"emoji/{emoji_path}")
         fn = fn.replace("1.png", "")
         self.assertIn("1.png", os.listdir(fn))
-        records = full_data["emoji_dir_records"]
+        records = read_json("emoji/records.json")
         self.assertEqual(records[0]["file_name"], "1.png")
         self.assertTrue("last_modified" in records[0])
         self.assertEqual(records[0]["path"], "2/emoji/images/1.png")
@@ -325,10 +315,10 @@ class RealmImportExportTest(ZulipTestCase):
         check_types(records[0]["user_profile_id"], records[0]["realm_id"])
 
         # Test realm logo and icon
-        records = full_data["realm_icons_dir_records"]
+        records = read_json("realm_icons/records.json")
         image_files = set()
         for record in records:
-            image_path = os.path.join(full_data["realm_icons_dir"], record["s3_path"])
+            image_path = export_fn(f"realm_icons/{record['s3_path']}")
             if image_path[-9:] == ".original":
                 with open(image_path, "rb") as image_file:
                     image_data = image_file.read()
@@ -350,11 +340,11 @@ class RealmImportExportTest(ZulipTestCase):
         )
 
         # Test avatars
-        fn = os.path.join(full_data["avatar_dir"], original_avatar_path_id)
+        fn = export_fn(f"avatars/{original_avatar_path_id}")
         with open(fn, "rb") as file:
             fn_data = file.read()
         self.assertEqual(fn_data, test_image)
-        records = full_data["avatar_dir_records"]
+        records = read_json("avatars/records.json")
         record_path = [record["path"] for record in records]
         record_s3_path = [record["s3_path"] for record in records]
         self.assertIn(original_avatar_path_id, record_path)
@@ -377,10 +367,10 @@ class RealmImportExportTest(ZulipTestCase):
 
         realm_emoji = RealmEmoji.objects.get(realm=realm)
         realm_emoji.delete()
-        full_data = self._export_realm(realm)
+        self._export_realm(realm)
         realm_emoji.save()
 
-        data = full_data["realm"]
+        data = read_json("realm.json")
         self.assert_length(data["zerver_userprofile_crossrealm"], 3)
         self.assert_length(data["zerver_userprofile_mirrordummy"], 0)
 
@@ -407,7 +397,7 @@ class RealmImportExportTest(ZulipTestCase):
         self.assert_length(exported_realm_user_default, 1)
         self.assertEqual(exported_realm_user_default[0]["default_language"], "de")
 
-        data = full_data["message"]
+        data = read_json("messages-000001.json")
         um = UserMessage.objects.all()[0]
         exported_um = self.find_by_id(data["zerver_usermessage"], um.id)
         self.assertEqual(exported_um["message"], um.message_id)
@@ -443,10 +433,10 @@ class RealmImportExportTest(ZulipTestCase):
 
         realm_emoji = RealmEmoji.objects.get(realm=realm)
         realm_emoji.delete()
-        full_data = self._export_realm(realm, exportable_user_ids=user_ids)
+        self._export_realm(realm, exportable_user_ids=user_ids)
         realm_emoji.save()
 
-        data = full_data["realm"]
+        data = read_json("realm.json")
 
         exported_user_emails = self.get_set(data["zerver_userprofile"], "delivery_email")
         self.assertIn(self.example_email("iago"), exported_user_emails)
@@ -461,7 +451,7 @@ class RealmImportExportTest(ZulipTestCase):
         self.assertNotIn(self.example_email("iago"), dummy_user_emails)
         self.assertNotIn(self.example_email("hamlet"), dummy_user_emails)
 
-        data = full_data["message"]
+        data = read_json("messages-000001.json")
 
         exported_message_ids = self.get_set(data["zerver_message"], "id")
         self.assertNotIn(pm_a_msg_id, exported_message_ids)
@@ -541,10 +531,10 @@ class RealmImportExportTest(ZulipTestCase):
         realm_emoji = RealmEmoji.objects.get(realm=realm)
         realm_emoji.delete()
         assert message is not None
-        full_data = self._export_realm(realm, consent_message_id=message.id)
+        self._export_realm(realm, consent_message_id=message.id)
         realm_emoji.save()
 
-        data = full_data["realm"]
+        data = read_json("realm.json")
 
         self.assert_length(data["zerver_userprofile_crossrealm"], 3)
         self.assert_length(data["zerver_userprofile_mirrordummy"], 0)
@@ -572,7 +562,7 @@ class RealmImportExportTest(ZulipTestCase):
             },
         )
 
-        data = full_data["message"]
+        data = read_json("messages-000001.json")
         exported_usermessages = UserMessage.objects.filter(
             user_profile__in=[self.example_user("iago"), self.example_user("hamlet")]
         )
@@ -1394,7 +1384,7 @@ class SingleUserExportTest(ZulipTestCase):
         with self.assertLogs(level="INFO"):
             do_export_user(cordelia, output_dir)
 
-        messages = read_file(output_dir, "messages-000001.json")
+        messages = read_json("messages-000001.json")
 
         huddle_name = "Cordelia, Lear's daughter, King Hamlet, Othello, the Moor of Venice"
 
@@ -1646,7 +1636,7 @@ class SingleUserExportTest(ZulipTestCase):
         with self.assertLogs(level="INFO"):
             do_export_user(cordelia, output_dir)
 
-        user = read_file(output_dir, "user.json")
+        user = read_json("user.json")
 
         for table_name, f in checkers.items():
             f(user[table_name])
