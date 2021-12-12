@@ -1348,10 +1348,6 @@ class RealmImportExportTest(ZulipTestCase):
 
 
 class SingleUserExportTest(ZulipTestCase):
-    def setUp(self) -> None:
-        super().setUp()
-        self.rm_tree(settings.LOCAL_UPLOADS_DIR)
-
     def test_message_data(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
