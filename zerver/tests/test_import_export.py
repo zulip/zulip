@@ -137,7 +137,7 @@ class RealmImportExportTest(ZulipTestCase):
         super().setUp()
         self.rm_tree(settings.LOCAL_UPLOADS_DIR)
 
-    def _export_realm(
+    def export_realm(
         self,
         realm: Realm,
         exportable_user_ids: Optional[Set[int]] = None,
@@ -203,7 +203,7 @@ class RealmImportExportTest(ZulipTestCase):
         realm = user.realm
         self.upload_files_for_user(user)
         self.upload_files_for_realm(user)
-        self._export_realm(realm)
+        self.export_realm(realm)
 
         self.verify_uploads(user, is_s3=False)
         self.verify_avatars(user)
@@ -323,7 +323,7 @@ class RealmImportExportTest(ZulipTestCase):
 
         self.upload_files_for_user(user)
         self.upload_files_for_realm(user)
-        self._export_realm(realm)
+        self.export_realm(realm)
 
         self.verify_uploads(user, is_s3=True)
         self.verify_avatars(user)
@@ -346,7 +346,7 @@ class RealmImportExportTest(ZulipTestCase):
 
         realm_emoji = RealmEmoji.objects.get(realm=realm)
         realm_emoji.delete()
-        self._export_realm(realm)
+        self.export_realm(realm)
         realm_emoji.save()
 
         data = read_json("realm.json")
@@ -412,7 +412,7 @@ class RealmImportExportTest(ZulipTestCase):
 
         realm_emoji = RealmEmoji.objects.get(realm=realm)
         realm_emoji.delete()
-        self._export_realm(realm, exportable_user_ids=user_ids)
+        self.export_realm(realm, exportable_user_ids=user_ids)
         realm_emoji.save()
 
         data = read_json("realm.json")
@@ -510,7 +510,7 @@ class RealmImportExportTest(ZulipTestCase):
         realm_emoji = RealmEmoji.objects.get(realm=realm)
         realm_emoji.delete()
         assert message is not None
-        self._export_realm(realm, consent_message_id=message.id)
+        self.export_realm(realm, consent_message_id=message.id)
         realm_emoji.save()
 
         data = read_json("realm.json")
@@ -748,7 +748,7 @@ class RealmImportExportTest(ZulipTestCase):
         for f in getters:
             snapshots[f.__name__] = f(original_realm)
 
-        self._export_realm(original_realm)
+        self.export_realm(original_realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
             do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
@@ -1119,7 +1119,7 @@ class RealmImportExportTest(ZulipTestCase):
         RealmEmoji.objects.get(realm=original_realm).delete()
 
         RealmUserDefault.objects.get(realm=original_realm).delete()
-        self._export_realm(original_realm)
+        self.export_realm(original_realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
             do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
@@ -1142,7 +1142,7 @@ class RealmImportExportTest(ZulipTestCase):
         self.upload_files_for_user(user)
         self.upload_files_for_realm(user)
 
-        self._export_realm(realm)
+        self.export_realm(realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
             do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
@@ -1205,7 +1205,7 @@ class RealmImportExportTest(ZulipTestCase):
 
         self.upload_files_for_realm(user)
         self.upload_files_for_user(user)
-        self._export_realm(realm)
+        self.export_realm(realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
             do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
@@ -1289,7 +1289,7 @@ class RealmImportExportTest(ZulipTestCase):
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
 
         self.upload_files_for_user(user)
-        self._export_realm(realm)
+        self.export_realm(realm)
 
         with self.settings(BILLING_ENABLED=True), self.assertLogs(level="INFO"):
             realm = do_import_realm(
