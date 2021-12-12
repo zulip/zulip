@@ -146,15 +146,6 @@ class RealmImportExportTest(ZulipTestCase):
                 consent_message_id=consent_message_id,
             )
 
-            try:
-                export_usermessages_batch(
-                    input_path=os.path.join(output_dir, "messages-000002.json.partial"),
-                    output_path=os.path.join(output_dir, "messages-000002.json"),
-                    consent_message_id=consent_message_id,
-                )
-            except FileNotFoundError:
-                pass
-
         def read_file(fn: str) -> Any:
             full_fn = os.path.join(output_dir, fn)
             with open(full_fn, "rb") as f:
