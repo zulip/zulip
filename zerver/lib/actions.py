@@ -5762,7 +5762,7 @@ def notify_default_streams(realm: Realm) -> None:
         type="default_streams",
         default_streams=streams_to_dicts_sorted(get_default_streams_for_realm(realm.id)),
     )
-    send_event(realm, event, active_non_guest_user_ids(realm.id))
+    transaction.on_commit(lambda: send_event(realm, event, active_non_guest_user_ids(realm.id)))
 
 
 def notify_default_stream_groups(realm: Realm) -> None:
@@ -5783,6 +5783,7 @@ def do_add_default_stream(stream: Stream) -> None:
         notify_default_streams(stream.realm)
 
 
+@transaction.atomic(savepoint=False)
 def do_remove_default_stream(stream: Stream) -> None:
     realm_id = stream.realm_id
     stream_id = stream.id
