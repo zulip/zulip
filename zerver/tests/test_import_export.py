@@ -226,6 +226,14 @@ class RealmImportExportTest(ZulipTestCase):
         self.assertEqual(records[0]["path"], path_id)
         self.assertEqual(records[0]["s3_path"], path_id)
 
+        realm_str, slot, random_hash, file_name = path_id.split("/")
+        self.assertEqual(realm_str, str(realm.id))
+        # We randomly pick a number between 0 and 255 and turn it into
+        # hex in order to avoid large directories.
+        assert len(slot) <= 2
+        self.assert_length(random_hash, 24)
+        self.assertEqual(file_name, "dummy.txt")
+
         # Test emojis
         fn = export_fn(f"emoji/{emoji_path}")
         fn = fn.replace("1.png", "")
@@ -294,12 +302,15 @@ class RealmImportExportTest(ZulipTestCase):
             self.assertEqual(type(realm_id), int)
 
         # Test uploads
-        fields = attachment_path_id.split("/")
-        fn = export_fn(os.path.join("uploads", fields[0], fields[1], fields[2]))
+        realm_str, random_hash, file_name = attachment_path_id.split("/")
+        self.assertEqual(realm_str, str(realm.id))
+        self.assert_length(random_hash, 24)
+        self.assertEqual(file_name, "dummy.txt")
+        fn = export_fn(f"uploads/{realm_str}/{random_hash}/dummy.txt")
         with open(fn) as f:
             self.assertEqual(f.read(), "zulip!")
         records = read_json("uploads/records.json")
-        self.assertEqual(records[0]["path"], os.path.join(fields[0], fields[1], fields[2]))
+        self.assertEqual(records[0]["path"], attachment_path_id)
         self.assertEqual(records[0]["s3_path"], attachment_path_id)
         check_types(records[0]["user_profile_id"], records[0]["realm_id"])
 
