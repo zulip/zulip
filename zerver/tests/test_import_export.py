@@ -203,6 +203,14 @@ class RealmImportExportTest(ZulipTestCase):
         self._setup_export_files(user)
         self._export_realm(realm)
 
+        self.verify_uploads(user)
+        self.verify_avatars(user)
+        self.verify_emojis(user, is_s3=False)
+        self.verify_realm_logo_and_icon()
+
+    def verify_uploads(self, user: UserProfile) -> None:
+        realm = user.realm
+
         data = read_json("attachment.json")
         self.assert_length(data["zerver_attachment"], 1)
         path_id = data["zerver_attachment"][0]["path_id"]
@@ -211,9 +219,9 @@ class RealmImportExportTest(ZulipTestCase):
         fn = export_fn(f"uploads/{path_id}")
         with open(fn) as f:
             self.assertEqual(f.read(), "zulip!")
-        records = read_json("uploads/records.json")
-        self.assertEqual(records[0]["path"], path_id)
-        self.assertEqual(records[0]["s3_path"], path_id)
+        (record,) = read_json("uploads/records.json")
+        self.assertEqual(record["path"], path_id)
+        self.assertEqual(record["s3_path"], path_id)
 
         realm_str, slot, random_hash, file_name = path_id.split("/")
         self.assertEqual(realm_str, str(realm.id))
@@ -222,11 +230,6 @@ class RealmImportExportTest(ZulipTestCase):
         assert len(slot) <= 2
         self.assert_length(random_hash, 24)
         self.assertEqual(file_name, "dummy.txt")
-
-        # Test other stuff
-        self.verify_avatars(user)
-        self.verify_emojis(user, is_s3=False)
-        self.verify_realm_logo_and_icon()
 
     def verify_emojis(self, user: UserProfile, is_s3: bool) -> None:
         realm = user.realm
