@@ -944,6 +944,10 @@ td.pointer {
             color: hsl(0, 100%, 50%);
             font-weight: bold;
         }
+
+        .message_control_button {
+            visibility: inherit;
+        }
     }
 
     .star_container {
