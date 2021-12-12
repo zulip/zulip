@@ -158,7 +158,7 @@ class RealmImportExportTest(ZulipTestCase):
                 consent_message_id=consent_message_id,
             )
 
-    def _setup_export_files(self, user_profile: UserProfile) -> str:
+    def _setup_export_files(self, user_profile: UserProfile) -> None:
         realm = user_profile.realm
         message = most_recent_message(user_profile)
         url = upload_message_file(
@@ -193,8 +193,6 @@ class RealmImportExportTest(ZulipTestCase):
 
         realm.refresh_from_db()
 
-        return attachment_path_id
-
     """
     Tests for export
     """
@@ -202,13 +200,12 @@ class RealmImportExportTest(ZulipTestCase):
     def test_export_files_from_local(self) -> None:
         user = self.example_user("hamlet")
         realm = user.realm
-        path_id = self._setup_export_files(user)
+        self._setup_export_files(user)
         self._export_realm(realm)
 
         data = read_json("attachment.json")
         self.assert_length(data["zerver_attachment"], 1)
-        record = data["zerver_attachment"][0]
-        self.assertEqual(record["path_id"], path_id)
+        path_id = data["zerver_attachment"][0]["path_id"]
 
         # Test uploads
         fn = export_fn(f"uploads/{path_id}")
@@ -280,13 +277,13 @@ class RealmImportExportTest(ZulipTestCase):
         user = self.example_user("hamlet")
         realm = user.realm
 
-        attachment_path_id = self._setup_export_files(user)
+        self._setup_export_files(user)
         self._export_realm(realm)
 
         data = read_json("attachment.json")
         self.assert_length(data["zerver_attachment"], 1)
         record = data["zerver_attachment"][0]
-        self.assertEqual(record["path_id"], attachment_path_id)
+        attachment_path_id = record["path_id"]
 
         def check_types(user_profile_id: int, realm_id: int) -> None:
             self.assertEqual(type(user_profile_id), int)
