@@ -223,6 +223,9 @@ class RealmImportExportTest(ZulipTestCase):
         self.assert_length(random_hash, 24)
         self.assertEqual(file_name, "dummy.txt")
 
+        # Test avatars
+        self.verify_avatars(user)
+
         # Test emojis
         emoji_path = f"{realm.id}/emoji/images/1.png"
         emoji_dir = export_fn(f"emoji/{realm.id}/emoji/images")
@@ -258,17 +261,33 @@ class RealmImportExportTest(ZulipTestCase):
             },
         )
 
-        # Test avatars
-        original_avatar_path_id = user_avatar_path(user) + ".original"
-        fn = export_fn(f"avatars/{original_avatar_path_id}")
-        with open(fn, "rb") as fb:
-            fn_data = fb.read()
-        self.assertEqual(fn_data, read_test_image_file("img.png"))
+    def verify_avatars(self, user: UserProfile) -> None:
         records = read_json("avatars/records.json")
-        record_path = [record["path"] for record in records]
-        record_s3_path = [record["s3_path"] for record in records]
-        self.assertIn(original_avatar_path_id, record_path)
-        self.assertIn(original_avatar_path_id, record_s3_path)
+        exported_paths = set()
+
+        # Make sure all files in records.json got written.
+        for record in records:
+            self.assertEqual(record["path"], record["s3_path"])
+            path = record["path"]
+            fn = export_fn(f"avatars/{path}")
+            assert os.path.exists(fn)
+
+            if path.endswith(".original"):
+                exported_paths.add(path)
+
+                # For now we know that all our tests use
+                # emojis based on img.png.  This may change some
+                # day.
+                with open(fn, "rb") as fb:
+                    fn_data = fb.read()
+
+                self.assertEqual(fn_data, read_test_image_file("img.png"))
+
+        assert exported_paths
+
+        # Right now we expect only our user to have an uploaded avatar.
+        db_paths = {user_avatar_path(user) + ".original"}
+        self.assertEqual(exported_paths, db_paths)
 
     @use_s3_backend
     def test_export_files_from_s3(self) -> None:
@@ -301,6 +320,9 @@ class RealmImportExportTest(ZulipTestCase):
         self.assertEqual(records[0]["path"], attachment_path_id)
         self.assertEqual(records[0]["s3_path"], attachment_path_id)
         check_types(records[0]["user_profile_id"], records[0]["realm_id"])
+
+        # Test avatars
+        self.verify_avatars(user)
 
         # Test emojis
         emoji_path = f"{realm.id}/emoji/images/1.png"
@@ -338,19 +360,6 @@ class RealmImportExportTest(ZulipTestCase):
                 "icon.original",
             },
         )
-
-        # Test avatars
-        original_avatar_path_id = user_avatar_path(user) + ".original"
-        fn = export_fn(f"avatars/{original_avatar_path_id}")
-        with open(fn, "rb") as file:
-            fn_data = file.read()
-        self.assertEqual(fn_data, read_test_image_file("img.png"))
-        records = read_json("avatars/records.json")
-        record_path = [record["path"] for record in records]
-        record_s3_path = [record["s3_path"] for record in records]
-        self.assertIn(original_avatar_path_id, record_path)
-        self.assertIn(original_avatar_path_id, record_s3_path)
-        check_types(records[0]["user_profile_id"], records[0]["realm_id"])
 
     def test_zulip_realm(self) -> None:
         realm = Realm.objects.get(string_id="zulip")
