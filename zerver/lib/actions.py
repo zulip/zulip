@@ -1369,6 +1369,7 @@ def do_deactivate_user(
         send_event(user_profile.realm, event, bot_owner_user_ids(user_profile))
 
 
+@transaction.atomic(savepoint=False)
 def do_deactivate_stream(
     stream: Stream, log: bool = True, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -1381,7 +1382,7 @@ def do_deactivate_stream(
         "type": "mark_stream_messages_as_read_for_everyone",
         "stream_recipient_id": stream.recipient_id,
     }
-    queue_json_publish("deferred_work", deferred_work_event)
+    transaction.on_commit(lambda: queue_json_publish("deferred_work", deferred_work_event))
 
     # Get the affected user ids *before* we deactivate everybody.
     affected_user_ids = can_access_stream_user_ids(stream)
@@ -1424,7 +1425,7 @@ def do_deactivate_stream(
     stream_dict = stream.to_dict()
     stream_dict.update(dict(name=old_name, invite_only=was_invite_only))
     event = dict(type="stream", op="delete", streams=[stream_dict])
-    send_event(stream.realm, event, affected_user_ids)
+    transaction.on_commit(lambda: send_event(stream.realm, event, affected_user_ids))
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
@@ -5772,7 +5773,7 @@ def notify_default_stream_groups(realm: Realm) -> None:
             get_default_stream_groups(realm)
         ),
     )
-    send_event(realm, event, active_non_guest_user_ids(realm.id))
+    transaction.on_commit(lambda: send_event(realm, event, active_non_guest_user_ids(realm.id)))
 
 
 def do_add_default_stream(stream: Stream) -> None:
