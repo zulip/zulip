@@ -237,11 +237,16 @@ class RealmImportExportTest(ZulipTestCase):
         self.assertEqual(record["s3_path"], emoji_path)
 
         # Test realm logo and icon
+        self.verify_realm_logo_and_icon()
+
+    def verify_realm_logo_and_icon(self) -> None:
         records = read_json("realm_icons/records.json")
         image_files = set()
+
         for record in records:
+            self.assertEqual(record["path"], record["s3_path"])
             image_path = export_fn(f"realm_icons/{record['path']}")
-            if image_path[-9:] == ".original":
+            if image_path.endswith(".original"):
                 with open(image_path, "rb") as image_file:
                     image_data = image_file.read()
                 self.assertEqual(image_data, read_test_image_file("img.png"))
@@ -249,6 +254,7 @@ class RealmImportExportTest(ZulipTestCase):
                 self.assertTrue(os.path.exists(image_path))
 
             image_files.add(os.path.basename(image_path))
+
         self.assertEqual(
             set(image_files),
             {
@@ -337,29 +343,7 @@ class RealmImportExportTest(ZulipTestCase):
         check_types(record["user_profile_id"], record["realm_id"])
 
         # Test realm logo and icon
-        records = read_json("realm_icons/records.json")
-        image_files = set()
-        for record in records:
-            image_path = export_fn(f"realm_icons/{record['s3_path']}")
-            if image_path[-9:] == ".original":
-                with open(image_path, "rb") as image_file:
-                    image_data = image_file.read()
-                self.assertEqual(image_data, read_test_image_file("img.png"))
-            else:
-                self.assertTrue(os.path.exists(image_path))
-
-            image_files.add(os.path.basename(image_path))
-        self.assertEqual(
-            set(image_files),
-            {
-                "night_logo.png",
-                "logo.original",
-                "logo.png",
-                "icon.png",
-                "night_logo.original",
-                "icon.original",
-            },
-        )
+        self.verify_realm_logo_and_icon()
 
     def test_zulip_realm(self) -> None:
         realm = Realm.objects.get(string_id="zulip")
