@@ -46,12 +46,7 @@ from zerver.lib.test_helpers import (
     use_s3_backend,
 )
 from zerver.lib.topic_mutes import add_topic_mute
-from zerver.lib.upload import (
-    claim_attachment,
-    upload_avatar_image,
-    upload_emoji_image,
-    upload_message_file,
-)
+from zerver.lib.upload import claim_attachment, upload_avatar_image, upload_message_file
 from zerver.models import (
     AlertWord,
     Attachment,
@@ -137,6 +132,14 @@ class RealmImportExportTest(ZulipTestCase):
         super().setUp()
         self.rm_tree(settings.LOCAL_UPLOADS_DIR)
 
+        # Deleting LOCAL_UPLOADS_DIR results in the test database
+        # having RealmEmoji records without associated files.
+        #
+        # Even if we didn't delete them, the way that the test runner
+        # varies settings.LOCAL_UPLOADS_DIR for each test worker
+        # process would likely result in this being necessary anyway.
+        RealmEmoji.objects.all().delete()
+
     def export_realm(
         self,
         realm: Realm,
@@ -158,7 +161,9 @@ class RealmImportExportTest(ZulipTestCase):
                 consent_message_id=consent_message_id,
             )
 
-    def upload_files_for_user(self, user_profile: UserProfile) -> None:
+    def upload_files_for_user(
+        self, user_profile: UserProfile, *, emoji_name: str = "whatever"
+    ) -> None:
         message = most_recent_message(user_profile)
         url = upload_message_file(
             "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
@@ -177,8 +182,10 @@ class RealmImportExportTest(ZulipTestCase):
         user_profile.avatar_source = "U"
         user_profile.save()
 
+        realm = user_profile.realm
+
         with get_test_image_file("img.png") as img_file:
-            upload_emoji_image(img_file, "1.png", user_profile)
+            check_add_realm_emoji(realm, emoji_name, user_profile, img_file)
 
     def upload_files_for_realm(self, user_profile: UserProfile) -> None:
         realm = user_profile.realm
@@ -245,12 +252,16 @@ class RealmImportExportTest(ZulipTestCase):
     def verify_emojis(self, user: UserProfile, is_s3: bool) -> None:
         realm = user.realm
 
-        emoji_path = f"{realm.id}/emoji/images/1.png"
+        realm_emoji = RealmEmoji.objects.get(author=user)
+        file_name = realm_emoji.file_name
+        assert file_name.endswith(".png")
+
+        emoji_path = f"{realm.id}/emoji/images/{file_name}"
         emoji_dir = export_fn(f"emoji/{realm.id}/emoji/images")
-        self.assertEqual(os.listdir(emoji_dir), ["1.png"])
+        self.assertEqual(os.listdir(emoji_dir), [file_name])
 
         (record,) = read_json("emoji/records.json")
-        self.assertEqual(record["file_name"], "1.png")
+        self.assertEqual(record["file_name"], file_name)
         self.assertEqual(record["path"], emoji_path)
         self.assertEqual(record["s3_path"], emoji_path)
 
@@ -344,10 +355,7 @@ class RealmImportExportTest(ZulipTestCase):
         realm_user_default.default_language = "de"
         realm_user_default.save()
 
-        realm_emoji = RealmEmoji.objects.get(realm=realm)
-        realm_emoji.delete()
         self.export_realm(realm)
-        realm_emoji.save()
 
         data = read_json("realm.json")
         self.assert_length(data["zerver_userprofile_crossrealm"], 3)
@@ -410,10 +418,7 @@ class RealmImportExportTest(ZulipTestCase):
             self.example_user("iago"), self.example_user("hamlet")
         )
 
-        realm_emoji = RealmEmoji.objects.get(realm=realm)
-        realm_emoji.delete()
         self.export_realm(realm, exportable_user_ids=user_ids)
-        realm_emoji.save()
 
         data = read_json("realm.json")
 
@@ -507,11 +512,8 @@ class RealmImportExportTest(ZulipTestCase):
             self.example_user("hamlet"), message, "outbox", "1f4e4", Reaction.UNICODE_EMOJI
         )
 
-        realm_emoji = RealmEmoji.objects.get(realm=realm)
-        realm_emoji.delete()
         assert message is not None
         self.export_realm(realm, consent_message_id=message.id)
-        realm_emoji.save()
 
         data = read_json("realm.json")
 
@@ -625,7 +627,6 @@ class RealmImportExportTest(ZulipTestCase):
     def test_import_realm(self) -> None:
 
         original_realm = Realm.objects.get(string_id="zulip")
-        RealmEmoji.objects.get(realm=original_realm).delete()
 
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
@@ -1116,7 +1117,6 @@ class RealmImportExportTest(ZulipTestCase):
 
     def test_import_realm_with_no_realm_user_default_table(self) -> None:
         original_realm = Realm.objects.get(string_id="zulip")
-        RealmEmoji.objects.get(realm=original_realm).delete()
 
         RealmUserDefault.objects.get(realm=original_realm).delete()
         self.export_realm(original_realm)
