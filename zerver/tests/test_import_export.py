@@ -42,6 +42,7 @@ from zerver.lib.test_helpers import (
     get_test_image_file,
     most_recent_message,
     most_recent_usermessage,
+    read_test_image_file,
     use_s3_backend,
 )
 from zerver.lib.topic_mutes import add_topic_mute
@@ -194,8 +195,7 @@ class RealmImportExportTest(ZulipTestCase):
             upload.upload_backend.upload_realm_logo_image(img_file, user_profile, night=True)
             do_change_logo_source(realm, Realm.LOGO_UPLOADED, True, acting_user=user_profile)
 
-        with get_test_image_file("img.png") as img_file:
-            test_image = img_file.read()
+        test_image = read_test_image_file("img.png")
         user_profile.avatar_source = "U"
         user_profile.save()
 
@@ -1208,8 +1208,7 @@ class RealmImportExportTest(ZulipTestCase):
         upload_path = upload.upload_backend.realm_avatar_and_logo_path(imported_realm)
         full_upload_path = os.path.join(settings.LOCAL_UPLOADS_DIR, upload_path)
 
-        with get_test_image_file("img.png") as f:
-            test_image_data = f.read()
+        test_image_data = read_test_image_file("img.png")
         self.assertIsNotNone(test_image_data)
 
         with open(os.path.join(full_upload_path, "icon.original"), "rb") as f:
@@ -1242,8 +1241,7 @@ class RealmImportExportTest(ZulipTestCase):
             do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
 
         imported_realm = Realm.objects.get(string_id="test-zulip")
-        with get_test_image_file("img.png") as f:
-            test_image_data = f.read()
+        test_image_data = read_test_image_file("img.png")
 
         # Test attachments
         uploaded_file = Attachment.objects.get(realm=imported_realm)

@@ -205,6 +205,11 @@ def get_test_image_file(filename: str) -> IO[bytes]:
     return open(os.path.join(test_avatar_dir, filename), "rb")
 
 
+def read_test_image_file(filename: str) -> bytes:
+    with get_test_image_file(filename) as img_file:
+        return img_file.read()
+
+
 def avatar_disk_path(
     user_profile: UserProfile, medium: bool = False, original: bool = False
 ) -> str:
