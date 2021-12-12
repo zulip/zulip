@@ -80,7 +80,6 @@ from zerver.models import (
     get_active_streams,
     get_client,
     get_huddle_hash,
-    get_realm,
     get_stream,
 )
 
@@ -158,9 +157,9 @@ class RealmImportExportTest(ZulipTestCase):
                 consent_message_id=consent_message_id,
             )
 
-    def _setup_export_files(self, realm: Realm) -> Tuple[str, str, str, bytes]:
-        message = Message.objects.all()[0]
-        user_profile = message.sender
+    def _setup_export_files(self, user_profile: UserProfile) -> Tuple[str, str, str, bytes]:
+        realm = user_profile.realm
+        message = most_recent_message(user_profile)
         url = upload_message_file(
             "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
         )
@@ -197,8 +196,8 @@ class RealmImportExportTest(ZulipTestCase):
 
         with get_test_image_file("img.png") as img_file:
             test_image = img_file.read()
-        message.sender.avatar_source = "U"
-        message.sender.save()
+        user_profile.avatar_source = "U"
+        user_profile.save()
 
         realm.refresh_from_db()
 
@@ -209,8 +208,9 @@ class RealmImportExportTest(ZulipTestCase):
     """
 
     def test_export_files_from_local(self) -> None:
-        realm = Realm.objects.get(string_id="zulip")
-        path_id, emoji_path, original_avatar_path_id, test_image = self._setup_export_files(realm)
+        user = self.example_user("hamlet")
+        realm = user.realm
+        path_id, emoji_path, original_avatar_path_id, test_image = self._setup_export_files(user)
         self._export_realm(realm)
 
         data = read_json("attachment.json")
@@ -283,13 +283,15 @@ class RealmImportExportTest(ZulipTestCase):
     def test_export_files_from_s3(self) -> None:
         create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET, settings.S3_AVATAR_BUCKET)
 
-        realm = Realm.objects.get(string_id="zulip")
+        user = self.example_user("hamlet")
+        realm = user.realm
+
         (
             attachment_path_id,
             emoji_path,
             original_avatar_path_id,
             test_image,
-        ) = self._setup_export_files(realm)
+        ) = self._setup_export_files(user)
         self._export_realm(realm)
 
         data = read_json("attachment.json")
@@ -1168,8 +1170,9 @@ class RealmImportExportTest(ZulipTestCase):
         self.assertEqual(realm_user_default.twenty_four_hour_time, False)
 
     def test_import_files_from_local(self) -> None:
-        realm = Realm.objects.get(string_id="zulip")
-        self._setup_export_files(realm)
+        user = self.example_user("hamlet")
+        realm = user.realm
+        self._setup_export_files(user)
 
         self._export_realm(realm)
 
@@ -1196,8 +1199,7 @@ class RealmImportExportTest(ZulipTestCase):
         self.assertTrue(os.path.isfile(emoji_file_path))
 
         # Test avatars
-        user_email = Message.objects.all()[0].sender.email
-        user_profile = UserProfile.objects.get(email=user_email, realm=imported_realm)
+        user_profile = UserProfile.objects.get(full_name=user.full_name, realm=imported_realm)
         avatar_path_id = user_avatar_path(user_profile) + ".original"
         avatar_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", avatar_path_id)
         self.assertTrue(os.path.isfile(avatar_file_path))
@@ -1231,8 +1233,9 @@ class RealmImportExportTest(ZulipTestCase):
             settings.S3_AUTH_UPLOADS_BUCKET, settings.S3_AVATAR_BUCKET
         )
 
-        realm = Realm.objects.get(string_id="zulip")
-        self._setup_export_files(realm)
+        user = self.example_user("hamlet")
+        realm = user.realm
+        self._setup_export_files(user)
 
         self._export_realm(realm)
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
@@ -1260,8 +1263,7 @@ class RealmImportExportTest(ZulipTestCase):
         self.assertEqual(emoji_key.key, emoji_path)
 
         # Test avatars
-        user_email = Message.objects.all()[0].sender.email
-        user_profile = UserProfile.objects.get(email=user_email, realm=imported_realm)
+        user_profile = UserProfile.objects.get(full_name=user.full_name, realm=imported_realm)
         avatar_path_id = user_avatar_path(user_profile) + ".original"
         original_image_key = avatar_bucket.Object(avatar_path_id)
         self.assertEqual(original_image_key.key, avatar_path_id)
@@ -1314,10 +1316,11 @@ class RealmImportExportTest(ZulipTestCase):
         self.assertEqual(message_ids, [555, 888, 999])
 
     def test_plan_type(self) -> None:
-        realm = get_realm("zulip")
+        user = self.example_user("hamlet")
+        realm = user.realm
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
 
-        self._setup_export_files(realm)
+        self._setup_export_files(user)
         self._export_realm(realm)
 
         with self.settings(BILLING_ENABLED=True), self.assertLogs(level="INFO"):
