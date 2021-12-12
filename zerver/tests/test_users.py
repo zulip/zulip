@@ -329,12 +329,13 @@ class PermissionTest(ZulipTestCase):
         #############################################################
         # Now, switch email address visibility, check client_gravatar
         # is automatically disabled for the user.
-        do_set_realm_property(
-            user.realm,
-            "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
-            acting_user=None,
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            do_set_realm_property(
+                user.realm,
+                "email_address_visibility",
+                Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+                acting_user=None,
+            )
         result = self.client_get("/json/users", {"client_gravatar": "true"})
         self.assert_json_success(result)
         members = result.json()["members"]
