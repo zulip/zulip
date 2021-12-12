@@ -158,7 +158,7 @@ class RealmImportExportTest(ZulipTestCase):
                 consent_message_id=consent_message_id,
             )
 
-    def _setup_export_files(self, user_profile: UserProfile) -> Tuple[str, str, str, bytes]:
+    def _setup_export_files(self, user_profile: UserProfile) -> Tuple[str, str, str]:
         realm = user_profile.realm
         message = most_recent_message(user_profile)
         url = upload_message_file(
@@ -195,13 +195,12 @@ class RealmImportExportTest(ZulipTestCase):
             upload.upload_backend.upload_realm_logo_image(img_file, user_profile, night=True)
             do_change_logo_source(realm, Realm.LOGO_UPLOADED, True, acting_user=user_profile)
 
-        test_image = read_test_image_file("img.png")
         user_profile.avatar_source = "U"
         user_profile.save()
 
         realm.refresh_from_db()
 
-        return attachment_path_id, emoji_path, original_avatar_path_id, test_image
+        return attachment_path_id, emoji_path, original_avatar_path_id
 
     """
     Tests for export
@@ -210,7 +209,7 @@ class RealmImportExportTest(ZulipTestCase):
     def test_export_files_from_local(self) -> None:
         user = self.example_user("hamlet")
         realm = user.realm
-        path_id, emoji_path, original_avatar_path_id, test_image = self._setup_export_files(user)
+        path_id, emoji_path, original_avatar_path_id = self._setup_export_files(user)
         self._export_realm(realm)
 
         data = read_json("attachment.json")
@@ -251,7 +250,7 @@ class RealmImportExportTest(ZulipTestCase):
             if image_path[-9:] == ".original":
                 with open(image_path, "rb") as image_file:
                     image_data = image_file.read()
-                self.assertEqual(image_data, test_image)
+                self.assertEqual(image_data, read_test_image_file("img.png"))
             else:
                 self.assertTrue(os.path.exists(image_path))
 
@@ -272,7 +271,7 @@ class RealmImportExportTest(ZulipTestCase):
         fn = export_fn(f"avatars/{original_avatar_path_id}")
         with open(fn, "rb") as fb:
             fn_data = fb.read()
-        self.assertEqual(fn_data, test_image)
+        self.assertEqual(fn_data, read_test_image_file("img.png"))
         records = read_json("avatars/records.json")
         record_path = [record["path"] for record in records]
         record_s3_path = [record["s3_path"] for record in records]
@@ -290,7 +289,6 @@ class RealmImportExportTest(ZulipTestCase):
             attachment_path_id,
             emoji_path,
             original_avatar_path_id,
-            test_image,
         ) = self._setup_export_files(user)
         self._export_realm(realm)
 
@@ -335,7 +333,7 @@ class RealmImportExportTest(ZulipTestCase):
             if image_path[-9:] == ".original":
                 with open(image_path, "rb") as image_file:
                     image_data = image_file.read()
-                self.assertEqual(image_data, test_image)
+                self.assertEqual(image_data, read_test_image_file("img.png"))
             else:
                 self.assertTrue(os.path.exists(image_path))
 
@@ -356,7 +354,7 @@ class RealmImportExportTest(ZulipTestCase):
         fn = export_fn(f"avatars/{original_avatar_path_id}")
         with open(fn, "rb") as file:
             fn_data = file.read()
-        self.assertEqual(fn_data, test_image)
+        self.assertEqual(fn_data, read_test_image_file("img.png"))
         records = read_json("avatars/records.json")
         record_path = [record["path"] for record in records]
         record_s3_path = [record["s3_path"] for record in records]
