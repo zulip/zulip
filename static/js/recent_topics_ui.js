@@ -181,6 +181,14 @@ export function revive_current_focus() {
 
     if (is_table_focused()) {
         if (last_visited_topic) {
+            const topic_data = topics.get(last_visited_topic);
+            if (!topic_data) {
+                // `last_visited_topic` was renamed. We fallback to focus on
+                // the first visible topic since if the topic was recently edited,
+                // it most likely has a latest edit confirmation message.
+                set_table_focus(0, col_focus);
+                return true;
+            }
             const topic_last_msg_id = topics.get(last_visited_topic).last_msg_id;
             const current_list = topics_widget.get_current_list();
             const last_visited_topic_index = current_list.findIndex(
