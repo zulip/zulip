@@ -212,17 +212,24 @@ class RealmImportExportTest(ZulipTestCase):
         self.upload_files_for_realm(user)
         self.export_realm(realm)
 
+        self.verify_attachment_json(user)
         self.verify_uploads(user, is_s3=False)
         self.verify_avatars(user)
         self.verify_emojis(user, is_s3=False)
         self.verify_realm_logo_and_icon()
 
+    def verify_attachment_json(self, user: UserProfile) -> None:
+        attachment = Attachment.objects.get(owner=user)
+        (record,) = read_json("attachment.json")["zerver_attachment"]
+        self.assertEqual(record["path_id"], attachment.path_id)
+        self.assertEqual(record["owner"], attachment.owner_id)
+        self.assertEqual(record["realm"], attachment.realm_id)
+
     def verify_uploads(self, user: UserProfile, is_s3: bool) -> None:
         realm = user.realm
 
-        data = read_json("attachment.json")
-        self.assert_length(data["zerver_attachment"], 1)
-        path_id = data["zerver_attachment"][0]["path_id"]
+        attachment = Attachment.objects.get(owner=user)
+        path_id = attachment.path_id
 
         # Test uploads
         fn = export_fn(f"uploads/{path_id}")
@@ -336,6 +343,7 @@ class RealmImportExportTest(ZulipTestCase):
         self.upload_files_for_realm(user)
         self.export_realm(realm)
 
+        self.verify_attachment_json(user)
         self.verify_uploads(user, is_s3=True)
         self.verify_avatars(user)
         self.verify_emojis(user, is_s3=True)
