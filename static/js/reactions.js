@@ -279,16 +279,18 @@ export function add_reaction(event) {
     }
 }
 
-view.update_existing_reaction = function (opts) {
+view.update_existing_reaction = function ({
+    message_id,
+    emoji_name,
+    user_list,
+    user_id,
+    reaction_type,
+    emoji_code,
+}) {
     // Our caller ensures that this message already has a reaction
     // for this emoji and sets up our user_list.  This function
     // simply updates the DOM.
-
-    const message_id = opts.message_id;
-    const emoji_name = opts.emoji_name;
-    const user_list = opts.user_list;
-    const user_id = opts.user_id;
-    const local_id = get_local_reaction_id(opts);
+    const local_id = get_local_reaction_id({reaction_type, emoji_code});
     const reaction = find_reaction(message_id, local_id);
 
     set_reaction_count(reaction, user_list.length);
