@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import argparse
 import logging
 import os
 import pwd
@@ -20,6 +19,7 @@ from scripts.lib.zulip_tools import (
     has_process_fts_updates,
     list_supervisor_processes,
     overwrite_symlink,
+    start_arg_parser,
 )
 
 action = "restart"
@@ -30,19 +30,7 @@ verbing = action.title() + "ing"
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format=f"%(asctime)s {action}-server: %(message)s", level=logging.INFO)
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--fill-cache", action="store_true", help="Fill the memcached caches")
-if action == "restart":
-    parser.add_argument(
-        "--less-graceful",
-        action="store_true",
-        help="Restart with more concern for expediency than minimizing availability interruption",
-    )
-    parser.add_argument(
-        "--skip-tornado",
-        action="store_true",
-        help="Do not restart Tornado processes",
-    )
+parser = start_arg_parser(action=action, add_help=True)
 args = parser.parse_args()
 
 deploy_path = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
