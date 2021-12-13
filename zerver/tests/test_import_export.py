@@ -127,7 +127,10 @@ def get_huddle_hashes(r: Realm) -> str:
     return huddle_hash
 
 
-class RealmImportExportTest(ZulipTestCase):
+class ExportFile(ZulipTestCase):
+    """This class is a container for shared helper functions
+    used for both the realm-level and user-level export tests."""
+
     def setUp(self) -> None:
         super().setUp()
         self.rm_tree(settings.LOCAL_UPLOADS_DIR)
@@ -139,27 +142,6 @@ class RealmImportExportTest(ZulipTestCase):
         # varies settings.LOCAL_UPLOADS_DIR for each test worker
         # process would likely result in this being necessary anyway.
         RealmEmoji.objects.all().delete()
-
-    def export_realm(
-        self,
-        realm: Realm,
-        exportable_user_ids: Optional[Set[int]] = None,
-        consent_message_id: Optional[int] = None,
-    ) -> None:
-        output_dir = make_export_output_dir()
-        with patch("zerver.lib.export.create_soft_link"), self.assertLogs(level="INFO"):
-            do_export_realm(
-                realm=realm,
-                output_dir=output_dir,
-                threads=0,
-                exportable_user_ids=exportable_user_ids,
-                consent_message_id=consent_message_id,
-            )
-            export_usermessages_batch(
-                input_path=os.path.join(output_dir, "messages-000001.json.partial"),
-                output_path=os.path.join(output_dir, "messages-000001.json"),
-                consent_message_id=consent_message_id,
-            )
 
     def upload_files_for_user(
         self, user_profile: UserProfile, *, emoji_name: str = "whatever"
@@ -200,23 +182,6 @@ class RealmImportExportTest(ZulipTestCase):
         with get_test_image_file("img.png") as img_file:
             upload.upload_backend.upload_realm_logo_image(img_file, user_profile, night=True)
             do_change_logo_source(realm, Realm.LOGO_UPLOADED, True, acting_user=user_profile)
-
-    """
-    Tests for export
-    """
-
-    def test_export_files_from_local(self) -> None:
-        user = self.example_user("hamlet")
-        realm = user.realm
-        self.upload_files_for_user(user)
-        self.upload_files_for_realm(user)
-        self.export_realm(realm)
-
-        self.verify_attachment_json(user)
-        self.verify_uploads(user, is_s3=False)
-        self.verify_avatars(user)
-        self.verify_emojis(user, is_s3=False)
-        self.verify_realm_logo_and_icon()
 
     def verify_attachment_json(self, user: UserProfile) -> None:
         attachment = Attachment.objects.get(owner=user)
@@ -331,6 +296,42 @@ class RealmImportExportTest(ZulipTestCase):
         # Right now we expect only our user to have an uploaded avatar.
         db_paths = {user_avatar_path(user) + ".original"}
         self.assertEqual(exported_paths, db_paths)
+
+
+class RealmImportExportTest(ExportFile):
+    def export_realm(
+        self,
+        realm: Realm,
+        exportable_user_ids: Optional[Set[int]] = None,
+        consent_message_id: Optional[int] = None,
+    ) -> None:
+        output_dir = make_export_output_dir()
+        with patch("zerver.lib.export.create_soft_link"), self.assertLogs(level="INFO"):
+            do_export_realm(
+                realm=realm,
+                output_dir=output_dir,
+                threads=0,
+                exportable_user_ids=exportable_user_ids,
+                consent_message_id=consent_message_id,
+            )
+            export_usermessages_batch(
+                input_path=os.path.join(output_dir, "messages-000001.json.partial"),
+                output_path=os.path.join(output_dir, "messages-000001.json"),
+                consent_message_id=consent_message_id,
+            )
+
+    def test_export_files_from_local(self) -> None:
+        user = self.example_user("hamlet")
+        realm = user.realm
+        self.upload_files_for_user(user)
+        self.upload_files_for_realm(user)
+        self.export_realm(realm)
+
+        self.verify_attachment_json(user)
+        self.verify_uploads(user, is_s3=False)
+        self.verify_avatars(user)
+        self.verify_emojis(user, is_s3=False)
+        self.verify_realm_logo_and_icon()
 
     @use_s3_backend
     def test_export_files_from_s3(self) -> None:
