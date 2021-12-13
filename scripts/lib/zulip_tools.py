@@ -653,6 +653,23 @@ def deport(netloc: str) -> str:
     return "[" + r.hostname + "]" if ":" in r.hostname else r.hostname
 
 
+def start_arg_parser(action: str, add_help: bool = False) -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(add_help=add_help)
+    parser.add_argument("--fill-cache", action="store_true", help="Fill the memcached caches")
+    if action == "restart":
+        parser.add_argument(
+            "--less-graceful",
+            action="store_true",
+            help="Restart with more concern for expediency than minimizing availability interruption",
+        )
+        parser.add_argument(
+            "--skip-tornado",
+            action="store_true",
+            help="Do not restart Tornado processes",
+        )
+    return parser
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1]
     if cmd == "make_deploy_path":
