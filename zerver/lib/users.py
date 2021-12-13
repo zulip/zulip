@@ -394,12 +394,11 @@ def validate_user_custom_profile_data(
             raise JsonableError(error.message)
 
 
-def can_access_delivery_email(user_profile: UserProfile) -> bool:
-    realm = user_profile.realm
-    if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
+def can_access_delivery_email(user_profile: UserProfile, email_address_visibility: int) -> bool:
+    if email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
         return user_profile.is_realm_admin
 
-    if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_MODERATORS:
+    if email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_MODERATORS:
         return user_profile.is_realm_admin or user_profile.is_moderator
 
     return False
@@ -477,7 +476,9 @@ def format_user_row(
             client_gravatar=client_gravatar,
         )
 
-    if acting_user is not None and can_access_delivery_email(acting_user):
+    if acting_user is not None and can_access_delivery_email(
+        acting_user, realm.email_address_visibility
+    ):
         result["delivery_email"] = row["delivery_email"]
 
     if is_bot:
