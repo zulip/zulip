@@ -32,6 +32,7 @@ from scripts.lib.zulip_tools import (
     get_config_file,
     parse_os_release,
     run_psql_as_postgres,
+    start_arg_parser,
     su_to_zulip,
 )
 
@@ -72,7 +73,9 @@ if (vendor, os_version) in UNSUPPORTED_DISTROS:
 # make sure we have appropriate file permissions
 os.umask(0o22)
 
-parser = argparse.ArgumentParser()
+restart_parser = start_arg_parser(action="restart", add_help=False)
+
+parser = argparse.ArgumentParser(parents=[restart_parser])
 parser.add_argument("deploy_path", metavar="deploy_path", help="Path to deployment directory")
 parser.add_argument("--skip-puppet", action="store_true", help="Skip doing puppet/apt upgrades.")
 parser.add_argument("--skip-migrations", action="store_true", help="Skip doing migrations.")
@@ -91,6 +94,15 @@ parser.add_argument(
     "--audit-fts-indexes", action="store_true", help="Audit and fix full text search indexes."
 )
 args = parser.parse_args()
+
+if not args.skip_puppet and args.less_graceful:
+    logging.warning("Ignored --less-graceful; all upgrades without --skip-puppet are ungraceful.")
+
+if not args.skip_puppet and args.skip_tornado:
+    logging.error(
+        "Cannot skip tornado restart unless we are skipping puppet!  Omit --skip-tornado, or add --skip-puppet."
+    )
+    sys.exit(1)
 
 deploy_path = args.deploy_path
 os.chdir(deploy_path)
@@ -312,7 +324,12 @@ if IS_SERVER_UP or not args.skip_puppet:
     # Even if the server wasn't up previously, puppet might have
     # started it if there were supervisord configuration changes, so
     # we need to use restart-server if puppet ran.
-    subprocess.check_output(["./scripts/restart-server", "--fill-cache"], preexec_fn=su_to_zulip)
+    restart_args = ["--fill-cache"]
+    if args.skip_tornado:
+        restart_args.append("--skip-tornado")
+    if args.less_graceful:
+        restart_args.append("--less-graceful")
+    subprocess.check_output(["./scripts/restart-server", *restart_args], preexec_fn=su_to_zulip)
 else:
     subprocess.check_output(["./scripts/start-server", "--fill-cache"], preexec_fn=su_to_zulip)
 
