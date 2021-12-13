@@ -29,5 +29,11 @@ def api_iftt_app_webhook(
     if content is None:
         raise JsonableError(_("Content can't be empty"))
 
+    if not isinstance(topic, str):
+        raise JsonableError(_("Topic must be a string"))
+
+    if not isinstance(content, str):
+        raise JsonableError(_("Content must be a string"))
+
     check_send_webhook_message(request, user_profile, topic, content)
     return json_success()
