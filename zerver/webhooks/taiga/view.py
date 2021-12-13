@@ -13,6 +13,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_dict, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -22,7 +23,7 @@ from zerver.models import UserProfile
 def api_taiga_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    message: Dict[str, Any] = REQ(argument_type="body"),
+    message: Dict[str, object] = REQ(argument_type="body", json_validator=check_dict()),
 ) -> HttpResponse:
     parsed_events = parse_message(message)
     content_lines = []
@@ -30,9 +31,12 @@ def api_taiga_webhook(
         content_lines.append(generate_content(event) + "\n")
     content = "".join(sorted(content_lines))
     topic = "General"
-    if message["data"].get("milestone") is not None:
-        if message["data"]["milestone"].get("name") is not None:
-            topic = message["data"]["milestone"]["name"]
+    data = check_dict()("data", message.get("data"))
+    milestone = check_none_or(check_dict())("data milestone", data.get("milestone"))
+    if milestone is not None:
+        name = check_none_or(check_string)("data milestone name", milestone.get("name"))
+        if name is not None:
+            topic = name
     check_send_webhook_message(request, user_profile, topic, content)
 
     return json_success()

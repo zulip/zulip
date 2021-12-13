@@ -11,6 +11,7 @@ from zerver.decorator import log_exception_to_webhook_logger, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_dict
 from zerver.lib.webhooks.common import (
     check_send_webhook_message,
     validate_extract_webhook_http_header,
@@ -79,7 +80,7 @@ ALL_EVENT_TYPES = [
 def api_bitbucket2_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: Dict[str, object] = REQ(argument_type="body", json_validator=check_dict()),
     branches: Optional[str] = REQ(default=None),
     user_specified_topic: Optional[str] = REQ("topic", default=None),
 ) -> HttpResponse:

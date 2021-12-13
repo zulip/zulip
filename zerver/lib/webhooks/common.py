@@ -217,7 +217,7 @@ def get_http_headers_from_filename(http_header_key: str) -> Callable[[str], Dict
     return fixture_to_headers
 
 
-def unix_milliseconds_to_timestamp(milliseconds: Any, webhook: str) -> datetime:
+def unix_milliseconds_to_timestamp(milliseconds: int, webhook: str) -> datetime:
     """If an integration requires time input in unix milliseconds, this helper
     checks to ensure correct type and will catch any errors related to type or
     value and raise a JsonableError.

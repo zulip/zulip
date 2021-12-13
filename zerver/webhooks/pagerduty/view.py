@@ -6,6 +6,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_dict, check_list, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -222,13 +223,13 @@ def send_formated_pagerduty(
 def api_pagerduty_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: Dict[str, object] = REQ(argument_type="body", json_validator=check_dict()),
 ) -> HttpResponse:
-    messages = payload.get("messages")
+    messages = check_none_or(check_list(check_dict()))("messages", payload.get("messages"))
 
     if messages is not None:
-        for message in messages:
-            message_type = message.get("type")
+        for i, message in enumerate(messages):
+            message_type = check_none_or(check_string)(f"messages[{i}] type", message.get("type"))
 
             # If the message has no "type" key, then this payload came from a
             # Pagerduty Webhook V2.
@@ -241,24 +242,24 @@ def api_pagerduty_webhook(
             format_dict = build_pagerduty_formatdict(message)
             send_formated_pagerduty(request, user_profile, message_type, format_dict)
 
-        for message in messages:
-            event = message.get("event")
+        for i, message in enumerate(messages):
+            event_type = check_none_or(check_string)(f"messages[{i}] event", message.get("event"))
 
             # If the message has no "event" key, then this payload came from a
             # Pagerduty Webhook V1.
-            if event is None:
+            if event_type is None:
                 break
 
-            if event not in PAGER_DUTY_EVENT_NAMES_V2:
-                raise UnsupportedWebhookEventType(event)
+            if event_type not in PAGER_DUTY_EVENT_NAMES_V2:
+                raise UnsupportedWebhookEventType(event_type)
 
             format_dict = build_pagerduty_formatdict_v2(message)
-            send_formated_pagerduty(request, user_profile, event, format_dict)
+            send_formated_pagerduty(request, user_profile, event_type, format_dict)
     else:
         if "event" in payload:
             # V3 has no "messages" field, and it has key "event" instead
-            event = payload["event"]
-            event_type = event.get("event_type")
+            event = check_dict()("event", payload["event"])
+            event_type = check_string("event event_type", event.get("event_type"))
 
             if event_type not in PAGER_DUTY_EVENT_NAMES_V3:
                 raise UnsupportedWebhookEventType(event_type)

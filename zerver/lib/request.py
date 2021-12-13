@@ -199,7 +199,7 @@ class _REQ(Generic[ResultT]):
 # See also this documentation to learn how @overload helps here.
 # https://zulip.readthedocs.io/en/latest/testing/mypy.html#using-overload-to-accurately-describe-variations
 #
-# Overload 1: converter
+# Overload 1: converter, argument_type=None
 @overload
 def REQ(
     whence: Optional[str] = ...,
@@ -220,6 +220,7 @@ def REQ(
     whence: Optional[str] = ...,
     *,
     default: ResultT = ...,
+    argument_type: Optional[Literal["body"]] = ...,
     json_validator: Validator[ResultT],
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
@@ -264,13 +265,13 @@ def REQ(
 def REQ(
     whence: Optional[str] = ...,
     *,
-    default: ResultT = ...,
+    default: object = ...,
     argument_type: Literal["body"],
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
     aliases: Sequence[str] = ...,
     path_only: bool = ...,
-) -> ResultT:
+) -> object:
     ...
 
 
@@ -368,73 +369,71 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
                 continue
             assert func_var_name is not None
 
+            post_var_name: Optional[str]
+            default_assigned = False
+
             if param.argument_type == "body":
-                try:
-                    val = orjson.loads(request.body)
-                except orjson.JSONDecodeError:
-                    raise InvalidJSONError(_("Malformed JSON"))
-                kwargs[func_var_name] = val
-                continue
+                post_var_name = "body"
+                val = request.body
             else:
                 # This is a view bug, not a user error, and thus should throw a 500.
                 assert param.argument_type is None, "Invalid argument type"
 
-            post_var_names = [param.post_var_name]
-            post_var_names += param.aliases
+                post_var_names = [param.post_var_name]
+                post_var_names += param.aliases
 
-            default_assigned = False
+                post_var_name = None
 
-            post_var_name: Optional[str] = None
-
-            for req_var in post_var_names:
-                assert req_var is not None
-                if req_var in request.POST:
-                    val = request.POST[req_var]
-                    request_notes.processed_parameters.add(req_var)
-                elif req_var in request.GET:
-                    val = request.GET[req_var]
-                    request_notes.processed_parameters.add(req_var)
-                else:
-                    # This is covered by test_REQ_aliases, but coverage.py
-                    # fails to recognize this for some reason.
-                    continue  # nocoverage
-                if post_var_name is not None:
+                for req_var in post_var_names:
                     assert req_var is not None
-                    raise RequestConfusingParmsError(post_var_name, req_var)
-                post_var_name = req_var
+                    if req_var in request.POST:
+                        val = request.POST[req_var]
+                        request_notes.processed_parameters.add(req_var)
+                    elif req_var in request.GET:
+                        val = request.GET[req_var]
+                        request_notes.processed_parameters.add(req_var)
+                    else:
+                        # This is covered by test_REQ_aliases, but coverage.py
+                        # fails to recognize this for some reason.
+                        continue  # nocoverage
+                    if post_var_name is not None:
+                        raise RequestConfusingParmsError(post_var_name, req_var)
+                    post_var_name = req_var
 
-            if post_var_name is None:
-                post_var_name = param.post_var_name
-                assert post_var_name is not None
-                if param.default is _REQ.NotSpecified:
-                    raise RequestVariableMissingError(post_var_name)
-                val = param.default
-                default_assigned = True
+                if post_var_name is None:
+                    post_var_name = param.post_var_name
+                    assert post_var_name is not None
+                    if param.default is _REQ.NotSpecified:
+                        raise RequestVariableMissingError(post_var_name)
+                    val = param.default
+                    default_assigned = True
 
-            if param.converter is not None and not default_assigned:
-                try:
-                    val = param.converter(val)
-                except JsonableError:
-                    raise
-                except Exception:
-                    raise RequestVariableConversionError(post_var_name, val)
+                if param.converter is not None and not default_assigned:
+                    try:
+                        val = param.converter(val)
+                    except JsonableError:
+                        raise
+                    except Exception:
+                        raise RequestVariableConversionError(post_var_name, val)
+
+                # str_validators is like json_validator, but for direct strings (no JSON parsing).
+                if param.str_validator is not None and not default_assigned:
+                    try:
+                        val = param.str_validator(post_var_name, val)
+                    except ValidationError as error:
+                        raise JsonableError(error.message)
 
             # json_validator is like converter, but doesn't handle JSON parsing; we do.
             if param.json_validator is not None and not default_assigned:
                 try:
                     val = orjson.loads(val)
                 except orjson.JSONDecodeError:
+                    if param.argument_type == "body":
+                        raise InvalidJSONError(_("Malformed JSON"))
                     raise JsonableError(_('Argument "{}" is not valid JSON.').format(post_var_name))
 
                 try:
                     val = param.json_validator(post_var_name, val)
-                except ValidationError as error:
-                    raise JsonableError(error.message)
-
-            # str_validators is like json_validator, but for direct strings (no JSON parsing).
-            if param.str_validator is not None and not default_assigned:
-                try:
-                    val = param.str_validator(post_var_name, val)
                 except ValidationError as error:
                     raise JsonableError(error.message)
 

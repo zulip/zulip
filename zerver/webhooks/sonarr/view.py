@@ -6,6 +6,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_dict, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_webhook_message
 from zerver.models import UserProfile
 
@@ -44,12 +45,12 @@ ALL_EVENT_TYPES = [
 def api_sonarr_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: Dict[str, object] = REQ(argument_type="body", json_validator=check_dict()),
 ) -> HttpResponse:
     body = get_body_for_http_request(payload)
     subject = get_subject_for_http_request(payload)
 
-    check_send_webhook_message(request, user_profile, subject, body, payload["eventType"])
+    check_send_webhook_message(request, user_profile, subject, body, check_string("eventType", payload.get("eventType")))
     return json_success()
 
 

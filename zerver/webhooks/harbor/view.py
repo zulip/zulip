@@ -8,6 +8,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_dict,check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import Realm, UserProfile
 
@@ -91,7 +92,7 @@ ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
 def api_harbor_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: Dict[str, object] = REQ(argument_type="body", json_validator=check_dict()),
 ) -> HttpResponse:
 
     operator_username = "**{}**".format(payload["operator"])
@@ -102,8 +103,14 @@ def api_harbor_webhook(
     if operator_profile:
         operator_username = f"@**{operator_profile.full_name}**"  # nocoverage
 
-    event = payload["type"]
-    topic = payload["event_data"]["repository"]["repo_full_name"]
+    event = check_string("type", payload.get("type"))
+    topic = check_string(
+        "event_data repository repo_full_name",
+        check_dict()(
+            "event_data repository",
+            check_dict()("event_data", payload.get("event_data")).get("repository"),
+        ).get("repo_full_name"),
+    )
 
     if event in IGNORED_EVENTS:
         return json_success()

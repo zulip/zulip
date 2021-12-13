@@ -1,6 +1,6 @@
 # Webhooks for teamcity integration
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
@@ -13,6 +13,7 @@ from zerver.lib.actions import (
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress
+from zerver.lib.validator import check_dict, check_list, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import Realm, UserProfile
 
@@ -53,22 +54,22 @@ def get_teamcity_property_value(property_list: List[Dict[str, str]], name: str) 
 def api_teamcity_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: Dict[str, object] = REQ(argument_type="body", json_validator=check_dict()),
 ) -> HttpResponse:
-    message = payload.get("build")
+    message = check_none_or(check_dict())("build", payload.get("build"))
     if message is None:
         # Ignore third-party specific (e.g. Slack) payload formats
         # and notify the bot owner
-        message = MISCONFIGURED_PAYLOAD_TYPE_ERROR_MESSAGE.format(
+        content = MISCONFIGURED_PAYLOAD_TYPE_ERROR_MESSAGE.format(
             bot_name=user_profile.full_name,
             support_email=FromAddress.SUPPORT,
         ).strip()
-        send_rate_limited_pm_notification_to_bot_owner(user_profile, user_profile.realm, message)
+        send_rate_limited_pm_notification_to_bot_owner(user_profile, user_profile.realm, content)
 
         return json_success()
 
-    build_name = message["buildFullName"]
-    build_url = message["buildStatusUrl"]
+    build_name = check_string("buildFullName", message["buildFullName"])
+    build_url = check_string("buildStatusUrl", message["buildStatusUrl"])
     changes_url = build_url + "&tab=buildChangesDiv"
     build_number = message["buildNumber"]
     build_result = message["buildResult"]
@@ -106,20 +107,21 @@ def api_teamcity_webhook(
     else:
         topic = build_name
 
+    properties = check_list(check_dict(value_validator=check_string))(
+        "teamcityProperties", message["teamcityProperties"]
+    )
+
     # Check if this is a personal build, and if so try to private message the user who triggered it.
-    if (
-        get_teamcity_property_value(message["teamcityProperties"], "env.BUILD_IS_PERSONAL")
-        == "true"
-    ):
+    if get_teamcity_property_value(properties, "env.BUILD_IS_PERSONAL") == "true":
         # The triggeredBy field gives us the teamcity user full name, and the
         # "teamcity.build.triggeredBy.username" property gives us the teamcity username.
         # Let's try finding the user email from both.
-        teamcity_fullname = message["triggeredBy"].split(";")[0]
+        teamcity_fullname = check_string("triggeredBy", message["triggeredBy"]).split(";")[0]
         teamcity_user = guess_zulip_user_from_teamcity(teamcity_fullname, user_profile.realm)
 
         if teamcity_user is None:
             teamcity_shortname = get_teamcity_property_value(
-                message["teamcityProperties"], "teamcity.build.triggeredBy.username"
+                properties, "teamcity.build.triggeredBy.username"
             )
             if teamcity_shortname is not None:
                 teamcity_user = guess_zulip_user_from_teamcity(

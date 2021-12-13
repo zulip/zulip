@@ -1,11 +1,12 @@
 import time
-from typing import Any, Dict
+from typing import Dict
 
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_dict, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -22,15 +23,15 @@ State changed to **{state}**:
 def api_insping_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Dict[str, Any]] = REQ(argument_type="body"),
+    payload: Dict[str, object] = REQ(argument_type="body", json_validator=check_dict()),
 ) -> HttpResponse:
 
-    data = payload["webhook_event_data"]
+    data = check_dict()("webhook_event_data", payload.get("webhook_event_data"))
 
     state_name = data["check_state_name"]
     url_tested = data["request_url"]
     response_time = data["response_time"]
-    timestamp = data["request_start_time"]
+    timestamp = check_string("webhook_event_data request_start_time", data["request_start_time"])
 
     time_formatted = time.strftime("%c", time.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f+00:00"))
 

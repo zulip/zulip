@@ -8,6 +8,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_dict, check_list
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -74,7 +75,9 @@ ALL_EVENT_TYPES = list(EVENT_TYPE_BODY_MAPPER.keys())
 def api_updown_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: List[Dict[str, Any]] = REQ(argument_type="body"),
+    payload: List[Dict[str, object]] = REQ(
+        argument_type="body", json_validator=check_list(check_dict())
+    ),
 ) -> HttpResponse:
     for event in payload:
         send_message_for_event(request, user_profile, event)

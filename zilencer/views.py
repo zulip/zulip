@@ -23,6 +23,7 @@ from zerver.lib.response import json_success
 from zerver.lib.validator import (
     check_bool,
     check_capped_string,
+    check_dict,
     check_dict_only,
     check_float,
     check_int,
@@ -169,14 +170,14 @@ def unregister_all_remote_push_devices(
 def remote_server_notify_push(
     request: HttpRequest,
     entity: Union[UserProfile, RemoteZulipServer],
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: Dict[str, object] = REQ(argument_type="body", json_validator=check_dict()),
 ) -> HttpResponse:
     server = validate_entity(entity)
 
-    user_id = payload["user_id"]
-    gcm_payload = payload["gcm_payload"]
-    apns_payload = payload["apns_payload"]
-    gcm_options = payload.get("gcm_options", {})
+    user_id = check_int("user_id", payload["user_id"])
+    gcm_payload = check_dict()("gcm_payload", payload["gcm_payload"])
+    apns_payload = check_dict()("apns_payload", payload["apns_payload"])
+    gcm_options = check_dict()("gcm_options", payload.get("gcm_options", {}))
 
     android_devices = list(
         RemotePushDeviceToken.objects.filter(

@@ -8,6 +8,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_dict
 from zerver.lib.webhooks.common import (
     check_send_webhook_message,
     get_http_headers_from_filename,
@@ -135,7 +136,7 @@ ALL_EVENT_TYPES = ["issue_comment", "issues", "create", "pull_request", "push", 
 def api_gogs_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: Dict[str, object] = REQ(argument_type="body", json_validator=check_dict()),
     branches: Optional[str] = REQ(default=None),
     user_specified_topic: Optional[str] = REQ("topic", default=None),
 ) -> HttpResponse:

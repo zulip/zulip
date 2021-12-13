@@ -8,6 +8,7 @@ from zerver.decorator import return_success_on_head_request, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_dict, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -21,10 +22,11 @@ from .card_actions import IGNORED_CARD_ACTIONS, SUPPORTED_CARD_ACTIONS, process_
 def api_trello_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Mapping[str, Any] = REQ(argument_type="body"),
+    payload: Mapping[str, object] = REQ(argument_type="body", json_validator=check_dict()),
 ) -> HttpResponse:
     payload = orjson.loads(request.body)
-    action_type = payload["action"].get("type")
+    action = check_dict()("action", payload.get("action"))
+    action_type = check_string("action type", action.get("type"))
     message = get_subject_and_body(payload, action_type)
     if message is None:
         return json_success()

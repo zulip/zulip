@@ -5,6 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_dict
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -16,7 +17,7 @@ ALL_EVENT_TYPES = ["new", "finished"]
 def api_buildbot_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: Dict[str, object] = REQ(argument_type="body", json_validator=check_dict()),
 ) -> HttpResponse:
     topic = payload["project"]
     if not topic:

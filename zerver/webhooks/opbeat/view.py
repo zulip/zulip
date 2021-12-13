@@ -6,6 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_dict, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -101,7 +102,7 @@ def format_object(
 def api_opbeat_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: Dict[str, object] = REQ(argument_type="body", json_validator=check_dict()),
 ) -> HttpResponse:
     """
     This uses the subject name from opbeat to make the subject,
@@ -109,7 +110,7 @@ def api_opbeat_webhook(
     details about the object mentioned.
     """
 
-    message_subject = payload["title"]
+    message_subject = check_string("title", payload.get("title"))
 
     message = format_object(payload, "base", "")
 

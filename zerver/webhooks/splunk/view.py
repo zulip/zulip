@@ -6,6 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_dict, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import MAX_TOPIC_NAME_LENGTH, UserProfile
 
@@ -23,15 +24,16 @@ Splunk alert from saved search:
 def api_splunk_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: Dict[str, object] = REQ(argument_type="body", json_validator=check_dict()),
 ) -> HttpResponse:
 
     # use default values if expected data is not provided
-    search_name = payload.get("search_name", "Missing search_name")
+    search_name = check_string("search_name", payload.get("search_name", "Missing search_name"))
     results_link = payload.get("results_link", "Missing results_link")
-    host = payload.get("result", {}).get("host", "Missing host")
-    source = payload.get("result", {}).get("source", "Missing source")
-    raw = payload.get("result", {}).get("_raw", "Missing _raw")
+    result = check_dict()("result", payload.get("result", {}))
+    host = result.get("host", "Missing host")
+    source = result.get("source", "Missing source")
+    raw = result.get("_raw", "Missing _raw")
 
     # for the default topic, use search name but truncate if too long
     if len(search_name) >= MAX_TOPIC_NAME_LENGTH:

@@ -7,6 +7,7 @@ from zerver.decorator import authenticated_rest_api_view
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_dict
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -147,7 +148,7 @@ def format_freshdesk_ticket_creation_message(ticket: TicketDict) -> str:
 def api_freshdesk_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: Dict[str, object] = REQ(argument_type="body", json_validator=check_dict()),
 ) -> HttpResponse:
     ticket_data = payload["freshdesk_webhook"]
 

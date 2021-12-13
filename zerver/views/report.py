@@ -19,7 +19,7 @@ from zerver.lib.response import json_success
 from zerver.lib.storage import static_path
 from zerver.lib.unminify import SourceMap
 from zerver.lib.utils import statsd, statsd_key
-from zerver.lib.validator import check_bool, check_dict, to_non_negative_int
+from zerver.lib.validator import check_bool, check_dict, check_string, to_non_negative_int
 from zerver.models import UserProfile
 
 js_source_map: Optional[SourceMap] = None
@@ -184,7 +184,10 @@ def report_error(
 @require_POST
 @has_request_variables
 def report_csp_violations(
-    request: HttpRequest, csp_report: Dict[str, Any] = REQ(argument_type="body")
+    request: HttpRequest,
+    csp_report: Dict[str, str] = REQ(
+        argument_type="body", json_validator=check_dict(value_validator=check_string)
+    ),
 ) -> HttpResponse:
     def get_attr(csp_report_attr: str) -> str:
         return csp_report.get(csp_report_attr, "")

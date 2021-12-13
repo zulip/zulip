@@ -7,6 +7,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_dict, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -18,14 +19,14 @@ ALL_EVENT_TYPES = ["error_notification", "error_activity"]
 def api_raygun_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: Dict[str, object] = REQ(argument_type="body", json_validator=check_dict()),
 ) -> HttpResponse:
     # The payload contains 'event' key. This 'event' key has a value of either
     # 'error_notification' or 'error_activity'. 'error_notification' happens
     # when an error is caught in an application, where as 'error_activity'
     # happens when an action is being taken for the error itself
     # (ignored/resolved/assigned/etc.).
-    event = payload["event"]
+    event = check_string("event", payload.get("event"))
 
     # Because we wanted to create a message for all of the payloads, it is best
     # to handle them separately. This is because some payload keys don't exist

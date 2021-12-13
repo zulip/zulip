@@ -1,11 +1,12 @@
 # Webhooks for external integrations.
-from typing import Any, Dict
+from typing import Dict
 
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_dict, check_list, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -24,20 +25,22 @@ ALL_EVENT_TYPES = ["first-fail", "stop", "received"]
 def api_solano_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: Dict[str, object] = REQ(argument_type="body", json_validator=check_dict()),
 ) -> HttpResponse:
-    event = payload.get("event")
+    event = check_none_or(check_string)("event", payload.get("event"))
     topic = "build update"
     if event == "test":
         return handle_test_event(request, user_profile, topic)
     try:
-        author = payload["committers"][0]
+        author = check_list(check_string)("committers", payload.get("committers"))[0]
     except KeyError:
         author = "Unknown"
     status = payload["status"]
     build_log = payload["url"]
-    repository = payload["repository"]["url"]
-    commit_id = payload["commit_id"]
+    repository = check_string(
+        "repository url", check_dict()("repository", payload.get("repository")).get("url")
+    )
+    commit_id = check_string("commit_id", payload.get("commit_id"))
 
     good_status = ["passed"]
     bad_status = ["failed", "error"]

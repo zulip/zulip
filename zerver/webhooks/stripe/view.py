@@ -9,6 +9,7 @@ from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.lib.validator import check_dict, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -50,14 +51,15 @@ ALL_EVENT_TYPES = [
 def api_stripe_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: Dict[str, object] = REQ(argument_type="body", json_validator=check_dict()),
     stream: str = REQ(default="test"),
 ) -> HttpResponse:
     try:
         topic, body = topic_and_body(payload)
     except SuppressedEvent:  # nocoverage
         return json_success()
-    check_send_webhook_message(request, user_profile, topic, body, payload["type"])
+    type = check_string("type", payload.get("type"))
+    check_send_webhook_message(request, user_profile, topic, body, type)
     return json_success()
 
 

@@ -1,10 +1,11 @@
-from typing import Any, Dict
+from typing import Dict
 
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_dict, check_list, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -31,60 +32,63 @@ ALL_EVENT_TYPES = [
 def api_opsgenie_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: Dict[str, object] = REQ(argument_type="body", json_validator=check_dict()),
 ) -> HttpResponse:
+    alert = check_dict()("alert", payload.get("alert"))
 
     # construct the body of the message
     info = {
         "additional_info": "",
-        "alert_type": payload["action"],
-        "alert_id": payload["alert"]["alertId"],
-        "integration_name": payload["integrationName"],
-        "tags": ", ".join("`" + tag + "`" for tag in payload["alert"].get("tags", [])),
+        "alert_type": check_string("action", payload.get("action")),
+        "alert_id": check_string("alert alertId", alert.get("alertId")),
+        "integration_name": check_string("integrationName", payload.get("integrationName")),
+        "tags": ", ".join(
+            "`" + tag + "`" for tag in check_list(check_string)("alert tags", alert.get("tags", []))
+        ),
     }
 
     topic = info["integration_name"]
     bullet_template = "* **{key}**: {value}\n"
 
-    if "note" in payload["alert"]:
+    if "note" in alert:
         info["additional_info"] += bullet_template.format(
             key="Note",
-            value=payload["alert"]["note"],
+            value=alert["note"],
         )
-    if "recipient" in payload["alert"]:
+    if "recipient" in alert:
         info["additional_info"] += bullet_template.format(
             key="Recipient",
-            value=payload["alert"]["recipient"],
+            value=alert["recipient"],
         )
-    if "addedTags" in payload["alert"]:
+    if "addedTags" in alert:
         info["additional_info"] += bullet_template.format(
             key="Tags added",
-            value=payload["alert"]["addedTags"],
+            value=alert["addedTags"],
         )
-    if "team" in payload["alert"]:
+    if "team" in alert:
         info["additional_info"] += bullet_template.format(
             key="Team added",
-            value=payload["alert"]["team"],
+            value=alert["team"],
         )
-    if "owner" in payload["alert"]:
+    if "owner" in alert:
         info["additional_info"] += bullet_template.format(
             key="Assigned owner",
-            value=payload["alert"]["owner"],
+            value=alert["owner"],
         )
     if "escalationName" in payload:
         info["additional_info"] += bullet_template.format(
             key="Escalation",
             value=payload["escalationName"],
         )
-    if "removedTags" in payload["alert"]:
+    if "removedTags" in alert:
         info["additional_info"] += bullet_template.format(
             key="Tags removed",
-            value=payload["alert"]["removedTags"],
+            value=alert["removedTags"],
         )
-    if "message" in payload["alert"]:
+    if "message" in alert:
         info["additional_info"] += bullet_template.format(
             key="Message",
-            value=payload["alert"]["message"],
+            value=alert["message"],
         )
     if info["tags"]:
         info["additional_info"] += bullet_template.format(

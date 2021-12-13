@@ -242,7 +242,8 @@ class DecoratorTestCase(ZulipTestCase):
     def test_REQ_argument_type(self) -> None:
         @has_request_variables
         def get_payload(
-            request: HttpRequest, payload: Dict[str, Any] = REQ(argument_type="body")
+            request: HttpRequest,
+            payload: Dict[str, object] = REQ(argument_type="body", json_validator=check_dict()),
         ) -> HttpResponse:
             return json_response(data={"payload": payload})
 

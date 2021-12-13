@@ -1,5 +1,6 @@
 # Webhooks for external integrations.
-from typing import Any, Dict
+from datetime import datetime
+from typing import Dict, Union
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
@@ -8,6 +9,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_dict, check_int, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message, unix_milliseconds_to_timestamp
 from zerver.models import UserProfile
 
@@ -32,26 +34,31 @@ ALL_EVENT_TYPES = ["closed", "acknowledged", "open"]
 def api_newrelic_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: Dict[str, object] = REQ(argument_type="body", json_validator=check_dict()),
 ) -> HttpResponse:
 
     info = {
-        "condition_name": payload.get("condition_name", "Unknown condition"),
-        "details": payload.get("details", "No details."),
-        "incident_url": payload.get("incident_url", "https://alerts.newrelic.com"),
-        "incident_acknowledge_url": payload.get(
-            "incident_acknowledge_url", "https://alerts.newrelic.com"
+        "condition_name": check_string(
+            "condition_name", payload.get("condition_name", "Unknown condition")
         ),
-        "status": payload.get("current_state", "None"),
+        "details": check_string("details", payload.get("details", "No details.")),
+        "incident_url": check_string(
+            "incident_url", payload.get("incident_url", "https://alerts.newrelic.com")
+        ),
+        "incident_acknowledge_url": check_string(
+            "incident_acknowledge_url",
+            payload.get("incident_acknowledge_url", "https://alerts.newrelic.com"),
+        ),
+        "status": check_string("current_state", payload.get("current_state", "None")),
         "iso_timestamp": "",
-        "owner": payload.get("owner", ""),
+        "owner": check_string("owner", payload.get("owner", "")),
     }
 
-    unix_time = payload.get("timestamp", None)
+    unix_time = check_int("timestamp", payload.get("timestamp", None))
     if unix_time is None:
         raise JsonableError(_("The newrelic webhook requires timestamp in milliseconds"))
 
-    info["iso_timestamp"] = unix_milliseconds_to_timestamp(unix_time, "newrelic")
+    info["iso_timestamp"] = str(unix_milliseconds_to_timestamp(unix_time, "newrelic"))
 
     # Add formatting to the owner field if owner is present
     if info["owner"] != "":

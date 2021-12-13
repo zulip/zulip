@@ -5,6 +5,7 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.validator import check_dict
 from zerver.lib.webhooks.common import get_http_headers_from_filename
 from zerver.lib.webhooks.git import get_pull_request_event_message
 from zerver.models import UserProfile
@@ -40,7 +41,7 @@ def format_pull_request_event(payload: Dict[str, Any], include_title: bool = Fal
 def api_gitea_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: Dict[str, object] = REQ(argument_type="body", json_validator=check_dict()),
     branches: Optional[str] = REQ(default=None),
     user_specified_topic: Optional[str] = REQ("topic", default=None),
 ) -> HttpResponse:

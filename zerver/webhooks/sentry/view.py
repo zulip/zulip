@@ -9,6 +9,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_dict, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -252,9 +253,9 @@ def transform_webhook_payload(payload: Dict[str, Any]) -> Optional[Dict[str, Any
 def api_sentry_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: Dict[str, object] = REQ(argument_type="body", json_validator=check_dict()),
 ) -> HttpResponse:
-    data = payload.get("data", None)
+    data = check_none_or(check_dict())("data", payload.get("data", None))
 
     if data is None:
         data = transform_webhook_payload(payload)
@@ -262,9 +263,13 @@ def api_sentry_webhook(
     # We currently support two types of payloads: events and issues.
     if data:
         if "event" in data:
-            subject, body = handle_event_payload(data["event"])
+            subject, body = handle_event_payload(check_dict()("data event", data.get("event")))
         elif "issue" in data:
-            subject, body = handle_issue_payload(payload["action"], data["issue"], payload["actor"])
+            subject, body = handle_issue_payload(
+                check_string("action", payload.get("action")),
+                check_dict()("data issue", data.get("issue")),
+                check_dict()("actor", payload.get("actor")),
+            )
         else:
             raise UnsupportedWebhookEventType(str(list(data.keys())))
     else:

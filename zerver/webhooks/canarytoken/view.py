@@ -6,6 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_dict
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -15,7 +16,7 @@ from zerver.models import UserProfile
 def api_canarytoken_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    message: Dict[str, Any] = REQ(argument_type="body"),
+    message: Dict[str, object] = REQ(argument_type="body", json_validator=check_dict()),
     user_specified_topic: Optional[str] = REQ("topic", default=None),
 ) -> HttpResponse:
     """
