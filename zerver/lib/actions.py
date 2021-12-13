@@ -5041,11 +5041,9 @@ def do_change_stream_permission(
     is_web_public: Optional[bool] = None,
     acting_user: UserProfile,
 ) -> None:
-    old_policy_name = get_stream_permission_policy_name(
-        invite_only=stream.invite_only,
-        history_public_to_subscribers=stream.history_public_to_subscribers,
-        is_web_public=stream.is_web_public,
-    )
+    old_invite_only_value = stream.invite_only
+    old_history_public_to_subscribers_value = stream.history_public_to_subscribers
+    old_is_web_public_value = stream.is_web_public
 
     # A note on these assertions: It's possible we'd be better off
     # making all callers of this function pass the full set of
@@ -5073,13 +5071,57 @@ def do_change_stream_permission(
         stream.history_public_to_subscribers = history_public_to_subscribers
         stream.is_web_public = False
 
-    stream.save(update_fields=["invite_only", "history_public_to_subscribers", "is_web_public"])
+    with transaction.atomic():
+        stream.save(update_fields=["invite_only", "history_public_to_subscribers", "is_web_public"])
 
-    new_policy_name = get_stream_permission_policy_name(
-        invite_only=stream.invite_only,
-        history_public_to_subscribers=stream.history_public_to_subscribers,
-        is_web_public=stream.is_web_public,
-    )
+        event_time = timezone_now()
+        if old_invite_only_value != stream.invite_only:
+            RealmAuditLog.objects.create(
+                realm=stream.realm,
+                acting_user=acting_user,
+                modified_stream=stream,
+                event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+                event_time=event_time,
+                extra_data=orjson.dumps(
+                    {
+                        RealmAuditLog.OLD_VALUE: old_invite_only_value,
+                        RealmAuditLog.NEW_VALUE: stream.invite_only,
+                        "property": "invite_only",
+                    }
+                ).decode(),
+            )
+
+        if old_history_public_to_subscribers_value != stream.history_public_to_subscribers:
+            RealmAuditLog.objects.create(
+                realm=stream.realm,
+                acting_user=acting_user,
+                modified_stream=stream,
+                event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+                event_time=event_time,
+                extra_data=orjson.dumps(
+                    {
+                        RealmAuditLog.OLD_VALUE: old_history_public_to_subscribers_value,
+                        RealmAuditLog.NEW_VALUE: stream.history_public_to_subscribers,
+                        "property": "history_public_to_subscribers",
+                    }
+                ).decode(),
+            )
+
+        if old_is_web_public_value != stream.is_web_public:
+            RealmAuditLog.objects.create(
+                realm=stream.realm,
+                acting_user=acting_user,
+                modified_stream=stream,
+                event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+                event_time=event_time,
+                extra_data=orjson.dumps(
+                    {
+                        RealmAuditLog.OLD_VALUE: old_is_web_public_value,
+                        RealmAuditLog.NEW_VALUE: stream.is_web_public,
+                        "property": "is_web_public",
+                    }
+                ).decode(),
+            )
 
     event = dict(
         op="update",
@@ -5092,6 +5134,17 @@ def do_change_stream_permission(
         name=stream.name,
     )
     send_event(stream.realm, event, can_access_stream_user_ids(stream))
+
+    old_policy_name = get_stream_permission_policy_name(
+        invite_only=old_invite_only_value,
+        history_public_to_subscribers=old_history_public_to_subscribers_value,
+        is_web_public=old_is_web_public_value,
+    )
+    new_policy_name = get_stream_permission_policy_name(
+        invite_only=stream.invite_only,
+        history_public_to_subscribers=stream.history_public_to_subscribers,
+        is_web_public=stream.is_web_public,
+    )
     send_change_stream_permission_notification(
         stream,
         old_policy_name=old_policy_name,
