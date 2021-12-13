@@ -383,12 +383,15 @@ export function remove_reaction(event) {
     });
 }
 
-view.remove_reaction = function (opts) {
-    const message_id = opts.message_id;
-    const emoji_name = opts.emoji_name;
-    const user_list = opts.user_list;
-    const user_id = opts.user_id;
-    const local_id = get_local_reaction_id(opts);
+view.remove_reaction = function ({
+    message_id,
+    emoji_name,
+    user_list,
+    user_id,
+    reaction_type,
+    emoji_code,
+}) {
+    const local_id = get_local_reaction_id({reaction_type, emoji_code});
     const reaction = find_reaction(message_id, local_id);
 
     if (user_list.length === 0) {
