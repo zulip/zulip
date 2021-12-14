@@ -5,7 +5,7 @@
 maxdepth: 3
 ---
 
-version-control
+commit-discipline
 code-style
 code-reviewing
 zulipbot-usage
