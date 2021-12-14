@@ -38,6 +38,37 @@ const weaving = {
     stream_id: 5,
     pin_to_top: false,
 };
+const stream_underscore = {
+    subscribed: true,
+    name: "stream_underscore",
+    stream_id: 6,
+    pin_to_top: true,
+};
+const stream_dash = {
+    subscribed: true,
+    name: "stream-dash",
+    stream_id: 7,
+    pin_to_top: false,
+};
+const stream_slash = {
+    subscribed: true,
+    name: "stream/slash",
+    stream_id: 8,
+    pin_to_top: false,
+};
+const stream_space = {
+    subscribed: true,
+    name: "stream space",
+    stream_id: 9,
+    pin_to_top: false,
+};
+
+const stream_space_dash_underscore_slash = {
+    subscribed: true,
+    name: "stream space-dash_underscore/slash",
+    stream_id: 10,
+    pin_to_top: false,
+};
 
 function sort_groups(query) {
     const streams = stream_data.subscribed_stream_ids();
@@ -113,4 +144,43 @@ test("basics", ({override}) => {
     assert.deepEqual(sorted.pinned_streams, []);
     assert.deepEqual(sorted.normal_streams, [fast_tortoise.stream_id]);
     assert.deepEqual(sorted.dormant_streams, []);
+});
+
+run_test("word_boundary_based_matching", () => {
+    stream_data.add_sub(stream_underscore);
+    stream_data.add_sub(stream_dash);
+    stream_data.add_sub(stream_slash);
+    stream_data.add_sub(stream_space);
+    stream_data.add_sub(stream_space_dash_underscore_slash);
+    const streams = stream_data.subscribed_stream_ids();
+    assert.deepEqual(stream_sort.sort_groups(streams, "under"), {
+        same_as_before: false,
+        pinned_streams: [6],
+        normal_streams: [10],
+        dormant_streams: [],
+    });
+    assert.deepEqual(stream_sort.sort_groups(streams, "dash"), {
+        same_as_before: false,
+        pinned_streams: [],
+        normal_streams: [10, 7],
+        dormant_streams: [],
+    });
+    assert.deepEqual(stream_sort.sort_groups(streams, "slash"), {
+        same_as_before: false,
+        pinned_streams: [],
+        normal_streams: [10, 8],
+        dormant_streams: [],
+    });
+    assert.deepEqual(stream_sort.sort_groups(streams, "space"), {
+        same_as_before: false,
+        pinned_streams: [],
+        normal_streams: [9, 10],
+        dormant_streams: [],
+    });
+    assert.deepEqual(stream_sort.sort_groups(streams, "stream-d"), {
+        same_as_before: false,
+        pinned_streams: [],
+        normal_streams: [7],
+        dormant_streams: [],
+    });
 });

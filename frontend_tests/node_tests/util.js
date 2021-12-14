@@ -295,3 +295,35 @@ run_test("clean_user_content_links", () => {
             '<a href="/#fragment" title="http://zulip.zulipdev.com/#fragment">fragment</a>',
     );
 });
+
+run_test("filter_by_prefix_match_at_word_boundaries", () => {
+    const strings = [
+        "stream_underscore",
+        "stream-dash",
+        "stream/slash",
+        "stream space",
+        "stream space-dash_underscore/slash",
+    ];
+    const values = [0, 1, 2, 3, 4];
+    const values_to_string = (id) => strings[id];
+    assert.deepEqual(
+        util.filter_by_prefix_match_at_word_boundaries(values, "under", values_to_string),
+        [0, 4],
+    );
+    assert.deepEqual(
+        util.filter_by_prefix_match_at_word_boundaries(values, "dash", values_to_string),
+        [1, 4],
+    );
+    assert.deepEqual(
+        util.filter_by_prefix_match_at_word_boundaries(values, "slash", values_to_string),
+        [2, 4],
+    );
+    assert.deepEqual(
+        util.filter_by_prefix_match_at_word_boundaries(values, "space", values_to_string),
+        [3, 4],
+    );
+    assert.deepEqual(
+        util.filter_by_prefix_match_at_word_boundaries(values, "stream-d", values_to_string),
+        [1],
+    );
+});

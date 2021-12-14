@@ -23,7 +23,11 @@ export function get_list_info(stream_id, zoomed) {
     let topic_names = stream_topic_history.get_recent_topic_names(stream_id);
     if (zoomed) {
         const search_term = topic_list.get_topic_search_term();
-        topic_names = util.filter_by_word_prefix_match(topic_names, search_term, (item) => item);
+        topic_names = util.filter_by_prefix_match_at_word_boundaries(
+            topic_names,
+            search_term,
+            (item) => item,
+        );
     }
 
     const items = [];

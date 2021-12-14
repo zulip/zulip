@@ -1,5 +1,6 @@
 import _ from "lodash";
 
+import * as common from "./common";
 import {$t} from "./i18n";
 
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
@@ -320,7 +321,7 @@ export function clean_user_content_links(html) {
     return content.innerHTML;
 }
 
-export function filter_by_word_prefix_match(items, search_term, item_to_text) {
+export function filter_by_prefix_match_at_word_boundaries(items, search_term, item_to_text) {
     if (search_term === "") {
         return items;
     }
@@ -329,12 +330,7 @@ export function filter_by_word_prefix_match(items, search_term, item_to_text) {
     search_terms = search_terms.map((s) => s.trim());
 
     const filtered_items = items.filter((item) =>
-        search_terms.some((search_term) => {
-            const lower_name = item_to_text(item).toLowerCase();
-            const cands = lower_name.split(" ");
-            cands.push(lower_name);
-            return cands.some((name) => name.startsWith(search_term));
-        }),
+        search_terms.some((search_term) => common.phrase_match(search_term, item_to_text(item))),
     );
 
     return filtered_items;
