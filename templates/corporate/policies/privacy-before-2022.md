@@ -1,4 +1,4 @@
-# Privacy Policy
+# Privacy Policy (prior to 2022)
 
 !!! warn ""
     Starting January 1, 2022, this policy is replaced by the updated
