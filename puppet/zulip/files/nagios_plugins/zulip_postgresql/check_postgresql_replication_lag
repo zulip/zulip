@@ -39,8 +39,7 @@ def run_sql_query(query: str) -> List[List[str]]:
         "ON_ERROR_STOP=1",
         "-d",
         get_config(config_file, "postgresql", "database_name", "zulip"),
-        "-u",
-        get_config(config_file, "postgresql", "database_user", "zulip"),
+        # No -U; nagios connects as itself
         "-c",
         f"SELECT {query}",
     ]
