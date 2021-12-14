@@ -1216,6 +1216,20 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assertEqual(messages[-1].content, expected_notification)
 
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+            modified_stream=stream,
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = orjson.dumps(
+            {
+                RealmAuditLog.OLD_VALUE: "Test description",
+                RealmAuditLog.NEW_VALUE: "a multi line description",
+                "property": "description",
+            }
+        ).decode()
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+
         # Verify that we don't render inline URL previews in this code path.
         with self.settings(INLINE_URL_EMBED_PREVIEW=True):
             result = self.client_patch(
@@ -1263,6 +1277,20 @@ class StreamAdminTest(ZulipTestCase):
             "```"
         )
         self.assertEqual(messages[-1].content, expected_notification)
+
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+            modified_stream=stream,
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = orjson.dumps(
+            {
+                RealmAuditLog.OLD_VALUE: "See https://zulip.com/team",
+                RealmAuditLog.NEW_VALUE: "Test description",
+                "property": "description",
+            }
+        ).decode()
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
     def test_change_stream_description_requires_admin(self) -> None:
         user_profile = self.example_user("hamlet")

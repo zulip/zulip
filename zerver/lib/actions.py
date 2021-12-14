@@ -5149,9 +5149,25 @@ def do_change_stream_description(
     stream: Stream, new_description: str, *, acting_user: UserProfile
 ) -> None:
     old_description = stream.description
-    stream.description = new_description
-    stream.rendered_description = render_stream_description(new_description)
-    stream.save(update_fields=["description", "rendered_description"])
+
+    with transaction.atomic():
+        stream.description = new_description
+        stream.rendered_description = render_stream_description(new_description)
+        stream.save(update_fields=["description", "rendered_description"])
+        RealmAuditLog.objects.create(
+            realm=stream.realm,
+            acting_user=acting_user,
+            modified_stream=stream,
+            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+            event_time=timezone_now(),
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.OLD_VALUE: old_description,
+                    RealmAuditLog.NEW_VALUE: new_description,
+                    "property": "description",
+                }
+            ).decode(),
+        )
 
     event = dict(
         type="stream",
