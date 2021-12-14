@@ -194,10 +194,25 @@ const netherland_stream = {
     stream_id: 3,
     subscribed: false,
 };
+const south_korea_stream = {
+    name: "south-korea",
+    description: "South Korea, different from Korea",
+    stream_id: 4,
+    subscribed: false,
+};
+
+const korea_stream = {
+    name: "korea",
+    description: "Korea, the original",
+    stream_id: 5,
+    subscribed: false,
+};
 
 stream_data.add_sub(sweden_stream);
 stream_data.add_sub(denmark_stream);
 stream_data.add_sub(netherland_stream);
+stream_data.add_sub(south_korea_stream);
+stream_data.add_sub(korea_stream);
 
 emoji.active_realm_emojis = new Map();
 emoji.emojis_by_name = emojis_by_name;
@@ -657,6 +672,10 @@ test("initialize", ({override, mock_template}) => {
         assert.equal(options.matcher("The Netherlands"), true);
         assert.equal(options.matcher("Sweden"), false);
 
+        options.query = "korea";
+        assert.equal(options.matcher("south-korea"), true);
+        assert.equal(options.matcher("korea"), true);
+
         stream_typeahead_called = true;
     };
 
@@ -906,7 +925,12 @@ test("initialize", ({override, mock_template}) => {
         fake_this.$element.closest = () => [];
         fake_this.options = options;
         let actual_value = options.source.call(fake_this, "test #s");
-        assert.deepEqual(sorted_names_from(actual_value), ["Denmark", "Sweden", "The Netherlands"]);
+        assert.deepEqual(sorted_names_from(actual_value), [
+            "Denmark",
+            "Sweden",
+            "The Netherlands",
+            "south-korea",
+        ]);
         assert.ok(caret_called);
 
         // options.highlighter()
@@ -1220,7 +1244,13 @@ test("begins_typeahead", ({override}) => {
 
     function assert_stream_list(input, rest = "") {
         const values = get_values(input, rest);
-        assert.deepEqual(sorted_names_from(values), ["Denmark", "Sweden", "The Netherlands"]);
+        assert.deepEqual(sorted_names_from(values), [
+            "Denmark",
+            "Sweden",
+            "The Netherlands",
+            "korea",
+            "south-korea",
+        ]);
     }
 
     const people_only = {is_silent: true};

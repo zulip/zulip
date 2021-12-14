@@ -8,6 +8,7 @@ import * as emoji from "../shared/js/emoji";
 import * as typeahead from "../shared/js/typeahead";
 
 import * as channel from "./channel";
+import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
@@ -1184,10 +1185,7 @@ export function initialize() {
             return typeahead_helper.render_typeahead_item({primary: item});
         },
         matcher(item) {
-            // The matcher for "stream" is strictly prefix-based,
-            // because we want to avoid mixing up streams.
-            const q = this.query.trim().toLowerCase();
-            return item.toLowerCase().startsWith(q);
+            return common.phrase_match(this.query.trim(), item);
         },
     });
 
