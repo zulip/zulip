@@ -40,6 +40,34 @@ class TestBuildEmail(ZulipTestCase):
         )
         self.assertEqual(mail.extra_headers["From"], FromAddress.NOREPLY)
 
+    def test_limited_to_length(self) -> None:
+        hamlet = self.example_user("hamlet")
+        # This is exactly the max length
+        limit_length_name = "澳" * 61
+        hamlet.full_name = limit_length_name
+        hamlet.save()
+
+        mail = build_email(
+            "zerver/emails/password_reset",
+            to_user_ids=[hamlet.id],
+            from_name="Noreply",
+            from_address=FromAddress.NOREPLY,
+            language="en",
+        )
+        self.assertEqual(mail.to[0], f"{hamlet.full_name} <{hamlet.delivery_email}>")
+
+        # One more character makes it flip to just the address, with no name
+        hamlet.full_name += "澳"
+        hamlet.save()
+        mail = build_email(
+            "zerver/emails/password_reset",
+            to_user_ids=[hamlet.id],
+            from_name="Noreply",
+            from_address=FromAddress.NOREPLY,
+            language="en",
+        )
+        self.assertEqual(mail.to[0], hamlet.delivery_email)
+
 
 class TestSendEmail(ZulipTestCase):
     def test_initialize_connection(self) -> None:

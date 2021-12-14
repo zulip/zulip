@@ -86,10 +86,20 @@ def build_email(
         if realm is None:
             assert len({to_user.realm_id for to_user in to_users}) == 1
             realm = to_users[0].realm
-        to_emails = [
-            str(Address(display_name=to_user.full_name, addr_spec=to_user.delivery_email))
-            for to_user in to_users
-        ]
+        to_emails = []
+        for to_user in to_users:
+            stringified = str(
+                Address(display_name=to_user.full_name, addr_spec=to_user.delivery_email)
+            )
+            # Check ASCII encoding length.  Amazon SES rejects emails
+            # with From or To values longer than 320 characters (which
+            # appears to be a misinterpretation of the RFC); in that
+            # case we drop the name part from the address, under the
+            # theory that it's better to send the email with a
+            # simplified field than not at all.
+            if len(sanitize_address(stringified, "utf-8")) > 320:
+                stringified = str(Address(addr_spec=to_user.delivery_email))
+            to_emails.append(stringified)
 
     extra_headers = {}
     if realm is not None:
@@ -159,11 +169,8 @@ def build_email(
 
     # Set the "From" that is displayed separately from the envelope-from.
     extra_headers["From"] = str(Address(display_name=from_name, addr_spec=from_address))
-    # Check ASCII encoding length.  Amazon SES rejects emails with
-    # From names longer than 320 characters (which appears to be a
-    # misinterpretation of the RFC); in that case we drop the name
-    # from the From line, under the theory that it's better to send
-    # the email with a simplified From field than not.
+    # As above, with the "To" line, we drop the name part if it would
+    # result in an address which is longer than 320 bytes.
     if len(sanitize_address(extra_headers["From"], "utf-8")) > 320:
         extra_headers["From"] = str(Address(addr_spec=from_address))
 
