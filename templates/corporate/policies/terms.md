@@ -10,16 +10,19 @@ terms or the Services, please contact us at:
 * Email: [support@zulip.com](mailto:support@zulip.com)
 * Address: Kandra Labs Inc., 450 Townsend Street, San Francisco, CA 94107
 
-These Terms of Service (the “Terms”) are a binding contract between you and
-**KANDRA LABS, INC.** (“Zulip,” “we” and “us”). Your use of the Services in any
-way means that you agree to all of these Terms, and these Terms will remain in
-effect while you use the Services. These Terms include the provisions in this
-document as well as those in the [Privacy Policy](/policies/privacy),
-[Rules of Use](/policies/privacy), and, if applicable, Data Processing Addendum. **Your
-use of or participation in certain Services may also be subject to additional
-policies, rules and/or conditions (“Additional Terms”), which are incorporated
-herein by reference, and you understand and agree that by using or participating
-in any such Services, you agree to also comply with these Additional Terms.**
+These Terms of Service (the “Terms”) are a binding contract between
+you and **KANDRA LABS, INC.** (“Zulip,” “we” and “us”). Your use of
+the Services in any way means that you agree to all of these Terms,
+and these Terms will remain in effect while you use the
+Services. These Terms include the provisions in this document as well
+as those in the [Privacy Policy](/policies/privacy), [Rules of
+Use](/policies/privacy), and, if applicable, [Data Processing
+Addendum](/static/images/policies/Zulip-Data-Processing-Addendum.pdf). **Your
+use of or participation in certain Services may also be subject to
+additional policies, rules and/or conditions (“Additional Terms”),
+which are incorporated herein by reference, and you understand and
+agree that by using or participating in any such Services, you agree
+to also comply with these Additional Terms.**
 
 **Please read these Terms carefully.** They cover important information about
 Services provided to you and any charges, taxes, and fees we bill you. **These
