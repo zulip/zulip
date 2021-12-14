@@ -238,7 +238,7 @@ experience, these are the best predictors of success:
   guidelines](https://zulip.com/developer-community/#getting-help) and
   [this essay][good-questions-blog] for some good advice.
 - Learning and practicing
-  [Git commit discipline](https://zulip.readthedocs.io/en/latest/contributing/version-control.html#commit-discipline).
+  [Git commit discipline](https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html).
 - Submitting carefully tested code. This generally means checking your work
   through a combination of automated tests and manually clicking around the
   UI trying to find bugs in your work. See
