@@ -119,25 +119,25 @@ jobs:
             name: Bionic production install with custom db name and user
             is_bionic: true
             os: bionic
-            install-command: /tmp/production-install --test-custom-db
+            extra_args: --test-custom-db
 
           - docker_image: zulip/ci:focal
             name: Focal production install
             is_focal: true
             os: focal
-            install-command: /tmp/production-install
+            extra_args: ""
 
           - docker_image: zulip/ci:buster
             name: Buster production install
             is_buster: true
             os: buster
-            install-command: /tmp/production-install
+            extra_args: ""
 
           - docker_image: zulip/ci:bullseye
             name: Bullseye production install
             is_bullseye: true
             os: bullseye
-            install-command: /tmp/production-install
+            extra_args: ""
 
     name: ${{ matrix.name  }}
     container:
@@ -191,7 +191,7 @@ jobs:
       - name: Install production
         run: |
           sudo service rabbitmq-server restart
-          sudo ${{ matrix.install-command }}
+          sudo /tmp/production-install ${{ matrix.extra-args }}
 
       - name: Verify install
         run: sudo /tmp/production-verify
