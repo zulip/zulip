@@ -14,22 +14,16 @@ export function autofocus(selector: string): void {
 }
 
 export function phrase_match(query: string, phrase: string): boolean {
-    // match "tes" to "test" and "stream test" but not "hostess"
-    let i;
+    // match "tes" to "test", "topic-test" and "stream test" but not "hostess"
+
+    // see: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
+    function escape_RegExp(string: string): string {
+        return string.replace(/[$()*+.?[\\\]^{|}]/g, "\\$&"); // $& means the whole matched string
+    }
     query = query.toLowerCase();
-
     phrase = phrase.toLowerCase();
-    if (phrase.startsWith(query)) {
-        return true;
-    }
-
-    const parts = phrase.split(" ");
-    for (i = 0; i < parts.length; i += 1) {
-        if (parts[i].startsWith(query)) {
-            return true;
-        }
-    }
-    return false;
+    const re = new RegExp("(\\b|_)" + escape_RegExp(query), "u");
+    return re.test(phrase);
 }
 
 export function copy_data_attribute_value(elem: JQuery, key: string): void {

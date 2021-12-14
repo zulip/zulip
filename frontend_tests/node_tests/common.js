@@ -27,13 +27,33 @@ run_test("basics", () => {
 });
 
 run_test("phrase_match", () => {
+    // simple phrase matching
     assert.ok(common.phrase_match("tes", "test"));
     assert.ok(common.phrase_match("Tes", "test"));
     assert.ok(common.phrase_match("Tes", "Test"));
     assert.ok(common.phrase_match("tes", "Stream Test"));
 
+    // only match prefixes
     assert.ok(!common.phrase_match("tests", "test"));
     assert.ok(!common.phrase_match("tes", "hostess"));
+
+    // word_boundary detection
+    assert.ok(common.phrase_match("tes", "topic-test"));
+    assert.ok(common.phrase_match("tes", "topic/test"));
+    assert.ok(common.phrase_match("tes", "topic_test"));
+    assert.ok(common.phrase_match("tes", "topic&test"));
+    assert.ok(common.phrase_match("tes", "topic)test"));
+
+    // extra: documenting an edge-case; _ is not a \b character by default.
+    assert.ok(!common.phrase_match("_tes", "topic_test"));
+    assert.ok(common.phrase_match("-tes", "topic-test"));
+    assert.ok(common.phrase_match("/tes", "topic/test"));
+    assert.ok(common.phrase_match("&tes", "topic&test"));
+    assert.ok(common.phrase_match(")tes", "topic)test"));
+
+    // test non latin scripts. These tests don't behave as expected.
+    assert.ok(!common.phrase_match("ビ", "ビデオゲーム"));
+    assert.ok(!common.phrase_match("조", "조리법 😎"));
 });
 
 run_test("copy_data_attribute_value", ({override}) => {
