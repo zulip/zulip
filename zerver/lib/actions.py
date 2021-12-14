@@ -6287,6 +6287,7 @@ def do_update_message(
         stream_id = target_message.recipient.type_id
         stream_being_edited = get_stream_by_id_in_realm(stream_id, realm)
         event["stream_name"] = stream_being_edited.name
+        event["stream_id"] = stream_being_edited.id
 
     ums = UserMessage.objects.filter(message=target_message.id)
 
@@ -6380,7 +6381,6 @@ def do_update_message(
     if topic_name is not None or new_stream is not None:
         orig_topic_name = target_message.topic_name()
         event["propagate_mode"] = propagate_mode
-        event["stream_id"] = target_message.recipient.type_id
 
     if new_stream is not None:
         assert content is None
