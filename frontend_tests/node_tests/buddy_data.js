@@ -361,7 +361,7 @@ test("title_data", () => {
     let expected_data = {
         first_line: "Human Myself",
         second_line: "out to lunch",
-        third_line: "translated: Active now",
+        third_line: "translated: Last active: translated: More than 2 weeks ago",
         show_you: true,
     };
     page_params.user_id = me.user_id;
@@ -570,8 +570,8 @@ test("get_items_for_users", ({override_rewire}) => {
             name: "Human Myself",
             num_unread: 0,
             status_emoji_info,
-            user_circle_class: "user_circle_green",
-            user_circle_status: "translated: Active",
+            user_circle_class: "user_circle_empty",
+            user_circle_status: "translated: Offline",
             user_id: 1001,
         },
         {

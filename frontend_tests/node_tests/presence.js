@@ -84,10 +84,6 @@ function test(label, f) {
     });
 }
 
-test("my user", () => {
-    assert.equal(presence.get_status(me.user_id), "active");
-});
-
 test("unknown user", ({override}) => {
     const unknown_user_id = 999;
     const now = 888888;

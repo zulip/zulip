@@ -220,7 +220,7 @@ export function mark_client_active() {
     // exported for testing
     if (!client_is_active) {
         client_is_active = true;
-        send_presence_to_server(false);
+        send_presence_to_server(true);
     }
 }
 

@@ -40,11 +40,7 @@ export function is_active(user_id) {
 }
 
 export function get_status(user_id) {
-    if (people.is_my_user_id(user_id)) {
-        if (user_settings.presence_enabled) {
-            // if the current user is sharing presence, they always see themselves as online.
-            return "active";
-        }
+    if (people.is_my_user_id(user_id) && !user_settings.presence_enabled) {
         // if the current user is not sharing presence, they always see themselves as offline.
         return "offline";
     }
@@ -224,7 +220,6 @@ export function update_info_for_small_realm() {
 
     for (const person of persons) {
         const user_id = person.user_id;
-        let status = "offline";
 
         if (presence_info.has(user_id)) {
             // this is normal, we have data for active
@@ -237,12 +232,8 @@ export function update_info_for_small_realm() {
             continue;
         }
 
-        if (people.is_my_user_id(user_id)) {
-            status = "active";
-        }
-
         presence_info.set(user_id, {
-            status,
+            status: "offline",
             last_active: undefined,
         });
     }
