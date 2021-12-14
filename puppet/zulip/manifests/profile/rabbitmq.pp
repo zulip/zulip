@@ -16,6 +16,12 @@ class zulip::profile::rabbitmq {
     ensure => absent,
   }
 
+  file { '/etc/rabbitmq':
+    ensure => 'directory',
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+  }
   file { '/etc/rabbitmq/rabbitmq.config':
     ensure  => file,
     require => Package[rabbitmq-server],
@@ -24,26 +30,27 @@ class zulip::profile::rabbitmq {
     mode    => '0644',
     source  => 'puppet:///modules/zulip/rabbitmq/rabbitmq.config',
   }
-
-  $rabbitmq_nodename = zulipconf('rabbitmq', 'nodename', '')
-  if $rabbitmq_nodename != '' {
-    file { '/etc/rabbitmq':
-      ensure => 'directory',
-      owner  => 'root',
-      group  => 'root',
-      mode   => '0755',
-    }
-
-    file { '/etc/rabbitmq/rabbitmq-env.conf':
-      ensure  => file,
-      require => File['/etc/rabbitmq'],
-      before  => [Package[rabbitmq-server], Service[rabbitmq-server]],
-      notify  => Exec['configure-rabbitmq'],
-      owner   => 'root',
-      group   => 'root',
-      mode    => '0644',
-      content => template('zulip/rabbitmq-env.conf.template.erb'),
-    }
+  exec { 'warn-rabbitmq-nodename-change':
+    command   => "${::zulip_scripts_path}/lib/warn-rabbitmq-nodename-change",
+    onlyif    => '[ -f /etc/rabbitmq/rabbitmq-env.conf ] && ! grep -xq NODENAME=zulip@localhost /etc/rabbitmq/rabbitmq-env.conf',
+    before    => [
+      File['/etc/rabbitmq/rabbitmq-env.conf'],
+      Service['rabbitmq-server'],
+    ],
+    logoutput => true,
+    loglevel  => 'warning',
+  }
+  file { '/etc/rabbitmq/rabbitmq-env.conf':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'puppet:///modules/zulip/rabbitmq/rabbitmq-env.conf',
+    before => Package['rabbitmq-server'],
+    notify => [
+      Service['rabbitmq-server'],
+      Exec['configure-rabbitmq'],
+    ],
   }
   # epmd doesn't have an init script, so we just check if it is
   # running, and if it isn't, start it.  Even in case of a race, this

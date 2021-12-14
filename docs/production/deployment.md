@@ -728,12 +728,6 @@ connections.
 The version of PostgreSQL that is in use. Do not set by hand; use the
 [PostgreSQL upgrade tool](../production/upgrade-or-modify.html#upgrading-postgresql).
 
-### `[rabbitmq]`
-
-#### `nodename`
-
-The name used to identify the local RabbitMQ server; do not modify.
-
 ### `[memcached]`
 
 #### `memory`

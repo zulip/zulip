@@ -121,6 +121,11 @@ log][commit-log] for an up-to-date list of raw changes.
 
 ## Zulip 4.x series
 
+- Removed the `rabbitmq.nodename` configuration in `zulip.conf`; all
+  RabbitMQ instances will be reconfigured to have a nodename of
+  `zulip@localhost`. You can remove this setting from your
+  `zulip.conf` configuration file, if it exists.
+
 ## Zulip 4.8 -- 2021-12-01
 
 - CVE-2021-43791: Zulip could fail to enforce expiration dates

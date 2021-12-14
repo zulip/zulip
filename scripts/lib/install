@@ -433,29 +433,6 @@ EOF
     if [ -n "$POSTGRESQL_DATABASE_USER" ]; then
         crudini --set /etc/zulip/zulip.conf postgresql database_user "$POSTGRESQL_DATABASE_USER"
     fi
-
-    # Note: there are four dpkg-query outputs to consider:
-    #
-    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
-    # root@host# apt install rabbitmq-server
-    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
-    # install ok installed
-    # root@host# apt remove rabbitmq-server
-    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
-    # deinstall ok config-files
-    # root@host# apt purge rabbitmq-server
-    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
-    # unknown ok not-installed
-    #
-    # (There are more possibilities in the case of dpkg errors.)  Here
-    # we are checking for either empty or not-installed.
-    if ! dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null | grep -vq ' not-installed$'; then
-        cat <<EOF >>/etc/zulip/zulip.conf
-
-[rabbitmq]
-nodename = zulip@localhost
-EOF
-    fi
 fi
 
 if has_class "zulip::app_frontend_base"; then
