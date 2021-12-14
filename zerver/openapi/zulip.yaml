@@ -2030,6 +2030,11 @@ paths:
 
                                     The pre-edit stream for all of the messages with IDs in
                                     `message_ids`.
+
+                                    **Changes**: As of Zulip 5.0 (feature level 112), this field
+                                    is present for all edits to a stream message. Previously, it
+                                    was not present when only the content of the stream message was
+                                    edited.
                                 new_stream_id:
                                   type: integer
                                   description: |

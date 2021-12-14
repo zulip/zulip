@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 5.0
 
+**Feature level 112**
+
+* [`GET /events`](/api/get-events): Updated `update_message` event type
+  to include `stream_id` field for all edits to stream messages.
+
 **Feature level 111**
 
 * [`POST /subscriptions/properties`](/api/update-subscription-settings):
