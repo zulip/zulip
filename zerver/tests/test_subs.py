@@ -879,7 +879,7 @@ class StreamAdminTest(ZulipTestCase):
         self.subscribe(self.example_user("cordelia"), "private_stream")
 
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=2):
             stream_id = get_stream("private_stream", user_profile.realm).id
             result = self.client_patch(
                 f"/json/streams/{stream_id}",
@@ -890,7 +890,7 @@ class StreamAdminTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         prospero = self.example_user("prospero")
 
-        notified_user_ids = set(events[-1]["users"])
+        notified_user_ids = set(events[0]["users"])
         self.assertIn(user_profile.id, notified_user_ids)
         self.assertIn(cordelia.id, notified_user_ids)
         self.assertNotIn(prospero.id, notified_user_ids)
@@ -1158,7 +1158,7 @@ class StreamAdminTest(ZulipTestCase):
         self.subscribe(user_profile, "stream_name1")
 
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=2):
             stream_id = get_stream("stream_name1", realm).id
             result = self.client_patch(
                 f"/json/streams/{stream_id}",
@@ -1186,7 +1186,6 @@ class StreamAdminTest(ZulipTestCase):
         self.assertIn(user_profile.id, notified_user_ids)
         self.assertIn(self.example_user("prospero").id, notified_user_ids)
         self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
-
         self.assertEqual("Test description", stream.description)
 
         result = self.client_patch(f"/json/streams/{stream_id}", {"description": "a" * 1025})
@@ -1202,6 +1201,20 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_success(result)
         stream = get_stream("stream_name1", realm)
         self.assertEqual(stream.description, "a multi line description")
+
+        messages = get_topic_messages(user_profile, stream, "stream events")
+        expected_notification = (
+            f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this stream.\n"
+            "Old description:\n"
+            "``` quote\n"
+            "Test description\n"
+            "```\n"
+            "New description:\n"
+            "``` quote\n"
+            "a multi line description\n"
+            "```"
+        )
+        self.assertEqual(messages[-1].content, expected_notification)
 
         # Verify that we don't render inline URL previews in this code path.
         with self.settings(INLINE_URL_EMBED_PREVIEW=True):
@@ -1228,15 +1241,28 @@ class StreamAdminTest(ZulipTestCase):
             acting_user=None,
         )
 
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
-            stream_id = get_stream("stream_name1", realm).id
-            result = self.client_patch(
-                f"/json/streams/{stream_id}",
-                {"description": "Test description"},
-            )
+        stream_id = get_stream("stream_name1", realm).id
+        result = self.client_patch(
+            f"/json/streams/{stream_id}",
+            {"description": "Test description"},
+        )
         self.assert_json_success(result)
         stream = get_stream("stream_name1", realm)
         self.assertEqual(stream.description, "Test description")
+
+        messages = get_topic_messages(user_profile, stream, "stream events")
+        expected_notification = (
+            f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this stream.\n"
+            "Old description:\n"
+            "``` quote\n"
+            "See https://zulip.com/team\n"
+            "```\n"
+            "New description:\n"
+            "``` quote\n"
+            "Test description\n"
+            "```"
+        )
+        self.assertEqual(messages[-1].content, expected_notification)
 
     def test_change_stream_description_requires_admin(self) -> None:
         user_profile = self.example_user("hamlet")

@@ -2532,9 +2532,12 @@ class SubscribeActionTest(BaseAction):
         )
         check_subscription_add("events[0]", events[0])
 
-        action = lambda: do_change_stream_description(stream, "new description")
-        events = self.verify_action(action, include_subscribers=include_subscribers)
+        action = lambda: do_change_stream_description(
+            stream, "new description", acting_user=self.example_user("hamlet")
+        )
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
         check_stream_update("events[0]", events[0])
+        check_message("events[1]", events[1])
 
         # Update stream privacy - make stream web public
         action = lambda: do_change_stream_permission(

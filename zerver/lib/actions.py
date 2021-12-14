@@ -5116,7 +5116,39 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
     return {"email_address": new_email}
 
 
-def do_change_stream_description(stream: Stream, new_description: str) -> None:
+def send_change_stream_description_notification(
+    stream: Stream, *, old_description: str, new_description: str, acting_user: UserProfile
+) -> None:
+    sender = get_system_bot(settings.NOTIFICATION_BOT, acting_user.realm_id)
+    user_mention = silent_mention_syntax_for_user(acting_user)
+
+    with override_language(stream.realm.default_language):
+        notification_string = _(
+            "{user} changed the description for this stream.\n"
+            "Old description:\n"
+            "``` quote\n"
+            "{old_description}\n"
+            "```\n"
+            "New description:\n"
+            "``` quote\n"
+            "{new_description}\n"
+            "```"
+        )
+        notification_string = notification_string.format(
+            user=user_mention,
+            old_description=old_description,
+            new_description=new_description,
+        )
+
+        internal_send_stream_message(
+            sender, stream, Realm.STREAM_EVENTS_NOTIFICATION_TOPIC, notification_string
+        )
+
+
+def do_change_stream_description(
+    stream: Stream, new_description: str, *, acting_user: UserProfile
+) -> None:
+    old_description = stream.description
     stream.description = new_description
     stream.rendered_description = render_stream_description(new_description)
     stream.save(update_fields=["description", "rendered_description"])
@@ -5131,6 +5163,13 @@ def do_change_stream_description(stream: Stream, new_description: str) -> None:
         rendered_description=stream.rendered_description,
     )
     send_event(stream.realm, event, can_access_stream_user_ids(stream))
+
+    send_change_stream_description_notification(
+        stream,
+        old_description=old_description,
+        new_description=new_description,
+        acting_user=acting_user,
+    )
 
 
 def send_change_stream_message_retention_days_notification(
