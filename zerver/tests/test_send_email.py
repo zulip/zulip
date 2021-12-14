@@ -17,8 +17,9 @@ from zerver.lib.test_classes import ZulipTestCase
 
 
 class TestBuildEmail(ZulipTestCase):
-    def test_build_SES_compatible_From_field_limit(self) -> None:
+    def test_limited_from_length(self) -> None:
         hamlet = self.example_user("hamlet")
+        # This is exactly the max length
         limit_length_name = "a" * (320 - len(sanitize_address(FromAddress.NOREPLY, "utf-8")) - 3)
         mail = build_email(
             "zerver/emails/password_reset",
@@ -28,6 +29,16 @@ class TestBuildEmail(ZulipTestCase):
             language="en",
         )
         self.assertEqual(mail.extra_headers["From"], f"{limit_length_name} <{FromAddress.NOREPLY}>")
+
+        # One more character makes it flip to just the address, with no name
+        mail = build_email(
+            "zerver/emails/password_reset",
+            to_emails=[hamlet],
+            from_name=limit_length_name + "a",
+            from_address=FromAddress.NOREPLY,
+            language="en",
+        )
+        self.assertEqual(mail.extra_headers["From"], FromAddress.NOREPLY)
 
     def test_build_and_send_SES_incompatible_From_address(self) -> None:
         hamlet = self.example_user("hamlet")
