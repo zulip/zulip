@@ -284,7 +284,7 @@ def update_stream_backend(
         if "\n" in description:
             # We don't allow newline characters in stream descriptions.
             description = description.replace("\n", " ")
-        do_change_stream_description(stream, description)
+        do_change_stream_description(stream, description, acting_user=user_profile)
     if new_name is not None:
         new_name = new_name.strip()
         if stream.name == new_name:
