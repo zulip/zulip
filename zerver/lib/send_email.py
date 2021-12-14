@@ -542,17 +542,20 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
             "realm_name": user_profile.realm.name,
             "unsubscribe_link": one_click_unsubscribe_link(user_profile, "marketing"),
         }
-        send_email(
-            email_id,
-            to_user_ids=[user_profile.id],
-            from_address=FromAddress.SUPPORT,
-            reply_to_email=options.get("reply_to"),
-            from_name=get_header(
-                options.get("from_name"), parsed_email_template.get("from"), "from_name"
-            ),
-            context=context,
-            dry_run=options["dry_run"],
-        )
+        try:
+            send_email(
+                email_id,
+                to_user_ids=[user_profile.id],
+                from_address=FromAddress.SUPPORT,
+                reply_to_email=options.get("reply_to"),
+                from_name=get_header(
+                    options.get("from_name"), parsed_email_template.get("from"), "from_name"
+                ),
+                context=context,
+                dry_run=options["dry_run"],
+            )
+        except EmailNotDeliveredException:
+            pass
 
         if options["dry_run"]:
             break
