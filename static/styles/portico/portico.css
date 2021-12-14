@@ -433,6 +433,61 @@ img.screenshot {
     #portico-area {
         margin-left: 1.5em;
     }
+
+    /* To reveal the whole page for printing we should show the content of the body,
+    since printing dialog can't scroll content inside nested containers (simplebar) as a user. */
+    body.noscroll {
+        overflow: auto;
+        position: static;
+        width: 100%;
+    }
+
+    /* In a browser markdown container calculates the height and the width close to the browsers viewport,
+    but for printing we need the content to expand its size as usual block element. */
+    .help .markdown {
+        height: inherit;
+        width: 100%;
+        position: static;
+    }
+
+    /* Enabling header only on the first printing page. */
+    .header.portico-header {
+        position: static;
+    }
+
+    .app-main.portico-page-container {
+        /* Removing extra white space on the first printable page. */
+        margin: 0;
+
+        .app.help.inline-block {
+            /* Inlinde-block messes up the natural flow of the content inside printed page.
+            To battle that we have to use the same level of css specificity. */
+            display: block;
+        }
+    }
+
+    .sidebar {
+        /* Hiding sidebar on a printed page */
+        display: none;
+    }
+
+    /* Resetting all the custom scrollbar elements to be simple blocks so they don't cut the content. */
+    .simplebar-wrapper,
+    .simplebar-mask,
+    .simplebar-offset,
+    .simplebar-content-wrapper {
+        position: static;
+        overflow: auto;
+    }
+
+    /* If we don't remove these utility blocks for custom scrolling
+    we will have extra empty space on a printed page. */
+    .simplebar-height-auto-observer-wrapper,
+    .simplebar-placeholder,
+    .simplebar-track .simplebar-vertical,
+    .simplebar-track .simplebar-horizontal {
+        display: none;
+    }
 }
 
 .landing-page-bottom {
