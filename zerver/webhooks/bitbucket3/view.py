@@ -1,9 +1,9 @@
 import string
 from functools import partial
-from inspect import signature
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from django.http import HttpRequest, HttpResponse
+from typing_extensions import Protocol
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
@@ -68,7 +68,8 @@ def get_user_name(payload: Dict[str, Any]) -> str:
 
 def ping_handler(
     payload: Dict[str, Any],
-    include_title: Optional[str] = None,
+    branches: Optional[str],
+    include_title: Optional[str],
 ) -> List[Dict[str, str]]:
     if include_title:
         subject = include_title
@@ -78,7 +79,12 @@ def ping_handler(
     return [{"subject": subject, "body": body}]
 
 
-def repo_comment_handler(payload: Dict[str, Any], action: str) -> List[Dict[str, str]]:
+def repo_comment_handler(
+    payload: Dict[str, Any],
+    action: str,
+    branches: Optional[str],
+    include_title: Optional[str],
+) -> List[Dict[str, str]]:
     repo_name = payload["repository"]["name"]
     subject = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
     sha = payload["commit"]
@@ -97,7 +103,11 @@ def repo_comment_handler(payload: Dict[str, Any], action: str) -> List[Dict[str,
     return [{"subject": subject, "body": body}]
 
 
-def repo_forked_handler(payload: Dict[str, Any]) -> List[Dict[str, str]]:
+def repo_forked_handler(
+    payload: Dict[str, Any],
+    branches: Optional[str],
+    include_title: Optional[str],
+) -> List[Dict[str, str]]:
     repo_name = payload["repository"]["origin"]["name"]
     subject = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=repo_name)
     body = BITBUCKET_FORK_BODY.format(
@@ -109,7 +119,11 @@ def repo_forked_handler(payload: Dict[str, Any]) -> List[Dict[str, str]]:
     return [{"subject": subject, "body": body}]
 
 
-def repo_modified_handler(payload: Dict[str, Any]) -> List[Dict[str, str]]:
+def repo_modified_handler(
+    payload: Dict[str, Any],
+    branches: Optional[str],
+    include_title: Optional[str],
+) -> List[Dict[str, str]]:
     subject_new = BITBUCKET_TOPIC_TEMPLATE.format(repository_name=payload["new"]["name"])
     new_name = payload["new"]["name"]
     body = BITBUCKET_REPO_UPDATED_CHANGED.format(
@@ -173,7 +187,8 @@ def repo_push_tag_data(payload: Dict[str, Any], change: Dict[str, Any]) -> Dict[
 
 def repo_push_handler(
     payload: Dict[str, Any],
-    branches: Optional[str] = None,
+    branches: Optional[str],
+    include_title: Optional[str],
 ) -> List[Dict[str, str]]:
     data = []
     for change in payload["changes"]:
@@ -211,7 +226,7 @@ def get_pr_subject(repo: str, type: str, id: str, title: str) -> str:
     return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(repo=repo, type=type, id=id, title=title)
 
 
-def get_simple_pr_body(payload: Dict[str, Any], action: str, include_title: Optional[bool]) -> str:
+def get_simple_pr_body(payload: Dict[str, Any], action: str, include_title: Optional[str]) -> str:
     pr = payload["pullRequest"]
     return get_pull_request_event_message(
         user_name=get_user_name(payload),
@@ -223,7 +238,7 @@ def get_simple_pr_body(payload: Dict[str, Any], action: str, include_title: Opti
 
 
 def get_pr_opened_or_modified_body(
-    payload: Dict[str, Any], action: str, include_title: Optional[bool]
+    payload: Dict[str, Any], action: str, include_title: Optional[str]
 ) -> str:
     pr = payload["pullRequest"]
     description = pr.get("description")
@@ -266,7 +281,7 @@ def get_pr_opened_or_modified_body(
     )
 
 
-def get_pr_needs_work_body(payload: Dict[str, Any], include_title: Optional[bool]) -> str:
+def get_pr_needs_work_body(payload: Dict[str, Any], include_title: Optional[str]) -> str:
     pr = payload["pullRequest"]
     if not include_title:
         return PULL_REQUEST_MARKED_AS_NEEDS_WORK_TEMPLATE.format(
@@ -282,7 +297,7 @@ def get_pr_needs_work_body(payload: Dict[str, Any], include_title: Optional[bool
     )
 
 
-def get_pr_reassigned_body(payload: Dict[str, Any], include_title: Optional[bool]) -> str:
+def get_pr_reassigned_body(payload: Dict[str, Any], include_title: Optional[str]) -> str:
     pr = payload["pullRequest"]
     assignees_string = get_assignees_string(pr)
     if not assignees_string:
@@ -318,7 +333,10 @@ def get_pr_reassigned_body(payload: Dict[str, Any], include_title: Optional[bool
 
 
 def pr_handler(
-    payload: Dict[str, Any], action: str, include_title: bool = False
+    payload: Dict[str, Any],
+    action: str,
+    branches: Optional[str],
+    include_title: Optional[str],
 ) -> List[Dict[str, str]]:
     pr = payload["pullRequest"]
     subject = get_pr_subject(
@@ -337,7 +355,10 @@ def pr_handler(
 
 
 def pr_comment_handler(
-    payload: Dict[str, Any], action: str, include_title: bool = False
+    payload: Dict[str, Any],
+    action: str,
+    branches: Optional[str],
+    include_title: Optional[str],
 ) -> List[Dict[str, str]]:
     pr = payload["pullRequest"]
     subject = get_pr_subject(
@@ -358,7 +379,14 @@ def pr_comment_handler(
     return [{"subject": subject, "body": body}]
 
 
-EVENT_HANDLER_MAP: Dict[str, Optional[Callable[..., List[Dict[str, str]]]]] = {
+class EventHandler(Protocol):
+    def __call__(
+        self, payload: Dict[str, Any], branches: Optional[str], include_title: Optional[str]
+    ) -> List[Dict[str, str]]:
+        ...
+
+
+EVENT_HANDLER_MAP: Dict[str, EventHandler] = {
     "diagnostics:ping": ping_handler,
     "repo:comment:added": partial(repo_comment_handler, action="commented"),
     "repo:comment:edited": partial(repo_comment_handler, action="edited their comment"),
@@ -400,12 +428,7 @@ def api_bitbucket3_webhook(
     if handler is None:
         raise UnsupportedWebhookEventType(eventkey)
 
-    if "branches" in signature(handler).parameters:
-        data = handler(payload, branches)
-    elif "include_title" in signature(handler).parameters:
-        data = handler(payload, include_title=user_specified_topic)
-    else:
-        data = handler(payload)
+    data = handler(payload, branches=branches, include_title=user_specified_topic)
     for element in data:
         check_send_webhook_message(
             request,
