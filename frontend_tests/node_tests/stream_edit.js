@@ -127,7 +127,7 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
         () => "stream_subscription_request_result",
     );
 
-    override(stream_edit, "sort_but_pin_current_user_on_top", noop);
+    override(people, "sort_but_pin_current_user_on_top", noop);
 
     const subscriptions_table_selector = "#subscriptions_table";
     const input_field_stub = $.create(".input");

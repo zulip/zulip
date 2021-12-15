@@ -1387,6 +1387,21 @@ export function is_my_user_id(user_id) {
     return user_id === my_user_id;
 }
 
+function compare_by_name(a, b) {
+    return util.strcmp(a.full_name, b.full_name);
+}
+
+export function sort_but_pin_current_user_on_top(users) {
+    const my_user = people_by_user_id_dict.get(my_user_id);
+    if (users.includes(my_user)) {
+        users.splice(users.indexOf(my_user), 1);
+        users.sort(compare_by_name);
+        users.unshift(my_user);
+    } else {
+        users.sort(compare_by_name);
+    }
+}
+
 export function initialize(my_user_id, params) {
     for (const person of params.realm_users) {
         add_active_user(person);

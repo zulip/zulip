@@ -51,10 +51,6 @@ function setup_subscriptions_stream_hash(sub) {
     browser_history.update(hash);
 }
 
-function compare_by_name(a, b) {
-    return util.strcmp(a.full_name, b.full_name);
-}
-
 export function setup_subscriptions_tab_hash(tab_key_value) {
     if (tab_key_value === "all-streams") {
         browser_history.update("#streams/all");
@@ -341,23 +337,6 @@ export function remove_user_from_stream(user_id, sub, success, failure) {
     });
 }
 
-export function sort_but_pin_current_user_on_top(users) {
-    if (users === undefined) {
-        blueslip.error("Undefined users are passed to function sort_but_pin_current_user_on_top");
-        return;
-    }
-
-    const my_user = people.get_by_email(people.my_current_email());
-    const compare_function = compare_by_name;
-    if (users.includes(my_user)) {
-        users.splice(users.indexOf(my_user), 1);
-        users.sort(compare_function);
-        users.unshift(my_user);
-    } else {
-        users.sort(compare_function);
-    }
-}
-
 export function create_item_from_text(text, current_items) {
     const funcs = [
         stream_pill.create_item_from_stream_name,
@@ -423,7 +402,7 @@ function enable_subscriber_management({sub, parent_container}) {
 
     const user_ids = peer_data.get_subscribers(stream_id);
     const users = get_users_from_subscribers(user_ids);
-    sort_but_pin_current_user_on_top(users);
+    people.sort_but_pin_current_user_on_top(users);
 
     function get_users_for_subscriber_typeahead() {
         const potential_subscribers = peer_data.potential_subscribers(stream_id);

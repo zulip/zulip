@@ -6,6 +6,7 @@ import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
+import * as people from "./people";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_settings_containers from "./stream_settings_containers";
@@ -193,7 +194,7 @@ export function update_subscribers_list(sub) {
         // Perform re-rendering only when the stream settings form of the corresponding
         // stream is open.
         if (subscribers_list) {
-            stream_edit.sort_but_pin_current_user_on_top(users);
+            people.sort_but_pin_current_user_on_top(users);
             subscribers_list.replace_list_data(users);
         }
         $(".subscriber_list_settings_container").show();
