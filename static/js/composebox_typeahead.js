@@ -768,6 +768,10 @@ export function content_highlighter(item) {
     }
 }
 
+function is_numeric_key(key) {
+    return ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(key);
+}
+
 export function show_flatpickr(element, callback, default_timestamp, options = {}) {
     const flatpickr_input = $("<input id='#timestamp_flatpickr'>");
 
@@ -788,7 +792,17 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         formatDate: (date) => formatISO(date),
         disableMobile: true,
         onKeyDown: (selectedDates, dateStr, instance, event) => {
+            if (is_numeric_key(event.key)) {
+                // Don't stopPropagation for numeric inputs, let them be handled normally
+                return;
+            }
+
             const hotkey = get_keydown_hotkey(event);
+
+            if (hotkey === "backspace" || hotkey === "delete") {
+                // Don't stopPropagation for backspace or delete, let them be handled normally
+                return;
+            }
 
             if (["tab", "shift_tab"].includes(hotkey.name)) {
                 const elems = [
@@ -815,10 +829,18 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
     const container = $($(instance.innerContainer).parent());
 
     container.on("keydown", (e) => {
+        if (is_numeric_key(e.key)) {
+            return true; // Let users type numeric values
+        }
+
         const hotkey = get_keydown_hotkey(e);
 
         if (!hotkey) {
             return false;
+        }
+
+        if (hotkey.name === "backspace" || hotkey.name === "delete") {
+            return true; // Let backspace or delete be handled normally
         }
 
         if (hotkey.name === "enter") {
