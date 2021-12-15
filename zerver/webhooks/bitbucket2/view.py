@@ -3,7 +3,7 @@ import re
 import string
 from functools import partial
 from inspect import signature
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from django.http import HttpRequest, HttpResponse
 
@@ -93,25 +93,27 @@ def api_bitbucket2_webhook(
             if branches.find(branch) == -1:
                 return json_success(request)
 
-    subject = get_subject_based_on_type(payload, type)
-    body_function = get_body_based_on_type(type)
-    if "include_title" in signature(body_function).parameters:
-        body = body_function(
-            payload,
-            include_title=user_specified_topic is not None,
-        )
-    else:
-        body = body_function(payload)
+        subjects = get_push_subjects(payload)
+        bodies = get_push_bodies(payload)
 
-    if type != "push":
-        check_send_webhook_message(
-            request, user_profile, subject, body, type, unquote_url_parameters=True
-        )
-    else:
-        for b, s in zip(body, subject):
+        for b, s in zip(bodies, subjects):
             check_send_webhook_message(
                 request, user_profile, s, b, type, unquote_url_parameters=True
             )
+    else:
+        subject = get_subject_based_on_type(payload, type)
+        body_function = get_body_based_on_type(type)
+        if "include_title" in signature(body_function).parameters:
+            body = body_function(
+                payload,
+                include_title=user_specified_topic is not None,
+            )
+        else:
+            body = body_function(payload)
+
+        check_send_webhook_message(
+            request, user_profile, subject, body, type, unquote_url_parameters=True
+        )
 
     return json_success(request)
 
@@ -147,7 +149,7 @@ def get_subject(payload: Dict[str, Any]) -> str:
     )
 
 
-def get_subject_based_on_type(payload: Dict[str, Any], type: str) -> Any:
+def get_subject_based_on_type(payload: Dict[str, Any], type: str) -> str:
     if type.startswith("pull_request"):
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repository_name(payload["repository"]),
@@ -162,8 +164,7 @@ def get_subject_based_on_type(payload: Dict[str, Any], type: str) -> Any:
             id=payload["issue"]["id"],
             title=payload["issue"]["title"],
         )
-    if type == "push":
-        return get_push_subjects(payload)
+    assert type != "push"
     return get_subject(payload)
 
 
@@ -201,9 +202,8 @@ def get_type(request: HttpRequest, payload: Dict[str, Any]) -> str:
     raise UnsupportedWebhookEventType(event_key)
 
 
-def get_body_based_on_type(type: str) -> Any:
-    fn = GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER.get(type)
-    return fn
+def get_body_based_on_type(type: str) -> Callable[..., str]:
+    return GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER[type]
 
 
 def get_push_bodies(payload: Dict[str, Any]) -> List[str]:
@@ -500,7 +500,7 @@ def get_branch_name_for_push_event(payload: Dict[str, Any]) -> Optional[str]:
         return (change["new"] or change["old"]).get("name")
 
 
-GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER = {
+GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER: Dict[str, Callable[..., str]] = {
     "fork": get_fork_body,
     "commit_comment": get_commit_comment_body,
     "change_commit_status": get_commit_status_changed_body,
@@ -520,6 +520,5 @@ GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER = {
     "pull_request_comment_deleted": partial(
         get_pull_request_deleted_or_updated_comment_action_body, action="deleted"
     ),
-    "push": get_push_bodies,
     "repo:updated": get_repo_updated_body,
 }
