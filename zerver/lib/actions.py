@@ -5038,8 +5038,25 @@ def send_change_stream_post_policy_notification(
 def do_change_stream_post_policy(
     stream: Stream, stream_post_policy: int, *, acting_user: UserProfile
 ) -> None:
-    stream.stream_post_policy = stream_post_policy
-    stream.save(update_fields=["stream_post_policy"])
+    old_post_policy = stream.stream_post_policy
+    with transaction.atomic():
+        stream.stream_post_policy = stream_post_policy
+        stream.save(update_fields=["stream_post_policy"])
+        RealmAuditLog.objects.create(
+            realm=stream.realm,
+            acting_user=acting_user,
+            modified_stream=stream,
+            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+            event_time=timezone_now(),
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.OLD_VALUE: old_post_policy,
+                    RealmAuditLog.NEW_VALUE: stream_post_policy,
+                    "property": "stream_post_policy",
+                }
+            ).decode(),
+        )
+
     event = dict(
         op="update",
         type="stream",
