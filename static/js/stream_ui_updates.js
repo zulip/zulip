@@ -8,6 +8,7 @@ import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
+import * as stream_settings_containers from "./stream_settings_containers";
 import * as stream_settings_ui from "./stream_settings_ui";
 
 export function initialize_disable_btn_hint_popover(
@@ -40,7 +41,9 @@ export function initialize_disable_btn_hint_popover(
 }
 
 export function initialize_cant_subscribe_popover(sub) {
-    const button_wrapper = stream_edit.settings_for_sub(sub).find(".sub_unsub_button_wrapper");
+    const button_wrapper = stream_settings_containers
+        .get_edit_container(sub)
+        .find(".sub_unsub_button_wrapper");
     const settings_button = stream_settings_ui.settings_button_for_sub(sub);
     initialize_disable_btn_hint_popover(
         button_wrapper,
@@ -152,7 +155,7 @@ export function update_stream_row_in_settings_tab(sub) {
 
 export function update_stream_subscription_type_text(sub) {
     // This is in the right panel.
-    const stream_settings = stream_edit.settings_for_sub(sub);
+    const stream_settings = stream_settings_containers.get_edit_container(sub);
     const template_data = {
         ...sub,
         stream_post_policy_values: stream_data.stream_post_policy_values,
