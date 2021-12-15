@@ -30,6 +30,7 @@ import * as settings_ui from "./settings_ui";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_pill from "./stream_pill";
+import * as stream_settings_containers from "./stream_settings_containers";
 import * as stream_settings_data from "./stream_settings_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as stream_ui_updates from "./stream_ui_updates";
@@ -62,14 +63,6 @@ export function setup_subscriptions_tab_hash(tab_key_value) {
     } else {
         blueslip.debug("Unknown tab_key_value: " + tab_key_value);
     }
-}
-
-export function settings_for_sub(sub) {
-    return $(
-        `#subscription_overlay .subscription_settings[data-stream-id='${CSS.escape(
-            sub.stream_id,
-        )}']`,
-    );
 }
 
 export function is_sub_settings_active(sub) {
@@ -208,18 +201,18 @@ function get_subscriber_list(sub_row) {
 }
 
 export function update_stream_name(sub, new_name) {
-    const sub_settings = settings_for_sub(sub);
-    sub_settings.find(".email-address").text(sub.email_address);
-    sub_settings.find(".sub-stream-name").text(new_name);
+    const edit_container = stream_settings_containers.get_edit_container(sub);
+    edit_container.find(".email-address").text(sub.email_address);
+    edit_container.find(".sub-stream-name").text(new_name);
 }
 
 export function update_stream_description(sub) {
-    const stream_settings = settings_for_sub(sub);
-    stream_settings.find("input.description").val(sub.description);
+    const edit_container = stream_settings_containers.get_edit_container(sub);
+    edit_container.find("input.description").val(sub.description);
     const html = render_stream_description({
         rendered_description: util.clean_user_content_links(sub.rendered_description),
     });
-    stream_settings.find(".stream-description").html(html);
+    edit_container.find(".stream-description").html(html);
 }
 
 export function invite_user_to_stream(user_ids, sub, success, failure) {
@@ -397,9 +390,9 @@ export function get_text_from_item(item) {
 
 function show_subscription_settings(sub) {
     const stream_id = sub.stream_id;
-    const sub_settings = settings_for_sub(sub);
+    const edit_container = stream_settings_containers.get_edit_container(sub);
 
-    const colorpicker = sub_settings.find(".colorpicker");
+    const colorpicker = edit_container.find(".colorpicker");
     const color = stream_data.get_color(sub.name);
     stream_color.set_colorpicker_color(colorpicker, color);
     stream_ui_updates.update_add_subscriptions_elements(sub);
@@ -424,7 +417,7 @@ function show_subscription_settings(sub) {
         stream_ui_updates.initialize_cant_subscribe_popover(sub);
     }
     // fetch subscriber list from memory.
-    const list = get_subscriber_list(sub_settings);
+    const list = get_subscriber_list(edit_container);
     list.empty();
 
     const user_ids = peer_data.get_subscribers(sub.stream_id);
@@ -459,7 +452,7 @@ function show_subscription_settings(sub) {
         user_group: true,
         user: true,
     };
-    pill_typeahead.set_up(sub_settings.find(".input"), pill_widget, opts);
+    pill_typeahead.set_up(edit_container.find(".input"), pill_widget, opts);
 }
 
 export function is_notification_setting(setting_label) {
@@ -529,12 +522,12 @@ export function show_settings_for(node) {
     $("#stream_settings .tab-container").prepend(toggler.get());
     stream_ui_updates.update_toggler_for_sub(sub);
 
-    const sub_settings = settings_for_sub(sub);
+    const edit_container = stream_settings_containers.get_edit_container(sub);
 
     $(".nothing-selected").hide();
     $("#subscription_overlay .stream_change_property_info").hide();
 
-    sub_settings.addClass("show");
+    edit_container.addClass("show");
 
     show_subscription_settings(sub);
 }
@@ -564,15 +557,15 @@ function stream_is_muted_changed(e) {
         return;
     }
 
-    const sub_settings = settings_for_sub(sub);
-    const notification_checkboxes = sub_settings.find(".sub_notification_setting");
+    const edit_container = stream_settings_containers.get_edit_container(sub);
+    const notification_checkboxes = edit_container.find(".sub_notification_setting");
 
     stream_settings_ui.set_muted(
         sub,
         e.target.checked,
         `#stream_change_property_status${CSS.escape(sub.stream_id)}`,
     );
-    sub_settings.find(".mute-note").toggleClass("hide-mute-note", !sub.is_muted);
+    edit_container.find(".mute-note").toggleClass("hide-mute-note", !sub.is_muted);
     notification_checkboxes.toggleClass("muted-sub", sub.is_muted);
     notification_checkboxes.find("input[type='checkbox']").prop("disabled", sub.is_muted);
 }
