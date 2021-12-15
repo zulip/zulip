@@ -249,6 +249,12 @@ class DecoratorTestCase(ZulipTestCase):
             return json_response(data={"payload": payload})
 
         request = HostRequestMock()
+        request.body = b"\xde\xad\xbe\xef"
+        with self.assertRaises(JsonableError) as cm:
+            get_payload(request)
+        self.assertEqual(str(cm.exception), "Malformed payload")
+
+        request = HostRequestMock()
         request.body = b"notjson"
         with self.assertRaises(JsonableError) as cm:
             get_payload(request)
