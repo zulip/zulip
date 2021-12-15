@@ -185,13 +185,6 @@ function format_member_list_elem(person) {
     });
 }
 
-function get_subscriber_list(sub_row) {
-    const stream_id_str = sub_row.data("stream-id");
-    return $(
-        `.subscription_settings[data-stream-id="${CSS.escape(stream_id_str)}"] .subscriber_table`,
-    );
-}
-
 export function update_stream_name(sub, new_name) {
     const edit_container = stream_settings_containers.get_edit_container(sub);
     edit_container.find(".email-address").text(sub.email_address);
@@ -392,9 +385,6 @@ function enable_subscriber_management({sub, parent_container}) {
     if (!stream_data.can_toggle_subscription(sub)) {
         stream_ui_updates.initialize_cant_subscribe_popover(sub);
     }
-    // fetch subscriber list from memory.
-    const list = get_subscriber_list(parent_container);
-    list.empty();
 
     const user_ids = peer_data.get_subscribers(stream_id);
     const users = people.get_users_from_ids(user_ids);
@@ -405,7 +395,12 @@ function enable_subscriber_management({sub, parent_container}) {
         return user_pill.filter_taken_users(potential_subscribers, pill_widget);
     }
 
-    ListWidget.create(list, users, {
+    const list_container = parent_container.find(".subscriber_table");
+    list_container.empty();
+
+    const simplebar_container = parent_container.find(".subscriber_list_container");
+
+    ListWidget.create(list_container, users, {
         name: "stream_subscribers/" + stream_id,
         modifier(item) {
             return format_member_list_elem(item);
@@ -419,7 +414,7 @@ function enable_subscriber_management({sub, parent_container}) {
                 return match;
             },
         },
-        simplebar_container: $(".subscriber_list_container"),
+        simplebar_container,
     });
 
     const opts = {

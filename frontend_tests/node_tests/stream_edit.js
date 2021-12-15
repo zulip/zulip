@@ -151,6 +151,12 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
             case ".pill-container": {
                 return pill_container_stub;
             }
+            case ".subscriber_table": {
+                return $.create("subscriber-table-stub");
+            }
+            case ".subscriber_list_container": {
+                return undefined;
+            }
             // No default
         }
         throw new Error(`unexpected selector ${selector}`);
