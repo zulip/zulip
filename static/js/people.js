@@ -55,6 +55,10 @@ function split_to_ints(lst) {
     return lst.split(",").map((s) => Number.parseInt(s, 10));
 }
 
+export function get_users_from_ids(user_ids) {
+    return user_ids.map((user_id) => get_by_user_id(user_id));
+}
+
 export function get_by_user_id(user_id, ignore_missing) {
     if (!people_by_user_id_dict.has(user_id) && !ignore_missing) {
         blueslip.error("Unknown user_id in get_by_user_id: " + user_id);

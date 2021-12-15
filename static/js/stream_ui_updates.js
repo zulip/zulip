@@ -178,8 +178,8 @@ export function update_subscribers_list(sub) {
     if (!stream_data.can_view_subscribers(sub)) {
         $(".subscriber_list_settings_container").hide();
     } else {
-        const subscribers = peer_data.get_subscribers(sub.stream_id);
-        const users = stream_edit.get_users_from_subscribers(subscribers);
+        const subscriber_ids = peer_data.get_subscribers(sub.stream_id);
+        const users = people.get_users_from_ids(subscriber_ids);
 
         /*
             We try to find a subscribers list that is already in the
