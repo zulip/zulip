@@ -73,10 +73,6 @@ export function is_sub_settings_active(sub) {
     return false;
 }
 
-export function get_users_from_subscribers(subscribers) {
-    return subscribers.map((user_id) => people.get_by_user_id(user_id));
-}
-
 export function get_retention_policy_text_for_subscription_type(sub) {
     let message_retention_days = sub.message_retention_days;
     // If both this stream and the organization-level policy are to retain forever,
@@ -401,7 +397,7 @@ function enable_subscriber_management({sub, parent_container}) {
     list.empty();
 
     const user_ids = peer_data.get_subscribers(stream_id);
-    const users = get_users_from_subscribers(user_ids);
+    const users = people.get_users_from_ids(user_ids);
     people.sort_but_pin_current_user_on_top(users);
 
     function get_users_for_subscriber_typeahead() {
