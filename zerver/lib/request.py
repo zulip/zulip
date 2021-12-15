@@ -382,8 +382,6 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
             post_var_names = [param.post_var_name]
             post_var_names += param.aliases
 
-            default_assigned = False
-
             post_var_name: Optional[str] = None
 
             for req_var in post_var_names:
@@ -408,10 +406,10 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
                 assert post_var_name is not None
                 if param.default is _REQ.NotSpecified:
                     raise RequestVariableMissingError(post_var_name)
-                val = param.default
-                default_assigned = True
+                kwargs[func_var_name] = param.default
+                continue
 
-            if param.converter is not None and not default_assigned:
+            if param.converter is not None:
                 try:
                     val = param.converter(post_var_name, val)
                 except JsonableError:
@@ -420,7 +418,7 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
                     raise RequestVariableConversionError(post_var_name, val)
 
             # json_validator is like converter, but doesn't handle JSON parsing; we do.
-            if param.json_validator is not None and not default_assigned:
+            if param.json_validator is not None:
                 try:
                     val = orjson.loads(val)
                 except orjson.JSONDecodeError:
@@ -432,7 +430,7 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
                     raise JsonableError(error.message)
 
             # str_validators is like json_validator, but for direct strings (no JSON parsing).
-            if param.str_validator is not None and not default_assigned:
+            if param.str_validator is not None:
                 try:
                     val = param.str_validator(post_var_name, val)
                 except ValidationError as error:
