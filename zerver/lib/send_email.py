@@ -495,7 +495,7 @@ def get_header(option: Optional[str], header: Optional[str], name: str) -> str:
     return str(option or header)
 
 
-def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None:
+def send_custom_email(users: List[UserProfile], *, options: Dict[str, Any]) -> None:
     """
     Can be used directly with from a management shell with
     send_custom_email(user_profile_list, dict(

@@ -38,7 +38,7 @@ class TestCustomEmails(ZulipTestCase):
         markdown_template_path = "templates/zerver/emails/email_base_default.source.html"
         send_custom_email(
             [hamlet],
-            {
+            options={
                 "markdown_template_path": markdown_template_path,
                 "reply_to": reply_to,
                 "subject": email_subject,
@@ -60,7 +60,7 @@ class TestCustomEmails(ZulipTestCase):
         )
         send_custom_email(
             [hamlet],
-            {
+            options={
                 "markdown_template_path": markdown_template_path,
                 "dry_run": False,
             },
@@ -83,7 +83,7 @@ class TestCustomEmails(ZulipTestCase):
             NoEmailArgumentException,
             send_custom_email,
             [hamlet],
-            {
+            options={
                 "markdown_template_path": markdown_template_path,
                 "from_name": from_name,
                 "dry_run": False,
@@ -94,7 +94,7 @@ class TestCustomEmails(ZulipTestCase):
             NoEmailArgumentException,
             send_custom_email,
             [hamlet],
-            {
+            options={
                 "markdown_template_path": markdown_template_path,
                 "subject": email_subject,
                 "dry_run": False,
@@ -115,7 +115,7 @@ class TestCustomEmails(ZulipTestCase):
             DoubledEmailArgumentException,
             send_custom_email,
             [hamlet],
-            {
+            options={
                 "markdown_template_path": markdown_template_path,
                 "subject": email_subject,
                 "dry_run": False,
@@ -126,7 +126,7 @@ class TestCustomEmails(ZulipTestCase):
             DoubledEmailArgumentException,
             send_custom_email,
             [hamlet],
-            {
+            options={
                 "markdown_template_path": markdown_template_path,
                 "from_name": from_name,
                 "dry_run": False,
@@ -144,7 +144,7 @@ class TestCustomEmails(ZulipTestCase):
         )
         send_custom_email(
             [admin_user, non_admin_user],
-            {
+            options={
                 "markdown_template_path": markdown_template_path,
                 "admins_only": True,
                 "dry_run": False,
@@ -162,7 +162,7 @@ class TestCustomEmails(ZulipTestCase):
         with patch("builtins.print") as _:
             send_custom_email(
                 [hamlet],
-                {
+                options={
                     "markdown_template_path": markdown_template_path,
                     "reply_to": reply_to,
                     "subject": email_subject,
