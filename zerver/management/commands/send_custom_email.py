@@ -136,3 +136,5 @@ class Command(ZulipBaseCommand):
             print("Would send the above email to:")
             for user in users:
                 print(f"  {user.delivery_email} ({user.realm.string_id})")
+            for email in target_emails:
+                print(f"  {email}")
