@@ -58,6 +58,10 @@ from zerver.lib.types import ProfileFieldData, Validator
 ResultT = TypeVar("ResultT")
 
 
+def check_anything(var_name: str, val: object) -> object:
+    return val
+
+
 def check_string(var_name: str, val: object) -> str:
     if not isinstance(val, str):
         raise ValidationError(_("{var_name} is not a string").format(var_name=var_name))
