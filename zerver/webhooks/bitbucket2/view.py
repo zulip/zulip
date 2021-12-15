@@ -2,10 +2,10 @@
 import re
 import string
 from functools import partial
-from inspect import signature
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from django.http import HttpRequest, HttpResponse
+from typing_extensions import Protocol
 
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
@@ -103,13 +103,10 @@ def api_bitbucket2_webhook(
     else:
         subject = get_subject_based_on_type(payload, type)
         body_function = get_body_based_on_type(type)
-        if "include_title" in signature(body_function).parameters:
-            body = body_function(
-                payload,
-                include_title=user_specified_topic is not None,
-            )
-        else:
-            body = body_function(payload)
+        body = body_function(
+            payload,
+            include_title=user_specified_topic is not None,
+        )
 
         check_send_webhook_message(
             request, user_profile, subject, body, type, unquote_url_parameters=True
@@ -202,7 +199,14 @@ def get_type(request: HttpRequest, payload: Dict[str, Any]) -> str:
     raise UnsupportedWebhookEventType(event_key)
 
 
-def get_body_based_on_type(type: str) -> Callable[..., str]:
+class BodyGetter(Protocol):
+    def __call__(self, payload: Dict[str, Any], include_title: bool) -> str:
+        ...
+
+
+def get_body_based_on_type(
+    type: str,
+) -> BodyGetter:
     return GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER[type]
 
 
@@ -264,7 +268,7 @@ def get_normal_push_body(payload: Dict[str, Any], change: Dict[str, Any]) -> str
     )
 
 
-def get_fork_body(payload: Dict[str, Any]) -> str:
+def get_fork_body(payload: Dict[str, Any], include_title: bool) -> str:
     return BITBUCKET_FORK_BODY.format(
         actor=get_user_info(payload["actor"]),
         fork_name=get_repository_full_name(payload["fork"]),
@@ -272,7 +276,7 @@ def get_fork_body(payload: Dict[str, Any]) -> str:
     )
 
 
-def get_commit_comment_body(payload: Dict[str, Any]) -> str:
+def get_commit_comment_body(payload: Dict[str, Any], include_title: bool) -> str:
     comment = payload["comment"]
     action = "[commented]({})".format(comment["links"]["html"]["href"])
     return get_commits_comment_action_message(
@@ -284,7 +288,7 @@ def get_commit_comment_body(payload: Dict[str, Any]) -> str:
     )
 
 
-def get_commit_status_changed_body(payload: Dict[str, Any]) -> str:
+def get_commit_status_changed_body(payload: Dict[str, Any], include_title: bool) -> str:
     commit_api_url = payload["commit_status"]["links"]["commit"]["href"]
     commit_id = commit_api_url.split("/")[-1]
 
@@ -302,12 +306,12 @@ def get_commit_status_changed_body(payload: Dict[str, Any]) -> str:
     )
 
 
-def get_issue_commented_body(payload: Dict[str, Any], include_title: bool = False) -> str:
+def get_issue_commented_body(payload: Dict[str, Any], include_title: bool) -> str:
     action = "[commented]({}) on".format(payload["comment"]["links"]["html"]["href"])
     return get_issue_action_body(payload, action, include_title)
 
 
-def get_issue_action_body(payload: Dict[str, Any], action: str, include_title: bool = False) -> str:
+def get_issue_action_body(payload: Dict[str, Any], action: str, include_title: bool) -> str:
     issue = payload["issue"]
     assignee = None
     message = None
@@ -327,9 +331,7 @@ def get_issue_action_body(payload: Dict[str, Any], action: str, include_title: b
     )
 
 
-def get_pull_request_action_body(
-    payload: Dict[str, Any], action: str, include_title: bool = False
-) -> str:
+def get_pull_request_action_body(payload: Dict[str, Any], action: str, include_title: bool) -> str:
     pull_request = payload["pullrequest"]
     return get_pull_request_event_message(
         get_actor_info(payload),
@@ -341,7 +343,7 @@ def get_pull_request_action_body(
 
 
 def get_pull_request_created_or_updated_body(
-    payload: Dict[str, Any], action: str, include_title: bool = False
+    payload: Dict[str, Any], action: str, include_title: bool
 ) -> str:
     pull_request = payload["pullrequest"]
     assignee = None
@@ -363,7 +365,7 @@ def get_pull_request_created_or_updated_body(
 
 def get_pull_request_comment_created_action_body(
     payload: Dict[str, Any],
-    include_title: bool = False,
+    include_title: bool,
 ) -> str:
     action = "[commented]({})".format(payload["comment"]["links"]["html"]["href"])
     return get_pull_request_comment_action_body(payload, action, include_title)
@@ -372,7 +374,7 @@ def get_pull_request_comment_created_action_body(
 def get_pull_request_deleted_or_updated_comment_action_body(
     payload: Dict[str, Any],
     action: str,
-    include_title: bool = False,
+    include_title: bool,
 ) -> str:
     action = "{} a [comment]({})".format(action, payload["comment"]["links"]["html"]["href"])
     return get_pull_request_comment_action_body(payload, action, include_title)
@@ -381,7 +383,7 @@ def get_pull_request_deleted_or_updated_comment_action_body(
 def get_pull_request_comment_action_body(
     payload: Dict[str, Any],
     action: str,
-    include_title: bool = False,
+    include_title: bool,
 ) -> str:
     action += " on"
     return get_pull_request_event_message(
@@ -417,7 +419,7 @@ def append_punctuation(title: str, message: str) -> str:
     return message
 
 
-def get_repo_updated_body(payload: Dict[str, Any]) -> str:
+def get_repo_updated_body(payload: Dict[str, Any], include_title: bool) -> str:
     changes = ["website", "name", "links", "language", "full_name", "description"]
     body = ""
     repo_name = payload["repository"]["name"]
@@ -500,7 +502,7 @@ def get_branch_name_for_push_event(payload: Dict[str, Any]) -> Optional[str]:
         return (change["new"] or change["old"]).get("name")
 
 
-GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER: Dict[str, Callable[..., str]] = {
+GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER: Dict[str, BodyGetter] = {
     "fork": get_fork_body,
     "commit_comment": get_commit_comment_body,
     "change_commit_status": get_commit_status_changed_body,
