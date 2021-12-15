@@ -12,5 +12,9 @@
 {% endblock %}
 
 {% block manage_preferences %}
-<p><a href="{{ realm_uri }}/#settings/notifications">{{ _("Manage email preferences") }}</a> | <a href="{{ unsubscribe_link }}">{{ _("Unsubscribe from marketing emails") }}</a></p>
+    {% if remote_server_email %}
+    <p>You are receiving this email to update you about important changes to Zulip's Terms of Service.</p>
+    {% else %}
+    <p><a href="{{ realm_uri }}/#settings/notifications">{{ _("Manage email preferences") }}</a> | <a href="{{ unsubscribe_link }}">{{ _("Unsubscribe from marketing emails") }}</a></p>
+    {% endif %}
 {% endblock %}

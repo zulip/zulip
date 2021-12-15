@@ -7,7 +7,7 @@ from email.headerregistry import Address
 from email.parser import Parser
 from email.policy import default
 from email.utils import formataddr, parseaddr
-from typing import Any, Dict, List, Mapping, Optional, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 import backoff
 import orjson
@@ -495,8 +495,12 @@ def get_header(option: Optional[str], header: Optional[str], name: str) -> str:
     return str(option or header)
 
 
-def send_custom_email(users: List[UserProfile], *, options: Dict[str, Any]) -> None:
+def send_custom_email(
+    users: List[UserProfile], *, target_emails: Sequence[str] = [], options: Dict[str, Any]
+) -> None:
     """
+    Helper for `manage.py send_custom_email`.
+
     Can be used directly with from a management shell with
     send_custom_email(user_profile_list, dict(
         markdown_template_path="/path/to/markdown/file.md",
@@ -563,6 +567,24 @@ def send_custom_email(users: List[UserProfile], *, options: Dict[str, Any]) -> N
             )
         except EmailNotDeliveredException:
             pass
+
+        if options["dry_run"]:
+            break
+
+    # Now send emails to any recipients without a user account.
+    # This code path is intended for rare RemoteZulipServer emails.
+    for email_address in target_emails:
+        send_email(
+            email_id,
+            to_emails=[email_address],
+            from_address=FromAddress.SUPPORT,
+            reply_to_email=options.get("reply_to"),
+            from_name=get_header(
+                options.get("from_name"), parsed_email_template.get("from"), "from_name"
+            ),
+            context={"remote_server_email": True},
+            dry_run=options["dry_run"],
+        )
 
         if options["dry_run"]:
             break
