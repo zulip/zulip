@@ -167,7 +167,6 @@ html {
             font-size: 1.25em;
             line-height: 1.5;
             margin-bottom: 0;
-            border-bottom: 1px solid hsla(0, 0, 100%, 0.6);
 
             &.home-link {
                 font-size: 1em;
@@ -190,11 +189,6 @@ html {
         h3 {
             &:not(:first-of-type) {
                 margin-top: 0;
-            }
-
-            &:first-of-type,
-            &.home-link {
-                border-bottom: none;
             }
 
             a {
