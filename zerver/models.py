@@ -2253,12 +2253,19 @@ class Stream(models.Model):
 
     # Who in the organization has permission to send messages to this stream.
     stream_post_policy: int = models.PositiveSmallIntegerField(default=STREAM_POST_POLICY_EVERYONE)
-    STREAM_POST_POLICY_TYPES = [
-        STREAM_POST_POLICY_EVERYONE,
-        STREAM_POST_POLICY_ADMINS,
-        STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS,
-        STREAM_POST_POLICY_MODERATORS,
-    ]
+    POST_POLICIES: Dict[int, str] = {
+        # These strings should match the strings in the
+        # stream_post_policy_values object in stream_data.js.
+        STREAM_POST_POLICY_EVERYONE: gettext_lazy("All stream members can post"),
+        STREAM_POST_POLICY_ADMINS: gettext_lazy("Only organization administrators can post"),
+        STREAM_POST_POLICY_MODERATORS: gettext_lazy(
+            "Only organization administrators and moderators can post"
+        ),
+        STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS: gettext_lazy(
+            "Only organization full members can post"
+        ),
+    }
+    STREAM_POST_POLICY_TYPES = list(POST_POLICIES.keys())
 
     # The unique thing about Zephyr public streams is that we never list their
     # users.  We may try to generalize this concept later, but for now

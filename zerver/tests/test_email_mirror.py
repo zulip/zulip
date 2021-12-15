@@ -955,7 +955,9 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         self.assert_json_success(result)
 
         stream = get_stream("announce", user_profile.realm)
-        do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_ADMINS)
+        do_change_stream_post_policy(
+            stream, Stream.STREAM_POST_POLICY_ADMINS, acting_user=user_profile
+        )
 
         usermessage = most_recent_usermessage(user_profile)
 

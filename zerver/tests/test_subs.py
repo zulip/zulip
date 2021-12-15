@@ -1323,7 +1323,16 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assert_json_success(result)
         stream = get_stream("stream_name1", user_profile.realm)
-        self.assertTrue(stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS)
+        self.assertEqual(stream.stream_post_policy, Stream.STREAM_POST_POLICY_ADMINS)
+
+        messages = get_topic_messages(user_profile, stream, "stream events")
+        expected_notification = (
+            f"@_**{user_profile.full_name}|{user_profile.id}** changed the "
+            "[posting permissions](/help/stream-sending-policy) for this stream:\n\n"
+            "* **Old permissions**: All stream members can post.\n"
+            "* **New permissions**: Only organization administrators can post."
+        )
+        self.assertEqual(messages[-1].content, expected_notification)
 
     def test_change_stream_post_policy_requires_admin(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -1377,6 +1386,15 @@ class StreamAdminTest(ZulipTestCase):
             stream = get_stream("stream_name1", user_profile.realm)
             self.assertEqual(stream.stream_post_policy, policy)
 
+            messages = get_topic_messages(user_profile, stream, "stream events")
+            expected_notification = (
+                f"@_**{user_profile.full_name}|{user_profile.id}** changed the "
+                "[posting permissions](/help/stream-sending-policy) for this stream:\n\n"
+                f"* **Old permissions**: {Stream.POST_POLICIES[old_post_policy]}.\n"
+                f"* **New permissions**: {Stream.POST_POLICIES[policy]}."
+            )
+            self.assertEqual(messages[-1].content, expected_notification)
+
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
 
         for policy in policies:
@@ -1387,6 +1405,16 @@ class StreamAdminTest(ZulipTestCase):
             self.assert_json_success(result)
             stream = get_stream("stream_name1", user_profile.realm)
             self.assertEqual(stream.stream_post_policy, policy)
+
+            messages = get_topic_messages(user_profile, stream, "stream events")
+            expected_notification = (
+                f"@_**{user_profile.full_name}|{user_profile.id}** changed the "
+                "[posting permissions](/help/stream-sending-policy) for this stream:\n\n"
+                f"* **Old permissions**: {Stream.POST_POLICIES[old_post_policy]}.\n"
+                f"* **New permissions**: {Stream.POST_POLICIES[policy]}."
+            )
+
+            self.assertEqual(messages[-1].content, expected_notification)
 
     def test_change_stream_message_retention_days_notifications(self) -> None:
         user_profile = self.example_user("desdemona")
@@ -3905,7 +3933,7 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         member = self.example_user("AARON")
         stream = self.make_stream("stream1")
-        do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_ADMINS)
+        do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_ADMINS, acting_user=member)
         result = self.common_subscribe_to_streams(member, ["stream1"])
         self.assert_json_success(result)
 
@@ -3925,7 +3953,9 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertTrue(new_member.is_provisional_member)
 
         stream = self.make_stream("stream1")
-        do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS)
+        do_change_stream_post_policy(
+            stream, Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS, acting_user=new_member
+        )
         result = self.common_subscribe_to_streams(new_member, ["stream1"])
         self.assert_json_success(result)
 
@@ -3942,7 +3972,9 @@ class SubscriptionAPITest(ZulipTestCase):
         # Make sure that we are testing this with full member which is just below the moderator
         # in the role hierarchy.
         self.assertFalse(member.is_provisional_member)
-        do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_MODERATORS)
+        do_change_stream_post_policy(
+            stream, Stream.STREAM_POST_POLICY_MODERATORS, acting_user=member
+        )
         result = self.common_subscribe_to_streams(member, ["stream1"])
         self.assert_json_success(result)
 
