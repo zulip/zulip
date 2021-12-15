@@ -2554,9 +2554,12 @@ class SubscribeActionTest(BaseAction):
         check_stream_update("events[0]", events[0])
 
         # Update stream stream_post_policy property
-        action = lambda: do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_ADMINS)
-        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
+        action = lambda: do_change_stream_post_policy(
+            stream, Stream.STREAM_POST_POLICY_ADMINS, acting_user=self.example_user("hamlet")
+        )
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=3)
         check_stream_update("events[0]", events[0])
+        check_message("events[2]", events[2])
 
         action = lambda: do_change_stream_message_retention_days(
             stream, self.example_user("hamlet"), -1

@@ -173,7 +173,9 @@ class MessagePOSTTest(ZulipTestCase):
 
         stream_name = "Verona"
         stream = get_stream(stream_name, admin_profile.realm)
-        do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_ADMINS)
+        do_change_stream_post_policy(
+            stream, Stream.STREAM_POST_POLICY_ADMINS, acting_user=admin_profile
+        )
 
         # Admins and their owned bots can send to STREAM_POST_POLICY_ADMINS streams
         self._send_and_verify_message(admin_profile, stream_name)
@@ -261,7 +263,9 @@ class MessagePOSTTest(ZulipTestCase):
 
         stream_name = "Verona"
         stream = get_stream(stream_name, admin_profile.realm)
-        do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_MODERATORS)
+        do_change_stream_post_policy(
+            stream, Stream.STREAM_POST_POLICY_MODERATORS, acting_user=admin_profile
+        )
 
         # Admins and their owned bots can send to STREAM_POST_POLICY_MODERATORS streams
         self._send_and_verify_message(admin_profile, stream_name)
@@ -349,7 +353,9 @@ class MessagePOSTTest(ZulipTestCase):
 
         stream_name = "Verona"
         stream = get_stream(stream_name, admin_profile.realm)
-        do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS)
+        do_change_stream_post_policy(
+            stream, Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS, acting_user=admin_profile
+        )
 
         # Admins and their owned bots can send to STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS streams,
         # even if the admin is a new user

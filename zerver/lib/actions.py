@@ -5012,7 +5012,32 @@ def do_change_stream_permission(
         do_change_stream_invite_only(stream, invite_only, history_public_to_subscribers)
 
 
-def do_change_stream_post_policy(stream: Stream, stream_post_policy: int) -> None:
+def send_change_stream_post_policy_notification(
+    stream: Stream, *, old_post_policy: int, new_post_policy: int, acting_user: UserProfile
+) -> None:
+    sender = get_system_bot(settings.NOTIFICATION_BOT, acting_user.realm_id)
+    user_mention = silent_mention_syntax_for_user(acting_user)
+
+    with override_language(stream.realm.default_language):
+        notification_string = _(
+            "{user} changed the [posting permissions](/help/stream-sending-policy) "
+            "for this stream:\n\n"
+            "* **Old permissions**: {old_policy}.\n"
+            "* **New permissions**: {new_policy}.\n"
+        )
+        notification_string = notification_string.format(
+            user=user_mention,
+            old_policy=Stream.POST_POLICIES[old_post_policy],
+            new_policy=Stream.POST_POLICIES[new_post_policy],
+        )
+        internal_send_stream_message(
+            sender, stream, Realm.STREAM_EVENTS_NOTIFICATION_TOPIC, notification_string
+        )
+
+
+def do_change_stream_post_policy(
+    stream: Stream, stream_post_policy: int, *, acting_user: UserProfile
+) -> None:
     stream.stream_post_policy = stream_post_policy
     stream.save(update_fields=["stream_post_policy"])
     event = dict(
@@ -5038,6 +5063,13 @@ def do_change_stream_post_policy(stream: Stream, stream_post_policy: int) -> Non
         name=stream.name,
     )
     send_event(stream.realm, event, can_access_stream_user_ids(stream))
+
+    send_change_stream_post_policy_notification(
+        stream,
+        old_post_policy=old_post_policy,
+        new_post_policy=stream_post_policy,
+        acting_user=acting_user,
+    )
 
 
 def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -> Dict[str, str]:

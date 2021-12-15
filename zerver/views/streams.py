@@ -303,7 +303,7 @@ def update_stream_backend(
         if is_announcement_only:
             stream_post_policy = Stream.STREAM_POST_POLICY_ADMINS
     if stream_post_policy is not None:
-        do_change_stream_post_policy(stream, stream_post_policy)
+        do_change_stream_post_policy(stream, stream_post_policy, acting_user=user_profile)
 
     # But we require even realm administrators to be actually
     # subscribed to make a private stream public.

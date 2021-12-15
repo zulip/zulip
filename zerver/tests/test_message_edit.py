@@ -1697,7 +1697,9 @@ class EditMessageTest(EditMessageTestCase):
                 self.assert_length(messages, 4)
 
         # Check when stream_post_policy is STREAM_POST_POLICY_ADMINS.
-        do_change_stream_post_policy(new_stream, Stream.STREAM_POST_POLICY_ADMINS)
+        do_change_stream_post_policy(
+            new_stream, Stream.STREAM_POST_POLICY_ADMINS, acting_user=user_profile
+        )
         error_msg = "Only organization administrators can send to this stream."
         check_move_message_to_stream(UserProfile.ROLE_MODERATOR, error_msg)
         check_move_message_to_stream(UserProfile.ROLE_REALM_ADMINISTRATOR)
@@ -1707,7 +1709,9 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         # Check when stream_post_policy is STREAM_POST_POLICY_MODERATORS.
-        do_change_stream_post_policy(new_stream, Stream.STREAM_POST_POLICY_MODERATORS)
+        do_change_stream_post_policy(
+            new_stream, Stream.STREAM_POST_POLICY_MODERATORS, acting_user=user_profile
+        )
         error_msg = "Only organization administrators and moderators can send to this stream."
         check_move_message_to_stream(UserProfile.ROLE_MEMBER, error_msg)
         check_move_message_to_stream(UserProfile.ROLE_MODERATOR)
@@ -1717,7 +1721,9 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         # Check when stream_post_policy is STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS.
-        do_change_stream_post_policy(new_stream, Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS)
+        do_change_stream_post_policy(
+            new_stream, Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS, acting_user=user_profile
+        )
         error_msg = "New members cannot send to this stream."
 
         do_set_realm_property(
@@ -1736,7 +1742,9 @@ class EditMessageTest(EditMessageTestCase):
         # In this case also, guest is not allowed as we do not allow guest to move
         # messages between streams in any case, so stream_post_policy of new stream does
         # not matter.
-        do_change_stream_post_policy(new_stream, Stream.STREAM_POST_POLICY_EVERYONE)
+        do_change_stream_post_policy(
+            new_stream, Stream.STREAM_POST_POLICY_EVERYONE, acting_user=user_profile
+        )
         do_set_realm_property(
             user_profile.realm, "waiting_period_threshold", 100000, acting_user=None
         )
