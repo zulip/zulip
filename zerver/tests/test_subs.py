@@ -1334,6 +1334,20 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assertEqual(messages[-1].content, expected_notification)
 
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+            modified_stream=stream,
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = orjson.dumps(
+            {
+                RealmAuditLog.OLD_VALUE: Stream.STREAM_POST_POLICY_EVERYONE,
+                RealmAuditLog.NEW_VALUE: Stream.STREAM_POST_POLICY_ADMINS,
+                "property": "stream_post_policy",
+            }
+        ).decode()
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+
     def test_change_stream_post_policy_requires_admin(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
@@ -1378,9 +1392,10 @@ class StreamAdminTest(ZulipTestCase):
         )
 
         for policy in policies:
-            stream_id = get_stream("stream_name1", user_profile.realm).id
+            stream = get_stream("stream_name1", user_profile.realm)
+            old_post_policy = stream.stream_post_policy
             result = self.client_patch(
-                f"/json/streams/{stream_id}", {"stream_post_policy": orjson.dumps(policy).decode()}
+                f"/json/streams/{stream.id}", {"stream_post_policy": orjson.dumps(policy).decode()}
             )
             self.assert_json_success(result)
             stream = get_stream("stream_name1", user_profile.realm)
@@ -1394,13 +1409,28 @@ class StreamAdminTest(ZulipTestCase):
                 f"* **New permissions**: {Stream.POST_POLICIES[policy]}."
             )
             self.assertEqual(messages[-1].content, expected_notification)
+
+            realm_audit_log = RealmAuditLog.objects.filter(
+                event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+                modified_stream=stream,
+            ).last()
+            assert realm_audit_log is not None
+            expected_extra_data = orjson.dumps(
+                {
+                    RealmAuditLog.OLD_VALUE: old_post_policy,
+                    RealmAuditLog.NEW_VALUE: policy,
+                    "property": "stream_post_policy",
+                }
+            ).decode()
+            self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
 
         for policy in policies:
-            stream_id = get_stream("stream_name1", user_profile.realm).id
+            stream = get_stream("stream_name1", user_profile.realm)
+            old_post_policy = stream.stream_post_policy
             result = self.client_patch(
-                f"/json/streams/{stream_id}", {"stream_post_policy": orjson.dumps(policy).decode()}
+                f"/json/streams/{stream.id}", {"stream_post_policy": orjson.dumps(policy).decode()}
             )
             self.assert_json_success(result)
             stream = get_stream("stream_name1", user_profile.realm)
@@ -1415,6 +1445,20 @@ class StreamAdminTest(ZulipTestCase):
             )
 
             self.assertEqual(messages[-1].content, expected_notification)
+
+            realm_audit_log = RealmAuditLog.objects.filter(
+                event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+                modified_stream=stream,
+            ).last()
+            assert realm_audit_log is not None
+            expected_extra_data = orjson.dumps(
+                {
+                    RealmAuditLog.OLD_VALUE: old_post_policy,
+                    RealmAuditLog.NEW_VALUE: policy,
+                    "property": "stream_post_policy",
+                }
+            ).decode()
+            self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
     def test_change_stream_message_retention_days_notifications(self) -> None:
         user_profile = self.example_user("desdemona")
