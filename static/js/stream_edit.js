@@ -389,7 +389,6 @@ export function get_text_from_item(item) {
 }
 
 function show_subscription_settings(sub) {
-    const stream_id = sub.stream_id;
     const edit_container = stream_settings_containers.get_edit_container(sub);
 
     const colorpicker = edit_container.find(".colorpicker");
@@ -401,7 +400,13 @@ function show_subscription_settings(sub) {
         return;
     }
 
-    const pill_container = edit_container.find(".pill-container");
+    enable_subscriber_management({sub, parent_container: edit_container});
+}
+
+function enable_subscriber_management({sub, parent_container}) {
+    const stream_id = sub.stream_id;
+
+    const pill_container = parent_container.find(".pill-container");
 
     pill_widget = input_pill.create({
         container: pill_container,
@@ -413,10 +418,10 @@ function show_subscription_settings(sub) {
         stream_ui_updates.initialize_cant_subscribe_popover(sub);
     }
     // fetch subscriber list from memory.
-    const list = get_subscriber_list(edit_container);
+    const list = get_subscriber_list(parent_container);
     list.empty();
 
-    const user_ids = peer_data.get_subscribers(sub.stream_id);
+    const user_ids = peer_data.get_subscribers(stream_id);
     const users = get_users_from_subscribers(user_ids);
     sort_but_pin_current_user_on_top(users);
 
