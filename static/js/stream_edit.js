@@ -401,14 +401,10 @@ function show_subscription_settings(sub) {
         return;
     }
 
-    const container = $(
-        `#subscription_overlay .subscription_settings[data-stream-id='${CSS.escape(
-            stream_id,
-        )}'] .pill-container`,
-    );
+    const pill_container = edit_container.find(".pill-container");
 
     pill_widget = input_pill.create({
-        container,
+        container: pill_container,
         create_item_from_text,
         get_text_from_item,
     });
@@ -452,7 +448,7 @@ function show_subscription_settings(sub) {
         user_group: true,
         user: true,
     };
-    pill_typeahead.set_up(edit_container.find(".input"), pill_widget, opts);
+    pill_typeahead.set_up(pill_container.find(".input"), pill_widget, opts);
 }
 
 export function is_notification_setting(setting_label) {

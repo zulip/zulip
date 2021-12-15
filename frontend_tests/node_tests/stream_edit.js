@@ -137,12 +137,24 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
     const sub_settings_selector = `#subscription_overlay .subscription_settings[data-stream-id='${CSS.escape(
         denmark.stream_id,
     )}']`;
-    const $sub_settings_container = $.create(sub_settings_selector);
-    $sub_settings_container.find = noop;
-    $sub_settings_container.find = () => input_field_stub;
 
-    const pill_container_stub = $.create(sub_settings_selector + " .pill-container");
+    const pill_container_stub = $.create("pill-container-stub");
     pill_container_stub.find = () => input_field_stub;
+
+    const $sub_settings_container = $.create(sub_settings_selector);
+
+    $sub_settings_container.find = (selector) => {
+        switch (selector) {
+            case ".colorpicker": {
+                return undefined;
+            }
+            case ".pill-container": {
+                return pill_container_stub;
+            }
+            // No default
+        }
+        throw new Error(`unexpected selector ${selector}`);
+    };
 
     const $subscription_settings = $.create(".subscription_settings");
     $subscription_settings.addClass = noop;
