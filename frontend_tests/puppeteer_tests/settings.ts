@@ -208,7 +208,13 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
         await common.get_text_from_selector(page, "div.bot_edit_errors"),
         "Name is already in use!",
     );
-    await page.click("#edit_bot_modal .dialog_cancel_button");
+
+    const cancel_button_selector = "#edit_bot_modal .dialog_cancel_button";
+    await page.waitForFunction(
+        (cancel_button_selector: string) =>
+            !document.querySelector(cancel_button_selector)?.hasAttribute("disabled"),
+    );
+    await page.click(cancel_button_selector);
     await page.waitForXPath(
         `//*[@class="btn open_edit_bot_form" and @data-email="${bot1_email}"]/ancestor::*[@class="details"]/*[@class="name" and text()="Bot one"]`,
     );
