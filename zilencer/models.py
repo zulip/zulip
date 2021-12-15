@@ -37,6 +37,9 @@ class RemoteZulipServer(models.Model):
     contact_email: str = models.EmailField(blank=True, null=False)
     last_updated: datetime.datetime = models.DateTimeField("last updated", auto_now=True)
 
+    # Whether the server registration has been deactivated.
+    deactivated: bool = models.BooleanField(default=False)
+
     # Plan types for self-hosted customers
     PLAN_TYPE_SELF_HOSTED = 1
     PLAN_TYPE_STANDARD = 102

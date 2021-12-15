@@ -3916,9 +3916,12 @@ class AbstractRealmAuditLog(models.Model):
     STREAM_MESSAGE_RETENTION_DAYS_CHANGED = 605
 
     # The following values are only for RemoteZulipServerAuditLog
-    # Values are chosen to be 10000 greater than the value in RealmAuditLog.
+    # Values should be exactly 10000 greater than the corresponding
+    # value used for the same purpose in RealmAuditLog (e.g.
+    # REALM_DEACTIVATED = 201, and REMOTE_SERVER_DEACTIVATED = 10201).
     REMOTE_SERVER_CREATED = 10215
     REMOTE_SERVER_PLAN_TYPE_CHANGED = 10204
+    REMOTE_SERVER_DEACTIVATED = 10201
 
     event_type: int = models.PositiveSmallIntegerField()
 

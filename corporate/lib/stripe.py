@@ -633,6 +633,24 @@ def do_change_remote_server_plan_type(remote_server: RemoteZulipServer, plan_typ
     )
 
 
+@transaction.atomic
+def do_deactivate_remote_server(remote_server: RemoteZulipServer) -> None:
+    if remote_server.deactivated:
+        billing_logger.warning(
+            f"Cannot deactivate remote server with ID {remote_server.id}, "
+            "server has already been deactivated."
+        )
+        return
+
+    remote_server.deactivated = True
+    remote_server.save(update_fields=["deactivated"])
+    RemoteZulipServerAuditLog.objects.create(
+        event_type=RealmAuditLog.REMOTE_SERVER_DEACTIVATED,
+        server=remote_server,
+        event_time=timezone_now(),
+    )
+
+
 # Only used for cloud signups
 @catch_stripe_errors
 def process_initial_upgrade(
