@@ -53,6 +53,36 @@ class TestCustomEmails(ZulipTestCase):
         self.assertEqual(msg.reply_to[0], reply_to)
         self.assertNotIn("{% block content %}", msg.body)
 
+    def test_send_custom_email_remote_server(self) -> None:
+        email_subject = "subject_test"
+        reply_to = "reply_to_test"
+        from_name = "from_name_test"
+        contact_email = "zulip-admin@example.com"
+        markdown_template_path = "templates/corporate/policies/index.md"
+        send_custom_email(
+            [],
+            target_emails=[contact_email],
+            options={
+                "markdown_template_path": markdown_template_path,
+                "reply_to": reply_to,
+                "subject": email_subject,
+                "from_name": from_name,
+                "dry_run": False,
+            },
+        )
+        self.assert_length(mail.outbox, 1)
+        msg = mail.outbox[0]
+        self.assertEqual(msg.subject, email_subject)
+        self.assertEqual(msg.to, [contact_email])
+        self.assert_length(msg.reply_to, 1)
+        self.assertEqual(msg.reply_to[0], reply_to)
+        self.assertNotIn("{% block content %}", msg.body)
+        # Verify that the HTML version contains the footer.
+        self.assertIn(
+            "You are receiving this email to update you about important changes to Zulip",
+            str(msg.message()),
+        )
+
     def test_send_custom_email_headers(self) -> None:
         hamlet = self.example_user("hamlet")
         markdown_template_path = (
