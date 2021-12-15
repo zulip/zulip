@@ -432,6 +432,41 @@ class NormalActionsTest(BaseAction):
             ),
         )
 
+        # Verify private message editing - content only edit
+        pm = Message.objects.order_by("-id")[0]
+        content = "new content"
+        rendering_result = render_markdown(pm, content)
+        prior_mention_user_ids: Set[int] = set()
+        mention_data = MentionData(
+            realm_id=self.user_profile.realm_id,
+            content=content,
+        )
+
+        events = self.verify_action(
+            lambda: do_update_message(
+                self.user_profile,
+                pm,
+                None,
+                None,
+                None,
+                False,
+                False,
+                content,
+                rendering_result,
+                prior_mention_user_ids,
+                mention_data,
+            ),
+            state_change_expected=False,
+        )
+        check_update_message(
+            "events[0]",
+            events[0],
+            is_stream_message=False,
+            has_content=True,
+            has_topic=False,
+            has_new_stream_id=False,
+        )
+
     def test_huddle_send_message_events(self) -> None:
         huddle = [
             self.example_user("hamlet"),
@@ -456,10 +491,8 @@ class NormalActionsTest(BaseAction):
         check_message("events[0]", events[0])
         assert events[0]["message"]["avatar_url"] is None
 
-        # Verify message editing
+        # Verify stream message editing - content only
         message = Message.objects.order_by("-id")[0]
-        topic = "new_topic"
-        propagate_mode = "change_all"
         content = "new content"
         rendering_result = render_markdown(message, content)
         prior_mention_user_ids: Set[int] = set()
@@ -473,12 +506,41 @@ class NormalActionsTest(BaseAction):
                 self.user_profile,
                 message,
                 None,
-                topic,
-                propagate_mode,
+                None,
+                None,
                 False,
                 False,
                 content,
                 rendering_result,
+                prior_mention_user_ids,
+                mention_data,
+            ),
+            state_change_expected=False,
+        )
+        check_update_message(
+            "events[0]",
+            events[0],
+            is_stream_message=True,
+            has_content=True,
+            has_topic=False,
+            has_new_stream_id=False,
+        )
+
+        # Verify stream message editing - topic only
+        topic = "new_topic"
+        propagate_mode = "change_all"
+
+        events = self.verify_action(
+            lambda: do_update_message(
+                self.user_profile,
+                message,
+                None,
+                topic,
+                propagate_mode,
+                False,
+                False,
+                None,
+                None,
                 prior_mention_user_ids,
                 mention_data,
             ),
@@ -487,7 +549,8 @@ class NormalActionsTest(BaseAction):
         check_update_message(
             "events[0]",
             events[0],
-            has_content=True,
+            is_stream_message=True,
+            has_content=False,
             has_topic=True,
             has_new_stream_id=False,
         )
@@ -506,7 +569,6 @@ class NormalActionsTest(BaseAction):
         self.send_stream_message(self.user_profile, "Verona")
         message_id = self.send_stream_message(self.user_profile, "Verona")
         message = Message.objects.get(id=message_id)
-        topic = "new_topic"
         stream = get_stream("Denmark", self.user_profile.realm)
         propagate_mode = "change_all"
         prior_mention_user_ids = set()
@@ -516,7 +578,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile,
                 message,
                 stream,
-                topic,
+                None,
                 propagate_mode,
                 True,
                 True,
@@ -534,8 +596,9 @@ class NormalActionsTest(BaseAction):
         check_update_message(
             "events[0]",
             events[0],
+            is_stream_message=True,
             has_content=False,
-            has_topic=True,
+            has_topic=False,
             has_new_stream_id=True,
         )
 
