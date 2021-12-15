@@ -114,7 +114,7 @@ class Command(ZulipBaseCommand):
                 .filter(id__in=[u.id for u in users])
                 .exclude(tos_version=None)
             )
-        send_custom_email(users, options)
+        send_custom_email(users, options=options)
 
         if options["dry_run"]:
             print("Would send the above email to:")
