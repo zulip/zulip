@@ -161,7 +161,8 @@ def send_event(
 ) -> None:
     """`users` is a list of user IDs, or in some special cases like message
     send/update or embeds, dictionaries containing extra data."""
-    port = get_tornado_port(realm)
+    host = realm.host
+    port = get_tornado_port(host)
     queue_json_publish(
         notify_tornado_queue_name(port),
         dict(event=event, users=list(users)),

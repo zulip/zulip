@@ -11,12 +11,12 @@ if os.path.exists("/etc/zulip/sharding.json"):
         shard_map = json.loads(f.read())
 
 
-def get_tornado_port(realm: Realm) -> int:
-    return shard_map.get(realm.host, settings.TORNADO_PORTS[0])
+def get_tornado_port(realm_host: str) -> int:
+    return shard_map.get(realm_host, settings.TORNADO_PORTS[0])
 
 
 def get_tornado_uri(realm: Realm) -> str:
-    port = get_tornado_port(realm)
+    port = get_tornado_port(realm.host)
     return f"http://127.0.0.1:{port}"
 
 
