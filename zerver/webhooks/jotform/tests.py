@@ -1,7 +1,7 @@
 from zerver.lib.test_classes import WebhookTestCase
 
 
-class JotFormHookTests(WebhookTestCase):
+class JotformHookTests(WebhookTestCase):
     STREAM_NAME = "test"
     URL_TEMPLATE = "/api/v1/external/jotform?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "jotform"
