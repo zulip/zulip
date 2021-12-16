@@ -38,6 +38,7 @@ class zulip::profile::rabbitmq {
       ensure  => file,
       require => File['/etc/rabbitmq'],
       before  => [Package[rabbitmq-server], Service[rabbitmq-server]],
+      notify  => Exec['configure-rabbitmq'],
       owner   => 'root',
       group   => 'root',
       mode    => '0644',
@@ -62,5 +63,9 @@ class zulip::profile::rabbitmq {
                 File['/etc/default/rabbitmq-server']],
   }
 
-  # TODO: Should also call exactly once "configure-rabbitmq"
+  exec { 'configure-rabbitmq':
+    command     => "${::zulip_scripts_path}/setup/configure-rabbitmq",
+    refreshonly => true,
+    require     => Service['rabbitmq-server'],
+  }
 }
