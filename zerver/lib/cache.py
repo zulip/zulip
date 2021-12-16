@@ -201,7 +201,11 @@ def cache_with_key(
             if val is not None:
                 return val[0]
 
+            t = time.time()
             val = func(*args, **kwargs)
+            elapsed = time.time() - t
+            elapsed_ms = elapsed * 1000
+            logging.info(f"CACHE: took {elapsed_ms:.2f}ms to compute value for {key}")
 
             cache_set(key, val, cache_name=cache_name, timeout=timeout)
 
