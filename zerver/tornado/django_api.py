@@ -124,7 +124,7 @@ def get_user_events(
     return resp.json()["events"]
 
 
-def send_notification_http(realm: Realm, data: Mapping[str, Any]) -> None:
+def send_notification_http(realm_host: str, data: Mapping[str, Any]) -> None:
     if not settings.USING_TORNADO or settings.RUNNING_INSIDE_TORNADO:
         # To allow the backend test suite to not require a separate
         # Tornado process, we simply call the process_notification
@@ -139,7 +139,7 @@ def send_notification_http(realm: Realm, data: Mapping[str, Any]) -> None:
 
         process_notification(data)
     else:
-        tornado_uri = get_tornado_uri(realm.host)
+        tornado_uri = get_tornado_uri(realm_host)
         requests_client().post(
             tornado_uri + "/notify_tornado",
             data=dict(data=orjson.dumps(data), secret=settings.SHARED_SECRET),
@@ -166,5 +166,5 @@ def send_event(
     queue_json_publish(
         notify_tornado_queue_name(port),
         dict(event=event, users=list(users)),
-        lambda *args, **kwargs: send_notification_http(realm, *args, **kwargs),
+        lambda *args, **kwargs: send_notification_http(realm.host, *args, **kwargs),
     )
