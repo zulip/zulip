@@ -394,7 +394,7 @@ log][commit-log] for an up-to-date list of raw changes.
 - New integrations: Freshping, JotForm, Uptime Robot, and a JSON
   formatter (which is particularly useful when developing a new
   integration).
-- Updated integrations: ClubHouse, NewRelic, Bitbucket, Zabbix.
+- Updated integrations: Clubhouse, NewRelic, Bitbucket, Zabbix.
 - Improved formatting of GitHub and GitLab integrations.
 - Improved the user experience for multi-user invitations.
 - Improved several rendered-message styling details.

@@ -710,7 +710,7 @@ EVENTS_SECONDARY_ACTIONS_FUNCTION_MAPPER: Dict[
 }
 
 
-@webhook_view("ClubHouse", all_event_types=ALL_EVENT_TYPES)
+@webhook_view("Clubhouse", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_clubhouse_webhook(
     request: HttpRequest,
