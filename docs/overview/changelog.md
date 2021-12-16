@@ -391,7 +391,7 @@ log][commit-log] for an up-to-date list of raw changes.
 - Added support for subscribing all members of a user group to a stream.
 - Added support for sms: and tel: links.
 - Community topic editing time limit increased to 3 days for members.
-- New integrations: Freshping, JotForm, Uptime Robot, and a JSON
+- New integrations: Freshping, Jotform, Uptime Robot, and a JSON
   formatter (which is particularly useful when developing a new
   integration).
 - Updated integrations: Clubhouse, NewRelic, Bitbucket, Zabbix.
