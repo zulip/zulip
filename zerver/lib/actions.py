@@ -256,7 +256,7 @@ from zerver.models import (
     realm_filters_for_realm,
     validate_attachment_request,
 )
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event, send_event_to_shard
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import (
@@ -5576,7 +5576,9 @@ def do_update_user_activity(
         activity.save(update_fields=["last_visit", "count"])
 
 
-def send_presence_changed(user_profile: UserProfile, presence: UserPresence) -> None:
+def send_presence_changed(
+    *, user_id: int, user_email: str, realm_id: int, realm_host: str, presence: UserPresence
+) -> None:
     # Most presence data is sent to clients in the main presence
     # endpoint in response to the user's own presence; this results
     # data that is 1-2 minutes stale for who is online.  The flaw with
@@ -5586,7 +5588,7 @@ def send_presence_changed(user_profile: UserProfile, presence: UserPresence) -> 
     #
     # See https://zulip.readthedocs.io/en/latest/subsystems/presence.html for
     # internals documentation on presence.
-    user_ids = active_user_ids(user_profile.realm_id)
+    user_ids = active_user_ids(realm_id)
     if len(user_ids) > settings.USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS:
         # These immediate presence generate quadratic work for Tornado
         # (linear number of users in each event and the frequency of
@@ -5604,12 +5606,16 @@ def send_presence_changed(user_profile: UserProfile, presence: UserPresence) -> 
     presence_dict = presence.to_dict()
     event = dict(
         type="presence",
-        email=user_profile.email,
-        user_id=user_profile.id,
+        email=user_email,
+        user_id=user_id,
         server_timestamp=time.time(),
         presence={presence_dict["client"]: presence_dict},
     )
-    send_event(user_profile.realm, event, user_ids)
+
+    # We use send_event_to_shard() instead of send_event() to
+    # allow optimizations in the user_presence queue processing.
+    # Basically, we don't need to fetch UserProfile/Realm objects.
+    send_event_to_shard(realm_host, event, user_ids)
 
 
 def consolidate_client(client: Client) -> Client:
@@ -5667,7 +5673,13 @@ def do_update_user_presence(
         presence.save(update_fields=update_fields)
 
     if not user_profile.realm.presence_disabled and (created or became_online):
-        send_presence_changed(user_profile, presence)
+        send_presence_changed(
+            user_id=user_profile.id,
+            user_email=user_profile.email,
+            realm_id=user_profile.realm_id,
+            realm_host=user_profile.realm.host,
+            presence=presence,
+        )
 
 
 def update_user_activity_interval(user_profile: UserProfile, log_time: datetime.datetime) -> None:
