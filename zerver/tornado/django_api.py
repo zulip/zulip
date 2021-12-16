@@ -162,9 +162,18 @@ def send_event(
     """`users` is a list of user IDs, or in some special cases like message
     send/update or embeds, dictionaries containing extra data."""
     host = realm.host
+    send_event_to_shard(host, event, users)
+
+
+def send_event_to_shard(
+    host: str, event: Mapping[str, Any], users: Union[Iterable[int], Iterable[Mapping[str, Any]]]
+) -> None:
+    # Unless you are dealing with a highly optimized code path like
+    # presence, you generally want to call send_event, especially if
+    # you already have a Realm object.
     port = get_tornado_port(host)
     queue_json_publish(
         notify_tornado_queue_name(port),
         dict(event=event, users=list(users)),
-        lambda *args, **kwargs: send_notification_http(realm.host, *args, **kwargs),
+        lambda *args, **kwargs: send_notification_http(host, *args, **kwargs),
     )
