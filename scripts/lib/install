@@ -497,7 +497,6 @@ For more information, see:
 EOF
         exit 1
     fi
-    "$ZULIP_PATH"/scripts/setup/configure-rabbitmq
 fi
 
 if has_class "zulip::postgresql_common" && [ -z "$NO_INIT_DB" ]; then
