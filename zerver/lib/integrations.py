@@ -356,7 +356,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         legacy=True,
     ),
     WebhookIntegration("buildbot", ["continuous-integration"], display_name="Buildbot"),
-    WebhookIntegration("canarytoken", ["monitoring"], display_name="Thinkst Canarytoken"),
+    WebhookIntegration("canarytoken", ["monitoring"], display_name="Thinkst Canarytokens"),
     WebhookIntegration("circleci", ["continuous-integration"], display_name="CircleCI"),
     WebhookIntegration("clubhouse", ["project-management"]),
     WebhookIntegration("codeship", ["continuous-integration", "deployment"]),

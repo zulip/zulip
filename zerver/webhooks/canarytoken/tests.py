@@ -1,7 +1,7 @@
 from zerver.lib.test_classes import WebhookTestCase
 
 
-class CanarytokenHookTests(WebhookTestCase):
+class CanarytokensHookTests(WebhookTestCase):
     STREAM_NAME = "canarytoken"
     URL_TEMPLATE = "/api/v1/external/canarytoken?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "canarytoken"
