@@ -980,6 +980,11 @@ export function initialize() {
                 !$(e.target).closest("[data-tippy-root]").length &&
                 !$(e.target).closest(".modal-backdrop").length &&
                 !$(e.target).closest(".enter_sends").length &&
+                // Clicks on the buddy list should not close
+                // composebox since what's shown in the
+                // composebox decides what's shown in the
+                // buddy list.
+                !$(e.target).closest("#user-list").length &&
                 $(e.target).closest("body").length
             ) {
                 // Unfocus our compose area if we click out of it. Don't let exits out
