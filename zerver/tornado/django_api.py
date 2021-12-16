@@ -80,7 +80,7 @@ def request_event_queue(
     if not settings.USING_TORNADO:
         return None
 
-    tornado_uri = get_tornado_uri(user_profile.realm)
+    tornado_uri = get_tornado_uri(user_profile.realm.host)
     req = {
         "dont_block": "true",
         "apply_markdown": orjson.dumps(apply_markdown),
@@ -111,7 +111,7 @@ def get_user_events(
     if not settings.USING_TORNADO:
         return []
 
-    tornado_uri = get_tornado_uri(user_profile.realm)
+    tornado_uri = get_tornado_uri(user_profile.realm.host)
     post_data: Dict[str, Any] = {
         "queue_id": queue_id,
         "last_event_id": last_event_id,
@@ -139,7 +139,7 @@ def send_notification_http(realm: Realm, data: Mapping[str, Any]) -> None:
 
         process_notification(data)
     else:
-        tornado_uri = get_tornado_uri(realm)
+        tornado_uri = get_tornado_uri(realm.host)
         requests_client().post(
             tornado_uri + "/notify_tornado",
             data=dict(data=orjson.dumps(data), secret=settings.SHARED_SECRET),

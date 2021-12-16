@@ -3,8 +3,6 @@ import os
 
 from django.conf import settings
 
-from zerver.models import Realm
-
 shard_map = {}
 if os.path.exists("/etc/zulip/sharding.json"):
     with open("/etc/zulip/sharding.json") as f:
@@ -15,8 +13,8 @@ def get_tornado_port(realm_host: str) -> int:
     return shard_map.get(realm_host, settings.TORNADO_PORTS[0])
 
 
-def get_tornado_uri(realm: Realm) -> str:
-    port = get_tornado_port(realm.host)
+def get_tornado_uri(realm_host: str) -> str:
+    port = get_tornado_port(realm_host)
     return f"http://127.0.0.1:{port}"
 
 
