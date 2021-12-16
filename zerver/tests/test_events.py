@@ -879,7 +879,12 @@ class NormalActionsTest(BaseAction):
     def test_presence_events(self) -> None:
         events = self.verify_action(
             lambda: do_update_user_presence(
-                self.user_profile, get_client("website"), timezone_now(), UserPresence.ACTIVE
+                user_id=self.user_profile.id,
+                user_email=self.user_profile.email,
+                realm_id=self.user_profile.realm_id,
+                client=get_client("website"),
+                log_time=timezone_now(),
+                status=UserPresence.ACTIVE,
             ),
             slim_presence=False,
         )
@@ -892,12 +897,15 @@ class NormalActionsTest(BaseAction):
             status="active",
         )
 
+        cordelia = self.example_user("cordelia")
         events = self.verify_action(
             lambda: do_update_user_presence(
-                self.example_user("cordelia"),
-                get_client("website"),
-                timezone_now(),
-                UserPresence.ACTIVE,
+                user_id=cordelia.id,
+                user_email=cordelia.email,
+                realm_id=cordelia.realm_id,
+                client=get_client("website"),
+                log_time=timezone_now(),
+                status=UserPresence.ACTIVE,
             ),
             slim_presence=True,
         )
@@ -919,12 +927,22 @@ class NormalActionsTest(BaseAction):
         )
         self.verify_action(
             lambda: do_update_user_presence(
-                self.user_profile, get_client("website"), timezone_now(), UserPresence.ACTIVE
+                user_id=self.user_profile.id,
+                user_email=self.user_profile.email,
+                realm_id=self.user_profile.realm_id,
+                client=get_client("website"),
+                log_time=timezone_now(),
+                status=UserPresence.ACTIVE,
             )
         )
         events = self.verify_action(
             lambda: do_update_user_presence(
-                self.user_profile, get_client("ZulipAndroid/1.0"), timezone_now(), UserPresence.IDLE
+                user_id=self.user_profile.id,
+                user_email=self.user_profile.email,
+                realm_id=self.user_profile.realm_id,
+                client=get_client("ZulipAndroid/1.0"),
+                log_time=timezone_now(),
+                status=UserPresence.IDLE,
             )
         )
 

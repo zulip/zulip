@@ -5633,18 +5633,26 @@ def consolidate_client(client: Client) -> Client:
 
 @statsd_increment("user_presence")
 def do_update_user_presence(
-    user_profile: UserProfile, client: Client, log_time: datetime.datetime, status: int
+    *,
+    user_id: int,
+    user_email: str,
+    realm_id: int,
+    client: Client,
+    log_time: datetime.datetime,
+    status: int,
+    realm_presence_disabled: bool = False,
+    realm_host: str = "",
 ) -> None:
     client = consolidate_client(client)
 
     defaults = dict(
         timestamp=log_time,
         status=status,
-        realm_id=user_profile.realm_id,
+        realm_id=realm_id,
     )
 
     (presence, created) = UserPresence.objects.get_or_create(
-        user_profile=user_profile,
+        user_profile_id=user_id,
         client=client,
         defaults=defaults,
     )
@@ -5672,12 +5680,12 @@ def do_update_user_presence(
             update_fields.append("status")
         presence.save(update_fields=update_fields)
 
-    if not user_profile.realm.presence_disabled and (created or became_online):
+    if not realm_presence_disabled and (created or became_online):
         send_presence_changed(
-            user_id=user_profile.id,
-            user_email=user_profile.email,
-            realm_id=user_profile.realm_id,
-            realm_host=user_profile.realm.host,
+            user_id=user_id,
+            user_email=user_email,
+            realm_id=realm_id,
+            realm_host=realm_host,
             presence=presence,
         )
 
@@ -5688,23 +5696,29 @@ def update_user_activity_interval(user_profile: UserProfile, log_time: datetime.
 
 
 def update_user_presence(
-    user_profile: UserProfile,
+    user: UserProfile,
     client: Client,
     log_time: datetime.datetime,
     status: int,
     new_user_input: bool,
 ) -> None:
+    realm = user.realm
     event = {
-        "user_profile_id": user_profile.id,
+        "user_id": user.id,
+        "user_email": user.email,
+        "realm_id": user.realm_id,
         "status": status,
         "time": datetime_to_timestamp(log_time),
         "client": client.name,
+        "realm_presence_disabled": realm.presence_disabled,
+        "realm_host": realm.host,
     }
 
+    # Queue data to eventually be processed by do_update_user_presence.
     queue_json_publish("user_presence", event)
 
     if new_user_input:
-        update_user_activity_interval(user_profile, log_time)
+        update_user_activity_interval(user, log_time)
 
 
 def do_update_user_status(

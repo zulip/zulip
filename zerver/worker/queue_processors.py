@@ -560,12 +560,30 @@ class UserActivityIntervalWorker(QueueProcessingWorker):
 @assign_queue("user_presence")
 class UserPresenceWorker(QueueProcessingWorker):
     def consume(self, event: Mapping[str, Any]) -> None:
+        # Consume events that were written by update_user_presence.
+        if "realm_id" not in event:
+            # We have a legacy queue entry that we
+            # can just silently drop on the floor.
+            return
         logging.debug("Received presence event: %s", event)
-        user_profile = get_user_profile_by_id(event["user_profile_id"])
+        user_id = event["user_id"]
+        user_email = event["user_email"]
+        realm_id = event["realm_id"]
         client = get_client(event["client"])
         log_time = timestamp_to_datetime(event["time"])
         status = event["status"]
-        do_update_user_presence(user_profile, client, log_time, status)
+        realm_presence_disabled = event["realm_presence_disabled"]
+        realm_host = event["realm_host"]
+        do_update_user_presence(
+            user_id=user_id,
+            user_email=user_email,
+            realm_id=realm_id,
+            client=client,
+            log_time=log_time,
+            status=status,
+            realm_presence_disabled=realm_presence_disabled,
+            realm_host=realm_host,
+        )
 
 
 @assign_queue("missedmessage_emails")

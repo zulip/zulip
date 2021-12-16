@@ -1157,12 +1157,16 @@ class TestUserPresenceUpdatesDisabled(ZulipTestCase):
     def test_presence_events_diabled_on_larger_realm(self) -> None:
         # First check that normally the mocked function gets called.
         events: List[Mapping[str, Any]] = []
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
         with self.tornado_redirected_to_list(events, expected_num_events=1):
             do_update_user_presence(
-                self.example_user("cordelia"),
-                get_client("website"),
-                timezone_now(),
-                UserPresence.ACTIVE,
+                user_id=cordelia.id,
+                user_email=cordelia.email,
+                realm_id=cordelia.realm_id,
+                client=get_client("website"),
+                log_time=timezone_now(),
+                status=UserPresence.ACTIVE,
             )
 
         # Now check that if the realm has more than the USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS
@@ -1170,8 +1174,10 @@ class TestUserPresenceUpdatesDisabled(ZulipTestCase):
         with self.tornado_redirected_to_list(events, expected_num_events=0):
             with self.settings(USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS=1):
                 do_update_user_presence(
-                    self.example_user("hamlet"),
-                    get_client("website"),
-                    timezone_now(),
-                    UserPresence.ACTIVE,
+                    user_id=hamlet.id,
+                    user_email=hamlet.email,
+                    realm_id=hamlet.realm_id,
+                    client=get_client("website"),
+                    log_time=timezone_now(),
+                    status=UserPresence.ACTIVE,
                 )

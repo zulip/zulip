@@ -712,7 +712,14 @@ class RealmImportExportTest(ExportFile):
 
         client = get_client("website")
 
-        do_update_user_presence(sample_user, client, timezone_now(), UserPresence.ACTIVE)
+        do_update_user_presence(
+            user_id=sample_user.id,
+            user_email=sample_user.email,
+            realm_id=sample_user.realm_id,
+            client=client,
+            log_time=timezone_now(),
+            status=UserPresence.ACTIVE,
+        )
 
         # send Cordelia to the islands
         do_update_user_status(
@@ -1570,8 +1577,22 @@ class SingleUserExportTest(ExportFile):
             self.assertEqual(rec["user_profile"], cordelia.id)
             self.assertEqual(make_datetime(rec["start"]), now)
 
-        do_update_user_presence(cordelia, client, now, UserPresence.ACTIVE)
-        do_update_user_presence(othello, client, now, UserPresence.IDLE)
+        do_update_user_presence(
+            user_id=cordelia.id,
+            user_email=cordelia.email,
+            realm_id=cordelia.realm_id,
+            client=client,
+            log_time=now,
+            status=UserPresence.ACTIVE,
+        )
+        do_update_user_presence(
+            user_id=othello.id,
+            user_email=othello.email,
+            realm_id=othello.realm_id,
+            client=client,
+            log_time=now,
+            status=UserPresence.IDLE,
+        )
 
         @checker
         def zerver_userpresence(records: List[Record]) -> None:
