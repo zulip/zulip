@@ -2857,6 +2857,8 @@ def check_send_message(
 
     addressee = Addressee.legacy_build(sender, message_type_name, message_to, topic_name)
     try:
+        if len(message_to) > 50:
+            raise AssertionError("Private Message Groups must contain 50 participants or less.")
         message = check_message(
             sender,
             client,
