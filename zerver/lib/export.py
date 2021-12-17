@@ -1874,14 +1874,15 @@ def do_export_realm(
 
     do_write_stats_file_for_realm_export(output_dir)
 
-    # We need to change back to the current working directory after writing
-    # the tarball to the output directory, otherwise the state is compromised
-    # for our unit tests.
-    reset_dir = os.getcwd()
     tarball_path = output_dir.rstrip("/") + ".tar.gz"
-    os.chdir(os.path.dirname(output_dir))
-    subprocess.check_call(["tar", "-czf", tarball_path, os.path.basename(output_dir)])
-    os.chdir(reset_dir)
+    subprocess.check_call(
+        [
+            "tar",
+            f"-czf{tarball_path}",
+            f"-C{os.path.dirname(output_dir)}",
+            os.path.basename(output_dir),
+        ]
+    )
     return tarball_path
 
 
