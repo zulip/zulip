@@ -182,7 +182,9 @@ def api_reviewboard_webhook(
     user_profile: UserProfile,
     payload: Dict[str, Sequence[Dict[str, Any]]] = REQ(argument_type="body"),
 ) -> HttpResponse:
-    event_type = validate_extract_webhook_http_header(request, "X_REVIEWBOARD_EVENT", "ReviewBoard")
+    event_type = validate_extract_webhook_http_header(
+        request, "X_REVIEWBOARD_EVENT", "Review Board"
+    )
     assert event_type is not None
 
     body_function = RB_MESSAGE_FUNCTIONS.get(event_type)

@@ -431,7 +431,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration("pivotal", ["project-management"], display_name="Pivotal Tracker"),
     WebhookIntegration("radarr", ["entertainment"], display_name="Radarr"),
     WebhookIntegration("raygun", ["monitoring"], display_name="Raygun"),
-    WebhookIntegration("reviewboard", ["version-control"], display_name="ReviewBoard"),
+    WebhookIntegration("reviewboard", ["version-control"], display_name="Review Board"),
     WebhookIntegration("semaphore", ["continuous-integration", "deployment"]),
     WebhookIntegration("sentry", ["monitoring"]),
     WebhookIntegration(
