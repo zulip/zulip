@@ -156,10 +156,11 @@ any existing documentation that might be relevant to the new feature.
 For detailed information on the kinds of documentation Zulip has, see
 [Documentation](../documentation/overview.md).
 
-**End user documentation:** You will likely need to at least update,
-extend and link to `/help` articles that are related to your new
-feature. See [User documentation](../documentation/user.md) for more
-detailed information about writing and editing feature `/help` articles.
+**Help center documentation:** You will likely need to at least update,
+extend and link to `/help/` articles that are related to your new
+feature. [Writing help center articles](../documentation/user.md)
+provides more detailed information about writing and editing feature
+`/help/` articles.
 
 **API documentation:** A new feature will probably impact the REST API
 documentation as well, which will mean updating `zerver/openapi/zulip.yaml`
@@ -686,15 +687,15 @@ important to make sure that your new feature is well documented.
 This example feature adds new functionality that requires messages to
 have topics if the setting is enabled. A recommended way to document
 this feature would be to update and/or augment Zulip's existing
-[end user documentation (Help Center)](https://zulip.com/help/)
-to reflect your changes and additions.
+[help center documentation](https://zulip.com/help/) to reflect your
+changes and additions.
 
 At the very least, this will involve modifying (or adding) a Markdown
 file documenting the feature to `templates/zerver/help/` in the main
 Zulip server repository, where the source for Zulip's end user
 documentation is stored. Details about writing, editing and testing
 these Markdown files can be found in:
-[User documentation](../documentation/user.md).
+[Writing help center articles](../documentation/user.md).
 
 Also, new features will often impact Zulip's REST API documentation,
 which is found in `zerver/openapi/zulip.yaml`. You may have noticed
