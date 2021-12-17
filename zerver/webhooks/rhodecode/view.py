@@ -1,18 +1,14 @@
 # Webhooks for external integrations.
-from typing import Any, Dict, Sequence, Optional
+from typing import Any, Dict, Optional, Sequence
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import webhook_view
+from zerver.decorator import log_exception_to_webhook_logger, webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.git import get_push_commits_event_message
 from zerver.models import UserProfile
-
-from zerver.lib.webhooks.git import (
-    TOPIC_WITH_BRANCH_TEMPLATE,
-    get_push_commits_event_message,
-)
 
 
 class Helper:
@@ -30,6 +26,7 @@ class Helper:
             summary=summary,
             unsupported_event=True,
         )
+
 
 def get_repository_name(payload: Dict[str, Any]) -> str:
     return payload["event"]["repo"]["repo_name"]
@@ -58,9 +55,7 @@ def get_push_commits_body(helper: Helper) -> str:
     )
 
 
-EVENT_FUNCTION_MAPPER = {
-    "push_commits": get_push_commits_body
-}
+EVENT_FUNCTION_MAPPER = {"push_commits": get_push_commits_body}
 
 
 ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
@@ -86,10 +81,7 @@ def api_rhodecode_webhook(
     )
     body = body_function(helper)
 
-    subject = TOPIC_WITH_BRANCH_TEMPLATE.format(
-        repo=get_repository_name(payload),
-        branch=payload["event"]["push"]["branches"][0]["name"]
-    )
+    subject = get_repository_name(payload)
 
     check_send_webhook_message(request, user_profile, subject, body, event)
 
