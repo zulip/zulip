@@ -32,9 +32,9 @@ Contributing to improve language libraries is appreciated, as is
 writing new ones.  If you actively maintain a Zulip language binding
 and would like it to be listed here (or would like to collaborate with
 us in making it an official library), post in [this
-topic][integrations-thread] on
-[chat.zulip.org](/developer-community/) or submit a pull request
-[updating this
+topic][integrations-thread] in
+[the Zulip development community](https://zulip.com/development-community/)
+or submit a pull request [updating this
 page](https://zulip.readthedocs.io/en/latest/documentation/api.html).
 
 [integrations-thread]: https://chat.zulip.org/#narrow/stream/127-integrations/topic/API.20client.20libraries/

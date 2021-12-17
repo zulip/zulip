@@ -48,11 +48,15 @@ page can be easily identified in it's respective JavaScript file. -->
                 {% endif %}
                 {% if no_auth_enabled %}
                     <div class="alert">
-                        <p>No authentication backends are enabled on this
-                        server yet, so it is impossible to log in!</p>
+                        <p>
+                            No authentication backends are enabled on this
+                            server yet, so it is impossible to log in!
+                        </p>
 
-                        <p>See the <a href="https://zulip.readthedocs.io/en/latest/production/install.html#step-3-configure-zulip">Zulip
-                        authentication documentation</a> to learn how to configure authentication backends.</p>
+                        <p>
+                            See the <a href="https://zulip.readthedocs.io/en/latest/production/install.html#step-3-configure-zulip">
+                            Zulip authentication documentation</a> to learn how to configure authentication backends.
+                        </p>
                     </div>
                 {% else %}
                     {% if password_auth_enabled %}
@@ -131,7 +135,7 @@ page can be easily identified in it's respective JavaScript file. -->
                         <form class="social_login_form form-inline" action="{{ backend.login_url }}" method="get">
                             <input type="hidden" name="next" value="{{ next }}" />
                             <button id="login_{{ backend.button_id_suffix }}" class="login-social-button"
-                              {% if backend.display_icon %} style="background-image:url({{ backend.display_icon }})"  {% endif %}>                                {{ _('Log in with %(identity_provider)s', identity_provider=backend.display_name) }}
+                              {% if backend.display_icon %} style="background-image:url({{ backend.display_icon }})"  {% endif %}> {{ _('Log in with %(identity_provider)s', identity_provider=backend.display_name) }}
                             </button>
                         </form>
                     </div>

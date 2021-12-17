@@ -52,6 +52,10 @@ Zulip's Puppet configuration will change the ownership of
 `/var/log/nginx` so that the `zulip` user can access it. Depending on
 your configuration, this may or may not cause problems.
 
+Depending on how you have configured `nginx` for your other services,
+you may need to add a `server_name` for the Zulip `server` block in
+the `nginx` configuration.
+
 ### Puppet
 
 If you have a Puppet server running on your server, you will get an
@@ -98,5 +102,5 @@ We don't provide a convenient way to uninstall a Zulip server.
 
 Most of the limitations are things we'd accept a pull request to fix;
 we welcome contributions to shrink this list of gotchas. Chat with us
-in the [chat.zulip.org community](https://zulip.com/developer-community/) if you're
+in the [chat.zulip.org community](https://zulip.com/development-community/) if you're
 interested in helping!

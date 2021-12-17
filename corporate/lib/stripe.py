@@ -32,6 +32,7 @@ from zerver.lib.send_email import FromAddress, send_email_to_billing_admins_and_
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Realm, RealmAuditLog, UserProfile, get_system_bot
+from zilencer.models import RemoteZulipServer, RemoteZulipServerAuditLog
 from zproject.config import get_secret
 
 stripe.api_key = get_secret("stripe_secret_key")
@@ -454,8 +455,11 @@ def make_end_of_cycle_updates_if_needed(
                 licenses_at_next_renewal=licenses_at_next_renewal,
             )
 
+            realm = new_plan.customer.realm
+            assert realm is not None
+
             RealmAuditLog.objects.create(
-                realm=new_plan.customer.realm,
+                realm=realm,
                 event_time=event_time,
                 event_type=RealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN,
                 extra_data=orjson.dumps(
@@ -616,6 +620,19 @@ def ensure_realm_does_not_have_active_plan(realm: Customer) -> None:
         raise UpgradeWithExistingPlanError()
 
 
+@transaction.atomic
+def do_change_remote_server_plan_type(remote_server: RemoteZulipServer, plan_type: int) -> None:
+    old_value = remote_server.plan_type
+    remote_server.plan_type = plan_type
+    remote_server.save(update_fields=["plan_type"])
+    RemoteZulipServerAuditLog.objects.create(
+        event_type=RealmAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED,
+        server=remote_server,
+        event_time=timezone_now(),
+        extra_data={"old_value": old_value, "new_value": plan_type},
+    )
+
+
 # Only used for cloud signups
 @catch_stripe_errors
 def process_initial_upgrade(
@@ -629,6 +646,7 @@ def process_initial_upgrade(
     realm = user.realm
     customer = update_or_create_stripe_customer(user)
     assert customer.stripe_customer_id is not None  # for mypy
+    assert customer.realm is not None
     ensure_realm_does_not_have_active_plan(customer.realm)
     (
         billing_cycle_anchor,
@@ -710,9 +728,9 @@ def process_initial_upgrade(
         )
         stripe.Invoice.finalize_invoice(stripe_invoice)
 
-    from zerver.lib.actions import do_change_plan_type
+    from zerver.lib.actions import do_change_realm_plan_type
 
-    do_change_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=user)
+    do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=user)
 
 
 def update_license_ledger_for_manual_plan(
@@ -722,12 +740,14 @@ def update_license_ledger_for_manual_plan(
     licenses_at_next_renewal: Optional[int] = None,
 ) -> None:
     if licenses is not None:
+        assert plan.customer.realm is not None
         assert get_latest_seat_count(plan.customer.realm) <= licenses
         assert licenses > plan.licenses()
         LicenseLedger.objects.create(
             plan=plan, event_time=event_time, licenses=licenses, licenses_at_next_renewal=licenses
         )
     elif licenses_at_next_renewal is not None:
+        assert plan.customer.realm is not None
         assert get_latest_seat_count(plan.customer.realm) <= licenses_at_next_renewal
         LicenseLedger.objects.create(
             plan=plan,
@@ -779,6 +799,7 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
     if plan.invoicing_status == CustomerPlan.STARTED:
         raise NotImplementedError("Plan with invoicing_status==STARTED needs manual resolution.")
     if not plan.customer.stripe_customer_id:
+        assert plan.customer.realm is not None
         raise BillingError(
             f"Realm {plan.customer.realm.string_id} has a paid plan without a Stripe customer."
         )
@@ -930,9 +951,9 @@ def update_sponsorship_status(
 
 
 def approve_sponsorship(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
-    from zerver.lib.actions import do_change_plan_type, internal_send_private_message
+    from zerver.lib.actions import do_change_realm_plan_type, internal_send_private_message
 
-    do_change_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=acting_user)
+    do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=acting_user)
     customer = get_customer_by_realm(realm)
     if customer is not None and customer.sponsorship_pending:
         customer.sponsorship_pending = False
@@ -979,9 +1000,10 @@ def do_change_plan_status(plan: CustomerPlan, status: int) -> None:
 
 
 def process_downgrade(plan: CustomerPlan) -> None:
-    from zerver.lib.actions import do_change_plan_type
+    from zerver.lib.actions import do_change_realm_plan_type
 
-    do_change_plan_type(plan.customer.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+    assert plan.customer.realm is not None
+    do_change_realm_plan_type(plan.customer.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
     plan.status = CustomerPlan.ENDED
     plan.save(update_fields=["status"])
 

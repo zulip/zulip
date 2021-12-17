@@ -59,6 +59,10 @@ export function maybe_disable_widgets() {
         .prop("disabled", true);
 
     $(".organization-box [data-name='organization-settings']")
+        .find(".dropdown_list_reset_button")
+        .hide();
+
+    $(".organization-box [data-name='organization-settings']")
         .find(".control-label-disabled")
         .addClass("enabled");
 
@@ -125,6 +129,12 @@ function get_property_value(property_name, for_realm_default_settings) {
         // realm_user_default_settings are stored in a separate object.
         if (property_name === "twenty_four_hour_time") {
             return JSON.stringify(realm_user_settings_defaults.twenty_four_hour_time);
+        }
+        if (
+            property_name === "email_notifications_batching_period_seconds" ||
+            property_name === "email_notification_batching_period_edit_minutes"
+        ) {
+            return realm_user_settings_defaults.email_notifications_batching_period_seconds;
         }
         return realm_user_settings_defaults[property_name];
     }
@@ -218,6 +228,7 @@ function get_subsection_property_elements(element) {
 const simple_dropdown_properties = [
     "realm_create_private_stream_policy",
     "realm_create_public_stream_policy",
+    "realm_create_web_public_stream_policy",
     "realm_invite_to_stream_policy",
     "realm_user_group_edit_policy",
     "realm_private_message_policy",
@@ -232,7 +243,7 @@ function set_property_dropdown_value(property_name) {
     $(`#id_${CSS.escape(property_name)}`).val(get_property_value(property_name));
 }
 
-function change_element_block_display_property(elem_id, show_element) {
+export function change_element_block_display_property(elem_id, show_element) {
     const elem = $(`#${CSS.escape(elem_id)}`);
     if (show_element) {
         elem.parent().show();
@@ -349,6 +360,13 @@ function set_digest_emails_weekday_visibility() {
     );
 }
 
+function set_create_web_public_stream_dropdown_visibility() {
+    change_element_block_display_property(
+        "id_realm_create_web_public_stream_policy",
+        page_params.server_web_public_streams_enabled && page_params.realm_enable_spectator_access,
+    );
+}
+
 export function populate_realm_domains(realm_domains) {
     if (!meta.loaded) {
         return;
@@ -445,6 +463,9 @@ function update_dependent_subsettings(property_name) {
             );
             set_digest_emails_weekday_visibility();
             break;
+        case "realm_enable_spectator_access":
+            set_create_web_public_stream_dropdown_visibility();
+            break;
     }
 }
 
@@ -476,6 +497,13 @@ function discard_property_element_changes(elem, for_realm_default_settings) {
             elem.closest(".org-subsection-parent")
                 .find(`.setting_emojiset_choice[value='${CSS.escape(property_value)}'`)
                 .prop("checked", true);
+            break;
+        case "email_notifications_batching_period_seconds":
+        case "email_notification_batching_period_edit_minutes":
+            settings_notifications.set_notification_batching_ui(
+                $("#realm-user-default-settings"),
+                realm_user_settings_defaults.email_notifications_batching_period_seconds,
+            );
             break;
         default:
             if (property_value !== undefined) {
@@ -669,6 +697,18 @@ function get_auth_method_table_data() {
     return new_auth_methods;
 }
 
+function get_email_notification_batching_setting_element_value() {
+    const select_elem_val = $("#realm-user-default-settings")
+        .find(".setting_email_notifications_batching_period_seconds")
+        .val();
+    if (select_elem_val !== "custom_period") {
+        return Number.parseInt(select_elem_val, 10);
+    }
+    const edit_elem_val = $("#realm_email_notification_batching_period_edit_minutes").val();
+    const setting_value_in_minutes = Number.parseInt(edit_elem_val, 10);
+    return setting_value_in_minutes * 60;
+}
+
 function check_property_changed(elem, for_realm_default_settings) {
     elem = $(elem);
     const property_name = extract_property_name(elem, for_realm_default_settings);
@@ -691,6 +731,11 @@ function check_property_changed(elem, for_realm_default_settings) {
         case "realm_default_code_block_language":
             changed_val = default_code_language_widget.value();
             break;
+        case "email_notifications_batching_period_seconds":
+        case "email_notification_batching_period_edit_minutes": {
+            changed_val = get_email_notification_batching_setting_element_value();
+            break;
+        }
         default:
             if (current_val !== undefined) {
                 changed_val = get_input_element_value(elem, typeof current_val);
@@ -773,6 +818,14 @@ export function register_save_discard_widget_handlers(
             // within a subsection whose changes should not affect the
             // visibility of the discard button
             return false;
+        }
+
+        if ($(e.target).hasClass("setting_email_notifications_batching_period_seconds")) {
+            const show_elem = $(e.target).val() === "custom_period";
+            change_element_block_display_property(
+                "realm_email_notification_batching_period_edit_minutes",
+                show_elem,
+            );
         }
 
         const subsection = $(e.target).closest(".org-subsection-parent");
@@ -916,6 +969,14 @@ export function register_save_discard_widget_handlers(
         for (let input_elem of properties_elements) {
             input_elem = $(input_elem);
             if (check_property_changed(input_elem, for_realm_default_settings)) {
+                if (
+                    input_elem.hasClass("email_notification_batching_period_edit_minutes") ||
+                    input_elem.hasClass("setting_email_notifications_batching_period_seconds")
+                ) {
+                    const setting_value = get_email_notification_batching_setting_element_value();
+                    data.email_notifications_batching_period_seconds = setting_value;
+                    continue;
+                }
                 const input_value = get_input_element_value(input_elem);
                 if (input_value !== undefined) {
                     let property_name;
@@ -988,6 +1049,7 @@ export function build_page() {
     set_org_join_restrictions_dropdown();
     set_message_content_in_email_notifications_visiblity();
     set_digest_emails_weekday_visibility();
+    set_create_web_public_stream_dropdown_visibility();
 
     register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
 

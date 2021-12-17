@@ -50,6 +50,7 @@ from zerver.lib.exceptions import (
     OrganizationOwnerRequired,
     ResourceNotFoundError,
 )
+from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.retention import parse_message_retention_days
@@ -272,10 +273,12 @@ def update_stream_backend(
         if not user_profile.is_realm_owner:
             raise OrganizationOwnerRequired()
         user_profile.realm.ensure_not_on_limited_plan()
-        message_retention_days_value = parse_message_retention_days(
+        new_message_retention_days_value = parse_message_retention_days(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
-        do_change_stream_message_retention_days(stream, message_retention_days_value)
+        do_change_stream_message_retention_days(
+            stream, user_profile, new_message_retention_days_value
+        )
 
     if description is not None:
         if "\n" in description:
@@ -314,8 +317,8 @@ def update_stream_backend(
         # Enforce restrictions on creating web-public streams.
         if not user_profile.realm.web_public_streams_enabled():
             raise JsonableError(_("Web public streams are not enabled."))
-        if not user_profile.is_realm_owner:
-            raise OrganizationOwnerRequired()
+        if not user_profile.can_create_web_public_streams():
+            raise JsonableError(_("Insufficient permission"))
         # Forbid parameter combinations that are inconsistent
         if is_private or history_public_to_subscribers is False:
             raise JsonableError(_("Invalid parameters"))
@@ -647,7 +650,7 @@ def send_messages_for_new_subscribers(
                 topic = _("new streams")
 
             content = content.format(
-                user_name=f"@_**{user_profile.full_name}|{user_profile.id}**",
+                user_name=silent_mention_syntax_for_user(user_profile),
                 stream_str=", ".join(f"#**{s.name}**" for s in created_streams),
             )
 
@@ -672,7 +675,7 @@ def send_messages_for_new_subscribers(
                         stream=stream,
                         topic=Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
                         content=_("Stream created by {user_name}.").format(
-                            user_name=f"@_**{user_profile.full_name}|{user_profile.id}**",
+                            user_name=silent_mention_syntax_for_user(user_profile),
                         ),
                     ),
                 )
@@ -877,7 +880,6 @@ def update_subscription_properties_backend(
         "pin_to_top": check_bool,
         "wildcard_mentions_notify": check_bool,
     }
-    response_data = []
 
     for change in subscription_data:
         stream_id = change["stream_id"]
@@ -900,6 +902,16 @@ def update_subscription_properties_backend(
             user_profile, sub, stream, property, value, acting_user=user_profile
         )
 
-        response_data.append({"stream_id": stream_id, "property": property, "value": value})
+    # TODO: Do this more generally, see update_realm_user_settings_defaults.realm.py
+    from zerver.lib.request import RequestNotes
 
-    return json_success({"subscription_data": response_data})
+    request_notes = RequestNotes.get_notes(request)
+    for req_var in request.POST:
+        if req_var not in request_notes.processed_parameters:
+            request_notes.ignored_parameters.add(req_var)
+
+    result: Dict[str, Any] = {}
+    if len(request_notes.ignored_parameters) > 0:
+        result["ignored_parameters_unsupported"] = list(request_notes.ignored_parameters)
+
+    return json_success(result)

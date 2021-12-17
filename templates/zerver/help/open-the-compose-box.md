@@ -37,3 +37,4 @@ can close the compose box using `Esc`, or up/down arrow if the box is empty.
 * [Replying to messages](/help/replying-to-messages)
 * [Messaging tips & tricks](/help/messaging-tips)
 * [Keyboard shortcuts](/help/keyboard-shortcuts)
+* [Resize the compose box](/help/resize-the-compose-box)

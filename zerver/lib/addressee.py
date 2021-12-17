@@ -1,3 +1,4 @@
+import unicodedata
 from typing import Iterable, List, Optional, Sequence, Union, cast
 
 from django.utils.translation import gettext as _
@@ -40,6 +41,10 @@ def validate_topic(topic: str) -> str:
     if topic == "":
         raise JsonableError(_("Topic can't be empty"))
 
+    for character in topic:
+        unicodeCategory = unicodedata.category(character)
+        if unicodeCategory in ["Cc", "Cs", "Cn"]:
+            raise JsonableError(_("Invalid characters in topic!"))
     return topic
 
 

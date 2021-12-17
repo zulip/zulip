@@ -126,7 +126,7 @@ class RegistrationForm(forms.Form):
         del kwargs["realm_creation"]
 
         super().__init__(*args, **kwargs)
-        if settings.TERMS_OF_SERVICE:
+        if settings.TERMS_OF_SERVICE_VERSION is not None:
             self.fields["terms"] = forms.BooleanField(required=True)
         self.fields["realm_name"] = forms.CharField(
             max_length=Realm.MAX_REALM_NAME_LENGTH, required=self.realm_creation

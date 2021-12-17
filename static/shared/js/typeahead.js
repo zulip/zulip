@@ -87,7 +87,7 @@ function clean_query(query) {
     // contenteditable widget such as the composebox PM section, the
     // space at the end was a `no break-space (U+00A0)` instead of
     // `space (U+0020)`, which lead to no matches in those cases.
-    query = query.replace(/\u00A0/g, String.fromCharCode(32));
+    query = query.replace(/\u00A0/g, " ");
 
     return query;
 }

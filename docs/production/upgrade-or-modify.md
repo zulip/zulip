@@ -188,7 +188,7 @@ If you need help and don't have a support contract, you can visit
 [#production
 help](https://chat.zulip.org/#narrow/stream/31-production-help) in the
 [Zulip development community
-server](https://zulip.com/developer-community/) for best-effort help.
+server](https://zulip.com/development-community/) for best-effort help.
 Please include the relevant error output from the above logs in a
 [Markdown code
 block](https://zulip.com/help/code-blocks)
@@ -589,8 +589,8 @@ If you do modify Zulip and then report an issue you see in your
 modified version of Zulip, please be responsible about communicating
 that fact:
 
-- Ideally, you'd reproduce the issue in an unmodified version (e.g. on
-  [chat.zulip.org](https://zulip.com/developer-community/) or
+- Ideally, you'd reproduce the issue in an unmodified version (e.g. in
+  [the Zulip development community](https://zulip.com/development-community/) or on
   [zulip.com](https://zulip.com)).
 - Where that is difficult or you think it's very unlikely your changes
   are related to the issue, just mention your changes in the issue report.

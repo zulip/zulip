@@ -9,10 +9,6 @@ from django.utils.translation import gettext_lazy
 from zerver.models import UserHotspot, UserProfile
 
 INTRO_HOTSPOTS: Dict[str, Dict[str, Promise]] = {
-    "intro_reply": {
-        "title": gettext_lazy("Reply to a message"),
-        "description": gettext_lazy("Click anywhere on a message to reply."),
-    },
     "intro_streams": {
         "title": gettext_lazy("Catch up on a stream"),
         "description": gettext_lazy(

@@ -314,6 +314,7 @@ class Command(BaseCommand):
                 invite_required=False,
                 plan_type=Realm.PLAN_TYPE_SELF_HOSTED,
                 org_type=Realm.ORG_TYPES["business"]["id"],
+                enable_spectator_access=True,
             )
             RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
             assert zulip_realm.notifications_stream is not None
@@ -464,7 +465,7 @@ class Command(BaseCommand):
                 email = fname.lower() + "@zulip.com"
                 names.append((full_name, email))
 
-            create_users(zulip_realm, names, tos_version=settings.TOS_VERSION)
+            create_users(zulip_realm, names, tos_version=settings.TERMS_OF_SERVICE_VERSION)
 
             iago = get_user_by_delivery_email("iago@zulip.com", zulip_realm)
             do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
@@ -786,13 +787,17 @@ class Command(BaseCommand):
                     ("Athena Consulting Exchange User (MIT)", "starnine@mit.edu"),
                     ("Esp Classroom (MIT)", "espuser@mit.edu"),
                 ]
-                create_users(mit_realm, testsuite_mit_users, tos_version=settings.TOS_VERSION)
+                create_users(
+                    mit_realm, testsuite_mit_users, tos_version=settings.TERMS_OF_SERVICE_VERSION
+                )
 
                 testsuite_lear_users = [
                     ("King Lear", "king@lear.org"),
                     ("Cordelia, Lear's daughter", "cordelia@zulip.com"),
                 ]
-                create_users(lear_realm, testsuite_lear_users, tos_version=settings.TOS_VERSION)
+                create_users(
+                    lear_realm, testsuite_lear_users, tos_version=settings.TERMS_OF_SERVICE_VERSION
+                )
 
             if not options["test_suite"]:
                 # To keep the messages.json fixtures file for the test

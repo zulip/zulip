@@ -827,6 +827,11 @@ enabling `zproject.backends.GenericOpenIdConnectBackend` in
 `AUTHENTICATION_BACKENDS` and following the steps outlined in the
 comment documentation in `/etc/zulip/settings.py`.
 
+If your server was originally installed from a release in the
+`4.x` series or earlier, you will need to update your `settings.py`
+file. You can find instructions on how to do that in a
+[separate doc][update-inline-comments].
+
 Note that `SOCIAL_AUTH_OIDC_ENABLED_IDPS` only supports a single IdP currently.
 
 The Return URL to authorize with the provider is
@@ -845,7 +850,7 @@ prefills that value in the new account creation form, but gives the
 user the opportunity to edit it before submitting. When `True`, Zulip
 assumes the name is correct, and new users will not be presented with
 a registration form unless they need to accept Terms of Service for
-the server (i.e. `TERMS_OF_SERVICE=True`).
+the server (i.e. `TERMS_OF_SERVICE_VERSION` is set).
 
 ## Adding more authentication backends
 

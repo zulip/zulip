@@ -4,6 +4,7 @@
   "amount_received": 4800,
   "application": null,
   "application_fee_amount": null,
+  "automatic_payment_methods": null,
   "canceled_at": null,
   "cancellation_reason": null,
   "capture_method": "automatic",
@@ -42,7 +43,7 @@
         "failure_code": null,
         "failure_message": null,
         "fraud_details": {},
-        "id": "ch_NORMALIZED00000000000003",
+        "id": "ch_NORMALIZED00000000000001",
         "invoice": null,
         "livemode": false,
         "metadata": {
@@ -51,10 +52,12 @@
           "license_management": "automatic",
           "licenses": "6",
           "price_per_license": "800",
+          "realm_id": "1",
           "realm_str": "zulip",
           "seat_count": "6",
           "type": "upgrade",
-          "user_email": "hamlet@zulip.com"
+          "user_email": "hamlet@zulip.com",
+          "user_id": "10"
         },
         "object": "charge",
         "on_behalf_of": null,
@@ -68,8 +71,8 @@
           "type": "authorized"
         },
         "paid": true,
-        "payment_intent": "pi_NORMALIZED00000000000002",
-        "payment_method": "pm_1JTq97A4KHR4JzRvSZnWE2hG",
+        "payment_intent": "pi_NORMALIZED00000000000001",
+        "payment_method": "pm_1K2OZtHSaWXyvFpK02aHTNcT",
         "payment_method_details": {
           "card": {
             "brand": "visa",
@@ -93,14 +96,14 @@
         },
         "receipt_email": "hamlet@zulip.com",
         "receipt_number": null,
-        "receipt_url": "https://pay.stripe.com/receipts/acct_NORMALIZED000001/ch_NORMALIZED00000000000003/rcpt_NORMALIZED000000000000000000001",
+        "receipt_url": "https://pay.stripe.com/receipts/acct_NORMALIZED000001/ch_NORMALIZED00000000000001/rcpt_NORMALIZED000000000000000000001",
         "refunded": false,
         "refunds": {
           "data": [],
           "has_more": false,
           "object": "list",
           "total_count": 0,
-          "url": "/v1/charges/ch_NORMALIZED00000000000003/refunds"
+          "url": "/v1/charges/ch_NORMALIZED00000000000001/refunds"
         },
         "review": null,
         "shipping": null,
@@ -116,15 +119,15 @@
     "has_more": false,
     "object": "list",
     "total_count": 1,
-    "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000002"
+    "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
   },
-  "client_secret": "pi_NORMALIZED00000000000002_secret_eAYqbQky9PWR3EM4jyo2zhHsu",
+  "client_secret": "pi_NORMALIZED00000000000001_secret_XFh1O0803XKyaTfGwKbRrpwn2",
   "confirmation_method": "automatic",
   "created": 1000000000,
   "currency": "usd",
   "customer": "cus_NORMALIZED0001",
   "description": "Upgrade to Zulip Standard, $8.0 x 6",
-  "id": "pi_NORMALIZED00000000000002",
+  "id": "pi_NORMALIZED00000000000001",
   "invoice": null,
   "last_payment_error": null,
   "livemode": false,
@@ -134,15 +137,17 @@
     "license_management": "automatic",
     "licenses": "6",
     "price_per_license": "800",
+    "realm_id": "1",
     "realm_str": "zulip",
     "seat_count": "6",
     "type": "upgrade",
-    "user_email": "hamlet@zulip.com"
+    "user_email": "hamlet@zulip.com",
+    "user_id": "10"
   },
   "next_action": null,
   "object": "payment_intent",
   "on_behalf_of": null,
-  "payment_method": "pm_1JTq97A4KHR4JzRvSZnWE2hG",
+  "payment_method": "pm_1K2OZtHSaWXyvFpK02aHTNcT",
   "payment_method_options": {
     "card": {
       "installments": null,

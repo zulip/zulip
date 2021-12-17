@@ -223,28 +223,14 @@ behind reverse proxies.
 
 [using-http]: ../production/deployment.html#configuring-zulip-to-allow-http
 
-## Using an outgoing HTTP proxy
+## Customizing the outgoing HTTP proxy
 
-Zulip supports routing all of its outgoing HTTP and HTTPS traffic
-through an HTTP `CONNECT` proxy, such as [Smokescreen][smokescreen];
-this includes outgoing webhooks, image and website previews, and
-mobile push notifications. You may wish to enable this feature to
-provide a consistent egress point, or enforce access control on URLs
-to prevent [SSRF][ssrf] against internal resources.
+To protect against [SSRF][ssrf], Zulip 4.8 and above default to
+routing all outgoing HTTP and HTTPS traffic through
+[Smokescreen][smokescreen], an HTTP `CONNECT` proxy; this includes
+outgoing webhooks, website previews, and mobile push notifications.
 
-To use Smokescreen:
-
-1. Add `, zulip::profile::smokescreen` to the list of `puppet_classes`
-   in `/etc/zulip/zulip.conf`. A typical value after this change is:
-
-   ```ini
-   puppet_classes = zulip::profile::standalone, zulip::profile::smokescreen
-   ```
-
-1. Optionally, configure the [smokescreen ACLs][smokescreen-acls]. By
-   default, Smokescreen denies access to all [non-public IP
-   addresses](https://en.wikipedia.org/wiki/Private_network), including
-   127.0.0.1.
+To use a custom outgoing proxy:
 
 1. Add the following block to `/etc/zulip/zulip.conf`, substituting in
    your proxy's hostname/IP and port:
@@ -255,19 +241,28 @@ To use Smokescreen:
    port = 4750
    ```
 
-1. If you intend to also make the Smokescreen install available to
-   other hosts, set `listen_address` in the same block. Note that you
-   must control access to the Smokescreen port if you do this, as
-   failing to do so opens a public HTTP proxy!
-
 1. As root, run
    `/home/zulip/deployments/current/scripts/zulip-puppet-apply`. This
-   will compile and install Smokescreen, reconfigure services to use
-   it, and restart Zulip.
+   will reconfigure and restart Zulip.
 
-If you would like to use an already-installed HTTP proxy, omit the
-first step, and adjust the IP address and port in the second step
-accordingly.
+If you have a deployment with multiple frontend servers, or wish to
+install Smokescreen on a separate host, you can apply the
+`zulip::profile::smokescreen` Puppet class on that host, and follow
+the above steps, setting the `[http_proxy]` block to point to that
+host.
+
+If you wish to disable the outgoing proxy entirely, follow the above
+steps, configuring an empty `host` value.
+
+Optionally, you can also configure the [Smokescreen ACL
+list][smokescreen-acls]. By default, Smokescreen denies access to all
+[non-public IP
+addresses](https://en.wikipedia.org/wiki/Private_network), including
+127.0.0.1, but allows traffic to all public Internet hosts.
+
+In Zulip 4.7 and older, to enable SSRF protection via Smokescreen, you
+will need to explicitly add the `zulip::profile::smokescreen` Puppet
+class, and configure the `[http_proxy]` block as above.
 
 [smokescreen]: https://github.com/stripe/smokescreen
 [smokescreen-acls]: https://github.com/stripe/smokescreen#acls
@@ -311,6 +306,33 @@ HTTP as follows:
 1. Finally, restart the Zulip server, using
    `/home/zulip/deployments/current/scripts/restart-server`.
 
+#### Configuring Zulip to trust proxies
+
+Before placing Zulip behind a reverse proxy, it needs to be configured to trust
+the client IP addresses that the proxy reports. This is important to have
+accurate IP addresses in server logs, as well as in notification emails which
+are sent to end users.
+
+1. Determine the IP addresses of all reverse proxies you are setting up, as seen
+   from the Zulip host. Depending on your network setup, these may not be the
+   same as the public IP addresses of the reverse proxies.
+
+1. Add the following block to `/etc/zulip/zulip.conf`.
+
+   ```ini
+   [loadbalancer]
+   # Use the IP addresses you determined above, separated by commas.
+   ips = 192.168.0.100
+   ```
+
+1. Reconfigure Zulip with these settings. As root, run
+   `/home/zulip/deployments/current/scripts/zulip-puppet-apply`. This will
+   adjust Zulip's `nginx` configuration file to accept the `X-Forwarded-For`
+   header when it is sent from one of the reverse proxy IPs.
+
+1. Finally, restart the Zulip server, using
+   `/home/zulip/deployments/current/scripts/restart-server`.
+
 ### nginx configuration
 
 For `nginx` configuration, there's two things you need to set up:
@@ -347,6 +369,10 @@ Don't forget to update `server_name`, `ssl_certificate`,
 `ssl_certificate_key` and `proxy_pass` with the appropriate values for
 your installation.
 
+On the Zulip side, you will need to add the `nginx` server IP as a trusted
+reverse proxy. Follow the instructions to [configure Zulip to trust
+proxies](#configuring-zulip-to-trust-proxies).
+
 [nginx-proxy-longpolling-config]: https://github.com/zulip/zulip/blob/main/puppet/zulip/files/nginx/zulip-include-common/proxy_longpolling
 [standalone.pp]: https://github.com/zulip/zulip/blob/main/puppet/zulip/manifests/profile/standalone.pp
 [zulipchat-puppet]: https://github.com/zulip/zulip/tree/main/puppet/zulip_ops/manifests
@@ -369,7 +395,11 @@ make the following changes in two configuration files.
 
 3. Restart your Zulip server with `/home/zulip/deployments/current/scripts/restart-server`.
 
-4. Create an Apache2 virtual host configuration file, similar to the
+4. Follow the instructions to [configure Zulip to trust
+   proxies](#configuring-zulip-to-trust-proxies). For this example, the reverse
+   proxy IP would be `127.0.0.1`.
+
+5. Create an Apache2 virtual host configuration file, similar to the
    following. Place it the appropriate path for your Apache2
    installation and enable it (E.g. if you use Debian or Ubuntu, then
    place it in `/etc/apache2/sites-available/zulip.example.com.conf`
@@ -427,7 +457,9 @@ backend zulip
 
 Since this configuration uses the `http` mode, you will also need to
 [configure Zulip to allow HTTP](#configuring-zulip-to-allow-http) as
-described above.
+described above. Additionally, you will need to [add the the HAProxy server IP
+address as a trusted load balancer](#configuring-zulip-to-trust-proxies)
+to have Zulip respect the addresses in `X-Forwarded-For` headers.
 
 ### Other proxies
 
@@ -436,7 +468,9 @@ things you need to be careful about when configuring it:
 
 1. Configure your reverse proxy (or proxies) to correctly maintain the
    `X-Forwarded-For` HTTP header, which is supposed to contain the series
-   of IP addresses the request was forwarded through. You can verify
+   of IP addresses the request was forwarded through. Additionally,
+   [configure Zulip to respect the addresses sent by your reverse
+   proxies](#configuring-zulip-to-trust-proxies). You can verify
    your work by looking at `/var/log/zulip/server.log` and checking it
    has the actual IP addresses of clients, not the IP address of the
    proxy server.
@@ -462,6 +496,40 @@ The key configuration options are, for the `/json/events` and
    unexpectedly (e.g. pointing to a DNS name that you haven't configured
    with multiple IPs for your Zulip machine; sometimes this happens with
    IPv6 configuration).
+
+## PostgreSQL warm standby
+
+Zulip's configuration allows for [warm standby database
+replicas][warm-standby] as a disaster recovery solution; see the
+linked PostgreSQL documentation for details on this type of
+deployment. Zulip's configuration leverages `wal-g`, our [database
+backup solution][wal-g], and thus requires that it be configured for
+the primary and all secondary warm standby replicas.
+
+The primary should have log-shipping enabled, with:
+
+```ini
+[postgresql]
+replication = yes
+```
+
+Warm spare replicas should have log-shipping enabled, and their
+primary replica and replication username configured:
+
+```ini
+[postgresql]
+replication = yes
+replication_user = replicator
+replication_primary = hostname-of-primary.example.com
+```
+
+The `postgres` user on the replica will need to be able to
+authenticate as the `replicator` user, which may require further
+configuration of `pg_hba.conf` and client certificates on the
+replica.
+
+[warm-standby]: https://www.postgresql.org/docs/current/warm-standby.html
+[wal-g]: ../production/export-and-import.html#backup-details
 
 ## System and deployment configuration
 
@@ -568,14 +636,6 @@ Override the default uwsgi backlog of 128 connections.
 Override the default `uwsgi` (Django) process count of 6 on hosts with
 more than 3.5GiB of RAM, 4 on hosts with less.
 
-### `[certbot]`
-
-#### `auto_renew`
-
-If set to the string `yes`, [Certbot will attempt to automatically
-renew its certificate](../production/ssl-certificates.html#certbot-recommended). Do
-no set by hand; use `scripts/setup/setup-certbot` to configure this.
-
 ### `[postfix]`
 
 #### `mailname`
@@ -602,9 +662,23 @@ setting](https://www.postgresql.org/docs/current/runtime-config-query.html#GUC-R
 
 #### `replication`
 
-Set to non-empty to enable replication to enable [streaming
-replication between PostgreSQL
-servers](../production/export-and-import.html#postgresql-streaming-replication).
+Set to non-empty to enable replication to enable [log shipping
+replication between PostgreSQL servers](#postgresql-warm-standby).
+This should be enabled on the primary, as well as any replicas, and
+further requires configuration of
+[wal-g](../production/export-and-import.html#backup-details).
+
+#### `replication_primary`
+
+On the [warm standby replicas](#postgresql-warm-standby), set to the
+hostname of the primary PostgreSQL server that streaming replication
+should be done from.
+
+#### `replication_user`
+
+On the [warm standby replicas](#postgresql-warm-standby), set to the
+username that the host should authenticate to the primary PostgreSQL
+server as, for streaming replication.
 
 #### `ssl_ca_file`
 
@@ -651,11 +725,13 @@ load balancers whose `X-Forwarded-For` should be respected.
 #### `host`
 
 The hostname or IP address of an [outgoing HTTP `CONNECT`
-proxy](#using-an-outgoing-http-proxy).
+proxy](#customizing-the-outgoing-http-proxy). Defaults to `localhost`
+if unspecified.
 
 #### `port`
 
 The TCP port of the HTTP `CONNECT` proxy on the host specified above.
+Defaults to `4750` if unspecified.
 
 #### `listen_address`
 

@@ -58,6 +58,7 @@ function same_recipient(a, b) {
     return util.same_recipient(a.msg, b.msg);
 }
 
+
 function message_resolved_or_not(message) {
     // Returns true if the topic was resolved (starts with resolved_topic_prefix)
     // but its content wasn't edited. Addresses a bug where resolved topics are
@@ -71,6 +72,26 @@ function message_resolved_or_not(message) {
         for (const msg of message.edit_history) {
             if (msg.prev_content) {
                 return false;
+            }            
+            // if the message doesn't have an edited history and
+            // it starts with the resolved topic prefix, the topic is just resolved, nothing more.
+            if (message.topic.startsWith(message_edit.RESOLVED_TOPIC_PREFIX)) {
+                resolved = true;
+            }
+        }
+    }
+    return resolved;
+}
+
+function message_was_only_moved(message) {
+    // Returns true if the message has had its stream/topic edited
+    // (i.e. the message was moved), but its content has not been
+    // edited.
+    let moved = false;
+    if (message.edit_history !== undefined) {
+        for (const msg of message.edit_history) {
+            if (msg.prev_content) {
+                return false;
             }
             // if the message doesn't have an edited history and
             // it starts with the resolved topic prefix, the topic is just resolved, nothing more.
@@ -80,6 +101,12 @@ function message_resolved_or_not(message) {
         }
     }
     return resolved;
+            if (util.get_edit_event_prev_topic(msg) || msg.prev_stream) {
+                moved = true;
+            }
+        }
+    }
+    return moved;
 }
 
 function render_group_display_date(group, message_container) {
@@ -173,7 +200,8 @@ function populate_group_from_message_container(group, message_container) {
     if (group.is_stream) {
         group.background_color = stream_data.get_color(message_container.msg.stream);
         group.color_class = color_class.get_css_class(group.background_color);
-        group.invite_only = stream_data.get_invite_only(message_container.msg.stream);
+        group.invite_only = stream_data.is_invite_only_by_stream_name(message_container.msg.stream);
+        group.is_web_public = stream_data.is_web_public(message_container.msg.stream_id);
         group.topic = message_container.msg.topic;
         group.match_topic = util.get_match_topic(message_container.msg);
         group.stream_url = message_container.stream_url;
@@ -261,6 +289,8 @@ export class MessageListView {
             message_container.edited_alongside_sender = include_sender && !status_message;
             message_container.edited_status_msg = include_sender && status_message;
             message_container.resolved = message_resolved_or_not(message_container.msg);
+            message_container.moved = message_was_only_moved(message_container.msg);
+          
         } else {
             delete message_container.last_edit_timestr;
             message_container.edited_in_left_col = false;

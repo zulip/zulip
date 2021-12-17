@@ -6,10 +6,10 @@ class zulip_ops::prometheus::node {
 
   $version = '1.1.2'
   zulip::sha256_tarball_to { 'node_exporter':
-    url     => "https://github.com/prometheus/node_exporter/releases/download/v${version}/node_exporter-${version}.linux-amd64.tar.gz",
+    url     => "https://github.com/prometheus/node_exporter/releases/download/v${version}/node_exporter-${version}.linux-${::architecture}.tar.gz",
     sha256  => '8c1f6a317457a658e0ae68ad710f6b4098db2cad10204649b51e3c043aa3e70d',
     install => {
-      "node_exporter-${version}.linux-amd64/node_exporter" => "/usr/local/bin/node_exporter-${version}",
+      "node_exporter-${version}.linux-${::architecture}/node_exporter" => "/usr/local/bin/node_exporter-${version}",
     },
   }
   file { '/usr/local/bin/node_exporter':

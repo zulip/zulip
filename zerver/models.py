@@ -240,6 +240,10 @@ class Realm(models.Model):
         default=2 ** 31 - 1,
     )
 
+    # Allow users to access web public streams without login. This
+    # setting also controls API access of web public streams.
+    enable_spectator_access: bool = models.BooleanField(default=False)
+
     # Whether the organization has enabled inline image and URL previews.
     inline_image_preview: bool = models.BooleanField(default=True)
     inline_url_embed_preview: bool = models.BooleanField(default=False)
@@ -624,40 +628,41 @@ class Realm(models.Model):
     property_types: Dict[str, Union[type, Tuple[type, ...]]] = dict(
         add_custom_emoji_policy=int,
         allow_edit_history=bool,
+        avatar_changes_disabled=bool,
         bot_creation_policy=int,
-        create_public_stream_policy=int,
         create_private_stream_policy=int,
+        create_public_stream_policy=int,
         create_web_public_stream_policy=int,
-        invite_to_stream_policy=int,
-        move_messages_between_streams_policy=int,
+        default_code_block_language=(str, type(None)),
         default_language=str,
+        delete_own_message_policy=int,
         description=str,
         digest_emails_enabled=bool,
+        digest_weekday=int,
         disallow_disposable_email_addresses=bool,
         email_address_visibility=int,
         email_changes_disabled=bool,
+        emails_restricted_to_domains=bool,
+        enable_spectator_access=bool,
         giphy_rating=int,
-        invite_required=bool,
-        invite_to_realm_policy=int,
         inline_image_preview=bool,
         inline_url_embed_preview=bool,
+        invite_required=bool,
+        invite_to_realm_policy=int,
+        invite_to_stream_policy=int,
         mandatory_topics=bool,
+        message_content_allowed_in_email_notifications=bool,
+        message_content_delete_limit_seconds=(int, type(None)),
         message_retention_days=(int, type(None)),
+        move_messages_between_streams_policy=int,
         name=str,
         name_changes_disabled=bool,
-        avatar_changes_disabled=bool,
-        emails_restricted_to_domains=bool,
+        private_message_policy=int,
         send_welcome_emails=bool,
-        message_content_allowed_in_email_notifications=bool,
+        user_group_edit_policy=int,
         video_chat_provider=int,
         waiting_period_threshold=int,
-        digest_weekday=int,
-        private_message_policy=int,
-        user_group_edit_policy=int,
-        default_code_block_language=(str, type(None)),
-        message_content_delete_limit_seconds=(int, type(None)),
         wildcard_mention_policy=int,
-        delete_own_message_policy=int,
     )
 
     DIGEST_WEEKDAY_VALUES = [0, 1, 2, 3, 4, 5, 6]
@@ -891,19 +896,27 @@ class Realm(models.Model):
             # target every open Internet service that can host files.
             return False
 
+        if not self.enable_spectator_access:
+            return False
+
         return True
 
     def has_web_public_streams(self) -> bool:
-        """
-        If any of the streams in the realm is web
-        public, then the realm is web public.
-        """
         if not self.web_public_streams_enabled():
             return False
 
         from zerver.lib.streams import get_web_public_streams_queryset
 
         return get_web_public_streams_queryset(self).exists()
+
+    def allow_web_public_streams_access(self) -> bool:
+        """
+        If any of the streams in the realm is web
+        public and `enable_spectator_access` and
+        settings.WEB_PUBLIC_STREAMS_ENABLED is True,
+        then the Realm is web public.
+        """
+        return self.has_web_public_streams()
 
 
 post_save.connect(flush_realm, sender=Realm)
@@ -1034,6 +1047,15 @@ class RealmEmoji(models.Model):
 
     def __str__(self) -> str:
         return f"<RealmEmoji({self.realm.string_id}): {self.id} {self.name} {self.deactivated} {self.file_name}>"
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["realm", "name"],
+                condition=Q(deactivated=False),
+                name="unique_realm_emoji_when_false_deactivated",
+            ),
+        ]
 
 
 def get_realm_emoji_dicts(
@@ -1488,26 +1510,26 @@ class UserBaseSettings(models.Model):
     )
 
     notification_settings_legacy = dict(
+        desktop_icon_count_display=int,
+        email_notifications_batching_period_seconds=int,
         enable_desktop_notifications=bool,
         enable_digest_emails=bool,
         enable_login_emails=bool,
         enable_marketing_emails=bool,
-        email_notifications_batching_period_seconds=int,
         enable_offline_email_notifications=bool,
         enable_offline_push_notifications=bool,
         enable_online_push_notifications=bool,
         enable_sounds=bool,
+        enable_stream_audible_notifications=bool,
         enable_stream_desktop_notifications=bool,
         enable_stream_email_notifications=bool,
         enable_stream_push_notifications=bool,
-        enable_stream_audible_notifications=bool,
-        wildcard_mentions_notify=bool,
         message_content_in_email_notifications=bool,
         notification_sound=str,
         pm_content_in_desktop_notifications=bool,
-        desktop_icon_count_display=int,
-        realm_name_in_notifications=bool,
         presence_enabled=bool,
+        realm_name_in_notifications=bool,
+        wildcard_mentions_notify=bool,
     )
 
     notification_setting_types = {
@@ -1520,10 +1542,10 @@ class UserBaseSettings(models.Model):
         **notification_setting_types,
         **dict(
             # Add new general settings here.
-            send_stream_typing_notifications=bool,
+            escape_navigates_to_default_view=bool,
             send_private_typing_notifications=bool,
             send_read_receipts=bool,
-            escape_navigates_to_default_view=bool,
+            send_stream_typing_notifications=bool,
         ),
     }
 
@@ -1595,7 +1617,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # compatibility in Zulip APIs where users are referred to by their
     # email address, not their ID; it should be used in all API use cases.
     #
-    # Both fields are unique within a realm (in a case-insensitive fashion).
+    # Both fields are unique within a realm (in a case-insensitive
+    # fashion). Since Django's unique_together is case sensitive, this
+    # is enforced via SQL indexes created by
+    # zerver/migrations/0295_case_insensitive_email_indexes.py.
     delivery_email: str = models.EmailField(blank=False, db_index=True)
     email: str = models.EmailField(blank=False, db_index=True)
 
@@ -2804,8 +2829,15 @@ class AbstractEmoji(models.Model):
         default=UNICODE_EMOJI, choices=REACTION_TYPES, max_length=30
     )
 
-    # A string that uniquely identifies a particular emoji.  The format varies
-    # by type:
+    # A string with the property that (realm, reaction_type,
+    # emoji_code) uniquely determines the emoji glyph.
+    #
+    # We cannot use `emoji_name` for this purpose, since the
+    # name-to-glyph mappings for unicode emoji change with time as we
+    # update our emoji database, and multiple custom emoji can have
+    # the same `emoji_name` in a realm (at most one can have
+    # `deactivated=False`). The format for `emoji_code` varies by
+    # `reaction_type`:
     #
     # * For Unicode emoji, a dash-separated hex encoding of the sequence of
     #   Unicode codepoints that define this emoji in the Unicode
@@ -2813,10 +2845,10 @@ class AbstractEmoji(models.Model):
     #   following data, with "non_qualified" taking precedence when both present:
     #     https://raw.githubusercontent.com/iamcal/emoji-data/master/emoji_pretty.json
     #
-    # * For realm emoji (aka user uploaded custom emoji), the ID
-    #   (in ASCII decimal) of the RealmEmoji object.
+    # * For user uploaded custom emoji (`reaction_type="realm_emoji"`), the stringified ID
+    #   of the RealmEmoji object, computed as `str(realm_emoji.id)`.
     #
-    # * For "Zulip extra emoji" (like :zulip:), the filename of the emoji.
+    # * For "Zulip extra emoji" (like :zulip:), the name of the emoji (e.g. "zulip").
     emoji_code: str = models.TextField()
 
     class Meta:
@@ -2847,7 +2879,10 @@ class Reaction(AbstractReaction):
             "user_profile_id",
             "user_profile__full_name",
         ]
-        return Reaction.objects.filter(message_id__in=needed_ids).values(*fields)
+        # The ordering is important here, as it makes it convenient
+        # for clients to display reactions in order without
+        # client-side sorting code.
+        return Reaction.objects.filter(message_id__in=needed_ids).values(*fields).order_by("id")
 
     def __str__(self) -> str:
         return f"{self.user_profile.email} / {self.message.id} / {self.emoji_name}"
@@ -3811,7 +3846,7 @@ class AbstractRealmAuditLog(models.Model):
     USER_AVATAR_SOURCE_CHANGED = 123
     USER_FULL_NAME_CHANGED = 124
     USER_EMAIL_CHANGED = 125
-    USER_TOS_VERSION_CHANGED = 126
+    USER_TERMS_OF_SERVICE_VERSION_CHANGED = 126
     USER_API_KEY_CHANGED = 127
     USER_BOT_OWNER_CHANGED = 128
     USER_DEFAULT_SENDING_STREAM_CHANGED = 129
@@ -3859,6 +3894,12 @@ class AbstractRealmAuditLog(models.Model):
     STREAM_DEACTIVATED = 602
     STREAM_NAME_CHANGED = 603
     STREAM_REACTIVATED = 604
+    STREAM_MESSAGE_RETENTION_DAYS_CHANGED = 605
+
+    # The following values are only for RemoteZulipServerAuditLog
+    # Values are chosen to be 10000 greater than the value in RealmAuditLog.
+    REMOTE_SERVER_CREATED = 10215
+    REMOTE_SERVER_PLAN_TYPE_CHANGED = 10204
 
     event_type: int = models.PositiveSmallIntegerField()
 

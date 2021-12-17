@@ -69,6 +69,7 @@ class ApiURLView(TemplateView):
 
 class MarkdownDirectoryView(ApiURLView):
     path_template = ""
+    policies_view = False
 
     def get_path(self, article: str) -> DocumentationArticle:
         http_status = 200
@@ -87,10 +88,25 @@ class MarkdownDirectoryView(ApiURLView):
         endpoint_name = None
         endpoint_method = None
 
+        if self.policies_view and self.path_template.startswith("/"):
+            # This block is required because neither the Django
+            # template loader nor the article_path logic below support
+            # settings.POLICIES_DIRECTORY being an absolute path.
+            if not os.path.exists(path):
+                article = "missing"
+                http_status = 404
+                path = self.path_template % (article,)
+
+            return DocumentationArticle(
+                article_path=path,
+                article_http_status=http_status,
+                endpoint_path=None,
+                endpoint_method=None,
+            )
+
         # The following is a somewhat hacky approach to extract titles from articles.
         # Hack: `context["article"] has a leading `/`, so we use + to add directories.
         article_path = os.path.join(settings.DEPLOY_ROOT, "templates") + path
-
         if (not os.path.exists(article_path)) and self.path_template == "/zerver/api/%s.md":
             try:
                 endpoint_name, endpoint_method = get_endpoint_from_operationid(article)
@@ -102,6 +118,7 @@ class MarkdownDirectoryView(ApiURLView):
                     endpoint_path=None,
                     endpoint_method=None,
                 )
+
         try:
             loader.get_template(path)
             return DocumentationArticle(
@@ -124,6 +141,20 @@ class MarkdownDirectoryView(ApiURLView):
 
         documentation_article = self.get_path(article)
         context["article"] = documentation_article.article_path
+        if documentation_article.article_path.startswith("/") and os.path.exists(
+            documentation_article.article_path
+        ):
+            # Absolute path case
+            article_path = documentation_article.article_path
+        elif documentation_article.article_path.startswith("/"):
+            # Hack: `context["article"] has a leading `/`, so we use + to add directories.
+            article_path = (
+                os.path.join(settings.DEPLOY_ROOT, "templates") + documentation_article.article_path
+            )
+        else:
+            article_path = os.path.join(
+                settings.DEPLOY_ROOT, "templates", documentation_article.article_path
+            )
 
         # For disabling the "Back to home" on the homepage
         context["not_index_page"] = not context["article"].endswith("/index.md")
@@ -134,6 +165,13 @@ class MarkdownDirectoryView(ApiURLView):
             sidebar_article = self.get_path("include/sidebar_index")
             sidebar_index = sidebar_article.article_path
             title_base = "Zulip Help Center"
+        elif self.path_template == f"{settings.POLICIES_DIRECTORY}/%s.md":
+            context["page_is_policy_center"] = True
+            context["doc_root"] = "/policies/"
+            context["doc_root_title"] = "Terms and policies"
+            sidebar_article = self.get_path("sidebar_index")
+            sidebar_index = sidebar_article.article_path
+            title_base = "Zulip terms and policies"
         else:
             context["page_is_api_center"] = True
             context["doc_root"] = "/api/"
@@ -143,8 +181,8 @@ class MarkdownDirectoryView(ApiURLView):
             title_base = "Zulip API documentation"
 
         # The following is a somewhat hacky approach to extract titles from articles.
-        # Hack: `context["article"] has a leading `/`, so we use + to add directories.
-        article_path = os.path.join(settings.DEPLOY_ROOT, "templates") + context["article"]
+        endpoint_name = None
+        endpoint_method = None
         if os.path.exists(article_path):
             with open(article_path) as article_file:
                 first_line = article_file.readlines()[0]
@@ -186,6 +224,12 @@ class MarkdownDirectoryView(ApiURLView):
         return context
 
     def get(self, request: HttpRequest, article: str = "") -> HttpResponse:
+        # Hack: It's hard to reinitialize urls.py from tests, and so
+        # we want to defer the use of settings.POLICIES_DIRECTORY to
+        # runtime.
+        if self.policies_view:
+            self.path_template = f"{settings.POLICIES_DIRECTORY}/%s.md"
+
         documentation_article = self.get_path(article)
         http_status = documentation_article.article_http_status
         result = super().get(self, article=article)

@@ -20,7 +20,7 @@ from zerver.lib.actions import (
     UserMessageLite,
     bulk_insert_ums,
     do_change_avatar_fields,
-    do_change_plan_type,
+    do_change_realm_plan_type,
 )
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.bulk_create import bulk_create_users, bulk_set_users_or_streams_recipient_fields
@@ -66,6 +66,7 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
+    UserStatus,
     UserTopic,
     get_huddle_hash,
     get_realm,
@@ -108,6 +109,7 @@ ID_MAP: Dict[str, Dict[int, int]] = {
     "realmplayground": {},
     "message": {},
     "user_presence": {},
+    "userstatus": {},
     "useractivity": {},
     "useractivityinterval": {},
     "usermessage": {},
@@ -427,7 +429,6 @@ def re_map_foreign_keys(
     verbose: bool = False,
     id_field: bool = False,
     recipient_field: bool = False,
-    reaction_field: bool = False,
 ) -> None:
     """
     This is a wrapper function for all the realm data tables
@@ -447,7 +448,6 @@ def re_map_foreign_keys(
         verbose,
         id_field,
         recipient_field,
-        reaction_field,
     )
 
 
@@ -459,7 +459,6 @@ def re_map_foreign_keys_internal(
     verbose: bool = False,
     id_field: bool = False,
     recipient_field: bool = False,
-    reaction_field: bool = False,
 ) -> None:
     """
     We occasionally need to assign new ids to rows during the
@@ -487,11 +486,6 @@ def re_map_foreign_keys_internal(
             else:
                 continue
         old_id = item[field_name]
-        if reaction_field:
-            if item["reaction_type"] == Reaction.REALM_EMOJI:
-                old_id = int(old_id)
-            else:
-                continue
         if old_id in lookup_table:
             new_id = lookup_table[old_id]
             if verbose:
@@ -504,10 +498,36 @@ def re_map_foreign_keys_internal(
             item[field_name + "_id"] = new_id
             del item[field_name]
         else:
-            if reaction_field:
-                item[field_name] = str(new_id)
-            else:
-                item[field_name] = new_id
+            item[field_name] = new_id
+
+
+def re_map_realm_emoji_codes(data: TableData, *, table_name: str) -> None:
+    """
+    Some tables, including Reaction and UserStatus, contain a form of
+    foreign key reference to the RealmEmoji table in the form of
+    `str(realm_emoji.id)` when `reaction_type="realm_emoji"`.
+
+    See the block comment for emoji_code in the AbstractEmoji
+    definition for more details.
+    """
+    realm_emoji_dct = {}
+
+    for row in data["zerver_realmemoji"]:
+        realm_emoji_dct[row["id"]] = row
+
+    for row in data[table_name]:
+        if row["reaction_type"] == Reaction.REALM_EMOJI:
+            old_realm_emoji_id = int(row["emoji_code"])
+
+            # Fail hard here if we didn't map correctly here
+            new_realm_emoji_id = ID_MAP["realmemoji"][old_realm_emoji_id]
+
+            # This is a very important sanity check.
+            realm_emoji_row = realm_emoji_dct[new_realm_emoji_id]
+            assert realm_emoji_row["name"] == row["emoji_name"]
+
+            # Now update emoji_code to the new id.
+            row["emoji_code"] = str(new_realm_emoji_id)
 
 
 def re_map_foreign_keys_many_to_many(
@@ -1228,14 +1248,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     re_map_foreign_keys(data, "zerver_reaction", "message", related_table="message")
     re_map_foreign_keys(data, "zerver_reaction", "user_profile", related_table="user_profile")
-    re_map_foreign_keys(
-        data,
-        "zerver_reaction",
-        "emoji_code",
-        related_table="realmemoji",
-        id_field=True,
-        reaction_field=True,
-    )
+    re_map_realm_emoji_codes(data, table_name="zerver_reaction")
     update_model_ids(Reaction, data, "reaction")
     bulk_import_model(data, Reaction)
 
@@ -1248,6 +1261,14 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         else:
             stream.first_message_id = first_message.id
         stream.save(update_fields=["first_message_id"])
+
+    if "zerver_userstatus" in data:
+        fix_datetime_fields(data, "zerver_userstatus")
+        re_map_foreign_keys(data, "zerver_userstatus", "user_profile", related_table="user_profile")
+        re_map_foreign_keys(data, "zerver_userstatus", "client", related_table="client")
+        update_model_ids(UserStatus, data, "userstatus")
+        re_map_realm_emoji_codes(data, table_name="zerver_userstatus")
+        bulk_import_model(data, UserStatus)
 
     # Do attachments AFTER message data is loaded.
     # TODO: de-dup how we read these json files.
@@ -1265,9 +1286,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     import_analytics_data(realm=realm, import_dir=import_dir)
 
     if settings.BILLING_ENABLED:
-        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
     else:
-        do_change_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=None)
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=None)
     return realm
 
 

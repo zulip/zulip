@@ -9,7 +9,7 @@
         <select class="custom_user_field_value">
             <option value=""></option>
             {{#each field_choices}}
-            <option value="{{ this.value }}" {{#if this.selected}}selected{{/if}}>{{ this.text }}</option>
+                <option value="{{ this.value }}" {{#if this.selected}}selected{{/if}}>{{ this.text }}</option>
             {{/each}}
         </select>
         {{else if is_user_field }}

@@ -456,9 +456,10 @@ python_rules = RuleList(
             ],
         },
         {
-            "pattern": "exit[(]1[)]",
+            "pattern": r"exit[(][1-9]\d*[)]",
             "include_only": {"/management/commands/"},
             "description": "Raise CommandError to exit with failure in management commands",
+            "exclude": {"zerver/management/commands/process_queue.py"},
         },
         {
             "pattern": ".is_realm_admin =",
@@ -479,6 +480,10 @@ python_rules = RuleList(
         {
             "pattern": "\\.(called(_once|_with|_once_with)?|not_called|has_calls|not_called)[(]",
             "description": 'A mock function is missing a leading "assert_"',
+        },
+        {
+            "pattern": "@transaction.atomic\\(\\)",
+            "description": "Use @transaction.atomic as function decorator for consistency.",
         },
         *whitespace_rules,
     ],
@@ -518,7 +523,7 @@ css_rules = RuleList(
 prose_style_rules: List["Rule"] = [
     {
         "pattern": r'^[^{].*?[^\/\#\-"]([jJ]avascript)',  # exclude usage in hrefs/divs/custom-markdown
-        "exclude": {"docs/documentation/api.md"},
+        "exclude": {"docs/documentation/api.md", "templates/corporate/policies/privacy.md"},
         "description": "javascript should be spelled JavaScript",
     },
     {
@@ -546,7 +551,7 @@ html_rules: List["Rule"] = [
         "exclude": {
             "templates/zerver/email.html",
             "zerver/tests/fixtures/email",
-            "templates/zerver/for-companies.html",
+            "templates/zerver/for-business.html",
             "templates/corporate/support_request.html",
             "templates/corporate/support_request_thanks.html",
             "templates/zerver/emails/support_request.html",
@@ -696,7 +701,7 @@ html_rules: List["Rule"] = [
             "templates/zerver/accounts_home.html",
             "templates/zerver/login.html",
             # Needs the width cleaned up; display: none is fine
-            "static/templates/settings/account_settings.hbs",
+            "static/templates/dialog_change_password.hbs",
             # background image property is dynamically generated
             "static/templates/user_profile_modal.hbs",
             "static/templates/pm_list_item.hbs",
@@ -869,6 +874,7 @@ markdown_rules = RuleList(
         },
         {
             "pattern": r"\][(][^#h]",
+            "exclude_pattern": "mailto:",
             "include_only": {"README.md", "CONTRIBUTING.md"},
             "description": "Use absolute links from docs served by GitHub",
         },

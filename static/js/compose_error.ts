@@ -9,8 +9,11 @@ export function show(error_html: string, bad_input?: JQuery, alert_class = "aler
         .stop(true)
         .fadeTo(0, 1);
     $("#compose-error-msg").html(error_html);
-    $("#compose-send-button").prop("disabled", false);
-    $("#sending-indicator").hide();
+    // TODO: Replace with compose_ui.hide_compose_spinner() when it is converted to ts.
+    $("#compose-send-button .loader").hide();
+    $("#compose-send-button span").show();
+    $("#compose-send-button").removeClass("disable-btn");
+
     if (bad_input !== undefined) {
         bad_input.trigger("focus").trigger("select");
     }

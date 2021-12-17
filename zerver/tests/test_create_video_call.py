@@ -175,7 +175,7 @@ class TestVideoCall(ZulipTestCase):
             self.assertEqual(
                 response.json()["url"],
                 "/calls/bigbluebutton/join?meeting_id=zulip-1&password=AAAAAAAAAA"
-                "&checksum=697939301a52d3a2f0b3c3338895c1a5ab528933",
+                "&checksum=d5eb2098bcd0e69a33caf2b18490991b843c8fa6be779316b4303c7990aca687",
             )
 
     @responses.activate
@@ -194,7 +194,7 @@ class TestVideoCall(ZulipTestCase):
         self.assertEqual(
             response.url,
             "https://bbb.example.com/bigbluebutton/api/join?meetingID=zulip-1&password=a"
-            "&fullName=King%20Hamlet&checksum=7ddbb4e7e5aa57cb8c58db12003f3b5b040ff530",
+            "&fullName=King%20Hamlet&checksum=ca78d6d3c3e04918bfab9d7d6cbc6e50602ab2bdfe1365314570943346a71a00",
         )
 
     @responses.activate

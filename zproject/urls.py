@@ -83,9 +83,7 @@ from zerver.views.portico import (
     hello_view,
     landing_view,
     plans_view,
-    privacy_view,
     team_view,
-    terms_view,
 )
 from zerver.views.presence import (
     get_presence_backend,
@@ -128,9 +126,9 @@ from zerver.views.registration import (
     accounts_home,
     accounts_home_from_multiuse_invite,
     accounts_register,
-    check_prereg_key_and_redirect,
     create_realm,
     find_account,
+    get_prereg_key_and_redirect,
     realm_redirect,
 )
 from zerver.views.report import (
@@ -559,8 +557,8 @@ i18n_urls = [
     path("accounts/register/", accounts_register, name="accounts_register"),
     path(
         "accounts/do_confirm/<confirmation_key>",
-        check_prereg_key_and_redirect,
-        name="check_prereg_key_and_redirect",
+        get_prereg_key_and_redirect,
+        name="get_prereg_key_and_redirect",
     ),
     path(
         "accounts/confirm_new_email/<confirmation_key>",
@@ -608,7 +606,16 @@ i18n_urls = [
     path("apps/download/<platform>", app_download_link_redirect),
     path("apps/<platform>", apps_view),
     path(
-        "developer-community/", landing_view, {"template_name": "zerver/developer-community.html"}
+        "developer-community/", RedirectView.as_view(url="/development-community/", permanent=True)
+    ),
+    path(
+        "development-community/",
+        landing_view,
+        {"template_name": "zerver/development-community.html"},
+    ),
+    # Renamed to have a cleared URL.
+    path(
+        "developer-community/", RedirectView.as_view(url="/development-community/", permanent=True)
     ),
     path("attribution/", landing_view, {"template_name": "zerver/attribution.html"}),
     path("team/", team_view),
@@ -618,9 +625,11 @@ i18n_urls = [
     path("for/events/", landing_view, {"template_name": "zerver/for-events.html"}),
     path("for/open-source/", landing_view, {"template_name": "zerver/for-open-source.html"}),
     path("for/research/", landing_view, {"template_name": "zerver/for-research.html"}),
-    path("for/companies/", landing_view, {"template_name": "zerver/for-companies.html"}),
+    path("for/business/", landing_view, {"template_name": "zerver/for-business.html"}),
+    path("for/companies/", RedirectView.as_view(url="/for/business/", permanent=True)),
     path("case-studies/tum/", landing_view, {"template_name": "zerver/tum-case-study.html"}),
     path("case-studies/ucsd/", landing_view, {"template_name": "zerver/ucsd-case-study.html"}),
+    path("case-studies/rust/", landing_view, {"template_name": "zerver/rust-case-study.html"}),
     path("case-studies/lean/", landing_view, {"template_name": "zerver/lean-case-study.html"}),
     path(
         "for/communities/",
@@ -633,9 +642,6 @@ i18n_urls = [
         RedirectView.as_view(url="/for/communities/", permanent=True),
     ),
     path("security/", landing_view, {"template_name": "zerver/security.html"}),
-    # Terms of Service and privacy pages.
-    path("terms/", terms_view),
-    path("privacy/", privacy_view),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
@@ -797,6 +803,10 @@ help_documentation_view = MarkdownDirectoryView.as_view(
 api_documentation_view = MarkdownDirectoryView.as_view(
     template_name="zerver/documentation_main.html", path_template="/zerver/api/%s.md"
 )
+policy_documentation_view = MarkdownDirectoryView.as_view(
+    template_name="zerver/documentation_main.html",
+    policies_view=True,
+)
 urls += [
     # Redirects due to us having moved the docs:
     path(
@@ -867,10 +877,24 @@ urls += [
         "help/add-custom-emoji",
         RedirectView.as_view(url="/help/custom-emoji", permanent=True),
     ),
+    path(
+        "help/night-mode",
+        RedirectView.as_view(url="/help/dark-theme", permanent=True),
+    ),
     path("help/", help_documentation_view),
     path("help/<path:article>", help_documentation_view),
     path("api/", api_documentation_view),
     path("api/<slug:article>", api_documentation_view),
+    path("policies/", policy_documentation_view),
+    path("policies/<slug:article>", policy_documentation_view),
+    path(
+        "privacy/",
+        RedirectView.as_view(url="/policies/privacy"),
+    ),
+    path(
+        "terms/",
+        RedirectView.as_view(url="/policies/terms"),
+    ),
 ]
 
 # Two-factor URLs

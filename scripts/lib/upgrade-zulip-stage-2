@@ -206,8 +206,8 @@ elif args.from_git:
     # Ideally, we'd have 2 thresholds here, depending on whether the
     # system is running queue workers multithreaded or multiprocess.
     # See puppet/zulip/manifests/app_frontend_base.pp for background.
-    if mem_gib < 3.8:
-        logging.info("Shutting down server to build static assets on a low-RAM system.")
+    if mem_gib < 4.2:
+        logging.info("Shutting down server to ensure sufficient free RAM for webpack.")
         shutdown_server()
 
     # Note: The fact that this is before we apply Puppet changes means
@@ -215,7 +215,15 @@ elif args.from_git:
     # update-prod-static with the Git upgrade process.  But it'll fail
     # safely; this seems like a worthwhile tradeoff to minimize downtime.
     logging.info("Building static assets...")
-    subprocess.check_call(["./tools/update-prod-static"], preexec_fn=su_to_zulip)
+    try:
+        subprocess.check_call(["./tools/update-prod-static"], preexec_fn=su_to_zulip)
+    except subprocess.CalledProcessError:
+        logging.error("Failed to build static assets.")
+        if IS_SERVER_UP:
+            logging.error("Usually the cause is insufficient free RAM to run webpack.")
+            logging.error("Try stopping the Zulip server (scripts/stop-server) and trying again.")
+        sys.exit(1)
+
     logging.info("Caching Zulip Git version...")
     subprocess.check_call(["./tools/cache-zulip-git-version"], preexec_fn=su_to_zulip)
 else:

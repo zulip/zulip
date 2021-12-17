@@ -7,11 +7,11 @@
         "object": {
           "application": null,
           "cancellation_reason": null,
-          "client_secret": "seti_1JTqAsA4KHR4JzRv5WaDLerO_secret_K86Nbkg8OadCoA80Cap51BApJUDcMX9",
+          "client_secret": "seti_1K2ObkHSaWXyvFpKHth3yD4Z_secret_KhoE7zhtCrs9yGGrNJCZWdC1hexgZko",
           "created": 1000000000,
           "customer": "cus_NORMALIZED0001",
           "description": null,
-          "id": "seti_1JTqAsA4KHR4JzRv5WaDLerO",
+          "id": "seti_1K2ObkHSaWXyvFpKHth3yD4Z",
           "last_setup_error": null,
           "latest_attempt": null,
           "livemode": false,
@@ -22,10 +22,12 @@
             "license_management": "automatic",
             "licenses": "6",
             "price_per_license": "8000",
+            "realm_id": "1",
             "realm_str": "zulip",
             "seat_count": "6",
             "type": "upgrade",
-            "user_email": "hamlet@zulip.com"
+            "user_email": "hamlet@zulip.com",
+            "user_id": "10"
           },
           "next_action": null,
           "object": "setup_intent",
@@ -44,13 +46,13 @@
           "usage": "off_session"
         }
       },
-      "id": "evt_1JTqAtA4KHR4JzRvZ8u0ihQ0",
+      "id": "evt_1K2ObkHSaWXyvFpKA8Wk6IR5",
       "livemode": false,
       "object": "event",
       "pending_webhooks": 0,
       "request": {
         "id": "req_NORMALIZED0001",
-        "idempotency_key": "ca5b53d9-8c11-4d52-a92f-8a93f09bc5d9"
+        "idempotency_key": "7ba5c07d-6251-4423-af13-f3f1f88d8a1b"
       },
       "type": "setup_intent.created"
     }

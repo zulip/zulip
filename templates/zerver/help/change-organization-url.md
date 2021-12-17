@@ -27,6 +27,10 @@ you're [hosting multiple organizations][zulip-multiple-organizations]
 and want to change the subdomain for one of them, you can do this
 using the `change_realm_subdomain` [management command][management-commands].
 
+In addition to configuring Zulip as detailed here, you also need to
+generate [SSL certificates][ssl-certificates] for your new domain.
+
+[ssl-certificates]: https://zulip.readthedocs.io/en/latest/production/ssl-certificates.html
 [zulip-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
 [zulip-multiple-organizations]: https://zulip.readthedocs.io/en/stable/production/multiple-organizations.html
 [management-commands]: https://zulip.readthedocs.io/en/latest/production/management-commands.html#other-useful-manage-py-commands

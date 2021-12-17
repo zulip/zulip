@@ -18,7 +18,7 @@ from zerver.lib.actions import (
     do_add_streams_to_default_stream_group,
     do_change_default_stream_group_description,
     do_change_default_stream_group_name,
-    do_change_plan_type,
+    do_change_realm_plan_type,
     do_change_stream_post_policy,
     do_change_subscription_property,
     do_change_user_role,
@@ -36,6 +36,7 @@ from zerver.lib.actions import (
     gather_subscriptions_helper,
     get_average_weekly_stream_traffic,
     get_default_streams_for_realm,
+    get_topic_messages,
     lookup_default_stream_groups,
     round_to_2_significant_digits,
     validate_user_access_to_subscribers_helper,
@@ -72,6 +73,7 @@ from zerver.models import (
     DefaultStreamGroup,
     Message,
     Realm,
+    RealmAuditLog,
     Recipient,
     Stream,
     Subscription,
@@ -89,6 +91,12 @@ from zerver.views.streams import compose_views
 
 
 class TestMiscStuff(ZulipTestCase):
+    def test_test_helper(self) -> None:
+        cordelia = self.example_user("cordelia")
+        s = self.subscribed_stream_name_list(cordelia)
+        self.assertIn("* Verona", s)
+        self.assertNotIn("* Denmark", s)
+
     def test_empty_results(self) -> None:
         # These are essentially just tests to ensure line
         # coverage for codepaths that won't ever really be
@@ -563,10 +571,23 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_error(result, "Must be an organization or stream administrator")
 
+        do_set_realm_property(
+            realm, "create_web_public_stream_policy", Realm.POLICY_OWNERS_ONLY, acting_user=None
+        )
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         result = self.client_patch(f"/json/streams/{stream_id}", params)
-        self.assert_json_error(result, "Must be an organization owner")
+        self.assert_json_error(result, "Insufficient permission")
 
+        do_set_realm_property(
+            realm, "create_web_public_stream_policy", Realm.POLICY_NOBODY, acting_user=None
+        )
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        result = self.client_patch(f"/json/streams/{stream_id}", params)
+        self.assert_json_error(result, "Insufficient permission")
+
+        do_set_realm_property(
+            realm, "create_web_public_stream_policy", Realm.POLICY_OWNERS_ONLY, acting_user=None
+        )
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
         with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
             result = self.client_patch(f"/json/streams/{stream_id}", params)
@@ -1259,11 +1280,87 @@ class StreamAdminTest(ZulipTestCase):
             stream = get_stream("stream_name1", user_profile.realm)
             self.assertEqual(stream.stream_post_policy, policy)
 
+    def test_change_stream_message_retention_days_notifications(self) -> None:
+        user_profile = self.example_user("desdemona")
+        self.login_user(user_profile)
+        realm = user_profile.realm
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=None)
+        stream = self.subscribe(user_profile, "stream_name1")
+
+        # Go from realm default (forever) to 2 days
+        result = self.client_patch(
+            f"/json/streams/{stream.id}", {"message_retention_days": orjson.dumps(2).decode()}
+        )
+        self.assert_json_success(result)
+        messages = get_topic_messages(user_profile, stream, "stream events")
+        self.assert_length(messages, 1)
+        expected_notification = (
+            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) "
+            "for this stream from **Forever** to **2 days**. Messages will be automatically "
+            "deleted after 2 days."
+        )
+        self.assertEqual(messages[0].content, expected_notification)
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.STREAM_MESSAGE_RETENTION_DAYS_CHANGED
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = orjson.dumps(
+            {RealmAuditLog.OLD_VALUE: None, RealmAuditLog.NEW_VALUE: 2}
+        ).decode()
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+
+        # Go from 2 days to 8 days
+        result = self.client_patch(
+            f"/json/streams/{stream.id}", {"message_retention_days": orjson.dumps(8).decode()}
+        )
+        self.assert_json_success(result)
+        messages = get_topic_messages(user_profile, stream, "stream events")
+        self.assert_length(messages, 2)
+        expected_notification = (
+            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) "
+            "for this stream from **2 days** to **8 days**. Messages will be automatically "
+            "deleted after 8 days."
+        )
+        self.assertEqual(messages[1].content, expected_notification)
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.STREAM_MESSAGE_RETENTION_DAYS_CHANGED
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = orjson.dumps(
+            {RealmAuditLog.OLD_VALUE: 2, RealmAuditLog.NEW_VALUE: 8}
+        ).decode()
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+
+        # Go from 8 days to realm default (None on stream, forever/-1 on realm)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"message_retention_days": orjson.dumps("realm_default").decode()},
+        )
+        self.assert_json_success(result)
+        messages = get_topic_messages(user_profile, stream, "stream events")
+        self.assert_length(messages, 3)
+        expected_notification = (
+            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) "
+            "for this stream from **8 days** to **Forever**."
+        )
+        self.assertEqual(messages[2].content, expected_notification)
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.STREAM_MESSAGE_RETENTION_DAYS_CHANGED
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = orjson.dumps(
+            {
+                RealmAuditLog.OLD_VALUE: 8,
+                RealmAuditLog.NEW_VALUE: None,
+            }
+        ).decode()
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+
     def test_change_stream_message_retention_days(self) -> None:
         user_profile = self.example_user("desdemona")
         self.login_user(user_profile)
         realm = user_profile.realm
-        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
         stream = self.subscribe(user_profile, "stream_name1")
 
         result = self.client_patch(
@@ -1271,9 +1368,9 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Available on Zulip Standard. Upgrade to access.")
 
-        do_change_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=None)
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=None)
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=2):
             result = self.client_patch(
                 f"/json/streams/{stream.id}", {"message_retention_days": orjson.dumps(2).decode()}
             )
@@ -1300,7 +1397,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
         self.assertEqual(stream.message_retention_days, 2)
 
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=2):
             result = self.client_patch(
                 f"/json/streams/{stream.id}",
                 {"message_retention_days": orjson.dumps("unlimited").decode()},
@@ -1322,7 +1419,7 @@ class StreamAdminTest(ZulipTestCase):
         stream = get_stream("stream_name1", realm)
         self.assertEqual(stream.message_retention_days, -1)
 
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=2):
             result = self.client_patch(
                 f"/json/streams/{stream.id}",
                 {"message_retention_days": orjson.dumps("realm_default").decode()},
@@ -1437,13 +1534,13 @@ class StreamAdminTest(ZulipTestCase):
             },
         ]
 
-        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=admin)
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=admin)
         with self.assertRaisesRegex(
             JsonableError, "Available on Zulip Standard. Upgrade to access."
         ):
             list_to_streams(streams_raw, owner, autocreate=True)
 
-        do_change_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=admin)
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=admin)
         result = list_to_streams(streams_raw, owner, autocreate=True)
         self.assert_length(result[0], 0)
         self.assert_length(result[1], 3)
@@ -2715,6 +2812,40 @@ class SubscriptionPropertiesTest(ZulipTestCase):
             },
         )
         self.assert_json_error(result, "Unknown subscription property: bad")
+
+    def test_ignored_parameters_in_subscriptions_properties_endpoint(self) -> None:
+        """
+        Sending an invalid parameter with a valid parameter returns
+        an `ignored_parameters_unsupported` array.
+        """
+        test_user = self.example_user("hamlet")
+        self.login_user(test_user)
+
+        subs = gather_subscriptions(test_user)[0]
+        sub = subs[0]
+        json_result = self.api_post(
+            test_user,
+            "/api/v1/users/me/subscriptions/properties",
+            {
+                "subscription_data": orjson.dumps(
+                    [
+                        {
+                            "property": "wildcard_mentions_notify",
+                            "stream_id": sub["stream_id"],
+                            "value": True,
+                        }
+                    ]
+                ).decode(),
+                "invalid_parameter": orjson.dumps(
+                    [{"property": "pin_to_top", "stream_id": sub["stream_id"], "value": False}]
+                ).decode(),
+            },
+        )
+
+        self.assert_json_success(json_result)
+        result = orjson.loads(json_result.content)
+        self.assertIn("ignored_parameters_unsupported", result)
+        self.assertEqual(result["ignored_parameters_unsupported"], ["invalid_parameter"])
 
 
 class SubscriptionRestApiTest(ZulipTestCase):

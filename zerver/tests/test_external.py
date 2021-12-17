@@ -1,15 +1,20 @@
 import time
 from contextlib import contextmanager
-from typing import Any, Callable, Iterator
+from typing import IO, Any, Callable, Iterator, Optional, Sequence
 from unittest import mock, skipUnless
 
 import DNS
+import orjson
+from circuitbreaker import CircuitBreakerMonitor
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
+from zerver import decorator
 from zerver.forms import email_is_not_mit_mailing_list
+from zerver.lib.cache import cache_delete
 from zerver.lib.rate_limiter import (
     RateLimitedIPAddr,
     RateLimitedUser,
@@ -286,6 +291,122 @@ class RateLimitTests(ZulipTestCase):
                 return self.client_post("/accounts/find/", {"emails": "new@zulip.com"})
 
         self.do_test_hit_ratelimits(alternate_requests, is_json=False)
+
+    @contextmanager
+    def tor_mock(
+        self,
+        side_effect: Optional[Exception] = None,
+        read_data: Sequence[str] = ["1.2.3.4", "5.6.7.8"],
+    ) -> Iterator[mock.Mock]:
+        # We need to reset the circuitbreaker before starting.  We
+        # patch the .opened property to be false, then call the
+        # function, so it resets to closed.
+        with mock.patch("builtins.open", mock.mock_open(read_data=orjson.dumps(["1.2.3.4"]))):
+            with mock.patch(
+                "circuitbreaker.CircuitBreaker.opened", new_callable=mock.PropertyMock
+            ) as mock_opened:
+                mock_opened.return_value = False
+                decorator.get_tor_ips()
+
+        # Having closed it, it's now cached.  Clear the cache.
+        assert CircuitBreakerMonitor.get("get_tor_ips").closed
+        cache_delete("tor_ip_addresses:")
+
+        builtin_open = open
+        if side_effect:
+            tor_open = mock.MagicMock(side_effect=side_effect)
+        else:
+            tor_open = mock.mock_open(read_data=orjson.dumps(read_data))
+
+        def selective_mock_open(*args: Any, **kwargs: Any) -> IO[Any]:
+            if args[0] == settings.TOR_EXIT_NODE_FILE_PATH:
+                return tor_open(*args, **kwargs)
+            return builtin_open(*args, **kwargs)
+
+        with mock.patch("builtins.open", selective_mock_open):
+            yield tor_open
+
+    @rate_limit_rule(1, 5, domain="api_by_ip")
+    @override_settings(RATE_LIMIT_TOR_TOGETHER=True)
+    def test_tor_ip_limits(self) -> None:
+        request_count = 0
+        for ip in ["1.2.3.4", "5.6.7.8", "tor-exit-node"]:
+            RateLimitedIPAddr(ip, domain="api_by_ip").clear_history()
+
+        def alternate_requests() -> HttpResponse:
+            nonlocal request_count
+            request_count += 1
+            if request_count % 2 == 1:
+                return self.send_unauthed_api_request(REMOTE_ADDR="1.2.3.4")
+            else:
+                return self.send_unauthed_api_request(REMOTE_ADDR="5.6.7.8")
+
+        with self.tor_mock(read_data=["1.2.3.4", "5.6.7.8"]) as tor_open:
+            self.do_test_hit_ratelimits(alternate_requests)
+
+        # This is only read once, despite being used on each request
+        tor_open.assert_called_once_with(settings.TOR_EXIT_NODE_FILE_PATH, "rb")
+        tor_open().read.assert_called_once()
+
+    @rate_limit_rule(1, 5, domain="api_by_ip")
+    @override_settings(RATE_LIMIT_TOR_TOGETHER=True)
+    def test_tor_file_empty(self) -> None:
+        for ip in ["1.2.3.4", "5.6.7.8", "tor-exit-node"]:
+            RateLimitedIPAddr(ip, domain="api_by_ip").clear_history()
+
+        # An empty list of IPs is treated as some error in parsing the
+        # input, and as such should not be cached; rate-limiting
+        # should work as normal, per-IP
+        with self.tor_mock(read_data=[]) as tor_open:
+            with self.assertLogs("zerver.lib.rate_limiter", level="WARNING"):
+                self.do_test_hit_ratelimits(
+                    lambda: self.send_unauthed_api_request(REMOTE_ADDR="1.2.3.4")
+                )
+                resp = self.send_unauthed_api_request(REMOTE_ADDR="5.6.7.8")
+                self.assertNotEqual(resp.status_code, 429)
+
+        # Was not cached, so tried to read twice before hitting the
+        # circuit-breaker, and stopping trying
+        tor_open().read.assert_has_calls([mock.call(), mock.call()])
+
+    @rate_limit_rule(1, 5, domain="api_by_ip")
+    @override_settings(RATE_LIMIT_TOR_TOGETHER=True)
+    def test_tor_file_not_found(self) -> None:
+        for ip in ["1.2.3.4", "5.6.7.8", "tor-exit-node"]:
+            RateLimitedIPAddr(ip, domain="api_by_ip").clear_history()
+
+        with self.tor_mock(side_effect=FileNotFoundError("File not found")) as tor_open:
+            # If we cannot get a list of TOR exit nodes, then
+            # rate-limiting works as normal, per-IP
+            with self.assertLogs("zerver.lib.rate_limiter", level="WARNING") as log_mock:
+                self.do_test_hit_ratelimits(
+                    lambda: self.send_unauthed_api_request(REMOTE_ADDR="1.2.3.4")
+                )
+                resp = self.send_unauthed_api_request(REMOTE_ADDR="5.6.7.8")
+                self.assertNotEqual(resp.status_code, 429)
+
+        # Tries twice before hitting the circuit-breaker, and stopping trying
+        tor_open.assert_has_calls(
+            [
+                mock.call(settings.TOR_EXIT_NODE_FILE_PATH, "rb"),
+                mock.call(settings.TOR_EXIT_NODE_FILE_PATH, "rb"),
+            ]
+        )
+
+        self.assert_length(log_mock.output, 8)
+        self.assertEqual(
+            log_mock.output[0:2],
+            [
+                "WARNING:zerver.lib.rate_limiter:Failed to fetch TOR exit node list: {}".format(
+                    "File not found"
+                )
+            ]
+            * 2,
+        )
+        self.assertIn(
+            'Failed to fetch TOR exit node list: Circuit "get_tor_ips" OPEN',
+            log_mock.output[3],
+        )
 
     @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
     @rate_limit_rule(1, 5, domain="api_by_remote_server")

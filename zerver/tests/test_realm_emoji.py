@@ -7,6 +7,7 @@ from zerver.lib.actions import (
     do_create_user,
     do_set_realm_property,
 )
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
 from zerver.models import Realm, RealmEmoji, UserProfile, get_realm
@@ -343,3 +344,25 @@ class RealmEmojiTest(ZulipTestCase):
         self.login_user(emoji_author_2)
         result = self.client_delete("/json/realm/emoji/test_emoji")
         self.assert_json_success(result)
+
+    def test_upload_already_existed_emoji_in_check_add_realm_emoji(self) -> None:
+        realm_1 = do_create_realm("test_realm", "test_realm")
+        emoji_author = do_create_user(
+            "abc@example.com", password="abc", realm=realm_1, full_name="abc", acting_user=None
+        )
+        emoji_name = "emoji_test"
+        with get_test_image_file("img.png") as img_file:
+            # Because we want to verify the IntegrityError handling
+            # logic in check_add_realm_emoji rather than the primary
+            # check in upload_emoji, we need to make this request via
+            # that helper rather than via the API.
+            check_add_realm_emoji(
+                realm=emoji_author.realm, name=emoji_name, author=emoji_author, image_file=img_file
+            )
+            with self.assertRaises(JsonableError):
+                check_add_realm_emoji(
+                    realm=emoji_author.realm,
+                    name=emoji_name,
+                    author=emoji_author,
+                    image_file=img_file,
+                )

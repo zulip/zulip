@@ -52,9 +52,6 @@ def get_zoom_session(user: UserProfile) -> OAuth2Session:
 
     client_id = settings.VIDEO_ZOOM_CLIENT_ID
     client_secret = settings.VIDEO_ZOOM_CLIENT_SECRET
-    if user.realm.string_id in settings.VIDEO_ZOOM_TESTING_REALMS:  # nocoverage
-        client_id = settings.VIDEO_ZOOM_TESTING_CLIENT_ID
-        client_secret = settings.VIDEO_ZOOM_TESTING_CLIENT_SECRET
 
     return OAuth2Session(
         client_id,
@@ -129,8 +126,6 @@ def complete_zoom_user_in_realm(
         raise JsonableError(_("Invalid Zoom session identifier"))
 
     client_secret = settings.VIDEO_ZOOM_CLIENT_SECRET
-    if request.user.realm.string_id in settings.VIDEO_ZOOM_TESTING_REALMS:  # nocoverage
-        client_secret = settings.VIDEO_ZOOM_TESTING_CLIENT_SECRET
 
     oauth = get_zoom_session(request.user)
     try:
@@ -178,7 +173,7 @@ def get_bigbluebutton_url(request: HttpRequest, user_profile: UserProfile) -> Ht
     # https://docs.bigbluebutton.org/dev/api.html#usage for reference for checksum
     id = "zulip-" + str(random.randint(100000000000, 999999999999))
     password = b32encode(secrets.token_bytes(7))[:10].decode()
-    checksum = hashlib.sha1(
+    checksum = hashlib.sha256(
         (
             "create"
             + "meetingID="
@@ -257,7 +252,7 @@ def join_bigbluebutton(
             quote_via=quote,
         )
 
-        checksum = hashlib.sha1(
+        checksum = hashlib.sha256(
             ("join" + join_params + settings.BIG_BLUE_BUTTON_SECRET).encode()
         ).hexdigest()
         redirect_url_base = append_url_query_string(

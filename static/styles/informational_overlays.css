@@ -81,21 +81,6 @@
         }
     }
 
-    kbd {
-        display: inline-block;
-        border: 1px solid hsl(0, 0%, 80%);
-        border-radius: 4px;
-        font-weight: 600;
-        white-space: nowrap;
-        background-color: hsl(0, 0%, 98%);
-        color: hsl(0, 0%, 20%);
-        margin: 0.25em 0.1em;
-        padding: 0.1em 0.4em;
-        text-shadow: 0 1px 0 hsl(0, 0%, 100%);
-        /* Prevent selection */
-        user-select: none;
-    }
-
     .arrow-key {
         font-size: 1.36em;
         line-height: 1;

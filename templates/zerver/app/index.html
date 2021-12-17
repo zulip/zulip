@@ -41,7 +41,10 @@
     top: unset;
     bottom: 20px;
     }
-    body.night-mode #app-loading {
+    body.color-scheme-automatic #app-loading{
+    color: hsl(0, 0%, 20%);
+    }
+    body.dark-theme #app-loading {
     background-color: hsl(212, 28%, 18%);
     color: hsl(236, 33%, 90%);
     }
@@ -95,8 +98,10 @@
     <div class="alert-box">
         <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
             <div class="exit"></div>
-            {% trans %}<strong class="message">Unable to connect to
-            Zulip.</strong>  Updates may be delayed.{% endtrans %} {{ _('Retrying soon...') }} <a class="restart_get_events_button">{{ _('Try now.') }}</a>
+            <strong class="message">{{ _('Unable to connect to Zulip.') }}</strong>
+            {{ _('Updates may be delayed.') }}
+            {{ _('Retrying soon…') }}
+            <a class="restart_get_events_button">{{ _('Try now.') }}</a>
         </div>
         <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
             <div class="exit"></div>
@@ -112,8 +117,9 @@
                 Zephyr mirror script yourself</a> in a screen
                 session.
             </span>
-            <span id="desktop-zephyr-mirror-error-text" class="notdisplayed">To fix
-              this, you'll need to use the web interface.</span>
+            <span id="desktop-zephyr-mirror-error-text" class="notdisplayed">
+                To fix this, you'll need to use the web interface.
+            </span>
         </div>
         <div class="alert alert_sidebar alert-error home-error-bar" id="home-error"></div>
         <div class="alert alert_sidebar alert-error home-error-bar" id="reloading-application"></div>

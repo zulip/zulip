@@ -82,11 +82,15 @@ from zerver.lib.webhooks.common import (
 from zerver.models import (
     Client,
     Message,
+    Reaction,
     Realm,
+    RealmEmoji,
     Recipient,
     Stream,
     Subscription,
+    UserMessage,
     UserProfile,
+    UserStatus,
     clear_supported_auth_backends_cache,
     flush_per_request_caches,
     get_display_recipient,
@@ -815,10 +819,11 @@ Output:
         topic_name: str = "test",
         recipient_realm: Optional[Realm] = None,
         sending_client_name: str = "test suite",
+        allow_unsubscribed_sender: bool = False,
     ) -> int:
         (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
 
-        return check_send_stream_message(
+        message_id = check_send_stream_message(
             sender=sender,
             client=sending_client,
             stream_name=stream_name,
@@ -826,6 +831,24 @@ Output:
             body=content,
             realm=recipient_realm,
         )
+        if not UserMessage.objects.filter(user_profile=sender, message_id=message_id).exists():
+            if not sender.is_bot and not allow_unsubscribed_sender:
+                raise AssertionError(
+                    f"""
+    It appears that the sender did not get a UserMessage row, which is
+    almost certainly an artificial symptom that in your test setup you
+    have decided to send a message to a stream without the sender being
+    subscribed.
+
+    Please do self.subscribe(<user for {sender.full_name}>, {repr(stream_name)}) first.
+
+    Or choose a stream that the user is already subscribed to:
+
+{self.subscribed_stream_name_list(sender)}
+        """
+                )
+
+        return message_id
 
     def get_messages_response(
         self,
@@ -1038,6 +1061,12 @@ Output:
         if not allow_fail:
             self.assert_json_success(result)
         return result
+
+    def subscribed_stream_name_list(self, user: UserProfile) -> str:
+        # This is currently only used for producing error messages.
+        subscribed_streams = gather_subscriptions(user)[0]
+
+        return "".join(sorted(f"        * {stream['name']}\n" for stream in subscribed_streams))
 
     def check_user_subscribed_only_to_streams(self, user_name: str, streams: List[Stream]) -> None:
         streams = sorted(streams, key=lambda x: x.name)
@@ -1411,6 +1440,41 @@ Output:
                 "already_notified", {"email_notified": False, "push_notified": False}
             ),
         )
+
+    def verify_emoji_code_foreign_keys(self) -> None:
+        """
+        DB tables that refer to RealmEmoji use int(emoji_code) as the
+        foreign key. Those tables tend to de-normalize emoji_name due
+        to our inherintance-based setup. This helper makes sure those
+        invariants are intact, which is particularly tricky during
+        the import/export process (or during conversions from things
+        like Slack/RocketChat/MatterMost/etc.).
+        """
+        dct = {}
+
+        for row in RealmEmoji.objects.all():
+            dct[row.id] = row
+
+        if not dct:
+            raise AssertionError("test needs RealmEmoji rows")
+
+        count = 0
+        for row in Reaction.objects.filter(reaction_type=Reaction.REALM_EMOJI):
+            realm_emoji_id = int(row.emoji_code)
+            assert realm_emoji_id in dct
+            self.assertEqual(dct[realm_emoji_id].name, row.emoji_name)
+            self.assertEqual(dct[realm_emoji_id].realm_id, row.user_profile.realm_id)
+            count += 1
+
+        for row in UserStatus.objects.filter(reaction_type=UserStatus.REALM_EMOJI):
+            realm_emoji_id = int(row.emoji_code)
+            assert realm_emoji_id in dct
+            self.assertEqual(dct[realm_emoji_id].name, row.emoji_name)
+            self.assertEqual(dct[realm_emoji_id].realm_id, row.user_profile.realm_id)
+            count += 1
+
+        if count == 0:
+            raise AssertionError("test is meaningless without any pertinent rows")
 
 
 class WebhookTestCase(ZulipTestCase):

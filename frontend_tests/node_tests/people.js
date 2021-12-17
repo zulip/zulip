@@ -151,18 +151,21 @@ const steven = {
 
 const alice1 = {
     email: "alice1@example.com",
+    delivery_email: "alice1-delivery@example.com",
     user_id: 202,
     full_name: "Alice",
 };
 
 const bob = {
     email: "bob@example.com",
+    delivery_email: "bob-delivery@example.com",
     user_id: 203,
     full_name: "Bob van Roberts",
 };
 
 const alice2 = {
     email: "alice2@example.com",
+    delivery_email: "alice2-delivery@example.com",
     user_id: 204,
     full_name: "Alice",
 };
@@ -369,6 +372,31 @@ test_people("basics", () => {
     );
 });
 
+test_people("sort_but_pin_current_user_on_top with me", () => {
+    people.add_active_user(maria);
+    people.add_active_user(steven);
+
+    // We need the actual object from people.js, not the
+    // "me" object we made a copy of.
+    const my_user = people.get_by_user_id(me.user_id);
+    const users = [steven, debbie, maria, my_user];
+
+    people.sort_but_pin_current_user_on_top(users);
+
+    assert.deepEqual(users, [my_user, debbie, maria, steven]);
+});
+
+test_people("sort_but_pin_current_user_on_top without me", () => {
+    people.add_active_user(maria);
+    people.add_active_user(steven);
+
+    const users = [steven, maria];
+
+    people.sort_but_pin_current_user_on_top(users);
+
+    assert.deepEqual(users, [maria, steven]);
+});
+
 test_people("check_active_non_active_users", () => {
     people.add_active_user(bot_botson);
     people.add_active_user(isaac);
@@ -556,15 +584,51 @@ test_people("get_people_for_stream_create", () => {
     people.add_active_user(bob);
     people.add_active_user(alice2);
     assert.equal(people.get_active_human_count(), 4);
+    page_params.is_admin = true;
+    page_params.realm_email_address_visibility = admins_only;
 
-    const others = people.get_people_for_stream_create();
-    const expected = [
+    let others = people.get_people_for_stream_create();
+    let expected = [
+        {
+            email: "alice1-delivery@example.com",
+            user_id: alice1.user_id,
+            full_name: "Alice",
+            checked: false,
+            disabled: false,
+            show_email: true,
+        },
+        {
+            email: "alice2-delivery@example.com",
+            user_id: alice2.user_id,
+            full_name: "Alice",
+            checked: false,
+            disabled: false,
+            show_email: true,
+        },
+        {
+            email: "bob-delivery@example.com",
+            user_id: bob.user_id,
+            full_name: "Bob van Roberts",
+            checked: false,
+            disabled: false,
+            show_email: true,
+        },
+    ];
+    assert.deepEqual(others, expected);
+
+    page_params.is_admin = false;
+    alice1.delivery_email = undefined;
+    alice2.delivery_email = undefined;
+    bob.delivery_email = undefined;
+    others = people.get_people_for_stream_create();
+    expected = [
         {
             email: "alice1@example.com",
             user_id: alice1.user_id,
             full_name: "Alice",
             checked: false,
             disabled: false,
+            show_email: false,
         },
         {
             email: "alice2@example.com",
@@ -572,6 +636,7 @@ test_people("get_people_for_stream_create", () => {
             full_name: "Alice",
             checked: false,
             disabled: false,
+            show_email: false,
         },
         {
             email: "bob@example.com",
@@ -579,6 +644,7 @@ test_people("get_people_for_stream_create", () => {
             full_name: "Bob van Roberts",
             checked: false,
             disabled: false,
+            show_email: false,
         },
     ];
     assert.deepEqual(others, expected);
@@ -706,6 +772,12 @@ test_people("message_methods", () => {
         people.small_avatar_url_for_person(maria),
         "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon&s=50",
     );
+    assert.equal(
+        people.medium_avatar_url_for_person(maria),
+        "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon&s=500",
+    );
+    assert.equal(people.medium_avatar_url_for_person(charles), "/avatar/301/medium");
+    assert.equal(people.medium_avatar_url_for_person(ashton), "/avatar/303/medium");
 
     muted_users.add_muted_user(30);
     assert.deepEqual(people.sender_info_for_recent_topics_row([30]), [

@@ -1,6 +1,7 @@
 {start_tabs}
 1. Click the **New private message** button at the bottom of the Zulip window,
    or type `x`.
+
 2. Type the names of one or more recipients. Auto-complete will provide
    suggestions for users you can message.
 

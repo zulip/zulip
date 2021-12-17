@@ -253,17 +253,17 @@ let _old_width = $(window).width();
 export function handler() {
     const new_width = $(window).width();
 
-    if (new_width !== _old_width) {
-        _old_width = new_width;
-        condense.clear_message_content_height_cache();
-    }
-
-    // On mobile web, we want to avoid hiding a popover here,
+    // On mobile web, we want to avoid hiding a popover here on height change,
     // especially if this resize was triggered by a virtual keyboard
     // popping up when the user opened that very popover.
     const mobile = util.is_mobile();
-    if (!mobile) {
+    if (!mobile || new_width !== _old_width) {
         popovers.hide_all();
+    }
+
+    if (new_width !== _old_width) {
+        _old_width = new_width;
+        condense.clear_message_content_height_cache();
     }
     resize_page_components();
 

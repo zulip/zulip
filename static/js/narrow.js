@@ -9,6 +9,7 @@ import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
 import {Filter} from "./filter";
+import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
 import * as message_edit from "./message_edit";
 import * as message_fetch from "./message_fetch";
@@ -29,6 +30,7 @@ import * as resize from "./resize";
 import * as search from "./search";
 import * as search_pill from "./search_pill";
 import * as search_pill_widget from "./search_pill_widget";
+import * as spectators from "./spectators";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as top_left_corner from "./top_left_corner";
@@ -151,6 +153,14 @@ function update_narrow_title(filter) {
     }
 }
 
+export function reset_ui_state() {
+    // Resets the state of various visual UI elements that are
+    // a function of the current narrow.
+    narrow_banner.hide_empty_narrow_message();
+    message_scroll.hide_top_of_narrow_notices();
+    message_scroll.hide_indicators();
+}
+
 export function activate(raw_operators, opts) {
     /* Main entrypoint for switching to a new view / message list.
        Note that for historical reasons related to the current
@@ -187,11 +197,29 @@ export function activate(raw_operators, opts) {
          or rerendering due to server-side changes.
     */
 
+    const start_time = new Date();
+
+    reset_ui_state();
+
+    // Since narrow.activate is called directly from various
+    // places in our code without passing through hashchange,
+    // we need to check if the narrow is allowed for spectator here too.
+
+    if (
+        page_params.is_spectator &&
+        raw_operators.length &&
+        raw_operators.some(
+            (raw_operator) => !hash_util.allowed_web_public_narrows.includes(raw_operator.operator),
+        )
+    ) {
+        spectators.login_to_access();
+        return;
+    }
+
     if (recent_topics_util.is_visible()) {
         recent_topics_ui.hide();
     }
 
-    const start_time = new Date();
     const was_narrowed_already = narrow_state.active();
     // most users aren't going to send a bunch of a out-of-narrow messages
     // and expect to visit a list of narrows, so let's get these out of the way.
@@ -209,8 +237,6 @@ export function activate(raw_operators, opts) {
     const operators = filter.operators();
 
     update_narrow_title(filter);
-    message_scroll.hide_top_of_narrow_notices();
-    message_scroll.hide_indicators();
 
     blueslip.debug("Narrowed", {
         operators: operators.map((e) => e.operator),
@@ -811,7 +837,6 @@ function handle_post_narrow_deactivate_processes() {
     message_view_header.initialize();
     narrow_title = "All messages";
     notifications.redraw_title();
-    message_scroll.hide_top_of_narrow_notices();
     message_scroll.update_top_of_narrow_notices(message_lists.home);
 }
 
@@ -854,15 +879,13 @@ export function deactivate(coming_from_recent_topics = false) {
 
     narrow_state.reset_current_filter();
 
-    narrow_banner.hide_empty_narrow_message();
-
     $("body").removeClass("narrowed_view");
     $("#zfilt").removeClass("focused_table");
     $("#zhome").addClass("focused_table");
     message_lists.set_current(message_lists.home);
     condense.condense_and_collapse($("#zhome div.message_row"));
 
-    message_scroll.hide_indicators();
+    reset_ui_state();
     hashchange.save_narrow();
 
     if (message_lists.current.selected_id() !== -1) {

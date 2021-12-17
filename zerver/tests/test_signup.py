@@ -843,10 +843,23 @@ class LoginTest(ZulipTestCase):
         reset_emails_in_zulip_realm()
 
         realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
         stream_names = [f"stream_{i}" for i in range(40)]
         for stream_name in stream_names:
             stream = self.make_stream(stream_name, realm=realm)
             DefaultStream.objects.create(stream=stream, realm=realm)
+
+        # Make sure there's at least one recent message to be mark
+        # unread.  This prevents a bug where this test would start
+        # failing the test database was generated more than
+        # ONBOARDING_RECENT_TIMEDELTA ago.
+        self.subscribe(hamlet, "stream_0")
+        self.send_stream_message(
+            hamlet,
+            "stream_0",
+            topic_name="test topic",
+            content="test message",
+        )
 
         # Clear all the caches.
         flush_per_request_caches()
@@ -2008,16 +2021,16 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
         # Mainly a test of get_object_from_key, rather than of the invitation pathway
         with self.assertRaises(ConfirmationKeyException) as cm:
-            get_object_from_key(registration_key, Confirmation.INVITATION)
+            get_object_from_key(registration_key, [Confirmation.INVITATION])
         self.assertEqual(cm.exception.error_type, ConfirmationKeyException.DOES_NOT_EXIST)
 
         # Verify that using the wrong type doesn't work in the main confirm code path
         email_change_url = create_confirmation_link(prereg_user, Confirmation.EMAIL_CHANGE)
         email_change_key = email_change_url.split("/")[-1]
-        url = "/accounts/do_confirm/" + email_change_key
-        result = self.client_get(url)
-        self.assert_in_success_response(
-            ["Whoops. We couldn't find your confirmation link in the system."], result
+        result = self.client_post("/accounts/register/", {"key": email_change_key})
+        self.assertEqual(result.status_code, 404)
+        self.assert_in_response(
+            "Whoops. We couldn't find your confirmation link in the system.", result
         )
 
     def test_confirmation_expired(self) -> None:
@@ -2031,10 +2044,20 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         with patch("confirmation.models.timezone_now", return_value=date_sent):
             url = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
 
-        target_url = "/" + url.split("/", 3)[3]
-        result = self.client_get(target_url)
-        self.assert_in_success_response(
-            ["Whoops. The confirmation link has expired or been deactivated."], result
+        key = url.split("/")[-1]
+        confirmation_link_path = "/" + url.split("/", 3)[3]
+        # Both the confirmation link and submitting the key to the registration endpoint
+        # directly will return the appropriate error.
+        result = self.client_get(confirmation_link_path)
+        self.assertEqual(result.status_code, 404)
+        self.assert_in_response(
+            "Whoops. The confirmation link has expired or been deactivated.", result
+        )
+
+        result = self.client_post("/accounts/register/", {"key": key})
+        self.assertEqual(result.status_code, 404)
+        self.assert_in_response(
+            "Whoops. The confirmation link has expired or been deactivated.", result
         )
 
     def test_send_more_than_one_invite_to_same_user(self) -> None:
@@ -2105,7 +2128,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         """Since the key is a param input by the user to the registration endpoint,
         if it inserts an invalid value, the confirmation object won't be found. This
         tests if, in that scenario, we handle the exception by redirecting the user to
-        the confirmation_link_expired_error page.
+        the link_expired page.
         """
         email = self.nonreg_email("alice")
         password = "password"
@@ -2122,7 +2145,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             url, {"key": registration_key, "from_confirmation": 1, "full_nme": "alice"}
         )
         self.assertEqual(response.status_code, 404)
-        self.assert_in_response("The registration link has expired or is not valid.", response)
+        self.assert_in_response(
+            "Whoops. We couldn't find your confirmation link in the system.", response
+        )
 
         registration_key = confirmation_link.split("/")[-1]
         response = self.client_post(
@@ -2724,7 +2749,7 @@ class MultiuseInviteTest(ZulipTestCase):
         invite_link = self.generate_multiuse_invite_link(date_sent=date_sent)
         result = self.client_post(invite_link, {"email": email})
 
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 404)
         self.assert_in_response("The confirmation link has expired or been deactivated.", result)
 
     def test_invalid_multiuse_link(self) -> None:
@@ -2732,7 +2757,7 @@ class MultiuseInviteTest(ZulipTestCase):
         invite_link = "/join/invalid_key/"
         result = self.client_post(invite_link, {"email": email})
 
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 404)
         self.assert_in_response("Whoops. The confirmation link is malformed.", result)
 
     def test_invalid_multiuse_link_in_open_realm(self) -> None:
@@ -3955,7 +3980,7 @@ class UserSignUpTest(InviteUserBase):
 
         # Now try to to register using the first confirmation url:
         result = self.client_get(first_confirmation_url)
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 404)
         result = self.client_post(
             "/accounts/register/",
             {
@@ -3968,7 +3993,9 @@ class UserSignUpTest(InviteUserBase):
         )
         # Error page should be displayed
         self.assertEqual(result.status_code, 404)
-        self.assert_in_response("The registration link has expired or is not valid.", result)
+        self.assert_in_response(
+            "Whoops. The confirmation link has expired or been deactivated.", result
+        )
 
     def test_signup_with_multiple_default_stream_groups(self) -> None:
         # Check if user is subscribed to the streams of default
@@ -4205,7 +4232,8 @@ class UserSignUpTest(InviteUserBase):
             },
             subdomain="zephyr",
         )
-        self.assert_in_success_response(["We couldn't find your confirmation link"], result)
+        self.assertEqual(result.status_code, 404)
+        self.assert_in_response("We couldn't find your confirmation link", result)
 
     def test_signup_to_realm_on_manual_license_plan(self) -> None:
         realm = get_realm("zulip")
@@ -5099,7 +5127,7 @@ class UserSignUpTest(InviteUserBase):
             LDAP_APPEND_DOMAIN="zulip.com",
             AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
             AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",),
-            TERMS_OF_SERVICE=False,
+            TERMS_OF_SERVICE_VERSION=1.0,
         ):
             result = self.client_get(confirmation_url)
             self.assertEqual(result.status_code, 200)
@@ -5231,7 +5259,7 @@ class UserSignUpTest(InviteUserBase):
             "AssertionError: Mirror dummy user is already active!" in error_log.output[0]
         )
 
-    @override_settings(TERMS_OF_SERVICE=False)
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_dev_user_registration(self) -> None:
         """Verify that /devtools/register_user creates a new user, logs them
         in, and redirects to the logged-in app."""
@@ -5247,7 +5275,7 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(result["Location"], "http://zulip.testserver/")
         self.assert_logged_in_user_id(user_profile.id)
 
-    @override_settings(TERMS_OF_SERVICE=False)
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_dev_user_registration_create_realm(self) -> None:
         count = UserProfile.objects.count()
         string_id = f"realm-{count}"
@@ -5265,7 +5293,7 @@ class UserSignUpTest(InviteUserBase):
         assert user_profile is not None
         self.assert_logged_in_user_id(user_profile.id)
 
-    @override_settings(TERMS_OF_SERVICE=False)
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_dev_user_registration_create_demo_realm(self) -> None:
         result = self.client_post("/devtools/register_demo_realm/")
         self.assertEqual(result.status_code, 302)

@@ -20,7 +20,36 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 5.0
 
+**Feature level 112**
+
+* [`GET /events`](/api/get-events): Updated `update_message` event type
+  to include `stream_id` field for all edits to stream messages.
+
+**Feature level 111**
+
+* [`POST /subscriptions/properties`](/api/update-subscription-settings):
+  Removed `subscription_data` from response object, replacing it with
+  `ignored_parameters_unsupported`.
+
+**Feature level 110**
+
+* [`POST /register`](/api/register-queue): Added
+  `server_web_public_streams_enabled` to the response.
+
+**Feature level 109**
+
+* [`POST /register`](/api/register-queue), [`GET
+  /events`](/api/get-events), `PATCH /realm`: Added new
+  `enable_spectator_access` realm setting.
+
+**Feature level 108**
+
+* In the mobile application authentication flow, the authenticated
+  user's `user_id` is now included in the parameters encoded in the
+  final `zulip://` redirect URL.
+
 **Feature level 107**
+
 * [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
   [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
   Added user setting `escape_navigates_to_default_view` to allow users to

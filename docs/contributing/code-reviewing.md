@@ -16,7 +16,7 @@ this?". Good choices include
 
 Alternatively, posting a message in
 [#code-review](https://chat.zulip.org/#narrow/stream/91-code-review) on [the Zulip
-development community server](https://zulip.com/developer-community/), would
+development community server](https://zulip.com/development-community/), would
 help in reaching out to a wider group of reviewers. Either way, please be
 patient and mindful of the fact that it isn't possible to provide a
 quick reply always, but that the reviewer would get to it sooner or later.

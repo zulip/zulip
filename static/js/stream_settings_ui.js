@@ -607,7 +607,8 @@ export function setup_page(callback) {
         const template_data = {
             can_create_streams:
                 settings_data.user_can_create_private_streams() ||
-                settings_data.user_can_create_public_streams(),
+                settings_data.user_can_create_public_streams() ||
+                settings_data.user_can_create_web_public_streams(),
             hide_all_streams: !should_list_all_streams(),
             max_name_length: page_params.max_stream_name_length,
             max_description_length: page_params.max_stream_description_length,
@@ -651,6 +652,7 @@ export function setup_page(callback) {
             if (
                 settings_data.user_can_create_private_streams() ||
                 settings_data.user_can_create_public_streams() ||
+                settings_data.user_can_create_web_public_streams() ||
                 page_params.realm_is_zephyr_mirror_realm
             ) {
                 open_create_stream();
@@ -727,7 +729,7 @@ export function change_state(section) {
         // Guest users can not access unsubscribed streams
         // So redirect guest users to 'subscribed' tab
         // for any unsubscribed stream settings hash
-        if (page_params.is_guest && !stream_data.id_is_subscribed(stream_id)) {
+        if (page_params.is_guest && !stream_data.is_subscribed(stream_id)) {
             toggler.goto("subscribed");
         } else {
             show_right_section();
@@ -983,6 +985,98 @@ export function sub_or_unsub(sub, stream_row) {
         ajaxUnsubscribe(sub, stream_row);
     } else {
         ajaxSubscribe(sub.name, sub.color, stream_row);
+    }
+}
+
+export function update_web_public_stream_privacy_option_state(container) {
+    const web_public_stream_elem = container.find(
+        `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.web_public.code)}']`,
+    );
+    if (
+        !page_params.server_web_public_streams_enabled ||
+        !page_params.realm_enable_spectator_access
+    ) {
+        const for_change_privacy_modal = container.attr("id") === "stream_privacy_modal";
+        if (for_change_privacy_modal && web_public_stream_elem.is(":checked")) {
+            // We do not hide web-public option in the "Change privacy" modal if
+            // stream is web-public already. The option is disabled in this case.
+            web_public_stream_elem.prop("disabled", true);
+            return;
+        }
+        web_public_stream_elem.closest(".radio-input-parent").hide();
+        container
+            .find(".stream-privacy-values .radio-input-parent:visible:last")
+            .css("border-bottom", "none");
+    } else {
+        if (!web_public_stream_elem.is(":visible")) {
+            container
+                .find(".stream-privacy-values .radio-input-parent:visible:last")
+                .css("border-bottom", "");
+            web_public_stream_elem.closest(".radio-input-parent").show();
+        }
+        web_public_stream_elem.prop(
+            "disabled",
+            !settings_data.user_can_create_web_public_streams(),
+        );
+    }
+}
+
+export function update_public_stream_privacy_option_state(container) {
+    const public_stream_elem = container.find(
+        `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.public.code)}']`,
+    );
+    public_stream_elem.prop("disabled", !settings_data.user_can_create_public_streams());
+}
+
+export function update_private_stream_privacy_option_state(container) {
+    // Disable both "Private, shared history" and "Private, protected history" options.
+    const private_stream_elem = container.find(
+        `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.private.code)}']`,
+    );
+    const private_with_public_history_elem = container.find(
+        `input[value='${CSS.escape(
+            stream_data.stream_privacy_policy_values.private_with_public_history.code,
+        )}']`,
+    );
+
+    private_stream_elem.prop("disabled", !settings_data.user_can_create_private_streams());
+    private_with_public_history_elem.prop(
+        "disabled",
+        !settings_data.user_can_create_private_streams(),
+    );
+}
+
+export function hide_or_disable_stream_privacy_options_if_required(container) {
+    update_web_public_stream_privacy_option_state(container);
+
+    update_public_stream_privacy_option_state(container);
+
+    update_private_stream_privacy_option_state(container);
+}
+
+export function update_stream_privacy_choices(policy) {
+    if (!overlays.streams_open()) {
+        return;
+    }
+    const change_privacy_modal_opened = $("#stream_privacy_modal").is(":visible");
+    const stream_creation_form_opened = $("#stream-creation").is(":visible");
+
+    if (!change_privacy_modal_opened && !stream_creation_form_opened) {
+        return;
+    }
+    let container = $("#stream-creation");
+    if (change_privacy_modal_opened) {
+        container = $("#stream_privacy_modal");
+    }
+
+    if (policy === "create_private_stream_policy") {
+        update_private_stream_privacy_option_state(container);
+    }
+    if (policy === "create_public_stream_policy") {
+        update_public_stream_privacy_option_state(container);
+    }
+    if (policy === "create_web_public_stream_policy") {
+        update_web_public_stream_privacy_option_state(container);
     }
 }
 

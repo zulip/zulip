@@ -1200,7 +1200,10 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
     def test_social_auth_mobile_success(self) -> None:
         mobile_flow_otp = "1234abcd" * 8
-        account_data_dict = self.get_account_data_dict(email=self.email, name="Full Name")
+        hamlet = self.example_user("hamlet")
+        account_data_dict = self.get_account_data_dict(
+            email=hamlet.delivery_email, name="Full Name"
+        )
         self.assert_length(mail.outbox, 0)
         self.user_profile.date_joined = timezone_now() - datetime.timedelta(
             seconds=JUST_CREATED_THRESHOLD + 1
@@ -1231,7 +1234,9 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         query_params = urllib.parse.parse_qs(parsed_url.query)
         self.assertEqual(parsed_url.scheme, "zulip")
         self.assertEqual(query_params["realm"], ["http://zulip.testserver"])
-        self.assertEqual(query_params["email"], [self.example_email("hamlet")])
+        self.assertEqual(query_params["email"], [hamlet.delivery_email])
+        self.assertEqual(query_params["user_id"], [str(hamlet.id)])
+
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
         hamlet_api_keys = get_all_api_keys(self.example_user("hamlet"))
         self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
@@ -1411,7 +1416,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
         self.assertFalse(user_profile.has_usable_password())
 
-    @override_settings(TERMS_OF_SERVICE=None)
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_social_auth_registration(self) -> None:
         """If the user doesn't exist yet, social auth can be used to register an account"""
         email = "newuser@zulip.com"
@@ -1426,7 +1431,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
         )
 
-    @override_settings(TERMS_OF_SERVICE=None)
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_social_auth_mobile_registration(self) -> None:
         email = "newuser@zulip.com"
         name = "Full Name"
@@ -1453,7 +1458,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             mobile_flow_otp=mobile_flow_otp,
         )
 
-    @override_settings(TERMS_OF_SERVICE=None)
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_social_auth_desktop_registration(self) -> None:
         email = "newuser@zulip.com"
         name = "Full Name"
@@ -1480,7 +1485,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             desktop_flow_otp=desktop_flow_otp,
         )
 
-    @override_settings(TERMS_OF_SERVICE=None)
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_social_auth_registration_invitation_exists(self) -> None:
         """
         This tests the registration flow in the case where an invitation for the user
@@ -1502,7 +1507,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
         )
 
-    @override_settings(TERMS_OF_SERVICE=None)
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_social_auth_with_invalid_multiuse_invite(self) -> None:
         email = "newuser@zulip.com"
         name = "Full Name"
@@ -1521,9 +1526,9 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         result = self.client_get(result.url)
 
         self.assertEqual(result.status_code, 404)
-        self.assert_in_response("The registration link has expired or is not valid.", result)
+        self.assert_in_response("Whoops. The confirmation link is malformed.", result)
 
-    @override_settings(TERMS_OF_SERVICE=None)
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_social_auth_registration_using_multiuse_invite(self) -> None:
         """If the user doesn't exist yet, social auth can be used to register an account"""
         email = "newuser@zulip.com"
@@ -1623,7 +1628,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             result,
         )
 
-    @override_settings(TERMS_OF_SERVICE=None)
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_social_auth_with_ldap_populate_registration_from_confirmation(self) -> None:
         self.init_default_ldap_database()
         email = "newuser@zulip.com"
@@ -1686,7 +1691,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             log_warn.output, [f"WARNING:root:New account email {email} could not be found in LDAP"]
         )
 
-    @override_settings(TERMS_OF_SERVICE=None)
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_social_auth_with_ldap_auth_registration_from_confirmation(self) -> None:
         """
         This test checks that in configurations that use the LDAP authentication backend
@@ -1779,7 +1784,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertIn("login", result.url)
 
-    @override_settings(TERMS_OF_SERVICE=None)
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_social_auth_invited_as_admin_but_expired(self) -> None:
         iago = self.example_user("iago")
         email = self.nonreg_email("alice")
@@ -2162,7 +2167,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 result,
             )
 
-    @override_settings(TERMS_OF_SERVICE=None)
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_social_auth_registration_auto_signup(self) -> None:
         """
         Verify that with SAML auto signup enabled, a user coming from the /login page
@@ -3330,7 +3335,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
             family_name=name.split(" ")[1],
         )
 
-    @override_settings(TERMS_OF_SERVICE=None)
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_social_auth_registration_auto_signup(self) -> None:
         """
         The analogue of the auto_signup test for SAML.

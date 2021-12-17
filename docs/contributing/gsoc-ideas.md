@@ -81,28 +81,28 @@ tasks that are great for first-time contributors. Use
 to get your Zulip development environment set up and to find your first issue. If you have any
 trouble, please speak up in
 [#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) on
-[the Zulip development community server](https://zulip.com/developer-community/)
+[the Zulip development community server](https://zulip.com/development-community/)
 (use your name as the topic).
 
 ## Application tips, and how to be a strong candidate
 
-You'll be following
-[GSoC's application process instructions](https://developers.google.com/open-source/gsoc/). And
-we'll be asking you to make at least one successful pull request
-before the application deadline, to help us assess you as a developer.
-Students who we accept generally have 5 or more pull requests merged
-or nearly merged (usually including at least a couple that are
-significant, e.g. having 100+ lines of changes or that shows you have
-done significant debugging).
+You'll be following [GSoC's application process
+instructions](https://developers.google.com/open-source/gsoc/), and
+making at least one successful pull request before the application
+deadline, to help us assess you as a developer. Students who we accept
+generally have five or more merged, or nearly merged, pull requests
+(usually including at least a couple which are significant,
+e.g. having 100+ lines of changes or show you have done significant
+debugging).
 
 Getting started earlier is better, so you have more time to learn,
 make contributions, and make a good proposal.
 
 Your application should include the following:
 
-- Details on any experience you have related to the technologies that
-  Zulip has, or related to our product approach.
-- Links to materials to help us evaluate your level of experience and
+- Details on any experience you have related to the technologies used
+  by Zulip, or related to our product approach.
+- Links to materials which help us evaluate your level of experience and
   how you work, such as personal projects of yours, including any
   existing open source or open culture contributions you've made and
   any bug reports you've submitted to open source projects.
@@ -110,7 +110,7 @@ Your application should include the following:
 - A description of the project you'd like to do, and why you're
   excited about it.
 - Some notes on why you're excited about working on Zulip.
-- A link to the initial contribution(s) you did.
+- A link to your initial contribution(s).
 
 We expect applicants to either have experience with the technologies
 relevant to their project or have strong general programming
@@ -125,43 +125,65 @@ contributions throughout the application process, including after the
 application deadline.
 
 We are more interested in candidates if we see them submitting good
-contributions to Zulip projects, helping other applicants on GitHub
-and on
-[chat.zulip.org](https://zulip.com/developer-community/),
-learning from our suggestions,
-[trying to solve their own obstacles and then asking well-formed
-questions](https://blogs.akamai.com/2013/10/you-must-try-and-then-you-must-ask.html),
-and developing and sharing project ideas and project proposals that
+contributions to Zulip projects, helping other applicants on [GitHub](https://github.com/zulip/zulip)
+and on [chat.zulip.org](https://zulip.com/development-community),
+learning from our suggestions, [trying to solve their own obstacles and
+then asking well-formed questions](https://www.mattringel.com/2013/09/30/you-must-try-and-then-you-must-ask/),
+and developing and sharing project ideas and project proposals which
 are plausible and useful.
 
-Also, you're going to find that people give you links to pages that
-answer your questions. Here's how that often works:
+## Questions are Important
 
-1. you [try to solve your problem until you get stuck, including
-   looking through our code and our documentation, then start formulating
-   your request for
-   help](https://blogs.akamai.com/2013/10/you-must-try-and-then-you-must-ask.html)
-1. you ask your question
-1. someone directs you to a document
-1. you go read that document, and try to use it to answer your question
-1. you find you are confused about a new thing
-1. you ask another question
-1. now that you have demonstrated that you have the ability to read,
-   think, and learn new things, someone has a longer talk with you to
-   answer your new specific question
-1. you and the other person collaborate to improve the document that you
-   read in step 3 :-)
+A successful GSoC revolves around asking well-formed questions.
+A well-formed question helps you learn, respects the person answering,
+and reduces the time commitment and frustration level of everyone
+involved. Asking the right question, to the right person, in the right
+way, at the right time, is a skill which requires a lifetime of
+fine-tuning, but Zulip makes this a little bit easier by providing a
+general structure for asking questions in the Zulip community.
 
-This helps us make a balance between person-to-person discussion and
-documentation that everyone can read, so we save time answering common
-questions but also get everyone the personal help they need. This will
-help you understand the rhythm of help we provide in the developers'
-Zulip livechat -- including why we prefer to give you help in public
-mailing lists and Zulip streams, instead of in one-on-one private
-messages or email. We prefer to hear from you and respond to you in
-public places so more people have a chance to answer the question, and
-to see and benefit from the answer. [More about that in this blog
-post.](https://www.harihareswara.net/sumana/2016/10/12/0)
+This structure saves time answering common questions while still
+providing everyone the personal help they need, and maintains balance
+between stream discussion and documentation. Becoming familiar and
+comfortable with this rhythm will be helpful to you as you interact
+with other developers on
+[chat.zulip.org](https://zulip.com/development-community). It is always
+better (and Zulip’s strong preference) to ask questions and have
+conversation through a public stream rather than a private message or
+an email. This benefits you by giving you faster response times and
+the benefit of many minds, as well as benefiting the community as
+other contributors learn from reading the conversation.
+
+- Stick to the [community norms](https://zulip.com/development-community/).
+- Read these three blog posts
+  - [Try, Then Ask](https://www.mattringel.com/2013/09/30/you-must-try-and-then-you-must-ask/)
+  - [We Aren’t Just Making Code, We’re Making History](https://www.harihareswara.net/sumana/2016/10/12/0)
+  - [How to Ask Good Questions](https://jvns.ca/blog/good-questions/)
+- Understand [what makes a great Zulip contributor](../overview/contributing.html#what-makes-a-great-zulip-contributor)
+
+This is a typical question/response sequence:
+
+1. You [try to solve your problem until you get stuck, including
+   looking through our code and our documentation, then start
+   formulating your request for
+   help](https://www.mattringel.com/2013/09/30/you-must-try-and-then-you-must-ask/).
+1. You ask your question.
+1. Someone directs you to a document.
+1. You go read the document to find the answer to your question.
+1. You find you are confused about a new thing.
+1. You ask another question.
+1. Having demonstrated your the ability to read,
+   think, and learn new things, someone will have a longer talk with
+   you to answer your new, specific question.
+1. You and the other person collaborate to improve the document you
+   read in step 3. :-)
+
+As a final note on asking for help, please make use of [Zulip's
+Markdown](https://zulip.com/help/format-your-message-using-markdown)
+when posting questions; code blocks are nicer for reading terminal
+output than screenshots. And be sure to read the traceback before
+posting it; often the error message explains the problem or hints that
+you need more scrollback than just the last 20 lines.
 
 ## Mentors
 
@@ -171,18 +193,18 @@ part on who is a good fit for the needs of each student as well as
 technical expertise as well as who has available time during the
 summer. You can reach us via
 [#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) on [the Zulip
-development community server](https://zulip.com/developer-community/),
+development community server](https://zulip.com/development-community/),
 (compose a new stream message with your name as the topic).
 
-Zulip operates under group mentorship. That means you should
-generally post in public streams on chat.zulip.org, not send private
-messages, for assistance. Our preferred approach is to just post in
-an appropriate public stream on chat.zulip.org and someone will help
-you. We list the Zulip contributors who are experts for various
-projects by name below; they will likely be able to provide you with
-the best feedback on your proposal (feel free to @-mention them in
-your Zulip post). In practice, this allows project leadership to
-be involved in mentoring all students.
+Zulip operates under group mentorship. That means you should generally
+post in Zulip public streams, not send private messages, for
+assistance. Our preferred approach is to just post in an appropriate
+Zulip public stream .org and someone will help you. We list the Zulip
+contributors who are experts for various projects by name below; they
+will likely be able to provide you with the best feedback on your
+proposal (feel free to @-mention them in your Zulip post). In
+practice, this allows project leadership to be involved in mentoring
+all students.
 
 However, the first and most important thing to do for building a
 strong application is to show your skills by contributing to a large
@@ -198,9 +220,8 @@ make sure you don't make the same mistakes next time).
 Once you have several PRs merged (or at least one significant PR
 merged), you can start discussing with the Zulip development community
 the project you'd like to do, and developing a specific project plan.
-We recommend discussing what you're thinking in public streams on
-chat.zulip.org, so it's easy to get quick feedback from whoever is
-online.
+We recommend discussing what you're thinking in Zulip public streams,
+so it's easy to get quick feedback from whoever is online.
 
 ## Project ideas
 
@@ -584,11 +605,12 @@ two before the application deadline. That way, the whole developer
 community -- not just the mentors and administrators -- have a chance
 to give you feedback and help you improve your proposal.
 
-Where should you publish your draft? We prefer Dropbox Paper or
-Google Docs, since those platforms allow people to look at the text
-without having to log in or download a particular app, and you can
-update the draft as you improve your idea. In either case, you should
-post the draft for feedback in chat.zulip.org.
+Where should you publish your draft? We prefer Dropbox Paper or Google
+Docs, since those platforms allow people to look at the text without
+having to log in or download a particular app, and you can update the
+draft as you improve your idea. In either case, you should post the
+draft for feedback in
+[#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC).
 
 Rough is fine! The ideal first draft to get feedback from the
 community on should include primarily (1) links to your contributions

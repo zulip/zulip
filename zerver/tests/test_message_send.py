@@ -730,6 +730,37 @@ class MessagePOSTTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Missing topic")
 
+    def test_invalid_topic(self) -> None:
+        """
+        Sending a message with invalid 'Cc', 'Cs' and 'Cn' category of unicode characters
+        """
+        # For 'Cc' category
+        self.login("hamlet")
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "stream",
+                "to": "Verona",
+                "client": "test suite",
+                "topic": "Test\n\rTopic",
+                "content": "Test message",
+            },
+        )
+        self.assert_json_error(result, "Invalid characters in topic!")
+
+        # For 'Cn' category
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "stream",
+                "to": "Verona",
+                "client": "test suite",
+                "topic": "Test\uFFFETopic",
+                "content": "Test message",
+            },
+        )
+        self.assert_json_error(result, "Invalid characters in topic!")
+
     def test_invalid_message_type(self) -> None:
         """
         Messages other than the type of "private" or "stream" are considered as invalid

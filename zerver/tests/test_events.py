@@ -39,8 +39,8 @@ from zerver.lib.actions import (
     do_change_full_name,
     do_change_icon_source,
     do_change_logo_source,
-    do_change_plan_type,
     do_change_realm_domain,
+    do_change_realm_plan_type,
     do_change_stream_description,
     do_change_stream_message_retention_days,
     do_change_stream_permission,
@@ -432,6 +432,41 @@ class NormalActionsTest(BaseAction):
             ),
         )
 
+        # Verify private message editing - content only edit
+        pm = Message.objects.order_by("-id")[0]
+        content = "new content"
+        rendering_result = render_markdown(pm, content)
+        prior_mention_user_ids: Set[int] = set()
+        mention_data = MentionData(
+            realm_id=self.user_profile.realm_id,
+            content=content,
+        )
+
+        events = self.verify_action(
+            lambda: do_update_message(
+                self.user_profile,
+                pm,
+                None,
+                None,
+                None,
+                False,
+                False,
+                content,
+                rendering_result,
+                prior_mention_user_ids,
+                mention_data,
+            ),
+            state_change_expected=False,
+        )
+        check_update_message(
+            "events[0]",
+            events[0],
+            is_stream_message=False,
+            has_content=True,
+            has_topic=False,
+            has_new_stream_id=False,
+        )
+
     def test_huddle_send_message_events(self) -> None:
         huddle = [
             self.example_user("hamlet"),
@@ -456,10 +491,8 @@ class NormalActionsTest(BaseAction):
         check_message("events[0]", events[0])
         assert events[0]["message"]["avatar_url"] is None
 
-        # Verify message editing
+        # Verify stream message editing - content only
         message = Message.objects.order_by("-id")[0]
-        topic = "new_topic"
-        propagate_mode = "change_all"
         content = "new content"
         rendering_result = render_markdown(message, content)
         prior_mention_user_ids: Set[int] = set()
@@ -473,12 +506,41 @@ class NormalActionsTest(BaseAction):
                 self.user_profile,
                 message,
                 None,
-                topic,
-                propagate_mode,
+                None,
+                None,
                 False,
                 False,
                 content,
                 rendering_result,
+                prior_mention_user_ids,
+                mention_data,
+            ),
+            state_change_expected=False,
+        )
+        check_update_message(
+            "events[0]",
+            events[0],
+            is_stream_message=True,
+            has_content=True,
+            has_topic=False,
+            has_new_stream_id=False,
+        )
+
+        # Verify stream message editing - topic only
+        topic = "new_topic"
+        propagate_mode = "change_all"
+
+        events = self.verify_action(
+            lambda: do_update_message(
+                self.user_profile,
+                message,
+                None,
+                topic,
+                propagate_mode,
+                False,
+                False,
+                None,
+                None,
                 prior_mention_user_ids,
                 mention_data,
             ),
@@ -487,7 +549,8 @@ class NormalActionsTest(BaseAction):
         check_update_message(
             "events[0]",
             events[0],
-            has_content=True,
+            is_stream_message=True,
+            has_content=False,
             has_topic=True,
             has_new_stream_id=False,
         )
@@ -506,7 +569,6 @@ class NormalActionsTest(BaseAction):
         self.send_stream_message(self.user_profile, "Verona")
         message_id = self.send_stream_message(self.user_profile, "Verona")
         message = Message.objects.get(id=message_id)
-        topic = "new_topic"
         stream = get_stream("Denmark", self.user_profile.realm)
         propagate_mode = "change_all"
         prior_mention_user_ids = set()
@@ -516,7 +578,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile,
                 message,
                 stream,
-                topic,
+                None,
                 propagate_mode,
                 True,
                 True,
@@ -534,8 +596,9 @@ class NormalActionsTest(BaseAction):
         check_update_message(
             "events[0]",
             events[0],
+            is_stream_message=True,
             has_content=False,
-            has_topic=True,
+            has_topic=False,
             has_new_stream_id=True,
         )
 
@@ -1546,7 +1609,7 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(state_data["zulip_plan_is_not_limited"], True)
 
         events = self.verify_action(
-            lambda: do_change_plan_type(
+            lambda: do_change_realm_plan_type(
                 realm, Realm.PLAN_TYPE_LIMITED, acting_user=self.user_profile
             )
         )
@@ -1691,14 +1754,14 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(action, state_change_expected=True)
         check_realm_update_dict("events[0]", events[0])
 
-    def test_change_realm_day_mode_logo_source(self) -> None:
+    def test_change_realm_light_theme_logo_source(self) -> None:
         action = lambda: do_change_logo_source(
             self.user_profile.realm, Realm.LOGO_UPLOADED, False, acting_user=self.user_profile
         )
         events = self.verify_action(action, state_change_expected=True)
         check_realm_update_dict("events[0]", events[0])
 
-    def test_change_realm_night_mode_logo_source(self) -> None:
+    def test_change_realm_dark_theme_logo_source(self) -> None:
         action = lambda: do_change_logo_source(
             self.user_profile.realm, Realm.LOGO_UPLOADED, True, acting_user=self.user_profile
         )
@@ -1806,7 +1869,7 @@ class NormalActionsTest(BaseAction):
         self.user_profile.save(update_fields=["tutorial_status"])
 
         events = self.verify_action(
-            lambda: do_mark_hotspot_as_read(self.user_profile, "intro_reply")
+            lambda: do_mark_hotspot_as_read(self.user_profile, "intro_streams")
         )
         check_hotspots("events[0]", events[0])
 
@@ -2492,8 +2555,10 @@ class SubscribeActionTest(BaseAction):
         events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
         check_stream_update("events[0]", events[0])
 
-        action = lambda: do_change_stream_message_retention_days(stream, -1)
-        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=1)
+        action = lambda: do_change_stream_message_retention_days(
+            stream, self.example_user("hamlet"), -1
+        )
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
         check_stream_update("events[0]", events[0])
 
         # Subscribe to a totally new invite-only stream, so it's just Hamlet on it

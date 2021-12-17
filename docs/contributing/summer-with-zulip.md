@@ -34,8 +34,10 @@ materials](https://developers.google.com/open-source/gsoc/resources/manual).
 - Mentors and students should stay in close contact, both with each other and
   the rest of the Zulip community. We recommend the following:
 
-  - Daily checkins on #checkins on chat.zulip.org; ideally at some time of day
-    you can both be online, but when not possible, async is better than nothing!
+  - Daily checkins on #checkins in
+    [the Zulip development community](https://zulip.com/development-community/); ideally
+    at some time of day you can both be online, but when not
+    possible, async is better than nothing!
 
     - We prefer checkins in public streams, since it makes easier for
       other contributors to keep track of what everyone else is
@@ -54,9 +56,9 @@ materials](https://developers.google.com/open-source/gsoc/resources/manual).
     need help learning, and time-saving tricks.
 
   - If you need feedback from the community / decisions made, ask in the
-    appropriate public stream on [chat.zulip.org](https://chat.zulip.org). Often
-    someone can provide important context that you need to succeed in your
-    project.
+    appropriate public stream in
+    [the Zulip development community](https://zulip.com/development-community/). Often
+    someone can provide important context that you need to succeed in your project.
 
   - Communicate clearly, especially in public places! You'll get much more
     useful feedback to a well-written Zulip message or GitHub issue comment than

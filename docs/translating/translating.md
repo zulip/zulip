@@ -21,7 +21,7 @@ These are the steps you should follow if you want to help translate
 Zulip:
 
 1. Join [#translation][translation-stream] in the [Zulip development
-   community server](https://zulip.com/developer-community/), and say hello.
+   community server](https://zulip.com/development-community/), and say hello.
    That stream is also the right place for any questions, updates on your
    progress, reporting problematic strings, etc.
 
@@ -87,7 +87,7 @@ Some useful tips for your translating journey:
 
 - When in doubt, ask for context in
   [#translation](https://chat.zulip.org/#narrow/stream/58-translation) in
-  the [Zulip development community server](https://zulip.com/developer-community/).
+  the [Zulip development community server](https://zulip.com/development-community/).
 
 - If there are multiple possible translations for a term, search for it in
   the _Concordance_ tool (the button with a magnet in the top right corner).

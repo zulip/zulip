@@ -4,7 +4,7 @@ This section attempts to document the Zulip security model. It likely
 does not cover every issue; if there are details you're curious about,
 please feel free to ask questions in [#production
 help](https://chat.zulip.org/#narrow/stream/31-production-help) on the
-[Zulip community server](https://zulip.com/developer-community/) (or if you
+[Zulip community server](https://zulip.com/development-community/) (or if you
 think you've found a security bug, please report it to
 security@zulip.com so we can do a responsible security
 announcement).
@@ -239,7 +239,7 @@ strength allowed is controlled by two settings in
   browser is logged into a Zulip account that has received the
   uploaded file in question).
 
-- Zulip supports using the Camo image proxy to proxy content like
+- Zulip supports using the [go-camo][go-camo] image proxy to proxy content like
   inline image previews, that can be inserted into the Zulip message feed by
   other users. This ensures that clients do not make requests to external
   servers to fetch images, improving privacy.
@@ -259,15 +259,16 @@ strength allowed is controlled by two settings in
   - Mobile push notifications (must be configured to be enabled)
 
 - Notably, these first 3 features give end users (limited) control to cause
-  the Zulip server to make HTTP requests on their behalf. As a result,
-  Zulip supports routing all outgoing outgoing HTTP requests [through
+  the Zulip server to make HTTP requests on their behalf. Because of this,
+  Zulip routes all outgoing outgoing HTTP requests [through
   Smokescreen][smokescreen-setup] to ensure that Zulip cannot be
   used to execute [SSRF attacks][ssrf] against other systems on an
   internal corporate network. The default Smokescreen configuration
   denies access to all non-public IP addresses, including 127.0.0.1.
 
+[go-camo]: https://github.com/cactus/go-camo
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
-[smokescreen-setup]: ../production/deployment.html#using-an-outgoing-http-proxy
+[smokescreen-setup]: ../production/deployment.html#customizing-the-outgoing-http-proxy
 
 ## Final notes and security response
 

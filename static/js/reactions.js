@@ -66,6 +66,13 @@ function create_reaction(message_id, reaction_info) {
 }
 
 function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
+    if (page_params.is_spectator) {
+        // Spectators can't react, since they don't have accounts.  We
+        // stop here to avoid a confusing reaction local echo.
+        spectators.login_to_access();
+        return;
+    }
+
     const message = get_message(message_id);
     const local_id = get_local_reaction_id(reaction_info);
     const has_reacted = current_user_has_reacted_to_emoji(message, local_id);
@@ -111,13 +118,6 @@ export function toggle_emoji_reaction(message_id, emoji_name) {
 }
 
 export function process_reaction_click(message_id, local_id) {
-    if (page_params.is_spectator) {
-        // Spectators can't react, since they don't have accounts.  We
-        // stop here to avoid a confusing reaction local echo.
-        spectators.login_to_access();
-        return;
-    }
-
     const message = get_message(message_id);
 
     if (!message) {
@@ -308,33 +308,22 @@ view.insert_new_reaction = function (opts) {
     // before the add button.
 
     const message_id = opts.message_id;
-    const emoji_name = opts.emoji_name;
-    const emoji_code = opts.emoji_code;
     const user_id = opts.user_id;
     const user_list = [user_id];
 
     const context = {
         message_id,
-        emoji_name,
-        emoji_code,
+        ...emoji.get_emoji_details_for_rendering(opts),
     };
 
-    const new_label = generate_title(emoji_name, user_list);
-
-    if (opts.reaction_type !== "unicode_emoji") {
-        context.is_realm_emoji = true;
-        const emoji_info = emoji.all_realm_emojis.get(emoji_code);
-        if (!emoji_info) {
-            blueslip.error(`Cannot find/insert realm emoji for code '${emoji_code}'.`);
-            return;
-        }
-        context.url = emoji_info.emoji_url;
-    }
+    const new_label = generate_title(opts.emoji_name, user_list);
 
     context.count = 1;
     context.label = new_label;
     context.local_id = get_local_reaction_id(opts);
     context.emoji_alt_code = user_settings.emojiset === "text";
+    context.is_realm_emoji =
+        context.reaction_type === "realm_emoji" || context.reaction_type === "zulip_extra_emoji";
 
     if (opts.user_id === page_params.user_id) {
         context.class = "message_reaction reacted";
@@ -518,27 +507,15 @@ export function set_clean_reactions(message) {
 }
 
 export function add_clean_reaction(opts) {
-    const r = {};
+    const r = emoji.get_emoji_details_for_rendering(opts);
 
-    r.reaction_type = opts.reaction_type;
-    r.emoji_name = opts.emoji_name;
-    r.emoji_code = opts.emoji_code;
     r.local_id = opts.local_id;
 
     r.user_ids = opts.user_ids;
     update_user_fields(r);
 
     r.emoji_alt_code = user_settings.emojiset === "text";
-
-    if (r.reaction_type !== "unicode_emoji") {
-        r.is_realm_emoji = true;
-        const emoji_info = emoji.all_realm_emojis.get(r.emoji_code);
-        if (!emoji_info) {
-            blueslip.error(`Cannot find/add realm emoji for code '${r.emoji_code}'.`);
-            return;
-        }
-        r.url = emoji_info.emoji_url;
-    }
+    r.is_realm_emoji = r.reaction_type === "realm_emoji" || r.reaction_type === "zulip_extra_emoji";
 
     opts.message.clean_reactions.set(opts.local_id, r);
 }

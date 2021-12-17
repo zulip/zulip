@@ -78,13 +78,8 @@ const emoji_params = {
             id: "992",
             name: "inactive_realm_emoji",
             source_url: "/url/for/992",
+            still_url: "/still/url/for/992",
             deactivated: true,
-        },
-        zulip: {
-            id: "zulip",
-            name: "zulip",
-            source_url: "/url/for/zulip",
-            deactivated: false,
         },
     },
     emoji_codes,
@@ -174,6 +169,7 @@ test("basics", () => {
             label: "translated: Cali reacted with :frown:",
             emoji_alt_code: false,
             class: "message_reaction",
+            is_realm_emoji: false,
         },
         {
             emoji_name: "inactive_realm_emoji",
@@ -186,6 +182,7 @@ test("basics", () => {
             emoji_alt_code: false,
             is_realm_emoji: true,
             url: "/url/for/992",
+            still_url: "/still/url/for/992",
             class: "message_reaction reacted",
         },
         {
@@ -198,6 +195,7 @@ test("basics", () => {
             label: "translated: You (click to remove) and Bob van Roberts reacted with :smile:",
             emoji_alt_code: false,
             class: "message_reaction reacted",
+            is_realm_emoji: false,
         },
         {
             emoji_name: "tada",
@@ -209,6 +207,7 @@ test("basics", () => {
             label: "translated: Cali and Alexus reacted with :tada:",
             emoji_alt_code: false,
             class: "message_reaction",
+            is_realm_emoji: false,
         },
         {
             emoji_name: "rocket",
@@ -220,6 +219,7 @@ test("basics", () => {
             label: "translated: You (click to remove), Bob van Roberts and Cali reacted with :rocket:",
             emoji_alt_code: false,
             class: "message_reaction reacted",
+            is_realm_emoji: false,
         },
         {
             emoji_name: "wave",
@@ -231,27 +231,42 @@ test("basics", () => {
             label: "translated: Bob van Roberts, Cali and Alexus reacted with :wave:",
             emoji_alt_code: false,
             class: "message_reaction",
+            is_realm_emoji: false,
         },
     ];
     assert.deepEqual(result, expected_result);
 });
 
 test("unknown realm emojis (add)", () => {
-    blueslip.expect("error", "Cannot find/add realm emoji for code 'broken'.");
-    reactions.add_clean_reaction({
-        reaction_type: "realm_emoji",
-        emoji_code: "broken",
-        user_ids: [alice.user_id],
-    });
+    assert.throws(
+        () =>
+            reactions.view.insert_new_reaction({
+                reaction_type: "realm_emoji",
+                emoji_name: "false_emoji",
+                emoji_code: "broken",
+                user_ids: [alice.user_id],
+            }),
+        {
+            name: "Error",
+            message: "Cannot find realm emoji for code 'broken'.",
+        },
+    );
 });
 
 test("unknown realm emojis (insert)", () => {
-    blueslip.expect("error", "Cannot find/insert realm emoji for code 'bogus'.");
-    reactions.view.insert_new_reaction({
-        reaction_type: "realm_emoji",
-        emoji_code: "bogus",
-        user_id: bob.user_id,
-    });
+    assert.throws(
+        () =>
+            reactions.view.insert_new_reaction({
+                reaction_type: "realm_emoji",
+                emoji_name: "fake_emoji",
+                emoji_code: "bogus",
+                user_id: bob.user_id,
+            }),
+        {
+            name: "Error",
+            message: "Cannot find realm emoji for code 'bogus'.",
+        },
+    );
 });
 
 test("sending", ({override}) => {
@@ -606,6 +621,8 @@ test("view.insert_new_reaction (me w/unicode emoji)", ({override, mock_template}
             class: "message_reaction reacted",
             message_id: opts.message_id,
             label: "translated: You (click to remove) reacted with :8ball:",
+            reaction_type: opts.reaction_type,
+            is_realm_emoji: false,
         });
         return "<new reaction html>";
     });
@@ -621,14 +638,12 @@ test("view.insert_new_reaction (me w/unicode emoji)", ({override, mock_template}
 });
 
 test("view.insert_new_reaction (them w/zulip emoji)", ({override, mock_template}) => {
-    const zulip_emoji = emoji_params.realm_emoji.zulip;
     const opts = {
         message_id: 502,
         reaction_type: "realm_emoji",
         emoji_name: "zulip",
-        emoji_code: zulip_emoji.id,
+        emoji_code: "zulip",
         user_id: bob.user_id,
-        source_url: zulip_emoji.source_url,
     };
 
     const message_reactions = $.create("our-reactions");
@@ -655,6 +670,8 @@ test("view.insert_new_reaction (them w/zulip emoji)", ({override, mock_template}
             class: "message_reaction",
             message_id: opts.message_id,
             label: "translated: Bob van Roberts reacted with :zulip:",
+            still_url: undefined,
+            reaction_type: opts.reaction_type,
         });
         return "<new reaction html>";
     });

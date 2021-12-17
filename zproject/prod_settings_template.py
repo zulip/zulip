@@ -756,9 +756,15 @@ CAMO_URI = "/external_content/"
 ## Controls whether Zulip will rate-limit user requests.
 # RATE_LIMITING = True
 
-## If you want to set a Terms of Service for your server, set the path
-## to your Markdown file, and uncomment the following line.
-# TERMS_OF_SERVICE = '/etc/zulip/terms.md'
+## Fetch TOR exit node list every hour, and group all TOR exit nodes
+## together into one bucket when applying rate-limiting.
+# RATE_LIMIT_TOR_TOGETHER = False
 
-## Similarly if you want to set a Privacy Policy.
-# PRIVACY_POLICY = '/etc/zulip/privacy.md'
+## Configuration for Terms of Service and Privacy Policy for the
+## server.  If unset, Zulip will never prompt users to accept Terms of
+## Service.  Users will be prompted to accept the terms during account
+## registration, and during login if this value has changed.
+# TERMS_OF_SERVICE_VERSION = "1.0"
+
+## Directory containing Markdown files for the server's policies.
+# POLICIES_DIRECTORY = "/etc/zulip/policies/"

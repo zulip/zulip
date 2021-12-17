@@ -715,8 +715,6 @@ class S3UploadBackend(ZulipUploadBackend):
 
     def get_emoji_url(self, emoji_file_name: str, realm_id: int, still: bool = False) -> str:
         if still:
-            # We currently only support animated GIFs.
-            assert emoji_file_name.endswith(".gif")
             emoji_path = RealmEmoji.STILL_PATH_ID_TEMPLATE.format(
                 realm_id=realm_id,
                 emoji_filename_without_extension=os.path.splitext(emoji_file_name)[0],
@@ -968,8 +966,6 @@ class LocalUploadBackend(ZulipUploadBackend):
 
     def get_emoji_url(self, emoji_file_name: str, realm_id: int, still: bool = False) -> str:
         if still:
-            # We currently only support animated GIFs.
-            assert emoji_file_name.endswith(".gif")
             return os.path.join(
                 "/user_avatars",
                 RealmEmoji.STILL_PATH_ID_TEMPLATE.format(

@@ -72,6 +72,7 @@ IGNORED_PHRASES = [
     r".zuliprc",
     r"__\w+\.\w+__",
     # Things using "I"
+    r"I understand",
     r"I say",
     r"I want",
     r"I'm",
@@ -165,6 +166,11 @@ IGNORED_PHRASES = [
     # Used in our case studies
     r"Technical University of Munich",
     r"University of California San Diego",
+    # Used in stream creation form
+    r"email hidden",
+    # Use in compose box.
+    r"to send",
+    r"to add a new line",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

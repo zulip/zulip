@@ -38,7 +38,7 @@ class TestCustomEmails(ZulipTestCase):
         markdown_template_path = "templates/zerver/emails/email_base_default.source.html"
         send_custom_email(
             [hamlet],
-            {
+            options={
                 "markdown_template_path": markdown_template_path,
                 "reply_to": reply_to,
                 "subject": email_subject,
@@ -53,6 +53,36 @@ class TestCustomEmails(ZulipTestCase):
         self.assertEqual(msg.reply_to[0], reply_to)
         self.assertNotIn("{% block content %}", msg.body)
 
+    def test_send_custom_email_remote_server(self) -> None:
+        email_subject = "subject_test"
+        reply_to = "reply_to_test"
+        from_name = "from_name_test"
+        contact_email = "zulip-admin@example.com"
+        markdown_template_path = "templates/corporate/policies/index.md"
+        send_custom_email(
+            [],
+            target_emails=[contact_email],
+            options={
+                "markdown_template_path": markdown_template_path,
+                "reply_to": reply_to,
+                "subject": email_subject,
+                "from_name": from_name,
+                "dry_run": False,
+            },
+        )
+        self.assert_length(mail.outbox, 1)
+        msg = mail.outbox[0]
+        self.assertEqual(msg.subject, email_subject)
+        self.assertEqual(msg.to, [contact_email])
+        self.assert_length(msg.reply_to, 1)
+        self.assertEqual(msg.reply_to[0], reply_to)
+        self.assertNotIn("{% block content %}", msg.body)
+        # Verify that the HTML version contains the footer.
+        self.assertIn(
+            "You are receiving this email to update you about important changes to Zulip",
+            str(msg.message()),
+        )
+
     def test_send_custom_email_headers(self) -> None:
         hamlet = self.example_user("hamlet")
         markdown_template_path = (
@@ -60,7 +90,7 @@ class TestCustomEmails(ZulipTestCase):
         )
         send_custom_email(
             [hamlet],
-            {
+            options={
                 "markdown_template_path": markdown_template_path,
                 "dry_run": False,
             },
@@ -83,7 +113,7 @@ class TestCustomEmails(ZulipTestCase):
             NoEmailArgumentException,
             send_custom_email,
             [hamlet],
-            {
+            options={
                 "markdown_template_path": markdown_template_path,
                 "from_name": from_name,
                 "dry_run": False,
@@ -94,7 +124,7 @@ class TestCustomEmails(ZulipTestCase):
             NoEmailArgumentException,
             send_custom_email,
             [hamlet],
-            {
+            options={
                 "markdown_template_path": markdown_template_path,
                 "subject": email_subject,
                 "dry_run": False,
@@ -115,7 +145,7 @@ class TestCustomEmails(ZulipTestCase):
             DoubledEmailArgumentException,
             send_custom_email,
             [hamlet],
-            {
+            options={
                 "markdown_template_path": markdown_template_path,
                 "subject": email_subject,
                 "dry_run": False,
@@ -126,7 +156,7 @@ class TestCustomEmails(ZulipTestCase):
             DoubledEmailArgumentException,
             send_custom_email,
             [hamlet],
-            {
+            options={
                 "markdown_template_path": markdown_template_path,
                 "from_name": from_name,
                 "dry_run": False,
@@ -144,7 +174,7 @@ class TestCustomEmails(ZulipTestCase):
         )
         send_custom_email(
             [admin_user, non_admin_user],
-            {
+            options={
                 "markdown_template_path": markdown_template_path,
                 "admins_only": True,
                 "dry_run": False,
@@ -162,7 +192,7 @@ class TestCustomEmails(ZulipTestCase):
         with patch("builtins.print") as _:
             send_custom_email(
                 [hamlet],
-                {
+                options={
                     "markdown_template_path": markdown_template_path,
                     "reply_to": reply_to,
                     "subject": email_subject,
@@ -573,8 +603,11 @@ class TestMissedMessages(ZulipTestCase):
     def _extra_context_in_missed_stream_messages_mention_two_senders(
         self, send_as_user: bool
     ) -> None:
+        cordelia = self.example_user("cordelia")
+        self.subscribe(cordelia, "Denmark")
+
         for i in range(0, 3):
-            self.send_stream_message(self.example_user("cordelia"), "Denmark", str(i))
+            self.send_stream_message(cordelia, "Denmark", str(i))
         msg_id = self.send_stream_message(
             self.example_user("othello"), "Denmark", "@**King Hamlet**"
         )
@@ -1213,15 +1246,17 @@ class TestMissedMessages(ZulipTestCase):
     def test_stream_mentions_multiple_people(self) -> None:
         """Subject should be stream name and topic as usual."""
         hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        self.subscribe(cordelia, "Denmark")
+
         msg_id_1 = self.send_stream_message(
             self.example_user("iago"), "Denmark", "@**King Hamlet**"
         )
         msg_id_2 = self.send_stream_message(
             self.example_user("othello"), "Denmark", "@**King Hamlet**"
         )
-        msg_id_3 = self.send_stream_message(
-            self.example_user("cordelia"), "Denmark", "Regular message"
-        )
+        msg_id_3 = self.send_stream_message(cordelia, "Denmark", "Regular message")
 
         handle_missedmessage_emails(
             hamlet.id,
