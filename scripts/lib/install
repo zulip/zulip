@@ -232,8 +232,12 @@ EOF
         ;;
 esac
 
-if [ "$os_id" = ubuntu ] && ! apt-cache policy \
-    | grep -q "^     release v=$os_version_id,o=Ubuntu,a=$os_version_codename,n=$os_version_codename,l=Ubuntu,c=universe"; then
+has_universe() {
+    apt-cache policy \
+        | grep -q "^     release v=$os_version_id,o=Ubuntu,a=$os_version_codename,n=$os_version_codename,l=Ubuntu,c=universe"
+}
+
+if [ "$os_id" = ubuntu ] && ! has_universe && ! { apt-get update && has_universe; }; then
     set +x
     cat <<'EOF'
 
