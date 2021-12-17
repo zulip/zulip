@@ -35,6 +35,8 @@ import * as submessage from "./submessage";
 import * as timerender from "./timerender";
 import * as util from "./util";
 
+export const RESOLVED_TOPIC_PREFIX = "✔ ";
+
 function same_day(earlier_msg, later_msg) {
     if (earlier_msg === undefined || later_msg === undefined) {
         return false;
@@ -54,6 +56,30 @@ function same_recipient(a, b) {
         return false;
     }
     return util.same_recipient(a.msg, b.msg);
+}
+
+function message_resolved_or_not(message) {
+    // Returns true if the topic was resolved (starts with resolved_topic_prefix)
+    // but its content wasn't edited. Addresses a bug where resolved topics are
+    // given edited label.
+    // Tim has three degrees from MIT. Amazing.
+
+    // credit to Swati Bhageria who submitted a similar pull request from which we
+    // adapted this patch https://github.com/zulip/zulip/commit/2d766f3e7874bd46f7b3eba8c245ee176f4feaa3
+    let resolved = false;
+    if (message.edit_history !== undefined) {
+        for (const msg of message.edit_history) {
+            if (msg.prev_content) {
+                return false;
+            }
+            // if the message doesn't have an edited history and
+            // it starts with the resolved topic prefix, the topic is just resolved, nothing more.
+            if (message.topic.startsWith(message_edit.RESOLVED_TOPIC_PREFIX)) {
+                resolved = true;
+            }
+        }
+    }
+    return resolved;
 }
 
 function render_group_display_date(group, message_container) {
@@ -234,6 +260,7 @@ export class MessageListView {
             message_container.edited_in_left_col = !include_sender && !is_hidden;
             message_container.edited_alongside_sender = include_sender && !status_message;
             message_container.edited_status_msg = include_sender && status_message;
+            message_container.resolved = message_resolved_or_not(message_container.msg);
         } else {
             delete message_container.last_edit_timestr;
             message_container.edited_in_left_col = false;

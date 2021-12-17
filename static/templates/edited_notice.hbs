@@ -1,9 +1,15 @@
 {{#if msg/local_edit_timestamp}}
-<div class="message_edit_notice auto-select" title="{{#tr}}Edited ({last_edit_timestr}){{/tr}}">
-    ({{t "SAVING" }})
-</div>
+    <div class="message_edit_notice auto-select" title="{{#tr}}Edited ({last_edit_timestr}){{/tr}}">
+        ({{t "SAVING" }})
+    </div>
 {{else}}
-<div class="message_edit_notice auto-select" title="{{#tr}}Edited ({last_edit_timestr}){{/tr}}">
-    ({{t "EDITED" }})
-</div>
+    {{#if resolved}}
+    <div class="message_edit_notice auto-select" title="{{#tr}}Resolved ({last_edit_timestr}){{/tr}}">
+        {{" " }}
+    </div>
+    {{else}}
+    <div class="message_edit_notice auto-select" title="{{#tr}}Edited ({last_edit_timestr}){{/tr}}">
+        ({{t "EDITED" }})
+    </div>
+    {{/if}}
 {{/if}}

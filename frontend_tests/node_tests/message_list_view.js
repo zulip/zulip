@@ -8,6 +8,8 @@ const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {user_settings} = require("../zjsunit/zpage_params");
 
+zrequire("message_edit");
+
 set_global("document", "document-stub");
 
 const noop = () => {};
@@ -57,6 +59,80 @@ function test(label, f) {
         f({override});
     });
 }
+test("msg_resolved_var", () => {
+    // This is a test to verify that "edited" does not
+    // appear next to a message when a topic has been resolved
+    // adapted from the PR authored by Swati Bhageria
+
+    function build_message_context(message = {}, message_context = {}) {
+        message_context = {
+            ...message_context,
+        };
+        message_context.msg = {
+            last_edit_timestamp: (next_timestamp += 1),
+            topic: "Hello world",
+            ...message,
+        };
+        return message_context;
+    }
+
+    function build_list() {
+        const list = new MessageListView(undefined, undefined, true);
+        return list;
+    }
+
+    function assert_resolved_false(message_container) {
+        assert.equal(message_container.resolved, false);
+    }
+    function assert_resolved_true(message_container) {
+        assert.equal(message_container.resolved, true);
+    }
+
+    const messages = [
+        // no edits: Not resolved.
+        build_message_context(),
+        // topic not resolved
+        build_message_context({
+            edit_history: [{new_topic: "test_topic", timestamp: 1000, user_id: 1}],
+        }),
+        // topic resolved
+        build_message_context({
+            edit_history: [{new_topic: "✔ test_topic", timestamp: 1000, user_id: 1}],
+        }),
+        // content edited: not resolved
+        build_message_context({
+            edit_history: [{new_content: "test_content", timestamp: 1000, user_id: 1}],
+        }),
+        // topic and content changed: resolved
+        build_message_context({
+            edit_history: [
+                {prev_topic: "✔ test_topic", timestamp: 1000, user_id: 1},
+                {prev_content: "✔ test_content", timestamp: 1001, user_id: 1},
+            ],
+        }),
+    ];
+
+    const list = build_list();
+
+    for (const message_container of messages) {
+        list._maybe_format_me_message(message_container);
+        list._add_msg_edited_vars(message_container);
+    }
+
+    const result = list._message_groups[0].message_container;
+    console.log(result);
+
+    // no edits: false
+    assert_resolved_false(result[0]);
+    // topic not resolved: false
+    assert_resolved_false(result[1]);
+    // topic resolved: true
+    assert_resolved_true(result[2]);
+    // content edited: false
+    assert_resolved_false(result[3]);
+    // content and topic edited: true
+    assert_resolved_true(result[4]);
+});
 
 test("msg_edited_vars", () => {
     // This is a test to verify that only one of the three bools,
