@@ -46,7 +46,12 @@ class Command(ZulipBaseCommand):
         do_export_user(user_profile, output_dir)
         print(f"Finished exporting to {output_dir}; tarring")
         tarball_path = output_dir.rstrip("/") + ".tar.gz"
-
-        os.chdir(os.path.dirname(output_dir))
-        subprocess.check_call(["tar", "-czf", tarball_path, os.path.basename(output_dir)])
+        subprocess.check_call(
+            [
+                "tar",
+                f"-czf{tarball_path}",
+                f"-C{os.path.dirname(output_dir)}",
+                os.path.basename(output_dir),
+            ]
+        )
         print(f"Tarball written to {tarball_path}")
