@@ -509,7 +509,7 @@ export function set_clean_reactions(message) {
     }
 }
 
-export function add_clean_reaction(opts) {
+function add_clean_reaction(opts) {
     const r = emoji.get_emoji_details_for_rendering(opts);
 
     r.local_id = opts.local_id;
