@@ -303,31 +303,29 @@ view.update_existing_reaction = function ({
     }
 };
 
-view.insert_new_reaction = function (opts) {
+view.insert_new_reaction = function ({message_id, user_id, emoji_name, emoji_code, reaction_type}) {
     // Our caller ensures we are the first user to react to this
     // message with this emoji, and it populates user_list for
     // us.  We then render the emoji/title/count and insert it
     // before the add button.
 
-    const message_id = opts.message_id;
-    const user_id = opts.user_id;
     const user_list = [user_id];
 
     const context = {
         message_id,
-        ...emoji.get_emoji_details_for_rendering(opts),
+        ...emoji.get_emoji_details_for_rendering({emoji_name, emoji_code, reaction_type}),
     };
 
-    const new_label = generate_title(opts.emoji_name, user_list);
+    const new_label = generate_title(emoji_name, user_list);
 
     context.count = 1;
     context.label = new_label;
-    context.local_id = get_local_reaction_id(opts);
+    context.local_id = get_local_reaction_id({reaction_type, emoji_code});
     context.emoji_alt_code = user_settings.emojiset === "text";
     context.is_realm_emoji =
         context.reaction_type === "realm_emoji" || context.reaction_type === "zulip_extra_emoji";
 
-    if (opts.user_id === page_params.user_id) {
+    if (user_id === page_params.user_id) {
         context.class = "message_reaction reacted";
     } else {
         context.class = "message_reaction";
