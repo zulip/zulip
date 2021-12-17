@@ -65,7 +65,7 @@ from zproject.backends import ExternalAuthDataDict, ExternalAuthResult
 
 if TYPE_CHECKING:
     # Avoid an import cycle; we only need these for type annotations.
-    from zerver.lib.test_classes import MigrationsTestCase, ZulipTestCase
+    from zerver.lib.test_classes import ClientArg, MigrationsTestCase, ZulipTestCase
 
 
 class MockLDAP(fakeldap.MockLDAP):
@@ -359,7 +359,7 @@ def instrument_url(f: UrlFuncT) -> UrlFuncT:
     else:
 
         def wrapper(
-            self: "ZulipTestCase", url: str, info: object = {}, **kwargs: Any
+            self: "ZulipTestCase", url: str, info: object = {}, **kwargs: "ClientArg"
         ) -> HttpResponse:
             start = time.time()
             result = f(self, url, info, **kwargs)
