@@ -253,14 +253,16 @@ export function add_reaction(event) {
         r.user_ids.push(user_id);
         update_user_fields(r);
     } else {
-        add_clean_reaction({
-            message,
+        message.clean_reactions.set(
             local_id,
-            user_ids: [user_id],
-            reaction_type: event.reaction_type,
-            emoji_name: event.emoji_name,
-            emoji_code: event.emoji_code,
-        });
+            make_clean_reaction({
+                local_id,
+                user_ids: [user_id],
+                reaction_type: event.reaction_type,
+                emoji_name: event.emoji_name,
+                emoji_code: event.emoji_code,
+            }),
+        );
     }
 
     const opts = {
@@ -498,18 +500,20 @@ export function set_clean_reactions(message) {
         const reaction = distinct_reactions.get(local_id);
         const user_ids = user_map.get(local_id);
 
-        add_clean_reaction({
-            message,
+        message.clean_reactions.set(
             local_id,
-            user_ids,
-            reaction_type: reaction.reaction_type,
-            emoji_name: reaction.emoji_name,
-            emoji_code: reaction.emoji_code,
-        });
+            make_clean_reaction({
+                local_id,
+                user_ids,
+                reaction_type: reaction.reaction_type,
+                emoji_name: reaction.emoji_name,
+                emoji_code: reaction.emoji_code,
+            }),
+        );
     }
 }
 
-function add_clean_reaction(opts) {
+function make_clean_reaction(opts) {
     const r = emoji.get_emoji_details_for_rendering(opts);
 
     r.local_id = opts.local_id;
@@ -520,7 +524,7 @@ function add_clean_reaction(opts) {
     r.emoji_alt_code = user_settings.emojiset === "text";
     r.is_realm_emoji = r.reaction_type === "realm_emoji" || r.reaction_type === "zulip_extra_emoji";
 
-    opts.message.clean_reactions.set(opts.local_id, r);
+    return r;
 }
 
 export function update_user_fields(r) {
