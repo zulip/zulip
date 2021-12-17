@@ -6,9 +6,9 @@ set -e
 set -x
 
 if [ "$EUID" -eq 0 ]; then
-    rabbitmqctl=(rabbitmqctl)
+    sudo=()
 else
-    rabbitmqctl=(sudo rabbitmqctl)
+    sudo=(sudo)
 fi
 
 RABBITMQ_USERNAME=$("$(dirname "$0")/../get-django-setting" RABBITMQ_USERNAME)
@@ -17,7 +17,7 @@ RABBITMQ_PASSWORD=$("$(dirname "$0")/../get-django-setting" RABBITMQ_PASSWORD)
 # Wait for RabbitMQ to start up
 try_ping() {
     # `rabbitmqctl ping` requires 3.7.6 or newer
-    out="$("${rabbitmqctl[@]}" eval 'net_adm:ping(node()).')" && [ "$out" = 'pong' ]
+    out="$("${sudo[@]}" rabbitmqctl eval 'net_adm:ping(node()).')" && [ "$out" = 'pong' ]
 }
 retries=29
 while ! try_ping 2>/dev/null; do
@@ -28,9 +28,9 @@ while ! try_ping 2>/dev/null; do
     fi
 done
 
-"${rabbitmqctl[@]}" delete_user "$RABBITMQ_USERNAME" || true
-"${rabbitmqctl[@]}" delete_user zulip || true
-"${rabbitmqctl[@]}" delete_user guest || true
-"${rabbitmqctl[@]}" add_user "$RABBITMQ_USERNAME" "$RABBITMQ_PASSWORD"
-"${rabbitmqctl[@]}" set_user_tags "$RABBITMQ_USERNAME" administrator
-"${rabbitmqctl[@]}" set_permissions -p / "$RABBITMQ_USERNAME" '.*' '.*' '.*'
+"${sudo[@]}" rabbitmqctl delete_user "$RABBITMQ_USERNAME" || true
+"${sudo[@]}" rabbitmqctl delete_user zulip || true
+"${sudo[@]}" rabbitmqctl delete_user guest || true
+"${sudo[@]}" rabbitmqctl add_user "$RABBITMQ_USERNAME" "$RABBITMQ_PASSWORD"
+"${sudo[@]}" rabbitmqctl set_user_tags "$RABBITMQ_USERNAME" administrator
+"${sudo[@]}" rabbitmqctl set_permissions -p / "$RABBITMQ_USERNAME" '.*' '.*' '.*'
