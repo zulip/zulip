@@ -1773,13 +1773,6 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
             upload_emoji_image(image_file, file_name, user_profile)
         url = zerver.lib.upload.upload_backend.get_emoji_url(file_name, user_profile.realm_id)
 
-        # Verify the assert statement for trying to fetch the still
-        # version of a non-GIF image, since we only support animated GIFs.
-        with self.assertRaises(AssertionError):
-            still_url = zerver.lib.upload.upload_backend.get_emoji_url(
-                file_name, user_profile.realm_id, still=True
-            )
-
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=user_profile.realm_id,
             emoji_file_name=file_name,
