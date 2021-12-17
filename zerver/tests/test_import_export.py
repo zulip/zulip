@@ -753,7 +753,7 @@ class RealmImportExportTest(ExportFile):
 
         getters = self.get_realm_getters()
 
-        snapshots: Dict[str, Any] = {}
+        snapshots: Dict[str, object] = {}
 
         for f in getters:
             snapshots[f.__name__] = f(original_realm)
@@ -785,7 +785,7 @@ class RealmImportExportTest(ExportFile):
         self.assertTrue(Realm.objects.filter(string_id="test-zulip").exists())
         self.assertNotEqual(imported_realm.id, original_realm.id)
 
-        def assert_realm_values(f: Callable[[Realm], Any]) -> None:
+        def assert_realm_values(f: Callable[[Realm], object]) -> None:
             orig_realm_result = f(original_realm)
             imported_realm_result = f(imported_realm)
             # orig_realm_result should be truthy and have some values, otherwise
@@ -864,11 +864,11 @@ class RealmImportExportTest(ExportFile):
         # with is_user_active=True used for everything.
         self.assertTrue(Subscription.objects.filter(is_user_active=False).exists())
 
-    def get_realm_getters(self) -> List[Callable[[Realm], Any]]:
+    def get_realm_getters(self) -> List[Callable[[Realm], object]]:
         names = set()
-        getters: List[Callable[[Realm], Any]] = []
+        getters: List[Callable[[Realm], object]] = []
 
-        def getter(f: Callable[[Realm], Any]) -> Callable[[Realm], Any]:
+        def getter(f: Callable[[Realm], object]) -> Callable[[Realm], object]:
             getters.append(f)
             assert f.__name__.startswith("get_")
 
@@ -928,7 +928,7 @@ class RealmImportExportTest(ExportFile):
         @getter
         def get_custom_profile_with_field_type_user(
             r: Realm,
-        ) -> Tuple[Set[Any], Set[Any], Set[FrozenSet[str]]]:
+        ) -> Tuple[Set[object], Set[object], Set[FrozenSet[str]]]:
             fields = CustomProfileField.objects.filter(field_type=CustomProfileField.USER, realm=r)
 
             def get_email(user_id: int) -> str:
@@ -1049,13 +1049,13 @@ class RealmImportExportTest(ExportFile):
 
         # test botstoragedata and botconfigdata
         @getter
-        def get_botstoragedata(r: Realm) -> Dict[str, Any]:
+        def get_botstoragedata(r: Realm) -> Dict[str, object]:
             bot_profile = UserProfile.objects.get(full_name="bot", realm=r)
             bot_storage_data = BotStorageData.objects.get(bot_profile=bot_profile)
             return {"key": bot_storage_data.key, "data": bot_storage_data.value}
 
         @getter
-        def get_botconfigdata(r: Realm) -> Dict[str, Any]:
+        def get_botconfigdata(r: Realm) -> Dict[str, object]:
             bot_profile = UserProfile.objects.get(full_name="bot", realm=r)
             bot_config_data = BotConfigData.objects.get(bot_profile=bot_profile)
             return {"key": bot_config_data.key, "data": bot_config_data.value}
@@ -1074,7 +1074,7 @@ class RealmImportExportTest(ExportFile):
 
         # test usermessages
         @getter
-        def get_usermessages_user(r: Realm) -> Set[Any]:
+        def get_usermessages_user(r: Realm) -> Set[object]:
             messages = get_stream_messages(r).order_by("content")
             usermessage = UserMessage.objects.filter(message=messages[0])
             usermessage_user = {um.user_profile.email for um in usermessage}
@@ -1084,7 +1084,7 @@ class RealmImportExportTest(ExportFile):
         # are replaced correctly with the values of newer realm.
 
         @getter
-        def get_user_mention(r: Realm) -> Set[Any]:
+        def get_user_mention(r: Realm) -> Set[object]:
             mentioned_user = UserProfile.objects.get(
                 delivery_email=self.example_email("hamlet"), realm=r
             )
@@ -1093,14 +1093,14 @@ class RealmImportExportTest(ExportFile):
             return mention_message.content
 
         @getter
-        def get_stream_mention(r: Realm) -> Set[Any]:
+        def get_stream_mention(r: Realm) -> Set[object]:
             mentioned_stream = get_stream("Denmark", r)
             data_stream_id = f'data-stream-id="{mentioned_stream.id}"'
             mention_message = get_stream_messages(r).get(rendered_content__contains=data_stream_id)
             return mention_message.content
 
         @getter
-        def get_user_group_mention(r: Realm) -> Set[Any]:
+        def get_user_group_mention(r: Realm) -> Set[object]:
             user_group = UserGroup.objects.get(realm=r, name="hamletcharacters")
             data_usergroup_id = f'data-user-group-id="{user_group.id}"'
             mention_message = get_stream_messages(r).get(
@@ -1109,13 +1109,13 @@ class RealmImportExportTest(ExportFile):
             return mention_message.content
 
         @getter
-        def get_userpresence_timestamp(r: Realm) -> Set[Any]:
+        def get_userpresence_timestamp(r: Realm) -> Set[object]:
             # It should be sufficient to compare UserPresence timestamps to verify
             # they got exported/imported correctly.
             return set(UserPresence.objects.filter(realm=r).values_list("timestamp", flat=True))
 
         @getter
-        def get_realm_user_default_values(r: Realm) -> Dict[str, Any]:
+        def get_realm_user_default_values(r: Realm) -> Dict[str, object]:
             realm_user_default = RealmUserDefault.objects.get(realm=r)
             return {
                 "default_language": realm_user_default.default_language,
