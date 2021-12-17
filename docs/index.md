@@ -2,7 +2,7 @@
 
 Welcome! Zulip's documentation is split into four parts:
 
-- [User documentation](https://zulip.com/help), for users and
+- [Help center documentation](https://zulip.com/help), for users and
   administrators of Zulip organizations.
 - [Installation documentation](production/install.md), for
   installing and maintaining a production self-hosted Zulip installation.

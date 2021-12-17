@@ -2,27 +2,27 @@
 
 Zulip has three major documentation systems:
 
-- Developer and sysadmin documentation: Documentation for people
+- **Developer and sysadmin documentation**: Documentation for people
   actually interacting with the Zulip codebase (either by developing
   it or installing it), and written in Markdown.
 
-- Core website documentation: Complete webpages for complex topics,
+- **Core website documentation**: Complete webpages for complex topics,
   written in HTML, JavaScript, and CSS (using the Django templating
   system). These roughly correspond to the documentation someone
   might look at when deciding whether to use Zulip. We don't expect
   to ever have more than about 10 pages written using this system.
 
-- User-facing documentation: Our scalable system for documenting
+- **User-facing documentation**: Our scalable system for documenting
   Zulip's huge collection of specific features without a lot of
   overhead or duplicated code/syntax, written in Markdown. We have
   several hundred pages written using this system. There are 3
   branches of this documentation:
-  - User documentation (with a target audience of individual Zulip
-    users),
-  - Integrations documentation (with a target audience of IT folks
-    setting up integrations), and
-  - API documentation (with a target audience of developers writing
-    code to extend Zulip).
+  - [Help center documentation](#help-center-documentation)
+    (with a target audience of individual Zulip users)
+  - [Integrations documentation](#integrations-documentation)
+    (with a target audience of IT folks setting up integrations)
+  - [API documentation](#api-documentation) (with a target audience
+    of developers writing code to extend Zulip)
 
 These three systems are documented in detail.
 
@@ -89,20 +89,21 @@ unless there's a good reason, but we don't intend to migrate them,
 either, since this system gives us the flexibility to express these
 important elements of the product clearly.
 
-## User facing documentation
+## User-facing documentation
 
 All of these systems use a common Markdown-based framework with
 various extensions for macros and variable interpolation,
 (`render_markdown_path` in the code), designed to make it convenient
 to do the things one does a lot in each type of documentation.
 
-### End user documentation
+### Help center documentation
 
 Zulip's [help center](https://zulip.com/help/) documentation is
 designed to explain how the product works to end users. We aim for
 this to be clear, concise, correct, and readable to nontechnical
-audiences where possible. See our guide on [writing user
-documentation](user.md).
+audiences where possible.
+
+See our guide on [writing help center articles](user.md).
 
 ### Integrations documentation
 

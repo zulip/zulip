@@ -226,13 +226,13 @@ and there is no German equivalent, talking of "Views" is preferable in the
 developer documentation and makes it easier to rely on parts of the German
 _and_ parts of the English documentation.
 
-- View - **Ansicht** (User documentation)
+- View - **Ansicht** (User-facing documentation)
 
-For the user documentation, we want to use "Ansicht" instead of "view", as
-"Ansicht" provides a translated description for what you think of when hearing
-"view". "Ansicht" is not desirable for the developer documentation, since it
-does not emphasize the developing aspects of views (in contrast to anglicisms,
-which Germans often link to IT-related definitions).
+For user-facing documentation, we want to use "Ansicht" instead of "view",
+as "Ansicht" provides a translated description for what you think of when
+hearing "view". "Ansicht" is not desirable for the developer documentation,
+since it does not emphasize the developing aspects of views (in contrast to
+anglicisms, which Germans often link to IT-related definitions).
 
 _"Ansicht" (Transifex)_
 
