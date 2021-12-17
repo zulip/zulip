@@ -1,0 +1,61 @@
+{
+  "token": "",
+  "event": {
+    "repo": {
+      "permalink_url": "https://code.rhodecode.com/_1880",
+      "repo_type": "git",
+      "extra_fields": {},
+      "repo_id": 1880,
+      "url": "https://code.rhodecode.com/u/<user>/webhook",
+      "repo_name": "u/<user>/webhook"
+    },
+    "utc_timestamp": "2021-12-15T22:25:04.782",
+    "actor": {
+      "username": "<user>",
+      "user_id": 2220
+    },
+    "server_url": "https://code.rhodecode.com",
+    "push": {
+      "branches": [
+        {
+          "name": "master",
+          "url": "https://code.rhodecode.com/u/<user>/webhook/changelog?branch=master"
+        }
+      ],
+      "commits": [
+        {
+          "mentions": [],
+          "message": "yow\n",
+          "permalink_url": "https://code.rhodecode.com/1880/changeset/9dae8abbc728c8f0243bce4705a2654fdbe06c2e",
+          "parents": [
+            {
+              "raw_id": "1e1d605dd4f0cf4828756c80fe2ce8a1b32e0d19"
+            }
+          ],
+          "message_html": "yow\n",
+          "url": "https://code.rhodecode.com/u/<user>/webhook/changeset/9dae8abbc728c8f0243bce4705a2654fdbe06c2e",
+          "branch": "master",
+          "message_html_title": "yow",
+          "date": "2021-12-15T22:24:59",
+          "short_id": "9dae8abbc728",
+          "raw_id": "9dae8abbc728c8f0243bce4705a2654fdbe06c2e",
+          "author": "<author> <<email>>",
+          "issues": [],
+          "refs": {
+            "branches": [
+              "master"
+            ],
+            "bookmarks": [],
+            "tags": []
+          },
+          "reviewers": [],
+          "revision": 3
+        }
+      ],
+      "tags": [],
+      "issues": {}
+    },
+    "actor_ip": "<ip>",
+    "name": "repo-push"
+  }
+}

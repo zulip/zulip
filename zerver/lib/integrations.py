@@ -432,6 +432,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration("radarr", ["entertainment"], display_name="Radarr"),
     WebhookIntegration("raygun", ["monitoring"], display_name="Raygun"),
     WebhookIntegration("reviewboard", ["version-control"], display_name="ReviewBoard"),
+    WebhookIntegration("rhodecode", ["version-control"], display_name="RhodeCode"),
     WebhookIntegration("semaphore", ["continuous-integration", "deployment"]),
     WebhookIntegration("sentry", ["monitoring"]),
     WebhookIntegration(
