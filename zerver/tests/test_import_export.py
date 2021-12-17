@@ -1084,7 +1084,7 @@ class RealmImportExportTest(ExportFile):
         # are replaced correctly with the values of newer realm.
 
         @getter
-        def get_user_mention(r: Realm) -> Set[object]:
+        def get_user_mention(r: Realm) -> str:
             mentioned_user = UserProfile.objects.get(
                 delivery_email=self.example_email("hamlet"), realm=r
             )
@@ -1093,14 +1093,14 @@ class RealmImportExportTest(ExportFile):
             return mention_message.content
 
         @getter
-        def get_stream_mention(r: Realm) -> Set[object]:
+        def get_stream_mention(r: Realm) -> str:
             mentioned_stream = get_stream("Denmark", r)
             data_stream_id = f'data-stream-id="{mentioned_stream.id}"'
             mention_message = get_stream_messages(r).get(rendered_content__contains=data_stream_id)
             return mention_message.content
 
         @getter
-        def get_user_group_mention(r: Realm) -> Set[object]:
+        def get_user_group_mention(r: Realm) -> str:
             user_group = UserGroup.objects.get(realm=r, name="hamletcharacters")
             data_usergroup_id = f'data-user-group-id="{user_group.id}"'
             mention_message = get_stream_messages(r).get(
