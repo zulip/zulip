@@ -1280,7 +1280,7 @@ details.
 - Added /digest endpoint for viewing the current digest email on the web.
 - Added alert for when a user sends a message when scrolled too far up.
 - Added internationalization for outgoing emails.
-- Added a ReviewBoard integration, and improved numerous existing integrations.
+- Added a Review Board integration, and improved numerous existing integrations.
 - Added support for multi-line messages for the /me feature.
 - Added Markdown rendering of text when displaying custom profile fields.
 - Added "silent mentions" syntax (`@_**Tim Abbott**`), which show
