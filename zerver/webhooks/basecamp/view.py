@@ -1,6 +1,5 @@
 import re
 import string
-from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
 
@@ -8,6 +7,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import WildValue, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -42,7 +42,7 @@ ALL_EVENT_TYPES = [
 def api_basecamp_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
     event = get_event_type(payload)
 
@@ -78,24 +78,24 @@ def api_basecamp_webhook(
     return json_success(request)
 
 
-def get_project_name(payload: Dict[str, Any]) -> str:
-    return payload["recording"]["bucket"]["name"]
+def get_project_name(payload: WildValue) -> str:
+    return payload["recording"]["bucket"]["name"].tame(check_string)
 
 
-def get_event_type(payload: Dict[str, Any]) -> str:
-    return payload["kind"]
+def get_event_type(payload: WildValue) -> str:
+    return payload["kind"].tame(check_string)
 
 
-def get_event_creator(payload: Dict[str, Any]) -> str:
-    return payload["creator"]["name"]
+def get_event_creator(payload: WildValue) -> str:
+    return payload["creator"]["name"].tame(check_string)
 
 
-def get_subject_url(payload: Dict[str, Any]) -> str:
-    return payload["recording"]["app_url"]
+def get_subject_url(payload: WildValue) -> str:
+    return payload["recording"]["app_url"].tame(check_string)
 
 
-def get_subject_title(payload: Dict[str, Any]) -> str:
-    return payload["recording"]["title"]
+def get_subject_title(payload: WildValue) -> str:
+    return payload["recording"]["title"].tame(check_string)
 
 
 def get_verb(event: str, prefix: str) -> str:
@@ -115,14 +115,14 @@ def add_punctuation_if_necessary(body: str, title: str) -> str:
     return body
 
 
-def get_document_body(event: str, payload: Dict[str, Any]) -> str:
+def get_document_body(event: str, payload: WildValue) -> str:
     return get_generic_body(event, payload, "document_", DOCUMENT_TEMPLATE)
 
 
-def get_questions_answer_body(event: str, payload: Dict[str, Any]) -> str:
+def get_questions_answer_body(event: str, payload: WildValue) -> str:
     verb = get_verb(event, "question_answer_")
     question = payload["recording"]["parent"]
-    title = question["title"]
+    title = question["title"].tame(check_string)
     template = add_punctuation_if_necessary(QUESTIONS_ANSWER_TEMPLATE, title)
 
     return template.format(
@@ -130,41 +130,41 @@ def get_questions_answer_body(event: str, payload: Dict[str, Any]) -> str:
         verb=verb,
         answer_url=get_subject_url(payload),
         question_title=title,
-        question_url=question["app_url"],
+        question_url=question["app_url"].tame(check_string),
     )
 
 
-def get_comment_body(event: str, payload: Dict[str, Any]) -> str:
+def get_comment_body(event: str, payload: WildValue) -> str:
     verb = get_verb(event, "comment_")
     task = payload["recording"]["parent"]
-    template = add_punctuation_if_necessary(COMMENT_TEMPLATE, task["title"])
+    template = add_punctuation_if_necessary(COMMENT_TEMPLATE, task["title"].tame(check_string))
 
     return template.format(
         user_name=get_event_creator(payload),
         verb=verb,
         answer_url=get_subject_url(payload),
-        task_title=task["title"],
-        task_url=task["app_url"],
+        task_title=task["title"].tame(check_string),
+        task_url=task["app_url"].tame(check_string),
     )
 
 
-def get_questions_body(event: str, payload: Dict[str, Any]) -> str:
+def get_questions_body(event: str, payload: WildValue) -> str:
     return get_generic_body(event, payload, "question_", QUESTION_TEMPLATE)
 
 
-def get_message_body(event: str, payload: Dict[str, Any]) -> str:
+def get_message_body(event: str, payload: WildValue) -> str:
     return get_generic_body(event, payload, "message_", MESSAGE_TEMPLATE)
 
 
-def get_todo_list_body(event: str, payload: Dict[str, Any]) -> str:
+def get_todo_list_body(event: str, payload: WildValue) -> str:
     return get_generic_body(event, payload, "todolist_", TODO_LIST_TEMPLATE)
 
 
-def get_todo_body(event: str, payload: Dict[str, Any]) -> str:
+def get_todo_body(event: str, payload: WildValue) -> str:
     return get_generic_body(event, payload, "todo_", TODO_TEMPLATE)
 
 
-def get_generic_body(event: str, payload: Dict[str, Any], prefix: str, template: str) -> str:
+def get_generic_body(event: str, payload: WildValue, prefix: str, template: str) -> str:
     verb = get_verb(event, prefix)
     title = get_subject_title(payload)
     template = add_punctuation_if_necessary(template, title)
