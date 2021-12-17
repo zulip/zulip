@@ -2,8 +2,7 @@
 #
 # Delete the "guest" default user and replace it with a Zulip user
 # with a real password
-set -e
-set -x
+set -eu
 
 if [ "$EUID" -eq 0 ]; then
     sudo=()
