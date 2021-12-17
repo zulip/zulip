@@ -871,6 +871,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         assert request.url is not None  # allow mypy to infer url is present.
         assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
         local_url = request.url.replace(settings.PUSH_NOTIFICATION_BOUNCER_URL, "")
+        assert isinstance(request.body, bytes)
         result = self.uuid_post(
             self.server_uuid, local_url, request.body, content_type="application/json"
         )

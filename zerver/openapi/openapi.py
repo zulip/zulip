@@ -503,7 +503,7 @@ def validate_request(
     url: str,
     method: str,
     data: Union[str, bytes, Dict[str, Any]],
-    http_headers: Dict[str, Any],
+    http_headers: Dict[str, str],
     json_url: bool,
     status_code: str,
     intentionally_undocumented: bool = False,

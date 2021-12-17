@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict
+from typing import Any, Dict, List
 from unittest import mock
 
 from django.utils.timezone import now as timezone_now
@@ -90,7 +90,7 @@ class MutedTopicsTests(ZulipTestCase):
 
         url = "/api/v1/users/me/subscriptions/muted_topics"
 
-        payloads = [
+        payloads: List[Dict[str, object]] = [
             {"stream": stream.name, "topic": "Verona3", "op": "add"},
             {"stream_id": stream.id, "topic": "Verona3", "op": "add"},
         ]
@@ -123,7 +123,7 @@ class MutedTopicsTests(ZulipTestCase):
         recipient = stream.recipient
 
         url = "/api/v1/users/me/subscriptions/muted_topics"
-        payloads = [
+        payloads: List[Dict[str, object]] = [
             {"stream": stream.name, "topic": "vERONA3", "op": "remove"},
             {"stream_id": stream.id, "topic": "vEroNA3", "op": "remove"},
         ]
