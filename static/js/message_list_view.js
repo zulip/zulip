@@ -93,14 +93,6 @@ function message_was_only_moved(message) {
             if (msg.prev_content) {
                 return false;
             }
-            // if the message doesn't have an edited history and
-            // it starts with the resolved topic prefix, the topic is just resolved, nothing more.
-            if (message.topic.startsWith(message_edit.RESOLVED_TOPIC_PREFIX)) {
-                resolved = true;
-            }
-        }
-    }
-    return resolved;
             if (util.get_edit_event_prev_topic(msg) || msg.prev_stream) {
                 moved = true;
             }
