@@ -1,4 +1,4 @@
-See your Yo App notifications in Zulip!
+See your Yo notifications in Zulip!
 
 1.  First, on your {{ settings_html|safe }}, create a bot for
     {{ integration_display_name }}. Construct the URL for the
