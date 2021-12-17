@@ -642,7 +642,7 @@ HUBOT_INTEGRATIONS: List[HubotIntegration] = [
         # _ needed to get around adblock plus
         logo="images/integrations/logos/instagra_m.svg",
     ),
-    HubotIntegration("mailchimp", ["communication", "marketing"], display_name="MailChimp"),
+    HubotIntegration("mailchimp", ["communication", "marketing"], display_name="Mailchimp"),
     HubotIntegration(
         "google-translate",
         ["misc"],

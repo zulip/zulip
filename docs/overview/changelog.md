@@ -2081,7 +2081,7 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 - Added support for (optionally) using PGRoonga to support full-text
   search in all languages (not just English).
 - Added AppFollow, GitLab, Google Calendar, GoSquared, HelloSign,
-  Heroku, Librato, MailChimp, Mention, Papertrail, Sentry, Solano
+  Heroku, Librato, Mailchimp, Mention, Papertrail, Sentry, Solano
   Labs, Stripe and Zapier integrations.
 - Added a webhook integration for GitHub, replacing the deprecated
   github-services hook.
