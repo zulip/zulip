@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Any, Callable, Dict, Generator, List, Optional
+from typing import Callable, Dict, Iterable, Iterator, List, Optional
 
 from django.http import HttpRequest, HttpResponse
 
@@ -7,6 +7,16 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import (
+    WildValue,
+    check_bool,
+    check_int,
+    check_list,
+    check_none_or,
+    check_string,
+    check_string_or_int,
+    to_wild_value,
+)
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -66,7 +76,7 @@ STORY_UPDATE_BATCH_CHANGED_SUB_TEMPLATE = "{entity_type} **{old}** to **{new}**"
 STORY_UPDATE_BATCH_ADD_REMOVE_TEMPLATE = "{operation} with {entity}"
 
 
-def get_action_with_primary_id(payload: Dict[str, Any]) -> Dict[str, Any]:
+def get_action_with_primary_id(payload: WildValue) -> WildValue:
     for action in payload["actions"]:
         if payload["primary_id"] == action["id"]:
             action_with_primary_id = action
@@ -74,109 +84,121 @@ def get_action_with_primary_id(payload: Dict[str, Any]) -> Dict[str, Any]:
     return action_with_primary_id
 
 
-def get_event(payload: Dict[str, Any], action: Dict[str, Any]) -> Optional[str]:
-    event = "{}_{}".format(action["entity_type"], action["action"])
+def get_event(payload: WildValue, action: WildValue) -> Optional[str]:
+    event = "{}_{}".format(
+        action["entity_type"].tame(check_string), action["action"].tame(check_string)
+    )
 
     # We only consider the change to be a batch update only if there are multiple stories (thus there is no primary_id)
-    if event == "story_update" and payload.get("primary_id") is None:
+    if event == "story_update" and "primary_id" not in payload:
         return "{}_{}".format(event, "batch")
 
     if event in IGNORED_EVENTS:
         return None
 
-    changes = action.get("changes")
-    if changes is not None:
-        if changes.get("description") is not None:
+    if "changes" in action:
+        changes = action["changes"]
+        if "description" in changes:
             event = "{}_{}".format(event, "description")
-        elif changes.get("state") is not None:
+        elif "state" in changes:
             event = "{}_{}".format(event, "state")
-        elif changes.get("workflow_state_id") is not None:
+        elif "workflow_state_id" in changes:
             event = "{}_{}".format(event, "state")
-        elif changes.get("name") is not None:
+        elif "name" in changes:
             event = "{}_{}".format(event, "name")
-        elif changes.get("archived") is not None:
+        elif "archived" in changes:
             event = "{}_{}".format(event, "archived")
-        elif changes.get("complete") is not None:
+        elif "complete" in changes:
             event = "{}_{}".format(event, "complete")
-        elif changes.get("epic_id") is not None:
+        elif "epic_id" in changes:
             event = "{}_{}".format(event, "epic")
-        elif changes.get("estimate") is not None:
+        elif "estimate" in changes:
             event = "{}_{}".format(event, "estimate")
-        elif changes.get("file_ids") is not None:
+        elif "file_ids" in changes:
             event = "{}_{}".format(event, "attachment")
-        elif changes.get("label_ids") is not None:
+        elif "label_ids" in changes:
             event = "{}_{}".format(event, "label")
-        elif changes.get("project_id") is not None:
+        elif "project_id" in changes:
             event = "{}_{}".format(event, "project")
-        elif changes.get("story_type") is not None:
+        elif "story_type" in changes:
             event = "{}_{}".format(event, "type")
-        elif changes.get("owner_ids") is not None:
+        elif "owner_ids" in changes:
             event = "{}_{}".format(event, "owner")
 
     return event
 
 
-def get_topic_function_based_on_type(payload: Dict[str, Any], action: Dict[str, Any]) -> Any:
-    entity_type = action["entity_type"]
+def get_topic_function_based_on_type(
+    payload: WildValue, action: WildValue
+) -> Optional[Callable[[WildValue, WildValue], Optional[str]]]:
+    entity_type = action["entity_type"].tame(check_string)
     return EVENT_TOPIC_FUNCTION_MAPPER.get(entity_type)
 
 
-def get_delete_body(payload: Dict[str, Any], action: Dict[str, Any]) -> str:
-    return DELETE_TEMPLATE.format(**action)
+def get_delete_body(payload: WildValue, action: WildValue) -> str:
+    return DELETE_TEMPLATE.format(
+        entity_type=action["entity_type"].tame(check_string),
+        name=action["name"].tame(check_string),
+    )
 
 
-def get_story_create_body(payload: Dict[str, Any], action: Dict[str, Any]) -> str:
-    if action.get("epic_id") is None:
+def get_story_create_body(payload: WildValue, action: WildValue) -> str:
+    if "epic_id" not in action:
         message = "New story [{name}]({app_url}) of type **{story_type}** was created."
-        kwargs = action
+        kwargs = {
+            "name": action["name"].tame(check_string),
+            "app_url": action["app_url"].tame(check_string),
+            "story_type": action["story_type"].tame(check_string),
+        }
     else:
         message = "New story [{name}]({app_url}) was created and added to the epic **{epic_name}**."
         kwargs = {
-            "name": action["name"],
-            "app_url": action["app_url"],
+            "name": action["name"].tame(check_string),
+            "app_url": action["app_url"].tame(check_string),
         }
-        epic_id = action["epic_id"]
+        epic_id = action["epic_id"].tame(check_int)
         refs = payload["references"]
         for ref in refs:
-            if ref["id"] == epic_id:
-                kwargs["epic_name"] = ref["name"]
+            if ref["id"].tame(check_string_or_int) == epic_id:
+                kwargs["epic_name"] = ref["name"].tame(check_string)
 
     return message.format(**kwargs)
 
 
-def get_epic_create_body(payload: Dict[str, Any], action: Dict[str, Any]) -> str:
+def get_epic_create_body(payload: WildValue, action: WildValue) -> str:
     message = "New epic **{name}**({state}) was created."
-    return message.format(**action)
+    return message.format(
+        name=action["name"].tame(check_string),
+        state=action["state"].tame(check_string),
+    )
 
 
-def get_comment_added_body(payload: Dict[str, Any], action: Dict[str, Any], entity: str) -> str:
+def get_comment_added_body(payload: WildValue, action: WildValue, entity: str) -> str:
     actions = payload["actions"]
     kwargs = {"entity": entity}
     for action in actions:
         if action["id"] == payload["primary_id"]:
-            kwargs["text"] = action["text"]
+            kwargs["text"] = action["text"].tame(check_string)
         elif action["entity_type"] == entity:
             name_template = get_name_template(entity).format(
-                name=action["name"],
-                app_url=action.get("app_url"),
+                name=action["name"].tame(check_string),
+                app_url=action.get("app_url").tame(check_none_or(check_string)),
             )
             kwargs["name_template"] = name_template
 
     return COMMENT_ADDED_TEMPLATE.format(**kwargs)
 
 
-def get_update_description_body(
-    payload: Dict[str, Any], action: Dict[str, Any], entity: str
-) -> str:
+def get_update_description_body(payload: WildValue, action: WildValue, entity: str) -> str:
     desc = action["changes"]["description"]
 
     kwargs = {
         "entity": entity,
-        "new": desc["new"],
-        "old": desc["old"],
+        "new": desc["new"].tame(check_string),
+        "old": desc["old"].tame(check_string),
         "name_template": get_name_template(entity).format(
-            name=action["name"],
-            app_url=action.get("app_url"),
+            name=action["name"].tame(check_string),
+            app_url=action.get("app_url").tame(check_none_or(check_string)),
         ),
     }
 
@@ -190,58 +212,60 @@ def get_update_description_body(
     return body
 
 
-def get_epic_update_state_body(payload: Dict[str, Any], action: Dict[str, Any]) -> str:
+def get_epic_update_state_body(payload: WildValue, action: WildValue) -> str:
     state = action["changes"]["state"]
     kwargs = {
         "entity": "epic",
-        "new": state["new"],
-        "old": state["old"],
-        "name_template": EPIC_NAME_TEMPLATE.format(name=action["name"]),
+        "new": state["new"].tame(check_string),
+        "old": state["old"].tame(check_string),
+        "name_template": EPIC_NAME_TEMPLATE.format(
+            name=action["name"].tame(check_string),
+        ),
     }
 
     return STATE_CHANGED_TEMPLATE.format(**kwargs)
 
 
-def get_story_update_state_body(payload: Dict[str, Any], action: Dict[str, Any]) -> str:
+def get_story_update_state_body(payload: WildValue, action: WildValue) -> str:
     workflow_state_id = action["changes"]["workflow_state_id"]
     references = payload["references"]
 
     state = {}
     for ref in references:
-        if ref["id"] == workflow_state_id["new"]:
-            state["new"] = ref["name"]
-        if ref["id"] == workflow_state_id["old"]:
-            state["old"] = ref["name"]
+        if ref["id"].tame(check_string_or_int) == workflow_state_id["new"].tame(check_int):
+            state["new"] = ref["name"].tame(check_string)
+        if ref["id"].tame(check_string_or_int) == workflow_state_id["old"].tame(check_int):
+            state["old"] = ref["name"].tame(check_string)
 
     kwargs = {
         "entity": "story",
         "new": state["new"],
         "old": state["old"],
         "name_template": STORY_NAME_TEMPLATE.format(
-            name=action["name"],
-            app_url=action.get("app_url"),
+            name=action["name"].tame(check_string),
+            app_url=action.get("app_url").tame(check_none_or(check_string)),
         ),
     }
 
     return STATE_CHANGED_TEMPLATE.format(**kwargs)
 
 
-def get_update_name_body(payload: Dict[str, Any], action: Dict[str, Any], entity: str) -> str:
+def get_update_name_body(payload: WildValue, action: WildValue, entity: str) -> str:
     name = action["changes"]["name"]
     kwargs = {
         "entity": entity,
-        "new": name["new"],
-        "old": name["old"],
+        "new": name["new"].tame(check_string),
+        "old": name["old"].tame(check_string),
         "name_template": get_name_template(entity).format(
-            name=action["name"],
-            app_url=action.get("app_url"),
+            name=action["name"].tame(check_string),
+            app_url=action.get("app_url").tame(check_none_or(check_string)),
         ),
     }
 
     return NAME_CHANGED_TEMPLATE.format(**kwargs)
 
 
-def get_update_archived_body(payload: Dict[str, Any], action: Dict[str, Any], entity: str) -> str:
+def get_update_archived_body(payload: WildValue, action: WildValue, entity: str) -> str:
     archived = action["changes"]["archived"]
     if archived["new"]:
         operation = "archived"
@@ -251,8 +275,8 @@ def get_update_archived_body(payload: Dict[str, Any], action: Dict[str, Any], en
     kwargs = {
         "entity": entity,
         "name_template": get_name_template(entity).format(
-            name=action["name"],
-            app_url=action.get("app_url"),
+            name=action["name"].tame(check_string),
+            app_url=action.get("app_url").tame(check_none_or(check_string)),
         ),
         "operation": operation,
     }
@@ -260,58 +284,63 @@ def get_update_archived_body(payload: Dict[str, Any], action: Dict[str, Any], en
     return ARCHIVED_TEMPLATE.format(**kwargs)
 
 
-def get_story_task_body(payload: Dict[str, Any], action: Dict[str, Any], operation: str) -> str:
+def get_story_task_body(payload: WildValue, action: WildValue, operation: str) -> str:
     kwargs = {
-        "task_description": action["description"],
+        "task_description": action["description"].tame(check_string),
         "operation": operation,
     }
 
     for a in payload["actions"]:
-        if a["entity_type"] == "story":
+        if a["entity_type"].tame(check_string) == "story":
             kwargs["name_template"] = STORY_NAME_TEMPLATE.format(
-                name=a["name"],
-                app_url=a["app_url"],
+                name=a["name"].tame(check_string),
+                app_url=a["app_url"].tame(check_string),
             )
 
     return STORY_TASK_TEMPLATE.format(**kwargs)
 
 
-def get_story_task_completed_body(payload: Dict[str, Any], action: Dict[str, Any]) -> Optional[str]:
+def get_story_task_completed_body(payload: WildValue, action: WildValue) -> Optional[str]:
     kwargs = {
-        "task_description": action["description"],
+        "task_description": action["description"].tame(check_string),
     }
 
-    story_id = action["story_id"]
+    story_id = action["story_id"].tame(check_int)
     for ref in payload["references"]:
-        if ref["id"] == story_id:
+        if ref["id"].tame(check_string_or_int) == story_id:
             kwargs["name_template"] = STORY_NAME_TEMPLATE.format(
-                name=ref["name"],
-                app_url=ref["app_url"],
+                name=ref["name"].tame(check_string),
+                app_url=ref["app_url"].tame(check_string),
             )
 
-    if action["changes"]["complete"]["new"]:
+    if action["changes"]["complete"]["new"].tame(check_bool):
         return STORY_TASK_COMPLETED_TEMPLATE.format(**kwargs)
     else:
         return None
 
 
-def get_story_update_epic_body(payload: Dict[str, Any], action: Dict[str, Any]) -> str:
+def get_story_update_epic_body(payload: WildValue, action: WildValue) -> str:
     kwargs = {
         "story_name_template": STORY_NAME_TEMPLATE.format(
-            name=action["name"],
-            app_url=action["app_url"],
+            name=action["name"].tame(check_string),
+            app_url=action["app_url"].tame(check_string),
         ),
     }
 
-    new_id = action["changes"]["epic_id"].get("new")
-    old_id = action["changes"]["epic_id"].get("old")
+    epic_id = action["changes"]["epic_id"]
+    new_id = epic_id.get("new").tame(check_none_or(check_int))
+    old_id = epic_id.get("old").tame(check_none_or(check_int))
 
     for ref in payload["references"]:
-        if ref["id"] == new_id:
-            kwargs["new_epic_name_template"] = EPIC_NAME_TEMPLATE.format(name=ref["name"])
+        if ref["id"].tame(check_string_or_int) == new_id:
+            kwargs["new_epic_name_template"] = EPIC_NAME_TEMPLATE.format(
+                name=ref["name"].tame(check_string),
+            )
 
-        if ref["id"] == old_id:
-            kwargs["old_epic_name_template"] = EPIC_NAME_TEMPLATE.format(name=ref["name"])
+        if ref["id"].tame(check_string_or_int) == old_id:
+            kwargs["old_epic_name_template"] = EPIC_NAME_TEMPLATE.format(
+                name=ref["name"].tame(check_string),
+            )
 
     if new_id and old_id:
         return STORY_EPIC_CHANGED_TEMPLATE.format(**kwargs)
@@ -325,16 +354,17 @@ def get_story_update_epic_body(payload: Dict[str, Any], action: Dict[str, Any]) 
     return STORY_ADDED_REMOVED_EPIC_TEMPLATE.format(**kwargs)
 
 
-def get_story_update_estimate_body(payload: Dict[str, Any], action: Dict[str, Any]) -> str:
+def get_story_update_estimate_body(payload: WildValue, action: WildValue) -> str:
     kwargs = {
         "story_name_template": STORY_NAME_TEMPLATE.format(
-            name=action["name"],
-            app_url=action["app_url"],
+            name=action["name"].tame(check_string),
+            app_url=action["app_url"].tame(check_string),
         ),
     }
 
-    new = action["changes"]["estimate"].get("new")
-    if new:
+    estimate = action["changes"]["estimate"]
+    if "new" in estimate:
+        new = estimate["new"].tame(check_int)
         kwargs["estimate"] = f"{new} points"
     else:
         kwargs["estimate"] = "*Unestimated*"
@@ -342,45 +372,51 @@ def get_story_update_estimate_body(payload: Dict[str, Any], action: Dict[str, An
     return STORY_ESTIMATE_TEMPLATE.format(**kwargs)
 
 
-def get_reference_by_id(payload: Dict[str, Any], ref_id: int) -> Dict[str, Any]:
-    ref: Dict[str, Any] = {}
+def get_reference_by_id(payload: WildValue, ref_id: Optional[int]) -> Optional[WildValue]:
+    ref = None
     for reference in payload["references"]:
-        if reference["id"] == ref_id:
+        if reference["id"].tame(check_string_or_int) == ref_id:
             ref = reference
 
     return ref
 
 
 def get_secondary_actions_with_param(
-    payload: Dict[str, Any], entity: str, changed_attr: str
-) -> Generator[Dict[str, Any], None, None]:
+    payload: WildValue, entity: str, changed_attr: str
+) -> Iterator[WildValue]:
     # This function is a generator for secondary actions that have the required changed attributes,
     # i.e.: "story" that has "pull-request_ids" changed.
     for action in payload["actions"]:
-        if action["entity_type"] == entity and action["changes"].get(changed_attr) is not None:
+        if action["entity_type"].tame(check_string) == entity and changed_attr in action["changes"]:
             yield action
 
 
-def get_story_create_github_entity_body(
-    payload: Dict[str, Any], action: Dict[str, Any], entity: str
-) -> str:
-    pull_request_action: Dict[str, Any] = get_action_with_primary_id(payload)
+def get_story_create_github_entity_body(payload: WildValue, action: WildValue, entity: str) -> str:
+    pull_request_action: WildValue = get_action_with_primary_id(payload)
 
     kwargs = {
-        "name_template": STORY_NAME_TEMPLATE.format(**action),
-        "name": pull_request_action.get("number")
+        "name_template": STORY_NAME_TEMPLATE.format(
+            name=action["name"].tame(check_string),
+            app_url=action["app_url"].tame(check_string),
+        ),
+        "name": pull_request_action["number"].tame(check_int)
         if entity == "pull-request" or entity == "pull-request-comment"
-        else pull_request_action.get("name"),
-        "url": pull_request_action["url"],
+        else pull_request_action["name"].tame(check_string),
+        "url": pull_request_action["url"].tame(check_string),
         "workflow_state_template": "",
     }
 
     # Sometimes the workflow state of the story will not be changed when linking to a PR.
-    if action["changes"].get("workflow_state_id") is not None:
-        new_state_id = action["changes"]["workflow_state_id"]["new"]
-        old_state_id = action["changes"]["workflow_state_id"]["old"]
-        new_state = get_reference_by_id(payload, new_state_id)["name"]
-        old_state = get_reference_by_id(payload, old_state_id)["name"]
+    if "workflow_state_id" in action["changes"]:
+        workflow_state_id = action["changes"]["workflow_state_id"]
+        new_state_id = workflow_state_id["new"].tame(check_int)
+        old_state_id = workflow_state_id["old"].tame(check_int)
+        new_reference = get_reference_by_id(payload, new_state_id)
+        assert new_reference is not None
+        new_state = new_reference["name"].tame(check_string)
+        old_reference = get_reference_by_id(payload, old_state_id)
+        assert old_reference is not None
+        old_state = old_reference["name"].tame(check_string)
         kwargs["workflow_state_template"] = TRAILING_WORKFLOW_STATE_CHANGE_TEMPLATE.format(
             new=new_state, old=old_state
         )
@@ -394,34 +430,33 @@ def get_story_create_github_entity_body(
     return template.format(**kwargs)
 
 
-def get_story_update_attachment_body(
-    payload: Dict[str, Any], action: Dict[str, Any]
-) -> Optional[str]:
+def get_story_update_attachment_body(payload: WildValue, action: WildValue) -> Optional[str]:
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
-            name=action["name"],
-            app_url=action["app_url"],
+            name=action["name"].tame(check_string),
+            app_url=action["app_url"].tame(check_string),
         ),
     }
-    file_ids_added = action["changes"]["file_ids"].get("adds")
+    file_ids = action["changes"]["file_ids"]
 
     # If this is a payload for when an attachment is removed, ignore it
-    if not file_ids_added:
+    if "adds" not in file_ids:
         return None
 
+    file_ids_added = file_ids["adds"].tame(check_list(check_int))
     file_id = file_ids_added[0]
     for ref in payload["references"]:
-        if ref["id"] == file_id:
+        if ref["id"].tame(check_string_or_int) == file_id:
             kwargs.update(
-                type=ref["entity_type"],
-                file_name=ref["name"],
+                type=ref["entity_type"].tame(check_string),
+                file_name=ref["name"].tame(check_string),
             )
 
     return FILE_ATTACHMENT_TEMPLATE.format(**kwargs)
 
 
 def get_story_joined_label_list(
-    payload: Dict[str, Any], action: Dict[str, Any], label_ids_added: List[int]
+    payload: WildValue, action: WildValue, label_ids_added: List[int]
 ) -> str:
     labels = []
 
@@ -429,30 +464,32 @@ def get_story_joined_label_list(
         label_name = ""
 
         for action in payload["actions"]:
-            if action.get("id") == label_id:
-                label_name = action.get("name", "")
+            if action["id"].tame(check_int) == label_id:
+                label_name = action.get("name", "").tame(check_string)
 
         if label_name == "":
-            label_name = get_reference_by_id(payload, label_id).get("name", "")
+            reference = get_reference_by_id(payload, label_id)
+            label_name = "" if reference is None else reference["name"].tame(check_string)
 
         labels.append(LABEL_TEMPLATE.format(name=label_name))
 
     return ", ".join(labels)
 
 
-def get_story_label_body(payload: Dict[str, Any], action: Dict[str, Any]) -> Optional[str]:
+def get_story_label_body(payload: WildValue, action: WildValue) -> Optional[str]:
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
-            name=action["name"],
-            app_url=action["app_url"],
+            name=action["name"].tame(check_string),
+            app_url=action["app_url"].tame(check_string),
         ),
     }
-    label_ids_added = action["changes"]["label_ids"].get("adds")
+    label_ids = action["changes"]["label_ids"]
 
     # If this is a payload for when no label is added, ignore it
-    if not label_ids_added:
+    if "adds" not in label_ids:
         return None
 
+    label_ids_added = label_ids["adds"].tame(check_list(check_int))
     kwargs.update(labels=get_story_joined_label_list(payload, action, label_ids_added))
 
     return (
@@ -462,58 +499,60 @@ def get_story_label_body(payload: Dict[str, Any], action: Dict[str, Any]) -> Opt
     )
 
 
-def get_story_update_project_body(payload: Dict[str, Any], action: Dict[str, Any]) -> str:
+def get_story_update_project_body(payload: WildValue, action: WildValue) -> str:
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
-            name=action["name"],
-            app_url=action["app_url"],
+            name=action["name"].tame(check_string),
+            app_url=action["app_url"].tame(check_string),
         ),
     }
 
-    new_project_id = action["changes"]["project_id"]["new"]
-    old_project_id = action["changes"]["project_id"]["old"]
+    project_id = action["changes"]["project_id"]
+    new_project_id = project_id["new"].tame(check_int)
+    old_project_id = project_id["old"].tame(check_int)
     for ref in payload["references"]:
-        if ref["id"] == new_project_id:
-            kwargs.update(new=ref["name"])
-        if ref["id"] == old_project_id:
-            kwargs.update(old=ref["name"])
+        if ref["id"].tame(check_string_or_int) == new_project_id:
+            kwargs.update(new=ref["name"].tame(check_string))
+        if ref["id"].tame(check_string_or_int) == old_project_id:
+            kwargs.update(old=ref["name"].tame(check_string))
 
     return STORY_UPDATE_PROJECT_TEMPLATE.format(**kwargs)
 
 
-def get_story_update_type_body(payload: Dict[str, Any], action: Dict[str, Any]) -> str:
+def get_story_update_type_body(payload: WildValue, action: WildValue) -> str:
+    story_type = action["changes"]["story_type"]
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
-            name=action["name"],
-            app_url=action["app_url"],
+            name=action["name"].tame(check_string),
+            app_url=action["app_url"].tame(check_string),
         ),
-        "new_type": action["changes"]["story_type"]["new"],
-        "old_type": action["changes"]["story_type"]["old"],
+        "new_type": story_type["new"].tame(check_string),
+        "old_type": story_type["old"].tame(check_string),
     }
 
     return STORY_UPDATE_TYPE_TEMPLATE.format(**kwargs)
 
 
-def get_story_update_owner_body(payload: Dict[str, Any], action: Dict[str, Any]) -> str:
+def get_story_update_owner_body(payload: WildValue, action: WildValue) -> str:
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
-            name=action["name"],
-            app_url=action["app_url"],
+            name=action["name"].tame(check_string),
+            app_url=action["app_url"].tame(check_string),
         ),
     }
 
     return STORY_UPDATE_OWNER_TEMPLATE.format(**kwargs)
 
 
-def get_story_update_batch_body(payload: Dict[str, Any], action: Dict[str, Any]) -> Optional[str]:
+def get_story_update_batch_body(payload: WildValue, action: WildValue) -> Optional[str]:
     # When the user selects one or more stories with the checkbox, they can perform
     # a batch update on multiple stories while changing multiple attribtues at the
     # same time.
     changes = action["changes"]
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
-            name=action["name"],
-            app_url=action["app_url"],
+            name=action["name"].tame(check_string),
+            app_url=action["app_url"].tame(check_string),
         ),
         "workflow_state_template": "",
     }
@@ -524,20 +563,34 @@ def get_story_update_batch_body(payload: Dict[str, Any], action: Dict[str, Any])
     move_sub_templates = []
     if "epic_id" in changes:
         last_change = "epic"
+        epic_id = changes["epic_id"]
+        old_reference = get_reference_by_id(
+            payload, epic_id.get("old").tame(check_none_or(check_int))
+        )
+        new_reference = get_reference_by_id(
+            payload, epic_id.get("new").tame(check_none_or(check_int))
+        )
         move_sub_templates.append(
             STORY_UPDATE_BATCH_CHANGED_SUB_TEMPLATE.format(
                 entity_type="Epic",
-                old=get_reference_by_id(payload, changes["epic_id"].get("old")).get("name"),
-                new=get_reference_by_id(payload, changes["epic_id"].get("new")).get("name"),
+                old=None if old_reference is None else old_reference["name"].tame(check_string),
+                new=None if new_reference is None else new_reference["name"].tame(check_string),
             )
         )
     if "project_id" in changes:
         last_change = "project"
+        project_id = changes["project_id"]
+        old_reference = get_reference_by_id(
+            payload, project_id.get("old").tame(check_none_or(check_int))
+        )
+        new_reference = get_reference_by_id(
+            payload, project_id.get("new").tame(check_none_or(check_int))
+        )
         move_sub_templates.append(
             STORY_UPDATE_BATCH_CHANGED_SUB_TEMPLATE.format(
                 entity_type="Project",
-                old=get_reference_by_id(payload, changes["project_id"].get("old")).get("name"),
-                new=get_reference_by_id(payload, changes["project_id"].get("new")).get("name"),
+                old=None if old_reference is None else old_reference["name"].tame(check_string),
+                new=None if new_reference is None else new_reference["name"].tame(check_string),
             )
         )
     if len(move_sub_templates) > 0:
@@ -550,42 +603,47 @@ def get_story_update_batch_body(payload: Dict[str, Any], action: Dict[str, Any])
 
     if "story_type" in changes:
         last_change = "type"
+        story_type = changes["story_type"]
         templates.append(
             STORY_UPDATE_BATCH_CHANGED_TEMPLATE.format(
                 operation="{} changed".format("was" if len(templates) == 0 else "and"),
                 sub_templates=STORY_UPDATE_BATCH_CHANGED_SUB_TEMPLATE.format(
                     entity_type="type",
-                    old=changes["story_type"].get("old"),
-                    new=changes["story_type"].get("new"),
+                    old=story_type.get("old").tame(check_none_or(check_string)),
+                    new=story_type.get("new").tame(check_none_or(check_string)),
                 ),
             )
         )
 
     if "label_ids" in changes:
-        label_ids_added = changes["label_ids"].get("adds")
+        label_ids = changes["label_ids"]
         # If this is a payload for when no label is added, ignore it
-        if label_ids_added is not None:
+        if "adds" in label_ids:
+            label_ids_added = label_ids["adds"].tame(check_list(check_int))
             last_change = "label"
             labels = get_story_joined_label_list(payload, action, label_ids_added)
             templates.append(
                 STORY_UPDATE_BATCH_ADD_REMOVE_TEMPLATE.format(
                     operation="{} added".format("was" if len(templates) == 0 else "and"),
                     entity="the new label{plural} {labels}".format(
-                        plural="s" if len(changes["label_ids"]) > 1 else "", labels=labels
+                        plural="s" if len(label_ids) > 1 else "", labels=labels
                     ),
                 )
             )
 
     if "workflow_state_id" in changes:
         last_change = "state"
+        workflow_state_id = changes["workflow_state_id"]
+        old_reference = get_reference_by_id(
+            payload, workflow_state_id.get("old").tame(check_none_or(check_int))
+        )
+        new_reference = get_reference_by_id(
+            payload, workflow_state_id.get("new").tame(check_none_or(check_int))
+        )
         kwargs.update(
             workflow_state_template=TRAILING_WORKFLOW_STATE_CHANGE_TEMPLATE.format(
-                old=get_reference_by_id(payload, changes["workflow_state_id"].get("old")).get(
-                    "name"
-                ),
-                new=get_reference_by_id(payload, changes["workflow_state_id"].get("new")).get(
-                    "name"
-                ),
+                old=None if old_reference is None else old_reference["name"].tame(check_string),
+                new=None if new_reference is None else new_reference["name"].tame(check_string),
             )
         )
 
@@ -604,19 +662,19 @@ def get_story_update_batch_body(payload: Dict[str, Any], action: Dict[str, Any])
 
 
 def get_entity_name(
-    payload: Dict[str, Any], action: Dict[str, Any], entity: Optional[str] = None
+    payload: WildValue, action: WildValue, entity: Optional[str] = None
 ) -> Optional[str]:
-    name = action.get("name")
+    name = action["name"].tame(check_string) if "name" in action else None
 
     if name is None or action["entity_type"] == "branch":
         for action in payload["actions"]:
-            if action["entity_type"] == entity:
-                name = action["name"]
+            if action["entity_type"].tame(check_string) == entity:
+                name = action["name"].tame(check_string)
 
     if name is None:
         for ref in payload["references"]:
-            if ref["entity_type"] == entity:
-                name = ref["name"]
+            if ref["entity_type"].tame(check_string) == entity:
+                name = ref["name"].tame(check_string)
 
     return name
 
@@ -630,8 +688,8 @@ def get_name_template(entity: str) -> str:
 def send_stream_messages_for_actions(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any],
-    action: Dict[str, Any],
+    payload: WildValue,
+    action: WildValue,
     event: str,
 ) -> None:
     body_func = EVENT_BODY_FUNCTION_MAPPER.get(event)
@@ -646,7 +704,7 @@ def send_stream_messages_for_actions(
         check_send_webhook_message(request, user_profile, topic, body, event)
 
 
-EVENT_BODY_FUNCTION_MAPPER: Dict[str, Callable[[Dict[str, Any], Dict[str, Any]], Optional[str]]] = {
+EVENT_BODY_FUNCTION_MAPPER: Dict[str, Callable[[WildValue, WildValue], Optional[str]]] = {
     "story_update_archived": partial(get_update_archived_body, entity="story"),
     "epic_update_archived": partial(get_update_archived_body, entity="epic"),
     "story_create": get_story_create_body,
@@ -681,7 +739,7 @@ EVENT_BODY_FUNCTION_MAPPER: Dict[str, Callable[[Dict[str, Any], Dict[str, Any]],
 
 ALL_EVENT_TYPES = list(EVENT_BODY_FUNCTION_MAPPER.keys())
 
-EVENT_TOPIC_FUNCTION_MAPPER = {
+EVENT_TOPIC_FUNCTION_MAPPER: Dict[str, Callable[[WildValue, WildValue], Optional[str]]] = {
     "story": partial(get_entity_name, entity="story"),
     "pull-request": partial(get_entity_name, entity="story"),
     "branch": partial(get_entity_name, entity="story"),
@@ -695,9 +753,7 @@ IGNORED_EVENTS = {
     "story-comment_update",
 }
 
-EVENTS_SECONDARY_ACTIONS_FUNCTION_MAPPER: Dict[
-    str, Callable[[Dict[str, Any]], Generator[Dict[str, Any], None, None]]
-] = {
+EVENTS_SECONDARY_ACTIONS_FUNCTION_MAPPER: Dict[str, Callable[[WildValue], Iterator[WildValue]]] = {
     "pull-request_create": partial(
         get_secondary_actions_with_param, entity="story", changed_attr="pull_request_ids"
     ),
@@ -715,19 +771,19 @@ EVENTS_SECONDARY_ACTIONS_FUNCTION_MAPPER: Dict[
 def api_clubhouse_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Optional[Dict[str, Any]] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
 
     # Clubhouse has a tendency to send empty POST requests to
     # third-party endpoints. It is unclear as to which event type
     # such requests correspond to. So, it is best to ignore such
     # requests for now.
-    if payload is None:
+    if payload.value is None:
         return json_success(request)
 
-    if payload.get("primary_id") is not None:
+    if "primary_id" in payload:
         action = get_action_with_primary_id(payload)
-        primary_actions = [action]
+        primary_actions: Iterable[WildValue] = [action]
     else:
         primary_actions = payload["actions"]
 
