@@ -459,7 +459,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         "yo",
         ["communication"],
         function="zerver.webhooks.yo.view.api_yo_app_webhook",
-        display_name="Yo App",
+        display_name="Yo",
     ),
     WebhookIntegration("wordpress", ["marketing"], display_name="WordPress"),
     WebhookIntegration("zapier", ["meta-integration"]),
