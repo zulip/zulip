@@ -2331,7 +2331,7 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 - Added documentation on using Hubot to integrate with useful services
   not yet integrated with Zulip directly (e.g. Google Hangouts).
 - Added new management command to test sending email from Zulip.
-- Added Codeship, Pingdom, Taiga, Teamcity, and Yo integrations.
+- Added Codeship, Pingdom, Taiga, TeamCity, and Yo integrations.
 - Added Nagios plugins to the main distribution.
 - Added ability for realm administrators to manage custom emoji.
 - Added guide to writing new integrations.
