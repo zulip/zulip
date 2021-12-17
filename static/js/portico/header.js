@@ -8,12 +8,12 @@ $(() => {
 
     $(".dropdown").on("click", (e) => {
         const $this = $(e.target);
-        const dropdown_is_shown = $this.closest("ul .dropdown").hasClass("show");
+        const dropdown_is_shown = $this.closest(".dropdown").hasClass("show");
 
         if (!dropdown_is_shown) {
-            $this.closest("ul .dropdown").addClass("show");
+            $this.closest(".dropdown").addClass("show");
         } else if (dropdown_is_shown) {
-            $this.closest("ul .dropdown").removeClass("show");
+            $this.closest(".dropdown").removeClass("show");
         }
     });
 
