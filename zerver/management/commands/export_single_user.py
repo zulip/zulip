@@ -34,6 +34,7 @@ class Command(ZulipBaseCommand):
         if output_dir is None:
             output_dir = tempfile.mkdtemp(prefix="zulip-export-")
         else:
+            output_dir = os.path.abspath(output_dir)
             if os.path.exists(output_dir) and os.listdir(output_dir):
                 raise CommandError(
                     f"Refusing to overwrite nonempty directory: {output_dir}. Aborting...",
