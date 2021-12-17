@@ -1,5 +1,4 @@
-from typing import Any
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -10,7 +9,7 @@ class BeeminderHookTests(WebhookTestCase):
     WEBHOOK_DIR_NAME = "beeminder"
 
     @patch("zerver.webhooks.beeminder.view.time.time")
-    def test_beeminder_derail(self, time: Any) -> None:
+    def test_beeminder_derail(self, time: MagicMock) -> None:
         time.return_value = 1517739100  # 5.6 hours from fixture value
         expected_topic = "beekeeper"
         expected_message = """
@@ -26,7 +25,7 @@ You are going to derail from goal **gainweight** in **5.6 hours**. You need **+2
         )
 
     @patch("zerver.webhooks.beeminder.view.time.time")
-    def test_beeminder_derail_worried(self, time: Any) -> None:
+    def test_beeminder_derail_worried(self, time: MagicMock) -> None:
         time.return_value = 1517739100  # 5.6 hours from fixture value
         expected_topic = "beekeeper"
         expected_message = """
