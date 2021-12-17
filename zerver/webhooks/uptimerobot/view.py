@@ -13,10 +13,10 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 MISCONFIGURED_PAYLOAD_ERROR_MESSAGE = """
-Hi there! Your bot {bot_name} just received a Uptime Robot payload that is missing
+Hi there! Your bot {bot_name} just received a UptimeRobot payload that is missing
 some data that Zulip requires. This usually indicates a configuration issue
-in your Uptime Robot webhook settings. Please make sure that you set the required parameters
-when configuring the Uptime Robot webhook. Contact {support_email} if you
+in your UptimeRobot webhook settings. Please make sure that you set the required parameters
+when configuring the UptimeRobot webhook. Contact {support_email} if you
 need further help!
 """
 

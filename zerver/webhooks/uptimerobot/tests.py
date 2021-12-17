@@ -30,7 +30,7 @@ It was down for 44 minutes and 37 seconds.
 
     def test_uptimerobot_invalid_payload_with_missing_data(self) -> None:
         """
-        Tests if invalid uptime robot payloads are handled correctly
+        Tests if invalid UptimeRobot payloads are handled correctly
         """
         self.url = self.build_webhook_url()
         payload = self.get_body("uptimerobot_invalid_payload_with_missing_data")
