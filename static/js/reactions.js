@@ -513,12 +513,13 @@ export function set_clean_reactions(message) {
     }
 }
 
-function make_clean_reaction(opts) {
-    const r = emoji.get_emoji_details_for_rendering(opts);
+function make_clean_reaction({local_id, user_ids, emoji_name, emoji_code, reaction_type}) {
+    const r = {
+        local_id,
+        user_ids,
+        ...emoji.get_emoji_details_for_rendering({emoji_name, emoji_code, reaction_type}),
+    };
 
-    r.local_id = opts.local_id;
-
-    r.user_ids = opts.user_ids;
     update_user_fields(r);
 
     r.emoji_alt_code = user_settings.emojiset === "text";
