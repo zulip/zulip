@@ -1620,15 +1620,11 @@ def get_recipient_info(
 
         if possible_wildcard_mention:
             # If there's a possible wildcard mention, we need to
-            # determine which users would receive a wildcard mention
-            # notification for this message should the message indeed
-            # contain a wildcard mention.
-            #
-            # We don't have separate values for push/email
-            # notifications here; at this stage, we're just
-            # determining whether this wildcard mention should be
-            # treated as a mention (and follow the user's mention
-            # notification preferences) or a normal message.
+            # determine the set of users who have enabled the
+            # "wildcard_mentions_notify" setting (that is, the set of
+            # users for whom wildcard mentions should be treated like
+            # personal mentions for notifications). This setting
+            # applies to both email and push notifications.
             wildcard_mention_user_ids = {
                 row["user_profile_id"]
                 for row in subscription_rows
