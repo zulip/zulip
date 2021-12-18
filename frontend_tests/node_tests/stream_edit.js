@@ -40,6 +40,7 @@ const stream_pill = zrequire("stream_pill");
 const user_groups = zrequire("user_groups");
 const user_group_pill = zrequire("user_group_pill");
 const user_pill = zrequire("user_pill");
+const stream_subscribers_ui = zrequire("stream_subscribers_ui");
 const stream_ui_updates = zrequire("stream_ui_updates");
 const settings_config = zrequire("settings_config");
 
@@ -110,6 +111,7 @@ for (const sub of subs) {
 function test_ui(label, f) {
     run_test(label, ({override, mock_template}) => {
         page_params.user_id = me.user_id;
+        stream_subscribers_ui.initialize();
         stream_edit.initialize();
         f({override, mock_template});
     });
@@ -180,7 +182,7 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
     let expected_user_ids = [];
     let input_typeahead_called = false;
     let add_subscribers_request = false;
-    override(stream_edit, "invite_user_to_stream", (user_ids, sub) => {
+    override(stream_subscribers_ui, "invite_user_to_stream", (user_ids, sub) => {
         assert.equal(sub.stream_id, denmark.stream_id);
         assert.deepEqual(user_ids.sort(), expected_user_ids.sort());
         add_subscribers_request = true;
@@ -266,7 +268,7 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
 
         (function test_updater() {
             function number_of_pills() {
-                const pills = stream_edit.pill_widget.items();
+                const pills = stream_subscribers_ui.pill_widget.items();
                 return pills.length;
             }
 

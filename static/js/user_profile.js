@@ -20,7 +20,7 @@ import * as settings_account from "./settings_account";
 import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
 import * as stream_data from "./stream_data";
-import * as stream_edit from "./stream_edit";
+import * as stream_subscribers_ui from "./stream_subscribers_ui";
 import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
@@ -213,7 +213,7 @@ function handle_remove_stream_subscription(target_user_id, sub, success, failure
         });
     } else {
         // Unsubscribed by admin.
-        stream_edit.remove_user_from_stream(target_user_id, sub, success, failure);
+        stream_subscribers_ui.remove_user_from_stream(target_user_id, sub, success, failure);
     }
 }
 

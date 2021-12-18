@@ -29,8 +29,8 @@ const rendered_markdown = mock_esm("../../static/js/rendered_markdown");
 const resize = mock_esm("../../static/js/resize");
 const sent_messages = mock_esm("../../static/js/sent_messages");
 const server_events = mock_esm("../../static/js/server_events");
-const stream_edit = mock_esm("../../static/js/stream_edit");
 const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
+const stream_subscribers_ui = mock_esm("../../static/js/stream_subscribers_ui");
 const transmit = mock_esm("../../static/js/transmit");
 
 const compose_closed_ui = zrequire("compose_closed_ui");
@@ -625,7 +625,7 @@ test_ui("on_events", ({override}) => {
         people.add_active_user(mentioned);
 
         let invite_user_to_stream_called = false;
-        override(stream_edit, "invite_user_to_stream", (user_ids, sub, success) => {
+        override(stream_subscribers_ui, "invite_user_to_stream", (user_ids, sub, success) => {
             invite_user_to_stream_called = true;
             assert.deepEqual(user_ids, [mentioned.user_id]);
             assert.equal(sub, subscription);
