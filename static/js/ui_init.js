@@ -81,6 +81,7 @@ import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
 import * as stream_settings_ui from "./stream_settings_ui";
+import * as stream_subscribers_ui from "./stream_subscribers_ui";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
 import * as topic_list from "./topic_list";
@@ -568,6 +569,7 @@ export function initialize_everything() {
     initialize_kitchen_sink_stuff();
     echo.initialize();
     stream_edit.initialize();
+    stream_subscribers_ui.initialize();
     stream_data.initialize(stream_data_params);
     pm_conversations.recent.initialize(pm_conversations_params);
     muted_topics.initialize();
