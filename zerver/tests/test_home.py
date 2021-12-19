@@ -462,7 +462,7 @@ class HomeTest(ZulipTestCase):
                 result = self.client_get("/", dict(stream="Denmark"))
 
             html = result.content.decode()
-            self.assertIn("Accept the new Terms of Service", html)
+            self.assertIn("Accept the Terms of Service", html)
 
     def test_banned_desktop_app_versions(self) -> None:
         user = self.example_user("hamlet")
