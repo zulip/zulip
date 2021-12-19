@@ -1586,6 +1586,7 @@ class RecipientInfoTest(ZulipTestCase):
             long_term_idle_user_ids=set(),
             default_bot_user_ids=set(),
             service_bot_tuples=[],
+            all_bot_user_ids=set(),
         )
 
         self.assertEqual(info, expected_info)
@@ -1767,6 +1768,7 @@ class RecipientInfoTest(ZulipTestCase):
             possibly_mentioned_user_ids={service_bot.id, normal_bot.id},
         )
         self.assertEqual(info["default_bot_user_ids"], {normal_bot.id})
+        self.assertEqual(info["all_bot_user_ids"], {normal_bot.id, service_bot.id})
 
     def test_get_recipient_info_invalid_recipient_type(self) -> None:
         hamlet = self.example_user("hamlet")

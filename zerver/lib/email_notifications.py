@@ -1,5 +1,6 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/notifications.html
 
+import logging
 import math
 import re
 from collections import defaultdict
@@ -42,6 +43,8 @@ from zerver.models import (
     get_display_recipient,
     get_user_profile_by_id,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def relative_to_full_url(fragment: lxml.html.HtmlElement, base_url: str) -> None:
@@ -569,8 +572,13 @@ def handle_missedmessage_emails(
     }
 
     user_profile = get_user_profile_by_id(user_profile_id)
-    if user_profile.is_bot:  # nocoverage # TODO -- needs a test.
-        # Never email bot users.
+    if user_profile.is_bot:  # nocoverage
+        # We don't expect to reach here for bot users. However, this code exists
+        # to find and throw away any pre-existing events in the queue while
+        # upgrading from versions before our notifiability logic was implemented.
+        # TODO/compatibility: This block can be removed when one can no longer
+        # upgrade from versions <= 4.0 to versions >= 5.0
+        logger.warning("Send-email event found for bot user %s. Skipping.", user_profile_id)
         return
 
     if not user_profile.enable_offline_email_notifications:

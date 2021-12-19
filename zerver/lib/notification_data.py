@@ -41,7 +41,24 @@ class UserMessageNotificationsData:
         stream_email_user_ids: Set[int],
         wildcard_mention_user_ids: Set[int],
         muted_sender_user_ids: Set[int],
+        all_bot_user_ids: Set[int],
     ) -> "UserMessageNotificationsData":
+
+        if user_id in all_bot_user_ids:
+            # Don't send any notifications to bots
+            return cls(
+                user_id=user_id,
+                pm_email_notify=False,
+                mention_email_notify=False,
+                wildcard_mention_email_notify=False,
+                pm_push_notify=False,
+                mention_push_notify=False,
+                wildcard_mention_push_notify=False,
+                online_push_enabled=False,
+                stream_push_notify=False,
+                stream_email_notify=False,
+                sender_is_muted=False,
+            )
 
         # `wildcard_mention_user_ids` are those user IDs for whom wildcard mentions should
         # obey notification settings of personal mentions. Hence, it isn't an independent
