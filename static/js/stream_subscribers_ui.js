@@ -268,9 +268,10 @@ function remove_subscriber({stream_id, target_user_id, list_entry}) {
     if (!sub) {
         return;
     }
-    let message;
 
     function removal_success(data) {
+        let message;
+
         if (data.removed.length > 0) {
             // Remove the user from the subscriber list.
             list_entry.remove();
