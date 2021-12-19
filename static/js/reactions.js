@@ -502,13 +502,7 @@ export function set_clean_reactions(message) {
 
         message.clean_reactions.set(
             local_id,
-            make_clean_reaction({
-                local_id,
-                user_ids,
-                reaction_type: reaction.reaction_type,
-                emoji_name: reaction.emoji_name,
-                emoji_code: reaction.emoji_code,
-            }),
+            make_clean_reaction({local_id, user_ids, ...reaction}),
         );
     }
 }
