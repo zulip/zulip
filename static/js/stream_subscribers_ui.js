@@ -68,19 +68,20 @@ function get_stream_id(target) {
     const row = $(target).closest(
         ".stream-row, .stream_settings_header, .subscription_settings, .save-button",
     );
-    return Number.parseInt(row.attr("data-stream-id"), 10);
-}
+    const stream_id = Number.parseInt(row.attr("data-stream-id"), 10);
 
-function get_sub_for_target(target) {
-    const stream_id = get_stream_id(target);
     if (!stream_id) {
         blueslip.error("Cannot find stream id for target");
         return undefined;
     }
 
+    return stream_id;
+}
+
+function get_sub(stream_id) {
     const sub = sub_store.get(stream_id);
     if (!sub) {
-        blueslip.error("get_sub_for_target() failed id lookup: " + stream_id);
+        blueslip.error("get_sub() failed id lookup: " + stream_id);
         return undefined;
     }
     return sub;
@@ -188,10 +189,9 @@ export function remove_user_from_stream(user_id, sub, success, failure) {
     });
 }
 
-function submit_add_subscriber_form(e) {
-    const sub = get_sub_for_target(e.target);
+function submit_add_subscriber_form(stream_id) {
+    const sub = get_sub(stream_id);
     if (!sub) {
-        blueslip.error(".subscriber_list_add form submit fails");
         return;
     }
 
@@ -267,13 +267,15 @@ export function initialize() {
     $("#subscriptions_table").on("keyup", ".subscriber_list_add form", (e) => {
         if (e.key === "Enter") {
             e.preventDefault();
-            submit_add_subscriber_form(e);
+            const stream_id = get_stream_id(e.target);
+            submit_add_subscriber_form(stream_id);
         }
     });
 
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", (e) => {
         e.preventDefault();
-        submit_add_subscriber_form(e);
+        const stream_id = get_stream_id(e.target);
+        submit_add_subscriber_form(stream_id);
     });
 
     $("#subscriptions_table").on("submit", ".subscriber_list_remove form", (e) => {
@@ -282,9 +284,9 @@ export function initialize() {
         const list_entry = $(e.target).closest("tr");
         const target_user_id = Number.parseInt(list_entry.attr("data-subscriber-id"), 10);
 
-        const sub = get_sub_for_target(e.target);
+        const stream_id = get_stream_id(e.target);
+        const sub = get_sub(stream_id);
         if (!sub) {
-            blueslip.error(".subscriber_list_remove form submit fails");
             return;
         }
         let message;
