@@ -176,6 +176,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "platform": RequestNotes.get_notes(request).client_name,
         "allow_search_engine_indexing": allow_search_engine_indexing,
         "landing_page_navbar_message": settings.LANDING_PAGE_NAVBAR_MESSAGE,
+        "terms_of_service_message": settings.TERMS_OF_SERVICE_MESSAGE,
         "is_isolated_page": is_isolated_page(request),
         "default_page_params": default_page_params,
     }

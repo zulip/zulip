@@ -13,7 +13,7 @@ the registration flow has its own (nearly identical) copy of the fields below in
         {% include special_message_template %}
         {% else %}
         <div class="pitch">
-            <h1 class="get-started">{{ _("Accept the new Terms of Service") }}…</h1>
+            <h1 class="get-started">{{ _("Accept the Terms of Service") }}</h1>
         </div>
         {% endif %}
 
@@ -27,7 +27,13 @@ the registration flow has its own (nearly identical) copy of the fields below in
                     </div>
                 </div>
 
-                <div class="input-group margin terms-of-service">
+                {% if terms_of_service_message %}
+                <div class="description">
+                    <p>{{ terms_of_service_message |safe }}</p>
+                </div>
+                {% endif %}
+
+                <div class="input-group terms-of-service">
                     {#
                     This is somewhat subtle.
                     Checkboxes have a name and value, and when the checkbox is ticked, the form posts
@@ -48,10 +54,9 @@ the registration flow has its own (nearly identical) copy of the fields below in
                         {% endfor %}
                     {% endif %}
                 </div>
-                <br />
                 <div class="control-group">
                     <div class="controls">
-                        <input type="submit" class="btn btn-primary" value="{{ _('Enter') }}" /><br />
+                        <button id="accept_tos_button" type="submit">{{ _('Accept') }}</button>
                         <input type="hidden" name="next" value="{{ next }}" />
                     </div>
                 </div>
