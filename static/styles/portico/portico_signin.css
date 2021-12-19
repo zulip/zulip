@@ -284,9 +284,33 @@ html {
     }
 }
 
-.account-accept-terms-page .terms-of-service .input-group {
-    width: 450px;
-    margin: 0 auto 10px;
+.account-accept-terms-page {
+    #registration,
+    #accept_tos_button {
+        margin: 0;
+    }
+
+    .fakecontrol {
+        font-weight: normal;
+    }
+
+    .description {
+        margin-bottom: 20px;
+        font-size: 16px;
+        font-weight: 400;
+    }
+
+    .center-block {
+        max-width: 800px;
+
+        .control-group {
+            margin-bottom: 5px;
+        }
+    }
+
+    #accept_tos_button {
+        margin-top: 20px;
+    }
 }
 
 .register-account {
