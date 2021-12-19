@@ -263,6 +263,58 @@ function submit_add_subscriber_form(stream_id) {
     invite_user_to_stream(user_ids, sub, invite_success, invite_failure);
 }
 
+function remove_subscriber({stream_id, target_user_id, list_entry}) {
+    const sub = get_sub(stream_id);
+    if (!sub) {
+        return;
+    }
+    let message;
+
+    function removal_success(data) {
+        if (data.removed.length > 0) {
+            // Remove the user from the subscriber list.
+            list_entry.remove();
+            message = $t({defaultMessage: "Unsubscribed successfully!"});
+            // The rest of the work is done via the subscription -> remove event we will get
+        } else {
+            message = $t({defaultMessage: "User is already not subscribed."});
+        }
+        show_stream_subscription_request_result({
+            message,
+            add_class: "text-success",
+            remove_class: "text-remove",
+        });
+    }
+
+    function removal_failure() {
+        show_stream_subscription_request_result({
+            message: $t({defaultMessage: "Error removing user from this stream."}),
+            add_class: "text-error",
+            remove_class: "text-success",
+        });
+    }
+
+    function remove_user_from_private_stream() {
+        remove_user_from_stream(target_user_id, sub, removal_success, removal_failure);
+    }
+
+    if (sub.invite_only && people.is_my_user_id(target_user_id)) {
+        const html_body = render_unsubscribe_private_stream_modal();
+
+        confirm_dialog.launch({
+            html_heading: $t_html(
+                {defaultMessage: "Unsubscribe from {stream_name}"},
+                {stream_name: sub.name},
+            ),
+            html_body,
+            on_click: remove_user_from_private_stream,
+        });
+        return;
+    }
+
+    remove_user_from_stream(target_user_id, sub, removal_success, removal_failure);
+}
+
 export function initialize() {
     $("#subscriptions_table").on("keyup", ".subscriber_list_add form", (e) => {
         if (e.key === "Enter") {
@@ -283,56 +335,8 @@ export function initialize() {
 
         const list_entry = $(e.target).closest("tr");
         const target_user_id = Number.parseInt(list_entry.attr("data-subscriber-id"), 10);
-
         const stream_id = get_stream_id(e.target);
-        const sub = get_sub(stream_id);
-        if (!sub) {
-            return;
-        }
-        let message;
 
-        function removal_success(data) {
-            if (data.removed.length > 0) {
-                // Remove the user from the subscriber list.
-                list_entry.remove();
-                message = $t({defaultMessage: "Unsubscribed successfully!"});
-                // The rest of the work is done via the subscription -> remove event we will get
-            } else {
-                message = $t({defaultMessage: "User is already not subscribed."});
-            }
-            show_stream_subscription_request_result({
-                message,
-                add_class: "text-success",
-                remove_class: "text-remove",
-            });
-        }
-
-        function removal_failure() {
-            show_stream_subscription_request_result({
-                message: $t({defaultMessage: "Error removing user from this stream."}),
-                add_class: "text-error",
-                remove_class: "text-success",
-            });
-        }
-
-        function remove_user_from_private_stream() {
-            remove_user_from_stream(target_user_id, sub, removal_success, removal_failure);
-        }
-
-        if (sub.invite_only && people.is_my_user_id(target_user_id)) {
-            const html_body = render_unsubscribe_private_stream_modal();
-
-            confirm_dialog.launch({
-                html_heading: $t_html(
-                    {defaultMessage: "Unsubscribe from {stream_name}"},
-                    {stream_name: sub.name},
-                ),
-                html_body,
-                on_click: remove_user_from_private_stream,
-            });
-            return;
-        }
-
-        remove_user_from_stream(target_user_id, sub, removal_success, removal_failure);
+        remove_subscriber({stream_id, target_user_id, list_entry});
     });
 }
