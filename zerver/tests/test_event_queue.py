@@ -575,6 +575,32 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         result = self.api_delete(user_profile, f"/api/v1/users/me/muted_users/{iago.id}")
         self.assert_json_success(result)
 
+        # Test that bots don't receive any notifications
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+            "bot_type": "1",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        hambot = UserProfile.objects.get(id=result.json()["user_id"])
+        client_descriptor = allocate_event_queue(hambot)
+        self.assertTrue(client_descriptor.event_queue.empty())
+        msg_id = self.send_personal_message(iago, hambot)
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(hambot.id, client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_dict = mock_enqueue.call_args_list[0][1]
+
+            # Defaults are all False
+            assert_maybe_enqueue_notifications_call_args(
+                user_id=hambot.id,
+                args_dict=args_dict,
+                message_id=msg_id,
+            )
+        destroy_event_queue(hambot, client_descriptor.event_queue.id)
+        self.assert_json_success(result)
+
 
 class FileReloadLogicTest(ZulipTestCase):
     def test_persistent_queue_filename(self) -> None:

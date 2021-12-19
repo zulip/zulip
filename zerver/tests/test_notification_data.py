@@ -1,10 +1,15 @@
 from zerver.lib.mention import MentionBackend, MentionData
-from zerver.lib.notification_data import get_user_group_mentions_data
+from zerver.lib.notification_data import UserMessageNotificationsData, get_user_group_mentions_data
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_groups import create_user_group
 
 
 class TestNotificationData(ZulipTestCase):
+    """
+    Because the `UserMessageNotificationsData` does not do any database queries, all user IDs
+    used in the following tests are arbitrary, and do not represent real users.
+    """
+
     def test_is_push_notifiable(self) -> None:
         user_id = self.example_user("hamlet").id
         acting_user_id = self.example_user("cordelia").id
@@ -211,6 +216,24 @@ class TestNotificationData(ZulipTestCase):
         acting_user_id = self.example_user("cordelia").id
         user_data = self.create_user_notifications_data_object(user_id=user_id, pm_push_notify=True)
         self.assertTrue(user_data.is_notifiable(acting_user_id=acting_user_id, idle=True))
+
+    def test_bot_user_notifiability(self) -> None:
+        # Non-bot user (`user_id=9`) should get notified, while bot user (`user_id=10`) shouldn't
+        for user_id, notifiable in [(9, True), (10, False)]:
+            user_data = UserMessageNotificationsData.from_user_id_sets(
+                user_id=user_id,
+                flags=["mentioned"],
+                private_message=True,
+                online_push_user_ids=set(),
+                pm_mention_email_disabled_user_ids=set(),
+                pm_mention_push_disabled_user_ids=set(),
+                all_bot_user_ids={10, 11, 12},
+                muted_sender_user_ids=set(),
+                stream_email_user_ids=set(),
+                stream_push_user_ids=set(),
+                wildcard_mention_user_ids=set(),
+            )
+            self.assertEqual(user_data.is_notifiable(acting_user_id=1000, idle=True), notifiable)
 
     def test_user_group_mentions_map(self) -> None:
         hamlet = self.example_user("hamlet")

@@ -1539,6 +1539,7 @@ class RecipientInfoResult(TypedDict):
     long_term_idle_user_ids: Set[int]
     default_bot_user_ids: Set[int]
     service_bot_tuples: List[Tuple[int, int]]
+    all_bot_user_ids: Set[int]
 
 
 def get_recipient_info(
@@ -1720,7 +1721,7 @@ def get_recipient_info(
         lambda r: r["long_term_idle"],
     )
 
-    # These two bot data structures need to filter from the full set
+    # These three bot data structures need to filter from the full set
     # of users who either are receiving the message or might have been
     # mentioned in it, and so can't use get_ids_for.
     #
@@ -1736,6 +1737,11 @@ def get_recipient_info(
 
     service_bot_tuples = [(row["id"], row["bot_type"]) for row in rows if is_service_bot(row)]
 
+    # We also need the user IDs of all bots, to avoid trying to send push/email
+    # notifications to them. This set will be directly sent to the event queue code
+    # where we determine notifiability of the message for users.
+    all_bot_user_ids = {row["id"] for row in rows if row["is_bot"]}
+
     info: RecipientInfoResult = dict(
         active_user_ids=active_user_ids,
         online_push_user_ids=online_push_user_ids,
@@ -1749,6 +1755,7 @@ def get_recipient_info(
         long_term_idle_user_ids=long_term_idle_user_ids,
         default_bot_user_ids=default_bot_user_ids,
         service_bot_tuples=service_bot_tuples,
+        all_bot_user_ids=all_bot_user_ids,
     )
     return info
 
@@ -1957,6 +1964,7 @@ def build_message_send_dict(
         long_term_idle_user_ids=info["long_term_idle_user_ids"],
         default_bot_user_ids=info["default_bot_user_ids"],
         service_bot_tuples=info["service_bot_tuples"],
+        all_bot_user_ids=info["all_bot_user_ids"],
         wildcard_mention_user_ids=wildcard_mention_user_ids,
         links_for_embed=links_for_embed,
         widget_content=widget_content_dict,
@@ -2113,6 +2121,7 @@ def do_send_messages(
                     stream_email_user_ids=send_request.stream_email_user_ids,
                     wildcard_mention_user_ids=send_request.wildcard_mention_user_ids,
                     muted_sender_user_ids=send_request.muted_sender_user_ids,
+                    all_bot_user_ids=send_request.all_bot_user_ids,
                 ),
             )
             for user_id in send_request.active_user_ids
@@ -2138,6 +2147,7 @@ def do_send_messages(
             stream_email_user_ids=list(send_request.stream_email_user_ids),
             wildcard_mention_user_ids=list(send_request.wildcard_mention_user_ids),
             muted_sender_user_ids=list(send_request.muted_sender_user_ids),
+            all_bot_user_ids=list(send_request.all_bot_user_ids),
         )
 
         if send_request.message.is_stream_message():
@@ -6449,6 +6459,7 @@ def do_update_message(
         event["muted_sender_user_ids"] = list(info["muted_sender_user_ids"])
         event["prior_mention_user_ids"] = list(prior_mention_user_ids)
         event["presence_idle_user_ids"] = filter_presence_idle_user_ids(info["active_user_ids"])
+        event["all_bot_user_ids"] = list(info["all_bot_user_ids"])
         if rendering_result.mentions_wildcard:
             event["wildcard_mention_user_ids"] = list(info["wildcard_mention_user_ids"])
         else:

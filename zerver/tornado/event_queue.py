@@ -920,6 +920,7 @@ def process_message_event(
     stream_email_user_ids = set(event_template.get("stream_email_user_ids", []))
     wildcard_mention_user_ids = set(event_template.get("wildcard_mention_user_ids", []))
     muted_sender_user_ids = set(event_template.get("muted_sender_user_ids", []))
+    all_bot_user_ids = set(event_template.get("all_bot_user_ids", []))
 
     wide_dict: Dict[str, Any] = event_template["message_dict"]
 
@@ -967,6 +968,7 @@ def process_message_event(
             stream_email_user_ids=stream_email_user_ids,
             wildcard_mention_user_ids=wildcard_mention_user_ids,
             muted_sender_user_ids=muted_sender_user_ids,
+            all_bot_user_ids=all_bot_user_ids,
         )
 
         internal_data = asdict(user_notifications_data)
@@ -1113,6 +1115,7 @@ def process_message_update_event(
     stream_email_user_ids = set(event_template.pop("stream_email_user_ids", []))
     wildcard_mention_user_ids = set(event_template.pop("wildcard_mention_user_ids", []))
     muted_sender_user_ids = set(event_template.pop("muted_sender_user_ids", []))
+    all_bot_user_ids = set(event_template.pop("all_bot_user_ids", []))
 
     # TODO/compatibility: Translation code for the rename of
     # `push_notify_user_ids` to `online_push_user_ids`.  Remove this
@@ -1159,6 +1162,7 @@ def process_message_update_event(
             stream_email_user_ids=stream_email_user_ids,
             wildcard_mention_user_ids=wildcard_mention_user_ids,
             muted_sender_user_ids=muted_sender_user_ids,
+            all_bot_user_ids=all_bot_user_ids,
         )
 
         maybe_enqueue_notifications_for_message_update(
