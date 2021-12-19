@@ -368,6 +368,10 @@ function show_subscription_settings(sub) {
         return;
     }
 
+    if (!stream_data.can_toggle_subscription(sub)) {
+        stream_ui_updates.initialize_cant_subscribe_popover(sub);
+    }
+
     enable_subscriber_management({sub, parent_container: edit_container});
 }
 
@@ -381,10 +385,6 @@ function enable_subscriber_management({sub, parent_container}) {
         create_item_from_text,
         get_text_from_item,
     });
-
-    if (!stream_data.can_toggle_subscription(sub)) {
-        stream_ui_updates.initialize_cant_subscribe_popover(sub);
-    }
 
     const user_ids = peer_data.get_subscribers(stream_id);
     const users = people.get_users_from_ids(user_ids);
