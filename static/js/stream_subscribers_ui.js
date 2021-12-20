@@ -337,11 +337,17 @@ export function update_subscribers_list(sub) {
         // approach is superior when you do things like add subscribers
         // from an existing stream or a user group.
         const subscriber_ids = peer_data.get_subscribers(sub.stream_id);
-        const users = people.get_users_from_ids(subscriber_ids);
-        people.sort_but_pin_current_user_on_top(users);
-        subscribers_list_widget.replace_list_data(users);
+        update_subscribers_list_widget(subscriber_ids);
         $(".subscriber_list_settings_container").show();
     }
+}
+
+function update_subscribers_list_widget(subscriber_ids) {
+    // This re-renders the subscribers_list_widget with a new
+    // list of subscriber_ids.
+    const users = people.get_users_from_ids(subscriber_ids);
+    people.sort_but_pin_current_user_on_top(users);
+    subscribers_list_widget.replace_list_data(users);
 }
 
 export function initialize() {
