@@ -110,13 +110,20 @@ run_test("build_reload_url", () => {
     assert.equal(hash_util.build_reload_url(), "+oldhash=");
 });
 
-run_test("test_active_stream", () => {
+run_test("test is_editing_stream", () => {
     window.location.hash = "#streams/1/announce";
-    assert.equal(hash_util.active_stream().id, 1);
-    assert.equal(hash_util.active_stream().name, "announce");
+    assert.equal(hash_util.is_editing_stream(1), true);
+    assert.equal(hash_util.is_editing_stream(2), false);
+
+    // url is missing name at end
+    window.location.hash = "#streams/1";
+    assert.equal(hash_util.is_editing_stream(1), false);
+
+    window.location.hash = "#streams/bogus/bogus";
+    assert.equal(hash_util.is_editing_stream(1), false);
 
     window.location.hash = "#test/narrow";
-    assert.equal(hash_util.active_stream(), undefined);
+    assert.equal(hash_util.is_editing_stream(1), false);
 });
 
 run_test("test_is_create_new_stream_narrow", () => {

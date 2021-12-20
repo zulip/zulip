@@ -249,19 +249,22 @@ export function is_overlay_hash(hash) {
 
 // this finds the stream that is actively open in the settings and focused in
 // the left side.
-export function active_stream() {
+export function is_editing_stream(desired_stream_id) {
     const hash_components = window.location.hash.slice(1).split(/\//);
+
+    if (hash_components[0] !== "streams") {
+        return false;
+    }
+
+    if (!hash_components[2]) {
+        return false;
+    }
 
     // if the string casted to a number is valid, and another component
     // after exists then it's a stream name/id pair.
-    if (typeof Number.parseFloat(hash_components[1]) === "number" && hash_components[2]) {
-        return {
-            id: Number.parseFloat(hash_components[1]),
-            name: hash_components[2],
-        };
-    }
+    const stream_id = Number.parseFloat(hash_components[1]);
 
-    return undefined;
+    return stream_id === desired_stream_id;
 }
 
 export function is_create_new_stream_narrow() {
