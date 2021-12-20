@@ -7,6 +7,7 @@ import render_stream_subscription_request_result from "../templates/stream_setti
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
+import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as input_pill from "./input_pill";
 import * as ListWidget from "./list_widget";
@@ -16,7 +17,6 @@ import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
-import * as stream_edit from "./stream_edit";
 import * as stream_pill from "./stream_pill";
 import * as sub_store from "./sub_store";
 import * as ui from "./ui";
@@ -24,6 +24,7 @@ import * as user_group_pill from "./user_group_pill";
 import * as user_pill from "./user_pill";
 
 export let pill_widget;
+let current_stream_id;
 
 function create_item_from_text(text, current_items) {
     const funcs = [
@@ -65,21 +66,6 @@ function format_member_list_elem(person) {
     });
 }
 
-function get_stream_id(target) {
-    // TODO: Use more precise selector.
-    const row = $(target).closest(
-        ".stream-row, .stream_settings_header, .subscription_settings, .save-button",
-    );
-    const stream_id = Number.parseInt(row.attr("data-stream-id"), 10);
-
-    if (!stream_id) {
-        blueslip.error("Cannot find stream id for target");
-        return undefined;
-    }
-
-    return stream_id;
-}
-
 function get_sub(stream_id) {
     const sub = sub_store.get(stream_id);
     if (!sub) {
@@ -119,6 +105,9 @@ export function enable_subscriber_management({sub, parent_container}) {
     const stream_id = sub.stream_id;
 
     const pill_container = parent_container.find(".pill-container");
+
+    // current_stream_id and pill_widget are module-level variables
+    current_stream_id = stream_id;
 
     pill_widget = input_pill.create({
         container: pill_container,
@@ -274,6 +263,11 @@ function remove_subscriber({stream_id, target_user_id, list_entry}) {
     function removal_success(data) {
         let message;
 
+        if (stream_id !== current_stream_id) {
+            blueslip.info("Response for subscription removal came too late.");
+            return;
+        }
+
         if (data.removed.length > 0) {
             // Remove the user from the subscriber list.
             list_entry.remove();
@@ -321,7 +315,14 @@ function remove_subscriber({stream_id, target_user_id, list_entry}) {
 export function update_subscribers_list(sub) {
     // This is for the "Stream membership" section of the right panel.
     // Render subscriptions only if stream settings is open
-    if (!stream_edit.is_sub_settings_active(sub)) {
+    if (!hash_util.is_editing_stream(sub.stream_id)) {
+        blueslip.info("ignoring subscription for stream that is no longer being edited");
+        return;
+    }
+
+    if (sub.stream_id !== current_stream_id) {
+        // This should never happen if the prior check works correctly.
+        blueslip.error("current_stream_id does not match sub.stream_id for some reason");
         return;
     }
 
@@ -355,15 +356,13 @@ export function initialize() {
     $("#subscriptions_table").on("keyup", ".subscriber_list_add form", (e) => {
         if (e.key === "Enter") {
             e.preventDefault();
-            const stream_id = get_stream_id(e.target);
-            submit_add_subscriber_form(stream_id);
+            submit_add_subscriber_form(current_stream_id);
         }
     });
 
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", (e) => {
         e.preventDefault();
-        const stream_id = get_stream_id(e.target);
-        submit_add_subscriber_form(stream_id);
+        submit_add_subscriber_form(current_stream_id);
     });
 
     $("#subscriptions_table").on("submit", ".subscriber_list_remove form", (e) => {
@@ -371,7 +370,7 @@ export function initialize() {
 
         const list_entry = $(e.target).closest("tr");
         const target_user_id = Number.parseInt(list_entry.attr("data-subscriber-id"), 10);
-        const stream_id = get_stream_id(e.target);
+        const stream_id = current_stream_id;
 
         remove_subscriber({stream_id, target_user_id, list_entry});
     });
