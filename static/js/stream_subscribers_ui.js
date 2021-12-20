@@ -15,6 +15,8 @@ import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
 import * as settings_data from "./settings_data";
+import * as stream_data from "./stream_data";
+import * as stream_edit from "./stream_edit";
 import * as stream_pill from "./stream_pill";
 import * as sub_store from "./sub_store";
 import * as ui from "./ui";
@@ -314,6 +316,39 @@ function remove_subscriber({stream_id, target_user_id, list_entry}) {
     }
 
     remove_user_from_stream(target_user_id, sub, removal_success, removal_failure);
+}
+
+export function update_subscribers_list(sub) {
+    // This is for the "Stream membership" section of the right panel.
+    // Render subscriptions only if stream settings is open
+    if (!stream_edit.is_sub_settings_active(sub)) {
+        return;
+    }
+
+    if (!stream_data.can_view_subscribers(sub)) {
+        $(".subscriber_list_settings_container").hide();
+    } else {
+        const subscriber_ids = peer_data.get_subscribers(sub.stream_id);
+        const users = people.get_users_from_ids(subscriber_ids);
+
+        /*
+            We try to find a subscribers list that is already in the
+            cache that list_widget.js maintains.  The list we are
+            looking for would have been created in the function
+            stream_edit.show_subscription_settings, using the same
+            naming scheme as below for the `name` parameter.
+        */
+        const subscribers_list = ListWidget.get("stream_subscribers/" + sub.stream_id);
+
+        // Changing the data clears the rendered list and the list needs to be re-rendered.
+        // Perform re-rendering only when the stream settings form of the corresponding
+        // stream is open.
+        if (subscribers_list) {
+            people.sort_but_pin_current_user_on_top(users);
+            subscribers_list.replace_list_data(users);
+        }
+        $(".subscriber_list_settings_container").show();
+    }
 }
 
 export function initialize() {
