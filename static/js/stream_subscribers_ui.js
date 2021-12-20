@@ -25,6 +25,7 @@ import * as user_pill from "./user_pill";
 
 export let pill_widget;
 let current_stream_id;
+let subscribers_list_widget;
 
 function create_item_from_text(text, current_items) {
     const funcs = [
@@ -129,8 +130,10 @@ export function enable_subscriber_management({sub, parent_container}) {
 
     const simplebar_container = parent_container.find(".subscriber_list_container");
 
-    ListWidget.create(list_container, users, {
-        name: "stream_subscribers/" + stream_id,
+    // We track a single subscribers_list_widget for this module, since we
+    // only ever have one list of subscribers visible at a time.
+    subscribers_list_widget = ListWidget.create(list_container, users, {
+        name: "stream_subscribers",
         modifier(item) {
             return format_member_list_elem(item);
         },
@@ -329,25 +332,14 @@ export function update_subscribers_list(sub) {
     if (!stream_data.can_view_subscribers(sub)) {
         $(".subscriber_list_settings_container").hide();
     } else {
+        // Re-render the whole list when we add new users.  This is
+        // inefficient for the single-user case, but using the big-hammer
+        // approach is superior when you do things like add subscribers
+        // from an existing stream or a user group.
         const subscriber_ids = peer_data.get_subscribers(sub.stream_id);
         const users = people.get_users_from_ids(subscriber_ids);
-
-        /*
-            We try to find a subscribers list that is already in the
-            cache that list_widget.js maintains.  The list we are
-            looking for would have been created in the function
-            stream_edit.show_subscription_settings, using the same
-            naming scheme as below for the `name` parameter.
-        */
-        const subscribers_list = ListWidget.get("stream_subscribers/" + sub.stream_id);
-
-        // Changing the data clears the rendered list and the list needs to be re-rendered.
-        // Perform re-rendering only when the stream settings form of the corresponding
-        // stream is open.
-        if (subscribers_list) {
-            people.sort_but_pin_current_user_on_top(users);
-            subscribers_list.replace_list_data(users);
-        }
+        people.sort_but_pin_current_user_on_top(users);
+        subscribers_list_widget.replace_list_data(users);
         $(".subscriber_list_settings_container").show();
     }
 }
