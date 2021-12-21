@@ -364,25 +364,37 @@ function update_subscribers_list_widget(subscriber_ids) {
 }
 
 export function initialize() {
-    $("#subscriptions_table").on("keyup", ".subscriber_list_add form", (e) => {
-        if (e.key === "Enter") {
+    $("#subscriptions_table").on(
+        "keyup",
+        ".edit_subscribers_for_stream .subscriber_list_add form",
+        (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                submit_add_subscriber_form(current_stream_id);
+            }
+        },
+    );
+
+    $("#subscriptions_table").on(
+        "submit",
+        ".edit_subscribers_for_stream .subscriber_list_add form",
+        (e) => {
             e.preventDefault();
             submit_add_subscriber_form(current_stream_id);
-        }
-    });
+        },
+    );
 
-    $("#subscriptions_table").on("submit", ".subscriber_list_add form", (e) => {
-        e.preventDefault();
-        submit_add_subscriber_form(current_stream_id);
-    });
+    $("#subscriptions_table").on(
+        "submit",
+        ".edit_subscribers_for_stream .subscriber_list_remove form",
+        (e) => {
+            e.preventDefault();
 
-    $("#subscriptions_table").on("submit", ".subscriber_list_remove form", (e) => {
-        e.preventDefault();
+            const list_entry = $(e.target).closest("tr");
+            const target_user_id = Number.parseInt(list_entry.attr("data-subscriber-id"), 10);
+            const stream_id = current_stream_id;
 
-        const list_entry = $(e.target).closest("tr");
-        const target_user_id = Number.parseInt(list_entry.attr("data-subscriber-id"), 10);
-        const stream_id = current_stream_id;
-
-        remove_subscriber({stream_id, target_user_id, list_entry});
-    });
+            remove_subscriber({stream_id, target_user_id, list_entry});
+        },
+    );
 }

@@ -144,12 +144,23 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
     pill_container_stub.find = () => input_field_stub;
 
     const $sub_settings_container = $.create(sub_settings_selector);
+    const $edit_subscribers_container = $.create("edit-subscribers-stub");
 
     $sub_settings_container.find = (selector) => {
         switch (selector) {
             case ".colorpicker": {
                 return undefined;
             }
+            case ".edit_subscribers_for_stream": {
+                return $edit_subscribers_container;
+            }
+            // No default
+        }
+        throw new Error(`unexpected selector ${selector}`);
+    };
+
+    $edit_subscribers_container.find = (selector) => {
+        switch (selector) {
             case ".pill-container": {
                 return pill_container_stub;
             }
@@ -173,7 +184,9 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
     $subscription_settings.attr("data-stream-id", denmark.stream_id);
     $subscription_settings.length = 0;
 
-    const $add_subscribers_form = $.create(".subscriber_list_add form");
+    const $add_subscribers_form = $.create(
+        ".edit_subscribers_for_stream .subscriber_list_add form",
+    );
     $add_subscribers_form.closest = () => $subscription_settings;
 
     let template_rendered = false;
@@ -327,7 +340,7 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
 
     let add_subscribers_handler = $(subscriptions_table_selector).get_on_handler(
         "submit",
-        ".subscriber_list_add form",
+        ".edit_subscribers_for_stream .subscriber_list_add form",
     );
 
     fake_this = $add_subscribers_form;
@@ -351,7 +364,7 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
 
     add_subscribers_handler = $(subscriptions_table_selector).get_on_handler(
         "keyup",
-        ".subscriber_list_add form",
+        ".edit_subscribers_for_stream .subscriber_list_add form",
     );
     event.key = "Enter";
 

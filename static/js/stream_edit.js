@@ -182,7 +182,11 @@ function show_subscription_settings(sub) {
         stream_ui_updates.initialize_cant_subscribe_popover(sub);
     }
 
-    stream_subscribers_ui.enable_subscriber_management({sub, parent_container: edit_container});
+    const subscriber_container = edit_container.find(".edit_subscribers_for_stream");
+    stream_subscribers_ui.enable_subscriber_management({
+        sub,
+        parent_container: subscriber_container,
+    });
 }
 
 export function is_notification_setting(setting_label) {
