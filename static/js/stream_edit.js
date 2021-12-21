@@ -49,14 +49,6 @@ export function setup_subscriptions_tab_hash(tab_key_value) {
     }
 }
 
-export function is_sub_settings_active(sub) {
-    // This function return whether the provided given sub object is
-    // currently being viewed/edited in the stream edit UI.  This is
-    // used to determine whether we need to rerender the stream edit
-    // UI when a sub object is modified by an event.
-    return hash_util.is_editing_stream(sub.stream_id);
-}
-
 export function get_retention_policy_text_for_subscription_type(sub) {
     let message_retention_days = sub.message_retention_days;
     // If both this stream and the organization-level policy are to retain forever,

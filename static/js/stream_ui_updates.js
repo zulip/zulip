@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import render_stream_permission_description from "../templates/stream_settings/stream_permission_description.hbs";
 
+import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
 import * as stream_data from "./stream_data";
@@ -52,7 +53,7 @@ export function initialize_cant_subscribe_popover(sub) {
 }
 
 export function update_toggler_for_sub(sub) {
-    if (!stream_edit.is_sub_settings_active(sub)) {
+    if (!hash_util.is_editing_stream(sub.stream_id)) {
         return;
     }
     if (sub.subscribed) {
@@ -92,7 +93,7 @@ export function update_settings_button_for_sub(sub) {
 
 export function update_regular_sub_settings(sub) {
     // These are in the right panel.
-    if (!stream_edit.is_sub_settings_active(sub)) {
+    if (!hash_util.is_editing_stream(sub.stream_id)) {
         return;
     }
     const $settings = $(`.subscription_settings[data-stream-id='${CSS.escape(sub.stream_id)}']`);
@@ -160,13 +161,13 @@ export function update_stream_subscription_type_text(sub) {
         message_retention_text: stream_edit.get_retention_policy_text_for_subscription_type(sub),
     };
     const html = render_stream_permission_description(template_data);
-    if (stream_edit.is_sub_settings_active(sub)) {
+    if (hash_util.is_editing_stream(sub.stream_id)) {
         stream_settings.find(".subscription-type-text").expectOne().html(html);
     }
 }
 
 export function update_add_subscriptions_elements(sub) {
-    if (!stream_edit.is_sub_settings_active(sub)) {
+    if (!hash_util.is_editing_stream(sub.stream_id)) {
         return;
     }
 
