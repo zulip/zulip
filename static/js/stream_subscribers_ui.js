@@ -57,6 +57,16 @@ function get_text_from_item(item) {
     return undefined;
 }
 
+function set_up_pill_typeahead({pill_container, get_users}) {
+    const opts = {
+        user_source: get_users,
+        stream: true,
+        user_group: true,
+        user: true,
+    };
+    pill_typeahead.set_up(pill_container.find(".input"), pill_widget, opts);
+}
+
 function format_member_list_elem(person) {
     return render_stream_member_list_entry({
         name: person.full_name,
@@ -116,14 +126,16 @@ export function enable_subscriber_management({sub, parent_container}) {
         get_text_from_item,
     });
 
-    const user_ids = peer_data.get_subscribers(stream_id);
-    const users = people.get_users_from_ids(user_ids);
-    people.sort_but_pin_current_user_on_top(users);
-
     function get_users_for_subscriber_typeahead() {
         const potential_subscribers = peer_data.potential_subscribers(stream_id);
         return user_pill.filter_taken_users(potential_subscribers, pill_widget);
     }
+
+    set_up_pill_typeahead({pill_container, get_users: get_users_for_subscriber_typeahead});
+
+    const user_ids = peer_data.get_subscribers(stream_id);
+    const users = people.get_users_from_ids(user_ids);
+    people.sort_but_pin_current_user_on_top(users);
 
     const list_container = parent_container.find(".subscriber_table");
     list_container.empty();
@@ -148,14 +160,6 @@ export function enable_subscriber_management({sub, parent_container}) {
         },
         simplebar_container,
     });
-
-    const opts = {
-        user_source: get_users_for_subscriber_typeahead,
-        stream: true,
-        user_group: true,
-        user: true,
-    };
-    pill_typeahead.set_up(pill_container.find(".input"), pill_widget, opts);
 }
 
 export function invite_user_to_stream(user_ids, sub, success, failure) {
