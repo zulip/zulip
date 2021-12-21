@@ -137,7 +137,7 @@ if has_application_server():
             )
     else:
         logging.info("%s Tornado process", verbing)
-        subprocess.check_call(["supervisorctl", action, "zulip-tornado", "zulip-tornado:*"])
+        subprocess.check_call(["supervisorctl", action, "zulip-tornado:*"])
 
     # Finally, restart the Django uWSGI processes.
     logging.info("%s django server", verbing)

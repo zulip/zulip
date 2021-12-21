@@ -96,6 +96,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         realm = hamlet.realm
         stream_name = "Denmark"
 
+        self.subscribe(cordelia, stream_name)
         self.unsubscribe(hamlet, stream_name)
 
         queue_data = dict(

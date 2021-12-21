@@ -33,7 +33,7 @@ to each new major release.
 
 Since Zulip's settings file is a Python script, there are a number of
 other things that one can configure that are not documented; ask in
-[the Zulip development community](https://zulip.com/developer-community/)
+[the Zulip development community](https://zulip.com/development-community/)
 if there's something you'd like to do but can't figure out how to.
 
 ## Specific settings
@@ -86,12 +86,25 @@ and configure this service.
 ### Terms of Service and Privacy policy
 
 Zulip allows you to configure your server's Terms of Service and
-Privacy Policy pages (`/terms` and `/privacy`, respectively). You can
-use the `TERMS_OF_SERVICE` and `PRIVACY_POLICY` settings to configure
-the path to your server's policies. The syntax is Markdown (with
-support for included HTML). A good approach is to use paths like
-`/etc/zulip/terms.md`, so that it's easy to back up your policy
-configuration along with your other Zulip server configuration.
+Privacy Policy pages (`/terms` and `/privacy`, respectively).
+
+You can configure this using the `POLICIES_DIRECTORY` setting. We
+recommend using `/etc/zulip/policies`, so that your policies are
+naturally backed up with the server's other configuration. Just place
+Markdown files named `terms.md` and `privacy.md` in that directory,
+and set `TERMS_OF_SERVICE_VERSION` to `1.0` to enable this feature.
+
+You can place additional files in this directory to document
+additional policies; if you do so, you may want to:
+
+- Create a Markdown file `sidebar_index.md` listing the pages in your
+  policies site; this generates the policies site navigation.
+- Create a Markdown file `missing.md` with custom content for 404s in
+  this directory.
+
+Please make clear in these pages what organization is hosting your
+Zulip server, so that nobody could be confused that your policies are
+the policies for Zulip Cloud.
 
 ### Miscellaneous server settings
 

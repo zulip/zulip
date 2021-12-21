@@ -80,17 +80,17 @@
             <div class="subscription-config">
                 <div class="subsection-parent">
                     {{#each other_settings}}
-                    <div class="input-group">
-                        {{> stream_settings_checkbox
-                          setting_name=name
-                          is_checked=is_checked
-                          is_muted=(lookup ../sub "is_muted")
-                          stream_id=(lookup ../sub "stream_id")
-                          notification_setting=false
-                          disabled_realm_setting=disabled_realm_setting
-                          is_disabled=is_disabled
-                          label=label}}
-                    </div>
+                        <div class="input-group">
+                            {{> stream_settings_checkbox
+                              setting_name=name
+                              is_checked=is_checked
+                              is_muted=(lookup ../sub "is_muted")
+                              stream_id=(lookup ../sub "stream_id")
+                              notification_setting=false
+                              disabled_realm_setting=disabled_realm_setting
+                              is_disabled=is_disabled
+                              label=label}}
+                        </div>
                     {{/each}}
 
                     <div class="input-group">
@@ -103,17 +103,17 @@
                 <h4 class="stream_setting_subsection_title">{{t "Notification settings" }}</h4>
                 <div class="subsection-parent">
                     {{#each notification_settings}}
-                    <div class="input-group">
-                        {{> stream_settings_checkbox
-                          setting_name=name
-                          is_checked=is_checked
-                          is_muted=(lookup ../sub "is_muted")
-                          stream_id=(lookup ../sub "stream_id")
-                          notification_setting=true
-                          disabled_realm_setting=disabled_realm_setting
-                          is_disabled=is_disabled
-                          label=label}}
-                    </div>
+                        <div class="input-group">
+                            {{> stream_settings_checkbox
+                              setting_name=name
+                              is_checked=is_checked
+                              is_muted=(lookup ../sub "is_muted")
+                              stream_id=(lookup ../sub "stream_id")
+                              notification_setting=true
+                              disabled_realm_setting=disabled_realm_setting
+                              is_disabled=is_disabled
+                              label=label}}
+                        </div>
                     {{/each}}
                 </div>
             </div>
@@ -122,7 +122,7 @@
         <div class="subscriber_settings stream_section">
             {{#with sub}}
             <div class="subscription-members-setting">
-                {{> stream_members show_email=../show_email}}
+                {{> stream_members}}
             </div>
             {{/with}}
         </div>

@@ -1523,6 +1523,26 @@ update_message_required_fields = [
     ("user_id", int),
     ("edit_timestamp", int),
     ("message_id", int),
+    ("flags", ListType(str)),
+    ("message_ids", ListType(int)),
+]
+
+update_message_stream_fields: List[Tuple[str, object]] = [
+    ("stream_id", int),
+    ("stream_name", str),
+    ("new_stream_id", int),
+    (
+        "propagate_mode",
+        EnumType(
+            [
+                # The order here needs to match the OpenAPI definitions
+                "change_one",
+                "change_later",
+                "change_all",
+            ]
+        ),
+    ),
+    (ORIG_TOPIC, str),
 ]
 
 update_message_content_fields: List[Tuple[str, object]] = [
@@ -1535,28 +1555,13 @@ update_message_content_fields: List[Tuple[str, object]] = [
 ]
 
 update_message_topic_fields = [
-    ("flags", ListType(str)),
-    ("message_ids", ListType(int)),
-    ("new_stream_id", int),
-    (ORIG_TOPIC, str),
-    (
-        "propagate_mode",
-        EnumType(
-            [
-                # The order here needs to match the OpenAPI definitions
-                "change_one",
-                "change_later",
-                "change_all",
-            ]
-        ),
-    ),
-    ("stream_id", int),
-    ("stream_name", str),
     (TOPIC_LINKS, ListType(_check_topic_links)),
     (TOPIC_NAME, str),
 ]
 
-update_message_optional_fields = update_message_content_fields + update_message_topic_fields
+update_message_optional_fields = (
+    update_message_stream_fields + update_message_content_fields + update_message_topic_fields
+)
 
 # The schema here does not include the "embedded"
 # variant of update_message; it is for message
@@ -1571,6 +1576,7 @@ _check_update_message = make_checker(update_message_event)
 def check_update_message(
     var_name: str,
     event: Dict[str, object],
+    is_stream_message: bool,
     has_content: bool,
     has_topic: bool,
     has_new_stream_id: bool,
@@ -1582,6 +1588,9 @@ def check_update_message(
     expected_keys = {"id"}
     expected_keys.update(tup[0] for tup in update_message_required_fields)
 
+    if is_stream_message:
+        expected_keys.update(tup[0] for tup in update_message_stream_fields)
+
     if has_content:
         expected_keys.update(tup[0] for tup in update_message_content_fields)
 
@@ -1590,6 +1599,10 @@ def check_update_message(
 
     if not has_new_stream_id:
         expected_keys.discard("new_stream_id")
+
+    if not has_new_stream_id and not has_topic:
+        expected_keys.discard("propagate_mode")
+        expected_keys.discard(ORIG_TOPIC)
 
     assert expected_keys == actual_keys
 

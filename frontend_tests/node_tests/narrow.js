@@ -16,6 +16,15 @@ const stream_data = zrequire("stream_data");
 const {Filter} = zrequire("../js/filter");
 const narrow = zrequire("narrow");
 
+function empty_narrow_html(title, html, search_data) {
+    const opts = {
+        title,
+        html,
+        search_data,
+    };
+    return require("../../static/templates/empty_feed_notice.hbs")(opts);
+}
+
 function set_filter(operators) {
     operators = operators.map((op) => ({
         operator: op[0],
@@ -67,6 +76,95 @@ function hide_all_empty_narrow_messages() {
     }
 }
 
+run_test("empty_narrow_html", ({mock_template}) => {
+    mock_template("empty_feed_notice.hbs", true, (data, html) => html);
+
+    let actual_html = empty_narrow_html("This is a title", "<h1> This is the html </h1>");
+    assert.equal(
+        actual_html,
+        `<div class="empty_feed_notice">
+    <h4> This is a title </h4>
+    <h1> This is the html </h1>
+</div>
+`,
+    );
+
+    const search_data_with_all_search_types = {
+        topic_query: "test",
+        stream_query: "new",
+        has_stop_word: true,
+        query_words: [
+            {query_word: "search", is_stop_word: false},
+            {query_word: "a", is_stop_word: true},
+        ],
+    };
+    actual_html = empty_narrow_html(
+        "This is a title",
+        undefined,
+        search_data_with_all_search_types,
+    );
+    assert.equal(
+        actual_html,
+        `<div class="empty_feed_notice">
+    <h4> This is a title </h4>
+    <div>
+        Some common words were excluded from your search. <br/>You searched for:
+        <span>stream: new</span>
+        <span>topic: test</span>
+            <span>search</span>
+            <del>a</del>
+    </div>
+</div>
+`,
+    );
+
+    const search_data_with_stream_without_stop_words = {
+        has_stop_word: false,
+        stream_query: "hello world",
+        query_words: [{query_word: "searchA", is_stop_word: false}],
+    };
+    actual_html = empty_narrow_html(
+        "This is a title",
+        undefined,
+        search_data_with_stream_without_stop_words,
+    );
+    assert.equal(
+        actual_html,
+        `<div class="empty_feed_notice">
+    <h4> This is a title </h4>
+    <div>
+        You searched for:
+        <span>stream: hello world</span>
+            <span>searchA</span>
+    </div>
+</div>
+`,
+    );
+
+    const search_data_with_topic_without_stop_words = {
+        has_stop_word: false,
+        topic_query: "hello",
+        query_words: [{query_word: "searchB", is_stop_word: false}],
+    };
+    actual_html = empty_narrow_html(
+        "This is a title",
+        undefined,
+        search_data_with_topic_without_stop_words,
+    );
+    assert.equal(
+        actual_html,
+        `<div class="empty_feed_notice">
+    <h4> This is a title </h4>
+    <div>
+        You searched for:
+        <span>topic: hello</span>
+            <span>searchB</span>
+    </div>
+</div>
+`,
+    );
+});
+
 run_test("uris", () => {
     people.add_active_user(ray);
     people.add_active_user(alice);
@@ -92,111 +190,171 @@ run_test("uris", () => {
     assert.equal(emails, "me@example.com");
 });
 
-run_test("show_empty_narrow_message", () => {
+run_test("show_empty_narrow_message", ({mock_template}) => {
     page_params.stop_words = [];
+
+    mock_template("empty_feed_notice.hbs", true, (data, html) => html);
 
     narrow_state.reset_current_filter();
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.equal($(".empty_feed_notice").visible(), false);
-    assert.ok($("#empty_narrow_message").visible());
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: Nothing's been sent here yet!",
+            'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
+        ),
+    );
 
     // for non-existent or private stream
     set_filter([["stream", "Foo"]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#nonsubbed_private_nonexistent_stream_narrow_message").visible());
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: This stream does not exist or is private."),
+    );
 
     // for non sub public stream
     stream_data.add_sub({name: "ROME", stream_id: 99});
     set_filter([["stream", "Rome"]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#nonsubbed_stream_narrow_message").visible());
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You aren't subscribed to this stream and nobody has talked about that yet!",
+            'translated HTML: <button class="button white rounded stream_sub_unsub_button sea-green" type="button" name="subscription">Subscribe</button>',
+        ),
+    );
 
     set_filter([["is", "starred"]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#empty_star_narrow_message").visible());
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You haven't starred anything yet!",
+            'translated HTML: Learn more about starring messages <a href="/help/star-a-message">here</a>.',
+        ),
+    );
 
     set_filter([["is", "mentioned"]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#empty_narrow_all_mentioned").visible());
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You haven't been mentioned yet!",
+            'translated HTML: Learn more about mentions <a href="/help/mention-a-user-or-group">here</a>.',
+        ),
+    );
 
     set_filter([["is", "private"]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#empty_narrow_all_private_message").visible());
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You have no private messages yet!",
+            'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+        ),
+    );
 
     set_filter([["is", "unread"]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#no_unread_narrow_message").visible());
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: You have no unread messages!"),
+    );
 
     set_filter([["is", "resolved"]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#empty_narrow_resolved_topics").visible());
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: No topics are marked as resolved."),
+    );
 
     set_filter([["pm-with", ["Yo"]]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#non_existing_user").visible());
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: This user does not exist!"),
+    );
 
     people.add_active_user(alice);
     set_filter([["pm-with", ["alice@example.com", "Yo"]]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#non_existing_users").visible());
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: One or more of these users do not exist!"),
+    );
 
     set_filter([["pm-with", "alice@example.com"]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#empty_narrow_private_message").visible());
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You have no private messages with this person yet!",
+            'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+        ),
+    );
 
     people.add_active_user(me);
     people.initialize_current_user(me.user_id);
     set_filter([["pm-with", me.email]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#empty_narrow_self_private_message").visible());
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You have not sent any private messages to yourself yet!",
+            'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start a conversation with yourself</a>?',
+        ),
+    );
 
     set_filter([["pm-with", me.email + "," + alice.email]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#empty_narrow_multi_private_message").visible());
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You have no private messages with these people yet!",
+            'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+        ),
+    );
 
     set_filter([["group-pm-with", "alice@example.com"]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#empty_narrow_group_private_message").visible());
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You have no group private messages with this person yet!",
+            'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+        ),
+    );
 
     set_filter([["sender", "ray@example.com"]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#silent_user").visible());
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: You haven't received any messages sent by this user yet!"),
+    );
 
     set_filter([["sender", "sinwar@example.com"]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#non_existing_user").visible());
-
-    const display = $("#empty_search_stop_words_string");
-
-    const items = [];
-    display.append = (html) => {
-        items.push(html);
-    };
-
-    set_filter([["search", "grail"]]);
-    hide_all_empty_narrow_messages();
-    narrow_banner.show_empty_narrow_message();
-    assert.ok($("#empty_search_narrow_message").visible());
-
-    assert.equal(items.length, 2);
-    assert.equal(items[0], " ");
-    assert.equal(items[1].text(), "grail");
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: This user does not exist!"),
+    );
 
     set_filter([
         ["sender", "alice@example.com"],
@@ -204,12 +362,24 @@ run_test("show_empty_narrow_message", () => {
     ]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#empty_narrow_message").visible());
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: Nothing's been sent here yet!",
+            'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
+        ),
+    );
 
     set_filter([["is", "invalid"]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#empty_narrow_message").visible());
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: Nothing's been sent here yet!",
+            'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
+        ),
+    );
 
     const my_stream = {
         name: "my stream",
@@ -221,60 +391,93 @@ run_test("show_empty_narrow_message", () => {
     set_filter([["stream", "my stream"]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#empty_narrow_message").visible());
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: Nothing's been sent here yet!",
+            'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
+        ),
+    );
 
     set_filter([["stream", ""]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#nonsubbed_private_nonexistent_stream_narrow_message").visible());
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: This stream does not exist or is private."),
+    );
+});
+
+run_test("show_empty_narrow_message_with_search", ({mock_template}) => {
+    page_params.stop_words = [];
+
+    mock_template("empty_feed_notice.hbs", true, (data, html) => html);
+
+    narrow_state.reset_current_filter();
+    set_filter([["search", "grail"]]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert.match($(".empty_feed_notice_main").html(), /<span>grail<\/span>/);
 });
 
 run_test("hide_empty_narrow_message", () => {
-    $(".empty_feed_notice").show();
+    $(".empty_feed_notice_main").html("<div class='empty_feed_notice'>Nothing here</div>");
     narrow_banner.hide_empty_narrow_message();
-    assert.ok(!$(".empty_feed_notice").visible());
+    assert.equal($(".empty_feed_notice").text(), "never-been-set");
 });
 
-run_test("show_search_stopwords", () => {
+run_test("show_search_stopwords", ({mock_template}) => {
     page_params.stop_words = ["what", "about"];
 
-    narrow_state.reset_current_filter();
-    let items = [];
+    mock_template("empty_feed_notice.hbs", true, (data, html) => html);
 
-    const display = $("#empty_search_stop_words_string");
-
-    display.append = (html) => {
-        if (html.text) {
-            items.push(html.selector + html.text());
-        }
+    const expected_search_data = {
+        has_stop_word: true,
+        query_words: [
+            {query_word: "what", is_stop_word: true},
+            {query_word: "about", is_stop_word: true},
+            {query_word: "grail", is_stop_word: false},
+        ],
     };
-
+    narrow_state.reset_current_filter();
     set_filter([["search", "what about grail"]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#empty_search_narrow_message").visible());
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: No search results", undefined, expected_search_data),
+    );
 
-    assert.equal(items.length, 3);
-    assert.equal(items[0], "<del>what");
-    assert.equal(items[1], "<del>about");
-    assert.equal(items[2], "<span>grail");
-
-    items = [];
+    const expected_stream_search_data = {
+        has_stop_word: true,
+        stream_query: "streamA",
+        query_words: [
+            {query_word: "what", is_stop_word: true},
+            {query_word: "about", is_stop_word: true},
+            {query_word: "grail", is_stop_word: false},
+        ],
+    };
     set_filter([
         ["stream", "streamA"],
         ["search", "what about grail"],
     ]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#empty_search_narrow_message").visible());
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: No search results", undefined, expected_stream_search_data),
+    );
 
-    assert.equal(items.length, 4);
-    assert.equal(items[0], "<span>stream: streamA");
-    assert.equal(items[1], "<del>what");
-    assert.equal(items[2], "<del>about");
-    assert.equal(items[3], "<span>grail");
-
-    items = [];
+    const expected_stream_topic_search_data = {
+        has_stop_word: true,
+        stream_query: "streamA",
+        topic_query: "topicA",
+        query_words: [
+            {query_word: "what", is_stop_word: true},
+            {query_word: "about", is_stop_word: true},
+            {query_word: "grail", is_stop_word: false},
+        ],
+    };
     set_filter([
         ["stream", "streamA"],
         ["topic", "topicA"],
@@ -282,18 +485,19 @@ run_test("show_search_stopwords", () => {
     ]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#empty_search_narrow_message").visible());
-
-    assert.equal(items.length, 4);
-    assert.equal(items[0], "<span>stream: streamA topic: topicA");
-    assert.equal(items[1], "<del>what");
-    assert.equal(items[2], "<del>about");
-    assert.equal(items[3], "<span>grail");
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: No search results",
+            undefined,
+            expected_stream_topic_search_data,
+        ),
+    );
 });
 
-run_test("show_invalid_narrow_message", () => {
+run_test("show_invalid_narrow_message", ({mock_template}) => {
     narrow_state.reset_current_filter();
-    const display = $("#empty_search_stop_words_string");
+    mock_template("empty_feed_notice.hbs", true, (data, html) => html);
 
     stream_data.add_sub({name: "streamA", stream_id: 88});
     stream_data.add_sub({name: "streamB", stream_id: 77});
@@ -304,10 +508,12 @@ run_test("show_invalid_narrow_message", () => {
     ]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#empty_search_narrow_message").visible());
     assert.equal(
-        display.text(),
-        "translated: You are searching for messages that belong to more than one stream, which is not possible.",
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: No search results",
+            "translated HTML: <p>You are searching for messages that belong to more than one stream, which is not possible.</p>",
+        ),
     );
 
     set_filter([
@@ -316,10 +522,12 @@ run_test("show_invalid_narrow_message", () => {
     ]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#empty_search_narrow_message").visible());
     assert.equal(
-        display.text(),
-        "translated: You are searching for messages that belong to more than one topic, which is not possible.",
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: No search results",
+            "translated HTML: <p>You are searching for messages that belong to more than one topic, which is not possible.</p>",
+        ),
     );
 
     people.add_active_user(ray);
@@ -331,10 +539,12 @@ run_test("show_invalid_narrow_message", () => {
     ]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
-    assert.ok($("#empty_search_narrow_message").visible());
     assert.equal(
-        display.text(),
-        "translated: You are searching for messages that are sent by more than one person, which is not possible.",
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: No search results",
+            "translated HTML: <p>You are searching for messages that are sent by more than one person, which is not possible.</p>",
+        ),
     );
 });
 

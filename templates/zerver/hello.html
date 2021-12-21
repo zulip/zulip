@@ -531,20 +531,23 @@
     </div>
 
     <div class="padded-content call-to-action-bottom">
-        <h1>Experience Zulip today!</h1>
-        {% if root_domain_landing_page %}
-        <a href="{{ url('plans') }}" class="download-button button green">
-            {{ _('See plans and pricing') }}
-        </a>
-        {% endif %}
+        <h1>Learn how Zulip can help your organization!</h1>
+        <div class="register-buttons">
+            <a href="/for/business" class="register-now button">Business</a>
+            <a href="/for/open-source" class="register-now button">Open source</a>
+            <a href="/for/education" class="register-now button">Education</a>
+            <a href="/for/events" class="register-now button">Events and Conferences</a>
+            <a href="/for/research" class="register-now button">Research</a>
+            <a href="/for/communities" class="register-now button">Communities</a>
+        </div>
         {% if register_link_disabled %}
         {% elif only_sso %}
-        <a href="{{ url('login-sso') }}" class="button green">
+        <a href="{{ url('login-sso') }}" class="styled-button button green">
             {{ _('Log in now') }}
         </a>
         {% else %}
-        <a href="{{ url('register') }}" class="button green">
-            {{ _('Sign up now') }}
+        <a href="/plans" class="styled-button button green">
+            {{ _('See plans and pricing') }}
         </a>
         {% endif %}
         <div class="zulip-octopus"></div>

@@ -34,7 +34,7 @@ of load profiles:
   etc. have large numbers of users, many of whom are idle. (Many of
   the others likely stopped by to ask a question, got it answered, and
   then didn't need the community again for the next year). Our own
-  [Zulip development community](https://zulip.com/developer-community/) is a good
+  [Zulip development community](https://zulip.com/development-community/) is a good
   example for this, with more than 15K total user accounts, of which
   only several hundred have logged in during the last few weeks.
   Zulip has many important optimizations, including [soft

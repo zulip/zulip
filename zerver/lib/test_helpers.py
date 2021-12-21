@@ -65,7 +65,7 @@ from zproject.backends import ExternalAuthDataDict, ExternalAuthResult
 
 if TYPE_CHECKING:
     # Avoid an import cycle; we only need these for type annotations.
-    from zerver.lib.test_classes import MigrationsTestCase, ZulipTestCase
+    from zerver.lib.test_classes import ClientArg, MigrationsTestCase, ZulipTestCase
 
 
 class MockLDAP(fakeldap.MockLDAP):
@@ -203,6 +203,11 @@ def reset_emails_in_zulip_realm() -> None:
 def get_test_image_file(filename: str) -> IO[bytes]:
     test_avatar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../tests/images"))
     return open(os.path.join(test_avatar_dir, filename), "rb")
+
+
+def read_test_image_file(filename: str) -> bytes:
+    with get_test_image_file(filename) as img_file:
+        return img_file.read()
 
 
 def avatar_disk_path(
@@ -354,7 +359,7 @@ def instrument_url(f: UrlFuncT) -> UrlFuncT:
     else:
 
         def wrapper(
-            self: "ZulipTestCase", url: str, info: object = {}, **kwargs: Any
+            self: "ZulipTestCase", url: str, info: object = {}, **kwargs: "ClientArg"
         ) -> HttpResponse:
             start = time.time()
             result = f(self, url, info, **kwargs)

@@ -112,10 +112,17 @@
         list-style: none;
 
         & > li {
+            position: relative;
+            vertical-align: top;
+            /* This needs to be wide enough for 2-digit numbers. */
+            padding-left: 33px;
+            top: -2px;
             counter-increment: item;
-            margin-bottom: 5px;
 
             &::before {
+                position: absolute;
+                top: 0;
+                left: 0;
                 content: counter(item);
                 display: inline-block;
                 vertical-align: top;
@@ -129,15 +136,6 @@
                 text-align: center;
             }
 
-            & > p {
-                display: inline-block;
-                vertical-align: top;
-                /* This needs to be wide enough for 2-digit numbers. */
-                max-width: calc(100% - 40px);
-                position: relative;
-                top: -2px;
-            }
-
             & > .codehilite,
             & > p:not(:first-child) {
                 padding-left: 24px;
@@ -149,7 +147,7 @@
             }
 
             & > ul {
-                padding-left: 20px;
+                margin-bottom: 5px;
             }
 
             .warn,
@@ -159,10 +157,6 @@
             }
         }
 
-        p {
-            margin: 0 0 2px;
-        }
-
         @media (width <= 500px) {
             margin-left: 0;
         }
@@ -170,6 +164,11 @@
 
     ul {
         margin: 0 10px 15px 25px;
+
+        /* Avoid extra whitespace after nested bulleted lists. */
+        ul {
+            margin: 0 20px;
+        }
 
         & > li {
             margin: 5px 0;
@@ -189,7 +188,7 @@
             margin: 15px 10px;
 
             & > li {
-                margin: 5px 0;
+                margin: 2.5px 0;
             }
         }
 

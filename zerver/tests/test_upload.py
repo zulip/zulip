@@ -21,7 +21,7 @@ import zerver.lib.upload
 from zerver.lib.actions import (
     do_change_icon_source,
     do_change_logo_source,
-    do_change_plan_type,
+    do_change_realm_plan_type,
     do_create_realm,
     do_delete_old_unclaimed_attachments,
     do_set_realm_property,
@@ -410,7 +410,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         body = f"Illegal message ...[zulip.txt](http://{host}/user_uploads/" + d1_path_id + ")"
         cordelia = self.example_user("cordelia")
         with self.assertLogs(level="WARNING") as warn_log:
-            self.send_stream_message(cordelia, "Denmark", body, "test")
+            self.send_stream_message(cordelia, "Verona", body, "test")
         self.assertTrue(
             f"WARNING:root:User {cordelia.id} tried to share upload" in warn_log.output[0]
             and "but lacks permission" in warn_log.output[0]
@@ -428,13 +428,14 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Then, have that new recipient user publish it.
         body = f"Third message ...[zulip.txt](http://{host}/user_uploads/" + d1_path_id + ")"
-        self.send_stream_message(self.example_user("othello"), "Denmark", body, "test")
+        self.send_stream_message(self.example_user("othello"), "Verona", body, "test")
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 3)
         self.assertTrue(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
         self.assertFalse(Attachment.objects.get(path_id=d1_path_id).is_web_public)
 
         # Finally send to Rome, the web-public stream, and confirm it's now web-public
         body = f"Fourth message ...[zulip.txt](http://{host}/user_uploads/" + d1_path_id + ")"
+        self.subscribe(self.example_user("othello"), "Rome")
         self.send_stream_message(self.example_user("othello"), "Rome", body, "test")
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 4)
         self.assertTrue(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
@@ -1544,7 +1545,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_upload_limited_plan_type(self) -> None:
         user_profile = self.example_user("iago")
-        do_change_plan_type(user_profile.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        do_change_realm_plan_type(user_profile.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
         self.login_user(user_profile)
         with get_test_image_file(self.correct_files[0][0]) as fp:
             result = self.client_post(
@@ -1588,7 +1589,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
             f"/user_avatars/{realm.id}/realm/{file_name}?version=2&night={is_night_str}",
         )
 
-        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=user_profile)
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=user_profile)
         if self.night:
             self.assertEqual(realm.night_logo_source, Realm.LOGO_UPLOADED)
         else:
@@ -1771,13 +1772,6 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         with get_test_image_file("img.png") as image_file:
             upload_emoji_image(image_file, file_name, user_profile)
         url = zerver.lib.upload.upload_backend.get_emoji_url(file_name, user_profile.realm_id)
-
-        # Verify the assert statement for trying to fetch the still
-        # version of a non-GIF image, since we only support animated GIFs.
-        with self.assertRaises(AssertionError):
-            still_url = zerver.lib.upload.upload_backend.get_emoji_url(
-                file_name, user_profile.realm_id, still=True
-            )
 
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=user_profile.realm_id,

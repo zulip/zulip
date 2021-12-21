@@ -41,9 +41,7 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 
 ```bash
-# On CentOS/RHEL, you must first install epel-release, and then python36,
-# and finally you must run `sudo ln -nsf /usr/bin/python36 /usr/bin/python3`
-# On Fedora, you must first install python3
+# On CentOS/RHEL/Fedora, you must first install python3
 # From a clone of zulip.git
 ./tools/provision
 source /srv/zulip-py3-venv/bin/activate
@@ -283,7 +281,7 @@ expected.
 
 As with other installation methods, please visit [#provision
 help][provision-help] in the [Zulip development community
-server](https://zulip.com/developer-community/) if you need help.
+server](https://zulip.com/development-community/) if you need help.
 
 [provision-help]: https://chat.zulip.org/#narrow/stream/21-provision-help
 
@@ -301,7 +299,7 @@ likely only a few lines of changes to `tools/lib/provision.py` and
 `scripts/lib/setup-apt-repo` if you'd like to do it yourself and
 submit a pull request, or you can ask for help in
 [#development help](https://chat.zulip.org/#narrow/stream/49-development-help)
-in [the Zulip development community](https://zulip.com/developer-community/),
+in [the Zulip development community](https://zulip.com/development-community/),
 and a core team member can help guide you through adding support for the platform.
 
 [zulip-rtd-git-cloning]: ../git/cloning.html#step-1b-clone-to-your-machine

@@ -28,3 +28,15 @@ class IFTTTHookTests(WebhookTestCase):
         payload = self.get_body("invalid_payload_with_missing_content")
         result = self.client_post(self.url, payload, content_type="application/json")
         self.assert_json_error(result, "Content can't be empty")
+
+    def test_ifttt_when_topic_is_dict(self) -> None:
+        self.url = self.build_webhook_url()
+        payload = self.get_body("invalid_payload_with_dict_topic")
+        result = self.client_post(self.url, payload, content_type="application/json")
+        self.assert_json_error(result, "Topic must be a string")
+
+    def test_ifttt_when_content_is_dict(self) -> None:
+        self.url = self.build_webhook_url()
+        payload = self.get_body("invalid_payload_with_dict_content")
+        result = self.client_post(self.url, payload, content_type="application/json")
+        self.assert_json_error(result, "Content must be a string")

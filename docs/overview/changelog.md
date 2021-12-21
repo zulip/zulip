@@ -34,6 +34,10 @@ log][commit-log] for an up-to-date list of raw changes.
 - This release contains a migration, `0009_confirmation_expiry_date_backfill`,
   that can take several minutes to run on a server with millions of
   messages of history.
+- The `TERMS_OF_SERVICE` and `PRIVACY_POLICY` settings have been
+  removed in favor of a system that supports additional policy
+  documents, such as a code of conduct. See the [updated
+  documentation](../production/settings.md) for the new system.
 
 #### Full feature changelog
 

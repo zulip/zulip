@@ -77,6 +77,10 @@ OPEN_REALM_CREATION = True
 WEB_PUBLIC_STREAMS_ENABLED = True
 INVITES_MIN_USER_AGE_DAYS = 0
 
+# For development convenience, configure the ToS/Privacy Policies
+POLICIES_DIRECTORY = "corporate/policies"
+TERMS_OF_SERVICE_VERSION = "1.0"
+
 EMBEDDED_BOTS_ENABLED = True
 
 SYSTEM_ONLY_REALMS: Set[str] = set()
@@ -162,9 +166,6 @@ SEARCH_PILLS_ENABLED = bool(os.getenv("SEARCH_PILLS_ENABLED", False))
 
 BILLING_ENABLED = True
 LANDING_PAGE_NAVBAR_MESSAGE: Optional[str] = None
-
-# Test custom TOS template rendering
-TERMS_OF_SERVICE = "corporate/terms.md"
 
 # Our run-dev.py proxy uses X-Forwarded-Port to communicate to Django
 # that the request is actually on port 9991, not port 9992 (the Django

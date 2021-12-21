@@ -106,9 +106,11 @@ forwarding service).
 
 ## Security and privacy
 
-Use of the push notification bouncer is subject to the
-[Zulipchat Terms of Service](https://zulip.com/terms/). By using
-push notifications, you agree to those terms.
+Use of the push notification bouncer is subject to the Zulip Cloud [Terms of
+Service](https://zulip.com/policies/terms), [Privacy
+Policy](https://zulip.com/policies/privacy) and [Rules of
+Use](https://zulip.com/policies/rules). By using push notifications, you agree
+to these terms.
 
 We've designed this push notification bouncer service with security
 and privacy in mind:
@@ -170,10 +172,11 @@ Zulip open source project understand how many people are using Zulip,
 and help us allocate resources towards supporting self-hosted
 installations.
 
-Our use of these statistics is governed by the same Terms of Service
-and Privacy Policy that covers the Mobile Push Notifications Service
-itself. If your organization does not want to submit these statistics,
-you can disable this feature at any time by setting
+Our use of these statistics is governed by the same [Terms of
+Service](https://zulip.com/policies/terms) and [Privacy
+Policy](https://zulip.com/policies/privacy) that covers the Mobile Push
+Notifications Service itself. If your organization does not want to submit these
+statistics, you can disable this feature at any time by setting
 `SUBMIT_USAGE_STATISTICS=False` in `/etc/zulip/settings.py`.
 
 ## Rate limits

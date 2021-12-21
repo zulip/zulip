@@ -107,6 +107,8 @@ class TransferUploadsToS3Test(ZulipTestCase):
         self.assertEqual(image_data, original_key.get()["Body"].read())
         self.assertEqual(resized_image_data, resized_key.get()["Body"].read())
 
+        emoji_name = "emoji2.png"
+
         with get_test_image_file("animated_img.gif") as image_file:
             emoji = check_add_realm_emoji(othello.realm, emoji_name, othello, image_file)
         if not emoji:

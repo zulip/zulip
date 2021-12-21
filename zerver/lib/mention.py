@@ -152,3 +152,7 @@ def get_stream_name_info(realm: Realm, stream_names: Set[str]) -> Dict[str, Full
 
     dct = {row["name"]: row for row in rows}
     return dct
+
+
+def silent_mention_syntax_for_user(user_profile: UserProfile) -> str:
+    return f"@_**{user_profile.full_name}|{user_profile.id}**"

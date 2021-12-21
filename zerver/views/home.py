@@ -26,13 +26,10 @@ def need_accept_tos(user_profile: Optional[UserProfile]) -> bool:
     if user_profile is None:
         return False
 
-    if settings.TERMS_OF_SERVICE is None:  # nocoverage
+    if settings.TERMS_OF_SERVICE_VERSION is None:
         return False
 
-    if settings.TOS_VERSION is None:
-        return False
-
-    return int(settings.TOS_VERSION.split(".")[0]) > user_profile.major_tos_version()
+    return int(settings.TERMS_OF_SERVICE_VERSION.split(".")[0]) > user_profile.major_tos_version()
 
 
 @zulip_login_required
@@ -42,15 +39,18 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         form = ToSForm(request.POST)
         if form.is_valid():
-            do_change_tos_version(request.user, settings.TOS_VERSION)
+            do_change_tos_version(request.user, settings.TERMS_OF_SERVICE_VERSION)
             return redirect(home)
     else:
         form = ToSForm()
 
     email = request.user.delivery_email
     special_message_template = None
-    if request.user.tos_version is None and settings.FIRST_TIME_TOS_TEMPLATE is not None:
-        special_message_template = "zerver/" + settings.FIRST_TIME_TOS_TEMPLATE
+    if (
+        request.user.tos_version is None
+        and settings.FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE is not None
+    ):
+        special_message_template = settings.FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE
     return render(
         request,
         "zerver/accounts_accept_terms.html",

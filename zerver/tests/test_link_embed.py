@@ -365,9 +365,7 @@ class PreviewTestCase(ZulipTestCase):
     def test_edit_message_history(self) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
-        msg_id = self.send_stream_message(
-            user, "Scotland", topic_name="editing", content="original"
-        )
+        msg_id = self.send_stream_message(user, "Denmark", topic_name="editing", content="original")
 
         url = "http://test.org/"
         self.create_mock_response(url)
@@ -448,7 +446,7 @@ class PreviewTestCase(ZulipTestCase):
         edited_url = "http://edited.org/"
         with mock_queue_publish("zerver.lib.actions.queue_json_publish") as patched:
             msg_id = self.send_stream_message(
-                user, "Scotland", topic_name="foo", content=original_url
+                user, "Denmark", topic_name="foo", content=original_url
             )
             patched.assert_called_once()
             queue = patched.call_args[0][0]
@@ -559,7 +557,7 @@ class PreviewTestCase(ZulipTestCase):
         self.login_user(user)
         url = "http://test.org/"
         with mock_queue_publish("zerver.lib.actions.queue_json_publish") as patched:
-            msg_id = self.send_stream_message(user, "Scotland", topic_name="foo", content=url)
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
             self.assertEqual(queue, "embed_links")
@@ -663,7 +661,7 @@ class PreviewTestCase(ZulipTestCase):
         self.login_user(user)
         url = "http://test.org/audio.mp3"
         with mock_queue_publish("zerver.lib.actions.queue_json_publish") as patched:
-            msg_id = self.send_stream_message(user, "Scotland", topic_name="foo", content=url)
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
             self.assertEqual(queue, "embed_links")
@@ -695,7 +693,7 @@ class PreviewTestCase(ZulipTestCase):
         self.login_user(user)
         url = "http://test.org/foo.html"
         with mock_queue_publish("zerver.lib.actions.queue_json_publish") as patched:
-            msg_id = self.send_stream_message(user, "Scotland", topic_name="foo", content=url)
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
             self.assertEqual(queue, "embed_links")
@@ -730,7 +728,7 @@ class PreviewTestCase(ZulipTestCase):
         self.login_user(user)
         url = "http://test.org/foo.html"
         with mock_queue_publish("zerver.lib.actions.queue_json_publish") as patched:
-            msg_id = self.send_stream_message(user, "Scotland", topic_name="foo", content=url)
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
             self.assertEqual(queue, "embed_links")
@@ -767,7 +765,7 @@ class PreviewTestCase(ZulipTestCase):
         self.login_user(user)
         url = "http://test.org/"
         with mock_queue_publish("zerver.lib.actions.queue_json_publish") as patched:
-            msg_id = self.send_stream_message(user, "Scotland", topic_name="foo", content=url)
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
             self.assertEqual(queue, "embed_links")
