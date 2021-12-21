@@ -256,7 +256,7 @@ export function add_sub_to_table(sub) {
     }
 
     const settings_html = render_stream_settings(sub);
-    ui.get_content_element($(".subscriptions .settings")).append($(settings_html));
+    ui.get_content_element($("#manage_streams_container .settings")).append($(settings_html));
 
     if (stream_create.get_name() === sub.name) {
         // This `stream_create.get_name()` check tells us whether the
@@ -1086,7 +1086,7 @@ export function initialize() {
         open_create_stream();
     });
 
-    $(".subscriptions").on("click", "#stream_creation_form [data-dismiss]", (e) => {
+    $("#manage_streams_container").on("click", "#stream_creation_form [data-dismiss]", (e) => {
         e.preventDefault();
         // we want to make sure that the click is not just a simulated
         // click; this fixes an issue where hitting "Enter" would
