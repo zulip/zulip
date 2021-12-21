@@ -408,7 +408,7 @@ export function render_left_panel_superset() {
         return render_browse_streams_list(template_data);
     });
 
-    ui.get_content_element($("#subscriptions_table .streams-list")).html(html);
+    ui.get_content_element($("#manage_streams_container .streams-list")).html(html);
 }
 
 // LeftPanelParams { input: String, subscribed_only: Boolean, sort_order: String }
@@ -425,7 +425,7 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
 
     const stream_ids = [];
 
-    for (const row of $("#subscriptions_table .stream-row")) {
+    for (const row of $("#manage_streams_container .stream-row")) {
         const stream_id = stream_id_for_row(row);
         stream_ids.push(stream_id);
     }
@@ -440,7 +440,7 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
         hidden_ids.add(stream_id);
     }
 
-    for (const row of $("#subscriptions_table .stream-row")) {
+    for (const row of $("#manage_streams_container .stream-row")) {
         const stream_id = stream_id_for_row(row);
 
         // Below code goes away if we don't do sort-DOM-in-place.
@@ -458,7 +458,7 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
     const all_stream_ids = [...buckets.name, ...buckets.desc, ...buckets.other];
 
     for (const stream_id of all_stream_ids) {
-        ui.get_content_element($("#subscriptions_table .streams-list")).append(
+        ui.get_content_element($("#manage_streams_container .streams-list")).append(
             widgets.get(stream_id),
         );
     }
@@ -565,7 +565,7 @@ export function setup_page(callback) {
                 switch_stream_sort(key);
             },
         });
-        $("#subscriptions_table .search-container").prepend(sort_toggler.get());
+        $("#manage_streams_container .search-container").prepend(sort_toggler.get());
 
         // place subs tooltips at bottom
         tippy(".tippy-bottom", {
@@ -588,7 +588,7 @@ export function setup_page(callback) {
 
         if (should_list_all_streams()) {
             const toggler_elem = toggler.get();
-            $("#subscriptions_table .search-container").prepend(toggler_elem);
+            $("#manage_streams_container .search-container").prepend(toggler_elem);
         }
         if (page_params.is_guest) {
             toggler.disable_tab("all-streams");
@@ -599,7 +599,7 @@ export function setup_page(callback) {
     }
 
     function populate_and_fill() {
-        $("#subscriptions_table").empty();
+        $("#manage_streams_container").empty();
 
         // TODO: Ideally we'd indicate in some way what stream types
         // the user can create, by showing other options as disabled.
@@ -626,7 +626,7 @@ export function setup_page(callback) {
         };
 
         const rendered = render_stream_settings_overlay(template_data);
-        $("#subscriptions_table").append(rendered);
+        $("#manage_streams_container").append(rendered);
 
         render_left_panel_superset();
         initialize_components();
@@ -958,7 +958,7 @@ export function unsubscribe_from_private_stream(sub) {
         let stream_row;
         if (overlays.streams_open()) {
             stream_row = $(
-                "#subscriptions_table div.stream-row[data-stream-id='" + sub.stream_id + "']",
+                "#manage_streams_container div.stream-row[data-stream-id='" + sub.stream_id + "']",
             );
         }
 
@@ -1081,7 +1081,7 @@ export function update_stream_privacy_choices(policy) {
 }
 
 export function initialize() {
-    $("#subscriptions_table").on("click", ".create_stream_button", (e) => {
+    $("#manage_streams_container").on("click", ".create_stream_button", (e) => {
         e.preventDefault();
         open_create_stream();
     });
@@ -1096,13 +1096,17 @@ export function initialize() {
         }
     });
 
-    $("#subscriptions_table").on("click", ".email-address", function () {
+    $("#manage_streams_container").on("click", ".email-address", function () {
         selectText(this);
     });
 
-    $("#subscriptions_table").on("click", ".stream-row, .create_stream_button", show_right_section);
+    $("#manage_streams_container").on(
+        "click",
+        ".stream-row, .create_stream_button",
+        show_right_section,
+    );
 
-    $("#subscriptions_table").on("click", ".fa-chevron-left", () => {
+    $("#manage_streams_container").on("click", ".fa-chevron-left", () => {
         $(".right").removeClass("show");
         $(".subscriptions-header").removeClass("slide-left");
     });
@@ -1110,7 +1114,7 @@ export function initialize() {
     {
         const sel = ".search-container, .streams-list, .subscriptions-header";
 
-        $("#subscriptions_table").on("click", sel, (e) => {
+        $("#manage_streams_container").on("click", sel, (e) => {
             if ($(e.target).is(sel)) {
                 stream_edit.open_edit_panel_empty();
             }

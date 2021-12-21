@@ -364,7 +364,7 @@ function update_subscribers_list_widget(subscriber_ids) {
 }
 
 export function initialize() {
-    $("#subscriptions_table").on(
+    $("#manage_streams_container").on(
         "keyup",
         ".edit_subscribers_for_stream .subscriber_list_add form",
         (e) => {
@@ -375,7 +375,7 @@ export function initialize() {
         },
     );
 
-    $("#subscriptions_table").on(
+    $("#manage_streams_container").on(
         "submit",
         ".edit_subscribers_for_stream .subscriber_list_add form",
         (e) => {
@@ -384,7 +384,7 @@ export function initialize() {
         },
     );
 
-    $("#subscriptions_table").on(
+    $("#manage_streams_container").on(
         "submit",
         ".edit_subscribers_for_stream .subscriber_list_remove form",
         (e) => {

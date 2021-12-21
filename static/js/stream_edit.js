@@ -468,7 +468,7 @@ export function initialize() {
         stream_settings_ui.sub_or_unsub(sub);
     });
 
-    $("#subscriptions_table").on("click", ".change-stream-privacy", (e) => {
+    $("#manage_streams_container").on("click", ".change-stream-privacy", (e) => {
         const stream_id = get_stream_id(e.target);
         const stream = sub_store.get(stream_id);
 
@@ -518,7 +518,7 @@ export function initialize() {
         e.stopPropagation();
     });
 
-    $("#subscriptions_table").on("click", "#open_stream_info_modal", (e) => {
+    $("#manage_streams_container").on("click", "#open_stream_info_modal", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const stream_id = get_stream_id(e.target);
@@ -544,7 +544,7 @@ export function initialize() {
         });
     });
 
-    $("#subscriptions_table").on("keypress", "#change_stream_description", (e) => {
+    $("#manage_streams_container").on("keypress", "#change_stream_description", (e) => {
         // Stream descriptions can not be multiline, so disable enter key
         // to prevent new line
         if (e.key === "Enter") {
@@ -578,7 +578,7 @@ export function initialize() {
         settings_ui.do_settings_change(channel.patch, url, data, status_element);
     }
 
-    $("#subscriptions_table").on(
+    $("#manage_streams_container").on(
         "click",
         ".close-modal-btn, .close-change-stream-info-modal",
         (e) => {
@@ -588,13 +588,13 @@ export function initialize() {
         },
     );
 
-    $("#subscriptions_table").on(
+    $("#manage_streams_container").on(
         "change",
         "#sub_is_muted_setting .sub_setting_control",
         stream_is_muted_changed,
     );
 
-    $("#subscriptions_table").on(
+    $("#manage_streams_container").on(
         "change",
         ".sub_setting_checkbox .sub_setting_control",
         stream_setting_changed,
@@ -602,11 +602,13 @@ export function initialize() {
 
     // This handler isn't part of the normal edit interface; it's the convenient
     // checkmark in the subscriber list.
-    $("#subscriptions_table").on("click", ".sub_unsub_button", (e) => {
+    $("#manage_streams_container").on("click", ".sub_unsub_button", (e) => {
         const sub = get_sub_for_target(e.target);
         // Makes sure we take the correct stream_row.
         const stream_row = $(
-            `#subscriptions_table div.stream-row[data-stream-id='${CSS.escape(sub.stream_id)}']`,
+            `#manage_streams_container div.stream-row[data-stream-id='${CSS.escape(
+                sub.stream_id,
+            )}']`,
         );
         stream_settings_ui.sub_or_unsub(sub, stream_row);
 
@@ -619,7 +621,7 @@ export function initialize() {
         e.stopPropagation();
     });
 
-    $("#subscriptions_table").on("click", ".deactivate", (e) => {
+    $("#manage_streams_container").on("click", ".deactivate", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -663,7 +665,7 @@ export function initialize() {
         $(".dialog_submit_button").attr("data-stream-id", stream_id);
     });
 
-    $("#subscriptions_table").on("click", ".stream-row", function (e) {
+    $("#manage_streams_container").on("click", ".stream-row", function (e) {
         if ($(e.target).closest(".check, .subscription_settings").length === 0) {
             open_edit_panel_for_row(this);
         }
