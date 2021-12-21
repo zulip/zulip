@@ -134,6 +134,17 @@ export function enable_subscriber_management({sub, parent_container}) {
     set_up_pill_typeahead({pill_container, get_users: get_users_for_subscriber_typeahead});
 
     const user_ids = peer_data.get_subscribers(stream_id);
+
+    // We track a single subscribers_list_widget for this module, since we
+    // only ever have one list of subscribers visible at a time.
+    subscribers_list_widget = make_list_widget({
+        parent_container,
+        name: "stream_subscribers",
+        user_ids,
+    });
+}
+
+function make_list_widget({parent_container, name, user_ids}) {
     const users = people.get_users_from_ids(user_ids);
     people.sort_but_pin_current_user_on_top(users);
 
@@ -142,10 +153,8 @@ export function enable_subscriber_management({sub, parent_container}) {
 
     const simplebar_container = parent_container.find(".subscriber_list_container");
 
-    // We track a single subscribers_list_widget for this module, since we
-    // only ever have one list of subscribers visible at a time.
-    subscribers_list_widget = ListWidget.create(list_container, users, {
-        name: "stream_subscribers",
+    return ListWidget.create(list_container, users, {
+        name,
         modifier(item) {
             return format_member_list_elem(item);
         },
