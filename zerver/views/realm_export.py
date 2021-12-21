@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+import orjson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
@@ -88,7 +89,8 @@ def delete_realm_export(request: HttpRequest, user: UserProfile, export_id: int)
         )
     except RealmAuditLog.DoesNotExist:
         raise JsonableError(_("Invalid data export ID"))
-
+    
+    export_data = orjson.decode(audit_log_entry.extra_data)
     if audit_log_entry.extra_data is None:
         raise JsonableError(_("Export cannot be deleted until complete"))
     do_delete_realm_export(user, audit_log_entry)
