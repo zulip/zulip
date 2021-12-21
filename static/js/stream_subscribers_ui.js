@@ -150,7 +150,7 @@ export function enable_subscriber_management({sub, parent_container}) {
             return format_member_list_elem(item);
         },
         filter: {
-            element: $(`[data-stream-id='${CSS.escape(stream_id)}'] .search`),
+            element: parent_container.find(".search"),
             predicate(person, value) {
                 const matcher = people.build_person_matcher(value);
                 const match = matcher(person);
