@@ -275,8 +275,7 @@ export function remove_stream(stream_id) {
     // stream, but we let jQuery silently handle that.
     const row = row_for_stream_id(stream_id);
     row.remove();
-    const sub = sub_store.get(stream_id);
-    if (stream_edit.is_sub_settings_active(sub)) {
+    if (hash_util.is_editing_stream(stream_id)) {
         stream_edit.open_edit_panel_empty();
     }
 }
