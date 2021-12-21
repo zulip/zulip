@@ -124,7 +124,7 @@ export function update_change_stream_privacy_settings(sub) {
 
 export function update_notification_setting_checkbox(notification_name) {
     // This is in the right panel (Personal settings).
-    const stream_row = $("#subscriptions_table .stream-row.active");
+    const stream_row = $("#manage_streams_container .stream-row.active");
     if (!stream_row.length) {
         return;
     }

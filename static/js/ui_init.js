@@ -316,11 +316,11 @@ export function initialize_kitchen_sink_stuff() {
         $(this).removeClass("fa fa-play");
     });
 
-    $("#subscriptions_table").on("mouseover", ".subscription_header", function () {
+    $("#manage_streams_container").on("mouseover", ".subscription_header", function () {
         $(this).addClass("active");
     });
 
-    $("#subscriptions_table").on("mouseout", ".subscription_header", function () {
+    $("#manage_streams_container").on("mouseout", ".subscription_header", function () {
         $(this).removeClass("active");
     });
 
