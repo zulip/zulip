@@ -56,6 +56,24 @@ function same_recipient(a, b) {
     return util.same_recipient(a.msg, b.msg);
 }
 
+function message_was_only_moved(message) {
+    // Returns true if the message has had its stream/topic edited
+    // (i.e. the message was moved), but its content has not been
+    // edited.
+    let moved = false;
+    if (message.edit_history !== undefined) {
+        for (const msg of message.edit_history) {
+            if (msg.prev_content) {
+                return false;
+            }
+            if (util.get_edit_event_prev_topic(msg) || msg.prev_stream) {
+                moved = true;
+            }
+        }
+    }
+    return moved;
+}
+
 function render_group_display_date(group, message_container) {
     const time = new Date(message_container.msg.timestamp * 1000);
     const today = new Date();
@@ -235,6 +253,7 @@ export class MessageListView {
             message_container.edited_in_left_col = !include_sender && !is_hidden;
             message_container.edited_alongside_sender = include_sender && !status_message;
             message_container.edited_status_msg = include_sender && status_message;
+            message_container.moved = message_was_only_moved(message_container.msg);
         } else {
             delete message_container.last_edit_timestr;
             message_container.edited_in_left_col = false;

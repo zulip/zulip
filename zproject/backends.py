@@ -2449,6 +2449,17 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         """
         idp = self.get_idp(idp_name)
         auth = self._create_saml_auth(idp)
+        # This setting controls whether LogoutRequests delivered to us
+        # need to be signed. The default of False is not acceptable,
+        # because we don't want anyone to be able to submit a request
+        # to get other users logged out.
+        auth.get_settings().get_security_data()["wantMessagesSigned"] = True
+        # Defensive code to confirm the setting change above is successful,
+        # to catch API changes in python3-saml that would make the change not
+        # be applied to the actual settings of `auth` - e.g. due to us only
+        # receiving a copy of the dict.
+        assert auth.get_settings().get_security_data()["wantMessagesSigned"] is True
+
         # This validates the LogoutRequest and prepares the response
         # (the URL to which to redirect the client to convey the response to the IdP)
         # but is a no-op otherwise because keep_local_session=True keeps it from

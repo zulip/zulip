@@ -1,9 +1,10 @@
 import os
-import shutil
 import subprocess
 import tempfile
 from argparse import ArgumentParser
 from typing import Any
+
+from django.core.management.base import CommandError
 
 from zerver.lib.export import do_export_user
 from zerver.lib.management import ZulipBaseCommand
@@ -32,12 +33,25 @@ class Command(ZulipBaseCommand):
         output_dir = options["output_dir"]
         if output_dir is None:
             output_dir = tempfile.mkdtemp(prefix="zulip-export-")
-        if os.path.exists(output_dir):
-            shutil.rmtree(output_dir)
-        os.makedirs(output_dir)
+        else:
+            output_dir = os.path.abspath(output_dir)
+            if os.path.exists(output_dir) and os.listdir(output_dir):
+                raise CommandError(
+                    f"Refusing to overwrite nonempty directory: {output_dir}. Aborting...",
+                )
+            else:
+                os.makedirs(output_dir)
+
         print(f"Exporting user {user_profile.delivery_email}")
         do_export_user(user_profile, output_dir)
         print(f"Finished exporting to {output_dir}; tarring")
         tarball_path = output_dir.rstrip("/") + ".tar.gz"
-        subprocess.check_call(["tar", "--strip-components=1", "-czf", tarball_path, output_dir])
+        subprocess.check_call(
+            [
+                "tar",
+                f"-czf{tarball_path}",
+                f"-C{os.path.dirname(output_dir)}",
+                os.path.basename(output_dir),
+            ]
+        )
         print(f"Tarball written to {tarball_path}")

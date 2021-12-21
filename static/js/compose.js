@@ -615,10 +615,11 @@ export function initialize() {
         }
     });
 
-    let instance = {};
     $("body").on("click", ".time_pick", (e) => {
         e.preventDefault();
         e.stopPropagation();
+
+        $(e.target).toggleClass("has_popover");
 
         let target_textarea;
         let edit_message_id;
@@ -630,13 +631,13 @@ export function initialize() {
             target_textarea = $(compose_click_target).closest("form").find("textarea");
         }
 
-        if (!instance.calendarContainer) {
+        if ($(e.target).hasClass("has_popover")) {
             const on_timestamp_selection = (val) => {
                 const timestr = `<time:${val}> `;
                 compose_ui.insert_syntax_and_focus(timestr, target_textarea);
             };
 
-            instance = composebox_typeahead.show_flatpickr(
+            composebox_typeahead.show_flatpickr(
                 $(compose_click_target)[0],
                 on_timestamp_selection,
                 new Date(),
@@ -645,11 +646,7 @@ export function initialize() {
                     position: "above center",
                 },
             );
-            return;
         }
-
-        instance.close();
-        instance.destroy();
     });
 
     $("#compose").on("click", ".markdown_preview", (e) => {

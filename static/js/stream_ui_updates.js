@@ -6,8 +6,10 @@ import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
+import * as people from "./people";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
+import * as stream_settings_containers from "./stream_settings_containers";
 import * as stream_settings_ui from "./stream_settings_ui";
 
 export function initialize_disable_btn_hint_popover(
@@ -40,7 +42,9 @@ export function initialize_disable_btn_hint_popover(
 }
 
 export function initialize_cant_subscribe_popover(sub) {
-    const button_wrapper = stream_edit.settings_for_sub(sub).find(".sub_unsub_button_wrapper");
+    const button_wrapper = stream_settings_containers
+        .get_edit_container(sub)
+        .find(".sub_unsub_button_wrapper");
     const settings_button = stream_settings_ui.settings_button_for_sub(sub);
     initialize_disable_btn_hint_popover(
         button_wrapper,
@@ -152,7 +156,7 @@ export function update_stream_row_in_settings_tab(sub) {
 
 export function update_stream_subscription_type_text(sub) {
     // This is in the right panel.
-    const stream_settings = stream_edit.settings_for_sub(sub);
+    const stream_settings = stream_settings_containers.get_edit_container(sub);
     const template_data = {
         ...sub,
         stream_post_policy_values: stream_data.stream_post_policy_values,
@@ -174,8 +178,8 @@ export function update_subscribers_list(sub) {
     if (!stream_data.can_view_subscribers(sub)) {
         $(".subscriber_list_settings_container").hide();
     } else {
-        const subscribers = peer_data.get_subscribers(sub.stream_id);
-        const users = stream_edit.get_users_from_subscribers(subscribers);
+        const subscriber_ids = peer_data.get_subscribers(sub.stream_id);
+        const users = people.get_users_from_ids(subscriber_ids);
 
         /*
             We try to find a subscribers list that is already in the
@@ -190,7 +194,7 @@ export function update_subscribers_list(sub) {
         // Perform re-rendering only when the stream settings form of the corresponding
         // stream is open.
         if (subscribers_list) {
-            stream_edit.sort_but_pin_current_user_on_top(users);
+            people.sort_but_pin_current_user_on_top(users);
             subscribers_list.replace_list_data(users);
         }
         $(".subscriber_list_settings_container").show();

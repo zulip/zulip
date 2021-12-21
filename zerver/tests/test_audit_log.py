@@ -221,7 +221,7 @@ class TestRealmAuditLog(ZulipTestCase):
         do_change_tos_version(user, tos_version)
         self.assertEqual(
             RealmAuditLog.objects.filter(
-                event_type=RealmAuditLog.USER_TOS_VERSION_CHANGED, event_time__gte=now
+                event_type=RealmAuditLog.USER_TERMS_OF_SERVICE_VERSION_CHANGED, event_time__gte=now
             ).count(),
             1,
         )

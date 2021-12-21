@@ -372,6 +372,31 @@ test_people("basics", () => {
     );
 });
 
+test_people("sort_but_pin_current_user_on_top with me", () => {
+    people.add_active_user(maria);
+    people.add_active_user(steven);
+
+    // We need the actual object from people.js, not the
+    // "me" object we made a copy of.
+    const my_user = people.get_by_user_id(me.user_id);
+    const users = [steven, debbie, maria, my_user];
+
+    people.sort_but_pin_current_user_on_top(users);
+
+    assert.deepEqual(users, [my_user, debbie, maria, steven]);
+});
+
+test_people("sort_but_pin_current_user_on_top without me", () => {
+    people.add_active_user(maria);
+    people.add_active_user(steven);
+
+    const users = [steven, maria];
+
+    people.sort_but_pin_current_user_on_top(users);
+
+    assert.deepEqual(users, [maria, steven]);
+});
+
 test_people("check_active_non_active_users", () => {
     people.add_active_user(bot_botson);
     people.add_active_user(isaac);

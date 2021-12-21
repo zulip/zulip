@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 5.0
 
+**Feature level 112**
+
+* [`GET /events`](/api/get-events): Updated `update_message` event type
+  to include `stream_id` field for all edits to stream messages.
+
 **Feature level 111**
 
 * [`POST /subscriptions/properties`](/api/update-subscription-settings):
@@ -44,6 +49,7 @@ format used by the Zulip server that they are interacting with.
   final `zulip://` redirect URL.
 
 **Feature level 107**
+
 * [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
   [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
   Added user setting `escape_navigates_to_default_view` to allow users to

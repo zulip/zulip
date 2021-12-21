@@ -446,7 +446,7 @@ def accounts_register(
                 full_name,
                 prereg_user=prereg_user,
                 role=role,
-                tos_version=settings.TOS_VERSION,
+                tos_version=settings.TERMS_OF_SERVICE_VERSION,
                 timezone=timezone,
                 default_stream_groups=default_stream_groups,
                 source_profile=source_profile,

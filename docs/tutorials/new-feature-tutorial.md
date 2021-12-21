@@ -575,7 +575,7 @@ in. For example in this case of `mandatory_topics` it will lie in
 
 _If you're not sure in which section your feature belongs, it's
 better to discuss it in
-[the Zulip development community](https://zulip.com/developer-community/)
+[the Zulip development community](https://zulip.com/development-community/)
 before implementing it._
 
 Note that some settings, like `realm_msg_edit_limit_setting`,

@@ -87,29 +87,38 @@ class ReactionEmojiTest(ZulipTestCase):
         """
         Formatted reactions data is saved in cache.
         """
-        sender = self.example_user("hamlet")
-        reaction_info = {
-            "emoji_name": "smile",
-        }
-        result = self.api_post(sender, "/api/v1/messages/1/reactions", reaction_info)
+        senders = [self.example_user("hamlet"), self.example_user("cordelia")]
+        emojis = ["smile", "tada"]
+        expected_emoji_codes = ["1f642", "1f389"]
 
-        self.assert_json_success(result)
-        self.assertEqual(200, result.status_code)
+        for sender, emoji in zip(senders, emojis):
+            reaction_info = {
+                "emoji_name": emoji,
+            }
+            result = self.api_post(sender, "/api/v1/messages/1/reactions", reaction_info)
+
+            self.assert_json_success(result)
+            self.assertEqual(200, result.status_code)
+
         key = to_dict_cache_key_id(1)
         message = extract_message_dict(cache_get(key)[0])
 
         expected_reaction_data = [
             {
-                "emoji_name": "smile",
-                "emoji_code": "1f642",
+                "emoji_name": emoji,
+                "emoji_code": emoji_code,
                 "reaction_type": "unicode_emoji",
                 "user": {
                     "email": f"user{sender.id}@zulip.testserver",
                     "id": sender.id,
-                    "full_name": "King Hamlet",
+                    "full_name": sender.full_name,
                 },
                 "user_id": sender.id,
             }
+            # It's important that we preserve the loop order in this
+            # test, since this is our test to verify that we're
+            # returning reactions in chronological order.
+            for sender, emoji, emoji_code in zip(senders, emojis, expected_emoji_codes)
         ]
         self.assertEqual(expected_reaction_data, message["reactions"])
 
@@ -1100,7 +1109,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
         into a problem.
         """
         hamlet = self.example_user("hamlet")
-        self.send_stream_message(hamlet, "Scotland")
+        self.send_stream_message(hamlet, "Denmark")
         message = self.get_last_message()
         reaction = Reaction(
             user_profile=hamlet,

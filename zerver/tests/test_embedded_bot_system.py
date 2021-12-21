@@ -59,6 +59,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
 
     def test_message_to_embedded_bot_with_initialize(self) -> None:
         assert self.bot_profile is not None
+        self.subscribe(self.user_profile, "Denmark")
         with patch(
             "zulip_bots.bots.helloworld.helloworld.HelloWorldHandler.initialize", create=True
         ) as mock_initialize:

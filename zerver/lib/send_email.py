@@ -7,7 +7,7 @@ from email.headerregistry import Address
 from email.parser import Parser
 from email.policy import default
 from email.utils import formataddr, parseaddr
-from typing import Any, Dict, List, Mapping, Optional, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 import backoff
 import orjson
@@ -86,10 +86,20 @@ def build_email(
         if realm is None:
             assert len({to_user.realm_id for to_user in to_users}) == 1
             realm = to_users[0].realm
-        to_emails = [
-            str(Address(display_name=to_user.full_name, addr_spec=to_user.delivery_email))
-            for to_user in to_users
-        ]
+        to_emails = []
+        for to_user in to_users:
+            stringified = str(
+                Address(display_name=to_user.full_name, addr_spec=to_user.delivery_email)
+            )
+            # Check ASCII encoding length.  Amazon SES rejects emails
+            # with From or To values longer than 320 characters (which
+            # appears to be a misinterpretation of the RFC); in that
+            # case we drop the name part from the address, under the
+            # theory that it's better to send the email with a
+            # simplified field than not at all.
+            if len(sanitize_address(stringified, "utf-8")) > 320:
+                stringified = str(Address(addr_spec=to_user.delivery_email))
+            to_emails.append(stringified)
 
     extra_headers = {}
     if realm is not None:
@@ -159,11 +169,8 @@ def build_email(
 
     # Set the "From" that is displayed separately from the envelope-from.
     extra_headers["From"] = str(Address(display_name=from_name, addr_spec=from_address))
-    # Check ASCII encoding length.  Amazon SES rejects emails with
-    # From names longer than 320 characters (which appears to be a
-    # misinterpretation of the RFC); in that case we drop the name
-    # from the From line, under the theory that it's better to send
-    # the email with a simplified From field than not.
+    # As above, with the "To" line, we drop the name part if it would
+    # result in an address which is longer than 320 bytes.
     if len(sanitize_address(extra_headers["From"], "utf-8")) > 320:
         extra_headers["From"] = str(Address(addr_spec=from_address))
 
@@ -488,8 +495,12 @@ def get_header(option: Optional[str], header: Optional[str], name: str) -> str:
     return str(option or header)
 
 
-def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None:
+def send_custom_email(
+    users: List[UserProfile], *, target_emails: Sequence[str] = [], options: Dict[str, Any]
+) -> None:
     """
+    Helper for `manage.py send_custom_email`.
+
     Can be used directly with from a management shell with
     send_custom_email(user_profile_list, dict(
         markdown_template_path="/path/to/markdown/file.md",
@@ -542,15 +553,36 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
             "realm_name": user_profile.realm.name,
             "unsubscribe_link": one_click_unsubscribe_link(user_profile, "marketing"),
         }
+        try:
+            send_email(
+                email_id,
+                to_user_ids=[user_profile.id],
+                from_address=FromAddress.SUPPORT,
+                reply_to_email=options.get("reply_to"),
+                from_name=get_header(
+                    options.get("from_name"), parsed_email_template.get("from"), "from_name"
+                ),
+                context=context,
+                dry_run=options["dry_run"],
+            )
+        except EmailNotDeliveredException:
+            pass
+
+        if options["dry_run"]:
+            break
+
+    # Now send emails to any recipients without a user account.
+    # This code path is intended for rare RemoteZulipServer emails.
+    for email_address in target_emails:
         send_email(
             email_id,
-            to_user_ids=[user_profile.id],
+            to_emails=[email_address],
             from_address=FromAddress.SUPPORT,
             reply_to_email=options.get("reply_to"),
             from_name=get_header(
                 options.get("from_name"), parsed_email_template.get("from"), "from_name"
             ),
-            context=context,
+            context={"remote_server_email": True},
             dry_run=options["dry_run"],
         )
 

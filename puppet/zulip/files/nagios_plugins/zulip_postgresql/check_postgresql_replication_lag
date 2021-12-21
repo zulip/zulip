@@ -4,14 +4,27 @@
 replica PostgreSQL servers' xlog location.  Requires that the user this
 connects to PostgreSQL as has been granted the `pg_monitor` role.
 
+This can only use stdlib modules from python.
 """
+import configparser
 import re
 import subprocess
 from typing import Dict, List
 
-from scripts.lib.zulip_tools import get_config, get_config_file
 
-config_file = get_config_file()
+def get_config(
+    config_file: configparser.RawConfigParser,
+    section: str,
+    key: str,
+    default_value: str = "",
+) -> str:
+    if config_file.has_option(section, key):
+        return config_file.get(section, key)
+    return default_value
+
+
+config_file = configparser.RawConfigParser()
+config_file.read("/etc/zulip/zulip.conf")
 
 states = {
     "OK": 0,
@@ -39,8 +52,7 @@ def run_sql_query(query: str) -> List[List[str]]:
         "ON_ERROR_STOP=1",
         "-d",
         get_config(config_file, "postgresql", "database_name", "zulip"),
-        "-u",
-        get_config(config_file, "postgresql", "database_user", "zulip"),
+        # No -U; nagios connects as itself
         "-c",
         f"SELECT {query}",
     ]

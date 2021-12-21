@@ -38,13 +38,28 @@ class zulip::profile::app_frontend {
     notify  => Service['nginx'],
   }
 
-  # Trigger 2x a day certbot renew
+  # We used to install a cron job, but certbot now has a systemd cron
+  # that does better.  This can be removed once upgrading from 5.0 is
+  # no longer possible.
   file { '/etc/cron.d/certbot-renew':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/cron.d/certbot-renew',
+    ensure => absent,
+  }
+
+  # Reload nginx after deploying a new cert.
+  file { ['/etc/letsencrypt/renewal-hooks', '/etc/letsencrypt/renewal-hooks/deploy']:
+    ensure  => directory,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0755',
+    require => Package[certbot],
+  }
+  file { '/etc/letsencrypt/renewal-hooks/deploy/001-nginx.sh':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0755',
+    source  => 'puppet:///modules/zulip/letsencrypt/nginx-deploy-hook.sh',
+    require => Package[certbot],
   }
 
   # Restart the server regularly to avoid potential memory leak problems.

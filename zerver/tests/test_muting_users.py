@@ -312,10 +312,21 @@ class MutedUsersTests(ZulipTestCase):
         self.make_stream("general")
         self.subscribe(hamlet, "general")
 
+        def send_stream_message() -> int:
+            # For testing simplicity we allow the somewhat
+            # contrived situation that cordelia can post
+            # to the general stream, even though she is not
+            # subscribed. This prevents some noise when we
+            # look at the mocked calls to maybe_enqueue_notifications.
+            message_id = self.send_stream_message(
+                cordelia, "general", allow_unsubscribed_sender=True
+            )
+            return message_id
+
         # No muting. Only Hamlet is subscribed to #general, so only he can potentially receive
         # notifications.
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as m:
-            message_id = self.send_stream_message(cordelia, "general")
+            message_id = send_stream_message()
             # Message does not mention Hamlet, so no notification.
             m.assert_not_called()
 
@@ -340,7 +351,7 @@ class MutedUsersTests(ZulipTestCase):
         self.assert_json_success(result)
 
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as m:
-            message_id = self.send_stream_message(cordelia, "general")
+            message_id = send_stream_message()
             m.assert_not_called()
 
         self.login("cordelia")

@@ -35,7 +35,7 @@ materials](https://developers.google.com/open-source/gsoc/resources/manual).
   the rest of the Zulip community. We recommend the following:
 
   - Daily checkins on #checkins in
-    [the Zulip development community](https://zulip.com/developer-community/); ideally
+    [the Zulip development community](https://zulip.com/development-community/); ideally
     at some time of day you can both be online, but when not
     possible, async is better than nothing!
 
@@ -57,7 +57,7 @@ materials](https://developers.google.com/open-source/gsoc/resources/manual).
 
   - If you need feedback from the community / decisions made, ask in the
     appropriate public stream in
-    [the Zulip development community](https://zulip.com/developer-community/). Often
+    [the Zulip development community](https://zulip.com/development-community/). Often
     someone can provide important context that you need to succeed in your project.
 
   - Communicate clearly, especially in public places! You'll get much more

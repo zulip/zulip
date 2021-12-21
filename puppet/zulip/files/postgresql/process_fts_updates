@@ -47,6 +47,7 @@ BATCH_SIZE = 1000
 parser = argparse.ArgumentParser()
 parser.add_argument("--quiet", action="store_true")
 parser.add_argument("--nagios-check", action="store_true")
+parser.add_argument("--nagios-user")
 options = parser.parse_args()
 
 logging.Formatter.converter = time.gmtime
@@ -154,6 +155,11 @@ except ImportError:
 conn: Optional[psycopg2.extensions.connection]
 
 if options.nagios_check:
+    # Nagios connects as itself, unless you specify otherwise
+    if options.nagios_user:
+        pg_args["user"] = options.nagios_user
+    else:
+        del pg_args["user"]
     conn = psycopg2.connect(**pg_args)
     cursor = conn.cursor()
     cursor.execute("SELECT count(*) FROM fts_update_log")

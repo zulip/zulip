@@ -1,5 +1,5 @@
 import os
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from scripts.lib.zulip_tools import deport
 
@@ -110,9 +110,6 @@ SSO_APPEND_DOMAIN: Optional[str] = None
 
 VIDEO_ZOOM_CLIENT_ID = get_secret("video_zoom_client_id", development_only=True)
 VIDEO_ZOOM_CLIENT_SECRET = get_secret("video_zoom_client_secret")
-VIDEO_ZOOM_TESTING_REALMS: Set[str] = set()
-VIDEO_ZOOM_TESTING_CLIENT_ID = get_secret("video_zoom_testing_client_id", development_only=True)
-VIDEO_ZOOM_TESTING_CLIENT_SECRET = get_secret("video_zoom_testing_client_secret")
 
 # Email gateway
 EMAIL_GATEWAY_PATTERN = ""
@@ -177,8 +174,7 @@ TORNADO_PORTS: List[int] = []
 USING_TORNADO = True
 
 # ToS/Privacy templates
-PRIVACY_POLICY: Optional[str] = None
-TERMS_OF_SERVICE: Optional[str] = None
+POLICIES_DIRECTORY: str = "zerver/policies_absent"
 
 # Security
 ENABLE_FILE_LINKS = False
@@ -358,9 +354,9 @@ REALM_CREATION_LINK_VALIDITY_DAYS = 7
 # Version number for ToS.  Change this if you want to force every
 # user to click through to re-accept terms of service before using
 # Zulip again on the web.
-TOS_VERSION: Optional[str] = None
-# Template to use when bumping TOS_VERSION to explain situation.
-FIRST_TIME_TOS_TEMPLATE: Optional[str] = None
+TERMS_OF_SERVICE_VERSION: Optional[str] = None
+# Template to use when bumping TERMS_OF_SERVICE_VERSION to explain situation.
+FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE: Optional[str] = None
 
 # Hostname used for Zulip's statsd logging integration.
 STATSD_HOST = ""

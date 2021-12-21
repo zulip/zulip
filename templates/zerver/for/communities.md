@@ -117,7 +117,7 @@ Zulip’s topic-based threading model solves the problems described above:
 ## Try Zulip today!
 
 You can see Zulip in action in our own
-[Zulip development community](https://zulip.com/developer-community/), which sends
+[Zulip development community](https://zulip.com/development-community/), which sends
 thousands of messages a week. We often get feedback from contributors
 around the world that they love how responsive Zulip’s project leaders
 are in public Zulip conversations. We are able to achieve this despite

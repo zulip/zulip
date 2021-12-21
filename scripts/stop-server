@@ -39,7 +39,7 @@ if has_application_server():
     # closer to "empty."  We stop Django before Tornado so it doesn't try
     # to make requests to make queues with a down'd Tornado.
     services.append("zulip-django")
-    services.extend(["zulip-tornado", "zulip-tornado:*"])
+    services.append("zulip-tornado:*")
     services.append("zulip-workers:*")
     if has_application_server(once=True):
         # These used to be included in "zulip-workers:*"; since we may

@@ -115,8 +115,10 @@ def fetch_api_key() -> Dict[str, object]:
     ]
 )
 def iago_message_id() -> Dict[str, object]:
+    iago = helpers.example_user("iago")
+    helpers.subscribe(iago, "Denmark")
     return {
-        "message_id": helpers.send_stream_message(helpers.example_user("iago"), "Denmark"),
+        "message_id": helpers.send_stream_message(iago, "Denmark"),
     }
 
 

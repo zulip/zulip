@@ -173,11 +173,12 @@ class TopicHistoryTest(ZulipTestCase):
         self.assert_json_error(result, "Invalid stream id")
 
     def test_get_topics_web_public_stream_web_public_request(self) -> None:
+        iago = self.example_user("iago")
         stream = self.make_stream("web-public-steram", is_web_public=True)
+        self.subscribe(iago, stream.name)
+
         for i in range(3):
-            self.send_stream_message(
-                self.example_user("iago"), stream.name, topic_name="topic" + str(i)
-            )
+            self.send_stream_message(iago, stream.name, topic_name="topic" + str(i))
 
         endpoint = f"/json/users/me/{stream.id}/topics"
         result = self.client_get(endpoint)

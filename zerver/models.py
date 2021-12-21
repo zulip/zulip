@@ -1048,6 +1048,15 @@ class RealmEmoji(models.Model):
     def __str__(self) -> str:
         return f"<RealmEmoji({self.realm.string_id}): {self.id} {self.name} {self.deactivated} {self.file_name}>"
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["realm", "name"],
+                condition=Q(deactivated=False),
+                name="unique_realm_emoji_when_false_deactivated",
+            ),
+        ]
+
 
 def get_realm_emoji_dicts(
     realm: Realm, only_active_emojis: bool = False
@@ -2820,8 +2829,15 @@ class AbstractEmoji(models.Model):
         default=UNICODE_EMOJI, choices=REACTION_TYPES, max_length=30
     )
 
-    # A string that uniquely identifies a particular emoji.  The format varies
-    # by type:
+    # A string with the property that (realm, reaction_type,
+    # emoji_code) uniquely determines the emoji glyph.
+    #
+    # We cannot use `emoji_name` for this purpose, since the
+    # name-to-glyph mappings for unicode emoji change with time as we
+    # update our emoji database, and multiple custom emoji can have
+    # the same `emoji_name` in a realm (at most one can have
+    # `deactivated=False`). The format for `emoji_code` varies by
+    # `reaction_type`:
     #
     # * For Unicode emoji, a dash-separated hex encoding of the sequence of
     #   Unicode codepoints that define this emoji in the Unicode
@@ -2829,10 +2845,10 @@ class AbstractEmoji(models.Model):
     #   following data, with "non_qualified" taking precedence when both present:
     #     https://raw.githubusercontent.com/iamcal/emoji-data/master/emoji_pretty.json
     #
-    # * For realm emoji (aka user uploaded custom emoji), the ID
-    #   (in ASCII decimal) of the RealmEmoji object.
+    # * For user uploaded custom emoji (`reaction_type="realm_emoji"`), the stringified ID
+    #   of the RealmEmoji object, computed as `str(realm_emoji.id)`.
     #
-    # * For "Zulip extra emoji" (like :zulip:), the filename of the emoji.
+    # * For "Zulip extra emoji" (like :zulip:), the name of the emoji (e.g. "zulip").
     emoji_code: str = models.TextField()
 
     class Meta:
@@ -2863,7 +2879,10 @@ class Reaction(AbstractReaction):
             "user_profile_id",
             "user_profile__full_name",
         ]
-        return Reaction.objects.filter(message_id__in=needed_ids).values(*fields)
+        # The ordering is important here, as it makes it convenient
+        # for clients to display reactions in order without
+        # client-side sorting code.
+        return Reaction.objects.filter(message_id__in=needed_ids).values(*fields).order_by("id")
 
     def __str__(self) -> str:
         return f"{self.user_profile.email} / {self.message.id} / {self.emoji_name}"
@@ -3827,7 +3846,7 @@ class AbstractRealmAuditLog(models.Model):
     USER_AVATAR_SOURCE_CHANGED = 123
     USER_FULL_NAME_CHANGED = 124
     USER_EMAIL_CHANGED = 125
-    USER_TOS_VERSION_CHANGED = 126
+    USER_TERMS_OF_SERVICE_VERSION_CHANGED = 126
     USER_API_KEY_CHANGED = 127
     USER_BOT_OWNER_CHANGED = 128
     USER_DEFAULT_SENDING_STREAM_CHANGED = 129
@@ -3875,6 +3894,12 @@ class AbstractRealmAuditLog(models.Model):
     STREAM_DEACTIVATED = 602
     STREAM_NAME_CHANGED = 603
     STREAM_REACTIVATED = 604
+    STREAM_MESSAGE_RETENTION_DAYS_CHANGED = 605
+
+    # The following values are only for RemoteZulipServerAuditLog
+    # Values are chosen to be 10000 greater than the value in RealmAuditLog.
+    REMOTE_SERVER_CREATED = 10215
+    REMOTE_SERVER_PLAN_TYPE_CHANGED = 10204
 
     event_type: int = models.PositiveSmallIntegerField()
 

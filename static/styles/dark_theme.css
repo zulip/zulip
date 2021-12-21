@@ -27,6 +27,42 @@ body.dark-theme {
         color: inherit;
     }
 
+    /************************* MODAL DARK THEME *******************/
+    .dialog_cancel_button {
+        background-color: hsl(211, 29%, 14%);
+        color: hsl(0, 0%, 100%);
+        border: 1px solid hsla(0, 0%, 0%, 0.6);
+    }
+
+    .modal__btn:disabled {
+        opacity: 1;
+        background-color: hsla(0, 0%, 83%, 0.5);
+    }
+
+    .modal-bg,
+    .modal__container {
+        background-color: hsl(212, 28%, 18%);
+    }
+
+    .modal__close {
+        &::before {
+            color: hsl(236, 33%, 90%);
+        }
+
+        &:hover {
+            background: hsla(0, 0%, 91%, 0.1);
+        }
+    }
+
+    .modal-footer {
+        box-shadow: inset 0 1px 0 hsla(0, 0%, 0%, 0.2);
+    }
+
+    #invite_user_form .modal-footer {
+        /* no transparency prevents overlap issues */
+        background-color: hsl(211, 28%, 14%);
+    }
+
     .enter_sends kbd {
         background-color: hsl(211, 29%, 14%);
         border-color: hsl(211, 29%, 14%);
@@ -148,21 +184,6 @@ body.dark-theme {
         border-color: hsla(0, 0%, 100%, 0.4);
     }
 
-    .modal-bg,
-    .modal__container {
-        background-color: hsl(212, 28%, 18%);
-    }
-
-    .modal__close {
-        &::before {
-            color: hsl(236, 33%, 90%);
-        }
-
-        &:hover {
-            background: hsla(0, 0%, 91%, 0.1);
-        }
-    }
-
     .streams_popover .sp-container {
         background-color: transparent;
 
@@ -221,7 +242,7 @@ body.dark-theme {
 
     /* these are converting grey things to "new grey" */
     :disabled,
-    input:read-only,
+    input:not([type="radio"]):read-only,
     textarea:read-only,
     .sidebar-title,
     .recipient_row_date {
@@ -618,15 +639,6 @@ body.dark-theme {
         background-color: hsl(212, 28%, 18%);
     }
 
-    .modal-footer {
-        box-shadow: inset 0 1px 0 hsla(0, 0%, 0%, 0.2);
-    }
-
-    #invite_user_form .modal-footer {
-        /* no transparency prevents overlap issues */
-        background-color: hsl(211, 28%, 14%);
-    }
-
     .subscriptions-container .right .display-type,
     .stream-row,
     .subscriptions-container .left .search-container,
@@ -956,8 +968,7 @@ body.dark-theme {
     }
 
     /* Popover: */
-    .hotspot.overlay .hotspot-popover,
-    #hotspot_intro_reply_icon {
+    .hotspot.overlay .hotspot-popover {
         border-color: hsla(0, 0%, 0%, 0.2) !important;
         /* Based on the `.hotspot-popover` shadow in `hotspots.css`, but with a new
     color. */
@@ -1026,7 +1037,6 @@ body.dark-theme {
 
     /* Content: */
     .hotspot.overlay .hotspot-popover .hotspot-popover-content,
-    #hotspot_intro_reply_icon,
     .hotspot.overlay .hotspot-popover .hotspot-popover-bottom {
         background-color: hsl(212, 28%, 18%);
     }

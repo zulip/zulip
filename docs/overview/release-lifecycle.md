@@ -179,7 +179,7 @@ do not have any of these priority labels.
 We welcome participation from our user community in influencing the
 Zulip roadmap. If a bug or missing feature is causing significant
 pain for you, we'd love to hear from you, either in
-[chat.zulip.org](https://zulip.com/developer-community/) or on the relevant
+[chat.zulip.org](https://zulip.com/development-community/) or on the relevant
 GitHub issue. Please an include an explanation of your use case: such
 details can be extremely helpful in designing appropriately general
 solutions, and also helps us identify cases where an existing solution
@@ -229,7 +229,7 @@ independently as needed.
 [electron]: https://www.electronjs.org/
 [upgrading-to-main]: ../production/upgrade-or-modify.html#upgrading-to-main
 [os-upgrade]: ../production/upgrade-or-modify.html#upgrading-the-operating-system
-[chat-zulip-org]: https://zulip.com/developer-community/
+[chat-zulip-org]: https://zulip.com/development-community/
 [fork-zulip]: ../production/upgrade-or-modify.html#modifying-zulip
 [zulip-server]: https://github.com/zulip/zulip
 [mobile-beta]: https://github.com/zulip/zulip-mobile#using-the-beta

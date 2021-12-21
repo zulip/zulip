@@ -636,14 +636,6 @@ Override the default uwsgi backlog of 128 connections.
 Override the default `uwsgi` (Django) process count of 6 on hosts with
 more than 3.5GiB of RAM, 4 on hosts with less.
 
-### `[certbot]`
-
-#### `auto_renew`
-
-If set to the string `yes`, [Certbot will attempt to automatically
-renew its certificate](../production/ssl-certificates.html#certbot-recommended). Do
-no set by hand; use `scripts/setup/setup-certbot` to configure this.
-
 ### `[postfix]`
 
 #### `mailname`
