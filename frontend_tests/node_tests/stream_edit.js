@@ -153,6 +153,9 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
             case ".pill-container": {
                 return pill_container_stub;
             }
+            case ".search": {
+                return undefined;
+            }
             case ".subscriber_table": {
                 return $.create("subscriber-table-stub");
             }
