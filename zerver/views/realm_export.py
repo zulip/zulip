@@ -95,4 +95,3 @@ def delete_realm_export(request: HttpRequest, user: UserProfile, export_id: int)
         raise JsonableError(_("Export cannot be deleted until complete"))
     do_delete_realm_export(user, audit_log_entry)
     return json_success()
-    
