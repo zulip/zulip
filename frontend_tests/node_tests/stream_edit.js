@@ -145,38 +145,18 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
 
     const $sub_settings_container = $.create(sub_settings_selector);
     const $edit_subscribers_container = $.create("edit-subscribers-stub");
+    const $unused = $.create("unused");
 
-    $sub_settings_container.find = (selector) => {
-        switch (selector) {
-            case ".colorpicker": {
-                return undefined;
-            }
-            case ".edit_subscribers_for_stream": {
-                return $edit_subscribers_container;
-            }
-            // No default
-        }
-        throw new Error(`unexpected selector ${selector}`);
-    };
+    $sub_settings_container.set_find_results(".colorpicker", $unused);
+    $sub_settings_container.set_find_results(
+        ".edit_subscribers_for_stream",
+        $edit_subscribers_container,
+    );
 
-    $edit_subscribers_container.find = (selector) => {
-        switch (selector) {
-            case ".pill-container": {
-                return pill_container_stub;
-            }
-            case ".search": {
-                return undefined;
-            }
-            case ".subscriber_table": {
-                return $.create("subscriber-table-stub");
-            }
-            case ".subscriber_list_container": {
-                return undefined;
-            }
-            // No default
-        }
-        throw new Error(`unexpected selector ${selector}`);
-    };
+    $edit_subscribers_container.set_find_results(".pill-container", pill_container_stub);
+    $edit_subscribers_container.set_find_results(".search", $unused);
+    $edit_subscribers_container.set_find_results(".subscriber_table", $unused);
+    $edit_subscribers_container.set_find_results(".subscriber_list_container", $unused);
 
     const $subscription_settings = $.create(".subscription_settings");
     $subscription_settings.addClass = noop;
