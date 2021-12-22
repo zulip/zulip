@@ -5,6 +5,7 @@ import render_widgets_todo_widget_tasks from "../templates/widgets/todo_widget_t
 
 import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
+import {page_params} from "./page_params";
 import * as util from "./util";
 
 // Any single user should send add a finite number of tasks
@@ -193,6 +194,17 @@ export function activate(opts) {
 
         elem.find("input.task").on("click", (e) => {
             e.stopPropagation();
+
+            if (page_params.is_spectator) {
+                // Logically, spectators should not be able totoggle
+                // TODO checkboxes. However, the browser changes the
+                // checkbox's state before calling handlers like this,
+                // so we need to just toggle the checkbox back to its
+                // previous state.
+                $(e.target).prop("checked", !$(e.target).is(":checked"));
+                $(e.target).blur();
+                return;
+            }
             const key = $(e.target).attr("data-key");
 
             const data = task_data.handle.strike.outbound(key);
