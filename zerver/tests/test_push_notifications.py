@@ -2455,6 +2455,18 @@ class PushBouncerSignupTest(ZulipTestCase):
         result = self.client_post("/api/v1/remotes/server/register", request)
         self.assert_json_error(result, "Enter a valid email address.")
 
+    def test_push_signup_invalid_zulip_org_id(self) -> None:
+        zulip_org_id = "x" * RemoteZulipServer.UUID_LENGTH
+        zulip_org_key = get_random_string(64)
+        request = dict(
+            zulip_org_id=zulip_org_id,
+            zulip_org_key=zulip_org_key,
+            hostname="example.com",
+            contact_email="server-admin@example.com",
+        )
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_error(result, "Invalid UUID")
+
     def test_push_signup_success(self) -> None:
         zulip_org_id = str(uuid.uuid4())
         zulip_org_key = get_random_string(64)
