@@ -440,15 +440,6 @@ export function initialize() {
         finish();
     });
 
-    $("#compose-announce").on("click", ".compose-announce-confirm", (event) => {
-        event.preventDefault();
-
-        $(event.target).parents(".compose-announce").remove();
-        compose_validate.set_user_acknowledged_announce_flag(true);
-        compose_validate.clear_announce_warnings();
-        finish();
-    });
-
     $("#compose-send-status").on("click", ".sub_unsub_button", (event) => {
         event.preventDefault();
 

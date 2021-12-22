@@ -279,7 +279,6 @@
 .compose_invite_user,
 .compose_private_stream_alert,
 .compose-all-everyone,
-.compose-announce,
 .compose_not_subscribed {
     padding: 4px 0;
     display: flex;
@@ -305,7 +304,6 @@
 
 .compose_resolved_topic_user_controls,
 .compose-all-everyone-controls,
-.compose-announce-controls,
 .compose_invite_user_controls,
 .compose_private_stream_alert_controls {
     float: right;
