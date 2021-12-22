@@ -4,6 +4,7 @@ import os
 import random
 import re
 import sys
+import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
@@ -4421,7 +4422,7 @@ class BillingHelpersTest(ZulipTestCase):
         self.assertTrue(is_sponsored_realm(realm))
 
     def test_change_remote_server_plan_type(self) -> None:
-        server_uuid = "demo-1234"
+        server_uuid = str(uuid.uuid4())
         remote_server = RemoteZulipServer.objects.create(
             uuid=server_uuid,
             api_key="magic_secret_api_key",

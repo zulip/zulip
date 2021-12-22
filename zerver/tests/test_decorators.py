@@ -1,6 +1,7 @@
 import base64
 import os
 import re
+import uuid
 from collections import defaultdict
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 from unittest import mock, skipUnless
@@ -644,7 +645,7 @@ class RateLimitTestCase(ZulipTestCase):
 
     @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
     def test_rate_limiting_happens_if_remote_server(self) -> None:
-        server_uuid = "1234-abcd"
+        server_uuid = str(uuid.uuid4())
         server = RemoteZulipServer(
             uuid=server_uuid,
             api_key="magic_secret_api_key",

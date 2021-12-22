@@ -50,6 +50,7 @@ IGNORED_PHRASES = [
     r"URL",
     r"Ubuntu",
     r"Updown",
+    r"UUID",
     r"V5",
     r"Webathena",
     r"Windows",

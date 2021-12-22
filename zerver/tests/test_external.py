@@ -1,4 +1,5 @@
 import time
+import uuid
 from contextlib import contextmanager
 from typing import IO, Any, Callable, Iterator, Optional, Sequence
 from unittest import mock, skipUnless
@@ -411,7 +412,7 @@ class RateLimitTests(ZulipTestCase):
     @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
     @rate_limit_rule(1, 5, domain="api_by_remote_server")
     def test_hit_ratelimits_as_remote_server(self) -> None:
-        server_uuid = "1234-abcd"
+        server_uuid = str(uuid.uuid4())
         server = RemoteZulipServer(
             uuid=server_uuid,
             api_key="magic_secret_api_key",
@@ -433,7 +434,7 @@ class RateLimitTests(ZulipTestCase):
             self.assertEqual(
                 m.output,
                 [
-                    "WARNING:zerver.lib.rate_limiter:Remote server <RemoteZulipServer demo.example.com 1234-abcd> exceeded rate limits on domain api_by_remote_server"
+                    f"WARNING:zerver.lib.rate_limiter:Remote server <RemoteZulipServer demo.example.com {server_uuid[:12]}> exceeded rate limits on domain api_by_remote_server"
                 ],
             )
         finally:
