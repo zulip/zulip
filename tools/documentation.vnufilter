@@ -1,4 +1,5 @@
 # Warnings that are probably less important.
 
 Consider using the “h1” element as a top-level heading only \(all “h1” elements are treated as top-level headings by many screen readers and other tools\)\.
+Document uses the Unicode Private Use Area\(s\), which should not be used in publicly exchanged documents\. \(Charmod C073\)
 Section lacks heading\. Consider using “h2”-“h6” elements to add identifying headings to all sections\.
