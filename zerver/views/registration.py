@@ -213,6 +213,7 @@ def registration_helper(
     source_realm_id: Optional[int] = REQ(
         default=None, converter=to_converted_or_fallback(to_non_negative_int, None)
     ),
+    form_is_demo_organization: Optional[str] = REQ("is_demo_organization", default=None),
 ) -> HttpResponse:
     try:
         prereg_object, realm_creation = check_prereg_key(request, key)
@@ -233,12 +234,29 @@ def registration_helper(
         password_required = prereg_object.password_required
         role = prereg_object.invited_as
 
-    try:
-        validators.validate_email(email)
-    except ValidationError:
-        return TemplateResponse(
-            request, "zerver/invalid_email.html", context={"invalid_email": True}
-        )
+    if form_is_demo_organization is None:
+        demo_organization_creation = False
+    else:
+        # Check the explicit strings that return false
+        # in django.forms.BooleanField.to_python.
+        false_strings = ("false", "0")
+        demo_organization_creation = form_is_demo_organization.strip().lower() not in false_strings
+
+    if email == "":
+        # Do not attempt to validate email for users without an email address.
+        # The assertions here are to help document the only circumstance under which
+        # this condition should be possible.
+        assert realm_creation and demo_organization_creation
+        # TODO: Remove settings.DEVELOPMENT when demo organization feature ready
+        # to be fully implemented.
+        assert settings.DEVELOPMENT
+    else:
+        try:
+            validators.validate_email(email)
+        except ValidationError:
+            return TemplateResponse(
+                request, "zerver/invalid_email.html", context={"invalid_email": True}
+            )
 
     if realm_creation:
         # For creating a new realm, there is no existing realm or domain
@@ -419,12 +437,12 @@ def registration_helper(
             string_id = form.cleaned_data["realm_subdomain"]
             realm_name = form.cleaned_data["realm_name"]
             realm_type = form.cleaned_data["realm_type"]
-            is_demo_org = form.cleaned_data["is_demo_organization"]
+            is_demo_organization = form.cleaned_data["is_demo_organization"]
             realm = do_create_realm(
                 string_id,
                 realm_name,
                 org_type=realm_type,
-                is_demo_organization=is_demo_org,
+                is_demo_organization=is_demo_organization,
                 prereg_realm=prereg_realm,
             )
         assert realm is not None

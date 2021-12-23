@@ -67,6 +67,16 @@ def get_device_os(user_agent: str) -> Optional[str]:
 def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: Any) -> None:
     if not user.enable_login_emails:
         return
+
+    if user.delivery_email == "":
+        # Do not attempt to send new login emails for users without an email address.
+        # The assertions here are to help document the only circumstance under which
+        # this condition should be possible.
+        assert (
+            user.realm.demo_organization_scheduled_deletion_date is not None and user.is_realm_owner
+        )
+        return
+
     # We import here to minimize the dependencies of this module,
     # since it runs as part of `manage.py` initialization
     from zerver.context_processors import common_context

@@ -767,6 +767,13 @@ def send_account_registered_email(user: UserProfile, realm_creation: bool = Fals
     # Imported here to avoid import cycles.
     from zerver.context_processors import common_context
 
+    if user.delivery_email == "":
+        # Do not attempt to enqueue welcome emails for users without an email address.
+        # The assertions here are to help document the only circumstance under which
+        # this condition should be possible.
+        assert user.realm.demo_organization_scheduled_deletion_date is not None and realm_creation
+        return
+
     from_name, from_address = welcome_sender_information()
     realm_url = user.realm.uri
 
@@ -811,9 +818,16 @@ def send_account_registered_email(user: UserProfile, realm_creation: bool = Fals
     )
 
 
-def enqueue_welcome_emails(user: UserProfile) -> None:
+def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> None:
     # Imported here to avoid import cycles.
     from zerver.context_processors import common_context
+
+    if user.delivery_email == "":
+        # Do not attempt to enqueue welcome emails for users without an email address.
+        # The assertions here are to help document the only circumstance under which
+        # this condition should be possible.
+        assert user.realm.demo_organization_scheduled_deletion_date is not None and realm_creation
+        return
 
     from_name, from_address = welcome_sender_information()
     other_account_count = (
