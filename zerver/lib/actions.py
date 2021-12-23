@@ -3600,7 +3600,7 @@ def internal_send_huddle_message(
     return message_ids[0]
 
 
-def pick_color(user_profile: UserProfile, used_colors: Set[str]) -> str:
+def pick_color(used_colors: Set[str]) -> str:
     # These colors are shared with the palette in stream_settings_ui.js.
     available_colors = [s for s in STREAM_ASSIGNMENT_COLORS if s not in used_colors]
 
@@ -3893,7 +3893,7 @@ def bulk_add_subscriptions(
             if stream.name in color_map:
                 color = color_map[stream.name]
             else:
-                color = pick_color(user_profile, used_colors)
+                color = pick_color(used_colors)
             used_colors.add(color)
 
             sub = Subscription(
