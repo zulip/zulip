@@ -434,10 +434,8 @@ do not match the types declared in the implementation of {function.__name__}.\n"
         # Iterate through the decorators to find the original
         # function, wrapped by has_request_variables, so we can parse
         # its arguments.
-        while getattr(function, "__wrapped__", None):
-            function = getattr(function, "__wrapped__", None)
-            # Tell mypy this is never None.
-            assert function is not None
+        while hasattr(function, "__wrapped__"):
+            function = getattr(function, "__wrapped__")
 
         # Now, we do inference mapping each REQ parameter's
         # declaration details to the Python/mypy types for the
