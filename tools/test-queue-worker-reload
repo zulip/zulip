@@ -5,6 +5,7 @@ import subprocess
 import sys
 import time
 import types
+from typing import Optional
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -22,7 +23,7 @@ def check_worker_launch(run_dev: "subprocess.Popen[str]") -> bool:
     failed = False
     i = 0
 
-    def on_timer(signum: int, frame: types.FrameType) -> None:
+    def on_timer(signum: int, frame: Optional[types.FrameType]) -> None:
         nonlocal failed, i
         sys.stdout.write(".")
         sys.stdout.flush()
