@@ -406,8 +406,13 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
         # Find our untested urls.
         pattern_cnt: Dict[str, int] = collections.defaultdict(int)
 
-        def re_strip(r: Any) -> str:
-            return str(r).lstrip("^").rstrip("$")
+        def re_strip(r: str) -> str:
+            assert r.startswith(r"^")
+            if r.endswith(r"$"):
+                return r[1:-1]
+            else:
+                assert r.endswith(r"\Z")
+                return r[1:-2]
 
         def find_patterns(patterns: List[Any], prefixes: List[str]) -> None:
             for pattern in patterns:
