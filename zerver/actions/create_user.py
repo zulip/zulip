@@ -280,7 +280,7 @@ def process_new_human_user(
     # from being sent after the user is created.
     clear_scheduled_invitation_emails(user_profile.delivery_email)
     if realm.send_welcome_emails:
-        enqueue_welcome_emails(user_profile)
+        enqueue_welcome_emails(user_profile, realm_creation)
 
     # Schedule an initial email with the user's
     # new account details and log-in information.

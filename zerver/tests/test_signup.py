@@ -3952,6 +3952,11 @@ class UserSignUpTest(ZulipTestCase):
         assert user_profile is not None
         self.assert_logged_in_user_id(user_profile.id)
 
+        # Demo organizations are created without setting an email address for the owner.
+        self.assertEqual(user_profile.delivery_email, "")
+        scheduled_email = ScheduledEmail.objects.filter(users=user_profile).last()
+        assert scheduled_email is None
+
         expected_deletion_date = realm.date_created + datetime.timedelta(
             days=settings.DEMO_ORG_DEADLINE_DAYS
         )
