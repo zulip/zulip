@@ -7518,7 +7518,7 @@ def do_mark_hotspot_as_read(user: UserProfile, hotspot: str) -> None:
 
 def notify_linkifiers(realm: Realm) -> None:
     realm_linkifiers = linkifiers_for_realm(realm.id)
-    event = dict(type="realm_linkifiers", realm_linkifiers=realm_linkifiers)
+    event: Dict[str, object] = dict(type="realm_linkifiers", realm_linkifiers=realm_linkifiers)
     send_event(realm, event, active_user_ids(realm.id))
 
     # Below is code for backwards compatibility. The now deprecated
