@@ -4109,9 +4109,12 @@ class RequiresBillingAccessTest(StripeTestCase):
 
         # Make sure that we are testing all the JSON endpoints
         # Quite a hack, but probably fine for now
-        string_with_all_endpoints = str(get_resolver("corporate.urls").reverse_dict)
+        reverse_dict = get_resolver("corporate.urls").reverse_dict
         json_endpoints = {
-            word.strip("\"'()[],$") for word in string_with_all_endpoints.split() if "json/" in word
+            pat
+            for name in reverse_dict
+            for matches, pat, defaults, converters in reverse_dict.getlist(name)
+            if pat.startswith(re.escape("json/"))
         }
         self.assert_length(json_endpoints, len(tested_endpoints))
 
