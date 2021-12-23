@@ -277,6 +277,7 @@ class ZulipSCIMUser(SCIMUser):
                 raise ConflictError("Email address already in use: " + str(e))
 
         if self.is_new_user():
+            assert full_name_new_value is not None
             self.obj = do_create_user(
                 email_new_value,
                 password,
