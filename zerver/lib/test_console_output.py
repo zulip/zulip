@@ -1,8 +1,10 @@
 import logging
 import re
 import sys
+from contextlib import contextmanager
+from io import SEEK_SET, TextIOWrapper
 from types import TracebackType
-from typing import Optional, Sequence, Type, cast
+from typing import IO, Iterable, Iterator, List, Optional, Type
 
 
 class ExtraConsoleOutputInTestException(Exception):
@@ -13,106 +15,155 @@ class ExtraConsoleOutputFinder:
     def __init__(self) -> None:
         valid_line_patterns = [
             # Example: Running zerver.tests.test_attachments.AttachmentsTests.test_delete_unauthenticated
-            "^Running ",
+            b"^Running ",
             # Example: ** Test is TOO slow: analytics.tests.test_counts.TestRealmActiveHumans.test_end_to_end (0.581 s)
-            "^\\*\\* Test is TOO slow: ",
-            "^----------------------------------------------------------------------",
+            b"^\\*\\* Test is TOO slow: ",
+            b"^----------------------------------------------------------------------",
             # Example: INFO: URL coverage report is in var/url_coverage.txt
-            "^INFO: URL coverage report is in",
+            b"^INFO: URL coverage report is in",
             # Example: INFO: Try running: ./tools/create-test-api-docs
-            "^INFO: Try running:",
+            b"^INFO: Try running:",
             # Example: -- Running tests in parallel mode with 4 processes
-            "^-- Running tests in",
-            "^OK",
+            b"^-- Running tests in",
+            b"^OK",
             # Example: Ran 2139 tests in 115.659s
-            "^Ran [0-9]+ tests in",
+            b"^Ran [0-9]+ tests in",
             # Destroying test database for alias 'default'...
-            "^Destroying test database for alias ",
-            "^Using existing clone",
-            "^\\*\\* Skipping ",
+            b"^Destroying test database for alias ",
+            b"^Using existing clone",
+            b"^\\*\\* Skipping ",
         ]
-        self.compiled_line_patterns = []
-        for pattern in valid_line_patterns:
-            self.compiled_line_patterns.append(re.compile(pattern))
-        self.full_extra_output = ""
+        self.compiled_line_pattern = re.compile(b"|".join(valid_line_patterns))
+        self.partial_line = b""
+        self.full_extra_output = b""
 
-    def find_extra_output(self, data: str) -> None:
-        lines = data.split("\n")
+    def find_extra_output(self, data: bytes) -> None:
+        *lines, self.partial_line = (self.partial_line + data).split(b"\n")
         for line in lines:
-            if not line:
-                continue
-            found_extra_output = True
-            for compiled_pattern in self.compiled_line_patterns:
-                if compiled_pattern.match(line):
-                    found_extra_output = False
-                    break
-            if found_extra_output:
-                self.full_extra_output += f"{line}\n"
+            if not self.compiled_line_pattern.match(line):
+                self.full_extra_output += line + b"\n"
 
 
-class TeeStderrAndFindExtraConsoleOutput:
-    def __init__(self, extra_output_finder: ExtraConsoleOutputFinder) -> None:
-        self.stderr_stream = sys.stderr
-
-        # get shared console handler instance from any logger that have it
-        self.console_log_handler = cast(
-            logging.StreamHandler, logging.getLogger("django.server").handlers[0]
-        )
-
-        assert isinstance(self.console_log_handler, logging.StreamHandler)
-        assert self.console_log_handler.stream == sys.stderr
+class WrappedIO(IO[bytes]):
+    def __init__(self, stream: IO[bytes], extra_output_finder: ExtraConsoleOutputFinder) -> None:
+        self.stream = stream
         self.extra_output_finder = extra_output_finder
 
-    def __enter__(self) -> None:
-        sys.stderr = self  # type: ignore[assignment] # Doing tee by swapping stderr stream with custom file like class
-        self.console_log_handler.stream = self
+    @property
+    def mode(self) -> str:
+        return self.stream.mode
+
+    @property
+    def name(self) -> str:
+        return self.stream.name
+
+    def close(self) -> None:
+        pass
+
+    @property
+    def closed(self) -> bool:
+        return self.stream.closed
+
+    def fileno(self) -> int:
+        return self.stream.fileno()
+
+    def flush(self) -> None:
+        self.stream.flush()
+
+    def isatty(self) -> bool:
+        return self.stream.isatty()
+
+    def read(self, n: int = -1) -> bytes:
+        return self.stream.read(n)
+
+    def readable(self) -> bool:
+        return self.stream.readable()
+
+    def readline(self, limit: int = -1) -> bytes:
+        return self.stream.readline(limit)
+
+    def readlines(self, hint: int = -1) -> List[bytes]:
+        return self.stream.readlines(hint)
+
+    def seek(self, offset: int, whence: int = SEEK_SET) -> int:
+        return self.stream.seek(offset, whence)
+
+    def seekable(self) -> bool:
+        return self.stream.seekable()
+
+    def tell(self) -> int:
+        return self.stream.tell()
+
+    def truncate(self, size: Optional[int] = None) -> int:
+        return self.truncate(size)
+
+    def writable(self) -> bool:
+        return self.stream.writable()
+
+    def write(self, data: bytes) -> int:
+        num_chars = self.stream.write(data)
+        self.extra_output_finder.find_extra_output(data)
+        return num_chars
+
+    def writelines(self, data: Iterable[bytes]) -> None:
+        self.stream.writelines(data)
+        lines = b"".join(data)
+        self.extra_output_finder.find_extra_output(lines)
+
+    def __next__(self) -> bytes:
+        return next(self.stream)
+
+    def __iter__(self) -> Iterator[bytes]:
+        return self
+
+    def __enter__(self) -> IO[bytes]:
+        self.stream.__enter__()
+        return self
 
     def __exit__(
         self,
         exc_type: Optional[Type[BaseException]],
         exc_value: Optional[BaseException],
         traceback: Optional[TracebackType],
-    ) -> None:
-        sys.stderr = self.stderr_stream
-        self.console_log_handler.stream = sys.stderr
-
-    def write(self, data: str) -> None:
-        self.stderr_stream.write(data)
-        self.extra_output_finder.find_extra_output(data)
-
-    def writelines(self, data: Sequence[str]) -> None:
-        self.stderr_stream.writelines(data)
-        lines = "".join(data)
-        self.extra_output_finder.find_extra_output(lines)
-
-    def flush(self) -> None:
-        self.stderr_stream.flush()
+    ) -> Optional[bool]:
+        return self.stream.__exit__(exc_type, exc_value, traceback)
 
 
-class TeeStdoutAndFindExtraConsoleOutput:
-    def __init__(self, extra_output_finder: ExtraConsoleOutputFinder) -> None:
-        self.stdout_stream = sys.stdout
-        self.extra_output_finder = extra_output_finder
+@contextmanager
+def tee_stderr_and_find_extra_console_output(
+    extra_output_finder: ExtraConsoleOutputFinder,
+) -> Iterator[None]:
+    stderr = sys.stderr
 
-    def __enter__(self) -> None:
-        sys.stdout = self  # type: ignore[assignment] # Doing tee by swapping stderr stream with custom file like class
+    # get shared console handler instance from any logger that have it
+    console_log_handler = logging.getLogger("django.server").handlers[0]
+    assert isinstance(console_log_handler, logging.StreamHandler)
+    assert console_log_handler.stream == stderr
 
-    def __exit__(
-        self,
-        exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
-    ) -> None:
-        sys.stdout = self.stdout_stream
+    sys.stderr = console_log_handler.stream = TextIOWrapper(
+        WrappedIO(stderr.buffer, extra_output_finder), line_buffering=True
+    )
+    try:
+        yield
+    finally:
+        try:
+            sys.stderr.flush()
+        finally:
+            sys.stderr = console_log_handler.stream = stderr
 
-    def write(self, data: str) -> None:
-        self.stdout_stream.write(data)
-        self.extra_output_finder.find_extra_output(data)
 
-    def writelines(self, data: Sequence[str]) -> None:
-        self.stdout_stream.writelines(data)
-        lines = "".join(data)
-        self.extra_output_finder.find_extra_output(lines)
-
-    def flush(self) -> None:
-        self.stdout_stream.flush()
+@contextmanager
+def tee_stdout_and_find_extra_console_output(
+    extra_output_finder: ExtraConsoleOutputFinder,
+) -> Iterator[None]:
+    stdout = sys.stdout
+    sys.stdout = TextIOWrapper(
+        WrappedIO(sys.stdout.buffer, extra_output_finder), line_buffering=True
+    )
+    try:
+        yield
+    finally:
+        try:
+            sys.stdout.flush()
+        finally:
+            sys.stdout = stdout
