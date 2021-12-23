@@ -400,6 +400,11 @@ test("content_typeahead_selected", ({override}) => {
         caret_called2 = true;
         return this;
     };
+    fake_this.$element.attr = function (attr_name) {
+        assert.equal(attr_name, "id");
+        return "compose-textarea";
+    };
+
     autosize_called = false;
     set_timeout_called = false;
 

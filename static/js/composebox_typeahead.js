@@ -840,7 +840,7 @@ export function content_typeahead_selected(item, event) {
                 highlight.end = highlight.start + item.placeholder.length;
             }
             break;
-        case "stream":
+        case "stream": {
             beginning = beginning.slice(0, -this.token.length - 1);
             if (beginning.endsWith("#*")) {
                 beginning = beginning.slice(0, -2);
@@ -854,8 +854,15 @@ export function content_typeahead_selected(item, event) {
             } else {
                 beginning += "** ";
             }
-            compose_validate.warn_if_private_stream_is_linked(item);
+
+            let $message_row;
+            if ($textbox.attr("id") !== "compose-textarea") {
+                $message_row = $textbox.closest(".message_row");
+            }
+
+            compose_validate.warn_if_private_stream_is_linked(item, $message_row);
             break;
+        }
         case "syntax": {
             // Isolate the end index of the triple backticks/tildes, including
             // possibly a space afterward

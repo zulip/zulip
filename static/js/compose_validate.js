@@ -13,9 +13,11 @@ import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import {$t_html} from "./i18n";
+import * as message_lists from "./message_lists";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
+import * as rows from "./rows";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
@@ -61,20 +63,36 @@ export function needs_subscribe_warning(user_id, stream_id) {
     return true;
 }
 
-export function warn_if_private_stream_is_linked(linked_stream) {
+export function warn_if_private_stream_is_linked(linked_stream, $msg_row) {
     // For PMs, we currently don't warn about links to private
     // streams, since you are specifically sharing the existence of
     // the private stream with someone.  One could imagine changing
     // this policy if user feedback suggested it was useful.
-    if (compose_state.get_message_type() !== "stream") {
-        return;
-    }
+    let stream_id;
+    let $warning_area;
 
-    const compose_stream = stream_data.get_sub(compose_state.stream_name());
-    if (compose_stream === undefined) {
-        // We have an invalid stream name, don't warn about this here as
-        // we show an error to the user when they try to send the message.
-        return;
+    if ($msg_row) {
+        // If msg_row is passed that means that the stream was linked in message edit form and not in compose box.
+        const message = message_lists.current.get(rows.id($msg_row));
+        if (!message.is_stream) {
+            return;
+        }
+
+        stream_id = message.stream_id;
+        $warning_area = $msg_row.find(".message_edit_private_stream_alert");
+    } else {
+        if (compose_state.get_message_type() !== "stream") {
+            return;
+        }
+
+        const compose_stream = stream_data.get_sub(compose_state.stream_name());
+        if (compose_stream === undefined) {
+            // We have an invalid stream name, don't warn about this here as
+            // we show an error to the user when they try to send the message.
+            return;
+        }
+        stream_id = compose_stream.stream_id;
+        $warning_area = $("#compose_private_stream_alert");
     }
 
     // If the stream we're linking to is not invite-only, then it's
@@ -95,7 +113,7 @@ export function warn_if_private_stream_is_linked(linked_stream) {
     // knows it exists.  (But always warn Zephyr users, since
     // we may not know their stream's subscribers.)
     if (
-        peer_data.is_subscriber_subset(compose_stream.stream_id, linked_stream.stream_id) &&
+        peer_data.is_subscriber_subset(stream_id, linked_stream.stream_id) &&
         !page_params.realm_is_zephyr_mirror_realm
     ) {
         return;
@@ -103,7 +121,6 @@ export function warn_if_private_stream_is_linked(linked_stream) {
 
     const stream_name = linked_stream.name;
 
-    const $warning_area = $("#compose_private_stream_alert");
     const context = {stream_name};
     const new_row = render_compose_private_stream_alert(context);
 

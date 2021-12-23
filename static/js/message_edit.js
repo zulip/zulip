@@ -667,6 +667,21 @@ function edit_message($row, raw_content) {
         });
     }
     composebox_typeahead.initialize_topic_edit_typeahead($message_edit_topic, message.stream, true);
+
+    $(".message_edit_private_stream_alert").on(
+        "click",
+        ".compose_private_stream_alert_close",
+        (e) => {
+            const $stream_alert_row = $(e.target).parents(".compose_private_stream_alert");
+            const $stream_alert = $(e.target).closest(".home-error-bar");
+
+            $stream_alert_row.remove();
+
+            if ($stream_alert.children().length === 0) {
+                $stream_alert.hide();
+            }
+        },
+    );
 }
 
 function start_edit_maintaining_scroll($row, content) {
