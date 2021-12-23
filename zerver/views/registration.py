@@ -52,7 +52,12 @@ from zerver.lib.sessions import get_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import get_accounts_for_email
-from zerver.lib.validator import to_converted_or_fallback, to_non_negative_int, to_timezone_or_empty
+from zerver.lib.validator import (
+    to_bool,
+    to_converted_or_fallback,
+    to_non_negative_int,
+    to_timezone_or_empty,
+)
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import (
     DisposableEmailError,
@@ -156,6 +161,7 @@ def accounts_register(
     source_realm_id: Optional[int] = REQ(
         default=None, converter=to_converted_or_fallback(to_non_negative_int, None)
     ),
+    is_demo_organization: Optional[bool] = REQ(converter=to_bool, default=False),
 ) -> HttpResponse:
     try:
         prereg_user = check_prereg_key(request, key)
@@ -170,10 +176,17 @@ def accounts_register(
     if realm_creation:
         role = UserProfile.ROLE_REALM_OWNER
 
-    try:
-        validators.validate_email(email)
-    except ValidationError:
-        return render(request, "zerver/invalid_email.html", context={"invalid_email": True})
+    if realm_creation and is_demo_organization:
+        # Demo organization owners are not required to provide an email
+        # upon demo realm creation, so we can skip email validation
+        # for demo org owners and the email can be blank till the owner
+        # sets it when converting the demo organization.
+        email = ""
+    else:
+        try:
+            validators.validate_email(email)
+        except ValidationError:
+            return render(request, "zerver/invalid_email.html", context={"invalid_email": True})
 
     if realm_creation:
         # For creating a new realm, there is no existing realm or domain

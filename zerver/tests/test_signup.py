@@ -5677,10 +5677,12 @@ class UserSignUpTest(InviteUserBase):
         result = self.client_get(result["Location"], subdomain=realm.string_id)
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], f"http://{realm.string_id}.testserver")
+        self.assertFalse(realm.send_welcome_emails)
 
         user_profile = UserProfile.objects.all().order_by("id").last()
         assert user_profile is not None
         self.assert_logged_in_user_id(user_profile.id)
+        self.assertEqual(user_profile.email, "")
 
         expected_deletion_date = realm.date_created + datetime.timedelta(
             days=settings.DEMO_ORG_DEADLINE_DAYS

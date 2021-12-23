@@ -88,7 +88,8 @@ def register_development_realm(request: HttpRequest) -> HttpResponse:
 def register_demo_development_realm(request: HttpRequest) -> HttpResponse:
     count = UserProfile.objects.count()
     name = f"user-{count}"
-    email = f"{name}@zulip.com"
+    # Demo organization admins are not required to provide an email.
+    email = ""
     realm_name = generate_demo_realm_name()
     realm_type = Realm.ORG_TYPES["business"]["id"]
     prereg = create_preregistration_user(email, None, realm_creation=True, password_required=False)

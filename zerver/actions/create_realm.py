@@ -167,6 +167,10 @@ def do_create_realm(
         kwargs["org_type"] = org_type
     if enable_spectator_access is not None:
         kwargs["enable_spectator_access"] = enable_spectator_access
+    if is_demo_organization:
+        # Welcome emails are disabled for demo organizations, since
+        # their owners will not have a valid email set.
+        kwargs["send_welcome_emails"] = False
 
     if date_created is not None:
         # The date_created parameter is intended only for use by test
