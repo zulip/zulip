@@ -259,7 +259,7 @@ body.dark-theme {
     .new-style .button {
         background-color: hsla(0, 0%, 0%, 0.2);
 
-        &:not(.sea-green):not(.btn-danger):not(.btn-warning):not(.btn-link):not(.poll-vote) {
+        &:not(.sea-green):not(.btn-danger):not(.btn-warning):not(.btn-link):not(.poll-vote):not(.poll-button):not(.add-task-button) {
             border-color: hsla(0, 0%, 0%, 0.6);
             color: inherit;
         }

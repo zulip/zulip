@@ -23,8 +23,26 @@
     .add-task,
     .add-desc {
         font-size: 12pt;
-        font-weight: 600;
+        font-weight: 400;
         margin-right: 4px;
+    }
+
+    .add-task-button {
+        font-weight: 400;
+        font-size: 12pt;
+        color: hsl(156, 41%, 40%);
+        border-color: hsl(156, 28%, 70%);
+        border-style: solid;
+        border-radius: 3px;
+        background-color: hsl(0, 0%, 100%);
+        border-width: 1px;
+        padding: 3pt;
+        padding-left: 10pt;
+        padding-right: 10pt;
+
+        &:hover {
+            border-color: hsl(156, 41%, 40%);
+        }
     }
 }
 
@@ -53,19 +71,46 @@
     }
 
     .poll-option {
-        font-weight: 600;
+        font-weight: 400;
         font-size: 12pt;
+    }
+
+    .poll-choice {
+        font-weight: 600;
+        font-size: 10pt;
+        padding-top: 20pt;
+    }
+
+    .poll-button {
+        font-weight: 400;
+        font-size: 12pt;
+        color: hsl(156, 41%, 40%);
+        border-color: hsl(156, 28%, 70%);
+        border-style: solid;
+        border-radius: 3px;
+        background-color: hsl(0, 0%, 100%);
+        border-width: 1px;
+        padding: 3pt;
+        padding-left: 10pt;
+        padding-right: 10pt;
+
+        &:hover {
+            border-color: hsl(156, 41%, 40%);
+        }
     }
 
     .poll-vote {
         color: hsl(156, 41%, 40%);
         border-color: hsl(156, 28%, 70%);
         border-style: solid;
+        font-weight: 600;
         border-radius: 3px;
         margin-right: 4px;
         padding-left: 2px; /* padding for Chromium browsers */
         padding-right: 2px;
-        min-width: 28px;
+        min-width: 22px;
+        min-height: 22px;
+        font-size: 9.5pt;
         background-color: hsl(0, 0%, 100%);
 
         &:hover {
@@ -81,6 +126,7 @@
     .poll-names {
         color: hsl(0, 0%, 45%);
         padding-left: 4px;
+        padding-top: 20pt;
         font-size: 10pt;
     }
 }

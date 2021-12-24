@@ -161,7 +161,7 @@ export function activate(opts) {
         const html = render_widgets_todo_widget();
         elem.html(html);
 
-        elem.find("button.add-task").on("click", (e) => {
+        elem.find("button.add-task-button").on("click", (e) => {
             e.stopPropagation();
             elem.find(".widget-error").text("");
             const task = elem.find("input.add-task").val().trim();
