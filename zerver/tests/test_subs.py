@@ -11,6 +11,7 @@ from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import (
+    STREAM_ASSIGNMENT_COLORS,
     bulk_add_subscriptions,
     bulk_get_subscriber_user_ids,
     bulk_remove_subscriptions,
@@ -38,6 +39,7 @@ from zerver.lib.actions import (
     get_default_streams_for_realm,
     get_topic_messages,
     lookup_default_stream_groups,
+    pick_colors,
     round_to_2_significant_digits,
     validate_user_access_to_subscribers_helper,
 )
@@ -96,6 +98,57 @@ class TestMiscStuff(ZulipTestCase):
         s = self.subscribed_stream_name_list(cordelia)
         self.assertIn("* Verona", s)
         self.assertNotIn("* Denmark", s)
+
+    def test_pick_colors(self) -> None:
+        used_colors: Set[str] = set()
+        color_map: Dict[int, str] = {}
+        recipient_ids = list(range(30))
+        user_color_map = pick_colors(used_colors, color_map, recipient_ids)
+        self.assertEqual(
+            user_color_map,
+            {
+                0: "#76ce90",
+                1: "#fae589",
+                2: "#a6c7e5",
+                3: "#e79ab5",
+                4: "#bfd56f",
+                5: "#f4ae55",
+                6: "#b0a5fd",
+                7: "#addfe5",
+                8: "#f5ce6e",
+                9: "#c2726a",
+                10: "#94c849",
+                11: "#bd86e5",
+                12: "#ee7e4a",
+                13: "#a6dcbf",
+                14: "#95a5fd",
+                15: "#53a063",
+                16: "#9987e1",
+                17: "#e4523d",
+                18: "#c2c2c2",
+                19: "#4f8de4",
+                20: "#c6a8ad",
+                21: "#e7cc4d",
+                22: "#c8bebf",
+                23: "#a47462",
+                # start repeating
+                24: "#76ce90",
+                25: "#fae589",
+                26: "#a6c7e5",
+                27: "#e79ab5",
+                28: "#bfd56f",
+                29: "#f4ae55",
+            },
+        )
+
+        color_map = {98: "color98", 99: "color99"}
+        used_colors = set(STREAM_ASSIGNMENT_COLORS) - {"#c6a8ad", "#9987e1"}
+        recipient_ids = [99, 98, 1, 2, 3, 4]
+        user_color_map = pick_colors(used_colors, color_map, recipient_ids)
+        self.assertEqual(
+            user_color_map,
+            {98: "color98", 99: "color99", 1: "#9987e1", 2: "#c6a8ad", 3: "#a6c7e5", 4: "#e79ab5"},
+        )
 
     def test_empty_results(self) -> None:
         # These are essentially just tests to ensure line

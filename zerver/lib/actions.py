@@ -3596,14 +3596,32 @@ def internal_send_huddle_message(
     return message_ids[0]
 
 
-def pick_color(used_colors: Set[str]) -> str:
-    # These colors are shared with the palette in stream_settings_ui.js.
+def pick_colors(
+    used_colors: Set[str], color_map: Dict[int, str], recipient_ids: List[int]
+) -> Dict[int, str]:
+    used_colors = set(used_colors)
+    recipient_ids = sorted(recipient_ids)
+    result = {}
+
+    other_recipient_ids = []
+    for recipient_id in recipient_ids:
+        if recipient_id in color_map:
+            color = color_map[recipient_id]
+            result[recipient_id] = color
+            used_colors.add(color)
+        else:
+            other_recipient_ids.append(recipient_id)
+
     available_colors = [s for s in STREAM_ASSIGNMENT_COLORS if s not in used_colors]
 
-    if available_colors:
-        return available_colors[0]
-    else:
-        return STREAM_ASSIGNMENT_COLORS[len(used_colors) % len(STREAM_ASSIGNMENT_COLORS)]
+    for i, recipient_id in enumerate(other_recipient_ids):
+        if i < len(available_colors):
+            color = available_colors[i]
+        else:
+            color = STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)]
+        result[recipient_id] = color
+
+    return result
 
 
 def validate_user_access_to_subscribers(
@@ -3858,6 +3876,12 @@ def bulk_add_subscriptions(
     recipient_ids = [stream.recipient_id for stream in streams]
     recipient_id_to_stream = {stream.recipient_id: stream for stream in streams}
 
+    recipient_color_map = {}
+    for stream in streams:
+        color: Optional[str] = color_map.get(stream.name, None)
+        if color is not None:
+            recipient_color_map[stream.recipient_id] = color
+
     used_colors_for_user_ids: Dict[int, Set[str]] = get_used_colors_for_user_ids(user_ids)
 
     existing_subs = Subscription.objects.filter(
@@ -3875,12 +3899,11 @@ def bulk_add_subscriptions(
     subs_to_add: List[SubInfo] = []
     for user_profile in users:
         my_subs = subs_by_user[user_profile.id]
-        used_colors = used_colors_for_user_ids.get(user_profile.id, set())
 
         # Make a fresh set of all new recipient ids, and then we will
         # remove any for which our user already has a subscription
         # (and we'll re-activate any subscriptions as needed).
-        new_recipient_ids = {stream.recipient_id for stream in streams}
+        new_recipient_ids: Set[int] = {stream.recipient_id for stream in streams}
 
         for sub in my_subs:
             if sub.recipient_id in new_recipient_ids:
@@ -3892,14 +3915,12 @@ def bulk_add_subscriptions(
                 else:
                     subs_to_activate.append(sub_info)
 
+        used_colors = used_colors_for_user_ids.get(user_profile.id, set())
+        user_color_map = pick_colors(used_colors, recipient_color_map, list(new_recipient_ids))
+
         for recipient_id in new_recipient_ids:
             stream = recipient_id_to_stream[recipient_id]
-
-            if stream.name in color_map:
-                color = color_map[stream.name]
-            else:
-                color = pick_color(used_colors)
-            used_colors.add(color)
+            color = user_color_map[recipient_id]
 
             sub = Subscription(
                 user_profile=user_profile,
