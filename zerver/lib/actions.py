@@ -138,6 +138,7 @@ from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_users,
     get_subscribed_stream_ids_for_user,
     get_subscriptions_for_send_message,
+    get_used_colors_for_user_ids,
     get_user_ids_for_streams,
     num_subscribers_for_stream_id,
     subscriber_ids_with_stream_history_access,
@@ -3846,6 +3847,7 @@ def bulk_add_subscriptions(
     acting_user: Optional[UserProfile],
 ) -> SubT:
     users = list(users)
+    user_ids = [user.id for user in users]
 
     # Sanity check out callers
     for stream in streams:
@@ -3855,6 +3857,8 @@ def bulk_add_subscriptions(
         assert user.realm_id == realm.id
 
     recipient_id_to_stream = {stream.recipient_id: stream for stream in streams}
+
+    used_colors_for_user_ids: Dict[int, Set[str]] = get_used_colors_for_user_ids(user_ids)
 
     subs_by_user: Dict[int, List[Subscription]] = defaultdict(list)
     all_subs_query = get_stream_subscriptions_for_users(users)
@@ -3866,7 +3870,7 @@ def bulk_add_subscriptions(
     subs_to_add: List[SubInfo] = []
     for user_profile in users:
         my_subs = subs_by_user[user_profile.id]
-        used_colors = {sub.color for sub in my_subs}
+        used_colors = used_colors_for_user_ids.get(user_profile.id, set())
 
         # Make a fresh set of all new recipient ids, and then we will
         # remove any for which our user already has a subscription
