@@ -3976,6 +3976,8 @@ class SubscriptionAPITest(ZulipTestCase):
         user5 = self.example_user("AARON")
         guest = self.example_user("polonius")
 
+        realm = user1.realm
+
         stream1 = self.make_stream("stream1")
         stream2 = self.make_stream("stream2")
         stream3 = self.make_stream("stream3")
@@ -4000,6 +4002,7 @@ class SubscriptionAPITest(ZulipTestCase):
             with queries_captured() as query_count:
                 with cache_tries_captured() as cache_count:
                     bulk_remove_subscriptions(
+                        realm,
                         [user1, user2],
                         [stream1, stream2, stream3, private],
                         acting_user=None,
@@ -4067,6 +4070,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         with self.tornado_redirected_to_list(events, expected_num_events=0):
             bulk_remove_subscriptions(
+                realm,
                 users=[mit_user],
                 streams=streams,
                 acting_user=None,

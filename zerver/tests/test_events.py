@@ -1920,12 +1920,12 @@ class NormalActionsTest(BaseAction):
             check_subscription_peer_add("events[1]", events[1])
 
     def test_remove_other_user_never_subscribed(self) -> None:
-        self.subscribe(self.example_user("othello"), "test_stream")
+        othello = self.example_user("othello")
+        realm = othello.realm
+        self.subscribe(othello, "test_stream")
         stream = get_stream("test_stream", self.user_profile.realm)
 
-        action = lambda: bulk_remove_subscriptions(
-            [self.example_user("othello")], [stream], acting_user=None
-        )
+        action = lambda: bulk_remove_subscriptions(realm, [othello], [stream], acting_user=None)
         events = self.verify_action(action)
         check_subscription_peer_remove("events[0]", events[0])
 
@@ -2476,13 +2476,15 @@ class SubscribeActionTest(BaseAction):
         )
         check_subscription_peer_add("events[0]", events[0])
 
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        othello = self.example_user("othello")
+        realm = othello.realm
         stream = get_stream("test_stream", self.user_profile.realm)
 
         # Now remove the first user, to test the normal unsubscribe flow and
         # 'peer_remove' event for subscribed streams.
-        action = lambda: bulk_remove_subscriptions(
-            [self.example_user("othello")], [stream], acting_user=None
-        )
+        action = lambda: bulk_remove_subscriptions(realm, [othello], [stream], acting_user=None)
         events = self.verify_action(
             action,
             include_subscribers=include_subscribers,
@@ -2491,9 +2493,7 @@ class SubscribeActionTest(BaseAction):
         check_subscription_peer_remove("events[0]", events[0])
 
         # Now remove the user himself, to test the 'remove' event flow
-        action = lambda: bulk_remove_subscriptions(
-            [self.example_user("hamlet")], [stream], acting_user=None
-        )
+        action = lambda: bulk_remove_subscriptions(realm, [hamlet], [stream], acting_user=None)
         events = self.verify_action(
             action, include_subscribers=include_subscribers, include_streams=False, num_events=2
         )
@@ -2515,9 +2515,7 @@ class SubscribeActionTest(BaseAction):
         check_subscription_peer_add("events[0]", events[0])
 
         # Remove the user to test 'peer_remove' event flow for unsubscribed stream.
-        action = lambda: bulk_remove_subscriptions(
-            [self.example_user("iago")], [stream], acting_user=None
-        )
+        action = lambda: bulk_remove_subscriptions(realm, [iago], [stream], acting_user=None)
         events = self.verify_action(
             action,
             include_subscribers=include_subscribers,
