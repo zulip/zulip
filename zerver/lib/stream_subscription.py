@@ -82,6 +82,30 @@ def get_stream_subscriptions_for_users(user_profiles: List[UserProfile]) -> Quer
     )
 
 
+def get_used_colors_for_user_ids(user_ids: List[int]) -> Dict[int, Set[str]]:
+    """Fetch which stream colors have already been used for each user in
+    user_ids. Uses an optimized query designed to support picking
+    colors when bulk-adding users to streams, which requires
+    inspecting all Subscription objects for the users, which can often
+    end up being all Subscription objects in the realm.
+    """
+    query = (
+        Subscription.objects.filter(
+            user_profile_id__in=user_ids,
+            recipient__type=Recipient.STREAM,
+        )
+        .values("user_profile_id", "color")
+        .distinct()
+    )
+
+    result: Dict[int, Set[str]] = defaultdict(set)
+
+    for row in list(query):
+        result[row["user_profile_id"]].add(row["color"])
+
+    return result
+
+
 def get_bulk_stream_subscriber_info(
     users: List[UserProfile],
     streams: List[Stream],
