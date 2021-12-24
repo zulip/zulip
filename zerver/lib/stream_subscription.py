@@ -74,14 +74,6 @@ def get_stream_subscriptions_for_user(user_profile: UserProfile) -> QuerySet:
     )
 
 
-def get_stream_subscriptions_for_users(user_profiles: List[UserProfile]) -> QuerySet:
-    # TODO: Change return type to QuerySet[Subscription]
-    return Subscription.objects.filter(
-        user_profile__in=user_profiles,
-        recipient__type=Recipient.STREAM,
-    )
-
-
 def get_used_colors_for_user_ids(user_ids: List[int]) -> Dict[int, Set[str]]:
     """Fetch which stream colors have already been used for each user in
     user_ids. Uses an optimized query designed to support picking

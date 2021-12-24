@@ -135,7 +135,6 @@ from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     get_bulk_stream_subscriber_info,
     get_stream_subscriptions_for_user,
-    get_stream_subscriptions_for_users,
     get_subscribed_stream_ids_for_user,
     get_subscriptions_for_send_message,
     get_used_colors_for_user_ids,
@@ -3860,13 +3859,19 @@ def bulk_add_subscriptions(
     for user in users:
         assert user.realm_id == realm.id
 
+    recipient_ids = [stream.recipient_id for stream in streams]
     recipient_id_to_stream = {stream.recipient_id: stream for stream in streams}
 
     used_colors_for_user_ids: Dict[int, Set[str]] = get_used_colors_for_user_ids(user_ids)
 
+    existing_subs = Subscription.objects.filter(
+        user_profile_id__in=user_ids,
+        recipient__type=Recipient.STREAM,
+        recipient_id__in=recipient_ids,
+    )
+
     subs_by_user: Dict[int, List[Subscription]] = defaultdict(list)
-    all_subs_query = get_stream_subscriptions_for_users(users)
-    for sub in all_subs_query:
+    for sub in existing_subs:
         subs_by_user[sub.user_profile_id].append(sub)
 
     already_subscribed: List[SubInfo] = []
