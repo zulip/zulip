@@ -1076,8 +1076,9 @@ Output:
         return stream
 
     def unsubscribe(self, user_profile: UserProfile, stream_name: str) -> None:
+        realm = user_profile.realm
         stream = get_stream(stream_name, user_profile.realm)
-        bulk_remove_subscriptions([user_profile], [stream], acting_user=None)
+        bulk_remove_subscriptions(realm, [user_profile], [stream], acting_user=None)
 
     # Subscribe to a stream by making an API request
     def common_subscribe_to_streams(

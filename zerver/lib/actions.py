@@ -4184,6 +4184,7 @@ SubAndRemovedT = Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile,
 
 
 def bulk_remove_subscriptions(
+    realm: Realm,
     users: Iterable[UserProfile],
     streams: Iterable[Stream],
     *,
@@ -4192,6 +4193,13 @@ def bulk_remove_subscriptions(
 
     users = list(users)
     streams = list(streams)
+
+    # Sanity check our callers
+    for stream in streams:
+        assert stream.realm_id == realm.id
+
+    for user in users:
+        assert user.realm_id == realm.id
 
     stream_dict = {stream.id: stream for stream in streams}
 
@@ -4226,16 +4234,14 @@ def bulk_remove_subscriptions(
             subs_to_deactivate.append(sub_info)
             sub_ids_to_deactivate.append(sub_info.sub.id)
 
-    our_realm = users[0].realm
-
     # We do all the database changes in a transaction to ensure
     # RealmAuditLog entries are atomically created when making changes.
     with transaction.atomic():
-        occupied_streams_before = list(get_occupied_streams(our_realm))
+        occupied_streams_before = list(get_occupied_streams(realm))
         Subscription.objects.filter(
             id__in=sub_ids_to_deactivate,
         ).update(active=False)
-        occupied_streams_after = list(get_occupied_streams(our_realm))
+        occupied_streams_after = list(get_occupied_streams(realm))
 
         # Log subscription activities in RealmAuditLog
         event_time = timezone_now()
@@ -4266,7 +4272,7 @@ def bulk_remove_subscriptions(
     for user_profile in users:
         if len(streams_by_user[user_profile.id]) == 0:
             continue
-        notify_subscriptions_removed(our_realm, user_profile, streams_by_user[user_profile.id])
+        notify_subscriptions_removed(realm, user_profile, streams_by_user[user_profile.id])
 
         event = {
             "type": "mark_stream_messages_as_read",
@@ -4276,7 +4282,7 @@ def bulk_remove_subscriptions(
         queue_json_publish("deferred_work", event)
 
     send_peer_remove_events(
-        realm=our_realm,
+        realm=realm,
         streams=streams,
         altered_user_dict=altered_user_dict,
     )

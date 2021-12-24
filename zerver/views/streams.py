@@ -405,6 +405,7 @@ def remove_subscriptions_backend(
     ),
 ) -> HttpResponse:
 
+    realm = user_profile.realm
     removing_someone_else = check_if_removing_someone_else(user_profile, principals)
 
     streams_as_dict: List[StreamDict] = []
@@ -424,7 +425,7 @@ def remove_subscriptions_backend(
 
     result: Dict[str, List[str]] = dict(removed=[], not_removed=[])
     (removed, not_subscribed) = bulk_remove_subscriptions(
-        people_to_unsub, streams, acting_user=user_profile
+        realm, people_to_unsub, streams, acting_user=user_profile
     )
 
     for (subscriber, removed_stream) in removed:
