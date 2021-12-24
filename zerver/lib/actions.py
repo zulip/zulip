@@ -4175,11 +4175,13 @@ def get_available_notification_sounds() -> List[str]:
     return sorted(available_notification_sounds)
 
 
-def notify_subscriptions_removed(user_profile: UserProfile, streams: Iterable[Stream]) -> None:
+def notify_subscriptions_removed(
+    realm: Realm, user_profile: UserProfile, streams: Iterable[Stream]
+) -> None:
 
     payload = [dict(name=stream.name, stream_id=stream.id) for stream in streams]
     event = dict(type="subscription", op="remove", subscriptions=payload)
-    send_event(user_profile.realm, event, [user_profile.id])
+    send_event(realm, event, [user_profile.id])
 
 
 SubAndRemovedT = Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
@@ -4268,7 +4270,7 @@ def bulk_remove_subscriptions(
     for user_profile in users:
         if len(streams_by_user[user_profile.id]) == 0:
             continue
-        notify_subscriptions_removed(user_profile, streams_by_user[user_profile.id])
+        notify_subscriptions_removed(our_realm, user_profile, streams_by_user[user_profile.id])
 
         event = {
             "type": "mark_stream_messages_as_read",
