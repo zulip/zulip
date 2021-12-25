@@ -3777,6 +3777,13 @@ def get_subscriber_ids(stream: Stream, requesting_user: Optional[UserProfile] = 
     return subscriptions_query.values_list("user_profile_id", flat=True)
 
 
+@dataclass
+class StreamInfo:
+    email_address: str
+    stream_weekly_traffic: Optional[int]
+    subscribers: List[int]
+
+
 def send_subscription_add_events(
     realm: Realm,
     sub_info_list: List[SubInfo],
@@ -3789,24 +3796,40 @@ def send_subscription_add_events(
     stream_ids = {sub_info.stream.id for sub_info in sub_info_list}
     recent_traffic = get_streams_traffic(stream_ids=stream_ids)
 
+    # We generally only have a few streams, so we compute stream
+    # data in its own loop.
+    stream_info_dict: Dict[int, StreamInfo] = {}
+    for sub_info in sub_info_list:
+        stream = sub_info.stream
+        if stream.id not in stream_info_dict:
+            email_address = encode_email_address(stream, show_sender=True)
+            stream_weekly_traffic = get_average_weekly_stream_traffic(
+                stream.id, stream.date_created, recent_traffic
+            )
+            if stream.is_in_zephyr_realm and not stream.invite_only:
+                subscribers = []
+            else:
+                subscribers = list(subscriber_dict[stream.id])
+            stream_info_dict[stream.id] = StreamInfo(
+                email_address=email_address,
+                stream_weekly_traffic=stream_weekly_traffic,
+                subscribers=subscribers,
+            )
+
     for user_id, sub_infos in info_by_user.items():
         sub_dicts = []
         for sub_info in sub_infos:
             stream = sub_info.stream
+            stream_info = stream_info_dict[stream.id]
             subscription = sub_info.sub
             sub_dict = stream.to_dict()
             for field_name in Subscription.API_FIELDS:
                 sub_dict[field_name] = getattr(subscription, field_name)
 
             sub_dict["in_home_view"] = not subscription.is_muted
-            sub_dict["email_address"] = encode_email_address(stream, show_sender=True)
-            sub_dict["stream_weekly_traffic"] = get_average_weekly_stream_traffic(
-                stream.id, stream.date_created, recent_traffic
-            )
-            if stream.is_in_zephyr_realm and not stream.invite_only:
-                sub_dict["subscribers"] = []
-            else:
-                sub_dict["subscribers"] = list(subscriber_dict[stream.id])
+            sub_dict["email_address"] = stream_info.email_address
+            sub_dict["stream_weekly_traffic"] = stream_info.stream_weekly_traffic
+            sub_dict["subscribers"] = stream_info.subscribers
             sub_dicts.append(sub_dict)
 
         # Send a notification to the user who subscribed.
