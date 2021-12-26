@@ -95,6 +95,8 @@ elif vendor == "fedora" and os_version == "33":
     POSTGRESQL_VERSION = "13"
 elif vendor == "fedora" and os_version == "34":
     POSTGRESQL_VERSION = "13"
+elif vendor == "fedora" and os_version == "35":
+    POSTGRESQL_VERSION = "13"    
 elif vendor == "rhel" and os_version.startswith("7."):
     POSTGRESQL_VERSION = "10"
 elif vendor == "centos" and os_version == "7":

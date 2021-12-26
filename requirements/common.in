@@ -184,7 +184,7 @@ backoff
 pymongo
 
 # Non-backtracking regular expressions
-google-re2
+#google-re2==0.0.5 # https://github.com/google/re2/issues/271
 
 # For querying recursive group membership
 django-cte

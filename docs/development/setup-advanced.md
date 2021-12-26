@@ -15,7 +15,7 @@ that's running one of:
 - Ubuntu 20.04 Focal, 18.04 Bionic
 - Debian 10 Buster, 11 Bullseye (beta)
 - CentOS 7 (beta)
-- Fedora 33 and 34 (beta)
+- Fedora 33, 34 and 35 (beta)
 - RHEL 7 (beta)
 
 You can just run the Zulip provision script on your machine.

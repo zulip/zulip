@@ -465,7 +465,7 @@ gitlint-core==0.17.0 \
     --hash=sha256:772dfd33effaa8515ca73e901466aa938c19ced894bec6783d19691f57429691 \
     --hash=sha256:cb99ccd736a698b910385211203bda94bf4ce29086d0c08f8f58a18c40a98377
     # via -r requirements/dev.in
-google-re2==0.2.20211101 \
+google-re2==0.0.5 \
     --hash=sha256:07cc08c067156c8fc13d5cb074a4ad2496f3fc73d2b83b80cdfaa2c873edada6 \
     --hash=sha256:0be575a2204257eee3e2767415d4c2043ffc31b272a10ce64f1e013151f25927 \
     --hash=sha256:1f3b1a0664fcf934e23e449f700fc5fd83a1d93806bd8dc2c395506d05a138a7 \
@@ -482,7 +482,9 @@ google-re2==0.2.20211101 \
     --hash=sha256:9536f4d965eaa6754170b4ebdabd6a89b64fe4560cc207fec5272bfad345e8be \
     --hash=sha256:c1fb5dbc23fcc2d5a634e23a185ea08e552a83d76bf324ab52b15eb8c0f87795 \
     --hash=sha256:d3dc0f87924bf9be5cd14e69c3d90cd5c78cf455facaf0dbe859795e4c227ceb \
-    --hash=sha256:f3c6bac568fb4fedc8c3c8991ae3ac021fd52340f5a64444d100f0b76e6fba71
+    --hash=sha256:f3c6bac568fb4fedc8c3c8991ae3ac021fd52340f5a64444d100f0b76e6fba71 \
+    --hash=sha256:427e683ac116d161ac60b7d2c481def4f1b2c087309ae8e91da0d1a2725dd6c5
+
     # via -r requirements/common.in
 greenlet==1.1.2 \
     --hash=sha256:00e44c8afdbe5467e4f7b5851be223be68adb4272f44696ee71fe46b7036a711 \
