@@ -14,8 +14,7 @@
 
     .user_status_content_wrapper {
         display: flex;
-        border: 1px solid;
-        border-color: hsla(0, 0%, 0%, 0.6);
+        border: 1px solid hsla(0, 0%, 0%, 0.6);
         border-radius: 5px;
 
         input.user_status {
