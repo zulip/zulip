@@ -24,31 +24,38 @@ export class LazySet {
     */
 
     constructor(vals) {
-        this.arr = vals;
-        this.set = undefined;
+        this.data = {
+            arr: vals,
+            set: undefined,
+        };
     }
 
     keys() {
-        if (this.set !== undefined) {
-            return this.set.keys();
+        const {data} = this;
+        if (data.set !== undefined) {
+            return data.set.keys();
         }
-        return this.arr.values();
+        return data.arr.values();
     }
 
     _make_set() {
-        if (this.set !== undefined) {
+        if (this.data.set !== undefined) {
             return;
         }
-        this.set = new Set(this.arr);
-        this.arr = undefined;
+
+        this.data = {
+            arr: undefined,
+            set: new Set(this.data.arr),
+        };
     }
 
     get size() {
-        if (this.set !== undefined) {
-            return this.set.size;
+        const {data} = this;
+        if (data.set !== undefined) {
+            return data.set.size;
         }
 
-        return this.arr.length;
+        return data.arr.length;
     }
 
     map(f) {
@@ -58,19 +65,19 @@ export class LazySet {
     has(v) {
         this._make_set();
         const val = this._clean(v);
-        return this.set.has(val);
+        return this.data.set.has(val);
     }
 
     add(v) {
         this._make_set();
         const val = this._clean(v);
-        this.set.add(val);
+        this.data.set.add(val);
     }
 
     delete(v) {
         this._make_set();
         const val = this._clean(v);
-        return this.set.delete(val);
+        return this.data.set.delete(val);
     }
 
     _clean(v) {
