@@ -39,20 +39,6 @@ class zulip::supervisor {
     ensure => absent,
   }
 
-  # These were similarly moved, but were only referenced in zulip_ops,
-  # and thus can be removed as soon as all relevant hosts have been
-  # updated:
-  file { [
-    "${zulip::common::supervisor_system_conf_dir}/grafana.conf",
-    "${zulip::common::supervisor_system_conf_dir}/munin_tunnels.conf",
-    "${zulip::common::supervisor_system_conf_dir}/prometheus.conf",
-    "${zulip::common::supervisor_system_conf_dir}/prometheus_node_exporter.conf",
-    "${zulip::common::supervisor_system_conf_dir}/redis_tunnel.conf",
-    "${zulip::common::supervisor_system_conf_dir}/zmirror.conf",
-    ]:
-    ensure => absent,
-  }
-
   # In the docker environment, we don't want/need supervisor to be
   # started/stopped /bin/true is used as a decoy command, to maintain
   # compatibility with other code using the supervisor service.
