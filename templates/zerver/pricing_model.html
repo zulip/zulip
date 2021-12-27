@@ -1,14 +1,23 @@
 <div class="pricing-model">
     <div class="padded-content">
         <h1>Get started today.</h1>
-
         <div class="pricing-container">
+            <div class="pricing-switcher">
+                <button class="btn cloud-plan-btn active">
+                    <i class="fa fa-cloud"></i>
+                    <div class="content">
+                        Zulip Cloud
+                    </div>
+                </button>
+                <button class="btn self-hosted-plan-btn">
+                    <i class="fa fa-server"></i>
+                    <div class="content">
+                        Self-host Zulip
+                    </div>
+                </button>
+            </div>
             <div class="block">
-                <div class="plan-title responsive-title">
-                    Zulip Cloud
-                </div>
-
-                <div class="price-box" tabindex="-1">
+                <div class="price-box cloud-plan" tabindex="-1">
                     <div class="text-content">
                         <h2>Free</h2>
                         <div class="description">
@@ -43,7 +52,37 @@
                     </div>
                 </div>
 
-                <div class="price-box" tabindex="-1">
+                <div class="price-box self-hosted-plan" tabindex="-1">
+                    <div class="text-content">
+                        <h2>Free</h2>
+                        <div class="description">
+                            Retain full control over your data.
+                        </div>
+                        <hr />
+                        <ul class="feature-list">
+                            <li>All Zulip Cloud features included</li>
+                            <li>Friendly community support</li>
+                            <li><a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html">SAML, OIDC, Google, social SSO</a></li>
+                            <li><a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#synchronizing-data">LDAP/Active Directory sync</a></li>
+                            <li>Advanced <a href="/help/roles-and-permissions">roles</a> and <a href="/help/stream-permissions">permissions</a></li>
+                            <li>Easy <a href="https://zulip.readthedocs.io/en/stable/production/install.html">installation</a>
+                                and <a href="https://zulip.readthedocs.io/en/stable/production/upgrade-or-modify.html">maintenance</a></li>
+                        </ul>
+                    </div>
+                    <div class="bottom">
+                        <div class="text-content">
+                            <div class="pricing-details multi-line">
+                                Zulip is 100% free and open
+                                source, with no proprietary version. <br />
+                            </div>
+                            <a href="https://zulip.readthedocs.io/en/stable/production/install.html" class="button green">
+                                Install a Zulip server
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="price-box cloud-plan" tabindex="-1">
                     <div class="text-content">
                         <h2>Standard</h2>
                         <div class="description">
@@ -51,12 +90,13 @@
                         </div>
                         <hr />
                         <ul class="feature-list">
-                            <li>Unlimited search history</li>
-                            <li>File storage up to 10 GB per user</li>
-                            <li><a href="/help/message-retention-policy">Message retention policies</a></li>
-                            <li>Brand Zulip with your logo</li>
-                            <li>Priority commercial support</li>
-                            <li>Funds the Zulip open source project</li>
+                            <li>All Zulip Cloud features included</li>
+                            <li>Friendly community support</li>
+                            <li><a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html">SAML, OIDC, Google, social SSO</a></li>
+                            <li><a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#synchronizing-data">LDAP/Active Directory sync</a></li>
+                            <li>Advanced <a href="/help/roles-and-permissions">roles</a> and <a href="/help/stream-permissions">permissions</a></li>
+                            <li>Easy <a href="https://zulip.readthedocs.io/en/stable/production/install.html">installation</a>
+                                and <a href="https://zulip.readthedocs.io/en/stable/production/upgrade-or-modify.html">maintenance</a></li>
                         </ul>
                     </div>
                     <div class="bottom">
@@ -103,18 +143,12 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="block">
-                <div class="plan-title responsive-title">
-                    Self host Zulip
-                </div>
-
-                <div class="price-box" tabindex="-1">
+                <div class="price-box self-hosted-plan" tabindex="-1">
                     <div class="text-content">
-                        <h2>Self service</h2>
+                        <h2>Standard</h2>
                         <div class="description">
-                            Retain full control over your data.
+                            Your team's collaboration hub.
                         </div>
                         <hr />
                         <ul class="feature-list">
@@ -129,12 +163,18 @@
                     </div>
                     <div class="bottom">
                         <div class="text-content">
-                            <div class="pricing-details multi-line">
-                                Zulip is 100% free and open
-                                source, with no proprietary version. <br />
+                            <div class="standard-price-box">
+                                <div class="price">6<span class="price-cents">.67</span></div>
+                                <div class="details">
+                                    <span class="pricing-period">per user per month</span>
+                                    <br />
+                                    with annual billing discount
+                                    <br />
+                                    $8/month billed monthly
+                                </div>
                             </div>
-                            <a href="https://zulip.readthedocs.io/en/stable/production/install.html" class="button green">
-                                Install a Zulip server
+                            <a href="/some-link-to-regsiter" class="button green">
+                                Register
                             </a>
                         </div>
                     </div>
