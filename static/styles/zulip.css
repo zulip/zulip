@@ -586,7 +586,7 @@ strong {
     To resolve this, we just hide the tooltip for touch-events on
     touch-enabled devices resolving the above problem.  This means
     that tooltips will never appear on touchscreen devices, but that's
-    probably a reasoanble tradeoff here.
+    probably a reasonable tradeoff here.
 
     Source: https://drafts.csswg.org/mediaqueries-4/#mf-interaction
     */
@@ -661,7 +661,7 @@ strong {
                 filter: progid:dximagetransform.microsoft.gradient(startcolorstr='hsla(328, 100%, 50%, 0.8)', endcolorstr='hsla(332, 100%, 50%, 0.7)', gradienttype=0);
             }
             /* styles defined for user_circle here only deal with positioning of user_presence_circle
-            in typeahead list in order to ensure they are renderred correctly in in all screen sizes.
+            in typeahead list in order to ensure they are rendered correctly in in all screen sizes.
             Most of the style rules related to color, gradient etc. which are generally common throughout
             the app are defined in user_circles.css and are not overridden here. */
             .user_circle {
