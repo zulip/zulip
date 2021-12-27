@@ -25,7 +25,7 @@ Other than those limitations, they work exactly like a normal Zulip
 organization; you can invite additional users, connect the mobile
 apps, etc.
 
-## Creating demo organizations
+## Create a demo organization
 
 {start_tabs}
 
@@ -39,7 +39,7 @@ apps, etc.
 
 {end_tabs}
 
-## Converting a demo organization to a regular organization
+## Convert a demo organization to a permanent organization
 
 {start_tabs}
 

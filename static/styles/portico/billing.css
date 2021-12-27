@@ -177,6 +177,19 @@
 
     .invoice-button {
         font-size: 19px;
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+
+            &:hover {
+                pointer-events: all;
+            }
+        }
+    }
+
+    .upgrade-button-container {
+        display: inline-block;
     }
 
     #manual_license_count,
