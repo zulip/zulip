@@ -2651,7 +2651,11 @@ def get_recipient_from_user_profiles(
     assert recipient_profiles_map
     if len(recipient_profiles_map) == 1:
         [user_profile] = recipient_profiles_map.values()
-        return user_profile.recipient
+        return Recipient(
+            id=user_profile.recipient_id,
+            type=Recipient.PERSONAL,
+            type_id=user_profile.id,
+        )
 
     # Otherwise, we need a huddle.  Make sure the sender is included in huddle messages
     recipient_profiles_map[sender.id] = sender
