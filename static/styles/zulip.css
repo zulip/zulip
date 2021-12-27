@@ -1800,9 +1800,9 @@ div.focused_table {
         margin: 0;
         padding: 12px 0 12px 10px;
 
-@media (width < $sm_min) {
-    padding: 7px 0 7px 10px;
-}
+        @media (width < $sm_min) {
+            padding: 7px 0 7px 10px;
+        }
 
         & > a {
             padding: 12px 0;
