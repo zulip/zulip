@@ -1798,13 +1798,11 @@ div.focused_table {
         flex-shrink: 100;
         white-space: nowrap;
         margin: 0;
-        padding: 12px 0;
-        padding-left: 10px;
+        padding: 12px 0 12px 10px;
 
-        @media (width < $sm_min) {
-            padding: 7px 0;
-            padding-left: 10px;
-        }
+@media (width < $sm_min) {
+    padding: 7px 0 7px 10px;
+}
 
         & > a {
             padding: 12px 0;
@@ -1885,9 +1883,7 @@ div.focused_table {
         width: 100%;
         font-size: 16px;
         height: $header_height;
-        padding: 0;
-        padding-left: 5px;
-        padding-right: 20px;
+        padding: 0 20px 0 5px;
         border: none;
         border-radius: 0;
         font-family: "Source Sans 3", sans-serif;
@@ -2588,12 +2584,11 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 #topic_edit_form {
     display: inline-block;
-    margin: 0;
     height: 22px;
     padding-left: 20px;
     padding-right: 3px;
     line-height: 22px;
-    margin-left: -15px;
+    margin: 0 0 0 -15px;
 }
 
 #message_feed_container {
