@@ -29,12 +29,12 @@ class zulip::supervisor {
   # subdirectory in 2020-10 in version 4.0; these lines can be removed
   # in Zulip version 5.0 and later.
   file { [
-    "${zulip::common::supervisor_system_conf_dir}/cron.conf",
-    "${zulip::common::supervisor_system_conf_dir}/nginx.conf",
-    "${zulip::common::supervisor_system_conf_dir}/smokescreen.conf",
-    "${zulip::common::supervisor_system_conf_dir}/thumbor.conf",
-    "${zulip::common::supervisor_system_conf_dir}/zulip.conf",
-    "${zulip::common::supervisor_system_conf_dir}/zulip_db.conf",
+    "${system_conf_dir}/cron.conf",
+    "${system_conf_dir}/nginx.conf",
+    "${system_conf_dir}/smokescreen.conf",
+    "${system_conf_dir}/thumbor.conf",
+    "${system_conf_dir}/zulip.conf",
+    "${system_conf_dir}/zulip_db.conf",
     ]:
     ensure => absent,
   }
