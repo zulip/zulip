@@ -547,6 +547,43 @@ export function can_subscribe_others(sub) {
     return !page_params.is_guest && (!sub.invite_only || sub.subscribed);
 }
 
+export function can_post_messages_in_stream(stream) {
+    if (page_params.is_admin) {
+        return true;
+    }
+
+    if (stream.stream_post_policy === stream_post_policy_values.admins.code) {
+        return false;
+    }
+
+    if (page_params.is_moderator) {
+        return true;
+    }
+
+    if (stream.stream_post_policy === stream_post_policy_values.moderators.code) {
+        return false;
+    }
+
+    if (
+        page_params.is_guest &&
+        stream.stream_post_policy !== stream_post_policy_values.everyone.code
+    ) {
+        return false;
+    }
+
+    const person = people.get_by_user_id(people.my_current_user_id());
+    const current_datetime = new Date(Date.now());
+    const person_date_joined = new Date(person.date_joined);
+    const days = (current_datetime - person_date_joined) / 1000 / 86400;
+    if (
+        stream.stream_post_policy === stream_post_policy_values.non_new_members.code &&
+        days < page_params.realm_waiting_period_threshold
+    ) {
+        return false;
+    }
+    return true;
+}
+
 export function is_subscribed_by_name(stream_name) {
     const sub = get_sub(stream_name);
     return sub !== undefined && sub.subscribed;

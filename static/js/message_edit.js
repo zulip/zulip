@@ -385,6 +385,21 @@ function create_copy_to_clipboard_handler($row, source, message_id) {
     });
 }
 
+export function get_available_streams_for_moving_messages(current_stream_id) {
+    return stream_data
+        .subscribed_subs()
+        .filter((stream) => {
+            if (stream.id === current_stream_id) {
+                return true;
+            }
+            return stream_data.can_post_messages_in_stream(stream);
+        })
+        .map((stream) => ({
+            name: stream.name,
+            value: stream.stream_id.toString(),
+        }));
+}
+
 function edit_message($row, raw_content) {
     let stream_widget;
     $row.find(".message_reactions").hide();
@@ -420,10 +435,7 @@ function edit_message($row, raw_content) {
     const is_content_editable = editability === editability_types.FULL;
     // current message's stream has been already been added and selected in Handlebars
     const available_streams = is_stream_editable
-        ? stream_data.subscribed_subs().map((stream) => ({
-              name: stream.name,
-              value: stream.stream_id.toString(),
-          }))
+        ? get_available_streams_for_moving_messages(message.stream_id)
         : null;
 
     const select_move_stream_widget_name = `select_move_stream_${message.id}`;

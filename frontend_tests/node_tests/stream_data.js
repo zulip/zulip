@@ -941,3 +941,45 @@ test("get_invite_stream_data", () => {
     });
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
 });
+
+test("can_post_messages_in_stream", () => {
+    const social = {
+        subscribed: true,
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        is_muted: false,
+        invite_only: true,
+        history_public_to_subscribers: false,
+        stream_post_policy: stream_data.stream_post_policy_values.admins.code,
+    };
+    page_params.is_admin = false;
+    assert.equal(stream_data.can_post_messages_in_stream(social), false);
+
+    page_params.is_admin = true;
+    assert.equal(stream_data.can_post_messages_in_stream(social), true);
+
+    social.stream_post_policy = stream_data.stream_post_policy_values.moderators.code;
+    page_params.is_moderator = false;
+    page_params.is_admin = false;
+
+    assert.equal(stream_data.can_post_messages_in_stream(social), false);
+
+    page_params.is_moderator = true;
+    assert.equal(stream_data.can_post_messages_in_stream(social), true);
+
+    social.stream_post_policy = stream_data.stream_post_policy_values.non_new_members.code;
+    page_params.is_moderator = false;
+    me.date_joined = new Date(Date.now());
+    page_params.realm_waiting_period_threshold = 10;
+    assert.equal(stream_data.can_post_messages_in_stream(social), false);
+
+    me.date_joined = new Date(Date.now() - 20 * 86400000);
+    assert.equal(stream_data.can_post_messages_in_stream(social), true);
+
+    page_params.is_guest = true;
+    assert.equal(stream_data.can_post_messages_in_stream(social), false);
+
+    social.stream_post_policy = stream_data.stream_post_policy_values.everyone.code;
+    assert.equal(stream_data.can_post_messages_in_stream(social), true);
+});
