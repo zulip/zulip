@@ -3,8 +3,8 @@ import re
 from typing import Dict, List, Match, Optional, Set, Tuple
 
 from django.db.models import Q
+from typing_extensions import TypedDict
 
-from zerver.lib.types import FullNameInfo
 from zerver.models import Realm, UserGroup, UserProfile, get_active_streams
 
 # Match multi-word string between @** ** or match any one-word
@@ -13,6 +13,12 @@ MENTIONS_RE = re.compile(r"(?<![^\s\'\"\(,:<])@(?P<silent>_?)(\*\*(?P<match>[^\*
 USER_GROUP_MENTIONS_RE = re.compile(r"(?<![^\s\'\"\(,:<])@(?P<silent>_?)(\*(?P<match>[^\*]+)\*)")
 
 wildcards = ["all", "everyone", "stream"]
+
+
+class FullNameInfo(TypedDict):
+    id: int
+    email: str
+    full_name: str
 
 
 def user_mention_matches_wildcard(mention: str) -> bool:

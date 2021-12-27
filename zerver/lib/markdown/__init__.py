@@ -64,7 +64,7 @@ from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.lib.url_preview import preview as link_preview
-from zerver.models import Message, Realm, linkifiers_for_realm
+from zerver.models import EmojiInfo, Message, Realm, linkifiers_for_realm
 
 ReturnT = TypeVar("ReturnT")
 
@@ -134,7 +134,16 @@ class MessageRenderingResult:
     potential_attachment_path_ids: List[str]
 
 
-DbData = Dict[str, Any]
+@dataclass
+class DbData:
+    mention_data: MentionData
+    realm_uri: str
+    realm_alert_words_automaton: Optional[ahocorasick.Automaton]
+    active_realm_emoji: Dict[str, EmojiInfo]
+    sent_by_bot: bool
+    stream_names: Dict[str, int]
+    translate_emoticons: bool
+
 
 # Format version of the Markdown rendering; stored along with rendered
 # messages so that we can efficiently determine what needs to be re-rendered
@@ -277,7 +286,7 @@ def rewrite_local_links_to_relative(db_data: Optional[DbData], link: str) -> str
     """
 
     if db_data:
-        realm_uri_prefix = db_data["realm_uri"] + "/"
+        realm_uri_prefix = db_data.realm_uri + "/"
         if (
             link.startswith(realm_uri_prefix)
             and urllib.parse.urljoin(realm_uri_prefix, link[len(realm_uri_prefix) :]) == link
@@ -1322,7 +1331,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 # previews are pretty stable.
 
             db_data = self.md.zulip_db_data
-            if db_data and db_data["sent_by_bot"]:
+            if db_data and db_data.sent_by_bot:
                 continue
 
             if not self.md.url_embed_preview_enabled:
@@ -1478,7 +1487,7 @@ class EmoticonTranslation(markdown.inlinepatterns.Pattern):
 
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
         db_data = self.md.zulip_db_data
-        if db_data is None or not db_data["translate_emoticons"]:
+        if db_data is None or not db_data.translate_emoticons:
             return None
 
         emoticon = match.group("emoticon")
@@ -1506,7 +1515,7 @@ class Emoji(markdown.inlinepatterns.Pattern):
         active_realm_emoji: Dict[str, EmojiInfo] = {}
         db_data = self.md.zulip_db_data
         if db_data is not None:
-            active_realm_emoji = db_data["active_realm_emoji"]
+            active_realm_emoji = db_data.active_realm_emoji
 
         if name in active_realm_emoji:
             return make_realm_emoji(active_realm_emoji[name]["source_url"], orig_syntax)
@@ -1849,7 +1858,7 @@ class UserMentionPattern(CompiledInlineProcessor):
             if id_syntax_match:
                 full_name = id_syntax_match.group("full_name")
                 id = int(id_syntax_match.group("user_id"))
-                user = db_data["mention_data"].get_user_by_id(id)
+                user = db_data.mention_data.get_user_by_id(id)
 
                 # For @**name|id**, we need to specifically check that
                 # name matches the full_name of user in mention_data.
@@ -1860,7 +1869,7 @@ class UserMentionPattern(CompiledInlineProcessor):
                         return None, None, None
             else:
                 # For @**name** syntax.
-                user = db_data["mention_data"].get_user_by_name(name)
+                user = db_data.mention_data.get_user_by_name(name)
 
             if wildcard:
                 if not silent:
@@ -1897,7 +1906,7 @@ class UserGroupMentionPattern(CompiledInlineProcessor):
         db_data = self.md.zulip_db_data
 
         if db_data is not None:
-            user_group = db_data["mention_data"].get_user_group(name)
+            user_group = db_data.mention_data.get_user_group(name)
             if user_group:
                 if not silent:
                     self.md.zulip_rendering_result.mentions_user_group_ids.add(user_group.id)
@@ -1926,7 +1935,7 @@ class StreamPattern(CompiledInlineProcessor):
         db_data = self.md.zulip_db_data
         if db_data is None:
             return None
-        stream_id = db_data["stream_names"].get(name)
+        stream_id = db_data.stream_names.get(name)
         return stream_id
 
     def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
@@ -1957,7 +1966,7 @@ class StreamTopicPattern(CompiledInlineProcessor):
         db_data = self.md.zulip_db_data
         if db_data is None:
             return None
-        stream_id = db_data["stream_names"].get(name)
+        stream_id = db_data.stream_names.get(name)
         return stream_id
 
     def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
@@ -2028,7 +2037,7 @@ class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
             # don't do any special rendering; we just append the alert words
             # we find to the set self.md.zulip_rendering_result.user_ids_with_alert_words.
 
-            realm_alert_words_automaton = db_data["realm_alert_words_automaton"]
+            realm_alert_words_automaton = db_data.realm_alert_words_automaton
 
             if realm_alert_words_automaton is not None:
                 content = "\n".join(lines).lower()
@@ -2507,15 +2516,15 @@ def do_convert(
         else:
             active_realm_emoji = {}
 
-        _md_engine.zulip_db_data = {
-            "realm_alert_words_automaton": realm_alert_words_automaton,
-            "mention_data": mention_data,
-            "active_realm_emoji": active_realm_emoji,
-            "realm_uri": message_realm.uri,
-            "sent_by_bot": sent_by_bot,
-            "stream_names": stream_name_info,
-            "translate_emoticons": translate_emoticons,
-        }
+        _md_engine.zulip_db_data = DbData(
+            realm_alert_words_automaton=realm_alert_words_automaton,
+            mention_data=mention_data,
+            active_realm_emoji=active_realm_emoji,
+            realm_uri=message_realm.uri,
+            sent_by_bot=sent_by_bot,
+            stream_names=stream_name_info,
+            translate_emoticons=translate_emoticons,
+        )
 
     try:
         # Spend at most 5 seconds rendering; this protects the backend
