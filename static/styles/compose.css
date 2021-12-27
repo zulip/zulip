@@ -138,8 +138,7 @@
     }
 
     .message_header {
-        background: none;
-        background-color: hsl(0, 0%, 92%);
+        background: hsl(0, 0%, 92%) none;
         border: none;
         border-radius: 0;
         box-shadow: none !important;
