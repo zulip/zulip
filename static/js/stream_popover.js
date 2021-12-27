@@ -479,10 +479,8 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
             ".stream_header_colorblock",
         );
         stream_bar.decorate(current_stream_name, $stream_header_colorblock, false);
-        const streams_list = stream_data.subscribed_subs().map((stream) => ({
-            name: stream.name,
-            value: stream.stream_id.toString(),
-        }));
+        const streams_list =
+            message_edit.get_available_streams_for_moving_messages(current_stream_id);
         const opts = {
             widget_name: "select_stream",
             data: streams_list,
