@@ -425,66 +425,6 @@ function validate_stream_message_announce(sub) {
     return true;
 }
 
-function validate_stream_message_post_policy(sub) {
-    if (page_params.is_admin) {
-        return true;
-    }
-
-    const stream_post_permission_type = stream_data.stream_post_policy_values;
-    const stream_post_policy = sub.stream_post_policy;
-
-    if (stream_post_policy === stream_post_permission_type.admins.code) {
-        compose_error.show(
-            $t_html({
-                defaultMessage: "Only organization admins are allowed to post to this stream.",
-            }),
-        );
-        return false;
-    }
-
-    if (page_params.is_moderator) {
-        return true;
-    }
-
-    if (stream_post_policy === stream_post_permission_type.moderators.code) {
-        compose_error.show(
-            $t_html({
-                defaultMessage:
-                    "Only organization admins and moderators are allowed to post to this stream.",
-            }),
-        );
-        return false;
-    }
-
-    if (page_params.is_guest && stream_post_policy !== stream_post_permission_type.everyone.code) {
-        compose_error.show(
-            $t_html({defaultMessage: "Guests are not allowed to post to this stream."}),
-        );
-        return false;
-    }
-
-    const person = people.get_by_user_id(page_params.user_id);
-    const current_datetime = new Date(Date.now());
-    const person_date_joined = new Date(person.date_joined);
-    const days = (current_datetime - person_date_joined) / 1000 / 86400;
-    let error_html;
-    if (
-        stream_post_policy === stream_post_permission_type.non_new_members.code &&
-        days < page_params.realm_waiting_period_threshold
-    ) {
-        error_html = $t_html(
-            {
-                defaultMessage:
-                    "New members are not allowed to post to this stream.<br />Permission will be granted in {days} days.",
-            },
-            {days},
-        );
-        compose_error.show(error_html);
-        return false;
-    }
-    return true;
-}
-
 export function validation_error(error_type, stream_name) {
     let response;
 
@@ -557,7 +497,12 @@ function validate_stream_message() {
         return validation_error("does-not-exist", stream_name);
     }
 
-    if (!validate_stream_message_post_policy(sub)) {
+    if (!stream_data.can_post_messages_in_stream(sub)) {
+        compose_error.show(
+            $t_html({
+                defaultMessage: "You do not have permission to post in this stream.",
+            }),
+        );
         return false;
     }
 

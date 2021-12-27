@@ -394,7 +394,7 @@ test_ui("test_validate_stream_message_post_policy_admin_only", () => {
     assert.ok(!compose_validate.validate());
     assert.equal(
         $("#compose-error-msg").html(),
-        $t_html({defaultMessage: "Only organization admins are allowed to post to this stream."}),
+        $t_html({defaultMessage: "You do not have permission to post in this stream."}),
     );
 
     // Reset error message.
@@ -408,7 +408,7 @@ test_ui("test_validate_stream_message_post_policy_admin_only", () => {
     assert.ok(!compose_validate.validate());
     assert.equal(
         $("#compose-error-msg").html(),
-        $t_html({defaultMessage: "Only organization admins are allowed to post to this stream."}),
+        $t_html({defaultMessage: "You do not have permission to post in this stream."}),
     );
 });
 
@@ -431,8 +431,7 @@ test_ui("test_validate_stream_message_post_policy_moderators_only", () => {
     assert.equal(
         $("#compose-error-msg").html(),
         $t_html({
-            defaultMessage:
-                "Only organization admins and moderators are allowed to post to this stream.",
+            defaultMessage: "You do not have permission to post in this stream.",
         }),
     );
 
@@ -443,8 +442,7 @@ test_ui("test_validate_stream_message_post_policy_moderators_only", () => {
     assert.equal(
         $("#compose-error-msg").html(),
         $t_html({
-            defaultMessage:
-                "Only organization admins and moderators are allowed to post to this stream.",
+            defaultMessage: "You do not have permission to post in this stream.",
         }),
     );
 });
@@ -465,7 +463,7 @@ test_ui("test_validate_stream_message_post_policy_full_members_only", () => {
     assert.ok(!compose_validate.validate());
     assert.equal(
         $("#compose-error-msg").html(),
-        $t_html({defaultMessage: "Guests are not allowed to post to this stream."}),
+        $t_html({defaultMessage: "You do not have permission to post in this stream."}),
     );
 });
 
