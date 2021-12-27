@@ -54,7 +54,7 @@ from zerver.lib.emoji import EMOTICON_RE, codepoint_to_name, name_to_codepoint, 
 from zerver.lib.exceptions import MarkdownRenderingException
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
-from zerver.lib.mention import MentionData, get_stream_name_info
+from zerver.lib.mention import MentionData, get_stream_name_map
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
@@ -1922,30 +1922,30 @@ class UserGroupMentionPattern(CompiledInlineProcessor):
 
 
 class StreamPattern(CompiledInlineProcessor):
-    def find_stream_by_name(self, name: str) -> Optional[Dict[str, Any]]:
+    def find_stream_id(self, name: str) -> Optional[int]:
         db_data = self.md.zulip_db_data
         if db_data is None:
             return None
-        stream = db_data["stream_names"].get(name)
-        return stream
+        stream_id = db_data["stream_names"].get(name)
+        return stream_id
 
     def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
         self, m: Match[str], data: str
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
         name = m.group("stream_name")
 
-        stream = self.find_stream_by_name(name)
-        if stream is None:
+        stream_id = self.find_stream_id(name)
+        if stream_id is None:
             return None, None, None
         el = Element("a")
         el.set("class", "stream")
-        el.set("data-stream-id", str(stream["id"]))
+        el.set("data-stream-id", str(stream_id))
         # TODO: We should quite possibly not be specifying the
         # href here and instead having the browser auto-add the
         # href when it processes a message with one of these, to
         # provide more clarity to API clients.
         # Also do the same for StreamTopicPattern.
-        stream_url = encode_stream(stream["id"], name)
+        stream_url = encode_stream(stream_id, name)
         el.set("href", f"/#narrow/stream/{stream_url}")
         text = f"#{name}"
         el.text = markdown.util.AtomicString(text)
@@ -1953,12 +1953,12 @@ class StreamPattern(CompiledInlineProcessor):
 
 
 class StreamTopicPattern(CompiledInlineProcessor):
-    def find_stream_by_name(self, name: str) -> Optional[Dict[str, Any]]:
+    def find_stream_id(self, name: str) -> Optional[int]:
         db_data = self.md.zulip_db_data
         if db_data is None:
             return None
-        stream = db_data["stream_names"].get(name)
-        return stream
+        stream_id = db_data["stream_names"].get(name)
+        return stream_id
 
     def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
         self, m: Match[str], data: str
@@ -1966,13 +1966,13 @@ class StreamTopicPattern(CompiledInlineProcessor):
         stream_name = m.group("stream_name")
         topic_name = m.group("topic_name")
 
-        stream = self.find_stream_by_name(stream_name)
-        if stream is None or topic_name is None:
+        stream_id = self.find_stream_id(stream_name)
+        if stream_id is None or topic_name is None:
             return None, None, None
         el = Element("a")
         el.set("class", "stream-topic")
-        el.set("data-stream-id", str(stream["id"]))
-        stream_url = encode_stream(stream["id"], stream_name)
+        el.set("data-stream-id", str(stream_id))
+        stream_url = encode_stream(stream_id, stream_name)
         topic_url = hash_util_encode(topic_name)
         link = f"/#narrow/stream/{stream_url}/topic/{topic_url}"
         el.set("href", link)
@@ -2500,7 +2500,7 @@ def do_convert(
             mention_data = MentionData(message_realm.id, content)
 
         stream_names = possible_linked_stream_names(content)
-        stream_name_info = get_stream_name_info(message_realm, stream_names)
+        stream_name_info = get_stream_name_map(message_realm, stream_names)
 
         if content_has_emoji_syntax(content):
             active_realm_emoji = message_realm.get_active_emoji()

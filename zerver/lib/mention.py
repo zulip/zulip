@@ -131,7 +131,7 @@ class MentionData:
         return self.user_group_members.get(user_group_id, [])
 
 
-def get_stream_name_info(realm: Realm, stream_names: Set[str]) -> Dict[str, FullNameInfo]:
+def get_stream_name_map(realm: Realm, stream_names: Set[str]) -> Dict[str, int]:
     if not stream_names:
         return {}
 
@@ -150,7 +150,7 @@ def get_stream_name_info(realm: Realm, stream_names: Set[str]) -> Dict[str, Full
         )
     )
 
-    dct = {row["name"]: row for row in rows}
+    dct = {row["name"]: row["id"] for row in rows}
     return dct
 
 
