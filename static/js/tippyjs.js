@@ -117,6 +117,9 @@ export function initialize() {
         // so that regular users don't have to see
         // them unless they want to.
         delay: [300, 20],
+        // This ensures that the upload files tooltip
+        // doesn't hide behind the left sidebar.
+        appendTo: () => document.body,
     });
 
     delegate("body", {
