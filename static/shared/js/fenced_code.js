@@ -38,7 +38,7 @@ export function initialize(generated_pygments_data) {
 }
 
 export function wrap_code(code, lang) {
-    let header = '<div class="codehilite"><pre><span></span><code>';
+    let header = '<div class="codehighlight"><pre><span></span><code>';
     // Mimics the backend logic of adding a data-attribute (data-code-language)
     // to know what Pygments language was used to highlight this code block.
     //
@@ -47,7 +47,7 @@ export function wrap_code(code, lang) {
     // using the default header if it is.
     if (lang !== undefined && lang !== "" && Object.keys(pygments_data).length > 0) {
         const code_language = _.get(pygments_data, [lang, "pretty_name"], lang);
-        header = `<div class="codehilite" data-code-language="${_.escape(
+        header = `<div class="codehighlight" data-code-language="${_.escape(
             code_language,
         )}"><pre><span></span><code>`;
     }
