@@ -200,11 +200,11 @@ export const update_elements = (content) => {
         $(this).prepend(toggle_button_html);
     });
 
-    // Display the view-code-in-playground and the copy-to-clipboard button inside the div.codehilite element.
-    content.find("div.codehilite").each(function () {
-        const $codehilite = $(this);
-        const $pre = $codehilite.find("pre");
-        const fenced_code_lang = $codehilite.data("code-language");
+    // Display the view-code-in-playground and the copy-to-clipboard button inside the div.codehighlight element.
+    content.find("div.codehighlight").each(function () {
+        const $codehighlight = $(this);
+        const $pre = $codehighlight.find("pre");
+        const fenced_code_lang = $codehighlight.data("code-language");
         if (fenced_code_lang !== undefined) {
             const playground_info =
                 realm_playground.get_playground_info_for_languages(fenced_code_lang);
