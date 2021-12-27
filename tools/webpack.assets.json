@@ -23,7 +23,8 @@
         "./static/js/billing/upgrade",
         "./static/js/templates",
         "./static/js/loading",
-        "./static/styles/portico/billing.css"
+        "./static/styles/portico/billing.css",
+        "tippy.js/dist/tippy.css"
     ],
     "billing-event-status": [
         "./static/js/bundles/portico",

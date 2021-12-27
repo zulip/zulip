@@ -276,6 +276,7 @@ def initial_upgrade(
             "annual_price": 8000,
             "monthly_price": 800,
             "percent_off": float(percent_off),
+            "demo_organization_scheduled_deletion_date": user.realm.demo_organization_scheduled_deletion_date,
         },
         "realm_org_type": user.realm.org_type,
         "sorted_org_types": sorted(
@@ -286,6 +287,7 @@ def initial_upgrade(
             ),
             key=lambda d: d[1]["display_order"],
         ),
+        "is_demo_org": user.realm.demo_organization_scheduled_deletion_date is not None,
     }
     response = render(request, "corporate/upgrade.html", context=context)
     return response

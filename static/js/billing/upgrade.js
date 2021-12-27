@@ -1,4 +1,5 @@
 import $ from "jquery";
+import tippy from "tippy.js";
 
 import {page_params} from "../page_params";
 
@@ -71,6 +72,18 @@ export const initialize = () => {
 
     helpers.show_license_section($("input[type=radio][name=license_management]:checked").val());
     helpers.update_charged_amount(prices, $("input[type=radio][name=schedule]:checked").val());
+
+    if (page_params.demo_organization_scheduled_deletion_date) {
+        tippy("[data-tippy-content]", {
+            // Same defaults as set in our tippyjs module.
+            maxWidth: 300,
+            delay: [100, 20],
+            animation: false,
+            touch: ["hold", 750],
+            placement: "bottom",
+        });
+        // Add configuration for any additional tooltips here.
+    }
 };
 
 $(() => {

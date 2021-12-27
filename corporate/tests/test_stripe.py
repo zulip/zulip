@@ -2329,6 +2329,15 @@ class StripeTest(StripeTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual("/upgrade/", response["Location"])
 
+    def test_upgrade_page_for_demo_orgs(self) -> None:
+        user = self.example_user("iago")
+        user.realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(days=30)
+        user.realm.save()
+        self.login_user(user)
+
+        response = self.client_get("/billing/", follow=True)
+        self.assert_in_success_response(["not eligible for upgrades"], response)
+
     def test_redirect_for_upgrade_page(self) -> None:
         user = self.example_user("iago")
         self.login_user(user)
