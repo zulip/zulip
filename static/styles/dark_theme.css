@@ -507,7 +507,8 @@ body.dark-theme {
     .all-messages-sidebar-menu-icon:hover,
     .starred-messages-sidebar-menu-icon:hover,
     .stream-sidebar-menu-icon:hover,
-    .topic-sidebar-menu-icon:hover {
+    .topic-sidebar-menu-icon:hover,
+    .drafts-sidebar-menu-icon:hover {
         color: hsl(0, 0%, 100%) !important;
     }
 
