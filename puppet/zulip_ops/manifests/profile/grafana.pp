@@ -25,7 +25,7 @@ class zulip_ops::profile::grafana {
     uid        => '1070',
     gid        => '1070',
     shell      => '/bin/bash',
-    home       => $dir,
+    home       => $data_dir,
     managehome => false,
   }
   file { $data_dir:
