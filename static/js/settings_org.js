@@ -215,12 +215,13 @@ export function extract_property_name(elem, for_realm_default_settings) {
 
 function get_subsection_property_elements(element) {
     const subsection = $(element).closest(".org-subsection-parent");
-    if (subsection.hasClass("emoji-settings")) {
+    if (subsection.hasClass("theme-settings")) {
         // Because the emojiset widget has a unique radio button
         // structure, it needs custom code.
+        const color_scheme_elem = subsection.find(".setting_color_scheme");
         const emojiset_elem = subsection.find("input[name='emojiset']:checked");
         const translate_emoticons_elem = subsection.find(".translate_emoticons");
-        return [emojiset_elem, translate_emoticons_elem];
+        return [color_scheme_elem, emojiset_elem, translate_emoticons_elem];
     }
     return Array.from(subsection.find(".prop-element"));
 }
