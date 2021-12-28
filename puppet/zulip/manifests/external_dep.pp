@@ -6,7 +6,7 @@ define zulip::external_dep(
   String $bin = '',
 ) {
 
-  $dir = "/srv/zulip-${title}-${version}/"
+  $dir = "/srv/zulip-${title}-${version}"
 
   zulip::sha256_tarball_to { $title:
     url     => $url,
@@ -22,7 +22,7 @@ define zulip::external_dep(
   }
 
   if $bin != '' {
-    file { "${dir}${bin}":
+    file { "${dir}/${bin}":
       ensure  => file,
       require => File[$dir],
     }
