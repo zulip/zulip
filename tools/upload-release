@@ -96,14 +96,14 @@ if ordered_filenames[1] == new_basename:
     file_hashes["zulip-server-latest.tar.gz"] = file_hashes[new_basename]
 
 print("Updating SHA256SUMS.txt..")
-contents = b""
+contents = ""
 for ordered_filename in ordered_filenames:
     # natsorted type annotation is insufficiently generic
     assert isinstance(ordered_filename, str)
-    contents += f"{file_hashes[ordered_filename]}  {ordered_filename}\n".encode()
+    contents += f"{file_hashes[ordered_filename]}  {ordered_filename}\n"
 bucket.put_object(
     ACL="public-read",
-    Body=contents,
+    Body=contents.encode(),
     ContentType="text/plain",
     Key="server/SHA256SUMS.txt",
 )
