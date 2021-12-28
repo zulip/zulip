@@ -1,6 +1,16 @@
 import * as blueslip from "./blueslip";
 
 export class LazySet {
+    private data:
+        | {
+              arr: number[];
+              set: undefined;
+          }
+        | {
+              arr: undefined;
+              set: Set<number>;
+          };
+
     /*
         This class is optimized for a very
         particular use case.
@@ -23,14 +33,14 @@ export class LazySet {
         to a set for a one-time cost.
     */
 
-    constructor(vals) {
+    constructor(vals: number[]) {
         this.data = {
             arr: vals,
             set: undefined,
         };
     }
 
-    get size() {
+    get size(): number {
         const {data} = this;
         if (data.set !== undefined) {
             return data.set.size;
@@ -39,7 +49,7 @@ export class LazySet {
         return data.arr.length;
     }
 
-    keys() {
+    keys(): IterableIterator<number> {
         const {data} = this;
         if (data.set !== undefined) {
             return data.set.keys();
@@ -47,7 +57,7 @@ export class LazySet {
         return data.arr.values();
     }
 
-    _make_set() {
+    _make_set(): Set<number> {
         if (this.data.set !== undefined) {
             return this.data.set;
         }
@@ -60,29 +70,29 @@ export class LazySet {
         return this.data.set;
     }
 
-    map(f) {
+    map<T>(f: (v: number, k: number) => T): T[] {
         return Array.from(this.keys(), f);
     }
 
-    has(v) {
-        this._make_set();
+    has(v: number): boolean {
+        const set = this._make_set();
         const val = this._clean(v);
-        return this.data.set.has(val);
+        return set.has(val);
     }
 
-    add(v) {
+    add(v: number): void {
         const set = this._make_set();
         const val = this._clean(v);
         set.add(val);
     }
 
-    delete(v) {
+    delete(v: number): boolean {
         const set = this._make_set();
         const val = this._clean(v);
         return set.delete(val);
     }
 
-    _clean(v) {
+    _clean(v: number | string): number {
         if (typeof v !== "number") {
             blueslip.error("not a number");
             return Number.parseInt(v, 10);
