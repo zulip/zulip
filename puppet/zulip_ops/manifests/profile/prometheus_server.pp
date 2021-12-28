@@ -6,7 +6,7 @@ class zulip_ops::profile::prometheus_server {
   include zulip_ops::profile::base
   include zulip_ops::prometheus::base
 
-  $version = '2.27.1'
+  $version = $zulip::common::versions['prometheus']['version']
   $dir = "/srv/zulip-prometheus-${version}"
   $bin = "${dir}/prometheus"
   $data_dir = '/var/lib/prometheus'
@@ -14,7 +14,6 @@ class zulip_ops::profile::prometheus_server {
   zulip::external_dep { 'prometheus':
     version        => $version,
     url            => "https://github.com/prometheus/prometheus/releases/download/v${version}/prometheus-${version}.linux-${::architecture}.tar.gz",
-    sha256         => 'ce637d0167d5e6d2561f3bd37e1c58fe8601e13e4e1ea745653c068f6e1317ae',
     tarball_prefix => "prometheus-${version}.linux-${::architecture}",
   }
   file { '/usr/local/bin/promtool':

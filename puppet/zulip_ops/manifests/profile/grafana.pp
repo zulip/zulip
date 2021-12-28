@@ -4,7 +4,7 @@ class zulip_ops::profile::grafana {
   include zulip_ops::profile::base
   include zulip::supervisor
 
-  $version = '8.3.2'
+  $version = $zulip::common::versions['grafana']['version']
   $dir = "/srv/zulip-grafana-${version}"
   $bin = "${dir}/bin/grafana-server"
   $data_dir = '/var/lib/grafana'
@@ -12,7 +12,6 @@ class zulip_ops::profile::grafana {
   zulip::external_dep { 'grafana':
     version        => $version,
     url            => "https://dl.grafana.com/oss/release/grafana-${version}.linux-${::architecture}.tar.gz",
-    sha256         => '100f92c50aa612f213052c55594e58b68b7da641b751c5f144003d704730d189',
     tarball_prefix => "grafana-${version}",
   }
 

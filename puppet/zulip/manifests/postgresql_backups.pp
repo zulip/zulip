@@ -3,7 +3,7 @@
 class zulip::postgresql_backups {
   include zulip::postgresql_common
 
-  $wal_g_version = '1.1.1-rc'
+  $wal_g_version = $zulip::common::versions['wal-g']['version']
   $bin = "/srv/zulip-wal-g-${wal_g_version}"
   $package = "wal-g-pg-ubuntu-20.04-${::architecture}"
 
@@ -11,7 +11,6 @@ class zulip::postgresql_backups {
   zulip::external_dep { 'wal-g':
     version        => $wal_g_version,
     url            => "https://github.com/wal-g/wal-g/releases/download/v${wal_g_version}/${package}.tar.gz",
-    sha256         => 'eed4de63c2657add6e0fe70f8c0fbe62a4a54405b9bfc801b1912b6c4f2c7107',
     tarball_prefix => $package,
   }
   file { '/usr/local/bin/wal-g':

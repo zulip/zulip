@@ -4,14 +4,13 @@ class zulip_ops::prometheus::node {
   include zulip_ops::prometheus::base
   include zulip::supervisor
 
-  $version = '1.1.2'
+  $version = $zulip::common::versions['node_exporter']['version']
   $dir = "/srv/zulip-node_exporter-${version}"
   $bin = "${dir}/node_exporter"
 
   zulip::external_dep { 'node_exporter':
     version        => $version,
     url            => "https://github.com/prometheus/node_exporter/releases/download/v${version}/node_exporter-${version}.linux-${::architecture}.tar.gz",
-    sha256         => '8c1f6a317457a658e0ae68ad710f6b4098db2cad10204649b51e3c043aa3e70d',
     tarball_prefix => "node_exporter-${version}.linux-${::architecture}",
   }
 
