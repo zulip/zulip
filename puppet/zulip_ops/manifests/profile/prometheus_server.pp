@@ -7,20 +7,20 @@ class zulip_ops::profile::prometheus_server {
   include zulip_ops::prometheus::base
 
   $version = '2.27.1'
-  $dir = "/srv/zulip-prometheus-${version}/"
-  $bin = "${dir}prometheus"
+  $dir = "/srv/zulip-prometheus-${version}"
+  $bin = "${dir}/prometheus"
   $data_dir = '/var/lib/prometheus'
 
   zulip::external_dep { 'prometheus':
     version        => $version,
     url            => "https://github.com/prometheus/prometheus/releases/download/v${version}/prometheus-${version}.linux-${::architecture}.tar.gz",
     sha256         => 'ce637d0167d5e6d2561f3bd37e1c58fe8601e13e4e1ea745653c068f6e1317ae',
-    tarball_prefix => "prometheus-${version}.linux-${::architecture}/",
+    tarball_prefix => "prometheus-${version}.linux-${::architecture}",
     bin            => 'prometheus',
   }
   file { '/usr/local/bin/promtool':
     ensure  => 'link',
-    target  => "${dir}promtool",
+    target  => "${dir}/promtool",
     require => File[$dir],
   }
   # This was moved to an external dep in 2021/12, and the below can be
