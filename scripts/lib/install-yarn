@@ -9,8 +9,7 @@ check_version() {
     # Reading the version of Yarn from its package.json is much faster
     # than running yarn --version.
     link="$(command -v yarn)" \
-        && bin="$(readlink -f "$link")" \
-        && [ "$bin" = /srv/zulip-yarn/bin/yarn ] \
+        && [ "$link" -ef /srv/zulip-yarn/bin/yarn ] \
         && current_version="$(jq -r '.version' /srv/zulip-yarn/package.json)" \
         && [ "$current_version" = "$version" ]
 }
