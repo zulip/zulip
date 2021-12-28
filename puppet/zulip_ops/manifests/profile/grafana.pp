@@ -7,6 +7,7 @@ class zulip_ops::profile::grafana {
   $version = '8.3.2'
   $dir = "/srv/zulip-grafana-${version}"
   $bin = "${dir}/bin/grafana-server"
+  $data_dir = '/var/lib/grafana'
 
   zulip::external_dep { 'grafana':
     version        => $version,
@@ -27,7 +28,7 @@ class zulip_ops::profile::grafana {
     home       => $dir,
     managehome => false,
   }
-  file { '/var/lib/grafana':
+  file { $data_dir:
     ensure  => directory,
     owner   => 'grafana',
     group   => 'grafana',
@@ -46,7 +47,7 @@ class zulip_ops::profile::grafana {
     require => [
       Package[supervisor],
       Zulip::External_Dep['grafana'],
-      File['/var/lib/grafana'],
+      File[$data_dir],
       File['/var/log/grafana'],
     ],
     owner   => 'root',
