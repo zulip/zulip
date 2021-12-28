@@ -4,36 +4,28 @@ class zulip::postgresql_backups {
   include zulip::postgresql_common
 
   $wal_g_version = '1.1.1-rc'
-  $bin = "/usr/local/bin/wal-g-${wal_g_version}"
+  $bin = "/srv/zulip-wal-g-${wal_g_version}"
   $package = "wal-g-pg-ubuntu-20.04-${::architecture}"
-  zulip::sha256_tarball_to { 'wal-g':
-    url     => "https://github.com/wal-g/wal-g/releases/download/v${wal_g_version}/${package}.tar.gz",
-    sha256  => 'eed4de63c2657add6e0fe70f8c0fbe62a4a54405b9bfc801b1912b6c4f2c7107',
-    install => {
-      $package => $bin,
-    },
-  }
-  file { $bin:
-    ensure  => file,
-    require => Zulip::Sha256_tarball_to['wal-g'],
+
+  # This tarball contains only a single file
+  zulip::external_dep { 'wal-g':
+    version        => $wal_g_version,
+    url            => "https://github.com/wal-g/wal-g/releases/download/v${wal_g_version}/${package}.tar.gz",
+    sha256         => 'eed4de63c2657add6e0fe70f8c0fbe62a4a54405b9bfc801b1912b6c4f2c7107',
+    tarball_prefix => $package,
   }
   file { '/usr/local/bin/wal-g':
     ensure  => 'link',
     target  => $bin,
-    require => File[$bin],
+    require => Zulip::External_Dep['wal-g'],
   }
-  unless $::operatingsystem == 'Ubuntu' and $::operatingsystemrelease == '18.04' {
-    # Puppet 5.5.0 and below make this always-noisy, as they spout out
-    # a notify line about tidying the managed directory above.  Skip
-    # on Bionic, which has that old version; they'll get tidied upon
-    # upgrade to 20.04.
-    tidy { '/usr/local/bin/wal-g-*':
-      path    => '/usr/local/bin/',
-      recurse => 1,
-      rmdirs  => true,
-      matches => 'wal-g-*',
-      require => File[$bin],
-    }
+  # We used to install versions into /usr/local/bin/wal-g-VERSION,
+  # until we moved to using Zulip::External_Dep which places them in
+  # /srv/zulip-wal-g-VERSION.  Tidy old versions.
+  tidy { '/usr/local/bin/wal-g-*':
+    recurse => 1,
+    path    => '/usr/local/bin/',
+    matches => 'wal-g-*',
   }
 
   file { '/usr/local/bin/env-wal-g':
