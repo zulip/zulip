@@ -54,7 +54,7 @@ from zerver.lib.emoji import EMOTICON_RE, codepoint_to_name, name_to_codepoint, 
 from zerver.lib.exceptions import MarkdownRenderingException
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
-from zerver.lib.mention import MentionData, get_stream_name_map
+from zerver.lib.mention import FullNameInfo, MentionData, get_stream_name_map
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
@@ -1865,7 +1865,7 @@ class UserMentionPattern(CompiledInlineProcessor):
                 # This enforces our decision that
                 # @**user_1_name|id_for_user_2** should be invalid syntax.
                 if full_name:
-                    if user and user["full_name"] != full_name:
+                    if user and user.full_name != full_name:
                         return None, None, None
             else:
                 # For @**name** syntax.
@@ -1875,11 +1875,13 @@ class UserMentionPattern(CompiledInlineProcessor):
                 if not silent:
                     self.md.zulip_rendering_result.mentions_wildcard = True
                 user_id = "*"
-            elif user:
+            elif user is not None:
+                assert isinstance(user, FullNameInfo)
+
                 if not silent:
-                    self.md.zulip_rendering_result.mentions_user_ids.add(user["id"])
-                name = user["full_name"]
-                user_id = str(user["id"])
+                    self.md.zulip_rendering_result.mentions_user_ids.add(user.id)
+                name = user.full_name
+                user_id = str(user.id)
             else:
                 # Don't highlight @mentions that don't refer to a valid user
                 return None, None, None

@@ -1,9 +1,9 @@
 import functools
 import re
+from dataclasses import dataclass
 from typing import Dict, List, Match, Optional, Set, Tuple
 
 from django.db.models import Q
-from typing_extensions import TypedDict
 
 from zerver.models import Realm, UserGroup, UserProfile, get_active_streams
 
@@ -15,9 +15,9 @@ USER_GROUP_MENTIONS_RE = re.compile(r"(?<![^\s\'\"\(,:<])@(?P<silent>_?)(\*(?P<m
 wildcards = ["all", "everyone", "stream"]
 
 
-class FullNameInfo(TypedDict):
+@dataclass
+class FullNameInfo:
     id: int
-    email: str
     full_name: str
 
 
@@ -80,21 +80,20 @@ def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> List[F
         .filter(
             functools.reduce(lambda a, b: a | b, q_list),
         )
-        .values(
+        .only(
             "id",
             "full_name",
-            "email",
         )
     )
-    return list(rows)
+    return [FullNameInfo(id=row.id, full_name=row.full_name) for row in rows]
 
 
 class MentionData:
     def __init__(self, realm_id: int, content: str) -> None:
         mention_texts, has_wildcards = possible_mentions(content)
         possible_mentions_info = get_possible_mentions_info(realm_id, mention_texts)
-        self.full_name_info = {row["full_name"].lower(): row for row in possible_mentions_info}
-        self.user_id_info = {row["id"]: row for row in possible_mentions_info}
+        self.full_name_info = {row.full_name.lower(): row for row in possible_mentions_info}
+        self.user_id_info = {row.id: row for row in possible_mentions_info}
         self.init_user_group_data(realm_id=realm_id, content=content)
         self.has_wildcards = has_wildcards
 
