@@ -3,14 +3,14 @@ class zulip::smokescreen {
   include zulip::golang
 
   $version = 'dc403015f563eadc556a61870c6ad327688abe88'
-  $dir = "/srv/zulip-smokescreen-src-${version}/"
+  $dir = "/srv/zulip-smokescreen-src-${version}"
   $bin = "/usr/local/bin/smokescreen-${version}-go-${zulip::golang::version}"
 
   zulip::external_dep { 'smokescreen-src':
     version        => $version,
     url            => "https://github.com/stripe/smokescreen/archive/${version}.tar.gz",
     sha256         => 'ad4b181d14adcd9425045152b903a343dbbcfcad3c1e7625d2c65d1d50e1959d',
-    tarball_prefix => "smokescreen-${version}/",
+    tarball_prefix => "smokescreen-${version}",
   }
 
   exec { 'compile smokescreen':
