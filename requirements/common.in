@@ -197,3 +197,6 @@ soupsieve
 
 # Circuit-breaking for outgoing services
 circuitbreaker
+
+# Needed for parsing user-agent strings
+ua-parser
