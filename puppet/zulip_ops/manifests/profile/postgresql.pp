@@ -31,7 +31,7 @@ class zulip_ops::profile::postgresql {
   exec { 'setup_disks':
     command => '/root/setup_disks.sh',
     require => Package["postgresql-${zulip::postgresql_common::version}", 'xfsprogs'],
-    unless  => 'test $(readlink /var/lib/postgresql) = "/srv/postgresql/" -a -d /srv/postgresql',
+    unless  => 'test /var/lib/postgresql/ -ef /srv/postgresql/',
   }
 
   file { "${zulip::postgresql_base::postgresql_confdir}/pg_hba.conf":
