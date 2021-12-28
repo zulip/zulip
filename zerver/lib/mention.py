@@ -21,6 +21,22 @@ class FullNameInfo:
     full_name: str
 
 
+@dataclass
+class UserFilter:
+    id: Optional[int]
+    full_name: Optional[str]
+
+    def Q(self) -> Q:
+        if self.full_name is not None and self.id is not None:
+            return Q(full_name__iexact=self.full_name, id=self.id)
+        elif self.id is not None:
+            return Q(id=self.id)
+        elif self.full_name is not None:
+            return Q(full_name__iexact=self.full_name)
+        else:
+            raise AssertionError("totally empty filter makes no sense")
+
+
 def user_mention_matches_wildcard(mention: str) -> bool:
     return mention in wildcards
 
@@ -53,7 +69,7 @@ def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> List[F
     if not mention_texts:
         return []
 
-    q_list = set()
+    user_filters = list()
 
     name_re = r"(?P<full_name>.+)?\|(?P<mention_id>\d+)$"
     for mention_text in mention_texts:
@@ -64,13 +80,15 @@ def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> List[F
             if full_name:
                 # For **name|id** mentions as mention_id
                 # cannot be null inside this block.
-                q_list.add(Q(full_name__iexact=full_name, id=mention_id))
+                user_filters.append(UserFilter(full_name=full_name, id=int(mention_id)))
             else:
                 # For **|id** syntax.
-                q_list.add(Q(id=mention_id))
+                user_filters.append(UserFilter(full_name=None, id=int(mention_id)))
         else:
             # For **name** syntax.
-            q_list.add(Q(full_name__iexact=mention_text))
+            user_filters.append(UserFilter(full_name=mention_text, id=None))
+
+    q_list = [user_filter.Q() for user_filter in user_filters]
 
     rows = (
         UserProfile.objects.filter(
