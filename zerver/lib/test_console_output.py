@@ -35,7 +35,7 @@ class ExtraConsoleOutputFinder:
         ]
         self.compiled_line_pattern = re.compile(b"|".join(valid_line_patterns))
         self.partial_line = b""
-        self.full_extra_output = b""
+        self.full_extra_output = bytearray()
 
     def find_extra_output(self, data: bytes) -> None:
         *lines, self.partial_line = (self.partial_line + data).split(b"\n")
