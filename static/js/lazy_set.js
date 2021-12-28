@@ -30,6 +30,15 @@ export class LazySet {
         };
     }
 
+    get size() {
+        const {data} = this;
+        if (data.set !== undefined) {
+            return data.set.size;
+        }
+
+        return data.arr.length;
+    }
+
     keys() {
         const {data} = this;
         if (data.set !== undefined) {
@@ -47,15 +56,6 @@ export class LazySet {
             arr: undefined,
             set: new Set(this.data.arr),
         };
-    }
-
-    get size() {
-        const {data} = this;
-        if (data.set !== undefined) {
-            return data.set.size;
-        }
-
-        return data.arr.length;
     }
 
     map(f) {
