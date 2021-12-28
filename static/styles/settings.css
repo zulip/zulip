@@ -1077,6 +1077,7 @@ input[type="checkbox"] {
         color: hsl(0, 0%, 47%);
         min-width: 80px;
         line-height: 1.2;
+        vertical-align: text-bottom;
 
         &:hover,
         &:focus {
