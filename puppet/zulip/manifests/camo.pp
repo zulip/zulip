@@ -7,14 +7,14 @@ class zulip::camo (String $listen_address = '0.0.0.0') {
   }
 
   $version = '2.3.0'
-  $dir = "/srv/zulip-go-camo-${version}/"
-  $bin = "${dir}bin/go-camo"
+  $dir = "/srv/zulip-go-camo-${version}"
+  $bin = "${dir}/bin/go-camo"
 
   zulip::external_dep { 'go-camo':
     version        => $version,
     url            => "https://github.com/cactus/go-camo/releases/download/v${version}/go-camo-${version}.go1171.linux-${::architecture}.tar.gz",
     sha256         => '965506e6edb9d974c810519d71e847afb7ca69d1d01ae7d8be6d7a91de669c0c',
-    tarball_prefix => "go-camo-${version}/",
+    tarball_prefix => "go-camo-${version}",
     bin            => 'bin/go-camo',
   }
 
