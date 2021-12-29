@@ -1855,6 +1855,7 @@ def build_message_send_dict(
     realm: Optional[Realm] = None,
     widget_content_dict: Optional[Dict[str, Any]] = None,
     email_gateway: bool = False,
+    mention_backend: Optional[MentionBackend] = None,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -1863,7 +1864,9 @@ def build_message_send_dict(
     if realm is None:
         realm = message.sender.realm
 
-    mention_backend = MentionBackend(realm.id)
+    if mention_backend is None:
+        mention_backend = MentionBackend(realm.id)
+
     mention_data = MentionData(
         mention_backend=mention_backend,
         content=message.content,
@@ -3303,6 +3306,7 @@ def check_message(
     email_gateway: bool = False,
     *,
     skip_stream_access_check: bool = False,
+    mention_backend: Optional[MentionBackend] = None,
 ) -> SendMessageRequest:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -3428,6 +3432,7 @@ def check_message(
         realm=realm,
         widget_content_dict=widget_content_dict,
         email_gateway=email_gateway,
+        mention_backend=mention_backend,
     )
 
     if stream is not None and message_send_dict.rendering_result.mentions_wildcard:
@@ -3444,6 +3449,7 @@ def _internal_prep_message(
     addressee: Addressee,
     content: str,
     email_gateway: bool = False,
+    mention_backend: Optional[MentionBackend] = None,
 ) -> Optional[SendMessageRequest]:
     """
     Create a message object and checks it, but doesn't send it or save it to the database.
@@ -3473,6 +3479,7 @@ def _internal_prep_message(
             content,
             realm=realm,
             email_gateway=email_gateway,
+            mention_backend=mention_backend,
         )
     except JsonableError as e:
         logging.exception(
@@ -3528,7 +3535,11 @@ def internal_prep_stream_message_by_name(
 
 
 def internal_prep_private_message(
-    realm: Realm, sender: UserProfile, recipient_user: UserProfile, content: str
+    realm: Realm,
+    sender: UserProfile,
+    recipient_user: UserProfile,
+    content: str,
+    mention_backend: Optional[MentionBackend] = None,
 ) -> Optional[SendMessageRequest]:
     """
     See _internal_prep_message for details of how this works.
@@ -3540,6 +3551,7 @@ def internal_prep_private_message(
         sender=sender,
         addressee=addressee,
         content=content,
+        mention_backend=mention_backend,
     )
 
 
