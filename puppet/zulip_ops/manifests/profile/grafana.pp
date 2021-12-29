@@ -13,7 +13,6 @@ class zulip_ops::profile::grafana {
     url            => "https://dl.grafana.com/oss/release/grafana-${version}.linux-${::architecture}.tar.gz",
     sha256         => '100f92c50aa612f213052c55594e58b68b7da641b751c5f144003d704730d189',
     tarball_prefix => "grafana-${version}",
-    bin            => 'bin/grafana-server',
   }
 
   group { 'grafana':
@@ -46,7 +45,7 @@ class zulip_ops::profile::grafana {
     ensure  => file,
     require => [
       Package[supervisor],
-      File[$bin],
+      Zulip::External_Dep['grafana'],
       File['/var/lib/grafana'],
       File['/var/log/grafana'],
     ],

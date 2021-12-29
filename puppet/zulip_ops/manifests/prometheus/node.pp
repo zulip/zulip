@@ -13,7 +13,6 @@ class zulip_ops::prometheus::node {
     url            => "https://github.com/prometheus/node_exporter/releases/download/v${version}/node_exporter-${version}.linux-${::architecture}.tar.gz",
     sha256         => '8c1f6a317457a658e0ae68ad710f6b4098db2cad10204649b51e3c043aa3e70d',
     tarball_prefix => "node_exporter-${version}.linux-${::architecture}",
-    bin            => 'node_exporter',
   }
 
   # This was moved to an external_dep in 2021/12, and these lines can
@@ -28,7 +27,7 @@ class zulip_ops::prometheus::node {
     require => [
       User[zulip],
       Package[supervisor],
-      File[$bin],
+      Zulip::External_Dep['node_exporter'],
     ],
     owner   => 'root',
     group   => 'root',

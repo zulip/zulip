@@ -3,7 +3,6 @@ define zulip::external_dep(
   String $sha256,
   String $url,
   String $tarball_prefix,
-  String $bin = '',
 ) {
 
   $dir = "/srv/zulip-${title}-${version}"
@@ -16,18 +15,6 @@ define zulip::external_dep(
     },
   }
 
-  file { $dir:
-    ensure  => directory,
-    require => Zulip::Sha256_tarball_to[$title],
-  }
-
-  if $bin != '' {
-    file { "${dir}/${bin}":
-      ensure  => file,
-      require => File[$dir],
-    }
-  }
-
   unless $::operatingsystem == 'Ubuntu' and $::operatingsystemrelease == '18.04' {
     # Puppet 5.5.0 and below make this always-noisy, as they spout out
     # a notify line about tidying the managed directory above.  Skip
@@ -38,7 +25,7 @@ define zulip::external_dep(
       recurse => 1,
       rmdirs  => true,
       matches => "zulip-${title}-*",
-      require => File[$dir],
+      require => Zulip::Sha256_Tarball_To[$title],
     }
   }
 }
