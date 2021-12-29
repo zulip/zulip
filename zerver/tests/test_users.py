@@ -2037,6 +2037,7 @@ class DeleteUserTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         hamlet_personal_recipient = hamlet.recipient
         hamlet_user_id = hamlet.id
+        hamlet_date_joined = hamlet.date_joined
 
         self.send_personal_message(cordelia, hamlet)
         self.send_personal_message(hamlet, cordelia)
@@ -2070,6 +2071,7 @@ class DeleteUserTest(ZulipTestCase):
         )
         self.assertEqual(replacement_dummy_user.is_mirror_dummy, True)
         self.assertEqual(replacement_dummy_user.is_active, False)
+        self.assertEqual(replacement_dummy_user.date_joined, hamlet_date_joined)
 
         self.assertEqual(Message.objects.filter(id__in=personal_message_ids_to_hamlet).count(), 0)
         # Huddle messages from hamlet should have been deleted, but messages of other participants should
