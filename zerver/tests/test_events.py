@@ -171,7 +171,7 @@ from zerver.lib.events import (
     fetch_initial_state_data,
     post_process_state,
 )
-from zerver.lib.mention import MentionData
+from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import render_markdown
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -437,8 +437,9 @@ class NormalActionsTest(BaseAction):
         content = "new content"
         rendering_result = render_markdown(pm, content)
         prior_mention_user_ids: Set[int] = set()
+        mention_backend = MentionBackend(self.user_profile.realm_id)
         mention_data = MentionData(
-            realm_id=self.user_profile.realm_id,
+            mention_backend=mention_backend,
             content=content,
         )
 
@@ -496,8 +497,9 @@ class NormalActionsTest(BaseAction):
         content = "new content"
         rendering_result = render_markdown(message, content)
         prior_mention_user_ids: Set[int] = set()
+        mention_backend = MentionBackend(self.user_profile.realm_id)
         mention_data = MentionData(
-            realm_id=self.user_profile.realm_id,
+            mention_backend=mention_backend,
             content=content,
         )
 

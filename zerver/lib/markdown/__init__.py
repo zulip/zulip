@@ -54,7 +54,7 @@ from zerver.lib.emoji import EMOTICON_RE, codepoint_to_name, name_to_codepoint, 
 from zerver.lib.exceptions import MarkdownRenderingException
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
-from zerver.lib.mention import FullNameInfo, MentionData, get_stream_name_map
+from zerver.lib.mention import FullNameInfo, MentionBackend, MentionData, get_stream_name_map
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
@@ -2508,7 +2508,8 @@ def do_convert(
         # are uncommon enough that it's a useful optimization.
 
         if mention_data is None:
-            mention_data = MentionData(message_realm.id, content)
+            mention_backend = MentionBackend(message_realm.id)
+            mention_data = MentionData(mention_backend, content)
 
         stream_names = possible_linked_stream_names(content)
         stream_name_info = get_stream_name_map(message_realm, stream_names)
