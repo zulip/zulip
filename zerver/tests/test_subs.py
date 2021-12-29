@@ -4945,6 +4945,7 @@ class GetSubscribersTest(ZulipTestCase):
         (We also use this test to verify subscription notifications to
         folks who get subscribed to streams.)
         """
+        hamlet = self.example_user("hamlet")
         streams = [f"stream_{i}" for i in range(10)]
         for stream_name in streams:
             self.make_stream(stream_name)
@@ -4958,8 +4959,8 @@ class GetSubscribersTest(ZulipTestCase):
             self.user_profile, streams, dict(principals=orjson.dumps(users_to_subscribe).decode())
         )
 
-        msg = """
-            @**King Hamlet** subscribed you to the following streams:
+        msg = f"""
+            @**King Hamlet|{hamlet.id}** subscribed you to the following streams:
 
             * #**stream_0**
             * #**stream_1**
@@ -4992,8 +4993,8 @@ class GetSubscribersTest(ZulipTestCase):
             invite_only=True,
         )
 
-        msg = """
-            @**King Hamlet** subscribed you to the stream #**stream_invite_only_1**.
+        msg = f"""
+            @**King Hamlet|{hamlet.id}** subscribed you to the stream #**stream_invite_only_1**.
             """
         self.assert_user_got_subscription_notification(msg, self.user_profile.realm)
 
