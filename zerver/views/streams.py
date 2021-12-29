@@ -50,7 +50,7 @@ from zerver.lib.exceptions import (
     OrganizationOwnerRequired,
     ResourceNotFoundError,
 )
-from zerver.lib.mention import silent_mention_syntax_for_user
+from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.retention import parse_message_retention_days
@@ -603,6 +603,9 @@ def send_messages_for_new_subscribers(
 
     newly_created_stream_names = {s.name for s in created_streams}
 
+    realm = user_profile.realm
+    mention_backend = MentionBackend(realm.id)
+
     # Inform the user if someone else subscribed them to stuff,
     # or if a new stream was created with the "announce" option.
     notifications = []
@@ -633,10 +636,11 @@ def send_messages_for_new_subscribers(
 
             notifications.append(
                 internal_prep_private_message(
-                    realm=user_profile.realm,
+                    realm=realm,
                     sender=sender,
                     recipient_user=recipient_user,
                     content=msg,
+                    mention_backend=mention_backend,
                 )
             )
 

@@ -37,27 +37,61 @@ class UserFilter:
             raise AssertionError("totally empty filter makes no sense")
 
 
-@dataclass
 class MentionBackend:
-    realm_id: int
+    def __init__(self, realm_id: int) -> None:
+        self.realm_id = realm_id
+        self.user_cache: Dict[Tuple[int, str], FullNameInfo] = {}
 
     def get_full_name_info_list(self, user_filters: List[UserFilter]) -> List[FullNameInfo]:
-        q_list = [user_filter.Q() for user_filter in user_filters]
+        result: List[FullNameInfo] = []
+        unseen_user_filters: List[UserFilter] = []
 
-        rows = (
-            UserProfile.objects.filter(
-                realm_id=self.realm_id,
-                is_active=True,
+        # Try to get messages from the user_cache first.
+        # This loop populates two lists:
+        #  - results are the objects we pull from cache
+        #  - unseen_user_filters are filters where need to hit the DB
+        for user_filter in user_filters:
+            # We expect callers who take advantage of our user_cache to supply both
+            # id and full_name in the user mentions in their messages.
+            if user_filter.id is not None and user_filter.full_name is not None:
+                user = self.user_cache.get((user_filter.id, user_filter.full_name), None)
+                if user is not None:
+                    result.append(user)
+                    continue
+
+            # BOO! We have to go the database.
+            unseen_user_filters.append(user_filter)
+
+        # Most of the time, we have to go to the database to get user info,
+        # unless our last loop found everything in the cache.
+        if unseen_user_filters:
+            q_list = [user_filter.Q() for user_filter in unseen_user_filters]
+
+            rows = (
+                UserProfile.objects.filter(
+                    realm_id=self.realm_id,
+                    is_active=True,
+                )
+                .filter(
+                    functools.reduce(lambda a, b: a | b, q_list),
+                )
+                .only(
+                    "id",
+                    "full_name",
+                )
             )
-            .filter(
-                functools.reduce(lambda a, b: a | b, q_list),
-            )
-            .only(
-                "id",
-                "full_name",
-            )
-        )
-        return [FullNameInfo(id=row.id, full_name=row.full_name) for row in rows]
+
+            user_list = [FullNameInfo(id=row.id, full_name=row.full_name) for row in rows]
+
+            # We expect callers who take advantage of our cache to supply both
+            # id and full_name in the user mentions in their messages.
+            for user in user_list:
+                if user.id is not None and user.full_name is not None:
+                    self.user_cache[(user.id, user.full_name)] = user
+
+            result += user_list
+
+        return result
 
 
 def user_mention_matches_wildcard(mention: str) -> bool:
