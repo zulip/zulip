@@ -66,6 +66,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     cache_tries_captured,
     get_subscription,
+    most_recent_message,
     most_recent_usermessage,
     queries_captured,
     reset_emails_in_zulip_realm,
@@ -4889,9 +4890,12 @@ class GetSubscribersTest(ZulipTestCase):
         self.user_profile = self.example_user("hamlet")
         self.login_user(self.user_profile)
 
-    def assert_user_got_subscription_notification(self, expected_msg: str, realm: Realm) -> None:
+    def assert_user_got_subscription_notification(
+        self, user: UserProfile, expected_msg: str
+    ) -> None:
         # verify that the user was sent a message informing them about the subscription
-        msg = self.get_last_message()
+        realm = user.realm
+        msg = most_recent_message(user)
         self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
         self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
 
@@ -4946,18 +4950,28 @@ class GetSubscribersTest(ZulipTestCase):
         folks who get subscribed to streams.)
         """
         hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        polonius = self.example_user("polonius")
+
         streams = [f"stream_{i}" for i in range(10)]
         for stream_name in streams:
             self.make_stream(stream_name)
 
         users_to_subscribe = [
             self.user_profile.id,
-            self.example_user("othello").id,
-            self.example_user("cordelia").id,
+            othello.id,
+            cordelia.id,
+            polonius.id,
         ]
-        self.common_subscribe_to_streams(
-            self.user_profile, streams, dict(principals=orjson.dumps(users_to_subscribe).decode())
-        )
+
+        with queries_captured() as queries:
+            self.common_subscribe_to_streams(
+                self.user_profile,
+                streams,
+                dict(principals=orjson.dumps(users_to_subscribe).decode()),
+            )
+        self.assert_length(queries, 50)
 
         msg = f"""
             @**King Hamlet|{hamlet.id}** subscribed you to the following streams:
@@ -4974,7 +4988,8 @@ class GetSubscribersTest(ZulipTestCase):
             * #**stream_9**
             """
 
-        self.assert_user_got_subscription_notification(msg, self.user_profile.realm)
+        for user in [cordelia, othello, polonius]:
+            self.assert_user_got_subscription_notification(user, msg)
 
         # Subscribe ourself first.
         self.common_subscribe_to_streams(
@@ -4996,7 +5011,8 @@ class GetSubscribersTest(ZulipTestCase):
         msg = f"""
             @**King Hamlet|{hamlet.id}** subscribed you to the stream #**stream_invite_only_1**.
             """
-        self.assert_user_got_subscription_notification(msg, self.user_profile.realm)
+        for user in [cordelia, othello, polonius]:
+            self.assert_user_got_subscription_notification(user, msg)
 
         with queries_captured() as queries:
             subscribed_streams, _ = gather_subscriptions(
