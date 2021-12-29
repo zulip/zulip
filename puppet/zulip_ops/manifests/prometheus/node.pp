@@ -4,14 +4,18 @@ class zulip_ops::prometheus::node {
   include zulip_ops::prometheus::base
   include zulip::supervisor
 
+  $arch = $::architecture ? {
+    'amd64'   => 'amd64',
+    'aarch64' => 'arm64',
+  }
   $version = $zulip::common::versions['node_exporter']['version']
   $dir = "/srv/zulip-node_exporter-${version}"
   $bin = "${dir}/node_exporter"
 
   zulip::external_dep { 'node_exporter':
     version        => $version,
-    url            => "https://github.com/prometheus/node_exporter/releases/download/v${version}/node_exporter-${version}.linux-${::architecture}.tar.gz",
-    tarball_prefix => "node_exporter-${version}.linux-${::architecture}",
+    url            => "https://github.com/prometheus/node_exporter/releases/download/v${version}/node_exporter-${version}.linux-${arch}.tar.gz",
+    tarball_prefix => "node_exporter-${version}.linux-${arch}",
   }
 
   # This was moved to an external_dep in 2021/12, and these lines can
