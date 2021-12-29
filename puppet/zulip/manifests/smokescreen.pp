@@ -19,11 +19,10 @@ class zulip::smokescreen {
     # GOCACHE is required; nothing is written to GOPATH, but it is required to be set
     environment => ['GOCACHE=/tmp/gocache', 'GOPATH=/root/go'],
     creates     => $bin,
-    require     => [File[$zulip::golang::bin], File[$dir]],
-  }
-  file { $bin:
-    ensure  => file,
-    require => Exec['compile smokescreen'],
+    require     => [
+      Zulip::External_Dep['golang'],
+      Zulip::External_Dep['smokescreen-src'],
+    ],
   }
   unless $::operatingsystem == 'Ubuntu' and $::operatingsystemrelease == '18.04' {
     # Puppet 5.5.0 and below make this always-noisy, as they spout out
@@ -34,7 +33,7 @@ class zulip::smokescreen {
       path    => '/usr/local/bin',
       recurse => 1,
       matches => 'smokescreen-*',
-      require => File[$bin],
+      require => Exec['compile smokescreen'],
     }
   }
 
@@ -43,7 +42,7 @@ class zulip::smokescreen {
     ensure  => file,
     require => [
       Package[supervisor],
-      File[$bin],
+      Exec['compile smokescreen'],
     ],
     owner   => 'root',
     group   => 'root',
