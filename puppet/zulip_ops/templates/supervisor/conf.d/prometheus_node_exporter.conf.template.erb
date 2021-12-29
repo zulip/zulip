@@ -1,5 +1,5 @@
 [program:prometheus_node_exporter]
-command=/usr/local/bin/node_exporter --collector.supervisord --collector.supervisord.url=unix:///var/run/supervisor.sock --no-collector.hwmon
+command=<%= @bin %> --collector.supervisord --collector.supervisord.url=unix:///var/run/supervisor.sock --no-collector.hwmon
 priority=10
 autostart=true
 autorestart=true
