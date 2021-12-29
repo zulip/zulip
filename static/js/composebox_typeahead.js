@@ -75,8 +75,7 @@ export function topics_seen_for(stream_name) {
 
     // Fetch topic history from the server, in case we will need it soon.
     stream_topic_history_util.get_server_history(stream_id, () => {});
-    const topic_names = stream_topic_history.get_recent_topic_names(stream_id);
-    return topic_names;
+    return stream_topic_history.get_recent_topic_names(stream_id);
 }
 
 function get_language_matcher(query) {
@@ -146,7 +145,7 @@ export function should_enter_send(e) {
         this_enter_sends = !has_modifier_key;
     } else {
         // If enter_sends is not enabled, just hitting
-        // Snter should add a newline, but with a
+        // Enter should add a newline, but with a
         // non-Shift modifier key held down, we should
         // send.  With Shift, we shouldn't, because
         // Shift+Enter to get a newline is a common
