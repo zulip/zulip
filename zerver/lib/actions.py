@@ -1217,30 +1217,39 @@ def do_delete_user(user_profile: UserProfile) -> None:
     realm = user_profile.realm
     personal_recipient = user_profile.recipient
 
-    user_profile.delete()
-    # Recipient objects don't get deleted through CASCADE, so we need to handle
-    # the user's personal recipient manually. This will also delete all Messages pointing
-    # to this recipient (all private messages sent to the user).
-    assert personal_recipient is not None
-    personal_recipient.delete()
-    replacement_user = create_user(
-        force_id=user_id,
-        email=f"deleteduser{user_id}@{get_fake_email_domain(realm)}",
-        password=None,
-        realm=realm,
-        full_name=f"Deleted User {user_id}",
-        active=False,
-        is_mirror_dummy=True,
-    )
-    subs_to_recreate = [
-        Subscription(
-            user_profile=replacement_user,
-            recipient=recipient,
-            is_user_active=replacement_user.is_active,
+    with transaction.atomic():
+        user_profile.delete()
+        # Recipient objects don't get deleted through CASCADE, so we need to handle
+        # the user's personal recipient manually. This will also delete all Messages pointing
+        # to this recipient (all private messages sent to the user).
+        assert personal_recipient is not None
+        personal_recipient.delete()
+        replacement_user = create_user(
+            force_id=user_id,
+            email=f"deleteduser{user_id}@{get_fake_email_domain(realm)}",
+            password=None,
+            realm=realm,
+            full_name=f"Deleted User {user_id}",
+            active=False,
+            is_mirror_dummy=True,
         )
-        for recipient in Recipient.objects.filter(id__in=subscribed_huddle_recipient_ids)
-    ]
-    Subscription.objects.bulk_create(subs_to_recreate)
+        subs_to_recreate = [
+            Subscription(
+                user_profile=replacement_user,
+                recipient=recipient,
+                is_user_active=replacement_user.is_active,
+            )
+            for recipient in Recipient.objects.filter(id__in=subscribed_huddle_recipient_ids)
+        ]
+        Subscription.objects.bulk_create(subs_to_recreate)
+
+        RealmAuditLog.objects.create(
+            realm=replacement_user.realm,
+            modified_user=replacement_user,
+            acting_user=None,
+            event_type=RealmAuditLog.USER_DELETED,
+            event_time=timezone_now(),
+        )
 
 
 def change_user_is_active(user_profile: UserProfile, value: bool) -> None:
