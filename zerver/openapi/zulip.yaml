@@ -13931,8 +13931,9 @@ components:
             emoji's image can be found.
         still_url:
           type: string
+          nullable: true
           description: |
-            Only present when the emoji's image is animated.
+            Only non-null when the emoji's image is animated.
 
             The path relative to the organization's URL where a still
             (not animated) version of the emoji can be found. (This is
@@ -13942,7 +13943,9 @@ components:
             where continuously animating it would be a bad user experience
             (E.g. because it would be distracting).
 
-            **Changes**: New in Zulip 5.0 (feature level 97).
+            **Changes**: New in Zulip 5.0 (added as optional field in
+            feature level 97 and then made mandatory, but nullable, in
+            feature level 113).
         deactivated:
           type: boolean
           description: |

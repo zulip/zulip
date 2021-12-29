@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 5.0
 
+**Feature level 113**
+
+* `GET /realm/emoji`, `POST /realm/emoji/{emoji_name}`, [`GET
+  /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  The `still_url` field for custom emoji objects is now always
+  present, with a value of null for non-animated emoji. Previously, it
+  only was present for animated emoji.
+
 **Feature level 112**
 
 * [`GET /events`](/api/get-events): Updated `update_message` event type
