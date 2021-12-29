@@ -37,6 +37,29 @@ class UserFilter:
             raise AssertionError("totally empty filter makes no sense")
 
 
+@dataclass
+class MentionBackend:
+    realm_id: int
+
+    def get_full_name_info_list(self, user_filters: List[UserFilter]) -> List[FullNameInfo]:
+        q_list = [user_filter.Q() for user_filter in user_filters]
+
+        rows = (
+            UserProfile.objects.filter(
+                realm_id=self.realm_id,
+                is_active=True,
+            )
+            .filter(
+                functools.reduce(lambda a, b: a | b, q_list),
+            )
+            .only(
+                "id",
+                "full_name",
+            )
+        )
+        return [FullNameInfo(id=row.id, full_name=row.full_name) for row in rows]
+
+
 def user_mention_matches_wildcard(mention: str) -> bool:
     return mention in wildcards
 
@@ -65,7 +88,9 @@ def possible_user_group_mentions(content: str) -> Set[str]:
     return {m.group("match") for m in USER_GROUP_MENTIONS_RE.finditer(content)}
 
 
-def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> List[FullNameInfo]:
+def get_possible_mentions_info(
+    mention_backend: MentionBackend, mention_texts: Set[str]
+) -> List[FullNameInfo]:
     if not mention_texts:
         return []
 
@@ -88,28 +113,14 @@ def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> List[F
             # For **name** syntax.
             user_filters.append(UserFilter(full_name=mention_text, id=None))
 
-    q_list = [user_filter.Q() for user_filter in user_filters]
-
-    rows = (
-        UserProfile.objects.filter(
-            realm_id=realm_id,
-            is_active=True,
-        )
-        .filter(
-            functools.reduce(lambda a, b: a | b, q_list),
-        )
-        .only(
-            "id",
-            "full_name",
-        )
-    )
-    return [FullNameInfo(id=row.id, full_name=row.full_name) for row in rows]
+    return mention_backend.get_full_name_info_list(user_filters)
 
 
 class MentionData:
-    def __init__(self, realm_id: int, content: str) -> None:
+    def __init__(self, mention_backend: MentionBackend, content: str) -> None:
+        realm_id = mention_backend.realm_id
         mention_texts, has_wildcards = possible_mentions(content)
-        possible_mentions_info = get_possible_mentions_info(realm_id, mention_texts)
+        possible_mentions_info = get_possible_mentions_info(mention_backend, mention_texts)
         self.full_name_info = {row.full_name.lower(): row for row in possible_mentions_info}
         self.user_id_info = {row.id: row for row in possible_mentions_info}
         self.init_user_group_data(realm_id=realm_id, content=content)

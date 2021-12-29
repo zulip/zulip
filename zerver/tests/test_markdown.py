@@ -42,6 +42,7 @@ from zerver.lib.markdown.fenced_code import FencedBlockPreprocessor
 from zerver.lib.mdiff import diff_strings
 from zerver.lib.mention import (
     FullNameInfo,
+    MentionBackend,
     MentionData,
     get_possible_mentions_info,
     possible_mentions,
@@ -232,8 +233,9 @@ class MarkdownMiscTest(ZulipTestCase):
 
         fred4 = make_user("fred4@example.com", "Fred Flintstone")
 
+        mention_backend = MentionBackend(realm.id)
         lst = get_possible_mentions_info(
-            realm.id, {"Fred Flintstone", "Cordelia, LEAR's daughter", "Not A User"}
+            mention_backend, {"Fred Flintstone", "Cordelia, LEAR's daughter", "Not A User"}
         )
         set_of_names = set(map(lambda x: x.full_name.lower(), lst))
         self.assertEqual(set_of_names, {"fred flintstone", "cordelia, lear's daughter"})
@@ -259,7 +261,8 @@ class MarkdownMiscTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
         content = "@**King Hamlet** @**Cordelia, lear's daughter**"
-        mention_data = MentionData(realm.id, content)
+        mention_backend = MentionBackend(realm.id)
+        mention_data = MentionData(mention_backend, content)
         self.assertEqual(mention_data.get_user_ids(), {hamlet.id, cordelia.id})
         self.assertEqual(
             mention_data.get_user_by_id(hamlet.id),
@@ -275,7 +278,7 @@ class MarkdownMiscTest(ZulipTestCase):
 
         self.assertFalse(mention_data.message_has_wildcards())
         content = "@**King Hamlet** @**Cordelia, lear's daughter** @**all**"
-        mention_data = MentionData(realm.id, content)
+        mention_data = MentionData(mention_backend, content)
         self.assertTrue(mention_data.message_has_wildcards())
 
     def test_invalid_katex_path(self) -> None:

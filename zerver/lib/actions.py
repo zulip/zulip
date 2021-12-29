@@ -100,7 +100,7 @@ from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.i18n import get_language_name
 from zerver.lib.markdown import MessageRenderingResult, topic_links
 from zerver.lib.markdown import version as markdown_version
-from zerver.lib.mention import MentionData, silent_mention_syntax_for_user
+from zerver.lib.mention import MentionBackend, MentionData, silent_mention_syntax_for_user
 from zerver.lib.message import (
     MessageDict,
     SendMessageRequest,
@@ -1863,8 +1863,9 @@ def build_message_send_dict(
     if realm is None:
         realm = message.sender.realm
 
+    mention_backend = MentionBackend(realm.id)
     mention_data = MentionData(
-        realm_id=realm.id,
+        mention_backend=mention_backend,
         content=message.content,
     )
 
@@ -3065,8 +3066,9 @@ def check_update_message(
             content = "(deleted)"
         content = normalize_body(content)
 
+        mention_backend = MentionBackend(user_profile.realm_id)
         mention_data = MentionData(
-            realm_id=user_profile.realm.id,
+            mention_backend=mention_backend,
             content=content,
         )
         user_info = get_user_info_for_message_updates(message.id)

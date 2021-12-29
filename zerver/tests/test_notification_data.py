@@ -1,4 +1,4 @@
-from zerver.lib.mention import MentionData
+from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.notification_data import get_user_group_mentions_data
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_groups import create_user_group
@@ -220,11 +220,13 @@ class TestNotificationData(ZulipTestCase):
         hamlet_only = create_user_group("hamlet_only", [hamlet], realm)
         hamlet_and_cordelia = create_user_group("hamlet_and_cordelia", [hamlet, cordelia], realm)
 
+        mention_backend = MentionBackend(realm.id)
+
         # Base case. No user/user group mentions
         result = get_user_group_mentions_data(
             mentioned_user_ids=set(),
             mentioned_user_group_ids=[],
-            mention_data=MentionData(realm.id, "no group mentioned"),
+            mention_data=MentionData(mention_backend, "no group mentioned"),
         )
         self.assertDictEqual(result, {})
 
@@ -232,7 +234,7 @@ class TestNotificationData(ZulipTestCase):
         result = get_user_group_mentions_data(
             mentioned_user_ids=set(),
             mentioned_user_group_ids=[hamlet_and_cordelia.id],
-            mention_data=MentionData(realm.id, "hey @*hamlet_and_cordelia*!"),
+            mention_data=MentionData(mention_backend, "hey @*hamlet_and_cordelia*!"),
         )
         self.assertDictEqual(
             result,
@@ -247,7 +249,9 @@ class TestNotificationData(ZulipTestCase):
         result = get_user_group_mentions_data(
             mentioned_user_ids=set(),
             mentioned_user_group_ids=[hamlet_and_cordelia.id, hamlet_only.id],
-            mention_data=MentionData(realm.id, "hey @*hamlet_and_cordelia* and @*hamlet_only*"),
+            mention_data=MentionData(
+                mention_backend, "hey @*hamlet_and_cordelia* and @*hamlet_only*"
+            ),
         )
         self.assertDictEqual(
             result,
@@ -262,7 +266,9 @@ class TestNotificationData(ZulipTestCase):
         result = get_user_group_mentions_data(
             mentioned_user_ids=set(),
             mentioned_user_group_ids=[hamlet_only.id, hamlet_and_cordelia.id],
-            mention_data=MentionData(realm.id, "hey @*hamlet_only* and @*hamlet_and_cordelia*"),
+            mention_data=MentionData(
+                mention_backend, "hey @*hamlet_only* and @*hamlet_and_cordelia*"
+            ),
         )
         self.assertDictEqual(
             result,
@@ -277,7 +283,7 @@ class TestNotificationData(ZulipTestCase):
         result = get_user_group_mentions_data(
             mentioned_user_ids={hamlet.id},
             mentioned_user_group_ids=[hamlet_and_cordelia.id],
-            mention_data=MentionData(realm.id, "hey @*hamlet_and_cordelia*!"),
+            mention_data=MentionData(mention_backend, "hey @*hamlet_and_cordelia*!"),
         )
         self.assertDictEqual(
             result,

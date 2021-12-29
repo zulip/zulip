@@ -21,7 +21,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.avatar import avatar_url
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.mention import MentionData
+from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import (
     MessageDict,
     get_first_visible_message_id,
@@ -3776,7 +3776,8 @@ class MessageHasKeywordsTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         realm_id = hamlet.realm.id
         rendering_result = render_markdown(msg, content)
-        mention_data = MentionData(realm_id, content)
+        mention_backend = MentionBackend(realm_id)
+        mention_data = MentionData(mention_backend, content)
         do_update_message(
             hamlet,
             msg,
