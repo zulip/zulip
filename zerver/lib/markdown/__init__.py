@@ -1503,7 +1503,7 @@ class Emoji(markdown.inlinepatterns.Pattern):
         orig_syntax = match.group("syntax")
         name = orig_syntax[1:-1]
 
-        active_realm_emoji: Dict[str, Dict[str, str]] = {}
+        active_realm_emoji: Dict[str, EmojiInfo] = {}
         db_data = self.md.zulip_db_data
         if db_data is not None:
             active_realm_emoji = db_data["active_realm_emoji"]
