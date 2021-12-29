@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, Union
 
 import orjson
@@ -85,8 +86,13 @@ def create_user_profile(
     tutorial_status: str = UserProfile.TUTORIAL_WAITING,
     enter_sends: bool = False,
     force_id: Optional[int] = None,
+    force_date_joined: Optional[datetime] = None,
 ) -> UserProfile:
-    now = timezone_now()
+    if force_date_joined is None:
+        date_joined = timezone_now()
+    else:
+        date_joined = force_date_joined
+
     email = UserManager.normalize_email(email)
 
     extra_kwargs = {}
@@ -97,8 +103,8 @@ def create_user_profile(
         is_staff=False,
         is_active=active,
         full_name=full_name,
-        last_login=now,
-        date_joined=now,
+        last_login=date_joined,
+        date_joined=date_joined,
         realm=realm,
         is_bot=bool(bot_type),
         bot_type=bot_type,
@@ -141,6 +147,7 @@ def create_user(
     default_all_public_streams: Optional[bool] = None,
     source_profile: Optional[UserProfile] = None,
     force_id: Optional[int] = None,
+    force_date_joined: Optional[datetime] = None,
     enable_marketing_emails: Optional[bool] = None,
 ) -> UserProfile:
     user_profile = create_user_profile(
@@ -155,6 +162,7 @@ def create_user(
         tos_version,
         timezone,
         force_id=force_id,
+        force_date_joined=force_date_joined,
     )
     user_profile.avatar_source = avatar_source
     user_profile.timezone = timezone
