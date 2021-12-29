@@ -1,3 +1,5 @@
+import _ from "lodash";
+
 import * as blueslip from "./blueslip";
 import * as compose_fade_users from "./compose_fade_users";
 import * as hash_util from "./hash_util";
@@ -287,9 +289,18 @@ function maybe_shrink_list(user_ids, user_filter_text) {
         return user_ids;
     }
 
-    user_ids = user_ids.filter((user_id) => user_is_recently_active(user_id));
-
-    return user_ids;
+    // We have to partition and can't just directly slice user_ids
+    // here, because we want to make sure we include all recently_active
+    // users (and no one has guaranteed those are at the start)
+    const [recently_active_users, offline_users] = _.partition(user_ids, user_is_recently_active);
+    if (recently_active_users.length < max_size_before_shrinking) {
+        return [
+            ...recently_active_users,
+            ...offline_users.slice(0, max_size_before_shrinking - recently_active_users.length),
+        ];
+    }
+    // else
+    return recently_active_users;
 }
 
 function filter_user_ids(user_filter_text, user_ids) {

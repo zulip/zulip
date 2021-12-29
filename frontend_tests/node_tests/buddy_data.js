@@ -397,13 +397,15 @@ test("bulk_data_hacks", ({override_rewire}) => {
 
     let user_ids;
 
-    // Even though we have 1000 users, we only get the 400 active
-    // users.  This is a consequence of buddy_data.maybe_shrink_list.
+    // Even though we have 1000 users, we only get 600 users (400 active and
+    // 200 inactive). This is a consequence of buddy_data.maybe_shrink_list.
     user_ids = buddy_data.get_filtered_and_sorted_user_ids();
-    assert.equal(user_ids.length, 400);
+    assert.equal(user_ids.length, 600);
 
+    // Even though we have 1000 users, we only get 600 users (400 active and
+    // 200 inactive). This is a consequence of buddy_data.maybe_shrink_list.
     user_ids = buddy_data.get_filtered_and_sorted_user_ids("");
-    assert.equal(user_ids.length, 400);
+    assert.equal(user_ids.length, 600);
 
     // We don't match on "so", because it's not at the start of a
     // word in the name/email.
@@ -420,10 +422,17 @@ test("bulk_data_hacks", ({override_rewire}) => {
     assert.equal(user_ids.length, 994);
 
     // Make our shrink limit higher, and go back to an empty search.
-    // We won't get all 1000 users, just the present ones.
+    // We won't get all 1000 users, just the present ones (we set 400
+    // active and 300 inactive which leaves 300 unset ie not present).
     override_rewire(buddy_data, "max_size_before_shrinking", 50000);
     user_ids = buddy_data.get_filtered_and_sorted_user_ids("");
     assert.equal(user_ids.length, 700);
+
+    // Make our shrink limit smaller, and go back to an empty search.
+    // We only get 400 active users.
+    override_rewire(buddy_data, "max_size_before_shrinking", 200);
+    user_ids = buddy_data.get_filtered_and_sorted_user_ids("");
+    assert.equal(user_ids.length, 400);
 });
 
 test("always show me", () => {
