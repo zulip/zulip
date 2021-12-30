@@ -53,7 +53,13 @@ def validate_entity(entity: Union[UserProfile, RemoteZulipServer]) -> RemoteZuli
 
 def validate_uuid(uuid: str) -> None:
     try:
-        UUID(uuid, version=4)
+        uuid_object = UUID(uuid, version=4)
+        # The UUID initialization under some circumstances will modify the uuid
+        # string to create a valid UUIDv4, instead of raising a ValueError.
+        # The submitted uuid needing to be modified means it's invalid, so
+        # we need to check for that condition.
+        if str(uuid_object) != uuid:
+            raise ValidationError(err_("Invalid UUID"))
     except ValueError:
         raise ValidationError(err_("Invalid UUID"))
 
