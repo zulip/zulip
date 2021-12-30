@@ -995,7 +995,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             else:
                 current_node.tail = text
 
-        db_data = self.md.zulip_db_data
+        db_data: Optional[DbData] = self.md.zulip_db_data
         current_index = 0
         for item in to_process:
             # The text we want to link starts in already linked text skip it
@@ -1330,7 +1330,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 # is enabled, but URL previews are a beta feature and YouTube
                 # previews are pretty stable.
 
-            db_data = self.md.zulip_db_data
+            db_data: Optional[DbData] = self.md.zulip_db_data
             if db_data and db_data.sent_by_bot:
                 continue
 
@@ -1486,7 +1486,7 @@ class EmoticonTranslation(markdown.inlinepatterns.Pattern):
     """Translates emoticons like `:)` into emoji like `:smile:`."""
 
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
-        db_data = self.md.zulip_db_data
+        db_data: Optional[DbData] = self.md.zulip_db_data
         if db_data is None or not db_data.translate_emoticons:
             return None
 
@@ -1513,7 +1513,7 @@ class Emoji(markdown.inlinepatterns.Pattern):
         name = orig_syntax[1:-1]
 
         active_realm_emoji: Dict[str, EmojiInfo] = {}
-        db_data = self.md.zulip_db_data
+        db_data: Optional[DbData] = self.md.zulip_db_data
         if db_data is not None:
             active_realm_emoji = db_data.active_realm_emoji
 
@@ -1625,7 +1625,7 @@ class CompiledPattern(markdown.inlinepatterns.Pattern):
 class AutoLink(CompiledPattern):
     def handleMatch(self, match: Match[str]) -> ElementStringNone:
         url = match.group("url")
-        db_data = self.md.zulip_db_data
+        db_data: Optional[DbData] = self.md.zulip_db_data
         return url_to_a(db_data, url)
 
 
@@ -1827,7 +1827,7 @@ class LinkifierPattern(CompiledInlineProcessor):
     def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
         self, m: Match[str], data: str
     ) -> Union[Tuple[Element, int, int], Tuple[None, None, None]]:
-        db_data = self.md.zulip_db_data
+        db_data: Optional[DbData] = self.md.zulip_db_data
         url = url_to_a(
             db_data,
             self.format_string % m.groupdict(),
@@ -1849,7 +1849,7 @@ class UserMentionPattern(CompiledInlineProcessor):
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
         name = m.group("match")
         silent = m.group("silent") == "_"
-        db_data = self.md.zulip_db_data
+        db_data: Optional[DbData] = self.md.zulip_db_data
         if db_data is not None:
             wildcard = mention.user_mention_matches_wildcard(name)
 
@@ -1903,7 +1903,7 @@ class UserGroupMentionPattern(CompiledInlineProcessor):
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
         name = m.group("match")
         silent = m.group("silent") == "_"
-        db_data = self.md.zulip_db_data
+        db_data: Optional[DbData] = self.md.zulip_db_data
 
         if db_data is not None:
             user_group = db_data.mention_data.get_user_group(name)
@@ -1932,7 +1932,7 @@ class UserGroupMentionPattern(CompiledInlineProcessor):
 
 class StreamPattern(CompiledInlineProcessor):
     def find_stream_id(self, name: str) -> Optional[int]:
-        db_data = self.md.zulip_db_data
+        db_data: Optional[DbData] = self.md.zulip_db_data
         if db_data is None:
             return None
         stream_id = db_data.stream_names.get(name)
@@ -1963,7 +1963,7 @@ class StreamPattern(CompiledInlineProcessor):
 
 class StreamTopicPattern(CompiledInlineProcessor):
     def find_stream_id(self, name: str) -> Optional[int]:
-        db_data = self.md.zulip_db_data
+        db_data: Optional[DbData] = self.md.zulip_db_data
         if db_data is None:
             return None
         stream_id = db_data.stream_names.get(name)
@@ -2028,7 +2028,7 @@ class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
         return False
 
     def run(self, lines: List[str]) -> List[str]:
-        db_data = self.md.zulip_db_data
+        db_data: Optional[DbData] = self.md.zulip_db_data
         if db_data is not None:
             # We check for alert words here, the set of which are
             # dependent on which users may see this message.
@@ -2062,7 +2062,7 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
             return None  # no-op; the link is not processed.
 
         # Rewrite local links to be relative
-        db_data = self.md.zulip_db_data
+        db_data: Optional[DbData] = self.md.zulip_db_data
         href = rewrite_local_links_to_relative(db_data, href)
 
         # Make changes to <a> tag attributes
