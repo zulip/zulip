@@ -1675,7 +1675,7 @@ div.focused_table {
     color: inherit;
     background-color: hsl(0, 11%, 96%);
     border-radius: 6px;
-    border: solid 1px hsl(215, 47%, 50%);
+    border: solid 1px hsl(220, 1%, 45%);
 }
 
 .messagebox-content {
