@@ -9,12 +9,10 @@ from zerver.lib.exceptions import JsonableError
 from zerver.models import Realm, UserGroup, UserGroupMembership, UserProfile
 
 
-def access_user_group_by_id(
-    user_group_id: int, user_profile: UserProfile, for_mention: bool = False
-) -> UserGroup:
+def access_user_group_by_id(user_group_id: int, user_profile: UserProfile) -> UserGroup:
     try:
         user_group = UserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
-        if not for_mention and user_group.is_system_group:
+        if user_group.is_system_group:
             raise JsonableError(_("Insufficient permission"))
         group_member_ids = get_user_group_direct_members(user_group)
         if (

@@ -24,7 +24,6 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message, bulk_access_messages_expect_usermessage, huddle_users
 from zerver.lib.remote_server import send_json_to_push_bouncer, send_to_push_bouncer
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.user_groups import access_user_group_by_id
 from zerver.models import (
     AbstractPushDeviceToken,
     ArchivedMessage,
@@ -32,6 +31,7 @@ from zerver.models import (
     NotificationTriggers,
     PushDeviceToken,
     Recipient,
+    UserGroup,
     UserMessage,
     UserProfile,
     get_display_recipient,
@@ -1008,9 +1008,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     mentioned_user_group_id = missed_message.get("mentioned_user_group_id")
 
     if mentioned_user_group_id is not None:
-        user_group = access_user_group_by_id(
-            mentioned_user_group_id, user_profile, for_mention=True
-        )
+        user_group = UserGroup.objects.get(id=mentioned_user_group_id, realm=user_profile.realm)
         mentioned_user_group_name = user_group.name
 
     apns_payload = get_message_payload_apns(
