@@ -41,6 +41,7 @@ class MentionBackend:
     def __init__(self, realm_id: int) -> None:
         self.realm_id = realm_id
         self.user_cache: Dict[Tuple[int, str], FullNameInfo] = {}
+        self.stream_cache: Dict[str, int] = {}
 
     def get_full_name_info_list(self, user_filters: List[UserFilter]) -> List[FullNameInfo]:
         result: List[FullNameInfo] = []
@@ -97,23 +98,36 @@ class MentionBackend:
         if not stream_names:
             return {}
 
-        q_list = {Q(name=name) for name in stream_names}
+        result: Dict[str, int] = {}
+        unseen_stream_names: List[str] = []
 
-        rows = (
-            get_linkable_streams(
-                realm_id=self.realm_id,
-            )
-            .filter(
-                functools.reduce(lambda a, b: a | b, q_list),
-            )
-            .values(
-                "id",
-                "name",
-            )
-        )
+        for stream_name in stream_names:
+            if stream_name in self.stream_cache:
+                result[stream_name] = self.stream_cache[stream_name]
+            else:
+                unseen_stream_names.append(stream_name)
 
-        dct = {row["name"]: row["id"] for row in rows}
-        return dct
+        if unseen_stream_names:
+            q_list = {Q(name=name) for name in unseen_stream_names}
+
+            rows = (
+                get_linkable_streams(
+                    realm_id=self.realm_id,
+                )
+                .filter(
+                    functools.reduce(lambda a, b: a | b, q_list),
+                )
+                .values(
+                    "id",
+                    "name",
+                )
+            )
+
+            for row in rows:
+                self.stream_cache[row["name"]] = row["id"]
+                result[row["name"]] = row["id"]
+
+        return result
 
 
 def user_mention_matches_wildcard(mention: str) -> bool:
