@@ -1,6 +1,7 @@
 import datetime
 import logging
 from typing import Any, Dict, List, Optional, Union
+from uuid import UUID
 
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
@@ -50,6 +51,13 @@ def validate_entity(entity: Union[UserProfile, RemoteZulipServer]) -> RemoteZuli
     return entity
 
 
+def validate_uuid(uuid: str) -> None:
+    try:
+        UUID(uuid, version=4)
+    except ValueError:
+        raise ValidationError(err_("Invalid UUID"))
+
+
 def validate_bouncer_token_request(
     entity: Union[UserProfile, RemoteZulipServer], token: str, kind: int
 ) -> RemoteZulipServer:
@@ -86,6 +94,11 @@ def register_remote_server(
 
     try:
         validate_email(contact_email)
+    except ValidationError as e:
+        raise JsonableError(e.message)
+
+    try:
+        validate_uuid(zulip_org_id)
     except ValidationError as e:
         raise JsonableError(e.message)
 

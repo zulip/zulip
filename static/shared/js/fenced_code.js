@@ -181,7 +181,7 @@ export function process_fenced_code(content) {
         };
     }
 
-    function default_hander() {
+    function default_handler() {
         return {
             handle_line(line) {
                 consume_line(output, line);
@@ -205,7 +205,7 @@ export function process_fenced_code(content) {
         }
     };
 
-    const current_handler = default_hander();
+    const current_handler = default_handler();
     handler_stack.push(current_handler);
 
     for (const line of input) {

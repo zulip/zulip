@@ -40,6 +40,7 @@ const stream_pill = zrequire("stream_pill");
 const user_groups = zrequire("user_groups");
 const user_group_pill = zrequire("user_group_pill");
 const user_pill = zrequire("user_pill");
+const stream_subscribers_ui = zrequire("stream_subscribers_ui");
 const stream_ui_updates = zrequire("stream_ui_updates");
 const settings_config = zrequire("settings_config");
 
@@ -110,6 +111,7 @@ for (const sub of subs) {
 function test_ui(label, f) {
     run_test(label, ({override, mock_template}) => {
         page_params.user_id = me.user_id;
+        stream_subscribers_ui.initialize();
         stream_edit.initialize();
         f({override, mock_template});
     });
@@ -129,7 +131,7 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
 
     override(people, "sort_but_pin_current_user_on_top", noop);
 
-    const subscriptions_table_selector = "#subscriptions_table";
+    const subscriptions_table_selector = "#manage_streams_container";
     const input_field_stub = $.create(".input");
 
     input_field_stub.before = () => {};
@@ -142,25 +144,19 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
     pill_container_stub.find = () => input_field_stub;
 
     const $sub_settings_container = $.create(sub_settings_selector);
+    const $edit_subscribers_container = $.create("edit-subscribers-stub");
+    const $unused = $.create("unused");
 
-    $sub_settings_container.find = (selector) => {
-        switch (selector) {
-            case ".colorpicker": {
-                return undefined;
-            }
-            case ".pill-container": {
-                return pill_container_stub;
-            }
-            case ".subscriber_table": {
-                return $.create("subscriber-table-stub");
-            }
-            case ".subscriber_list_container": {
-                return undefined;
-            }
-            // No default
-        }
-        throw new Error(`unexpected selector ${selector}`);
-    };
+    $sub_settings_container.set_find_results(".colorpicker", $unused);
+    $sub_settings_container.set_find_results(
+        ".edit_subscribers_for_stream",
+        $edit_subscribers_container,
+    );
+
+    $edit_subscribers_container.set_find_results(".pill-container", pill_container_stub);
+    $edit_subscribers_container.set_find_results(".search", $unused);
+    $edit_subscribers_container.set_find_results(".subscriber_table", $unused);
+    $edit_subscribers_container.set_find_results(".subscriber_list_container", $unused);
 
     const $subscription_settings = $.create(".subscription_settings");
     $subscription_settings.addClass = noop;
@@ -168,7 +164,9 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
     $subscription_settings.attr("data-stream-id", denmark.stream_id);
     $subscription_settings.length = 0;
 
-    const $add_subscribers_form = $.create(".subscriber_list_add form");
+    const $add_subscribers_form = $.create(
+        ".edit_subscribers_for_stream .subscriber_list_add form",
+    );
     $add_subscribers_form.closest = () => $subscription_settings;
 
     let template_rendered = false;
@@ -180,7 +178,7 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
     let expected_user_ids = [];
     let input_typeahead_called = false;
     let add_subscribers_request = false;
-    override(stream_edit, "invite_user_to_stream", (user_ids, sub) => {
+    override(stream_subscribers_ui, "invite_user_to_stream", (user_ids, sub) => {
         assert.equal(sub.stream_id, denmark.stream_id);
         assert.deepEqual(user_ids.sort(), expected_user_ids.sort());
         add_subscribers_request = true;
@@ -266,7 +264,7 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
 
         (function test_updater() {
             function number_of_pills() {
-                const pills = stream_edit.pill_widget.items();
+                const pills = stream_subscribers_ui.pill_widget.items();
                 return pills.length;
             }
 
@@ -322,7 +320,7 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
 
     let add_subscribers_handler = $(subscriptions_table_selector).get_on_handler(
         "submit",
-        ".subscriber_list_add form",
+        ".edit_subscribers_for_stream .subscriber_list_add form",
     );
 
     fake_this = $add_subscribers_form;
@@ -346,7 +344,7 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
 
     add_subscribers_handler = $(subscriptions_table_selector).get_on_handler(
         "keyup",
-        ".subscriber_list_add form",
+        ".edit_subscribers_for_stream .subscriber_list_add form",
     );
     event.key = "Enter";
 

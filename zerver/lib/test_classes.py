@@ -68,8 +68,8 @@ from zerver.lib.streams import (
 from zerver.lib.test_console_output import (
     ExtraConsoleOutputFinder,
     ExtraConsoleOutputInTestException,
-    TeeStderrAndFindExtraConsoleOutput,
-    TeeStdoutAndFindExtraConsoleOutput,
+    tee_stderr_and_find_extra_console_output,
+    tee_stdout_and_find_extra_console_output,
 )
 from zerver.lib.test_helpers import find_key_by_email, instrument_url
 from zerver.lib.users import get_api_key
@@ -168,9 +168,9 @@ class ZulipTestCase(TestCase):
         if not settings.BAN_CONSOLE_OUTPUT:
             return super().run(result)
         extra_output_finder = ExtraConsoleOutputFinder()
-        with TeeStderrAndFindExtraConsoleOutput(
+        with tee_stderr_and_find_extra_console_output(
             extra_output_finder
-        ), TeeStdoutAndFindExtraConsoleOutput(extra_output_finder):
+        ), tee_stdout_and_find_extra_console_output(extra_output_finder):
             test_result = super().run(result)
         if extra_output_finder.full_extra_output:
             exception_message = f"""
@@ -189,7 +189,7 @@ You should be able to quickly reproduce this failure with:
 test-backend --ban-console-output {self.id()}
 
 Output:
-{extra_output_finder.full_extra_output}
+{extra_output_finder.full_extra_output.decode(errors="replace")}
 --------------------------------------------
 """
             raise ExtraConsoleOutputInTestException(exception_message)
@@ -1076,8 +1076,9 @@ Output:
         return stream
 
     def unsubscribe(self, user_profile: UserProfile, stream_name: str) -> None:
+        realm = user_profile.realm
         stream = get_stream(stream_name, user_profile.realm)
-        bulk_remove_subscriptions([user_profile], [stream], acting_user=None)
+        bulk_remove_subscriptions(realm, [user_profile], [stream], acting_user=None)
 
     # Subscribe to a stream by making an API request
     def common_subscribe_to_streams(

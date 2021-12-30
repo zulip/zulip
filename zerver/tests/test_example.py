@@ -376,7 +376,7 @@ class TestQueryCounts(ZulipTestCase):
             )
 
         # The assert_length helper is another useful extra from ZulipTestCase.
-        self.assert_length(queries, 16)
+        self.assert_length(queries, 15)
 
 
 class TestDevelopmentEmailsLog(ZulipTestCase):

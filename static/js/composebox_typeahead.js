@@ -75,8 +75,7 @@ export function topics_seen_for(stream_name) {
 
     // Fetch topic history from the server, in case we will need it soon.
     stream_topic_history_util.get_server_history(stream_id, () => {});
-    const topic_names = stream_topic_history.get_recent_topic_names(stream_id);
-    return topic_names;
+    return stream_topic_history.get_recent_topic_names(stream_id);
 }
 
 function get_language_matcher(query) {
@@ -146,7 +145,7 @@ export function should_enter_send(e) {
         this_enter_sends = !has_modifier_key;
     } else {
         // If enter_sends is not enabled, just hitting
-        // Snter should add a newline, but with a
+        // Enter should add a newline, but with a
         // non-Shift modifier key held down, we should
         // send.  With Shift, we shouldn't, because
         // Shift+Enter to get a newline is a common
@@ -171,23 +170,24 @@ export function handle_enter(textarea, e) {
     //
     // We do this using caret and range from jquery-caret.
     const has_non_shift_modifier_key = e.ctrlKey || e.metaKey || e.altKey;
-    if (has_non_shift_modifier_key) {
-        // To properly emulate browser "Enter", if the
-        // user had selected something in the textarea,
-        // we need those characters to be cleared.
-        const range = textarea.range();
-        if (range.length > 0) {
-            textarea.range(range.start, range.end).range("");
-        }
-
-        // Now add the newline, remembering to resize the
-        // textarea if needed.
-        textarea.caret("\n");
-        compose_ui.autosize_textarea(textarea);
-        e.preventDefault();
+    if (!has_non_shift_modifier_key) {
+        // Use the native browser behavior.
         return;
     }
-    // Fall through to native browser behavior, otherwise.
+
+    // To properly emulate browser "Enter", if the
+    // user had selected something in the textarea,
+    // we need those characters to be cleared.
+    const range = textarea.range();
+    if (range.length > 0) {
+        textarea.range(range.start, range.end).range("");
+    }
+
+    // Now add the newline, remembering to resize the
+    // textarea if needed.
+    textarea.caret("\n");
+    compose_ui.autosize_textarea(textarea);
+    e.preventDefault();
 }
 
 // nextFocus is set on a keydown event to indicate where we should focus on keyup.

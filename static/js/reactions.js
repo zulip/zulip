@@ -253,14 +253,16 @@ export function add_reaction(event) {
         r.user_ids.push(user_id);
         update_user_fields(r);
     } else {
-        add_clean_reaction({
-            message,
+        message.clean_reactions.set(
             local_id,
-            user_ids: [user_id],
-            reaction_type: event.reaction_type,
-            emoji_name: event.emoji_name,
-            emoji_code: event.emoji_code,
-        });
+            make_clean_reaction({
+                local_id,
+                user_ids: [user_id],
+                reaction_type: event.reaction_type,
+                emoji_name: event.emoji_name,
+                emoji_code: event.emoji_code,
+            }),
+        );
     }
 
     const opts = {
@@ -279,16 +281,18 @@ export function add_reaction(event) {
     }
 }
 
-view.update_existing_reaction = function (opts) {
+view.update_existing_reaction = function ({
+    message_id,
+    emoji_name,
+    user_list,
+    user_id,
+    reaction_type,
+    emoji_code,
+}) {
     // Our caller ensures that this message already has a reaction
     // for this emoji and sets up our user_list.  This function
     // simply updates the DOM.
-
-    const message_id = opts.message_id;
-    const emoji_name = opts.emoji_name;
-    const user_list = opts.user_list;
-    const user_id = opts.user_id;
-    const local_id = get_local_reaction_id(opts);
+    const local_id = get_local_reaction_id({reaction_type, emoji_code});
     const reaction = find_reaction(message_id, local_id);
 
     set_reaction_count(reaction, user_list.length);
@@ -301,31 +305,29 @@ view.update_existing_reaction = function (opts) {
     }
 };
 
-view.insert_new_reaction = function (opts) {
+view.insert_new_reaction = function ({message_id, user_id, emoji_name, emoji_code, reaction_type}) {
     // Our caller ensures we are the first user to react to this
     // message with this emoji, and it populates user_list for
     // us.  We then render the emoji/title/count and insert it
     // before the add button.
 
-    const message_id = opts.message_id;
-    const user_id = opts.user_id;
     const user_list = [user_id];
 
     const context = {
         message_id,
-        ...emoji.get_emoji_details_for_rendering(opts),
+        ...emoji.get_emoji_details_for_rendering({emoji_name, emoji_code, reaction_type}),
     };
 
-    const new_label = generate_title(opts.emoji_name, user_list);
+    const new_label = generate_title(emoji_name, user_list);
 
     context.count = 1;
     context.label = new_label;
-    context.local_id = get_local_reaction_id(opts);
+    context.local_id = get_local_reaction_id({reaction_type, emoji_code});
     context.emoji_alt_code = user_settings.emojiset === "text";
     context.is_realm_emoji =
         context.reaction_type === "realm_emoji" || context.reaction_type === "zulip_extra_emoji";
 
-    if (opts.user_id === page_params.user_id) {
+    if (user_id === page_params.user_id) {
         context.class = "message_reaction reacted";
     } else {
         context.class = "message_reaction";
@@ -383,12 +385,15 @@ export function remove_reaction(event) {
     });
 }
 
-view.remove_reaction = function (opts) {
-    const message_id = opts.message_id;
-    const emoji_name = opts.emoji_name;
-    const user_list = opts.user_list;
-    const user_id = opts.user_id;
-    const local_id = get_local_reaction_id(opts);
+view.remove_reaction = function ({
+    message_id,
+    emoji_name,
+    user_list,
+    user_id,
+    reaction_type,
+    emoji_code,
+}) {
+    const local_id = get_local_reaction_id({reaction_type, emoji_code});
     const reaction = find_reaction(message_id, local_id);
 
     if (user_list.length === 0) {
@@ -495,29 +500,26 @@ export function set_clean_reactions(message) {
         const reaction = distinct_reactions.get(local_id);
         const user_ids = user_map.get(local_id);
 
-        add_clean_reaction({
-            message,
+        message.clean_reactions.set(
             local_id,
-            user_ids,
-            reaction_type: reaction.reaction_type,
-            emoji_name: reaction.emoji_name,
-            emoji_code: reaction.emoji_code,
-        });
+            make_clean_reaction({local_id, user_ids, ...reaction}),
+        );
     }
 }
 
-export function add_clean_reaction(opts) {
-    const r = emoji.get_emoji_details_for_rendering(opts);
+function make_clean_reaction({local_id, user_ids, emoji_name, emoji_code, reaction_type}) {
+    const r = {
+        local_id,
+        user_ids,
+        ...emoji.get_emoji_details_for_rendering({emoji_name, emoji_code, reaction_type}),
+    };
 
-    r.local_id = opts.local_id;
-
-    r.user_ids = opts.user_ids;
     update_user_fields(r);
 
     r.emoji_alt_code = user_settings.emojiset === "text";
     r.is_realm_emoji = r.reaction_type === "realm_emoji" || r.reaction_type === "zulip_extra_emoji";
 
-    opts.message.clean_reactions.set(opts.local_id, r);
+    return r;
 }
 
 export function update_user_fields(r) {

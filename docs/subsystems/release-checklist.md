@@ -78,7 +78,7 @@ preparing a new release.
 
 - Update the CI targets in `.github/workflows/production-suite.yml` to
   include upgrades from the most recent point releases from the last
-  two series -- e.g after releasing 4.8, both `main` and `4.x` should
+  two series -- e.g after releasing 4.8, both `main` and `4.x`
   should test upgrades from 3.4 and 4.8, and after releasing 5.0 both
   `main` and `5.x` should test upgrades from 4.8 and 5.0.
 - Following a major release (e.g. 4.0):

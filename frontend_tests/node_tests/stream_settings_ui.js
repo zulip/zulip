@@ -100,7 +100,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         $(sub_row).detach = () => sub_row;
     }
 
-    $.create("#subscriptions_table .stream-row", {children: sub_stubs});
+    $.create("#manage_streams_container .stream-row", {children: sub_stubs});
 
     let ui_called = false;
     ui.reset_scrollbar = (elem) => {

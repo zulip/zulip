@@ -37,6 +37,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django_cte import CTEManager
+from typing_extensions import TypedDict
 
 from confirmation import settings as confirmation_settings
 from zerver.lib import cache
@@ -98,6 +99,15 @@ MAX_TOPIC_NAME_LENGTH = 60
 MAX_LANGUAGE_ID_LENGTH: int = 50
 
 STREAM_NAMES = TypeVar("STREAM_NAMES", Sequence[str], AbstractSet[str])
+
+
+class EmojiInfo(TypedDict):
+    id: str
+    name: str
+    source_url: str
+    deactivated: bool
+    author_id: Optional[int]
+    still_url: Optional[str]
 
 
 def query_for_ids(query: QuerySet, user_ids: List[int], field: str) -> QuerySet:
@@ -726,11 +736,11 @@ class Realm(models.Model):
         return f"<Realm: {self.string_id} {self.id}>"
 
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600 * 24 * 7)
-    def get_emoji(self) -> Dict[str, Dict[str, Any]]:
+    def get_emoji(self) -> Dict[str, EmojiInfo]:
         return get_realm_emoji_uncached(self)
 
     @cache_with_key(get_active_realm_emoji_cache_key, timeout=3600 * 24 * 7)
-    def get_active_emoji(self) -> Dict[str, Dict[str, Any]]:
+    def get_active_emoji(self) -> Dict[str, EmojiInfo]:
         return get_active_realm_emoji_uncached(self)
 
     def get_admin_users_and_bots(
@@ -1058,9 +1068,7 @@ class RealmEmoji(models.Model):
         ]
 
 
-def get_realm_emoji_dicts(
-    realm: Realm, only_active_emojis: bool = False
-) -> Dict[str, Dict[str, Any]]:
+def get_realm_emoji_dicts(realm: Realm, only_active_emojis: bool = False) -> Dict[str, EmojiInfo]:
     query = RealmEmoji.objects.filter(realm=realm).select_related("author")
     if only_active_emojis:
         query = query.filter(deactivated=False)
@@ -1073,12 +1081,13 @@ def get_realm_emoji_dicts(
             author_id = realm_emoji.author_id
         emoji_url = get_emoji_url(realm_emoji.file_name, realm_emoji.realm_id)
 
-        emoji_dict = dict(
+        emoji_dict: EmojiInfo = dict(
             id=str(realm_emoji.id),
             name=realm_emoji.name,
             source_url=emoji_url,
             deactivated=realm_emoji.deactivated,
             author_id=author_id,
+            still_url=None,
         )
 
         if realm_emoji.is_animated:
@@ -1095,11 +1104,11 @@ def get_realm_emoji_dicts(
     return d
 
 
-def get_realm_emoji_uncached(realm: Realm) -> Dict[str, Dict[str, Any]]:
+def get_realm_emoji_uncached(realm: Realm) -> Dict[str, EmojiInfo]:
     return get_realm_emoji_dicts(realm)
 
 
-def get_active_realm_emoji_uncached(realm: Realm) -> Dict[str, Dict[str, Any]]:
+def get_active_realm_emoji_uncached(realm: Realm) -> Dict[str, EmojiInfo]:
     realm_emojis = get_realm_emoji_dicts(realm, only_active_emojis=True)
     d = {}
     for emoji_id, emoji_dict in realm_emojis.items():
@@ -2458,13 +2467,23 @@ def get_realm_stream(stream_name: str, realm_id: int) -> Stream:
     return Stream.objects.select_related().get(name__iexact=stream_name.strip(), realm_id=realm_id)
 
 
-def get_active_streams(realm: Optional[Realm]) -> QuerySet:
+def get_active_streams(realm: Realm) -> QuerySet:
     # TODO: Change return type to QuerySet[Stream]
     # NOTE: Return value is used as a QuerySet, so cannot currently be Sequence[QuerySet]
     """
     Return all streams (including invite-only streams) that have not been deactivated.
     """
     return Stream.objects.filter(realm=realm, deactivated=False)
+
+
+def get_linkable_streams(realm_id: int) -> QuerySet:
+    """
+    This returns the streams that we are allowed to linkify using
+    something like "#frontend" in our markup. For now the business
+    rule is that you can link any stream in the realm that hasn't
+    been deactivated (similar to how get_active_streams works).
+    """
+    return Stream.objects.filter(realm_id=realm_id, deactivated=False)
 
 
 def get_stream(stream_name: str, realm: Realm) -> Stream:

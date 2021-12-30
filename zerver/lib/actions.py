@@ -100,7 +100,7 @@ from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.i18n import get_language_name
 from zerver.lib.markdown import MessageRenderingResult, topic_links
 from zerver.lib.markdown import version as markdown_version
-from zerver.lib.mention import MentionData, silent_mention_syntax_for_user
+from zerver.lib.mention import MentionBackend, MentionData, silent_mention_syntax_for_user
 from zerver.lib.message import (
     MessageDict,
     SendMessageRequest,
@@ -135,9 +135,9 @@ from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     get_bulk_stream_subscriber_info,
     get_stream_subscriptions_for_user,
-    get_stream_subscriptions_for_users,
     get_subscribed_stream_ids_for_user,
     get_subscriptions_for_send_message,
+    get_used_colors_for_user_ids,
     get_user_ids_for_streams,
     num_subscribers_for_stream_id,
     subscriber_ids_with_stream_history_access,
@@ -503,7 +503,12 @@ def process_new_human_user(
     add_new_user_history(user_profile, streams)
 
     # mit_beta_users don't have a referred_by field
-    if not mit_beta_user and prereg_user is not None and prereg_user.referred_by is not None:
+    if (
+        not mit_beta_user
+        and prereg_user is not None
+        and prereg_user.referred_by is not None
+        and prereg_user.referred_by.is_active
+    ):
         # This is a cross-realm private message.
         with override_language(prereg_user.referred_by.default_language):
             internal_send_private_message(
@@ -1620,15 +1625,11 @@ def get_recipient_info(
 
         if possible_wildcard_mention:
             # If there's a possible wildcard mention, we need to
-            # determine which users would receive a wildcard mention
-            # notification for this message should the message indeed
-            # contain a wildcard mention.
-            #
-            # We don't have separate values for push/email
-            # notifications here; at this stage, we're just
-            # determining whether this wildcard mention should be
-            # treated as a mention (and follow the user's mention
-            # notification preferences) or a normal message.
+            # determine the set of users who have enabled the
+            # "wildcard_mentions_notify" setting (that is, the set of
+            # users for whom wildcard mentions should be treated like
+            # personal mentions for notifications). This setting
+            # applies to both email and push notifications.
             wildcard_mention_user_ids = {
                 row["user_profile_id"]
                 for row in subscription_rows
@@ -1854,6 +1855,7 @@ def build_message_send_dict(
     realm: Optional[Realm] = None,
     widget_content_dict: Optional[Dict[str, Any]] = None,
     email_gateway: bool = False,
+    mention_backend: Optional[MentionBackend] = None,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -1862,8 +1864,11 @@ def build_message_send_dict(
     if realm is None:
         realm = message.sender.realm
 
+    if mention_backend is None:
+        mention_backend = MentionBackend(realm.id)
+
     mention_data = MentionData(
-        realm_id=realm.id,
+        mention_backend=mention_backend,
         content=message.content,
     )
 
@@ -2651,7 +2656,11 @@ def get_recipient_from_user_profiles(
     assert recipient_profiles_map
     if len(recipient_profiles_map) == 1:
         [user_profile] = recipient_profiles_map.values()
-        return user_profile.recipient
+        return Recipient(
+            id=user_profile.recipient_id,
+            type=Recipient.PERSONAL,
+            type_id=user_profile.id,
+        )
 
     # Otherwise, we need a huddle.  Make sure the sender is included in huddle messages
     recipient_profiles_map[sender.id] = sender
@@ -3060,8 +3069,9 @@ def check_update_message(
             content = "(deleted)"
         content = normalize_body(content)
 
+        mention_backend = MentionBackend(user_profile.realm_id)
         mention_data = MentionData(
-            realm_id=user_profile.realm.id,
+            mention_backend=mention_backend,
             content=content,
         )
         user_info = get_user_info_for_message_updates(message.id)
@@ -3296,6 +3306,7 @@ def check_message(
     email_gateway: bool = False,
     *,
     skip_stream_access_check: bool = False,
+    mention_backend: Optional[MentionBackend] = None,
 ) -> SendMessageRequest:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -3421,6 +3432,7 @@ def check_message(
         realm=realm,
         widget_content_dict=widget_content_dict,
         email_gateway=email_gateway,
+        mention_backend=mention_backend,
     )
 
     if stream is not None and message_send_dict.rendering_result.mentions_wildcard:
@@ -3437,6 +3449,7 @@ def _internal_prep_message(
     addressee: Addressee,
     content: str,
     email_gateway: bool = False,
+    mention_backend: Optional[MentionBackend] = None,
 ) -> Optional[SendMessageRequest]:
     """
     Create a message object and checks it, but doesn't send it or save it to the database.
@@ -3466,6 +3479,7 @@ def _internal_prep_message(
             content,
             realm=realm,
             email_gateway=email_gateway,
+            mention_backend=mention_backend,
         )
     except JsonableError as e:
         logging.exception(
@@ -3521,7 +3535,11 @@ def internal_prep_stream_message_by_name(
 
 
 def internal_prep_private_message(
-    realm: Realm, sender: UserProfile, recipient_user: UserProfile, content: str
+    realm: Realm,
+    sender: UserProfile,
+    recipient_user: UserProfile,
+    content: str,
+    mention_backend: Optional[MentionBackend] = None,
 ) -> Optional[SendMessageRequest]:
     """
     See _internal_prep_message for details of how this works.
@@ -3533,6 +3551,7 @@ def internal_prep_private_message(
         sender=sender,
         addressee=addressee,
         content=content,
+        mention_backend=mention_backend,
     )
 
 
@@ -3600,14 +3619,32 @@ def internal_send_huddle_message(
     return message_ids[0]
 
 
-def pick_color(user_profile: UserProfile, used_colors: Set[str]) -> str:
-    # These colors are shared with the palette in stream_settings_ui.js.
+def pick_colors(
+    used_colors: Set[str], color_map: Dict[int, str], recipient_ids: List[int]
+) -> Dict[int, str]:
+    used_colors = set(used_colors)
+    recipient_ids = sorted(recipient_ids)
+    result = {}
+
+    other_recipient_ids = []
+    for recipient_id in recipient_ids:
+        if recipient_id in color_map:
+            color = color_map[recipient_id]
+            result[recipient_id] = color
+            used_colors.add(color)
+        else:
+            other_recipient_ids.append(recipient_id)
+
     available_colors = [s for s in STREAM_ASSIGNMENT_COLORS if s not in used_colors]
 
-    if available_colors:
-        return available_colors[0]
-    else:
-        return STREAM_ASSIGNMENT_COLORS[len(used_colors) % len(STREAM_ASSIGNMENT_COLORS)]
+    for i, recipient_id in enumerate(other_recipient_ids):
+        if i < len(available_colors):
+            color = available_colors[i]
+        else:
+            color = STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)]
+        result[recipient_id] = color
+
+    return result
 
 
 def validate_user_access_to_subscribers(
@@ -3777,6 +3814,13 @@ def get_subscriber_ids(stream: Stream, requesting_user: Optional[UserProfile] = 
     return subscriptions_query.values_list("user_profile_id", flat=True)
 
 
+@dataclass
+class StreamInfo:
+    email_address: str
+    stream_weekly_traffic: Optional[int]
+    subscribers: List[int]
+
+
 def send_subscription_add_events(
     realm: Realm,
     sub_info_list: List[SubInfo],
@@ -3789,24 +3833,40 @@ def send_subscription_add_events(
     stream_ids = {sub_info.stream.id for sub_info in sub_info_list}
     recent_traffic = get_streams_traffic(stream_ids=stream_ids)
 
+    # We generally only have a few streams, so we compute stream
+    # data in its own loop.
+    stream_info_dict: Dict[int, StreamInfo] = {}
+    for sub_info in sub_info_list:
+        stream = sub_info.stream
+        if stream.id not in stream_info_dict:
+            email_address = encode_email_address(stream, show_sender=True)
+            stream_weekly_traffic = get_average_weekly_stream_traffic(
+                stream.id, stream.date_created, recent_traffic
+            )
+            if stream.is_in_zephyr_realm and not stream.invite_only:
+                subscribers = []
+            else:
+                subscribers = list(subscriber_dict[stream.id])
+            stream_info_dict[stream.id] = StreamInfo(
+                email_address=email_address,
+                stream_weekly_traffic=stream_weekly_traffic,
+                subscribers=subscribers,
+            )
+
     for user_id, sub_infos in info_by_user.items():
         sub_dicts = []
         for sub_info in sub_infos:
             stream = sub_info.stream
+            stream_info = stream_info_dict[stream.id]
             subscription = sub_info.sub
             sub_dict = stream.to_dict()
             for field_name in Subscription.API_FIELDS:
                 sub_dict[field_name] = getattr(subscription, field_name)
 
             sub_dict["in_home_view"] = not subscription.is_muted
-            sub_dict["email_address"] = encode_email_address(stream, show_sender=True)
-            sub_dict["stream_weekly_traffic"] = get_average_weekly_stream_traffic(
-                stream.id, stream.date_created, recent_traffic
-            )
-            if stream.is_in_zephyr_realm and not stream.invite_only:
-                sub_dict["subscribers"] = []
-            else:
-                sub_dict["subscribers"] = list(subscriber_dict[stream.id])
+            sub_dict["email_address"] = stream_info.email_address
+            sub_dict["stream_weekly_traffic"] = stream_info.stream_weekly_traffic
+            sub_dict["subscribers"] = stream_info.subscribers
             sub_dicts.append(sub_dict)
 
         # Send a notification to the user who subscribed.
@@ -3827,6 +3887,7 @@ def bulk_add_subscriptions(
     acting_user: Optional[UserProfile],
 ) -> SubT:
     users = list(users)
+    user_ids = [user.id for user in users]
 
     # Sanity check out callers
     for stream in streams:
@@ -3835,11 +3896,25 @@ def bulk_add_subscriptions(
     for user in users:
         assert user.realm_id == realm.id
 
+    recipient_ids = [stream.recipient_id for stream in streams]
     recipient_id_to_stream = {stream.recipient_id: stream for stream in streams}
 
+    recipient_color_map = {}
+    for stream in streams:
+        color: Optional[str] = color_map.get(stream.name, None)
+        if color is not None:
+            recipient_color_map[stream.recipient_id] = color
+
+    used_colors_for_user_ids: Dict[int, Set[str]] = get_used_colors_for_user_ids(user_ids)
+
+    existing_subs = Subscription.objects.filter(
+        user_profile_id__in=user_ids,
+        recipient__type=Recipient.STREAM,
+        recipient_id__in=recipient_ids,
+    )
+
     subs_by_user: Dict[int, List[Subscription]] = defaultdict(list)
-    all_subs_query = get_stream_subscriptions_for_users(users)
-    for sub in all_subs_query:
+    for sub in existing_subs:
         subs_by_user[sub.user_profile_id].append(sub)
 
     already_subscribed: List[SubInfo] = []
@@ -3847,12 +3922,11 @@ def bulk_add_subscriptions(
     subs_to_add: List[SubInfo] = []
     for user_profile in users:
         my_subs = subs_by_user[user_profile.id]
-        used_colors = {sub.color for sub in my_subs}
 
         # Make a fresh set of all new recipient ids, and then we will
         # remove any for which our user already has a subscription
         # (and we'll re-activate any subscriptions as needed).
-        new_recipient_ids = {stream.recipient_id for stream in streams}
+        new_recipient_ids: Set[int] = {stream.recipient_id for stream in streams}
 
         for sub in my_subs:
             if sub.recipient_id in new_recipient_ids:
@@ -3864,14 +3938,12 @@ def bulk_add_subscriptions(
                 else:
                     subs_to_activate.append(sub_info)
 
+        used_colors = used_colors_for_user_ids.get(user_profile.id, set())
+        user_color_map = pick_colors(used_colors, recipient_color_map, list(new_recipient_ids))
+
         for recipient_id in new_recipient_ids:
             stream = recipient_id_to_stream[recipient_id]
-
-            if stream.name in color_map:
-                color = color_map[stream.name]
-            else:
-                color = pick_color(user_profile, used_colors)
-            used_colors.add(color)
+            color = user_color_map[recipient_id]
 
             sub = Subscription(
                 user_profile=user_profile,
@@ -4122,17 +4194,20 @@ def get_available_notification_sounds() -> List[str]:
     return sorted(available_notification_sounds)
 
 
-def notify_subscriptions_removed(user_profile: UserProfile, streams: Iterable[Stream]) -> None:
+def notify_subscriptions_removed(
+    realm: Realm, user_profile: UserProfile, streams: Iterable[Stream]
+) -> None:
 
     payload = [dict(name=stream.name, stream_id=stream.id) for stream in streams]
     event = dict(type="subscription", op="remove", subscriptions=payload)
-    send_event(user_profile.realm, event, [user_profile.id])
+    send_event(realm, event, [user_profile.id])
 
 
 SubAndRemovedT = Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
 
 
 def bulk_remove_subscriptions(
+    realm: Realm,
     users: Iterable[UserProfile],
     streams: Iterable[Stream],
     *,
@@ -4141,6 +4216,13 @@ def bulk_remove_subscriptions(
 
     users = list(users)
     streams = list(streams)
+
+    # Sanity check our callers
+    for stream in streams:
+        assert stream.realm_id == realm.id
+
+    for user in users:
+        assert user.realm_id == realm.id
 
     stream_dict = {stream.id: stream for stream in streams}
 
@@ -4175,16 +4257,14 @@ def bulk_remove_subscriptions(
             subs_to_deactivate.append(sub_info)
             sub_ids_to_deactivate.append(sub_info.sub.id)
 
-    our_realm = users[0].realm
-
     # We do all the database changes in a transaction to ensure
     # RealmAuditLog entries are atomically created when making changes.
     with transaction.atomic():
-        occupied_streams_before = list(get_occupied_streams(our_realm))
+        occupied_streams_before = list(get_occupied_streams(realm))
         Subscription.objects.filter(
             id__in=sub_ids_to_deactivate,
         ).update(active=False)
-        occupied_streams_after = list(get_occupied_streams(our_realm))
+        occupied_streams_after = list(get_occupied_streams(realm))
 
         # Log subscription activities in RealmAuditLog
         event_time = timezone_now()
@@ -4215,7 +4295,7 @@ def bulk_remove_subscriptions(
     for user_profile in users:
         if len(streams_by_user[user_profile.id]) == 0:
             continue
-        notify_subscriptions_removed(user_profile, streams_by_user[user_profile.id])
+        notify_subscriptions_removed(realm, user_profile, streams_by_user[user_profile.id])
 
         event = {
             "type": "mark_stream_messages_as_read",
@@ -4225,7 +4305,7 @@ def bulk_remove_subscriptions(
         queue_json_publish("deferred_work", event)
 
     send_peer_remove_events(
-        realm=our_realm,
+        realm=realm,
         streams=streams,
         altered_user_dict=altered_user_dict,
     )
@@ -7518,7 +7598,7 @@ def do_mark_hotspot_as_read(user: UserProfile, hotspot: str) -> None:
 
 def notify_linkifiers(realm: Realm) -> None:
     realm_linkifiers = linkifiers_for_realm(realm.id)
-    event = dict(type="realm_linkifiers", realm_linkifiers=realm_linkifiers)
+    event: Dict[str, object] = dict(type="realm_linkifiers", realm_linkifiers=realm_linkifiers)
     send_event(realm, event, active_user_ids(realm.id))
 
     # Below is code for backwards compatibility. The now deprecated

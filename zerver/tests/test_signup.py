@@ -868,7 +868,7 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries, cache_tries_captured() as cache_tries:
             self.register(self.nonreg_email("test"), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assert_length(queries, 89)
+        self.assert_length(queries, 90)
 
         # We can probably avoid a couple cache hits here, but there doesn't
         # seem to be any O(N) behavior.  Some of the cache hits are related
@@ -1279,6 +1279,31 @@ class InviteUserTest(InviteUserBase):
         self.assertEqual(
             prereg_user.referred_by.email,
             inviter.email,
+        )
+
+    def test_invite_from_now_deactivated_user(self) -> None:
+        """
+        While accepting an invitation from a user,
+        processing for a new user account will only
+        be completed if the inviter is not deactivated
+        after sending the invite.
+        """
+        inviter = self.example_user("hamlet")
+        self.login_user(inviter)
+        invitee = self.nonreg_email("alice")
+
+        result = self.invite(invitee, ["Denmark"])
+        self.assert_json_success(result)
+
+        prereg_user = PreregistrationUser.objects.get(email=invitee)
+        change_user_is_active(inviter, False)
+        do_create_user(
+            invitee,
+            "password",
+            inviter.realm,
+            "full name",
+            prereg_user=prereg_user,
+            acting_user=None,
         )
 
     def test_successful_invite_user_as_owner_from_owner_account(self) -> None:

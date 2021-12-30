@@ -28,6 +28,7 @@ from two_factor.utils import default_device
 from zerver.lib.cache import cache_with_key
 from zerver.lib.exceptions import (
     AccessDeniedError,
+    AnomalousWebhookPayload,
     ErrorCode,
     InvalidAPIKeyError,
     InvalidAPIKeyFormatError,
@@ -40,6 +41,7 @@ from zerver.lib.exceptions import (
     RealmDeactivatedError,
     UnsupportedWebhookEventType,
     UserDeactivatedError,
+    WebhookError,
 )
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimitedIPAddr, RateLimitedUser
@@ -62,6 +64,7 @@ rate_limiter_logger = logging.getLogger("zerver.lib.rate_limiter")
 
 webhook_logger = logging.getLogger("zulip.zerver.webhooks")
 webhook_unsupported_events_logger = logging.getLogger("zulip.zerver.webhooks.unsupported")
+webhook_anomalous_payloads_logger = logging.getLogger("zulip.zerver.webhooks.anomalous")
 
 FuncT = TypeVar("FuncT", bound=Callable[..., object])
 
@@ -305,14 +308,23 @@ def access_user_by_api_key(
     return user_profile
 
 
-def log_exception_to_webhook_logger(
-    summary: str,
-    unsupported_event: bool,
-) -> None:
-    if unsupported_event:
-        webhook_unsupported_events_logger.exception(summary, stack_info=True)
+def log_unsupported_webhook_event(summary: str) -> None:
+    # This helper is primarily used by some of our more complicated
+    # webhook integrations (e.g. GitHub) that need to log an unsupported
+    # event based on attributes nested deep within a complicated JSON
+    # payload. In such cases, the error message we want to log may not
+    # really fit what a regular UnsupportedWebhookEventType exception
+    # represents.
+    webhook_unsupported_events_logger.exception(summary, stack_info=True)
+
+
+def log_exception_to_webhook_logger(err: Exception) -> None:
+    if isinstance(err, AnomalousWebhookPayload):
+        webhook_anomalous_payloads_logger.exception(str(err), stack_info=True)
+    elif isinstance(err, UnsupportedWebhookEventType):
+        webhook_unsupported_events_logger.exception(str(err), stack_info=True)
     else:
-        webhook_logger.exception(summary, stack_info=True)
+        webhook_logger.exception(str(err), stack_info=True)
 
 
 def full_webhook_client_name(raw_client_name: Optional[str] = None) -> Optional[str]:
@@ -357,17 +369,12 @@ def webhook_view(
                     from zerver.lib.webhooks.common import notify_bot_owner_about_invalid_json
 
                     notify_bot_owner_about_invalid_json(user_profile, webhook_client_name)
-                elif isinstance(err, JsonableError) and not isinstance(
-                    err, UnsupportedWebhookEventType
-                ):
+                elif isinstance(err, JsonableError) and not isinstance(err, WebhookError):
                     pass
                 else:
-                    if isinstance(err, UnsupportedWebhookEventType):
+                    if isinstance(err, WebhookError):
                         err.webhook_name = webhook_client_name
-                    log_exception_to_webhook_logger(
-                        summary=str(err),
-                        unsupported_event=isinstance(err, UnsupportedWebhookEventType),
-                    )
+                    log_exception_to_webhook_logger(err)
                 raise err
 
         _wrapped_func_arguments._all_event_types = all_event_types
@@ -693,16 +700,13 @@ def authenticated_rest_api_view(
                 if not webhook_client_name:
                     raise err
                 if isinstance(err, JsonableError) and not isinstance(
-                    err, UnsupportedWebhookEventType
+                    err, WebhookError
                 ):  # nocoverage
                     raise err
 
-                if isinstance(err, UnsupportedWebhookEventType):
+                if isinstance(err, WebhookError):
                     err.webhook_name = webhook_client_name
-                log_exception_to_webhook_logger(
-                    summary=str(err),
-                    unsupported_event=isinstance(err, UnsupportedWebhookEventType),
-                )
+                log_exception_to_webhook_logger(err)
                 raise err
 
         return _wrapped_func_arguments

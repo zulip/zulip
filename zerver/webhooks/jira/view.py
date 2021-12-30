@@ -7,7 +7,7 @@ from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventType
+from zerver.lib.exceptions import AnomalousWebhookPayload, UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -348,6 +348,9 @@ def api_jira_webhook(
     event = get_event_type(payload)
     if event in IGNORED_EVENTS:
         return json_success()
+
+    if event is None:
+        raise AnomalousWebhookPayload()
 
     if event is not None:
         content_func = JIRA_CONTENT_FUNCTION_MAPPER.get(event)

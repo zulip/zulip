@@ -6,16 +6,14 @@ class zulip::camo (String $listen_address = '0.0.0.0') {
     ensure => 'purged',
   }
 
-  $version = '2.3.0'
-  $dir = "/srv/zulip-go-camo-${version}/"
-  $bin = "${dir}bin/go-camo"
+  $version = $zulip::common::versions['go-camo']['version']
+  $dir = "/srv/zulip-go-camo-${version}"
+  $bin = "${dir}/bin/go-camo"
 
   zulip::external_dep { 'go-camo':
     version        => $version,
     url            => "https://github.com/cactus/go-camo/releases/download/v${version}/go-camo-${version}.go1171.linux-${::architecture}.tar.gz",
-    sha256         => '965506e6edb9d974c810519d71e847afb7ca69d1d01ae7d8be6d7a91de669c0c',
-    tarball_prefix => "go-camo-${version}/",
-    bin            => 'bin/go-camo',
+    tarball_prefix => "go-camo-${version}",
   }
 
   file { "${zulip::common::supervisor_conf_dir}/go-camo.conf":
@@ -23,7 +21,7 @@ class zulip::camo (String $listen_address = '0.0.0.0') {
     require => [
       Package['camo'],
       Package[supervisor],
-      File[$bin],
+      Zulip::External_Dep['go-camo'],
       File['/usr/local/bin/secret-env-wrapper'],
     ],
     owner   => 'root',

@@ -712,9 +712,7 @@ realm_emoji_type = DictType(
         ("source_url", str),
         ("deactivated", bool),
         ("author_id", int),
-    ],
-    optional_keys=[
-        ("still_url", str),
+        ("still_url", OptionalType(str)),
     ],
 )
 
@@ -1530,19 +1528,6 @@ update_message_required_fields = [
 update_message_stream_fields: List[Tuple[str, object]] = [
     ("stream_id", int),
     ("stream_name", str),
-    ("new_stream_id", int),
-    (
-        "propagate_mode",
-        EnumType(
-            [
-                # The order here needs to match the OpenAPI definitions
-                "change_one",
-                "change_later",
-                "change_all",
-            ]
-        ),
-    ),
-    (ORIG_TOPIC, str),
 ]
 
 update_message_content_fields: List[Tuple[str, object]] = [
@@ -1559,8 +1544,31 @@ update_message_topic_fields = [
     (TOPIC_NAME, str),
 ]
 
+update_message_change_stream_fields: List[Tuple[str, object]] = [
+    ("new_stream_id", int),
+]
+
+update_message_change_stream_or_topic_fields: List[Tuple[str, object]] = [
+    (
+        "propagate_mode",
+        EnumType(
+            [
+                # The order here needs to match the OpenAPI definitions
+                "change_one",
+                "change_later",
+                "change_all",
+            ]
+        ),
+    ),
+    (ORIG_TOPIC, str),
+]
+
 update_message_optional_fields = (
-    update_message_stream_fields + update_message_content_fields + update_message_topic_fields
+    update_message_stream_fields
+    + update_message_content_fields
+    + update_message_topic_fields
+    + update_message_change_stream_fields
+    + update_message_change_stream_or_topic_fields
 )
 
 # The schema here does not include the "embedded"
@@ -1596,13 +1604,11 @@ def check_update_message(
 
     if has_topic:
         expected_keys.update(tup[0] for tup in update_message_topic_fields)
+        expected_keys.update(tup[0] for tup in update_message_change_stream_or_topic_fields)
 
-    if not has_new_stream_id:
-        expected_keys.discard("new_stream_id")
-
-    if not has_new_stream_id and not has_topic:
-        expected_keys.discard("propagate_mode")
-        expected_keys.discard(ORIG_TOPIC)
+    if has_new_stream_id:
+        expected_keys.update(tup[0] for tup in update_message_change_stream_fields)
+        expected_keys.update(tup[0] for tup in update_message_change_stream_or_topic_fields)
 
     assert expected_keys == actual_keys
 

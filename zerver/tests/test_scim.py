@@ -71,7 +71,7 @@ class TestNonSCIMAPIAccess(SCIMTestCase):
         # as verification of SCIM credentials shouldn't even be attempted,
         # because we're not querying a SCIM endpoint.
         with mock.patch("zerver.middleware.validate_scim_bearer_token", return_value=None) as m:
-            result = self.client_get(f"/api/v1/users/{hamlet.id}", **self.scim_headers())
+            result = self.client_get(f"/api/v1/users/{hamlet.id}", {}, **self.scim_headers())
 
         # The SCIM format of the Authorization header (bearer token) is rejected as a bad request
         # by our regular API authentication logic.
@@ -80,7 +80,7 @@ class TestNonSCIMAPIAccess(SCIMTestCase):
 
         # Now simply test end-to-end that access gets denied, without any mocking
         # interfering with the process.
-        result = self.client_get(f"/api/v1/users/{hamlet.id}", **self.scim_headers())
+        result = self.client_get(f"/api/v1/users/{hamlet.id}", {}, **self.scim_headers())
         self.assert_json_error(result, "This endpoint requires HTTP basic authentication.", 400)
 
 
@@ -95,7 +95,7 @@ class TestExceptionDetailsNotRevealedToClient(SCIMTestCase):
         ), self.assertLogs("django_scim.views", "ERROR") as mock_scim_logger, self.assertLogs(
             "django.request", "ERROR"
         ) as mock_request_logger:
-            result = self.client_get("/scim/v2/Users", **self.scim_headers())
+            result = self.client_get("/scim/v2/Users", {}, **self.scim_headers())
             # Only a generic error message is returned:
             self.assertEqual(
                 result.json(),
@@ -115,7 +115,7 @@ class TestSCIMUser(SCIMTestCase):
         hamlet = self.example_user("hamlet")
         expected_response_schema = self.generate_user_schema(hamlet)
 
-        result = self.client_get(f"/scim/v2/Users/{hamlet.id}", **self.scim_headers())
+        result = self.client_get(f"/scim/v2/Users/{hamlet.id}", {}, **self.scim_headers())
 
         self.assertEqual(result.status_code, 200)
         output_data = orjson.loads(result.content)
@@ -133,7 +133,9 @@ class TestSCIMUser(SCIMTestCase):
         }
 
         result = self.client_get(
-            f'/scim/v2/Users?filter=userName eq "{hamlet.delivery_email}"', **self.scim_headers()
+            f'/scim/v2/Users?filter=userName eq "{hamlet.delivery_email}"',
+            {},
+            **self.scim_headers(),
         )
         self.assertEqual(result.status_code, 200)
         output_data = orjson.loads(result.content)
@@ -146,6 +148,7 @@ class TestSCIMUser(SCIMTestCase):
 
         result = self.client_get(
             f'/scim/v2/Users?filter=userName eq "{different_realm_user.delivery_email}"',
+            {},
             **self.scim_headers(),
         )
         self.assertEqual(result.status_code, 200)
@@ -164,7 +167,7 @@ class TestSCIMUser(SCIMTestCase):
     def test_get_all_with_pagination(self) -> None:
         realm = get_realm("zulip")
 
-        result_all = self.client_get("/scim/v2/Users", **self.scim_headers())
+        result_all = self.client_get("/scim/v2/Users", {}, **self.scim_headers())
         self.assertEqual(result_all.status_code, 200)
         output_data_all = orjson.loads(result_all.content)
 
@@ -183,7 +186,7 @@ class TestSCIMUser(SCIMTestCase):
 
         # Test pagination works, as defined in https://datatracker.ietf.org/doc/html/rfc7644#section-3.4.2.4
         result_offset_limited = self.client_get(
-            "/scim/v2/Users?startIndex=4&count=3", **self.scim_headers()
+            "/scim/v2/Users?startIndex=4&count=3", {}, **self.scim_headers()
         )
         self.assertEqual(result_offset_limited.status_code, 200)
         output_data_offset_limited = orjson.loads(result_offset_limited.content)
@@ -209,7 +212,7 @@ class TestSCIMUser(SCIMTestCase):
         expected_response_schema["name"] = {"givenName": "Firstname", "familyName": "Lastname"}
 
         with self.mock_name_formatted_included(False):
-            result = self.client_get(f"/scim/v2/Users/{hamlet.id}", **self.scim_headers())
+            result = self.client_get(f"/scim/v2/Users/{hamlet.id}", {}, **self.scim_headers())
 
         self.assertEqual(result.status_code, 200)
         output_data = orjson.loads(result.content)
@@ -220,7 +223,7 @@ class TestSCIMUser(SCIMTestCase):
         expected_response_schema["name"] = {"givenName": "Firstnameonly", "familyName": ""}
 
         with self.mock_name_formatted_included(False):
-            result = self.client_get(f"/scim/v2/Users/{hamlet.id}", **self.scim_headers())
+            result = self.client_get(f"/scim/v2/Users/{hamlet.id}", {}, **self.scim_headers())
 
         self.assertEqual(result.status_code, 200)
         output_data = orjson.loads(result.content)
@@ -426,7 +429,7 @@ class TestSCIMUser(SCIMTestCase):
 
     def test_delete(self) -> None:
         hamlet = self.example_user("hamlet")
-        result = self.client_delete(f"/scim/v2/Users/{hamlet.id}", **self.scim_headers())
+        result = self.client_delete(f"/scim/v2/Users/{hamlet.id}", {}, **self.scim_headers())
 
         expected_response_schema = {
             "schemas": ["urn:ietf:params:scim:api:messages:2.0:Error"],
@@ -653,11 +656,11 @@ class TestSCIMGroup(SCIMTestCase):
 
     def test_endpoints_disabled(self) -> None:
         with self.assertLogs("django.request", "ERROR") as m:
-            result = self.client_get("/scim/v2/Groups", **self.scim_headers())
+            result = self.client_get("/scim/v2/Groups", {}, **self.scim_headers())
             self.assertEqual(result.status_code, 501)
             self.assertEqual(m.output, ["ERROR:django.request:Not Implemented: /scim/v2/Groups"])
         with self.assertLogs("django.request", "ERROR") as m:
-            result = self.client_get("/scim/v2/Groups/1", **self.scim_headers())
+            result = self.client_get("/scim/v2/Groups/1", {}, **self.scim_headers())
             self.assertEqual(result.status_code, 501)
             self.assertEqual(m.output, ["ERROR:django.request:Not Implemented: /scim/v2/Groups/1"])
         with self.assertLogs("django.request", "ERROR") as m:
@@ -685,6 +688,6 @@ class TestRemainingUnsupportedSCIMFeatures(SCIMTestCase):
             "/scim/v2/ServiceProviderConfig",
         ]:
             with self.assertLogs("django.request", "ERROR") as m:
-                result = self.client_get(url, **self.scim_headers())
+                result = self.client_get(url, {}, **self.scim_headers())
             self.assertEqual(result.status_code, 501)
             self.assertEqual(m.output, [f"ERROR:django.request:Not Implemented: {url}"])

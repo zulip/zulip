@@ -50,7 +50,7 @@ from zerver.lib.exceptions import (
     OrganizationOwnerRequired,
     ResourceNotFoundError,
 )
-from zerver.lib.mention import silent_mention_syntax_for_user
+from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.retention import parse_message_retention_days
@@ -405,6 +405,7 @@ def remove_subscriptions_backend(
     ),
 ) -> HttpResponse:
 
+    realm = user_profile.realm
     removing_someone_else = check_if_removing_someone_else(user_profile, principals)
 
     streams_as_dict: List[StreamDict] = []
@@ -424,7 +425,7 @@ def remove_subscriptions_backend(
 
     result: Dict[str, List[str]] = dict(removed=[], not_removed=[])
     (removed, not_subscribed) = bulk_remove_subscriptions(
-        people_to_unsub, streams, acting_user=user_profile
+        realm, people_to_unsub, streams, acting_user=user_profile
     )
 
     for (subscriber, removed_stream) in removed:
@@ -442,13 +443,13 @@ def you_were_just_subscribed_message(
     if len(subscriptions) == 1:
         with override_language(recipient_user.default_language):
             return _("{user_full_name} subscribed you to the stream {stream_name}.").format(
-                user_full_name=f"@**{acting_user.full_name}**",
+                user_full_name=f"@**{acting_user.full_name}|{acting_user.id}**",
                 stream_name=f"#**{subscriptions[0]}**",
             )
 
     with override_language(recipient_user.default_language):
         message = _("{user_full_name} subscribed you to the following streams:").format(
-            user_full_name=f"@**{acting_user.full_name}**",
+            user_full_name=f"@**{acting_user.full_name}|{acting_user.id}**",
         )
     message += "\n\n"
     for stream_name in subscriptions:
@@ -602,6 +603,9 @@ def send_messages_for_new_subscribers(
 
     newly_created_stream_names = {s.name for s in created_streams}
 
+    realm = user_profile.realm
+    mention_backend = MentionBackend(realm.id)
+
     # Inform the user if someone else subscribed them to stuff,
     # or if a new stream was created with the "announce" option.
     notifications = []
@@ -632,10 +636,11 @@ def send_messages_for_new_subscribers(
 
             notifications.append(
                 internal_prep_private_message(
-                    realm=user_profile.realm,
+                    realm=realm,
                     sender=sender,
                     recipient_user=recipient_user,
                     content=msg,
+                    mention_backend=mention_backend,
                 )
             )
 
