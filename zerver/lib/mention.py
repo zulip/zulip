@@ -5,7 +5,7 @@ from typing import Dict, List, Match, Optional, Set, Tuple
 
 from django.db.models import Q
 
-from zerver.models import Realm, UserGroup, UserProfile, get_linkable_streams
+from zerver.models import UserGroup, UserProfile, get_linkable_streams
 
 # Match multi-word string between @** ** or match any one-word
 # sequences after @
@@ -93,6 +93,28 @@ class MentionBackend:
 
         return result
 
+    def get_stream_name_map(self, stream_names: Set[str]) -> Dict[str, int]:
+        if not stream_names:
+            return {}
+
+        q_list = {Q(name=name) for name in stream_names}
+
+        rows = (
+            get_linkable_streams(
+                realm_id=self.realm_id,
+            )
+            .filter(
+                functools.reduce(lambda a, b: a | b, q_list),
+            )
+            .values(
+                "id",
+                "name",
+            )
+        )
+
+        dct = {row["name"]: row["id"] for row in rows}
+        return dct
+
 
 def user_mention_matches_wildcard(mention: str) -> bool:
     return mention in wildcards
@@ -152,6 +174,7 @@ def get_possible_mentions_info(
 
 class MentionData:
     def __init__(self, mention_backend: MentionBackend, content: str) -> None:
+        self.mention_backend = mention_backend
         realm_id = mention_backend.realm_id
         mention_texts, has_wildcards = possible_mentions(content)
         possible_mentions_info = get_possible_mentions_info(mention_backend, mention_texts)
@@ -198,28 +221,8 @@ class MentionData:
     def get_group_members(self, user_group_id: int) -> List[int]:
         return self.user_group_members.get(user_group_id, [])
 
-
-def get_stream_name_map(realm: Realm, stream_names: Set[str]) -> Dict[str, int]:
-    if not stream_names:
-        return {}
-
-    q_list = {Q(name=name) for name in stream_names}
-
-    rows = (
-        get_linkable_streams(
-            realm_id=realm.id,
-        )
-        .filter(
-            functools.reduce(lambda a, b: a | b, q_list),
-        )
-        .values(
-            "id",
-            "name",
-        )
-    )
-
-    dct = {row["name"]: row["id"] for row in rows}
-    return dct
+    def get_stream_name_map(self, stream_names: Set[str]) -> Dict[str, int]:
+        return self.mention_backend.get_stream_name_map(stream_names)
 
 
 def silent_mention_syntax_for_user(user_profile: UserProfile) -> str:
