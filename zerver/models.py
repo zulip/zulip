@@ -2467,7 +2467,7 @@ def get_realm_stream(stream_name: str, realm_id: int) -> Stream:
     return Stream.objects.select_related().get(name__iexact=stream_name.strip(), realm_id=realm_id)
 
 
-def get_active_streams(realm: Optional[Realm]) -> QuerySet:
+def get_active_streams(realm: Realm) -> QuerySet:
     # TODO: Change return type to QuerySet[Stream]
     # NOTE: Return value is used as a QuerySet, so cannot currently be Sequence[QuerySet]
     """
