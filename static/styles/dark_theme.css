@@ -232,8 +232,10 @@ body.dark-theme {
     .private-message .alert-msg {
         background-color: hsl(208, 17%, 29%);
     }
-    .private-message .message_expander, .message_condenser {
-            background-color: hsl(208, 17%, 29%);
+
+    .private-message .message_expander,
+    .message_condenser {
+        background-color: hsl(208, 17%, 29%);
     }
     /* do not turn the .message_header .stream_label text dark on hover because they're
        on a dark background, and don't change the dark labels dark either. */
@@ -345,7 +347,7 @@ body.dark-theme {
     .message_condenser {
         background-color: hsl(212, 28%, 18%);
     }
-    
+
     .new-style .tab-switcher .ind-tab.selected,
     div.message_content thead,
     .table-striped thead th,

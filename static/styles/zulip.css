@@ -1449,7 +1449,7 @@ div.focused_table {
         max-height: 10em;
         min-height: 0;
         overflow: hidden;
-        mask-image: linear-gradient(to top, transparent 0%, black);
+        mask-image: linear-gradient(to top, transparent 0%, hsl(0, 0%, 0%));
     }
 
     &.collapsed {
@@ -1618,14 +1618,14 @@ div.focused_table {
     justify-content: center;
     width: 90px;
     height: 23px;
-    margin-top:0px;
+    margin-top: 0;
     margin-bottom: 8px;
     position: relative;
     left: 50%;
     color: inherit;
     background-color: hsl(0, 11%, 96%);
     border-radius: 6px;
-    border: solid 1px hsl(215deg 47% 50%);
+    border: solid 1px hsl(215, 47%, 50%);
 }
 
 .messagebox-content {

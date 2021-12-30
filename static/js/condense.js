@@ -21,12 +21,12 @@ const _message_content_height_cache = new Map();
 
 function show_more_link(row) {
     row.find(".message_condenser").hide();
-    row.find(".message_expander").css('display', 'flex');
+    row.find(".message_expander").css("display", "flex");
 }
 
 function show_condense_link(row) {
     row.find(".message_expander").hide();
-    row.find(".message_condenser").css('display', 'flex');
+    row.find(".message_condenser").css("display", "flex");
 }
 
 function condense_row(row) {
@@ -141,7 +141,7 @@ export function toggle_collapse(message) {
             message.condensed = false;
             content.removeClass("condensed");
             hide_message_expander(row);
-            row.find(".message_condenser").css('display', 'flex');
+            row.find(".message_condenser").css("display", "flex");
         } else {
             collapse(row);
         }
@@ -181,13 +181,13 @@ export function hide_message_condenser(row) {
 
 export function show_message_expander(row) {
     if (row.find(".could-be-condensed").length !== 0) {
-        row.find(".message_expander").css('display', 'flex');
+        row.find(".message_expander").css("display", "flex");
     }
 }
 
 export function show_message_condenser(row) {
     if (row.find(".could-be-condensed").length !== 0) {
-        row.find(".message_condenser").css('display', 'flex');
+        row.find(".message_condenser").css("display", "flex");
     }
 }
 
@@ -247,7 +247,7 @@ export function condense_and_collapse(elems) {
         // button if the user has collapsed it.
         if (message.collapsed) {
             content.addClass("collapsed");
-            $(elem).find(".message_expander").css('display', 'flex');;
+            $(elem).find(".message_expander").css("display", "flex");
         }
     }
 }
@@ -267,7 +267,7 @@ export function initialize() {
             message.condensed = false;
             content.removeClass("condensed");
             $(this).hide();
-            row.find(".message_condenser").css('display', 'flex');;
+            row.find(".message_condenser").css("display", "flex");
         }
         e.stopPropagation();
         e.preventDefault();
