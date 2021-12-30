@@ -171,23 +171,24 @@ export function handle_enter(textarea, e) {
     //
     // We do this using caret and range from jquery-caret.
     const has_non_shift_modifier_key = e.ctrlKey || e.metaKey || e.altKey;
-    if (has_non_shift_modifier_key) {
-        // To properly emulate browser "Enter", if the
-        // user had selected something in the textarea,
-        // we need those characters to be cleared.
-        const range = textarea.range();
-        if (range.length > 0) {
-            textarea.range(range.start, range.end).range("");
-        }
-
-        // Now add the newline, remembering to resize the
-        // textarea if needed.
-        textarea.caret("\n");
-        compose_ui.autosize_textarea(textarea);
-        e.preventDefault();
+    if (!has_non_shift_modifier_key) {
+        // Use the native browser behavior.
         return;
     }
-    // Fall through to native browser behavior, otherwise.
+
+    // To properly emulate browser "Enter", if the
+    // user had selected something in the textarea,
+    // we need those characters to be cleared.
+    const range = textarea.range();
+    if (range.length > 0) {
+        textarea.range(range.start, range.end).range("");
+    }
+
+    // Now add the newline, remembering to resize the
+    // textarea if needed.
+    textarea.caret("\n");
+    compose_ui.autosize_textarea(textarea);
+    e.preventDefault();
 }
 
 // nextFocus is set on a keydown event to indicate where we should focus on keyup.
