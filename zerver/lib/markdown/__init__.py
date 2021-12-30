@@ -54,7 +54,7 @@ from zerver.lib.emoji import EMOTICON_RE, codepoint_to_name, name_to_codepoint, 
 from zerver.lib.exceptions import MarkdownRenderingException
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
-from zerver.lib.mention import FullNameInfo, MentionBackend, MentionData, get_stream_name_map
+from zerver.lib.mention import FullNameInfo, MentionBackend, MentionData
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
@@ -2512,7 +2512,7 @@ def do_convert(
             mention_data = MentionData(mention_backend, content)
 
         stream_names = possible_linked_stream_names(content)
-        stream_name_info = get_stream_name_map(message_realm, stream_names)
+        stream_name_info = mention_data.get_stream_name_map(stream_names)
 
         if content_has_emoji_syntax(content):
             active_realm_emoji = message_realm.get_active_emoji()
