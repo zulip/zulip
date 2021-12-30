@@ -32,6 +32,7 @@ class ErrorCode(Enum):
     RATE_LIMIT_HIT = auto()
     USER_DEACTIVATED = auto()
     REALM_DEACTIVATED = auto()
+    REALM_MOVED = auto()
     PASSWORD_AUTH_DISABLED = auto()
     PASSWORD_RESET_REQUIRED = auto()
     AUTHENTICATION_FAILED = auto()
@@ -272,12 +273,37 @@ class UserDeactivatedError(AuthenticationFailedError):
         return _("Account is deactivated")
 
 
-class RealmDeactivatedError(AuthenticationFailedError):
+class RealmDeactivatedError(JsonableError):
     code: ErrorCode = ErrorCode.REALM_DEACTIVATED
+    http_status_code = 404
+
+    def __init__(self) -> None:
+        pass
 
     @staticmethod
     def msg_format() -> str:
         return _("This organization has been deactivated")
+
+
+class RealmMovedError(JsonableError):
+    # This is a variation of RealmDeactivatedError
+    # when the deactivated realm has been moved to a different url.
+    code: ErrorCode = ErrorCode.REALM_MOVED
+    http_status_code = 404
+
+    def __init__(self, moved_to_url: str) -> None:
+        self.moved_to_url = moved_to_url
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("This organization has been moved to new hosting")
+
+    @property
+    def data(self) -> Dict[str, Any]:
+        data_dict = super().data
+        data_dict["moved_to_url"] = self.moved_to_url
+
+        return data_dict
 
 
 class PasswordAuthDisabledError(AuthenticationFailedError):
