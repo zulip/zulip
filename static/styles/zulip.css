@@ -1446,9 +1446,10 @@ div.focused_table {
     }
 
     &.condensed {
-        max-height: 8.5em;
+        max-height: 10em;
         min-height: 0;
         overflow: hidden;
+        mask-image: linear-gradient(to top, transparent 0%, black);
     }
 
     &.collapsed {
@@ -1608,6 +1609,23 @@ div.focused_table {
     &:hover {
         text-decoration: underline;
     }
+}
+
+.message_expander,
+.message_condenser {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 90px;
+    height: 23px;
+    margin-top:0px;
+    margin-bottom: 8px;
+    position: relative;
+    left: 50%;
+    color: inherit;
+    background-color: hsl(0, 11%, 96%);
+    border-radius: 6px;
+    border: solid 1px hsl(215deg 47% 50%);
 }
 
 .messagebox-content {

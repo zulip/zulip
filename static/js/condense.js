@@ -21,12 +21,12 @@ const _message_content_height_cache = new Map();
 
 function show_more_link(row) {
     row.find(".message_condenser").hide();
-    row.find(".message_expander").show();
+    row.find(".message_expander").css('display', 'flex');
 }
 
 function show_condense_link(row) {
     row.find(".message_expander").hide();
-    row.find(".message_condenser").show();
+    row.find(".message_condenser").css('display', 'flex');
 }
 
 function condense_row(row) {
@@ -42,8 +42,8 @@ function uncondense_row(row) {
 }
 
 export function uncollapse(row) {
-    // Uncollapse a message, restoring the condensed message [More] or
-    // [Show less] link if necessary.
+    // Uncollapse a message, restoring the condensed message 'Show more' or
+    // 'Show less' button if necessary.
     const message = message_lists.current.get(rows.id(row));
     message.collapsed = false;
     message_flags.save_uncollapsed(message);
@@ -54,17 +54,17 @@ export function uncollapse(row) {
 
         if (message.condensed === true) {
             // This message was condensed by the user, so re-show the
-            // [More] link.
+            // 'Show more' button.
             condense_row(row);
         } else if (message.condensed === false) {
             // This message was un-condensed by the user, so re-show the
-            // [Show less] link.
+            // 'Show less' button.
             uncondense_row(row);
         } else if (content.hasClass("could-be-condensed")) {
             // By default, condense a long message.
             condense_row(row);
         } else {
-            // This was a short message, no more need for a [More] link.
+            // This was a short message, no more need for a 'Show more' button.
             row.find(".message_expander").hide();
         }
     };
@@ -77,8 +77,8 @@ export function uncollapse(row) {
 }
 
 export function collapse(row) {
-    // Collapse a message, hiding the condensed message [More] or
-    // [Show less] link if necessary.
+    // Collapse a message, hiding the condensed message 'Show more' or
+    // 'Show less' button if necessary.
     const message = message_lists.current.get(rows.id(row));
     message.collapsed = true;
 
@@ -115,7 +115,7 @@ export function toggle_collapse(message) {
     // This function implements a multi-way toggle, to try to do what
     // the user wants for messages:
     //
-    // * If the message is currently showing any [More] link, either
+    // * If the message is currently showing 'Show more' button, either
     //   because it was previously condensed or collapsed, fully display it.
     // * If the message is fully visible, either because it's too short to
     //   condense or because it's already uncondensed, collapse it
@@ -141,7 +141,7 @@ export function toggle_collapse(message) {
             message.condensed = false;
             content.removeClass("condensed");
             hide_message_expander(row);
-            row.find(".message_condenser").show();
+            row.find(".message_condenser").css('display', 'flex');
         } else {
             collapse(row);
         }
@@ -181,13 +181,13 @@ export function hide_message_condenser(row) {
 
 export function show_message_expander(row) {
     if (row.find(".could-be-condensed").length !== 0) {
-        row.find(".message_expander").show();
+        row.find(".message_expander").css('display', 'flex');
     }
 }
 
 export function show_message_condenser(row) {
     if (row.find(".could-be-condensed").length !== 0) {
-        row.find(".message_condenser").show();
+        row.find(".message_condenser").css('display', 'flex');
     }
 }
 
@@ -243,11 +243,11 @@ export function condense_and_collapse(elems) {
             $(elem).find(".message_expander").hide();
         }
 
-        // Completely hide the message and replace it with a [More]
-        // link if the user has collapsed it.
+        // Completely hide the message and replace it with a 'Show More'
+        // button if the user has collapsed it.
         if (message.collapsed) {
             content.addClass("collapsed");
-            $(elem).find(".message_expander").show();
+            $(elem).find(".message_expander").css('display', 'flex');;
         }
     }
 }
@@ -267,7 +267,7 @@ export function initialize() {
             message.condensed = false;
             content.removeClass("condensed");
             $(this).hide();
-            row.find(".message_condenser").show();
+            row.find(".message_condenser").css('display', 'flex');;
         }
         e.stopPropagation();
         e.preventDefault();
