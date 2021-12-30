@@ -45,18 +45,18 @@ class zulip::common {
 
     # https://go.dev/dl/
     'golang' => {
-      'version' => '1.17.3',
+      'version' => '1.17.5',
       'sha256' => {
-        'amd64'   => '550f9845451c0c94be679faf116291e7807a8d78b43149f9506c1b15eb89008c',
-        'aarch64' => '06f505c8d27203f78706ad04e47050b49092f1b06dc9ac4fbee4f0e4d015c8d4',
+        'amd64'   => 'bd78114b0d441b029c8fe0341f4910370925a4d270a6a590668840675b0c653e',
+        'aarch64' => '6f95ce3da40d9ce1355e48f31f4eb6508382415ca4d7413b1e7a3314e6430e7e',
       },
     },
 
     # https://github.com/stripe/smokescreen/tags
     'smokescreen-src' => {
-      'version' => 'dc403015f563eadc556a61870c6ad327688abe88',
+      'version' => '96dc8b043d3f22dcb65a9c2ccf22e3794e2da3a1',
       # Source code, so arch-invariant sha256
-      'sha256' => 'ad4b181d14adcd9425045152b903a343dbbcfcad3c1e7625d2c65d1d50e1959d',
+      'sha256' => 'c2b8080999c3ba9e2b509f8d4cf300922557e7c070fb16ac7d1ea220416f8660',
     },
 
     # https://github.com/wal-g/wal-g/releases
@@ -73,28 +73,28 @@ class zulip::common {
 
     # https://grafana.com/grafana/download?edition=oss
     'grafana' => {
-      'version' => '8.3.2',
+      'version' => '8.3.3',
       'sha256' => {
-        'amd64'   => '100f92c50aa612f213052c55594e58b68b7da641b751c5f144003d704730d189',
-        'aarch64' => 'a948c49e45e1cdfba96dd885a8dd4585746520d64497bc59aeb6eb2dc46b5e22',
+        'amd64'   => '89428c520e004bcb9faf7618dd4c81ff62496064cbf2ead3e1b9dbcf476c6f18',
+        'aarch64' => '6252917d7e63eb47e0955125b3b2c1c5d3e4d2e3bb84c269a8d86bd073a1dce7',
       },
     },
 
     # https://prometheus.io/download/#node_exporter
     'node_exporter' => {
-      'version' => '1.1.2',
+      'version' => '1.3.1',
       'sha256' => {
-        'amd64'   => '8c1f6a317457a658e0ae68ad710f6b4098db2cad10204649b51e3c043aa3e70d',
-        'aarch64' => 'eb5e7d16f18bb3272d0d832986fc8ac6cb0b6c42d487c94e15dabb10feae8e04',
+        'amd64'   => '68f3802c2dd3980667e4ba65ea2e1fb03f4a4ba026cca375f15a0390ff850949',
+        'aarch64' => 'f19f35175f87d41545fa7d4657e834e3a37c1fe69f3bf56bc031a256117764e7',
       },
     },
 
     # https://prometheus.io/download/#prometheus
     'prometheus' => {
-      'version' => '2.27.1',
+      'version' => '2.32.1',
       'sha256' => {
-        'amd64'   => 'ce637d0167d5e6d2561f3bd37e1c58fe8601e13e4e1ea745653c068f6e1317ae',
-        'aarch64' => 'a96fc1466d9030a9a899c783c087c30e91471342a771544d4e494ceead95cedc',
+        'amd64'   => 'f08e96d73330a9ee7e6922a9f5b72ea188988a083bbfa9932359339fcf504a74',
+        'aarch64' => '2d185a8ed46161babeaaac8ce00ef1efdeccf3ef4ed234cd181eac6cad1ae4b2',
       },
     },
   }
