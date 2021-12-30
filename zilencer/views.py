@@ -40,6 +40,7 @@ from zilencer.models import (
     RemoteRealmAuditLog,
     RemoteRealmCount,
     RemoteZulipServer,
+    RemoteZulipServerAuditLog,
 )
 
 logger = logging.getLogger(__name__)
@@ -108,20 +109,30 @@ def register_remote_server(
     except ValidationError as e:
         raise JsonableError(e.message)
 
-    remote_server, created = RemoteZulipServer.objects.get_or_create(
-        uuid=zulip_org_id,
-        defaults={"hostname": hostname, "contact_email": contact_email, "api_key": zulip_org_key},
-    )
-
-    if not created:
-        if remote_server.api_key != zulip_org_key:
-            raise InvalidZulipServerKeyError(zulip_org_id)
+    with transaction.atomic():
+        remote_server, created = RemoteZulipServer.objects.get_or_create(
+            uuid=zulip_org_id,
+            defaults={
+                "hostname": hostname,
+                "contact_email": contact_email,
+                "api_key": zulip_org_key,
+            },
+        )
+        if created:
+            RemoteZulipServerAuditLog.objects.create(
+                event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_CREATED,
+                server=remote_server,
+                event_time=remote_server.last_updated,
+            )
         else:
-            remote_server.hostname = hostname
-            remote_server.contact_email = contact_email
-            if new_org_key is not None:
-                remote_server.api_key = new_org_key
-            remote_server.save()
+            if remote_server.api_key != zulip_org_key:
+                raise InvalidZulipServerKeyError(zulip_org_id)
+            else:
+                remote_server.hostname = hostname
+                remote_server.contact_email = contact_email
+                if new_org_key is not None:
+                    remote_server.api_key = new_org_key
+                remote_server.save()
 
     return json_success({"created": created})
 
