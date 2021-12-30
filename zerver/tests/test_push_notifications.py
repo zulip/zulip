@@ -2470,6 +2470,14 @@ class PushBouncerSignupTest(ZulipTestCase):
         result = self.client_post("/api/v1/remotes/server/register", request)
         self.assert_json_error(result, "Invalid UUID")
 
+        # This looks mostly like a proper UUID, but isn't actually a valid UUIDv4,
+        # which makes it slip past a basic validation via initializing uuid.UUID with it.
+        # Thus we should test this scenario separately.
+        zulip_org_id = "18cedb98-5222-5f34-50a9-fc418e1ba972"
+        request["zulip_org_id"] = zulip_org_id
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_error(result, "Invalid UUID")
+
     def test_push_signup_success(self) -> None:
         zulip_org_id = str(uuid.uuid4())
         zulip_org_key = get_random_string(64)
