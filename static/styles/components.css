@@ -91,11 +91,16 @@
                 background-position: 50% 50%;
                 background-repeat: no-repeat;
                 background-color: hsl(156, 41%, 40%);
+                border: 2px solid hsl(156, 41%, 40%);
             }
 
             &:disabled ~ span {
                 opacity: 0.5;
                 cursor: not-allowed;
+            }
+
+            &:hover ~ span {
+                border-color: hsl(156, 41%, 40%);
             }
         }
     }
