@@ -82,7 +82,7 @@ class zulip::common {
 
     # https://prometheus.io/download/#node_exporter
     'node_exporter' => {
-      'version' => '8.3.2',
+      'version' => '1.1.2',
       'sha256' => {
         'amd64'   => '8c1f6a317457a658e0ae68ad710f6b4098db2cad10204649b51e3c043aa3e70d',
         'aarch64' => 'eb5e7d16f18bb3272d0d832986fc8ac6cb0b6c42d487c94e15dabb10feae8e04',
