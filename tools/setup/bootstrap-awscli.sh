@@ -1,5 +1,7 @@
 # shellcheck shell=bash
 
+set -eu
+
 ARCH=$(uname -m)
 
 AWS_CLI_VERSION="2.4.7"
@@ -14,7 +16,7 @@ fi
 
 if [ ! -d "/srv/zulip-aws-tools/v2/$AWS_CLI_VERSION" ]; then
     mkdir -p /srv/zulip-aws-tools
-    cd /srv/zulip-aws-tools || exit 1
+    cd /srv/zulip-aws-tools
     rm -rf awscli.zip awscli.zip.sha256 aws/
     curl -fL "https://awscli.amazonaws.com/awscli-exe-linux-$ARCH-$AWS_CLI_VERSION.zip" -o awscli.zip
     echo "$AWS_CLI_SHA  awscli.zip" >awscli.zip.sha256
