@@ -2476,6 +2476,16 @@ def get_active_streams(realm: Optional[Realm]) -> QuerySet:
     return Stream.objects.filter(realm=realm, deactivated=False)
 
 
+def get_linkable_streams(realm_id: int) -> QuerySet:
+    """
+    This returns the streams that we are allowed to linkify using
+    something like "#frontend" in our markup. For now the business
+    rule is that you can link any stream in the realm that hasn't
+    been deactivated (similar to how get_active_streams works).
+    """
+    return Stream.objects.filter(realm_id=realm_id, deactivated=False)
+
+
 def get_stream(stream_name: str, realm: Realm) -> Stream:
     """
     Callers that don't have a Realm object already available should use

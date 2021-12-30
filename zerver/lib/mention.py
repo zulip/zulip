@@ -5,7 +5,7 @@ from typing import Dict, List, Match, Optional, Set, Tuple
 
 from django.db.models import Q
 
-from zerver.models import Realm, UserGroup, UserProfile, get_active_streams
+from zerver.models import Realm, UserGroup, UserProfile, get_linkable_streams
 
 # Match multi-word string between @** ** or match any one-word
 # sequences after @
@@ -206,8 +206,8 @@ def get_stream_name_map(realm: Realm, stream_names: Set[str]) -> Dict[str, int]:
     q_list = {Q(name=name) for name in stream_names}
 
     rows = (
-        get_active_streams(
-            realm=realm,
+        get_linkable_streams(
+            realm_id=realm.id,
         )
         .filter(
             functools.reduce(lambda a, b: a | b, q_list),
