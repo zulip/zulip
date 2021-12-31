@@ -48,10 +48,9 @@ Generic GitHub `org/repo#ID` format:
 * Original text: `zulip/zulip#2468`
 * Automatically links to: `https://github.com/zulip/zulip/issues/2468`
 
-Linkifiers are implemented as a limited subset of Python 3 regular
-expressions, with validation designed to prevent common mistakes,
-avoid accidentally expensive linkifiers, and allow translation into
-equivalent JavaScript regular expressions for local echo.
+Linkifier patterns are regular expressions, using the
+[re2](https://github.com/google/re2/wiki/Syntax) regular expression
+engine.
 
 If you have any trouble setting these up, please [contact
 us](/help/contact-support) with details on what you're trying to do,
