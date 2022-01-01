@@ -13,6 +13,7 @@ from scripts.lib.zulip_tools import (
     ENDC,
     OKGREEN,
     WARNING,
+    get_config,
     get_config_file,
     get_tornado_ports,
     has_application_server,
@@ -128,8 +129,29 @@ if has_application_server():
         subprocess.check_call(["supervisorctl", action, "zulip-tornado:*"])
 
     # Finally, restart the Django uWSGI processes.
-    logging.info("%s django server", verbing)
-    subprocess.check_call(["supervisorctl", action, "zulip-django"])
+    if (
+        action == "restart"
+        and not args.less_graceful
+        and get_config(config_file, "application_server", "rolling_restart") != ""
+        and os.path.exists("/home/zulip/deployments/uwsgi-control")
+    ):
+        # See if it's currently running
+        uwsgi_status = subprocess.run(
+            ["supervisorctl", "status", "zulip-django"],
+            stdout=subprocess.DEVNULL,
+        )
+        if uwsgi_status.returncode == 0:
+            logging.info("Starting rolling restart of django server")
+            with open("/home/zulip/deployments/uwsgi-control", "w") as control_socket:
+                # "c" is chain-reloading:
+                # https://uwsgi-docs.readthedocs.io/en/latest/MasterFIFO.html#available-commands
+                control_socket.write("c")
+        else:
+            logging.info("Starting django server")
+            subprocess.check_call(["supervisorctl", "start", "zulip-django"])
+    else:
+        logging.info("%s django server", verbing)
+        subprocess.check_call(["supervisorctl", action, "zulip-django"])
 
     using_sso = subprocess.check_output(["./scripts/get-django-setting", "USING_APACHE_SSO"])
     if using_sso.strip() == b"True":
