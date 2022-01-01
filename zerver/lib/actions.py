@@ -22,6 +22,7 @@ from typing import (
     Set,
     Tuple,
     Union,
+    cast,
 )
 
 import django.db.utils
@@ -181,6 +182,7 @@ from zerver.lib.upload import (
 )
 from zerver.lib.user_groups import access_user_group_by_id, create_user_group
 from zerver.lib.user_mutes import add_user_mute, get_muting_users, get_user_mutes
+from zerver.lib.user_notification_info import UserNotificationInfo, UserNotificationInfoBackend
 from zerver.lib.user_status import update_user_status
 from zerver.lib.users import (
     check_bot_name_available,
@@ -253,7 +255,6 @@ from zerver.models import (
     get_user_profile_by_id,
     is_cross_realm_bot_email,
     linkifiers_for_realm,
-    query_for_ids,
     realm_filters_for_realm,
     validate_attachment_request,
 )
@@ -1692,24 +1693,8 @@ def get_recipient_info(
     user_ids |= possibly_mentioned_user_ids
 
     if user_ids:
-        query = UserProfile.objects.filter(is_active=True).values(
-            "id",
-            "enable_online_push_notifications",
-            "enable_offline_email_notifications",
-            "enable_offline_push_notifications",
-            "is_bot",
-            "bot_type",
-            "long_term_idle",
-        )
-
-        # query_for_ids is fast highly optimized for large queries, and we
-        # need this codepath to be fast (it's part of sending messages)
-        query = query_for_ids(
-            query=query,
-            user_ids=sorted(user_ids),
-            field="id",
-        )
-        rows = list(query)
+        user_notification_info_backend = UserNotificationInfoBackend()
+        rows = user_notification_info_backend.get_user_notification_info(user_ids)
     else:
         # TODO: We should always have at least one user_id as a recipient
         #       of any message we send.  Right now the exception to this
@@ -1727,26 +1712,26 @@ def get_recipient_info(
         #         to-do.
         rows = []
 
-    def get_ids_for(f: Callable[[Dict[str, Any]], bool]) -> Set[int]:
+    def get_ids_for(f: Callable[[UserNotificationInfo], bool]) -> Set[int]:
         """Only includes users on the explicit message to line"""
-        return {row["id"] for row in rows if f(row)} & message_to_user_id_set
+        return {row.id for row in rows if f(row)} & message_to_user_id_set
 
-    def is_service_bot(row: Dict[str, Any]) -> bool:
-        return row["is_bot"] and (row["bot_type"] in UserProfile.SERVICE_BOT_TYPES)
+    def is_service_bot(row: UserNotificationInfo) -> bool:
+        return row.is_bot and (row.bot_type in UserProfile.SERVICE_BOT_TYPES)
 
     active_user_ids = get_ids_for(lambda r: True)
     online_push_user_ids = get_ids_for(
-        lambda r: r["enable_online_push_notifications"],
+        lambda r: r.enable_online_push_notifications,
     )
 
     # We deal with only the users who have disabled this setting, since that
     # will usually be much smaller a set than those who have enabled it (which
     # is the default)
     pm_mention_email_disabled_user_ids = get_ids_for(
-        lambda r: not r["enable_offline_email_notifications"]
+        lambda r: not r.enable_offline_email_notifications,
     )
     pm_mention_push_disabled_user_ids = get_ids_for(
-        lambda r: not r["enable_offline_push_notifications"]
+        lambda r: not r.enable_offline_push_notifications,
     )
 
     # Service bots don't get UserMessage rows.
@@ -1755,7 +1740,7 @@ def get_recipient_info(
     )
 
     long_term_idle_user_ids = get_ids_for(
-        lambda r: r["long_term_idle"],
+        lambda r: r.long_term_idle,
     )
 
     # These three bot data structures need to filter from the full set
@@ -1769,15 +1754,16 @@ def get_recipient_info(
     # sure we have the data we need for that without extra database
     # queries.
     default_bot_user_ids = {
-        row["id"] for row in rows if row["is_bot"] and row["bot_type"] == UserProfile.DEFAULT_BOT
+        row.id for row in rows if row.is_bot and row.bot_type == UserProfile.DEFAULT_BOT
     }
 
-    service_bot_tuples = [(row["id"], row["bot_type"]) for row in rows if is_service_bot(row)]
+    # We cast bot_type from an Optional[int] to an int.
+    service_bot_tuples = [(row.id, cast(int, row.bot_type)) for row in rows if is_service_bot(row)]
 
     # We also need the user IDs of all bots, to avoid trying to send push/email
     # notifications to them. This set will be directly sent to the event queue code
     # where we determine notifiability of the message for users.
-    all_bot_user_ids = {row["id"] for row in rows if row["is_bot"]}
+    all_bot_user_ids = {row.id for row in rows if row.is_bot}
 
     info: RecipientInfoResult = dict(
         active_user_ids=active_user_ids,
