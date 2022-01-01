@@ -97,5 +97,14 @@ class zulip::common {
         'aarch64' => '2d185a8ed46161babeaaac8ce00ef1efdeccf3ef4ed234cd181eac6cad1ae4b2',
       },
     },
+
+    # https://github.com/timonwong/uwsgi_exporter/releases
+    'uwsgi_exporter' => {
+      'version' => '1.0.0',
+      'sha256' => {
+        'amd64'   => '7e924dec77bca1052b4782dcf31f0c6b2ebe71d6bf4a72412b97fec45962cef0',
+        'aarch64' => 'b36e26c8e94f1954c76aa9e9920be2f84ecc12b34f14a81086fedade8c48cb74',
+      },
+    },
   }
 }
