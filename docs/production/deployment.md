@@ -623,6 +623,14 @@ override is useful both Docker systems (where the above algorithm
 might see the host's memory, not the container's) and/or when using
 remote servers for postgres, memcached, redis, and RabbitMQ.
 
+#### `rolling_restart`
+
+If set to a non-empty value, when using `./scripts/restart-server` to
+restart Zulip, restart the uwsgi processes one-at-a-time, instead of
+all at once. This decreases the number of 502's served to clients, at
+the cost of slightly increased memory usage, and the possibility that
+different requests will be served by different versions of the code.
+
 #### `uwsgi_buffer_size`
 
 Override the default uwsgi buffer size of 8192.

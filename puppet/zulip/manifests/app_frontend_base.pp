@@ -119,6 +119,12 @@ class zulip::app_frontend_base {
     notify  => Service[$zulip::common::supervisor_service],
   }
 
+  $uwsgi_rolling_restart = zulipconf('application_server', 'rolling_restart', '')
+  if $uwsgi_rolling_restart == '' {
+    file { '/home/zulip/deployments/uwsgi-control':
+      ensure => absent,
+    }
+  }
   $uwsgi_listen_backlog_limit = zulipconf('application_server', 'uwsgi_listen_backlog_limit', 128)
   $uwsgi_buffer_size = zulipconf('application_server', 'uwsgi_buffer_size', 8192)
   $uwsgi_processes = zulipconf('application_server', 'uwsgi_processes', $uwsgi_default_processes)
