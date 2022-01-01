@@ -207,7 +207,7 @@ class zulip::app_frontend_base {
   }
 
   # This cron job does nothing unless RATE_LIMIT_TOR_TOGETHER is enabled.
-  file { '/etc/cron.d/fetch-for-exit-nodes':
+  file { '/etc/cron.d/fetch-tor-exit-nodes':
     ensure => file,
     owner  => 'root',
     group  => 'root',
