@@ -29,6 +29,11 @@ define zulip::external_dep(
     },
   }
 
+  file { $dir:
+    ensure  => present,
+    require => Zulip::Sha256_Tarball_To[$title],
+  }
+
   unless $::operatingsystem == 'Ubuntu' and $::operatingsystemrelease == '18.04' {
     # Puppet 5.5.0 and below make this always-noisy, as they spout out
     # a notify line about tidying the managed directory above.  Skip
@@ -39,7 +44,7 @@ define zulip::external_dep(
       recurse => 1,
       rmdirs  => true,
       matches => "zulip-${title}-*",
-      require => Zulip::Sha256_Tarball_To[$title],
+      require => File[$dir],
     }
   }
 }
