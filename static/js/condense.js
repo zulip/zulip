@@ -3,6 +3,7 @@ import $ from "jquery";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
+import * as recent_topics_util from "./recent_topics_util";
 import * as rows from "./rows";
 
 /*
@@ -163,7 +164,9 @@ function get_message_height(elem, message_id) {
 
     // shown to be ~2.5x faster than Node.getBoundingClientRect().
     const height = elem.offsetHeight;
-    _message_content_height_cache.set(message_id, height);
+    if (!recent_topics_util.is_visible()) {
+        _message_content_height_cache.set(message_id, height);
+    }
     return height;
 }
 
