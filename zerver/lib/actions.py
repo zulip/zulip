@@ -368,26 +368,31 @@ def send_message_to_signup_notification_stream(
         internal_send_stream_message(sender, signup_notifications_stream, topic_name, message)
 
 
-def notify_new_user(user_profile: UserProfile) -> None:
+def notify_new_user(user_profile: UserProfile, referrer: Optional[UserProfile] = None) -> None:
     user_count = realm_user_count(user_profile.realm)
     sender_email = settings.NOTIFICATION_BOT
     sender = get_system_bot(sender_email, user_profile.realm_id)
 
     is_first_user = user_count == 1
     if not is_first_user:
-        message = _("{user} just signed up for Zulip. (total: {user_count})").format(
-            user=silent_mention_syntax_for_user(user_profile), user_count=user_count
-        )
-
-        if settings.BILLING_ENABLED:
-            from corporate.lib.registration import generate_licenses_low_warning_message_if_required
-
-            licenses_low_warning_message = generate_licenses_low_warning_message_if_required(
-                user_profile.realm
+        if referrer:
+            message = _("{user} accepted {referrer}'s invitation to join Zulip. (total: {user_count})").format(
+                user=silent_mention_syntax_for_user(user_profile), user_count=user_count, referrer=silent_mention_syntax_for_user(referrer)
             )
-            if licenses_low_warning_message is not None:
-                message += "\n"
-                message += licenses_low_warning_message
+        else:
+            message = _("{user} just signed up for Zulip. (total: {user_count})").format(
+                user=silent_mention_syntax_for_user(user_profile), user_count=user_count
+            )
+
+            if settings.BILLING_ENABLED:
+                from corporate.lib.registration import generate_licenses_low_warning_message_if_required
+
+                licenses_low_warning_message = generate_licenses_low_warning_message_if_required(
+                    user_profile.realm
+                )
+                if licenses_low_warning_message is not None:
+                    message += "\n"
+                    message += licenses_low_warning_message
 
         send_message_to_signup_notification_stream(sender, user_profile.realm, message)
 
@@ -398,12 +403,17 @@ def notify_new_user(user_profile: UserProfile) -> None:
         # Check whether the stream exists
         signups_stream = get_signups_stream(admin_realm)
         # We intentionally use the same strings as above to avoid translation burden.
-        message = _("{user} just signed up for Zulip. (total: {user_count})").format(
-            user=f"{user_profile.full_name} <`{user_profile.email}`>", user_count=user_count
-        )
-        internal_send_stream_message(
-            admin_realm_sender, signups_stream, user_profile.realm.display_subdomain, message
-        )
+        if referrer:
+            message = _("{user} accepted {referrer}'s invitation to join Zulip. (total: {user_count})").format(
+                user=silent_mention_syntax_for_user(user_profile), user_count=user_count, referrer=silent_mention_syntax_for_user(referrer)
+            )
+        else:
+            message = _("{user} just signed up for Zulip. (total: {user_count})").format(
+                user=f"{user_profile.full_name} <`{user_profile.email}`>", user_count=user_count
+            )
+            internal_send_stream_message(
+                admin_realm_sender, signups_stream, user_profile.realm.display_subdomain, message
+            )
 
     except Stream.DoesNotExist:
         # If the signups stream hasn't been created in the admin
@@ -523,7 +533,7 @@ def process_new_human_user(
     if not realm_creation and prereg_user is not None and prereg_user.referred_by is not None:
         notify_invites_changed(user_profile)
 
-    notify_new_user(user_profile)
+    notify_new_user(user_profile, acting_user)
     # Clear any scheduled invitation emails to prevent them
     # from being sent after the user is created.
     clear_scheduled_invitation_emails(user_profile.delivery_email)
