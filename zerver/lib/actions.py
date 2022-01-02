@@ -376,8 +376,12 @@ def notify_new_user(user_profile: UserProfile, referrer: Optional[UserProfile] =
     is_first_user = user_count == 1
     if not is_first_user:
         if referrer:
-            message = _("{user} accepted {referrer}'s invitation to join Zulip. (total: {user_count})").format(
-                user=silent_mention_syntax_for_user(user_profile), user_count=user_count, referrer=silent_mention_syntax_for_user(referrer)
+            message = _(
+                "{user} accepted {referrer}'s invitation to join Zulip. (total: {user_count})"
+            ).format(
+                user=silent_mention_syntax_for_user(user_profile),
+                user_count=user_count,
+                referrer=silent_mention_syntax_for_user(referrer),
             )
         else:
             message = _("{user} just signed up for Zulip. (total: {user_count})").format(
@@ -385,7 +389,9 @@ def notify_new_user(user_profile: UserProfile, referrer: Optional[UserProfile] =
             )
 
             if settings.BILLING_ENABLED:
-                from corporate.lib.registration import generate_licenses_low_warning_message_if_required
+                from corporate.lib.registration import (
+                    generate_licenses_low_warning_message_if_required,
+                )
 
                 licenses_low_warning_message = generate_licenses_low_warning_message_if_required(
                     user_profile.realm
@@ -404,8 +410,12 @@ def notify_new_user(user_profile: UserProfile, referrer: Optional[UserProfile] =
         signups_stream = get_signups_stream(admin_realm)
         # We intentionally use the same strings as above to avoid translation burden.
         if referrer:
-            message = _("{user} accepted {referrer}'s invitation to join Zulip. (total: {user_count})").format(
-                user=silent_mention_syntax_for_user(user_profile), user_count=user_count, referrer=silent_mention_syntax_for_user(referrer)
+            message = _(
+                "{user} accepted {referrer}'s invitation to join Zulip. (total: {user_count})"
+            ).format(
+                user=silent_mention_syntax_for_user(user_profile),
+                user_count=user_count,
+                referrer=silent_mention_syntax_for_user(referrer),
             )
         else:
             message = _("{user} just signed up for Zulip. (total: {user_count})").format(
