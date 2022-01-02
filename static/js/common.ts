@@ -136,9 +136,12 @@ export function setup_password_visibility_toggle(
 ): void {
     const label = $t({defaultMessage: "Show password"});
     set_password_toggle_label(password_selector, label, tippy_tooltips);
-    $(password_selector).on("click", (e: { preventDefault: () => void; stopPropagation: () => void; }) => {
-        e.preventDefault();
-        e.stopPropagation();
-        toggle_password_visibility(password_field_id, password_selector, tippy_tooltips);
-    });
+    $(password_selector).on(
+        "click",
+        (e: {preventDefault: () => void; stopPropagation: () => void}) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggle_password_visibility(password_field_id, password_selector, tippy_tooltips);
+        },
+    );
 }
