@@ -13,6 +13,7 @@ if settings.DEBUG:
     def static_path(path: str) -> str:
         return find(path) or "/nonexistent"
 
+
 else:
 
     def static_path(path: str) -> str:
