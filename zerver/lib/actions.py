@@ -4568,6 +4568,7 @@ def do_change_bot_owner(
     send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
 
+@transaction.atomic(durable=True)
 def do_change_tos_version(user_profile: UserProfile, tos_version: str) -> None:
     user_profile.tos_version = tos_version
     user_profile.save(update_fields=["tos_version"])
