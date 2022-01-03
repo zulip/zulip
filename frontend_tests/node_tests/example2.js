@@ -67,6 +67,9 @@ run_test("message_store", () => {
     message_store.set_message_booleans(in_message);
     assert.equal(in_message.alerted, true);
 
+    const failure = false;
+    assert.ok(failure);
+
     // Let's add a message into our message_store via
     // message_helper.process_new_message.
     assert.equal(message_store.get(in_message.id), undefined);
