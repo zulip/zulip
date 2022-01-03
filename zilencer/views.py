@@ -250,7 +250,10 @@ def remote_server_notify_push(
         user_id, android_devices, gcm_payload, gcm_options, remote=server
     )
 
-    apns_payload = truncate_payload(apns_payload)
+    if isinstance(apns_payload.get("custom"), dict) and isinstance(
+        apns_payload["custom"].get("zulip"), dict
+    ):
+        apns_payload["custom"]["zulip"] = truncate_payload(apns_payload["custom"]["zulip"])
     send_apple_push_notification(user_id, apple_devices, apns_payload, remote=server)
 
     return json_success(
