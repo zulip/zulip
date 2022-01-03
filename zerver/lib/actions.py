@@ -4676,6 +4676,7 @@ def notify_avatar_url_change(user_profile: UserProfile) -> None:
     )
 
 
+@transaction.atomic(savepoint=False)
 def do_change_avatar_fields(
     user_profile: UserProfile,
     avatar_source: str,
