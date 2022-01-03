@@ -4895,6 +4895,7 @@ def do_change_default_events_register_stream(
         )
 
 
+@transaction.atomic(durable=True)
 def do_change_default_all_public_streams(
     user_profile: UserProfile, value: bool, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -4918,17 +4919,20 @@ def do_change_default_all_public_streams(
     )
 
     if user_profile.is_bot:
-        send_event(
-            user_profile.realm,
-            dict(
-                type="realm_bot",
-                op="update",
-                bot=dict(
-                    user_id=user_profile.id,
-                    default_all_public_streams=user_profile.default_all_public_streams,
-                ),
+        event = dict(
+            type="realm_bot",
+            op="update",
+            bot=dict(
+                user_id=user_profile.id,
+                default_all_public_streams=user_profile.default_all_public_streams,
             ),
-            bot_owner_user_ids(user_profile),
+        )
+        transaction.on_commit(
+            lambda: send_event(
+                user_profile.realm,
+                event,
+                bot_owner_user_ids(user_profile),
+            )
         )
 
 
