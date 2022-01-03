@@ -302,7 +302,10 @@ class PushBouncerNotificationTest(BouncerTestCase):
         payload = {
             "user_id": hamlet.id,
             "gcm_payload": {"event": "remove", "zulip_message_ids": many_ids},
-            "apns_payload": {"event": "remove", "zulip_message_ids": many_ids},
+            "apns_payload": {
+                "badge": 0,
+                "custom": {"zulip": {"event": "remove", "zulip_message_ids": many_ids}},
+            },
             "gcm_options": {},
         }
         with mock.patch(
@@ -335,7 +338,15 @@ class PushBouncerNotificationTest(BouncerTestCase):
         apple_push.assert_called_once_with(
             hamlet.id,
             [apple_token],
-            {"event": "remove", "zulip_message_ids": ",".join(str(i) for i in range(50, 250))},
+            {
+                "badge": 0,
+                "custom": {
+                    "zulip": {
+                        "event": "remove",
+                        "zulip_message_ids": ",".join(str(i) for i in range(50, 250)),
+                    }
+                },
+            },
             remote=server,
         )
         android_push.assert_called_once_with(
