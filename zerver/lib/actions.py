@@ -4682,6 +4682,7 @@ def do_delete_avatar_image(user: UserProfile, *, acting_user: Optional[UserProfi
     delete_avatar_image(user)
 
 
+@transaction.atomic(durable=True)
 def do_change_icon_source(
     realm: Realm, icon_source: str, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -4698,15 +4699,18 @@ def do_change_icon_source(
         acting_user=acting_user,
     )
 
-    send_event(
-        realm,
-        dict(
-            type="realm",
-            op="update_dict",
-            property="icon",
-            data=dict(icon_source=realm.icon_source, icon_url=realm_icon_url(realm)),
-        ),
-        active_user_ids(realm.id),
+    event = dict(
+        type="realm",
+        op="update_dict",
+        property="icon",
+        data=dict(icon_source=realm.icon_source, icon_url=realm_icon_url(realm)),
+    )
+    transaction.on_commit(
+        lambda: send_event(
+            realm,
+            event,
+            active_user_ids(realm.id),
+        )
     )
 
 
