@@ -4808,6 +4808,7 @@ def do_change_realm_plan_type(
     send_event(realm, event, active_user_ids(realm.id))
 
 
+@transaction.atomic(durable=True)
 def do_change_default_sending_stream(
     user_profile: UserProfile, stream: Optional[Stream], *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -4835,17 +4836,20 @@ def do_change_default_sending_stream(
             stream_name: Optional[str] = stream.name
         else:
             stream_name = None
-        send_event(
-            user_profile.realm,
-            dict(
-                type="realm_bot",
-                op="update",
-                bot=dict(
-                    user_id=user_profile.id,
-                    default_sending_stream=stream_name,
-                ),
+        event = dict(
+            type="realm_bot",
+            op="update",
+            bot=dict(
+                user_id=user_profile.id,
+                default_sending_stream=stream_name,
             ),
-            bot_owner_user_ids(user_profile),
+        )
+        transaction.on_commit(
+            lambda: send_event(
+                user_profile.realm,
+                event,
+                bot_owner_user_ids(user_profile),
+            )
         )
 
 
