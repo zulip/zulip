@@ -23,6 +23,12 @@ class zulip::smokescreen {
       Zulip::External_Dep['smokescreen-src'],
     ],
   }
+  # This resource exists purely so it doesn't get tidied; it is
+  # created by the 'compile smokescreen' step.
+  file { $bin:
+    ensure  => file,
+    require => Exec['compile smokescreen'],
+  }
   unless $::operatingsystem == 'Ubuntu' and $::operatingsystemrelease == '18.04' {
     # Puppet 5.5.0 and below make this always-noisy, as they spout out
     # a notify line about tidying the managed file above.  Skip
