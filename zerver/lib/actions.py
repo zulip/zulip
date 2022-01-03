@@ -4710,6 +4710,7 @@ def do_change_icon_source(
     )
 
 
+@transaction.atomic(durable=True)
 def do_change_logo_source(
     realm: Realm, logo_source: str, night: bool, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -4736,7 +4737,7 @@ def do_change_logo_source(
         property="night_logo" if night else "logo",
         data=get_realm_logo_data(realm, night),
     )
-    send_event(realm, event, active_user_ids(realm.id))
+    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
 
 
 @transaction.atomic(durable=True)
