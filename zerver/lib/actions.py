@@ -4739,6 +4739,7 @@ def do_change_logo_source(
     send_event(realm, event, active_user_ids(realm.id))
 
 
+@transaction.atomic(durable=True)
 def do_change_realm_org_type(
     realm: Realm,
     org_type: int,
