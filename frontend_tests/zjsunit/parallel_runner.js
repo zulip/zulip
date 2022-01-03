@@ -27,20 +27,48 @@ function create_file_groups(files, parallel) {
 
 const file_groups = create_file_groups(files, parallel);
 
+const worker_processes = [];
+
+// we use this map to ensure that we only call .kill() on the processes
+// we have forked, this is important because if we didn't ensure this,
+// it is entirely possible that we would send a kill signal to an
+// arbitrary process which just happens to have the same pid as the one
+// we had created (through pid reallocation).
+// see: https://nodejs.org/api/child_process.html#subprocesskillsignal
+const has_exited = new Map();
+
+function kill_all_child_processes() {
+    for (const worker_process of worker_processes) {
+        if (!has_exited.get(worker_process.pid)) {
+            has_exited.set(worker_process.pid, true);
+            worker_process.kill();
+        }
+    }
+}
+
 for (const file_group of file_groups) {
     const worker_process = child_process.fork(index, file_group, {stdio: "inherit"});
+    const current_pid = worker_process.pid;
+    has_exited.set(current_pid, false);
     worker_process.on("error", (error) => {
         console.error(error);
-        // if we fail to create a child processes, send a non zero
+        // if we fail to create a child processes, kill all previously
+        // created processes, exit this process and send a non zero
         // return code, so that we don't check coverage
-        process.exitCode = 2;
+        has_exited.set(current_pid, true);
+        kill_all_child_processes();
+        process.exit(2);
     });
     worker_process.on("exit", (code) => {
+        has_exited.set(current_pid, true);
         if (code === undefined || code !== 0) {
             // if any worker_process ends without running all its test
-            // files eg due to an error, send a non zero return code,
-            // so that we don't check coverage
-            process.exitCode = 1;
+            // files eg due to an error, then kill all worker_processes,
+            // exit this process and send a non zero return code, so that
+            // we don't check coverage
+            kill_all_child_processes();
+            process.exit(1);
         }
     });
+    worker_processes.push(worker_process);
 }
