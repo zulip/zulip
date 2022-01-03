@@ -4498,6 +4498,7 @@ def check_change_bot_full_name(
     do_change_full_name(user_profile, new_full_name, acting_user)
 
 
+@transaction.atomic(durable=True)
 def do_change_bot_owner(
     user_profile: UserProfile, bot_owner: UserProfile, acting_user: UserProfile
 ) -> None:
@@ -4521,16 +4522,19 @@ def do_change_bot_owner(
 
     # Delete the bot from previous owner's bot data.
     if previous_owner and not previous_owner.is_realm_admin:
-        send_event(
-            user_profile.realm,
-            dict(
-                type="realm_bot",
-                op="delete",
-                bot=dict(
-                    user_id=user_profile.id,
-                ),
+        delete_event = dict(
+            type="realm_bot",
+            op="delete",
+            bot=dict(
+                user_id=user_profile.id,
             ),
-            {previous_owner.id},
+        )
+        transaction.on_commit(
+            lambda: send_event(
+                user_profile.realm,
+                delete_event,
+                {previous_owner.id},
+            )
         )
         # Do not send update event for previous bot owner.
         update_users = update_users - {previous_owner.id}
@@ -4538,26 +4542,29 @@ def do_change_bot_owner(
     # Notify the new owner that the bot has been added.
     if not bot_owner.is_realm_admin:
         add_event = created_bot_event(user_profile)
-        send_event(user_profile.realm, add_event, {bot_owner.id})
+        transaction.on_commit(lambda: send_event(user_profile.realm, add_event, {bot_owner.id}))
         # Do not send update event for bot_owner.
         update_users = update_users - {bot_owner.id}
 
-    send_event(
-        user_profile.realm,
-        dict(
-            type="realm_bot",
-            op="update",
-            bot=dict(
-                user_id=user_profile.id,
-                owner_id=user_profile.bot_owner.id,
-            ),
+    bot_event = dict(
+        type="realm_bot",
+        op="update",
+        bot=dict(
+            user_id=user_profile.id,
+            owner_id=user_profile.bot_owner.id,
         ),
-        update_users,
+    )
+    transaction.on_commit(
+        lambda: send_event(
+            user_profile.realm,
+            bot_event,
+            update_users,
+        )
     )
 
     # Since `bot_owner_id` is included in the user profile dict we need
     # to update the users dict with the new bot owner id
-    event: Dict[str, Any] = dict(
+    event = dict(
         type="realm_user",
         op="update",
         person=dict(
@@ -4565,7 +4572,9 @@ def do_change_bot_owner(
             bot_owner_id=user_profile.bot_owner.id,
         ),
     )
-    send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+    transaction.on_commit(
+        lambda: send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+    )
 
 
 @transaction.atomic(durable=True)
