@@ -623,7 +623,7 @@ def list_supervisor_processes(*args: str) -> List[str]:
         universal_newlines=True,
         stdout=subprocess.PIPE,
     )
-    # `supercisorctl status` returns 3 if any are stopped, which is
+    # `supervisorctl status` returns 3 if any are stopped, which is
     # fine here; and exit code 4 is for no such process, which is
     # handled below.
     if worker_status.returncode not in (0, 3, 4):
