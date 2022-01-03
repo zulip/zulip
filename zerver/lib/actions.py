@@ -5494,6 +5494,7 @@ def update_scheduled_email_notifications_time(
     )
 
 
+@transaction.atomic(durable=True)
 def do_change_user_setting(
     user_profile: UserProfile,
     setting_name: str,
@@ -5553,7 +5554,7 @@ def do_change_user_setting(
         assert isinstance(setting_value, str)
         event["language_name"] = get_language_name(setting_value)
 
-    send_event(user_profile.realm, event, [user_profile.id])
+    transaction.on_commit(lambda: send_event(user_profile.realm, event, [user_profile.id]))
 
     if setting_name in UserProfile.notification_settings_legacy:
         # This legacy event format is for backwards-compatiblity with
@@ -5565,7 +5566,9 @@ def do_change_user_setting(
             "notification_name": setting_name,
             "setting": setting_value,
         }
-        send_event(user_profile.realm, legacy_event, [user_profile.id])
+        transaction.on_commit(
+            lambda: send_event(user_profile.realm, legacy_event, [user_profile.id])
+        )
 
     if setting_name in UserProfile.display_settings_legacy or setting_name == "timezone":
         # This legacy event format is for backwards-compatiblity with
@@ -5581,7 +5584,9 @@ def do_change_user_setting(
             assert isinstance(setting_value, str)
             legacy_event["language_name"] = get_language_name(setting_value)
 
-        send_event(user_profile.realm, legacy_event, [user_profile.id])
+        transaction.on_commit(
+            lambda: send_event(user_profile.realm, legacy_event, [user_profile.id])
+        )
 
     # Updates to the timezone display setting are sent to all users
     if setting_name == "timezone":
@@ -5590,10 +5595,13 @@ def do_change_user_setting(
             user_id=user_profile.id,
             timezone=canonicalize_timezone(user_profile.timezone),
         )
-        send_event(
-            user_profile.realm,
-            dict(type="realm_user", op="update", person=payload),
-            active_user_ids(user_profile.realm_id),
+        timezone_event = dict(type="realm_user", op="update", person=payload)
+        transaction.on_commit(
+            lambda: send_event(
+                user_profile.realm,
+                timezone_event,
+                active_user_ids(user_profile.realm_id),
+            )
         )
 
     if setting_name == "enable_drafts_synchronization" and setting_value is False:
