@@ -3,6 +3,7 @@ from typing import List, Tuple
 from uuid import UUID
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from analytics.models import BaseCount
@@ -12,7 +13,10 @@ from zerver.models import AbstractPushDeviceToken, AbstractRealmAuditLog
 
 
 def get_remote_server_by_uuid(uuid: str) -> "RemoteZulipServer":
-    return RemoteZulipServer.objects.get(uuid=uuid)
+    try:
+        return RemoteZulipServer.objects.get(uuid=uuid)
+    except ValidationError:
+        raise RemoteZulipServer.DoesNotExist()
 
 
 class RemoteZulipServer(models.Model):
