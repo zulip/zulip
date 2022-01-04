@@ -5,7 +5,7 @@ class zulip::postgresql_backups {
 
   $wal_g_version = '0.2.15'
   zulip::sha256_tarball_to { 'wal-g':
-    url     => "https://github.com/wal-g/wal-g/releases/download/v${wal_g_version}/wal-g.linux-${::architecture}.tar.gz",
+    url     => "https://github.com/wal-g/wal-g/releases/download/v${wal_g_version}/wal-g.linux-amd64.tar.gz",
     sha256  => 'ea33c2341d7bfb203c6948590c29834c013ab06a28c7a2b236a73d906f785c84',
     install => {
       'wal-g' => "/usr/local/bin/wal-g-${wal_g_version}",
