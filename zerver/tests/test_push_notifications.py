@@ -241,6 +241,20 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         del self.API_KEYS[self.server_uuid]
 
+        self.API_KEYS["invalid_uuid"] = "invalid"
+        result = self.uuid_post(
+            "invalid_uuid",
+            endpoint,
+            dict(user_id=user_id, token_kind=token_kind, token=token),
+            subdomain="zulip",
+        )
+        self.assert_json_error(
+            result,
+            "Zulip server auth failure: invalid_uuid is not registered -- did you run `manage.py register_server`?",
+            status_code=401,
+        )
+        del self.API_KEYS["invalid_uuid"]
+
         credentials_uuid = str(uuid.uuid4())
         credentials = "{}:{}".format(credentials_uuid, "invalid")
         api_auth = "Basic " + base64.b64encode(credentials.encode()).decode()
