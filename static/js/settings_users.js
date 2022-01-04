@@ -428,7 +428,7 @@ function confirm_deactivation(row, user_id, status_field) {
     const user = people.get_by_user_id(user_id);
     const opts = {
         username: user.full_name,
-        email: user.email,
+        email: settings_data.email_for_user_settings(user),
     };
     const html_body = render_settings_deactivation_user_modal(opts);
 
