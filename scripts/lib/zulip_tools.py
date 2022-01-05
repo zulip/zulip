@@ -562,7 +562,7 @@ def get_config_file() -> configparser.RawConfigParser:
 
 
 def get_deploy_options(config_file: configparser.RawConfigParser) -> List[str]:
-    return get_config(config_file, "deployment", "deploy_options", "").strip().split()
+    return shlex.split(get_config(config_file, "deployment", "deploy_options", "").strip())
 
 
 def run_psql_as_postgres(
