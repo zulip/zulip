@@ -672,3 +672,10 @@ Defaults to `4750` if unspecified.
 
 The IP address that Smokescreen should bind to and listen on.
 Defaults to `127.0.0.1`.
+
+#### `enable_for_camo`
+
+Because Camo includes logic to deny access to private subnets, routing
+its requests through Smokescreen is generally not necessary. Set to
+'true' or 'false' to override the default, which uses the proxy only if
+it is not the default of Smokescreen on a local host.
