@@ -511,6 +511,7 @@ def accounts_register(
             "MAX_NAME_LENGTH": str(UserProfile.MAX_NAME_LENGTH),
             "MAX_PASSWORD_LENGTH": str(form.MAX_PASSWORD_LENGTH),
             "MAX_REALM_SUBDOMAIN_LENGTH": str(Realm.MAX_REALM_SUBDOMAIN_LENGTH),
+            "corporate_enabled": settings.CORPORATE_ENABLED,
             "sorted_realm_types": sorted(
                 Realm.ORG_TYPES.values(), key=lambda d: d["display_order"]
             ),

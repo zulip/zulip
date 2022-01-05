@@ -653,7 +653,7 @@ Output:
         source_realm_id: str = "",
         key: Optional[str] = None,
         realm_type: int = Realm.ORG_TYPES["business"]["id"],
-        enable_marketing_emails: bool = True,
+        enable_marketing_emails: Optional[bool] = None,
         is_demo_organization: bool = False,
         **kwargs: ClientArg,
     ) -> HttpResponse:
@@ -678,9 +678,10 @@ Output:
             "from_confirmation": from_confirmation,
             "default_stream_group": default_stream_groups,
             "source_realm_id": source_realm_id,
-            "enable_marketing_emails": enable_marketing_emails,
             "is_demo_organization": is_demo_organization,
         }
+        if enable_marketing_emails is not None:
+            payload["enable_marketing_emails"] = enable_marketing_emails
         if password is not None:
             payload["password"] = password
         if realm_in_root_domain is not None:

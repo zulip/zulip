@@ -3232,6 +3232,60 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(user.realm, realm)
         self.assertTrue(user.enable_marketing_emails)
 
+    @override_settings(OPEN_REALM_CREATION=True, CORPORATE_ENABLED=False)
+    def test_create_realm_without_prompting_for_marketing_emails(self) -> None:
+        password = "test"
+        string_id = "zuliptest"
+        email = "user1@test.com"
+        realm_name = "Test"
+
+        # Make sure the realm does not exist
+        with self.assertRaises(Realm.DoesNotExist):
+            get_realm(string_id)
+
+        # Create new realm with the email
+        result = self.client_post("/new/", {"email": email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(f"/accounts/new/send_confirm/{email}"))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        # Visit the confirmation link.
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        # Simulate the initial POST that is made by confirm-preregistration.js
+        # by triggering submit on confirm_preregistration.html.
+        payload = {
+            "full_name": "",
+            "key": find_key_by_email(email),
+            "from_confirmation": "1",
+        }
+        result = self.client_post("/accounts/register/", payload)
+        # Assert that the form did not prompt the user for enabling
+        # marketing emails.
+        self.assert_not_in_success_response(['input id="id_enable_marketing_emails"'], result)
+
+        result = self.submit_reg_form_for_user(
+            email,
+            password,
+            realm_subdomain=string_id,
+            realm_name=realm_name,
+        )
+        self.assertEqual(result.status_code, 302)
+
+        result = self.client_get(result.url, subdomain=string_id)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, "http://zuliptest.testserver")
+
+        # Make sure the realm is created
+        realm = get_realm(string_id)
+        self.assertEqual(realm.string_id, string_id)
+        user = get_user(email, realm)
+        self.assertEqual(user.realm, realm)
+        self.assertFalse(user.enable_marketing_emails)
+
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_realm_with_marketing_emails_disabled(self) -> None:
         password = "test"
