@@ -5,7 +5,12 @@ module Puppet::Parser::Functions
     zulip_conf_path = lookupvar("zulip_conf_path")
     output = `/usr/bin/crudini --get #{zulip_conf_path} #{joined} 2>&1`; result = $?.success?
     if result
-      output.strip()
+      if [true, false].include? default
+        # If the default is a bool, coerce into a bool
+        ['1','y','t','true','yes','enable','enabled'].include? output.strip.downcase
+      else
+        output.strip
+      end
     else
       default
     end
