@@ -338,9 +338,9 @@ if IS_SERVER_UP or not args.skip_puppet:
     # Even if the server wasn't up previously, puppet might have
     # started it if there were supervisord configuration changes, so
     # we need to use restart-server if puppet ran.
-    subprocess.check_output(["./scripts/restart-server", "--fill-cache"], preexec_fn=su_to_zulip)
+    subprocess.check_call(["./scripts/restart-server", "--fill-cache"], preexec_fn=su_to_zulip)
 else:
-    subprocess.check_output(["./scripts/start-server", "--fill-cache"], preexec_fn=su_to_zulip)
+    subprocess.check_call(["./scripts/start-server", "--fill-cache"], preexec_fn=su_to_zulip)
 
 logging.info("Upgrade complete!")
 
