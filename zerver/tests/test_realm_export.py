@@ -97,6 +97,13 @@ class RealmExportTest(ZulipTestCase):
         with self.assertRaises(botocore.exceptions.ClientError):
             bucket.Object(path_id).load()
 
+        # try to delete a not-yet-completed realm export.
+        audit_log_entry.refresh_from_db()
+        extra_data = audit_log_entry.extra_data
+        assert extra_data is None:
+            result = self.client_delete(f"/json/export/realm/{audit_log_entry.id}")
+            self.assert_json_error(result, "Export cannot be deleted until complete")
+
         # Try to delete an export with a `deleted_timestamp` key.
         audit_log_entry.refresh_from_db()
         extra_data = audit_log_entry.extra_data
@@ -163,6 +170,13 @@ class RealmExportTest(ZulipTestCase):
         self.assert_json_success(result)
         response = self.client_get(export_path)
         self.assertEqual(response.status_code, 404)
+
+        # try to delete a not-yet-completed realm export.
+        audit_log_entry.refresh_from_db()
+        extra_data = audit_log_entry.extra_data
+        assert extra_data is None:
+            result = self.client_delete(f"/json/export/realm/{audit_log_entry.id}")
+            self.assert_json_error(result, "Export cannot be deleted until complete")
 
         # Try to delete an export with a `deleted_timestamp` key.
         audit_log_entry.refresh_from_db()
