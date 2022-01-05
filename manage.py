@@ -34,7 +34,7 @@ def get_filtered_commands() -> Dict[str, str]:
     development-focused management commands in production.
     """
     all_commands = get_commands()
-    documented_commands = dict()
+    documented_commands = {}
     documented_apps = [
         # "auth" removed because its commands are not applicable to Zulip.
         # "contenttypes" removed because we don't use that subsystem, and

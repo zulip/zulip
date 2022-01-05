@@ -163,8 +163,7 @@ def get_user_group_mentions_data(
     mentioned_user_ids: Set[int], mentioned_user_group_ids: List[int], mention_data: MentionData
 ) -> Dict[int, int]:
     # Maps user_id -> mentioned user_group_id
-    mentioned_user_groups_map: Dict[int, int] = dict()
-
+    mentioned_user_groups_map: Dict[int, int] = {}
     # Add members of the mentioned user groups into `mentions_user_ids`.
     for group_id in mentioned_user_group_ids:
         member_ids = mention_data.get_group_members(group_id)

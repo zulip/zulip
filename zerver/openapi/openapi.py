@@ -423,7 +423,7 @@ def validate_against_openapi_schema(
         # (E.g. the several dozen format variants for individual
         # events returned by GET /events) and instead just display the
         # specific variant we expect to match the response.
-        brief_error_display_schema = {"nullable": False, "oneOf": list()}
+        brief_error_display_schema = {"nullable": False, "oneOf": []}
         brief_error_display_schema_oneOf = []
         brief_error_validator_value = []
 
