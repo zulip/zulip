@@ -232,3 +232,15 @@ $(() => {
 $(document).on("click", ".markdown h1, .markdown h2, .markdown h3", function () {
     window.location.hash = $(this).attr("id");
 });
+
+$(document).on("click", ".cloud-plan-btn", () => {
+    $(".cloud-plan-btn, .self-hosted-plan-btn").toggleClass("active");
+    $(".price-box.cloud-plan").css("display", "inline-block");
+    $(".price-box.self-hosted-plan").hide();
+});
+
+$(document).on("click", ".self-hosted-plan-btn", () => {
+    $(".cloud-plan-btn, .self-hosted-plan-btn").toggleClass("active");
+    $(".price-box.cloud-plan").hide()
+    $(".price-box.self-hosted-plan").css("display", "inline-block");
+});

@@ -2719,6 +2719,56 @@ nav {
 
 .pricing-model .pricing-container {
     text-align: center;
+
+    .price-box.self-hosted-plan {
+        display: none;
+    }
+
+    .pricing-switcher {
+        display: flex;
+        width: 700px;
+        margin: auto;
+        margin-top: 40px;
+        
+        .btn {
+            outline: none;
+            width: 50%;
+            height: 50px;
+            border-radius: 0 10px 10px 0;
+            font-weight: 700;
+            font-size: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            background-color: hsl(170, 6%, 93%);
+
+            &:first-child {
+                border-radius: 10px 0 0 10px;
+            }
+
+            &.active {
+                color: hsl(0, 0%, 100%);
+                background-color: hsl(173, 100%, 21%);
+                box-shadow: none;
+
+                .fa {
+                    background: linear-gradient(#e8fffa, #89b5aa);
+                    background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                }
+            }
+
+            .content {
+                display: flex;
+                gap: 4px;
+            }
+
+            .fa {
+                font-size: 30px;
+            }
+        }
+    }
 }
 
 .pricing-model .pricing-container .block {
@@ -2740,7 +2790,7 @@ nav {
     position: relative;
     display: inline-block;
     vertical-align: bottom;
-    margin: 0;
+    margin: 20px;
     width: 300px;
     height: 500px;
 
@@ -3066,9 +3116,6 @@ nav {
 }
 
 @media (width <= 1376px) {
-    .portico-landing.plans .price-box {
-        margin: 20px;
-    }
 
     .portico-landing.apps .main .details-container {
         height: auto;
