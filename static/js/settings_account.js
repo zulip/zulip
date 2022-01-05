@@ -283,6 +283,13 @@ export function add_custom_profile_fields_to_settings() {
     initialize_custom_date_type_fields(element_id);
 }
 
+export function hide_confirm_email_banner() {
+    if (!overlays.settings_open()) {
+        return;
+    }
+    $("#account-settings-status").hide();
+}
+
 export function set_up() {
     // Add custom profile fields elements to user account settings.
     add_custom_profile_fields_to_settings();
@@ -577,6 +584,7 @@ export function set_up() {
                 {defaultMessage: "Check your email ({email}) to confirm the new address."},
                 {email: data.email},
             ),
+            sticky: true,
         };
         settings_ui.do_settings_change(
             channel.patch,

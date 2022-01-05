@@ -50,6 +50,7 @@ export const update_person = function update(person) {
         if (people.is_my_user_id(person.user_id)) {
             settings_account.update_email(delivery_email);
             page_params.delivery_email = delivery_email;
+            settings_account.hide_confirm_email_banner();
         }
     }
 
