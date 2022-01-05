@@ -1981,6 +1981,9 @@ paths:
                                   type: integer
                                   description: |
                                     The ID of the user who sent the message.
+
+                                    Not present if update_message event is for providing inline URL
+                                    preview in message.
                                 message_id:
                                   type: integer
                                   description: |
@@ -2011,11 +2014,27 @@ paths:
 
                                     Content changes should be applied only to the single message
                                     indicated by `message_id`.
+                                flags:
+                                  type: array
+                                  description: |
+                                    The user's personal [message flags][message-flags] for the
+                                    message with ID `message_id` following the edit.
+
+                                    A client application should compare these to the original flags
+                                    to identify cases where a mention or alert word was added by the
+                                    edit.
+
+                                    [message-flags]: /api/update-message-flags#available-flags
+                                  items:
+                                    type: string
                                 edit_timestamp:
                                   type: integer
                                   description: |
                                     The time when this message edit operation was processed by the
                                     server.
+
+                                    Not present if update_message event is for providing inline URL
+                                    preview in message.
                                 stream_name:
                                   type: string
                                   description: |
@@ -2038,13 +2057,16 @@ paths:
                                 new_stream_id:
                                   type: integer
                                   description: |
-                                    Note: Only present if message(s) were moved to a different stream.
+                                    Only present if message(s) were moved to a different stream.
 
                                     The post-edit stream for all of the messages with IDs in
                                     `message_ids`.
                                 propagate_mode:
                                   type: string
                                   description: |
+                                    Only present if this event moved messages to a different
+                                    topic and/or stream.
+
                                     The choice the editing user made about which messages should be
                                     affected by a stream/topic edit: just the one indicated in
                                     `message_id`, messages in the same topic that had been sent
@@ -2068,19 +2090,19 @@ paths:
                                 orig_subject:
                                   type: string
                                   description: |
+                                    Only present if this event moved messages to a different
+                                    topic and/or stream.
+
                                     The pre-edit topic for all of the messages with IDs in
                                     `message_ids`.
-
-                                    Only present if this event moved messages to a different
-                                    topic.
                                 subject:
                                   type: string
                                   description: |
-                                    The post-edit topic for all of the messages with IDs in
-                                    `message_ids`.
-
                                     Only present if this event moved messages to a different
                                     topic.
+
+                                    The post-edit topic for all of the messages with IDs in
+                                    `message_ids`.
                                 topic_links:
                                   type: array
                                   items:
@@ -2096,14 +2118,14 @@ paths:
                                         description: |
                                           The expanded target url which the link points to.
                                   description: |
+                                    Only present if this event moved messages to a different
+                                    topic.
+
                                     Data on any links to be included in the `topic`
                                     line (these are generated by
                                     [custom linkification filter](/help/add-a-custom-linkifier)
                                     that match content in the message's topic.), corresponding
                                     to the post-edit topic.
-
-                                    Only present if this event moved messages to a different
-                                    topic.
 
                                     **Changes**: This field contained a list of urls before
                                     Zulip 4.0 (feature level 46).
@@ -2115,49 +2137,54 @@ paths:
                                 orig_content:
                                   type: string
                                   description: |
+                                    Only present if this event changed the message content.
+
                                     The original content of the message with ID `message_id`
                                     immediately prior to this edit, in the original markdown.
                                 orig_rendered_content:
                                   type: string
                                   description: |
+                                    Only present if this event changed the message content.
+
                                     The original content of the message with ID `message_id`
                                     immediately prior to this edit, rendered as HTML.
                                 prev_rendered_content_version:
                                   type: integer
                                   description: |
+                                    Only present if this event changed the message content.
+
                                     The Markdown processor version number for the pre-edit message.
 
                                     Clients should ignore this field.
                                 content:
                                   type: string
                                   description: |
+                                    Only present if this event changed the message content.
+
                                     The new content of the message with ID `message_id`, in the
                                     original Markdown.
                                 rendered_content:
                                   type: string
                                   description: |
+                                    Only present if this event changed the message content.
+
                                     The new content of the message with ID `message_id`,
                                     rendered in HTML.
                                 is_me_message:
                                   type: boolean
                                   description: |
+                                    Only present if this event changed the message content.
+
                                     Whether the message with ID `message_id` is now a
                                     [/me status message][status-messages].
 
                                     [status-messages]: /help/format-your-message-using-markdown#status-messages
-                                flags:
-                                  type: array
-                                  description: |
-                                    The user's personal [message flags][message-flags] for the
-                                    message with ID `message_id` following the edit.
-
-                                    A client application should compare these to the original flags
-                                    to identify cases where a mention or alert word was added by the
-                                    edit.
-
-                                    [message-flags]: /api/update-message-flags#available-flags
-                                  items:
-                                    type: string
+                              required:
+                                - "type"
+                                - "id"
+                                - "message_id"
+                                - "message_ids"
+                                - "flags"
                               example:
                                 {
                                   "type": "update_message",
