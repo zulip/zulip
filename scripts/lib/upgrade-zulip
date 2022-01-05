@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import configparser
 import logging
 import os
@@ -13,8 +14,6 @@ os.environ["PYTHONUNBUFFERED"] = "y"
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 from scripts.lib.zulip_tools import (
     DEPLOYMENTS_DIR,
-    ENDC,
-    FAIL,
     assert_running_as_root,
     get_config_file,
     get_deploy_options,
@@ -34,13 +33,11 @@ os.umask(0o22)
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s upgrade-zulip: %(message)s", level=logging.INFO)
 
-if len(sys.argv) != 2:
-    print(FAIL + f"Usage: {sys.argv[0]} <tarball>" + ENDC)
-    sys.exit(1)
+parser = argparse.ArgumentParser()
+parser.add_argument("tarball", help="Path to Zulip Server tarball")
+args, extra_options = parser.parse_known_args()
 
-tarball_path = sys.argv[1]
-
-error_rerun_script = f"{DEPLOYMENTS_DIR}/current/scripts/upgrade-zulip {tarball_path}"
+error_rerun_script = f"{DEPLOYMENTS_DIR}/current/scripts/upgrade-zulip {args.tarball}"
 get_deployment_lock(error_rerun_script)
 
 try:
@@ -50,8 +47,8 @@ try:
     # not readable by the Zulip user.
     logging.info("Archiving the tarball under %s", TARBALL_ARCHIVE_PATH)
     os.makedirs(TARBALL_ARCHIVE_PATH, exist_ok=True)
-    archived_tarball_path = os.path.join(TARBALL_ARCHIVE_PATH, os.path.basename(tarball_path))
-    shutil.copy(tarball_path, archived_tarball_path)
+    archived_tarball_path = os.path.join(TARBALL_ARCHIVE_PATH, os.path.basename(args.tarball))
+    shutil.copy(args.tarball, archived_tarball_path)
     subprocess.check_output(["chown", "-R", "zulip:zulip", TARBALL_ARCHIVE_PATH])
 
     logging.info("Unpacking the tarball")
@@ -67,7 +64,12 @@ try:
     os.chdir(deploy_path)
     try:
         subprocess.check_call(
-            [os.path.abspath("./scripts/lib/upgrade-zulip-stage-2"), deploy_path, *deploy_options]
+            [
+                os.path.abspath("./scripts/lib/upgrade-zulip-stage-2"),
+                deploy_path,
+                *deploy_options,
+                *extra_options,
+            ]
         )
     except subprocess.CalledProcessError:
         # There's no use in showing a stacktrace here; it just hides
