@@ -1,4 +1,4 @@
-<% if @nginx_http_only != '' -%>
+<% if @nginx_http_only -%>
 <% else -%>
 server {
     listen 80;
@@ -15,7 +15,7 @@ server {
 include /etc/nginx/zulip-include/upstreams;
 
 server {
-<% if @nginx_http_only != '' -%>
+<% if @nginx_http_only -%>
     listen <%= @nginx_listen_port %>;
     listen [::]:<%= @nginx_listen_port %>;
 <% else -%>

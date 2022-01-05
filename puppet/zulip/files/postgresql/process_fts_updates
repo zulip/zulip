@@ -141,7 +141,15 @@ except ImportError:
     config_file = configparser.RawConfigParser()
     config_file.read("/etc/zulip/zulip.conf")
 
-    if config_file.has_option("machine", "pgroonga"):
+    if get_config(config_file, "machine", "pgroonga", "false").lower() in [
+        "1",
+        "y",
+        "t",
+        "yes",
+        "true",
+        "enable",
+        "enabled",
+    ]:
         USING_PGROONGA = True
 
     pg_args["user"] = get_config(config_file, "postgresql", "database_user", "zulip")
