@@ -793,16 +793,12 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         disableMobile: true,
         onKeyDown: (selectedDates, dateStr, instance, event) => {
             if (is_numeric_key(event.key)) {
-                // Don't stopPropagation for numeric inputs, let them be handled normally
+                // Don't attempt to get_keydown_hotkey for numeric inputs
+                // as it would return undefined.
                 return;
             }
 
             const hotkey = get_keydown_hotkey(event);
-
-            if (hotkey === "backspace" || hotkey === "delete") {
-                // Don't stopPropagation for backspace or delete, let them be handled normally
-                return;
-            }
 
             if (["tab", "shift_tab"].includes(hotkey.name)) {
                 const elems = [
@@ -830,7 +826,8 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
 
     container.on("keydown", (e) => {
         if (is_numeric_key(e.key)) {
-            return true; // Let users type numeric values
+            // Let users type numeric values
+            return true;
         }
 
         const hotkey = get_keydown_hotkey(e);
@@ -840,7 +837,8 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         }
 
         if (hotkey.name === "backspace" || hotkey.name === "delete") {
-            return true; // Let backspace or delete be handled normally
+            // Let backspace or delete be handled normally
+            return true;
         }
 
         if (hotkey.name === "enter") {
