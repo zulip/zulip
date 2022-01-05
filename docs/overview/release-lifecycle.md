@@ -72,7 +72,7 @@ in a stable release.
   to chat.zulip.org to facilitate design feedback.
 - We maintain Git branches with names like `4.x` containing backported
   commits from `main` that we plan to include in the next maintenance
-  release. Self hosters can [upgrade][upgrade-from-git] to these
+  release. Self-hosters can [upgrade][upgrade-from-git] to these
   stable release branches to get bug fixes staged for the next stable
   release (which is very useful when you reported a bug whose fix we
   choose to backport). We support these branches as though they were a
