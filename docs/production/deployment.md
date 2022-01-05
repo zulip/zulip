@@ -538,6 +538,20 @@ the system and deployment; `/etc/zulip/settings.py` is used to
 configure the application itself. The `zulip.conf` sections and
 settings are described below.
 
+When a setting refers to "set to true" or "set to false", the values
+`true` and `false` are canonical, but any of the following values will
+be considered "true", case-insensitively:
+
+- 1
+- y
+- t
+- yes
+- true
+- enable
+- enabled
+
+Any other value (including the empty string) is considered false.
+
 ### `[machine]`
 
 #### `puppet_classes`
@@ -560,8 +574,7 @@ you will need to add **`zulip::apache_sso`** to the list.
 
 #### `pgroonga`
 
-Set to the string `enabled` if enabling the [multi-language PGroonga
-search
+Set to true if enabling the [multi-language PGroonga search
 extension](../subsystems/full-text-search.html#multi-language-full-text-search).
 
 ### `[deployment]`
@@ -591,9 +604,9 @@ repository](../production/upgrade-or-modify.html#upgrading-from-a-git-repository
 
 #### `http_only`
 
-If set to non-empty, [configures Zulip to allow HTTP
-access][using-http]; use if Zulip is deployed behind a reverse proxy
-that is handling SSL/TLS termination.
+If set to true, [configures Zulip to allow HTTP access][using-http];
+use if Zulip is deployed behind a reverse proxy that is handling
+SSL/TLS termination.
 
 #### `nginx_listen_port`
 
@@ -603,7 +616,7 @@ Set to the port number if you [prefer to listen on a port other than
 #### `no_serve_uploads`
 
 To enable the [the S3 uploads backend][s3-uploads], one needs to both
-configure `settings.py` and set this to 'true' to configure
+configure `settings.py` and set this to true to configure
 `nginx`. Remove this field to return to the local uploads backend (any
 non-empty value is currently equivalent to true).
 
@@ -618,10 +631,11 @@ mode). The calculation is based on whether the system has enough
 memory (currently 3.5GiB) to run a single-server Zulip installation in
 the multiprocess mode.
 
-Set to `true` or `false` to override the automatic calculation. This
-override is useful both Docker systems (where the above algorithm
-might see the host's memory, not the container's) and/or when using
-remote servers for postgres, memcached, redis, and RabbitMQ.
+Set explicitly to true or false to override the automatic
+calculation. This override is useful both Docker systems (where the
+above algorithm might see the host's memory, not the container's)
+and/or when using remote servers for postgres, memcached, redis, and
+RabbitMQ.
 
 #### `rolling_restart`
 
@@ -670,10 +684,10 @@ setting](https://www.postgresql.org/docs/current/runtime-config-query.html#GUC-R
 
 #### `replication`
 
-Set to non-empty to enable replication to enable [log shipping
-replication between PostgreSQL servers](#postgresql-warm-standby).
-This should be enabled on the primary, as well as any replicas, and
-further requires configuration of
+Set to true to enable replication to enable [log shipping replication
+between PostgreSQL servers](#postgresql-warm-standby). This should be
+enabled on the primary, as well as any replicas, and further requires
+configuration of
 [wal-g](../production/export-and-import.html#backup-details).
 
 #### `replication_primary`

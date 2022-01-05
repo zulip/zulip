@@ -73,7 +73,7 @@ class zulip::app_frontend_base {
   # multiprocess.  Multiprocess scales much better, but requires more
   # RAM; we just auto-detect based on available system RAM.
   $queues_multiprocess_default = $zulip::common::total_memory_mb > 3500
-  $queues_multiprocess = Boolean(zulipconf('application_server', 'queue_workers_multiprocess', $queues_multiprocess_default))
+  $queues_multiprocess = zulipconf('application_server', 'queue_workers_multiprocess', $queues_multiprocess_default)
   $queues = [
     'deferred_work',
     'digest_emails',
