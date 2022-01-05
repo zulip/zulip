@@ -394,7 +394,7 @@ class PlansPageTest(ZulipTestCase):
     def test_plans_auth(self) -> None:
         root_domain = ""
         result = self.client_get("/plans/", subdomain=root_domain)
-        self.assert_in_success_response(["Self host Zulip"], result)
+        self.assert_in_success_response(["Self-host Zulip"], result)
         self.assert_not_in_success_response(["/upgrade#sponsorship"], result)
         self.assert_in_success_response(["/accounts/go/?next=/upgrade%23sponsorship"], result)
 
