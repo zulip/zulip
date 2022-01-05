@@ -72,8 +72,8 @@ class zulip::postgresql_base {
     source  => 'puppet:///modules/zulip/nagios_plugins/zulip_postgresql',
   }
 
-  $pgroonga = zulipconf('machine', 'pgroonga', '')
-  if $pgroonga == 'enabled' {
+  $pgroonga = zulipconf('machine', 'pgroonga', false)
+  if $pgroonga {
     # Needed for optional our full text search system
 
     # Removed 2020-12 in version 4.0; these lines can be removed when

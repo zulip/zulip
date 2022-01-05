@@ -4,8 +4,8 @@ class zulip::profile::app_frontend {
   include zulip::app_frontend_base
   include zulip::app_frontend_once
 
-  $nginx_http_only = zulipconf('application_server', 'http_only', undef)
-  if $nginx_http_only != '' {
+  $nginx_http_only = zulipconf('application_server', 'http_only', false)
+  if $nginx_http_only {
     $nginx_listen_port = zulipconf('application_server', 'nginx_listen_port', 80)
   } else {
     $nginx_listen_port = zulipconf('application_server', 'nginx_listen_port', 443)

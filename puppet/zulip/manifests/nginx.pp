@@ -39,8 +39,12 @@ class zulip::nginx {
   # For installations using S3 to serve uploaded files, we want Django
   # to handle the /serve_uploads and /user_avatars routes, so that it
   # can serve a redirect (after doing authentication, for uploads).
-  $no_serve_uploads = zulipconf('application_server', 'no_serve_uploads', '')
-  if $no_serve_uploads == '' {
+  $no_serve_uploads = zulipconf('application_server', 'no_serve_uploads', false)
+  if $no_serve_uploads {
+    file { '/etc/nginx/zulip-include/app.d/uploads-internal.conf':
+      ensure  => absent,
+    }
+  } else {
     file { '/etc/nginx/zulip-include/app.d/uploads-internal.conf':
       ensure  => file,
       require => Package[$zulip::common::nginx],
@@ -49,10 +53,6 @@ class zulip::nginx {
       mode    => '0644',
       notify  => Service['nginx'],
       source  => 'puppet:///modules/zulip/nginx/zulip-include-maybe/uploads-internal.conf',
-    }
-  } else {
-    file { '/etc/nginx/zulip-include/app.d/uploads-internal.conf':
-      ensure  => absent,
     }
   }
 
