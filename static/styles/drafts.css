@@ -109,7 +109,7 @@
             display: inline-block;
             position: absolute;
             top: 9px;
-            right: -80px;
+            right: -103px;
             font-size: 0.9em;
 
             @media (width < $sm_min) {
