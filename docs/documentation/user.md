@@ -45,7 +45,7 @@ This system is designed to make writing and maintaining such documentation
 highly efficient. We link to the docs extensively from the landing pages and
 in-product, so it's important to keep the docs up to date.
 
-## Guide to writing documentation
+## Guide to writing help center articles
 
 Writing documentation is a different form of writing than most people have
 experience with.
@@ -53,8 +53,8 @@ experience with.
 ### Getting started
 
 There are over 100 feature articles and longer guides in the
-[Zulip help center](https://zulip.com/help/), so use that as a resource
-and guide as you begin.
+[Zulip help center](https://zulip.com/help/), so make the most of
+the current documentation as a resource and guide as you begin.
 
 - Use the list on [Zulip help center home](https://zulip.com/help/)
   to find the section of the docs (e.g. Display settings, Sending
@@ -67,12 +67,15 @@ and guide as you begin.
   readability of the documentation.
 
 - Should the feature you're documenting be added or merged into an
-  existing article? If so, you can locate that article in
-  `templates/zerver/help` and start working on updating it with
-  content about the new feature.
+  existing article?
 
-- If not, make a list of which articles (or guides) would be good to
-  link to as **Related articles** in your new feature documentation.
+  - If so, you can locate that article in
+    `templates/zerver/help` and start working on updating it with
+    content about the new feature.
+
+  - If not, choose an existing article to use as a template for your
+    new article and make a list of which articles (or guides) would be
+    good to link to in your new feature documentation.
 
 Remember that real estate in the left sidebar is somewhat precious.
 Minor features should rarely get their own article, and should instead
@@ -83,10 +86,39 @@ can always ask in
 [#documentation](https://chat.zulip.org/#narrow/stream/19-documentation)
 on the [Zulip community server](https://zulip.com/development-community/).
 
+### Updating an existing article
+
+If the new feature you're documenting is a refinement on,
+or related to, a feature that already has a dedicated help center
+article, the information will be more useful and discoverable for
+users as an addition to the existing article.
+
+Here are some things to keep in mind when expanding and updating
+existing help center articles:
+
+- Maintain the format and style of the current article.
+
+- Review the [Markdown features](#markdown-features) available and
+  pay attention to the ones already utilized in the article.
+
+- Think about where inline links to other help center documentation
+  would be appropriate in the description of the feature. For example,
+  your new feature might relate to general Zulip features like
+  [keyboard shortcuts](https://zulip.com/help/keyboard-shortcuts)
+  or [streams and topics](https://zulip.com/help/streams-and-topics).
+
+- Make sure there is a **Related articles** section at the end
+  of the article that again links to any help center documentation
+  mentioned in the text or related to the feature.
+
+Creating robust and informative help center articles with good links
+will allow users to navigate the help center much more effectively.
+
 ### Adding a new article
 
 If the feature you're documenting needs a new article, here are some
-things to keep in mind:
+things to keep in mind, in addition to the points made above for
+updating existing documentation:
 
 - Choose an existing article in the related section of the help
   documentation, and copy the format, wording, style, etc. as closely
