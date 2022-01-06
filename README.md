@@ -1,12 +1,16 @@
 # Zulip overview
 
-Zulip is a powerful, open source group chat application that combines the
-immediacy of real-time chat with the productivity benefits of threaded
-conversations. Zulip is used by open source projects, Fortune 500 companies,
-large standards bodies, and others who need a real-time chat system that
-allows users to easily process hundreds or thousands of messages a day. With
-over 700 contributors merging over 500 commits a month, Zulip is also the
-largest and fastest growing open source group chat project.
+[Zulip](https://zulip.com) is an open-source team collaboration tool with unique
+[topic-based threading][why-zulip] that combines the best of email and chat to
+make remote work productive and delightful. Fortune 500 companies, [leading open
+source projects][rust-case-study], and thousands of other organizations use
+Zulip every day. Zulip is the only [modern team chat app][features] that is
+designed for both live and asynchronous conversations.
+
+Zulip is built by a distributed community of developers from all around the
+world, with 74+ people who have each contributed 100+ commits. With
+over 700 contributors merging over 500 commits a month, Zulip is the
+largest and fastest growing open source team chat project.
 
 [![GitHub Actions build status](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml/badge.svg)](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml?query=branch%3Amain)
 [![coverage status](https://img.shields.io/codecov/c/github/zulip/zulip/main.svg)](https://codecov.io/gh/zulip/zulip)
@@ -20,6 +24,9 @@ largest and fastest growing open source group chat project.
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/zulip)](https://github.com/sponsors/zulip)
 
 [mypy-coverage]: https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/
+[why-zulip]: https://zulip.com/why-zulip/
+[rust-case-study]: https://zulip.com/case-studies/rust/
+[features]: https://zulip.com/features/
 
 ## Getting started
 
