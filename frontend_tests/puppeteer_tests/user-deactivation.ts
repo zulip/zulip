@@ -27,7 +27,7 @@ async function test_deactivate_user(page: Page): Promise<void> {
 
     assert.strictEqual(
         await common.get_text_from_selector(page, ".dialog_heading"),
-        "Deactivate " + (await common.get_internal_email_from_name(page, "cordelia")),
+        "Deactivate " + common.fullname.cordelia,
         "Deactivate modal has wrong user.",
     );
     assert.strictEqual(
