@@ -208,6 +208,7 @@
     position: relative;
     cursor: pointer;
     font-size: 20px;
+    margin-right: 15px;
 }
 
 #sidebar-keyboard-shortcuts {
