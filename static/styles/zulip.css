@@ -339,16 +339,9 @@ p.n-margin {
 .app-main,
 .header-main {
     width: 100%;
-    /* TODO: This 1400px is wrong, but it's hard to do better.  On
-       browsers with a nonzero default scrollbar width (i.e. not
-       macOS), we actually want a max-width of 1400px+the width of the
-       scrollbar, which is done as an override in
-       static/js/scroll_bar.js.
-
-       And with the fluid_layout_width setting, we don't want a
-       max-width at all.  The consequence is that if you reload a
-       Zulip window, there's a brief flash where the content is
-       misplaced before the JS code can fix it. */
+    /* `max-width` is changed based on `fluid_layout_width` setting in
+       `scroll_bar.js`. User may or may not see a flash of mispositioned content
+       based on how quickly the JS code is executed. */
     max-width: 1400px;
     min-width: 950px;
     margin: 0 auto;
