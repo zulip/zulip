@@ -48,7 +48,6 @@ export function initialize() {
 
         // Align floating recipient bar with the middle column.
         $(".fixed-app").css("left", "-" + sbWidth / 2 + "px");
-        $("#keyboard-icon").css({"margin-right": sbWidth + "px"});
     }
     set_layout_width();
 }
