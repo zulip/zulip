@@ -312,6 +312,7 @@ def run_tests_via_node_js() -> int:
 
     node_tests_cmd += test_files
     if options.coverage:
+        os.environ["USING_INSTRUMENTED_CODE"] = "TRUE"
         coverage_dir = os.path.join(ROOT_DIR, "var/node-coverage")
 
         nyc = os.path.join(ROOT_DIR, "node_modules/.bin/nyc")
