@@ -166,8 +166,8 @@ export class ListCursorWithScrollOverride extends ListCursor {
     }
 
     adjust_scroll(row) {
-        const scroll_container = $(this.list.scroll_container_sel);
-        scroll_util.scroll_element_into_container_for_buddy_list(row, scroll_container);
+        const $scroll_container = $(this.list.scroll_container_sel);
+        scroll_util.scroll_element_into_container_for_buddy_list(row, $scroll_container);
         delete this.is_arrow_nav;
     }
 }
