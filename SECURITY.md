@@ -1,8 +1,5 @@
 # Security policy
 
-Security announcements are sent to zulip-announce@googlegroups.com,
-so you should subscribe if you are running Zulip in production.
-
 ## Reporting a vulnerability
 
 We love responsible reports of (potential) security issues in Zulip,
@@ -16,6 +13,13 @@ in our release notes when we publish the fix.
 
 Our [security model][security-model] document may be a helpful
 resource.
+
+## Security announcements
+
+We send security announcements to our [announcement mailing
+list](https://groups.google.com/g/zulip-announce). If you are running
+Zulip in production, you should subscribe, by clicking "Join group" at
+the top of that page.
 
 ## Supported versions
 
