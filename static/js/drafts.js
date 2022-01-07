@@ -22,12 +22,14 @@ import * as markdown from "./markdown";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as rendered_markdown from "./rendered_markdown";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as ui_util from "./ui_util";
+import {user_settings} from "./user_settings";
 import * as util from "./util";
 
 function set_count(count) {
@@ -757,6 +759,11 @@ export function set_initial_element(drafts) {
 
 export function initialize() {
     remove_old_drafts();
+
+    // enable drafts synchronization in dev env
+    if (page_params.development_environment) {
+        user_settings.enable_drafts_synchronization = true;
+    }
 
     window.addEventListener("beforeunload", () => {
         update_draft();
