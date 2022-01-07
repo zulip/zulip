@@ -263,9 +263,14 @@ strength allowed is controlled by two settings in
   internal corporate network. The default Smokescreen configuration
   denies access to all non-public IP addresses, including 127.0.0.1.
 
+  The Camo image server does not, by default, route its traffic
+  through Smokescreen, since Camo includes logic to deny access to
+  private subnets; this can be [overridden][proxy.enable_for_camo].
+
 [go-camo]: https://github.com/cactus/go-camo
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
 [smokescreen-setup]: ../production/deployment.html#customizing-the-outgoing-http-proxy
+[proxy.enable_for_camo]: ../production/deployment.html#enable-for-camo
 
 ## Final notes and security response
 
