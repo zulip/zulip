@@ -9,10 +9,12 @@ import render_draft_table_body from "../templates/draft_table_body.hbs";
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
+import * as channel from "./channel";
 import * as color_class from "./color_class";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_fade from "./compose_fade";
+import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as confirm_dialog from "./confirm_dialog";
@@ -72,7 +74,9 @@ export const draft_model = (function () {
         // collisions to essentially zero.
         const id = getTimestamp().toString(16) + "-" + Math.random().toString(16).split(/\./).pop();
 
-        draft.updatedAt = getTimestamp();
+        if (!draft.server_id) {
+            draft.updatedAt = getTimestamp();
+        }
         drafts[id] = draft;
         save(drafts, update_count);
 
@@ -84,17 +88,27 @@ export const draft_model = (function () {
         let changed = false;
 
         function check_if_equal(draft_a, draft_b) {
-            return _.isEqual(_.omit(draft_a, ["updatedAt"]), _.omit(draft_b, ["updatedAt"]));
+            return _.isEqual(
+                _.omit(draft_a, ["updatedAt", "server_id"]),
+                _.omit(draft_b, ["updatedAt", "server_id"]),
+            );
         }
 
         if (drafts[id]) {
             changed = !check_if_equal(drafts[id], draft);
+
             if (update_timestamp) {
                 draft.updatedAt = getTimestamp();
             }
+
+            if (changed & user_settings.enable_drafts_synchronization) {
+                    draft.server_id = drafts[id].server_id;
+                }
+            
             drafts[id] = draft;
             save(drafts);
         }
+
         return changed;
     };
 
@@ -105,18 +119,119 @@ export const draft_model = (function () {
         save(drafts);
     };
 
+    exports.setServerId = function (id, server_id) {
+        const drafts = get();
+
+        if (drafts[id]) {
+            const draft = draft_model.getDraft(id);
+            if (draft.server_id === undefined) {
+                draft.server_id = server_id;
+            }
+            drafts[id] = draft;
+            save(drafts);
+        }
+    };
+
     return exports;
 })();
+
 
 export function sync_count() {
     const drafts = draft_model.get();
     set_count(Object.keys(drafts).length);
 }
 
+export const draft_sync = (function () {
+    const exports = {};
+
+    function build_draft_object_for_server(local_draft) {
+        let recipients = [];
+        let topic = "";
+
+        if (local_draft.type === "stream") {
+            const stream = Number.parseInt(local_draft.stream_id, 10);
+            recipients.push(stream);
+            topic = util.get_draft_topic(local_draft);
+        } else {
+            recipients = local_draft.pm_recipient_ids;
+        }
+
+        const draft_data = {
+            type: local_draft.type,
+            to: recipients,
+            topic,
+            content: local_draft.content,
+            timestamp: local_draft.updatedAt / 1000,
+        };
+
+        return draft_data;
+    }
+
+    exports.add_local_drafts_to_server = function (local_ids) {
+        const drafts = [];
+
+        for (const id of local_ids) {
+            const local_draft = draft_model.getDraft(id);
+            const draft_data = build_draft_object_for_server(local_draft);
+            drafts.push(draft_data);
+        }
+
+        channel.post({
+            url: "/json/drafts",
+            data: {drafts: JSON.stringify(drafts)},
+            success(data) {
+                const server_ids = data.ids;
+                for (const [i, server_id] of server_ids.entries()) {
+                    draft_model.setServerId(local_ids[i], server_id);
+                }
+            },
+        });
+    };
+
+    exports.delete_local_draft_from_server = function (server_id) {
+        channel.del({
+            url: "/json/drafts/" + server_id,
+        });
+    };
+
+    exports.update_draft_on_server = function (local_draft) {
+        const draft_server_id = local_draft.server_id;
+        const draft_data = build_draft_object_for_server(local_draft);
+
+        channel.patch({
+            url: "/json/drafts/" + draft_server_id,
+            data: {draft: JSON.stringify(draft_data)},
+        });
+    };
+
+    exports.get_drafts_from_server = function () {
+        channel.get({
+            url: "/json/drafts",
+            idempotent: true,
+            success(data) {
+                console.log(`There are ${data.drafts.length} drafts on the server.`);
+                console.log(data.drafts);
+            },
+        });
+    };
+
+    return exports;
+})();
+
+export function delete_draft(local_id) {
+    if (user_settings.enable_drafts_synchronization) {
+        const draft = draft_model.getDraft(local_id);
+        if (draft.server_id) {
+            draft_sync.delete_local_draft_from_server(draft.server_id);
+        }
+    }
+    draft_model.deleteDraft(local_id);
+}
+
 export function delete_all_drafts() {
     const drafts = draft_model.get();
     for (const [id] of Object.entries(drafts)) {
-        draft_model.deleteDraft(id);
+        delete_draft(id);
     }
 }
 
@@ -157,6 +272,7 @@ export function snapshot_message() {
         const recipient = compose_state.private_message_recipient();
         message.reply_to = recipient;
         message.private_message_recipient = recipient;
+        message.pm_recipient_ids = compose_pm_pill.get_user_ids();
     } else {
         message.stream = compose_state.stream_name();
         const sub = stream_data.get_sub(message.stream);
@@ -233,6 +349,9 @@ export function update_draft(opts = {}) {
         // just update the existing draft.
         const changed = draft_model.editDraft(draft_id, draft);
         if (changed) {
+            if (user_settings.enable_drafts_synchronization) {
+                draft_sync.update_draft_on_server(draft_model.getDraft(draft_id));
+            }
             maybe_notify(no_notify);
         }
         return draft_id;
@@ -241,6 +360,11 @@ export function update_draft(opts = {}) {
     // We have never saved a draft for this message, so add one.
     const update_count = opts.update_count === undefined ? true : opts.update_count;
     const new_draft_id = draft_model.addDraft(draft, update_count);
+    if (user_settings.enable_drafts_synchronization) {
+        const new_draft = [];
+        new_draft.push(new_draft_id);
+        draft_sync.add_local_drafts_to_server(new_draft);
+    }
     $("#compose-textarea").data("draft-id", new_draft_id);
     maybe_notify(no_notify);
 
@@ -289,7 +413,7 @@ export function remove_old_drafts() {
     const drafts = draft_model.get();
     for (const [id, draft] of Object.entries(drafts)) {
         if (draft.updatedAt < old_date) {
-            draft_model.deleteDraft(id);
+            delete_draft(id);
         }
     }
 }
@@ -312,7 +436,10 @@ export function format_draft(draft) {
             if (sub && sub.name !== stream_name) {
                 stream_name = sub.name;
                 draft.stream = stream_name;
-                draft_model.editDraft(id, draft);
+                const changed = draft_model.editDraft(id, draft);
+                if (changed && user_settings.enable_drafts_synchronization) {
+                    draft_sync.update_draft_on_server(draft_model.getDraft(id));
+                }
             }
         }
         const draft_topic = draft.topic || compose.empty_topic_placeholder();
@@ -350,7 +477,7 @@ export function format_draft(draft) {
         // drafts overlay can be opened without any errors.
         // We also report the exception to the server so that
         // the bug can be fixed.
-        draft_model.deleteDraft(id);
+        delete_draft(id);
         blueslip.error(
             "Error in rendering draft.",
             {
@@ -406,7 +533,7 @@ function remove_draft($draft_row) {
     // Deletes the draft and removes it from the list
     const draft_id = $draft_row.data("draft-id");
 
-    draft_model.deleteDraft(draft_id);
+    delete_draft(draft_id);
 
     $draft_row.remove();
 
@@ -760,9 +887,14 @@ export function set_initial_element(drafts) {
 export function initialize() {
     remove_old_drafts();
 
-    // enable drafts synchronization in dev env
+    // TEMP: enable drafts synchronization in dev env
     if (page_params.development_environment) {
         user_settings.enable_drafts_synchronization = true;
+    }
+
+    // TEMP: page load triggers console.log of drafts on server
+    if (user_settings.enable_drafts_synchronization) {
+        draft_sync.get_drafts_from_server();
     }
 
     window.addEventListener("beforeunload", () => {

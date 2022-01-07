@@ -349,7 +349,7 @@ export function reify_message_id(local_id, server_id) {
 
     if (message.draft_id) {
         // Delete the draft if message was locally echoed
-        drafts.draft_model.deleteDraft(message.draft_id);
+        drafts.delete_draft(message.draft_id);
     }
 
     const opts = {old_id: Number.parseFloat(local_id), new_id: server_id};
