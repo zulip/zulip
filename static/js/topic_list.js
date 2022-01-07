@@ -134,6 +134,7 @@ export class TopicListWidget {
         this.parent_elem = parent_elem;
         this.my_stream_id = my_stream_id;
         this.topic_search_text = "";
+        this.topic_search_focused_before_build = true;
     }
 
     build_list(spinner) {
@@ -186,7 +187,11 @@ export class TopicListWidget {
             // Restore topic search text saved in remove()
             // after the element was rerendered.
             input.val(this.topic_search_text);
-            input.trigger("focus");
+            if (this.topic_search_focused_before_build) {
+                // Don't focus topic search if it wasn't focused before.
+                // This avoids unwanted change of focus.
+                input.trigger("focus");
+            }
 
             // setup display of clear(x) button.
             if (this.topic_search_text.length) {
@@ -228,6 +233,7 @@ export class TopicListWidget {
 
         const find = () => this.parent_elem.find(".topic-list");
 
+        this.topic_search_focused_before_build = document.activeElement.id === "filter-topic-input";
         vdom.update(replace_content, find, new_dom, this.prior_dom);
 
         this.prior_dom = new_dom;
