@@ -42,7 +42,35 @@ export const topic = get_or_set("stream_message_recipient_topic");
 export const message_content = get_or_set("compose-textarea", true);
 
 export function focus_in_empty_compose() {
-    return composing() && message_content() === "" && $("#compose-textarea").is(":focus");
+    // A user trying to press arrow keys in an empty compose is mostly
+    // likely trying to navigate messages. This helper function
+    // decides whether the compose box is "empty" for this purpose.
+    if (!composing() || message_content() !== "") {
+        return false;
+    }
+
+    const focused_element_id = document.activeElement.id;
+    if (focused_element_id === "compose-textarea") {
+        // Focus will be in the compose textarea after sending a
+        // message; this is the most common situation.
+        return true;
+    }
+
+    // If the current focus is in one of the recipient inputs, we need
+    // to check whether the input is empty, to avoid accidentally
+    // overriding the browser feature where the Up/Down arrow keys jump
+    // you to the start/end of a non-empty text input.
+    //
+    // Check whether the current input element is empty for each input type.
+    switch (focused_element_id) {
+        case "private_message_recipient":
+            return private_message_recipient().length === 0;
+        case "stream_message_recipient_topic":
+        case "stream_message_recipient_stream":
+            return document.activeElement.value === "";
+    }
+
+    return false;
 }
 
 export function private_message_recipient(value) {
