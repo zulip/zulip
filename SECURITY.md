@@ -25,8 +25,9 @@ form of minor security/maintenance releases.
 We work hard to make [upgrades][upgrades] reliable, so that there's no
 reason to run older major releases.
 
-See also our documentation on the [Zulip release lifecycle][release-lifecycle]
+See also our documentation on the [Zulip release
+lifecycle][release-lifecycle].
 
 [security-model]: https://zulip.readthedocs.io/en/latest/production/security-model.html
 [upgrades]: https://zulip.readthedocs.io/en/latest/production/upgrade-or-modify.html#upgrading-to-a-release
-[release-cycle]: https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html
+[release-lifecycle]: https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html
