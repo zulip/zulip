@@ -20,6 +20,10 @@ const bot_data_params = {
 };
 
 const avatar = mock_esm("../../static/js/avatar");
+const overlays = mock_esm("../../static/js/overlays", {
+    is_modal_open: () => false,
+    open_modal: () => {},
+});
 
 function ClipboardJS(sel) {
     assert.equal(sel, "#copy_zuliprc");
@@ -32,7 +36,7 @@ const settings_bots = zrequire("settings_bots");
 bot_data.initialize(bot_data_params);
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, mock_template}) => {
         page_params.realm_uri = "https://chat.example.com";
         page_params.realm_embedded_bots = [
             {name: "converter", config: {}},
@@ -40,7 +44,7 @@ function test(label, f) {
             {name: "foobot", config: {bar: "baz", qux: "quux"}},
         ];
 
-        f({override});
+        f({override, mock_template});
     });
 }
 
@@ -119,7 +123,19 @@ function test_create_bot_type_input_box_toggle(f) {
     assert.ok(!config_inputbox.visible());
 }
 
-test("test tab clicks", ({override}) => {
+test("test tab clicks", ({override, mock_template}) => {
+    mock_template("settings/add_a_new_bot_model.hbs", true, (data, html) => html);
+
+    mock_template("dialog_widget.hbs", true, (data, html) => {
+        const child = $(".dialog_submit_button");
+        $(html).set_find_results(".dialog_submit_button", child);
+
+        const container = $("#dialog_widget_modal");
+        const modal__container = $(".modal__container");
+        container.set_find_results(".modal__container", modal__container);
+        return html;
+    });
+
     override($.validator, "addMethod", () => {});
 
     $("#create_bot_form").validate = () => {};
@@ -137,6 +153,7 @@ test("test tab clicks", ({override}) => {
 
     test_create_bot_type_input_box_toggle(() => {
         $(`#${CSS.escape("bot-settings")} .add-a-new-bot-tab`).trigger("click");
+        override(overlays, "is_modal_open", () => true);
         $("#create_bot_type").trigger("change");
     });
 
@@ -145,7 +162,6 @@ test("test tab clicks", ({override}) => {
     }
 
     const tabs = {
-        add: $("#bots_lists_navbar .add-a-new-bot-tab"),
         active: $("#bots_lists_navbar .active-bots-tab"),
         inactive: $("#bots_lists_navbar .inactive-bots-tab"),
     };
@@ -158,35 +174,21 @@ test("test tab clicks", ({override}) => {
     };
 
     const forms = {
-        add: $("#add-a-new-bot-form"),
         active: $("#active_bots_list"),
         inactive: $("#inactive_bots_list"),
     };
 
-    click_on_tab(tabs.add);
-    assert.ok(tabs.add.hasClass("active"));
-    assert.ok(!tabs.active.hasClass("active"));
-    assert.ok(!tabs.inactive.hasClass("active"));
-
-    assert.ok(forms.add.visible());
-    assert.ok(!forms.active.visible());
-    assert.ok(!forms.inactive.visible());
-
     click_on_tab(tabs.active);
-    assert.ok(!tabs.add.hasClass("active"));
     assert.ok(tabs.active.hasClass("active"));
     assert.ok(!tabs.inactive.hasClass("active"));
 
-    assert.ok(!forms.add.visible());
     assert.ok(forms.active.visible());
     assert.ok(!forms.inactive.visible());
 
     click_on_tab(tabs.inactive);
-    assert.ok(!tabs.add.hasClass("active"));
     assert.ok(!tabs.active.hasClass("active"));
     assert.ok(tabs.inactive.hasClass("active"));
 
-    assert.ok(!forms.add.visible());
     assert.ok(!forms.active.visible());
     assert.ok(forms.inactive.visible());
 });
