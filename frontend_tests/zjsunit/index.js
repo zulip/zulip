@@ -114,7 +114,13 @@ try {
         namespace.finish();
     }
 } catch (error) {
-    if (error.stack) {
+    if (process.env.USING_INSTRUMENTED_CODE) {
+        console.info(`
+    TEST FAILED! Before using the --coverage option please make sure that your
+    tests work under normal conditions.
+
+        `);
+    } else if (error.stack) {
         console.info(short_tb(error.stack));
     } else {
         console.info(error);
