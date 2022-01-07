@@ -26,6 +26,7 @@ const popovers = mock_esm("../../static/js/popovers");
 const resize = mock_esm("../../static/js/resize");
 const scroll_util = mock_esm("../../static/js/scroll_util");
 const watchdog = mock_esm("../../static/js/watchdog");
+const ui = mock_esm("../../static/js/ui");
 
 set_global("document", _document);
 
@@ -752,6 +753,18 @@ test("initialize", ({override, mock_template}) => {
     override(padded_widget, "update_padding", () => {});
     override(pm_list, "update_private_messages", () => {});
     override(watchdog, "check_for_unsuspend", () => {});
+    override(ui, "get_scroll_element", ($elem) => {
+        assert.equal($elem.selector, "#buddy_list_wrapper");
+        return {
+            scrollTop: (val) => {
+                if (!val) {
+                    return 200;
+                }
+                assert.equal(val, 200);
+                return null;
+            },
+        };
+    });
 
     let payload;
     override(channel, "post", (arg) => {

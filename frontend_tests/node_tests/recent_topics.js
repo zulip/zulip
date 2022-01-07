@@ -369,8 +369,7 @@ test("test_recent_topics_show", ({mock_template, override, override_rewire}) => 
     rt.clear_for_tests();
     rt.process_messages(messages);
 
-    override_rewire(activity, "build_user_sidebar", noop);
-
+    override_rewire(activity, "redraw", () => {});
     rt.show();
 
     // incorrect topic_key

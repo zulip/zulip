@@ -23,6 +23,7 @@ import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as presence from "./presence";
+import * as ui from "./ui";
 import * as ui_util from "./ui_util";
 import {UserSearch} from "./user_search";
 import * as user_status from "./user_status";
@@ -283,8 +284,22 @@ export function on_revoke_away(user_id) {
     pm_list.update_private_messages();
 }
 
+let saved_scrollTop = 0;
+function save_sidebar_scroll() {
+    const scroll_element = ui.get_scroll_element($("#buddy_list_wrapper"));
+    saved_scrollTop = scroll_element.scrollTop();
+}
+
+function load_sidebar_scroll() {
+    const scroll_element = ui.get_scroll_element($("#buddy_list_wrapper"));
+    scroll_element.scrollTop(saved_scrollTop);
+    buddy_list.fill_screen_with_content();
+}
+
 export function redraw() {
+    save_sidebar_scroll();
     build_user_sidebar();
+    load_sidebar_scroll();
     // todo: figure out how to avoid.
     // this is a hack to make sure nothing breaks if we call redraw
     // before complete init, if we investigate our calls to redraw
