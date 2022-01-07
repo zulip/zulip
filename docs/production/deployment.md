@@ -229,6 +229,11 @@ To protect against [SSRF][ssrf], Zulip 4.8 and above default to
 routing all outgoing HTTP and HTTPS traffic through
 [Smokescreen][smokescreen], an HTTP `CONNECT` proxy; this includes
 outgoing webhooks, website previews, and mobile push notifications.
+By default, the Camo image proxy will be automatically configured to
+use a custom outgoing proxy, but does not use Smokescreen by default
+because Camo includes similar logic to deny access to private
+subnets. You can [override][proxy.enable_for_camo] this default
+configuration if desired.
 
 To use a custom outgoing proxy:
 
@@ -264,6 +269,7 @@ In Zulip 4.7 and older, to enable SSRF protection via Smokescreen, you
 will need to explicitly add the `zulip::profile::smokescreen` Puppet
 class, and configure the `[http_proxy]` block as above.
 
+[proxy.enable_for_camo]: #enable-for-camo
 [smokescreen]: https://github.com/stripe/smokescreen
 [smokescreen-acls]: https://github.com/stripe/smokescreen#acls
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
