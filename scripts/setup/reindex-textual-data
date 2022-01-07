@@ -65,9 +65,7 @@ FROM
         JOIN pg_class AS trel ON trel.oid = i.indrelid
         JOIN pg_namespace AS tnsp ON trel.relnamespace = tnsp.oid
         JOIN pg_class AS irel ON irel.oid = i.indexrelid
-        CROSS JOIN unnest(i.indkey) colnum
-        JOIN pg_attribute AS a ON trel.oid = a.attrelid
-                AND a.attnum = colnum
+        JOIN pg_attribute AS a ON a.attrelid = i.indexrelid
         WHERE tnsp.nspname = 'zulip'
         AND a.attcollation != 0
 GROUP BY 1, 2, i.indrelid
