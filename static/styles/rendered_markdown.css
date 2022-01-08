@@ -238,6 +238,11 @@
                 padding: 5px;
                 height: auto;
             }
+
+            /* Style copy-to-clipboard button inside spoiler tag codeblocks */
+            .copy_codeblock {
+                right: 16px;
+            }
         }
 
         .spoiler-button {
