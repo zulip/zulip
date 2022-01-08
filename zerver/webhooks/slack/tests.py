@@ -9,7 +9,7 @@ class SlackWebhookTests(WebhookTestCase):
     def test_slack_channel_to_topic(self) -> None:
 
         expected_topic = "channel: general"
-        expected_message = "**slack_user**: `test\n`"
+        expected_message = "**slack_user**: test"
         self.check_webhook(
             "message_info",
             expected_topic,
@@ -22,7 +22,7 @@ class SlackWebhookTests(WebhookTestCase):
         self.STREAM_NAME = "general"
         self.url = "{}{}".format(self.url, "&channels_map_to_topics=0")
         expected_topic = "Message from Slack"
-        expected_message = "**slack_user**: `test\n`"
+        expected_message = "**slack_user**: test"
         self.check_webhook(
             "message_info",
             expected_topic,
