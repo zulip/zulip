@@ -1,5 +1,5 @@
 <div id="bot-edit-form" data-user-id="{{user_id}}">
-    <form class="form-horizontal name-setting">
+    <form class="new-style edit_bot_form form-horizontal name-setting">
         <input type="hidden" name="is_full_name" value="true" />
         <div class="input-group edit_bot_owner_container">
             <label for="bot_owner_select">{{t "Owner" }}</label>
@@ -8,11 +8,11 @@
               list_placeholder=(t 'Filter users')
               reset_button_text=(t '[Remove owner]')}}
         </div>
-        <div class="input-group name_change_container">
+        <div class="name_change_container">
             <label for="full_name">{{t "Full name" }}</label>
             <input type="text" autocomplete="off" name="full_name" value="{{ full_name }}" />
         </div>
-        <div class="input-group email_change_container">
+        <div class="email_change_container">
             <label for="email">{{t "Email" }}</label>
             <input type="text" autocomplete="off" name="email" value="{{ email }}" readonly/>
         </div>
