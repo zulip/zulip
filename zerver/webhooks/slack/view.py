@@ -9,7 +9,7 @@ from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.models import UserProfile
 
-ZULIP_MESSAGE_TEMPLATE = "**{message_sender}**: `{text}`"
+ZULIP_MESSAGE_TEMPLATE = "**{message_sender}**: {text}"
 VALID_OPTIONS = {"SHOULD_NOT_BE_MAPPED": "0", "SHOULD_BE_MAPPED": "1"}
 
 
