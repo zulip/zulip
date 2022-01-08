@@ -5124,7 +5124,7 @@ def send_change_stream_description_notification(
 
     with override_language(stream.realm.default_language):
         notification_string = _(
-            "{user} changed the description for this stream.\n"
+            "{user} changed the description for this stream.\n\n"
             "Old description:\n"
             "``` quote\n"
             "{old_description}\n"
