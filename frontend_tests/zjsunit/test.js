@@ -30,7 +30,7 @@ exports.run_test = (label, f, opts) => {
 
     try {
         namespace._start_template_mocking();
-        namespace.with_overrides((override) => {
+        namespace.with_overrides(({override}) => {
             f({override, mock_template: namespace._mock_template});
         });
         namespace._finish_template_mocking();
