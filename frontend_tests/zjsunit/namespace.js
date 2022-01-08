@@ -347,6 +347,10 @@ exports.with_field_rewire = function (obj, field, val, f) {
     // as exporting a helper function for tests from the module
     // containing the function you need to mock.
 
+    if (typeof val === "function") {
+        throw new TypeError("Please try to avoid mocking here, or use override_rewire.");
+    }
+
     const old_val = field in obj ? obj[field] : obj.__GetDependency__(field);
     try {
         obj.__Rewire__(field, val);
