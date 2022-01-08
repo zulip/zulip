@@ -672,6 +672,7 @@ function handle_bot_form(tbody, status_field) {
         dialog_widget.launch({
             html_heading: $t_html({defaultMessage: "Change bot info and owner"}),
             html_body,
+            id: "edit_bot_modal",
             on_click: submit_bot_details,
             post_render: get_bot_owner_widget,
         });
