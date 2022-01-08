@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, with_field_rewire, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params, user_settings} = require("../zjsunit/zpage_params");
@@ -433,9 +433,14 @@ test("content_typeahead_selected", ({override_rewire}) => {
 
     fake_this.query = "@back";
     fake_this.token = "back";
-    with_field(compose_validate, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
-        actual_value = ct.content_typeahead_selected.call(fake_this, backend);
-    });
+    with_field_rewire(
+        compose_validate,
+        "warn_if_mentioning_unsubscribed_user",
+        unexpected_warn,
+        () => {
+            actual_value = ct.content_typeahead_selected.call(fake_this, backend);
+        },
+    );
     expected_value = "@*Backend* ";
     assert.equal(actual_value, expected_value);
 
@@ -453,9 +458,14 @@ test("content_typeahead_selected", ({override_rewire}) => {
 
     fake_this.query = "@_kin";
     fake_this.token = "kin";
-    with_field(compose_validate, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
-        actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
-    });
+    with_field_rewire(
+        compose_validate,
+        "warn_if_mentioning_unsubscribed_user",
+        unexpected_warn,
+        () => {
+            actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
+        },
+    );
 
     expected_value = "@_**King Hamlet** ";
     assert.equal(actual_value, expected_value);
@@ -480,9 +490,14 @@ test("content_typeahead_selected", ({override_rewire}) => {
 
     fake_this.query = "@_back";
     fake_this.token = "back";
-    with_field(compose_validate, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
-        actual_value = ct.content_typeahead_selected.call(fake_this, backend);
-    });
+    with_field_rewire(
+        compose_validate,
+        "warn_if_mentioning_unsubscribed_user",
+        unexpected_warn,
+        () => {
+            actual_value = ct.content_typeahead_selected.call(fake_this, backend);
+        },
+    );
     expected_value = "@_*Backend* ";
     assert.equal(actual_value, expected_value);
 
@@ -1578,7 +1593,7 @@ test("message people", ({override}) => {
     };
 
     function get_results(search_key) {
-        return with_field(ct, "max_num_items", 2, () =>
+        return with_field_rewire(ct, "max_num_items", 2, () =>
             ct.get_person_suggestions(search_key, opts),
         );
     }

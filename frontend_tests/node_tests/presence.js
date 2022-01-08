@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, with_field_rewire, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const {user_settings} = require("../zjsunit/zpage_params");
@@ -100,7 +100,7 @@ test("unknown user", ({override}) => {
     // If the server is suspected to be offline or reloading,
     // then we suppress errors.  The use case here is that we
     // haven't gotten info for a brand new user yet.
-    with_field(
+    with_field_rewire(
         watchdog,
         "suspects_user_is_offline",
         () => true,

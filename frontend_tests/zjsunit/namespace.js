@@ -322,26 +322,37 @@ exports.finish = function () {
 
 exports.with_field = function (obj, field, val, f) {
     if ("__esModule" in obj && "__Rewire__" in obj) {
-        const old_val = field in obj ? obj[field] : obj.__GetDependency__(field);
-        try {
-            obj.__Rewire__(field, val);
-            return f();
-        } finally {
-            obj.__Rewire__(field, old_val);
+        throw new TypeError(
+            "Cannot mutate an ES module from outside. Consider exporting a test helper function from it instead.",
+        );
+    }
+
+    const had_val = Object.prototype.hasOwnProperty.call(obj, field);
+    const old_val = obj[field];
+    try {
+        obj[field] = val;
+        return f();
+    } finally {
+        if (had_val) {
+            obj[field] = old_val;
+        } else {
+            delete obj[field];
         }
-    } else {
-        const had_val = Object.prototype.hasOwnProperty.call(obj, field);
-        const old_val = obj[field];
-        try {
-            obj[field] = val;
-            return f();
-        } finally {
-            if (had_val) {
-                obj[field] = old_val;
-            } else {
-                delete obj[field];
-            }
-        }
+    }
+};
+
+exports.with_field_rewire = function (obj, field, val, f) {
+    // This is deprecated because it relies on the slow
+    // babel-plugin-rewire-ts plugin.  Consider alternatives such
+    // as exporting a helper function for tests from the module
+    // containing the function you need to mock.
+
+    const old_val = field in obj ? obj[field] : obj.__GetDependency__(field);
+    try {
+        obj.__Rewire__(field, val);
+        return f();
+    } finally {
+        obj.__Rewire__(field, old_val);
     }
 };
 
