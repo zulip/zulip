@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, with_field_rewire, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const channel = mock_esm("../../static/js/channel");
@@ -137,7 +137,7 @@ test("is_complete_for_stream_id", () => {
         first: () => ({id: 5}),
     };
 
-    with_field(all_messages_data, "all_messages_data", all_messages_data_stub, () => {
+    with_field_rewire(all_messages_data, "all_messages_data", all_messages_data_stub, () => {
         assert.equal(stream_topic_history.is_complete_for_stream_id(sub.stream_id), true);
 
         // Now simulate a more recent message id.

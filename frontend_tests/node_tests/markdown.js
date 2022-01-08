@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_cases");
 const markdown_assert = require("../zjsunit/markdown_assert");
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {set_global, with_field_rewire, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const {page_params, user_settings} = require("../zjsunit/zpage_params");
@@ -833,7 +833,7 @@ test("missing unicode emojis", ({override_rewire}) => {
 test("katex_throws_unexpected_exceptions", () => {
     blueslip.expect("error", "Error: some-exception");
     const message = {raw_content: "$$a$$"};
-    with_field(
+    with_field_rewire(
         markdown,
         "katex",
         {
