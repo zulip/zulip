@@ -85,18 +85,18 @@ function create_social_sidebar_row({mock_template}) {
 }
 
 function test_ui(label, f) {
-    run_test(label, ({override, mock_template}) => {
+    run_test(label, ({override, override_rewire, mock_template}) => {
         stream_data.clear_subscriptions();
         stream_list.stream_sidebar.rows.clear();
-        f({override, mock_template});
+        f({override, override_rewire, mock_template});
     });
 }
 
-test_ui("create_sidebar_row", ({override, mock_template}) => {
+test_ui("create_sidebar_row", ({override_rewire, mock_template}) => {
     // Make a couple calls to create_sidebar_row() and make sure they
     // generate the right markup as well as play nice with get_stream_li().
     user_settings.demote_inactive_streams = 1;
-    override(unread, "num_unread_for_stream", () => num_unread_for_stream);
+    override_rewire(unread, "num_unread_for_stream", () => num_unread_for_stream);
 
     stream_data.add_sub(devel);
     stream_data.add_sub(social);
@@ -156,11 +156,11 @@ test_ui("create_sidebar_row", ({override, mock_template}) => {
     assert.ok(!social_li.hasClass("out_of_home_view"));
 
     const row = stream_list.stream_sidebar.get_row(stream_id);
-    override(stream_data, "is_active", () => true);
+    override_rewire(stream_data, "is_active", () => true);
     row.update_whether_active();
     assert.ok(!social_li.hasClass("inactive_stream"));
 
-    override(stream_data, "is_active", () => false);
+    override_rewire(stream_data, "is_active", () => false);
     row.update_whether_active();
     assert.ok(social_li.hasClass("inactive_stream"));
 
@@ -173,8 +173,8 @@ test_ui("create_sidebar_row", ({override, mock_template}) => {
     assert.ok(removed);
 });
 
-test_ui("pinned_streams_never_inactive", ({override, mock_template}) => {
-    override(unread, "num_unread_for_stream", () => num_unread_for_stream);
+test_ui("pinned_streams_never_inactive", ({override_rewire, mock_template}) => {
+    override_rewire(unread, "num_unread_for_stream", () => num_unread_for_stream);
 
     stream_data.add_sub(devel);
     stream_data.add_sub(social);
@@ -186,16 +186,16 @@ test_ui("pinned_streams_never_inactive", ({override, mock_template}) => {
     const social_sidebar = $("<social sidebar row>");
     let stream_id = social.stream_id;
     let row = stream_list.stream_sidebar.get_row(stream_id);
-    override(stream_data, "is_active", () => false);
+    override_rewire(stream_data, "is_active", () => false);
 
     stream_list.build_stream_list();
     assert.ok(social_sidebar.hasClass("inactive_stream"));
 
-    override(stream_data, "is_active", () => true);
+    override_rewire(stream_data, "is_active", () => true);
     row.update_whether_active();
     assert.ok(!social_sidebar.hasClass("inactive_stream"));
 
-    override(stream_data, "is_active", () => false);
+    override_rewire(stream_data, "is_active", () => false);
     row.update_whether_active();
     assert.ok(social_sidebar.hasClass("inactive_stream"));
 
@@ -203,7 +203,7 @@ test_ui("pinned_streams_never_inactive", ({override, mock_template}) => {
     const devel_sidebar = $("<devel sidebar row>");
     stream_id = devel.stream_id;
     row = stream_list.stream_sidebar.get_row(stream_id);
-    override(stream_data, "is_active", () => false);
+    override_rewire(stream_data, "is_active", () => false);
 
     stream_list.build_stream_list();
     assert.ok(!devel_sidebar.hasClass("inactive_stream"));
@@ -363,14 +363,14 @@ test_ui("zoom_in_and_zoom_out", () => {
     assert.ok($("#streams_list").hasClass("zoom-out"));
 });
 
-test_ui("narrowing", ({override}) => {
+test_ui("narrowing", ({override_rewire}) => {
     initialize_stream_data();
 
     topic_list.close = noop;
     topic_list.rebuild = noop;
     topic_list.active_stream_id = noop;
     topic_list.get_stream_li = noop;
-    override(scroll_util, "scroll_element_into_container", noop);
+    override_rewire(scroll_util, "scroll_element_into_container", noop);
 
     assert.ok(!$("<devel sidebar row html>").hasClass("active-filter"));
 
@@ -417,8 +417,8 @@ test_ui("focusout_user_filter", () => {
     click_handler(e);
 });
 
-test_ui("focus_user_filter", ({override}) => {
-    override(scroll_util, "scroll_element_into_container", noop);
+test_ui("focus_user_filter", ({override_rewire}) => {
+    override_rewire(scroll_util, "scroll_element_into_container", noop);
     stream_list.set_event_handlers();
 
     initialize_stream_data();
@@ -431,15 +431,15 @@ test_ui("focus_user_filter", ({override}) => {
     click_handler(e);
 });
 
-test_ui("sort_streams", ({override}) => {
-    override(scroll_util, "scroll_element_into_container", noop);
+test_ui("sort_streams", ({override_rewire}) => {
+    override_rewire(scroll_util, "scroll_element_into_container", noop);
 
     // Get coverage on early-exit.
     stream_list.build_stream_list();
 
     initialize_stream_data();
 
-    override(stream_data, "is_active", (sub) => sub.name !== "cars");
+    override_rewire(stream_data, "is_active", (sub) => sub.name !== "cars");
 
     let appended_elems;
     $("#stream_filters").append = (elems) => {
@@ -483,7 +483,7 @@ test_ui("sort_streams", ({override}) => {
     assert.ok(!stream_list.stream_sidebar.has_row_for(stream_id));
 });
 
-test_ui("separators_only_pinned_and_dormant", ({override}) => {
+test_ui("separators_only_pinned_and_dormant", ({override_rewire}) => {
     // Test only pinned and dormant streams
 
     // Get coverage on early-exit.
@@ -517,7 +517,7 @@ test_ui("separators_only_pinned_and_dormant", ({override}) => {
     };
     add_row(DenmarkSub);
 
-    override(stream_data, "is_active", (sub) => sub.name !== "Denmark");
+    override_rewire(stream_data, "is_active", (sub) => sub.name !== "Denmark");
 
     let appended_elems;
     $("#stream_filters").append = (elems) => {
@@ -583,7 +583,7 @@ test_ui("separators_only_pinned", () => {
 
 narrow_state.active = () => false;
 
-test_ui("rename_stream", ({override, mock_template}) => {
+test_ui("rename_stream", ({override_rewire, mock_template}) => {
     initialize_stream_data();
 
     const sub = stream_data.get_sub_by_name("devel");
@@ -610,7 +610,7 @@ test_ui("rename_stream", ({override, mock_template}) => {
     });
 
     let count_updated;
-    override(stream_list, "update_count_in_dom", (li) => {
+    override_rewire(stream_list, "update_count_in_dom", (li) => {
         assert.equal(li, li_stub);
         count_updated = true;
     });
@@ -619,10 +619,10 @@ test_ui("rename_stream", ({override, mock_template}) => {
     assert.ok(count_updated);
 });
 
-test_ui("refresh_pin", ({override, mock_template}) => {
+test_ui("refresh_pin", ({override_rewire, mock_template}) => {
     initialize_stream_data();
 
-    override(scroll_util, "scroll_element_into_container", noop);
+    override_rewire(scroll_util, "scroll_element_into_container", noop);
 
     const sub = {
         name: "maybe_pin",
@@ -643,11 +643,11 @@ test_ui("refresh_pin", ({override, mock_template}) => {
 
     mock_template("stream_sidebar_row.hbs", false, () => ({to_$: () => li_stub}));
 
-    override(stream_list, "update_count_in_dom", noop);
+    override_rewire(stream_list, "update_count_in_dom", noop);
     $("#stream_filters").append = noop;
 
     let scrolled;
-    override(stream_list, "scroll_stream_into_view", (li) => {
+    override_rewire(stream_list, "scroll_stream_into_view", (li) => {
         assert.equal(li, li_stub);
         scrolled = true;
     });
@@ -656,7 +656,7 @@ test_ui("refresh_pin", ({override, mock_template}) => {
     assert.ok(scrolled);
 });
 
-test_ui("create_initial_sidebar_rows", ({override, mock_template}) => {
+test_ui("create_initial_sidebar_rows", ({override, override_rewire, mock_template}) => {
     initialize_stream_data();
 
     const html_dict = new Map();
@@ -666,7 +666,7 @@ test_ui("create_initial_sidebar_rows", ({override, mock_template}) => {
         html_dict.set(stream_id, widget.get_li().html());
     });
 
-    override(stream_list, "update_count_in_dom", noop);
+    override_rewire(stream_list, "update_count_in_dom", noop);
 
     mock_template("stream_sidebar_row.hbs", false, (data) => "<div>stub-html-" + data.name);
 

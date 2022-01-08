@@ -59,9 +59,9 @@ people.add_cross_realm_user(welcome_bot);
 
 function test_ui(label, f) {
     // The sloppy_$ flag lets us re-use setup from prior tests.
-    run_test(label, ({override, mock_template}) => {
+    run_test(label, ({override, override_rewire, mock_template}) => {
         $("#compose-textarea").val("some message");
-        f({override, mock_template});
+        f({override, override_rewire, mock_template});
     });
 }
 
@@ -248,7 +248,7 @@ test_ui("validate", ({override, mock_template}) => {
     );
 });
 
-test_ui("get_invalid_recipient_emails", ({override}) => {
+test_ui("get_invalid_recipient_emails", ({override_rewire}) => {
     const welcome_bot = {
         email: "welcome-bot@example.com",
         user_id: 124,
@@ -264,7 +264,7 @@ test_ui("get_invalid_recipient_emails", ({override}) => {
 
     people.initialize(page_params.user_id, params);
 
-    override(compose_state, "private_message_recipient", () => "welcome-bot@example.com");
+    override_rewire(compose_state, "private_message_recipient", () => "welcome-bot@example.com");
     assert.deepEqual(compose_validate.get_invalid_recipient_emails(), []);
 });
 
@@ -320,7 +320,7 @@ test_ui("test_wildcard_mention_allowed", () => {
     assert.ok(!compose_validate.wildcard_mention_allowed());
 });
 
-test_ui("validate_stream_message", ({override, mock_template}) => {
+test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
     // This test is in kind of continuation to test_validate but since it is
     // primarily used to get coverage over functions called from validate()
     // we are separating it up in different test. Though their relative position
@@ -351,7 +351,7 @@ test_ui("validate_stream_message", ({override, mock_template}) => {
         compose_content = data;
     };
 
-    override(compose_validate, "wildcard_mention_allowed", () => true);
+    override_rewire(compose_validate, "wildcard_mention_allowed", () => true);
     compose_state.message_content("Hey @**all**");
     assert.ok(!compose_validate.validate());
     assert.equal($("#compose-send-button").prop("disabled"), false);
@@ -359,7 +359,7 @@ test_ui("validate_stream_message", ({override, mock_template}) => {
     assert.equal(compose_content, "compose_all_everyone_stub");
     assert.ok($("#compose-all-everyone").visible());
 
-    override(compose_validate, "wildcard_mention_allowed", () => false);
+    override_rewire(compose_validate, "wildcard_mention_allowed", () => false);
     assert.ok(!compose_validate.validate());
     assert.equal(
         $("#compose-error-msg").html(),
@@ -630,7 +630,7 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
     }
 });
 
-test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
+test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, mock_template}) => {
     override(settings_data, "user_can_subscribe_other_users", () => true);
 
     let mentioned = {
@@ -676,7 +676,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
     const checks = [
         (function () {
             let called;
-            override(compose_validate, "needs_subscribe_warning", (user_id, stream_id) => {
+            override_rewire(compose_validate, "needs_subscribe_warning", (user_id, stream_id) => {
                 called = true;
                 assert.equal(user_id, 34);
                 assert.equal(stream_id, 111);

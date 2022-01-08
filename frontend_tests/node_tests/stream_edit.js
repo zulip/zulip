@@ -109,15 +109,15 @@ for (const sub of subs) {
 }
 
 function test_ui(label, f) {
-    run_test(label, ({override, mock_template}) => {
+    run_test(label, ({override, override_rewire, mock_template}) => {
         page_params.user_id = me.user_id;
         stream_subscribers_ui.initialize();
         stream_edit.initialize();
-        f({override, mock_template});
+        f({override, override_rewire, mock_template});
     });
 }
 
-test_ui("subscriber_pills", ({override, mock_template}) => {
+test_ui("subscriber_pills", ({override_rewire, mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         return html;
@@ -129,7 +129,7 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
         () => "stream_subscription_request_result",
     );
 
-    override(people, "sort_but_pin_current_user_on_top", noop);
+    override_rewire(people, "sort_but_pin_current_user_on_top", noop);
 
     const subscriptions_table_selector = "#manage_streams_container";
     const input_field_stub = $.create(".input");
@@ -178,7 +178,7 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
     let expected_user_ids = [];
     let input_typeahead_called = false;
     let add_subscribers_request = false;
-    override(stream_subscribers_ui, "invite_user_to_stream", (user_ids, sub) => {
+    override_rewire(stream_subscribers_ui, "invite_user_to_stream", (user_ids, sub) => {
         assert.equal(sub.stream_id, denmark.stream_id);
         assert.deepEqual(user_ids.sort(), expected_user_ids.sort());
         add_subscribers_request = true;
@@ -306,8 +306,8 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
     let fake_this = $subscription_settings;
     let event = {target: fake_this};
 
-    override(stream_ui_updates, "update_toggler_for_sub", noop);
-    override(stream_ui_updates, "update_add_subscriptions_elements", noop);
+    override_rewire(stream_ui_updates, "update_toggler_for_sub", noop);
+    override_rewire(stream_ui_updates, "update_add_subscriptions_elements", noop);
 
     const {stream_notification_settings, pm_mention_notification_settings} = settings_config;
     for (const setting of [...stream_notification_settings, ...pm_mention_notification_settings]) {
@@ -350,8 +350,8 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
 
     // Only Denmark stream pill is created and a
     // request is sent to add all it's subscribers.
-    override(user_pill, "get_user_ids", () => []);
-    override(user_group_pill, "get_user_ids", () => []);
+    override_rewire(user_pill, "get_user_ids", () => []);
+    override_rewire(user_group_pill, "get_user_ids", () => []);
     expected_user_ids = potential_denmark_stream_subscribers;
     add_subscribers_handler(event);
 
@@ -363,14 +363,14 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
 
     // No request is sent if we try to subscribe ourselves
     // only and are already subscribed to the stream.
-    override(user_pill, "get_user_ids", () => [me.user_id]);
+    override_rewire(user_pill, "get_user_ids", () => [me.user_id]);
     add_subscribers_handler(event);
     assert.ok(!add_subscribers_request);
 
     // Denmark stream pill and fred and mark user pills are created.
     // But only one request for mark is sent even though a mark user
     // pill is created and mark is also a subscriber of Denmark stream.
-    override(user_pill, "get_user_ids", () => [mark.user_id, fred.user_id]);
+    override_rewire(user_pill, "get_user_ids", () => [mark.user_id, fred.user_id]);
     stream_pill.get_user_ids = () => peer_data.get_subscribers(denmark.stream_id);
     expected_user_ids = potential_denmark_stream_subscribers.concat(fred.user_id);
     add_subscribers_handler(event);
@@ -379,8 +379,8 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
         return user_id === mark.user_id;
     }
     // Deactivated user_id is not included in request.
-    override(user_pill, "get_user_ids", () => [mark.user_id, fred.user_id]);
-    override(people, "is_person_active", is_person_active);
+    override_rewire(user_pill, "get_user_ids", () => [mark.user_id, fred.user_id]);
+    override_rewire(people, "is_person_active", is_person_active);
     expected_user_ids = [mark.user_id];
     add_subscribers_handler(event);
 });

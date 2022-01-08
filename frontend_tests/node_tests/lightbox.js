@@ -23,13 +23,13 @@ const rows = zrequire("rows");
 const lightbox = zrequire("lightbox");
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, override_rewire}) => {
         lightbox.clear_for_testing();
-        f({override});
+        f({override, override_rewire});
     });
 }
 
-test("pan_and_zoom", ({override}) => {
+test("pan_and_zoom", ({override_rewire}) => {
     const img = $.create("img-stub");
     const link = $.create("link-stub");
     const msg = $.create("msg-stub");
@@ -39,7 +39,7 @@ test("pan_and_zoom", ({override}) => {
     img.set_parent(link);
     link.closest = () => msg;
 
-    override(rows, "id", (row) => {
+    override_rewire(rows, "id", (row) => {
         assert.equal(row, msg);
         return 1234;
     });
@@ -53,20 +53,20 @@ test("pan_and_zoom", ({override}) => {
         return "message-stub";
     };
 
-    override(lightbox, "render_lightbox_list_images", () => {});
+    override_rewire(lightbox, "render_lightbox_list_images", () => {});
 
     lightbox.open(img);
 
     assert.equal(fetched_zid, 1234);
 });
 
-test("youtube", ({override}) => {
+test("youtube", ({override_rewire}) => {
     const href = "https://youtube.com/some-random-clip";
     const img = $.create("img-stub");
     const link = $.create("link-stub");
     const msg = $.create("msg-stub");
 
-    override(rows, "id", (row) => {
+    override_rewire(rows, "id", (row) => {
         assert.equal(row, msg);
         return 4321;
     });
@@ -86,7 +86,7 @@ test("youtube", ({override}) => {
     link.closest = () => msg;
     link.attr("href", href);
 
-    override(lightbox, "render_lightbox_list_images", () => {});
+    override_rewire(lightbox, "render_lightbox_list_images", () => {});
 
     lightbox.open(img);
     assert.equal($(".image-actions .open").attr("href"), href);

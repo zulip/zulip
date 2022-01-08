@@ -684,7 +684,7 @@ run_test("typing", ({override}) => {
     dispatch(event);
 });
 
-run_test("user_settings", ({override}) => {
+run_test("user_settings", ({override, override_rewire}) => {
     settings_display.set_default_language_name = () => {};
     let event = event_fixtures.user_settings__default_language;
     user_settings.default_language = "en";
@@ -815,7 +815,7 @@ run_test("user_settings", ({override}) => {
         assert_same(user_settings.emojiset, "google");
     }
 
-    override(starred_messages, "rerender_ui", noop);
+    override_rewire(starred_messages, "rerender_ui", noop);
     event = event_fixtures.user_settings__starred_message_counts;
     user_settings.starred_message_counts = false;
     dispatch(event);
@@ -831,7 +831,7 @@ run_test("user_settings", ({override}) => {
         const stub = make_stub();
         event = event_fixtures.user_settings__demote_inactive_streams;
         override(stream_data, "set_filter_out_inactives", noop);
-        override(stream_list, "update_streams_sidebar", stub.f);
+        override_rewire(stream_list, "update_streams_sidebar", stub.f);
         user_settings.demote_inactive_streams = 1;
         dispatch(event);
         assert.equal(stub.num_calls, 1);
@@ -873,8 +873,8 @@ run_test("update_message (read)", ({override}) => {
     assert_same(args.message_ids, [999]);
 });
 
-run_test("update_message (add star)", ({override}) => {
-    override(starred_messages, "rerender_ui", noop);
+run_test("update_message (add star)", ({override, override_rewire}) => {
+    override_rewire(starred_messages, "rerender_ui", noop);
 
     const event = event_fixtures.update_message_flags__starred_add;
     const stub = make_stub();
@@ -888,8 +888,8 @@ run_test("update_message (add star)", ({override}) => {
     assert.equal(msg.starred, true);
 });
 
-run_test("update_message (remove star)", ({override}) => {
-    override(starred_messages, "rerender_ui", noop);
+run_test("update_message (remove star)", ({override, override_rewire}) => {
+    override_rewire(starred_messages, "rerender_ui", noop);
     const event = event_fixtures.update_message_flags__starred_remove;
     const stub = make_stub();
     override(ui, "update_starred_view", stub.f);
@@ -902,8 +902,8 @@ run_test("update_message (remove star)", ({override}) => {
     assert.equal(msg.starred, false);
 });
 
-run_test("update_message (wrong data)", ({override}) => {
-    override(starred_messages, "rerender_ui", noop);
+run_test("update_message (wrong data)", ({override_rewire}) => {
+    override_rewire(starred_messages, "rerender_ui", noop);
     const event = {
         ...event_fixtures.update_message_flags__starred_add,
         messages: [0], // message does not exist
@@ -912,10 +912,10 @@ run_test("update_message (wrong data)", ({override}) => {
     // update_starred_view never gets invoked, early return is successful
 });
 
-run_test("delete_message", ({override}) => {
+run_test("delete_message", ({override, override_rewire}) => {
     const event = event_fixtures.delete_message;
 
-    override(stream_list, "update_streams_sidebar", noop);
+    override_rewire(stream_list, "update_streams_sidebar", noop);
 
     const message_events_stub = make_stub();
     override(message_events, "remove_messages", message_events_stub.f);
@@ -924,7 +924,7 @@ run_test("delete_message", ({override}) => {
     override(unread_ops, "process_read_messages_event", unread_ops_stub.f);
 
     const stream_topic_history_stub = make_stub();
-    override(stream_topic_history, "remove_messages", stream_topic_history_stub.f);
+    override_rewire(stream_topic_history, "remove_messages", stream_topic_history_stub.f);
 
     dispatch(event);
 
@@ -943,7 +943,7 @@ run_test("delete_message", ({override}) => {
     assert_same(args.opts.max_removed_msg_id, 1337);
 });
 
-run_test("user_status", ({override}) => {
+run_test("user_status", ({override, override_rewire}) => {
     let event = event_fixtures.user_status__set_away;
     {
         const stub = make_stub();
@@ -986,7 +986,7 @@ run_test("user_status", ({override}) => {
     {
         const stub = make_stub();
         override(activity, "redraw_user", stub.f);
-        override(compose_pm_pill, "get_user_ids", () => [event.user_id]);
+        override_rewire(compose_pm_pill, "get_user_ids", () => [event.user_id]);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("user_id");

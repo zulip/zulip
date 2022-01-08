@@ -44,9 +44,9 @@ people.initialize_current_user(me.user_id);
 const dispatch = server_events_dispatch.dispatch_normal_event;
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, override_rewire}) => {
         stream_data.clear_subscriptions();
-        f({override});
+        f({override, override_rewire});
     });
 }
 
@@ -181,11 +181,11 @@ test("stream update", ({override}) => {
     assert.equal(args.value, event.value);
 });
 
-test("stream create", ({override}) => {
+test("stream create", ({override, override_rewire}) => {
     const event = event_fixtures.stream__create;
 
     const stub = make_stub();
-    override(stream_data, "create_streams", stub.f);
+    override_rewire(stream_data, "create_streams", stub.f);
     override(stream_settings_ui, "add_sub_to_table", noop);
     override(overlays, "streams_open", () => true);
     dispatch(event);
@@ -197,7 +197,7 @@ test("stream create", ({override}) => {
     );
 });
 
-test("stream delete (normal)", ({override}) => {
+test("stream delete (normal)", ({override, override_rewire}) => {
     const event = event_fixtures.stream__delete;
 
     for (const stream of event.streams) {
@@ -206,7 +206,7 @@ test("stream delete (normal)", ({override}) => {
 
     stream_data.subscribe_myself(event.streams[0]);
 
-    override(stream_data, "delete_sub", noop);
+    override_rewire(stream_data, "delete_sub", noop);
     override(settings_streams, "update_default_streams_table", noop);
 
     narrow_state.is_for_stream_id = () => true;

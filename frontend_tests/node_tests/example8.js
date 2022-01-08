@@ -65,7 +65,7 @@ people.add_active_user(kitty);
 
     It's usage below will make it more clear to you.
 */
-run_test("typing_events.render_notifications_for_narrow", ({override, mock_template}) => {
+run_test("typing_events.render_notifications_for_narrow", ({override_rewire, mock_template}) => {
     // All typists are rendered in `#typing_notifications`.
     const typing_notifications = $("#typing_notifications");
 
@@ -78,7 +78,7 @@ run_test("typing_events.render_notifications_for_narrow", ({override, mock_templ
 
     // As we are not testing any functionality of `get_users_typing_for_narrow`,
     // let's override it to return two typists.
-    override(typing_events, "get_users_typing_for_narrow", () => two_typing_users_ids);
+    override_rewire(typing_events, "get_users_typing_for_narrow", () => two_typing_users_ids);
 
     const two_typing_users_rendered_html = "Two typing users rendered html stub";
 
@@ -125,7 +125,7 @@ run_test("typing_events.render_notifications_for_narrow", ({override, mock_templ
     // Change to having four typists and verify the rendered html has
     // 'Several people are typing…' but not the list of users.
     const four_typing_users_ids = [anna.user_id, vronsky.user_id, levin.user_id, kitty.user_id];
-    override(typing_events, "get_users_typing_for_narrow", () => four_typing_users_ids);
+    override_rewire(typing_events, "get_users_typing_for_narrow", () => four_typing_users_ids);
 
     typing_events.render_notifications_for_narrow();
     assert.ok(typing_notifications.html().includes("Several people are typing…"));

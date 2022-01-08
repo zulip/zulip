@@ -572,9 +572,9 @@ run_test("narrow_to_compose_target errors", () => {
     test();
 });
 
-run_test("narrow_to_compose_target streams", ({override}) => {
+run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     const args = {called: false};
-    override(narrow, "activate", (operators, opts) => {
+    override_rewire(narrow, "activate", (operators, opts) => {
         args.operators = operators;
         args.opts = opts;
         args.called = true;
@@ -620,16 +620,16 @@ run_test("narrow_to_compose_target streams", ({override}) => {
     assert.deepEqual(args.operators, [{operator: "stream", operand: "ROME"}]);
 });
 
-run_test("narrow_to_compose_target PMs", ({override}) => {
+run_test("narrow_to_compose_target PMs", ({override_rewire}) => {
     const args = {called: false};
-    override(narrow, "activate", (operators, opts) => {
+    override_rewire(narrow, "activate", (operators, opts) => {
         args.operators = operators;
         args.opts = opts;
         args.called = true;
     });
 
     let emails;
-    override(compose_state, "private_message_recipient", () => emails);
+    override_rewire(compose_state, "private_message_recipient", () => emails);
 
     compose_state.set_message_type("private");
     people.add_active_user(ray);

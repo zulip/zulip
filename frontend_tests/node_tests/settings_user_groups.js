@@ -87,7 +87,7 @@ const name_selector = `#user-groups #${CSS.escape(1)} .name`;
 const description_selector = `#user-groups #${CSS.escape(1)} .description`;
 const instructions_selector = `#user-groups #${CSS.escape(1)} .save-instructions`;
 
-test_ui("populate_user_groups", ({override, mock_template}) => {
+test_ui("populate_user_groups", ({override_rewire, mock_template}) => {
     const realm_user_group = {
         id: 1,
         name: "Mobile",
@@ -156,7 +156,7 @@ test_ui("populate_user_groups", ({override, mock_template}) => {
         return people.get_by_user_id !== undefined && people.get_by_user_id !== noop;
     };
 
-    override(settings_user_groups, "can_edit", () => true);
+    override_rewire(settings_user_groups, "can_edit", () => true);
 
     const all_pills = new Map();
 
@@ -355,7 +355,7 @@ test_ui("populate_user_groups", ({override, mock_template}) => {
         "function",
     );
 });
-test_ui("with_external_user", ({override, mock_template}) => {
+test_ui("with_external_user", ({override_rewire, mock_template}) => {
     const realm_user_group = {
         id: 1,
         name: "Mobile",
@@ -376,10 +376,10 @@ test_ui("with_external_user", ({override, mock_template}) => {
 
     people.get_by_user_id = () => noop;
 
-    override(user_pill, "append_person", () => noop);
+    override_rewire(user_pill, "append_person", () => noop);
 
     let can_edit_called = 0;
-    override(settings_user_groups, "can_edit", () => {
+    override_rewire(settings_user_groups, "can_edit", () => {
         can_edit_called += 1;
         return false;
     });
@@ -493,10 +493,10 @@ test_ui("with_external_user", ({override, mock_template}) => {
     assert.equal(turned_off["click/whole"], true);
 });
 
-test_ui("reload", ({override}) => {
+test_ui("reload", ({override_rewire}) => {
     $("#user-groups").html("Some text");
     let populate_user_groups_called = false;
-    override(settings_user_groups, "populate_user_groups", () => {
+    override_rewire(settings_user_groups, "populate_user_groups", () => {
         populate_user_groups_called = true;
     });
     settings_user_groups.reload();
@@ -510,7 +510,7 @@ test_ui("reset", () => {
     assert.equal(result, undefined);
 });
 
-test_ui("on_events", ({override, mock_template}) => {
+test_ui("on_events", ({override_rewire, mock_template}) => {
     mock_template("confirm_dialog/confirm_delete_user.hbs", false, (data) => {
         assert.deepEqual(data, {
             group_name: "Mobile",
@@ -518,7 +518,7 @@ test_ui("on_events", ({override, mock_template}) => {
         return "stub";
     });
 
-    override(settings_user_groups, "can_edit", () => true);
+    override_rewire(settings_user_groups, "can_edit", () => true);
 
     (function test_admin_user_group_form_submit_triggered() {
         const handler = $(".organization form.admin-user-group-form").get_on_handler("submit");
@@ -664,7 +664,7 @@ test_ui("on_events", ({override, mock_template}) => {
 
             // Cancel button triggers blur event.
             let settings_user_groups_reload_called = false;
-            override(settings_user_groups, "reload", () => {
+            override_rewire(settings_user_groups, "reload", () => {
                 settings_user_groups_reload_called = true;
             });
             api_endpoint_called = false;

@@ -38,9 +38,9 @@ function get_list_info(zoomed) {
 }
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, override_rewire}) => {
         stream_topic_history.reset();
-        f({override});
+        f({override, override_rewire});
     });
 }
 
@@ -122,15 +122,15 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
     assert.equal(list_info.num_possible_topics, 2);
 });
 
-test("get_list_info unreads", ({override}) => {
+test("get_list_info unreads", ({override, override_rewire}) => {
     let list_info;
 
-    override(stream_topic_history, "get_recent_topic_names", () =>
+    override_rewire(stream_topic_history, "get_recent_topic_names", () =>
         _.range(15).map((i) => "topic " + i),
     );
 
     const unread_cnt = new Map();
-    override(unread, "num_unread_for_topic", (stream_id, topic_name) => {
+    override_rewire(unread, "num_unread_for_topic", (stream_id, topic_name) => {
         assert.equal(stream_id, general.stream_id);
         return unread_cnt.get(topic_name) || 0;
     });
