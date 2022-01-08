@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {with_field, zrequire} = require("../zjsunit/namespace");
+const {with_field_rewire, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -550,7 +550,7 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
 
 run_test("narrow_to_compose_target errors", () => {
     function test() {
-        with_field(
+        with_field_rewire(
             narrow,
             "activate",
             () => {

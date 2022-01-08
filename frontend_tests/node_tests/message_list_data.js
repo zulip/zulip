@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {set_global, with_field_rewire, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 
@@ -129,7 +129,7 @@ run_test("muting", () => {
 
     // `messages_filtered_for_topic_mutes` should skip filtering
     // messages if `excludes_muted_topics` is false.
-    with_field(
+    with_field_rewire(
         muted_topics,
         "is_topic_muted",
         () => {
@@ -145,7 +145,7 @@ run_test("muting", () => {
 
     // If we are in a 1:1 PM narrow, `messages_filtered_for_user_mutes` should skip
     // filtering messages.
-    with_field(
+    with_field_rewire(
         muted_topics,
         "is_user_muted",
         () => {

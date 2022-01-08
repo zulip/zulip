@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, with_field_rewire, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -268,7 +268,7 @@ test("ensure coverage", ({override}) => {
     // where functions early exit.
     override(narrow_state, "active", () => false);
 
-    with_field(
+    with_field_rewire(
         pm_list,
         "rebuild_recent",
         () => {
