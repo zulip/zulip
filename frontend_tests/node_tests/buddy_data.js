@@ -96,7 +96,7 @@ function add_canned_users() {
 }
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, override_rewire}) => {
         user_settings.presence_enabled = true;
         compose_fade_helper.clear_focused_recipient();
         stream_data.clear_subscriptions();
@@ -107,7 +107,7 @@ function test(label, f) {
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
         muted_users.set_muted_users([]);
-        f({override});
+        f({override, override_rewire});
     });
 }
 
@@ -462,9 +462,9 @@ test("bulk_data_hacks", () => {
     assert.equal(user_ids.length, 700);
 });
 
-test("always show me", ({override}) => {
+test("always show me", ({override_rewire}) => {
     const present_user_ids = [];
-    override(presence, "get_user_ids", () => present_user_ids);
+    override_rewire(presence, "get_user_ids", () => present_user_ids);
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id]);
 
     // Make sure we didn't mutate the list passed to us.
@@ -512,7 +512,7 @@ test("level", () => {
     assert.equal(buddy_data.level(selma.user_id), 3);
 });
 
-test("user_last_seen_time_status", ({override}) => {
+test("user_last_seen_time_status", ({override, override_rewire}) => {
     set_presence(selma.user_id, "active");
     set_presence(me.user_id, "active");
 
@@ -529,7 +529,7 @@ test("user_last_seen_time_status", ({override}) => {
         "translated: Last active: translated: More than 2 weeks ago",
     );
 
-    override(presence, "last_active_date", (user_id) => {
+    override_rewire(presence, "last_active_date", (user_id) => {
         assert.equal(user_id, old_user.user_id);
         return new Date(1526137743000);
     });
@@ -548,7 +548,7 @@ test("user_last_seen_time_status", ({override}) => {
     assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Idle");
 });
 
-test("get_items_for_users", ({override}) => {
+test("get_items_for_users", ({override_rewire}) => {
     people.add_active_user(alice);
     people.add_active_user(fred);
     user_status.set_away(alice.user_id);
@@ -558,7 +558,7 @@ test("get_items_for_users", ({override}) => {
         emoji_code: "1f697",
         reaction_type: "unicode_emoji",
     };
-    override(user_status, "get_status_emoji", () => status_emoji_info);
+    override_rewire(user_status, "get_status_emoji", () => status_emoji_info);
 
     const user_ids = [me.user_id, alice.user_id, fred.user_id];
     assert.deepEqual(buddy_data.get_items_for_users(user_ids), [
@@ -601,8 +601,8 @@ test("get_items_for_users", ({override}) => {
     ]);
 });
 
-test("error handling", ({override}) => {
-    override(presence, "get_user_ids", () => [42]);
+test("error handling", ({override_rewire}) => {
+    override_rewire(presence, "get_user_ids", () => [42]);
     blueslip.expect("error", "Unknown user_id in get_by_user_id: 42");
     blueslip.expect("warn", "Got user_id in presence but not people: 42");
     buddy_data.get_filtered_and_sorted_user_ids();

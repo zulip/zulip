@@ -76,18 +76,18 @@ function get_suggestions(base_query, query) {
 }
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, override_rewire}) => {
         init();
-        f({override});
+        f({override, override_rewire});
     });
 }
 
-test("basic_get_suggestions", ({override}) => {
+test("basic_get_suggestions", ({override_rewire}) => {
     const query = "fred";
 
-    override(stream_data, "subscribed_streams", () => []);
+    override_rewire(stream_data, "subscribed_streams", () => []);
 
-    override(narrow_state, "stream", () => "office");
+    override_rewire(narrow_state, "stream", () => "office");
 
     const suggestions = get_suggestions("", query);
 
@@ -95,8 +95,8 @@ test("basic_get_suggestions", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("basic_get_suggestions_for_spectator", ({override}) => {
-    override(stream_data, "subscribed_streams", () => []);
+test("basic_get_suggestions_for_spectator", ({override_rewire}) => {
+    override_rewire(stream_data, "subscribed_streams", () => []);
     page_params.is_spectator = true;
 
     const query = "";
@@ -375,10 +375,10 @@ test("group_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("empty_query_suggestions", ({override}) => {
+test("empty_query_suggestions", ({override_rewire}) => {
     const query = "";
 
-    override(stream_data, "subscribed_streams", () => ["devel", "office"]);
+    override_rewire(stream_data, "subscribed_streams", () => ["devel", "office"]);
 
     const suggestions = get_suggestions("", query);
 
@@ -416,12 +416,12 @@ test("empty_query_suggestions", ({override}) => {
     assert.equal(describe("has:attachment"), "Messages with one or more attachment");
 });
 
-test("has_suggestions", ({override}) => {
+test("has_suggestions", ({override_rewire}) => {
     // Checks that category wise suggestions are displayed instead of a single
     // default suggestion when suggesting `has` operator.
     let query = "h";
-    override(stream_data, "subscribed_streams", () => ["devel", "office"]);
-    override(narrow_state, "stream", () => {});
+    override_rewire(stream_data, "subscribed_streams", () => ["devel", "office"]);
+    override_rewire(narrow_state, "stream", () => {});
 
     let suggestions = get_suggestions("", query);
     let expected = ["h", "has:link", "has:image", "has:attachment"];
@@ -472,10 +472,10 @@ test("has_suggestions", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("check_is_suggestions", ({override}) => {
+test("check_is_suggestions", ({override_rewire}) => {
     let query = "i";
-    override(stream_data, "subscribed_streams", () => ["devel", "office"]);
-    override(narrow_state, "stream", () => {});
+    override_rewire(stream_data, "subscribed_streams", () => ["devel", "office"]);
+    override_rewire(narrow_state, "stream", () => {});
 
     let suggestions = get_suggestions("", query);
     let expected = [
@@ -596,10 +596,10 @@ test("check_is_suggestions", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("sent_by_me_suggestions", ({override}) => {
-    override(stream_data, "subscribed_streams", () => []);
+test("sent_by_me_suggestions", ({override_rewire}) => {
+    override_rewire(stream_data, "subscribed_streams", () => []);
 
-    override(narrow_state, "stream", () => {});
+    override_rewire(narrow_state, "stream", () => {});
 
     let query = "";
     let suggestions = get_suggestions("", query);
@@ -672,18 +672,18 @@ test("sent_by_me_suggestions", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("topic_suggestions", ({override}) => {
+test("topic_suggestions", ({override, override_rewire}) => {
     let suggestions;
     let expected;
 
     override(stream_topic_history_util, "get_server_history", () => {});
-    override(stream_data, "subscribed_streams", () => ["office"]);
-    override(narrow_state, "stream", () => "office");
+    override_rewire(stream_data, "subscribed_streams", () => ["office"]);
+    override_rewire(narrow_state, "stream", () => "office");
 
     const devel_id = 44;
     const office_id = 77;
 
-    override(stream_data, "get_stream_id", (stream_name) => {
+    override_rewire(stream_data, "get_stream_id", (stream_name) => {
         switch (stream_name) {
             case "office":
                 return office_id;
@@ -761,10 +761,10 @@ test("topic_suggestions", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("whitespace_glitch", ({override}) => {
+test("whitespace_glitch", ({override_rewire}) => {
     const query = "stream:office "; // note trailing space
 
-    override(stream_data, "subscribed_streams", () => ["office"]);
+    override_rewire(stream_data, "subscribed_streams", () => ["office"]);
 
     const suggestions = get_suggestions("", query);
 
@@ -773,10 +773,10 @@ test("whitespace_glitch", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("stream_completion", ({override}) => {
-    override(stream_data, "subscribed_streams", () => ["office", "dev help"]);
+test("stream_completion", ({override_rewire}) => {
+    override_rewire(stream_data, "subscribed_streams", () => ["office", "dev help"]);
 
-    override(narrow_state, "stream", () => {});
+    override_rewire(narrow_state, "stream", () => {});
 
     let query = "stream:of";
     let suggestions = get_suggestions("", query);
@@ -817,8 +817,8 @@ function people_suggestion_setup() {
     people.add_active_user(alice);
 }
 
-test("people_suggestions", ({override}) => {
-    override(narrow_state, "stream", noop);
+test("people_suggestions", ({override_rewire}) => {
+    override_rewire(narrow_state, "stream", noop);
     people_suggestion_setup();
 
     let query = "te";
@@ -881,10 +881,10 @@ test("people_suggestions", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("people_suggestion (Admin only email visibility)", ({override}) => {
+test("people_suggestion (Admin only email visibility)", ({override_rewire}) => {
     /* Suggestions when realm_email_address_visibility is set to admin
     only */
-    override(narrow_state, "stream", noop);
+    override_rewire(narrow_state, "stream", noop);
     people_suggestion_setup();
 
     const query = "te";
@@ -942,8 +942,8 @@ test("operator_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("queries_with_spaces", ({override}) => {
-    override(stream_data, "subscribed_streams", () => ["office", "dev help"]);
+test("queries_with_spaces", ({override_rewire}) => {
+    override_rewire(stream_data, "subscribed_streams", () => ["office", "dev help"]);
 
     // test allowing spaces with quotes surrounding operand
     let query = 'stream:"dev he"';

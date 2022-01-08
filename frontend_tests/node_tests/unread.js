@@ -55,10 +55,10 @@ function test_notifiable_count(home_unread_messages, expected_notifiable_count) 
 }
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, override_rewire}) => {
         unread.declare_bankruptcy();
         muted_topics.set_muted_topics([]);
-        f({override});
+        f({override, override_rewire});
     });
 }
 
@@ -244,12 +244,12 @@ test("muting", () => {
     assert.equal(unread.num_unread_for_stream(unknown_stream_id), 0);
 });
 
-test("num_unread_for_topic", ({override}) => {
+test("num_unread_for_topic", ({override_rewire}) => {
     // Test the num_unread_for_topic() function using many
     // messages.
     const stream_id = 301;
 
-    override(sub_store, "get", (arg) => {
+    override_rewire(sub_store, "get", (arg) => {
         if (arg === stream_id) {
             return {name: "Some stream"};
         }
@@ -317,13 +317,13 @@ test("num_unread_for_topic", ({override}) => {
     assert.deepEqual(msg_ids, []);
 });
 
-test("home_messages", ({override}) => {
-    override(stream_data, "is_subscribed", () => true);
-    override(stream_data, "is_muted", () => false);
+test("home_messages", ({override_rewire}) => {
+    override_rewire(stream_data, "is_subscribed", () => true);
+    override_rewire(stream_data, "is_muted", () => false);
 
     const stream_id = 401;
 
-    override(sub_store, "get", () => ({
+    override_rewire(sub_store, "get", () => ({
         name: "whatever",
     }));
 
@@ -356,7 +356,7 @@ test("home_messages", ({override}) => {
     test_notifiable_count(counts.home_unread_messages, 0);
 
     // Now unsubscribe all our streams.
-    override(stream_data, "is_subscribed", () => false);
+    override_rewire(stream_data, "is_subscribed", () => false);
     counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);
     test_notifiable_count(counts.home_unread_messages, 0);

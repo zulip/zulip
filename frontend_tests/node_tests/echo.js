@@ -192,7 +192,7 @@ run_test("update_message_lists", () => {
     assert.equal(view_args.new, 402);
 });
 
-run_test("insert_local_message streams", ({override}) => {
+run_test("insert_local_message streams", ({override, override_rewire}) => {
     const fake_now = 555;
     MockDate.set(new Date(fake_now * 1000));
 
@@ -210,7 +210,7 @@ run_test("insert_local_message streams", ({override}) => {
         add_topic_links_called = true;
     });
 
-    override(echo, "insert_message", (message) => {
+    override_rewire(echo, "insert_message", (message) => {
         assert.equal(message.display_recipient, "general");
         assert.equal(message.timestamp, fake_now);
         assert.equal(message.sender_email, "iago@zulip.com");
@@ -233,7 +233,7 @@ run_test("insert_local_message streams", ({override}) => {
     assert.ok(insert_message_called);
 });
 
-run_test("insert_local_message PM", ({override}) => {
+run_test("insert_local_message PM", ({override, override_rewire}) => {
     const local_id_float = 102.01;
 
     page_params.user_id = 123;
@@ -254,7 +254,7 @@ run_test("insert_local_message PM", ({override}) => {
     let apply_markdown_called = false;
     let insert_message_called = false;
 
-    override(echo, "insert_message", (message) => {
+    override_rewire(echo, "insert_message", (message) => {
         assert.equal(message.display_recipient.length, 3);
         insert_message_called = true;
     });
@@ -280,12 +280,12 @@ run_test("insert_local_message PM", ({override}) => {
     assert.ok(insert_message_called);
 });
 
-run_test("test reify_message_id", ({override}) => {
+run_test("test reify_message_id", ({override, override_rewire}) => {
     const local_id_float = 103.01;
 
     override(markdown, "apply_markdown", () => {});
     override(markdown, "add_topic_links", () => {});
-    override(echo, "insert_message", () => {});
+    override_rewire(echo, "insert_message", () => {});
 
     const message_request = {
         type: "stream",

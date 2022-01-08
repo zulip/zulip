@@ -40,7 +40,7 @@ run_test("is_my_user_id", () => {
     assert.equal(people.is_my_user_id(me.user_id.toString()), true);
 });
 
-run_test("blueslip", ({override}) => {
+run_test("blueslip", ({override_rewire}) => {
     const unknown_email = "alicebobfred@example.com";
 
     blueslip.expect("debug", "User email operand unknown: " + unknown_email);
@@ -104,8 +104,8 @@ run_test("blueslip", ({override}) => {
     const reply_to = people.pm_reply_to(message);
     assert.ok(reply_to.includes("?"));
 
-    override(people, "pm_with_user_ids", () => [42]);
-    override(people, "get_by_user_id", () => {});
+    override_rewire(people, "pm_with_user_ids", () => [42]);
+    override_rewire(people, "get_by_user_id", () => {});
     blueslip.expect("error", "Unknown people in message");
     const uri = people.pm_with_url({});
     assert.equal(uri.indexOf("unk"), uri.length - 3);

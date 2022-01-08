@@ -50,14 +50,14 @@ stream_data.add_sub(muted);
 muted_topics.add_muted_topic(general.stream_id, "muted topic");
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, override_rewire}) => {
         page_params.is_admin = false;
         page_params.realm_users = [];
         user_settings.enable_desktop_notifications = true;
         user_settings.enable_sounds = true;
         user_settings.wildcard_mentions_notify = true;
         user_settings.notification_sound = "ding";
-        f({override});
+        f({override, override_rewire});
     });
 }
 
@@ -280,8 +280,8 @@ test("message_is_notifiable", () => {
     assert.equal(notifications.message_is_notifiable(message), true);
 });
 
-test("basic_notifications", ({override}) => {
-    override(ui, "replace_emoji_with_text", () => {});
+test("basic_notifications", ({override_rewire}) => {
+    override_rewire(ui, "replace_emoji_with_text", () => {});
 
     let n; // Object for storing all notification data for assertions.
     let last_closed_message_id = null;
