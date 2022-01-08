@@ -1618,7 +1618,7 @@ div.focused_table {
     justify-content: center;
     width: 90px;
     height: 23px;
-    margin-top: 0;
+    margin-top: 4;
     margin-bottom: 8px;
     position: relative;
     left: 50%;
