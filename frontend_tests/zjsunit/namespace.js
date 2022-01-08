@@ -356,6 +356,25 @@ exports.with_field_rewire = function (obj, field, val, f) {
     }
 };
 
+exports.with_function_call_disallowed_rewire = function (obj, field, f) {
+    // This is deprecated because it relies on the slow
+    // babel-plugin-rewire-ts plugin.
+
+    if (typeof obj[field] !== "function") {
+        throw new TypeError(`Expected a function for ${field}`);
+    }
+
+    const old_val = field in obj ? obj[field] : obj.__GetDependency__(field);
+    try {
+        obj.__Rewire__(field, () => {
+            throw new Error(`unexpected call to ${field}`);
+        });
+        return f();
+    } finally {
+        obj.__Rewire__(field, old_val);
+    }
+};
+
 exports.with_overrides = function (test_function) {
     // This function calls test_function() and passes in
     // a way to override the namespace temporarily.

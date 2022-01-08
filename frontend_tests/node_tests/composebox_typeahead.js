@@ -2,7 +2,13 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, with_field_rewire, zrequire} = require("../zjsunit/namespace");
+const {
+    mock_esm,
+    set_global,
+    with_field_rewire,
+    with_function_call_disallowed_rewire,
+    zrequire,
+} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params, user_settings} = require("../zjsunit/zpage_params");
@@ -433,10 +439,9 @@ test("content_typeahead_selected", ({override_rewire}) => {
 
     fake_this.query = "@back";
     fake_this.token = "back";
-    with_field_rewire(
+    with_function_call_disallowed_rewire(
         compose_validate,
         "warn_if_mentioning_unsubscribed_user",
-        unexpected_warn,
         () => {
             actual_value = ct.content_typeahead_selected.call(fake_this, backend);
         },
@@ -452,16 +457,11 @@ test("content_typeahead_selected", ({override_rewire}) => {
 
     // silent mention
     fake_this.completing = "silent_mention";
-    function unexpected_warn() {
-        throw new Error("unexpected warning about unsubscribed user");
-    }
-
     fake_this.query = "@_kin";
     fake_this.token = "kin";
-    with_field_rewire(
+    with_function_call_disallowed_rewire(
         compose_validate,
         "warn_if_mentioning_unsubscribed_user",
-        unexpected_warn,
         () => {
             actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
         },
@@ -490,10 +490,9 @@ test("content_typeahead_selected", ({override_rewire}) => {
 
     fake_this.query = "@_back";
     fake_this.token = "back";
-    with_field_rewire(
+    with_function_call_disallowed_rewire(
         compose_validate,
         "warn_if_mentioning_unsubscribed_user",
-        unexpected_warn,
         () => {
             actual_value = ct.content_typeahead_selected.call(fake_this, backend);
         },
