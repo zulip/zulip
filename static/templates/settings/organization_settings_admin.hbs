@@ -134,12 +134,11 @@
                     </select>
                 </div>
 
-
+                <label class="dropdown-title">{{admin_settings_label.realm_default_code_block_language}}</label>
                 {{> dropdown_list_widget
                   widget_name="realm_default_code_block_language"
                   list_placeholder=(t 'Filter languages')
-                  reset_button_text=(t '[Unset]')
-                  label=admin_settings_label.realm_default_code_block_language }}
+                  reset_button_text=(t '[Unset]') }}
 
                 {{> settings_checkbox
                   setting_name="realm_message_content_allowed_in_email_notifications"
