@@ -121,7 +121,7 @@ emoji.initialize({
 });
 
 function stubbing(module, func_name_to_stub, test_function) {
-    with_overrides((override) => {
+    with_overrides(({override}) => {
         const stub = make_stub();
         override(module, func_name_to_stub, stub.f);
         test_function(stub);
@@ -331,13 +331,13 @@ run_test("misc", () => {
     const message_view_only_keys = "@+>RjJkKsSuvi:GM";
 
     // Check that they do nothing without a selected message
-    with_overrides((override) => {
+    with_overrides(({override}) => {
         override(message_lists.current, "empty", () => true);
         assert_unmapped(message_view_only_keys);
     });
 
     // Check that they do nothing while in the settings overlay
-    with_overrides((override) => {
+    with_overrides(({override}) => {
         override(overlays, "settings_open", () => true);
         assert_unmapped("@*+->rRjJkKsSuvi:GM");
     });

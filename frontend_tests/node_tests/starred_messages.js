@@ -96,7 +96,7 @@ run_test("rerender_ui", () => {
     }
 
     user_settings.starred_message_counts = true;
-    with_overrides((override) => {
+    with_overrides(({override}) => {
         const stub = make_stub();
         override(stream_popover, "hide_topic_popover", () => {});
         override(top_left_corner, "update_starred_count", stub.f);
@@ -107,7 +107,7 @@ run_test("rerender_ui", () => {
     });
 
     user_settings.starred_message_counts = false;
-    with_overrides((override) => {
+    with_overrides(({override}) => {
         const stub = make_stub();
         override(stream_popover, "hide_topic_popover", () => {});
         override(top_left_corner, "update_starred_count", stub.f);

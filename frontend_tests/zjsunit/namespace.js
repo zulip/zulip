@@ -410,7 +410,7 @@ exports.with_overrides = function (test_function) {
     };
 
     try {
-        test_function(override);
+        test_function({override});
     } finally {
         restore_callbacks.reverse();
         for (const restore_callback of restore_callbacks) {

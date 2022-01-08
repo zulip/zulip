@@ -139,7 +139,7 @@ test("draft_model edit", () => {
     const unread_count = $('<span class="unread_count"></span>');
     $(".top_left_drafts").set_find_results(".unread_count", unread_count);
 
-    with_overrides((override) => {
+    with_overrides(({override}) => {
         override(Date, "now", () => 1);
         const expected = {...draft_1};
         expected.updatedAt = 1;
@@ -147,7 +147,7 @@ test("draft_model edit", () => {
         assert.deepEqual(draft_model.getDraft(id), expected);
     });
 
-    with_overrides((override) => {
+    with_overrides(({override}) => {
         override(Date, "now", () => 2);
         const expected = {...draft_2};
         expected.updatedAt = 2;
