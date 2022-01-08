@@ -2,7 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, with_field_rewire, zrequire} = require("../zjsunit/namespace");
+const {
+    mock_esm,
+    set_global,
+    with_function_call_disallowed_rewire,
+    zrequire,
+} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -227,14 +232,9 @@ test("errors", () => {
     };
 
     // This should early return and not run pm_conversations.set_partner
-    with_field_rewire(
-        pm_conversations,
-        "set_partner",
-        () => assert.fail(),
-        () => {
-            pm_conversations.process_message(message);
-        },
-    );
+    with_function_call_disallowed_rewire(pm_conversations, "set_partner", () => {
+        pm_conversations.process_message(message);
+    });
 });
 
 test("reify_message_id", () => {
