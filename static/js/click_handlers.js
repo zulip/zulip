@@ -591,27 +591,62 @@ export function initialize() {
                 observer.disconnect();
             },
             onShow: (instance) => {
-                // For both buddy list and top left corner pm list, `target_node`
-                // is their parent `ul` element. We cannot use MutationObserver
-                // directly on the reference element because it will be removed
-                // and we need to attach it on an element which will remain in the
-                // DOM which is their parent `ul`.
-                const target_node = $(instance.reference).parents("ul").get(0);
-                // We only need to know if any of the `li` elements were removed.
+                // We only need to know if any of the `.presence_row` elements were removed.
                 const config = {attributes: false, childList: true, subtree: false};
-                const callback = function (mutationsList) {
-                    for (const mutation of mutationsList) {
-                        // Hide instance if reference is in the removed node list.
-                        if (
-                            Array.prototype.includes.call(
-                                mutation.removedNodes,
-                                instance.reference.parentElement,
-                            )
-                        ) {
-                            instance.hide();
+                let callback;
+
+                // For buddy list `target_node` is the parent `#user_presences` element,
+                // and for the top left corner pm list `target_node` is the parent `ul`.
+                //
+                // We cannot use MutationObserver directly on the reference element
+                // because it will be removed and we need to attach it on an element
+                // which will remain in the DOM, ie on the appropriate parent element.
+                let target_node = $(instance.reference).parents("#user_presences").get(0);
+                if (target_node) {
+                    callback = function (mutationsList) {
+                        for (const mutation of mutationsList) {
+                            // Hide instance if reference is in the removed node list.
+                            if (
+                                mutation.removedNodes.length > 3 &&
+                                (Array.prototype.includes.call(
+                                    // all users list
+                                    // #user_presences, users section div, then presence_row divs
+                                    mutation.removedNodes[0].childNodes,
+                                    instance.reference.parentElement,
+                                ) ||
+                                    Array.prototype.includes.call(
+                                        // users list
+                                        // #user_presences, then users section div, then collapse div, then presence_row divs
+                                        mutation.removedNodes[0].childNodes[3].childNodes,
+                                        instance.reference.parentElement,
+                                    ) ||
+                                    Array.prototype.includes.call(
+                                        // others list
+                                        //  #user_presences, then others section div, then collapse div, then presence_row divs
+                                        mutation.removedNodes[2].childNodes[3].childNodes,
+                                        instance.reference.parentElement,
+                                    ))
+                            ) {
+                                instance.hide();
+                            }
                         }
-                    }
-                };
+                    };
+                } else {
+                    target_node = $(instance.reference).parents("ul").get(0);
+                    callback = function (mutationsList) {
+                        for (const mutation of mutationsList) {
+                            // Hide instance if reference is in the removed node list.
+                            if (
+                                Array.prototype.includes.call(
+                                    mutation.removedNodes,
+                                    instance.reference.parentElement,
+                                )
+                            ) {
+                                instance.hide();
+                            }
+                        }
+                    };
+                }
                 observer = new MutationObserver(callback);
                 observer.observe(target_node, config);
             },
