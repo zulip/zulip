@@ -40,7 +40,7 @@ function contains_sub(subs, sub) {
 }
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, override_rewire}) => {
         page_params.is_admin = false;
         page_params.realm_users = [];
         page_params.is_guest = false;
@@ -48,7 +48,7 @@ function test(label, f) {
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
         stream_data.clear_subscriptions();
-        f({override});
+        f({override, override_rewire});
     });
 }
 
@@ -718,7 +718,7 @@ test("canonicalized_name", () => {
     assert.deepStrictEqual(stream_data.canonicalized_name("Stream_Bar"), "stream_bar");
 });
 
-test("create_sub", ({override}) => {
+test("create_sub", ({override_rewire}) => {
     const india = {
         stream_id: 102,
         name: "India",
@@ -737,7 +737,7 @@ test("create_sub", ({override}) => {
         color: "#76ce90",
     };
 
-    override(color_data, "pick_color", () => "#bd86e5");
+    override_rewire(color_data, "pick_color", () => "#bd86e5");
 
     const india_sub = stream_data.create_sub_from_server_data(india);
     assert.ok(india_sub);

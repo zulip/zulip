@@ -254,7 +254,7 @@ run_test("compute_placeholder_text", () => {
     );
 });
 
-run_test("quote_and_reply", ({override}) => {
+run_test("quote_and_reply", ({override, override_rewire}) => {
     const selected_message = {
         type: "stream",
         stream: "devel",
@@ -368,7 +368,7 @@ run_test("quote_and_reply", ({override}) => {
         "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n```quote\nTesting with caret initially positioned at 0.\n```\n%hello there",
     );
 
-    override(compose_actions, "respond_to_message", () => {
+    override_rewire(compose_actions, "respond_to_message", () => {
         // Reset compose state to replicate the re-opening of compose-box.
         textarea_val = "";
         textarea_caret_pos = 0;
@@ -437,14 +437,14 @@ run_test("set_compose_box_top", () => {
     assert.equal(compose_top, "");
 });
 
-run_test("test_compose_height_changes", ({override}) => {
+run_test("test_compose_height_changes", ({override, override_rewire}) => {
     let autosize_destroyed = false;
     override(autosize, "destroy", () => {
         autosize_destroyed = true;
     });
 
     let compose_box_top_set = false;
-    override(compose_ui, "set_compose_box_top", (set_top) => {
+    override_rewire(compose_ui, "set_compose_box_top", (set_top) => {
         compose_box_top_set = set_top;
     });
 
@@ -617,9 +617,9 @@ run_test("format_text", () => {
     assert.equal(wrap_selection_called, false);
 });
 
-run_test("markdown_shortcuts", ({override}) => {
+run_test("markdown_shortcuts", ({override_rewire}) => {
     let format_text_type;
-    override(compose_ui, "format_text", (textarea, type) => {
+    override_rewire(compose_ui, "format_text", (textarea, type) => {
         format_text_type = type;
     });
 

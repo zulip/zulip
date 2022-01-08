@@ -78,7 +78,7 @@ run_test("planchange", ({override}) => {
     });
 });
 
-run_test("licensechange", ({override}) => {
+run_test("licensechange", ({override, override_rewire}) => {
     override(helpers, "set_tab", () => {});
     let create_ajax_request_called = false;
     create_ajax_request_called = false;
@@ -99,7 +99,7 @@ run_test("licensechange", ({override}) => {
     });
 
     let create_update_license_request_called = false;
-    override(billing, "create_update_license_request", () => {
+    override_rewire(billing, "create_update_license_request", () => {
         create_update_license_request_called = true;
     });
 

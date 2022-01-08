@@ -62,9 +62,9 @@ function initialize() {
 }
 
 function test_people(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, override_rewire}) => {
         initialize();
-        f({override});
+        f({override, override_rewire});
     });
 }
 
@@ -889,7 +889,7 @@ test_people("message_methods", () => {
     assert.equal(people.sender_is_guest(message), false);
 });
 
-test_people("extract_people_from_message", ({override}) => {
+test_people("extract_people_from_message", ({override_rewire}) => {
     let message = {
         type: "stream",
         sender_full_name: maria.full_name,
@@ -899,7 +899,7 @@ test_people("extract_people_from_message", ({override}) => {
     assert.ok(!people.is_known_user_id(maria.user_id));
 
     let reported;
-    override(people, "report_late_add", (user_id, email) => {
+    override_rewire(people, "report_late_add", (user_id, email) => {
         assert.equal(user_id, maria.user_id);
         assert.equal(email, maria.email);
         reported = true;

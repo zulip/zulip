@@ -20,10 +20,10 @@ const frontend = {
 };
 stream_data.add_sub(frontend);
 
-run_test("settings", ({override}) => {
+run_test("settings", ({override_rewire}) => {
     muted_topics.add_muted_topic(frontend.stream_id, "js", 1577836800);
     let populate_list_called = false;
-    override(settings_muted_topics, "populate_list", () => {
+    override_rewire(settings_muted_topics, "populate_list", () => {
         const opts = muted_topics.get_muted_topics();
         assert.deepEqual(opts, [
             {

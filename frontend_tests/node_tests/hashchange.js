@@ -116,7 +116,7 @@ run_test("people_slugs", () => {
     assert.equal(hash, "#narrow/pm-with/42-alice");
 });
 
-function test_helper({override, change_tab}) {
+function test_helper({override, override_rewire, change_tab}) {
     let events = [];
     let narrow_terms;
 
@@ -141,7 +141,7 @@ function test_helper({override, change_tab}) {
             events.push("change_tab_to " + hash);
         });
 
-        override(narrow, "activate", (terms) => {
+        override_rewire(narrow, "activate", (terms) => {
             narrow_terms = terms;
             events.push("narrow.activate");
         });
@@ -162,15 +162,15 @@ function test_helper({override, change_tab}) {
     };
 }
 
-run_test("hash_interactions", ({override}) => {
+run_test("hash_interactions", ({override, override_rewire}) => {
     window_stub = $.create("window-stub");
     user_settings.default_view = "recent_topics";
 
-    override(recent_topics_util, "is_visible", () => false);
-    const helper = test_helper({override, change_tab: true});
+    override_rewire(recent_topics_util, "is_visible", () => false);
+    const helper = test_helper({override, override_rewire, change_tab: true});
 
     let recent_topics_ui_shown = false;
-    override(recent_topics_ui, "show", () => {
+    override_rewire(recent_topics_ui, "show", () => {
         recent_topics_ui_shown = true;
     });
     window.location.hash = "#unknown_hash";
@@ -303,10 +303,10 @@ run_test("hash_interactions", ({override}) => {
     helper.assert_events([[ui_util, "blur_active_element"]]);
 });
 
-run_test("save_narrow", ({override}) => {
-    override(recent_topics_util, "is_visible", () => false);
+run_test("save_narrow", ({override, override_rewire}) => {
+    override_rewire(recent_topics_util, "is_visible", () => false);
 
-    const helper = test_helper({override});
+    const helper = test_helper({override, override_rewire});
 
     let operators = [{operator: "is", operand: "private"}];
 

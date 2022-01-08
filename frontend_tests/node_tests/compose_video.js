@@ -53,13 +53,13 @@ const realm_available_video_chat_providers = {
 };
 
 function test(label, f) {
-    run_test(label, ({override, mock_template}) => {
+    run_test(label, ({override, override_rewire, mock_template}) => {
         page_params.realm_available_video_chat_providers = realm_available_video_chat_providers;
-        f({override, mock_template});
+        f({override, override_rewire, mock_template});
     });
 }
 
-test("videos", ({override, mock_template}) => {
+test("videos", ({override, override_rewire, mock_template}) => {
     page_params.realm_video_chat_provider = realm_available_video_chat_providers.disabled.id;
 
     override(upload, "setup_upload", () => {});
@@ -84,7 +84,7 @@ test("videos", ({override, mock_template}) => {
             },
         };
 
-        override(compose_ui, "insert_syntax_and_focus", () => {
+        override_rewire(compose_ui, "insert_syntax_and_focus", () => {
             called = true;
         });
 
@@ -110,7 +110,7 @@ test("videos", ({override, mock_template}) => {
             },
         };
 
-        override(compose_ui, "insert_syntax_and_focus", (syntax) => {
+        override_rewire(compose_ui, "insert_syntax_and_focus", (syntax) => {
             syntax_to_insert = syntax;
             called = true;
         });
@@ -148,7 +148,7 @@ test("videos", ({override, mock_template}) => {
             },
         };
 
-        override(compose_ui, "insert_syntax_and_focus", (syntax) => {
+        override_rewire(compose_ui, "insert_syntax_and_focus", (syntax) => {
             syntax_to_insert = syntax;
             called = true;
         });
@@ -194,7 +194,7 @@ test("videos", ({override, mock_template}) => {
             },
         };
 
-        override(compose_ui, "insert_syntax_and_focus", (syntax) => {
+        override_rewire(compose_ui, "insert_syntax_and_focus", (syntax) => {
             syntax_to_insert = syntax;
             called = true;
         });

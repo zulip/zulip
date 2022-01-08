@@ -13,10 +13,10 @@ const muted_users = zrequire("muted_users");
 
 const noop = () => {};
 
-run_test("settings", ({override}) => {
+run_test("settings", ({override_rewire}) => {
     muted_users.add_muted_user(5, 1577836800);
     let populate_list_called = false;
-    override(settings_muted_users, "populate_list", () => {
+    override_rewire(settings_muted_users, "populate_list", () => {
         const opts = muted_users.get_muted_users();
         assert.deepEqual(opts, [
             {

@@ -97,7 +97,7 @@ stream_data.create_streams([
 ]);
 
 function test(label, f) {
-    run_test(label, ({override, mock_template}) => {
+    run_test(label, ({override, override_rewire, mock_template}) => {
         pm_conversations.clear_for_testing();
         recent_senders.clear_for_testing();
         peer_data.clear_for_testing();
@@ -107,11 +107,11 @@ function test(label, f) {
         page_params.realm_email_address_visibility =
             settings_config.email_address_visibility_values.admins_only.code;
 
-        f({override, mock_template});
+        f({override, override_rewire, mock_template});
     });
 }
 
-test("sort_streams", ({override}) => {
+test("sort_streams", ({override_rewire}) => {
     let test_streams = [
         {
             stream_id: 101,
@@ -150,7 +150,7 @@ test("sort_streams", ({override}) => {
         },
     ];
 
-    override(stream_data, "is_active", (sub) => sub.name !== "dead");
+    override_rewire(stream_data, "is_active", (sub) => sub.name !== "dead");
 
     test_streams = th.sort_streams(test_streams, "d");
     assert.deepEqual(test_streams[0].name, "Denmark"); // Pinned streams first

@@ -61,9 +61,9 @@ function make_sub(name, stream_id) {
 }
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, override_rewire}) => {
         stream_data.clear_subscriptions();
-        f({override});
+        f({override, override_rewire});
     });
 }
 
@@ -1610,10 +1610,10 @@ test("navbar_helpers", () => {
     assert.equal(filter.generate_redirect_url(), default_redirect.redirect_url);
 });
 
-test("error_cases", ({override}) => {
+test("error_cases", ({override_rewire}) => {
     // This test just gives us 100% line coverage on defensive code that
     // should not be reached unless we break other code.
-    override(people, "pm_with_user_ids", () => {});
+    override_rewire(people, "pm_with_user_ids", () => {});
 
     const predicate = get_predicate([["pm-with", "Joe@example.com"]]);
     assert.ok(!predicate({type: "private"}));

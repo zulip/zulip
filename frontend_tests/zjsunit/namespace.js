@@ -358,6 +358,13 @@ exports.with_overrides = function (test_function) {
         // restores the original value of `obj[func_name]` as its last
         // step.  Generally our code calls `run_test`, which wraps
         // `with_overrides`.
+
+        if ("__esModule" in obj && "__Rewire__" in obj) {
+            throw new TypeError(
+                "Cannot mutate an ES module from outside. Consider exporting a test helper function from it instead.",
+            );
+        }
+
         if (typeof f !== "function") {
             throw new TypeError(
                 "You can only override with a function. Use with_field for non-functions.",
@@ -381,11 +388,7 @@ exports.with_overrides = function (test_function) {
 
         unused_funcs.get(obj).set(func_name, true);
 
-        const old_f =
-            "__esModule" in obj && "__Rewire__" in obj && !(func_name in obj)
-                ? obj.__GetDependency__(func_name)
-                : obj[func_name];
-
+        const old_f = obj[func_name];
         const new_f = function (...args) {
             unused_funcs.get(obj).delete(func_name);
             return f.apply(this, args);
@@ -396,21 +399,55 @@ exports.with_overrides = function (test_function) {
         // code can also use this, as needed.)
         new_f._patched_with_override = true;
 
-        if ("__esModule" in obj && "__Rewire__" in obj) {
-            obj.__Rewire__(func_name, new_f);
-            restore_callbacks.push(() => {
-                obj.__Rewire__(func_name, old_f);
-            });
-        } else {
-            obj[func_name] = new_f;
-            restore_callbacks.push(() => {
-                obj[func_name] = old_f;
-            });
+        obj[func_name] = new_f;
+        restore_callbacks.push(() => {
+            obj[func_name] = old_f;
+        });
+    };
+
+    const override_rewire = function (obj, func_name, f) {
+        // This is deprecated because it relies on the slow
+        // babel-plugin-rewire-ts plugin.  Consider alternatives such
+        // as exporting a helper function for tests from the module
+        // containing the function you need to mock.
+
+        if (typeof f !== "function") {
+            throw new TypeError(
+                "You can only override with a function. Use with_field for non-functions.",
+            );
         }
+
+        if (typeof obj !== "object" && typeof obj !== "function") {
+            throw new TypeError(`We cannot override a function for ${typeof obj} objects`);
+        }
+
+        if (obj[func_name] !== undefined && typeof obj[func_name] !== "function") {
+            throw new TypeError(`
+                You are overriding a non-function with a function.
+                This is almost certainly an error.
+            `);
+        }
+
+        if (!unused_funcs.has(obj)) {
+            unused_funcs.set(obj, new Map());
+        }
+
+        unused_funcs.get(obj).set(func_name, true);
+
+        const old_f = func_name in obj ? obj[func_name] : obj.__GetDependency__(func_name);
+        const new_f = function (...args) {
+            unused_funcs.get(obj).delete(func_name);
+            return f.apply(this, args);
+        };
+
+        obj.__Rewire__(func_name, new_f);
+        restore_callbacks.push(() => {
+            obj.__Rewire__(func_name, old_f);
+        });
     };
 
     try {
-        test_function({override});
+        test_function({override, override_rewire});
     } finally {
         restore_callbacks.reverse();
         for (const restore_callback of restore_callbacks) {
