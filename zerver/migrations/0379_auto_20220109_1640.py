@@ -6,18 +6,18 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0378_auto_20220109_0910'),
+        ("zerver", "0378_auto_20220109_0910"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='realmuserdefault',
-            old_name='send_invite_signup_private_message',
-            new_name='send_private_message_on_invitee_signup',
+            model_name="realmuserdefault",
+            old_name="send_invite_signup_private_message",
+            new_name="send_private_message_on_invitee_signup",
         ),
         migrations.RenameField(
-            model_name='userprofile',
-            old_name='send_invite_signup_private_message',
-            new_name='send_private_message_on_invitee_signup',
+            model_name="userprofile",
+            old_name="send_invite_signup_private_message",
+            new_name="send_private_message_on_invitee_signup",
         ),
     ]
