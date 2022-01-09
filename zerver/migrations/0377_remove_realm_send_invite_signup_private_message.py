@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0376_auto_20220108_1140'),
+        ("zerver", "0376_auto_20220108_1140"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='realm',
-            name='send_invite_signup_private_message',
+            model_name="realm",
+            name="send_invite_signup_private_message",
         ),
     ]

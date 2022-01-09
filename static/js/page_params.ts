@@ -31,7 +31,7 @@ export const page_params: {
     realm_user_group_edit_policy: number;
     realm_waiting_period_threshold: number;
     request_language: string;
-    send_invite_signup_private_message: boolean;
+    send_private_message_on_invitee_signup: boolean;
     server_avatar_changes_disabled: boolean;
     server_name_changes_disabled: boolean;
     server_web_public_streams_enabled: boolean;

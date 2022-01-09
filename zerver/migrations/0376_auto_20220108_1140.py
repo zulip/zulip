@@ -6,17 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0375_realm_allow_invite_signup_private_msg'),
+        ("zerver", "0375_realm_allow_invite_signup_private_msg"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='realm',
-            name='allow_invite_signup_private_msg',
+            model_name="realm",
+            name="allow_invite_signup_private_msg",
         ),
         migrations.AddField(
-            model_name='realm',
-            name='send_invite_signup_private_message',
+            model_name="realm",
+            name="send_invite_signup_private_message",
             field=models.BooleanField(default=True),
         ),
     ]

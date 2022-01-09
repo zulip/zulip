@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0377_remove_realm_send_invite_signup_private_message'),
+        ("zerver", "0377_remove_realm_send_invite_signup_private_message"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realmuserdefault',
-            name='send_invite_signup_private_message',
+            model_name="realmuserdefault",
+            name="send_invite_signup_private_message",
             field=models.BooleanField(default=True),
         ),
         migrations.AddField(
-            model_name='userprofile',
-            name='send_invite_signup_private_message',
+            model_name="userprofile",
+            name="send_invite_signup_private_message",
             field=models.BooleanField(default=True),
         ),
     ]

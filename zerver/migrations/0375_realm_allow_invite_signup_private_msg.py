@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0374_backfill_user_delete_realmauditlog'),
+        ("zerver", "0374_backfill_user_delete_realmauditlog"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realm',
-            name='allow_invite_signup_private_msg',
+            model_name="realm",
+            name="allow_invite_signup_private_msg",
             field=models.BooleanField(default=False),
         ),
     ]

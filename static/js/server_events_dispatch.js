@@ -601,7 +601,7 @@ export function dispatch_normal_event(event) {
                 "twenty_four_hour_time",
                 "translate_emoticons",
                 "starred_message_counts",
-                "send_invite_signup_private_message",
+                "send_private_message_on_invitee_signup",
                 "send_stream_typing_notifications",
                 "send_private_typing_notifications",
                 "send_read_receipts",
@@ -696,8 +696,8 @@ export function dispatch_normal_event(event) {
                 activity.redraw_user(page_params.user_id);
                 break;
             }
-            if (event.property === "send_invite_signup_private_message") {
-                user_settings.send_invite_signup_private_message = event.value;
+            if (event.property === "send_private_message_on_invitee_signup") {
+                user_settings.send_private_message_on_invitee_signup = event.value;
             }
             settings_display.update_page(event.property);
             break;

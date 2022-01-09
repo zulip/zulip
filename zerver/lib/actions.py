@@ -509,7 +509,7 @@ def process_new_human_user(
         and prereg_user is not None
         and prereg_user.referred_by is not None
         and prereg_user.referred_by.is_active
-        and prereg_user.referred_by.send_invite_signup_private_message
+        and prereg_user.referred_by.send_private_message_on_invitee_signup
     ):
         # This is a cross-realm private message.
         with override_language(prereg_user.referred_by.default_language):
