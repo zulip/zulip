@@ -1,6 +1,20 @@
 {% extends "zerver/base.html" %}
 {% set entrypoint = "stats" %}
 
+{% block customhead %}
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<link href="/static/images/logo/apple-touch-icon-precomposed.png" rel="apple-touch-icon-precomposed" />
+<style>
+    body.color-scheme-automatic{
+    color: hsl(0, 0%, 20%);
+    }
+    body.dark-theme{
+    background-color: hsl(212, 28%, 18%);
+    color: hsl(236, 33%, 90%);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="app portico-page stats-page">
 
@@ -129,6 +143,6 @@
             <span class="docs_link"><a href="/help/analytics">{{ _("Analytics documentation") }}</a></span>
         </div>
     </div>
-
+    <script src="../../static/js/stats/stats-theme.js"></script>
 </div>
 {% endblock %}
