@@ -52,6 +52,7 @@ from zerver.lib.upload import (
     ZulipUploadBackend,
     delete_export_tarball,
     delete_message_image,
+    read_s3_file,
     resize_avatar,
     resize_emoji,
     sanitize_name,
@@ -1858,6 +1859,21 @@ class S3Test(ZulipTestCase):
         self.subscribe(self.example_user("hamlet"), "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
         self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
+
+    @use_s3_backend
+    def test_read_s3_file(self) -> None:
+        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
+
+        user_profile = self.example_user("hamlet")
+        uri = upload_message_file(
+            "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
+        )
+
+        base = "/user_uploads/"
+        self.assertEqual(base, uri[: len(base)])
+        path_id = re.sub("/user_uploads/", "", uri)
+
+        self.assertEqual(b"zulip!", read_s3_file(bucket.name, path_id))
 
     @use_s3_backend
     def test_file_upload_s3_with_undefined_content_type(self) -> None:

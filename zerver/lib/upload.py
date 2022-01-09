@@ -385,6 +385,20 @@ def get_signed_upload_url(path: str) -> str:
     )
 
 
+def read_s3_file(bucket_name: str, path: str) -> bytes:
+    """
+    A shortcut function for getting file data given a bucket
+    and path. Returns bytes
+    """
+    session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+    bucket = get_bucket(bucket_name, session)
+    s3_obj = bucket.Object(path)
+    mem_obj = io.BytesIO()
+    s3_obj.download_fileobj(mem_obj)
+    mem_obj.seek(0)
+    return mem_obj.read()
+
+
 class S3UploadBackend(ZulipUploadBackend):
     def __init__(self) -> None:
         self.session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
@@ -675,12 +689,11 @@ class S3UploadBackend(ZulipUploadBackend):
     def upload_emoji_image(
         self, emoji_file: IO[bytes], emoji_file_name: str, user_profile: UserProfile
     ) -> bool:
-        content_type = guess_type(emoji_file.name)[0]
+        content_type = guess_type(emoji_file_name)[0]
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=user_profile.realm_id,
             emoji_file_name=emoji_file_name,
         )
-
         image_data = emoji_file.read()
         resized_image_data, is_animated, still_image_data = resize_emoji(image_data)
         upload_image_to_s3(
