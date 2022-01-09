@@ -49,13 +49,15 @@ export class LazySet {
 
     _make_set() {
         if (this.data.set !== undefined) {
-            return;
+            return this.data.set;
         }
 
         this.data = {
             arr: undefined,
             set: new Set(this.data.arr),
         };
+
+        return this.data.set;
     }
 
     map(f) {
@@ -69,15 +71,15 @@ export class LazySet {
     }
 
     add(v) {
-        this._make_set();
+        const set = this._make_set();
         const val = this._clean(v);
-        this.data.set.add(val);
+        set.add(val);
     }
 
     delete(v) {
-        this._make_set();
+        const set = this._make_set();
         const val = this._clean(v);
-        return this.data.set.delete(val);
+        return set.delete(val);
     }
 
     _clean(v) {
