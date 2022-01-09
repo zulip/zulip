@@ -487,7 +487,9 @@ export const display_settings_labels = {
         defaultMessage: "Show user list on left sidebar in narrow windows",
     }),
     starred_message_counts: $t({defaultMessage: "Show counts for starred messages"}),
-    send_private_message_on_invitee_signup: $t({defaultMessage: "Send private message when an invitee join's"}),
+    send_private_message_on_invitee_signup: $t({
+        defaultMessage: "Send private message when an invitee join's",
+    }),
     twenty_four_hour_time: $t({defaultMessage: "Time format"}),
     translate_emoticons: new Handlebars.SafeString(
         $t_html({
