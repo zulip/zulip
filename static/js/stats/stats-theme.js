@@ -1,6 +1,8 @@
 //  function to set theme for stats page
 function setTheme(theme){
+    
     'use strict';
+
     if(theme === "dark-theme"){        
         document.querySelector('body').classList.remove('color-scheme-automatic');
         document.querySelector('body').classList.add('dark-theme');
