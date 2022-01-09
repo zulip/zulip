@@ -1,0 +1,15 @@
+[
+    {
+        "user": "U6006P1CN",
+        "text": "<@U6006P1CN> has joined the channel",
+        "type": "message",
+        "subtype": "channel_join",
+        "ts": "1498401043.277604"
+    },
+    {
+        "type": "message",
+        "user": "U6006P1CN",
+        "text": "edfadfa",
+        "ts": "1498401071.279035"
+    }
+]

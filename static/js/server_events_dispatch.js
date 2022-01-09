@@ -601,6 +601,7 @@ export function dispatch_normal_event(event) {
                 "twenty_four_hour_time",
                 "translate_emoticons",
                 "starred_message_counts",
+                "send_invite_signup_private_message",
                 "send_stream_typing_notifications",
                 "send_private_typing_notifications",
                 "send_read_receipts",
@@ -694,6 +695,9 @@ export function dispatch_normal_event(event) {
                 $("#user_presence_enabled").prop("checked", user_settings.presence_enabled);
                 activity.redraw_user(page_params.user_id);
                 break;
+            }
+            if (event.property === "send_invite_signup_private_message") {
+                user_settings.send_invite_signup_private_message = event.value;
             }
             settings_display.update_page(event.property);
             break;

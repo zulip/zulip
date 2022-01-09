@@ -1,0 +1,118 @@
+[
+    {
+        "user": "U8VAHEVUY",
+        "text": "<@U8VAHEVUY> has joined the channel",
+        "type": "message",
+        "subtype": "channel_join",
+        "ts": "1516454398.000069"
+    },
+    {
+        "type": "message",
+        "user": "U8VAHEVUY",
+        "text": "This is Steve typing random stuff.",
+        "ts": "1516454537.000093"
+    },
+    {
+        "user": "U8W3QFGQ5",
+        "text": "<@U8W3QFGQ5> has joined the channel",
+        "type": "message",
+        "subtype": "channel_join",
+        "ts": "1516454650.000039"
+    },
+    {
+        "type": "message",
+        "subtype": "file_share",
+        "text": "<@U6006P1CN> uploaded a file: <https:\/\/plan8team.slack.com\/files\/U6006P1CN\/F8VSW87RR\/dirac72.md|dirac72.md> and commented: test upload attachment",
+        "file": {
+            "id": "F8VSW87RR",
+            "created": 1516457078,
+            "timestamp": 1516457078,
+            "name": "dirac72.md",
+            "title": "dirac72.md",
+            "mimetype": "text\/plain",
+            "filetype": "markdown",
+            "pretty_type": "Markdown (raw)",
+            "user": "U6006P1CN",
+            "editable": true,
+            "size": 5755,
+            "mode": "snippet",
+            "is_external": false,
+            "external_type": "",
+            "is_public": true,
+            "public_url_shared": false,
+            "display_as_bot": false,
+            "username": "",
+            "url_private": "https:\/\/files.slack.com\/files-pri\/T5YFFM2QY-F8VSW87RR\/dirac72.md?t=xoxe-202525716848-307302644288-309011455943-473e6f6e9f9c51261dcf5996ec6d5759",
+            "url_private_download": "https:\/\/files.slack.com\/files-pri\/T5YFFM2QY-F8VSW87RR\/download\/dirac72.md?t=xoxe-202525716848-307302644288-309011455943-473e6f6e9f9c51261dcf5996ec6d5759",
+            "permalink": "https:\/\/plan8team.slack.com\/files\/U6006P1CN\/F8VSW87RR\/dirac72.md",
+            "permalink_public": "https:\/\/slack-files.com\/T5YFFM2QY-F8VSW87RR-c7d3bae349",
+            "edit_link": "https:\/\/plan8team.slack.com\/files\/U6006P1CN\/F8VSW87RR\/dirac72.md\/edit",
+            "preview": "#72. The fine-structure of the energy-levels of hydrogen\n\nWe shall now takethe case ofthe hydrogen atom, for which A, = e\/o\",\nand work out its energy-levels, given by the eigenvalues H’ of H.\nThe equation (H '——H )1) = O which deﬁnes these eigenvalues, when",
+            "preview_highlight": "<div class=\"CodeMirror cm-s-default CodeMirrorServer\" oncopy=\"if(event.clipboardData){event.clipboardData.setData('text\/plain',window.getSelection().toString().replace(\/\\u200b\/g,''));event.preventDefault();event.stopPropagation();}\">\n<div class=\"CodeMirror-code\">\n<div><pre>#72. The fine-structure of the energy-levels of hydrogen<\/pre><\/div>\n<div><pre><\/pre><\/div>\n<div><pre>We shall now takethe case ofthe hydrogen atom, for which A, = e\/o&quot;,<\/pre><\/div>\n<div><pre>and work out its energy-levels, given by the eigenvalues H’ of H.<\/pre><\/div>\n<div><pre>The equation (H '——H )1) = O which deﬁnes these eigenvalues, when<\/pre><\/div>\n<\/div>\n<\/div>\n",
+            "lines": 194,
+            "lines_more": 189,
+            "preview_is_truncated": true,
+            "channels": [],
+            "groups": [],
+            "ims": [],
+            "comments_count": 1,
+            "initial_comment": {
+                "id": "Fc8VDP95A5",
+                "created": 1516457078,
+                "timestamp": 1516457078,
+                "user": "U6006P1CN",
+                "is_intro": true,
+                "comment": "test upload attachment"
+            }
+        },
+        "user": "U6006P1CN",
+        "upload": true,
+        "display_as_bot": false,
+        "username": "k._",
+        "bot_id": null,
+        "ts": "1516457078.000065"
+    },
+    {
+        "type": "message",
+        "user": "U6006P1CN",
+        "text": "Huh this is very useful being able to see the snippet of text files",
+        "ts": "1516457212.000035"
+    },
+    {
+        "user": "U8X25EBAB",
+        "text": "<@U8X25EBAB> has joined the channel",
+        "type": "message",
+        "subtype": "channel_join",
+        "ts": "1516457416.000062"
+    },
+    {
+        "type": "message",
+        "user": "U8W3QFGQ5",
+        "text": "The markdown mapping is also lossy, as Zulip doesn't support two types of formatting together like bold and italic ~*_random_*~ while slack does",
+        "ts": "1516468219.000018"
+    },
+    {
+        "type": "message",
+        "user": "U8W3QFGQ5",
+        "text": "@everyone",
+        "ts": "1516468505.000010"
+    },
+    {
+        "type": "message",
+        "user": "U8W3QFGQ5",
+        "text": "@everyone",
+        "ts": "1516468518.000115"
+    },
+    {
+        "type": "message",
+        "user": "U8W3QFGQ5",
+        "text": "<!channel>",
+        "ts": "1516468529.000046"
+    },
+    {
+        "type": "message",
+        "user": "U8W3QFGQ5",
+        "text": "<!channel>",
+        "ts": "1516468530.000036"
+    }
+]

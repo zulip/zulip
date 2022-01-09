@@ -89,6 +89,7 @@ export const get_all_display_settings = (): DisplaySettings => ({
             "left_side_userlist",
             "fluid_layout_width",
             "starred_message_counts",
+            "send_invite_signup_private_message",
         ],
     },
     render_only: {
@@ -486,6 +487,7 @@ export const display_settings_labels = {
         defaultMessage: "Show user list on left sidebar in narrow windows",
     }),
     starred_message_counts: $t({defaultMessage: "Show counts for starred messages"}),
+    send_invite_signup_private_message: $t({defaultMessage: "Send private message when a new user join's"}),
     twenty_four_hour_time: $t({defaultMessage: "Time format"}),
     translate_emoticons: new Handlebars.SafeString(
         $t_html({

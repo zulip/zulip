@@ -140,6 +140,9 @@ def json_change_settings(
     twenty_four_hour_time: Optional[bool] = REQ(json_validator=check_bool, default=None),
     dense_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
     starred_message_counts: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    send_invite_signup_private_message: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
     fluid_layout_width: Optional[bool] = REQ(json_validator=check_bool, default=None),
     high_contrast_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
     color_scheme: Optional[int] = REQ(

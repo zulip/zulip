@@ -1414,6 +1414,7 @@ class UserBaseSettings(models.Model):
     dense_mode: bool = models.BooleanField(default=True)
     fluid_layout_width: bool = models.BooleanField(default=False)
     high_contrast_mode: bool = models.BooleanField(default=False)
+    send_invite_signup_private_message: bool = models.BooleanField(default=True)
     translate_emoticons: bool = models.BooleanField(default=False)
     twenty_four_hour_time: bool = models.BooleanField(default=False)
     starred_message_counts: bool = models.BooleanField(default=True)
@@ -1513,6 +1514,7 @@ class UserBaseSettings(models.Model):
         fluid_layout_width=bool,
         high_contrast_mode=bool,
         left_side_userlist=bool,
+        send_invite_signup_private_message=bool,
         starred_message_counts=bool,
         translate_emoticons=bool,
         twenty_four_hour_time=bool,

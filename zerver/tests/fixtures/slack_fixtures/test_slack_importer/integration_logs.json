@@ -1,0 +1,56 @@
+[
+    {
+        "user_id": "U8W3QFGQ5",
+        "user_name": "rheaparekh12",
+        "date": "1517041753",
+        "change_type": "expanded",
+        "app_type": "Slack API Tester",
+        "app_id": "A02",
+        "scope": "read,client,admin,identify,post,apps"
+    },
+    {
+        "user_id": "U8W3QFGQ5",
+        "user_name": "rheaparekh12",
+        "date": "1517041751",
+        "change_type": "expanded",
+        "app_type": "Slack API Tester",
+        "app_id": "A02",
+        "scope": "read,client,admin,identify,post,apps"
+    },
+    {
+        "user_id": "U8W3QFGQ5",
+        "user_name": "rheaparekh12",
+        "date": "1517041734",
+        "change_type": "added",
+        "app_type": "Slack API Tester",
+        "app_id": "A02",
+        "scope": "read,client,admin,identify,post,apps"
+    },
+    {
+        "user_id": "U8X25EBAB",
+        "user_name": "rishiweb_0",
+        "date": "1516457507",
+        "change_type": "updated",
+        "service_id": "301365159168",
+        "service_type": "Giphy",
+        "scope": "commands"
+    },
+    {
+        "user_id": "U8X25EBAB",
+        "user_name": "rishiweb_0",
+        "date": "1516457503",
+        "change_type": "added",
+        "service_id": "301365159168",
+        "service_type": "Giphy",
+        "scope": "commands"
+    },
+    {
+        "user_id": 0,
+        "user_name": "slack",
+        "date": "1498401043",
+        "change_type": "added",
+        "service_id": "202634974129",
+        "service_type": "Google Drive",
+        "scope": "files:write:user"
+    }
+]
