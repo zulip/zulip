@@ -181,7 +181,7 @@ class RateLimited(JsonableError):
 
     @staticmethod
     def msg_format() -> str:
-        return _("API usage exceeded rate limit")
+        return _("Too many attempts to change email. Please try again later")
 
     @property
     def extra_headers(self) -> Dict[str, Any]:
