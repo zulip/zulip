@@ -14,6 +14,7 @@ import * as compose_pm_pill from "./compose_pm_pill";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as dark_theme from "./dark_theme";
 import * as emoji from "./emoji";
+import * as drafts from "./drafts";
 import * as emoji_picker from "./emoji_picker";
 import * as giphy from "./giphy";
 import * as hotspots from "./hotspots";
@@ -117,6 +118,28 @@ export function dispatch_normal_event(event) {
 
             break;
         }
+
+        case "drafts":
+            switch (event.op) {
+                case "add":
+                    for (const draft of event.drafts) {
+                        drafts.compare_drafts(draft);
+                    }
+                    // TODO: live update of drafts overlay if open
+                    break;
+                case "update":
+                    drafts.compare_drafts(event.draft);
+                    // TODO: live update of drafts overlay if open
+                    break;
+                case "remove":
+                    drafts.remove_draft(event.draft_id);
+                    // TODO: live update of drafts overlay if open
+                    break;
+                default:
+                    blueslip.error("Unexpected event type drafts/" + event.op);
+                    break;
+            }
+            break;
 
         case "has_zoom_token":
             page_params.has_zoom_token = event.value;

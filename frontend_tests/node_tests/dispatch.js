@@ -31,6 +31,7 @@ const bot_data = mock_esm("../../static/js/bot_data");
 const compose_pm_pill = mock_esm("../../static/js/compose_pm_pill");
 const composebox_typeahead = mock_esm("../../static/js/composebox_typeahead");
 const dark_theme = mock_esm("../../static/js/dark_theme");
+const drafts = mock_esm("../../static/js/drafts");
 const emoji_picker = mock_esm("../../static/js/emoji_picker");
 const hotspots = mock_esm("../../static/js/hotspots");
 const linkifiers = mock_esm("../../static/js/linkifiers");
@@ -254,6 +255,38 @@ run_test("default_streams", ({override}) => {
     assert.equal(stub.num_calls, 1);
     const args = stub.get_args("realm_default_streams");
     assert_same(args.realm_default_streams, event.default_streams);
+});
+
+run_test("drafts", ({override}) => {
+    let event = event_fixtures.drafts__add;
+    {
+        const stub = make_stub();
+        override(drafts, "compare_drafts", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("draft");
+        assert_same(args.draft, event.drafts[0]);
+    }
+
+    event = event_fixtures.drafts__update;
+    {
+        const stub = make_stub();
+        override(drafts, "compare_drafts", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("draft");
+        assert_same(args.draft, event.draft);
+    }
+
+    event = event_fixtures.drafts__remove;
+    {
+        const stub = make_stub();
+        override(drafts, "remove_draft", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("draft_id");
+        assert_same(args.draft_id, event.draft_id);
+    }
 });
 
 run_test("hotspots", ({override}) => {
@@ -1087,6 +1120,8 @@ run_test("server_event_dispatch_op_errors", ({override}) => {
     override(settings_user_groups_legacy, "reload", noop);
     blueslip.expect("error", "Unexpected event type user_group/other");
     server_events_dispatch.dispatch_normal_event({type: "user_group", op: "other"});
+    blueslip.expect("error", "Unexpected event type drafts/other");
+    server_events_dispatch.dispatch_normal_event({type: "drafts", op: "other"});
 });
 
 run_test("realm_user_settings_defaults", ({override}) => {

@@ -167,6 +167,86 @@ export const draft_sync = (function () {
         return draft_data;
     }
 
+    function build_local_draft_from_server_data(server_draft) {
+        const local_draft = {
+            type: server_draft.type,
+            content: server_draft.content,
+            updatedAt: server_draft.timestamp * 1000,
+            server_id: server_draft.id,
+        };
+
+        if (server_draft.type === "stream") {
+            const stream_id = server_draft.to[0];
+            local_draft.stream_id = stream_id;
+            local_draft.stream = stream_data.maybe_get_stream_name(stream_id);
+            local_draft.topic = server_draft.topic;
+        } else {
+            const pm_ids = server_draft.to;
+            local_draft.pm_recipient_ids = pm_ids;
+            local_draft.private_message_recipient = pm_ids
+                .map((id) => people.get_by_user_id(id).email)
+                .join(",");
+        }
+
+        return local_draft;
+    }
+
+    function get_local_id_if_server_id_match(server_id) {
+        const drafts = draft_model.get();
+        for (const [id] of Object.entries(drafts)) {
+            if (drafts[id].server_id === server_id) {
+                return id;
+            }
+        }
+        return undefined;
+    }
+
+    function compare_local_and_server_drafts(server_draft) {
+        const local_draft_id = get_local_id_if_server_id_match(server_draft.id);
+        if (!local_draft_id) {
+            const new_draft = build_local_draft_from_server_data(server_draft);
+            draft_model.addDraft(new_draft);
+        } else {
+            const local_draft = draft_model.getDraft(local_draft_id);
+            const local_timestamp = local_draft.updatedAt;
+            const server_timestamp = server_draft.timestamp * 1000;
+            if (server_timestamp > local_timestamp) {
+                const updated_draft = build_local_draft_from_server_data(server_draft);
+                draft_model.editDraft(local_draft_id, updated_draft);
+            }
+        }
+    }
+
+    function delete_local_draft_if_no_server_id_match(server_drafts) {
+        const local_drafts = draft_model.get();
+
+        for (const [id] of Object.entries(local_drafts)) {
+            if (local_drafts[id].server_id) {
+                let match = false;
+                for (const server_draft of server_drafts) {
+                    if (local_drafts[id].server_id === server_draft.id) {
+                        match = true;
+                        break;
+                    }
+                }
+                if (!match) {
+                    draft_model.deleteDraft(id);
+                }
+            }
+        }
+    }
+
+    exports.compare_local_to_server_draft = function (server_draft) {
+        compare_local_and_server_drafts(server_draft);
+    };
+
+    exports.maybe_remove_draft = function (server_id) {
+        const local_id = get_local_id_if_server_id_match(server_id);
+        if (local_id) {
+            draft_model.deleteDraft(local_id);
+        }
+    };
+
     exports.add_local_drafts_to_server = function (local_ids) {
         const drafts = [];
 
@@ -209,14 +289,28 @@ export const draft_sync = (function () {
             url: "/json/drafts",
             idempotent: true,
             success(data) {
-                console.log(`There are ${data.drafts.length} drafts on the server.`);
-                console.log(data.drafts);
+                for (const server_draft of data.drafts) {
+                    compare_local_and_server_drafts(server_draft);
+                }
+                delete_local_draft_if_no_server_id_match(data.drafts);
             },
         });
     };
 
     return exports;
 })();
+
+export function compare_drafts(server_draft) {
+    if (user_settings.enable_drafts_synchronization) {
+        draft_sync.compare_local_to_server_draft(server_draft);
+    }
+}
+
+export function remove_draft(server_id) {
+    if (user_settings.enable_drafts_synchronization) {
+        draft_sync.maybe_remove_draft(server_id);
+    }
+}
 
 export function delete_draft(local_id) {
     if (user_settings.enable_drafts_synchronization) {
@@ -529,7 +623,7 @@ function row_after_focus() {
     return $next_row;
 }
 
-function remove_draft($draft_row) {
+function remove_draft_from_list($draft_row) {
     // Deletes the draft and removes it from the list
     const draft_id = $draft_row.data("draft-id");
 
@@ -635,7 +729,7 @@ export function launch() {
         $(".draft_controls .delete-draft").on("click", function () {
             const $draft_row = $(this).closest(".draft-row");
 
-            remove_draft($draft_row);
+            remove_draft_from_list($draft_row);
         });
     }
 
@@ -848,7 +942,7 @@ export function drafts_handle_events(e, event_key) {
             activate_element(new_focus_element[0].children[0]);
         }
 
-        remove_draft($draft_row);
+        remove_draft_from_list($draft_row);
     }
 
     // This handles when pressing Enter while looking at drafts.
@@ -892,7 +986,6 @@ export function initialize() {
         user_settings.enable_drafts_synchronization = true;
     }
 
-    // TEMP: page load triggers console.log of drafts on server
     if (user_settings.enable_drafts_synchronization) {
         draft_sync.get_drafts_from_server();
     }

@@ -162,6 +162,40 @@ exports.fixtures = {
         topic: "topic1",
     },
 
+    drafts__add: {
+        type: "drafts",
+        op: "add",
+        drafts: [
+            {
+                id: 12,
+                type: "stream",
+                to: [streams.devel.stream_id],
+                topic: "draft sync",
+                content: "new draft text",
+                timestamp: fake_then,
+            },
+        ],
+    },
+
+    drafts__remove: {
+        type: "drafts",
+        op: "remove",
+        draft_id: 12,
+    },
+
+    drafts__update: {
+        type: "drafts",
+        op: "update",
+        draft: {
+            id: 12,
+            type: "stream",
+            to: [streams.devel.stream_id],
+            topic: "draft sync",
+            content: "edited draft text",
+            timestamp: fake_now,
+        },
+    },
+
     has_zoom_token: {
         type: "has_zoom_token",
         value: true,
