@@ -22,14 +22,14 @@
     /* For the box-shadow to be visible on the left */
     .add-task,
     .add-desc {
-        font-size: 12pt;
+        font-size: 10pt;
         font-weight: 400;
         margin-right: 4px;
     }
 
     .add-task-button {
         font-weight: 400;
-        font-size: 12pt;
+        font-size: 10pt;
         color: hsl(156, 41%, 40%);
         border-color: hsl(156, 28%, 70%);
         border-style: solid;
@@ -39,9 +39,16 @@
         padding: 3pt;
         padding-left: 10pt;
         padding-right: 10pt;
+        transition: all 0.2s ease;
 
         &:hover {
-            border-color: hsl(156, 41%, 40%);
+            border-color: hsl(156, 30%, 50%);
+        }
+
+        &:active {
+            border-color: hsl(156, 30%, 40%);
+            color: hsl(156, 44%, 43%);
+            background-color: hsl(154, 33%, 96%);
         }
     }
 }
@@ -72,7 +79,7 @@
 
     .poll-option {
         font-weight: 400;
-        font-size: 12pt;
+        font-size: 10pt;
     }
 
     .poll-choice {
@@ -83,7 +90,7 @@
 
     .poll-button {
         font-weight: 400;
-        font-size: 12pt;
+        font-size: 10pt;
         color: hsl(156, 41%, 40%);
         border-color: hsl(156, 28%, 70%);
         border-style: solid;
@@ -95,7 +102,13 @@
         padding-right: 10pt;
 
         &:hover {
-            border-color: hsl(156, 41%, 40%);
+            border-color: hsl(156, 30%, 50%);
+        }
+
+        &:active {
+            border-color: hsl(156, 30%, 40%);
+            color: hsl(156, 44%, 43%);
+            background-color: hsl(154, 33%, 96%);
         }
     }
 
