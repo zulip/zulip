@@ -63,6 +63,8 @@ function get_display_name(contributor) {
 //   - Display full name instead of GitHub username.
 export default function render_tabs() {
     const template = _.template($("#contributors-template").html());
+    const count_template = _.template($("#count-template").html());
+    const total_count_template = _.template($("#total-count-template").html());
     const total_tab_html = contributors_list
         .map((c) => ({
             name: get_display_name(c),
@@ -75,7 +77,10 @@ export default function render_tabs() {
         .map((c) => template(c))
         .join("");
 
-    $("#tab-total").html(total_tab_html);
+    $("#tab-total .contributors-grid").html(total_tab_html);
+    $("#tab-total").prepend(
+        total_count_template({contributor_count: contributors_list.length, tab_name: "total"}),
+    );
 
     for (const repo_name of Object.keys(repo_name_to_tab_name)) {
         const tab_name = repo_name_to_tab_name[repo_name];
@@ -83,12 +88,12 @@ export default function render_tabs() {
             continue;
         }
         // Set as the loading template for now, and load when clicked.
-        $(`#tab-${CSS.escape(tab_name)}`).html($("#loading-template").html());
+        $(`#tab-${CSS.escape(tab_name)} .contributors-grid`).html($("#loading-template").html());
 
         $(`#${CSS.escape(tab_name)}`).on("click", () => {
             if (!loaded_repos.includes(repo_name)) {
-                const html = contributors_list
-                    .filter((c) => c[repo_name])
+                const filtered_by_repo = contributors_list.filter((c) => c[repo_name]);
+                const html = filtered_by_repo
                     .sort((a, b) =>
                         a[repo_name] < b[repo_name] ? 1 : a[repo_name] > b[repo_name] ? -1 : 0,
                     )
@@ -103,7 +108,12 @@ export default function render_tabs() {
                     )
                     .join("");
 
-                $(`#tab-${CSS.escape(tab_name)}`).html(html);
+                $(`#tab-${CSS.escape(tab_name)} .contributors-grid`).html(html);
+                const contributor_count = filtered_by_repo.length;
+                const repo_url = `https://github.com/zulip/${repo_name}`;
+                $(`#tab-${CSS.escape(tab_name)}`).prepend(
+                    count_template({contributor_count, repo_name, repo_url}),
+                );
 
                 loaded_repos.push(repo_name);
             }
