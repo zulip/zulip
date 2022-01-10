@@ -884,11 +884,14 @@ input#python-zulip-api:checked ~ #tab-python-zulip-api,
 input#zulip-js:checked ~ #tab-zulip-js,
 input#zulipbot:checked ~ #tab-zulipbot,
 input#terminal:checked ~ #tab-terminal {
-    border-top: 1px solid hsl(0, 0%, 93%);
-    padding-top: 20px;
-    display: grid;
-    grid-gap: 5px;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    display: block;
+
+    .contributors-grid {
+        padding-top: 5px;
+        display: grid;
+        grid-gap: 5px;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
 }
 
 .avatar_img {
