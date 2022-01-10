@@ -241,66 +241,23 @@ p {
     }
 }
 
-
-/*css for dark theme*/
-body.dark-theme{
-    font-family: "Source Sans 3", sans-serif !important;
-    color: white;
+/*  css for dark dark-theme  */
+body.dark-theme {
+    color: hsl(0, 100%, 100%);
 }
 
-body.dark-theme .alert{
-    margin-left: 10px;
+body.dark-theme .alert {
     background-color: hsl(170, 46%, 54%);
     color: hsl(0, 0%, 100%);
 }
 
 body.dark-theme .chart-container {
-    display: inline-block;
-    vertical-align: top;
-    margin: 10px 0;
-    padding: 20px;
-    border: 2px solid hsl(0, 0%, 93%);
     background-color: hsl(212, 28%, 10%);
 
-    button {
-        position: relative;
-        z-index: 1;
-    }
-
     h1 {
-        margin-top: 0;
-        font-size: 1.5em;
-        color: white;
-    }
-
-    &:not(.pie-chart) .number-stat {
-        position: relative;
-        top: -30px;
-    }
-
-    &.pie-chart hr {
-        margin-bottom: 8px;
-    }
-
-    .button-container {
-        position: relative;
-        z-index: 1;
-
-        label {
-            margin: 3px;
-        }
-
-        > * {
-            display: inline-block;
-            vertical-align: top;
-        }
+        color: hsl(0, 100%, 100%);
     }
 }
-
-/*body.dark-theme .div{
-    background-color: hsl(200, 20%, 10%);
-}*/
-
 
 body.dark-theme .buttons button {
     background-color: hsl(200, 20%, 10%);
@@ -308,22 +265,13 @@ body.dark-theme .buttons button {
 
     &.selected {
         background-color: hsl(0, 0%, 0%);
-        color: hsl(212,100%,60%);
+        color: hsl(212, 100%, 60%);
     }
 }
 
 body.dark-theme .button {
-    font-family: "Source Sans 3", sans-serif !important;
-    border: none;
-    border-radius: 4px;
-    outline: none;
-
     &:hover {
         background-color: hsl(200, 20%, 10%) !important;
-        color: hsl(212,100%,70%);
-    }
-
-    &[data-user="everyone"] {
-        margin-right: 10px;
+        color: hsl(212, 100%, 70%);
     }
 }
