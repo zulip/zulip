@@ -10,7 +10,7 @@
 # The CGIs will read the main and host config files for any other
 # data they might need.
 
-main_config_file=/etc/nagios3/nagios.cfg
+main_config_file=/etc/nagios4/nagios.cfg
 
 
 
@@ -19,7 +19,7 @@ main_config_file=/etc/nagios3/nagios.cfg
 # value is used to locate the logo images needed by the statusmap
 # and statuswrl CGIs.
 
-physical_html_path=/usr/share/nagios3/htdocs
+physical_html_path=/usr/share/nagios4/htdocs
 
 
 
@@ -31,7 +31,7 @@ physical_html_path=/usr/share/nagios3/htdocs
 # http://www.myhost.com/nagios, this value should be '/nagios'
 # (without the quotes).
 
-url_html_path=/nagios3
+url_html_path=/nagios4
 
 
 
@@ -68,7 +68,7 @@ use_pending_states=1
 # have to be tweaked a bit, as different versions of the plugin
 # use different command line arguments/syntaxes.
 
-nagios_check_command=/usr/lib/nagios/plugins/check_nagios /var/cache/nagios3/status.dat 5 '/usr/sbin/nagios3'
+nagios_check_command=/usr/lib/nagios/plugins/check_nagios /var/cache/nagios4/status.dat 5 '/usr/sbin/nagios4'
 
 
 # AUTHENTICATION USAGE
