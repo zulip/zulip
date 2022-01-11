@@ -22,14 +22,11 @@ def check_stream_name(stream_name: str) -> None:
             )
 
 
-def check_stream_topic(topic: str) -> str:
-    assert topic is not None
-    topic = topic.strip()
-    if topic == "":
+def check_stream_topic(topic: str) -> None:
+    if topic.strip() == "":
         raise JsonableError(_("Topic can't be empty"))
 
     for character in topic:
         unicodeCategory = unicodedata.category(character)
         if unicodeCategory in ["Cc", "Cs", "Cn"]:
             raise JsonableError(_("Invalid characters in topic!"))
-    return topic
