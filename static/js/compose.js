@@ -401,6 +401,11 @@ export function render_compose_box() {
     common.adjust_mac_shortcuts(".enter_sends kbd");
 }
 
+function focus_on_textarea() {
+    const textarea = $("#compose-textarea");
+    textarea.focus();
+}
+
 export function initialize() {
     render_compose_box();
 
@@ -459,12 +464,16 @@ export function initialize() {
         const sub = stream_data.get_sub(stream_name);
         stream_settings_ui.sub_or_unsub(sub);
         $("#compose-send-status").hide();
+
+        focus_on_textarea();
     });
 
     $("#compose-send-status").on("click", "#compose_not_subscribed_close", (event) => {
         event.preventDefault();
 
         $("#compose-send-status").hide();
+
+        focus_on_textarea();
     });
 
     $("#compose_resolved_topic").on("click", ".compose_unresolve_topic", (event) => {
@@ -480,12 +489,16 @@ export function initialize() {
             message_edit.toggle_resolve_topic(message_id, topic_name);
             compose_validate.clear_topic_resolved_warning();
         });
+
+        focus_on_textarea();
     });
 
     $("#compose_resolved_topic").on("click", ".compose_resolved_topic_close", (event) => {
         event.preventDefault();
 
         compose_validate.clear_topic_resolved_warning();
+
+        focus_on_textarea();
     });
 
     $("#compose_invite_users").on("click", ".compose_invite_link", (event) => {
@@ -530,6 +543,8 @@ export function initialize() {
         if (all_invites.children().length === 0) {
             all_invites.hide();
         }
+
+        focus_on_textarea();
     });
 
     $("#compose_private_stream_alert").on(
@@ -544,6 +559,8 @@ export function initialize() {
             if (stream_alert.children().length === 0) {
                 stream_alert.hide();
             }
+
+            focus_on_textarea();
         },
     );
 
