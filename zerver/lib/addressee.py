@@ -1,9 +1,9 @@
-import unicodedata
 from typing import Iterable, List, Optional, Sequence, Union, cast
 
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.string_validation import check_stream_topic
 from zerver.models import (
     Realm,
     Stream,
@@ -33,19 +33,6 @@ def get_user_profiles_by_ids(user_ids: Iterable[int], realm: Realm) -> List[User
             raise JsonableError(_("Invalid user ID {}").format(user_id))
         user_profiles.append(user_profile)
     return user_profiles
-
-
-def validate_topic(topic: str) -> str:
-    assert topic is not None
-    topic = topic.strip()
-    if topic == "":
-        raise JsonableError(_("Topic can't be empty"))
-
-    for character in topic:
-        unicodeCategory = unicodedata.category(character)
-        if unicodeCategory in ["Cc", "Cs", "Cn"]:
-            raise JsonableError(_("Invalid characters in topic!"))
-    return topic
 
 
 class Addressee:
@@ -160,7 +147,7 @@ class Addressee:
 
     @staticmethod
     def for_stream(stream: Stream, topic: str) -> "Addressee":
-        topic = validate_topic(topic)
+        topic = check_stream_topic(topic)
         return Addressee(
             msg_type="stream",
             stream=stream,
@@ -169,7 +156,7 @@ class Addressee:
 
     @staticmethod
     def for_stream_name(stream_name: str, topic: str) -> "Addressee":
-        topic = validate_topic(topic)
+        topic = check_stream_topic(topic)
         return Addressee(
             msg_type="stream",
             stream_name=stream_name,
@@ -178,7 +165,7 @@ class Addressee:
 
     @staticmethod
     def for_stream_id(stream_id: int, topic: str) -> "Addressee":
-        topic = validate_topic(topic)
+        topic = check_stream_topic(topic)
         return Addressee(
             msg_type="stream",
             stream_id=stream_id,
