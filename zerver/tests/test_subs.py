@@ -3171,7 +3171,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
             "delete": orjson.dumps([invalid_stream_name]).decode(),
         }
         result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(result, f"Invalid stream name '{invalid_stream_name}'")
+        self.assert_json_error(result, "Stream name can't be empty!")
 
     def test_stream_name_too_long(self) -> None:
         user = self.example_user("hamlet")
@@ -3776,7 +3776,7 @@ class SubscriptionAPITest(ZulipTestCase):
         result = self.common_subscribe_to_streams(
             self.test_user, [invalid_stream_name], allow_fail=True
         )
-        self.assert_json_error(result, f"Invalid stream name '{invalid_stream_name}'")
+        self.assert_json_error(result, "Stream name can't be empty!")
 
     def assert_adding_subscriptions_for_principal(
         self,
@@ -4489,7 +4489,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # currently, the only invalid stream name is the empty string
         invalid_stream_name = ""
         result = self.client_post("/json/subscriptions/exists", {"stream": invalid_stream_name})
-        self.assert_json_error(result, "Invalid stream name ''")
+        self.assert_json_error(result, "Stream name can't be empty!")
 
     def test_existing_subscriptions_autosubscription(self) -> None:
         """
