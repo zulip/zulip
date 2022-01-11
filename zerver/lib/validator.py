@@ -530,7 +530,7 @@ def validate_todo_data(todo_data: object) -> None:
 
 
 # Converter functions for use with has_request_variables
-def to_non_negative_int(s: str, max_int_size: int = 2**32 - 1) -> int:
+def to_non_negative_int(var_name: str, s: str, max_int_size: int = 2**32 - 1) -> int:
     x = int(s)
     if x < 0:
         raise ValueError("argument is negative")
@@ -539,15 +539,15 @@ def to_non_negative_int(s: str, max_int_size: int = 2**32 - 1) -> int:
     return x
 
 
-def to_float(s: str) -> float:
+def to_float(var_name: str, s: str) -> float:
     return float(s)
 
 
-def to_decimal(s: str) -> Decimal:
+def to_decimal(var_name: str, s: str) -> Decimal:
     return Decimal(s)
 
 
-def to_timezone_or_empty(s: str) -> str:
+def to_timezone_or_empty(var_name: str, s: str) -> str:
     if s in pytz.all_timezones_set:
         return canonicalize_timezone(s)
     else:
@@ -555,11 +555,11 @@ def to_timezone_or_empty(s: str) -> str:
 
 
 def to_converted_or_fallback(
-    sub_converter: Callable[[str], ResultT], default: ResultT
-) -> Callable[[str], ResultT]:
-    def converter(s: str) -> ResultT:
+    sub_converter: Callable[[str, str], ResultT], default: ResultT
+) -> Callable[[str, str], ResultT]:
+    def converter(var_name: str, s: str) -> ResultT:
         try:
-            return sub_converter(s)
+            return sub_converter(var_name, s)
         except ValueError:
             return default
 
