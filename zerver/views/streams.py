@@ -61,11 +61,11 @@ from zerver.lib.streams import (
     access_stream_by_name,
     access_stream_for_delete_or_update,
     access_web_public_stream,
-    check_stream_name,
     check_stream_name_available,
     filter_stream_authorization,
     list_to_streams,
 )
+from zerver.lib.string_validation import check_stream_name
 from zerver.lib.topic import (
     get_topic_history_for_public_stream,
     get_topic_history_for_stream,
