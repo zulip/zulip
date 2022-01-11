@@ -600,7 +600,7 @@ def get_search_fields(
     }
 
 
-def narrow_parameter(json: str) -> OptionalNarrowListT:
+def narrow_parameter(var_name: str, json: str) -> OptionalNarrowListT:
 
     data = orjson.loads(json)
     if not isinstance(data, list):

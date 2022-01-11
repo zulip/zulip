@@ -130,7 +130,7 @@ class _REQ(Generic[ResultT]):
         self,
         whence: Optional[str] = None,
         *,
-        converter: Optional[Callable[[str], ResultT]] = None,
+        converter: Optional[Callable[[str, str], ResultT]] = None,
         default: Union[_NotSpecified, ResultT, None] = NotSpecified,
         json_validator: Optional[Validator[ResultT]] = None,
         str_validator: Optional[Validator[ResultT]] = None,
@@ -204,7 +204,7 @@ class _REQ(Generic[ResultT]):
 def REQ(
     whence: Optional[str] = ...,
     *,
-    converter: Callable[[str], ResultT],
+    converter: Callable[[str, str], ResultT],
     default: ResultT = ...,
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
@@ -278,7 +278,7 @@ def REQ(
 def REQ(
     whence: Optional[str] = None,
     *,
-    converter: Optional[Callable[[str], ResultT]] = None,
+    converter: Optional[Callable[[str, str], ResultT]] = None,
     default: Union[_REQ._NotSpecified, ResultT] = _REQ.NotSpecified,
     json_validator: Optional[Validator[ResultT]] = None,
     str_validator: Optional[Validator[ResultT]] = None,
@@ -413,7 +413,7 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
 
             if param.converter is not None and not default_assigned:
                 try:
-                    val = param.converter(val)
+                    val = param.converter(post_var_name, val)
                 except JsonableError:
                     raise
                 except Exception:

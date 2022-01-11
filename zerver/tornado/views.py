@@ -65,7 +65,7 @@ def get_events_backend(
     # user_client is intended only for internal Django=>Tornado requests
     # and thus shouldn't be documented for external use.
     user_client: Optional[Client] = REQ(
-        converter=get_client, default=None, intentionally_undocumented=True
+        converter=lambda var_name, s: get_client(s), default=None, intentionally_undocumented=True
     ),
     last_event_id: Optional[int] = REQ(json_validator=check_int, default=None),
     queue_id: Optional[str] = REQ(default=None),

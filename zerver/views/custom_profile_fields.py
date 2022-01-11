@@ -105,7 +105,7 @@ check_profile_field_data: Validator[ProfileFieldData] = check_dict(
 def create_realm_custom_profile_field(
     request: HttpRequest,
     user_profile: UserProfile,
-    name: str = REQ(default="", converter=lambda x: x.strip()),
+    name: str = REQ(default="", converter=lambda var_name, x: x.strip()),
     hint: str = REQ(default=""),
     field_data: ProfileFieldData = REQ(default={}, json_validator=check_profile_field_data),
     field_type: int = REQ(json_validator=check_int),
@@ -152,7 +152,7 @@ def update_realm_custom_profile_field(
     request: HttpRequest,
     user_profile: UserProfile,
     field_id: int,
-    name: str = REQ(default="", converter=lambda x: x.strip()),
+    name: str = REQ(default="", converter=lambda var_name, x: x.strip()),
     hint: str = REQ(default=""),
     field_data: ProfileFieldData = REQ(default={}, json_validator=check_profile_field_data),
 ) -> HttpResponse:

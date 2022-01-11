@@ -154,7 +154,7 @@ class DecoratorTestCase(ZulipTestCase):
         self.assertEqual(str(cm.exception), "Can't decide between 'number' and 'x' arguments")
 
     def test_REQ_converter(self) -> None:
-        def my_converter(data: str) -> List[int]:
+        def my_converter(var_name: str, data: str) -> List[int]:
             lst = orjson.loads(data)
             if not isinstance(lst, list):
                 raise ValueError("not a list")
@@ -766,13 +766,13 @@ class ValidatorTestCase(ZulipTestCase):
             check_int("x", x)
 
     def test_to_non_negative_int(self) -> None:
-        self.assertEqual(to_non_negative_int("5"), 5)
+        self.assertEqual(to_non_negative_int("x", "5"), 5)
         with self.assertRaisesRegex(ValueError, "argument is negative"):
-            to_non_negative_int("-1")
+            to_non_negative_int("x", "-1")
         with self.assertRaisesRegex(ValueError, re.escape("5 is too large (max 4)")):
-            to_non_negative_int("5", max_int_size=4)
+            to_non_negative_int("x", "5", max_int_size=4)
         with self.assertRaisesRegex(ValueError, re.escape(f"{2**32} is too large (max {2**32-1})")):
-            to_non_negative_int(str(2**32))
+            to_non_negative_int("x", str(2**32))
 
     def test_check_float(self) -> None:
         x: Any = 5.5
