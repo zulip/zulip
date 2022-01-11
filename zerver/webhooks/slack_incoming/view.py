@@ -10,6 +10,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import InvalidJSONError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_dict
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -20,7 +21,7 @@ def api_slack_incoming_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     user_specified_topic: Optional[str] = REQ("topic", default=None),
-    payload: Optional[Dict[str, Any]] = REQ("payload", converter=orjson.loads, default=None),
+    payload: Optional[Dict[str, Any]] = REQ("payload", json_validator=check_dict(), default=None),
 ) -> HttpResponse:
 
     # Slack accepts webhook payloads as payload="encoded json" as
