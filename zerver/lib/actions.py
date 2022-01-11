@@ -155,7 +155,7 @@ from zerver.lib.streams import (
     send_stream_creation_event,
     subscribed_to_stream,
 )
-from zerver.lib.string_validation import check_stream_name
+from zerver.lib.string_validation import check_stream_name, check_stream_topic
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import (
@@ -2975,8 +2975,8 @@ def validate_message_edit_payload(
     if propagate_mode != "change_one" and topic_name is None and stream_id is None:
         raise JsonableError(_("Invalid propagate_mode without topic edit"))
 
-    if topic_name == "":
-        raise JsonableError(_("Topic can't be empty"))
+    if topic_name is not None:
+        check_stream_topic(topic_name)
 
     if stream_id is not None and content is not None:
         raise JsonableError(_("Cannot change message content while changing stream"))
