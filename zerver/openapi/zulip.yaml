@@ -7863,7 +7863,7 @@ paths:
             **Changes**: New in Zulip 5.0 (feature level 105).
           schema:
             type: boolean
-          example: true
+          example: false
       responses:
         "200":
           description: Success
@@ -11603,6 +11603,10 @@ paths:
                           Present if `realm_user` is present in `fetch_event_types`.
 
                           The full name of the current user.
+                      send_private_message_on_invitee_signup:
+                        type: boolean
+                        description: |
+                          Whether to get a PM when an invitee join's the realm.
                       cross_realm_bots:
                         type: array
                         description: |
@@ -12505,7 +12509,7 @@ paths:
             **Changes**: New in Zulip 5.0 (feature level 105).
           schema:
             type: boolean
-          example: true
+          example: false
       responses:
         "200":
           description: Success

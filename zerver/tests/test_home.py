@@ -183,7 +183,6 @@ class HomeTest(ZulipTestCase):
         "recent_private_conversations",
         "request_language",
         "search_pills_enabled",
-        "send_private_message_on_invitee_signup",
         "server_avatar_changes_disabled",
         "server_generation",
         "server_inline_image_preview",
