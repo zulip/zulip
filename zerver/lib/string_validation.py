@@ -8,7 +8,8 @@ from zerver.models import Stream
 
 def check_stream_name(stream_name: str) -> None:
     if stream_name.strip() == "":
-        raise JsonableError(_("Invalid stream name '{}'").format(stream_name))
+        raise JsonableError(_("Stream name can't be empty!"))
+
     if len(stream_name) > Stream.MAX_NAME_LENGTH:
         raise JsonableError(
             _("Stream name too long (limit: {} characters).").format(Stream.MAX_NAME_LENGTH)
