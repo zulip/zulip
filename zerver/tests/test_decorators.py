@@ -130,7 +130,8 @@ class DecoratorTestCase(ZulipTestCase):
     def test_REQ_aliases(self) -> None:
         @has_request_variables
         def double(
-            request: HttpRequest, x: int = REQ(whence="number", aliases=["x", "n"], converter=int)
+            request: HttpRequest,
+            x: int = REQ(whence="number", aliases=["x", "n"], json_validator=check_int),
         ) -> HttpResponse:
             return json_response(data={"number": x + x})
 
