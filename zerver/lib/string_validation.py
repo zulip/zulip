@@ -19,9 +19,9 @@ unicode_non_chars = set(
 def check_string_is_printable(var: str) -> Optional[int]:
     # Return position (1-indexed!) of the character which is not
     # printable, None if no such character is present.
-    for i in range(len(var)):
-        unicode_character = unicodedata.category(var[i])
-        if (unicode_character in ["Cc", "Cs"]) or var[i] in unicode_non_chars:
+    for i, char in enumerate(var):
+        unicode_character = unicodedata.category(char)
+        if (unicode_character in ["Cc", "Cs"]) or char in unicode_non_chars:
             return i + 1
     return None
 
