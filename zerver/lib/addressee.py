@@ -147,7 +147,8 @@ class Addressee:
 
     @staticmethod
     def for_stream(stream: Stream, topic: str) -> "Addressee":
-        topic = check_stream_topic(topic)
+        topic = topic.strip()
+        check_stream_topic(topic)
         return Addressee(
             msg_type="stream",
             stream=stream,
@@ -156,7 +157,8 @@ class Addressee:
 
     @staticmethod
     def for_stream_name(stream_name: str, topic: str) -> "Addressee":
-        topic = check_stream_topic(topic)
+        topic = topic.strip()
+        check_stream_topic(topic)
         return Addressee(
             msg_type="stream",
             stream_name=stream_name,
@@ -165,7 +167,8 @@ class Addressee:
 
     @staticmethod
     def for_stream_id(stream_id: int, topic: str) -> "Addressee":
-        topic = check_stream_topic(topic)
+        topic = topic.strip()
+        check_stream_topic(topic)
         return Addressee(
             msg_type="stream",
             stream_id=stream_id,
