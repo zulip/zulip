@@ -43,7 +43,7 @@ def fix_topics(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
             topics = [r[0] for r in results]
             for topic in topics:
                 fixed_topic = "".join(
-                    [character for character in topic if character_is_printable(character)]
+                    character for character in topic if character_is_printable(character)
                 )
                 if fixed_topic == topic:
                     continue
