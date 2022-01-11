@@ -42,6 +42,9 @@ mock_esm("../src/hash_util", {
 });
 mock_esm("../src/stream_data", {
     is_subscribed: () => true,
+    get_sub_by_id(stream_id) {
+        return {stream_id};
+    },
 });
 
 // Define test users

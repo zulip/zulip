@@ -10,6 +10,7 @@ realm.realm_move_messages_within_stream_limit_seconds = 259200;
 
 const message_edit = zrequire("message_edit");
 const people = zrequire("people");
+const stream_data = zrequire("stream_data");
 
 const is_content_editable = message_edit.is_content_editable;
 
@@ -69,6 +70,7 @@ run_test("is_content_editable", () => {
     // It's been 60 > 45+10 since message.timestamp. When realm_allow_message_editing
     // is true, we can edit the topic if there is one.
     assert.equal(is_content_editable(message, 45), false);
+
     // Right now, we prevent users from editing widgets.
     message.submessages = ["/poll"];
     assert.equal(is_content_editable(message, 55), false);
@@ -79,6 +81,17 @@ run_test("is_content_editable", () => {
     assert.equal(is_content_editable(message, 55), true);
     // If we don't pass a second argument, treat it as 0
     assert.equal(is_content_editable(message), false);
+
+    message.type = "stream";
+    message.stream_id = 1;
+    stream_data.add_sub({stream_id: 1, name: "test"});
+    assert.equal(is_content_editable(message, 55), true);
+
+    stream_data.delete_sub(1);
+    // Cannot edit messages in a deactivated stream.
+    assert.equal(is_content_editable(message, 55), false);
+
+    stream_data.add_sub({stream_id: 1, name: "Test stream"});
 });
 
 run_test("is_topic_editable", ({override}) => {
@@ -89,6 +102,7 @@ run_test("is_topic_editable", ({override}) => {
         sent_by_me: true,
         locally_echoed: true,
         type: "stream",
+        stream_id: 1,
     };
     realm.realm_allow_message_editing = true;
     override(settings_data, "user_can_move_messages_to_another_topic", () => true);
@@ -133,6 +147,12 @@ run_test("is_topic_editable", ({override}) => {
 
     realm.realm_allow_message_editing = false;
     assert.equal(message_edit.is_topic_editable(message), true);
+
+    stream_data.delete_sub(1);
+    // Cannot edit message's topic in a deactivated stream.
+    assert.equal(message_edit.is_topic_editable(message), false);
+
+    stream_data.add_sub({stream_id: 1, name: "Test stream"});
 });
 
 run_test("is_stream_editable", ({override}) => {
@@ -143,6 +163,7 @@ run_test("is_stream_editable", ({override}) => {
         sent_by_me: true,
         locally_echoed: true,
         type: "stream",
+        stream_id: 1,
     };
     realm.realm_allow_message_editing = true;
     override(settings_data, "user_can_move_messages_between_streams", () => true);
@@ -177,6 +198,12 @@ run_test("is_stream_editable", ({override}) => {
 
     current_user.is_moderator = true;
     assert.equal(message_edit.is_stream_editable(message), true);
+
+    stream_data.delete_sub(1);
+    // Cannot move messages from a deactivated stream.
+    assert.equal(message_edit.is_stream_editable(message), false);
+
+    stream_data.add_sub({stream_id: 1, name: "Test stream"});
 });
 
 run_test("get_deletability", ({override}) => {

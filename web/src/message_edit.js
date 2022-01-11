@@ -123,6 +123,12 @@ export function is_message_editable_ignoring_permissions(message) {
     if (currently_echoing_messages.has(message.id)) {
         return false;
     }
+
+    // Messages in deactivated streams are not editable.
+    if (message.type === "stream" && stream_data.get_sub_by_id(message.stream_id) === undefined) {
+        return false;
+    }
+
     return true;
 }
 
