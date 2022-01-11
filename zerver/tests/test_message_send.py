@@ -723,7 +723,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "topic": "",
             },
         )
-        self.assert_json_error(result, "Topic can't be empty")
+        self.assert_json_error(result, "Topic can't be empty!")
 
     def test_missing_topic(self) -> None:
         """
