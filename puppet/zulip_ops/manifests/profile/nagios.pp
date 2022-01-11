@@ -140,6 +140,17 @@ class zulip_ops::profile::nagios {
     require => File['/var/lib/nagios'],
   }
 
+  # Disable apparmor for msmtp so it can read the above config file
+  file { '/etc/apparmor.d/disable/usr.bin.msmtp':
+    ensure => link,
+    target => '/etc/apparmor.d/usr.bin.msmtp',
+    notify => Exec['reload apparmor'],
+  }
+  exec {'reload apparmor':
+    command     => '/sbin/apparmor_parser -R /etc/apparmor.d/usr.bin.msmtp',
+    refreshonly => true,
+  }
+
   exec { 'fix_nagios_permissions':
     command => 'dpkg-statoverride --update --add nagios www-data 2710 /var/lib/nagios4/rw',
     unless  => 'bash -c "ls -ld /var/lib/nagios4/rw | grep ^drwx--s--- -q"',
