@@ -15,7 +15,7 @@ unicode_non_chars = [
 
 
 def character_is_printable(character: str) -> bool:
-    return unicodedata.category(character) in ["Cc", "Cs"] or character in unicode_non_chars
+    return not (unicodedata.category(character) in ["Cc", "Cs"] or character in unicode_non_chars)
 
 
 def fix_topics(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
