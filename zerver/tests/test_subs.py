@@ -3498,9 +3498,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
             "delete": orjson.dumps([stream_name]).decode(),
         }
         result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(
-            result, f"Stream name '{stream_name}' contains NULL (0x00) characters."
-        )
+        self.assert_json_error(result, "Invalid character in stream name, at position 4!")
 
     def test_compose_views_rollback(self) -> None:
         """
@@ -3557,6 +3555,58 @@ class SubscriptionAPITest(ZulipTestCase):
             if random_stream not in all_stream_names:
                 random_streams.append(random_stream)
         return random_streams
+
+    def test_invalid_stream_name(self) -> None:
+        """
+        Creating a stream with invalid 'Cc' and 'Cn' category of unicode characters in stream name
+        """
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        # For Cc category
+        post_data_cc = {
+            "subscriptions": orjson.dumps(
+                [{"name": "new\n\rstream", "description": "this is description"}]
+            ).decode(),
+            "invite_only": orjson.dumps(False).decode(),
+        }
+        result = self.api_post(
+            user, "/api/v1/users/me/subscriptions", post_data_cc, subdomain="zulip"
+        )
+        self.assert_json_error(result, "Invalid character in stream name, at position 4!")
+
+        # For Cn category
+        post_data_cn = {
+            "subscriptions": orjson.dumps(
+                [{"name": "new\uFFFEstream", "description": "this is description"}]
+            ).decode(),
+            "invite_only": orjson.dumps(False).decode(),
+        }
+        result = self.api_post(
+            user, "/api/v1/users/me/subscriptions", post_data_cn, subdomain="zulip"
+        )
+        self.assert_json_error(result, "Invalid character in stream name, at position 4!")
+
+    def test_invalid_stream_rename(self) -> None:
+        """
+        Renaming a stream with invalid characters.
+        """
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        stream = self.subscribe(user_profile, "stream_name1")
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        # Check for empty name
+        result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": ""})
+        self.assert_json_error(result, "Stream name can't be empty!")
+        # Check for long name
+        result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "a" * 61})
+        self.assert_json_error(result, "Stream name too long (limit: 60 characters).")
+        # Check for Cc characters
+        result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "test\n\rname"})
+        self.assert_json_error(result, "Invalid character in stream name, at position 5!")
+        # Check for Cn characters
+        result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "test\uFFFEame"})
+        self.assert_json_error(result, "Invalid character in stream name, at position 5!")
 
     def test_successful_subscriptions_list(self) -> None:
         """
@@ -3841,9 +3891,7 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         stream_name = "abc\000"
         result = self.common_subscribe_to_streams(self.test_user, [stream_name], allow_fail=True)
-        self.assert_json_error(
-            result, f"Stream name '{stream_name}' contains NULL (0x00) characters."
-        )
+        self.assert_json_error(result, "Invalid character in stream name, at position 4!")
 
     def _test_user_settings_for_creating_streams(
         self,
