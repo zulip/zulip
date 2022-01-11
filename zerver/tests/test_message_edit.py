@@ -192,7 +192,21 @@ class EditMessagePayloadTest(EditMessageTestCase):
                 "topic": " ",
             },
         )
-        self.assert_json_error(result, "Topic can't be empty")
+        self.assert_json_error(result, "Topic can't be empty!")
+
+    def test_edit_message_invalid_topic(self) -> None:
+        self.login("hamlet")
+        msg_id = self.send_stream_message(
+            self.example_user("hamlet"), "Denmark", topic_name="editing", content="before edit"
+        )
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "topic": "editing\nfun",
+            },
+        )
+        self.assert_json_error(result, "Invalid characters in topic!")
 
     def test_move_message_to_stream_with_content(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
