@@ -7855,6 +7855,15 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: send_private_message_on_invitee_signup
+            in: query
+            description: |
+              Whether to get a PM when an invitee join's the realm.
+
+              **Changes**: New in Zulip 5.0 (feature level 105).
+            schema:
+              type: boolean
+            example: true
       responses:
         "200":
           description: Success
@@ -9677,6 +9686,12 @@ paths:
                               read messages.
 
                               **Changes**: New in Zulip 5.0 (feature level 105).
+                          send_private_message_on_invitee_signup:
+                            type: boolean
+                            description: |
+                              Whether to get a PM when an invitee join's the realm.
+
+                              **Changes**: New in Zulip 5.0 (feature level 105).
                       has_zoom_token:
                         type: boolean
                         description: |
@@ -11156,6 +11171,10 @@ paths:
                             description: |
                               Whether clients should display the [number of starred
                               messages](/help/star-a-message#display-the-number-of-starred-messages).
+                          send_private_message_on_invitee_signup:
+                            type: boolean
+                            description: |
+                              Whether to get a PM when an invitee join's the realm.
                           fluid_layout_width:
                             type: boolean
                             description: |
@@ -11387,6 +11406,12 @@ paths:
                             description: |
                               Whether other users are allowed to see whether you've
                               read messages.
+
+                              **Changes**: New in Zulip 5.0 (feature level 105).
+                          send_private_message_on_invitee_signup:
+                            type: boolean
+                            description: |
+                              Whether to get a PM when an invitee join's the realm.
 
                               **Changes**: New in Zulip 5.0 (feature level 105).
                       realm_users:
@@ -12476,6 +12501,15 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: send_private_message_on_invitee_signup
+            in: query
+            description: |
+              Whether to get a PM when an invitee join's the realm.
+
+              **Changes**: New in Zulip 5.0 (feature level 105).
+            schema:
+              type: boolean
+            example: true
       responses:
         "200":
           description: Success
