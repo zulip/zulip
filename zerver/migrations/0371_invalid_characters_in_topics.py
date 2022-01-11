@@ -4,6 +4,19 @@ from django.db import connection, migrations, models
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
+# There are 66 Unicode non-characters; see
+# https://www.unicode.org/faq/private_use.html#nonchar4
+unicode_non_chars = [
+    chr(x)
+    for x in list(range(0xFDD0, 0xFDF0))  # FDD0 through FDEF, inclusive
+    + list(range(0xFFFE, 0x110000, 0x10000))  # 0xFFFE, 0x1FFFE, ... 0x10FFFE inclusive
+    + list(range(0xFFFF, 0x110000, 0x10000))  # 0xFFFF, 0x1FFFF, ... 0x10FFFF inclusive
+]
+
+
+def character_is_printable(character: str) -> bool:
+    return unicodedata.category(character) in ["Cc", "Cs"] or character in unicode_non_chars
+
 
 def fix_topics(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     Message = apps.get_model("zerver", "Message")
@@ -30,11 +43,7 @@ def fix_topics(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
             topics = [r[0] for r in results]
             for topic in topics:
                 fixed_topic = "".join(
-                    [
-                        character
-                        for character in topic
-                        if unicodedata.category(character) not in ["Cc", "Cs", "Cn"]
-                    ]
+                    [character for character in topic if character_is_printable(character)]
                 )
                 if fixed_topic == topic:
                     continue

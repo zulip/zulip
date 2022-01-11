@@ -752,7 +752,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "content": "Test message",
             },
         )
-        self.assert_json_error(result, "Invalid characters in topic!")
+        self.assert_json_error(result, "Invalid character in topic, at position 5!")
 
         # For 'Cn' category
         result = self.client_post(
@@ -765,7 +765,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "content": "Test message",
             },
         )
-        self.assert_json_error(result, "Invalid characters in topic!")
+        self.assert_json_error(result, "Invalid character in topic, at position 5!")
 
     def test_invalid_message_type(self) -> None:
         """

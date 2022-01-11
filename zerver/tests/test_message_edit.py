@@ -206,7 +206,7 @@ class EditMessagePayloadTest(EditMessageTestCase):
                 "topic": "editing\nfun",
             },
         )
-        self.assert_json_error(result, "Invalid characters in topic!")
+        self.assert_json_error(result, "Invalid character in topic, at position 8!")
 
     def test_move_message_to_stream_with_content(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
