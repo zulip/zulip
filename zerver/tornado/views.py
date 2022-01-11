@@ -67,7 +67,7 @@ def get_events_backend(
     user_client: Optional[Client] = REQ(
         converter=get_client, default=None, intentionally_undocumented=True
     ),
-    last_event_id: Optional[int] = REQ(converter=int, default=None),
+    last_event_id: Optional[int] = REQ(json_validator=check_int, default=None),
     queue_id: Optional[str] = REQ(default=None),
     # apply_markdown, client_gravatar, all_public_streams, and various
     # other parameters are only used when registering a new queue via this
