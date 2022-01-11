@@ -12,6 +12,8 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popovers from "./popovers";
 import * as rows from "./rows";
+import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 
@@ -46,11 +48,34 @@ export function fetch_and_render_message_history(message) {
                     item.topic_edited = true;
                     item.prev_topic = msg.prev_topic;
                     item.new_topic = msg.topic;
+                } else if (msg.prev_topic && msg.prev_stream) {
+                    const sub = sub_store.get(msg.prev_stream);
+                    item.posted_or_edited = "Edited by";
+                    item.topic_edited = true;
+                    item.prev_topic = msg.prev_topic;
+                    item.new_topic = msg.topic;
+                    item.stream_changed = true;
+                    if (!sub) {
+                        item.prev_stream = "Unknown Stream";
+                    } else {
+                        item.prev_stream = stream_data.maybe_get_stream_name(msg.prev_stream);
+                    }
+                    item.new_stream = stream_data.maybe_get_stream_name(message.stream_id);
                 } else if (msg.prev_topic) {
                     item.posted_or_edited = "Topic edited by";
                     item.topic_edited = true;
                     item.prev_topic = msg.prev_topic;
                     item.new_topic = msg.topic;
+                } else if (msg.prev_stream) {
+                    const sub = sub_store.get(msg.prev_stream);
+                    item.posted_or_edited = "Stream edited by";
+                    item.stream_changed = true;
+                    if (!sub) {
+                        item.prev_stream = "Unknown Stream";
+                    } else {
+                        item.prev_stream = stream_data.maybe_get_stream_name(msg.prev_stream);
+                    }
+                    item.new_stream = stream_data.maybe_get_stream_name(message.stream_id);
                 } else {
                     // just a content edit
                     item.posted_or_edited = "Edited by";
