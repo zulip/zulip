@@ -148,7 +148,6 @@ from zerver.lib.streams import (
     access_stream_for_send_message,
     can_access_stream_user_ids,
     check_stream_access_based_on_stream_post_policy,
-    check_stream_name,
     create_stream_if_needed,
     get_default_value_for_history_public_to_subscribers,
     get_web_public_streams_queryset,
@@ -156,6 +155,7 @@ from zerver.lib.streams import (
     send_stream_creation_event,
     subscribed_to_stream,
 )
+from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import (

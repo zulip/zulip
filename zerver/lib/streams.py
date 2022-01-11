@@ -13,6 +13,7 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
+from zerver.lib.string_validation import check_stream_name
 from zerver.models import (
     DefaultStreamGroup,
     Realm,
@@ -173,20 +174,6 @@ def create_streams_if_needed(
             existing_streams.append(stream)
 
     return added_streams, existing_streams
-
-
-def check_stream_name(stream_name: str) -> None:
-    if stream_name.strip() == "":
-        raise JsonableError(_("Invalid stream name '{}'").format(stream_name))
-    if len(stream_name) > Stream.MAX_NAME_LENGTH:
-        raise JsonableError(
-            _("Stream name too long (limit: {} characters).").format(Stream.MAX_NAME_LENGTH)
-        )
-    for i in stream_name:
-        if ord(i) == 0:
-            raise JsonableError(
-                _("Stream name '{}' contains NULL (0x00) characters.").format(stream_name)
-            )
 
 
 def subscribed_to_stream(user_profile: UserProfile, stream_id: int) -> bool:
