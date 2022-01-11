@@ -4132,7 +4132,7 @@ paths:
             The ID of the stream to access.
           schema:
             type: integer
-          example: 43
+          example: 42
           required: true
       responses:
         "200":
@@ -4157,7 +4157,7 @@ paths:
             The ID of the stream to access.
           schema:
             type: integer
-          example: 43
+          example: 42
           required: true
         - name: topic_name
           in: query
@@ -4588,7 +4588,7 @@ paths:
             oneOf:
               - type: string
               - type: integer
-          example: 43
+          example: 42
         - name: num_before
           in: query
           description: |
@@ -5542,7 +5542,7 @@ paths:
             if the target message is not a stream message.
           schema:
             type: integer
-          example: 43
+          example: 42
       responses:
         "200":
           description: Success.
@@ -6980,7 +6980,7 @@ paths:
             The ID of the stream to access.
           schema:
             type: integer
-          example: 43
+          example: 42
           required: false
         - name: topic
           in: query
@@ -7856,14 +7856,14 @@ paths:
             type: boolean
           example: true
         - name: send_private_message_on_invitee_signup
-            in: query
-            description: |
-              Whether to get a PM when an invitee join's the realm.
+          in: query
+          description: |
+            Whether to get a PM when an invitee join's the realm.
 
-              **Changes**: New in Zulip 5.0 (feature level 105).
-            schema:
-              type: boolean
-            example: true
+            **Changes**: New in Zulip 5.0 (feature level 105).
+          schema:
+            type: boolean
+          example: true
       responses:
         "200":
           description: Success
@@ -8392,7 +8392,7 @@ paths:
             The ID of the linkifier that you want to remove.
           schema:
             type: integer
-          example: 43
+          example: 42
           required: true
       responses:
         "200":
@@ -11171,10 +11171,6 @@ paths:
                             description: |
                               Whether clients should display the [number of starred
                               messages](/help/star-a-message#display-the-number-of-starred-messages).
-                          send_private_message_on_invitee_signup:
-                            type: boolean
-                            description: |
-                              Whether to get a PM when an invitee join's the realm.
                           fluid_layout_width:
                             type: boolean
                             description: |
@@ -12502,14 +12498,14 @@ paths:
             type: boolean
           example: true
         - name: send_private_message_on_invitee_signup
-            in: query
-            description: |
-              Whether to get a PM when an invitee join's the realm.
+          in: query
+          description: |
+            Whether to get a PM when an invitee join's the realm.
 
-              **Changes**: New in Zulip 5.0 (feature level 105).
-            schema:
-              type: boolean
-            example: true
+            **Changes**: New in Zulip 5.0 (feature level 105).
+          schema:
+            type: boolean
+          example: true
       responses:
         "200":
           description: Success
@@ -15371,7 +15367,7 @@ components:
         The target message's ID.
       schema:
         type: integer
-      example: 43
+      example: 42
       required: true
     UserId:
       name: user_id
