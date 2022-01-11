@@ -43,7 +43,7 @@ def _transform_commits_list_to_common_format(commits: List[Dict[str, Any]]) -> L
     for commit in commits:
         new_commits_list.append(
             {
-                "name": commit["author"].get("username"),
+                "name": commit["author"]["name"],
                 "sha": commit.get("id"),
                 "url": commit.get("url"),
                 "message": commit.get("message"),
@@ -89,9 +89,6 @@ def api_beanstalk_webhook(
     if git_repo:
         if branches is not None and branches.find(payload["branch"]) == -1:
             return json_success(request)
-        # To get a linkable url,
-        for commit in payload["commits"]:
-            commit["author"] = {"username": commit["author"]["name"]}
 
         subject, content = build_message_from_gitlog(
             user_profile,
