@@ -6,6 +6,25 @@ from django.utils.translation import gettext as _
 from zerver.lib.exceptions import JsonableError
 from zerver.models import Stream
 
+# There are 66 Unicode non-characters; see
+# https://www.unicode.org/faq/private_use.html#nonchar4
+unicode_non_chars = [
+    chr(x)
+    for x in list(range(0xFDD0, 0xFDF0))  # FDD0 through FDEF, inclusive
+    + list(range(0xFFFE, 0x110000, 0x10000))  # 0xFFFE, 0x1FFFE, ... 0x10FFFE inclusive
+    + list(range(0xFFFF, 0x110000, 0x10000))  # 0xFFFF, 0x1FFFF, ... 0x10FFFF inclusive
+]
+
+
+def check_string_is_printable(var: str) -> Optional[int]:
+    # Return position (1-indexed!) of the character which is not
+    # printable, None if no such character is present.
+    for i in range(len(var)):
+        unicode_character = unicodedata.category(var[i])
+        if (unicode_character in ["Cc", "Cs"]) or var[i] in unicode_non_chars:
+            return i + 1
+    return None
+
 
 def check_stream_name(stream_name: str) -> None:
     if stream_name.strip() == "":
@@ -26,7 +45,8 @@ def check_stream_topic(topic: str) -> None:
     if topic.strip() == "":
         raise JsonableError(_("Topic can't be empty!"))
 
-    for character in topic:
-        unicodeCategory = unicodedata.category(character)
-        if unicodeCategory in ["Cc", "Cs", "Cn"]:
-            raise JsonableError(_("Invalid characters in topic!"))
+    invalid_character_pos = check_string_is_printable(topic)
+    if invalid_character_pos is not None:
+        raise JsonableError(
+            _("Invalid character in topic, at position {}!").format(invalid_character_pos)
+        )
