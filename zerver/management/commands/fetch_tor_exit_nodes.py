@@ -41,7 +41,7 @@ Does nothing unless RATE_LIMIT_TOR_TOGETHER is enabled.
             help="Number of times to retry fetching data from TOR",
         )
 
-    def handle(*args: Any, **options: Any) -> None:
+    def handle(self, *args: Any, **options: Any) -> None:
         if not settings.RATE_LIMIT_TOR_TOGETHER:
             return
 
