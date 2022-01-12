@@ -412,10 +412,10 @@ def notify_new_user(user_profile: UserProfile) -> None:
         pass
 
 
-def notify_invites_changed(user_profile: UserProfile) -> None:
+def notify_invites_changed(realm: Realm) -> None:
     event = dict(type="invites_changed")
-    admin_ids = [user.id for user in user_profile.realm.get_admin_users_and_bots()]
-    send_event(user_profile.realm, event, admin_ids)
+    admin_ids = [user.id for user in realm.get_admin_users_and_bots()]
+    send_event(realm, event, admin_ids)
 
 
 def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -> None:
@@ -522,7 +522,7 @@ def process_new_human_user(
 
     revoke_preregistration_users(user_profile, prereg_user, realm_creation)
     if not realm_creation and prereg_user is not None and prereg_user.referred_by is not None:
-        notify_invites_changed(user_profile)
+        notify_invites_changed(user_profile.realm)
 
     notify_new_user(user_profile)
     # Clear any scheduled invitation emails to prevent them
@@ -7472,7 +7472,7 @@ def do_invite_users(
             skipped,
             sent_invitations=True,
         )
-    notify_invites_changed(user_profile)
+    notify_invites_changed(user_profile.realm)
 
 
 def do_get_invites_controlled_by_user(user_profile: UserProfile) -> List[Dict[str, Any]]:
@@ -7546,7 +7546,7 @@ def do_create_multiuse_invite_link(
         invite.streams.set(streams)
     invite.invited_as = invited_as
     invite.save()
-    notify_invites_changed(referred_by)
+    notify_invites_changed(referred_by.realm)
     return create_confirmation_link(
         invite, Confirmation.MULTIUSE_INVITE, validity_in_days=invite_expires_in_days
     )
@@ -7554,6 +7554,8 @@ def do_create_multiuse_invite_link(
 
 def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
     email = prereg_user.email
+    realm = prereg_user.realm
+    assert realm is not None
 
     # Delete both the confirmation objects and the prereg_user object.
     # TODO: Probably we actually want to set the confirmation objects
@@ -7563,14 +7565,16 @@ def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
     Confirmation.objects.filter(content_type=content_type, object_id=prereg_user.id).delete()
     prereg_user.delete()
     clear_scheduled_invitation_emails(email)
-    notify_invites_changed(prereg_user)
+    notify_invites_changed(realm)
 
 
 def do_revoke_multi_use_invite(multiuse_invite: MultiuseInvite) -> None:
+    realm = multiuse_invite.referred_by.realm
+
     content_type = ContentType.objects.get_for_model(MultiuseInvite)
     Confirmation.objects.filter(content_type=content_type, object_id=multiuse_invite.id).delete()
     multiuse_invite.delete()
-    notify_invites_changed(multiuse_invite.referred_by)
+    notify_invites_changed(realm)
 
 
 def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
