@@ -72,7 +72,6 @@ class Command(BaseCommand):
             )
 
         def inner_run() -> None:
-            from django.conf import settings
             from django.utils import translation
 
             translation.activate(settings.LANGUAGE_CODE)
