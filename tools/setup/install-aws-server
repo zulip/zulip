@@ -54,6 +54,7 @@ AWS_ZONE_ID=$(lookup zone_id)
 SECURITY_GROUPS=$(lookup security_groups)
 AMI_ID=$(lookup image_id)
 INSTANCE_TYPE=$(lookup instance_type)
+IAM_PROFILE=$(lookup iam_profile)
 SSH_SECRET_ID=$(lookup ssh_secret_id)
 
 # Verify it doesn't exist already
@@ -69,7 +70,7 @@ if [ "$EXISTING_RECORDS" != "0" ]; then
 fi
 
 EXTRA_ARGS+=(
-    --iam-instance-profile "Name=\"EC2ProdInstance\""
+    --iam-instance-profile "Name=\"$IAM_PROFILE\""
     --image-id "$AMI_ID"
     --instance-type "$INSTANCE_TYPE"
     --security-group-ids "$SECURITY_GROUPS"
