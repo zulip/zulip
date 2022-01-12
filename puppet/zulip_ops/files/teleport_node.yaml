@@ -10,7 +10,21 @@ ssh_service:
   enabled: "yes"
   commands:
     - name: hostname
-      command: [/bin/hostname]
+      command: ["/bin/hostname"]
+      period: 1h0m0s
+    - name: uname
+      command: ["/usr/bin/uptrack-uname", "-r"]
+      period: 1h0m0s
+    - name: distro
+      command: ["/usr/bin/lsb_release", "-ds"]
+      period: 1h0m0s
+    - name: classes
+      command:
+        - /usr/bin/crudini
+        - --get
+        - /etc/zulip/zulip.conf
+        - machine
+        - puppet_classes
       period: 1h0m0s
 
 proxy_service:
