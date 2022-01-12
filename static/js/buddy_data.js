@@ -507,14 +507,21 @@ function get_processed_users_section_data(filter_text) {
 
 function get_processed_others_section_data(filter_text, user_ids) {
     const all_user_ids = get_filtered_all_user_id_list(filter_text);
-    let other_ids = all_user_ids.filter(
+    const other_ids = all_user_ids.filter(
         (potential_other_id) => !user_ids.includes(potential_other_id),
     );
 
     let other_title;
     if (other_ids.length) {
         other_title = $t({defaultMessage: "All other users"});
-        other_ids = maybe_shrink_list(other_ids).ids;
+        const maybe_shrunk_list = maybe_shrink_list(other_ids, filter_text);
+        if (maybe_shrunk_list.is_shrunk) {
+            return {
+                other_ids: sort_users(maybe_shrunk_list.ids),
+                other_title,
+                unshrunk_other_ids: other_ids,
+            };
+        }
         return {other_ids: sort_users(other_ids), other_title};
     }
     // else
@@ -527,9 +534,15 @@ function get_processed_others_section_data(filter_text, user_ids) {
 // are consistent with changes to does_belong_to_users_or_others_section
 export function get_filtered_and_sorted_key_groups_and_titles(filter_text) {
     const users = get_processed_users_section_data(filter_text);
+    let key_groups_and_titles = {
+        user_keys: users.user_ids,
+        other_keys: [],
+    };
     let user_ids;
     if (users.unshrunk_user_ids) {
         user_ids = users.unshrunk_user_ids;
+        key_groups_and_titles.extra_users_count =
+            users.unshrunk_user_ids.length - users.user_ids.length;
     } else {
         user_ids = users.user_ids;
     }
@@ -537,19 +550,18 @@ export function get_filtered_and_sorted_key_groups_and_titles(filter_text) {
     // so there's no others section.
     if (users.user_title) {
         const others = get_processed_others_section_data(filter_text, user_ids);
-        const key_groups_and_titles = {
-            user_keys: users.user_ids,
+        key_groups_and_titles = {
+            ...key_groups_and_titles,
             user_keys_title: users.user_title,
             other_keys: others.other_ids,
             other_keys_title: others.other_title,
         };
-        return key_groups_and_titles;
+        if (others.unshrunk_other_ids) {
+            key_groups_and_titles.extra_others_count =
+                others.unshrunk_other_ids.length - others.other_ids.length;
+        }
     }
-    // else
-    return {
-        user_keys: users.user_ids,
-        other_keys: [],
-    };
+    return key_groups_and_titles;
 }
 
 // this function essentially replicates the logic to answer does user

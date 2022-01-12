@@ -456,27 +456,6 @@ test("bulk_data_hacks", ({override_rewire}) => {
     user_keys = buddy_data.get_filtered_and_sorted_key_groups_and_titles().user_keys;
     assert.equal(user_keys.length, 600);
 
-    // but the other list needs to be calculated with unshrunk user_ids, hence
-    // it gets passed all 994 (mark + 1 to 1999) users (since there's no filter, we're using all
-    // active users).
-    override_rewire(buddy_data, "get_processed_others_section_data", (filter_text, user_ids) => {
-        assert.equal(user_ids.length, 994);
-        return {
-            other_ids: [],
-        };
-    });
-
-    stream_data.clear_subscriptions();
-    stream_data.add_sub(denmark);
-    // make sure there's a users title so that we calculate others title
-    const filter_terms = [{operator: "stream", operand: "Denmark"}];
-    const filter = new Filter(filter_terms);
-    narrow_state.set_current_filter(filter);
-
-    buddy_data.get_filtered_and_sorted_key_groups_and_titles();
-    narrow_state.reset_current_filter();
-    stream_data.clear_subscriptions();
-
     // Even though we have 1000 users, we only get 600 users (400 active and
     // 200 inactive). This is a consequence of buddy_data.maybe_shrink_list.
     user_keys = buddy_data.get_filtered_and_sorted_key_groups_and_titles("").user_keys;
@@ -508,6 +487,51 @@ test("bulk_data_hacks", ({override_rewire}) => {
     override_rewire(buddy_data, "max_size_before_shrinking", 200);
     user_keys = buddy_data.get_filtered_and_sorted_key_groups_and_titles("").user_keys;
     assert.equal(user_keys.length, 400);
+});
+
+test("additional count", ({override_rewire}) => {
+    add_canned_users();
+    set_presence(selma.user_id, "online");
+    set_presence(fred.user_id, "offline");
+    set_presence(jill.user_id, "offline");
+    set_presence(mark.user_id, "offline");
+
+    // sanity check
+    let id_and_title_group = buddy_data.get_filtered_and_sorted_key_groups_and_titles("");
+    assert.deepEqual(id_and_title_group, {
+        user_keys: [me.user_id, fred.user_id, selma.user_id, jill.user_id, mark.user_id],
+        other_keys: [],
+    });
+
+    override_rewire(buddy_data, "max_size_before_shrinking", 3);
+    id_and_title_group = buddy_data.get_filtered_and_sorted_key_groups_and_titles("");
+
+    assert.deepEqual(id_and_title_group, {
+        user_keys: [me.user_id, fred.user_id, selma.user_id],
+        extra_users_count: 2,
+        other_keys: [],
+    });
+
+    override_rewire(compose_state, "stream_name", () => "");
+    // say for example that we're composing a pm between me, alice and mark.
+    override_rewire(
+        compose_state,
+        "private_message_recipient",
+        () => alice.email + "," + bot.email + "," + mark.email,
+    );
+    compose_state.set_message_type("private");
+    override_rewire(buddy_data, "max_size_before_shrinking", 2);
+    const key_groups_and_titles = buddy_data.get_filtered_and_sorted_key_groups_and_titles("");
+
+    assert.deepEqual(key_groups_and_titles, {
+        extra_others_count: 1,
+        other_keys: [fred.user_id, selma.user_id],
+        other_keys_title: "translated: All other users",
+        extra_users_count: 1,
+        user_keys: [me.user_id, alice.user_id],
+        user_keys_title: "translated: PM recipients",
+    });
+    compose_state.set_message_type("");
 });
 
 test("always show me", ({override_rewire}) => {

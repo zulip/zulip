@@ -8,11 +8,15 @@
     </h5>
     <ul class="collapse {{#unless users_title_collapsed}} in {{/unless}}" id="users">
     </ul>
+    <div id="extra_users" class="hidden">
+    </div>
 </div>
 {{else}}
 {{! "all users" presence rows }}
 <ul id="users">
 </ul>
+<div id="extra_users" class="hidden">
+</div>
 {{/if}}
 
 {{! other presence rows }}
@@ -27,5 +31,7 @@
     </h5>
     <ul class="collapse {{#unless others_title_collapsed}} in {{/unless}}" id="others">
     </ul>
+    <div id="extra_others" class="hidden">
+    </div>
 </div>
 {{/if}}

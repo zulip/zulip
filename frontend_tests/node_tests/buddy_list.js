@@ -130,9 +130,23 @@ run_test("basics", ({override, mock_template}) => {
 
 run_test("section_basics", ({override, mock_template}) => {
     mock_template("presence_sections.hbs", false, (data) => {
-        assert.equal(data.users_count, "translated:  1");
-        assert.equal(data.others_count, "translated:  1");
+        assert.equal(data.users_count, "translated:  2");
+        assert.equal(data.others_count, "translated:  4");
         return "html-stub-from-template";
+    });
+
+    let additional_count_template_calls = 0;
+    mock_template("presence_additional_count.hbs", false, (data) => {
+        assert.ok([0, 1].includes(additional_count_template_calls));
+        switch (additional_count_template_calls) {
+            case 0:
+                assert.equal(data.count, 1);
+                break;
+            case 1:
+                assert.equal(data.count, 3);
+                break;
+        }
+        additional_count_template_calls += 1;
     });
 
     const buddy_list = new BuddyList();
@@ -159,9 +173,12 @@ run_test("section_basics", ({override, mock_template}) => {
     buddy_list.populate({
         user_keys_title: "dummy_user_keys_title",
         user_keys: [alice.user_id],
+        extra_users_count: 1,
         other_keys_title: "dummy_other_keys_title",
         other_keys: [bob.user_id],
+        extra_others_count: 3,
     });
+    assert.equal(additional_count_template_calls, 2);
 
     // calling render_more when we've already rendered
     // everything should early exit

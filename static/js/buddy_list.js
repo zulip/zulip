@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import render_presence_additional_count from "../templates/presence_additional_count.hbs";
 import render_presence_row from "../templates/presence_row.hbs";
 import render_presence_rows from "../templates/presence_rows.hbs";
 import render_presence_sections from "../templates/presence_sections.hbs";
@@ -20,7 +21,9 @@ class BuddyListConf {
     item_sel = "li.user_sidebar_entry";
     padding_sel = "#buddy_list_wrapper_padding";
     users_section_sel = "#users";
+    extra_users_selector = "#extra_users";
     others_section_sel = "#others";
+    extra_others_selector = "#extra_others";
 
     sections_to_html(opts) {
         let users_title_collapsed = false;
@@ -29,14 +32,13 @@ class BuddyListConf {
             users_title_collapsed = Boolean(ls.get("users_title_collapsed"));
             others_title_collapsed = Boolean(ls.get("others_title_collapsed"));
         }
+        const users_count = opts.users_count + opts.extra_users_count;
+        const others_count = opts.others_count + opts.extra_others_count;
         const html = render_presence_sections({
-            users_count: $t({defaultMessage: " {users_count}"}, {users_count: opts.users_count}),
+            users_count: $t({defaultMessage: " {users_count}"}, {users_count}),
             users_title: opts.user_items_title,
             users_title_collapsed,
-            others_count: $t(
-                {defaultMessage: " {others_count}"},
-                {others_count: opts.others_count},
-            ),
+            others_count: $t({defaultMessage: " {others_count}"}, {others_count}),
             others_title: opts.other_items_title,
             others_title_collapsed,
         });
@@ -95,13 +97,25 @@ export class BuddyList extends BuddyListConf {
         // We rely on our caller to give us items
         // in already-sorted order.
         this.user_keys = opts.user_keys;
+        if (opts.extra_users_count) {
+            this.extra_users_count = opts.extra_users_count;
+        } else {
+            this.extra_users_count = 0;
+        }
         this.other_keys = opts.other_keys;
+        if (opts.extra_others_count) {
+            this.extra_others_count = opts.extra_others_count;
+        } else {
+            this.extra_others_count = 0;
+        }
 
         const html = this.sections_to_html({
             user_items_title: opts.user_keys_title,
             users_count: opts.user_keys.length,
+            extra_users_count: this.extra_users_count,
             other_items_title: opts.other_keys_title,
             others_count: opts.other_keys.length,
+            extra_others_count: this.extra_others_count,
         });
 
         this.$container = $(this.container_sel);
@@ -177,6 +191,14 @@ export class BuddyList extends BuddyListConf {
         this.fill_screen_with_content();
     }
 
+    _render_extra_count({extras_selector, count}) {
+        const rendered_additional_count = render_presence_additional_count({
+            count,
+        });
+        $(extras_selector).html(rendered_additional_count);
+        $(extras_selector).removeClass("hidden");
+    }
+
     _render_more({chunk_size, begin, keys, section_sel}) {
         const end = begin + chunk_size;
         const more_keys = keys.slice(begin, end);
@@ -213,6 +235,12 @@ export class BuddyList extends BuddyListConf {
         });
         if (render_count > 0) {
             this.users_render_count += render_count;
+            if (this.users_render_count >= this.user_keys.length && this.extra_users_count) {
+                this._render_extra_count({
+                    extras_selector: this.extra_users_selector,
+                    count: this.extra_users_count,
+                });
+            }
             this.update_padding();
         }
     }
@@ -226,6 +254,12 @@ export class BuddyList extends BuddyListConf {
         });
         if (render_count > 0) {
             this.others_render_count += render_count;
+            if (this.others_render_count >= this.other_keys.length && this.extra_others_count) {
+                this._render_extra_count({
+                    extras_selector: this.extra_others_selector,
+                    count: this.extra_others_count,
+                });
+            }
             this.update_padding();
         }
     }
