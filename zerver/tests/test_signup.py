@@ -41,7 +41,7 @@ from zerver.lib.actions import (
     do_create_user,
     do_deactivate_realm,
     do_deactivate_user,
-    do_get_user_invites,
+    do_get_invites_controlled_by_user,
     do_invite_users,
     do_set_realm_property,
     do_set_realm_user_default_setting,
@@ -2246,7 +2246,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
 
 class InvitationsTestCase(InviteUserBase):
-    def test_do_get_user_invites(self) -> None:
+    def test_do_get_invites_controlled_by_user(self) -> None:
         user_profile = self.example_user("iago")
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
@@ -2283,9 +2283,9 @@ class InvitationsTestCase(InviteUserBase):
         do_create_multiuse_invite_link(
             user_profile, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_days
         )
-        self.assert_length(do_get_user_invites(user_profile), 5)
-        self.assert_length(do_get_user_invites(hamlet), 1)
-        self.assert_length(do_get_user_invites(othello), 1)
+        self.assert_length(do_get_invites_controlled_by_user(user_profile), 5)
+        self.assert_length(do_get_invites_controlled_by_user(hamlet), 1)
+        self.assert_length(do_get_invites_controlled_by_user(othello), 1)
 
     def test_successful_get_open_invitations(self) -> None:
         """
