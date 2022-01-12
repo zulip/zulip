@@ -1601,13 +1601,12 @@ class InviteUserTest(InviteUserBase):
 
         self.assertEqual(secret_msg.id, secret_msg_id)
 
-        if user_profile.send_private_message_on_invitee_signup:
-            self.assertEqual(inviter_msg.sender.email, "notification-bot@zulip.com")
-            self.assertTrue(
-                inviter_msg.content.startswith(
-                    f"alice_zulip.com <`{invitee_profile.email}`> accepted your",
-                )
+        self.assertEqual(inviter_msg.sender.email, "notification-bot@zulip.com")
+        self.assertTrue(
+            inviter_msg.content.startswith(
+                f"alice_zulip.com <`{invitee_profile.email}`> accepted your",
             )
+        )
 
         self.assertEqual(signups_stream_msg.sender.email, "notification-bot@zulip.com")
         self.assertTrue(
