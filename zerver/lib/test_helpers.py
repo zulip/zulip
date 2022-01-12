@@ -186,8 +186,10 @@ def stdout_suppressed() -> Iterator[IO[str]]:
 
     with open(os.devnull, "a") as devnull:
         stdout, sys.stdout = sys.stdout, devnull
-        yield stdout
-        sys.stdout = stdout
+        try:
+            yield stdout
+        finally:
+            sys.stdout = stdout
 
 
 def reset_emails_in_zulip_realm() -> None:
