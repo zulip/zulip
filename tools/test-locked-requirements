@@ -67,7 +67,7 @@ def get_requirements_hash(tmp_dir: str, use_test_lock_files: bool = False) -> st
     return sha1.hexdigest()
 
 
-def may_be_setup_cache() -> None:
+def maybe_set_up_cache() -> None:
     os.makedirs(CACHE_DIR, exist_ok=True)
     if not os.path.exists(CACHE_FILE):
         with open(CACHE_FILE, "wb") as fp:
@@ -90,7 +90,7 @@ def update_cache(hash_list: List[str]) -> None:
 
 
 def main() -> None:
-    may_be_setup_cache()
+    maybe_set_up_cache()
     hash_list = load_cache()
     tmp = tempfile.TemporaryDirectory()
     tmp_dir = tmp.name
