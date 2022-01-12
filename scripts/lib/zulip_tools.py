@@ -330,7 +330,7 @@ def purge_unused_caches(
     caches_to_purge = get_caches_to_be_purged(caches_dir, caches_in_use, args.threshold_days)
     caches_to_keep = all_caches - caches_to_purge
 
-    may_be_perform_purging(
+    maybe_perform_purging(
         caches_to_purge, caches_to_keep, cache_type, args.dry_run, args.verbose, args.no_headings
     )
     if args.verbose:
@@ -376,7 +376,7 @@ def generate_sha1sum_emoji(zulip_path: str) -> str:
     return sha.hexdigest()
 
 
-def may_be_perform_purging(
+def maybe_perform_purging(
     dirs_to_purge: Set[str],
     dirs_to_keep: Set[str],
     dir_type: str,

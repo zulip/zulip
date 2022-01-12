@@ -11,7 +11,7 @@ from scripts.lib import clean_unused_caches
 from scripts.lib.zulip_tools import (
     DEPLOYMENTS_DIR,
     get_recent_deployments,
-    may_be_perform_purging,
+    maybe_perform_purging,
     su_to_zulip,
 )
 
@@ -80,7 +80,7 @@ def main() -> None:
     deployments_to_keep = get_recent_deployments(args.threshold_days)
     deployments_to_purge = get_deployments_to_be_purged(deployments_to_keep)
 
-    may_be_perform_purging(
+    maybe_perform_purging(
         deployments_to_purge, deployments_to_keep, "deployment", args.dry_run, args.verbose, True
     )
 
