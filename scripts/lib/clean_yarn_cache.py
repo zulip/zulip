@@ -6,7 +6,7 @@ import sys
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(ZULIP_PATH)
 
-from scripts.lib.zulip_tools import may_be_perform_purging, parse_cache_script_args
+from scripts.lib.zulip_tools import maybe_perform_purging, parse_cache_script_args
 
 YARN_CACHE_PATH = os.path.expanduser("~/.cache/yarn/")
 CURRENT_VERSION = "v6"
@@ -30,7 +30,7 @@ def remove_unused_versions_dir(args: argparse.Namespace) -> None:
         return
 
     no_headings = getattr(args, "no_headings", False)
-    may_be_perform_purging(
+    maybe_perform_purging(
         dirs_to_purge,
         {current_version_dir},
         "yarn cache",
