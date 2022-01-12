@@ -8,7 +8,7 @@ from django.utils.translation import gettext as _
 from zerver.decorator import require_member_or_admin, require_realm_admin
 from zerver.lib.actions import (
     do_create_multiuse_invite_link,
-    do_get_user_invites,
+    do_get_invites_controlled_by_user,
     do_invite_users,
     do_resend_user_invite_email,
     do_revoke_multi_use_invite,
@@ -99,7 +99,7 @@ def get_invitee_emails_set(invitee_emails_raw: str) -> Set[str]:
 
 @require_member_or_admin
 def get_user_invites(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    all_users = do_get_user_invites(user_profile)
+    all_users = do_get_invites_controlled_by_user(user_profile)
     return json_success({"invites": all_users})
 
 
