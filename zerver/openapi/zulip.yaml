@@ -4132,7 +4132,7 @@ paths:
             The ID of the stream to access.
           schema:
             type: integer
-          example: 42
+          example: 43
           required: true
       responses:
         "200":
@@ -4157,7 +4157,7 @@ paths:
             The ID of the stream to access.
           schema:
             type: integer
-          example: 42
+          example: 43
           required: true
         - name: topic_name
           in: query
@@ -4588,7 +4588,7 @@ paths:
             oneOf:
               - type: string
               - type: integer
-          example: 42
+          example: 43
         - name: num_before
           in: query
           description: |
@@ -5542,7 +5542,7 @@ paths:
             if the target message is not a stream message.
           schema:
             type: integer
-          example: 42
+          example: 43
       responses:
         "200":
           description: Success.
@@ -6980,7 +6980,7 @@ paths:
             The ID of the stream to access.
           schema:
             type: integer
-          example: 42
+          example: 43
           required: false
         - name: topic
           in: query
@@ -7863,7 +7863,7 @@ paths:
             **Changes**: New in Zulip 5.0 (feature level 105).
           schema:
             type: boolean
-          example: false
+          example: true
       responses:
         "200":
           description: Success
@@ -8392,7 +8392,7 @@ paths:
             The ID of the linkifier that you want to remove.
           schema:
             type: integer
-          example: 42
+          example: 43
           required: true
       responses:
         "200":
@@ -12509,7 +12509,7 @@ paths:
             **Changes**: New in Zulip 5.0 (feature level 105).
           schema:
             type: boolean
-          example: false
+          example: true
       responses:
         "200":
           description: Success
@@ -15371,7 +15371,7 @@ components:
         The target message's ID.
       schema:
         type: integer
-      example: 42
+      example: 43
       required: true
     UserId:
       name: user_id
