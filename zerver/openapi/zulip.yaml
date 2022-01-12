@@ -4306,10 +4306,12 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/JsonSuccessBase"
                   - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
+                      result: {}
+                      msg: {}
                       count:
                         type: integer
                         description: |
@@ -4393,7 +4395,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/JsonSuccessBase"
                   - additionalProperties: false
                     description: |
                       When all of the drafts in the request are valid, this endpoint will return
@@ -4402,6 +4404,8 @@ paths:
                       step, then none of the drafts will be created and we would not get this
                       status code. The typical JSON response in such a case is:
                     properties:
+                      result: {}
+                      msg: {}
                       ids:
                         type: array
                         description: |
@@ -12519,6 +12523,8 @@ paths:
                   - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
+                      result: {}
+                      msg: {}
                       subscribers:
                         type: array
                         items:
