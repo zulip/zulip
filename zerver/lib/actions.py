@@ -813,6 +813,29 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
     if user_profile.is_bot:
         notify_created_bot(user_profile)
 
+    subscribed_recipient_ids = Subscription.objects.filter(
+        user_profile_id=user_profile.id, active=True, recipient__type=Recipient.STREAM
+    ).values_list("recipient__type_id", flat=True)
+    subscribed_streams = Stream.objects.filter(id__in=subscribed_recipient_ids, deactivated=False)
+    subscriber_peer_info = bulk_get_subscriber_peer_info(
+        realm=user_profile.realm,
+        streams=subscribed_streams,
+    )
+
+    altered_user_dict: Dict[int, Set[int]] = defaultdict(set)
+    for stream in subscribed_streams:
+        altered_user_dict[stream.id] = {user_profile.id}
+
+    stream_dict = {stream.id: stream for stream in subscribed_streams}
+
+    send_peer_subscriber_events(
+        op="peer_add",
+        realm=user_profile.realm,
+        altered_user_dict=altered_user_dict,
+        stream_dict=stream_dict,
+        private_peer_dict=subscriber_peer_info.private_peer_dict,
+    )
+
 
 def active_humans_in_realm(realm: Realm) -> Sequence[UserProfile]:
     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
