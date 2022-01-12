@@ -9157,9 +9157,11 @@ paths:
                                 rendered_description: {}
                                 is_web_public: {}
                                 stream_post_policy: {}
-                                message_retention_days: {}
+                                message_retention_days:
+                                  nullable: true
                                 history_public_to_subscribers: {}
-                                first_message_id: {}
+                                first_message_id:
+                                  nullable: true
                                 is_announcement_only: {}
                                 stream_weekly_traffic:
                                   type: integer
@@ -11604,16 +11606,19 @@ paths:
                               properties:
                                 email: {}
                                 is_bot: {}
-                                avatar_url: {}
+                                avatar_url:
+                                  nullable: true
                                 avatar_version: {}
                                 full_name: {}
                                 is_admin: {}
                                 is_owner: {}
                                 is_billing_admin: {}
                                 role: {}
-                                bot_type: {}
+                                bot_type:
+                                  nullable: true
                                 user_id: {}
-                                bot_owner_id: {}
+                                bot_owner_id:
+                                  nullable: true
                                 is_active: {}
                                 is_guest: {}
                                 timezone: {}
@@ -12653,9 +12658,11 @@ paths:
                                 rendered_description: {}
                                 is_web_public: {}
                                 stream_post_policy: {}
-                                message_retention_days: {}
+                                message_retention_days:
+                                  nullable: true
                                 history_public_to_subscribers: {}
-                                first_message_id: {}
+                                first_message_id:
+                                  nullable: true
                                 is_announcement_only: {}
                                 is_default:
                                   type: boolean
@@ -13417,7 +13424,8 @@ paths:
                       - $ref: "#/components/schemas/MessagesBase"
                       - additionalProperties: false
                         properties:
-                          avatar_url: {}
+                          avatar_url:
+                            nullable: true
                           client: {}
                           content: {}
                           content_type: {}
@@ -13617,9 +13625,11 @@ components:
             rendered_description: {}
             is_web_public: {}
             stream_post_policy: {}
-            message_retention_days: {}
+            message_retention_days:
+              nullable: true
             history_public_to_subscribers: {}
-            first_message_id: {}
+            first_message_id:
+              nullable: true
             is_announcement_only: {}
     BasicStreamBase:
       type: object
@@ -13727,11 +13737,14 @@ components:
             user_id: {}
             full_name: {}
             api_key: {}
-            default_sending_stream: {}
-            default_events_register_stream: {}
+            default_sending_stream:
+              nullable: true
+            default_events_register_stream:
+              nullable: true
             default_all_public_streams: {}
             avatar_url: {}
-            owner_id: {}
+            owner_id:
+              nullable: true
             services: {}
     BasicBotBase:
       type: object
@@ -13831,11 +13844,14 @@ components:
             user_id: {}
             full_name: {}
             api_key: {}
-            default_sending_stream: {}
-            default_events_register_stream: {}
+            default_sending_stream:
+              nullable: true
+            default_events_register_stream:
+              nullable: true
             default_all_public_streams: {}
             avatar_url: {}
-            owner_id: {}
+            owner_id:
+              nullable: true
             services: {}
             email:
               type: string
@@ -14434,7 +14450,8 @@ components:
         - $ref: "#/components/schemas/MessagesBase"
         - additionalProperties: false
           properties:
-            avatar_url: {}
+            avatar_url:
+              nullable: true
             client: {}
             content: {}
             content_type: {}
@@ -14610,7 +14627,8 @@ components:
         - $ref: "#/components/schemas/MessagesBase"
         - additionalProperties: false
           properties:
-            avatar_url: {}
+            avatar_url:
+              nullable: true
             client: {}
             content: {}
             content_type: {}
@@ -14746,16 +14764,19 @@ components:
           properties:
             email: {}
             is_bot: {}
-            avatar_url: {}
+            avatar_url:
+              nullable: true
             avatar_version: {}
             full_name: {}
             is_admin: {}
             is_owner: {}
             is_billing_admin: {}
             role: {}
-            bot_type: {}
+            bot_type:
+              nullable: true
             user_id: {}
-            bot_owner_id: {}
+            bot_owner_id:
+              nullable: true
             is_active: {}
             is_guest: {}
             timezone: {}
