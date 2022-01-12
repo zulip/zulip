@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-set -e
+set -eu
+set -o pipefail
 
-SERVER=$1
-ROLES=$2
-BRANCH=$3
+SERVER=${1:-}
+ROLES=${2:-}
+BRANCH=${3:-}
 if [ -z "$SERVER" ] || [ -z "$ROLES" ]; then
     echo "USAGE: $0 server roles [branch]"
     echo
