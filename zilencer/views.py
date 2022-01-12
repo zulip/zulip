@@ -13,6 +13,7 @@ from django.utils.translation import gettext as err_
 from django.views.decorators.csrf import csrf_exempt
 
 from analytics.lib.counts import COUNT_STATS
+from corporate.lib.stripe import do_deactivate_remote_server
 from zerver.decorator import InvalidZulipServerKeyError, require_post
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
@@ -73,6 +74,17 @@ def validate_bouncer_token_request(
     server = validate_entity(entity)
     validate_token(token, kind)
     return server
+
+
+@csrf_exempt
+@require_post
+@has_request_variables
+def deactivate_remote_server(
+    request: HttpRequest,
+    remote_server: RemoteZulipServer,
+) -> HttpResponse:
+    do_deactivate_remote_server(remote_server)
+    return json_success()
 
 
 @csrf_exempt
