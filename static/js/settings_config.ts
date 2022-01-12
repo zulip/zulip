@@ -507,7 +507,7 @@ export const notification_settings_labels = {
         defaultMessage: "Include content of private messages in desktop notifications",
     }),
     desktop_icon_count_display: $t({
-        defaultMessage: "Unread count summary (appears in desktop sidebar and browser tab)",
+        defaultMessage: "Unread count badge (appears in desktop sidebar and browser tab)",
     }),
     enable_digest_emails: $t({defaultMessage: "Send digest emails when I'm away"}),
     enable_login_emails: $t({

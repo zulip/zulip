@@ -8097,7 +8097,7 @@ paths:
         - name: desktop_icon_count_display
           in: query
           description: |
-            Unread count summary (appears in desktop sidebar and browser tab)
+            Unread count badge (appears in desktop sidebar and browser tab)
 
             - 1 - All unreads
             - 2 - Private messages and mentions
@@ -9982,7 +9982,7 @@ paths:
                           desktop_icon_count_display:
                             type: integer
                             description: |
-                              Unread count summary (appears in desktop sidebar and browser tab)
+                              Unread count badge (appears in desktop sidebar and browser tab)
 
                               - 1 - All unreads
                               - 2 - Private messages and mentions
@@ -11681,7 +11681,7 @@ paths:
                           desktop_icon_count_display:
                             type: integer
                             description: |
-                              Unread count summary (appears in desktop sidebar and browser tab)
+                              Unread count badge (appears in desktop sidebar and browser tab)
 
                               - 1 - All unreads
                               - 2 - Private messages and mentions
@@ -12788,7 +12788,7 @@ paths:
         - name: desktop_icon_count_display
           in: query
           description: |
-            Unread count summary (appears in desktop sidebar and browser tab)
+            Unread count badge (appears in desktop sidebar and browser tab)
 
             - 1 - All unreads
             - 2 - Private messages and mentions
