@@ -1848,10 +1848,23 @@ class NormalActionsTest(BaseAction):
 
     def test_do_reactivate_user(self) -> None:
         bot = self.create_bot("test")
+        self.subscribe(bot, "Denmark")
+        self.make_stream("Test private stream", invite_only=True)
+        self.subscribe(bot, "Test private stream")
         do_deactivate_user(bot, acting_user=None)
         action = lambda: do_reactivate_user(bot, acting_user=None)
-        events = self.verify_action(action, num_events=2)
+        events = self.verify_action(action, num_events=3)
         check_realm_bot_add("events[1]", events[1])
+        check_subscription_peer_add("events[2]", events[2])
+
+        # Test 'peer_add' event for private stream is received only if user is subscribed to it.
+        do_deactivate_user(bot, acting_user=None)
+        self.subscribe(self.example_user("hamlet"), "Test private stream")
+        action = lambda: do_reactivate_user(bot, acting_user=None)
+        events = self.verify_action(action, num_events=4)
+        check_realm_bot_add("events[1]", events[1])
+        check_subscription_peer_add("events[2]", events[2])
+        check_subscription_peer_add("events[3]", events[3])
 
     def test_do_deactivate_realm(self) -> None:
         realm = self.user_profile.realm
