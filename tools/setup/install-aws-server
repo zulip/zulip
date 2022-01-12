@@ -69,11 +69,12 @@ if [ "$EXISTING_RECORDS" != "0" ]; then
     exit 1
 fi
 
+# shellcheck disable=SC2206  # We intentionally split $SECURITY_GROUPS
 EXTRA_ARGS+=(
     --iam-instance-profile "Name=\"$IAM_PROFILE\""
     --image-id "$AMI_ID"
     --instance-type "$INSTANCE_TYPE"
-    --security-group-ids "$SECURITY_GROUPS"
+    --security-group-ids $SECURITY_GROUPS
     --monitoring Enabled=true
 )
 
