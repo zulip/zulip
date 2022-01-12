@@ -38,7 +38,7 @@ class zulip_ops::profile::base {
   zulip::safepackage { $org_base_packages: ensure => 'installed' }
 
   # Uninstall the AWS kernel, but only after we install the usual one
-  package { 'linux-image-aws':
+  package { ['linux-image-aws', 'linux-headers-aws', 'linux-aws-*', 'linux-image-*-aws', 'linux-modules-*-aws']:
     ensure  => absent,
     require => Package['linux-image-virtual'],
   }
