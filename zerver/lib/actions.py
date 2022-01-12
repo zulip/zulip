@@ -1300,6 +1300,7 @@ def do_deactivate_user(
 
         delete_user_sessions(user_profile)
         clear_scheduled_emails(user_profile.id)
+        revoke_invites_generated_by_user(user_profile)
 
         event_time = timezone_now()
         RealmAuditLog.objects.create(
@@ -7532,6 +7533,39 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> List[Dict[st
             )
         )
     return invites
+
+
+def get_valid_invite_confirmations_generated_by_user(
+    user_profile: UserProfile,
+) -> List[Confirmation]:
+    prereg_user_ids = filter_to_valid_prereg_users(
+        PreregistrationUser.objects.filter(referred_by=user_profile)
+    ).values_list("id", flat=True)
+    confirmations = list(
+        Confirmation.objects.filter(type=Confirmation.INVITATION, object_id__in=prereg_user_ids)
+    )
+
+    multiuse_invite_ids = MultiuseInvite.objects.filter(referred_by=user_profile).values_list(
+        "id", flat=True
+    )
+    confirmations += list(
+        Confirmation.objects.filter(
+            type=Confirmation.MULTIUSE_INVITE,
+            expiry_date__gte=timezone_now(),
+            object_id__in=multiuse_invite_ids,
+        )
+    )
+
+    return confirmations
+
+
+def revoke_invites_generated_by_user(user_profile: UserProfile) -> None:
+    confirmations_to_revoke = get_valid_invite_confirmations_generated_by_user(user_profile)
+    now = timezone_now()
+    for confirmation in confirmations_to_revoke:
+        confirmation.expiry_date = now
+
+    Confirmation.objects.bulk_update(confirmations_to_revoke, ["expiry_date"])
 
 
 def do_create_multiuse_invite_link(
