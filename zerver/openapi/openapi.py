@@ -361,6 +361,24 @@ def fix_events(content: Dict[str, Any]) -> None:
         event.pop("user", None)
 
 
+def prune_type_schema_by_type(schema: Dict[str, Any], type: str) -> bool:
+    return ("enum" in schema and type not in schema["enum"]) or (
+        "allOf" in schema
+        and any(prune_type_schema_by_type(subschema, type) for subschema in schema["allOf"])
+    )
+
+
+def prune_schema_by_type(schema: Dict[str, Any], type: str) -> bool:
+    return (
+        "properties" in schema
+        and "type" in schema["properties"]
+        and prune_type_schema_by_type(schema["properties"]["type"], type)
+    ) or (
+        "allOf" in schema
+        and any(prune_schema_by_type(subschema, type) for subschema in schema["allOf"])
+    )
+
+
 def validate_against_openapi_schema(
     content: Dict[str, Any],
     path: str,
@@ -423,18 +441,18 @@ def validate_against_openapi_schema(
         # (E.g. the several dozen format variants for individual
         # events returned by GET /events) and instead just display the
         # specific variant we expect to match the response.
-        brief_error_display_schema = {"nullable": False, "oneOf": list()}
-        brief_error_display_schema_oneOf = []
-        brief_error_validator_value = []
-
-        for validator_value in error.validator_value:
-            if validator_value["example"]["type"] == error.instance["type"]:
-                brief_error_validator_value.append(validator_value)
-
-        for i_schema in error.schema["oneOf"]:
-            if i_schema["example"]["type"] == error.instance["type"]:
-                brief_error_display_schema_oneOf.append(i_schema)
-        brief_error_display_schema["oneOf"] = brief_error_display_schema_oneOf
+        brief_error_validator_value = [
+            validator_value
+            for validator_value in error.validator_value
+            if not prune_schema_by_type(validator_value, error.instance["type"])
+        ]
+        brief_error_display_schema = error.schema.copy()
+        if "oneOf" in brief_error_display_schema:
+            brief_error_display_schema["oneOf"] = [
+                i_schema
+                for i_schema in error.schema["oneOf"]
+                if not prune_schema_by_type(i_schema, error.instance["type"])
+            ]
 
         # Field list from https://python-jsonschema.readthedocs.io/en/stable/errors/
         raise JsonSchemaValidationError(
