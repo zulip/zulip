@@ -3,8 +3,6 @@ import _ from "lodash";
 
 import {page_params} from "../page_params";
 
-const contributors_list = page_params.contributors;
-
 const repo_name_to_tab_name = {
     zulip: "server",
     "zulip-desktop": "desktop",
@@ -58,6 +56,10 @@ function get_display_name(contributor) {
     return contributor.name;
 }
 
+function exclude_bot_contributors(contributor) {
+    return contributor.github_username !== "dependabot[bot]";
+}
+
 // TODO (for v2 of /team contributors):
 //   - Make tab header responsive.
 //   - Display full name instead of GitHub username.
@@ -65,6 +67,7 @@ export default function render_tabs() {
     const template = _.template($("#contributors-template").html());
     const count_template = _.template($("#count-template").html());
     const total_count_template = _.template($("#total-count-template").html());
+    const contributors_list = page_params.contributors.filter((c) => exclude_bot_contributors(c));
     const total_tab_html = contributors_list
         .map((c) => ({
             name: get_display_name(c),
