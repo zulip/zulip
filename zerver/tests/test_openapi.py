@@ -8,7 +8,6 @@ from unittest.mock import MagicMock, patch
 import yaml
 from django.http import HttpResponse
 from django.utils import regex_helper
-from jsonschema.exceptions import ValidationError
 
 from zerver.lib.request import _REQ, arguments_map
 from zerver.lib.rest import rest_dispatch
@@ -86,7 +85,7 @@ class OpenAPIToolsTest(ZulipTestCase):
 
     def test_validate_against_openapi_schema(self) -> None:
         with self.assertRaisesRegex(
-            ValidationError, r"Additional properties are not allowed \('foo' was unexpected\)"
+            SchemaError, r"Additional properties are not allowed \('foo' was unexpected\)"
         ):
             bad_content: Dict[str, object] = {
                 "msg": "",
@@ -97,7 +96,7 @@ class OpenAPIToolsTest(ZulipTestCase):
                 bad_content, TEST_ENDPOINT, TEST_METHOD, TEST_RESPONSE_SUCCESS
             )
 
-        with self.assertRaisesRegex(ValidationError, r"42 is not of type string"):
+        with self.assertRaisesRegex(SchemaError, r"42 is not of type string"):
             bad_content = {
                 "msg": 42,
                 "result": "success",
@@ -106,7 +105,7 @@ class OpenAPIToolsTest(ZulipTestCase):
                 bad_content, TEST_ENDPOINT, TEST_METHOD, TEST_RESPONSE_SUCCESS
             )
 
-        with self.assertRaisesRegex(ValidationError, r"'msg' is a required property"):
+        with self.assertRaisesRegex(SchemaError, r"'msg' is a required property"):
             bad_content = {
                 "result": "success",
             }
@@ -148,7 +147,7 @@ class OpenAPIToolsTest(ZulipTestCase):
                 "200",
             )
             with self.assertRaisesRegex(
-                ValidationError,
+                SchemaError,
                 r"\{'obj': \{'str3': 'test', 'str4': 'extraneous'\}\} is not valid under any of the given schemas",
             ):
                 validate_against_openapi_schema(
