@@ -76,6 +76,7 @@ from zerver.models import (
     get_realm,
     get_stream,
 )
+from zilencer.models import RemoteZulipServerAuditLog
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import (
@@ -2485,6 +2486,44 @@ class TestPushNotificationsContent(ZulipTestCase):
 
 @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
 class PushBouncerSignupTest(ZulipTestCase):
+    def test_deactivate_remote_server(self) -> None:
+        zulip_org_id = str(uuid.uuid4())
+        zulip_org_key = get_random_string(64)
+        request = dict(
+            zulip_org_id=zulip_org_id,
+            zulip_org_key=zulip_org_key,
+            hostname="example.com",
+            contact_email="server-admin@example.com",
+        )
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_success(result)
+        server = RemoteZulipServer.objects.get(uuid=zulip_org_id)
+        self.assertEqual(server.hostname, "example.com")
+        self.assertEqual(server.contact_email, "server-admin@example.com")
+
+        request = dict(zulip_org_id=zulip_org_id, zulip_org_key=zulip_org_key)
+        result = self.uuid_post(
+            zulip_org_id, "/api/v1/remotes/server/deactivate", request, subdomain=""
+        )
+        self.assert_json_success(result)
+
+        server = RemoteZulipServer.objects.get(uuid=zulip_org_id)
+        remote_realm_audit_log = RemoteZulipServerAuditLog.objects.filter(
+            event_type=RealmAuditLog.REMOTE_SERVER_DEACTIVATED
+        ).last()
+        assert remote_realm_audit_log is not None
+        self.assertTrue(server.deactivated)
+
+        # Now test that trying to deactivate again reports the right error.
+        result = self.uuid_post(
+            zulip_org_id, "/api/v1/remotes/server/deactivate", request, subdomain=""
+        )
+        self.assert_json_error(
+            result,
+            "The mobile push notification service registration for your server has been deactivated",
+            status_code=401,
+        )
+
     def test_push_signup_invalid_host(self) -> None:
         zulip_org_id = str(uuid.uuid4())
         zulip_org_key = get_random_string(64)
