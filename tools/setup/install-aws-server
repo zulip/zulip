@@ -56,6 +56,7 @@ AMI_ID=$(lookup image_id)
 INSTANCE_TYPE=$(lookup instance_type)
 IAM_PROFILE=$(lookup iam_profile)
 SSH_SECRET_ID=$(lookup ssh_secret_id)
+AZ=$(lookup availability_zone)
 
 # Verify it doesn't exist already
 ZONE_NAME=$($AWS route53 get-hosted-zone --id "$AWS_ZONE_ID" | jq -r '.HostedZone.Name')
@@ -76,6 +77,7 @@ EXTRA_ARGS+=(
     --instance-type "$INSTANCE_TYPE"
     --security-group-ids $SECURITY_GROUPS
     --monitoring Enabled=true
+    --placement "AvailabilityZone=$AZ"
 )
 
 # Build up the provisioning script
