@@ -13625,7 +13625,6 @@ components:
       type: object
       description: |
         Object containing basic details about the stream.
-      additionalProperties: false
       properties:
         stream_id:
           type: integer
