@@ -78,6 +78,7 @@ EXTRA_ARGS+=(
     --security-group-ids $SECURITY_GROUPS
     --monitoring Enabled=true
     --placement "AvailabilityZone=$AZ"
+    --block-device-mappings "DeviceName=/dev/sda1,Ebs={VolumeType=gp3,Throughput=125,Iops=3000,Encrypted=true}"
 )
 
 # Build up the provisioning script
