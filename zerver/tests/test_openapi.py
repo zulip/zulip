@@ -85,8 +85,8 @@ class OpenAPIToolsTest(ZulipTestCase):
         assert expected_item in actual
 
     def test_validate_against_openapi_schema(self) -> None:
-        with self.assertRaises(
-            ValidationError, msg="Additional properties are not allowed ('foo' was unexpected)"
+        with self.assertRaisesRegex(
+            ValidationError, r"Additional properties are not allowed \('foo' was unexpected\)"
         ):
             bad_content: Dict[str, object] = {
                 "msg": "",
@@ -97,7 +97,7 @@ class OpenAPIToolsTest(ZulipTestCase):
                 bad_content, TEST_ENDPOINT, TEST_METHOD, TEST_RESPONSE_SUCCESS
             )
 
-        with self.assertRaises(ValidationError, msg=("42 is not of type string")):
+        with self.assertRaisesRegex(ValidationError, r"42 is not of type string"):
             bad_content = {
                 "msg": 42,
                 "result": "success",
@@ -106,7 +106,7 @@ class OpenAPIToolsTest(ZulipTestCase):
                 bad_content, TEST_ENDPOINT, TEST_METHOD, TEST_RESPONSE_SUCCESS
             )
 
-        with self.assertRaises(ValidationError, msg='Expected to find the "msg" required key'):
+        with self.assertRaisesRegex(ValidationError, r"'msg' is a required property"):
             bad_content = {
                 "result": "success",
             }
@@ -142,8 +142,9 @@ class OpenAPIToolsTest(ZulipTestCase):
                 "test1",
                 "200",
             )
-            with self.assertRaises(
-                ValidationError, msg='Extraneous key "str4" in response\'s content'
+            with self.assertRaisesRegex(
+                ValidationError,
+                r"\{'obj': \{'str3': 'test', 'str4': 'extraneous'\}\} is not valid under any of the given schemas",
             ):
                 validate_against_openapi_schema(
                     (
@@ -155,7 +156,10 @@ class OpenAPIToolsTest(ZulipTestCase):
                     "test2",
                     "200",
                 )
-            with self.assertRaises(SchemaError, msg='Opaque object "obj"'):
+            with self.assertRaisesRegex(
+                SchemaError,
+                r"additionalProperties needs to be defined for objects to makesure they have no additional properties left to be documented\.",
+            ):
                 # Checks for opaque objects
                 validate_schema(
                     test_dict["test3"]["responses"]["200"]["content"]["application/json"]["schema"]
