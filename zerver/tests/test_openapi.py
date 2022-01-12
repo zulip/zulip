@@ -132,14 +132,19 @@ class OpenAPIToolsTest(ZulipTestCase):
         # 'deep' opaque object. Also the parameters are a heterogeneous
         # mix of arrays and objects to verify that our descent logic
         # correctly gets to the the deeply nested objects.
-        with open(os.path.join(os.path.dirname(OPENAPI_SPEC_PATH), "testing.yaml")) as test_file:
+        test_filename = os.path.join(os.path.dirname(OPENAPI_SPEC_PATH), "testing.yaml")
+        with open(test_filename) as test_file:
             test_dict = yaml.safe_load(test_file)
-        openapi_spec.openapi()["paths"]["testing"] = test_dict
-        try:
+        with patch("zerver.openapi.openapi.openapi_spec", OpenAPISpec(test_filename)):
             validate_against_openapi_schema(
-                (test_dict["test1"]["responses"]["200"]["content"]["application/json"]["example"]),
-                "testing",
-                "test1",
+                {
+                    "top_array": [
+                        {"obj": {"str3": "test"}},
+                        [{"str1": "success", "str2": "success"}],
+                    ],
+                },
+                "/test1",
+                "get",
                 "200",
             )
             with self.assertRaisesRegex(
@@ -147,13 +152,14 @@ class OpenAPIToolsTest(ZulipTestCase):
                 r"\{'obj': \{'str3': 'test', 'str4': 'extraneous'\}\} is not valid under any of the given schemas",
             ):
                 validate_against_openapi_schema(
-                    (
-                        test_dict["test2"]["responses"]["200"]["content"]["application/json"][
-                            "example"
-                        ]
-                    ),
-                    "testing",
-                    "test2",
+                    {
+                        "top_array": [
+                            {"obj": {"str3": "test", "str4": "extraneous"}},
+                            [{"str1": "success", "str2": "success"}],
+                        ],
+                    },
+                    "/test2",
+                    "get",
                     "200",
                 )
             with self.assertRaisesRegex(
@@ -162,10 +168,10 @@ class OpenAPIToolsTest(ZulipTestCase):
             ):
                 # Checks for opaque objects
                 validate_schema(
-                    test_dict["test3"]["responses"]["200"]["content"]["application/json"]["schema"]
+                    test_dict["paths"]["/test3"]["get"]["responses"]["200"]["content"][
+                        "application/json"
+                    ]["schema"]
                 )
-        finally:
-            openapi_spec.openapi()["paths"].pop("testing", None)
 
     def test_live_reload(self) -> None:
         # Force the reload by making the last update date < the file's last
