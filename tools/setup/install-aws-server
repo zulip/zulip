@@ -72,6 +72,7 @@ if [ "$EXISTING_RECORDS" != "0" ]; then
     exit 1
 fi
 
+# https://docs.aws.amazon.com/cli/latest/reference/ec2/run-instances.html
 # shellcheck disable=SC2206  # We intentionally split $SECURITY_GROUPS
 EXTRA_ARGS+=(
     --iam-instance-profile "Name=\"$IAM_PROFILE\""
