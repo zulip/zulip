@@ -347,7 +347,8 @@ exports.with_field_rewire = function (obj, field, val, f) {
     // as exporting a helper function for tests from the module
     // containing the function you need to mock.
 
-    const old_val = obj[field];
+    // https://github.com/rosswarren/babel-plugin-rewire-ts/issues/15
+    const old_val = field in obj ? obj[field] : obj.__GetDependency__(field);
 
     if (typeof old_val === "function") {
         throw new TypeError("Please try to avoid mocking here, or use override_rewire.");
@@ -365,7 +366,8 @@ exports.with_function_call_disallowed_rewire = function (obj, field, f) {
     // This is deprecated because it relies on the slow
     // babel-plugin-rewire-ts plugin.
 
-    const old_val = obj[field];
+    // https://github.com/rosswarren/babel-plugin-rewire-ts/issues/15
+    const old_val = field in obj ? obj[field] : obj.__GetDependency__(field);
 
     if (typeof old_val !== "function") {
         throw new TypeError(`Expected a function for ${field}`);
@@ -470,7 +472,9 @@ exports.with_overrides = function (test_function) {
 
         unused_funcs.get(obj).set(func_name, true);
 
-        const old_f = obj[func_name];
+        // https://github.com/rosswarren/babel-plugin-rewire-ts/issues/15
+        const old_f = func_name in obj ? obj[func_name] : obj.__GetDependency__(func_name);
+
         const new_f = function (...args) {
             unused_funcs.get(obj).delete(func_name);
             return f.apply(this, args);
