@@ -684,7 +684,7 @@ class S3UploadBackend(ZulipUploadBackend):
     def upload_emoji_image(
         self, emoji_file: IO[bytes], emoji_file_name: str, user_profile: UserProfile
     ) -> bool:
-        content_type = guess_type(emoji_file.name)[0]
+        content_type = guess_type(emoji_file_name)[0]
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=user_profile.realm_id,
             emoji_file_name=emoji_file_name,
