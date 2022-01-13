@@ -24,7 +24,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_safe
-from jinja2.utils import Markup as mark_safe
+from markupsafe import Markup as mark_safe
 from social_django.utils import load_backend, load_strategy
 from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView
