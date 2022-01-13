@@ -286,8 +286,10 @@ class IntegrationView(ApiURLView):
 
 @has_request_variables
 def integration_doc(request: HttpRequest, integration_name: str = REQ()) -> HttpResponse:
-    if not request.is_ajax():
+    # FIXME: This check is jQuery-specific.
+    if request.headers.get("x-requested-with") != "XMLHttpRequest":
         return HttpResponseNotFound()
+
     try:
         integration = INTEGRATIONS[integration_name]
     except KeyError:
