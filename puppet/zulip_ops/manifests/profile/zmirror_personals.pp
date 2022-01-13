@@ -8,7 +8,6 @@ class zulip_ops::profile::zmirror_personals {
     'zephyr-clients',
     'krb5-config',
     'krb5-user',
-    'debathena-zephyr-config',
     # Packages needed to build pyzephyr
     'libzephyr-dev',
     'comerr-dev',
