@@ -4,7 +4,7 @@ from typing import Any, Set
 
 import orjson
 from django.conf import settings
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util import Retry
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.outgoing_http import OutgoingSession

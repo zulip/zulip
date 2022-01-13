@@ -97,6 +97,7 @@ module = [
     "tornado.*",
     "twitter.*",
     "two_factor.*",
+    "urllib3.*",
     "zxcvbn.*",
 ]
 ignore_missing_imports = true
