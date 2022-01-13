@@ -65,8 +65,8 @@ from zerver.lib.storage import static_path
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     create_s3_buckets,
-    get_test_image_file,
     load_subdomain_token,
+    read_test_image_file,
     use_s3_backend,
 )
 from zerver.lib.types import Validator
@@ -6228,8 +6228,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
     @use_s3_backend
     def test_update_user_avatar_for_s3(self) -> None:
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
-        with get_test_image_file("img.png") as f:
-            test_image_data = f.read()
+        test_image_data = read_test_image_file("img.png")
         self.change_ldap_user_attr("hamlet", "jpegPhoto", test_image_data)
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "avatar": "jpegPhoto"}):
             self.perform_ldap_sync(self.example_user("hamlet"))

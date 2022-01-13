@@ -40,6 +40,7 @@ from zerver.lib.test_helpers import (
     create_s3_buckets,
     get_test_image_file,
     queries_captured,
+    read_test_image_file,
     use_s3_backend,
 )
 from zerver.lib.upload import (
@@ -1302,8 +1303,7 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
     # with a corresponding increase in the duration of the previous frame.
     def test_resize_emoji(self) -> None:
         # Test unequal width and height of animated GIF image
-        with get_test_image_file("animated_unequal_img.gif") as f:
-            animated_unequal_img_data = f.read()
+        animated_unequal_img_data = read_test_image_file("animated_unequal_img.gif")
         resized_img_data, is_animated, still_img_data = resize_emoji(
             animated_unequal_img_data, size=50
         )
@@ -1315,14 +1315,12 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual((50, 50), still_image.size)
 
         # Test corrupt image exception
-        with get_test_image_file("corrupt.gif") as f:
-            corrupted_img_data = f.read()
+        corrupted_img_data = read_test_image_file("corrupt.gif")
         with self.assertRaises(BadImageError):
             resize_emoji(corrupted_img_data)
 
         # Test an image larger than max is resized
-        with get_test_image_file("animated_large_img.gif") as f:
-            animated_large_img_data = f.read()
+        animated_large_img_data = read_test_image_file("animated_large_img.gif")
         with patch("zerver.lib.upload.MAX_EMOJI_GIF_SIZE", 128):
             resized_img_data, is_animated, still_img_data = resize_emoji(
                 animated_large_img_data, size=50
@@ -1335,8 +1333,7 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
             self.assertEqual((50, 50), still_image.size)
 
         # Test an image file larger than max is resized
-        with get_test_image_file("animated_large_img.gif") as f:
-            animated_large_img_data = f.read()
+        animated_large_img_data = read_test_image_file("animated_large_img.gif")
         with patch("zerver.lib.upload.MAX_EMOJI_GIF_FILE_SIZE_BYTES", 3 * 1024 * 1024):
             resized_img_data, is_animated, still_img_data = resize_emoji(
                 animated_large_img_data, size=50
@@ -1349,8 +1346,7 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
             self.assertEqual((50, 50), still_image.size)
 
         # Test an image smaller than max and smaller than file size max is not resized
-        with get_test_image_file("animated_large_img.gif") as f:
-            animated_large_img_data = f.read()
+        animated_large_img_data = read_test_image_file("animated_large_img.gif")
         with patch("zerver.lib.upload.MAX_EMOJI_GIF_SIZE", 512):
             resized_img_data, is_animated, still_img_data = resize_emoji(
                 animated_large_img_data, size=50
@@ -1723,8 +1719,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         user_profile = self.example_user("hamlet")
         file_path = user_avatar_path(user_profile)
 
-        with get_test_image_file("img.png") as image_file:
-            write_local_file("avatars", file_path + ".original", image_file.read())
+        write_local_file("avatars", file_path + ".original", read_test_image_file("img.png"))
 
         image_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", file_path + ".original")
         with open(image_path, "rb") as f:
@@ -1756,10 +1751,8 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
         assert settings.LOCAL_UPLOADS_DIR is not None
         file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", emoji_path)
-        with get_test_image_file("img.png") as image_file, open(
-            file_path + ".original", "rb"
-        ) as original_file:
-            self.assertEqual(image_file.read(), original_file.read())
+        with open(file_path + ".original", "rb") as original_file:
+            self.assertEqual(read_test_image_file("img.png"), original_file.read())
 
         expected_size = (DEFAULT_EMOJI_SIZE, DEFAULT_EMOJI_SIZE)
         with Image.open(file_path) as resized_image:
@@ -1951,8 +1944,7 @@ class S3Test(ZulipTestCase):
             zerver.lib.upload.upload_backend.upload_avatar_image(
                 image_file, user_profile, user_profile
             )
-        with open(get_test_image_file("img.png").name, "rb") as f:
-            test_image_data = f.read()
+        test_image_data = read_test_image_file("img.png")
         test_medium_image_data = resize_avatar(test_image_data, MEDIUM_AVATAR_SIZE)
 
         original_image_key = bucket.Object(original_image_path_id)
@@ -2057,8 +2049,7 @@ class S3Test(ZulipTestCase):
 
         original_path_id = os.path.join(str(user_profile.realm.id), "realm", "icon.original")
         original_key = bucket.Object(original_path_id)
-        with get_test_image_file("img.png") as image_file:
-            self.assertEqual(image_file.read(), original_key.get()["Body"].read())
+        self.assertEqual(read_test_image_file("img.png"), original_key.get()["Body"].read())
 
         resized_path_id = os.path.join(str(user_profile.realm.id), "realm", "icon.png")
         resized_data = bucket.Object(resized_path_id).get()["Body"].read()
@@ -2080,8 +2071,7 @@ class S3Test(ZulipTestCase):
             str(user_profile.realm.id), "realm", f"{file_name}.original"
         )
         original_key = bucket.Object(original_path_id)
-        with get_test_image_file("img.png") as image_file:
-            self.assertEqual(image_file.read(), original_key.get()["Body"].read())
+        self.assertEqual(read_test_image_file("img.png"), original_key.get()["Body"].read())
 
         resized_path_id = os.path.join(str(user_profile.realm.id), "realm", f"{file_name}.png")
         resized_data = bucket.Object(resized_path_id).get()["Body"].read()
@@ -2108,8 +2098,7 @@ class S3Test(ZulipTestCase):
             emoji_file_name=emoji_name,
         )
         original_key = bucket.Object(emoji_path + ".original")
-        with get_test_image_file("img.png") as image_file:
-            self.assertEqual(image_file.read(), original_key.get()["Body"].read())
+        self.assertEqual(read_test_image_file("img.png"), original_key.get()["Body"].read())
 
         resized_data = bucket.Object(emoji_path).get()["Body"].read()
         resized_image = Image.open(io.BytesIO(resized_data))

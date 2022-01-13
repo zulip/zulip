@@ -7,7 +7,12 @@ from moto import mock_s3
 from zerver.lib.actions import check_add_realm_emoji
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import avatar_disk_path, create_s3_buckets, get_test_image_file
+from zerver.lib.test_helpers import (
+    avatar_disk_path,
+    create_s3_buckets,
+    get_test_image_file,
+    read_test_image_file,
+)
 from zerver.lib.transfer import (
     transfer_avatars_to_s3,
     transfer_emoji_to_s3,
@@ -98,8 +103,7 @@ class TransferUploadsToS3Test(ZulipTestCase):
         original_key = bucket.Object(emoji_path + ".original")
         resized_key = bucket.Object(emoji_path)
 
-        with get_test_image_file("img.png") as image_file:
-            image_data = image_file.read()
+        image_data = read_test_image_file("img.png")
         resized_image_data, is_animated, still_image_data = resize_emoji(image_data)
 
         self.assertEqual(is_animated, False)
@@ -133,8 +137,7 @@ class TransferUploadsToS3Test(ZulipTestCase):
             )
         )
 
-        with get_test_image_file("animated_img.gif") as image_file:
-            image_data = image_file.read()
+        image_data = read_test_image_file("animated_img.gif")
         resized_image_data, is_animated, still_image_data = resize_emoji(image_data)
 
         self.assertEqual(is_animated, True)
