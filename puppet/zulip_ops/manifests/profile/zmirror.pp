@@ -14,7 +14,7 @@ class zulip_ops::profile::zmirror {
     'libzephyr-dev',
     'comerr-dev',
     'python3-dev',
-    'python-dev',
+    'python2.7-dev',
     'cython3',
     'cython',
   ]
