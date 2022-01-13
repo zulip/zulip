@@ -78,7 +78,7 @@ def add_subscriptions(client: Client) -> None:
     )
     # {code_example|end}
 
-    validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "200_0")
+    validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "200")
 
     ensure_users([26], ["newbie"])
     # {code_example|start}
@@ -104,7 +104,7 @@ def test_add_subscriptions_already_subscribed(client: Client) -> None:
         principals=["newbie@zulip.com"],
     )
 
-    validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "200_1")
+    validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "200")
 
 
 def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> None:
