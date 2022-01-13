@@ -14802,7 +14802,7 @@ components:
           type: boolean
           description: |
             A boolean specifying whether the user is an organization owner.
-            If true, is_admin will also be true.
+            If true, `is_admin` will also be true.
 
             **Changes**: New in Zulip 3.0 (feature level 8).
         is_billing_admin:
@@ -14820,8 +14820,8 @@ components:
             - 400
             - 600
           description: |
-            [Organization-level role](/help/roles-and-permissions)) of the user.
-            Poosible values are:
+            [Organization-level role](/help/roles-and-permissions) of the user.
+            Possible values are:
 
             - Organization owner => 100
             - Organization administrator => 200
