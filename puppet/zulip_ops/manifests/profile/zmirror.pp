@@ -8,7 +8,6 @@ class zulip_ops::profile::zmirror {
     'zephyr-clients',
     'krb5-config',
     'krb5-user',
-    'debathena-kerberos-config',
     'debathena-zephyr-config',
     # Packages needed to build pyzephyr
     'libzephyr-dev',
@@ -39,6 +38,14 @@ class zulip_ops::profile::zmirror {
     group  => 'root',
     mode   => '0644',
     source => 'puppet:///modules/zulip_ops/cron.d/zephyr-mirror',
+  }
+
+  file { '/etc/krb5.conf':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'puppet:///modules/zulip_ops/krb5.conf',
   }
 
   file { '/etc/default/zephyr-clients.debathena':
