@@ -4786,6 +4786,7 @@ def do_change_realm_org_type(
     )
 
 
+@transaction.atomic(savepoint=False)
 def do_change_realm_plan_type(
     realm: Realm, plan_type: int, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -4834,7 +4835,7 @@ def do_change_realm_plan_type(
         "value": plan_type,
         "extra_data": {"upload_quota": realm.upload_quota_bytes()},
     }
-    send_event(realm, event, active_user_ids(realm.id))
+    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
 
 
 @transaction.atomic(durable=True)
