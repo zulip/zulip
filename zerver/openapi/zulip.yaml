@@ -15431,11 +15431,13 @@ components:
       content:
         application/json:
           schema:
-            type: array
-            items:
-              oneOf:
-                - type: string
-                - type: integer
+            oneOf:
+              - type: array
+                items:
+                  type: string
+              - type: array
+                items:
+                  type: integer
           example: ["ZOE@zulip.com"]
     ReactionType:
       name: reaction_type
