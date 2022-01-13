@@ -6699,30 +6699,17 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/AddSubscriptionsResponse"
-                      - $ref: "#/components/schemas/SuccessDescription"
-                      - example:
-                          {
-                            "already_subscribed": {},
-                            "msg": "",
-                            "result": "success",
-                            "subscribed": {"iago@zulip.com": ["new stream"]},
-                          }
-                  - allOf:
-                      - $ref: "#/components/schemas/AddSubscriptionsResponse"
-                      - example:
-                          {
-                            "already_subscribed":
-                              {"newbie@zulip.com": ["new stream"]},
-                            "msg": "",
-                            "result": "success",
-                            "subscribed": {},
-                          }
-                        description: |
-                          A typical successful JSON response when the user is already subscribed to
-                          the streams specified
+                allOf:
+                  - $ref: "#/components/schemas/AddSubscriptionsResponse"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - example:
+                      {
+                        "already_subscribed":
+                          {"newbie@zulip.com": ["new stream"]},
+                        "msg": "",
+                        "result": "success",
+                        "subscribed": {"iago@zulip.com": ["new stream"]},
+                      }
         "400":
           description: Bad request.
           content:
