@@ -1,9 +1,9 @@
+import panzoom from "@panzoom/panzoom";
 import $ from "jquery";
 
 import render_lightbox_overlay from "../templates/lightbox_overlay.hbs";
 
 import * as blueslip from "./blueslip";
-import {LightboxCanvas} from "./lightbox_canvas";
 import * as message_store from "./message_store";
 import * as overlays from "./overlays";
 import * as people from "./people";
@@ -14,6 +14,64 @@ let is_open = false;
 // the asset map is a map of all retrieved images and YouTube videos that are
 // memoized instead of being looked up multiple times.
 const asset_map = new Map();
+
+export class PanZoomControl {
+    // Class for both initializing and controlling the
+    // the pan/zoom functionality.
+    constructor(container) {
+        this.container = container;
+        this.panzoom = panzoom(this.container, {
+            disablePan: true,
+            disableZoom: true,
+            cursor: "auto",
+        });
+
+        // keybinds
+        document.addEventListener("keydown", (e) => {
+            if (!overlays.lightbox_open()) {
+                return;
+            }
+            switch (e.key) {
+                case "Z":
+                case "+":
+                    this.zoomIn();
+                    break;
+                case "z":
+                case "-":
+                    this.zoomOut();
+                    break;
+                case "v":
+                    overlays.close_overlay("lightbox");
+                    break;
+            }
+            e.preventDefault();
+            e.stopPropagation();
+        });
+    }
+
+    reset() {
+        this.panzoom.reset();
+    }
+
+    disablePanZoom() {
+        this.container.removeEventListener("wheel", this.panzoom.zoomWithWheel);
+        this.panzoom.setOptions({disableZoom: true, disablePan: true, cursor: "auto"});
+        this.reset();
+    }
+
+    enablePanZoom() {
+        this.panzoom.setOptions({disableZoom: false, disablePan: false, cursor: "move"});
+        this.container.addEventListener("wheel", this.panzoom.zoomWithWheel);
+    }
+
+    zoomIn() {
+        this.panzoom.zoomIn();
+    }
+
+    zoomOut() {
+        this.panzoom.zoomOut();
+    }
+}
 
 export function clear_for_testing() {
     is_open = false;
@@ -51,21 +109,10 @@ function display_image(payload) {
     $(".player-container").hide();
     $(".image-actions, .image-description, .download, .lightbox-canvas-trigger").show();
 
-    const lightbox_canvas = $(".lightbox-canvas-trigger").hasClass("enabled");
-
-    if (lightbox_canvas === true) {
-        const canvas = document.createElement("canvas");
-        canvas.dataset.src = payload.source;
-
-        $("#lightbox_overlay .image-preview").html(canvas).show();
-        const photo = new LightboxCanvas(canvas);
-        photo.speed(2.3);
-    } else {
-        const img = new Image();
-        img.src = payload.source;
-
-        $("#lightbox_overlay .image-preview").html(img).show();
-    }
+    const img_container = $("#lightbox_overlay .image-preview > .zoom-element");
+    const img = new Image();
+    img.src = payload.source;
+    img_container.html(img).show();
 
     $(".image-description .title").text(payload.title || "N/A");
     $(".image-description .user").text(payload.user);
@@ -282,8 +329,14 @@ export function next() {
 
 // this is a block of events that are required for the lightbox to work.
 export function initialize() {
+    // Renders the DOM for the lightbox.
     const rendered_lightbox_overlay = render_lightbox_overlay();
     $("body").append(rendered_lightbox_overlay);
+
+    // Bind the pan/zoom control the newly created element.
+    const pan_zoom_control = new PanZoomControl(
+        $("#lightbox_overlay .image-preview > .zoom-element")[0],
+    );
 
     $("#main_div, #compose .preview_content").on("click", ".message_inline_image a", function (e) {
         // prevent the link from opening in a new page.
@@ -308,6 +361,7 @@ export function initialize() {
 
         $(".image-list .image.selected").removeClass("selected");
         $(this).addClass("selected");
+        pan_zoom_control.reset();
 
         const parentOffset = this.parentNode.clientWidth + this.parentNode.scrollLeft;
         // this is the left and right of the image compared to its parent.
@@ -341,18 +395,15 @@ export function initialize() {
     });
 
     $("#lightbox_overlay").on("click", ".lightbox-canvas-trigger", function () {
-        let $img = $("#lightbox_overlay").find(".image-preview img");
+        const $img = $("#lightbox_overlay").find(".image-preview img");
+        open($img);
 
-        if ($img.length) {
-            $(this).addClass("enabled");
-            // the `lightbox.open` function will see the enabled class and
-            // enable the `LightboxCanvas` class.
-            open($img);
-        } else {
-            $img = $($("#lightbox_overlay").find(".image-preview canvas")[0].image);
-
+        if ($(this).hasClass("enabled")) {
+            pan_zoom_control.disablePanZoom();
             $(this).removeClass("enabled");
-            open($img);
+        } else {
+            pan_zoom_control.enablePanZoom();
+            $(this).addClass("enabled");
         }
     });
 
