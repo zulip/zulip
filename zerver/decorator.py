@@ -218,7 +218,7 @@ class InvalidZulipServerError(JsonableError):
 
     @staticmethod
     def msg_format() -> str:
-        return "Zulip server auth failure: {role} is not registered -- did you run `manage.py register_server`?"
+        return "Zulip server auth failure: {role} is not registered -- did you run `manage.py mobile_push_service --register`?"
 
 
 class InvalidZulipServerKeyError(InvalidZulipServerError):

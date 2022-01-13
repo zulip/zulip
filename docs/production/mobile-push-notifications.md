@@ -36,12 +36,12 @@ You can enable this for your Zulip server as follows:
 
    ```bash
    # As root:
-   su zulip -c '/home/zulip/deployments/current/manage.py register_server'
+   su zulip -c '/home/zulip/deployments/current/manage.py mobile_push_service --register'
    # Or as the zulip user, you can skip the `su zulip -c`:
-   /home/zulip/deployments/current/manage.py register_server
+   /home/zulip/deployments/current/manage.py mobile_push_service --register
 
    # docker-zulip users can run this inside the container with `docker exec`:
-   docker exec -it -u zulip <container_name> /home/zulip/deployments/current/manage.py register_server
+   docker exec -it -u zulip <container_name> /home/zulip/deployments/current/manage.py mobile_push_service --register
    ```
 
    This command will print the registration data it would send to the
@@ -80,11 +80,11 @@ Your server's registration includes the server's hostname and contact
 email address (from `EXTERNAL_HOST` and `ZULIP_ADMINISTRATOR` in
 `/etc/zulip/settings.py`, aka the `--hostname` and `--email` options
 in the installer). You can update your server's registration data by
-running `manage.py register_server` again.
+running `manage.py mobile_push_service --register` again.
 
 If you'd like to rotate your server's API key for this service
 (`zulip_org_key`), you need to use
-`manage.py register_server --rotate-key` option; it will automatically
+`manage.py mobile_push_service --rotate-key` option; it will automatically
 generate a new `zulip_org_key` and store that new key in
 `/etc/zulip/zulip-secrets.conf`.
 

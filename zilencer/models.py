@@ -22,7 +22,7 @@ def get_remote_server_by_uuid(uuid: str) -> "RemoteZulipServer":
 class RemoteZulipServer(models.Model):
     """Each object corresponds to a single remote Zulip server that is
     registered for the Mobile Push Notifications Service via
-    `manage.py register_server`.
+    `manage.py mobile_push_service --register`.
     """
 
     UUID_LENGTH = 36

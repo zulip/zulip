@@ -261,7 +261,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         )
         self.assert_json_error(
             result,
-            "Zulip server auth failure: invalid_uuid is not registered -- did you run `manage.py register_server`?",
+            "Zulip server auth failure: invalid_uuid is not registered -- did you run `manage.py mobile_push_service --register`?",
             status_code=401,
         )
         del self.API_KEYS["invalid_uuid"]
@@ -276,7 +276,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         )
         self.assert_json_error(
             result,
-            f"Zulip server auth failure: {credentials_uuid} is not registered -- did you run `manage.py register_server`?",
+            f"Zulip server auth failure: {credentials_uuid} is not registered -- did you run `manage.py mobile_push_service --register`?",
             status_code=401,
         )
 
@@ -2101,7 +2101,7 @@ class TestSendToPushBouncer(ZulipTestCase):
         self.assertEqual(
             str(exc.exception),
             "Push notifications bouncer error: "
-            "Zulip server auth failure: testRole is not registered -- did you run `manage.py register_server`?",
+            "Zulip server auth failure: testRole is not registered -- did you run `manage.py mobile_push_service --register`?",
         )
 
     @responses.activate
