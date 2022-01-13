@@ -23,7 +23,7 @@ from django.core.signing import BadSignature, TimestampSigner
 from django.http import HttpRequest
 from django.urls import reverse
 from django.utils.translation import gettext as _
-from jinja2.utils import Markup as mark_safe
+from markupsafe import Markup as mark_safe
 from mypy_boto3_s3.client import S3Client
 from mypy_boto3_s3.service_resource import Bucket, Object
 from PIL import Image, ImageOps

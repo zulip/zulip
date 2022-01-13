@@ -10,7 +10,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.template import loader
 from django.utils.timezone import now as timezone_now
-from jinja2.utils import Markup as mark_safe
+from markupsafe import Markup as mark_safe
 from psycopg2.sql import SQL, Composable, Literal
 
 from analytics.lib.counts import COUNT_STATS
