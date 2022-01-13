@@ -1,6 +1,5 @@
 class zulip_ops::profile::zmirror {
   include zulip_ops::profile::base
-  include zulip_ops::apt_repository_debathena
   include zulip::supervisor
 
   $zmirror_packages = [# Packages needed to run the mirror
@@ -18,7 +17,6 @@ class zulip_ops::profile::zmirror {
   ]
   package { $zmirror_packages:
     ensure  => 'installed',
-    require => Exec['setup_apt_repo_debathena'],
   }
 
   file { "${zulip::common::supervisor_conf_dir}/zmirror.conf":
