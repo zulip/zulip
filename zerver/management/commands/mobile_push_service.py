@@ -1,6 +1,7 @@
+import base64
 import subprocess
 from argparse import ArgumentParser
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import requests
 from django.conf import settings
@@ -25,6 +26,11 @@ class Command(ZulipBaseCommand):
             "--register",
             action="store_true",
             help="Register your server for the Mobile Push Notification Service.",
+        )
+        parser.add_argument(
+            "--deactivate",
+            action="store_true",
+            help="Deactivate your server's Mobile Push Notification Service registration.",
         )
         parser.add_argument(
             "--agree_to_terms_of_service",
@@ -64,6 +70,8 @@ class Command(ZulipBaseCommand):
             self._handle_register_subcommand(*args, **options)
         elif options["rotate_key"]:
             self._handle_rotate_key_subcommand(*args, **options)
+        elif options["deactivate"]:
+            self._handle_deactivate_subcommand(*args, **options)
 
     def _handle_rotate_key_subcommand(self, *args: Any, **options: Any) -> None:
         request = {
@@ -131,11 +139,27 @@ class Command(ZulipBaseCommand):
         else:
             print("Mobile Push Notification Service registration successfully updated!")
 
-    def _request_push_notification_bouncer_url(self, url: str, params: Dict[str, Any]) -> Response:
+    def _handle_deactivate_subcommand(self, *args: Any, **options: Any) -> None:
+        credentials = "{}:{}".format(settings.ZULIP_ORG_ID, settings.ZULIP_ORG_KEY)
+        basic_auth = "Basic " + base64.b64encode(credentials.encode()).decode()
+
+        response = self._request_push_notification_bouncer_url(
+            "/api/v1/remotes/server/deactivate", headers={"authorization": basic_auth}
+        )
+
+        assert response.json()["result"] == "success"
+        print("Mobile Push Notification Service registration successfully deactivated!")
+
+    def _request_push_notification_bouncer_url(
+        self,
+        url: str,
+        params: Optional[Dict[str, Any]] = {},
+        headers: Optional[Dict[str, Any]] = {},
+    ) -> Response:
         registration_url = settings.PUSH_NOTIFICATION_BOUNCER_URL + url
         session = PushBouncerSession()
         try:
-            response = session.post(registration_url, params=params)
+            response = session.post(registration_url, params=params, headers=headers)
         except requests.RequestException:
             raise CommandError(
                 "Network error connecting to push notifications service "
