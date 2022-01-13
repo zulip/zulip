@@ -4,7 +4,7 @@ from unittest import mock
 
 import requests
 import responses
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util import Retry
 
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.test_classes import ZulipTestCase
