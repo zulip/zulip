@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("zerver", "0376_auto_20220108_1140"),
+        ("zerver", "0376_realm_allow_invite_signup_private_msg"),
     ]
 
     operations = [
