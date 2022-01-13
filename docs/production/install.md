@@ -86,7 +86,6 @@ Otherwise, open the link in a browser.
 Follow the prompts to set up your organization,
 and your own user account as an administrator.
 
-
 The link is a secure one-time-use link. If you need another
 later, you can generate a new one by running
 `manage.py generate_realm_creation_link` on the server. See also our
