@@ -93,7 +93,6 @@ EXEMPT_FILES = make_set(
         "static/js/info_overlay.js",
         "static/js/invite.js",
         "static/js/lightbox.js",
-        "static/js/lightbox_canvas.js",
         "static/js/list_util.ts",
         "static/js/loading.ts",
         "static/js/local_message.js",
