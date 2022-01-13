@@ -6724,13 +6724,13 @@ paths:
                           A typical successful JSON response when the user is already subscribed to
                           the streams specified
         "400":
-          description: Success.
+          description: Bad request.
           content:
             application/json:
               schema:
                 oneOf:
                   - allOf:
-                      - $ref: "#/components/schemas/AddSubscriptionsResponse"
+                      - $ref: "#/components/schemas/JsonError"
                       - example:
                           {
                             "msg": "Unable to access stream (private_stream).",
