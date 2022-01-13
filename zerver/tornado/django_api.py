@@ -7,7 +7,7 @@ import requests
 from django.conf import settings
 from requests.adapters import ConnectionError, HTTPAdapter
 from requests.models import PreparedRequest, Response
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util import Retry
 
 from zerver.lib.queue import queue_json_publish
 from zerver.models import Client, Realm, UserProfile

@@ -7,7 +7,7 @@ from typing import List
 import digitalocean
 import zulip
 from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util import Retry
 
 manager = digitalocean.Manager(token=os.environ["DIGITALOCEAN_API_KEY"])
 zulip_client = zulip.Client()
