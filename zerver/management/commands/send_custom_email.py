@@ -90,10 +90,12 @@ class Command(ZulipBaseCommand):
         elif options["remote_servers"]:
             from zilencer.models import RemoteZulipServer
 
-            # TODO: Make this filter for deactivated=False once we add
-            # that to the data model.
             target_emails = list(
-                set(RemoteZulipServer.objects.all().values_list("contact_email", flat=True))
+                set(
+                    RemoteZulipServer.objects.filter(deactivated=False).values_list(
+                        "contact_email", flat=True
+                    )
+                )
             )
         elif options["all_sponsored_org_admins"]:
             # Sends at most one copy to each email address, even if it
