@@ -623,7 +623,7 @@ IMAGE_EXTENSIONS = [".bmp", ".gif", ".jpe", ".jpeg", ".jpg", ".png", ".webp"]
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     TWITTER_MAX_IMAGE_HEIGHT = 400
     TWITTER_MAX_TO_PREVIEW = 3
-    INLINE_PREVIEW_LIMIT_PER_MESSAGE = 5
+    INLINE_PREVIEW_LIMIT_PER_MESSAGE = 10
 
     def add_a(
         self,
