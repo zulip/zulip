@@ -11,6 +11,10 @@ p {
     margin-bottom: 0;
 }
 
+label{
+    font-weight: bold;
+}
+
 .app-main {
     padding: 0;
     width: auto;
@@ -101,7 +105,7 @@ p {
 }
 
 .buttons button {
-    background-color: hsl(0, 0%, 94%);
+    background-color: hsl(0, 0%, 100%);
 
     &.selected {
         background-color: hsl(0, 0%, 85%);
@@ -119,7 +123,7 @@ p {
     outline: none;
 
     &:hover {
-        background-color: hsl(0, 0%, 84%) !important;
+        background-color: hsl(0, 0%, 94%) !important;
     }
 
     &[data-user="everyone"] {
