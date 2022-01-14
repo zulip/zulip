@@ -7628,6 +7628,8 @@ def revoke_invites_generated_by_user(user_profile: UserProfile) -> None:
         confirmation.expiry_date = now
 
     Confirmation.objects.bulk_update(confirmations_to_revoke, ["expiry_date"])
+    if len(confirmations_to_revoke):
+        notify_invites_changed(realm=user_profile.realm)
 
 
 def do_create_multiuse_invite_link(
