@@ -159,7 +159,7 @@
 
                 <script type="text/template" id="total-count-template">
                     <p class="contributor-count">
-                        <%= contributor_count %> total contributors
+                        <%= contributor_count %> total contributors (<%= hundred_plus_contributor_count %> with 100+ commits)
                     </p>
                 </script>
 
@@ -169,6 +169,7 @@
                         <a href="<%= repo_url %>" target="_blank" rel="noopener noreferrer">
                             zulip/<%= repo_name %>
                         </a>
+                        (<%= hundred_plus_contributor_count %> with 100+ commits)
                     </p>
                 </script>
 
