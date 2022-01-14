@@ -849,9 +849,12 @@ class PushNotificationTest(BouncerTestCase):
     @contextmanager
     def mock_apns(self) -> Iterator[APNsContext]:
         apns_context = APNsContext(apns=mock.Mock(), loop=asyncio.new_event_loop())
-        with mock.patch("zerver.lib.push_notifications.get_apns_context") as mock_get:
-            mock_get.return_value = apns_context
-            yield apns_context
+        try:
+            with mock.patch("zerver.lib.push_notifications.get_apns_context") as mock_get:
+                mock_get.return_value = apns_context
+                yield apns_context
+        finally:
+            apns_context.loop.close()
 
     def setup_apns_tokens(self) -> None:
         self.tokens = ["aaaa", "bbbb"]
@@ -1457,7 +1460,10 @@ class TestAPNs(PushNotificationTest):
             with self.settings(APNS_CERT_FILE="/foo.pem"), mock.patch("aioapns.APNs") as mock_apns:
                 apns_context = get_apns_context()
                 assert apns_context is not None
-                self.assertEqual(mock_apns.return_value, apns_context.apns)
+                try:
+                    self.assertEqual(mock_apns.return_value, apns_context.apns)
+                finally:
+                    apns_context.loop.close()
         finally:
             # Reset the cache for `get_apns_context` so that we don't
             # leak changes to the rest of the world.
