@@ -1839,12 +1839,18 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(action)
         check_realm_bot_update("events[0]", events[0], "services")
 
-    def test_do_deactivate_user(self) -> None:
+    def test_do_deactivate_bot(self) -> None:
         bot = self.create_bot("test")
         action = lambda: do_deactivate_user(bot, acting_user=None)
         events = self.verify_action(action, num_events=2)
         check_realm_user_remove("events[0]", events[0])
         check_realm_bot_remove("events[1]", events[1])
+
+    def test_do_deactivate_user(self) -> None:
+        user_profile = self.example_user("cordelia")
+        action = lambda: do_deactivate_user(user_profile, acting_user=None)
+        events = self.verify_action(action, num_events=1)
+        check_realm_user_remove("events[0]", events[0])
 
     def test_do_reactivate_user(self) -> None:
         bot = self.create_bot("test")
