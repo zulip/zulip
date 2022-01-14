@@ -153,7 +153,7 @@ export function build_stream_list(force_rerender) {
     for (const stream_id of stream_groups.dormant_streams) {
         add_sidebar_li(stream_id);
     }
-    
+
     if (elems.length > 0) {
         parent.append(elems);
     } else {
