@@ -199,7 +199,7 @@ elif "debian" in os_families():
     SYSTEM_DEPENDENCIES = [
         *DEBIAN_DEPENDECIES,
         f"postgresql-{POSTGRESQL_VERSION}",
-        f"postgresql-{POSTGRESQL_VERSION}-pgdg-pgroonga",
+        f"postgresql-{POSTGRESQL_VERSION}-pgroonga",
         *VENV_DEPENDENCIES,
     ]
 elif "rhel" in os_families():
