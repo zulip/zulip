@@ -144,7 +144,6 @@
             background: 0;
             box-shadow: none;
             font-family: "Source Sans 3", sans-serif;
-            font-size: 1.4em;
             line-height: 20px;
         }
     }
@@ -177,8 +176,7 @@
     }
 
     .invoice-button {
-        font-size: 17px;
-        font-weight: 700 !important;
+        font-size: 19px;
     }
 
     #mix_license_count,
