@@ -6561,7 +6561,14 @@ def do_update_embedded_data(
     content: Optional[str],
     rendering_result: MessageRenderingResult,
 ) -> None:
-    event: Dict[str, Any] = {"type": "update_message", "message_id": message.id}
+    timestamp = timezone_now()
+    event: Dict[str, Any] = {
+        "type": "update_message",
+        "user_id": None,
+        "edit_timestamp": datetime_to_timestamp(timestamp),
+        "message_id": message.id,
+        "rendering_only": True,
+    }
     changed_messages = [message]
     rendered_content: Optional[str] = None
 
@@ -6630,6 +6637,7 @@ def do_update_message(
         "user_id": user_profile.id,
         "edit_timestamp": datetime_to_timestamp(timestamp),
         "message_id": target_message.id,
+        "rendering_only": False,
     }
 
     edit_history_event: Dict[str, Any] = {
