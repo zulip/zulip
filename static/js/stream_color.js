@@ -20,13 +20,13 @@ function update_table_stream_color(table, stream_name, color) {
                 .children(".messagebox")
                 .css(
                     "box-shadow",
-                    "inset 2px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style,
+                    "inset 1px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style,
                 );
             messages
                 .children(".date_row")
                 .css(
                     "box-shadow",
-                    "inset 2px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style,
+                    "inset 1px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style,
                 );
             $label.css({background: style, "border-left-color": style});
             $label.removeClass("dark_background");

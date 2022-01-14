@@ -1278,7 +1278,7 @@ td.pointer {
     }
 
     .messagebox-content {
-        box-shadow: inset 0 0 0 2px hsl(215, 47%, 50%),
+        box-shadow: inset 0 0 0 1px hsl(215, 47%, 50%),
             -1px -1px 0 0 hsl(215, 47%, 50%), 1px 1px 0 0 hsl(215, 47%, 50%),
             -1px 1px 0 0 hsl(215, 47%, 50%), 1px -1px 0 0 hsl(215, 47%, 50%);
     }
