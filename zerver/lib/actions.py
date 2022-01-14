@@ -5230,11 +5230,11 @@ def send_change_stream_description_notification(
     with override_language(stream.realm.default_language):
         notification_string = _(
             "{user} changed the description for this stream.\n\n"
-            "Old description:\n"
+            "* **Old description:**\n"
             "``` quote\n"
             "{old_description}\n"
             "```\n"
-            "New description:\n"
+            "* **New description:**\n"
             "``` quote\n"
             "{new_description}\n"
             "```"

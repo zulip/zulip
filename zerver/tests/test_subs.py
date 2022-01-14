@@ -1228,11 +1228,11 @@ class StreamAdminTest(ZulipTestCase):
         messages = get_topic_messages(user_profile, stream, "stream events")
         expected_notification = (
             f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this stream.\n\n"
-            "Old description:\n"
+            "* **Old description:**\n"
             "``` quote\n"
             "Test description\n"
             "```\n"
-            "New description:\n"
+            "* **New description:**\n"
             "``` quote\n"
             "a multi line description\n"
             "```"
@@ -1290,11 +1290,11 @@ class StreamAdminTest(ZulipTestCase):
         messages = get_topic_messages(user_profile, stream, "stream events")
         expected_notification = (
             f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this stream.\n\n"
-            "Old description:\n"
+            "* **Old description:**\n"
             "``` quote\n"
             "See https://zulip.com/team\n"
             "```\n"
-            "New description:\n"
+            "* **New description:**\n"
             "``` quote\n"
             "Test description\n"
             "```"
