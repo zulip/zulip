@@ -746,6 +746,11 @@ def apply_event(
             state["raw_users"][person_user_id] = person
         elif event["op"] == "remove":
             state["raw_users"][person_user_id]["is_active"] = False
+            if include_subscribers:
+                for sub in state["subscriptions"]:
+                    sub["subscribers"] = [
+                        user_id for user_id in sub["subscribers"] if user_id != person_user_id
+                    ]
         elif event["op"] == "update":
             is_me = person_user_id == user_profile.id
 
