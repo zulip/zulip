@@ -414,6 +414,9 @@ def update_realm_user_settings_defaults(
         json_validator=check_bool, default=None
     ),
     send_read_receipts: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    receive_private_message_on_invitee_signup: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
 ) -> HttpResponse:
     if notification_sound is not None or email_notifications_batching_period_seconds is not None:
         check_settings_values(notification_sound, email_notifications_batching_period_seconds)

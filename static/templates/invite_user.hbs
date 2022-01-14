@@ -70,6 +70,13 @@
                         </select>
                     </div>
                 </div>
+                <div class="input-group">
+                    <label class="checkbox display-block" for="receive_pm">
+                        <input type="checkbox" id="receive_pm" name="receive_pm" {{#if receive_pm_enabled }} checked{{/if}} />
+                        <span></span>
+                        {{t "Send me a private message when my invitation is accepted" }}
+                    </label>
+                </div>
                 <div>
                     <label>{{t "Streams they should join" }}</label>
                     <div id="streams_to_add"></div>

@@ -38,6 +38,7 @@ export type UserSettingsType = {
     send_stream_typing_notifications: boolean;
     send_private_typing_notifications: boolean;
     send_read_receipts: boolean;
+    receive_private_message_on_invitee_signup: boolean;
 };
 
 export let user_settings = {} as UserSettingsType;

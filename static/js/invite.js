@@ -81,6 +81,15 @@ function submit_invitation_form() {
     const $invitee_emails_group = $invitee_emails.closest(".control-group");
     const data = get_common_invitation_data();
     data.invitee_emails = $("#invitee_emails").val();
+    const receive_private_message_on_invitee_signup = JSON.stringify(
+        $("#receive_pm").prop("checked"),
+    );
+
+    channel.patch({
+        url: "/json/settings",
+        idempotent: true,
+        data: {receive_private_message_on_invitee_signup},
+    });
 
     channel.post({
         url: "/json/invites",
@@ -311,6 +320,7 @@ export function initialize() {
         $("#multiuse_radio_section").show();
         $("#invite-method-choice").hide();
         $("#invitee_emails").prop("disabled", true);
+        $("#receive_pm").prop("disabled", true);
         $("#submit-invitation").text($t({defaultMessage: "Generate invite link"}));
         $("#submit-invitation").data("loading-text", $t({defaultMessage: "Generating link..."}));
         reset_error_messages();
@@ -318,6 +328,7 @@ export function initialize() {
 
     $("#invite-user").on("change", "#generate_multiuse_invite_radio", () => {
         $("#invitee_emails").prop("disabled", false);
+        $("#receive_pm").prop("disabled", false);
         $("#submit-invitation").text($t({defaultMessage: "Invite"}));
         $("#submit-invitation").data("loading-text", $t({defaultMessage: "Inviting..."}));
         $("#multiuse_radio_section").hide();

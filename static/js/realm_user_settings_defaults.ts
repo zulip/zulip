@@ -35,6 +35,7 @@ export type RealmDefaultSettingsType = {
     display_emoji_reaction_users: boolean;
     twenty_four_hour_time: boolean;
     wildcard_mentions_notify: boolean;
+    receive_private_message_on_invitee_signup: boolean;
 };
 
 export let realm_user_settings_defaults = {} as RealmDefaultSettingsType;

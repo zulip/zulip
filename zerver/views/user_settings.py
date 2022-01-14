@@ -205,6 +205,9 @@ def json_change_settings(
     ),
     send_stream_typing_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
     send_read_receipts: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    receive_private_message_on_invitee_signup: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
 ) -> HttpResponse:
     if (
         default_language is not None

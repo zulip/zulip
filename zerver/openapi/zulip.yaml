@@ -8327,6 +8327,15 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: receive_private_message_on_invitee_signup
+          in: query
+          description: |
+            Whether or not to receive private message on invitee signup.
+
+            **Changes**: New in Zulip 5.0 (feature level 116).
+          schema:
+            type: boolean
+          example: true
       responses:
         "200":
           description: Success
@@ -10233,6 +10242,12 @@ paths:
                               read messages.
 
                               **Changes**: New in Zulip 5.0 (feature level 105).
+                          receive_private_message_on_invitee_signup:
+                            type: boolean
+                            description: |
+                              Whether or not to receive private message on invitee signup.
+
+                              **Changes**: New in Zulip 5.0 (feature level 116).
                       has_zoom_token:
                         type: boolean
                         description: |
@@ -12041,6 +12056,12 @@ paths:
                               read messages.
 
                               **Changes**: New in Zulip 5.0 (feature level 105).
+                          receive_private_message_on_invitee_signup:
+                            type: boolean
+                            description: |
+                              Whether or not to receive private message on invitee signup.
+
+                              **Changes**: New in Zulip 5.0 (feature level 116).
                       realm_users:
                         type: array
                         description: |
@@ -12236,6 +12257,10 @@ paths:
                           Present if `realm_user` is present in `fetch_event_types`.
 
                           The full name of the current user.
+                      receive_private_message_on_invitee_signup:
+                        type: boolean
+                        description: |
+                          Whether or not to receive private message on invitee signup.
                       cross_realm_bots:
                         type: array
                         description: |
@@ -13157,6 +13182,15 @@ paths:
             read messages.
 
             **Changes**: New in Zulip 5.0 (feature level 105).
+          schema:
+            type: boolean
+          example: true
+        - name: receive_private_message_on_invitee_signup
+          in: query
+          description: |
+            Whether or not to receive private message on invitee signup.
+
+            **Changes**: New in Zulip 5.0 (feature level 116).
           schema:
             type: boolean
           example: true

@@ -1550,6 +1550,7 @@ class UserBaseSettings(models.Model):
     enable_marketing_emails: bool = models.BooleanField(default=True)
     realm_name_in_notifications: bool = models.BooleanField(default=False)
     presence_enabled: bool = models.BooleanField(default=True)
+    receive_private_message_on_invitee_signup: bool = models.BooleanField(default=True)
 
     # Whether or not the user wants to sync their drafts.
     enable_drafts_synchronization: bool = models.BooleanField(default=True)
@@ -1600,7 +1601,10 @@ class UserBaseSettings(models.Model):
     )
 
     notification_setting_types = {
-        **notification_settings_legacy
+        **notification_settings_legacy,
+        **dict(
+            receive_private_message_on_invitee_signup=bool,
+        ),
     }  # Add new notifications settings here.
 
     # Define the types of the various automatically managed properties

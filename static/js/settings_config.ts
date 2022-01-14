@@ -598,6 +598,9 @@ export const notification_settings_labels = {
     realm_name_in_notifications: $t({
         defaultMessage: "Include organization name in subject of message notification emails",
     }),
+    receive_private_message_on_invitee_signup: $t({
+        defaultMessage: "Send me a private message when my invitation is accepted",
+    }),
 };
 
 export const realm_user_settings_defaults_labels = {
@@ -612,6 +615,9 @@ export const realm_user_settings_defaults_labels = {
 
     realm_presence_enabled: $t({defaultMessage: "Display availability to other users when online"}),
     realm_enter_sends: $t({defaultMessage: "Enter sends when composing a message"}),
+    receive_private_message_on_invitee_signup: $t({
+        defaultMessage: "Send me a private message when my invitation is accepted",
+    }),
 };
 
 // NOTIFICATIONS
