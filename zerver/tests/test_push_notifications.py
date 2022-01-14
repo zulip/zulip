@@ -91,13 +91,13 @@ if settings.ZILENCER_ENABLED:
 class BouncerTestCase(ZulipTestCase):
     def setUp(self) -> None:
         self.server_uuid = "6cde5f7a-1f7e-4978-9716-49f69ebfc9fe"
-        server = RemoteZulipServer(
+        self.server = RemoteZulipServer(
             uuid=self.server_uuid,
             api_key="magic_secret_api_key",
             hostname="demo.example.com",
             last_updated=now(),
         )
-        server.save()
+        self.server.save()
         super().setUp()
 
     def tearDown(self) -> None:
@@ -163,6 +163,16 @@ class PushBouncerNotificationTest(BouncerTestCase):
             subdomain="",
         )
         self.assert_json_error(result, "Must validate with valid Zulip server API key")
+
+        # Try with deactivated remote servers
+        self.server.deactivated = True
+        self.server.save()
+        result = self.uuid_post(self.server_uuid, endpoint, self.get_generic_payload("unregister"))
+        self.assert_json_error_contains(
+            result,
+            "The mobile push notification service registration for your server has been deactivated",
+            401,
+        )
 
     def test_register_remote_push_user_paramas(self) -> None:
         token = "111222"
@@ -267,6 +277,16 @@ class PushBouncerNotificationTest(BouncerTestCase):
             result,
             f"Zulip server auth failure: {credentials_uuid} is not registered -- did you run `manage.py register_server`?",
             status_code=401,
+        )
+
+        # Try with deactivated remote servers
+        self.server.deactivated = True
+        self.server.save()
+        result = self.uuid_post(self.server_uuid, endpoint, self.get_generic_payload("register"))
+        self.assert_json_error_contains(
+            result,
+            "The mobile push notification service registration for your server has been deactivated",
+            401,
         )
 
     def test_remote_push_user_endpoints(self) -> None:

@@ -39,6 +39,7 @@ from zerver.lib.exceptions import (
     OrganizationOwnerRequired,
     RateLimited,
     RealmDeactivatedError,
+    RemoteServerDeactivatedError,
     UnsupportedWebhookEventType,
     UserDeactivatedError,
     WebhookError,
@@ -246,6 +247,9 @@ def validate_api_key(
             raise InvalidZulipServerError(role)
         if api_key != remote_server.api_key:
             raise InvalidZulipServerKeyError(role)
+
+        if remote_server.deactivated:
+            raise RemoteServerDeactivatedError()
 
         if get_subdomain(request) != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
             raise JsonableError(_("Invalid subdomain for push notifications bouncer"))

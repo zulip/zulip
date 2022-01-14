@@ -32,6 +32,7 @@ class ErrorCode(Enum):
     RATE_LIMIT_HIT = auto()
     USER_DEACTIVATED = auto()
     REALM_DEACTIVATED = auto()
+    REMOTE_SERVER_DEACTIVATED = auto()
     PASSWORD_AUTH_DISABLED = auto()
     PASSWORD_RESET_REQUIRED = auto()
     AUTHENTICATION_FAILED = auto()
@@ -278,6 +279,16 @@ class RealmDeactivatedError(AuthenticationFailedError):
     @staticmethod
     def msg_format() -> str:
         return _("This organization has been deactivated")
+
+
+class RemoteServerDeactivatedError(AuthenticationFailedError):
+    code: ErrorCode = ErrorCode.REALM_DEACTIVATED
+
+    @staticmethod
+    def msg_format() -> str:
+        return _(
+            "The mobile push notification service registration for your server has been deactivated"
+        )
 
 
 class PasswordAuthDisabledError(AuthenticationFailedError):
