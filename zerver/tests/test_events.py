@@ -744,7 +744,25 @@ class NormalActionsTest(BaseAction):
         )
         check_invites_changed("events[0]", events[0])
 
+    def test_deactivate_user_invites_changed_event(self) -> None:
+        self.user_profile = self.example_user("iago")
+        user_profile = self.example_user("cordelia")
+        invite_expires_in_days = 2
+        do_invite_users(
+            user_profile,
+            ["foo@zulip.com"],
+            [],
+            invite_expires_in_days=invite_expires_in_days,
+        )
+
+        events = self.verify_action(
+            lambda: do_deactivate_user(user_profile, acting_user=None), num_events=2
+        )
+        check_invites_changed("events[0]", events[0])
+
     def test_revoke_user_invite_event(self) -> None:
+        # We need set self.user_profile to be an admin, so that
+        # we receive the invites_changed event.
         self.user_profile = self.example_user("iago")
         streams = []
         for stream_name in ["Denmark", "Verona"]:
