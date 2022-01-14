@@ -627,7 +627,6 @@ base_template_engine_settings: Dict[str, Any] = {
         "environment": "zproject.jinja2.environment",
         "extensions": [
             "jinja2.ext.i18n",
-            "jinja2.ext.autoescape",
         ],
         "context_processors": [
             "zerver.context_processors.zulip_default_context",
