@@ -18,5 +18,6 @@ review-process
 zulipbot-usage
 reporting-bugs
 suggesting-features
+contributor-statistics
 licensing
 ```
