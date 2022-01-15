@@ -369,14 +369,10 @@ elif [ "$package_system" = yum ]; then
     fi
 fi
 
-if [ -n "$USE_CERTBOT" ]; then
-    # Puppet, which is run below, installs the post-deploy hook to
-    # reload nginx -- but it also installs nginx itself, so we're fine
-    # to run this now.
-    "$ZULIP_PATH"/scripts/setup/setup-certbot \
-        --method=standalone \
-        "$EXTERNAL_HOST" --email "$ZULIP_ADMINISTRATOR"
-elif [ -n "$SELF_SIGNED_CERT" ]; then
+# We generate a self-signed cert even with certbot, so we can use the
+# webroot authenticator, which requires nginx be set up with a
+# certificate.
+if [ -n "$SELF_SIGNED_CERT" ] || [ -n "$USE_CERTBOT" ]; then
     "$ZULIP_PATH"/scripts/setup/generate-self-signed-cert \
         --exists-ok "${EXTERNAL_HOST:-$(hostname)}"
 fi
@@ -483,6 +479,11 @@ if [ "$package_system" = apt ]; then
 elif [ "$package_system" = yum ]; then
     # No action is required because `yum update` already does upgrade.
     :
+fi
+
+if [ -n "$USE_CERTBOT" ]; then
+    "$ZULIP_PATH"/scripts/setup/setup-certbot \
+        "$EXTERNAL_HOST" --email "$ZULIP_ADMINISTRATOR"
 fi
 
 if has_class "zulip::nginx" && ! has_class "zulip::profile::docker"; then
