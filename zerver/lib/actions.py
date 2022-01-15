@@ -6488,6 +6488,7 @@ def send_message_moved_breadcrumbs(
     new_stream: Stream,
     new_topic: Optional[str],
     new_thread_notification_string: Optional[str],
+    changed_messages_count: int,
 ) -> None:
     # Since moving content between streams is highly disruptive,
     # it's worth adding a couple tombstone messages showing what
@@ -6510,6 +6511,7 @@ def send_message_moved_breadcrumbs(
                 new_thread_notification_string.format(
                     old_location=old_topic_link,
                     user=user_mention,
+                    changed_messages_count=changed_messages_count,
                 ),
             )
 
@@ -6523,6 +6525,7 @@ def send_message_moved_breadcrumbs(
                 old_thread_notification_string.format(
                     user=user_mention,
                     new_location=new_topic_link,
+                    changed_messages_count=changed_messages_count,
                 ),
             )
 
@@ -7017,17 +7020,37 @@ def do_update_message(
 
     if len(changed_messages) > 0 and new_stream is not None and stream_being_edited is not None:
         # Notify users that the topic was moved.
+        changed_messages_count = len(changed_messages)
+
         old_thread_notification_string = None
         if send_notification_to_old_thread:
-            old_thread_notification_string = gettext_lazy(
-                "This topic was moved by {user} to {new_location}"
-            )
+            if propagate_mode == "change_all":
+                old_thread_notification_string = gettext_lazy(
+                    "This topic was moved to {new_location} by {user}."
+                )
+            elif propagate_mode == "change_one":
+                old_thread_notification_string = gettext_lazy(
+                    "A message was moved from this topic to {new_location} by {user}."
+                )
+            else:
+                old_thread_notification_string = gettext_lazy(
+                    "{changed_messages_count} messages were moved from this topic to {new_location} by {user}."
+                )
 
         new_thread_notification_string = None
         if send_notification_to_new_thread:
-            new_thread_notification_string = gettext_lazy(
-                "This topic was moved here from {old_location} by {user}"
-            )
+            if propagate_mode == "change_all":
+                new_thread_notification_string = gettext_lazy(
+                    "This topic was moved here from {old_location} by {user}."
+                )
+            elif propagate_mode == "change_one":
+                new_thread_notification_string = gettext_lazy(
+                    "A message was moved here from {old_location} by {user}."
+                )
+            else:
+                new_thread_notification_string = gettext_lazy(
+                    "{changed_messages_count} messages were moved here from {old_location} by {user}."
+                )
 
         send_message_moved_breadcrumbs(
             user_profile,
@@ -7037,6 +7060,7 @@ def do_update_message(
             new_stream,
             topic_name,
             new_thread_notification_string,
+            changed_messages_count,
         )
 
     if (
