@@ -19,6 +19,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, QueryDi
 from django.http.multipartparser import MultiPartParser
 from django.shortcuts import resolve_url
 from django.template.response import SimpleTemplateResponse, TemplateResponse
+from django.utils.cache import add_never_cache_headers
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
@@ -561,7 +562,9 @@ def require_server_admin(view_func: ViewFuncT) -> ViewFuncT:
         if not request.user.is_staff:
             return HttpResponseRedirect(settings.HOME_NOT_LOGGED_IN)
 
-        return add_logging_data(view_func)(request, *args, **kwargs)
+        response = add_logging_data(view_func)(request, *args, **kwargs)
+        add_never_cache_headers(response)
+        return response
 
     return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
 
