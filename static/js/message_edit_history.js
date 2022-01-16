@@ -6,7 +6,7 @@ import render_message_history_modal from "../templates/message_history_modal.hbs
 
 import * as channel from "./channel";
 import * as dialog_widget from "./dialog_widget";
-import {$t_html} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as message_lists from "./message_lists";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -40,45 +40,45 @@ export function fetch_and_render_message_history(message) {
                 }
 
                 if (index === 0) {
-                    item.posted_or_edited = "Posted by";
+                    item.posted_or_edited = $t({defaultMessage: "Posted by"});
                     item.body_to_render = msg.rendered_content;
                 } else if (msg.prev_topic && msg.prev_content) {
-                    item.posted_or_edited = "Edited by";
+                    item.posted_or_edited = $t({defaultMessage: "Edited by"});
                     item.body_to_render = msg.content_html_diff;
                     item.topic_edited = true;
                     item.prev_topic = msg.prev_topic;
                     item.new_topic = msg.topic;
                 } else if (msg.prev_topic && msg.prev_stream) {
                     const sub = sub_store.get(msg.prev_stream);
-                    item.posted_or_edited = "Edited by";
+                    item.posted_or_edited = $t({defaultMessage: "Edited by"});
                     item.topic_edited = true;
                     item.prev_topic = msg.prev_topic;
                     item.new_topic = msg.topic;
                     item.stream_changed = true;
                     if (!sub) {
-                        item.prev_stream = "Unknown Stream";
+                        item.prev_stream = $t({defaultMessage: "Unknown stream"});
                     } else {
                         item.prev_stream = stream_data.maybe_get_stream_name(msg.prev_stream);
                     }
                     item.new_stream = stream_data.maybe_get_stream_name(message.stream_id);
                 } else if (msg.prev_topic) {
-                    item.posted_or_edited = "Topic edited by";
+                    item.posted_or_edited = $t({defaultMessage: "Topic edited by"});
                     item.topic_edited = true;
                     item.prev_topic = msg.prev_topic;
                     item.new_topic = msg.topic;
                 } else if (msg.prev_stream) {
                     const sub = sub_store.get(msg.prev_stream);
-                    item.posted_or_edited = "Stream edited by";
+                    item.posted_or_edited = $t({defaultMessage: "Stream edited by"});
                     item.stream_changed = true;
                     if (!sub) {
-                        item.prev_stream = "Unknown Stream";
+                        item.prev_stream = $t({defaultMessage: "Unknown stream"});
                     } else {
                         item.prev_stream = stream_data.maybe_get_stream_name(msg.prev_stream);
                     }
                     item.new_stream = stream_data.maybe_get_stream_name(message.stream_id);
                 } else {
                     // just a content edit
-                    item.posted_or_edited = "Edited by";
+                    item.posted_or_edited = $t({defaultMessage: "Edited by"});
                     item.body_to_render = msg.content_html_diff;
                 }
 
