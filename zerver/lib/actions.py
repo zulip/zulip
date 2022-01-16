@@ -3688,7 +3688,9 @@ def pick_colors(
         if i < len(available_colors):
             color = available_colors[i]
         else:
-            color = STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)]
+            # We have to start re-using old colors, and we use recipient_id
+            # to choose the color.
+            color = STREAM_ASSIGNMENT_COLORS[recipient_id % len(STREAM_ASSIGNMENT_COLORS)]
         result[recipient_id] = color
 
     return result
