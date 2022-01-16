@@ -1693,7 +1693,7 @@ def get_recipient_info(
     user_ids |= possibly_mentioned_user_ids
 
     if user_ids:
-        user_notification_info_backend = UserNotificationInfoBackend()
+        user_notification_info_backend = UserNotificationInfoBackend(user_ids)
         rows = user_notification_info_backend.get_user_notification_info(user_ids)
     else:
         # TODO: We should always have at least one user_id as a recipient

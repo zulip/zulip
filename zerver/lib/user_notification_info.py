@@ -16,7 +16,9 @@ class UserNotificationInfo:
 
 
 class UserNotificationInfoBackend:
-    def get_user_notification_info(self, user_ids: Set[int]) -> List[UserNotificationInfo]:
+    def __init__(self, user_ids: Set[int]) -> None:
+        self.user_ids = user_ids
+
         query = UserProfile.objects.filter(is_active=True).values(
             "id",
             "enable_online_push_notifications",
@@ -35,8 +37,8 @@ class UserNotificationInfoBackend:
             field="id",
         )
 
-        result = [
-            UserNotificationInfo(
+        self.cache = {
+            row["id"]: UserNotificationInfo(
                 id=row["id"],
                 enable_online_push_notifications=row["enable_online_push_notifications"],
                 enable_offline_push_notifications=row["enable_offline_push_notifications"],
@@ -46,6 +48,9 @@ class UserNotificationInfoBackend:
                 long_term_idle=row["long_term_idle"],
             )
             for row in query
-        ]
+        }
 
+    def get_user_notification_info(self, user_ids: Set[int]) -> List[UserNotificationInfo]:
+        assert user_ids.issubset(self.user_ids)
+        result = [self.cache[user_id] for user_id in user_ids if user_id in self.cache]
         return result
