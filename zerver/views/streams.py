@@ -604,12 +604,13 @@ def send_messages_for_new_subscribers(
     newly_created_stream_names = {s.name for s in created_streams}
 
     realm = user_profile.realm
-    mention_backend = MentionBackend(realm.id)
 
     # Inform the user if someone else subscribed them to stuff,
     # or if a new stream was created with the "announce" option.
     notifications = []
     if new_subscriptions:
+        recipient_tups = []
+
         for email, subscribed_stream_names in new_subscriptions.items():
             if email == user_profile.email:
                 # Don't send a Zulip if you invited yourself.
@@ -626,23 +627,29 @@ def send_messages_for_new_subscribers(
                 continue
 
             recipient_user = email_to_user_profile[email]
-            sender = get_system_bot(settings.NOTIFICATION_BOT, recipient_user.realm_id)
+            recipient_tup = (recipient_user, notify_stream_names)
+            recipient_tups.append(recipient_tup)
 
-            msg = you_were_just_subscribed_message(
-                acting_user=user_profile,
-                recipient_user=recipient_user,
-                stream_names=notify_stream_names,
-            )
+        if recipient_tups:
+            sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+            mention_backend = MentionBackend(realm.id)
 
-            notifications.append(
-                internal_prep_private_message(
-                    realm=realm,
-                    sender=sender,
+            for (recipient_user, notify_stream_names) in recipient_tups:
+                msg = you_were_just_subscribed_message(
+                    acting_user=user_profile,
                     recipient_user=recipient_user,
-                    content=msg,
-                    mention_backend=mention_backend,
+                    stream_names=notify_stream_names,
                 )
-            )
+
+                notifications.append(
+                    internal_prep_private_message(
+                        realm=realm,
+                        sender=sender,
+                        recipient_user=recipient_user,
+                        content=msg,
+                        mention_backend=mention_backend,
+                    )
+                )
 
     if announce and len(created_streams) > 0:
         notifications_stream = user_profile.realm.get_notifications_stream()
