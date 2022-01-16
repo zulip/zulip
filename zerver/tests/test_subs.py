@@ -5101,7 +5101,7 @@ class GetSubscribersTest(ZulipTestCase):
                 streams,
                 dict(principals=orjson.dumps(users_to_subscribe).decode()),
             )
-        self.assert_length(queries, 46)
+        self.assert_length(queries, 44)
 
         msg = f"""
             @**King Hamlet|{hamlet.id}** subscribed you to the following streams:

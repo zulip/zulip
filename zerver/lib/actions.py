@@ -1588,6 +1588,7 @@ def get_recipient_info(
     stream_topic: Optional[StreamTopicTarget],
     possibly_mentioned_user_ids: AbstractSet[int] = set(),
     possible_wildcard_mention: bool = True,
+    user_notification_info_backend: Optional[UserNotificationInfoBackend] = None,
 ) -> RecipientInfoResult:
     stream_push_user_ids: Set[int] = set()
     stream_email_user_ids: Set[int] = set()
@@ -1693,7 +1694,8 @@ def get_recipient_info(
     user_ids |= possibly_mentioned_user_ids
 
     if user_ids:
-        user_notification_info_backend = UserNotificationInfoBackend(user_ids)
+        if user_notification_info_backend is None:
+            user_notification_info_backend = UserNotificationInfoBackend(user_ids)
         rows = user_notification_info_backend.get_user_notification_info(user_ids)
     else:
         # TODO: We should always have at least one user_id as a recipient
@@ -1886,6 +1888,7 @@ def build_message_send_dict(
     widget_content_dict: Optional[Dict[str, Any]] = None,
     email_gateway: bool = False,
     mention_backend: Optional[MentionBackend] = None,
+    user_notification_info_backend: Optional[UserNotificationInfoBackend] = None,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -1918,6 +1921,7 @@ def build_message_send_dict(
         stream_topic=stream_topic,
         possibly_mentioned_user_ids=mention_data.get_user_ids(),
         possible_wildcard_mention=mention_data.message_has_wildcards(),
+        user_notification_info_backend=user_notification_info_backend,
     )
 
     # Render our message_dicts.
@@ -3340,6 +3344,7 @@ def check_message(
     *,
     skip_stream_access_check: bool = False,
     mention_backend: Optional[MentionBackend] = None,
+    user_notification_info_backend: Optional[UserNotificationInfoBackend] = None,
 ) -> SendMessageRequest:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -3466,6 +3471,7 @@ def check_message(
         widget_content_dict=widget_content_dict,
         email_gateway=email_gateway,
         mention_backend=mention_backend,
+        user_notification_info_backend=user_notification_info_backend,
     )
 
     if stream is not None and message_send_dict.rendering_result.mentions_wildcard:
@@ -3483,6 +3489,7 @@ def _internal_prep_message(
     content: str,
     email_gateway: bool = False,
     mention_backend: Optional[MentionBackend] = None,
+    user_notification_info_backend: Optional[UserNotificationInfoBackend] = None,
 ) -> Optional[SendMessageRequest]:
     """
     Create a message object and checks it, but doesn't send it or save it to the database.
@@ -3513,6 +3520,7 @@ def _internal_prep_message(
             realm=realm,
             email_gateway=email_gateway,
             mention_backend=mention_backend,
+            user_notification_info_backend=user_notification_info_backend,
         )
     except JsonableError as e:
         logging.exception(
@@ -3573,6 +3581,7 @@ def internal_prep_private_message(
     recipient_user: UserProfile,
     content: str,
     mention_backend: Optional[MentionBackend] = None,
+    user_notification_info_backend: Optional[UserNotificationInfoBackend] = None,
 ) -> Optional[SendMessageRequest]:
     """
     See _internal_prep_message for details of how this works.
@@ -3585,6 +3594,7 @@ def internal_prep_private_message(
         addressee=addressee,
         content=content,
         mention_backend=mention_backend,
+        user_notification_info_backend=user_notification_info_backend,
     )
 
 

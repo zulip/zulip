@@ -72,6 +72,7 @@ from zerver.lib.topic import (
     messages_for_topic,
 )
 from zerver.lib.types import Validator
+from zerver.lib.user_notification_info import UserNotificationInfoBackend
 from zerver.lib.utils import assert_is_not_none
 from zerver.lib.validator import (
     check_bool,
@@ -609,6 +610,7 @@ def send_messages_for_new_subscribers(
     # or if a new stream was created with the "announce" option.
     notifications = []
     if new_subscriptions:
+        recipient_user_ids = set()
         recipient_tups = []
 
         for email, subscribed_stream_names in new_subscriptions.items():
@@ -629,10 +631,14 @@ def send_messages_for_new_subscribers(
             recipient_user = email_to_user_profile[email]
             recipient_tup = (recipient_user, notify_stream_names)
             recipient_tups.append(recipient_tup)
+            recipient_user_ids.add(recipient_user.id)
 
         if recipient_tups:
             sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+            recipient_user_ids.add(sender.id)
+            recipient_user_ids.add(user_profile.id)
             mention_backend = MentionBackend(realm.id)
+            user_notification_info_backend = UserNotificationInfoBackend(recipient_user_ids)
 
             for (recipient_user, notify_stream_names) in recipient_tups:
                 msg = you_were_just_subscribed_message(
@@ -648,6 +654,7 @@ def send_messages_for_new_subscribers(
                         recipient_user=recipient_user,
                         content=msg,
                         mention_backend=mention_backend,
+                        user_notification_info_backend=user_notification_info_backend,
                     )
                 )
 
