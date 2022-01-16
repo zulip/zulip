@@ -148,7 +148,30 @@ class TestMiscStuff(ZulipTestCase):
         user_color_map = pick_colors(used_colors, color_map, recipient_ids)
         self.assertEqual(
             user_color_map,
-            {98: "color98", 99: "color99", 1: "#9987e1", 2: "#c6a8ad", 3: "#a6c7e5", 4: "#e79ab5"},
+            {98: "color98", 99: "color99", 1: "#9987e1", 2: "#c6a8ad", 3: "#e79ab5", 4: "#bfd56f"},
+        )
+
+        """
+        If we are assigning colors to a user with 24+ streams, we have to start
+        re-using old colors.  Our algorithm basically uses recipient_id % 24, so
+        the following code reflects the worse case scenario that our new
+        streams have recipient ids spaced out by exact multiples of 24.  We
+        don't try to work around this edge case, since users who really depend
+        on the stream colors can always just assign themselves custom colors
+        for the streams that they really want to stand out.
+
+        Even if recipient_ids were completely random, the odds of collisions
+        are low, but it's often the case that bulk-adds are done for streams
+        that either were or are being created at roughly the same time, so the
+        recipient_ids tend to have even fewer collisions.
+        """
+        used_colors = set(STREAM_ASSIGNMENT_COLORS)
+        color_map = {}
+        recipient_ids = [2, 26, 50, 74]
+        user_color_map = pick_colors(used_colors, color_map, recipient_ids)
+        self.assertEqual(
+            user_color_map,
+            {2: "#a6c7e5", 26: "#a6c7e5", 50: "#a6c7e5", 74: "#a6c7e5"},
         )
 
     def test_empty_results(self) -> None:
