@@ -16,7 +16,7 @@ the Services in any way means that you agree to all of these Terms,
 and these Terms will remain in effect while you use the
 Services. These Terms include the provisions in this document as well
 as those in the [Privacy Policy](/policies/privacy), [Rules of
-Use](/policies/privacy), and, if applicable, [Data Processing
+Use](/policies/rules), and, if applicable, [Data Processing
 Addendum](/static/images/policies/Zulip-Data-Processing-Addendum.pdf). **Your
 use of or participation in certain Services may also be subject to
 additional policies, rules and/or conditions (“Additional Terms”),
