@@ -20,7 +20,7 @@ server {
     ssl_certificate /etc/ssl/certs/ssl-cert-snakeoil.pem;
     ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
 
-    server_name staging.zulip.com;
+    server_name zulipstaging.com;
 
     include /etc/zulip/nginx_sharding.conf;
     include /etc/nginx/zulip-include/app;
