@@ -230,6 +230,7 @@ from zerver.models import (
     UserPresence,
     UserProfile,
     UserStatus,
+    UserTopic,
     active_non_guest_user_ids,
     active_user_ids,
     custom_profile_fields_for_realm,
@@ -7740,7 +7741,10 @@ def do_mute_topic(
 
 
 def do_unmute_topic(user_profile: UserProfile, stream: Stream, topic: str) -> None:
-    remove_topic_mute(user_profile, stream.id, topic)
+    try:
+        remove_topic_mute(user_profile, stream.id, topic)
+    except UserTopic.DoesNotExist:
+        raise JsonableError(_("Topic is not muted"))
     event = dict(type="muted_topics", muted_topics=get_topic_mutes(user_profile))
     send_event(user_profile.realm, event, [user_profile.id])
 

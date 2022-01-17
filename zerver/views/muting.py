@@ -54,9 +54,6 @@ def unmute_topic(
         assert stream_id is not None
         stream = access_stream_for_unmute_topic_by_id(user_profile, stream_id, error)
 
-    if not topic_is_muted(user_profile, stream.id, topic_name):
-        raise JsonableError(error)
-
     do_unmute_topic(user_profile, stream, topic_name)
     return json_success()
 
