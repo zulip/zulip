@@ -19,9 +19,6 @@ errors common to many endpoints:
 
 {generate_code_example|/rest-error-handling:post|fixture}
 
-The `retry-after` parameter in the response indicates how many seconds
-the client must wait before making additional requests.
-
 To help clients avoid exceeding rate limits, Zulip sets the following
 HTTP headers in all API responses:
 
@@ -44,6 +41,3 @@ and over time. The default configuration currently limits:
 When the Zulip server has configured multiple rate limits that apply
 to a given request, the values returned will be for the strictest
 limit.
-
-**Changes**: The `code` field in the response is new in Zulip 4.0
-(feature level 36).
