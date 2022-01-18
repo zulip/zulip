@@ -214,6 +214,9 @@ export class TopicListWidget {
         const input = this.parent_elem.find("#filter-topic-input");
         if (input.length) {
             this.update_topic_search_text(input.val());
+            // Only set focus on search input if it was focused before the update.
+            this.topic_search_focused_before_build =
+                document.activeElement.id === "filter-topic-input";
         } else {
             // Clear the topic search input when zooming out.
             this.update_topic_search_text("");
@@ -233,7 +236,6 @@ export class TopicListWidget {
 
         const find = () => this.parent_elem.find(".topic-list");
 
-        this.topic_search_focused_before_build = document.activeElement.id === "filter-topic-input";
         vdom.update(replace_content, find, new_dom, this.prior_dom);
 
         this.prior_dom = new_dom;
