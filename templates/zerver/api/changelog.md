@@ -590,7 +590,7 @@ field with an integer field `invite_to_realm_policy`.
 * [`POST /users`](/api/create-user): Restricted access to organization
   administrators with the `can_create_users` permission.
 * [Error handling](/api/rest-error-handling): The `code` property will
-  not be present in errors due to rate limits.
+  now be present in errors due to rate limits.
 
 **Feature level 35**
 

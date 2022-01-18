@@ -15190,8 +15190,8 @@ components:
           description: |
             ## Missing request parameter(s)
 
-            A typical failed JSON response for when a required request parameter:
-            is not supplied
+            A typical failed JSON response for when a required request parameter
+            is not supplied:
           properties:
             result: {}
             msg: {}
@@ -15249,6 +15249,12 @@ components:
             }
           description: |
             ## Rate limit exceeded
+
+            The `retry-after` parameter in the response indicates how many seconds
+            the client must wait before making additional requests.
+
+            **Changes**: The `code` field was not present in rate
+            limit errors before Zulip 4.0 (feature level 36).
 
             A typical failed JSON response for when a rate limit is exceeded:
     RealmDeactivatedError:
