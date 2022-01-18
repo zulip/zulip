@@ -1007,7 +1007,7 @@ button#register_auth_button_gitlab {
 
 .goto-account-page {
     #realm_redirect_subdomain {
-        text-align: right;
+        text-align: left;
         position: relative;
         padding-right: 10px;
     }
