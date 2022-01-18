@@ -10,10 +10,14 @@ To run a Zulip server, you will need:
   - Debian 10 Buster
 - At least 2GB RAM, and 10GB disk space
   - If you expect 100+ users: 4GB RAM, and 2 CPUs
+  - If you intend to [upgrade from Git][upgrade-from-git]: 3GB RAM, or
+    2G and at least 1G of swap configured.
 - A hostname in DNS
 - Credentials for sending email
 
 For details on each of these requirements, see below.
+
+[upgrade-from-git]: ../production/upgrade-or-modify.html#upgrading-from-a-git-repository
 
 ## Server
 
