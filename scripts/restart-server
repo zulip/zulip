@@ -91,6 +91,13 @@ if has_application_server():
 if has_process_fts_updates():
     workers.append("process-fts-updates")
 
+# Before we start (re)starting main services, make sure to start any
+# optional auxiliary services that we don't stop, but do expect to be
+# running, and aren't currently.
+aux_services = list_supervisor_processes(["go-camo", "smokescreen"], only_running=False)
+if aux_services:
+    subprocess.check_call(["supervisorctl", "start", *aux_services])
+
 if action == "restart" and len(workers) > 0:
     if args.less_graceful:
         # The less graceful form stops every worker now; we start them
