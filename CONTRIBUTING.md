@@ -229,17 +229,24 @@ labels.
      on [Git commit
      discipline](https://zulip.readthedocs.io/en/latest/contributing/version-control.html#commit-discipline).
   2. If all the feedback has been addressed, did you leave a comment explaining that
-     you have done so and **requesting a re-review**? If not, it may not be a
+     you have done so and **requesting another review**? If not, it may not be a
      clear to project maintainers that your PR is ready for another look.
   3. It is common for PRs to require **multiple rounds of review**. For example,
      prior to getting code review from project maintainers, you may receive
      feedback on the UI (without regard for the implementation), and your code
-     may be reviewed by other contributors. This helps us make good use of
-     project maintainers' time, and helps you make progress on the PR by
-     getting more frequent feedback.
+     may be [reviewed by other
+     contributors](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html).
+     This helps us make good use of project maintainers' time, and helps you
+     make progress on the PR by getting more frequent feedback.
   4. If you think the PR is ready and haven't seen any updates for a couple
      of weeks, it can be helpful to post a **comment summarizing your
-     understanding of the state of the review process**.
+     understanding of the state of the review process**. Your comment should
+     make it easy to understand what has been done and what remains by:
+     - Summarizing the changes made since the last review you received.
+     - Highlighting remaining questions or decisions, with links to any
+       relevant chat.zulip.org threads.
+     - Providing updated screenshots and information on manual testing if
+       appropriate.
   5. Finally, **Zulip project maintainers are people too**! They may be busy
      with other work, and sometimes they might even take a vacation. ;) It can
      occasionally take a few weeks for a PR in the final stages of the review
