@@ -153,7 +153,7 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         super().setUp()
         self.bot_user = get_user("outgoing-webhook@zulip.com", get_realm("zulip"))
         self.stream_message_event = {
-            "command": "@**test**",
+            "command": "@**test-service** test",
             "user_profile_id": 12,
             "service_name": "test-service",
             "trigger": "mention",
@@ -214,9 +214,10 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         self.assertEqual(request_data[6][1], 123456)  # timestamp
         self.assertEqual(request_data[7][1], "U21")  # user_id
         self.assertEqual(request_data[8][1], "Sample User")  # user_name
-        self.assertEqual(request_data[9][1], "@**test**")  # text
-        self.assertEqual(request_data[10][1], "mention")  # trigger_word
-        self.assertEqual(request_data[11][1], 12)  # user_profile_id
+        self.assertEqual(request_data[9][1], "/test-service")  # command
+        self.assertEqual(request_data[10][1], "test")  # text
+        self.assertEqual(request_data[11][1], "mention")  # trigger_word
+        self.assertEqual(request_data[12][1], 12)  # user_profile_id
 
     @mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
     def test_make_request_private_message(self, mock_fail_with_message: mock.Mock) -> None:
@@ -239,3 +240,13 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         response = dict(text="test_content")
         success_response = self.handler.process_success(response)
         self.assertEqual(success_response, dict(content="test_content"))
+
+    def test_separate_command_text(self) -> None:
+        response: Dict[str, str] = self.handler.separate_command_text("@**test-service** test")
+        self.assertEqual(response, dict(command="/test-service", text="test"))
+
+        response = self.handler.separate_command_text("test @**test-service**")
+        self.assertEqual(response, dict(command="", text="test @**test-service**"))
+
+        response = self.handler.separate_command_text("@**user** @**test-service**")
+        self.assertEqual(response, dict(command="", text="@**user** @**test-service**"))

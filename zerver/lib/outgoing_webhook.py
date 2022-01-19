@@ -1,6 +1,7 @@
 import abc
 import json
 import logging
+import re
 from time import perf_counter
 from typing import Any, AnyStr, Dict, Optional
 
@@ -125,6 +126,12 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
         # text=googlebot: What is the air-speed velocity of an unladen swallow?
         # trigger_word=googlebot:
 
+        # https://api.slack.com/interactivity/slash-commands documents the
+        # latest Slack slash command format:
+        # command=/weather
+        # text=94070
+
+        processed_command_message: Dict[str, Any] = self.separate_command_text(event["command"])
         request_data = [
             ("token", self.token),
             ("team_id", f"T{realm.id}"),
@@ -135,7 +142,8 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
             ("timestamp", event["message"]["timestamp"]),
             ("user_id", f"U{event['message']['sender_id']}"),
             ("user_name", event["message"]["sender_full_name"]),
-            ("text", event["command"]),
+            ("command", processed_command_message["command"]),
+            ("text", processed_command_message["text"]),
             ("trigger_word", event["trigger"]),
             ("service_id", event["user_profile_id"]),
         ]
@@ -148,6 +156,40 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
             return success_data
 
         return None
+
+    def separate_command_text(self, message: str) -> Dict[str, Any]:
+        """
+        message is the text typed by the user.
+
+        This method processes the message and separates the command and the text.
+        https://api.slack.com/interactivity/slash-commands documents the Slack slash command format
+        """
+        trimmed_message = message.lstrip()
+        check_command = re.match(r"^@\*\*.+\*\*", trimmed_message)
+
+        # Check if the message starts with a mention
+        if check_command is None:
+            return {
+                "command": "",
+                "text": message,
+            }
+        else:
+            command = check_command.group()
+
+            # Check whether the first mention is the bot user
+            if command.startswith("@**" + self.service_name + "**"):
+                processed_message = message.replace(
+                    "@**" + self.service_name + "**", "", 1
+                ).lstrip()
+                return {
+                    "command": "/" + self.service_name,
+                    "text": processed_message,
+                }
+            else:
+                return {
+                    "command": "",
+                    "text": message,
+                }
 
 
 AVAILABLE_OUTGOING_WEBHOOK_INTERFACES: Dict[str, Any] = {

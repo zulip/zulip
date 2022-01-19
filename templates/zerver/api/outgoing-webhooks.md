@@ -147,8 +147,14 @@ Here's how we fill in the fields that a Slack-format webhook expects:
             <td>Full name of sender</td>
         </tr>
         <tr>
+            <td><code>command</code></td>
+            <td>Bot name prefixed by "/" if the message starts with the @-mention
+             of the bot</td>
+        </tr>
+        <tr>
             <td><code>text</code></td>
-            <td>The content of the message (in Markdown)</td>
+            <td>The content of the message (in Markdown). If the content starts with the @-mention of the bot, then the @-mention is trimmed and moved to the command
+            field accordingly.</td>
         </tr>
         <tr>
             <td><code>trigger_word</code></td>
@@ -173,7 +179,8 @@ The above data is posted as list of tuples (not JSON), here's an example:
  ('timestamp', 1532078950),
  ('user_id', 'U21'),
  ('user_name', 'Full Name'),
- ('text', '@**test**'),
+ ('command', '/bot')
+ ('text', 'test'),
  ('trigger_word', 'mention'),
  ('service_id', 27)]
 ```
