@@ -831,7 +831,7 @@ test("misc", ({override_rewire}) => {
 
     const stub_notification_disable_parent = $.create("<stub notification_disable parent");
     stub_notification_disable_parent.set_find_results(
-        ".dropdown_list_reset_button:enabled",
+        ".dropdown_list_reset_button",
         $.create("<disable link>"),
     );
 
@@ -906,7 +906,7 @@ test("misc", ({override_rewire}) => {
     ];
     const dropdown_list_parent = $.create("<list parent>");
     dropdown_list_parent.set_find_results(
-        ".dropdown_list_reset_button:enabled",
+        ".dropdown_list_reset_button",
         $.create("<disable button>"),
     );
     for (const name of widget_settings) {
