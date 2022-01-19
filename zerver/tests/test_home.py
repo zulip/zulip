@@ -219,7 +219,7 @@ class HomeTest(ZulipTestCase):
     def test_home(self) -> None:
         # Keep this list sorted!!!
         html_bits = [
-            "empty_feed_notice_main",
+            "message_feed_errors_container",
             "Loading...",
             # Verify that the app styles get included
             "app-stubentry.js",
@@ -447,7 +447,7 @@ class HomeTest(ZulipTestCase):
         which still want the home page to load properly.
         """
         html = result.content.decode()
-        if "empty_feed_notice_main" not in html:
+        if "message_feed_errors_container" not in html:
             raise AssertionError("Home page probably did not load.")
 
     def test_terms_of_service(self) -> None:
