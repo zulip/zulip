@@ -27,7 +27,7 @@ const {DropdownListWidget, MultiSelectDropdownListWidget} = zrequire("dropdown_l
 const setup_dropdown_zjquery_data = (name) => {
     const input_group = $(".input_group");
     const reset_button = $(".dropdown_list_reset_button");
-    input_group.set_find_results(".dropdown_list_reset_button:enabled", reset_button);
+    input_group.set_find_results(".dropdown_list_reset_button", reset_button);
     $(`#${CSS.escape(name)}_widget #${CSS.escape(name)}_name`).closest = () => input_group;
     const $widget = $(`#${CSS.escape(name)}_widget #${CSS.escape(name)}_name`);
     return {reset_button, $widget};
