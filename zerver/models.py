@@ -37,7 +37,6 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django_cte import CTEManager
-from typing_extensions import TypedDict
 
 from confirmation import settings as confirmation_settings
 from zerver.lib import cache
@@ -99,15 +98,6 @@ MAX_TOPIC_NAME_LENGTH = 60
 MAX_LANGUAGE_ID_LENGTH: int = 50
 
 STREAM_NAMES = TypeVar("STREAM_NAMES", Sequence[str], AbstractSet[str])
-
-
-class EmojiInfo(TypedDict):
-    id: str
-    name: str
-    source_url: str
-    deactivated: bool
-    author_id: Optional[int]
-    still_url: Optional[str]
 
 
 def query_for_ids(query: QuerySet, user_ids: List[int], field: str) -> QuerySet:
@@ -249,10 +239,6 @@ class Realm(models.Model):
         flags=AUTHENTICATION_FLAGS,
         default=2 ** 31 - 1,
     )
-
-    # Allow users to access web public streams without login. This
-    # setting also controls API access of web public streams.
-    enable_spectator_access: bool = models.BooleanField(default=False)
 
     # Whether the organization has enabled inline image and URL previews.
     inline_image_preview: bool = models.BooleanField(default=True)
@@ -638,41 +624,40 @@ class Realm(models.Model):
     property_types: Dict[str, Union[type, Tuple[type, ...]]] = dict(
         add_custom_emoji_policy=int,
         allow_edit_history=bool,
-        avatar_changes_disabled=bool,
         bot_creation_policy=int,
-        create_private_stream_policy=int,
         create_public_stream_policy=int,
+        create_private_stream_policy=int,
         create_web_public_stream_policy=int,
-        default_code_block_language=(str, type(None)),
+        invite_to_stream_policy=int,
+        move_messages_between_streams_policy=int,
         default_language=str,
-        delete_own_message_policy=int,
         description=str,
         digest_emails_enabled=bool,
-        digest_weekday=int,
         disallow_disposable_email_addresses=bool,
         email_address_visibility=int,
         email_changes_disabled=bool,
-        emails_restricted_to_domains=bool,
-        enable_spectator_access=bool,
         giphy_rating=int,
-        inline_image_preview=bool,
-        inline_url_embed_preview=bool,
         invite_required=bool,
         invite_to_realm_policy=int,
-        invite_to_stream_policy=int,
+        inline_image_preview=bool,
+        inline_url_embed_preview=bool,
         mandatory_topics=bool,
-        message_content_allowed_in_email_notifications=bool,
-        message_content_delete_limit_seconds=(int, type(None)),
         message_retention_days=(int, type(None)),
-        move_messages_between_streams_policy=int,
         name=str,
         name_changes_disabled=bool,
-        private_message_policy=int,
+        avatar_changes_disabled=bool,
+        emails_restricted_to_domains=bool,
         send_welcome_emails=bool,
-        user_group_edit_policy=int,
+        message_content_allowed_in_email_notifications=bool,
         video_chat_provider=int,
         waiting_period_threshold=int,
+        digest_weekday=int,
+        private_message_policy=int,
+        user_group_edit_policy=int,
+        default_code_block_language=(str, type(None)),
+        message_content_delete_limit_seconds=(int, type(None)),
         wildcard_mention_policy=int,
+        delete_own_message_policy=int,
     )
 
     DIGEST_WEEKDAY_VALUES = [0, 1, 2, 3, 4, 5, 6]
@@ -736,11 +721,11 @@ class Realm(models.Model):
         return f"<Realm: {self.string_id} {self.id}>"
 
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600 * 24 * 7)
-    def get_emoji(self) -> Dict[str, EmojiInfo]:
+    def get_emoji(self) -> Dict[str, Dict[str, Any]]:
         return get_realm_emoji_uncached(self)
 
     @cache_with_key(get_active_realm_emoji_cache_key, timeout=3600 * 24 * 7)
-    def get_active_emoji(self) -> Dict[str, EmojiInfo]:
+    def get_active_emoji(self) -> Dict[str, Dict[str, Any]]:
         return get_active_realm_emoji_uncached(self)
 
     def get_admin_users_and_bots(
@@ -906,27 +891,19 @@ class Realm(models.Model):
             # target every open Internet service that can host files.
             return False
 
-        if not self.enable_spectator_access:
-            return False
-
         return True
 
     def has_web_public_streams(self) -> bool:
+        """
+        If any of the streams in the realm is web
+        public, then the realm is web public.
+        """
         if not self.web_public_streams_enabled():
             return False
 
         from zerver.lib.streams import get_web_public_streams_queryset
 
         return get_web_public_streams_queryset(self).exists()
-
-    def allow_web_public_streams_access(self) -> bool:
-        """
-        If any of the streams in the realm is web
-        public and `enable_spectator_access` and
-        settings.WEB_PUBLIC_STREAMS_ENABLED is True,
-        then the Realm is web public.
-        """
-        return self.has_web_public_streams()
 
 
 post_save.connect(flush_realm, sender=Realm)
@@ -1058,17 +1035,10 @@ class RealmEmoji(models.Model):
     def __str__(self) -> str:
         return f"<RealmEmoji({self.realm.string_id}): {self.id} {self.name} {self.deactivated} {self.file_name}>"
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["realm", "name"],
-                condition=Q(deactivated=False),
-                name="unique_realm_emoji_when_false_deactivated",
-            ),
-        ]
 
-
-def get_realm_emoji_dicts(realm: Realm, only_active_emojis: bool = False) -> Dict[str, EmojiInfo]:
+def get_realm_emoji_dicts(
+    realm: Realm, only_active_emojis: bool = False
+) -> Dict[str, Dict[str, Any]]:
     query = RealmEmoji.objects.filter(realm=realm).select_related("author")
     if only_active_emojis:
         query = query.filter(deactivated=False)
@@ -1081,13 +1051,12 @@ def get_realm_emoji_dicts(realm: Realm, only_active_emojis: bool = False) -> Dic
             author_id = realm_emoji.author_id
         emoji_url = get_emoji_url(realm_emoji.file_name, realm_emoji.realm_id)
 
-        emoji_dict: EmojiInfo = dict(
+        emoji_dict = dict(
             id=str(realm_emoji.id),
             name=realm_emoji.name,
             source_url=emoji_url,
             deactivated=realm_emoji.deactivated,
             author_id=author_id,
-            still_url=None,
         )
 
         if realm_emoji.is_animated:
@@ -1104,11 +1073,11 @@ def get_realm_emoji_dicts(realm: Realm, only_active_emojis: bool = False) -> Dic
     return d
 
 
-def get_realm_emoji_uncached(realm: Realm) -> Dict[str, EmojiInfo]:
+def get_realm_emoji_uncached(realm: Realm) -> Dict[str, Dict[str, Any]]:
     return get_realm_emoji_dicts(realm)
 
 
-def get_active_realm_emoji_uncached(realm: Realm) -> Dict[str, EmojiInfo]:
+def get_active_realm_emoji_uncached(realm: Realm) -> Dict[str, Dict[str, Any]]:
     realm_emojis = get_realm_emoji_dicts(realm, only_active_emojis=True)
     d = {}
     for emoji_id, emoji_dict in realm_emojis.items():
@@ -1519,26 +1488,26 @@ class UserBaseSettings(models.Model):
     )
 
     notification_settings_legacy = dict(
-        desktop_icon_count_display=int,
-        email_notifications_batching_period_seconds=int,
         enable_desktop_notifications=bool,
         enable_digest_emails=bool,
         enable_login_emails=bool,
         enable_marketing_emails=bool,
+        email_notifications_batching_period_seconds=int,
         enable_offline_email_notifications=bool,
         enable_offline_push_notifications=bool,
         enable_online_push_notifications=bool,
         enable_sounds=bool,
-        enable_stream_audible_notifications=bool,
         enable_stream_desktop_notifications=bool,
         enable_stream_email_notifications=bool,
         enable_stream_push_notifications=bool,
+        enable_stream_audible_notifications=bool,
+        wildcard_mentions_notify=bool,
         message_content_in_email_notifications=bool,
         notification_sound=str,
         pm_content_in_desktop_notifications=bool,
-        presence_enabled=bool,
+        desktop_icon_count_display=int,
         realm_name_in_notifications=bool,
-        wildcard_mentions_notify=bool,
+        presence_enabled=bool,
     )
 
     notification_setting_types = {
@@ -1551,10 +1520,10 @@ class UserBaseSettings(models.Model):
         **notification_setting_types,
         **dict(
             # Add new general settings here.
-            escape_navigates_to_default_view=bool,
+            send_stream_typing_notifications=bool,
             send_private_typing_notifications=bool,
             send_read_receipts=bool,
-            send_stream_typing_notifications=bool,
+            escape_navigates_to_default_view=bool,
         ),
     }
 
@@ -1626,10 +1595,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # compatibility in Zulip APIs where users are referred to by their
     # email address, not their ID; it should be used in all API use cases.
     #
-    # Both fields are unique within a realm (in a case-insensitive
-    # fashion). Since Django's unique_together is case sensitive, this
-    # is enforced via SQL indexes created by
-    # zerver/migrations/0295_case_insensitive_email_indexes.py.
+    # Both fields are unique within a realm (in a case-insensitive fashion).
     delivery_email: str = models.EmailField(blank=False, db_index=True)
     email: str = models.EmailField(blank=False, db_index=True)
 
@@ -1739,7 +1705,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     #
     # In Django, the convention is to use an empty string instead of NULL/None
     # for text-based fields. For more information, see
-    # https://docs.djangoproject.com/en/3.2/ref/models/fields/#django.db.models.Field.null.
+    # https://docs.djangoproject.com/en/1.10/ref/models/fields/#django.db.models.Field.null.
     timezone: str = models.CharField(max_length=40, default="")
 
     AVATAR_FROM_GRAVATAR = "G"
@@ -2253,19 +2219,12 @@ class Stream(models.Model):
 
     # Who in the organization has permission to send messages to this stream.
     stream_post_policy: int = models.PositiveSmallIntegerField(default=STREAM_POST_POLICY_EVERYONE)
-    POST_POLICIES: Dict[int, str] = {
-        # These strings should match the strings in the
-        # stream_post_policy_values object in stream_data.js.
-        STREAM_POST_POLICY_EVERYONE: gettext_lazy("All stream members can post"),
-        STREAM_POST_POLICY_ADMINS: gettext_lazy("Only organization administrators can post"),
-        STREAM_POST_POLICY_MODERATORS: gettext_lazy(
-            "Only organization administrators and moderators can post"
-        ),
-        STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS: gettext_lazy(
-            "Only organization full members can post"
-        ),
-    }
-    STREAM_POST_POLICY_TYPES = list(POST_POLICIES.keys())
+    STREAM_POST_POLICY_TYPES = [
+        STREAM_POST_POLICY_EVERYONE,
+        STREAM_POST_POLICY_ADMINS,
+        STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS,
+        STREAM_POST_POLICY_MODERATORS,
+    ]
 
     # The unique thing about Zephyr public streams is that we never list their
     # users.  We may try to generalize this concept later, but for now
@@ -2370,6 +2329,8 @@ class UserTopic(models.Model):
     last_updated: datetime.datetime = models.DateTimeField(
         default=datetime.datetime(2020, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)
     )
+    muted_datetime: Optional[datetime.datetime] = models.DateTimeField(null=True)
+    remind_datetime: Optional[datetime.datetime] = models.DateTimeField(null=True)
 
     # Implicitly, if a UserTopic does not exist, the (user, topic)
     # pair should have normal behavior for that (user, stream) pair.
@@ -2474,23 +2435,13 @@ def get_realm_stream(stream_name: str, realm_id: int) -> Stream:
     return Stream.objects.select_related().get(name__iexact=stream_name.strip(), realm_id=realm_id)
 
 
-def get_active_streams(realm: Realm) -> QuerySet:
+def get_active_streams(realm: Optional[Realm]) -> QuerySet:
     # TODO: Change return type to QuerySet[Stream]
     # NOTE: Return value is used as a QuerySet, so cannot currently be Sequence[QuerySet]
     """
     Return all streams (including invite-only streams) that have not been deactivated.
     """
     return Stream.objects.filter(realm=realm, deactivated=False)
-
-
-def get_linkable_streams(realm_id: int) -> QuerySet:
-    """
-    This returns the streams that we are allowed to linkify using
-    something like "#frontend" in our markup. For now the business
-    rule is that you can link any stream in the realm that hasn't
-    been deactivated (similar to how get_active_streams works).
-    """
-    return Stream.objects.filter(realm_id=realm_id, deactivated=False)
 
 
 def get_stream(stream_name: str, realm: Realm) -> Stream:
@@ -2855,15 +2806,8 @@ class AbstractEmoji(models.Model):
         default=UNICODE_EMOJI, choices=REACTION_TYPES, max_length=30
     )
 
-    # A string with the property that (realm, reaction_type,
-    # emoji_code) uniquely determines the emoji glyph.
-    #
-    # We cannot use `emoji_name` for this purpose, since the
-    # name-to-glyph mappings for unicode emoji change with time as we
-    # update our emoji database, and multiple custom emoji can have
-    # the same `emoji_name` in a realm (at most one can have
-    # `deactivated=False`). The format for `emoji_code` varies by
-    # `reaction_type`:
+    # A string that uniquely identifies a particular emoji.  The format varies
+    # by type:
     #
     # * For Unicode emoji, a dash-separated hex encoding of the sequence of
     #   Unicode codepoints that define this emoji in the Unicode
@@ -2871,10 +2815,10 @@ class AbstractEmoji(models.Model):
     #   following data, with "non_qualified" taking precedence when both present:
     #     https://raw.githubusercontent.com/iamcal/emoji-data/master/emoji_pretty.json
     #
-    # * For user uploaded custom emoji (`reaction_type="realm_emoji"`), the stringified ID
-    #   of the RealmEmoji object, computed as `str(realm_emoji.id)`.
+    # * For realm emoji (aka user uploaded custom emoji), the ID
+    #   (in ASCII decimal) of the RealmEmoji object.
     #
-    # * For "Zulip extra emoji" (like :zulip:), the name of the emoji (e.g. "zulip").
+    # * For "Zulip extra emoji" (like :zulip:), the filename of the emoji.
     emoji_code: str = models.TextField()
 
     class Meta:
@@ -2905,10 +2849,7 @@ class Reaction(AbstractReaction):
             "user_profile_id",
             "user_profile__full_name",
         ]
-        # The ordering is important here, as it makes it convenient
-        # for clients to display reactions in order without
-        # client-side sorting code.
-        return Reaction.objects.filter(message_id__in=needed_ids).values(*fields).order_by("id")
+        return Reaction.objects.filter(message_id__in=needed_ids).values(*fields)
 
     def __str__(self) -> str:
         return f"{self.user_profile.email} / {self.message.id} / {self.emoji_name}"
@@ -3865,7 +3806,6 @@ class AbstractRealmAuditLog(models.Model):
     USER_DEACTIVATED = 103
     USER_REACTIVATED = 104
     USER_ROLE_CHANGED = 105
-    USER_DELETED = 106
 
     USER_SOFT_ACTIVATED = 120
     USER_SOFT_DEACTIVATED = 121
@@ -3873,7 +3813,7 @@ class AbstractRealmAuditLog(models.Model):
     USER_AVATAR_SOURCE_CHANGED = 123
     USER_FULL_NAME_CHANGED = 124
     USER_EMAIL_CHANGED = 125
-    USER_TERMS_OF_SERVICE_VERSION_CHANGED = 126
+    USER_TOS_VERSION_CHANGED = 126
     USER_API_KEY_CHANGED = 127
     USER_BOT_OWNER_CHANGED = 128
     USER_DEFAULT_SENDING_STREAM_CHANGED = 129
@@ -3921,16 +3861,6 @@ class AbstractRealmAuditLog(models.Model):
     STREAM_DEACTIVATED = 602
     STREAM_NAME_CHANGED = 603
     STREAM_REACTIVATED = 604
-    STREAM_MESSAGE_RETENTION_DAYS_CHANGED = 605
-    STREAM_PROPERTY_CHANGED = 607
-
-    # The following values are only for RemoteZulipServerAuditLog
-    # Values should be exactly 10000 greater than the corresponding
-    # value used for the same purpose in RealmAuditLog (e.g.
-    # REALM_DEACTIVATED = 201, and REMOTE_SERVER_DEACTIVATED = 10201).
-    REMOTE_SERVER_CREATED = 10215
-    REMOTE_SERVER_PLAN_TYPE_CHANGED = 10204
-    REMOTE_SERVER_DEACTIVATED = 10201
 
     event_type: int = models.PositiveSmallIntegerField()
 

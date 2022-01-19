@@ -1,4 +1,5 @@
 import datetime
+from django.db.models import Q 
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from django.utils.timezone import now as timezone_now
@@ -9,11 +10,14 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import topic_match_sa
 from zerver.models import UserProfile, UserTopic, get_stream
 
+from zerver.lib.url_encoding import hash_util_encode
+
 
 def get_topic_mutes(
     user_profile: UserProfile, include_deactivated: bool = False
 ) -> List[Tuple[str, str, float]]:
-    query = UserTopic.objects.filter(user_profile=user_profile, visibility_policy=UserTopic.MUTED)
+    query = UserTopic.objects.filter(Q(user_profile=user_profile), Q(visibility_policy=UserTopic.MUTED), 
+    Q(muted_datetime__isnull=True) | Q(muted_datetime__gt=timezone_now()))
     # Exclude muted topics that are part of deactivated streams unless
     # explicitly requested.
     if not include_deactivated:
@@ -22,9 +26,12 @@ def get_topic_mutes(
         "stream__name",
         "topic_name",
         "last_updated",
+        "muted_datetime",
+        "remind_datetime",
     )
+
     return [
-        (row["stream__name"], row["topic_name"], datetime_to_timestamp(row["last_updated"]))
+        (row["stream__name"], row["topic_name"], datetime_to_timestamp(row["last_updated"]), row["muted_datetime"], row["remind_datetime"])
         for row in rows
     ]
 
@@ -64,6 +71,8 @@ def add_topic_mute(
     recipient_id: int,
     topic_name: str,
     date_muted: Optional[datetime.datetime] = None,
+    muted_datetime: Optional[datetime.datetime] = None,
+    remind_datetime: Optional[datetime.datetime] = None,
 ) -> None:
     if date_muted is None:
         date_muted = timezone_now()
@@ -74,6 +83,8 @@ def add_topic_mute(
         topic_name=topic_name,
         last_updated=date_muted,
         visibility_policy=UserTopic.MUTED,
+        muted_datetime=muted_datetime,
+        remind_datetime=remind_datetime,
     )
 
 
@@ -106,6 +117,8 @@ def exclude_topic_mutes(
     query = UserTopic.objects.filter(
         user_profile=user_profile,
         visibility_policy=UserTopic.MUTED,
+        muted_datetime__isnull=True, 
+        muted_datetime__gt=timezone_now()
     )
 
     if stream_id is not None:
@@ -137,13 +150,27 @@ def build_topic_mute_checker(user_profile: UserProfile) -> Callable[[int, str], 
     rows = UserTopic.objects.filter(
         user_profile=user_profile, visibility_policy=UserTopic.MUTED
     ).values(
+        "stream_id",
         "recipient_id",
         "topic_name",
+        "muted_datetime",
     )
     rows = list(rows)
+    rows_filtered = []
+
+    for row in rows:
+        if row["muted_datetime"] is None: 
+            rows_filtered.append(row)
+        else:
+            if row["muted_datetime"] > timezone_now():
+                rows_filtered.append(row)
+    
+    for row in rows:
+        if row not in rows_filtered:
+            remove_topic_mute(user_profile, row["stream_id"], row["topic_name"])
 
     tups = set()
-    for row in rows:
+    for row in rows_filtered:
         recipient_id = row["recipient_id"]
         topic_name = row["topic_name"]
         tups.add((recipient_id, topic_name.lower()))

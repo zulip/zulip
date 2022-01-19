@@ -1,0 +1,54 @@
+<ul class="nav nav-list temp_mute_topic_popover">
+    <li>
+        <p class="topic-name">
+            <i class="fa fa-clock-o" aria-hidden="true" style="color: {{color}}"></i>
+            <b>{{topic_name}}</b>
+        </p>
+    </li>
+
+    <hr />
+
+
+    <li class="hidden-for-spectators">
+        <a tabindex="0" class="sidebar-popover-temp-mute-topic-period" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-bell-slash" aria-hidden="true"></i>
+            {{t "5 minutes"}}
+        </a>
+    </li>
+    <li class="hidden-for-spectators">
+        <a tabindex="1" class="sidebar-popover-temp-mute-topic-period" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-bell-slash" aria-hidden="true"></i>
+            {{t "15 minutes"}}
+        </a>
+    </li>
+    <li class="hidden-for-spectators">
+        <a tabindex="2" class="sidebar-popover-temp-mute-topic-period" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-bell-slash" aria-hidden="true"></i>
+            {{t "30 minutes"}}
+        </a>
+    </li>
+    <li class="hidden-for-spectators">
+        <a tabindex="3" class="sidebar-popover-temp-mute-topic-period" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-bell-slash" aria-hidden="true"></i>
+            {{t "1 hour"}}
+        </a>
+    </li>
+    <li class="hidden-for-spectators">
+        <a tabindex="4" class="sidebar-popover-temp-mute-topic-period" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-bell-slash" aria-hidden="true"></i>
+            {{t "1 day"}}
+        </a>
+    </li>
+    <li class="hidden-for-spectators">
+        <a tabindex="5" class="sidebar-popover-temp-mute-topic-period" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-bell-slash" aria-hidden="true"></i>
+            {{t "1 week"}}
+        </a>
+    </li>
+    <li class="hidden-for-spectators">
+        <a tabindex="6" class="sidebar-popover-mute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-bell-slash" aria-hidden="true"></i>
+            {{t "Until I turn it on"}}
+        </a>
+    </li>
+</ul>

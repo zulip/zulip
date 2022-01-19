@@ -42,8 +42,18 @@ import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import * as user_profile from "./user_profile";
 import * as util from "./util";
+import * as info_overlay_reminder from "./info_overlay_reminder";
 
 export function initialize() {
+    // SPECTATORS LOGIN TO ACCESS MODAL
+
+    $("body").on("click hide", ".spectator_go_back", (e) => {
+        browser_history.return_to_web_public_hash();
+        $("#login_to_access_modal").modal("hide");
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
     // MESSAGE CLICKING
 
     function initialize_long_tap() {
@@ -376,8 +386,7 @@ export function initialize() {
     $("body").on("click", "#recent_topics_table .on_hover_topic_unmute", (e) => {
         e.stopPropagation();
         const $elt = $(e.target);
-        const topic_row_index = $elt.closest("tr").index();
-        recent_topics_ui.focus_clicked_element(topic_row_index, recent_topics_ui.COLUMNS.mute);
+        recent_topics_ui.focus_clicked_element($elt, recent_topics_ui.COLUMNS.mute);
         mute_or_unmute_topic($elt, false);
     });
 
@@ -386,8 +395,7 @@ export function initialize() {
     $("body").on("click", "#recent_topics_table .on_hover_topic_mute", (e) => {
         e.stopPropagation();
         const $elt = $(e.target);
-        const topic_row_index = $elt.closest("tr").index();
-        recent_topics_ui.focus_clicked_element(topic_row_index, recent_topics_ui.COLUMNS.mute);
+        recent_topics_ui.focus_clicked_element($elt, recent_topics_ui.COLUMNS.mute);
         mute_or_unmute_topic($elt, true);
     });
 
@@ -398,8 +406,7 @@ export function initialize() {
 
     $("body").on("click", "#recent_topics_table .on_hover_topic_read", (e) => {
         e.stopPropagation();
-        const topic_row_index = $(e.target).closest("tr").index();
-        recent_topics_ui.focus_clicked_element(topic_row_index, recent_topics_ui.COLUMNS.read);
+        recent_topics_ui.focus_clicked_element($(e.target), recent_topics_ui.COLUMNS.read);
         const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-topic-name");
         unread_ops.mark_topic_as_read(stream_id, topic);
@@ -417,23 +424,13 @@ export function initialize() {
 
     $("body").on("click", "td.recent_topic_stream", (e) => {
         e.stopPropagation();
-        const topic_row_index = $(e.target).closest("tr").index();
-        recent_topics_ui.focus_clicked_element(topic_row_index, recent_topics_ui.COLUMNS.stream);
+        recent_topics_ui.focus_clicked_element($(e.target), recent_topics_ui.COLUMNS.stream);
         window.location.href = $(e.currentTarget).find("a").attr("href");
     });
 
     $("body").on("click", "td.recent_topic_name", (e) => {
         e.stopPropagation();
-        // The element's parent may re-render while it is being passed to
-        // other functions, so, we get topic_key first.
-        const topic_row = $(e.target).closest("tr");
-        const topic_key = topic_row.attr("id").slice("recent_topics:".length - 1);
-        const topic_row_index = topic_row.index();
-        recent_topics_ui.focus_clicked_element(
-            topic_row_index,
-            recent_topics_ui.COLUMNS.topic,
-            topic_key,
-        );
+        recent_topics_ui.focus_clicked_element($(e.target), recent_topics_ui.COLUMNS.topic);
         window.location.href = $(e.currentTarget).find("a").attr("href");
     });
 
@@ -451,6 +448,11 @@ export function initialize() {
         e.stopPropagation();
         $("#recent_topics_search").val("");
         recent_topics_ui.update_filters_view();
+    });
+
+    // REMINDER
+    $("body").on("click", ".reminder-notifications-left-sidebar", (e) => {
+        info_overlay_reminder.show(muted_topics_ui.get_all_muted_topics());
     });
 
     // RECIPIENT BARS
@@ -647,20 +649,14 @@ export function initialize() {
     });
 
     function handle_compose_click(e) {
-        const $target = $(e.target);
         // Emoji clicks should be handled by their own click handler in emoji_picker.js
-        if ($target.is(".emoji_map, img.emoji, .drag, .compose_gif_icon, .compose_control_menu")) {
+        if ($(e.target).is(".emoji_map, img.emoji, .drag, .compose_gif_icon")) {
             return;
         }
 
         // The mobile compose button has its own popover when clicked, so it already.
         // hides other popovers.
-        if ($target.is(".compose_mobile_button, .compose_mobile_button *")) {
-            return;
-        }
-
-        if ($(".enter_sends").has(e.target).length) {
-            e.preventDefault();
+        if ($(e.target).is(".compose_mobile_button, .compose_mobile_button *")) {
             return;
         }
 
@@ -669,7 +665,7 @@ export function initialize() {
         // clicking "Press Enter to send" should not
         // trigger the composebox-closing code in MAIN CLICK HANDLER.
         // But do allow our formatting link.
-        if (!$target.is("a")) {
+        if (!$(e.target).is("a")) {
             e.stopPropagation();
         }
         // Still hide the popovers, however
@@ -804,6 +800,15 @@ export function initialize() {
         $(`#hotspot_${CSS.escape(hotspot_name)}_icon`).remove();
     });
 
+    $("body").on("click", ".hotspot-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        hotspots.post_hotspot_as_read("intro_reply");
+        hotspots.close_hotspot_icon($("#hotspot_intro_reply_icon"));
+        $("#hotspot_intro_reply_icon").remove();
+    });
+
     // stop propagation
     $("body").on("click", ".hotspot.overlay .hotspot-popover", (e) => {
         e.stopPropagation();
@@ -876,7 +881,6 @@ export function initialize() {
                 !$(e.target).closest(".micromodal").length &&
                 !$(e.target).closest("[data-tippy-root]").length &&
                 !$(e.target).closest(".modal-backdrop").length &&
-                !$(e.target).closest(".enter_sends").length &&
                 $(e.target).closest("body").length
             ) {
                 // Unfocus our compose area if we click out of it. Don't let exits out

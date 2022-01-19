@@ -85,6 +85,42 @@ export function mute_topic(stream_id, topic, from_hotkey) {
     });
 }
 
+export function temporary_mute_topic(stream_id, topic, muted_datetime, remind_datetime, from_hotkey) {
+    const stream_name = stream_data.maybe_get_stream_name(stream_id);
+    const data = {
+        stream_id,
+        topic,
+        muted_datetime,
+        remind_datetime,
+        op: "add",
+    };
+
+    channel.patch({
+        url: "/json/users/me/subscriptions/muted_topics",
+        idempotent: true,
+        data,
+        success() {
+            if (!from_hotkey) {
+                return;
+            }
+
+            feedback_widget.show({
+                populate(container) {
+                    const rendered_html = render_topic_muted();
+                    container.html(rendered_html);
+                    container.find(".stream").text(stream_name);
+                    container.find(".topic").text(topic);
+                },
+                on_undo() {
+                    unmute_topic(stream_id, topic);
+                },
+                title_text: $t({defaultMessage: "Topic muted"}),
+                undo_button_text: $t({defaultMessage: "Unmute"}),
+            });
+        },
+    });
+}
+
 export function unmute_topic(stream_id, topic) {
     // Accidentally unmuting a topic isn't as much an issue as accidentally muting
     // a topic, so we don't show a popup after unmuting.
@@ -113,4 +149,8 @@ export function toggle_topic_mute(message) {
     } else if (message.type === "stream") {
         mute_topic(stream_id, topic, true);
     }
+}
+
+export function get_all_muted_topics() {
+    return muted_topics.get_muted_topics_for_reminder();
 }

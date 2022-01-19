@@ -41,10 +41,7 @@
     top: unset;
     bottom: 20px;
     }
-    body.color-scheme-automatic #app-loading{
-    color: hsl(0, 0%, 20%);
-    }
-    body.dark-theme #app-loading {
+    body.night-mode #app-loading {
     background-color: hsl(212, 28%, 18%);
     color: hsl(236, 33%, 90%);
     }
@@ -75,7 +72,10 @@
     </div>
 </div>
 
-<div id="manage_streams_container"></div>
+<div class="subscriptions">
+    <div id="subscriptions_table">
+    </div>
+</div>
 <div id="drafts_table"></div>
 <div id="settings_overlay_container" class="overlay" data-overlay="settings" aria-hidden="true">
 </div>
@@ -95,10 +95,8 @@
     <div class="alert-box">
         <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
             <div class="exit"></div>
-            <strong class="message">{{ _('Unable to connect to Zulip.') }}</strong>
-            {{ _('Updates may be delayed.') }}
-            {{ _('Retrying soon…') }}
-            <a class="restart_get_events_button">{{ _('Try now.') }}</a>
+            {% trans %}<strong class="message">Unable to connect to
+            Zulip.</strong>  Updates may be delayed.{% endtrans %} {{ _('Retrying soon...') }} <a class="restart_get_events_button">{{ _('Try now.') }}</a>
         </div>
         <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
             <div class="exit"></div>
@@ -114,9 +112,8 @@
                 Zephyr mirror script yourself</a> in a screen
                 session.
             </span>
-            <span id="desktop-zephyr-mirror-error-text" class="notdisplayed">
-                To fix this, you'll need to use the web interface.
-            </span>
+            <span id="desktop-zephyr-mirror-error-text" class="notdisplayed">To fix
+              this, you'll need to use the web interface.</span>
         </div>
         <div class="alert alert_sidebar alert-error home-error-bar" id="home-error"></div>
         <div class="alert alert_sidebar alert-error home-error-bar" id="reloading-application"></div>
@@ -195,6 +192,21 @@
                 <button class="button no-style exit">&times;</button>
             </div>
             <div class="overlay-body">
+            </div>
+        </div>
+    </div>
+    <div class="informational-overlays-reminder overlay new-style" data-overlay="informationalOverlaysReminder" aria-hidden="true">
+        <div class="overlay-reminder-content modal-bg", style="width: 550px;
+        margin: 0 auto;position: relative;top: calc((30vh - 50px) / 2);border-radius: 4px;overflow: hidden;background-color: hsl(0, 0%, 100%);">
+            <div class="modal-header" style="padding: 10px; display: flex 0 0 100%;">
+                
+                <button class="button no-style exit" style="float: right;
+                font-size: 1.5rem;
+                color: hsl(0, 0%, 67%);
+                font-weight: 600;">&times;</button>
+                <h3 style="text-align: center;">Upcoming unmutes ...</h3>
+            </div>
+            <div class="overlay-reminder-body" style="padding-bottom: 10px;">
             </div>
         </div>
     </div>

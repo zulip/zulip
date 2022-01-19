@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import {$t_html} from "./i18n";
+import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
 import * as ui_report from "./ui_report";
@@ -194,7 +195,9 @@ export function stream_edit_uri(sub) {
     return hash;
 }
 
-export function search_public_streams_notice_url(operators) {
+export function search_public_streams_notice_url() {
+    // Computes the URL of the current narrow if streams:public were added.
+    const operators = narrow_state.filter().operators();
     const public_operator = {operator: "streams", operand: "public"};
     return operators_to_hash([public_operator].concat(operators));
 }
@@ -249,22 +252,19 @@ export function is_overlay_hash(hash) {
 
 // this finds the stream that is actively open in the settings and focused in
 // the left side.
-export function is_editing_stream(desired_stream_id) {
+export function active_stream() {
     const hash_components = window.location.hash.slice(1).split(/\//);
-
-    if (hash_components[0] !== "streams") {
-        return false;
-    }
-
-    if (!hash_components[2]) {
-        return false;
-    }
 
     // if the string casted to a number is valid, and another component
     // after exists then it's a stream name/id pair.
-    const stream_id = Number.parseFloat(hash_components[1]);
+    if (typeof Number.parseFloat(hash_components[1]) === "number" && hash_components[2]) {
+        return {
+            id: Number.parseFloat(hash_components[1]),
+            name: hash_components[2],
+        };
+    }
 
-    return stream_id === desired_stream_id;
+    return undefined;
 }
 
 export function is_create_new_stream_narrow() {
@@ -294,6 +294,7 @@ export function is_spectator_compatible(hash) {
         "search-operators",
         "all_messages",
         "about-zulip",
+        "reminder-notifications",
     ];
 
     const main_hash = get_hash_category(hash);
@@ -310,5 +311,5 @@ export function is_spectator_compatible(hash) {
 }
 
 export function current_hash_as_next() {
-    return `next=/${encodeURIComponent(window.location.hash)}`;
+    return `next=/${window.location.hash}`;
 }

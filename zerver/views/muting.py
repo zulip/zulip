@@ -29,6 +29,8 @@ def mute_topic(
     stream_name: Optional[str],
     topic_name: str,
     date_muted: datetime.datetime,
+    muted_datetime: Optional[datetime.datetime] = None,
+    remind_datetime: Optional[datetime.datetime] = None,
 ) -> HttpResponse:
     if stream_name is not None:
         (stream, sub) = access_stream_by_name(user_profile, stream_name)
@@ -39,7 +41,7 @@ def mute_topic(
     if topic_is_muted(user_profile, stream.id, topic_name):
         raise JsonableError(_("Topic already muted"))
 
-    do_mute_topic(user_profile, stream, topic_name, date_muted)
+    do_mute_topic(user_profile, stream, topic_name, date_muted, muted_datetime, remind_datetime)
     return json_success()
 
 
@@ -54,6 +56,9 @@ def unmute_topic(
         assert stream_id is not None
         stream = access_stream_for_unmute_topic_by_id(user_profile, stream_id, error)
 
+    if not topic_is_muted(user_profile, stream.id, topic_name):
+        raise JsonableError(error)
+
     do_unmute_topic(user_profile, stream, topic_name)
     return json_success()
 
@@ -66,6 +71,8 @@ def update_muted_topic(
     stream: Optional[str] = REQ(default=None),
     topic: str = REQ(),
     op: str = REQ(),
+    muted_datetime: Optional[datetime.datetime] = REQ(default=None),
+    remind_datetime: Optional[datetime.datetime] = REQ(default=None),
 ) -> HttpResponse:
 
     check_for_exactly_one_stream_arg(stream_id=stream_id, stream=stream)
@@ -77,6 +84,8 @@ def update_muted_topic(
             stream_name=stream,
             topic_name=topic,
             date_muted=timezone_now(),
+            muted_datetime=muted_datetime,
+            remind_datetime=remind_datetime,
         )
     elif op == "remove":
         return unmute_topic(

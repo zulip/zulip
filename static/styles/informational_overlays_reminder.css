@@ -1,0 +1,44 @@
+.informational-overlays-reminder {
+    .overlay-reminder-content {
+        /* because zoom breaks at 525px perhaps due to rounding errors, so add a
+           trivial amount of width so it doesn't break. */
+        width: 550px;
+        margin: 0 auto;
+        position: relative;
+        top: calc((30vh - 50px) / 2);
+        border-radius: 4px;
+        overflow: hidden;
+
+        background-color: hsl(0, 0%, 100%);
+    }
+
+    .overlay-reminder-modal {
+        padding-bottom: 10px;
+
+        .modal-header h3 {
+            font-weight: 300;
+        }
+
+        .modal-body {
+            height: 70vh;
+            text-align: center;
+            outline: none;
+
+            .help-table {
+                table-layout: fixed;
+            }
+
+            th {
+                font-weight: 400;
+            }
+        }
+    }
+
+    td.operator {
+        font-size: 0.9em;
+    }
+}
+
+#reminder-notifications table {
+    margin-bottom: 10px !important;
+}

@@ -70,6 +70,41 @@ export function set_muted_topics(tuples) {
     }
 }
 
+export function get_muted_topics_for_reminder() {
+    const tuples = page_params.muted_topics;
+
+    const topics = [];
+
+    for (const tuple of tuples) {
+        const stream_name = tuple[0];
+        const topic = tuple[1];
+        const date_muted = tuple[2];
+        const muted_datetime = tuple[3];
+        const remind_datetime = tuple[4];
+
+        const stream_id = stream_data.get_stream_id(stream_name);
+
+        var date = Date.now();
+        var today = new Date(date);
+
+        var remind_date_time = new Date(remind_datetime);
+        var muted_date_time = new Date(muted_datetime);
+
+        if (today.valueOf() >= remind_date_time.valueOf() && today.valueOf() <= muted_date_time.valueOf()) {
+            topics.push({
+                stream_id,
+                stream_name,
+                topic,
+                remind_datetime,
+                muted_datetime,
+                date_muted,
+            });
+        }
+    }
+
+    return topics;
+}
+
 export function initialize() {
     set_muted_topics(page_params.muted_topics);
 }
