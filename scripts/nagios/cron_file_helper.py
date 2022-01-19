@@ -1,9 +1,8 @@
 import time
-
 from typing import Tuple
 
-def nagios_from_file(results_file):
-    # type: (str) -> Tuple[int, str]
+
+def nagios_from_file(results_file: str) -> Tuple[int, str]:
     """Returns a nagios-appropriate string and return code obtained by
     parsing the desired file on disk. The file on disk should be of format
 
@@ -12,25 +11,31 @@ def nagios_from_file(results_file):
     This file is created by various nagios checking cron jobs such as
     check-rabbitmq-queues and check-rabbitmq-consumers"""
 
-    with open(results_file) as f:
-        data = f.read().strip()
-    pieces = data.split('|')
-
-    if not len(pieces) == 4:
-        state = 'UNKNOWN'
+    try:
+        with open(results_file) as f:
+            data = f.read().strip()
+    except FileNotFoundError:
+        state = "UNKNOWN"
         ret = 3
-        data = "Results file malformed"
+        data = "Results file is missing"
     else:
-        timestamp = int(pieces[0])
+        pieces = data.split("|")
 
-        time_diff = time.time() - timestamp
-        if time_diff > 60 * 2:
+        if not len(pieces) == 4:
+            state = "UNKNOWN"
             ret = 3
-            state = 'UNKNOWN'
-            data = "Results file is stale"
+            data = "Results file malformed"
         else:
-            ret = int(pieces[1])
-            state = pieces[2]
-            data = pieces[3]
+            timestamp = int(pieces[0])
 
-    return (ret, "%s: %s" % (state, data))
+            time_diff = time.time() - timestamp
+            if time_diff > 60 * 2:
+                ret = 3
+                state = "UNKNOWN"
+                data = "Results file is stale"
+            else:
+                ret = int(pieces[1])
+                state = pieces[2]
+                data = pieces[3]
+
+    return (ret, f"{state}: {data}")

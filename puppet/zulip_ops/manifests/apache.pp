@@ -4,27 +4,14 @@ class zulip_ops::apache {
                       'libapache2-mod-wsgi',
                       ]
   package { $apache_packages: ensure => 'installed' }
+  service { 'apache2':
+    require => Package['apache2'],
+  }
 
   apache2mod { [ 'headers', 'proxy', 'proxy_http', 'rewrite', 'auth_digest', 'ssl' ]:
     ensure  => present,
     require => Package['apache2'],
-  }
-
-  file { '/etc/apache2/users/':
-    ensure  => directory,
-    require => Package['apache2'],
-    owner   => 'www-data',
-    group   => 'www-data',
-    mode    => '0600',
-  }
-
-  file { '/etc/apache2/users/wiki':
-    ensure  => file,
-    require => File['/etc/apache2/users/'],
-    owner   => 'www-data',
-    group   => 'www-data',
-    mode    => '0600',
-    source  => 'puppet:///modules/zulip_ops/apache/users',
+    notify  => Service['apache2'],
   }
 
   file { '/etc/apache2/certs/':
@@ -42,6 +29,7 @@ class zulip_ops::apache {
     group   => 'root',
     mode    => '0640',
     source  => 'puppet:///modules/zulip_ops/apache/ports.conf',
+    notify  => Service['apache2'],
   }
 
   file { '/etc/apache2/sites-available/':

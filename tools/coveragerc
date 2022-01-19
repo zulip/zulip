@@ -12,12 +12,11 @@ exclude_lines =
     # Don't require coverage for __str__ statements just used for printing
     def __str__[(]self[)] -> .*:
     # Don't require coverage for errors about unsupported webhook event types
-    raise UnexpectedWebhookEventType
+    raise UnsupportedWebhookEventType
     # Don't require coverage for blocks only run when type-checking
     if TYPE_CHECKING:
-    # Don't require coverage for the settings.LOG_API_EVENT_TYPES code paths
-    # These are only run in a special testing mode, so will fail normal coverage.
-    if settings.LOG_API_EVENT_TYPES:
+    # Don't require coverage for abstract methods; they're never called.
+    @abstractmethod
     # PEP 484 overloading syntax
     ^\s*\.\.\.
 
@@ -33,7 +32,6 @@ omit =
     zerver/lib/test_runner.py
     # Has its own independent test suite
     zerver/openapi/python_examples.py
-    zerver/lib/parallel.py
     # Debugging tools that don't lend themselves well to unit tests
     zerver/lib/debug.py
     # Part of provisioning/populate_db

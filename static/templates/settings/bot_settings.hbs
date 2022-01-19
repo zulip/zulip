@@ -2,7 +2,11 @@
     <div class="bot-settings-form">
         {{#unless page_params.is_guest}}
         <div class="tip">
-            {{#tr this}}Looking for our <a href="/integrations" target="_blank">Integrations</a> or <a href="/api" target="_blank">API</a> documentation?{{/tr}}
+            {{#tr}}
+                Looking for our <z-integrations>integrations</z-integrations> or <z-api>API</z-api> documentation?
+                {{#*inline "z-integrations"}}<a href="/integrations" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+                {{#*inline "z-api"}}<a href="/api" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+            {{/tr}}
         </div>
         <div class="tip bot-settings-tip"></div>
 
@@ -35,8 +39,7 @@
                     <div class="input-group">
                         <label for="bot_type">
                             {{t "Bot type" }}
-                            <i class="fa fa-question-circle settings-info-icon bot_type_tooltip" aria-hidden="true" data-toggle="tooltip"
-                              title='{{t "Incoming webhooks can only send messages." }}'></i>
+                            <i class="fa fa-question-circle settings-info-icon bot_type_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content='{{t "Incoming webhooks can only send messages." }}'></i>
                         </label>
                         <select name="bot_type" id="create_bot_type">
                             {{#each page_params.bot_types}}
@@ -50,7 +53,7 @@
                         <label for="select_service_name">{{t "Bot"}}</label>
                         <select name="service_name" id="select_service_name">
                             {{#each page_params.realm_embedded_bots}}
-                            <option value="{{this.name}}">{{this.name}}</option>
+                                <option value="{{this.name}}">{{this.name}}</option>
                             {{/each}}
                         </select>
                     </div>
@@ -88,7 +91,7 @@
                     <div id="config_inputbox">
                         {{#each page_params.realm_embedded_bots as |bot index|}}
                             {{#each bot.config as |config_value config_key|}}
-                            {{> ../embedded_bot_config_item botname=bot.name key=config_key value=config_value}}
+                                {{> ../embedded_bot_config_item botname=bot.name key=config_key value=config_value}}
                             {{/each}}
                         {{/each}}
                     </div>

@@ -1,36 +1,49 @@
 class zulip::supervisor {
-  $supervisor_packages = [# Needed to run supervisor
-                          'supervisor',
-                          ]
-  package { $supervisor_packages: ensure => 'installed' }
-
-  $supervisord_conf = $::osfamily ? {
-    'debian' => '/etc/supervisor/supervisord.conf',
-    'redhat' => '/etc/supervisord.conf',
-  }
-  # Command to start supervisor
-  $supervisor_start = $::osfamily ? {
-    'debian' => '/etc/init.d/supervisor start',
-    'redhat' => 'systemctl start supervisord',
-  }
-
-  if $::osfamily == 'redhat' {
-    file { $zulip::common::supervisor_conf_dir:
-      ensure => 'directory',
-      owner  => 'root',
-      group  => 'root',
-    }
-  }
-
   $supervisor_service = $zulip::common::supervisor_service
 
-  # In the dockervoyager environment, we don't want/need supervisor to be started/stopped
-  # /bin/true is used as a decoy command, to maintain compatibility with other
-  # code using the supervisor service.
-  #
-  # This logic is definitely a hack, but it's less bad than the old hack :(
+  package { 'supervisor': ensure => 'installed' }
+
+  $system_conf_dir = $zulip::common::supervisor_system_conf_dir
+  file { $system_conf_dir:
+    ensure  => 'directory',
+    require => Package['supervisor'],
+    owner   => 'root',
+    group   => 'root',
+  }
+
+  $conf_dir = $zulip::common::supervisor_conf_dir
+  # lint:ignore:quoted_booleans
+  $should_purge = $facts['leave_supervisor'] != 'true'
+  # lint:endignore
+  file { $conf_dir:
+    ensure  => 'directory',
+    require => Package['supervisor'],
+    owner   => 'root',
+    group   => 'root',
+    purge   => $should_purge,
+    recurse => true,
+    notify  => Service[$supervisor_service],
+  }
+
+  # These files were moved from /etc/supervisor/conf.d/ into a zulip/
+  # subdirectory in 2020-10 in version 4.0; these lines can be removed
+  # in Zulip version 5.0 and later.
+  file { [
+    "${system_conf_dir}/cron.conf",
+    "${system_conf_dir}/nginx.conf",
+    "${system_conf_dir}/smokescreen.conf",
+    "${system_conf_dir}/thumbor.conf",
+    "${system_conf_dir}/zulip.conf",
+    "${system_conf_dir}/zulip_db.conf",
+    ]:
+    ensure => absent,
+  }
+
+  # In the docker environment, we don't want/need supervisor to be
+  # started/stopped /bin/true is used as a decoy command, to maintain
+  # compatibility with other code using the supervisor service.
   $puppet_classes = zulipconf('machine', 'puppet_classes', undef)
-  if $puppet_classes == 'zulip::dockervoyager' {
+  if 'docker' in $puppet_classes {
     service { $supervisor_service:
       ensure     => running,
       require    => [
@@ -40,7 +53,11 @@ class zulip::supervisor {
       hasstatus  => true,
       status     => '/bin/true',
       hasrestart => true,
-      restart    => '/bin/true'
+      restart    => '/bin/true',
+    }
+    exec { 'supervisor-restart':
+      refreshonly => true,
+      command     => '/bin/true',
     }
   } else {
     service { $supervisor_service:
@@ -50,42 +67,50 @@ class zulip::supervisor {
         Package['supervisor'],
       ],
       hasstatus  => true,
-      status     => 'supervisorctl status',
-      # The "restart" option in the init script does not work.  We could
-      # tell Puppet to fall back to stop/start, which does work, but the
-      # better option is to tell supervisord to reread its config via
-      # supervisorctl and then to "update".  You need to do both --
-      # after a "reread", supervisor won't actually take actual based on
-      # the changed configuration until you do an "update" (I assume
-      # this is so you can check if your config file parses without
-      # doing anything, but it's really confusing)
+      status     => $zulip::common::supervisor_status,
+      # Restarting the whole supervisorctl on every update to its
+      # configuration files has the unfortunate side-effect of
+      # restarting all of the services it controls; this results in an
+      # unduly large disruption.  The better option is to tell
+      # supervisord to reread its config via supervisorctl and then to
+      # "update".  You need to do both -- after a "reread", supervisor
+      # won't actually take action based on the changed configuration
+      # until you do an "update" (I assume this is so you can check if
+      # your config file parses without doing anything, but it's
+      # really confusing).
       #
-      # Also, to handle the case that supervisord wasn't running at all,
-      # we check if it is not running and if so, start it.
+      # If restarting supervisor itself is necessary, see
+      # Exec['supervisor-restart']
       #
-      # We use supervisor[d] as the pattern so the bash/grep commands don't match.
+      # Also, to handle the case that supervisord wasn't running at
+      # all, we check if it is not running and if so, start it.
       hasrestart => true,
       # lint:ignore:140chars
-      restart    => "bash -c 'if pgrep -f supervisor[d] >/dev/null; then supervisorctl reread && supervisorctl update; else ${supervisor_start}; fi'"
+      restart    => "bash -c 'if pgrep -x supervisord >/dev/null; then supervisorctl reread && supervisorctl update; else ${zulip::common::supervisor_start}; fi'",
       # lint:endignore
+    }
+    exec { 'supervisor-restart':
+      refreshonly => true,
+      command     => $zulip::common::supervisor_reload,
+      require     => Service[$supervisor_service],
     }
   }
 
-  file { $supervisord_conf:
+  file { $zulip::common::supervisor_conf_file:
     ensure  => file,
     require => Package[supervisor],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    source  => 'puppet:///modules/zulip/supervisor/supervisord.conf',
-    notify  => Service[$supervisor_service],
+    content => template('zulip/supervisor/supervisord.conf.erb'),
+    notify  => Exec['supervisor-restart'],
   }
 
-  if $zulip::base::release_name == 'xenial' {
-    exec {'enable supervisor':
-      unless  => "systemctl is-enabled ${supervisor_service}",
-      command => "systemctl enable ${supervisor_service}",
-      require => Package['supervisor'],
-    }
+  file { '/usr/local/bin/secret-env-wrapper':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+    source => 'puppet:///modules/zulip/secret-env-wrapper',
   }
 }

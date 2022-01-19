@@ -1,17 +1,23 @@
+import * as hash_util from "./hash_util";
+import * as people from "./people";
+import * as stream_data from "./stream_data";
+import * as user_groups from "./user_groups";
+import {user_settings} from "./user_settings";
+
 /*
     This config is in a separate file for partly
-    tactical reasons.  We want the webapp to
+    tactical reasons.  We want the web app to
     configure this one way, but we don't want to
     share this code with mobile.
 
     I also wanted to make some diffs clear before
     doing any major file moves.
 
-    Also, I want the unit tests for markdown to
+    Also, I want the unit tests for Markdown to
     be able to reuse this code easily (and therefore
     didn't just put this in ui_init.js).
 
-    Once the first steps of making markdown be a
+    Once the first steps of making Markdown be a
     shared library are complete, we may tweak
     the file organization a bit.
 
@@ -20,22 +26,17 @@
     when the lookups fail.
 */
 
-exports.get_helpers = () => ({
+export const get_helpers = () => ({
     // user stuff
     get_actual_name_from_user_id: people.get_actual_name_from_user_id,
     get_user_id_from_name: people.get_user_id_from_name,
     is_valid_full_name_and_user_id: people.is_valid_full_name_and_user_id,
     my_user_id: people.my_current_user_id,
+    is_valid_user_id: people.is_known_user_id,
 
     // user groups
     get_user_group_from_name: user_groups.get_user_group_from_name,
     is_member_of_user_group: user_groups.is_member_of,
-
-    // emojis
-    get_realm_emoji_url: emoji.get_realm_emoji_url,
-    get_emoji_name: emoji.get_emoji_name,
-    get_emoji_codepoint: emoji.get_emoji_codepoint,
-    get_emoticon_translations: emoji.get_emoticon_translations,
 
     // stream hashes
     get_stream_by_name: stream_data.get_sub,
@@ -43,5 +44,5 @@ exports.get_helpers = () => ({
     stream_topic_hash: hash_util.by_stream_topic_uri,
 
     // settings
-    should_translate_emoticons: () => page_params.translate_emoticons,
+    should_translate_emoticons: () => user_settings.translate_emoticons,
 });

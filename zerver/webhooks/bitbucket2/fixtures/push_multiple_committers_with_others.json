@@ -12,7 +12,7 @@
          }
       },
       "type":"user",
-      "username":"kolaszek",
+      "nickname":"Tomasz Kolaszek",
       "display_name":"Tomasz",
       "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}"
    },
@@ -35,7 +35,7 @@
             }
          },
          "type":"user",
-         "username":"kolaszek",
+         "nickname":"Tomasz Kolaszek",
          "display_name":"Tomasz",
          "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}"
       },
@@ -107,7 +107,7 @@
                            }
                         },
                         "type":"user",
-                        "username":"kolaszek",
+                        "nickname":"Tomasz Kolaszek",
                         "display_name":"Tomasz",
                         "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}"
                      },
@@ -156,7 +156,7 @@
                            }
                         },
                         "type":"user",
-                        "username":"kolaszek",
+                        "nickname":"Tomasz Kolaszek",
                         "display_name":"Tomasz",
                         "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}"
                      },
@@ -193,7 +193,7 @@
                            }
                         },
                         "type":"user",
-                        "username":"kolaszek",
+                        "nickname":"Tomasz Kolaszek",
                         "display_name":"Tomasz",
                         "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}"
                      },
@@ -230,7 +230,7 @@
                            }
                         },
                         "type":"user",
-                        "username":"Tomasz",
+                        "nickname":"Tomasz Kolaszek",
                         "display_name":"Tomasz",
                         "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}"
                      },
@@ -267,7 +267,7 @@
                            }
                         },
                         "type":"user",
-                        "username":"Tomasz",
+                        "nickname":"Tomasz Kolaszek",
                         "display_name":"Tomasz",
                         "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}"
                      },
@@ -304,7 +304,7 @@
                            }
                         },
                         "type":"user",
-                        "username":"james",
+                        "nickname":"James Franklin",
                         "display_name":"James",
                         "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}"
                      },
@@ -341,7 +341,7 @@
                            }
                         },
                         "type":"user",
-                        "username":"james",
+                        "nickname":"James Franklin",
                         "display_name":"James",
                         "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}"
                      },
@@ -378,7 +378,7 @@
                            }
                         },
                         "type":"user",
-                        "username":"james",
+                        "nickname":"James Kolek",
                         "display_name":"James",
                         "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}"
                      },
@@ -415,7 +415,7 @@
                            }
                         },
                         "type":"user",
-                        "username":"Brendon",
+                        "nickname":"Brendon Rogers",
                         "display_name":"Brendon",
                         "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}"
                      },
@@ -452,7 +452,7 @@
                            }
                         },
                         "type":"user",
-                        "username":"Brendon",
+                        "nickname":"Brendon Rogers",
                         "display_name":"Brendon",
                         "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}"
                      },
@@ -490,7 +490,7 @@
                            }
                         },
                         "type":"user",
-                        "username":"zbenjamin",
+                        "nickname":"Zev Benjamin",
                         "display_name":"Ben",
                         "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}"
                      },

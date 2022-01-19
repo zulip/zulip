@@ -1,11 +1,14 @@
 import logging
 import os
 import subprocess
-from django.conf import settings
 from typing import Optional
+
+from django.conf import settings
+
 from zerver.lib.storage import static_path
 
-def render_tex(tex: str, is_inline: bool=True) -> Optional[str]:
+
+def render_tex(tex: str, is_inline: bool = True) -> Optional[str]:
     r"""Render a TeX string into HTML using KaTeX
 
     Returns the HTML string, or None if there was some error in the TeX syntax
@@ -27,17 +30,14 @@ def render_tex(tex: str, is_inline: bool=True) -> Optional[str]:
     if not os.path.isfile(katex_path):
         logging.error("Cannot find KaTeX for latex rendering!")
         return None
-    command = ['node', katex_path]
+    command = ["node", katex_path]
     if not is_inline:
-        command.extend(['--display-mode'])
-    katex = subprocess.Popen(command,
-                             stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
-    stdout = katex.communicate(input=tex.encode())[0]
-    if katex.returncode == 0:
+        command.extend(["--display-mode"])
+    try:
+        stdout = subprocess.check_output(
+            command, input=tex, stderr=subprocess.DEVNULL, universal_newlines=True
+        )
         # stdout contains a newline at the end
-        assert stdout is not None
-        return stdout.decode('utf-8').strip()
-    else:
+        return stdout.strip()
+    except subprocess.CalledProcessError:
         return None

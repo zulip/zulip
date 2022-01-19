@@ -1,54 +1,14 @@
-# Send a message
+{generate_api_title(/messages:post)}
 
-Send a stream or a private message.
-
-`POST {{ api_url }}/v1/messages`
+{generate_api_description(/messages:post)}
 
 ## Usage examples
 
 {start_tabs}
-{tab|python}
 
 {generate_code_example(python)|/messages:post|example}
 
-{tab|js}
-
-More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
-```js
-const zulip = require('zulip-js');
-
-// Pass the path to your zuliprc file here.
-const config = {
-    zuliprc: 'zuliprc',
-};
-
-// Send a stream message
-zulip(config).then((client) => {
-    // Send a message
-    const params = {
-        to: 'Denmark',
-        type: 'stream',
-        subject: 'Castle',
-        content: 'I come not, friends, to steal away your hearts.'
-    }
-
-    client.messages.send(params).then(console.log);
-});
-
-// Send a private message
-zulip(config).then((client) => {
-    // Send a private message
-    const user_id = 9;
-    const params = {
-        to: [user_id],
-        type: 'private',
-        content: 'With mirth and laughter let old wrinkles come.',
-    }
-
-    client.messages.send(params).then(console.log);
-});
-
-```
+{generate_code_example(javascript)|/messages:post|example}
 
 {tab|curl}
 
@@ -56,17 +16,17 @@ zulip(config).then((client) => {
 # For stream messages
 curl -X POST {{ api_url }}/v1/messages \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d "type=stream" \
-    -d "to=Denmark" \
-    -d "subject=Castle" \
-    -d $"content=I come not, friends, to steal away your hearts."
+    --data-urlencode type=stream \
+    --data-urlencode to=Denmark \
+    --data-urlencode subject=Castle \
+    --data-urlencode 'content=I come not, friends, to steal away your hearts.'
 
 # For private messages
 curl -X POST {{ api_url }}/v1/messages \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
-    -d "type=private" \
-    -d "to=[9]" \
-    -d $"content=With mirth and laughter let old wrinkles come."
+    --data-urlencode type=private \
+    --data-urlencode 'to=[9]' \
+    --data-urlencode 'content=With mirth and laughter let old wrinkles come.'
 ```
 
 {tab|zulip-send}
@@ -93,36 +53,27 @@ If you'd like, you can also provide the message on the command-line with the
 
 ```bash
 zulip-send --stream Denmark --subject Castle \
-    --message "I come not, friends, to steal away your hearts." \
+    --message 'I come not, friends, to steal away your hearts.' \
     --user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
 ```
 
-You can omit the `user` and `api-key` arguments if you have a `~/.zuliprc`
+You can omit the `user` and `api-key` parameters if you have a `~/.zuliprc`
 file.
 
 {end_tabs}
 
-## Arguments
+## Parameters
 
 {generate_api_arguments_table|zulip.yaml|/messages:post}
 
+{generate_parameter_description(/messages:post)}
+
 ## Response
 
-#### Return values
+{generate_return_values_table|zulip.yaml|/messages:post}
 
-* `id`: The ID of the newly created message
+{generate_response_description(/messages:post)}
 
 #### Example response
-A typical successful JSON response may look like:
 
-{generate_code_example|/messages:post|fixture(200)}
-
-A typical failed JSON response for when a stream message is sent to a stream
-that does not exist:
-
-{generate_code_example|/messages:post|fixture(400_non_existing_stream)}
-
-A typical failed JSON response for when a private message is sent to a user
-that does not exist:
-
-{generate_code_example|/messages:post|fixture(400_non_existing_user)}
+{generate_code_example|/messages:post|fixture}

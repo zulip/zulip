@@ -3,41 +3,22 @@
 {!admin-only.md!}
 
 The information in your organization profile is displayed on your
-registration and login pages, and in the desktop and mobile apps. As
-an example, here is what the registration page for the Zulip community
-server looked like at one point:
+registration and login pages, and in the Zulip app. Here is an example
+registration/login page:
 
 ![settings](/static/images/help/organization-profile-example.png)
 
-Note that the Organization description supports full Markdown syntax,
-including bold/italic, links, lists, and
-[more](/help/format-your-message-using-markdown).
+## Edit organization profile
 
-### Create your organization profile
-
-{start_tabs}
-
-{settings_tab|organization-profile}
-
-1. Edit your organization **name**, **description**, and **profile picture**.
-1. Click **Save changes**.
-
-{end_tabs}
+{!edit-organization-profile.md!}
 
 ## Add a wide logo
 
-Zulip also allows you to customize the logo your users see in the upper left
-of the main, logged-in view. For best results make sure the logo has a
-transparent background, and trim the logo of any bordering whitespace.
+{!add-a-wide-logo.md!}
 
-### Add a wide logo
+## Related articles
 
-{start_tabs}
-
-{settings_tab|organization-profile}
-
-1. Under **Organization logo**, upload a new logo.
-
-{end_tabs}
-
-Make sure to test the logo in both day mode and [night mode](/help/night-mode).
+* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Customize organization settings](/help/customize-organization-settings)
+* [Create streams](/help/create-streams)
+* [Getting started with Zulip](/help/getting-started-with-zulip)

@@ -1,27 +1,36 @@
-zrequire('unread');
+"use strict";
 
-zrequire('Filter', 'js/filter');
-zrequire('MessageListData', 'js/message_list_data');
+const {strict: assert} = require("assert");
 
-set_global('page_params', {});
-set_global('blueslip', global.make_zblueslip());
-set_global('muting', {});
+const {
+    set_global,
+    with_function_call_disallowed_rewire,
+    zrequire,
+} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 
-global.patch_builtin('setTimeout', (f, delay) => {
+set_global("setTimeout", (f, delay) => {
     assert.equal(delay, 0);
     return f();
 });
 
+const muted_topics = zrequire("muted_topics");
+const muted_users = zrequire("muted_users");
+const {MessageListData} = zrequire("../js/message_list_data");
+const {Filter} = zrequire("filter");
+
 function make_msg(msg_id) {
     return {
         id: msg_id,
+        type: "stream",
         unread: true,
-        topic: 'whatever',
+        topic: "whatever",
     };
 }
 
 function make_msgs(msg_ids) {
-    return msg_ids.map(make_msg);
+    return msg_ids.map((msg_id) => make_msg(msg_id));
 }
 
 function assert_contents(mld, msg_ids) {
@@ -29,14 +38,20 @@ function assert_contents(mld, msg_ids) {
     assert.deepEqual(msgs, make_msgs(msg_ids));
 }
 
-run_test('basics', () => {
+function assert_msg_ids(messages, msg_ids) {
+    assert.deepEqual(
+        msg_ids,
+        messages.map((message) => message.id),
+    );
+}
+
+run_test("basics", () => {
     const mld = new MessageListData({
-        muting_enabled: false,
-        filter: undefined,
+        excludes_muted_topics: false,
     });
 
     assert.equal(mld.is_search(), false);
-    assert(mld.can_mark_messages_read());
+    assert.ok(mld.can_mark_messages_read());
     mld.add_anywhere(make_msgs([35, 25, 15, 45]));
 
     assert_contents(mld, [15, 25, 35, 45]);
@@ -61,7 +76,7 @@ run_test('basics', () => {
     assert.equal(mld.selected_id(), 50);
     assert.equal(mld.selected_idx(), 8);
 
-    mld.remove([mld.get(50)]);
+    mld.remove([50]);
     assert_contents(mld, [10, 15, 20, 25, 30, 35, 40, 45, 60, 70]);
 
     mld.update_items_for_muting();
@@ -75,7 +90,6 @@ run_test('basics', () => {
     mld.get(10).unread = false;
     assert.equal(mld.first_unread_message_id(), 15);
 
-
     mld.clear();
     assert_contents(mld, []);
     assert.equal(mld.closest_id(99), -1);
@@ -87,9 +101,7 @@ run_test('basics', () => {
     assert.equal(mld.selected_id(), 125.01);
 
     mld.get(125.01).id = 145;
-    mld.change_message_id(125.01, 145, {
-        re_render: () => {},
-    });
+    mld.change_message_id(125.01, 145);
     assert_contents(mld, [120, 130, 140, 145]);
 
     for (const msg of mld.all_messages()) {
@@ -99,121 +111,185 @@ run_test('basics', () => {
     assert.equal(mld.first_unread_message_id(), 145);
 });
 
-run_test('muting enabled', () => {
-    const mld = new MessageListData({
-        muting_enabled: true,
-        filter: undefined,
+run_test("muting", () => {
+    let mld = new MessageListData({
+        excludes_muted_topics: false,
+        filter: new Filter([{operator: "pm-with", operand: "alice@example.com"}]),
     });
 
-    muting.is_topic_muted = function () { return true; };
-    mld.add_anywhere(make_msgs([35, 25, 15, 45]));
-    assert_contents(mld, []);
+    const msgs = [
+        {id: 1, type: "stream", stream_id: 1, topic: "muted"},
+        {id: 2, type: "stream", stream_id: 1, topic: "whatever"},
+        {id: 3, type: "stream", stream_id: 1, topic: "muted", mentioned: true}, // mentions override muting
 
-    mld.get(35).mentioned = true;
+        // 10 = muted user, 9 = non-muted user, 11 = you
+        {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10}, // muted to huddle
+        {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9}, // non-muted to huddle
+        {id: 6, type: "private", to_user_ids: "11", sender_id: 10}, // muted to 1:1 PM
+        {id: 7, type: "private", to_user_ids: "11", sender_id: 9}, // non-muted to 1:1 PM
+        {id: 8, type: "private", to_user_ids: "10", sender_id: 11}, // 1:1 PM to muted
+        {id: 9, type: "private", to_user_ids: "9", sender_id: 11}, // 1:1 PM to non-muted
+    ];
+
+    // `messages_filtered_for_topic_mutes` should skip filtering
+    // messages if `excludes_muted_topics` is false.
+    with_function_call_disallowed_rewire(muted_topics, "is_topic_muted", () => {
+        const res = mld.messages_filtered_for_topic_mutes(msgs);
+        assert.deepEqual(res, msgs);
+    });
+
+    // If we are in a 1:1 PM narrow, `messages_filtered_for_user_mutes` should skip
+    // filtering messages.
+    with_function_call_disallowed_rewire(muted_users, "is_user_muted", () => {
+        const res = mld.messages_filtered_for_user_mutes(msgs);
+        assert.deepEqual(res, msgs);
+    });
+
+    // Test actual behaviour of `messages_filtered_for_*` methods.
+    mld.excludes_muted_topics = true;
+    mld.filter = new Filter([{operator: "stream", operand: "general"}]);
+    muted_topics.add_muted_topic(1, "muted");
+    const res = mld.messages_filtered_for_topic_mutes(msgs);
+    assert.deepEqual(res, [
+        {id: 2, type: "stream", stream_id: 1, topic: "whatever"},
+        {id: 3, type: "stream", stream_id: 1, topic: "muted", mentioned: true}, // mentions override muting
+
+        // `messages_filtered_for_topic_mutes` does not affect private messages
+        {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10},
+        {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9},
+        {id: 6, type: "private", to_user_ids: "11", sender_id: 10},
+        {id: 7, type: "private", to_user_ids: "11", sender_id: 9},
+        {id: 8, type: "private", to_user_ids: "10", sender_id: 11},
+        {id: 9, type: "private", to_user_ids: "9", sender_id: 11},
+    ]);
+
+    muted_users.add_muted_user(10);
+    const res_user = mld.messages_filtered_for_user_mutes(msgs);
+    assert.deepEqual(res_user, [
+        // `messages_filtered_for_user_mutes` does not affect stream messages
+        {id: 1, type: "stream", stream_id: 1, topic: "muted"},
+        {id: 2, type: "stream", stream_id: 1, topic: "whatever"},
+        {id: 3, type: "stream", stream_id: 1, topic: "muted", mentioned: true},
+
+        {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10}, // muted to huddle
+        {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9}, // non-muted to huddle
+        {id: 7, type: "private", to_user_ids: "11", sender_id: 9}, // non-muted to 1:1 PM
+        {id: 9, type: "private", to_user_ids: "9", sender_id: 11}, // 1:1 PM to non-muted
+    ]);
+
+    // Output filtered based on both topic and user muting.
+    mld._all_items = msgs;
+    const filtered_messages = mld.unmuted_messages(mld._all_items);
+    assert.deepEqual(filtered_messages, [
+        {id: 2, type: "stream", stream_id: 1, topic: "whatever"},
+        {id: 3, type: "stream", stream_id: 1, topic: "muted", mentioned: true},
+        {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10},
+        {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9},
+        {id: 7, type: "private", to_user_ids: "11", sender_id: 9},
+        {id: 9, type: "private", to_user_ids: "9", sender_id: 11},
+    ]);
+
+    // Also verify that, the correct set of messages is stored in `_items`
+    // once we update the list for muting.
     mld.update_items_for_muting();
-    assert.deepEqual(mld._items, [mld.get(35)]);
+    assert.deepEqual(filtered_messages, mld._items);
 
-    mld.remove(make_msgs([35, 15]));
-    assert_contents(mld, []);
-    assert.deepEqual(mld._all_items, make_msgs([25, 45]));
-
-    const msgs = make_msgs([10, 20]);
-    msgs[0].mentioned = true;
-    mld.prepend(msgs);
-    assert.deepEqual(mld._items, [mld.get(10)]);
-    assert.deepEqual(mld._all_items, msgs.concat(make_msgs([25, 45])));
-
-    mld.clear();
+    // MessageListData methods should always attempt to filter messages,
+    // and keep `_all_items` up-to-date.
+    mld = new MessageListData({
+        excludes_muted_topics: true,
+    });
     assert.deepEqual(mld._all_items, []);
-});
 
-run_test('more muting', () => {
-    muting.is_topic_muted = function (stream_id, topic) {
-        return topic === 'muted';
+    let unmuted_messages_calls = 0;
+    mld.unmuted_messages = (messages) => {
+        unmuted_messages_calls = unmuted_messages_calls + 1;
+        return messages;
     };
 
-    const mld = new MessageListData({
-        muting_enabled: true,
-        filter: undefined,
+    mld.add_anywhere([{id: 10}, {id: 20}]);
+    assert.equal(unmuted_messages_calls, 1);
+    assert_msg_ids(mld._all_items, [10, 20]);
+
+    mld.prepend([{id: 9}, {id: 19}]);
+    assert.equal(unmuted_messages_calls, 2);
+    assert_msg_ids(mld._all_items, [9, 19, 10, 20]);
+
+    mld.append([{id: 11}, {id: 21}]);
+    assert.equal(unmuted_messages_calls, 3);
+    assert_msg_ids(mld._all_items, [9, 19, 10, 20, 11, 21]);
+
+    mld.remove([9]);
+    assert_msg_ids(mld._all_items, [19, 10, 20, 11, 21]);
+
+    mld.reorder_messages(20);
+    assert_msg_ids(mld._all_items, [10, 11, 19, 20, 21]);
+
+    mld.clear();
+    assert_msg_ids(mld._all_items, []);
+
+    // Test `add_messages` populates the `info` dict **after**
+    // filtering the messages.
+    mld = new MessageListData({
+        excludes_muted_topics: true,
     });
 
     const orig_messages = [
-        {id: 3, topic: 'muted'},
-        {id: 4, topic: 'whatever'},
-        {id: 7, topic: 'muted'},
-        {id: 8, topic: 'whatever'},
+        {id: 3, type: "stream", stream_id: 1, topic: "muted"},
+        {id: 4, type: "stream", stream_id: 1, topic: "whatever"},
+        {id: 7, type: "stream", stream_id: 1, topic: "muted"},
+        {id: 8, type: "stream", stream_id: 1, topic: "whatever"},
     ];
 
     const orig_info = mld.add_messages(orig_messages);
-
     assert.deepEqual(orig_info, {
         top_messages: [],
         interior_messages: [],
         bottom_messages: [
-            {id: 4, topic: 'whatever'},
-            {id: 8, topic: 'whatever'},
+            {id: 4, type: "stream", stream_id: 1, topic: "whatever"},
+            {id: 8, type: "stream", stream_id: 1, topic: "whatever"},
         ],
     });
 
-    assert.deepEqual(
-        mld._all_items.map(message => message.id),
-        [3, 4, 7, 8]
-    );
-
-    assert.deepEqual(
-        mld.all_messages().map(message => message.id),
-        [4, 8]
-    );
+    assert_msg_ids(mld._all_items, [3, 4, 7, 8]);
+    assert_msg_ids(mld._items, [4, 8]);
 
     const more_messages = [
-        {id: 1, topic: 'muted'},
-        {id: 2, topic: 'whatever'},
-        {id: 3, topic: 'muted'}, // dup
-        {id: 5, topic: 'muted'},
-        {id: 6, topic: 'whatever'},
-        {id: 9, topic: 'muted'},
-        {id: 10, topic: 'whatever'},
+        {id: 1, type: "stream", stream_id: 1, topic: "muted"},
+        {id: 2, type: "stream", stream_id: 1, topic: "whatever"},
+        {id: 3, type: "stream", stream_id: 1, topic: "muted"}, // dup
+        {id: 5, type: "stream", stream_id: 1, topic: "muted"},
+        {id: 6, type: "stream", stream_id: 1, topic: "whatever"},
+        {id: 9, type: "stream", stream_id: 1, topic: "muted"},
+        {id: 10, type: "stream", stream_id: 1, topic: "whatever"},
     ];
 
     const more_info = mld.add_messages(more_messages);
 
-    assert.deepEqual(
-        mld._all_items.map(message => message.id),
-        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    );
-
-    assert.deepEqual(
-        mld.all_messages().map(message => message.id),
-        [2, 4, 6, 8, 10]
-    );
+    assert_msg_ids(mld._all_items, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    assert_msg_ids(mld._items, [2, 4, 6, 8, 10]);
 
     assert.deepEqual(more_info, {
-        top_messages: [
-            {id: 2, topic: 'whatever'},
-        ],
-        interior_messages: [
-            {id: 6, topic: 'whatever'},
-        ],
-        bottom_messages: [
-            {id: 10, topic: 'whatever'},
-        ],
+        top_messages: [{id: 2, type: "stream", stream_id: 1, topic: "whatever"}],
+        interior_messages: [{id: 6, type: "stream", stream_id: 1, topic: "whatever"}],
+        bottom_messages: [{id: 10, type: "stream", stream_id: 1, topic: "whatever"}],
     });
-
 });
 
-run_test('errors', () => {
+run_test("errors", () => {
     const mld = new MessageListData({
-        muting_enabled: false,
-        filter: undefined,
+        excludes_muted_topics: false,
     });
-    assert.equal(mld.get('bogus-id'), undefined);
+    assert.equal(mld.get("bogus-id"), undefined);
 
-    blueslip.set_test_data('fatal', 'Bad message id');
-    mld._add_to_hash(['asdf']);
-    assert.equal(blueslip.get_test_logs('fatal').length, 1);
+    assert.throws(
+        () => {
+            mld._add_to_hash(["asdf"]);
+        },
+        {message: "Bad message id"},
+    );
 
-    blueslip.set_test_data('error', 'Duplicate message added to MessageListData');
-    mld._hash.set(1, 'taken');
+    blueslip.expect("error", "Duplicate message added to MessageListData");
+    mld._hash.set(1, "taken");
     mld._add_to_hash(make_msgs([1]));
-    assert.equal(blueslip.get_test_logs('error').length, 1);
 });

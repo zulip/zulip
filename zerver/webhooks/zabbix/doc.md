@@ -1,69 +1,115 @@
 Receive Zabbix notifications in Zulip!
 
+!!! warn ""
+
+    **Note:** This guide is for Zabbix 5.2 and above; some older Zabbix versions have a
+    different workflow for creating an outgoing webhook.
+
 1. {!create-stream.md!}
 
 1. {!create-bot-construct-url-indented.md!}
 
-1.  On your Zabbix Server, create a script called `zulip.sh` in the
-    `alertscripts` folder with the following contents:
+1. Go to your Zabbix web interface, and click **Administration**. Click on
+   **General** and then select **Macros** from the dropdown. Click **Add** and set the
+   macro to `{$ZABBIX_URL}`. Set the value as the URL to your Zabbix server like
+   `https://zabbix.example.com` ensuring there no trailing slashes. Click **Update**
 
-        #!/bin/bash
-
-        webhook_url="$1"
-
-        # Build our JSON payload and send it as a POST request to the Zulip incoming web-hook URL
-        payload="$3"
-        /usr/bin/curl -m 5 --data "$payload" "${webhook_url}"
-
-    The `alertscripts` folder is usually found under `/usr/lib/zabbix/`, but
-    the exact path might differ depending on your environment. Make sure the
-    script is executable by your Zabbix environment.
-
-1. Go to your Zabbix Web Interface, and click **Administration**. Click on
+1. Go back to your Zabbix web interface, and click **Administration**. Click on
    **Media Types**, and click **Create Media Type**.
 
-1. Set **name** to a name of your choice, such as `Zulip`. Set **type** to **Script**,
-   and set **Script name** to `zulip.sh`. Add the following **Parameters**:
+1. Set **Name** to a name of your choice, such as `Zulip`. Set **Type** to **Webhook**.
+   Add the following **Parameters**:
 
-    * Add `{ALERT.SENDTO}` as the first parameter.
-    * Add `{ALERT.SUBJECT}` as the second parameter.
-    * Add `{ALERT.MESSAGE}` as the third parameter.
+    * Add `hostname` as the first parameter with the value `{HOST.NAME}`.
+    * Add `item` as the second parameter with the value `{ITEM.NAME1} is {ITEM.VALUE1}`.
+    * Add `link` as the third parameter with the value `{$ZABBIX_URL}/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.ID}`.
+    * Add `severity` as the fourth parameter with the value `{TRIGGER.SEVERITY}`.
+    * Add `status` as the fifth parameter with the value `{TRIGGER.STATUS}`.
+    * Add `trigger` as the sixth parameter with the value `{TRIGGER.NAME}`.
+    * Add `zulip_endpoint` as the seventh parameter with the value set as the URL
+      constructed earlier.
 
     Check the **Enabled** option, and click **Update**.
 
-1. Go back to your Zabbix Web Interface, and click **Administration**. Click
-   on **Users**, and select the alias of the user you would like
+1. Click the **Pencil** to edit the script and replace any existing content with the below script:
+
+         try {
+            Zabbix.Log(4, 'zulip webhook script value='+value);
+
+            var result = {
+               'tags': {
+                     'endpoint': 'zulip'
+               }
+            },
+            params = JSON.parse(value),
+            req = new CurlHttpRequest(),
+            payload = {},
+            resp;
+
+            req.AddHeader('Content-Type: application/json');
+
+            payload.hostname = params.hostname;
+            payload.severity = params.severity;
+            payload.status = params.status;
+            payload.item = params.item;
+            payload.trigger = params.trigger;
+            payload.link = params.link;
+            resp = req.Post(params.zulip_endpoint,
+               JSON.stringify(payload))
+
+            if (req.Status() != 200) {
+               throw 'Response code: '+req.Status();
+            }
+
+            resp = JSON.parse(resp);
+            result.tags.issue_id = resp.id;
+            result.tags.issue_key = resp.key;
+         } catch (error) {
+            Zabbix.Log(4, 'zulip issue creation failed json : '+JSON.stringify(payload));
+            Zabbix.Log(4, 'zulip issue creation failed : '+error);
+
+            result = {};
+         }
+
+         return JSON.stringify(result);
+
+1. Click **Apply**. Click **Message Templates**. Click **Add**. Select **Problem**.
+
+1. Set **Subject** to `{TRIGGER.STATUS}-{TRIGGER.SEVERITY}-{TRIGGER.NAME}`.
+   Set **Message** to the following:
+
+         {
+         "hostname": "{HOST.NAME}",
+         "severity": "{TRIGGER.SEVERITY}",
+         "status": "{TRIGGER.STATUS}",
+         "item": "{ITEM.NAME1} is {ITEM.VALUE1}",
+         "trigger": "{TRIGGER.NAME}",
+         "link": "{$ZABBIX_URL}/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.ID}"
+         }
+
+1. Click **Add**. Click **Update**.
+
+1. Go back to your Zabbix web interface, and click **Administration**.
+   Click on **Users**, and select the alias of the user you would like
    to use to set the notification. Click **Media**, and click **Add**.
 
-1. Set **Type** to **Zulip**, and set **Send To** to the URL constructed.
-   Tweak the severity for notifications as appropriate, and check the
-   **Enabled** option.
+1. Set **Type** to **Zulip** or whatever you named your media type as.
+   Set **Send To** to `Zulip` or any text. This field needs something in,
+   but isn't used. Tweak the severity and times when active for notifications
+   as appropriate, and check the **Enabled** option. Click **Add**.
+   Click **Update**.
 
-1. Go back to your Zabbix Web Interface, and click **Configuration**.
+1. Go back to your Zabbix web interface, and click **Configuration**.
    Click **Actions**, and click **Create Action**.
 
 1. Set **Name** to a name of your choice, such as `Zulip`. Under
    **New Conditions**, add the conditions for triggering a notification.
    Check the **Enabled** option, and click **Operations**.
 
-1. Set **Default Subject** to `{TRIGGER.STATUS}-{TRIGGER.SEVERITY}-{TRIGGER.NAME}`.
-   Set **Default Message** to the following:
-
-    ```
-    {
-        "hostname": "{HOST.NAME}",
-        "severity": "{TRIGGER.SEVERITY}",
-        "status": "{TRIGGER.STATUS}",
-        "item": "{ITEM.NAME1} is {ITEM.VALUE1}",
-        "trigger": "{TRIGGER.NAME}",
-        "link": "https://zabbix.example.com/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.ID}"
-    }
-    ```
-
-    Replace the `https://zabbix.example.com/` part of the **link** attribute with
-    the URL for your own Zabbix server. Click **New**, and under **Send to Users**,
-    click **Add**. Select the user you selected in step 6, and click **Select**.
-    Under **Send only to**, select **Zulip**, and click **Add**.
+1. Under **Operations** click **Add**, and then set **Operation Type** to
+   `Send Message`. Under **Send to Users**, click **Add**, and select the user
+   you added the alert to and click **Select**. Under **Send only to**,
+   select **Zulip** or the name of your media type. Click **Add**  twice.
 
 {!congrats.md!}
 

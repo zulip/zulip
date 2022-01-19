@@ -1,16 +1,59 @@
 #!/usr/bin/env bash
+#
+# This script handles adding custom apt repositories into
+# /etc/apt/sources.list.d/ files.  It bundles the GPG keys which are
+# used to verify the repositories (via `apt-key`), to explicitly pin
+# the trusted signing keys, as opposed to blindly trusting HTTPS.
+#
+# Each /etc/apt/sources.list.d/foo.list file is created via `--list
+# foo`, where `foo` defaults to `zulip`.  The default `zulip.list` is
+# installed in `scripts/lib/install` / `tools/lib/provision.py`, and
+# other `.list` files may be installed by Puppet.
 set -x
 set -e
+set -u
+set -o pipefail
+
+verify=false
+args="$(getopt -o '' --long verify,list: -- "$@")"
+eval "set -- $args"
+LIST=zulip
+while true; do
+    case "$1" in
+        --verify)
+            verify=true
+            shift
+            ;;
+        --list)
+            LIST="$2"
+            shift
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+done
 
 # Ensure the directory for LAST_DEPENDENCIES_HASH exists
 mkdir -p /var/lib/zulip
 
-SOURCES_FILE=/etc/apt/sources.list.d/zulip.list
-STAMP_FILE=/etc/apt/sources.list.d/zulip.list.apt-update-in-progress
+SOURCES_FILE=/etc/apt/sources.list.d/$LIST.list
+STAMP_FILE=/etc/apt/sources.list.d/$LIST.list.apt-update-in-progress
 
-ZULIP_SCRIPTS="$(dirname "$(dirname "$0")")"
-DEPENDENCIES_HASH=$(sha1sum "$ZULIP_SCRIPTS/setup/"*.asc "$0")
-DEPENDENCIES_HASH_FILE="/var/lib/zulip/setup-repositories-state"
+ZULIP_SCRIPTS="$(cd "$(dirname "$(dirname "$0")")" && pwd)"
+LIST_PATH="$ZULIP_SCRIPTS/setup/apt-repos/$LIST"
+if ! [ -d "$LIST_PATH" ]; then
+    echo "Not a valid value for --list: '$LIST'"
+    echo ""
+    echo "Valid values are:"
+    ls -1 "$ZULIP_SCRIPTS/setup/apt-repos/"
+    exit 1
+fi
+
+DEPENDENCIES_HASH=$(sha1sum "$LIST_PATH/"*.asc "$0")
+DEPENDENCIES_HASH_FILE="/var/lib/zulip/setup-repositories-state-$LIST"
 # Ensure that DEPENDENCIES_HASH_FILE exists before hashing it.
 touch "$DEPENDENCIES_HASH_FILE"
 LAST_DEPENDENCIES_HASH="$(cat "$DEPENDENCIES_HASH_FILE")"
@@ -19,6 +62,8 @@ LAST_DEPENDENCIES_HASH="$(cat "$DEPENDENCIES_HASH_FILE")"
 # (apt keys, code, etc.)  changed.
 if [ "$DEPENDENCIES_HASH" = "$LAST_DEPENDENCIES_HASH" ]; then
     exit 0
+elif [ "$verify" == true ]; then
+    exit 1
 fi
 
 # Ensure that the sources file exists
@@ -27,32 +72,30 @@ touch "$SOURCES_FILE"
 # Hash it to check if the sources file is changed by the script later.
 zulip_source_hash=$(sha1sum "$SOURCES_FILE")
 
-pre_setup_deps=(lsb-release apt-transport-https ca-certificates gnupg)
+pre_setup_deps=(lsb-release apt-transport-https ca-certificates gnupg curl)
 if ! apt-get -dy install "${pre_setup_deps[@]}"; then
     apt-get update
 fi
 apt-get -y install "${pre_setup_deps[@]}"
 
-SCRIPTS_PATH="$(dirname "$(dirname "$0")")"
-
 release=$(lsb_release -sc)
-if [[ "$release" =~ ^(xenial|bionic|cosmic|disco|eoan)$ ]] ; then
-    apt-key add "$SCRIPTS_PATH"/setup/pgroonga-ppa.asc
-    cat >$SOURCES_FILE <<EOF
-deb http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
-deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
-EOF
-elif [[ "$release" =~ ^(focal)$ ]] ; then
-    echo "Currently Groonga do not have a ppa package for Focal so we need to build pgroonga from the source"
-elif [[ "$release" =~ ^(stretch|buster)$ ]] ; then
-    apt-key add "$SCRIPTS_PATH"/setup/pgroonga-debian.asc
-    cat >$SOURCES_FILE <<EOF
-deb https://packages.groonga.org/debian/ $release main
-deb-src https://packages.groonga.org/debian/ $release main
-EOF
+if [ -f "$LIST_PATH/$release.list" ]; then
+    apt-key add "$LIST_PATH/"*.asc
+    cp "$LIST_PATH/$release.list" "$SOURCES_FILE"
 else
-    echo "Unsupported release $release."
+    cat <<EOF
+Unsupported release $release for sources.list file $LIST.  To add a
+new release, make a $LIST_PATH/$release.list file based on existing
+.list files in that directory.
+
+EOF
     exit 1
+fi
+
+if [ -e "$LIST_PATH/custom.sh" ]; then
+    export LIST_PATH
+    export STAMP_FILE
+    bash "$LIST_PATH/custom.sh"
 fi
 
 if [ "$zulip_source_hash" = "$(sha1sum "$SOURCES_FILE")" ] && ! [ -e "$STAMP_FILE" ]; then
@@ -65,8 +108,4 @@ else
     apt-get update && rm -f "$STAMP_FILE"
 fi
 
-if [ "$release" = "stretch" ]; then
-    apt-get install -y groonga-keyring
-fi
-
-echo "$DEPENDENCIES_HASH" > "$DEPENDENCIES_HASH_FILE"
+echo "$DEPENDENCIES_HASH" >"$DEPENDENCIES_HASH_FILE"

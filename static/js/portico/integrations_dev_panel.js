@@ -1,7 +1,10 @@
-// Main JavaScript file for the Integrations development panel at
+import $ from "jquery";
+
+import * as channel from "../channel";
+// Main JavaScript file for the integrations development panel at
 // /devtools/integrations.
 
-// Data Segment: We lazy load the requested fixtures from the backend
+// Data segment: We lazy load the requested fixtures from the backend
 // as and when required and then cache them here.
 
 const loaded_fixtures = new Map();
@@ -13,18 +16,30 @@ const clear_handlers = {
     topic_name: "#topic_name",
     URL: "#URL",
     results_notice: "#results_notice",
-    bot_name: function () { $('#bot_name').children()[0].selected = true; },
-    integration_name: function () { $('#integration_name').children()[0].selected = true; },
-    fixture_name: function () { $('#fixture_name').empty(); },
-    fixture_body: function () { $("#fixture_body")[0].value = ""; },
-    custom_http_headers: function () { $("#custom_http_headers")[0].value = "{}"; },
-    results: function () { $("#idp-results")[0].value = ""; },
+    bot_name() {
+        $("#bot_name").children()[0].selected = true;
+    },
+    integration_name() {
+        $("#integration_name").children()[0].selected = true;
+    },
+    fixture_name() {
+        $("#fixture_name").empty();
+    },
+    fixture_body() {
+        $("#fixture_body")[0].value = "";
+    },
+    custom_http_headers() {
+        $("#custom_http_headers")[0].value = "{}";
+    },
+    results() {
+        $("#idp-results")[0].value = "";
+    },
 };
 
 function clear_elements(elements) {
     // Supports strings (a selector to clear) or calling a function
     // (for more complex logic).
-    elements.forEach(function (element_name) {
+    for (const element_name of elements) {
         const handler = clear_handlers[element_name];
         if (typeof handler === "string") {
             const element_object = $(handler)[0];
@@ -33,7 +48,7 @@ function clear_elements(elements) {
         } else {
             handler();
         }
-    });
+    }
     return;
 }
 
@@ -70,9 +85,9 @@ function get_custom_http_headers() {
         try {
             // Let JavaScript validate the JSON for us.
             custom_headers = JSON.stringify(JSON.parse(custom_headers));
-        } catch (err) {
+        } catch {
             set_results_notice("Custom HTTP headers are not in a valid JSON format.", "warning");
-            return;
+            return undefined;
         }
     }
     return custom_headers;
@@ -88,15 +103,15 @@ function set_results(response) {
     const responses = response.responses;
 
     let data = "Results:\n\n";
-    responses.forEach(function (response) {
+    for (const response of responses) {
         if (response.fixture_name !== undefined) {
             data += "Fixture:            " + response.fixture_name;
-            data += "\nStatus Code:    "  + response.status_code;
+            data += "\nStatus code:    " + response.status_code;
         } else {
-            data += "Status Code:    "  + response.status_code;
+            data += "Status code:    " + response.status_code;
         }
         data += "\nResponse:       " + response.message + "\n\n";
-    });
+    }
     $("#idp-results")[0].value = data;
 }
 
@@ -128,12 +143,12 @@ function load_fixture_options(integration_name) {
     const fixtures_options_dropdown = $("#fixture_name")[0];
     const fixtures_names = Object.keys(loaded_fixtures.get(integration_name)).sort();
 
-    fixtures_names.forEach(function (fixture_name) {
+    for (const fixture_name of fixtures_names) {
         const new_dropdown_option = document.createElement("option");
         new_dropdown_option.value = fixture_name;
         new_dropdown_option.innerHTML = fixture_name;
         fixtures_options_dropdown.add(new_dropdown_option);
-    });
+    }
     load_fixture_body(fixtures_names[0]);
 
     return;
@@ -169,13 +184,13 @@ function update_url() {
     return;
 }
 
-// API Callers: These methods handle communicating with the Python backend API.
+// API callers: These methods handle communicating with the Python backend API.
 function handle_unsuccessful_response(response) {
     try {
         const status_code = response.statusCode().status;
         response = JSON.parse(response.responseText);
-        set_results_notice("Result: " + "(" + status_code + ") " + response.msg, "warning");
-    } catch (err) {
+        set_results_notice(`Result: (${status_code}) ${response.msg}`, "warning");
+    } catch {
         // If the response is not a JSON response, then it is probably
         // Django returning an HTML response containing a stack trace
         // with useful debugging information regarding the backend
@@ -189,7 +204,13 @@ function get_fixtures(integration_name) {
     /* Request fixtures from the backend for any integrations that we
     don't already have fixtures cached in loaded_fixtures). */
     if (integration_name === "") {
-        clear_elements(["custom_http_headers", "fixture_body", "fixture_name", "URL", "results_notice"]);
+        clear_elements([
+            "custom_http_headers",
+            "fixture_body",
+            "fixture_name",
+            "URL",
+            "results_notice",
+        ]);
         return;
     }
 
@@ -199,13 +220,13 @@ function get_fixtures(integration_name) {
     }
 
     // We don't have the fixtures for this integration; fetch them
-    // from the backend.  Relative url pattern:
-    // /devtools/integrations/(?P<integration_name>.+)/fixtures
+    // from the backend.  Relative URL pattern:
+    // /devtools/integrations/<integration_name>/fixtures
     channel.get({
         url: "/devtools/integrations/" + integration_name + "/fixtures",
         // Since the user may add or modify fixtures as they edit.
         idempotent: false,
-        success: function (response) {
+        success(response) {
             loaded_fixtures.set(integration_name, response.fixtures);
             load_fixture_options(integration_name);
             return;
@@ -242,7 +263,7 @@ function send_webhook_fixture_message() {
             // Let JavaScript validate the JSON for us.
             body = JSON.stringify(JSON.parse(body));
             is_json = true;
-        } catch (err) {
+        } catch {
             set_results_notice("Invalid JSON in fixture body.", "warning");
             return;
         }
@@ -252,9 +273,11 @@ function send_webhook_fixture_message() {
 
     channel.post({
         url: "/devtools/integrations/check_send_webhook_fixture_message",
-        data: {url: url, body: body, custom_headers: custom_headers, is_json: is_json},
-        beforeSend: function (xhr) {xhr.setRequestHeader('X-CSRFToken', csrftoken);},
-        success: function (response) {
+        data: {url, body, custom_headers, is_json},
+        beforeSend(xhr) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        },
+        success(response) {
             // If the previous fixture body was sent successfully,
             // then we should change the success message up a bit to
             // let the user easily know that this fixture body was
@@ -285,9 +308,13 @@ function send_all_fixture_messages() {
     const csrftoken = $("#csrftoken").val();
     channel.post({
         url: "/devtools/integrations/send_all_webhook_fixture_messages",
-        data: {url: url, integration_name: integration},
-        beforeSend: function (xhr) {xhr.setRequestHeader('X-CSRFToken', csrftoken);},
-        success: function (response) {set_results(response);},
+        data: {url, integration_name: integration},
+        beforeSend(xhr) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        },
+        success(response) {
+            set_results(response);
+        },
         error: handle_unsuccessful_response,
     });
 
@@ -295,20 +322,29 @@ function send_all_fixture_messages() {
 }
 
 // Initialization
-$(function () {
-    clear_elements(["stream_name", "topic_name", "URL", "bot_name", "integration_name",
-                    "fixture_name", "custom_http_headers", "fixture_body", "results_notice",
-                    "results"]);
+$(() => {
+    clear_elements([
+        "stream_name",
+        "topic_name",
+        "URL",
+        "bot_name",
+        "integration_name",
+        "fixture_name",
+        "custom_http_headers",
+        "fixture_body",
+        "results_notice",
+        "results",
+    ]);
 
     $("#stream_name")[0].value = "Denmark";
-    $("#topic_name")[0].value = "Integrations Testing";
+    $("#topic_name")[0].value = "Integrations testing";
 
     const potential_default_bot = $("#bot_name")[0][1];
     if (potential_default_bot !== undefined) {
         potential_default_bot.selected = true;
     }
 
-    $('#integration_name').change(function () {
+    $("#integration_name").on("change", function () {
         clear_elements(["custom_http_headers", "fixture_body", "fixture_name", "results_notice"]);
         const integration_name = $(this).children("option:selected").val();
         get_fixtures(integration_name);
@@ -316,28 +352,27 @@ $(function () {
         return;
     });
 
-    $('#fixture_name').change(function () {
+    $("#fixture_name").on("change", function () {
         clear_elements(["fixture_body", "results_notice"]);
         const fixture_name = $(this).children("option:selected").val();
         load_fixture_body(fixture_name);
         return;
     });
 
-    $('#send_fixture_button').click(function () {
+    $("#send_fixture_button").on("click", () => {
         send_webhook_fixture_message();
         return;
     });
 
-    $('#send_all_fixtures_button').click(function () {
+    $("#send_all_fixtures_button").on("click", () => {
         clear_elements(["results_notice"]);
         send_all_fixture_messages();
         return;
     });
 
-    $("#bot_name").change(update_url);
+    $("#bot_name").on("change", update_url);
 
-    $("#stream_name").change(update_url);
+    $("#stream_name").on("change", update_url);
 
-    $("#topic_name").change(update_url);
-
+    $("#topic_name").on("change", update_url);
 });

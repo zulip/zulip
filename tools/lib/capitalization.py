@@ -1,5 +1,5 @@
-from typing import List, Tuple, Match
 import re
+from typing import List, Match, Tuple
 
 from bs4 import BeautifulSoup
 
@@ -16,6 +16,7 @@ IGNORED_PHRASES = [
     r"App Store",
     r"Botserver",
     r"Cookie Bot",
+    r"DevAuthBackend",
     r"Dropbox",
     r"GCM",
     r"GitHub",
@@ -28,26 +29,28 @@ IGNORED_PHRASES = [
     r"ID",
     r"IDs",
     r"IP",
-    r"JIRA",
     r"JSON",
     r"Kerberos",
     r"LDAP",
     r"Mac",
     r"macOS",
+    r"Markdown",
     r"MiB",
+    r"OAuth",
     r"OTP",
     r"Pivotal",
     r"Play Store",
     r"PM",
     r"PMs",
-    r'REMOTE_USER',
-    r'Slack',
+    r"REMOTE_USER",
+    r"Slack",
     r"SSO",
-    r'Terms of Service',
-    r'Tuesday',
+    r"Terms of Service",
+    r"Tuesday",
     r"URL",
     r"Ubuntu",
     r"Updown",
+    r"UUID",
     r"V5",
     r"Webathena",
     r"Windows",
@@ -65,13 +68,16 @@ IGNORED_PHRASES = [
     r"Emoji One",
     r"mailinator.com",
     r"HQ",
+    r"BigBlueButton",
     # Code things
     r".zuliprc",
     r"__\w+\.\w+__",
     # Things using "I"
+    r"I understand",
     r"I say",
     r"I want",
     r"I'm",
+    r"I've",
     # Specific short words
     r"beta",
     r"and",
@@ -84,18 +90,24 @@ IGNORED_PHRASES = [
     r"zulip_org_id",
     r"admins",
     r"members",
+    r"signups",
     # Placeholders
     r"keyword",
     r"streamname",
     r"user@example.com",
     # Fragments of larger strings
-    (r'your subscriptions on your Streams page'),
-    (r'Change notification settings for individual streams on your '
-     '<a href="/#streams">Streams page</a>.'),
-    (r'Looking for our '
-     '<a href="/integrations" target="_blank">Integrations</a> or '
-     '<a href="/api" target="_blank">API</a> documentation?'),
+    (r"your subscriptions on your Streams page"),
+    (
+        r"Change notification settings for individual streams on your "
+        '<a href="/#streams">Streams page</a>.'
+    ),
+    (
+        r"Looking for our "
+        '<a href="/integrations" target="_blank">Integrations</a> or '
+        '<a href="/api" target="_blank">API</a> documentation?'
+    ),
     r'Most stream administration is done on the <a href="/#streams">Streams page</a>.',
+    r"Add global time<br />Everyone sees global times in their own time zone.",
     r"one or more people...",
     r"confirmation email",
     r"invites remaining",
@@ -107,10 +119,10 @@ IGNORED_PHRASES = [
     r"an unknown operating system",
     r"Go to Settings",
     r"Like Organization logo",
-
     # SPECIAL CASES
     # Enter is usually capitalized
     r"Press Enter to send",
+    r"Send message on pressing Enter",
     # Because topics usually are lower-case, this would look weird if it were capitalized
     r"more topics",
     # For consistency with "more topics"
@@ -120,10 +132,10 @@ IGNORED_PHRASES = [
     r"in 20 minutes",
     r"in 3 hours",
     # We should probably just delete this string from translations
-    r'activation key',
+    r"activation key",
     # these are used as topics
-    r'^new streams$',
-    r'^stream events$',
+    r"^new streams$",
+    r"^stream events$",
     # These are used as example short names (e.g. an uncapitalized context):
     r"^marketing$",
     r"^cookie$",
@@ -132,11 +144,9 @@ IGNORED_PHRASES = [
     r"\bN\b",
     # Capital c feels obtrusive in clear status option
     r"clear",
-
-    r"group private messages with __recipient__",
-    r"private messages with __recipient__",
+    r"group private messages with {recipient}",
+    r"private messages with {recipient}",
     r"private messages with yourself",
-
     # TO CLEAN UP
     # Just want to avoid churning login.html right now
     r"or Choose a user",
@@ -151,6 +161,17 @@ IGNORED_PHRASES = [
     r"your-organization-url",
     # Used in invite modal
     r"or",
+    # Used in GIPHY popover.
+    r"GIFs",
+    r"GIPHY",
+    # Used in our case studies
+    r"Technical University of Munich",
+    r"University of California San Diego",
+    # Used in stream creation form
+    r"email hidden",
+    # Use in compose box.
+    r"to send",
+    r"to add a new line",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the
@@ -161,37 +182,36 @@ IGNORED_PHRASES.sort(key=lambda regex: len(regex), reverse=True)
 # text using BeautifulSoup and then removes extra whitespaces from
 # it. This step enables us to add HTML in our regexes directly.
 COMPILED_IGNORED_PHRASES = [
-    re.compile(' '.join(BeautifulSoup(regex, 'lxml').text.split()))
-    for regex in IGNORED_PHRASES
+    re.compile(" ".join(BeautifulSoup(regex, "lxml").text.split())) for regex in IGNORED_PHRASES
 ]
 
-SPLIT_BOUNDARY = '?.!'  # Used to split string into sentences.
-SPLIT_BOUNDARY_REGEX = re.compile(r'[{}]'.format(SPLIT_BOUNDARY))
+SPLIT_BOUNDARY = "?.!"  # Used to split string into sentences.
+SPLIT_BOUNDARY_REGEX = re.compile(fr"[{SPLIT_BOUNDARY}]")
 
 # Regexes which check capitalization in sentences.
-DISALLOWED_REGEXES = [re.compile(regex) for regex in [
-    r'^[a-z]',  # Checks if the sentence starts with a lower case character.
-    r'^[A-Z][a-z]+[\sa-z0-9]+[A-Z]',  # Checks if an upper case character exists
+DISALLOWED = [
+    r"^[a-z](?!\})",  # Checks if the sentence starts with a lower case character.
+    r"^[A-Z][a-z]+[\sa-z0-9]+[A-Z]",  # Checks if an upper case character exists
     # after a lower case character when the first character is in upper case.
-]]
+]
+DISALLOWED_REGEX = re.compile(r"|".join(DISALLOWED))
 
 BANNED_WORDS = {
-    'realm': ('The term realm should not appear in user-facing strings. '
-              'Use organization instead.'),
+    "realm": "The term realm should not appear in user-facing strings. Use organization instead.",
 }
 
-def get_safe_phrase(phrase):
-    # type: (str) -> str
+
+def get_safe_phrase(phrase: str) -> str:
     """
     Safe phrase is in lower case and doesn't contain characters which can
     conflict with split boundaries. All conflicting characters are replaced
     with low dash (_).
     """
-    phrase = SPLIT_BOUNDARY_REGEX.sub('_', phrase)
+    phrase = SPLIT_BOUNDARY_REGEX.sub("_", phrase)
     return phrase.lower()
 
-def replace_with_safe_phrase(matchobj):
-    # type: (Match[str]) -> str
+
+def replace_with_safe_phrase(matchobj: Match[str]) -> str:
     """
     The idea is to convert IGNORED_PHRASES into safe phrases, see
     `get_safe_phrase()` function. The only exception is when the
@@ -215,34 +235,24 @@ def replace_with_safe_phrase(matchobj):
 
     return safe_string
 
-def get_safe_text(text):
-    # type: (str) -> str
+
+def get_safe_text(text: str) -> str:
     """
     This returns text which is rendered by BeautifulSoup and is in the
     form that can be split easily and has all IGNORED_PHRASES processed.
     """
-    soup = BeautifulSoup(text, 'lxml')
-    text = ' '.join(soup.text.split())  # Remove extra whitespaces.
+    soup = BeautifulSoup(text, "lxml")
+    text = " ".join(soup.text.split())  # Remove extra whitespaces.
     for phrase_regex in COMPILED_IGNORED_PHRASES:
         text = phrase_regex.sub(replace_with_safe_phrase, text)
 
     return text
 
-def is_capitalized(safe_text):
-    # type: (str) -> bool
+
+def is_capitalized(safe_text: str) -> bool:
     sentences = SPLIT_BOUNDARY_REGEX.split(safe_text)
-    sentences = [sentence.strip()
-                 for sentence in sentences if sentence.strip()]
+    return not any(DISALLOWED_REGEX.search(sentence.strip()) for sentence in sentences)
 
-    if not sentences:
-        return False
-
-    for sentence in sentences:
-        for regex in DISALLOWED_REGEXES:
-            if regex.search(sentence):
-                return False
-
-    return True
 
 def check_banned_words(text: str) -> List[str]:
     lower_cased_text = text.lower()
@@ -251,7 +261,7 @@ def check_banned_words(text: str) -> List[str]:
         if word in lower_cased_text:
             # Hack: Should move this into BANNED_WORDS framework; for
             # now, just hand-code the skips:
-            if 'realm_name' in lower_cased_text:
+            if "realm_name" in lower_cased_text:
                 continue
             kwargs = dict(word=word, text=text, reason=reason)
             msg = "{word} found in '{text}'. {reason}".format(**kwargs)
@@ -259,13 +269,13 @@ def check_banned_words(text: str) -> List[str]:
 
     return errors
 
-def check_capitalization(strings):
-    # type: (List[str]) -> Tuple[List[str], List[str], List[str]]
+
+def check_capitalization(strings: List[str]) -> Tuple[List[str], List[str], List[str]]:
     errors = []
     ignored = []
     banned_word_errors = []
     for text in strings:
-        text = ' '.join(text.split())  # Remove extra whitespaces.
+        text = " ".join(text.split())  # Remove extra whitespaces.
         safe_text = get_safe_text(text)
         has_ignored_phrase = text != safe_text
         capitalized = is_capitalized(safe_text)

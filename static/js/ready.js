@@ -1,1 +1,0 @@
-$("#app-loading").addClass("loaded");

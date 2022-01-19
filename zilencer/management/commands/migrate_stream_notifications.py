@@ -12,5 +12,4 @@ class Command(BaseCommand):
         for subscription in Subscription.objects.all():
             subscription.desktop_notifications = subscription.notifications
             subscription.audible_notifications = subscription.notifications
-            subscription.save(update_fields=["desktop_notifications",
-                                             "audible_notifications"])
+            subscription.save(update_fields=["desktop_notifications", "audible_notifications"])

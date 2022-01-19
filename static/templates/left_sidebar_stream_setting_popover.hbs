@@ -1,0 +1,14 @@
+<ul class="nav nav-list">
+    <li>
+        <a href="#streams/all">
+            {{t "Browse streams" }}
+        </a>
+    </li>
+    {{#if can_create_streams }}
+    <li>
+        <a href="#streams/new">
+            {{t "Create a stream" }}
+        </a>
+    </li>
+    {{/if}}
+</ul>

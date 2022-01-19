@@ -25,8 +25,8 @@ The Zulip Botserver is for people who want to
 * run multiple bots at once.
 
 The Zulip Botserver is a Python (Flask) server that implements Zulip's
-Outgoing Webhooks API.  You can of course write your own servers using
-the Outgoing Webhooks API, but the Botserver is designed to make it
+outgoing webhooks API.  You can of course write your own servers using
+the outgoing webhooks API, but the Botserver is designed to make it
 easy for a novice Python programmer to write a new bot and deploy it
 in production.
 
@@ -44,7 +44,7 @@ Botserver interaction are:
 
 1. The Zulip server sends a POST request to the Botserver on `https://bot-server.example.com/`:
 
-    ```
+    ```json
     {
       "message":{
         "content":"@**My Bot User** hello world",
@@ -55,7 +55,7 @@ Botserver interaction are:
     }
     ```
 
-    This url is configured in the Zulip web-app in your Bot User's settings.
+    This URL is configured in the Zulip web-app in your Bot User's settings.
 
 1. The Botserver searches for a bot to handle the message.
 
@@ -89,7 +89,7 @@ pip3 install zulip_botserver
 1. Register new bot users on the Zulip server's web interface.
 
     * Log in to the Zulip server.
-    * Navigate to *Settings (<i class="fa fa-cog"></i>)* -> *Your bots* -> *Add a new bot*.
+    * Navigate to *Personal settings (<i class="fa fa-cog"></i>)* -> *Bots* -> *Add a new bot*.
       Select *Outgoing webhook* for bot type, fill out the form (using
       the URL from above) and click on *Create bot*.
     * A new bot user should appear in the *Active bots* panel.
@@ -138,18 +138,6 @@ Botserver process.  You can do this with the following procedure.
     key=dOHHlyqgpt5g0tVuVl6NHxDLlc9eFRX4
     site=http://hostname
     token=aQVQmSd6j6IHphJ9m1jhgHdbnhl5ZcsY
-    ```
-
-    Each section contains the configuration for an outgoing webhook bot. For each
-    bot, enter the name of the bot you want to run in the square brackets `[]`.
-    For example, if we want `foo-bot@hostname` to run the `helloworld` bot, our
-    new section would look like this:
-
-    ```
-    [helloworld]
-    email=foo-bot@hostname
-    key=dOHHlyqgpt5g0tVuVl6NHxDLlc9eFRX4
-    site=http://hostname
     ```
 
     To run an external bot, enter the path to the bot's python file in the square
@@ -204,7 +192,7 @@ running it manually.
 
     * Edit the `<>` sections according to your preferences.
 
-[supervisord-config-file]: https://raw.githubusercontent.com/zulip/python-zulip-api/master/zulip_botserver/zulip-botserver-supervisord.conf
+[supervisord-config-file]: https://raw.githubusercontent.com/zulip/python-zulip-api/main/zulip_botserver/zulip-botserver-supervisord.conf
 
 1. Update *supervisord* to read the configuration file:
 
@@ -235,8 +223,8 @@ Botserver with SSL using an `nginx` or `Apache` reverse proxy and
 
 ### Troubleshooting
 
-1. Make sure the API key you're using is for an [Outgoing webhook
-   bot](https://zulipchat.com/api/outgoing-webhooks) and you've
+1. Make sure the API key you're using is for an [outgoing webhook
+   bot](/api/outgoing-webhooks) and you've
    correctly configured the URL for your Botserver.
 
 1.  Your Botserver needs to be accessible from your Zulip server over

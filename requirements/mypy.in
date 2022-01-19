@@ -3,3 +3,30 @@
 # and requirements/mypy.txt.
 # See requirements/README.md for more detail.
 mypy
+
+backoff-stubs
+boto3-stubs[s3]
+lxml-stubs
+https://github.com/andersk/pika-stubs/archive/87c5795741449e37bdbd2ceceee853fd56462440.zip#egg=pika-stubs==0.1.3+git  # https://github.com/hahow/pika-stubs/issues/1, https://github.com/hahow/pika-stubs/pull/4
+sqlalchemy[mypy]
+types-boto
+types-certifi
+types-chardet
+types-commonmark
+types-dataclasses
+types-decorator
+types-jsonschema
+types-Markdown
+types-oauthlib
+types-polib
+types-Pillow
+types-psycopg2
+types-Pygments
+types-python-dateutil
+types-pytz
+types-PyYAML
+types-redis
+types-requests
+types-six
+
+importlib-metadata;python_version<"3.10"  # for sqlalchemy

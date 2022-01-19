@@ -13,4 +13,4 @@
 
 ## Related articles
 
-* [About streams and topics](/help/about-streams-and-topics)
+* [Streams and topics](/help/streams-and-topics)

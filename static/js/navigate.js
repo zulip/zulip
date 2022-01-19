@@ -1,29 +1,33 @@
+import * as message_lists from "./message_lists";
+import * as message_viewport from "./message_viewport";
+import * as rows from "./rows";
+import * as unread_ops from "./unread_ops";
+
 function go_to_row(msg_id) {
-    current_msg_list.select_id(msg_id,
-                               {then_scroll: true,
-                                from_scroll: true});
+    message_lists.current.select_id(msg_id, {then_scroll: true, from_scroll: true});
 }
 
-exports.up = function () {
+export function up() {
     message_viewport.set_last_movement_direction(-1);
-    const msg_id = current_msg_list.prev();
+    const msg_id = message_lists.current.prev();
     if (msg_id === undefined) {
         return;
     }
     go_to_row(msg_id);
-};
+}
 
-exports.down = function (with_centering) {
+export function down(with_centering) {
     message_viewport.set_last_movement_direction(1);
 
-    if (current_msg_list.is_at_end()) {
+    if (message_lists.current.is_at_end()) {
         if (with_centering) {
             // At the last message, scroll to the bottom so we have
             // lots of nice whitespace for new messages coming in.
-            const current_msg_table = rows.get_table(current_msg_list.table_name);
-            message_viewport.scrollTop(current_msg_table.safeOuterHeight(true) -
-                                       message_viewport.height() * 0.1);
-            if (current_msg_list.can_mark_messages_read()) {
+            const current_msg_table = rows.get_table(message_lists.current.table_name);
+            message_viewport.scrollTop(
+                current_msg_table.safeOuterHeight(true) - message_viewport.height() * 0.1,
+            );
+            if (message_lists.current.can_mark_messages_read()) {
                 unread_ops.mark_current_list_as_read();
             }
         }
@@ -32,29 +36,27 @@ exports.down = function (with_centering) {
     }
 
     // Normal path starts here.
-    const msg_id = current_msg_list.next();
+    const msg_id = message_lists.current.next();
     if (msg_id === undefined) {
         return;
     }
     go_to_row(msg_id);
-};
+}
 
-exports.to_home = function () {
+export function to_home() {
     message_viewport.set_last_movement_direction(-1);
-    const first_id = current_msg_list.first().id;
-    current_msg_list.select_id(first_id, {then_scroll: true,
-                                          from_scroll: true});
-};
+    const first_id = message_lists.current.first().id;
+    message_lists.current.select_id(first_id, {then_scroll: true, from_scroll: true});
+}
 
-exports.to_end = function () {
-    const next_id = current_msg_list.last().id;
+export function to_end() {
+    const next_id = message_lists.current.last().id;
     message_viewport.set_last_movement_direction(1);
-    current_msg_list.select_id(next_id, {then_scroll: true,
-                                         from_scroll: true});
-    if (current_msg_list.can_mark_messages_read()) {
+    message_lists.current.select_id(next_id, {then_scroll: true, from_scroll: true});
+    if (message_lists.current.can_mark_messages_read()) {
         unread_ops.mark_current_list_as_read();
     }
-};
+}
 
 function amount_to_paginate() {
     // Some day we might have separate versions of this function
@@ -84,7 +86,7 @@ function amount_to_paginate() {
     return delta;
 }
 
-exports.page_up_the_right_amount = function () {
+export function page_up_the_right_amount() {
     // This function's job is to scroll up the right amount,
     // after the user hits Page Up.  We do this ourselves
     // because we can't rely on the browser to account for certain
@@ -94,51 +96,51 @@ exports.page_up_the_right_amount = function () {
     // scroll handlers, not here.
     const delta = amount_to_paginate();
     message_viewport.scrollTop(message_viewport.scrollTop() - delta);
-};
+}
 
-exports.page_down_the_right_amount = function () {
+export function page_down_the_right_amount() {
     // see also: page_up_the_right_amount
     const delta = amount_to_paginate();
     message_viewport.scrollTop(message_viewport.scrollTop() + delta);
-};
+}
 
-exports.page_up = function () {
-    if (message_viewport.at_top() && !current_msg_list.empty()) {
-        current_msg_list.select_id(current_msg_list.first().id, {then_scroll: false});
+export function page_up() {
+    if (message_viewport.at_top() && !message_lists.current.empty()) {
+        message_lists.current.select_id(message_lists.current.first().id, {then_scroll: false});
     } else {
-        exports.page_up_the_right_amount();
+        page_up_the_right_amount();
     }
-};
+}
 
-exports.page_down = function () {
-    if (message_viewport.at_bottom() && !current_msg_list.empty()) {
-        current_msg_list.select_id(current_msg_list.last().id, {then_scroll: false});
-        if (current_msg_list.can_mark_messages_read()) {
+export function page_down() {
+    if (message_viewport.at_bottom() && !message_lists.current.empty()) {
+        message_lists.current.select_id(message_lists.current.last().id, {then_scroll: false});
+        if (message_lists.current.can_mark_messages_read()) {
             unread_ops.mark_current_list_as_read();
         }
     } else {
-        exports.page_down_the_right_amount();
+        page_down_the_right_amount();
     }
-};
+}
 
-exports.scroll_to_selected = function () {
-    const selected_row = current_msg_list.selected_row();
+export function scroll_to_selected() {
+    const selected_row = message_lists.current.selected_row();
     if (selected_row && selected_row.length !== 0) {
         message_viewport.recenter_view(selected_row);
     }
-};
+}
 
+let scroll_to_selected_planned = false;
 
-exports.maybe_scroll_to_selected = function () {
-    // If we have been previously instructed to re-center to the
-    // selected message, then do so
-    if (pointer.recenter_pointer_on_display) {
-        exports.scroll_to_selected();
-        pointer.set_recenter_pointer_on_display(false);
+export function plan_scroll_to_selected() {
+    scroll_to_selected_planned = true;
+}
+
+export function maybe_scroll_to_selected() {
+    // If we have made a plan to scroll to the selected message but
+    // deferred doing so, do so here.
+    if (scroll_to_selected_planned) {
+        scroll_to_selected();
+        scroll_to_selected_planned = false;
     }
-};
-
-
-
-
-window.navigate = exports;
+}

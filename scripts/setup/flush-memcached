@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import os
 import sys
 
@@ -10,13 +9,10 @@ from scripts.lib.setup_path import setup_path
 
 setup_path()
 
-from zproject import settings
-import pylibmc
+import bmemcached
 
-pylibmc.Client(
-    [settings.MEMCACHED_LOCATION],
-    binary=True,
-    username=settings.MEMCACHED_USERNAME,
-    password=settings.MEMCACHED_PASSWORD,
-    behaviors=settings.CACHES["default"]["OPTIONS"]  # type: ignore # settings not typed properly
-).flush_all()
+from zproject import settings
+
+cache = settings.CACHES["default"]
+assert isinstance(cache, dict)  # for mypy
+bmemcached.Client((cache["LOCATION"],), **cache["OPTIONS"]).flush_all()

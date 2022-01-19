@@ -3,12 +3,12 @@
 ## Zulip CSS organization
 
 The Zulip application's CSS can be found in the `static/styles/`
-directory.  Zulip uses [Bootstrap](https://getbootstrap.com/) as its
+directory. Zulip uses [Bootstrap](https://getbootstrap.com/) as its
 main third-party CSS library.
 
-Zulip uses SCSS for its CSS files.  There are two high-level sections
+Zulip uses PostCSS for its CSS files. There are two high-level sections
 of CSS: the "portico" (logged-out pages like /help/, /login/, etc.),
-and the app.  The portico CSS lives under the `static/styles/portico`
+and the app. The portico CSS lives under the `static/styles/portico`
 subdirectory.
 
 ## Editing Zulip CSS
@@ -27,14 +27,14 @@ changes made in source files will immediately take effect in open
 browser windows, either by live-updating the CSS or reloading the
 browser window (following backend changes).
 
-## CSS Style guidelines
+## CSS style guidelines
 
 ### Avoid duplicated code
 
 Without care, it's easy for a web application to end up with thousands
 of lines of duplicated CSS code, which can make it very difficult to
-understand the current styling or modify it.  We would very much like
-to avoid such a fate.  So please make an effort to reuse existing
+understand the current styling or modify it. We would very much like
+to avoid such a fate. So please make an effort to reuse existing
 styling, clean up now-unused CSS, etc., to keep things maintainable.
 
 ### Be consistent with existing similar UI
@@ -62,21 +62,21 @@ browsers to make sure things look the same.
 
 ### Behavior
 
-* Templates are automatically recompiled in development when the file
-is saved; a refresh of the page should be enough to display the latest
-version. You might need to do a hard refresh, as some browsers cache
-webpages.
+- Templates are automatically recompiled in development when the file
+  is saved; a refresh of the page should be enough to display the latest
+  version. You might need to do a hard refresh, as some browsers cache
+  webpages.
 
-* Variables can be used in templates. The variables available to the
-template are called the **context**. Passing the context to the HTML
-template sets the values of those variables to the value they were
-given in the context. The sections below contain specifics on how the
-context is defined and where it can be found.
+- Variables can be used in templates. The variables available to the
+  template are called the **context**. Passing the context to the HTML
+  template sets the values of those variables to the value they were
+  given in the context. The sections below contain specifics on how the
+  context is defined and where it can be found.
 
 ### Backend templates
 
 For text generated in the backend, including logged-out ("portico")
-pages and the webapp's base content, we use the [Jinja2][] template
+pages and the web app's base content, we use the [Jinja2][] template
 engine (files in `templates/zerver`).
 
 The syntax for using conditionals and other common structures can be
@@ -84,25 +84,25 @@ found [here][jconditionals].
 
 The context for Jinja2 templates is assembled from a few places:
 
-* `zulip_default_context` in `zerver/context_processors.py`.  This is
-the default context available to all Jinja2 templates.
+- `zulip_default_context` in `zerver/context_processors.py`. This is
+  the default context available to all Jinja2 templates.
 
-* As an argument in the `render` call in the relevant function that
-renders the template. For example, if you want to find the context
-passed to `index.html`, you can do:
+- As an argument in the `render` call in the relevant function that
+  renders the template. For example, if you want to find the context
+  passed to `index.html`, you can do:
 
-```
+```console
 $ git grep zerver/app/index.html '*.py'
 zerver/views/home.py:    response = render(request, 'zerver/app/index.html',
 ```
 
 The next line in the code being the context definition.
 
-* `zproject/urls.py` for some fairly static pages that are rendered
-using `TemplateView`, for example:
+- `zproject/urls.py` for some fairly static pages that are rendered
+  using `TemplateView`, for example:
 
-```
-url(r'^config-error/google$', TemplateView.as_view(
+```python
+path('config-error/google', TemplateView.as_view(
     template_name='zerver/config_error.html',),
     {'google_error': True},),
 ```
@@ -132,7 +132,11 @@ whenever a template is changed.
 ### Translation
 
 All user-facing strings (excluding pages only visible to sysadmins or
-developers) should be tagged for [translation][].
+developers) should be tagged for [translation][trans].
+
+### Tooltips
+
+Zulip uses [TippyJS](https://atomiks.github.io/tippyjs/) for its tooltips.
 
 ## Static asset pipeline
 
@@ -147,12 +151,12 @@ relevant background as well.
 ### Primary build process
 
 Zulip's frontend is primarily JavaScript in the `static/js` directory;
-we are working on migrating these to Typescript modules.  Stylesheets
-are written in the Sass extension of CSS (with the scss syntax), they
-are converted from plain CSS and we have yet to take full advantage of
-the features Sass offers.  We use Webpack to transpile and build JS
+we are working on migrating these to TypeScript modules. Stylesheets
+are written in CSS extended by various PostCSS plugins; they are
+converted from plain CSS, and we have yet to take full advantage of
+the features PostCSS offers. We use Webpack to transpile and build JS
 and CSS bundles that the browser can understand, one for each entry
-points specified in `tools/webpack.assets.json`; source maps are
+points specified in `tools/webpack.*assets.json`; source maps are
 generated in the process for better debugging experience.
 
 In development mode, bundles are built and served on the fly using
@@ -164,12 +168,12 @@ webpack build, JS minification and a host of other steps for getting the assets
 ready for deployment.
 
 You can trace which source files are included in which HTML templates
-by comparing the `render_entrypoint` calls in the HTML templates under
-`templates/` with the bundles declared in `tools/webpack.assets.json`.
+by comparing the `entrypoint` variables in the HTML templates under
+`templates/` with the bundles declared in `tools/webpack.*assets.json`.
 
 ### Adding static files
 
-To add a static file to the app (JavaScript, TypeScript, CSS/Sass, images, etc),
+To add a static file to the app (JavaScript, TypeScript, CSS, images, etc),
 first add it to the appropriate place under `static/`.
 
 - Third-party packages from the NPM repository should be added to
@@ -184,11 +188,11 @@ first add it to the appropriate place under `static/`.
   version of third-party libraries.
 - Third-party files that we have patched should all go in
   `static/third/`. Tag the commit with "[third]" when adding or
-  modifying a third-party package.  Our goal is to the extent possible
+  modifying a third-party package. Our goal is to the extent possible
   to eliminate patched third-party code from the project.
-- Our own JavaScript and TypeScript files live under `static/js`.  Ideally,
+- Our own JavaScript and TypeScript files live under `static/js`. Ideally,
   new modules should be written in TypeScript (details on this policy below).
-- CSS/Sass files lives under `static/styles`.
+- CSS files live under `static/styles`.
 - Portico JavaScript ("portico" means for logged-out pages) lives under
   `static/js/portico`.
 - Custom SVG graphics living under `static/assets/icons` are compiled into
@@ -196,79 +200,91 @@ first add it to the appropriate place under `static/`.
   `static/assets/icons/template.hbs` template.
 
 For your asset to be included in a development/production bundle, it
-needs to be accessible from one of the entry points defined in
-`tools/webpack.assets.json`.
+needs to be accessible from one of the entry points defined either in
+`tools/webpack.assets.json` or `tools/webpack.dev-assets.json`.
 
-* If you plan to only use the file within the app proper, and not on the login
+- If you plan to only use the file within the app proper, and not on the login
   page or other standalone pages, put it in the `app` bundle by importing it
   in `static/js/bundles/app.js`.
-* If it needs to be available both in the app and all
+- If it needs to be available both in the app and all
   logged-out/portico pages, import it to
   `static/js/bundles/common.js` which itself is imported to the
   `app` and `common` bundles.
-* If it's just used on a single standalone page (e.g. `/stats`),
-  create a new entry point in `tools/webpack.assets.json`. Use the
-  `bundle` macro (defined in `templates/zerver/base.html`) in the
-  relevant Jinja2 template to inject the compiled JS and CSS.
+- If it's just used on a single standalone page which is only used in
+  a development environment (e.g. `/devlogin`) create a new entry
+  point in `tools/webpack.dev-assets.json` or it's used in both
+  production and development (e.g. `/stats`) create a new entry point
+  in `tools/webpack.assets.json`. Use the `bundle` macro (defined in
+  `templates/zerver/base.html`) in the relevant Jinja2 template to
+  inject the compiled JS and CSS.
 
 If you want to test minified files in development, look for the
-`DEBUG =` line in `zproject/settings.py` and set it to `False`.
+`DEBUG =` line in `zproject/default_settings.py` and set it to `False`.
 
 ### How it works in production
 
 A few useful notes are:
-* Zulip installs static assets in production in
-`/home/zulip/prod-static`.  When a new version is deployed, before the
-server is restarted, files are copied into that directory.
-* We use the VFL (Versioned File Layout) strategy, where each file in
+
+- Zulip installs static assets in production in
+  `/home/zulip/prod-static`. When a new version is deployed, before the
+  server is restarted, files are copied into that directory.
+- We use the VFL (versioned file layout) strategy, where each file in
   the codebase (e.g. `favicon.ico`) gets a new name
-  (e.g. `favicon.c55d45ae8c58.ico`) that contains a hash in it.  Each
+  (e.g. `favicon.c55d45ae8c58.ico`) that contains a hash in it. Each
   deployment, has a manifest file
   (e.g. `/home/zulip/deployments/current/staticfiles.json`) that maps
-  codebase filenames to serving filenames for that deployment.  The
+  codebase filenames to serving filenames for that deployment. The
   benefit of this VFL approach is that all the static files for past
   deployments can coexist, which in turn eliminates most classes of
   race condition bugs where browser windows opened just before a
-  deployment can't find their static assets.  It also is necessary for
+  deployment can't find their static assets. It also is necessary for
   any incremental rollout strategy where different clients get
   different versions of the site.
-* Some paths for files (e.g. emoji) are stored in the
+- Some paths for files (e.g. emoji) are stored in the
   `rendered_content` of past messages, and thus cannot be removed
   without breaking the rendering of old messages (or doing a
   mass-rerender of old messages).
 
-### CommonJS/Typescript modules
+### ES6/TypeScript modules
 
-Webpack provides seamless interoperability between different module
-systems such as CommonJS, AMD and ES6. Our JS files are written in the
-CommonJS format, which specifies public functions and variables as
-properties of the special `module.exports` object.  We also currently
-assign said object to the global `window` variable, which is a hack
-allowing us to use modules without importing them with the `require()`
-statement.
+JavaScript modules in the frontend are [ES6
+modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
+that are [transpiled by
+webpack](https://webpack.js.org/api/module-methods/#es6-recommended).
+Any variable, function, etc. can be made public by adding the
+[`export`
+keyword](https://developer.mozilla.org/en-US/docs/web/javascript/reference/statements/export),
+and consumed from another module using the [`import`
+statement](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import).
 
 New modules should ideally be written in TypeScript (though in cases
 where one is moving code from an existing JavaScript module, the new
 commit should just move the code, not translate it to TypeScript).
-
 TypeScript provides more accurate information to development tools,
-allowing for better refactoring, auto-completion and static
-analysis. TypeScript uses an ES6-like module system.  Any declaration
-can be made public by adding the `export` keyword. Consuming
-variables, functions, etc exported from another module should be done
-with the `import` statement as oppose to accessing them from the
-global `window` scope.  Internally our typescript compiler is
-configured to transpile TS to the ES6 module system.
+allowing for better refactoring, auto-completion and static analysis.
+TypeScript also uses the ES6 module system. See our documentation on
+[TypeScript static types](../testing/typescript).
 
-Read more about these module systems here:
-* [TypeScript modules](https://www.typescriptlang.org/docs/handbook/modules.html)
-* [CommonJS](https://nodejs.org/api/modules.html#modules_modules)
+Webpack does not ordinarily allow modules to be accessed directly from
+the browser console, but for debugging convenience, we have a custom
+webpack plugin (`tools/debug-require-webpack-plugin.ts`) that exposes
+a version of the `require()` function to the development environment
+browser console for this purpose. For example, you can access our
+`people` module by evaluating
+`people = require("./static/js/people")`, or the third-party `lodash`
+module with `_ = require("lodash")`. This mechanism is **not** a
+stable API and should not be used for any purpose other than
+interactive debugging.
 
-[Jinja2]: http://jinja.pocoo.org/
-[Handlebars]: https://handlebarsjs.com/
-[trans]: http://jinja.pocoo.org/docs/dev/templates/#i18n
-[i18next]: https://www.i18next.com
-[official]: https://www.i18next.com/plurals.html
+We have one module, `zulip_test`, that’s exposed as a global variable
+using `expose-loader` for direct use in Puppeteer tests and in the
+production browser console. If you need to access a variable or
+function in those scenarios, add it to `zulip_test`. This is also
+**not** a stable API.
+
+[jinja2]: http://jinja.pocoo.org/
+[handlebars]: https://handlebarsjs.com/
+[trans]: https://jinja.palletsprojects.com/en/3.0.x/extensions/#i18n-extension
 [jconditionals]: http://jinja.pocoo.org/docs/2.9/templates/#list-of-control-structures
 [hconditionals]: https://handlebarsjs.com/guide/#block_helpers.html
 [translation]: ../translating/translating.md

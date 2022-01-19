@@ -19,7 +19,7 @@
                "href":"https://bitbucket.org/kolaszek/"
             }
          },
-         "username":"kolaszek",
+         "nickname":"Tomasz Kolaszek",
          "type":"user",
          "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}"
       },
@@ -84,7 +84,7 @@
                               "href":"https://bitbucket.org/kolaszek/"
                            }
                         },
-                        "username":"kolaszek",
+                        "nickname":"Tomasz Kolaszek",
                         "type":"user",
                         "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}"
                      },
@@ -140,7 +140,7 @@
             "href":"https://bitbucket.org/kolaszek/"
          }
       },
-      "username":"kolaszek",
+      "nickname":"Tomasz Kolaszek",
       "type":"user",
       "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}"
    }

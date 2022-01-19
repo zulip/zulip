@@ -40,7 +40,7 @@ integration!
             "ticket_status":"{{ticket.status}}",
             "ticket_priority":"{{ticket.priority}}",
             "requester_name":"{{ticket.requester.name}}",
-            "requester_email":"{{ticket.requester.email}}",
+            "requester_email":"{{ticket.requester.email}}"
         }
     }
     {% endraw %}
@@ -88,7 +88,7 @@ integration!
             "ticket_status":"{{ticket.status}}",
             "ticket_priority":"{{ticket.priority}}",
             "requester_name":"{{ticket.requester.name}}",
-            "requester_email":"{{ticket.requester.email}}",
+            "requester_email":"{{ticket.requester.email}}"
         }
     }
     {% endraw %}

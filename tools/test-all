@@ -4,22 +4,24 @@ set -e
 cd "$(dirname "$0")"/..
 
 # read the options
-TEMP=$(getopt -o f --long force -- "$@")
+TEMP=$(getopt -o "" --long skip-provision-check -- "$@")
 eval set -- "$TEMP"
 
 # extract options.
-while true ; do
+while true; do
     case "$1" in
-        -f|--force)
-            FORCEARG="--force";
-            shift;;
+        --skip-provision-check)
+            FORCEARG="--skip-provision-check"
+            shift
+            ;;
         --)
-            shift;
-            break;;
+            shift
+            break
+            ;;
     esac
 done
 
-function run {
+function run() {
     echo '----'
     printf 'Running'
     printf ' %q' "$@"
@@ -34,17 +36,26 @@ function run {
     fi
 }
 
+printf '\n\e[33;1m'
+echo "Because test-all is very slow, we recommend running individual (sub)suites "
+echo "and relying on CI to run the complete test suite for a fast edit-test cycle.  See"
+echo "  https://zulip.readthedocs.io/en/latest/testing/testing.html#running-tests"
+echo "for details on how to run just the relevant subsets of our tests."
+printf '\e[0m'
+echo
+
 # prep
 run ./tools/check-provision $FORCEARG
-run ./tools/clean-repo
 
 # ci/backend
 run ./tools/lint --groups=backend $FORCEARG
 run ./tools/test-tools
-run ./tools/test-backend --include-webhooks $FORCEARG
+run ./tools/test-backend --include-webhooks --ban-console-output $FORCEARG
 run ./tools/test-migrations
 # Not running SVG optimizing since it's low-churn
 # run ./tools/setup/optimize-svg
+# Not running missing bot avatar detection since it's low churn
+# ./tools/setup/generate_integration_bots_avatars.py --check-missing
 # Not running documentation tests since it takes 20s and only tests documentation
 # run ./tools/test-documentation
 run ./tools/test-help-documentation $FORCEARG
@@ -59,9 +70,10 @@ run ./tools/test-api
 # ci/frontend
 run ./tools/lint --groups=frontend $FORCEARG
 run ./tools/test-js-with-node
+run ./tools/check-schemas
 run ./manage.py makemessages --locale en
 run env PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
 run env PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
-run ./tools/test-js-with-casper $FORCEARG
+run ./tools/test-js-with-puppeteer $FORCEARG
 
 printf '\n\e[32mAll OK!\e[0m\n'

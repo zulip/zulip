@@ -7,22 +7,22 @@
 </div>
 <div class="stacktrace-content">
     {{#each stackframes}}
-    <div data-full-path="{{ full_path }}" data-line-no="{{ line_number }}">
-        <div class="stackframe">
-            <i class="fa fa-caret-right expand"></i>
-            <span class="subtle">at</span>
-            {{#if function_name}}
-            {{ function_name.scope }}<b>{{ function_name.name }}</b>
-            {{/if}}
-            <span class="subtle">{{ show_path }}:{{ line_number }}</span>
-        </div>
-        <div class="code-context" style="display: none">
-            <div class="code-context-content">
-                {{~#each context~}}
-                <div {{#if focus}}class="focus-line"{{/if}}><span class="line-number">{{ line_number }}</span> {{ line }}</div>
-                {{~/each~}}
+        <div data-full-path="{{ full_path }}" data-line-no="{{ line_number }}">
+            <div class="stackframe">
+                <i class="fa fa-caret-right expand"></i>
+                <span class="subtle">at</span>
+                {{#if function_name}}
+                {{ function_name.scope }}<b>{{ function_name.name }}</b>
+                {{/if}}
+                <span class="subtle">{{ show_path }}:{{ line_number }}</span>
+            </div>
+            <div class="code-context" style="display: none">
+                <div class="code-context-content">
+                    {{~#each context~}}
+                        <div {{#if focus}}class="focus-line"{{/if}}><span class="line-number">{{ line_number }}</span> {{ line }}</div>
+                    {{~/each~}}
+                </div>
             </div>
         </div>
-    </div>
     {{/each}}
 </div>

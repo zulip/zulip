@@ -1,156 +1,136 @@
-const general_notifications_table_columns = [
-    /* An array of notification settings of any category like
-    * `stream_notification_settings` which makes a single row of
-    * "Notification triggers" table should follow this order
-    */
-    "visual", "audio", "mobile", "email", "all_mentions",
-];
+import $ from "jquery";
 
-exports.stream_notification_settings = [
-    "enable_stream_desktop_notifications",
-    "enable_stream_audible_notifications",
-    "enable_stream_push_notifications",
-    "enable_stream_email_notifications",
-    "wildcard_mentions_notify",
-];
+import render_stream_specific_notification_row from "../templates/settings/stream_specific_notification_row.hbs";
 
-const pm_mention_notification_settings = [
-    "enable_desktop_notifications",
-    "enable_sounds",
-    "enable_offline_push_notifications",
-    "enable_offline_email_notifications",
-];
+import * as channel from "./channel";
+import {$t} from "./i18n";
+import * as notifications from "./notifications";
+import {page_params} from "./page_params";
+import * as settings_config from "./settings_config";
+import * as settings_org from "./settings_org";
+import * as settings_ui from "./settings_ui";
+import * as stream_edit from "./stream_edit";
+import * as stream_settings_data from "./stream_settings_data";
+import * as unread_ui from "./unread_ui";
+import {user_settings} from "./user_settings";
 
-const desktop_notification_settings = [
-    "pm_content_in_desktop_notifications",
-];
+export const user_settings_panel = {};
 
-const mobile_notification_settings = [
-    "enable_online_push_notifications",
-];
-
-const email_notification_settings = [
-    "enable_digest_emails",
-    "enable_login_emails",
-    "message_content_in_email_notifications",
-    "realm_name_in_notifications",
-];
-
-const other_notification_settings = desktop_notification_settings.concat(
-    ["desktop_icon_count_display"],
-    mobile_notification_settings,
-    email_notification_settings,
-    ["notification_sound"]
-);
-
-exports.all_notification_settings = other_notification_settings.concat(
-    pm_mention_notification_settings,
-    exports.stream_notification_settings
-);
-
-
-function get_notifications_table_row_data(notify_settings) {
-    return general_notifications_table_columns.map((column, index) => {
-        const setting_name = notify_settings[index];
-        if (setting_name === undefined) {
-            return {
-                setting_name: "",
-                is_disabled: true,
-                is_checked: false,
-            };
-        }
-        const checkbox = {
-            setting_name: setting_name,
-            is_disabled: false,
-        };
-        if (column === "mobile") {
-            checkbox.is_disabled = !page_params.realm_push_notifications_enabled;
-        }
-        checkbox.is_checked = page_params[setting_name];
-        return checkbox;
-    });
-}
-
-exports.all_notifications = {
-    general_settings: [
-        {
-            label: i18n.t("Streams"),
-            notification_settings: get_notifications_table_row_data(
-                exports.stream_notification_settings),
-        },
-        {
-            label: i18n.t("PMs, mentions, and alerts"),
-            notification_settings: get_notifications_table_row_data(
-                pm_mention_notification_settings),
-        },
-    ],
-    settings: {
-        desktop_notification_settings: desktop_notification_settings,
-        mobile_notification_settings: mobile_notification_settings,
-        email_notification_settings: email_notification_settings,
-    },
-    show_push_notifications_tooltip: {
-        enable_online_push_notifications: !page_params.realm_push_notifications_enabled,
-    },
-};
-
-exports.desktop_icon_count_display_values = {
-    messages: {
-        code: 1,
-        description: i18n.t("All unreads"),
-    },
-    notifiable: {
-        code: 2,
-        description: i18n.t("Private messages and mentions"),
-    },
-    none: {
-        code: 3,
-        description: i18n.t("None"),
-    },
-};
-
-function change_notification_setting(setting, setting_data, status_element) {
-    const data = {};
-    data[setting] = JSON.stringify(setting_data);
-    settings_ui.do_settings_change(channel.patch, '/json/settings/notifications', data, status_element);
-}
-
-function update_desktop_icon_count_display() {
-    $("#desktop_icon_count_display").val(page_params.desktop_icon_count_display);
-    const count = unread.get_notifiable_count();
-    notifications.update_title_count(count);
-}
-
-exports.set_enable_digest_emails_visibility = function () {
-    if (page_params.realm_digest_emails_enabled) {
-        $('#enable_digest_emails_label').parent().show();
-    } else {
-        $('#enable_digest_emails_label').parent().hide();
+function rerender_ui() {
+    const unmatched_streams_table = $("#stream-specific-notify-table");
+    if (unmatched_streams_table.length === 0) {
+        // If we haven't rendered "notification settings" yet, do nothing.
+        return;
     }
-};
 
-exports.set_up = function () {
-    $('#notification-settings').on('change', 'input, select', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const input_elem = $(e.currentTarget);
-        const setting_name = input_elem.attr("name");
-        change_notification_setting(setting_name,
-                                    settings_org.get_input_element_value(this),
-                                    input_elem.closest('.subsection-parent').find('.alert-notification'));
+    const unmatched_streams =
+        stream_settings_data.get_unmatched_streams_for_notification_settings();
+
+    unmatched_streams_table.find(".stream-row").remove();
+
+    for (const stream of unmatched_streams) {
+        unmatched_streams_table.append(
+            render_stream_specific_notification_row({
+                stream,
+                stream_specific_notification_settings:
+                    settings_config.stream_specific_notification_settings,
+                is_disabled:
+                    settings_config.all_notifications(user_settings)
+                        .show_push_notifications_tooltip,
+            }),
+        );
+    }
+
+    if (unmatched_streams.length === 0) {
+        unmatched_streams_table.css("display", "none");
+    } else {
+        unmatched_streams_table.css("display", "table-row-group");
+    }
+}
+
+function change_notification_setting(setting, value, status_element) {
+    const data = {};
+    data[setting] = value;
+    settings_ui.do_settings_change(channel.patch, "/json/settings", data, status_element);
+}
+
+function update_desktop_icon_count_display(settings_panel) {
+    const container = $(settings_panel.container);
+    const settings_object = settings_panel.settings_object;
+    container
+        .find(".setting_desktop_icon_count_display")
+        .val(settings_object.desktop_icon_count_display);
+    if (!settings_panel.for_realm_settings) {
+        unread_ui.update_unread_counts();
+    }
+}
+
+export function set_notification_batching_ui(container, setting_seconds, force_custom) {
+    const edit_elem = container.find(".email_notification_batching_period_edit_minutes");
+    const valid_period_values = settings_config.email_notifications_batching_period_values.map(
+        (x) => x.value,
+    );
+
+    // We display the custom widget if either the user just selected
+    // custom_period, or the current value cannot be represented with
+    // the existing set of values.
+    const show_edit_elem = force_custom || !valid_period_values.includes(setting_seconds);
+    const select_elem_val = show_edit_elem ? "custom_period" : setting_seconds;
+
+    container.find(".setting_email_notifications_batching_period_seconds").val(select_elem_val);
+    edit_elem.val(setting_seconds / 60);
+    settings_org.change_element_block_display_property(edit_elem.attr("id"), show_edit_elem);
+}
+
+export function set_enable_digest_emails_visibility(settings_panel) {
+    const container = $(settings_panel.container);
+    const for_realm_settings = settings_panel.for_realm_settings;
+    if (page_params.realm_digest_emails_enabled) {
+        if (for_realm_settings) {
+            container.find(".other_email_notifications").show();
+            return;
+        }
+        container.find(".enable_digest_emails_label").parent().show();
+    } else {
+        if (for_realm_settings) {
+            container.find(".other_email_notifications").hide();
+            return;
+        }
+        container.find(".enable_digest_emails_label").parent().hide();
+    }
+}
+
+export function set_enable_marketing_emails_visibility() {
+    const container = $("#user-notification-settings");
+    if (page_params.corporate_enabled) {
+        container.find(".enable_marketing_emails_label").parent().show();
+    } else {
+        container.find(".enable_marketing_emails_label").parent().hide();
+    }
+}
+
+export function set_up(settings_panel) {
+    const container = $(settings_panel.container);
+    const settings_object = settings_panel.settings_object;
+    const notification_sound_elem = $(settings_panel.notification_sound_elem);
+    const for_realm_settings = settings_panel.for_realm_settings;
+
+    container.find(".play_notification_sound").on("click", () => {
+        if (settings_object.notification_sound !== "none") {
+            notification_sound_elem[0].play();
+        }
     });
 
-    update_desktop_icon_count_display();
+    update_desktop_icon_count_display(settings_panel);
 
-    $("#play_notification_sound").click(function () {
-        $("#notifications-area").find("audio")[0].play();
-    });
+    const notification_sound_dropdown = container.find(".setting_notification_sound");
+    notification_sound_dropdown.val(settings_object.notification_sound);
 
-    const notification_sound_dropdown = $("#notification_sound");
-    notification_sound_dropdown.val(page_params.notification_sound);
-
-    $("#enable_sounds, #enable_stream_audible_notifications").change(function () {
-        if ($("#enable_stream_audible_notifications").prop("checked") || $("#enable_sounds").prop("checked")) {
+    container.find(".enable_sounds, .enable_stream_audible_notifications").on("change", () => {
+        if (
+            container.find(".enable_stream_audible_notifications").prop("checked") ||
+            container.find(".enable_sounds").prop("checked")
+        ) {
             notification_sound_dropdown.prop("disabled", false);
             notification_sound_dropdown.parent().removeClass("control-label-disabled");
         } else {
@@ -158,23 +138,108 @@ exports.set_up = function () {
             notification_sound_dropdown.parent().addClass("control-label-disabled");
         }
     });
-    exports.set_enable_digest_emails_visibility();
-};
 
-exports.update_page = function () {
-    for (const setting of exports.all_notification_settings) {
-        if (setting === 'enable_offline_push_notifications'
-            && !page_params.realm_push_notifications_enabled) {
-            // If push notifications are disabled at the realm level,
-            // we should just leave the checkbox always off.
-            continue;
-        } else if (setting === 'desktop_icon_count_display') {
-            update_desktop_icon_count_display();
-            continue;
+    set_notification_batching_ui(
+        container,
+        settings_object.email_notifications_batching_period_seconds,
+    );
+
+    set_enable_digest_emails_visibility(settings_panel);
+
+    if (for_realm_settings) {
+        // For the realm-level defaults page, we use the common
+        // settings_org.js handlers, so we can return early here.
+        return;
+    }
+
+    // Common handler for sending requests to the server when an input
+    // element is changed.
+    container.find(".notification-settings-form").on("change", "input, select", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const input_elem = $(e.currentTarget);
+        if (input_elem.parents("#stream-specific-notify-table").length) {
+            stream_edit.stream_setting_changed(e, true);
+            return;
+        }
+        let setting_name = input_elem.attr("name");
+        let setting_value = settings_org.get_input_element_value(this);
+
+        if (setting_name === "email_notifications_batching_period_seconds") {
+            if (input_elem.val() === "custom_period") {
+                set_notification_batching_ui(
+                    container,
+                    settings_object.email_notifications_batching_period_seconds,
+                    true,
+                );
+                return;
+            }
+            set_notification_batching_ui(container, setting_value);
+        } else if (setting_name === "email_notification_batching_period_edit_minutes") {
+            // This field is in minutes, but the actual setting is seconds
+            setting_value = setting_value * 60;
+            set_notification_batching_ui(container, setting_value);
+            setting_name = "email_notifications_batching_period_seconds";
         }
 
-        $("#" + setting).prop('checked', page_params[setting]);
-    }
-};
+        change_notification_setting(
+            setting_name,
+            setting_value,
+            input_elem.closest(".subsection-parent").find(".alert-notification"),
+        );
+    });
 
-window.settings_notifications = exports;
+    // This final patch of settings are ones for which we
+    // intentionally don't let organization administrators set
+    // organization-level defaults.
+    container.find(".send_test_notification").on("click", () => {
+        notifications.send_test_notification(
+            $t({defaultMessage: "This is what a Zulip notification looks like."}),
+        );
+    });
+
+    set_enable_marketing_emails_visibility();
+    rerender_ui();
+}
+
+export function update_page(settings_panel) {
+    const container = $(settings_panel.container);
+    const settings_object = settings_panel.settings_object;
+    for (const setting of settings_config.all_notification_settings) {
+        switch (setting) {
+            case "enable_offline_push_notifications": {
+                if (!page_params.realm_push_notifications_enabled) {
+                    // If push notifications are disabled at the realm level,
+                    // we should just leave the checkbox always off.
+                    break;
+                }
+                container.find(`.${CSS.escape(setting)}`).prop("checked", settings_object[setting]);
+                break;
+            }
+            case "desktop_icon_count_display": {
+                update_desktop_icon_count_display(settings_panel);
+                break;
+            }
+            case "email_notifications_batching_period_seconds": {
+                set_notification_batching_ui(container, settings_object[setting]);
+                break;
+            }
+            case "notification_sound": {
+                container.find(`.setting_${CSS.escape(setting)}`).val(settings_object[setting]);
+                break;
+            }
+            default: {
+                container.find(`.${CSS.escape(setting)}`).prop("checked", settings_object[setting]);
+                break;
+            }
+        }
+    }
+    rerender_ui();
+}
+
+export function initialize() {
+    user_settings_panel.container = "#user-notification-settings";
+    user_settings_panel.settings_object = user_settings;
+    user_settings_panel.notification_sound_elem = "#user-notification-sound-audio";
+    user_settings_panel.for_realm_settings = false;
+}

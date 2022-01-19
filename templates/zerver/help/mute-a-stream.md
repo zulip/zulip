@@ -3,11 +3,12 @@
 Messages from muted streams do not show up in **All messages** or generate
 notifications, unless you are
 [mentioned](/help/mention-a-user-or-group). Messages from muted streams
-do not generate [alert word](/help/add-an-alert-word) notifications.
+do not generate [alert word](/help/pm-mention-alert-notifications#alert-words) notifications.
 
 Muted streams still appear in the left sidebar, though they are grayed out.
 
 !!! warn ""
+
     **Note**: Some parts of the Zulip experience may start to degrade
     if you receive more than a few hundred muted messages a day.
 
@@ -32,6 +33,8 @@ Muted streams still appear in the left sidebar, though they are grayed out.
 
 {end_tabs}
 
-## Related Articles
+## Related articles
 
 * [Mute a topic](/help/mute-a-topic)
+
+* [Mute a user](/help/mute-a-user)

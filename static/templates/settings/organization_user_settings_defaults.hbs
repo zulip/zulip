@@ -1,0 +1,37 @@
+<div id="realm-user-default-settings" class="settings-section" data-name="organization-level-user-defaults">
+    <div class="tip">
+        {{#tr}}
+            Configure the <z-link>default personal preference settings</z-link>
+            for new users joining your organization.
+            {{#*inline "z-link"}}<a href="/help/configure-default-new-user-settings" target="_blank" rel="noopener noreferrer">{{> @partial-block }}</a>{{/inline}}
+        {{/tr}}
+    </div>
+    {{> display_settings prefix="realm_" for_realm_settings=true}}
+
+    {{> notification_settings prefix="realm_" for_realm_settings=true}}
+
+    <div class="form-horizontal privacy_settings org-subsection-parent">
+        <div class="subsection-header inline-block">
+            <h3 class="inline-block">{{t "Privacy settings" }}</h3>
+            {{> settings_save_discard_widget section_name="privacy-setting" show_only_indicator=false }}
+        </div>
+        {{> settings_checkbox
+          setting_name="presence_enabled"
+          is_checked=settings_object.presence_enabled
+          label=settings_label.realm_presence_enabled
+          help_link="/help/status-and-availability"
+          prefix="realm_"}}
+    </div>
+
+    <div class="form-horizontal other_settings org-subsection-parent">
+        <div class="subsection-header inline-block">
+            <h3 class="inline-block">{{t "Other settings" }}</h3>
+            {{> settings_save_discard_widget section_name="other-setting" show_only_indicator=false }}
+        </div>
+        {{> settings_checkbox
+          setting_name="enter_sends"
+          is_checked=settings_object.enter_sends
+          label=settings_label.realm_enter_sends
+          prefix="realm_"}}
+    </div>
+</div>

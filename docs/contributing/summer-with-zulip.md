@@ -34,8 +34,10 @@ materials](https://developers.google.com/open-source/gsoc/resources/manual).
 - Mentors and students should stay in close contact, both with each other and
   the rest of the Zulip community. We recommend the following:
 
-  - Daily checkins on #checkins on chat.zulip.org; ideally at some time of day
-    you can both be online, but when not possible, async is better than nothing!
+  - Daily checkins on #checkins in
+    [the Zulip development community](https://zulip.com/development-community/); ideally
+    at some time of day you can both be online, but when not
+    possible, async is better than nothing!
 
     - We prefer checkins in public streams, since it makes easier for
       other contributors to keep track of what everyone else is
@@ -54,9 +56,9 @@ materials](https://developers.google.com/open-source/gsoc/resources/manual).
     need help learning, and time-saving tricks.
 
   - If you need feedback from the community / decisions made, ask in the
-    appropriate public stream on [chat.zulip.org](https://chat.zulip.org). Often
-    someone can provide important context that you need to succeed in your
-    project.
+    appropriate public stream in
+    [the Zulip development community](https://zulip.com/development-community/). Often
+    someone can provide important context that you need to succeed in your project.
 
   - Communicate clearly, especially in public places! You'll get much more
     useful feedback to a well-written Zulip message or GitHub issue comment than
@@ -88,14 +90,14 @@ materials](https://developers.google.com/open-source/gsoc/resources/manual).
 
   - If you work in one a smaller Zulip project
     (e.g. `zulip-terminal`), follow the project on GitHub so you can
-    keep track of what's happening there.  For folks working in
+    keep track of what's happening there. For folks working in
     `zulip/zulip`, doing that will send you too many notifications.
     So instead, we recommend that you join Zulip's GitHub teams that
     relate to your projects and/or interests, so that you see new
-    issues and PRs coming in that are relevant to your work.  When we
+    issues and PRs coming in that are relevant to your work. When we
     label an issue or PR with one of our area labels, `zulipbot` will
     automatically mention the relevant teams for that area,
-    subscribing you to those issues/PR threads.  You can browse the
+    subscribing you to those issues/PR threads. You can browse the
     area teams here: https://github.com/orgs/zulip/teams (You need to
     be a member of the Zulip organization to see them;
     ask Tim for an invite if needed).
@@ -225,7 +227,6 @@ materials](https://developers.google.com/open-source/gsoc/resources/manual).
   your contributions to the open source world this summer will be something you
   can be proud of for the rest of your life.
 
-
 ## What makes a successful summer
 
 Success for the student means a few things, in order of importance:
@@ -247,7 +248,6 @@ Success for the student means a few things, in order of importance:
   student has implemented. That section of code should be more readable,
   better-tested, and have clearer documentation.
 
-
 ## Extra notes for mentors
 
 - You're personally accountable for your student having a successful summer. If
@@ -268,9 +268,9 @@ Success for the student means a few things, in order of importance:
   plan it, you can get several round trips in per day even with big timezone
   differences like USA + India.
 
--  What exactly you focus on in your mentorship will vary from week to week and
-   depend somewhat on what the student needs. It might be any combination of
-   these things:
+- What exactly you focus on in your mentorship will vary from week to week and
+  depend somewhat on what the student needs. It might be any combination of
+  these things:
 
   - Helping the student plan, chunk, and prioritize their work.
 

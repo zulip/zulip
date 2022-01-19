@@ -1,14 +1,12 @@
 """Webhooks for external integrations."""
-import logging
 from typing import Any, Dict, List
 
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
 
 from zerver.decorator import authenticated_rest_api_view
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_error, json_success
+from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -30,6 +28,7 @@ TICKET_CREATION_TEMPLATE = """
 * **Status**: {status}
 """.strip()
 
+
 class TicketDict(Dict[str, Any]):
     """
     A helper class to turn a dictionary with ticket information into
@@ -50,8 +49,17 @@ def property_name(property: str, index: int) -> str:
     information through the API, since only FlightCar uses this integration,
     hardcode their statuses.
     """
-    statuses = ["", "", "Open", "Pending", "Resolved", "Closed",
-                "Waiting on Customer", "Job Application", "Monthly"]
+    statuses = [
+        "",
+        "",
+        "Open",
+        "Pending",
+        "Resolved",
+        "Closed",
+        "Waiting on Customer",
+        "Job Application",
+        "Monthly",
+    ]
     priorities = ["", "Low", "Medium", "High", "Urgent"]
 
     name = ""
@@ -78,8 +86,11 @@ def parse_freshdesk_event(event_string: str) -> List[str]:
         # This is a property change event, like {status:{from:4,to:6}}. Pull out
         # the property, from, and to states.
         property, _, from_state, _, to_state = data
-        return [property, property_name(property, int(from_state)),
-                property_name(property, int(to_state))]
+        return [
+            property,
+            property_name(property, int(from_state)),
+            property_name(property, int(to_state)),
+        ]
 
 
 def format_freshdesk_note_message(ticket: TicketDict, event_info: List[str]) -> str:
@@ -90,7 +101,7 @@ def format_freshdesk_note_message(ticket: TicketDict, event_info: List[str]) -> 
         email=ticket.requester_email,
         note_type=note_type,
         ticket_id=ticket.id,
-        ticket_url=ticket.url
+        ticket_url=ticket.url,
     )
 
     return content
@@ -108,7 +119,7 @@ def format_freshdesk_property_change_message(ticket: TicketDict, event_info: Lis
         ticket_url=ticket.url,
         property_name=event_info[0].capitalize(),
         old=event_info[1],
-        new=event_info[2]
+        new=event_info[2],
     )
 
     return content
@@ -125,35 +136,24 @@ def format_freshdesk_ticket_creation_message(ticket: TicketDict) -> str:
         description=cleaned_description,
         type=ticket.type,
         priority=ticket.priority,
-        status=ticket.status
+        status=ticket.status,
     )
 
     return content
 
+
 @authenticated_rest_api_view(webhook_client_name="Freshdesk")
 @has_request_variables
-def api_freshdesk_webhook(request: HttpRequest, user_profile: UserProfile,
-                          payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
+def api_freshdesk_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type="body"),
+) -> HttpResponse:
     ticket_data = payload["freshdesk_webhook"]
-
-    required_keys = [
-        "triggered_event", "ticket_id", "ticket_url", "ticket_type",
-        "ticket_subject", "ticket_description", "ticket_status",
-        "ticket_priority", "requester_name", "requester_email",
-    ]
-
-    for key in required_keys:
-        if ticket_data.get(key) is None:
-            logging.warning("Freshdesk webhook error. Payload was:")
-            logging.warning(request.body)
-            return json_error(_("Missing key %s in JSON") % (key,))
 
     ticket = TicketDict(ticket_data)
 
-    subject = "#{ticket_id}: {ticket_subject}".format(
-        ticket_id=ticket.id,
-        ticket_subject=ticket.subject
-    )
+    subject = f"#{ticket.id}: {ticket.subject}"
     event_info = parse_freshdesk_event(ticket.triggered_event)
 
     if event_info[1] == "created":

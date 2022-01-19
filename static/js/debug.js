@@ -1,15 +1,8 @@
 /* eslint-disable no-console */
 
-/* WARNING:
-
-    This file is only included when Django's DEBUG = True and your
-    host is in INTERNAL_IPS.
-
-    Do not commit any code elsewhere which uses these functions.
-    They are for debugging use only.
-
-    The file may still be accessible under other circumstances, so do
-    not put sensitive information here. */
+// This module is included from webpack in development mode.  To access it from
+// the browser console, run:
+//   var debug = require("./static/js/debug");
 
 /*
       debug.print_elapsed_time("foo", foo)
@@ -18,10 +11,10 @@
     to the console along with the name "foo". */
 
 export function print_elapsed_time(name, fun) {
-    const t0 = new Date().getTime();
+    const t0 = Date.now();
     const out = fun();
-    const t1 = new Date().getTime();
-    console.log(name + ': ' + (t1 - t0) + ' ms');
+    const t1 = Date.now();
+    console.log(name + ": " + (t1 - t0) + " ms");
     return out;
 }
 
@@ -30,11 +23,9 @@ export function check_duplicate_ids() {
     const collisions = [];
     let total_collisions = 0;
 
-    Array.prototype.slice.call(document.querySelectorAll("*")).forEach(function (o) {
+    for (const o of Array.prototype.slice.call(document.querySelectorAll("*"))) {
         if (o.id && ids.has(o.id)) {
-            const el = collisions.find(function (c) {
-                return c.id === o.id;
-            });
+            const el = collisions.find((c) => c.id === o.id);
 
             ids.add(o.id);
             total_collisions += 1;
@@ -44,8 +35,17 @@ export function check_duplicate_ids() {
                 collisions.push({
                     id: o.id,
                     count: 1,
-                    node: "<" + tag + " className='" + o.className + "' id='" + o.id + "'>" +
-                          "</" + tag + ">",
+                    node:
+                        "<" +
+                        tag +
+                        " className='" +
+                        o.className +
+                        "' id='" +
+                        o.id +
+                        "'>" +
+                        "</" +
+                        tag +
+                        ">",
                 });
             } else {
                 el.count += 1;
@@ -53,11 +53,11 @@ export function check_duplicate_ids() {
         } else if (o.id) {
             ids.add(o.id);
         }
-    });
+    }
 
     return {
-        collisions: collisions,
-        total_collisions: total_collisions,
+        collisions,
+        total_collisions,
     };
 }
 
@@ -91,39 +91,37 @@ export function check_duplicate_ids() {
  * The _rest_of_iteration section is the region of the iteration body
  * after section b.
  */
-export function IterationProfiler() {
-    this.sections = new Map();
-    this.last_time = window.performance.now();
-}
+export class IterationProfiler {
+    sections = new Map();
+    last_time = window.performance.now();
 
-IterationProfiler.prototype = {
-    iteration_start: function () {
-        this.section('_iteration_overhead');
-    },
+    iteration_start() {
+        this.section("_iteration_overhead");
+    }
 
-    iteration_stop: function () {
+    iteration_stop() {
         const now = window.performance.now();
         const diff = now - this.last_time;
         if (diff > 1) {
             this.sections.set(
                 "_rest_of_iteration",
-                (this.sections.get("_rest_of_iteration") || 0) + diff
+                (this.sections.get("_rest_of_iteration") || 0) + diff,
             );
         }
         this.last_time = now;
-    },
+    }
 
-    section: function (label) {
+    section(label) {
         const now = window.performance.now();
         this.sections.set(label, (this.sections.get(label) || 0) + (now - this.last_time));
         this.last_time = now;
-    },
+    }
 
-    done: function () {
-        this.section('_iteration_overhead');
+    done() {
+        this.section("_iteration_overhead");
 
         for (const [prop, cost] of this.sections) {
             console.log(prop, cost);
         }
-    },
-};
+    }
+}

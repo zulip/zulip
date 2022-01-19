@@ -1,9 +1,9 @@
 Puppet::Type.newtype(:apache2site) do
-    ensurable
-    newparam(:name) do
-       desc "The name of the site to enable"
-       isnamevar
-    end
+  ensurable
+  newparam(:name) do
+    desc "The name of the site to enable"
+    isnamevar
+  end
 end
 
 Puppet::Type.type(:apache2site).provide(:apache2site) do

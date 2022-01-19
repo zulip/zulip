@@ -10,6 +10,19 @@ harakiri=20
 buffer-size=<%= @uwsgi_buffer_size %>
 listen=<%= @uwsgi_listen_backlog_limit %>
 post-buffering=4096
-env= LANG=en_US.UTF-8
+env= LANG=C.UTF-8
 uid=zulip
 gid=zulip
+
+stats=/home/zulip/deployments/uwsgi-stats
+
+<% if @uwsgi_rolling_restart != '' -%>
+master-fifo=/home/zulip/deployments/uwsgi-control
+# lazy-apps are required for rolling restarts:
+# https://uwsgi-docs.readthedocs.io/en/latest/articles/TheArtOfGracefulReloading.html#preforking-vs-lazy-apps-vs-lazy
+lazy-apps=true
+<% end -%>
+
+ignore-sigpipe = true
+ignore-write-errors = true
+disable-write-exception = true

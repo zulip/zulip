@@ -1,12 +1,15 @@
 """
-    This module stores data for "External Account" custom profile field.
+    This module stores data for "external account" custom profile field.
 """
-from typing import Optional
-from django.utils.translation import ugettext as _
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext as _
 
-from zerver.lib.validator import check_required_string, \
-    check_external_account_url_pattern, check_dict_only
 from zerver.lib.types import ProfileFieldData
+from zerver.lib.validator import (
+    check_dict_only,
+    check_external_account_url_pattern,
+    check_required_string,
+)
 
 # Default external account fields are by default available
 # to realm admins, where realm admin only need to select
@@ -15,7 +18,7 @@ from zerver.lib.types import ProfileFieldData
 # text: Field text for admins - custom profile field in org settngs view
 # name: Field label or name - user profile in user settings view
 # hint: Field hint for realm users
-# url_patter: Field url linkifier
+# url_pattern: Field URL linkifier
 DEFAULT_EXTERNAL_ACCOUNTS = {
     "twitter": {
         "text": "Twitter",
@@ -24,28 +27,27 @@ DEFAULT_EXTERNAL_ACCOUNTS = {
         "hint": "Enter your Twitter username",
     },
     "github": {
-        "text": 'GitHub',
+        "text": "GitHub",
         "url_pattern": "https://github.com/%(username)s",
         "name": "GitHub",
         "hint": "Enter your GitHub username",
     },
 }
 
-def validate_external_account_field_data(field_data: ProfileFieldData) -> Optional[str]:
-    field_validator = check_dict_only(
-        [('subtype', check_required_string)],
-        [('url_pattern', check_external_account_url_pattern)],
-    )
-    error = field_validator('field_data', field_data)
-    if error:
-        return error
 
-    field_subtype = field_data.get('subtype')
+def validate_external_account_field_data(field_data: ProfileFieldData) -> ProfileFieldData:
+    field_validator = check_dict_only(
+        [("subtype", check_required_string)],
+        [("url_pattern", check_external_account_url_pattern)],
+    )
+    field_validator("field_data", field_data)
+
+    field_subtype = field_data.get("subtype")
     if field_subtype not in DEFAULT_EXTERNAL_ACCOUNTS.keys():
         if field_subtype == "custom":
-            if 'url_pattern' not in field_data.keys():
-                return _("Custom external account must define url pattern")
+            if "url_pattern" not in field_data.keys():
+                raise ValidationError(_("Custom external account must define URL pattern"))
         else:
-            return _("Invalid external account type")
+            raise ValidationError(_("Invalid external account type"))
 
-    return None
+    return field_data

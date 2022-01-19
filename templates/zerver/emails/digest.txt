@@ -9,13 +9,13 @@
     {{ new_streams.plain|display_list(1000) }}.
 {% endif %}
 
-Click here to log in to Zulip and catch up: {{ realm_uri }}.
+{% trans organization_uri=realm_uri %}Click here to log in to Zulip and catch up: {{ organization_uri }}.{% endtrans %}
 
 --
-Manage email preferences:
+{% trans %}Manage email preferences:{% endtrans %}
 
 {{ realm_uri }}/#settings/notifications
 
-Unsubscribe from digest emails:
+{% trans %}Unsubscribe from digest emails:{% endtrans %}
 
 {{ unsubscribe_link }}

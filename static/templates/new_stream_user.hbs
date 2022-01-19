@@ -1,0 +1,5 @@
+<label class="checkbox add-user-label" id="user_checkbox_{{user_id}}">
+    <input type="checkbox" name="user" {{#if checked}}checked="checked"{{#if disabled}} disabled="disabled"{{/if}}{{/if}} data-user-id="{{user_id}}"/>
+    <span></span>
+    {{full_name}} {{#if show_email}}({{email}}){{else}}({{#tr}}User ID: {user_id}; <em>email hidden</em>{{/tr}}){{/if}}
+</label>

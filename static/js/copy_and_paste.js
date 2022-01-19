@@ -1,4 +1,10 @@
-const TurndownService = require("turndown/lib/turndown.cjs.js");
+import $ from "jquery";
+import TurndownService from "turndown";
+
+import * as compose_ui from "./compose_ui";
+import * as message_lists from "./message_lists";
+import {page_params} from "./page_params";
+import * as rows from "./rows";
 
 function find_boundary_tr(initial_tr, iterate_row) {
     let j;
@@ -9,7 +15,7 @@ function find_boundary_tr(initial_tr, iterate_row) {
     // parent tr, we should let the browser handle the copy-paste
     // entirely on its own
     if (tr.length === 0) {
-        return;
+        return undefined;
     }
 
     // If the selection boundary is on a table row that does not have an
@@ -18,11 +24,11 @@ function find_boundary_tr(initial_tr, iterate_row) {
     // To ensure we can't enter an infinite loop, bail out (and let the
     // browser handle the copy-paste on its own) if we don't hit what we
     // are looking for within 10 rows.
-    for (j = 0; !tr.is('.message_row') && j < 10; j += 1) {
+    for (j = 0; !tr.is(".message_row") && j < 10; j += 1) {
         tr = iterate_row(tr);
     }
     if (j === 10) {
-        return;
+        return undefined;
     } else if (j !== 0) {
         // If we updated tr, then we are not dealing with a selection
         // that is entirely within one td, and we can skip the same td
@@ -34,11 +40,13 @@ function find_boundary_tr(initial_tr, iterate_row) {
 }
 
 function construct_recipient_header(message_row) {
-    const message_header_content = rows.get_message_recipient_header(message_row)
+    const message_header_content = rows
+        .get_message_recipient_header(message_row)
         .text()
         .replace(/\s+/g, " ")
-        .replace(/^\s/, "").replace(/\s$/, "");
-    return $('<p>').append($('<strong>').text(message_header_content));
+        .replace(/^\s/, "")
+        .replace(/\s$/, "");
+    return $("<p>").append($("<strong>").text(message_header_content));
 }
 
 /*
@@ -57,13 +65,15 @@ how modern browsers deal with copy/paste.  Just test
 your changes carefully.
 */
 function construct_copy_div(div, start_id, end_id) {
-    const start_row = current_msg_list.get_row(start_id);
+    const copy_rows = rows.visible_range(start_id, end_id);
+
+    const start_row = copy_rows[0];
     const start_recipient_row = rows.get_message_recipient_row(start_row);
     const start_recipient_row_id = rows.id_for_recipient_row(start_recipient_row);
     let should_include_start_recipient_header = false;
-
     let last_recipient_row_id = start_recipient_row_id;
-    for (let row = start_row; rows.id(row) <= end_id; row = rows.next_visible(row)) {
+
+    for (const row of copy_rows) {
         const recipient_row_id = rows.id_for_recipient_row(rows.get_message_recipient_row(row));
         // if we found a message from another recipient,
         // it means that we have messages from several recipients,
@@ -74,7 +84,7 @@ function construct_copy_div(div, start_id, end_id) {
             last_recipient_row_id = recipient_row_id;
             should_include_start_recipient_header = true;
         }
-        const message = current_msg_list.get(rows.id(row));
+        const message = message_lists.current.get(rows.id(row));
         const message_firstp = $(message.content).slice(0, 1);
         message_firstp.prepend(message.sender_full_name + ": ");
         div.append(message_firstp);
@@ -88,25 +98,24 @@ function construct_copy_div(div, start_id, end_id) {
 
 function select_div(div, selection) {
     div.css({
-        position: 'absolute',
-        left: '-99999px',
-        // Color and background is made according to "day mode"
+        position: "absolute",
+        left: "-99999px",
+        // Color and background is made according to "light theme"
         // exclusively here because when copying the content
         // into, say, Gmail compose box, the styles come along.
         // This is done to avoid copying the content with dark
-        // background when using the app in night mode.
+        // background when using the app in dark theme.
         // We can avoid other custom styles since they are wrapped
         // inside another parent such as `.message_content`.
-        color: '#333',
-        background: '#FFF',
-    })
-        .attr('id', 'copytempdiv');
-    $('body').append(div);
+        color: "#333",
+        background: "#FFF",
+    }).attr("id", "copytempdiv");
+    $("body").append(div);
     selection.selectAllChildren(div[0]);
 }
 
 function remove_div(div, ranges, selection) {
-    window.setTimeout(function () {
+    window.setTimeout(() => {
         selection = window.getSelection();
         selection.removeAllRanges();
 
@@ -114,13 +123,13 @@ function remove_div(div, ranges, selection) {
             selection.addRange(range);
         }
 
-        $('#copytempdiv').remove();
+        $("#copytempdiv").remove();
     }, 0);
 }
 
-exports.copy_handler = function () {
+export function copy_handler() {
     // This is the main handler for copying message content via
-    // `ctrl+C` in Zulip (note that this is totally independent of the
+    // `Ctrl+C` in Zulip (note that this is totally independent of the
     // "select region" copy behavior on Linux; that is handled
     // entirely by the browser, our HTML layout, and our use of the
     // no-select/auto-select CSS classes).  We put considerable effort
@@ -129,32 +138,32 @@ exports.copy_handler = function () {
     //
     // * If the selection is contained within a single message, we
     //   want to just copy the portion that was selected, which we
-    //   implement by letting the browser handle the ctrl+C event.
+    //   implement by letting the browser handle the Ctrl+C event.
     //
     // * Otherwise, we want to copy the bodies of all messages that
     //   were partially covered by the selection.
 
     const selection = window.getSelection();
-    const analysis = exports.analyze_selection(selection);
+    const analysis = analyze_selection(selection);
     const ranges = analysis.ranges;
     const start_id = analysis.start_id;
     const end_id = analysis.end_id;
     const skip_same_td_check = analysis.skip_same_td_check;
-    const div = $('<div>');
+    const div = $("<div>");
 
     if (start_id === undefined || end_id === undefined) {
         // In this case either the starting message or the ending
         // message is not defined, so this is definitely not a
         // multi-message selection and we can let the browser handle
         // the copy.
-        document.execCommand('copy');
+        document.execCommand("copy");
         return;
     }
 
     if (!skip_same_td_check && start_id === end_id) {
         // Check whether the selection both starts and ends in the
         // same message.  If so, Let the browser handle this.
-        document.execCommand('copy');
+        document.execCommand("copy");
         return;
     }
 
@@ -172,11 +181,11 @@ exports.copy_handler = function () {
     // Select div so that the browser will copy it
     // instead of copying the original selection
     select_div(div, selection);
-    document.execCommand('copy');
+    document.execCommand("copy");
     remove_div(div, ranges, selection);
-};
+}
 
-exports.analyze_selection = function (selection) {
+export function analyze_selection(selection) {
     // Here we analyze our selection to determine if part of a message
     // or multiple messages are selected.
     //
@@ -208,9 +217,10 @@ exports.analyze_selection = function (selection) {
         ranges.push(range);
 
         startc = $(range.startContainer);
-        start_data = find_boundary_tr($(startc.parents('.selectable_row, .message_header')[0]), function (row) {
-            return row.next();
-        });
+        start_data = find_boundary_tr(
+            $(startc.parents(".selectable_row, .message_header")[0]),
+            (row) => row.next(),
+        );
         if (start_data === undefined) {
             // Skip any selection sections that don't intersect a message.
             continue;
@@ -227,17 +237,15 @@ exports.analyze_selection = function (selection) {
         // This handles the issue that Chrome seems to like selecting
         // the compose_close button when you go off the end of the
         // last message
-        if (endc.attr('id') === "bottom_whitespace" || endc.attr('id') === "compose_close") {
+        if (endc.attr("id") === "bottom_whitespace" || endc.attr("id") === "compose_close") {
             initial_end_tr = $(".message_row").last();
             // The selection goes off the end of the message feed, so
             // this is a multi-message selection.
             skip_same_td_check = true;
         } else {
-            initial_end_tr = $(endc.parents('.selectable_row')[0]);
+            initial_end_tr = $(endc.parents(".selectable_row")[0]);
         }
-        end_data = find_boundary_tr(initial_end_tr, function (row) {
-            return row.prev();
-        });
+        end_data = find_boundary_tr(initial_end_tr, (row) => row.prev());
 
         if (end_data === undefined) {
             // Skip any selection sections that don't intersect a message.
@@ -255,35 +263,35 @@ exports.analyze_selection = function (selection) {
     }
 
     return {
-        ranges: ranges,
-        start_id: start_id,
-        end_id: end_id,
-        skip_same_td_check: skip_same_td_check,
+        ranges,
+        start_id,
+        end_id,
+        skip_same_td_check,
     };
-};
+}
 
-exports.paste_handler_converter = function (paste_html) {
+export function paste_handler_converter(paste_html) {
     const turndownService = new TurndownService();
-    turndownService.addRule('headings', {
-        filter: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
-        replacement: function (content) {
+    turndownService.addRule("headings", {
+        filter: ["h1", "h2", "h3", "h4", "h5", "h6"],
+        replacement(content) {
             return content;
         },
     });
-    turndownService.addRule('emphasis', {
-        filter: ['em', 'i'],
-        replacement: function (content) {
-            return '*' + content + '*';
+    turndownService.addRule("emphasis", {
+        filter: ["em", "i"],
+        replacement(content) {
+            return "*" + content + "*";
         },
     });
     // Checks for raw links without custom text or title.
-    turndownService.addRule('links', {
-        filter: function (node) {
-            return node.nodeName === "A" &&
-                node.href === node.innerHTML &&
-                node.href === node.title;
+    turndownService.addRule("links", {
+        filter(node) {
+            return (
+                node.nodeName === "A" && node.href === node.innerHTML && node.href === node.title
+            );
         },
-        replacement: function (content) {
+        replacement(content) {
             return content;
         },
     });
@@ -291,14 +299,14 @@ exports.paste_handler_converter = function (paste_html) {
     let markdown_text = turndownService.turndown(paste_html);
 
     // Checks for escaped ordered list syntax.
-    markdown_text = markdown_text.replace(/^(\W* {0,3})(\d+)\\\. /gm, '$1$2. ');
+    markdown_text = markdown_text.replace(/^(\W* {0,3})(\d+)\\\. /gm, "$1$2. ");
 
     // Removes newlines before the start of a list and between list elements.
-    markdown_text = markdown_text.replace(/\n+([*+-])/g, '\n$1');
+    markdown_text = markdown_text.replace(/\n+([*+-])/g, "\n$1");
     return markdown_text;
-};
+}
 
-exports.paste_handler = function (event) {
+export function paste_handler(event) {
     const clipboardData = event.originalEvent.clipboardData;
     if (!clipboardData) {
         // On IE11, ClipboardData isn't defined.  One can instead
@@ -310,11 +318,11 @@ exports.paste_handler = function (event) {
     }
 
     if (clipboardData.getData) {
-        const paste_html = clipboardData.getData('text/html');
+        const paste_html = clipboardData.getData("text/html");
         if (paste_html && page_params.development_environment) {
-            const text = exports.paste_handler_converter(paste_html);
-            const mdImageRegex = /^!\[.*\]\(.*\)$/;
-            if (text.match(mdImageRegex)) {
+            const text = paste_handler_converter(paste_html);
+            const mdImageRegex = /^!\[.*]\(.*\)$/;
+            if (mdImageRegex.test(text)) {
                 // This block catches cases where we are pasting an
                 // image into Zulip, which is handled by upload.js.
                 return;
@@ -324,11 +332,9 @@ exports.paste_handler = function (event) {
             compose_ui.insert_syntax_and_focus(text);
         }
     }
-};
+}
 
-exports.initialize = function () {
-    $("#compose-textarea").bind('paste', exports.paste_handler);
-    $('body').on('paste', '#message_edit_form', exports.paste_handler);
-};
-
-window.copy_and_paste = exports;
+export function initialize() {
+    $("#compose-textarea").on("paste", paste_handler);
+    $("body").on("paste", ".message_edit_form", paste_handler);
+}

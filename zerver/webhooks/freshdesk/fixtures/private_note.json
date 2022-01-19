@@ -9,6 +9,6 @@
         "ticket_status":"Open",
         "ticket_priority":"Medium",
     "requester_name":"Requester Bob",
-        "requester_email":"requester-bob@example.com",
+        "requester_email":"requester-bob@example.com"
     }
 }

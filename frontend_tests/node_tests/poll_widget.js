@@ -1,167 +1,230 @@
-zrequire('poll_widget');
+"use strict";
 
-set_global('$', global.make_zjquery());
+const {strict: assert} = require("assert");
 
-set_global('people', {});
-set_global('blueslip', global.make_zblueslip());
+const {zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
+const $ = require("../zjsunit/zjquery");
 
-const noop = () => {};
-const return_false = () => false;
-const return_true = () => true;
+const {PollData} = zrequire("../../static/shared/js/poll_data");
 
-run_test('poll_data_holder my question', () => {
+const poll_widget = zrequire("poll_widget");
+
+const people = zrequire("people");
+
+const me = {
+    email: "me@zulip.com",
+    full_name: "Me Myself",
+    user_id: 99,
+};
+const alice = {
+    email: "alice@zulip.com",
+    full_name: "Alice Lee",
+    user_id: 100,
+};
+people.add_active_user(me);
+people.add_active_user(alice);
+people.initialize_current_user(me.user_id);
+
+run_test("PollData my question", () => {
     const is_my_poll = true;
-    const question = 'Favorite color?';
+    const question = "Favorite color?";
 
-    const sender_id = 99;
-    people.my_current_user_id = () => sender_id;
-
-    const data_holder = poll_widget.poll_data_holder(is_my_poll, question, []);
+    const data_holder = new PollData({
+        current_user_id: me.user_id,
+        message_sender_id: me.user_id,
+        is_my_poll,
+        question,
+        options: [],
+        comma_separated_names: people.get_full_names_for_poll_option,
+        report_error_function: blueslip.warn,
+    });
 
     let data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
         options: [],
-        question: 'Favorite color?',
+        question: "Favorite color?",
     });
 
     const question_event = {
-        type: 'question',
-        question: 'best plan?',
+        type: "question",
+        question: "best plan?",
     };
 
-    data_holder.handle_event(sender_id, question_event);
+    data_holder.handle_event(me.user_id, question_event);
     data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
         options: [],
-        question: 'best plan?',
+        question: "best plan?",
     });
 
     const option_event = {
-        type: 'new_option',
+        type: "new_option",
         idx: 1,
-        option: 'release now',
+        option: "release now",
     };
 
-    people.safe_full_names = () => '';
-
-    data_holder.handle_event(sender_id, option_event);
+    data_holder.handle_event(me.user_id, option_event);
     data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
         options: [
             {
-                option: 'release now',
-                names: '',
+                option: "release now",
+                names: "",
                 count: 0,
-                key: '99,1',
+                key: "99,1",
                 current_user_vote: false,
             },
         ],
-        question: 'best plan?',
+        question: "best plan?",
     });
 
-    let  vote_event = {
-        type: 'vote',
-        key: '99,1',
+    let vote_event = {
+        type: "vote",
+        key: "99,1",
         vote: 1,
     };
 
-    data_holder.handle_event(sender_id, vote_event);
+    data_holder.handle_event(me.user_id, vote_event);
     data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
         options: [
             {
-                option: 'release now',
-                names: '',
+                option: "release now",
+                names: "Me Myself",
                 count: 1,
-                key: '99,1',
+                key: "99,1",
                 current_user_vote: true,
             },
         ],
-        question: 'best plan?',
+        question: "best plan?",
     });
 
-    const invalid_vote_event = {
-        type: 'vote',
-        key: '98,1',
+    vote_event = {
+        type: "vote",
+        key: "99,1",
         vote: 1,
     };
 
-    blueslip.set_test_data('warn', `unknown key for poll: ${invalid_vote_event.key}`);
-    data_holder.handle_event(sender_id, invalid_vote_event);
-    data = data_holder.get_widget_data();
-    assert.equal(blueslip.get_test_logs('warn').length, 1);
-    blueslip.clear_test_data();
-
-    const option_outbound_event = data_holder.handle.new_option.outbound('new option');
-    assert.deepEqual(option_outbound_event, {
-        type: 'new_option',
-        idx: 2,
-        option: 'new option',
-    });
-
-    const new_question = 'Any new plan?';
-    const question_outbound_event = data_holder.handle.question.outbound(new_question);
-    assert.deepEqual(question_outbound_event, {
-        type: 'question',
-        question: new_question,
-    });
-
-    const vote_outbound_event = data_holder.handle.vote.outbound('99,1');
-    assert.deepEqual(vote_outbound_event, { type: 'vote', key: '99,1', vote: -1 });
-
-    vote_event = {
-        type: 'vote',
-        key: '99,1',
-        vote: -1,
-    };
-
-    data_holder.handle_event(sender_id, vote_event);
+    data_holder.handle_event(alice.user_id, vote_event);
     data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
         options: [
             {
-                option: 'release now',
-                names: '',
-                count: 0,
-                key: '99,1',
+                option: "release now",
+                names: "Me Myself, Alice Lee",
+                count: 2,
+                key: "99,1",
+                current_user_vote: true,
+            },
+        ],
+        question: "best plan?",
+    });
+
+    const invalid_vote_event = {
+        type: "vote",
+        key: "98,1",
+        vote: 1,
+    };
+
+    blueslip.expect("warn", `unknown key for poll: ${invalid_vote_event.key}`);
+    data_holder.handle_event(me.user_id, invalid_vote_event);
+    data = data_holder.get_widget_data();
+
+    const option_outbound_event = data_holder.handle.new_option.outbound("new option");
+    assert.deepEqual(option_outbound_event, {
+        type: "new_option",
+        idx: 2,
+        option: "new option",
+    });
+
+    const new_question = "Any new plan?";
+    const question_outbound_event = data_holder.handle.question.outbound(new_question);
+    assert.deepEqual(question_outbound_event, {
+        type: "question",
+        question: new_question,
+    });
+
+    const vote_outbound_event = data_holder.handle.vote.outbound("99,1");
+    assert.deepEqual(vote_outbound_event, {type: "vote", key: "99,1", vote: -1});
+
+    vote_event = {
+        type: "vote",
+        key: "99,1",
+        vote: -1,
+    };
+
+    data_holder.handle_event(me.user_id, vote_event);
+    data = data_holder.get_widget_data();
+
+    assert.deepEqual(data, {
+        options: [
+            {
+                option: "release now",
+                names: "Alice Lee",
+                count: 1,
+                key: "99,1",
                 current_user_vote: false,
             },
         ],
-        question: 'best plan?',
+        question: "best plan?",
     });
 });
 
-run_test('activate another person poll', () => {
-    people.is_my_user_id = return_false;
-    global.stub_templates((template_name) => {
-        if (template_name === 'widgets/poll_widget') {
-            return 'widgets/poll_widget';
-        }
-        if (template_name === 'widgets/poll_widget_results') {
-            return 'widgets/poll_widget_results';
-        }
+run_test("wrong person editing question", () => {
+    const is_my_poll = true;
+    const question = "Favorite color?";
+
+    const data_holder = new PollData({
+        current_user_id: me.user_id,
+        message_sender_id: me.user_id,
+        is_my_poll,
+        question,
+        options: [],
+        comma_separated_names: people.get_full_names_for_poll_option,
+        report_error_function: blueslip.warn,
     });
 
-    const widget_elem = $('<div>').addClass('widget-content');
+    const question_event = {
+        type: "question",
+        question: "best plan?",
+    };
 
-    let out_data;   // Used to check the event data sent to the server
+    blueslip.expect("warn", "user 100 is not allowed to edit the question");
+
+    data_holder.handle_event(alice.user_id, question_event);
+
+    assert.deepEqual(data_holder.get_widget_data(), {
+        options: [],
+        question: "Favorite color?",
+    });
+});
+
+run_test("activate another person poll", ({mock_template}) => {
+    mock_template("widgets/poll_widget.hbs", false, () => "widgets/poll_widget");
+    mock_template("widgets/poll_widget_results.hbs", false, () => "widgets/poll_widget_results");
+
+    const widget_elem = $("<div>").addClass("widget-content");
+
+    let out_data; // Used to check the event data sent to the server
     const callback = (data) => {
         out_data = data;
     };
 
     const opts = {
         elem: widget_elem,
-        callback: callback,
+        callback,
         message: {
-            sender_id: 100,
+            sender_id: alice.user_id,
         },
         extra_data: {
-            question: 'What do you want?',
+            question: "What do you want?",
         },
     };
 
@@ -171,102 +234,65 @@ run_test('activate another person poll', () => {
         return elem;
     };
 
-    const poll_option = set_widget_find_result('button.poll-option');
-    const poll_option_input = set_widget_find_result('input.poll-option');
-    const widget_option_container = set_widget_find_result('ul.poll-widget');
+    const poll_option = set_widget_find_result("button.poll-option");
+    const poll_option_input = set_widget_find_result("input.poll-option");
+    const widget_option_container = set_widget_find_result("ul.poll-widget");
 
-    const poll_question_submit = set_widget_find_result('button.poll-question-check');
-    const poll_edit_question = set_widget_find_result('.poll-edit-question');
-    const poll_question_header = set_widget_find_result('.poll-question-header');
-    const poll_question_container = set_widget_find_result('.poll-question-bar');
-    const poll_option_container = set_widget_find_result('.poll-option-bar');
+    const poll_question_submit = set_widget_find_result("button.poll-question-check");
+    const poll_edit_question = set_widget_find_result(".poll-edit-question");
+    const poll_question_header = set_widget_find_result(".poll-question-header");
+    const poll_question_container = set_widget_find_result(".poll-question-bar");
+    const poll_option_container = set_widget_find_result(".poll-option-bar");
 
-    const poll_vote_button = set_widget_find_result('button.poll-vote');
-    const poll_please_wait = set_widget_find_result('.poll-please-wait');
-    const poll_author_help = set_widget_find_result('.poll-author-help');
+    const poll_vote_button = set_widget_find_result("button.poll-vote");
+    const poll_please_wait = set_widget_find_result(".poll-please-wait");
+    const poll_author_help = set_widget_find_result(".poll-author-help");
 
-    set_widget_find_result('button.poll-question-remove');
-    set_widget_find_result('input.poll-question');
-
-    let option_button_callback;
-    let vote_button_callback;
-
-    poll_option.on = (event, func) => {
-        assert.equal(event, 'click');
-        option_button_callback = func;
-    };
-
-    poll_vote_button.on = (event, func) => {
-        assert.equal(event, 'click');
-        vote_button_callback = func;
-    };
-
-    poll_question_header.toggle = (show) => {
-        assert(show);
-    };
-
-    poll_edit_question.toggle = (show) => {
-        assert(!show);
-    };
-
-    const show_submit = false;
-    poll_question_submit.toggle = (show) => {
-        assert.equal(show, show_submit);
-    };
-
-    poll_question_container.toggle = (show) => {
-        assert(!show);
-    };
-
-    poll_option_container.toggle = (show) => {
-        assert.equal(show, true);
-    };
-
-    poll_please_wait.toggle = (show) => {
-        assert.equal(show, false);
-    };
-
-    poll_author_help.toggle = (show) => {
-        assert(!show);
-    };
+    set_widget_find_result("button.poll-question-remove");
+    set_widget_find_result("input.poll-question");
 
     poll_widget.activate(opts);
 
-    assert.equal(widget_elem.html(), 'widgets/poll_widget');
-    assert.equal(widget_option_container.html(), 'widgets/poll_widget_results');
-    assert.equal(poll_question_header.text(), 'What do you want?');
+    assert.ok(poll_option_container.visible());
+    assert.ok(poll_question_header.visible());
 
-    const e = {
-        stopPropagation: noop,
-    };
+    assert.ok(!poll_question_container.visible());
+    assert.ok(!poll_question_submit.visible());
+    assert.ok(!poll_edit_question.visible());
+    assert.ok(!poll_please_wait.visible());
+    assert.ok(!poll_author_help.visible());
+
+    assert.equal(widget_elem.html(), "widgets/poll_widget");
+    assert.equal(widget_option_container.html(), "widgets/poll_widget_results");
+    assert.equal(poll_question_header.text(), "What do you want?");
 
     {
         /* Testing data sent to server on adding option */
-        poll_option_input.val('cool choice');
+        poll_option_input.val("cool choice");
         out_data = undefined;
-        option_button_callback(e);
-        assert.deepEqual(out_data,  { type: 'new_option', idx: 1, option: 'cool choice' });
+        poll_option.trigger("click");
+        assert.deepEqual(out_data, {type: "new_option", idx: 1, option: "cool choice"});
 
-        poll_option_input.val('');
+        poll_option_input.val("");
         out_data = undefined;
-        option_button_callback(e);
+        poll_option.trigger("click");
         assert.deepEqual(out_data, undefined);
     }
 
     const vote_events = [
         {
-            sender_id: 100,
+            sender_id: alice.user_id,
             data: {
-                type: 'new_option',
+                type: "new_option",
                 idx: 1,
-                option: 'release now',
+                option: "release now",
             },
         },
         {
-            sender_id: 100,
+            sender_id: alice.user_id,
             data: {
-                type: 'vote',
-                key: '100,1',
+                type: "vote",
+                key: "100,1",
                 vote: 1,
             },
         },
@@ -276,22 +302,18 @@ run_test('activate another person poll', () => {
 
     {
         /* Testing data sent to server on voting */
-        poll_vote_button.attr('data-key', '100,1');
-        const e = {
-            stopPropagation: noop,
-            target: poll_vote_button,
-        };
+        poll_vote_button.attr("data-key", "100,1");
         out_data = undefined;
-        vote_button_callback(e);
-        assert.deepEqual(out_data, { type: 'vote', key: '100,1', vote: 1 });
+        poll_vote_button.trigger("click");
+        assert.deepEqual(out_data, {type: "vote", key: "100,1", vote: 1});
     }
 
     const add_question_event = [
         {
             sender_id: 100,
             data: {
-                type: 'question',
-                question: 'best plan?',
+                type: "question",
+                question: "best plan?",
             },
         },
     ];
@@ -299,32 +321,23 @@ run_test('activate another person poll', () => {
     widget_elem.handle_events(add_question_event);
 });
 
-run_test('activate own poll', () => {
-    $.clear_all_elements();
+run_test("activate own poll", ({mock_template}) => {
+    mock_template("widgets/poll_widget.hbs", false, () => "widgets/poll_widget");
+    mock_template("widgets/poll_widget_results.hbs", false, () => "widgets/poll_widget_results");
 
-    people.is_my_user_id = return_true;
-    global.stub_templates((template_name) => {
-        if (template_name === 'widgets/poll_widget') {
-            return 'widgets/poll_widget';
-        }
-        if (template_name === 'widgets/poll_widget_results') {
-            return 'widgets/poll_widget_results';
-        }
-    });
-
-    const widget_elem = $('<div>').addClass('widget-content');
+    const widget_elem = $("<div>").addClass("widget-content");
     let out_data;
     const callback = (data) => {
         out_data = data;
     };
     const opts = {
         elem: widget_elem,
-        callback: callback,
+        callback,
         message: {
-            sender_id: 100,
+            sender_id: me.user_id,
         },
         extra_data: {
-            question: 'Where to go?',
+            question: "Where to go?",
         },
     };
 
@@ -334,85 +347,54 @@ run_test('activate own poll', () => {
         return elem;
     };
 
-    const poll_option = set_widget_find_result('button.poll-option');
-    const poll_option_input = set_widget_find_result('input.poll-option');
-    const widget_option_container = set_widget_find_result('ul.poll-widget');
+    set_widget_find_result("button.poll-option");
+    const poll_option_input = set_widget_find_result("input.poll-option");
+    const widget_option_container = set_widget_find_result("ul.poll-widget");
 
-    const poll_question_submit = set_widget_find_result('button.poll-question-check');
-    const poll_edit_question = set_widget_find_result('.poll-edit-question');
-    const poll_question_input = set_widget_find_result('input.poll-question');
-    const poll_question_header = set_widget_find_result('.poll-question-header');
-    const poll_question_container = set_widget_find_result('.poll-question-bar');
-    const poll_option_container = set_widget_find_result('.poll-option-bar');
+    const poll_question_submit = set_widget_find_result("button.poll-question-check");
+    const poll_edit_question = set_widget_find_result(".poll-edit-question");
+    const poll_question_input = set_widget_find_result("input.poll-question");
+    const poll_question_header = set_widget_find_result(".poll-question-header");
+    const poll_question_container = set_widget_find_result(".poll-question-bar");
+    const poll_option_container = set_widget_find_result(".poll-option-bar");
 
-    const poll_vote_button = set_widget_find_result('button.poll-vote');
-    const poll_please_wait = set_widget_find_result('.poll-please-wait');
-    const poll_author_help = set_widget_find_result('.poll-author-help');
+    set_widget_find_result("button.poll-vote");
+    const poll_please_wait = set_widget_find_result(".poll-please-wait");
+    const poll_author_help = set_widget_find_result(".poll-author-help");
 
-    set_widget_find_result('button.poll-question-remove');
+    set_widget_find_result("button.poll-question-remove");
 
-    let question_button_callback;
-
-    poll_question_submit.on = (event, func) => {
-        assert.equal(event, 'click');
-        question_button_callback = func;
-    };
-
-    // Following event handler are already tested and doesn't make sense
-    // to test them again
-    poll_option.on = noop;
-    poll_vote_button.on = noop;
-
-    poll_question_header.toggle = (show) => {
-        assert(show);
-    };
-
-    poll_edit_question.toggle = (show) => {
-        assert(show);
-    };
-
-    let show_submit = false;
-    poll_question_submit.toggle = (show) => {
-        assert.equal(show, show_submit);
-    };
-
-    poll_question_container.toggle = (show) => {
-        assert(!show);
-    };
-
-    poll_option_container.toggle = (show) => {
-        assert(show);
-    };
-
-    poll_please_wait.toggle = (show) => {
-        assert(!show);
-    };
-
-    poll_author_help.toggle = (show) => {
-        assert(!show);
-    };
+    function assert_visibility() {
+        assert.ok(poll_option_container.visible());
+        assert.ok(poll_question_header.visible());
+        assert.ok(!poll_question_container.visible());
+        assert.ok(poll_edit_question.visible());
+        assert.ok(!poll_please_wait.visible());
+        assert.ok(!poll_author_help.visible());
+    }
 
     poll_widget.activate(opts);
 
-    assert.equal(widget_elem.html(), 'widgets/poll_widget');
-    assert.equal(widget_option_container.html(), 'widgets/poll_widget_results');
-    assert.equal(poll_question_header.text(), 'Where to go?');
+    assert_visibility();
+    assert.ok(!poll_question_submit.visible());
+
+    assert.equal(widget_elem.html(), "widgets/poll_widget");
+    assert.equal(widget_option_container.html(), "widgets/poll_widget_results");
+    assert.equal(poll_question_header.text(), "Where to go?");
 
     {
         /* Testing data sent to server on editing question */
-        const e = {
-            stopPropagation: noop,
-        };
-
-        poll_question_input.val('Is it new?');
+        poll_question_input.val("Is it new?");
         out_data = undefined;
-        show_submit = true;
-        question_button_callback(e);
-        assert.deepEqual(out_data,  { type: 'question', question: 'Is it new?' });
+        poll_question_submit.trigger("click");
+        assert.deepEqual(out_data, {type: "question", question: "Is it new?"});
 
-        poll_option_input.val('');
+        assert_visibility();
+        assert.ok(poll_question_submit.visible());
+
+        poll_option_input.val("");
         out_data = undefined;
-        question_button_callback(e);
+        poll_question_submit.trigger("click");
         assert.deepEqual(out_data, undefined);
     }
 });

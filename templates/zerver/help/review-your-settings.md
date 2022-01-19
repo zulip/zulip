@@ -13,3 +13,13 @@ you use Zulip.
 1. Click on each tab on the left.
 
 {end_tabs}
+
+### Review your display settings
+
+{start_tabs}
+
+{relative|gear|settings}
+
+1. Click on the **Display settings** tab on the left.
+
+{end_tabs}

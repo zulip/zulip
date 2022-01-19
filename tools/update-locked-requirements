@@ -2,27 +2,22 @@
 set -e
 
 # Make sure the Zulip dev virtualenv exists, and operate within it.
-if [ ! -d /srv/zulip-py3-venv ] || [ ! -d /srv/zulip-thumbor-venv ]; then
+if [ ! -d /srv/zulip-py3-venv ]; then
     ./tools/setup/setup_venvs.py
 fi
 
-compile_requirements () {
+compile_requirements() {
     source="$1"
     output="$2"
-    python_version="$3"
 
     echo "Compiling $output"
-    if [ "$python_version" == "py2" ]; then
-        /srv/zulip-thumbor-venv/bin/pip-compile --quiet --allow-unsafe --generate-hashes --no-header --output-file "$output" "$source"
-    else
-        /srv/zulip-py3-venv/bin/pip-compile --quiet --allow-unsafe --generate-hashes --no-header --output-file "$output" "$source"
-    fi
+    /srv/zulip-py3-venv/bin/pip-compile --quiet --allow-unsafe --generate-hashes --no-header --output-file "$output" "$source"
 
     cat - "$output" <<EOF | sponge "$output"
 #
 # This file is GENERATED.  Don't edit directly.
 #
-# To update, edit the non-"lock" files in requirements/*.txt, then:
+# To update, edit the non-"lock" files in requirements/*.in, then:
 #
 #    tools/update-locked-requirements
 #
@@ -54,11 +49,8 @@ if [ $# -gt 0 ]; then
     done
 fi
 
-compile_requirements requirements/pip.in "$OUTPUT_BASE_DIR/pip.txt"
-compile_requirements requirements/prod.in "$OUTPUT_BASE_DIR/prod.txt"
 compile_requirements requirements/dev.in "$OUTPUT_BASE_DIR/dev.txt"
-compile_requirements requirements/mypy.in "$OUTPUT_BASE_DIR/mypy.txt"
-compile_requirements requirements/docs.in "$OUTPUT_BASE_DIR/docs.txt"
-compile_requirements requirements/pip.in "$OUTPUT_BASE_DIR/pip2.txt" py2
-compile_requirements requirements/thumbor.in "$OUTPUT_BASE_DIR/thumbor.txt" py2
-compile_requirements requirements/thumbor-dev.in "$OUTPUT_BASE_DIR/thumbor-dev.txt" py2
+for name in pip prod mypy docs; do
+    cp "$OUTPUT_BASE_DIR/dev.txt" "$OUTPUT_BASE_DIR/$name.txt"
+    compile_requirements "requirements/$name.in" "$OUTPUT_BASE_DIR/$name.txt"
+done

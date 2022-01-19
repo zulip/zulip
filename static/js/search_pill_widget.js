@@ -1,15 +1,23 @@
-exports.initialize = function () {
+import $ from "jquery";
+
+import * as browser_history from "./browser_history";
+import {page_params} from "./page_params";
+import * as search_pill from "./search_pill";
+
+export let widget;
+
+export function initialize() {
     if (!page_params.search_pills_enabled) {
         return;
     }
-    const container = $('#search_arrows');
-    exports.widget = search_pill.create_pills(container);
+    const container = $("#search_arrows");
+    widget = search_pill.create_pills(container);
 
-    exports.widget.onPillRemove(function () {
-        const base_query = search_pill.get_search_string_for_current_filter(exports.widget);
-        const operators = Filter.parse(base_query);
-        narrow.activate(operators, {trigger: 'search'});
+    widget.onPillRemove(() => {
+        if (widget.items().length === 0) {
+            browser_history.go_to_location("");
+        }
     });
-};
 
-window.search_pill_widget = exports;
+    widget.createPillonPaste(() => false);
+}

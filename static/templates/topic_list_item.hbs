@@ -1,13 +1,18 @@
 <li class='bottom_left_row {{#if is_active_topic}}active-sub-filter{{/if}} {{#if is_zero}}zero-topic-unreads{{/if}} {{#if is_muted}}muted_topic{{/if}} topic-list-item' data-topic-name='{{topic_name}}'>
     <span class='topic-box'>
+        <span class="sidebar-topic-check">
+            {{#if resolved}}
+            {{resolved_topic_prefix}}
+            {{/if}}
+        </span>
         <a href='{{url}}' class="topic-name" title="{{topic_name}}">
-            {{topic_name}}
+            {{topic_display_name}}
         </a>
-        <div class="topic-unread-count {{#if is_zero}}zero_count{{/if}}">
-            <div class="value">{{unread}}</div>
-        </div>
+        <span class="unread_count {{#if is_zero}}zero_count{{/if}}">
+            {{unread}}
+        </span>
     </span>
-    <span class="topic-sidebar-arrow">
-        <i class="fa fa-chevron-down" aria-hidden="true"></i>
+    <span class="topic-sidebar-menu-icon">
+        <i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i>
     </span>
 </li>

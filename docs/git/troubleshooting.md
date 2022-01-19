@@ -26,8 +26,8 @@ A merge commit is usually created when you've run `git pull` or `git merge`.
 You'll know you're creating a merge commit if you're prompted for a commit
 message and the default is something like this:
 
-```
-Merge branch 'master' of https://github.com/zulip/zulip
+```text
+Merge branch 'main' of https://github.com/zulip/zulip
 
 # Please enter a commit message to explain why this merge is necessary,
 # especially if it merges an updated upstream into a topic branch.
@@ -38,13 +38,13 @@ Merge branch 'master' of https://github.com/zulip/zulip
 
 And the first entry for `git log` will show something like:
 
-```
+```console
 commit e5f8211a565a5a5448b93e98ed56415255546f94
 Merge: 13bea0e e0c10ed
 Author: Christie Koehler <ck@christi3k.net>
 Date:   Mon Oct 10 13:25:51 2016 -0700
 
-    Merge branch 'master' of https://github.com/zulip/zulip
+    Merge branch 'main' of https://github.com/zulip/zulip
 ```
 
 Some graphical Git clients may also create merge commits.
@@ -52,10 +52,10 @@ Some graphical Git clients may also create merge commits.
 To undo a merge commit, first run `git reflog` to identify the commit you want
 to roll back to:
 
-```
+```console
 $ git reflog
 
-e5f8211 HEAD@{0}: pull upstream master: Merge made by the 'recursive' strategy.
+e5f8211 HEAD@{0}: pull upstream main: Merge made by the 'recursive' strategy.
 13bea0e HEAD@{1}: commit: test commit for docs.
 ```
 
@@ -67,19 +67,18 @@ by `git pull` and `13bea0e HEAD@{1}:` is the last commit I made before running
 Once you'd identified the ref you want to revert to, you can do so with [git
 reset][gitbook-reset]:
 
-```
+```console
 $ git reset --hard 13bea0e
 HEAD is now at 13bea0e test commit for docs.
 ```
 
-```eval_rst
-.. important::
-    ``git reset --hard <commit>`` will discard all changes in your
-    working directory and index since the commit you're resetting to with
-    ``<commit>``. *This is the main way you can lose work in Git*. If you need
-    to keep any changes that are in your working directory or that you have
-    committed, use ``git reset --merge <commit>`` instead.
-```
+:::{important}
+`git reset --hard <commit>` will discard all changes in your
+working directory and index since the commit you're resetting to with
+`<commit>`. _This is the main way you can lose work in Git_. If you need
+to keep any changes that are in your working directory or that you have
+committed, use `git reset --merge <commit>` instead.
+:::
 
 You can also use the relative reflog `HEAD@{1}` instead of the commit hash,
 just keep in mind that this changes as you run git commands.
@@ -87,17 +86,17 @@ just keep in mind that this changes as you run git commands.
 Now when you look at the output of `git reflog`, you should see that the tip of your branch points to your
 last commit `13bea0e` before the merge:
 
-```
+```console
 $ git reflog
 
 13bea0e HEAD@{2}: reset: moving to HEAD@{1}
-e5f8211 HEAD@{3}: pull upstream master: Merge made by the 'recursive' strategy.
+e5f8211 HEAD@{3}: pull upstream main: Merge made by the 'recursive' strategy.
 13bea0e HEAD@{4}: commit: test commit for docs.
 ```
 
 And the first entry `git log` shows is this:
 
-```
+```console
 commit 13bea0e40197b1670e927a9eb05aaf50df9e8277
 Author: Christie Koehler <ck@christi3k.net>
 Date:   Mon Oct 10 13:25:38 2016 -0700
@@ -115,32 +114,32 @@ with `git cherry-pick` ([docs][gitbook-git-cherry-pick]).
 For example, let's say you just committed "some work" and your `git log` looks
 like this:
 
-```
-* 67aea58 (HEAD -> master) some work
+```console
+* 67aea58 (HEAD -> main) some work
 * 13bea0e test commit for docs.
 ```
 
 You then mistakenly run `git reset --hard 13bea0e`:
 
-```
+```console
 $ git reset --hard 13bea0e
 HEAD is now at 13bea0e test commit for docs.
 
 $ git log
-* 13bea0e (HEAD -> master) test commit for docs.
+* 13bea0e (HEAD -> main) test commit for docs.
 ```
 
-And then realize you actually needed to keep commit 67aea58. First, use `git
-reflog` to confirm that commit you want to restore and then run `git
-cherry-pick <commit>`:
+And then realize you actually needed to keep commit 67aea58. First, use
+`git reflog` to confirm that commit you want to restore and then run
+`git cherry-pick <commit>`:
 
-```
+```console
 $ git reflog
 13bea0e HEAD@{0}: reset: moving to 13bea0e
 67aea58 HEAD@{1}: commit: some work
 
 $ git cherry-pick 67aea58
- [master 67aea58] some work
+ [main 67aea58] some work
  Date: Thu Oct 13 11:51:19 2016 -0700
  1 file changed, 1 insertion(+)
  create mode 100644 test4.txt
@@ -154,13 +153,13 @@ which ever branch you are rebasing on top of, is to code that has been changed
 by those new commits.
 
 For example, while I'm working on a file, another contributor makes a change to
-that file, submits a pull request and has their code merged into master.
+that file, submits a pull request and has their code merged into `main`.
 Usually this is not a problem, but in this case the other contributor made a
 change to a part of the file I also want to change. When I try to bring my
-branch up to date with `git fetch` and then `git rebase upstream/master`, I see
+branch up to date with `git fetch` and then `git rebase upstream/main`, I see
 the following:
 
-```
+```console
 First, rewinding head to replay your work on top of it...
 Applying: test change for docs
 Using index info to reconstruct a base tree...
@@ -178,11 +177,11 @@ To check out the original branch and stop rebasing, run "git rebase --abort".
 ```
 
 This message tells me that Git was not able to apply my changes to README.md
-after bringing in the new commits from upstream/master.
+after bringing in the new commits from upstream/main.
 
 Running `git status` also gives me some information:
 
-```
+```console
 rebase in progress; onto 5ae56e6
 You are currently rebasing branch 'docs-test' on '5ae56e6'.
   (fix conflicts and then run "git rebase --continue")
@@ -204,10 +203,12 @@ and `>>>>>>>`) markers to indicate where in files there are conflicts.
 
 Tip: You can see recent changes made to a file by running the following
 commands:
-```
+
+```bash
 git fetch upstream
-git log -p upstream/master -- /path/to/file
+git log -p upstream/main -- /path/to/file
 ```
+
 You can use this to compare the changes that you have made to a file with the
 ones in upstream, helping you avoid undoing changes from a previous commit when
 you are rebasing.
@@ -215,7 +216,7 @@ you are rebasing.
 Once you've done that, save the file(s), stage them with `git add` and then
 continue the rebase with `git rebase --continue`:
 
-```
+```console
 $ git add README.md
 
 $ git rebase --continue
@@ -234,14 +235,14 @@ pay attention and do a bit of work to ensure all of your work is readily
 available.
 
 Recall that most Git operations are local. When you commit your changes with
-`git commit` they are safely stored in your *local* Git database only. That is,
-until you *push* the commits to GitHub, they are only available on the computer
+`git commit` they are safely stored in your _local_ Git database only. That is,
+until you _push_ the commits to GitHub, they are only available on the computer
 where you committed them.
 
 So, before you stop working for the day, or before you switch computers, push
 all of your commits to GitHub with `git push`:
 
-```
+```console
 $ git push origin <branchname>
 ```
 
@@ -254,7 +255,7 @@ But if you're switching to another computer on which you have already cloned
 Zulip, you need to update your local Git database with new refs from your
 GitHub fork. You do this with `git fetch`:
 
-```
+```console
 $ git fetch <usermame>
 ```
 
@@ -262,11 +263,11 @@ Ideally you should do this before you have made any commits on the same branch
 on the second computer. Then you can `git merge` on whichever branch you need
 to update:
 
-```
+```console
 $ git checkout <my-branch>
 Switched to branch '<my-branch>'
 
-$ git merge origin/master
+$ git merge origin/main
 ```
 
 **If you have already made commits on the second computer that you need to

@@ -1,3 +1,5 @@
-$(function () {
-    $("#register").submit();
+import $ from "jquery";
+
+$(() => {
+    $("#register").trigger("submit");
 });

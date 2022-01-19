@@ -1,7 +1,7 @@
 # Mute a topic
 
 Messages from muted topics do not show up in **All messages** or generate
-notifications (including [alert word](/help/add-an-alert-word)
+notifications (including [alert word](/help/pm-mention-alert-notifications#alert-words)
 notifications), unless you are
 [mentioned](/help/mention-a-user-or-group). They also do not contribute to
 stream unread counts.
@@ -14,9 +14,9 @@ Muted topics still appear in the left sidebar, though they are grayed out.
 
 1. On the left, click on the stream that contains the topic you want to mute or unmute.
 
-2. Hover over the topic to reveal a down chevron
-   (<i class="fa fa-chevron-down"></i>) to its right.
-   Click on the down chevron (<i class="fa fa-chevron-down"></i>).
+2. Hover over the topic to reveal a ellipsis
+   (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>) to its right.
+   Click on the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>).
 
 4. Select **Mute the topic <topic name\>**.
 
@@ -38,7 +38,7 @@ Follow the same procedure to unmute the topic.
 
 Follow the same procedure to unmute the topic.
 
-### See your list of muted topics
+## Browse previously muted topics
 
 {start_tabs}
 
@@ -51,3 +51,5 @@ From there, you can also unmute any muted topics.
 ## Related articles
 
 * [Mute a stream](/help/mute-a-stream)
+
+* [Mute a user](/help/mute-a-user)

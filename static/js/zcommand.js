@@ -1,3 +1,14 @@
+import $ from "jquery";
+
+import marked from "../third/marked/lib/marked";
+
+import * as channel from "./channel";
+import * as common from "./common";
+import * as dark_theme from "./dark_theme";
+import * as feedback_widget from "./feedback_widget";
+import {$t} from "./i18n";
+import * as scroll_bar from "./scroll_bar";
+
 /*
 
 What in the heck is a zcommand?
@@ -16,114 +27,164 @@ What in the heck is a zcommand?
 
 */
 
-exports.send = function (opts) {
+export function send(opts) {
     const command = opts.command;
     const on_success = opts.on_success;
     const data = {
-        command: command,
+        command,
     };
 
     channel.post({
-        url: '/json/zcommand',
-        data: data,
-        success: function (data) {
+        url: "/json/zcommand",
+        data,
+        success(data) {
             if (on_success) {
                 on_success(data);
             }
         },
-        error: function () {
-            exports.tell_user('server did not respond');
+        error() {
+            tell_user("server did not respond");
         },
     });
-};
+}
 
-exports.tell_user = function (msg) {
+export function tell_user(msg) {
     // This is a bit hacky, but we don't have a super easy API now
     // for just telling users stuff.
-    $('#compose-send-status').removeClass(common.status_classes)
-        .addClass('alert-error')
-        .stop(true).fadeTo(0, 1);
-    $('#compose-error-msg').text(msg);
-};
+    $("#compose-send-status")
+        .removeClass(common.status_classes)
+        .addClass("alert-error")
+        .stop(true)
+        .fadeTo(0, 1);
+    $("#compose-error-msg").text(msg);
+}
 
-exports.enter_day_mode = function () {
-    exports.send({
+export function switch_to_light_theme() {
+    send({
         command: "/day",
-        on_success: function (data) {
-            night_mode.disable();
+        on_success(data) {
+            dark_theme.disable();
             feedback_widget.show({
-                populate: function (container) {
+                populate(container) {
                     const rendered_msg = marked(data.msg).trim();
                     container.html(rendered_msg);
                 },
-                on_undo: function () {
-                    exports.send({
+                on_undo() {
+                    send({
                         command: "/night",
                     });
                 },
-                title_text: i18n.t("Day mode"),
-                undo_button_text: i18n.t("Night"),
+                title_text: $t({defaultMessage: "Light theme"}),
+                undo_button_text: $t({defaultMessage: "Dark theme"}),
             });
         },
     });
-};
+}
 
-exports.enter_night_mode = function () {
-    exports.send({
+export function switch_to_dark_theme() {
+    send({
         command: "/night",
-        on_success: function (data) {
-            night_mode.enable();
+        on_success(data) {
+            dark_theme.enable();
             feedback_widget.show({
-                populate: function (container) {
+                populate(container) {
                     const rendered_msg = marked(data.msg).trim();
                     container.html(rendered_msg);
                 },
-                on_undo: function () {
-                    exports.send({
+                on_undo() {
+                    send({
                         command: "/day",
                     });
                 },
-                title_text: i18n.t("Night mode"),
-                undo_button_text: i18n.t("Day"),
+                title_text: $t({defaultMessage: "Dark theme"}),
+                undo_button_text: $t({defaultMessage: "Light theme"}),
             });
         },
     });
-};
+}
 
-exports.process = function (message_content) {
+export function enter_fluid_mode() {
+    send({
+        command: "/fluid-width",
+        on_success(data) {
+            scroll_bar.set_layout_width();
+            feedback_widget.show({
+                populate(container) {
+                    const rendered_msg = marked(data.msg).trim();
+                    container.html(rendered_msg);
+                },
+                on_undo() {
+                    send({
+                        command: "/fixed-width",
+                    });
+                },
+                title_text: $t({defaultMessage: "Fluid width mode"}),
+                undo_button_text: $t({defaultMessage: "Fixed width"}),
+            });
+        },
+    });
+}
 
+export function enter_fixed_mode() {
+    send({
+        command: "/fixed-width",
+        on_success(data) {
+            scroll_bar.set_layout_width();
+            feedback_widget.show({
+                populate(container) {
+                    const rendered_msg = marked(data.msg).trim();
+                    container.html(rendered_msg);
+                },
+                on_undo() {
+                    send({
+                        command: "/fluid-width",
+                    });
+                },
+                title_text: $t({defaultMessage: "Fixed width mode"}),
+                undo_button_text: $t({defaultMessage: "Fluid width"}),
+            });
+        },
+    });
+}
+
+export function process(message_content) {
     const content = message_content.trim();
 
-    if (content === '/ping') {
+    if (content === "/ping") {
         const start_time = new Date();
 
-        exports.send({
+        send({
             command: content,
-            on_success: function () {
+            on_success() {
                 const end_time = new Date();
                 let diff = end_time - start_time;
                 diff = Math.round(diff);
                 const msg = "ping time: " + diff + "ms";
-                exports.tell_user(msg);
+                tell_user(msg);
             },
         });
         return true;
     }
 
-    const day_commands = ['/day', '/light'];
+    const day_commands = ["/day", "/light"];
     if (day_commands.includes(content)) {
-        exports.enter_day_mode();
+        switch_to_light_theme();
         return true;
     }
 
-    const night_commands = ['/night', '/dark'];
+    const night_commands = ["/night", "/dark"];
     if (night_commands.includes(content)) {
-        exports.enter_night_mode();
+        switch_to_dark_theme();
         return true;
     }
 
-    if (content === '/settings') {
-        hashchange.go_to_location('settings/your-account');
+    if (content === "/fluid-width") {
+        enter_fluid_mode();
+        return true;
+    }
+
+    if (content === "/fixed-width") {
+        enter_fixed_mode();
         return true;
     }
 
@@ -131,6 +192,4 @@ exports.process = function (message_content) {
     // if we don't see an actual zcommand, so that compose.js
     // knows this is a normal message.
     return false;
-};
-
-window.zcommand = exports;
+}

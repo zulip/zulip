@@ -17,7 +17,7 @@ In `zerver/lib/hotspots.py`, add your content to the `ALL_HOTSPOTS` dictionary.
 Each key-value pair in `ALL_HOTSPOTS` associates the name of the hotspot with the
 content displayed to the user.
 
-```
+```python
 ALL_HOTSPOTS = {
     ...
     'new_hotspot_name': {
@@ -32,8 +32,8 @@ ALL_HOTSPOTS = {
 The target element and visual orientation of each hotspot is specified in
 `HOTSPOT_LOCATIONS` of `static/js/hotspots.js`.
 
-The `icon_offset` property specifies where the pulsing icon is placed *relative to
-the width and height of the target element*.
+The `icon_offset` property specifies where the pulsing icon is placed _relative to
+the width and height of the target element_.
 
 By default, `popovers.compute_placement` is used to responsively
 determine whether a popover is best displayed above (TOP), below (BOTTOM),
@@ -48,11 +48,12 @@ However, if you would like to fix the orientation of a hotspot popover, a
 To test your hotspot in the development environment, set
 `ALWAYS_SEND_ALL_HOTSPOTS = True` in `zproject/dev_settings.py`, and
 invoke `hotspots.initialize()` in your browser console. Every hotspot
-should be displayed.  Note that this setting has a bug that can result
+should be displayed. Note that this setting has a bug that can result
 in multiple copies of hotspots appearing; you can clear that by
 reloading the browser.
 
 Here are some visual characteristics to confirm:
+
 - popover content is readable
 - icons reposition themselves on resize
 - icons are hidden and shown along with their associated elements
@@ -67,8 +68,9 @@ a target element on a sidebar or overlay, the icon's z-index may need to
 be increased to 101, 102, or 103.
 
 This adjustment can be made at the bottom of `static/styles/hotspots.css`:
-```
-\#hotspot_new_hotspot_name_icon {
+
+```css
+#hotspot_new_hotspot_name_icon {
     z-index: 103;
 }
 ```

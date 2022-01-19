@@ -1,8 +1,8 @@
-<div id="filter-settings" class="settings-section" data-name="filter-settings">
+<div id="linkifier-settings" class="settings-section" data-name="linkifier-settings">
     <div class="admin-table-wrapper">
 
         <p>
-            {{#tr this}}
+            {{#tr}}
             Configure regular expression patterns that will be
             automatically linkified when used in Zulip message bodies or
             topics.  For example to automatically linkify commit IDs and
@@ -23,7 +23,7 @@
             </li>
         </ul>
         <p>
-            {{#tr this}}
+            {{#tr}}
             Or, to automatically linkify GitHub's <code>org/repo#1234</code> syntax:
             {{/tr}}
         </p>
@@ -35,26 +35,27 @@
             </li>
         </ul>
         <p>
-            {{#tr this}}
-            More details are available <a href="/help/add-a-custom-linkification-filter" target="_blank">in the Help Center article</a>.
+            {{#tr}}
+                More details are available <z-link>in the Help Center article</z-link>.
+                {{#*inline "z-link"}}<a href="/help/add-a-custom-linkifier" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
             {{/tr}}
         </p>
 
         {{#if is_admin}}
-        <form class="form-horizontal admin-filter-form">
-            <div class="add-new-filter-box grey-box">
-                <div class="new-filter-form wrapper">
-                    <div class="settings-section-title new-filter-section-title">{{t "Add a new linkifier" }}</div>
-                    <div class="alert" id="admin-filter-status"></div>
+        <form class="form-horizontal admin-linkifier-form">
+            <div class="add-new-linkifier-box grey-box">
+                <div class="new-linkifier-form wrapper">
+                    <div class="settings-section-title new-linkifier-section-title">{{t "Add a new linkifier" }}</div>
+                    <div class="alert" id="admin-linkifier-status"></div>
                     <div class="control-group">
-                        <label for="filter_pattern" class="control-label">{{t "Pattern" }}</label>
-                        <input type="text" id="filter_pattern" name="pattern" placeholder="#(?P<id>[0-9]+)" />
-                        <div class="alert" id="admin-filter-pattern-status"></div>
+                        <label for="linkifier_pattern" class="control-label">{{t "Pattern" }}</label>
+                        <input type="text" id="linkifier_pattern" name="pattern" placeholder="#(?P<id>[0-9]+)" />
+                        <div class="alert" id="admin-linkifier-pattern-status"></div>
                     </div>
                     <div class="control-group">
-                        <label for="filter_format_string" class="control-label">{{t "URL format string" }}</label>
-                        <input type="text" id="filter_format_string" name="url_format_string" placeholder="https://github.com/zulip/zulip/issues/%(id)s" />
-                        <div class="alert" id="admin-filter-format-status"></div>
+                        <label for="linkifier_format_string" class="control-label">{{t "URL format string" }}</label>
+                        <input type="text" id="linkifier_format_string" name="url_format_string" placeholder="https://github.com/zulip/zulip/issues/%(id)s" />
+                        <div class="alert" id="admin-linkifier-format-status"></div>
                     </div>
                     <button type="submit" class="button rounded sea-green">
                         {{t 'Add linkifier' }}
@@ -65,16 +66,17 @@
         {{/if}}
 
         <input type="text" class="search" placeholder="{{t 'Filter linkifiers' }}" aria-label="{{t 'Filter linkifiers' }}"/>
-        <div class="progressive-table-wrapper" data-simplebar data-list-render="linkifiers_list">
-            <table class="table table-condensed table-striped wrapped-table admin_filters_table">
-                <thead>
+        <div class="alert-notification edit-linkifier-status" id="linkifier-field-status"></div>
+        <div class="progressive-table-wrapper" data-simplebar>
+            <table class="table table-condensed table-striped wrapped-table admin_linkifiers_table">
+                <thead class="table-sticky-headers">
                     <th class="active" data-sort="pattern">{{t "Pattern" }}</th>
                     <th data-sort="url">{{t "URL format string" }}</th>
                     {{#if is_admin}}
                     <th class="actions">{{t "Actions" }}</th>
                     {{/if}}
                 </thead>
-                <tbody id="admin_filters_table" {{#unless is_admin}}class="required-text" data-empty="{{t 'No linkifiers set.' }}"{{/unless}}></tbody>
+                <tbody id="admin_linkifiers_table" class="required-text" data-empty="{{t 'No linkifiers set.' }}"></tbody>
             </table>
         </div>
     </div>

@@ -1,128 +1,129 @@
-const path = require('path');
-const fs = require('fs');
-const escapeRegExp = require("lodash/escapeRegExp");
+"use strict";
+
+const path = require("path");
+
+require("css.escape");
+require("handlebars/runtime");
+const {JSDOM} = require("jsdom");
+const _ = require("lodash");
+
+const handlebars = require("./handlebars");
+const stub_i18n = require("./i18n");
+const namespace = require("./namespace");
+const test = require("./test");
+const blueslip = require("./zblueslip");
+const zjquery = require("./zjquery");
+const zpage_params = require("./zpage_params");
+
+const dom = new JSDOM("", {url: "http://zulip.zulipdev.com/"});
+global.DOMParser = dom.window.DOMParser;
 
 require("@babel/register")({
     extensions: [".es6", ".es", ".jsx", ".js", ".mjs", ".ts"],
     only: [
-        new RegExp("^" + escapeRegExp(path.resolve(__dirname, "../../static/js")) + path.sep),
-        new RegExp("^" + escapeRegExp(path.resolve(__dirname, "../../static/shared/js")) + path.sep),
+        new RegExp("^" + _.escapeRegExp(path.resolve(__dirname, "../../static/js") + path.sep)),
+        new RegExp(
+            "^" + _.escapeRegExp(path.resolve(__dirname, "../../static/shared/js") + path.sep),
+        ),
     ],
-    plugins: ["rewire-ts"],
+    plugins: [
+        "babel-plugin-rewire-ts",
+        ["@babel/plugin-transform-modules-commonjs", {lazy: () => true}],
+    ],
 });
-
-global.assert = require('assert').strict;
-global._ = require('underscore/underscore.js');
-const _ = global._;
 
 // Create a helper function to avoid sneaky delays in tests.
 function immediate(f) {
-    return () => {
-        return f();
-    };
+    return () => f();
 }
 
 // Find the files we need to run.
-const finder = require('./finder.js');
-const files = finder.find_files_to_run(); // may write to console
+const files = process.argv.slice(2);
 if (files.length === 0) {
-    throw "No tests found";
+    throw new Error("No tests found");
 }
 
 // Set up our namespace helpers.
-const namespace = require('./namespace.js');
-global.set_global = namespace.set_global;
-global.patch_builtin = namespace.set_global;
-global.zrequire = namespace.zrequire;
-global.stub_out_jquery = namespace.stub_out_jquery;
-global.with_overrides = namespace.with_overrides;
-
-global.window = new Proxy(global, {
-    set: (obj, prop, value) => namespace.set_global(prop, value),
+const window = new Proxy(global, {
+    set: (obj, prop, value) => {
+        namespace.set_global(prop, value);
+        return true;
+    },
 });
-global.to_$ = () => window;
-
-// Set up stub helpers.
-const stub = require('./stub.js');
-global.with_stub = stub.with_stub;
-
-// Set up fake jQuery
-global.make_zjquery = require('./zjquery.js').make_zjquery;
-
-// Set up fake blueslip
-global.make_zblueslip = require('./zblueslip.js').make_zblueslip;
-
-// Set up fake translation
-const stub_i18n = require('./i18n.js');
 
 // Set up Handlebars
-const handlebars = require('./handlebars.js');
-global.make_handlebars = handlebars.make_handlebars;
-global.stub_templates = handlebars.stub_templates;
+handlebars.hook_require();
 
 const noop = function () {};
 
-// Set up fake module.hot
-// eslint-disable-next-line no-native-reassign
-module = require('module');
-module.prototype.hot = {
-    accept: noop,
-};
-
-// Set up fixtures.
-global.read_fixture_data = (fn) => {
-    const full_fn = path.join(__dirname, '../../zerver/tests/fixtures/', fn);
-    const data = JSON.parse(fs.readFileSync(full_fn, 'utf8', 'r'));
-    return data;
-};
-
 function short_tb(tb) {
-    const lines = tb.split('\n');
+    const lines = tb.split("\n");
 
-    const i = lines.findIndex(line => line.includes('run_test') || line.includes('run_one_module'));
+    const i = lines.findIndex((line) => line.includes("run_one_module"));
 
     if (i === -1) {
         return tb;
     }
 
-    return lines.splice(0, i + 1).join('\n') + '\n(...)\n';
+    return lines.splice(0, i + 1).join("\n") + "\n(...)\n";
 }
 
-// Set up bugdown comparison helper
-global.bugdown_assert = require('./bugdown_assert.js');
+require("../../static/js/templates"); // register Zulip extensions
 
 function run_one_module(file) {
-    console.info('running tests for ' + file.name);
-    require(file.full_name);
+    zjquery.clear_initialize_function();
+    zjquery.clear_all_elements();
+    console.info("running test " + path.basename(file, ".js"));
+    test.set_current_file_name(file);
+    require(file);
+    namespace.complain_about_unused_mocks();
 }
 
-global.run_test = (label, f) => {
-    if (files.length === 1) {
-        console.info('        test: ' + label);
-    }
-    f();
-};
+test.set_verbose(files.length === 1);
 
 try {
-    files.forEach(function (file) {
-        set_global('location', {
-            hash: '#',
-        });
-        global.patch_builtin('setTimeout', noop);
-        global.patch_builtin('setInterval', noop);
+    for (const file of files) {
+        namespace.start();
+        namespace.set_global("window", window);
+        namespace.set_global("to_$", () => window);
+        namespace.set_global("location", dom.window.location);
+        window.location.href = "http://zulip.zulipdev.com/#";
+        namespace.set_global("setTimeout", noop);
+        namespace.set_global("setInterval", noop);
         _.throttle = immediate;
         _.debounce = immediate;
+        zpage_params.reset();
 
-        set_global('i18n', stub_i18n);
-        namespace.clear_zulip_refs();
+        namespace.mock_esm("../../static/js/blueslip", blueslip);
+        require("../../static/js/blueslip");
+        namespace.mock_esm("../../static/js/i18n", stub_i18n);
+        require("../../static/js/i18n");
+        namespace.mock_esm("../../static/js/page_params", zpage_params);
+        require("../../static/js/page_params");
+        namespace.mock_esm("../../static/js/user_settings", zpage_params);
+        require("../../static/js/user_settings");
+        namespace.mock_esm("../../static/js/realm_user_settings_defaults", zpage_params);
+        require("../../static/js/realm_user_settings_defaults");
+
         run_one_module(file);
-        namespace.restore();
-    });
-} catch (e) {
-    if (e.stack) {
-        console.info(short_tb(e.stack));
+
+        if (blueslip.reset) {
+            blueslip.reset();
+        }
+
+        namespace.finish();
+    }
+} catch (error) {
+    if (process.env.USING_INSTRUMENTED_CODE) {
+        console.info(`
+    TEST FAILED! Before using the --coverage option please make sure that your
+    tests work under normal conditions.
+
+        `);
+    } else if (error.stack) {
+        console.info(short_tb(error.stack));
     } else {
-        console.info(e);
+        console.info(error);
     }
     process.exit(1);
 }

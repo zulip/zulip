@@ -1,4 +1,5 @@
 class zulip::postfix_localmail {
+  include zulip::snakeoil
   $postfix_packages = [ 'postfix', ]
 
   if $::fqdn == '' {
@@ -11,6 +12,7 @@ class zulip::postfix_localmail {
   }
 
   service { 'postfix':
+    require => Exec['generate-default-snakeoil'],
   }
 
   file {'/etc/mailname':
@@ -45,7 +47,7 @@ class zulip::postfix_localmail {
     mode    => '0644',
     owner   => root,
     group   => root,
-    source  => 'puppet:///modules/zulip/postfix/virtual',
+    content => template('zulip/postfix/virtual.erb'),
     require => Package[postfix],
     notify  => Service['postfix'],
   }
@@ -67,4 +69,12 @@ class zulip::postfix_localmail {
     ],
   }
 
+  file {'/etc/postfix/access':
+    ensure  => file,
+    mode    => '0644',
+    owner   => root,
+    group   => root,
+    source  => 'puppet:///modules/zulip/postfix/access',
+    require => Package[postfix],
+  }
 }

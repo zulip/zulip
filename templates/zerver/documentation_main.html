@@ -1,15 +1,29 @@
 {% extends "zerver/portico-help.html" %}
 {% set entrypoint = "help" %}
 
-{# Zulip User and API Documentation. #}
+{# Zulip user and API documentation. #}
+{% block title %}
+<title>{{ OPEN_GRAPH_TITLE }}</title>
+{% endblock %}
 
 {% block portico_content %}
 <div class="app help terms-page inline-block{% if page_is_help_center %} help-center{% endif %}{% if page_is_api_center %} api-center{% endif %}">
-    <div class="{{ sidebar_class }}">
+    <div class="sidebar">
         <div class="content">
-            <h1><a href="{{ doc_root }}" class="no-underline">Home</a></h1>
+            {% if not page_is_policy_center %}
+            <h1><a href="https://zulip.com" class="no-underline">Zulip homepage</a></h1>
+            <h1><a href="{{ doc_root }}" class="no-underline">{{ doc_root_title }} home</a></h1>
+            {% endif %}
+
+            {% if page_is_policy_center %}
+            {{ render_markdown_path(sidebar_index, pure_markdown=True) }}
+            {% else %}
             {{ render_markdown_path(sidebar_index, api_uri_context) }}
+            {% endif %}
+
+            {% if not page_is_policy_center %}
             <h1 class="home-link"><a href="/" class="no-underline">Back to Zulip</a></h1>
+            {% endif %}
         </div>
     </div>
 
@@ -19,7 +33,11 @@
 
     <div class="markdown">
         <div class="content">
+            {% if page_is_policy_center %}
+            {{ render_markdown_path(article, pure_markdown=True) }}
+            {% else %}
             {{ render_markdown_path(article, api_uri_context) }}
+            {% endif %}
 
             <div id="footer" class="documentation-footer">
                 <hr />

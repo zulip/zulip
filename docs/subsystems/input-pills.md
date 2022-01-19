@@ -1,4 +1,4 @@
-# UI: Input Pills
+# UI: input pills
 
 This is a high level and API explanation of the input pill interface in the
 frontend of the Zulip web application.
@@ -15,7 +15,7 @@ A pill container should have the following markup:
 
 The pills will automatically be inserted in before the ".input" in order.
 
-## Basic Usage
+## Basic usage
 
 ```js
 var pill_containter = $("#input_container");
@@ -27,17 +27,17 @@ var pills = input_pill.create({
 ```
 
 You can look at `static/js/user_pill.js` to see how the above
-methods are implemented.  Essentially you just need to convert
+methods are implemented. Essentially you just need to convert
 from raw data (like an email) to structured data (like an object
 with display_value, email, and user_id for a user), and vice
-versa.  The most important field to supply is `display_value`.
+versa. The most important field to supply is `display_value`.
 For user pills `pill_item.display_value === user.full_name`.
 
 ## Typeahead
 
 Pills almost always work in conjunction with typeahead, and
 you will want to provide a `source` function to typeahead
-that can exclude items from the prior pills.  Here is an
+that can exclude items from the prior pills. Here is an
 example snippet from our user group settings code.
 
 ```js
@@ -49,23 +49,22 @@ source: function () {
 And then in `user_pill.js`...
 
 ```js
-exports.typeahead_source = function (pill_widget) {
+export function typeahead_source(pill_widget) {
     const persons = people.get_realm_users();
-    return exports.filter_taken_users(persons, pill_widget);
-};
+    return filter_taken_users(persons, pill_widget);
+}
 
-exports.filter_taken_users = function (items, pill_widget) {
-    const taken_user_ids = exports.get_user_ids(pill_widget);
-    items = items.filter(item => !taken_user_ids.includes(item.user_id));
+export function filter_taken_users(items, pill_widget) {
+    const taken_user_ids = get_user_ids(pill_widget);
+    items = items.filter((item) => !taken_user_ids.includes(item.user_id));
     return items;
-};
+}
 ```
 
 ### `onPillCreate` and `onPillRemove` methods
 
 You can get notifications from the pill code that pills have been
 created/remove.
-
 
 ```js
 pills.onPillCreate(function () {

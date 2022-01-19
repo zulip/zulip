@@ -1,499 +1,260 @@
 {
     "env": {
-        "node": true,
-        "es6": true
+        "es2020": true,
+        "node": true
     },
-    "parserOptions": {
-        "ecmaVersion": 2019,
-        "warnOnUnsupportedTypeScriptVersion": false,
-        "sourceType": "module"
-    },
-    "plugins": [
-        "eslint-plugin-empty-returns"
+    "extends": [
+        "eslint:recommended",
+        "plugin:import/errors",
+        "plugin:import/warnings",
+        "plugin:unicorn/recommended",
+        "prettier"
     ],
+    "parser": "@babel/eslint-parser",
+    "parserOptions": {
+        "warnOnUnsupportedTypeScriptVersion": false,
+        "sourceType": "unambiguous"
+    },
+    "plugins": ["formatjs"],
+    "settings": {
+        "additionalFunctionNames": ["$t", "$t_html"]
+    },
+    "reportUnusedDisableDirectives": true,
     "rules": {
         "array-callback-return": "error",
-        "array-bracket-spacing": "error",
-        "arrow-spacing": [ "error", { "before": true, "after": true } ],
+        "arrow-body-style": "error",
         "block-scoped-var": "error",
-        "brace-style": [ "error", "1tbs", { "allowSingleLine": true } ],
-        "camelcase": "off",
-        "comma-dangle": [ "error",
-            {
-                "arrays": "always-multiline",
-                "objects": "always-multiline",
-                "imports": "always-multiline",
-                "exports": "always-multiline",
-                "functions": "never"
-            }
-        ],
-        "comma-spacing": [ "error",
-            {
-                "before": false,
-                "after": true
-            }
-        ],
-        "complexity": [ "off", 4 ],
+        "consistent-return": "error",
         "curly": "error",
-        "dot-notation": [ "error", { "allowKeywords": true } ],
-        "empty-returns/main": "error",
-        "eol-last": [ "error", "always" ],
+        "dot-notation": "error",
         "eqeqeq": "error",
-        "func-style": [ "off", "expression" ],
+        "formatjs/enforce-default-message": ["error", "literal"],
+        "formatjs/enforce-placeholders": [
+            "error",
+            {"ignoreList": ["b", "code", "em", "i", "kbd", "p", "strong"]}
+        ],
+        "formatjs/no-id": "error",
         "guard-for-in": "error",
-        "indent": ["error", 4, {
-            "ArrayExpression": "first",
-            "ObjectExpression": "first",
-            "SwitchCase": 0,
-            "CallExpression": {"arguments": "first"},
-            "FunctionExpression": {"parameters": "first"},
-            "FunctionDeclaration": {"parameters": "first"}
-        }],
-        "key-spacing": [ "error",
+        "import/extensions": "error",
+        "import/first": "error",
+        "import/newline-after-import": "error",
+        "import/no-self-import": "error",
+        "import/no-useless-path-segments": "error",
+        "import/order": [
+            "error",
             {
-                "beforeColon": false,
-                "afterColon": true
+                "alphabetize": {"order": "asc"},
+                "newlines-between": "always"
             }
         ],
-        "keyword-spacing": [ "error",
-            {
-                "before": true,
-                "after": true,
-                "overrides": {
-                    "return": { "after": true },
-                    "throw": { "after": true },
-                    "case": { "after": true }
-                }
-            }
-        ],
-        "max-depth": [ "off", 4 ],
-        "max-len": [ "error", 100, 2,
-            {
-                "ignoreUrls": true,
-                "ignoreComments": false,
-                "ignoreRegExpLiterals": true,
-                "ignoreStrings": true,
-                "ignoreTemplateLiterals": true
-            }
-        ],
-        "max-params": [ "off", 3 ],
-        "max-statements": [ "off", 10 ],
-        "new-cap": [ "error",
-            {
-                "newIsCap": true,
-                "capIsNew": false
-            }
-        ],
-        "new-parens": "error",
-        "newline-per-chained-call": "off",
+        "import/unambiguous": "error",
+        "lines-around-directive": "error",
+        "new-cap": "error",
         "no-alert": "error",
         "no-array-constructor": "error",
         "no-bitwise": "error",
         "no-caller": "error",
-        "no-case-declarations": "error",
         "no-catch-shadow": "error",
-        "no-console": "off",
-        "no-const-assign": "error",
-        "no-control-regex": "error",
-        "no-debugger": "error",
-        "no-delete-var": "error",
+        "no-constant-condition": ["error", {"checkLoops": false}],
         "no-div-regex": "error",
-        "no-dupe-class-members": "error",
-        "no-dupe-keys": "error",
         "no-duplicate-imports": "error",
         "no-else-return": "error",
-        "no-empty": "error",
-        "no-empty-character-class": "error",
         "no-eq-null": "error",
         "no-eval": "error",
-        "no-ex-assign": "error",
-        "no-extra-parens": ["error", "all"],
-        "no-extra-semi": "error",
-        "no-fallthrough": "error",
-        "no-floating-decimal": "error",
-        "no-func-assign": "error",
+        "no-implicit-coercion": "error",
         "no-implied-eval": "error",
+        "no-inner-declarations": "off",
         "no-iterator": "error",
         "no-label-var": "error",
         "no-labels": "error",
         "no-loop-func": "error",
-        "no-mixed-requires": [ "off", false ],
         "no-multi-str": "error",
         "no-native-reassign": "error",
-        "no-nested-ternary": "off",
         "no-new-func": "error",
         "no-new-object": "error",
         "no-new-wrappers": "error",
-        "no-obj-calls": "error",
-        "no-octal": "error",
         "no-octal-escape": "error",
-        "no-param-reassign": "off",
         "no-plusplus": "error",
         "no-proto": "error",
-        "no-redeclare": "error",
-        "no-regex-spaces": "error",
-        "no-restricted-syntax": "off",
         "no-return-assign": "error",
         "no-script-url": "error",
         "no-self-compare": "error",
-        "no-shadow": "off",
         "no-sync": "error",
-        "no-ternary": "off",
-        "no-trailing-spaces": "error",
-        "no-undef": "error",
+        "no-throw-literal": "error",
         "no-undef-init": "error",
-        "no-underscore-dangle": "off",
-        "no-unneeded-ternary": [ "error", { "defaultAssignment": false } ],
-        "no-unreachable": "error",
+        "no-unneeded-ternary": ["error", {"defaultAssignment": false}],
         "no-unused-expressions": "error",
-        "no-unused-vars": [ "error",
-            {
-                "vars": "local",
-                "args": "after-used",
-                "varsIgnorePattern": "print_elapsed_time|check_duplicate_ids"
-            }
-        ],
-        "no-use-before-define": "error",
+        "no-use-before-define": ["error", {"functions": false}],
+        "no-useless-concat": "error",
         "no-useless-constructor": "error",
-        // The Zulip codebase complies partially with the "no-useless-escape"
-        // rule; only regex expressions haven't been updated yet.
-        // Updated regex expressions are currently being tested in casper
-        // files and will decide about a potential future enforcement of this rule.
-        "no-useless-escape": "off",
         "no-var": "error",
-        "space-unary-ops": "error",
-        "no-whitespace-before-property": "error",
-        "no-with": "error",
-        "one-var": [ "error", "never" ],
-        "padded-blocks": "off",
-        "prefer-const": [ "error",
+        "object-shorthand": "error",
+        "one-var": ["error", "never"],
+        "prefer-arrow-callback": "error",
+        "prefer-const": [
+            "error",
             {
-                "destructuring": "any",
                 "ignoreReadBeforeAssign": true
             }
         ],
-        "quote-props": [ "error", "as-needed",
-            {
-                "keywords": false,
-                "unnecessary": true,
-                "numbers": false
-            }
-        ],
-        "quotes": [ "off", "single" ],
         "radix": "error",
-        "semi": "error",
-        "semi-spacing": ["error", {"before": false, "after": true}],
-        "sort-imports": "error",
-        "space-before-blocks": "error",
-        "space-before-function-paren": [ "error",
-            {
-                "anonymous": "always",
-                "named": "never",
-                "asyncArrow": "always"
-            }
-        ],
-        "space-in-parens": "error",
-        "space-infix-ops": "error",
-        "spaced-comment": "off",
-        "strict": "off",
-        "template-curly-spacing": "error",
-        "unnecessary-strict": "off",
-        "use-isnan": "error",
-        "valid-typeof": [ "error", { "requireStringLiterals": true } ],
-        "wrap-iife": [ "error", "outside", { "functionPrototypeMethods": false } ],
-        "wrap-regex": "off",
+        "sort-imports": ["error", {"ignoreDeclarationSort": true}],
+        "spaced-comment": ["error", "always", {"markers": ["/"]}],
+        "strict": "error",
+        "unicorn/consistent-function-scoping": "off",
+        "unicorn/explicit-length-check": "off",
+        "unicorn/filename-case": "off",
+        "unicorn/no-await-expression-member": "off",
+        "unicorn/no-nested-ternary": "off",
+        "unicorn/no-null": "off",
+        "unicorn/no-process-exit": "off",
+        "unicorn/no-useless-undefined": "off",
+        "unicorn/number-literal-case": "off",
+        "unicorn/numeric-separators-style": "off",
+        "unicorn/prefer-module": "off",
+        "unicorn/prefer-node-protocol": "off",
+        "unicorn/prefer-spread": "off",
+        "unicorn/prefer-ternary": "off",
+        "unicorn/prevent-abbreviations": "off",
+        "valid-typeof": ["error", {"requireStringLiterals": true}],
         "yoda": "error"
     },
     "overrides": [
         {
-            "files": [
-                "frontend_tests/**/*.{js,ts}",
-                "static/js/**/*.{js,ts}"
-            ],
+            "files": ["frontend_tests/puppeteer_lib/**", "frontend_tests/puppeteer_tests/**"],
             "globals": {
                 "$": false,
-                "ClipboardJS": false,
-                "FetchStatus": false,
-                "Filter": false,
-                "Handlebars": false,
-                "LightboxCanvas": false,
-                "MessageListData": false,
-                "MessageListView": false,
-                "Plotly": false,
-                "Sortable": false,
-                "WinChan": false,
-                "XDate": false,
-                "_": false,
-                "activity": false,
-                "admin": false,
-                "alert_words": false,
-                "alert_words_ui": false,
-                "attachments_ui": false,
-                "avatar": false,
-                "billing": false,
-                "blueslip": false,
-                "bot_data": false,
-                "bridge": false,
-                "buddy_data": false,
-                "buddy_list": false,
-                "channel": false,
-                "click_handlers": false,
-                "color_data": false,
-                "colorspace": false,
-                "common": false,
-                "components": false,
-                "compose": false,
-                "compose_actions": false,
-                "compose_fade": false,
-                "compose_pm_pill": false,
-                "compose_state": false,
-                "compose_ui": false,
-                "composebox_typeahead": false,
-                "condense": false,
-                "confirm_dialog": false,
-                "copy_and_paste": false,
-                "csrf_token": false,
-                "current_msg_list": true,
-                "drafts": false,
-                "echo": false,
-                "emoji": false,
-                "emoji_picker": false,
-                "favicon": false,
-                "feature_flags": false,
-                "feedback_widget": false,
-                "fenced_code": false,
-                "flatpickr": false,
-                "floating_recipient_bar": false,
-                "gear_menu": false,
-                "hash_util": false,
-                "hashchange": false,
-                "helpers": false,
-                "history": false,
-                "home_msg_list": false,
-                "hotspots": false,
-                "i18n": false,
-                "info_overlay": false,
-                "input_pill": false,
-                "invite": false,
-                "jQuery": false,
-                "katex": false,
-                "keydown_util": false,
-                "lightbox": false,
-                "list_cursor": false,
-                "list_render": false,
-                "list_util": false,
-                "loading": false,
-                "localStorage": false,
-                "local_message": false,
-                "localstorage": false,
-                "location": false,
-                "markdown": false,
-                "marked": false,
-                "md5": false,
-                "message_edit": false,
-                "message_events": false,
-                "message_fetch": false,
-                "message_flags": false,
-                "message_list": false,
-                "message_live_update": false,
-                "message_scroll": false,
-                "message_store": false,
-                "message_util": false,
-                "message_viewport": false,
-                "moment": false,
-                "muting": false,
-                "muting_ui": false,
-                "narrow": false,
-                "narrow_state": false,
-                "navigate": false,
-                "night_mode": false,
-                "notifications": false,
-                "overlays": false,
-                "padded_widget": false,
-                "page_params": false,
-                "panels": false,
-                "people": false,
-                "pm_conversations": false,
-                "pm_list": false,
-                "pm_list_dom": false,
-                "pointer": false,
-                "popovers": false,
-                "presence": false,
-                "reactions": false,
-                "realm_icon": false,
-                "realm_logo": false,
-                "realm_night_logo": false,
-                "recent_senders": false,
-                "reload": false,
-                "reload_state": false,
-                "reminder": false,
-                "resize": false,
-                "rows": false,
-                "rtl": false,
-                "run_test": false,
-                "schema": false,
-                "scroll_bar": false,
-                "scroll_util": false,
-                "search": false,
-                "search_pill": false,
-                "search_pill_widget": false,
-                "search_suggestion": false,
-                "search_util": false,
-                "sent_messages": false,
-                "server_events": false,
-                "server_events_dispatch": false,
-                "settings": false,
-                "settings_account": false,
-                "settings_bots": false,
-                "settings_display": false,
-                "settings_emoji": false,
-                "settings_exports": false,
-                "settings_linkifiers": false,
-                "settings_invites": false,
-                "settings_muting": false,
-                "settings_notifications": false,
-                "settings_org": false,
-                "settings_panel_menu": false,
-                "settings_profile_fields": false,
-                "settings_sections": false,
-                "settings_streams": false,
-                "settings_toggle": false,
-                "settings_ui": false,
-                "settings_user_groups": false,
-                "settings_users": false,
-                "starred_messages": false,
-                "stream_color": false,
-                "stream_create": false,
-                "stream_data": false,
-                "stream_edit": false,
-                "stream_events": false,
-                "stream_list": false,
-                "stream_muting": false,
-                "stream_popover": false,
-                "stream_sort": false,
-                "stream_ui_updates": false,
-                "StripeCheckout": false,
-                "submessage": false,
-                "subs": false,
-                "tab_bar": false,
-                "templates": false,
-                "tictactoe_widget": false,
-                "timerender": false,
-                "todo_widget": false,
-                "top_left_corner": false,
-                "topic_data": false,
-                "topic_generator": false,
-                "topic_list": false,
-                "topic_zoom": false,
-                "transmit": false,
-                "tutorial": false,
-                "typeahead_helper": false,
-                "typing": false,
-                "typing_data": false,
-                "typing_events": false,
-                "ui": false,
-                "ui_init": false,
-                "ui_report": false,
-                "ui_util": false,
-                "unread": false,
-                "unread_ops": false,
-                "unread_ui": false,
-                "upgrade": false,
-                "upload": false,
-                "upload_widget": false,
-                "user_events": false,
-                "user_groups": false,
-                "user_pill": false,
-                "user_search": false,
-                "user_status": false,
-                "user_status_ui": false,
-                "poll_widget": false,
-                "vdom": false,
-                "widgetize": false,
-                "zcommand": false,
-                "zform": false,
-                "zxcvbn": false
+                "zulip_test": false
             }
         },
         {
-            "files": [
-                "frontend_tests/casper_tests/*.js",
-                "frontend_tests/casper_lib/*.js"
-            ],
-            "rules": {
-                "no-var": "off" // PhantomJS doesn’t support let, const
+            "files": ["static/js/**"],
+            "globals": {
+                "StripeCheckout": false
             }
         },
         {
             "files": ["**/*.ts"],
-            "parser": "@typescript-eslint/parser",
+            "extends": [
+                "plugin:@typescript-eslint/recommended-requiring-type-checking",
+                "plugin:import/typescript"
+            ],
             "parserOptions": {
                 "project": "tsconfig.json"
             },
-            "plugins": ["@typescript-eslint"],
+            "settings": {
+                "import/resolver": {
+                    "node": {
+                        "extensions": [".ts", ".d.ts", ".js"] // https://github.com/import-js/eslint-plugin-import/issues/2267
+                    }
+                }
+            },
+            "globals": {
+                "JQuery": false
+            },
             "rules": {
                 // Disable base rule to avoid conflict
-                "empty-returns/main": "off",
-                "indent": "off",
-                "func-call-spacing": "off",
-                "no-extra-parens": "off",
-                "no-magic-numbers": "off",
-                "semi": "off",
+                "no-duplicate-imports": "off",
                 "no-unused-vars": "off",
                 "no-useless-constructor": "off",
+                "no-use-before-define": "off",
 
-                "@typescript-eslint/adjacent-overload-signatures": "error",
                 "@typescript-eslint/array-type": "error",
-                "@typescript-eslint/await-thenable": "error",
-                "@typescript-eslint/ban-types": "error",
-                "@typescript-eslint/ban-ts-ignore": "off",
-                "@typescript-eslint/camelcase": "off",
-                "@typescript-eslint/class-name-casing": "error",
                 "@typescript-eslint/consistent-type-assertions": "error",
-                "@typescript-eslint/explicit-function-return-type": ["error", { "allowExpressions": true }],
-                "@typescript-eslint/explicit-member-accessibility": "off",
-                "@typescript-eslint/func-call-spacing": "error",
-                "@typescript-eslint/generic-type-naming": "off",
-                "@typescript-eslint/indent": "error",
-                "@typescript-eslint/interface-name-prefix": "off",
-                "@typescript-eslint/member-delimiter-style": "error",
-                "@typescript-eslint/member-naming": ["error", { "private": "^_" } ],
+                "@typescript-eslint/consistent-type-imports": "error",
+                "@typescript-eslint/explicit-function-return-type": [
+                    "error",
+                    {"allowExpressions": true}
+                ],
                 "@typescript-eslint/member-ordering": "error",
-                "@typescript-eslint/no-array-constructor": "error",
-                "@typescript-eslint/no-empty-interface": "error",
+                "@typescript-eslint/no-duplicate-imports": "off",
                 "@typescript-eslint/no-explicit-any": "off",
-                "@typescript-eslint/no-extra-parens": ["error", "all"],
                 "@typescript-eslint/no-extraneous-class": "error",
-                "@typescript-eslint/no-for-in-array": "off",
-                "@typescript-eslint/no-inferrable-types": "error",
-                "@typescript-eslint/no-magic-numbers": "off",
-                "@typescript-eslint/no-misused-new": "error",
-                "@typescript-eslint/no-namespace": "error",
                 "@typescript-eslint/no-non-null-assertion": "off",
                 "@typescript-eslint/no-parameter-properties": "error",
-                "@typescript-eslint/no-require-imports": "off",
-                "@typescript-eslint/no-this-alias": "off",
-                "@typescript-eslint/no-type-alias": "off",
                 "@typescript-eslint/no-unnecessary-qualifier": "error",
-                "@typescript-eslint/no-unnecessary-type-assertion": "error",
-                "@typescript-eslint/no-unused-vars": ["error", { "varsIgnorePattern": "^_" } ],
+                "@typescript-eslint/no-unused-vars": ["error", {"varsIgnorePattern": "^_"}],
+                "@typescript-eslint/no-unsafe-argument": "off",
+                "@typescript-eslint/no-unsafe-assignment": "off",
+                "@typescript-eslint/no-unsafe-call": "off",
+                "@typescript-eslint/no-unsafe-member-access": "off",
+                "@typescript-eslint/no-unsafe-return": "off",
                 "@typescript-eslint/no-use-before-define": "error",
                 "@typescript-eslint/no-useless-constructor": "error",
-                "@typescript-eslint/no-var-requires": "off",
-                "@typescript-eslint/prefer-for-of": "off",
-                "@typescript-eslint/prefer-function-type": "off",
                 "@typescript-eslint/prefer-includes": "error",
-                "@typescript-eslint/prefer-interface": "off",
-                "@typescript-eslint/prefer-namespace-keyword": "error",
-                "@typescript-eslint/prefer-regexp-exec": "error",
                 "@typescript-eslint/prefer-string-starts-ends-with": "error",
                 "@typescript-eslint/promise-function-async": "error",
-                "@typescript-eslint/restrict-plus-operands": "off",
-                "@typescript-eslint/semi": "error",
-                "@typescript-eslint/triple-slash-reference": "error",
-                "@typescript-eslint/type-annotation-spacing": "error",
-                "@typescript-eslint/unbound-method": "off",
-                "@typescript-eslint/unified-signatures": "error"
+                "@typescript-eslint/unified-signatures": "error",
+                "no-undef": "error"
+            }
+        },
+        {
+            "files": ["**/*.d.ts"],
+            "rules": {
+                "import/unambiguous": "off"
+            }
+        },
+        {
+            "files": ["frontend_tests/**"],
+            "globals": {
+                "CSS": false,
+                "document": false,
+                "navigator": false,
+                "window": false
+            },
+            "rules": {
+                "formatjs/no-id": "off",
+                "new-cap": "off",
+                "no-sync": "off",
+                "unicorn/prefer-prototype-methods": "off"
+            }
+        },
+        {
+            "files": ["tools/debug-require.js"],
+            "env": {
+                "browser": true,
+                "es2020": false
+            },
+            "rules": {
+                // Don’t require ES features that PhantomJS doesn’t support
+                // TODO: Toggle these settings now that we don't use PhantomJS
+                "no-var": "off",
+                "object-shorthand": "off",
+                "prefer-arrow-callback": "off"
+            }
+        },
+        {
+            "files": ["static/**"],
+            "env": {
+                "browser": true,
+                "node": false
+            },
+            "rules": {
+                "no-console": "error"
+            },
+            "settings": {
+                "import/resolver": "webpack"
+            }
+        },
+        {
+            "files": ["static/shared/**"],
+            "env": {
+                "browser": false,
+                "shared-node-browser": true
+            },
+            "rules": {
+                "import/no-restricted-paths": [
+                    "error",
+                    {
+                        "zones": [
+                            {
+                                "target": "./static/shared",
+                                "from": ".",
+                                "except": ["./node_modules", "./static/shared"]
+                            }
+                        ]
+                    }
+                ]
             }
         }
     ]

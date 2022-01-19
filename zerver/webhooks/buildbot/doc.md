@@ -1,6 +1,7 @@
 Get Zulip notifications for your Buildbot builds!
 
 !!! tip ""
+
     This integration requires Buildbot version 2.2.0 or higher.
 
 1. {!create-stream.md!}
@@ -21,7 +22,7 @@ Get Zulip notifications for your Buildbot builds!
     is the API key of your Zulip bot, and `stream` is set to the stream name
     you want the notifications sent to.
 
-[1]: http://docs.buildbot.net/latest/manual/configuration/reporters.html#zulipstatuspush
+[1]: https://docs.buildbot.net/latest/manual/configuration/reporters/zulip_status.html
 
 {!congrats.md!}
 

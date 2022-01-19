@@ -1,4 +1,4 @@
-import _ from "underscore";
+import _ from "lodash";
 
 // The following constants are tuned to work with
 // TYPING_STARTED_EXPIRY_PERIOD, which is what the other
@@ -46,10 +46,7 @@ export function start_or_extend_idle_timer(worker) {
     if (state.idle_timer) {
         clearTimeout(state.idle_timer);
     }
-    state.idle_timer = setTimeout(
-        on_idle_timeout,
-        TYPING_STOPPED_WAIT_PERIOD
-    );
+    state.idle_timer = setTimeout(on_idle_timeout, TYPING_STOPPED_WAIT_PERIOD);
 }
 
 function set_next_start_time(current_time) {

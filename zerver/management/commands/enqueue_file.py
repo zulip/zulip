@@ -2,14 +2,15 @@ import sys
 from argparse import ArgumentParser
 from typing import IO, Any
 
-import ujson
+import orjson
 from django.core.management.base import BaseCommand
 
 from zerver.lib.queue import queue_json_publish
 
 
 def error(*args: Any) -> None:
-    raise Exception('We cannot enqueue because settings.USING_RABBITMQ is False.')
+    raise Exception("We cannot enqueue because settings.USING_RABBITMQ is False.")
+
 
 class Command(BaseCommand):
     help = """Read JSON lines from a file and enqueue them to a worker queue.
@@ -23,17 +24,19 @@ You can use "-" to represent stdin.
 """
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('queue_name', metavar='<queue>', type=str,
-                            help="name of worker queue to enqueue to")
-        parser.add_argument('file_name', metavar='<file>', type=str,
-                            help="name of file containing JSON lines")
+        parser.add_argument(
+            "queue_name", metavar="<queue>", help="name of worker queue to enqueue to"
+        )
+        parser.add_argument(
+            "file_name", metavar="<file>", help="name of file containing JSON lines"
+        )
 
     def handle(self, *args: Any, **options: str) -> None:
-        queue_name = options['queue_name']
-        file_name = options['file_name']
+        queue_name = options["queue_name"]
+        file_name = options["file_name"]
 
-        if file_name == '-':
-            f = sys.stdin  # type: IO[str]
+        if file_name == "-":
+            f: IO[str] = sys.stdin
         else:
             f = open(file_name)
 
@@ -44,14 +47,14 @@ You can use "-" to represent stdin.
 
             line = line.strip()
             try:
-                payload = line.split('\t')[1]
+                payload = line.split("\t")[1]
             except IndexError:
                 payload = line
 
-            print('Queueing to queue %s: %s' % (queue_name, payload))
+            print(f"Queueing to queue {queue_name}: {payload}")
 
             # Verify that payload is valid json.
-            data = ujson.loads(payload)
+            data = orjson.loads(payload)
 
             # This is designed to use the `error` method rather than
             # the call_consume_in_tests flow.

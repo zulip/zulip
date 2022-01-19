@@ -12,18 +12,16 @@ fill them out.
 
 {start_tabs}
 
-{settings_tab|your-account}
+{settings_tab|profile}
 
 1. Edit the fields under **Profile**.
 
 {end_tabs}
 
-!!! warn ""
-    Note: The **Profile** section will only appear if an organization
-    administrator has added custom profile fields.
-
 ## Related articles
 
+* [Set up your account](/help/set-up-your-account)
 * [Change your name](/help/change-your-name)
 * [Change your email address](/help/change-your-email-address)
+* [Change your profile picture](/help/change-your-profile-picture)
 * [View someone's profile](/help/view-someones-profile)

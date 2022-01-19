@@ -1,0 +1,718 @@
+{
+  "data": [
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "amount": 7200,
+          "amount_capturable": 0,
+          "amount_received": 7200,
+          "application": null,
+          "application_fee_amount": null,
+          "automatic_payment_methods": null,
+          "canceled_at": null,
+          "cancellation_reason": null,
+          "capture_method": "automatic",
+          "charges": {
+            "data": [
+              {
+                "amount": 7200,
+                "amount_captured": 7200,
+                "amount_refunded": 0,
+                "application": null,
+                "application_fee": null,
+                "application_fee_amount": null,
+                "balance_transaction": "txn_NORMALIZED00000000000001",
+                "billing_details": {
+                  "address": {
+                    "city": null,
+                    "country": null,
+                    "line1": null,
+                    "line2": null,
+                    "postal_code": null,
+                    "state": null
+                  },
+                  "email": null,
+                  "name": null,
+                  "phone": null
+                },
+                "calculated_statement_descriptor": "ZULIP STANDARD",
+                "captured": true,
+                "created": 1000000000,
+                "currency": "usd",
+                "customer": "cus_NORMALIZED0001",
+                "description": "Upgrade to Zulip Standard, $12.0 x 6",
+                "destination": null,
+                "dispute": null,
+                "disputed": false,
+                "failure_code": null,
+                "failure_message": null,
+                "fraud_details": {},
+                "id": "ch_NORMALIZED00000000000001",
+                "invoice": null,
+                "livemode": false,
+                "metadata": {
+                  "billing_modality": "charge_automatically",
+                  "billing_schedule": "1",
+                  "license_management": "automatic",
+                  "licenses": "6",
+                  "price_per_license": "1200",
+                  "realm_id": "1",
+                  "realm_str": "zulip",
+                  "seat_count": "6",
+                  "type": "upgrade",
+                  "user_email": "hamlet@zulip.com",
+                  "user_id": "10"
+                },
+                "object": "charge",
+                "on_behalf_of": null,
+                "order": null,
+                "outcome": {
+                  "network_status": "approved_by_network",
+                  "reason": null,
+                  "risk_level": "normal",
+                  "risk_score": 0,
+                  "seller_message": "Payment complete.",
+                  "type": "authorized"
+                },
+                "paid": true,
+                "payment_intent": "pi_NORMALIZED00000000000001",
+                "payment_method": "pm_1K2OXoHSaWXyvFpKhrceNhbI",
+                "payment_method_details": {
+                  "card": {
+                    "brand": "visa",
+                    "checks": {
+                      "address_line1_check": null,
+                      "address_postal_code_check": null,
+                      "cvc_check": "pass"
+                    },
+                    "country": "US",
+                    "exp_month": 3,
+                    "exp_year": 2033,
+                    "fingerprint": "NORMALIZED000001",
+                    "funding": "credit",
+                    "installments": null,
+                    "last4": "4242",
+                    "network": "visa",
+                    "three_d_secure": null,
+                    "wallet": null
+                  },
+                  "type": "card"
+                },
+                "receipt_email": "hamlet@zulip.com",
+                "receipt_number": null,
+                "receipt_url": "https://pay.stripe.com/receipts/acct_NORMALIZED000001/ch_NORMALIZED00000000000001/rcpt_NORMALIZED000000000000000000001",
+                "refunded": false,
+                "refunds": {
+                  "data": [],
+                  "has_more": false,
+                  "object": "list",
+                  "total_count": 0,
+                  "url": "/v1/charges/ch_NORMALIZED00000000000001/refunds"
+                },
+                "review": null,
+                "shipping": null,
+                "source": null,
+                "source_transfer": null,
+                "statement_descriptor": "Zulip Standard",
+                "statement_descriptor_suffix": null,
+                "status": "succeeded",
+                "transfer_data": null,
+                "transfer_group": null
+              }
+            ],
+            "has_more": false,
+            "object": "list",
+            "total_count": 1,
+            "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
+          },
+          "client_secret": "pi_NORMALIZED00000000000001_secret_fD7F9AdDLLYQt94Ii4rEflkYg",
+          "confirmation_method": "automatic",
+          "created": 1000000000,
+          "currency": "usd",
+          "customer": "cus_NORMALIZED0001",
+          "description": "Upgrade to Zulip Standard, $12.0 x 6",
+          "id": "pi_NORMALIZED00000000000001",
+          "invoice": null,
+          "last_payment_error": null,
+          "livemode": false,
+          "metadata": {
+            "billing_modality": "charge_automatically",
+            "billing_schedule": "1",
+            "license_management": "automatic",
+            "licenses": "6",
+            "price_per_license": "1200",
+            "realm_id": "1",
+            "realm_str": "zulip",
+            "seat_count": "6",
+            "type": "upgrade",
+            "user_email": "hamlet@zulip.com",
+            "user_id": "10"
+          },
+          "next_action": null,
+          "object": "payment_intent",
+          "on_behalf_of": null,
+          "payment_method": "pm_1K2OXoHSaWXyvFpKhrceNhbI",
+          "payment_method_options": {
+            "card": {
+              "installments": null,
+              "network": null,
+              "request_three_d_secure": "automatic"
+            }
+          },
+          "payment_method_types": [
+            "card"
+          ],
+          "receipt_email": "hamlet@zulip.com",
+          "review": null,
+          "setup_future_usage": null,
+          "shipping": null,
+          "source": null,
+          "statement_descriptor": "Zulip Standard",
+          "statement_descriptor_suffix": null,
+          "status": "succeeded",
+          "transfer_data": null,
+          "transfer_group": null
+        }
+      },
+      "id": "evt_3K2OXoHSaWXyvFpK1IgAmGCx",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "req_NORMALIZED0002",
+        "idempotency_key": "bbd6840b-375d-408a-a4b2-0353118fef83"
+      },
+      "type": "payment_intent.succeeded"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "amount": 7200,
+          "amount_captured": 7200,
+          "amount_refunded": 0,
+          "application": null,
+          "application_fee": null,
+          "application_fee_amount": null,
+          "balance_transaction": "txn_NORMALIZED00000000000001",
+          "billing_details": {
+            "address": {
+              "city": null,
+              "country": null,
+              "line1": null,
+              "line2": null,
+              "postal_code": null,
+              "state": null
+            },
+            "email": null,
+            "name": null,
+            "phone": null
+          },
+          "calculated_statement_descriptor": "ZULIP STANDARD",
+          "captured": true,
+          "created": 1000000000,
+          "currency": "usd",
+          "customer": "cus_NORMALIZED0001",
+          "description": "Upgrade to Zulip Standard, $12.0 x 6",
+          "destination": null,
+          "dispute": null,
+          "disputed": false,
+          "failure_code": null,
+          "failure_message": null,
+          "fraud_details": {},
+          "id": "ch_NORMALIZED00000000000001",
+          "invoice": null,
+          "livemode": false,
+          "metadata": {
+            "billing_modality": "charge_automatically",
+            "billing_schedule": "1",
+            "license_management": "automatic",
+            "licenses": "6",
+            "price_per_license": "1200",
+            "realm_id": "1",
+            "realm_str": "zulip",
+            "seat_count": "6",
+            "type": "upgrade",
+            "user_email": "hamlet@zulip.com",
+            "user_id": "10"
+          },
+          "object": "charge",
+          "on_behalf_of": null,
+          "order": null,
+          "outcome": {
+            "network_status": "approved_by_network",
+            "reason": null,
+            "risk_level": "normal",
+            "risk_score": 0,
+            "seller_message": "Payment complete.",
+            "type": "authorized"
+          },
+          "paid": true,
+          "payment_intent": "pi_NORMALIZED00000000000001",
+          "payment_method": "pm_1K2OXoHSaWXyvFpKhrceNhbI",
+          "payment_method_details": {
+            "card": {
+              "brand": "visa",
+              "checks": {
+                "address_line1_check": null,
+                "address_postal_code_check": null,
+                "cvc_check": "pass"
+              },
+              "country": "US",
+              "exp_month": 3,
+              "exp_year": 2033,
+              "fingerprint": "NORMALIZED000001",
+              "funding": "credit",
+              "installments": null,
+              "last4": "4242",
+              "network": "visa",
+              "three_d_secure": null,
+              "wallet": null
+            },
+            "type": "card"
+          },
+          "receipt_email": "hamlet@zulip.com",
+          "receipt_number": null,
+          "receipt_url": "https://pay.stripe.com/receipts/acct_NORMALIZED000001/ch_NORMALIZED00000000000001/rcpt_NORMALIZED000000000000000000001",
+          "refunded": false,
+          "refunds": {
+            "data": [],
+            "has_more": false,
+            "object": "list",
+            "total_count": 0,
+            "url": "/v1/charges/ch_NORMALIZED00000000000001/refunds"
+          },
+          "review": null,
+          "shipping": null,
+          "source": null,
+          "source_transfer": null,
+          "statement_descriptor": "Zulip Standard",
+          "statement_descriptor_suffix": null,
+          "status": "succeeded",
+          "transfer_data": null,
+          "transfer_group": null
+        }
+      },
+      "id": "evt_3K2OXoHSaWXyvFpK1BCXNPsv",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 2,
+      "request": {
+        "id": "req_NORMALIZED0002",
+        "idempotency_key": "bbd6840b-375d-408a-a4b2-0353118fef83"
+      },
+      "type": "charge.succeeded"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "address": null,
+          "balance": 0,
+          "created": 1000000000,
+          "currency": null,
+          "default_source": null,
+          "delinquent": false,
+          "description": "zulip (Zulip Dev)",
+          "discount": null,
+          "email": "hamlet@zulip.com",
+          "id": "cus_NORMALIZED0001",
+          "invoice_prefix": "NORMA01",
+          "invoice_settings": {
+            "custom_fields": null,
+            "default_payment_method": "pm_1K2OXoHSaWXyvFpKhrceNhbI",
+            "footer": null
+          },
+          "livemode": false,
+          "metadata": {
+            "realm_id": "1",
+            "realm_str": "zulip"
+          },
+          "name": null,
+          "next_invoice_sequence": 1,
+          "object": "customer",
+          "phone": null,
+          "preferred_locales": [],
+          "shipping": null,
+          "tax_exempt": "none"
+        },
+        "previous_attributes": {
+          "invoice_settings": {
+            "default_payment_method": null
+          }
+        }
+      },
+      "id": "evt_1K2OXrHSaWXyvFpKTft9z8iM",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "req_NORMALIZED0003",
+        "idempotency_key": "41855f8d-7eaf-45a3-8f4b-ebf23c527d2a"
+      },
+      "type": "customer.updated"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "application": null,
+          "cancellation_reason": null,
+          "client_secret": "seti_1K2OXpHSaWXyvFpKOq6F3F9K_secret_KhoAzpsEjV8G4oAeYDSFmGYMKv5BRkc",
+          "created": 1000000000,
+          "customer": "cus_NORMALIZED0001",
+          "description": null,
+          "id": "seti_1K2OXpHSaWXyvFpKOq6F3F9K",
+          "last_setup_error": null,
+          "latest_attempt": "setatt_1K2OXpHSaWXyvFpKcauo7Bx8",
+          "livemode": false,
+          "mandate": null,
+          "metadata": {
+            "billing_modality": "charge_automatically",
+            "billing_schedule": "1",
+            "license_management": "automatic",
+            "licenses": "6",
+            "price_per_license": "1200",
+            "realm_id": "1",
+            "realm_str": "zulip",
+            "seat_count": "6",
+            "type": "upgrade",
+            "user_email": "hamlet@zulip.com",
+            "user_id": "10"
+          },
+          "next_action": null,
+          "object": "setup_intent",
+          "on_behalf_of": null,
+          "payment_method": "pm_1K2OXoHSaWXyvFpKhrceNhbI",
+          "payment_method_options": {
+            "card": {
+              "request_three_d_secure": "automatic"
+            }
+          },
+          "payment_method_types": [
+            "card"
+          ],
+          "single_use_mandate": null,
+          "status": "succeeded",
+          "usage": "off_session"
+        }
+      },
+      "id": "evt_1K2OXqHSaWXyvFpKyccpbqqf",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "req_NORMALIZED0004",
+        "idempotency_key": "8c0e4f10-2995-45d3-9b35-aa76865e3557"
+      },
+      "type": "setup_intent.succeeded"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "billing_details": {
+            "address": {
+              "city": null,
+              "country": null,
+              "line1": null,
+              "line2": null,
+              "postal_code": null,
+              "state": null
+            },
+            "email": null,
+            "name": null,
+            "phone": null
+          },
+          "card": {
+            "brand": "visa",
+            "checks": {
+              "address_line1_check": null,
+              "address_postal_code_check": null,
+              "cvc_check": "pass"
+            },
+            "country": "US",
+            "exp_month": 3,
+            "exp_year": 2033,
+            "fingerprint": "NORMALIZED000001",
+            "funding": "credit",
+            "generated_from": null,
+            "last4": "4242",
+            "networks": {
+              "available": [
+                "visa"
+              ],
+              "preferred": null
+            },
+            "three_d_secure_usage": {
+              "supported": true
+            },
+            "wallet": null
+          },
+          "created": 1000000000,
+          "customer": "cus_NORMALIZED0001",
+          "id": "pm_1K2OXoHSaWXyvFpKhrceNhbI",
+          "livemode": false,
+          "metadata": {},
+          "object": "payment_method",
+          "type": "card"
+        }
+      },
+      "id": "evt_1K2OXqHSaWXyvFpKUpLnWMHc",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "req_NORMALIZED0004",
+        "idempotency_key": "8c0e4f10-2995-45d3-9b35-aa76865e3557"
+      },
+      "type": "payment_method.attached"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "application": null,
+          "cancellation_reason": null,
+          "client_secret": "seti_1K2OXpHSaWXyvFpKOq6F3F9K_secret_KhoAzpsEjV8G4oAeYDSFmGYMKv5BRkc",
+          "created": 1000000000,
+          "customer": "cus_NORMALIZED0001",
+          "description": null,
+          "id": "seti_1K2OXpHSaWXyvFpKOq6F3F9K",
+          "last_setup_error": null,
+          "latest_attempt": "setatt_1K2OXpHSaWXyvFpKcauo7Bx8",
+          "livemode": false,
+          "mandate": null,
+          "metadata": {
+            "billing_modality": "charge_automatically",
+            "billing_schedule": "1",
+            "license_management": "automatic",
+            "licenses": "6",
+            "price_per_license": "1200",
+            "realm_id": "1",
+            "realm_str": "zulip",
+            "seat_count": "6",
+            "type": "upgrade",
+            "user_email": "hamlet@zulip.com",
+            "user_id": "10"
+          },
+          "next_action": null,
+          "object": "setup_intent",
+          "on_behalf_of": null,
+          "payment_method": "pm_1K2OXoHSaWXyvFpKhrceNhbI",
+          "payment_method_options": {
+            "card": {
+              "request_three_d_secure": "automatic"
+            }
+          },
+          "payment_method_types": [
+            "card"
+          ],
+          "single_use_mandate": null,
+          "status": "succeeded",
+          "usage": "off_session"
+        }
+      },
+      "id": "evt_1K2OXqHSaWXyvFpKZ0zBpGzN",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "req_NORMALIZED0004",
+        "idempotency_key": "8c0e4f10-2995-45d3-9b35-aa76865e3557"
+      },
+      "type": "setup_intent.created"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "application": null,
+          "cancellation_reason": null,
+          "client_secret": "seti_1K2OXoHSaWXyvFpKLyy5ns16_secret_KhoANgFdO2YICL1Urfnax58nGUY0MeV",
+          "created": 1000000000,
+          "customer": "cus_NORMALIZED0001",
+          "description": null,
+          "id": "seti_1K2OXoHSaWXyvFpKLyy5ns16",
+          "last_setup_error": null,
+          "latest_attempt": null,
+          "livemode": false,
+          "mandate": null,
+          "metadata": {
+            "billing_modality": "charge_automatically",
+            "billing_schedule": "1",
+            "license_management": "automatic",
+            "licenses": "6",
+            "price_per_license": "1200",
+            "realm_id": "1",
+            "realm_str": "zulip",
+            "seat_count": "6",
+            "type": "upgrade",
+            "user_email": "hamlet@zulip.com",
+            "user_id": "10"
+          },
+          "next_action": null,
+          "object": "setup_intent",
+          "on_behalf_of": null,
+          "payment_method": null,
+          "payment_method_options": {
+            "card": {
+              "request_three_d_secure": "automatic"
+            }
+          },
+          "payment_method_types": [
+            "card"
+          ],
+          "single_use_mandate": null,
+          "status": "requires_payment_method",
+          "usage": "off_session"
+        }
+      },
+      "id": "evt_1K2OXoHSaWXyvFpKm8uayD4o",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "req_NORMALIZED0005",
+        "idempotency_key": "1eca5c75-5177-4abb-94c1-4e6c39916bef"
+      },
+      "type": "setup_intent.created"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "amount": 7200,
+          "amount_capturable": 0,
+          "amount_received": 0,
+          "application": null,
+          "application_fee_amount": null,
+          "automatic_payment_methods": null,
+          "canceled_at": null,
+          "cancellation_reason": null,
+          "capture_method": "automatic",
+          "charges": {
+            "data": [],
+            "has_more": false,
+            "object": "list",
+            "total_count": 0,
+            "url": "/v1/charges?payment_intent=pi_NORMALIZED00000000000001"
+          },
+          "client_secret": "pi_NORMALIZED00000000000001_secret_fD7F9AdDLLYQt94Ii4rEflkYg",
+          "confirmation_method": "automatic",
+          "created": 1000000000,
+          "currency": "usd",
+          "customer": "cus_NORMALIZED0001",
+          "description": "Upgrade to Zulip Standard, $12.0 x 6",
+          "id": "pi_NORMALIZED00000000000001",
+          "invoice": null,
+          "last_payment_error": null,
+          "livemode": false,
+          "metadata": {
+            "billing_modality": "charge_automatically",
+            "billing_schedule": "1",
+            "license_management": "automatic",
+            "licenses": "6",
+            "price_per_license": "1200",
+            "realm_id": "1",
+            "realm_str": "zulip",
+            "seat_count": "6",
+            "type": "upgrade",
+            "user_email": "hamlet@zulip.com",
+            "user_id": "10"
+          },
+          "next_action": null,
+          "object": "payment_intent",
+          "on_behalf_of": null,
+          "payment_method": null,
+          "payment_method_options": {
+            "card": {
+              "installments": null,
+              "network": null,
+              "request_three_d_secure": "automatic"
+            }
+          },
+          "payment_method_types": [
+            "card"
+          ],
+          "receipt_email": "hamlet@zulip.com",
+          "review": null,
+          "setup_future_usage": null,
+          "shipping": null,
+          "source": null,
+          "statement_descriptor": "Zulip Standard",
+          "statement_descriptor_suffix": null,
+          "status": "requires_payment_method",
+          "transfer_data": null,
+          "transfer_group": null
+        }
+      },
+      "id": "evt_3K2OXoHSaWXyvFpK1tATyd2u",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "req_NORMALIZED0006",
+        "idempotency_key": "d6ea8ee3-361c-451e-a3d7-e841957c3d25"
+      },
+      "type": "payment_intent.created"
+    },
+    {
+      "api_version": "2020-08-27",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "address": null,
+          "balance": 0,
+          "created": 1000000000,
+          "currency": null,
+          "default_source": null,
+          "delinquent": false,
+          "description": "zulip (Zulip Dev)",
+          "discount": null,
+          "email": "hamlet@zulip.com",
+          "id": "cus_NORMALIZED0001",
+          "invoice_prefix": "NORMA01",
+          "invoice_settings": {
+            "custom_fields": null,
+            "default_payment_method": null,
+            "footer": null
+          },
+          "livemode": false,
+          "metadata": {
+            "realm_id": "1",
+            "realm_str": "zulip"
+          },
+          "name": null,
+          "next_invoice_sequence": 1,
+          "object": "customer",
+          "phone": null,
+          "preferred_locales": [],
+          "shipping": null,
+          "tax_exempt": "none"
+        }
+      },
+      "id": "evt_1K2OXnHSaWXyvFpKsZOF5R1j",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "req_NORMALIZED0007",
+        "idempotency_key": "d4faf9c7-d357-4870-b964-b1d993c5c058"
+      },
+      "type": "customer.created"
+    }
+  ],
+  "has_more": false,
+  "object": "list",
+  "url": "/v1/events"
+}

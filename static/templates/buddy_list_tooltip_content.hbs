@@ -1,5 +1,9 @@
 <div class="buddy_list_tooltip_content">
-    <span class="tooltip_inner_content">{{first_line}}</span>
+    <span class="tooltip_inner_content">{{first_line}}
+        {{#if show_you}}
+        <span class="my_user_status">{{t "(you)" }}</span>
+        {{/if}}
+    </span>
     {{#if second_line}}
     <br /><span class="tooltip_inner_content">{{second_line}}</span>
     {{/if}}

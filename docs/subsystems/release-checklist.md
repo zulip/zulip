@@ -5,53 +5,95 @@ preparing a new release.
 
 ### A week before the release
 
-* Upgrade all Python dependencies in `requirements` to latest
-  upstream versions so they can burn in (use `pip list --outdated`).
-* Update all the strings on Transifex and notify translators that they
-  should translate the new strings to get them in for the next
-  release.
-* Update `changelog.md` with major changes going into the release.
-* Create a burndown list of bugs that need to be fixed before we can
+- For a major release (e.g. 4.0):
+  - Upgrade all Python dependencies in
+    `requirements` to latest upstream versions so they can burn in (use
+    `pip list --outdated`).
+  - [Upload strings to
+    Transifex](../translating/internationalization.html#translation-process)
+    using `push-translations`. Post a Transifex
+    [Announcement](https://www.transifex.com/zulip/zulip/announcements/)
+    notifying translators that we're approaching a release.
+  - Merge draft updates to the [changelog](../overview/changelog.md)
+    with changes since the last release. While doing so, take notes on
+    things that might need follow-up work or documentation before we
+    can happily advertise them in a release blog post.
+  - Inspect all `TODO/compatibility` comments for whether we can
+    remove any backwards-compatibility code in this release.
+- Create a burn-down list of issues that need to be fixed before we can
   release, and make sure all of them are being worked on.
-* Draft the release blog post (aka the release notes.)
+- Draft the release blog post (a.k.a. the release notes) in Paper. In
+  it, list the important changes in the release, from most to least
+  notable.
 
 ### Final release preparation
 
-* Update `changelog.md` with any changes since the last update, and
-  with revisions from the draft blog post.
-* Download updated translation strings from Transifex and commit them.
-* Use `build-release-tarball` to generate a release tarball.
-* Test the new tarball extensively, both new install and upgrade from last
-  release, on both Xenial and Bionic.
-* Repeat until release is ready.
-* When near finished: move the blog post draft to Ghost.  (For a draft
-  in Dropbox Paper, use "··· > Download > Markdown" to get a pretty
-  good markup conversion.)  Proofread the post, especially for
-  formatting.
+- Update the Paper blog post draft with any new commits.
+- _Except minor releases:_ Download updated translation strings from
+  Transifex and commit them.
+- Use `build-release-tarball` to generate a release tarball.
+- Test the new tarball extensively, both new install and upgrade from last
+  release, on both Bionic and Focal.
+- Repeat until release is ready.
+- Send around the Paper blog post draft for review.
+- Move the blog post draft to Ghost. (For a draft in Dropbox Paper,
+  use "··· > Export > Markdown" to get a pretty good markup
+  conversion.) Proofread the post, especially for formatting. Tag
+  the post with "Release announcements" in Ghost.
 
 ### Executing the release
 
-* Do final updates to `changelog.md`, for any final changes and with
-  any revisions from the draft blog post.  (And the date!)
-* Update `ZULIP_VERSION` and `LATEST_RELEASE_VERSION` in `version.py`.
-* Use `build-release-tarball` to generate a final release tarball.
-* Post the release tarball on https://www.zulip.org/dist/releases/ :
-  add the file, update the `zulip-server-latest.tar.gz` symlink, and
-  add to SHA256SUMS.txt, using `ship-release.sh`.
-* Create a Git tag and push the tag.
-* Post the release on GitHub, using the text from `changelog.md`.
-* Update the [Docker image](https://github.com/zulip/docker-zulip) and do a release of that.
-* Update the image of DigitalOcean one click app using [Fabric](https://github.com/zulip/marketplace-partners)
-  and publish it to DO marketplace.
-* Publish the blog post.
-* Email zulip-announce, post to #announce, and send a tweet.
+- Create the release commit, on `main` (for major releases) or on the
+  release branch (for minor releases):
+  - Copy the Markdown release notes for the release into
+    `docs/overview/changelog.md`.
+  - _Except minor releases:_ Adjust the `changelog.md` heading to have
+    the stable release series boilerplate.
+  - Update `ZULIP_VERSION` and `LATEST_RELEASE_VERSION` in `version.py`.
+  - _Except minor releases:_ Update `API_FEATURE_LEVEL` to a feature
+    level for the final release, and document a reserved range.
+- Tag that commit with an unsigned Git tag named the release number.
+- Use `build-release-tarball` to generate a final release tarball.
+- Push the tag and release commit.
+- Upload the tarball using `tools/upload-release`.
+- Post the release by [editing the latest tag on
+  GitHub](https://github.com/zulip/zulip/tags); use the text from
+  `changelog.md` for the release notes.
+
+  **Note:** This will trigger the [GitHub action](https://github.com/zulip/zulip/blob/main/tools/oneclickapps/README.md)
+  for updating DigitalOcean one-click app image. The action uses the latest release
+  tarball published on `download.zulip.com` for creating the image.
+
+- Update the [Docker image](https://github.com/zulip/docker-zulip) and
+  do a release of that.
+- Update the image of DigitalOcean one click app using
+  [Fabric](https://github.com/zulip/marketplace-partners) and publish
+  it to DO marketplace.
+- Publish the blog post; check the box to "send by email."
+- Email [zulip-announce](https://groups.google.com/g/zulip-announce),
+  post to [#announce](https://chat.zulip.org/#narrow/stream/1-announce),
+  and [send a tweet](https://twitter.com/zulip).
 
 ### Post-release
 
-* Push the release commit to master, if applicable (typically for a
-  major release); otherwise, make sure any last changes make it back
-  to master.
-* Update `ZULIP_VERSION` in `version.py` to e.g. `2.2.0+git` following
-  a 2.1.0 release, and make a Git tag named e.g. `2.2-dev` pointing to
-  this update.
-* Consider removing a few old releases from ReadTheDocs.
+- Update the CI targets in `.github/workflows/production-suite.yml` to
+  include upgrades from the most recent point releases from the last
+  two series -- e.g after releasing 4.8, both `main` and `4.x`
+  should test upgrades from 3.4 and 4.8, and after releasing 5.0 both
+  `main` and `5.x` should test upgrades from 4.8 and 5.0.
+- Following a major release (e.g. 4.0):
+  - Create a release branch (e.g. `4.x`).
+  - On the release branch, update `ZULIP_VERSION` in `version.py` to
+    the present release with a `+git` suffix, e.g. `4.0+git`.
+  - On `main`, update `ZULIP_VERSION` to the future major release with
+    a `-dev+git` suffix, e.g. `5.0-dev+git`. Make a Git tag for this
+    update commit with a `-dev` suffix, e.g. `5.0-dev`. Push the tag
+    to both zulip.git and zulip-internal.git to get a correct version
+    number for future Cloud deployments.
+  - Consider removing a few old releases from ReadTheDocs; we keep about
+    two years of back-versions.
+- Following a minor release (e.g. 3.2), on the release branch:
+  - Update `ZULIP_VERSION` to the present release with a `+git`
+    suffix, e.g. `3.2+git`.
+  - Update `LATEST_RELEASE_VERSION` with the released version.
+  - Cherry-pick the changelog changes back to `main`.

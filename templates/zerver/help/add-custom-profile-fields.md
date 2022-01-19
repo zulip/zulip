@@ -7,6 +7,10 @@ of residence, birthday, manager, Twitter handle, and more.
 Custom profile fields are always optional, and do not appear in users'
 profiles until they fill them out.
 
+Zulip supports synchronizing custom profile fields from an external
+user database such as LDAP or SAML. See the [authentication
+methods][authentication-production] documentation for details.
+
 ## Add a custom profile field
 
 {start_tabs}
@@ -39,3 +43,5 @@ There are several different types of fields available.
 
 * [Edit your profile](/help/edit-your-profile)
 * [View someone's profile](/help/view-someones-profile)
+
+[authentication-production]: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html

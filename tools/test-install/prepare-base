@@ -7,12 +7,14 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 RELEASE="$1"
-ARCH=amd64  # TODO: maybe i686 too
+ARCH=amd64 # TODO: maybe i686 too
 
 case "$RELEASE" in
-    xenial) extra_packages=(virtualenv postgresql-9.5)
+    bionic)
+        extra_packages=(python-pip)
         ;;
-    bionic) extra_packages=(virtualenv postgresql-10)
+    focal)
+        extra_packages=(python3-pip)
         ;;
     *)
         echo "error: unsupported target release: $RELEASE" >&2
@@ -46,19 +48,20 @@ run apt-get dist-upgrade -y
 # As an optimization, we install a bunch of packages the installer
 # would install for itself.
 run apt-get install -y --no-install-recommends \
-  xvfb parallel netcat unzip zip jq python3-pip wget curl eatmydata \
-  git crudini openssl ssl-cert \
-  build-essential python3-dev \
-  memcached rabbitmq-server redis-server \
-  hunspell-en-us supervisor libssl-dev puppet \
-  gettext libffi-dev libfreetype6-dev zlib1g-dev libjpeg-dev \
-  libldap2-dev libmemcached-dev python-dev python-pip \
-  python-six libxml2-dev libxslt1-dev libpq-dev \
-  "${extra_packages[@]}"
+    xvfb parallel unzip zip jq python3-pip curl eatmydata \
+    git crudini openssl ssl-cert \
+    build-essential python3-dev \
+    memcached redis-server \
+    hunspell-en-us supervisor libssl-dev puppet \
+    gettext libffi-dev libfreetype6-dev zlib1g-dev libjpeg-dev \
+    libldap2-dev \
+    libxml2-dev libxslt1-dev libpq-dev \
+    virtualenv \
+    "${extra_packages[@]}"
 
 run ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime
-run locale-gen en_US.UTF-8 || true
-echo "LC_ALL=en_US.UTF-8" | run tee /etc/default/locale
+run locale-gen C.UTF-8 || true
+echo "LC_ALL=C.UTF-8" | run tee /etc/default/locale
 
 # TODO: on failure, either stop or print message
 lxc-stop -n "$CONTAINER_NAME"

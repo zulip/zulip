@@ -1,14 +1,19 @@
 class zulip_ops::app_frontend {
   include zulip::app_frontend_base
-  include zulip::memcached
-  include zulip::rabbit
+  include zulip::profile::memcached
+  include zulip::profile::rabbitmq
   include zulip::postfix_localmail
   include zulip::static_asset_compiler
+  include zulip_ops::app_frontend_monitoring
   $app_packages = [# Needed for the ssh tunnel to the redis server
     'autossh',
   ]
   package { $app_packages: ensure => 'installed' }
-  $hosts_domain = zulipconf('nagios', 'hosts_domain', undef)
+  $redis_hostname = zulipconf('redis', 'hostname', undef)
+
+  zulip_ops::firewall_allow{ 'smtp': }
+  zulip_ops::firewall_allow{ 'http': }
+  zulip_ops::firewall_allow{ 'https': }
 
   file { '/etc/logrotate.d/zulip':
     ensure => file,
@@ -18,30 +23,7 @@ class zulip_ops::app_frontend {
     source => 'puppet:///modules/zulip/logrotate/zulip',
   }
 
-  file { '/etc/log2zulip.conf':
-    ensure => file,
-    owner  => 'zulip',
-    group  => 'zulip',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip_ops/log2zulip.conf',
-  }
-
-  file { '/etc/cron.d/log2zulip':
-    ensure => absent,
-  }
-
-  file { '/etc/log2zulip.zuliprc':
-    ensure => file,
-    owner  => 'zulip',
-    group  => 'zulip',
-    mode   => '0600',
-    source => 'puppet:///modules/zulip_ops/log2zulip.zuliprc',
-  }
-  file { '/etc/cron.d/check-apns-tokens':
-    ensure => absent,
-  }
-
-  file { '/etc/supervisor/conf.d/redis_tunnel.conf':
+  file { "${zulip::common::supervisor_conf_dir}/redis_tunnel.conf":
     ensure  => file,
     require => Package['supervisor', 'autossh'],
     owner   => 'root',
@@ -59,4 +41,13 @@ class zulip_ops::app_frontend {
     content => zulipsecret('secrets', 'redis_password', ''),
   }
 
+  # Each server does its own fetching of contributor data, since
+  # we don't have a way to synchronize that among several servers.
+  file { '/etc/cron.d/fetch-contributor-data':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'puppet:///modules/zulip_ops/cron.d/fetch-contributor-data',
+  }
 }

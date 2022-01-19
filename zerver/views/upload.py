@@ -1,25 +1,42 @@
-from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, \
-    HttpResponseNotFound
-from django.shortcuts import redirect
-from django.utils.cache import patch_cache_control
-from django.utils.translation import ugettext as _
-
-from zerver.lib.response import json_success, json_error
-from zerver.lib.upload import upload_message_image_from_request, get_local_file_path, \
-    get_signed_upload_url, check_upload_within_quota, INLINE_MIME_TYPES
-from zerver.models import UserProfile, validate_attachment_request
-from django.conf import settings
-from django_sendfile import sendfile
 from mimetypes import guess_type
 
-def serve_s3(request: HttpRequest, url_path: str) -> HttpResponse:
-    uri = get_signed_upload_url(url_path)
-    return redirect(uri)
+from django.conf import settings
+from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, HttpResponseNotFound
+from django.shortcuts import redirect
+from django.utils.cache import patch_cache_control
+from django.utils.translation import gettext as _
+from django_sendfile import sendfile
 
-def serve_local(request: HttpRequest, path_id: str) -> HttpResponse:
+from zerver.lib.exceptions import JsonableError
+from zerver.lib.response import json_success
+from zerver.lib.upload import (
+    INLINE_MIME_TYPES,
+    check_upload_within_quota,
+    generate_unauthed_file_access_url,
+    get_local_file_path,
+    get_local_file_path_id_from_token,
+    get_signed_upload_url,
+    upload_message_image_from_request,
+)
+from zerver.models import UserProfile, validate_attachment_request
+
+
+def serve_s3(request: HttpRequest, url_path: str, url_only: bool) -> HttpResponse:
+    url = get_signed_upload_url(url_path)
+    if url_only:
+        return json_success(dict(url=url))
+
+    return redirect(url)
+
+
+def serve_local(request: HttpRequest, path_id: str, url_only: bool) -> HttpResponse:
     local_path = get_local_file_path(path_id)
     if local_path is None:
-        return HttpResponseNotFound('<p>File not found</p>')
+        return HttpResponseNotFound("<p>File not found</p>")
+
+    if url_only:
+        url = generate_unauthed_file_access_url(path_id)
+        return json_success(dict(url=url))
 
     # Here we determine whether a browser should treat the file like
     # an attachment (and thus clicking a link to it should download)
@@ -41,14 +58,38 @@ def serve_local(request: HttpRequest, path_id: str) -> HttpResponse:
     mimetype, encoding = guess_type(local_path)
     attachment = mimetype not in INLINE_MIME_TYPES
 
-    response = sendfile(request, local_path, attachment=attachment,
-                        mimetype=mimetype, encoding=encoding)
+    response = sendfile(
+        request, local_path, attachment=attachment, mimetype=mimetype, encoding=encoding
+    )
     patch_cache_control(response, private=True, immutable=True)
     return response
 
-def serve_file_backend(request: HttpRequest, user_profile: UserProfile,
-                       realm_id_str: str, filename: str) -> HttpResponse:
-    path_id = "%s/%s" % (realm_id_str, filename)
+
+def serve_file_backend(
+    request: HttpRequest, user_profile: UserProfile, realm_id_str: str, filename: str
+) -> HttpResponse:
+    return serve_file(request, user_profile, realm_id_str, filename, url_only=False)
+
+
+def serve_file_url_backend(
+    request: HttpRequest, user_profile: UserProfile, realm_id_str: str, filename: str
+) -> HttpResponse:
+    """
+    We should return a signed, short-lived URL
+    that the client can use for native mobile download, rather than serving a redirect.
+    """
+
+    return serve_file(request, user_profile, realm_id_str, filename, url_only=True)
+
+
+def serve_file(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    realm_id_str: str,
+    filename: str,
+    url_only: bool = False,
+) -> HttpResponse:
+    path_id = f"{realm_id_str}/{filename}"
     is_authorized = validate_attachment_request(user_profile, path_id)
 
     if is_authorized is None:
@@ -56,22 +97,36 @@ def serve_file_backend(request: HttpRequest, user_profile: UserProfile,
     if not is_authorized:
         return HttpResponseForbidden(_("<p>You are not authorized to view this file.</p>"))
     if settings.LOCAL_UPLOADS_DIR is not None:
-        return serve_local(request, path_id)
+        return serve_local(request, path_id, url_only)
 
-    return serve_s3(request, path_id)
+    return serve_s3(request, path_id, url_only)
+
+
+def serve_local_file_unauthed(request: HttpRequest, token: str, filename: str) -> HttpResponse:
+    path_id = get_local_file_path_id_from_token(token)
+    if path_id is None:
+        raise JsonableError(_("Invalid token"))
+    if path_id.split("/")[-1] != filename:
+        raise JsonableError(_("Invalid filename"))
+
+    return serve_local(request, path_id, url_only=False)
+
 
 def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     if len(request.FILES) == 0:
-        return json_error(_("You must specify a file to upload"))
+        raise JsonableError(_("You must specify a file to upload"))
     if len(request.FILES) != 1:
-        return json_error(_("You may only upload one file at a time"))
+        raise JsonableError(_("You may only upload one file at a time"))
 
     user_file = list(request.FILES.values())[0]
     file_size = user_file.size
     if settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024 < file_size:
-        return json_error(_("Uploaded file is larger than the allowed limit of %s MB") % (
-            settings.MAX_FILE_UPLOAD_SIZE))
+        raise JsonableError(
+            _("Uploaded file is larger than the allowed limit of {} MiB").format(
+                settings.MAX_FILE_UPLOAD_SIZE,
+            )
+        )
     check_upload_within_quota(user_profile.realm, file_size)
 
     uri = upload_message_image_from_request(request, user_file, user_profile)
-    return json_success({'uri': uri})
+    return json_success({"uri": uri})

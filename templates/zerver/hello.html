@@ -2,9 +2,7 @@
 {% set entrypoint = "landing-page" %}
 
 {% block customhead %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- Bootstrap 2.3.2-->
-<script src="https://stackpath.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js" defer></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <style>
     .portico-page {
@@ -32,7 +30,7 @@
                 <h1>Chat for distributed teams.</h1>
                 <p>
                     Zulip combines the immediacy of real-time chat with an email
-                    threading model. <br class="line-break-desktop">With Zulip, you can catch
+                    threading model. <br class="line-break-desktop" />With Zulip, you can catch
                     up on important conversations while ignoring
                     irrelevant ones.
                 </p>
@@ -46,7 +44,7 @@
                                 <div class="item-inner">
 
                                     <button data-target="#tour-carousel" data-slide="next" type="button" name="button" class="start-button">Take the tour</button>
-                                    <img src="/static/images/story-tutorial/zulip-topic-blurred.png" alt="" class="start-image">
+                                    <img src="/static/images/story-tutorial/zulip-topic-blurred.png" alt="" class="start-image" />
                                 </div>
                             </div>
                             <div class="item">
@@ -55,11 +53,11 @@
                                     <div class="zulip-slack-comparison">
                                         <div class="comparison-zulip">
                                             <div class="caption">Zulip</div>
-                                            <img src="/static/images/story-tutorial/zulip-streams.png" class="zulip-streams" alt="{{ _('Streams in Zulip') }}">
+                                            <img src="/static/images/story-tutorial/zulip-streams.png" class="zulip-streams" alt="{{ _('Streams in Zulip') }}" />
                                         </div>
                                         <div class="comparison-slack">
                                             <div class="caption">Other team chat</div>
-                                            <img src="/static/images/story-tutorial/slack-streams.png" class="slack-streams" alt="{{ _('Streams in Slack') }}">
+                                            <img src="/static/images/story-tutorial/slack-streams.png" class="slack-streams" alt="{{ _('Streams in Slack') }}" />
                                         </div>
                                     </div>
                                 </div>
@@ -70,11 +68,11 @@
                                     <div class="zulip-slack-comparison">
                                         <div class="comparison-zulip">
                                             <div class="caption">Zulip</div>
-                                            <img src="/static/images/story-tutorial/zulip-streams-selected.png" class="zulip-streams-selected" alt="{{ _('Topics in Zulip') }}">
+                                            <img src="/static/images/story-tutorial/zulip-streams-selected.png" class="zulip-streams-selected" alt="{{ _('Topics in Zulip') }}" />
                                         </div>
                                         <div class="comparison-slack">
                                             <div class="caption">Other team chat</div>
-                                            <img src="/static/images/story-tutorial/slack-streams-selected.png" class="slack-streams-selected" alt="{{ _('Streams in Slack') }}">
+                                            <img src="/static/images/story-tutorial/slack-streams-selected.png" class="slack-streams-selected" alt="{{ _('Streams in Slack') }}" />
                                         </div>
                                     </div>
                                 </div>
@@ -85,11 +83,11 @@
                                     <div class="zulip-slack-comparison">
                                         <div class="comparison-zulip">
                                             <div class="caption comparison-2-caption-zulip">Zulip</div>
-                                            <img src="/static/images/story-tutorial/zulip-streams-unreads-arrows.png" alt="{{ _('Stream topics in Zulip') }}" class="zulip-unreads-arrows">
+                                            <img src="/static/images/story-tutorial/zulip-streams-unreads-arrows.png" alt="{{ _('Stream topics in Zulip') }}" class="zulip-unreads-arrows" />
                                         </div>
                                         <div class="comparison-slack">
                                             <div class="caption comparison-2-caption-slack">Other team chat</div>
-                                            <img src="/static/images/story-tutorial/slack-streams-unreads.png" class="slack-stream-unreads" alt="{{ _('Streams in Slack') }}">
+                                            <img src="/static/images/story-tutorial/slack-streams-unreads.png" class="slack-stream-unreads" alt="{{ _('Streams in Slack') }}" />
                                         </div>
                                     </div>
                                 </div>
@@ -97,27 +95,27 @@
                             <div class="item">
                                 <div class="item-inner">
                                     <p class="tour-item-header">Let&rsquo;s click on &ldquo;Tuesday night catering.&rdquo;</p>
-                                    <img src="/static/images/story-tutorial/zulip-topic.png" alt="{{ _('The Tuesday night catering topic in Zulip') }}" class="zulip-topic mobile-hide">
-                                    <img src="/static/images/story-tutorial/zulip-topic-crop.png" alt="{{ _('The Tuesday night catering topic in Zulip') }}" class="centered-image zulip-topic mobile-show">
+                                    <img src="/static/images/story-tutorial/zulip-topic.png" alt="{{ _('The Tuesday night catering topic in Zulip') }}" class="zulip-topic mobile-hide" />
+                                    <img src="/static/images/story-tutorial/zulip-topic-crop.png" alt="{{ _('The Tuesday night catering topic in Zulip') }}" class="centered-image zulip-topic mobile-show" />
                                 </div>
                             </div>
                             <div class="item">
                                 <div class="item-inner">
                                     <p class="tour-item-header">Messages in Zulip retain their context even if they&rsquo;re sent hours after the conversation started:</p>
-                                    <img src="/static/images/story-tutorial/zulip-streams-easy.png" alt="{{ _('The Tuesday night catering topic in Zulip') }}" class="zulip-easy mobile-hide">
+                                    <img src="/static/images/story-tutorial/zulip-streams-easy.png" alt="{{ _('The Tuesday night catering topic in Zulip') }}" class="zulip-easy mobile-hide" />
                                     <div class="mobile-show">
-                                        <img src="/static/images/story-tutorial/zulip-streams-easy-mobile-top.png" class="centered-image" alt="{{ _('The Tuesday night catering topic in Zulip') }}">
+                                        <img src="/static/images/story-tutorial/zulip-streams-easy-mobile-top.png" class="centered-image" alt="{{ _('The Tuesday night catering topic in Zulip') }}" />
                                         <p class="tour-explanation">Messages sent hours apart are linked in the same topic.</p>
-                                        <img src="/static/images/story-tutorial/zulip-streams-easy-mobile-bottom.png" class="centered-image" alt="{{ _('The Tuesday night catering topic in Zulip - compose box') }}">
+                                        <img src="/static/images/story-tutorial/zulip-streams-easy-mobile-bottom.png" class="centered-image" alt="{{ _('The Tuesday night catering topic in Zulip - compose box') }}" />
                                     </div>
                                 </div>
                             </div>
                             <div class="item">
                                 <div class="item-inner">
                                     <p class="tour-item-header">Without topics, it&rsquo;s hard to catch up efficiently, and hard to participate in conversations that started while you were away.</p>
-                                    <img src="/static/images/story-tutorial/slack-overwhelming.png" alt="{{ _('The Tuesday night catering topic in Slack') }}" class="slack-overwhelming mobile-hide">
+                                    <img src="/static/images/story-tutorial/slack-overwhelming.png" alt="{{ _('The Tuesday night catering topic in Slack') }}" class="slack-overwhelming mobile-hide" />
                                     <div class="mobile-show">
-                                        <img src="/static/images/story-tutorial/slack-overwhelming-mobile.png" class="centered-image" alt="{{ _('The Tuesday night catering topic in Slack') }}">
+                                        <img src="/static/images/story-tutorial/slack-overwhelming-mobile.png" class="centered-image" alt="{{ _('The Tuesday night catering topic in Slack') }}" />
                                         <p class="tour-explanation">The last message about Tuesday night catering is hidden 56 messages ago. Meanwhile, you just see a mix of unrelated messages.</p>
                                     </div>
                                 </div>
@@ -130,11 +128,11 @@
                                     </a>
                                     <div class="other-resources">
                                         <div class="other-resources-section">
-                                            <a href="/why-zulip"><img src="/static/images/landing-page/organised.svg" alt=""></a>
+                                            <a href="/why-zulip"><img src="/static/images/landing-page/organised.svg" alt="" /></a>
                                             <p><a href="/why-zulip">Zulip vs Slack &rarr;</a></p>
                                         </div>
                                         <div class="other-resources-section">
-                                            <a href="/features"><img src="/static/images/landing-page/featured.svg" alt=""></a>
+                                            <a href="/features"><img src="/static/images/landing-page/featured.svg" alt="" /></a>
                                             <p><a href="/features">See all features &rarr;</a></p>
                                         </div>
                                     </div>
@@ -143,8 +141,16 @@
                         </div>
                     </div>
 
-                    <a class="carousel-control left visibility-control hide" href="#tour-carousel" data-slide="prev"><i class="fa fa-chevron-left" aria-hidden="true"></i></a>
-                    <a class="carousel-control right visibility-control" href="#tour-carousel" data-slide="next"><i class="fa fa-chevron-right" aria-hidden="true"></i></a>
+                    <a class="carousel-control left visibility-control hide"
+                      href="#tour-carousel" data-slide="prev"
+                      aria-label="{{ _('Previous') }}" title="{{ _('Previous') }}">
+                        <i class="fa fa-chevron-left"></i>
+                    </a>
+                    <a class="carousel-control right visibility-control"
+                      href="#tour-carousel" data-slide="next"
+                      aria-label="{{ _('Next') }}" title="{{ _('Next') }}">
+                        <i class="fa fa-chevron-right"></i>
+                    </a>
                     <ol class="carousel-indicators">
                         <li data-target="#tour-carousel" data-slide-to="0" class="active"></li>
                         <li data-target="#tour-carousel" data-slide-to="1"></li>
@@ -177,7 +183,7 @@
             <div class="platform-icons">
                 <div class="group">
                     <h2>Web</h2>
-                    <a href="{{ apps_page_url }}">
+                    <a href="{{ apps_page_web }}">
                         <i class="fa fa-desktop platform-icon" aria-hidden="true"></i>
                     </a>
                 </div>
@@ -348,11 +354,11 @@
                 <h1>Open source.</h1>
                 <p>
                     Zulip is <a href="https://github.com/zulip/zulip">100% open source software</a>,
-                    built by a vibrant community of hundreds of developers
-                    from all around the world.  With 120,000 words of
+                    built by a vibrant community of over 700 developers
+                    from all around the world.  With 160,000 words of
                     <a href="https://zulip.readthedocs.io/">developer documentation</a>,
                     a high quality code base, and a
-                    <a href="https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html">welcoming community</a>,
+                    <a href="/development-community/">welcoming community</a>,
                     it&rsquo;s easy to extend or tweak Zulip.
                 </p>
                 <p>
@@ -365,8 +371,8 @@
                     and <a href="https://github.com/matrix-org/synapse/graphs/contributors">matrix.org</a>.
                 </p>
                 <p>
-                    <a href="https://zulip.readthedocs.io/en/stable/production/install.html"
-                    class="button">Install Zulip {{ latest_release_version }}</a> or <a href="{{ latest_release_announcement }}">read the Zulip {{ latest_major_version }} release announcement</a>.
+                    <a href="https://zulip.readthedocs.io/en/stable/production/install.html" class="button">Install Zulip {{ latest_release_version }}</a>
+                    or <a href="{{ latest_release_announcement }}">read the Zulip {{ latest_major_version }} release announcement</a>.
                 </p>
             </div>
         </div>
@@ -380,8 +386,7 @@
             <p>
                 Zulip has more than 90 native integrations. Several hundred more
                 are available through
-                <a href="/integrations/doc/hubot">Hubot</a>,
-                <a href="/integrations/doc/zapier">Zapier</a>,
+                <a href="/integrations/doc/zapier">Zapier</a>
                 and
                 <a href="/integrations/doc/ifttt">IFTTT</a>.
             </p>
@@ -391,49 +396,49 @@
         <div class="integration-icons">
             <a href="/integrations/doc/travis">
                 <div class="group">
-                    <img class="integration-logo" src="/static/images/integrations/logos/travis.svg" alt="{{ _('Travis logo') }}">
+                    <img class="integration-logo" src="/static/images/integrations/logos/travis.svg" alt="{{ _('Travis logo') }}" />
                     <h3 class="integration-name">Travis CI</h3>
                     <p class="integration-description">See build results immediately</p>
                 </div>
             </a>
             <a href="/integrations/doc/github">
                 <div class="group">
-                    <img class="integration-logo" src="/static/images/integrations/logos/github.svg" alt="{{ _('Github logo') }}">
-                    <h3 class="integration-name">Github</h3>
+                    <img class="integration-logo" src="/static/images/integrations/logos/github.svg" alt="{{ _('GitHub logo') }}" />
+                    <h3 class="integration-name">GitHub</h3>
                     <p class="integration-description">Track issues and pull requests</p>
                 </div>
             </a>
             <a href="/integrations/doc/heroku">
                 <div class="group">
-                    <img class="integration-logo" src="/static/images/integrations/logos/heroku.svg" alt="{{ _('Heroku logo') }}">
+                    <img class="integration-logo" src="/static/images/integrations/logos/heroku.svg" alt="{{ _('Heroku logo') }}" />
                     <h3 class="integration-name">Heroku</h3>
                     <p class="integration-description">Keep up with deployments</p>
                 </div>
             </a>
             <a href="/integrations/doc/zendesk">
                 <div class="group">
-                    <img class="integration-logo" src="/static/images/integrations/logos/zendesk.svg" alt="{{ _('Zendesk logo') }}">
+                    <img class="integration-logo" src="/static/images/integrations/logos/zendesk.svg" alt="{{ _('Zendesk logo') }}" />
                     <h3 class="integration-name">Zendesk</h3>
                     <p class="integration-description">Receive support tickets and updates</p>
                 </div>
             </a>
             <a href="/integrations/doc/jira">
                 <div class="group">
-                    <img class="integration-logo" src="/static/images/integrations/logos/jira.svg" alt="{{ _('JIRA logo') }}">
-                    <h3 class="integration-name">JIRA</h3>
+                    <img class="integration-logo" src="/static/images/integrations/logos/jira.svg" alt="{{ _('Jira logo') }}" />
+                    <h3 class="integration-name">Jira</h3>
                     <p class="integration-description">Monitor project bugs and issues</p>
                 </div>
             </a>
             <a href="/integrations/doc/sentry">
                 <div class="group">
-                    <img class="integration-logo" src="/static/images/integrations/logos/sentry.svg" alt="{{ _('Sentry logo') }}">
+                    <img class="integration-logo" src="/static/images/integrations/logos/sentry.svg" alt="{{ _('Sentry logo') }}" />
                     <h3 class="integration-name">Sentry</h3>
                     <p class="integration-description">See real-time error tracking</p>
                 </div>
             </a>
             <a href="/integrations/doc/pagerduty" class="hide-1">
                 <div class="group">
-                    <img class="integration-logo" src="/static/images/integrations/logos/pagerduty.svg" alt="{{ _('Pagerduty logo') }}">
+                    <img class="integration-logo" src="/static/images/integrations/logos/pagerduty.svg" alt="{{ _('Pagerduty logo') }}" />
                     <h3 class="integration-name">Pagerduty</h3>
                     <p class="integration-description">Connect to your monitoring systems</p>
                 </div>
@@ -526,26 +531,25 @@
     </div>
 
     <div class="padded-content call-to-action-bottom">
-        <h1>Experience Zulip today!</h1>
-        {% if root_domain_landing_page %}
-        <a href="{{ url('plans') }}" class="download-button button">
-            {{ _('See plans and pricing') }}
-        </a>
-        {% endif %}
+        <h1>Learn how Zulip can help your organization!</h1>
+        <div class="register-buttons">
+            <a href="/for/business" class="register-now button">Business</a>
+            <a href="/for/open-source" class="register-now button">Open source</a>
+            <a href="/for/education" class="register-now button">Education</a>
+            <a href="/for/events" class="register-now button">Events and Conferences</a>
+            <a href="/for/research" class="register-now button">Research</a>
+            <a href="/for/communities" class="register-now button">Communities</a>
+        </div>
         {% if register_link_disabled %}
         {% elif only_sso %}
-        <a href="{{ url('login-sso') }}" class="button">
+        <a href="{{ url('login-sso') }}" class="styled-button button green">
             {{ _('Log in now') }}
         </a>
         {% else %}
-        <a href="{{ url('register') }}" class="button">
-            {{ _('Sign up now') }}
+        <a href="/plans" class="styled-button button green">
+            {{ _('See plans and pricing') }}
         </a>
         {% endif %}
-        <p class="atlassian-migration">
-            Migrating from HipChat or Stride?
-            Check out our <a href="/atlassian">Atlassian migration guide</a>.
-        </p>
         <div class="zulip-octopus"></div>
     </div>
 </div>

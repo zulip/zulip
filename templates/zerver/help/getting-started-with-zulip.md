@@ -1,56 +1,66 @@
 # Getting started with Zulip
 
-Welcome to Zulip! Like any new tool, mastering Zulip will take some time,
-but once you get the hang of it, you'll never want to use another chat
-service again.
+Welcome to Zulip! This page guides you through getting started using
+Zulip. If you are setting up a new organization, you may also want to
+check out our [guide for setting up a new Zulip
+organization](/help/getting-your-organization-started-with-zulip).
 
-## Understand
-
-Read our [guide to streams and topics](/help/about-streams-and-topics) to familiarize
-yourself with Zulip's conversation model.
-
-If this is your first time using Zulip, we recommend starting with the web
-or desktop experience.
+Mastering Zulip can take a bit of time, but once you get the hang of
+it, you'll never want to use a different team chat app!
 
 ## Set up your account
 
-- [Set a profile picture](/help/set-your-profile-picture)
-- Get the [mobile and desktop apps](/apps)
-- [Browse and subscribe to streams](/help/browse-and-subscribe-to-streams)
-- [Configure your notifications](/#settings/notifications) to work the way
-  you do. If you're joining a low traffic organization and aren't using the
-  desktop app, consider sending all messages to email.
-- [Review your settings](/help/review-your-settings)
+{!set-up-your-account.md!}
 
-## Basic workflows
+## Learn about Zulip topics
 
-A few basic workflows are useful when getting oriented.
+{!streams-and-topics.md!}
 
-### For reading
+## Reading your messages
 
-- Use the left sidebar (or the `n` key) to review messages thread-by-thread.
-- Use the down arrow key (`↓`) to move the cursor to the next message.
-- Use the End key to mark all messages in the current view as read.
+Like your email inbox, Zulip works best if you read it topic-by-topic.
 
-### For writing
+### Finding a topic to read
 
-- To reply to a message, click on it, or use `r` or `Enter` to reply to the
-  message under the blue box.
-- When starting a new conversation, remember to start a new topic. Don't
-  overthink it; the first 2-3 words that come to your mind are probably
-  fine. Using topics may take some attention at the beginning, but after a
-  few days of using Zulip it will feel like second nature.
-- It is totally normal to have 5 conversations happening in a stream at the
-  same time; each on its own topic. So don't worry about interrupting; each
-  conversation has its own space.
-- It is totally normal for conversations to last many hours or days, even in
-  busy streams. Don't worry about replying long after a message is sent;
-  everyone will see your reply in context.
+#### From Recent topics
 
-## Advanced
+{!recent-topics.md!}
 
-- Master a few [keyboard shortcuts](/help/keyboard-shortcuts). Start
-  with `n`, `↓`, `c`, and `Enter`, and use `?` for help.
-- Learn how to
-  [format your messages](/help/format-your-message-using-markdown) using
-  Markdown.
+#### From the list of streams
+
+{!left-sidebar-topics.md!}
+
+### Reading topics
+
+{!reading-topics.md!}
+
+### Reading private messages
+
+{!reading-pms.md!}
+
+## Sending messages
+
+### When to start a new topic
+
+{!when-to-start-a-new-topic.md!}
+
+### How to start a new topic
+
+{!how-to-start-a-new-topic.md!}
+
+### Starting a new private thread
+
+{!starting-a-new-private-thread.md!}
+
+### Responding to an existing thread
+
+{!replying-to-messages.md!}
+
+### Messaging tips & tricks
+
+{!messaging-tips.md!}
+
+## Related articles
+
+* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+

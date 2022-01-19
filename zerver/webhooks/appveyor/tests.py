@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
 
 class AppveyorHookTests(WebhookTestCase):
-    STREAM_NAME = 'appveyor'
+    STREAM_NAME = "appveyor"
     URL_TEMPLATE = "/api/v1/external/appveyor?api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = 'appveyor'
+    WEBHOOK_DIR_NAME = "appveyor"
 
     def test_appveyor_build_success_message(self) -> None:
         """
@@ -19,7 +18,7 @@ class AppveyorHookTests(WebhookTestCase):
 * **Finished**: 9/9/2018 7:06 PM
 """.strip()
 
-        self.send_and_test_stream_message('appveyor_build_success', expected_topic, expected_message)
+        self.check_webhook("appveyor_build_success", expected_topic, expected_message)
 
     def test_appveyor_build_failure_message(self) -> None:
         """
@@ -33,7 +32,4 @@ class AppveyorHookTests(WebhookTestCase):
 * **Finished**: 9/9/2018 7:06 PM
 """.strip()
 
-        self.send_and_test_stream_message('appveyor_build_failure', expected_topic, expected_message)
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("appveyor", fixture_name, file_type="json")
+        self.check_webhook("appveyor_build_failure", expected_topic, expected_message)

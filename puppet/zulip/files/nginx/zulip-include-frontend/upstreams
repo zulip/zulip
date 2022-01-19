@@ -1,10 +1,7 @@
+include /etc/nginx/zulip-include/tornado-upstreams;
+
 upstream django {
     server unix:/home/zulip/deployments/uwsgi-socket;
-}
-
-upstream tornado {
-    server 127.0.0.1:9993;
-    keepalive 10000;
 }
 
 upstream localhost_sso {
@@ -13,8 +10,4 @@ upstream localhost_sso {
 
 upstream camo {
     server 127.0.0.1:9292;
-}
-
-upstream thumbor {
-    server localhost:9995;
 }

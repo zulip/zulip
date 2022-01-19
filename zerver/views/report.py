@@ -1,46 +1,52 @@
 # System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
-
-from typing import Any, Dict, Optional
+import logging
+import subprocess
+from typing import Any, Dict, Mapping, Optional, Union
+from urllib.parse import SplitResult
 
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from zerver.decorator import human_users_only, \
-    to_non_negative_int
-from zerver.lib.bugdown import privacy_clean_markdown
-from zerver.lib.request import has_request_variables, REQ
-from zerver.lib.response import json_success
+
+from zerver.context_processors import get_valid_realm_from_request
+from zerver.decorator import human_users_only
+from zerver.lib.markdown import privacy_clean_markdown
 from zerver.lib.queue import queue_json_publish
+from zerver.lib.request import REQ, RequestNotes, has_request_variables
+from zerver.lib.response import json_success
 from zerver.lib.storage import static_path
 from zerver.lib.unminify import SourceMap
 from zerver.lib.utils import statsd, statsd_key
-from zerver.lib.validator import check_bool, check_dict
+from zerver.lib.validator import check_bool, check_dict, to_non_negative_int
 from zerver.models import UserProfile
 
-import subprocess
-import logging
-
-js_source_map = None  # type: Optional[SourceMap]
+js_source_map: Optional[SourceMap] = None
 
 # Read the source map information for decoding JavaScript backtraces.
 def get_js_source_map() -> Optional[SourceMap]:
     global js_source_map
     if not js_source_map and not (settings.DEVELOPMENT or settings.TEST_SUITE):
-        js_source_map = SourceMap([
-            static_path('webpack-bundles')
-        ])
+        js_source_map = SourceMap(
+            [
+                static_path("webpack-bundles"),
+            ]
+        )
     return js_source_map
+
 
 @human_users_only
 @has_request_variables
-def report_send_times(request: HttpRequest, user_profile: UserProfile,
-                      time: int=REQ(converter=to_non_negative_int),
-                      received: int=REQ(converter=to_non_negative_int, default=-1),
-                      displayed: int=REQ(converter=to_non_negative_int, default=-1),
-                      locally_echoed: bool=REQ(validator=check_bool, default=False),
-                      rendered_content_disparity: bool=REQ(validator=check_bool,
-                                                           default=False)) -> HttpResponse:
+def report_send_times(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    time: int = REQ(converter=to_non_negative_int),
+    received: int = REQ(converter=to_non_negative_int, default=-1),
+    displayed: int = REQ(converter=to_non_negative_int, default=-1),
+    locally_echoed: bool = REQ(json_validator=check_bool, default=False),
+    rendered_content_disparity: bool = REQ(json_validator=check_bool, default=False),
+) -> HttpResponse:
     received_str = "(unknown)"
     if received > 0:
         received_str = str(received)
@@ -48,78 +54,99 @@ def report_send_times(request: HttpRequest, user_profile: UserProfile,
     if displayed > 0:
         displayed_str = str(displayed)
 
-    request._log_data["extra"] = "[%sms/%sms/%sms/echo:%s/diff:%s]" \
-        % (time, received_str, displayed_str, locally_echoed, rendered_content_disparity)
+    log_data = RequestNotes.get_notes(request).log_data
+    assert log_data is not None
+    log_data[
+        "extra"
+    ] = f"[{time}ms/{received_str}ms/{displayed_str}ms/echo:{locally_echoed}/diff:{rendered_content_disparity}]"
 
     base_key = statsd_key(user_profile.realm.string_id, clean_periods=True)
-    statsd.timing("endtoend.send_time.%s" % (base_key,), time)
+    statsd.timing(f"endtoend.send_time.{base_key}", time)
     if received > 0:
-        statsd.timing("endtoend.receive_time.%s" % (base_key,), received)
+        statsd.timing(f"endtoend.receive_time.{base_key}", received)
     if displayed > 0:
-        statsd.timing("endtoend.displayed_time.%s" % (base_key,), displayed)
+        statsd.timing(f"endtoend.displayed_time.{base_key}", displayed)
     if locally_echoed:
-        statsd.incr('locally_echoed')
+        statsd.incr("locally_echoed")
     if rendered_content_disparity:
-        statsd.incr('render_disparity')
+        statsd.incr("render_disparity")
     return json_success()
 
-@human_users_only
-@has_request_variables
-def report_narrow_times(request: HttpRequest, user_profile: UserProfile,
-                        initial_core: int=REQ(converter=to_non_negative_int),
-                        initial_free: int=REQ(converter=to_non_negative_int),
-                        network: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
-    request._log_data["extra"] = "[%sms/%sms/%sms]" % (initial_core, initial_free, network)
-    base_key = statsd_key(user_profile.realm.string_id, clean_periods=True)
-    statsd.timing("narrow.initial_core.%s" % (base_key,), initial_core)
-    statsd.timing("narrow.initial_free.%s" % (base_key,), initial_free)
-    statsd.timing("narrow.network.%s" % (base_key,), network)
-    return json_success()
-
-@human_users_only
-@has_request_variables
-def report_unnarrow_times(request: HttpRequest, user_profile: UserProfile,
-                          initial_core: int=REQ(converter=to_non_negative_int),
-                          initial_free: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
-    request._log_data["extra"] = "[%sms/%sms]" % (initial_core, initial_free)
-    base_key = statsd_key(user_profile.realm.string_id, clean_periods=True)
-    statsd.timing("unnarrow.initial_core.%s" % (base_key,), initial_core)
-    statsd.timing("unnarrow.initial_free.%s" % (base_key,), initial_free)
-    return json_success()
 
 @has_request_variables
-def report_error(request: HttpRequest, user_profile: UserProfile, message: str=REQ(),
-                 stacktrace: str=REQ(), ui_message: bool=REQ(validator=check_bool),
-                 user_agent: str=REQ(), href: str=REQ(), log: str=REQ(),
-                 more_info: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None)
-                 ) -> HttpResponse:
+def report_narrow_times(
+    request: HttpRequest,
+    user_profile: Union[UserProfile, AnonymousUser],
+    initial_core: int = REQ(converter=to_non_negative_int),
+    initial_free: int = REQ(converter=to_non_negative_int),
+    network: int = REQ(converter=to_non_negative_int),
+) -> HttpResponse:
+    log_data = RequestNotes.get_notes(request).log_data
+    assert log_data is not None
+    log_data["extra"] = f"[{initial_core}ms/{initial_free}ms/{network}ms]"
+    realm = get_valid_realm_from_request(request)
+    base_key = statsd_key(realm.string_id, clean_periods=True)
+    statsd.timing(f"narrow.initial_core.{base_key}", initial_core)
+    statsd.timing(f"narrow.initial_free.{base_key}", initial_free)
+    statsd.timing(f"narrow.network.{base_key}", network)
+    return json_success()
+
+
+@has_request_variables
+def report_unnarrow_times(
+    request: HttpRequest,
+    user_profile: Union[UserProfile, AnonymousUser],
+    initial_core: int = REQ(converter=to_non_negative_int),
+    initial_free: int = REQ(converter=to_non_negative_int),
+) -> HttpResponse:
+    log_data = RequestNotes.get_notes(request).log_data
+    assert log_data is not None
+    log_data["extra"] = f"[{initial_core}ms/{initial_free}ms]"
+    realm = get_valid_realm_from_request(request)
+    base_key = statsd_key(realm.string_id, clean_periods=True)
+    statsd.timing(f"unnarrow.initial_core.{base_key}", initial_core)
+    statsd.timing(f"unnarrow.initial_free.{base_key}", initial_free)
+    return json_success()
+
+
+@has_request_variables
+def report_error(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    message: str = REQ(),
+    stacktrace: str = REQ(),
+    ui_message: bool = REQ(json_validator=check_bool),
+    user_agent: str = REQ(),
+    href: str = REQ(),
+    log: str = REQ(),
+    more_info: Mapping[str, Any] = REQ(json_validator=check_dict([]), default={}),
+) -> HttpResponse:
     """Accepts an error report and stores in a queue for processing.  The
     actual error reports are later handled by do_report_error"""
     if not settings.BROWSER_ERROR_REPORTING:
         return json_success()
-    if more_info is None:
-        more_info = {}
+    more_info = dict(more_info)
 
     js_source_map = get_js_source_map()
     if js_source_map:
         stacktrace = js_source_map.annotate_stacktrace(stacktrace)
 
     try:
-        version = subprocess.check_output(["git", "log", "HEAD^..HEAD", "--oneline"],
-                                          universal_newlines=True)  # type: Optional[str]
-    except Exception:
+        version: Optional[str] = subprocess.check_output(
+            ["git", "show", "-s", "--oneline"],
+            universal_newlines=True,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError):
         version = None
 
     # Get the IP address of the request
-    remote_ip = request.META.get('HTTP_X_REAL_IP')
-    if remote_ip is None:
-        remote_ip = request.META['REMOTE_ADDR']
+    remote_ip = request.META["REMOTE_ADDR"]
 
     # For the privacy of our users, we remove any actual text content
     # in draft_content (from drafts rendering exceptions).  See the
     # comment on privacy_clean_markdown for more details.
-    if more_info.get('draft_content'):
-        more_info['draft_content'] = privacy_clean_markdown(more_info['draft_content'])
+    if more_info.get("draft_content"):
+        more_info["draft_content"] = privacy_clean_markdown(more_info["draft_content"])
 
     if user_profile.is_authenticated:
         email = user_profile.delivery_email
@@ -128,47 +155,55 @@ def report_error(request: HttpRequest, user_profile: UserProfile, message: str=R
         email = "unauthenticated@example.com"
         full_name = "Anonymous User"
 
-    queue_json_publish('error_reports', dict(
-        type = "browser",
-        report = dict(
-            host = request.get_host().split(":")[0],
-            ip_address = remote_ip,
-            user_email = email,
-            user_full_name = full_name,
-            user_visible = ui_message,
-            server_path = settings.DEPLOY_ROOT,
-            version = version,
-            user_agent = user_agent,
-            href = href,
-            message = message,
-            stacktrace = stacktrace,
-            log = log,
-            more_info = more_info,
-        )
-    ))
+    queue_json_publish(
+        "error_reports",
+        dict(
+            type="browser",
+            report=dict(
+                host=SplitResult("", request.get_host(), "", "", "").hostname,
+                ip_address=remote_ip,
+                user_email=email,
+                user_full_name=full_name,
+                user_visible=ui_message,
+                server_path=settings.DEPLOY_ROOT,
+                version=version,
+                user_agent=user_agent,
+                href=href,
+                message=message,
+                stacktrace=stacktrace,
+                log=log,
+                more_info=more_info,
+            ),
+        ),
+    )
 
     return json_success()
+
 
 @csrf_exempt
 @require_POST
 @has_request_variables
-def report_csp_violations(request: HttpRequest,
-                          csp_report: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
+def report_csp_violations(
+    request: HttpRequest, csp_report: Dict[str, Any] = REQ(argument_type="body")
+) -> HttpResponse:
     def get_attr(csp_report_attr: str) -> str:
-        return csp_report.get(csp_report_attr, '')
+        return csp_report.get(csp_report_attr, "")
 
-    logging.warning("CSP Violation in Document('%s'). "
-                    "Blocked URI('%s'), Original Policy('%s'), "
-                    "Violated Directive('%s'), Effective Directive('%s'), "
-                    "Disposition('%s'), Referrer('%s'), "
-                    "Status Code('%s'), Script Sample('%s')" % (get_attr('document-uri'),
-                                                                get_attr('blocked-uri'),
-                                                                get_attr('original-policy'),
-                                                                get_attr('violated-directive'),
-                                                                get_attr('effective-directive'),
-                                                                get_attr('disposition'),
-                                                                get_attr('referrer'),
-                                                                get_attr('status-code'),
-                                                                get_attr('script-sample')))
+    logging.warning(
+        "CSP violation in document('%s'). "
+        "blocked URI('%s'), original policy('%s'), "
+        "violated directive('%s'), effective directive('%s'), "
+        "disposition('%s'), referrer('%s'), "
+        "status code('%s'), script sample('%s')",
+        get_attr("document-uri"),
+        get_attr("blocked-uri"),
+        get_attr("original-policy"),
+        get_attr("violated-directive"),
+        get_attr("effective-directive"),
+        get_attr("disposition"),
+        get_attr("referrer"),
+        get_attr("status-code"),
+        get_attr("script-sample"),
+    )
 
     return json_success()

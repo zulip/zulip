@@ -34,7 +34,7 @@
   "alternateResult": {
     "fulfillment": {
       "speech": "Weather in New Delhi is nice!"
-    },
+    }
   },
   "status": {
     "code": 200,

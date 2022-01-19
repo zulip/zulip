@@ -15,7 +15,7 @@ class Command(BaseCommand):
         if not os.path.exists(config_file):
             raise RuntimeError("No ~/.zuliprc found")
         config = ConfigParser()
-        with open(config_file, 'r') as f:
+        with open(config_file) as f:
             config.read_file(f, config_file)
         api_key = config.get("api", "key")
         email = config.get("api", "email")
@@ -26,4 +26,4 @@ class Command(BaseCommand):
             user_profile.api_key = api_key
             user_profile.save(update_fields=["api_key"])
         except UserProfile.DoesNotExist:
-            print("User %s does not exist; not syncing API key" % (email,))
+            print(f"User {email} does not exist; not syncing API key")

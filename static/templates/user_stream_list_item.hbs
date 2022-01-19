@@ -1,0 +1,17 @@
+<tr data-stream-id="{{stream_id}}">
+    <td class="subscription_list_stream">
+        <span id="stream_sidebar_privacy_swatch_{{stream_id}}" class="stream-privacy filter-icon" style="color: {{stream_color}}">
+            {{> stream_privacy }}
+        </span>
+        <a class = "stream_list_item" href="{{stream_edit_url}}">{{name}}</a>
+    </td>
+    {{#if show_unsubscribe_button}}
+    <td class="remove_subscription">
+        <div class="subscription_list_remove">
+            <button type="button" name="unsubscribe" class="remove-subscription-button button small rounded btn-danger {{#if show_private_stream_unsub_tooltip}}tippy-zulip-tooltip{{/if}}" data-tippy-content='{{t "Use stream settings to unsubscribe from private streams."}}'>
+                {{t 'Unsubscribe' }}
+            </button>
+        </div>
+    </td>
+    {{/if}}
+</tr>

@@ -1,40 +1,36 @@
-<% if @nginx_http_only != '' -%>
+<% if @nginx_http_only -%>
 <% else -%>
 server {
     listen 80;
     listen [::]:80;
-    return 301 https://$host$request_uri;
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+
+    include /etc/nginx/zulip-include/certbot;
 }
 <% end -%>
 
 include /etc/nginx/zulip-include/upstreams;
 
 server {
-<% if @nginx_http_only != '' -%>
-    listen 80;
-    listen [::]:80;
+<% if @nginx_http_only -%>
+    listen <%= @nginx_listen_port %>;
+    listen [::]:<%= @nginx_listen_port %>;
 <% else -%>
-    listen <%= @nginx_listen_port %> http2;
-    listen [::]:<%= @nginx_listen_port %> http2;
+    listen <%= @nginx_listen_port %> ssl http2;
+    listen [::]:<%= @nginx_listen_port %> ssl http2;
 
-    ssl on;
     ssl_certificate <%= @ssl_dir %>/certs/zulip.combined-chain.crt;
     ssl_certificate_key <%= @ssl_dir %>/private/zulip.key;
-<% end -%>
-
-<% if @no_serve_uploads == '' -%>
-    location /user_avatars {
-        add_header X-Content-Type-Options nosniff;
-        add_header Content-Security-Policy "default-src 'none' img-src 'self'";
-        include /etc/nginx/zulip-include/uploads.types;
-        alias /home/zulip/uploads/avatars;
-    }
 <% end -%>
 
     location /local-static {
         alias /home/zulip/local-static;
     }
 
+    include /etc/zulip/nginx_sharding.conf;
     include /etc/nginx/zulip-include/certbot;
     include /etc/nginx/zulip-include/app;
 }

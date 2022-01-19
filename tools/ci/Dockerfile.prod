@@ -1,0 +1,26 @@
+# To build these production upgrade test images, say a Debian Buster system
+# preinstalled with Zulip 3.4:
+#   docker build . -f Dockerfile.prod --build-arg=BASE_IMAGE=zulip/ci:buster --build-arg=VERSION=3.4 --tag=zulip/ci:buster-3.4
+#   docker push zulip/ci:buster-3.4
+
+ARG BASE_IMAGE
+FROM $BASE_IMAGE
+
+# Remove already existing rabbitmq mnesia directory files
+RUN sudo rm -rf /var/lib/rabbitmq/mnesia/*
+
+# The bionic hack used in production suite
+RUN if (. /etc/os-release && [ "$ID $VERSION_ID" = 'ubuntu 18.04' ]); then \
+      sudo sed -i '/^bind/s/bind.*/bind 0.0.0.0/' /etc/redis/redis.conf; \
+    fi
+
+# Download the release tarball, start rabbitmq server and install the server
+ARG VERSION
+RUN cd $(mktemp -d) \
+  && curl -fLO "https://download.zulip.com/server/zulip-server-$VERSION.tar.gz" \
+  && tar -xf "zulip-server-$VERSION.tar.gz" \
+  && sudo service rabbitmq-server start \
+  && sudo service rabbitmq-server status \
+  && sudo -s "./zulip-server-$VERSION/scripts/setup/install" --self-signed-cert --hostname 127.0.0.1 --email circleci@example.com
+
+CMD ["/bin/sh"]

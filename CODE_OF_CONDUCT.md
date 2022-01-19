@@ -14,46 +14,46 @@ This isn't an exhaustive list of things that you can't do. Rather, take it
 in the spirit in which it's intended --- a guide to make it easier to enrich
 all of us and the technical communities in which we participate.
 
-## Expected Behavior
+## Expected behavior
 
 The following behaviors are expected and requested of all community members:
 
-* Participate. In doing so, you contribute to the health and longevity of
+- Participate. In doing so, you contribute to the health and longevity of
   the community.
-* Exercise consideration and respect in your speech and actions.
-* Attempt collaboration before conflict. Assume good faith.
-* Refrain from demeaning, discriminatory, or harassing behavior and speech.
-* Take action or alert community leaders if you notice a dangerous
+- Exercise consideration and respect in your speech and actions.
+- Attempt collaboration before conflict. Assume good faith.
+- Refrain from demeaning, discriminatory, or harassing behavior and speech.
+- Take action or alert community leaders if you notice a dangerous
   situation, someone in distress, or violations of this code, even if they
   seem inconsequential.
-* Community event venues may be shared with members of the public; be
+- Community event venues may be shared with members of the public; be
   respectful to all patrons of these locations.
 
-## Unacceptable Behavior
+## Unacceptable behavior
 
 The following behaviors are considered harassment and are unacceptable
 within the Zulip community:
 
-* Jokes or derogatory language that singles out members of any race,
+- Jokes or derogatory language that singles out members of any race,
   ethnicity, culture, national origin, color, immigration status, social and
   economic class, educational level, language proficiency, sex, sexual
   orientation, gender identity and expression, age, size, family status,
   political belief, religion, and mental and physical ability.
-* Violence, threats of violence, or violent language directed against
+- Violence, threats of violence, or violent language directed against
   another person.
-* Disseminating or threatening to disseminate another person's personal
+- Disseminating or threatening to disseminate another person's personal
   information.
-* Personal insults of any sort.
-* Posting or displaying sexually explicit or violent material.
-* Inappropriate photography or recording.
-* Deliberate intimidation, stalking, or following (online or in person).
-* Unwelcome sexual attention. This includes sexualized comments or jokes,
+- Personal insults of any sort.
+- Posting or displaying sexually explicit or violent material.
+- Inappropriate photography or recording.
+- Deliberate intimidation, stalking, or following (online or in person).
+- Unwelcome sexual attention. This includes sexualized comments or jokes,
   inappropriate touching or groping, and unwelcomed sexual advances.
-* Sustained disruption of community events, including talks and
+- Sustained disruption of community events, including talks and
   presentations.
-* Advocating for, or encouraging, any of the behaviors above.
+- Advocating for, or encouraging, any of the behaviors above.
 
-## Reporting and Enforcement
+## Reporting and enforcement
 
 Harassment and other code of conduct violations reduce the value of the
 community for everyone. If someone makes you or anyone else feel unsafe or
@@ -95,10 +95,9 @@ behavior occurring outside the scope of community activities when such
 behavior has the potential to adversely affect the safety and well-being of
 community members.
 
-## License and Attribution
+## License and attribution
 
 This Code of Conduct is adapted from the
-[Citizen Code of Conduct](http://citizencodeofconduct.org/) and the
 [Django Code of Conduct](https://www.djangoproject.com/conduct/), and is
 under a
 [Creative Commons BY-SA](https://creativecommons.org/licenses/by-sa/4.0/)

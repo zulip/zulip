@@ -52,9 +52,9 @@
         "name": "env.BUILD_IS_PERSONAL",
         "value": "true"
       },
-	  {
+      {
       "name": "teamcity.build.triggeredBy.username",
-      "value": "cordelia"
+      "value": "iago"
       }
     ]
   }

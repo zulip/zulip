@@ -36,6 +36,11 @@
                     "new":true,
                     "old":false
                 },
+                "pull_request_ids": {
+                    "adds": [
+                        500000032
+                    ]
+                },
                 "workflow_state_id":{
                     "new":500000010,
                     "old":500000008

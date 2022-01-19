@@ -13,7 +13,7 @@ also disable viewing of message edit history more generally.
 
 {start_tabs}
 
-{settings_tab|organization-settings}
+{settings_tab|organization-permissions}
 
 2. Under **Message editing**, uncheck **Enable message edit history**.
 

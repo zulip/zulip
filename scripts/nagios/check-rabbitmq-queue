@@ -1,80 +1,12 @@
 #!/usr/bin/env python3
 
-import re
-import time
 import os
-import subprocess
+import sys
 
-# The WARN_THRESHOLD/CRIT_THRESHOLD settings makes it possible to
-# configure specific queues to have a higher or lower limit then the
-# default.
-WARN_THRESHOLD_DEFAULT = 10
-WARN_THRESHOLD = {
-    'missedmessage_emails': WARN_THRESHOLD_DEFAULT,
-    # The user_activity worker has high throughput and uses a
-    # LoopQueueProcessingWorker, so it's normal to have a moderate
-    # backlog.
-    'user_activity': 1000,
-}
-CRIT_THRESHOLD_DEFAULT = 50
-CRIT_THRESHOLD = {
-    'missedmessage_emails': CRIT_THRESHOLD_DEFAULT,
-    # A backlog of hundreds of events for user_activity likely
-    # indicates an outage of the processor.
-    'user_activity': 5000,
-}
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(ZULIP_PATH)
 
-states = {
-    0: "OK",
-    1: "WARNING",
-    2: "CRITICAL",
-    3: "UNKNOWN"
-}
+from scripts.lib.check_rabbitmq_queue import check_rabbitmq_queues
 
-pattern = re.compile(r'(\w+)\t(\d+)')
-if 'USER' in os.environ and not os.environ['USER'] in ['root', 'rabbitmq']:
-    print("This script must be run as the root or rabbitmq user")
-
-output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_queues'], universal_newlines=True)
-
-status = 0
-max_count = 0
-warn_queues = []
-
-for line in output.split("\n"):
-    line = line.strip()
-    m = pattern.match(line)
-    if m:
-        queue = m.group(1)
-        count = int(m.group(2))
-        this_status = 0
-        if count > CRIT_THRESHOLD.get(queue, CRIT_THRESHOLD_DEFAULT):
-            this_status = 2
-            warn_queues.append(queue)
-        elif count > WARN_THRESHOLD.get(queue, WARN_THRESHOLD_DEFAULT):
-            this_status = max(status, 1)
-            warn_queues.append(queue)
-
-        status = max(status, this_status)
-        max_count = max(max_count, count)
-
-warn_about = ", ".join(warn_queues)
-now = int(time.time())
-now_struct = time.gmtime(now)
-
-# While we are sending digest emails, at 1800 hrs (UTC) each weekday, the mail
-# queues can get backed up; don't alert on those. Additionally, certain workers
-# (slow_queries and digest_emails) have a polling algorithm that means it's
-# normal for them to accumulate items.
-if not set(warn_queues) - set(("digest_emails", "slow_queries")) and \
-        now_struct.tm_hour == 18 and now_struct.tm_min < 25:
-    status = 0
-    print("%s|%s|%s|processing digests, not alerting on elevated mail queues" % (
-        now, status, states[status]))
-    exit(0)
-
-if status > 0:
-    print("%s|%s|%s|max count %s, queues affected: %s" % (
-        now, status, states[status], max_count, warn_about))
-else:
-    print("%s|%s|%s|queues normal, max count %s" % (now, status, states[status], max_count))
+if __name__ == "__main__":
+    check_rabbitmq_queues()

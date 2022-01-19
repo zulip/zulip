@@ -1,17 +1,16 @@
-import SourceMap from "source-map";
-import StackFrame from "stackframe";
+import type SourceMap from "source-map";
+import type StackFrame from "stackframe";
 
 declare namespace StackTraceGPS {
     type StackTraceGPSOptions = {
-        sourceCache?: { [url: string]: string | Promise<string> };
-        sourceMapConsumerCache?: { [sourceMappingUrl: string]: SourceMap.SourceMapConsumer };
+        sourceCache?: {[url: string]: string | Promise<string>};
+        sourceMapConsumerCache?: {[sourceMappingUrl: string]: SourceMap.SourceMapConsumer};
         offline?: boolean;
         ajax?(url: string): Promise<string>;
         atob?(base64: string): string;
     };
 }
 
-// eslint-disable-next-line no-redeclare
 declare class StackTraceGPS {
     constructor(options?: StackTraceGPS.StackTraceGPSOptions);
     pinpoint(stackframe: StackFrame): Promise<StackFrame>;

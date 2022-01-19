@@ -1,7 +1,7 @@
 # Format your messages
 
 [//]: # (All screenshots here require line-height: 22px and font-size: 16px in .message-content.)
-[//]: # (Requires some additional fiddling for the LaTeX picture, inline code block, and maybe a few others.)
+[//]: # (Requires some additional fiddling for the LaTeX picture, inline code span, and maybe a few others.)
 
 Zulip uses a variant of
 [GitHub Flavored Markdown](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
@@ -10,12 +10,16 @@ to allow you to easily format your messages.
 * [Emphasis](#emphasis)
 * [Lists](#lists)
 * [Links and images](#links)
-* [Code and TeX](#code)
+* [Code blocks](#code)
+* [LaTeX](#latex)
 * [Quotes](#quotes)
+* [Spoilers](#spoilers)
 * [Emoji and emoticons](#emoji-and-emoticons)
 * [Mentions](#mentions)
 * [Status messages](#status-messages)
+* [Global times](#global-times)
 * [Tables](#tables)
+* [To-do lists](#to-do-lists)
 * [Paragraphs and lines](#paragraphs-and-lines)
 
 ## Emphasis
@@ -25,7 +29,7 @@ to allow you to easily format your messages.
 ***~~All three at once~~***
 ```
 
-![](/static/images/help/markdown-emphasis.png)
+![Markdown emphasis](/static/images/help/markdown-emphasis.png)
 
 
 ## Lists
@@ -43,7 +47,7 @@ bullet
 + pluses are ok too
 ```
 
-![](/static/images/help/markdown-bullets.png)
+![Markdown bullets](/static/images/help/markdown-bullets.png)
 
 Numbered lists
 
@@ -53,24 +57,24 @@ Numbered lists
 1. one more
 ```
 
-![](/static/images/help/markdown-numbered-lists.png)
+![Markdown numbered lists](/static/images/help/markdown-numbered-lists.png)
 
 
 ## Links
 
 Zulip auto-linkifies URLs and valid stream names. You can also add a
-[custom linkifier](/help/add-a-custom-linkification-filter) to link
+[custom linkifier](/help/add-a-custom-linkifier) to link
 patterns like `#1234` to your ticketing system.
 
 ```
-Auto-detected URL: zulipchat.com
-Named link: [Zulip homepage](zulipchat.com)
+Auto-detected URL: zulip.com
+Named link: [Zulip homepage](zulip.com)
 Stream: #**stream name**
 Topic: #**stream name>topic name**
 Custom linkifier: #1234 (links to ticket 1234 in your ticketing system)
 ```
 
-![](/static/images/help/markdown-links.png)
+![Markdown links](/static/images/help/markdown-links.png)
 
 ## Images
 
@@ -81,7 +85,7 @@ about dropping, pasting, and attaching images.
 [A whale of a good time](https://your.zulip.domain/user_uploads/1/46/IPvysqXEtiTG1ZdNBrwAZODi/whale-time.png)
 ```
 
-![](/static/images/help/markdown-image.png)
+![Markdown image](/static/images/help/markdown-image.png)
 
 ## Code
 
@@ -102,26 +106,30 @@ def fib(n):
 ```
 ~~~
 
-![](/static/images/help/markdown-code.png)
+![Markdown code](/static/images/help/markdown-code.png)
 
-You can also use `~~~` to start codeblocks, or just indent the code 4 or more spaces.
+You can also use `~~~` to start code blocks, or just indent the code 4 or more spaces.
 
-Zulip supports syntax highlighting for hundreds of languages, and a
-typeahead will pop up when you start typing after the ` ``` `. If you can't
-find your language, search for it [here](https://pygments.org/docs/lexers/)
-and try the **short names** listed for the lexers for your language.
+See the main [code blocks article](/help/code-blocks) for details on
+[syntax highlighting](/help/code-blocks#language-tagging), [code
+playgrounds](/help/code-blocks#code-playgrounds), and other features.
 
-## Latex
+## LaTeX
 ~~~
 Inline: $$O(n^2)$$
 
 Displayed:
-```tex
+``` math
 \int_a^b f(t)\, dt = F(b) - F(a)
 ```
 ~~~
 
-![](/static/images/help/markdown-latex.png)
+![Markdown LaTeX](/static/images/help/markdown-latex.png)
+
+Zulip's LaTeX rendering is powered by [KaTeX](https://katex.org).
+Their [support table](https://katex.org/docs/support_table.html) is a
+helpful resource for checking what's supported or how to express
+something.
 
 ## Quotes
 
@@ -138,40 +146,90 @@ quote in two paragraphs
 ```
 ~~~
 
-![](/static/images/help/markdown-quotes.png)
+![Markdown quotes](/static/images/help/markdown-quotes.png)
+
+## Spoilers
+
+You can use spoilers to hide content that you do not want to be visible until
+the user interacts with it.
+
+
+~~~
+Normal content in message
+
+```spoiler Spoiler header
+Spoiler content. These lines won't be visible until the user expands the spoiler.
+```
+~~~
+
+The spoiler will initially display in a collapsed form:
+
+![Spoiler collapsed](/static/images/help/spoiler-collapsed.png)
+
+Clicking the arrow will expand the spoiler content:
+
+![Spoiler expanded](/static/images/help/spoiler-expanded.png)
 
 ## Emoji and emoticons
 
 To translate emoticons into emoji, you'll need to
 [enable emoticon translations](/help/enable-emoticon-translations).
-You can also [add custom emoji](/help/add-custom-emoji).
+You can also [add custom emoji](/help/custom-emoji).
 
 ```
 :octopus: :heart: :zulip: :)
 ```
 
-![](/static/images/help/markdown-emoji.png)
+![Markdown emoji](/static/images/help/markdown-emoji.png)
 
 ## Mentions
 
 Learn more about mentions [here](/help/mention-a-user-or-group).
-The numbers will be added automatically by the typeahead if needed for disambiguation.
 
 ```
-Users: @**Polonius** or @**Zoe|2132** (two asterisks)
+Users: @**Polonius** or @**aaron|26** or @**|26** (two asterisks)
 User group: @*support team* (one asterisk)
-Silent mention: @_**Polonius** (@_ instead of @)
+Silent mention: @_**Polonius** or @_**|26** (@_ instead of @)
 ```
 
-![](/static/images/help/markdown-mentions.png)
+The variants with numbers use user IDs, and are intended for
+disambiguation (if multiple users have the same name) and bots (for
+the variant that only contains the user ID).
 
-## Status Messages
+![Markdown mentions](/static/images/help/markdown-mentions.png)
+
+## Status messages
 
 ```
 /me is away
 ```
 
-![](/static/images/help/markdown-status.png)
+![Markdown status](/static/images/help/markdown-status.png)
+
+## Global times
+
+When collaborating with people in another timezone, you often need to
+express a specific time clearly. Rather than typing out your timezone
+and having everyone translate the time in their heads, in Zulip, you
+can mention a time, and it'll be displayed to each user in their own
+timezone (just like the timestamps on Zulip messages).
+
+A date picker will appear once you type `<time`.
+
+```
+Our next meeting is scheduled for <time:2020-05-28T13:30:00+05:30>
+```
+
+A person in San Francisco will see:
+
+> Our next meeting is scheduled for *Thu, May 28 2020, 1:00 AM*.
+
+While someone in India will see:
+
+> Our next meeting is scheduled for *Thu, May 28 2020, 1:30 PM*.
+
+You can also use other formats such as UNIX timestamps or human readable
+dates, for example, `<time:May 28 2020, 1:30 PM IST>`.
 
 ## Tables
 
@@ -186,7 +244,20 @@ The header separators (`---`) must be at least three dashes long.
 | C | **bold** *italic* ~~strikethrough~~  :smile:  ||
 ```
 
-![](/static/images/help/markdown-table.png)
+![Markdown table](/static/images/help/markdown-table.png)
+
+## To-do lists
+
+Sending a message with the text `/todo` creates a simple collaborative
+to-do list. Any user who can access the message can add tasks by
+entering the task's title and description and clicking "Add task". Once
+created, task titles and descriptions cannot be edited.
+
+Tasks can be marked (and unmarked) as completed by clicking the
+checkboxes on the left.
+
+![Markdown todo-lists](/static/images/help/markdown-todo.png)
+
 
 ## Paragraphs and lines
 
@@ -204,7 +275,7 @@ Over the line
 Under the line
 ```
 
-![](/static/images/help/markdown-paragraph.png)
+![Markdown paragraph](/static/images/help/markdown-paragraph.png)
 
 ## In-app help
 
@@ -214,10 +285,11 @@ A summary of the formatting syntax is available in-app.
 
 {!start-composing.md!}
 
-1. Click the A (<i class="fa fa-font"></i>) icon at the bottom of the compose box.
+1. Click help at the bottom of the compose box.
 
 {end_tabs}
 
 ## Related articles
 
 * [Create a poll](/help/create-a-poll)
+* [Messaging tips & tricks](/help/messaging-tips)

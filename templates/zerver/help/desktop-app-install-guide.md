@@ -16,7 +16,8 @@ look at the newest features, consider the [beta releases](#install-a-beta-releas
 #### Disk image (recommended)
 <!-- TODO why zip? -->
 
-1. Download [Zulip for macOS](https://zulipchat.com/apps/mac).
+1. Download [Zulip for macOS](https://zulip.com/apps/mac).
+
 1. Open the file, and drag the app into the `Applications` folder.
 
 The app will update automatically to future versions.
@@ -24,6 +25,7 @@ The app will update automatically to future versions.
 #### Homebrew
 
 1. Run `brew cask install zulip` in Terminal.
+
 1. Run Zulip from `Applications`. <!-- TODO fact check -->
 
 The app will update automatically to future versions. `brew upgrade` will
@@ -33,7 +35,8 @@ also work, if you prefer.
 
 #### Web installer (recommended)
 
-1. Download and run [Zulip for Windows](https://zulipchat.com/apps/windows).
+1. Download and run [Zulip for Windows](https://zulip.com/apps/windows).
+
 1. Run Zulip from the Start menu.
 
 The app will update automatically to future versions.
@@ -42,8 +45,10 @@ The app will update automatically to future versions.
 
 1. Download [zulip-x.x.x-x64.nsis.7z][latest] for 64-bit desktops
    (common), or [zulip-x.x.x-ia32.nsis.7z][latest] for 32-bit (rare).
+
 2. Copy the installer file to the machine you want to install the app
    on, and run it there.
+
 3. Run Zulip from the Start menu.
 
 The app will NOT update automatically. You can repeat these steps to upgrade
@@ -51,17 +56,18 @@ to future versions. <!-- TODO fact check -->
 
 {tab|linux}
 
-#### apt (Ubuntu or Debian 8+)
+#### APT (Ubuntu or Debian 8+)
 
 1. Enter the following commands into a terminal:
 
-        sudo apt-key adv --keyserver pool.sks-keyservers.net --recv 69AD12704E71A4803DCA3A682424BE5AE9BD10D9
-        echo "deb https://dl.bintray.com/zulip/debian/ stable main" | \
-        sudo tee -a /etc/apt/sources.list.d/zulip.list
+        sudo curl -fL -o /etc/apt/trusted.gpg.d/zulip-desktop.asc \
+            https://download.zulip.com/desktop/apt/zulip-desktop.asc
+        echo "deb https://download.zulip.com/desktop/apt stable main" | \
+            sudo tee /etc/apt/sources.list.d/zulip-desktop.list
         sudo apt update
         sudo apt install zulip
 
-    These commands set up the Zulip Desktop apt repository and its signing
+    These commands set up the Zulip Desktop APT repository and its signing
     key, and then install the Zulip client.
 
 1. Run Zulip from your app launcher, or with `zulip` from a terminal.
@@ -72,10 +78,12 @@ regular software update on your system, e.g. with
 
 #### AppImage (recommended for all other distros)
 
-1. Download [Zulip for Linux](https://zulipchat.com/apps/linux).
+1. Download [Zulip for Linux](https://zulip.com/apps/linux).
+
 2. Make the file executable, with
    `chmod a+x Zulip-x.x.x-x86_64.AppImage` from a terminal (replace
    `x.x.x` with the actual name of the downloaded file).
+
 3. Run the file from your app launcher, or from a terminal.
 
 No installer is necessary; this file is the Zulip app. The app will update
@@ -112,10 +120,10 @@ system above.
 If installing from scratch, follow the instructions above, except in the
 command starting `echo "deb https://...` replace `stable` with `beta`.
 
-If you've already installed the stable version, edit `zulip.list` and
+If you've already installed the stable version, edit `zulip-desktop.list` and
 reinstall:
 ```
-sudo sed -i s/stable/beta/ /etc/apt/sources.list.d/zulip.list
+sudo sed -i s/stable/beta/ /etc/apt/sources.list.d/zulip-desktop.list
 sudo apt update
 sudo apt install zulip
 ```
@@ -126,4 +134,4 @@ sudo apt install zulip
 ## Related articles
 
 * [Connect through a proxy](/help/connect-through-a-proxy)
-* [Add a custom certificate](/help/custom-certificates)
+* [Use a custom certificate](/help/custom-certificates)

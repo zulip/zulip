@@ -1,16 +1,17 @@
-# -*- coding: utf-8 -*-
 from django.conf import settings
 from django.db import migrations
-from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
-def rename_zulip_realm_to_zulipinternal(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def rename_zulip_realm_to_zulipinternal(
+    apps: StateApps, schema_editor: DatabaseSchemaEditor
+) -> None:
     if not settings.PRODUCTION:
         return
 
-    Realm = apps.get_model('zerver', 'Realm')
-    UserProfile = apps.get_model('zerver', 'UserProfile')
+    Realm = apps.get_model("zerver", "Realm")
+    UserProfile = apps.get_model("zerver", "UserProfile")
 
     if Realm.objects.count() == 0:
         # Database not yet populated, do nothing:
@@ -33,12 +34,13 @@ def rename_zulip_realm_to_zulipinternal(apps: StateApps, schema_editor: Database
     internal_realm.name = "System use only"
     internal_realm.save()
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0236_remove_illegal_characters_email_full'),
+        ("zerver", "0236_remove_illegal_characters_email_full"),
     ]
 
     operations = [
-        migrations.RunPython(rename_zulip_realm_to_zulipinternal)
+        migrations.RunPython(rename_zulip_realm_to_zulipinternal, elidable=True),
     ]

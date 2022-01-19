@@ -11,7 +11,7 @@
       "program": "CROND",
       "severity": "Info",
       "facility": "Cron",
-      "message": "message body 1",
+      "message": "message body 1"
     },
     {
       "id": 7711561783320576,
@@ -24,7 +24,7 @@
       "program": "CROND",
       "severity": "Info",
       "facility": "Cron",
-      "message": "message body 2",
+      "message": "message body 2"
     },
     {
       "id": 7711561783320576,
@@ -37,7 +37,7 @@
       "program": "CROND",
       "severity": "Info",
       "facility": "Cron",
-      "message": "message body 3",
+      "message": "message body 3"
     },
     {
       "id": 7711561783320576,
@@ -50,7 +50,7 @@
       "program": "CROND",
       "severity": "Info",
       "facility": "Cron",
-      "message": "message body 4",
+      "message": "message body 4"
     },
     {
       "id": 7711562567655424,
@@ -63,7 +63,7 @@
       "program": "CROND",
       "severity": "Info",
       "facility": "Cron",
-      "message": "A short event",
+      "message": "A short event"
     }
   ],
   "saved_search": {

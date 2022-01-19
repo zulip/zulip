@@ -41,11 +41,16 @@ below, and add more to your repertoire as needed.
 
 * **Toggle keyboard shortcuts view**: `?`
 
+* **Go to default view**: Press `Ctrl + [` (or `Esc`,
+  [if enabled][disable-escape])
+  until you are in the [default view](/help/configure-default-view).
+
+[disable-escape]: /help/configure-default-view#set-whether-esc-navigates-to-the-default-view
 ## Navigation
 
 * **Search messages**: `/` or `Ctrl+k`
 
-* **Search streams**: `q`
+* **Filter streams**: `q`
 
 * **Search people**: `w`
 
@@ -76,7 +81,7 @@ below, and add more to your repertoire as needed.
 
 * **Cycle between stream narrows**: `A` (previous) and `D` (next)
 
-* **Narrow to all messages**: `Esc` or `Ctrl` + `[` — Shows all unmuted messages.
+* **Narrow to all messages**: `a` — Shows all unmuted messages.
 
 * **Narrow to current compose box recipient**: `Ctrl` + `.`
 
@@ -99,11 +104,11 @@ below, and add more to your repertoire as needed.
 
 * **Send message**: `Enter`, `Tab` then `Enter`, and/or `Ctrl` + `Enter`,
   depending on your settings. See
-  [enable enter to send](https://zulipchat.com/help/enable-enter-to-send).
+  [enable enter to send](https://zulip.com/help/enable-enter-to-send).
 
 * **Insert new line**: `Enter`, or `Shift` + `Enter`, depending on your
   settings. See
-  [enable enter to send](https://zulipchat.com/help/enable-enter-to-send).
+  [enable enter to send](https://zulip.com/help/enable-enter-to-send).
 
 * **Insert italic text**: `*italic*` or `Ctrl + I`
 * **Insert bold text**: `**bold**` or `Ctrl + B`
@@ -137,6 +142,15 @@ title="thumbs up"/>**: `+`
   (including All messages), and don't contribute to unread counts. Read more about
   [muting topics](/help/mute-a-topic).
 
+## Recent topics
+
+* **View recent topics**: `t`
+* **Search recent topics**: `t`
+* **Escape from recent topics search**: `Esc` or arrow keys
+* **Navigate recent topics**: Use arrow keys or vim keys (`j`, `k`, `l`, `h`).
+
+Use `Enter` to engage with elements.
+
 ## Drafts
 
 * **Toggle drafts view**: `d`
@@ -166,6 +180,7 @@ Keyboard navigation (e.g. arrow keys) works as expected.
 * **Scroll through streams**: `↑` and `↓`
 
     !!! tip ""
+
         Pressing `↑` from the first stream in the list moves
         you to the **Filter streams** input.
 

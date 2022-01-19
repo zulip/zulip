@@ -1,7 +1,16 @@
+import * as hash_util from "./hash_util";
+import * as message_edit from "./message_edit";
+import * as muted_topics from "./muted_topics";
+import * as narrow_state from "./narrow_state";
+import * as stream_topic_history from "./stream_topic_history";
+import * as topic_list from "./topic_list";
+import * as unread from "./unread";
+import * as util from "./util";
+
 const max_topics = 5;
 const max_topics_with_unread = 8;
 
-exports.get_list_info = function (stream_id, zoomed) {
+export function get_list_info(stream_id, zoomed) {
     let topics_selected = 0;
     let more_topics_unreads = 0;
 
@@ -11,14 +20,24 @@ exports.get_list_info = function (stream_id, zoomed) {
         active_topic = active_topic.toLowerCase();
     }
 
-    const topic_names = topic_data.get_recent_names(stream_id);
+    let topic_names = stream_topic_history.get_recent_topic_names(stream_id);
+    if (zoomed) {
+        const search_term = topic_list.get_topic_search_term();
+        topic_names = util.filter_by_word_prefix_match(topic_names, search_term, (item) => item);
+    }
 
     const items = [];
 
     for (const [idx, topic_name] of topic_names.entries()) {
         const num_unread = unread.num_unread_for_topic(stream_id, topic_name);
         const is_active_topic = active_topic === topic_name.toLowerCase();
-        const is_topic_muted = muting.is_topic_muted(stream_id, topic_name);
+        const is_topic_muted = muted_topics.is_topic_muted(stream_id, topic_name);
+        const resolved = topic_name.startsWith(message_edit.RESOLVED_TOPIC_PREFIX);
+        let topic_display_name = topic_name;
+
+        if (resolved) {
+            topic_display_name = topic_display_name.replace(message_edit.RESOLVED_TOPIC_PREFIX, "");
+        }
 
         if (!zoomed) {
             function should_show_topic(topics_selected) {
@@ -78,20 +97,23 @@ exports.get_list_info = function (stream_id, zoomed) {
         }
 
         const topic_info = {
-            topic_name: topic_name,
+            topic_name,
+            topic_display_name,
             unread: num_unread,
             is_zero: num_unread === 0,
             is_muted: is_topic_muted,
-            is_active_topic: is_active_topic,
+            is_active_topic,
             url: hash_util.by_stream_topic_uri(stream_id, topic_name),
+            resolved,
+            resolved_topic_prefix: message_edit.RESOLVED_TOPIC_PREFIX,
         };
 
         items.push(topic_info);
     }
 
     return {
-        items: items,
+        items,
         num_possible_topics: topic_names.length,
-        more_topics_unreads: more_topics_unreads,
+        more_topics_unreads,
     };
-};
+}

@@ -13,8 +13,8 @@
 
 {{ _("If this was you, great! There's nothing else you need to do.") }}
 
-{% trans -%}
-If you do not recognize this login, or think your account may have been compromised, please reset your password at {{ realm_uri }}/accounts/password/reset/ or contact us immediately at {{ support_email }}.
+{% trans reset_link=realm_uri + "/accounts/password/reset/" %}
+If you do not recognize this login, or think your account may have been compromised, please reset your password at {{ reset_link }} or contact us immediately at {{ support_email }}.
 {%- endtrans %}
 
 

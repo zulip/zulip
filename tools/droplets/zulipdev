@@ -1,12 +1,13 @@
 server {
     listen 80;
+    listen [::]:80;
     return 301 https://$host$request_uri;
 }
 
 server {
-    listen 443;
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
 
-    ssl on;
     ssl_certificate /etc/ssl/certs/zulip.combined-chain.crt;
     ssl_certificate_key /etc/ssl/private/zulip.key;
 

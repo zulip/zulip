@@ -1,1 +1,1 @@
-{{ _("Your Zulip login page") }}
+{{ _("Your Zulip accounts") }}

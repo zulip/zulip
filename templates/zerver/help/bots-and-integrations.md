@@ -40,7 +40,7 @@ The **bot type** determines what the bot can do.
 Bot type | Permissions | Common uses
 ---|---|---
 Incoming webhook | Send messages into Zulip | Third party integrations
-Outgoing webhook | Send messages into Zulip, read messages where the bot is addressed | Third party integrations, most custom bots <!-- # ignorelongline -->
+Outgoing webhook | Send messages into Zulip, read messages where the bot is addressed | Third party integrations, most custom bots
 Generic | Anything the bot creator can do | Automating tasks, bots that listen to all messages on a stream
 API super bot (self-hosted only) | Anything any user can do | Mirroring
 
@@ -63,8 +63,8 @@ A few more details:
   (e.g. write messages that come from you, rather than from a look-a-like),
   you'll need to use your **personal API key**.
 
-* **API super bot**: You cannot create this from the web interface. Contact
-  `support@zulipchat.com` if you'd like information on how to set this up.
+* **API super bot**: You cannot create this from the web interface.
+  [Contact us](/help/contact-support) if you'd like information on how to set this up.
 
 ## Adding bots
 

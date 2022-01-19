@@ -6,14 +6,15 @@ Moderation is a big part of making an open community work.
 
 ## Prevention
 
-Zulip has many features designed to simplify moderation:
+Zulip has many features designed to simplify moderation by preventing
+problematic behavior:
 
 * [Disallow disposable email addresses](/help/allow-anyone-to-join-without-an-invitation)
   or [require users to log in via GitHub or GitLab](/help/configure-authentication-methods).
 * Restrict who can [create streams](/help/configure-who-can-create-streams),
   [create bots](/help/restrict-bot-creation), [send private
   messages](/help/restrict-private-messages), or
-  [add custom emoji](/help/only-allow-admins-to-add-emoji).
+  [add custom emoji](/help/custom-emoji#change-who-can-add-custom-emoji).
 * Link to a code of conduct in your
   [organization description](/help/create-your-organization-profile)
   (displayed on the registration page).
@@ -22,30 +23,40 @@ Zulip has many features designed to simplify moderation:
   post](/help/stream-sending-policy).
 * Add a [waiting period](/help/restrict-permissions-of-new-members) before
   new users can take disruptive actions.
-* [Restrict email visibility](/help/restrict-visibility-of-email-addresses)
-  to reduce the likelihood of off-platform spam.
+* [Restrict visibility of email addresses](/help/restrict-visibility-of-email-addresses)
+  to prevent off-platform spam.
+* [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
+  so only [moderators](/help/roles-and-permissions) can mention everyone in your organization.
 
 ## Response
 
+The following features are an important part of an organization's
+playbook when responding to abuse or spam that is not prevented by the
+organization's policy choices.
+
+* Individual users can [mute abusive users](/help/mute-a-user) to stop
+  harassment that moderators have not yet addressed, or [collapse
+  individual messages](/help/collapse-a-message) that they don't want
+  to see.
 * [Ban (deactivate) users](/help/deactivate-or-reactivate-a-user) acting in
   bad faith. You can reactivate them later if they repent.
-* Use the `streams:public sender:user@example.com`
-  [search operators](/help/search-for-messages) to find all messages sent by a user.
-* Delete messages, [delete streams](/help/delete-a-stream), and
+* Investigate behavior using the `streams:public
+  sender:user@example.com` [search
+  operators](/help/search-for-messages) to find all messages sent by a
+  user.
+* Delete messages, [archive streams](/help/archive-a-stream), and
   [unsubscribe users from streams](/help/add-or-remove-users-from-a-stream).
-* [Rename topics](/help/rename-a-topic).
-* [Change users' names](/help/change-a-users-name) (e.g. to "Spammer")
+* [Move topics](/help/rename-a-topic), including between streams, when
+  users start conversations in the wrong place.
+* [Change users' names](/help/change-a-users-name) (e.g. to "Name (Spammer)")
+  for users who sent spam private messages to many community members.
 * [Deactivate bots](/help/deactivate-or-reactivate-a-bot) or
-  [delete custom emoji](/help/add-custom-emoji#delete-custom-emoji).
-* Instruct users to [collapse](/help/collapse-a-message) messages that they don't
-  want to see.
+  [delete custom emoji](/help/custom-emoji#delete-custom-emoji).
 
 ## In the works
 
 * **Delete spammer**. This will wipe the user from your Zulip, by deleting
   all their messages and reactions, banning them, etc.
-* **Mute user**. This will allow an individual user to hide the messages of
-  another individual user.
 * **New users join as guests**. This will allow users joining via open
   registration to have extremely limited permissions by default, but still
   enough permissions to ask the core team a question or to get a feel for your

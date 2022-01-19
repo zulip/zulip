@@ -1,6 +1,4 @@
 class zulip::localhost_sso {
-  include zulip::common
-
   file { '/etc/nginx/zulip-include/app.d/external-sso.conf':
     ensure  => file,
     require => Package[$zulip::common::nginx],

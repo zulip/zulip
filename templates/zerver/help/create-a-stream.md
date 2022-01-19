@@ -4,12 +4,12 @@ By default, all users other than guests can create streams.
 
 Organization administrators can
 [restrict stream creation](/help/configure-who-can-create-streams) to
-admins only, or to members meeting a minimum account age.
+admins only, moderators only or to members meeting a minimum account age.
 
-If you are an administrator setting up streams for the first time, we highly
-recommend reading our
-[guide to streams](/help/getting-your-organization-started-with-zulip#create-streams)
-first.
+If you are an administrator setting up streams for the first time, check out our
+[guide to setting up streams for a new organization][org-guide-new-streams].
+
+[org-guide-new-streams]: /help/getting-your-organization-started-with-zulip#create-streams
 
 ## Create a stream
 
@@ -22,6 +22,7 @@ first.
 1. Fill out the requested info, and click **Create**.
 
 !!! warn ""
+
     **Note**: You will only see the **Create stream** button if you have
     permission to create streams.
 

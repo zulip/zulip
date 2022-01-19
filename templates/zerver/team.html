@@ -22,14 +22,14 @@
         <div class="padded-content markdown">
             <div class="team">
                 <p>
-                    Over 500 people have contributed to the Zulip
+                    Over 700 people have contributed to the Zulip
                     codebase, from high school students to 30 year
                     industry veterans, from people launching new careers
                     to people looking for community. Meet the team
                     below!
                 </p>
 
-                <h1>The core team at Kandra Labs</h1>
+                <h1 id="the-core-team">The core team at Kandra Labs</h1>
                 <div class="team-profiles">
                     <!-- Tim -->
                     <div class="profile bdfl">
@@ -51,7 +51,7 @@
                                     the open source community for over a
                                     decade. Tim has three degrees from MIT, and
                                     lives in San Francisco with his wife and
-                                    daughter.
+                                    two daughters.
                                 </p>
 
                             </div>
@@ -60,7 +60,7 @@
                 </div>
                 <p>
                     Kandra Labs provides commercial Zulip hosting and on-premises support
-                    at <a href="https://zulipchat.com/plans">https://zulipchat.com</a>,
+                    at <a href="https://zulip.com/plans">https://zulip.com</a>,
                     and employs the core developers of the project. It was
                     started in June 2016 to help sustain the growth of the Zulip
                     project. Kandra Labs is funded by
@@ -69,7 +69,7 @@
                 </p>
 
                 <!-- Contributors -->
-                <h1>Our amazing community</h1>
+                <h1 id="our-amazing-community">Our amazing community</h1>
                 <p>
                     While the team at Kandra Labs provides important
                     leadership, Zulip is built by an incredible
@@ -80,34 +80,34 @@
                 </p>
                 <p>
                     Here, we recognize the top contributors to the
-                    Zulip server project on GitHub.  Zulip's community
+                    Zulip project on GitHub.  Zulip's community
                     is unusual in how many people outside the core
                     team have made major contributions to the project.
                 </p>
 
                 <div class="contributors-list">
-                    <input id="total" type="radio" name="tabs" checked>
+                    <input id="total" type="radio" name="tabs" checked />
                     <label for="total"><i class="fa fa-globe" aria-hidden="true"></i>&nbsp; Total</label>
 
-                    <input id="server" type="radio" name="tabs">
+                    <input id="server" type="radio" name="tabs" />
                     <label for="server"><i class="fa fa-server" aria-hidden="true"></i>&nbsp; Server</label>
 
-                    <input id="desktop" type="radio" name="tabs">
+                    <input id="desktop" type="radio" name="tabs" />
                     <label for="desktop"><i class="fa fa-desktop" aria-hidden="true"></i>&nbsp; Desktop</label>
 
-                    <input id="mobile" type="radio" name="tabs">
+                    <input id="mobile" type="radio" name="tabs" />
                     <label for="mobile"><i class="fa fa-mobile" aria-hidden="true"></i>&nbsp; Mobile</label>
 
-                    <input id="python-zulip-api" type="radio" name="tabs">
+                    <input id="python-zulip-api" type="radio" name="tabs" />
                     <label for="python-zulip-api"><i class="fa fa-code" aria-hidden="true"></i>&nbsp; Python API</label>
 
-                    <input id="zulip-js" type="radio" name="tabs">
+                    <input id="zulip-js" type="radio" name="tabs" />
                     <label for="zulip-js"><i class="fa fa-code" aria-hidden="true"></i>&nbsp; JS API</label>
 
-                    <input id="zulipbot" type="radio" name="tabs">
+                    <input id="zulipbot" type="radio" name="tabs" />
                     <label for="zulipbot"><i class="fa fa-at" aria-hidden="true"></i>&nbsp; Zulipbot</label>
 
-                    <input id="terminal" type="radio" name="tabs">
+                    <input id="terminal" type="radio" name="tabs" />
                     <label for="terminal"><i class="fa fa-terminal" aria-hidden="true"></i>&nbsp; Terminal</label>
 
                     <div id="tab-total" class="contributors"></div>
@@ -120,15 +120,15 @@
                     <div id="tab-terminal" class="contributors"></div>
                 </div>
 
-                <!-- Compiled using underscore -->
+                <!-- Compiled using lodash -->
                 <script type="text/template" id="contributors-template">
                     <div class="person">
-                        <a href="https://github.com/<%= name %>" target="_blank" class="no-underline">
+                        <a href="<%= profile_url %>" target="_blank" rel="noopener noreferrer" class="no-underline">
                             <div class="avatar">
                                 <img class="avatar_img" src="<%= avatar %>" alt="{{ _('Avatar') }}" />
                             </div>
                             <div class='info'>
-                                <b>@<%= name %></b><br />
+                                <b><%= name %></b><br />
                                 <%= commits %> <%= commits === 1 ? 'commit' : 'commits' %>
                             </div>
                         </a>

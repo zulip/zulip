@@ -1,29 +1,30 @@
 # Reading strategies
 
-Zulip works a little bit differently than other chat platforms. Read
-[streams and topics](/help/about-streams-and-topics) if you're not yet
-familiar with Zulip's topics, and [why Zulip](/why-zulip) if you're
-curious why we built Zulip the way we did.
+In Zulip, streams determine who gets a message. Topics tell you what
+the message is about. If you are not yet familiar with Zulip's topics,
+we recommend first reading about [streams and
+topics](/help/streams-and-topics).
 
-We've outlined a few ways users process messages in Zulip.
+This article details a few ways to efficiently read through messages
+in Zulip.
 
 ## Topic by topic
 
-This is the recommended way to read new messages, for most users. If you're
-only going to learn one way to do it, this is the one.
+Like your email inbox, for most users, Zulip works best if you read it topic-by-topic.
 
-* Use the keyboard shortcut `n` (next unread topic) to jump from topic to
-  topic. You can use the arrow keys, page up/down, and Home/End to navigate
-  within a topic.
+### Finding a topic to read
 
-* Use `p` (next unread PM) to jump from PM to PM.
+#### From Recent topics
 
-* Use `r` (reply) to reply to a topic or PM.
+{!recent-topics.md!}
 
-* Use `c` (compose stream message) or `x` (compose PM) to start new
-  conversations.
+#### From the list of streams
 
-* Use up arrow or `Esc` to exit out of the compose box.
+{!left-sidebar-topics.md!}
+
+### Reading topics
+
+{!reading-topics.md!}
 
 ## Stream view
 
@@ -45,10 +46,10 @@ magnifying glass next to `STREAMS`, or by using the autocomplete in
 If you're all caught up, it can be useful to have a single place to keep
 track of all messages coming in.
 
-* Click on **All messages** in the upper left, or hit `Esc`.
+* Click on **All messages** in the upper left, or hit `a`.
 
 * You can use `s` (narrow to stream) or `S` (narrow to topic) to zoom in,
-  and `Esc` to get back to All messages.
+  and `a` to get back to All messages.
 
 ## Starring messages for later
 
@@ -57,6 +58,6 @@ like to reply to later.
 
 ## Related articles
 
+* [Getting started with Zulip](/help/getting-started-with-zulip)
+* [Recent topics](/help/recent-topics)
 * [Search](/help/search-for-messages) for streams, topics, or messages.
-
-* Unread counts

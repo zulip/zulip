@@ -37,7 +37,7 @@
          "display_name":"Tomasz",
          "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}",
          "type":"user",
-         "username":"kolaszek"
+         "nickname":"Tomasz Kolaszek"
       },
       "version":null,
       "milestone":null,
@@ -63,7 +63,7 @@
          "display_name":"Tomasz",
          "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}",
          "type":"user",
-         "username":"kolaszek"
+         "nickname":"Tomasz Kolaszek"
       },
       "priority":"major",
       "created_on":"2016-07-04T17:36:51.890354+00:00",
@@ -102,7 +102,7 @@
          "display_name":"Tomasz",
          "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}",
          "type":"user",
-         "username":"kolaszek"
+         "nickname":""
       },
       "name":"Repository name",
       "full_name":"kolaszek/repository-name",
@@ -138,7 +138,7 @@
          "display_name":"Tomasz",
          "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}",
          "type":"user",
-         "username":"kolaszek"
+         "nickname":"Tomasz Kolaszek"
       },
       "content":{
          "raw":"Add comment",
@@ -162,6 +162,6 @@
       "display_name":"Tomasz",
       "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}",
       "type":"user",
-      "username":"kolaszek"
+      "nickname":"Tomasz Kolaszek"
    }
 }

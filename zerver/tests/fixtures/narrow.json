@@ -246,7 +246,7 @@
         "accept_events":[
             {
                 "message":null,
-                "flags": [],
+                "flags": []
             }
         ],
         "reject_events":[
@@ -261,6 +261,38 @@
             [
                 "is",
                 "unread"
+            ]
+        ]
+    },
+    {
+        "accept_events":[
+            {
+                "message":{
+                    "type":"stream",
+                    "subject":"✔ python"
+                },
+                "flags":null
+            }
+        ],
+        "reject_events":[
+            {
+                "message":{
+                    "type":"private"
+                },
+                "flags":null
+            },
+            {
+                "message":{
+                    "type":"stream",
+                    "subject":"java"
+                },
+                "flags":null
+            }
+        ],
+        "narrow":[
+            [
+                "is",
+                "resolved"
             ]
         ]
     }

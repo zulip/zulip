@@ -24,19 +24,19 @@
     {% endif %}
 
     {% if new_streams.html %}
-    <p><b>New streams</b></p>
+    <p><b>{% trans %}New streams{% endtrans %}</b></p>
 
     <p>{{ new_streams.html|display_list(1000)|safe }}.</p>
     {% endif %}
 
     <br />
 
-    <p><a href="{{ realm_uri }}">Click here to log in to Zulip and catch up.</a></p>
+    <p><a href="{{ realm_uri }}">{% trans %}Click here to log in to Zulip and catch up.{% endtrans %}</a></p>
 {% endblock %}
 
 {% block manage_preferences %}
 <p>
-    <a href="{{ realm_uri }}/#settings/notifications">Manage email preferences</a> |
-    <a href="{{ unsubscribe_link }}">Unsubscribe from digest emails</a>
+    <a href="{{ realm_uri }}/#settings/notifications">{% trans %}Manage email preferences{% endtrans %}</a> |
+    <a href="{{ unsubscribe_link }}">{% trans %}Unsubscribe from digest emails{% endtrans %}</a>
 </p>
 {% endblock %}

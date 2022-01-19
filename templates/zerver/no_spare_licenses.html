@@ -1,0 +1,15 @@
+{% extends "zerver/portico.html" %}
+{% block portico_content %}
+<br/>
+<br/>
+<br/>
+
+<h3>{{ _("This organization cannot accept new members right now.") }}</h3>
+
+<p>
+    {% trans %}
+    New members cannot join this organization because all Zulip licenses are currently in use. Please contact the person who
+    invited you and ask them to increase the number of licenses, then try again.
+    {% endtrans %}
+</p>
+{% endblock %}

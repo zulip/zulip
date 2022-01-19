@@ -57,8 +57,21 @@
         </form>
         {% endfor %}
     </div>
-    <p class="bottom-text">
-        Only verified GitHub email addresses are listed.
-    </p>
+    {% if unverified_emails %}
+    <div class="bottom-text">
+        <p>
+            {% trans %}
+            Your GitHub account also has unverified email addresses
+            associated with it.
+            {% endtrans %}
+        </p>
+        <p>
+            {% trans %}
+            To use one of these to log in to Zulip, you must first
+            <a href="https://github.com/settings/emails">verify it with GitHub.</a>
+            {% endtrans %}
+        </p>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

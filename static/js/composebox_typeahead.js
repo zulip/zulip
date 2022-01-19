@@ -1,10 +1,37 @@
-const pygments_data = require("../generated/pygments_data.json");
-const typeahead = require("../shared/js/typeahead");
-const autosize = require('autosize');
+import {formatISO} from "date-fns";
+import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
+import $ from "jquery";
+import _ from "lodash";
 
-//************************************
+import pygments_data from "../generated/pygments_data.json";
+import * as emoji from "../shared/js/emoji";
+import * as typeahead from "../shared/js/typeahead";
+
+import * as compose from "./compose";
+import * as compose_pm_pill from "./compose_pm_pill";
+import * as compose_state from "./compose_state";
+import * as compose_ui from "./compose_ui";
+import * as compose_validate from "./compose_validate";
+import {get_keydown_hotkey} from "./hotkey";
+import {$t} from "./i18n";
+import * as message_store from "./message_store";
+import * as muted_users from "./muted_users";
+import {page_params} from "./page_params";
+import * as people from "./people";
+import * as rows from "./rows";
+import * as settings_data from "./settings_data";
+import * as stream_data from "./stream_data";
+import * as stream_topic_history from "./stream_topic_history";
+import * as stream_topic_history_util from "./stream_topic_history_util";
+import * as timerender from "./timerender";
+import * as typeahead_helper from "./typeahead_helper";
+import * as user_groups from "./user_groups";
+import * as user_pill from "./user_pill";
+import {user_settings} from "./user_settings";
+
+// **********************************
 // AN IMPORTANT NOTE ABOUT TYPEAHEADS
-//************************************
+// **********************************
 // They do not do any HTML escaping, at all.
 // And your input to them is rendered as though it were HTML by
 // the default highlighter.
@@ -15,38 +42,40 @@ const autosize = require('autosize');
 
 // This is what we use for PM/compose typeaheads.
 // We export it to allow tests to mock it.
-exports.max_num_items = 5;
+export const max_num_items = 8;
 
-exports.emoji_collection = [];
+export let emoji_collection = [];
 
-exports.update_emoji_data = function () {
-    exports.emoji_collection = [];
+export function update_emoji_data() {
+    emoji_collection = [];
     for (const emoji_dict of emoji.emojis_by_name.values()) {
         if (emoji_dict.is_realm_emoji === true) {
-            exports.emoji_collection.push({
+            emoji_collection.push({
                 emoji_name: emoji_dict.name,
                 emoji_url: emoji_dict.url,
                 is_realm_emoji: true,
             });
         } else {
             for (const alias of emoji_dict.aliases) {
-                exports.emoji_collection.push({
+                emoji_collection.push({
                     emoji_name: alias,
                     emoji_code: emoji_dict.emoji_code,
                 });
             }
         }
     }
-};
+}
 
-exports.topics_seen_for = function (stream_name) {
+export function topics_seen_for(stream_name) {
     const stream_id = stream_data.get_stream_id(stream_name);
     if (!stream_id) {
         return [];
     }
-    const topic_names = topic_data.get_recent_names(stream_id);
-    return topic_names;
-};
+
+    // Fetch topic history from the server, in case we will need it soon.
+    stream_topic_history_util.get_server_history(stream_id, () => {});
+    return stream_topic_history.get_recent_topic_names(stream_id);
+}
 
 function get_language_matcher(query) {
     query = query.toLowerCase();
@@ -55,12 +84,24 @@ function get_language_matcher(query) {
     };
 }
 
-exports.query_matches_person = function (query, person) {
-    return typeahead.query_matches_source_attrs(query, person, ["full_name", "email"], " ");
-};
+export function query_matches_person(query, person) {
+    if (!settings_data.show_email()) {
+        return typeahead.query_matches_source_attrs(query, person, ["full_name"], " ");
+    }
+    let email_attr = "email";
+    if (person.delivery_email) {
+        email_attr = "delivery_email";
+    }
+    return typeahead.query_matches_source_attrs(query, person, ["full_name", email_attr], " ");
+}
 
-function query_matches_name_description(query, user_group_or_stream) {
-    return typeahead.query_matches_source_attrs(query, user_group_or_stream, ["name", "description"], " ");
+export function query_matches_name_description(query, user_group_or_stream) {
+    return typeahead.query_matches_source_attrs(
+        query,
+        user_group_or_stream,
+        ["name", "description"],
+        " ",
+    );
 }
 
 function get_stream_or_user_group_matcher(query) {
@@ -76,7 +117,7 @@ function get_slash_matcher(query) {
     query = typeahead.clean_query_lowercase(query);
 
     return function (item) {
-        return typeahead.query_matches_source_attrs(query, item, ["name"], " ");
+        return typeahead.query_matches_source_attrs(query, item, ["name", "aliases"], " ");
     };
 }
 
@@ -85,187 +126,157 @@ function get_topic_matcher(query) {
 
     return function (topic) {
         const obj = {
-            topic: topic,
+            topic,
         };
 
-        return typeahead.query_matches_source_attrs(query, obj, ['topic'], ' ');
+        return typeahead.query_matches_source_attrs(query, obj, ["topic"], " ");
     };
 }
 
-// nextFocus is set on a keydown event to indicate where we should focus on keyup.
-// We can't focus at the time of keydown because we need to wait for typeahead.
-// And we can't compute where to focus at the time of keyup because only the keydown
-// has reliable information about whether it was a tab or a shift+tab.
-let nextFocus = false;
-
-exports.should_enter_send = function (e) {
+export function should_enter_send(e) {
     const has_non_shift_modifier_key = e.ctrlKey || e.metaKey || e.altKey;
     const has_modifier_key = e.shiftKey || has_non_shift_modifier_key;
     let this_enter_sends;
-    if (page_params.enter_sends) {
+    if (user_settings.enter_sends) {
         // With the enter_sends setting, we should send
         // the message unless the user was holding a
         // modifier key.
         this_enter_sends = !has_modifier_key;
     } else {
         // If enter_sends is not enabled, just hitting
-        // enter should add a newline, but with a
-        // non-shift modifier key held down, we should
-        // send.  With shift, we shouldn't, because
-        // shift+enter to get a newline is a common
+        // Enter should add a newline, but with a
+        // non-Shift modifier key held down, we should
+        // send.  With Shift, we shouldn't, because
+        // Shift+Enter to get a newline is a common
         // keyboard habit for folks for dealing with other
-        // chat products where enter-always-sends.
+        // chat products where Enter-always-sends.
         this_enter_sends = has_non_shift_modifier_key;
     }
     return this_enter_sends;
-};
+}
 
-exports.handle_enter = function (textarea, e) {
-    // Used only if enter doesn't send.
+export function handle_enter(textarea, e) {
+    // Used only if Enter doesn't send.
 
-    // Since this enter doesn't send, we just want to do
-    // the browser's default behavior for the "enter" key.
+    // Since this Enter doesn't send, we just want to do
+    // the browser's default behavior for the "Enter" key.
     // Letting the browser handle it works great if the
-    // key actually pressed was enter or shift-enter.
+    // key actually pressed was Enter or Shift-Enter.
 
-    // But the default browser behavior for ctrl/alt/meta
-    // + enter is to do nothing, so we need to emulate
-    // the browser behavior for "enter" in those cases.
+    // But the default browser behavior for Ctrl/Alt/Meta
+    // + Enter is to do nothing, so we need to emulate
+    // the browser behavior for "Enter" in those cases.
     //
     // We do this using caret and range from jquery-caret.
     const has_non_shift_modifier_key = e.ctrlKey || e.metaKey || e.altKey;
-    if (has_non_shift_modifier_key) {
-
-        // To properly emulate browser "enter", if the
-        // user had selected something in the textarea,
-        // we need those characters to be cleared.
-        const range = textarea.range();
-        if (range.length > 0) {
-            textarea.range(range.start, range.end).range('');
-        }
-
-        // Now add the newline, remembering to resize the
-        // textarea if needed.
-        textarea.caret("\n");
-        autosize.update(textarea);
-        e.preventDefault();
+    if (!has_non_shift_modifier_key) {
+        // Use the native browser behavior.
         return;
     }
-    // Fall through to native browser behavior, otherwise.
-};
+
+    // To properly emulate browser "Enter", if the
+    // user had selected something in the textarea,
+    // we need those characters to be cleared.
+    const range = textarea.range();
+    if (range.length > 0) {
+        textarea.range(range.start, range.end).range("");
+    }
+
+    // Now add the newline, remembering to resize the
+    // textarea if needed.
+    textarea.caret("\n");
+    compose_ui.autosize_textarea(textarea);
+    e.preventDefault();
+}
+
+// nextFocus is set on a keydown event to indicate where we should focus on keyup.
+// We can't focus at the time of keydown because we need to wait for typeahead.
+// And we can't compute where to focus at the time of keyup because only the keydown
+// has reliable information about whether it was a Tab or a Shift+Tab.
+let nextFocus = false;
 
 function handle_keydown(e) {
-    const code = e.keyCode || e.which;
+    const key = e.key;
 
-    if (code === 13 || code === 9 && !e.shiftKey) { // Enter key or tab key
+    if (key === "Enter" || (key === "Tab" && !e.shiftKey)) {
+        // Enter key or Tab key
         let target_sel;
 
         if (e.target.id) {
-            target_sel = '#' + e.target.id;
+            target_sel = `#${CSS.escape(e.target.id)}`;
         }
 
         const on_stream = target_sel === "#stream_message_recipient_stream";
-        const on_topic = target_sel  === "#stream_message_recipient_topic";
+        const on_topic = target_sel === "#stream_message_recipient_topic";
         const on_pm = target_sel === "#private_message_recipient";
-        const on_compose = target_sel === '#compose-textarea';
+        const on_compose = target_sel === "#compose-textarea";
 
-        if (on_stream || on_topic || on_pm) {
-            // For enter, prevent the form from submitting
-            // For tab, prevent the focus from changing again
-            e.preventDefault();
-        }
-
-        // In the compose_textarea box, preventDefault() for tab but not for enter
-        if (on_compose && code !== 13) {
-            e.preventDefault();
-        }
-
-        if (on_stream) {
-            nextFocus = "#stream_message_recipient_topic";
-        } else if (on_topic) {
-            if (code === 13) {
-                e.preventDefault();
-            }
-            nextFocus = '#compose-textarea';
-        } else if (on_pm) {
-            nextFocus = '#compose-textarea';
-        } else if (on_compose) {
-            if (code === 13) {
-                nextFocus = false;
-            } else {
-                nextFocus = "#compose-send-button";
-            }
-        } else {
-            nextFocus = false;
-        }
-
-        // If no typeaheads are shown...
-        if (!($("#stream_message_recipient_topic").data().typeahead.shown ||
-              $("#stream_message_recipient_stream").data().typeahead.shown ||
-              $("#private_message_recipient").data().typeahead.shown ||
-              $("#compose-textarea").data().typeahead.shown)) {
-
-            // If no typeaheads are shown and the user is tabbing from the message content box,
-            // then there's no need to wait and we can change the focus right away.
-            // Without this code to change the focus right away, if the user presses enter
-            // before they fully release the tab key, the tab will be lost.  Note that we don't
-            // want to change focus right away in the private_message_recipient box since it
-            // takes the typeaheads a little time to open after the user finishes typing, which
-            // can lead to the focus moving without the autocomplete having a chance to happen.
-            if (nextFocus) {
-                $(nextFocus).focus();
-                nextFocus = false;
-            }
-
-            if (on_compose && code === 13) {
-                if (exports.should_enter_send(e)) {
+        if (on_compose) {
+            if (key === "Tab") {
+                // This if branch is only here to make Tab+Enter work on Safari,
+                // which does not make <button>s tab-accessible by default
+                // (even if we were to set tabindex=0).
+                if (!should_enter_send(e)) {
+                    // It is important that we do an immediate focus
+                    // even here, rather than setting nextFocus. If
+                    // the user hits Tab and then Enter without first
+                    // releasing Tab, then setting nextFocus here
+                    // could result in focus being moved to the "Send
+                    // button" after sending the message, preventing
+                    // typing a next message!
+                    $("#compose-send-button").trigger("focus");
                     e.preventDefault();
-                    if ($("#compose-send-button").attr('disabled') !== "disabled") {
-                        $("#compose-send-button").attr('disabled', 'disabled');
+                    e.stopPropagation();
+                }
+            } else {
+                // Enter
+                if (should_enter_send(e)) {
+                    e.preventDefault();
+                    if (
+                        compose_validate.warn_for_text_overflow_when_tries_to_send() &&
+                        !$("#compose-send-button").prop("disabled")
+                    ) {
+                        $("#compose-send-button").prop("disabled", true);
                         compose.finish();
                     }
                     return;
                 }
-                exports.handle_enter($("#compose-textarea"), e);
+
+                handle_enter($("#compose-textarea"), e);
+            }
+        } else if (on_stream || on_topic || on_pm) {
+            // We are doing the focusing on keyup to not abort the typeahead.
+            if (on_stream) {
+                nextFocus = $("#stream_message_recipient_topic");
+            } else if (on_topic) {
+                nextFocus = $("#compose-textarea");
+            } else if (on_pm) {
+                nextFocus = $("#compose-textarea");
             }
         }
     }
 }
 
 function handle_keyup(e) {
-    const code = e.keyCode || e.which;
-    if (code === 13 || code === 9 && !e.shiftKey) { // Enter key or tab key
-        if (nextFocus) {
-            $(nextFocus).focus();
-            nextFocus = false;
-        }
+    if (
+        // Enter key or Tab key
+        (e.key === "Enter" || (e.key === "Tab" && !e.shiftKey)) &&
+        nextFocus
+    ) {
+        nextFocus.trigger("focus");
+        nextFocus = false;
+
+        // Prevent the form from submitting
+        e.preventDefault();
     }
 }
 
-// https://stackoverflow.com/questions/3380458/looking-for-a-better-workaround-to-chrome-select-on-focus-bug
-function select_on_focus(field_id) {
-    // A select event appears to trigger a focus event under certain
-    // conditions in Chrome so we need to protect against infinite
-    // recursion.
-    let in_handler = false;
-    $("#" + field_id).focus(function () {
-        if (in_handler) {
-            return;
-        }
-        in_handler = true;
-        $("#" + field_id).select().one('mouseup', function (e) {
-            e.preventDefault();
-        });
-        in_handler = false;
-    });
-}
-
-exports.split_at_cursor = function (query, input) {
+export function split_at_cursor(query, input) {
     const cursor = input.caret();
     return [query.slice(0, cursor), query.slice(cursor)];
-};
+}
 
-exports.tokenize_compose_str = function (s) {
+export function tokenize_compose_str(s) {
     // This basically finds a token like "@alic" or
     // "#Veron" as close to the end of the string as it
     // can find it.  It wants to find white space or
@@ -282,75 +293,85 @@ exports.tokenize_compose_str = function (s) {
     while (i > min_i) {
         i -= 1;
         switch (s[i]) {
-        case '`':
-        case '~':
-            // Code block must start on a new line
-            if (i === 2) {
-                return s;
-            } else if (i > 2 && s[i - 3] === "\n") {
-                return s.slice(i - 2);
-            }
-            break;
-        case '/':
-            if (i === 0) {
-                return s;
-            }
-            break;
-        case '#':
-        case '@':
-        case ':':
-        case '_':
-            if (i === 0) {
-                return s;
-            } else if (/[\s(){}\[\]]/.test(s[i - 1])) {
-                return s.slice(i);
-            }
-            break;
-        case '>':
-            // topic_jump
-            //
-            // If you hit `>` immediately after completing the typeahead for mentioning a stream,
-            // this will reposition the user from.  If | is the cursor, implements:
-            //
-            // `#**stream name** >|` => `#**stream name>|`.
-            if (s.substring(i - 2, i) === '**' || s.substring(i - 3, i) === '** ') {
-                // return any string as long as its not ''.
-                return '>topic_jump';
-            }
-            // maybe topic_list; let's let the stream_topic_regex decide later.
-            return '>topic_list';
+            case "`":
+            case "~":
+                // Code block must start on a new line
+                if (i === 2) {
+                    return s;
+                } else if (i > 2 && s[i - 3] === "\n") {
+                    return s.slice(i - 2);
+                }
+                break;
+            case "/":
+                if (i === 0) {
+                    return s;
+                }
+                break;
+            case "#":
+            case "@":
+            case ":":
+            case "_":
+                if (i === 0) {
+                    return s;
+                } else if (/[\s()[\]{}]/.test(s[i - 1])) {
+                    return s.slice(i);
+                }
+                break;
+            case ">":
+                // topic_jump
+                //
+                // If you hit `>` immediately after completing the typeahead for mentioning a stream,
+                // this will reposition the user from.  If | is the cursor, implements:
+                //
+                // `#**stream name** >|` => `#**stream name>|`.
+                if (
+                    s.slice(Math.max(0, i - 2), i) === "**" ||
+                    s.slice(Math.max(0, i - 3), i) === "** "
+                ) {
+                    // return any string as long as its not ''.
+                    return ">topic_jump";
+                }
+                // maybe topic_list; let's let the stream_topic_regex decide later.
+                return ">topic_list";
         }
     }
 
-    return '';
-};
+    const timestamp_index = s.indexOf("<time");
+    if (timestamp_index >= 0) {
+        return s.slice(timestamp_index);
+    }
 
-exports.broadcast_mentions = function () {
-    return ['all', 'everyone', 'stream'].map((mention, idx) => ({
-        special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
-                                  {wildcard_mention_token: mention}),
+    return "";
+}
+
+export function broadcast_mentions() {
+    return ["all", "everyone", "stream"].map((mention, idx) => ({
+        special_item_text: $t(
+            {defaultMessage: "{wildcard_mention_token} (Notify stream)"},
+            {wildcard_mention_token: mention},
+        ),
 
         email: mention,
 
         // Always sort above, under the assumption that names will
         // be longer and only contain "all" as a substring.
-        pm_recipient_count: Infinity,
+        pm_recipient_count: Number.POSITIVE_INFINITY,
 
         full_name: mention,
         is_broadcast: true,
 
         // used for sorting
-        idx: idx,
+        idx,
     }));
-};
+}
 
 function filter_mention_name(current_token) {
-    if (current_token.startsWith('**')) {
-        current_token = current_token.substring(2);
-    } else if (current_token.startsWith('*')) {
-        current_token = current_token.substring(1);
+    if (current_token.startsWith("**")) {
+        current_token = current_token.slice(2);
+    } else if (current_token.startsWith("*")) {
+        current_token = current_token.slice(1);
     }
-    if (current_token.length < 1 || current_token.lastIndexOf('*') !== -1) {
+    if (current_token.lastIndexOf("*") !== -1) {
         return false;
     }
 
@@ -367,49 +388,67 @@ function should_show_custom_query(query, items) {
     if (!query) {
         return false;
     }
-    const matched = items.some(elem => elem.toLowerCase() === query.toLowerCase());
+    const matched = items.some((elem) => elem.toLowerCase() === query.toLowerCase());
     return !matched;
 }
 
-exports.slash_commands = [
+export const slash_commands = [
     {
-        text: i18n.t("/me is excited (Display action text)"),
-        name: "me",
+        text: $t({defaultMessage: "/dark (Switch to the dark theme)"}),
+        name: "dark",
+        aliases: "night",
     },
     {
-        text: i18n.t("/poll Where should we go to lunch today? (Create a poll)"),
+        text: $t({defaultMessage: "/fixed-width (Toggle fixed width mode)"}),
+        name: "fixed-width",
+        aliases: "",
+    },
+    {
+        text: $t({defaultMessage: "/fluid-width (Toggle fluid width mode)"}),
+        name: "fluid-width",
+        aliases: "",
+    },
+    {
+        text: $t({defaultMessage: "/light (Switch to light theme)"}),
+        name: "light",
+        aliases: "day",
+    },
+    {
+        text: $t({defaultMessage: "/me is excited (Display action text)"}),
+        name: "me",
+        aliases: "",
+    },
+    {
+        text: $t({defaultMessage: "/poll Where should we go to lunch today? (Create a poll)"}),
         name: "poll",
+        aliases: "",
+    },
+    {
+        text: $t({defaultMessage: "/todo (Create a todo list)"}),
+        name: "todo",
+        aliases: "",
     },
 ];
 
-exports.filter_and_sort_mentions = function (is_silent, query) {
-    const opts = {
+export function filter_and_sort_mentions(is_silent, query, opts) {
+    opts = {
         want_broadcast: !is_silent,
-        want_groups: !is_silent,
         filter_pills: false,
+        ...opts,
     };
-    return exports.get_person_suggestions(query, opts);
-};
+    return get_person_suggestions(query, opts);
+}
 
-exports.get_pm_people = function (query) {
+export function get_pm_people(query) {
     const opts = {
         want_broadcast: false,
-        want_groups: true,
         filter_pills: true,
     };
-    return exports.get_person_suggestions(query, opts);
-};
+    return get_person_suggestions(query, opts);
+}
 
-exports.get_person_suggestions = function (query, opts) {
+export function get_person_suggestions(query, opts) {
     query = typeahead.clean_query_lowercase(query);
-
-    const person_matcher = (item) => {
-        return exports.query_matches_person(query, item);
-    };
-
-    const group_matcher = (item) => {
-        return query_matches_name_description(query, item);
-    };
 
     function filter_persons(all_persons) {
         let persons;
@@ -419,22 +458,19 @@ exports.get_person_suggestions = function (query, opts) {
         } else {
             persons = all_persons;
         }
+        // Exclude muted users from typeaheads.
+        persons = muted_users.filter_muted_users(persons);
 
         if (opts.want_broadcast) {
-            persons = persons.concat(exports.broadcast_mentions());
+            persons = persons.concat(broadcast_mentions());
         }
-        return persons.filter(person_matcher);
+
+        return persons.filter((item) => query_matches_person(query, item));
     }
 
-    let groups;
+    const groups = user_groups.get_realm_user_groups();
 
-    if (opts.want_groups) {
-        groups = user_groups.get_realm_user_groups();
-    } else {
-        groups = [];
-    }
-
-    const filtered_groups = groups.filter(group_matcher);
+    const filtered_groups = groups.filter((item) => query_matches_name_description(query, item));
 
     /*
         Let's say you're on a big realm and type
@@ -458,33 +494,46 @@ exports.get_person_suggestions = function (query, opts) {
         persons who match on prefix to groups who
         match on prefix.)
     */
-    const cutoff_length = exports.max_num_items;
+    const cutoff_length = max_num_items;
 
-    const filtered_message_persons = filter_persons(
-        people.get_message_people()
-    );
+    const filtered_message_persons = filter_persons(people.get_active_message_people());
 
     let filtered_persons;
 
     if (filtered_message_persons.length >= cutoff_length) {
         filtered_persons = filtered_message_persons;
     } else {
-        filtered_persons = filter_persons(
-            people.get_realm_users()
-        );
+        filtered_persons = filter_persons(people.get_realm_users());
     }
 
-    return typeahead_helper.sort_recipients(
-        filtered_persons,
+    return typeahead_helper.sort_recipients({
+        users: filtered_persons,
         query,
-        compose_state.stream_name(),
-        compose_state.topic(),
-        filtered_groups,
-        exports.max_num_items
-    );
-};
+        current_stream: opts.stream,
+        current_topic: opts.topic,
+        groups: filtered_groups,
+        max_num_items,
+    });
+}
 
-exports.get_sorted_filtered_items = function (query) {
+export function get_stream_topic_data(hacky_this) {
+    const opts = {};
+    const message_row = hacky_this.$element.closest(".message_row");
+    if (message_row.length === 1) {
+        // we are editing a message so we try to use it's keys.
+        const msg = message_store.get(rows.id(message_row));
+        if (msg.type === "stream") {
+            opts.stream = msg.stream;
+            opts.topic = msg.topic;
+        }
+    } else {
+        opts.stream = compose_state.stream_name();
+        opts.topic = compose_state.topic();
+    }
+    return opts;
+}
+
+export function get_sorted_filtered_items(query) {
     /*
         This is just a "glue" function to work
         around bootstrap.  We want to control these
@@ -508,8 +557,7 @@ exports.get_sorted_filtered_items = function (query) {
         several years ago.)
     */
 
-    const hacky_this = this;
-    const fetcher = exports.get_candidates.bind(hacky_this);
+    const fetcher = get_candidates.bind(this);
     const big_results = fetcher(query);
 
     if (!big_results) {
@@ -518,31 +566,32 @@ exports.get_sorted_filtered_items = function (query) {
 
     // We are still hacking info onto the "this" from
     // bootstrap.  Yuck.
-    const completing = hacky_this.completing;
-    const token = hacky_this.token;
+    const completing = this.completing;
+    const token = this.token;
 
-    if (completing === 'mention' || completing === 'silent_mention') {
-        return exports.filter_and_sort_mentions(
-            big_results.is_silent, token);
+    const opts = get_stream_topic_data(this);
+
+    if (completing === "mention" || completing === "silent_mention") {
+        return filter_and_sort_mentions(big_results.is_silent, token, opts);
     }
 
-    return exports.filter_and_sort_candidates(completing, big_results, token);
-};
+    return filter_and_sort_candidates(completing, big_results, token);
+}
 
-exports.filter_and_sort_candidates = function (completing, candidates, token) {
-    const matcher = exports.compose_content_matcher(completing, token);
+export function filter_and_sort_candidates(completing, candidates, token) {
+    const matcher = compose_content_matcher(completing, token);
 
-    const small_results = candidates.filter(item => matcher(item));
+    const small_results = candidates.filter((item) => matcher(item));
 
-    const sorted_results = exports.sort_results(completing, small_results, token);
+    const sorted_results = sort_results(completing, small_results, token);
 
     return sorted_results;
-};
+}
 
-exports.get_candidates = function (query) {
-    const split = exports.split_at_cursor(query, this.$element);
-    let current_token = exports.tokenize_compose_str(split[0]);
-    if (current_token === '') {
+export function get_candidates(query) {
+    const split = split_at_cursor(query, this.$element);
+    let current_token = tokenize_compose_str(split[0]);
+    if (current_token === "") {
         return false;
     }
     const rest = split[1];
@@ -553,93 +602,93 @@ exports.get_candidates = function (query) {
     // already-completed object.
 
     // We will likely want to extend this list to be more i18n-friendly.
-    const terminal_symbols = ',.;?!()[] "\'\n\t';
-    if (rest !== '' && !terminal_symbols.includes(rest[0])) {
+    const terminal_symbols = ",.;?!()[]> \"'\n\t";
+    if (rest !== "" && !terminal_symbols.includes(rest[0])) {
         return false;
     }
 
     // Start syntax highlighting autocompleter if the first three characters are ```
-    const syntax_token = current_token.substring(0, 3);
-    if (this.options.completions.syntax && (syntax_token === '```' || syntax_token === "~~~")) {
+    const syntax_token = current_token.slice(0, 3);
+    if (this.options.completions.syntax && (syntax_token === "```" || syntax_token === "~~~")) {
         // Only autocomplete if user starts typing a language after ```
         if (current_token.length === 3) {
             return false;
         }
 
         // If the only input is a space, don't autocomplete
-        current_token = current_token.substring(3);
+        current_token = current_token.slice(3);
         if (current_token === " ") {
             return false;
         }
 
         // Trim the first whitespace if it is there
         if (current_token[0] === " ") {
-            current_token = current_token.substring(1);
+            current_token = current_token.slice(1);
         }
-        this.completing = 'syntax';
+        this.completing = "syntax";
         this.token = current_token;
         return Object.keys(pygments_data.langs);
     }
 
     // Only start the emoji autocompleter if : is directly after one
     // of the whitespace or punctuation chars we split on.
-    if (this.options.completions.emoji && current_token[0] === ':') {
+    if (this.options.completions.emoji && current_token[0] === ":") {
         // We don't want to match non-emoji emoticons such
         // as :P or :-p
         // Also, if the user has only typed a colon and nothing after,
         // no need to match yet.
-        if (/^:-.?$/.test(current_token) || /^:[^a-z+]?$/.test(current_token)) {
+        if (/^:-.?$/.test(current_token) || /^:[^+a-z]?$/.test(current_token)) {
             return false;
         }
         // Don't autocomplete if there is a space following a ':'
         if (current_token[1] === " ") {
             return false;
         }
-        this.completing = 'emoji';
-        this.token = current_token.substring(1);
-        return exports.emoji_collection;
+        this.completing = "emoji";
+        this.token = current_token.slice(1);
+        return emoji_collection;
     }
 
-    if (this.options.completions.mention && current_token[0] === '@') {
-        current_token = current_token.substring(1);
-        this.completing = 'mention';
+    if (this.options.completions.mention && current_token[0] === "@") {
+        current_token = current_token.slice(1);
+        this.completing = "mention";
         // Silent mentions
         let is_silent = false;
-        if (current_token.startsWith('_')) {
-            this.completing = 'silent_mention';
+        if (current_token.startsWith("_")) {
+            this.completing = "silent_mention";
             is_silent = true;
-            current_token = current_token.substring(1);
+            current_token = current_token.slice(1);
         }
         current_token = filter_mention_name(current_token);
-        if (!current_token) {
+        if (!current_token && typeof current_token === "boolean") {
             this.completing = null;
             return false;
         }
         this.token = current_token;
-        return {is_silent: is_silent};
+        return {is_silent};
     }
 
     function get_slash_commands_data() {
-        const commands = exports.slash_commands;
+        const commands = slash_commands;
         return commands;
     }
 
-    if (this.options.completions.slash && current_token[0] === '/') {
-        current_token = current_token.substring(1);
+    if (this.options.completions.slash && current_token[0] === "/") {
+        current_token = current_token.slice(1);
 
-        this.completing = 'slash';
+        this.completing = "slash";
         this.token = current_token;
         return get_slash_commands_data();
     }
 
-    if (this.options.completions.stream && current_token[0] === '#') {
+    if (this.options.completions.stream && current_token[0] === "#") {
         if (current_token.length === 1) {
             return false;
         }
 
-        current_token = current_token.substring(1);
-        if (current_token.startsWith('**')) {
-            current_token = current_token.substring(2);
+        current_token = current_token.slice(1);
+        if (current_token.startsWith("**")) {
+            current_token = current_token.slice(2);
         }
 
         // Don't autocomplete if there is a space following a '#'
@@ -647,7 +696,7 @@ exports.get_candidates = function (query) {
             return false;
         }
 
-        this.completing = 'stream';
+        this.completing = "stream";
         this.token = current_token;
         return stream_data.get_unsorted_subs();
     }
@@ -655,25 +704,25 @@ exports.get_candidates = function (query) {
     if (this.options.completions.topic) {
         // Stream regex modified from marked.js
         // Matches '#**stream name** >' at the end of a split.
-        const stream_regex =  /#\*\*([^\*>]+)\*\*\s?>$/;
+        const stream_regex = /#\*\*([^*>]+)\*\*\s?>$/;
         const should_jump_inside_typeahead = stream_regex.test(split[0]);
         if (should_jump_inside_typeahead) {
-            this.completing = 'topic_jump';
-            this.token = '>';
+            this.completing = "topic_jump";
+            this.token = ">";
             // We return something so that the typeahead is shown, but ultimately
-            return [''];
+            return [""];
         }
 
         // Matches '#**stream name>some text' at the end of a split.
-        const stream_topic_regex = /#\*\*([^\*>]+)>([^\*]*)$/;
+        const stream_topic_regex = /#\*\*([^*>]+)>([^*]*)$/;
         const should_begin_typeahead = stream_topic_regex.test(split[0]);
         if (should_begin_typeahead) {
-            this.completing = 'topic_list';
+            this.completing = "topic_list";
             const tokens = stream_topic_regex.exec(split[0]);
             if (tokens[1]) {
                 const stream_name = tokens[1];
-                this.token = tokens[2] || '';
-                const topic_list = exports.topics_seen_for(stream_name);
+                this.token = tokens[2] || "";
+                const topic_list = topics_seen_for(stream_name);
                 if (should_show_custom_query(this.token, topic_list)) {
                     topic_list.push(this.token);
                 }
@@ -681,197 +730,409 @@ exports.get_candidates = function (query) {
             }
         }
     }
-    return false;
-};
-
-exports.content_highlighter = function (item) {
-    if (this.completing === 'emoji') {
-        return typeahead_helper.render_emoji(item);
-    } else if (this.completing === 'mention' || this.completing === 'silent_mention') {
-        return typeahead_helper.render_person_or_user_group(item);
-    } else if (this.completing === 'slash') {
-        return typeahead_helper.render_typeahead_item({
-            primary: item.text,
-        });
-    } else if (this.completing === 'stream') {
-        return typeahead_helper.render_stream(item);
-    } else if (this.completing === 'syntax') {
-        return typeahead_helper.render_typeahead_item({ primary: item });
-    } else if (this.completing === 'topic_jump') {
-        return typeahead_helper.render_typeahead_item({ primary: item });
-    } else if (this.completing === 'topic_list') {
-        return typeahead_helper.render_typeahead_item({ primary: item });
+    if (this.options.completions.timestamp) {
+        const time_jump_regex = /<time(:([^>]*?)>?)?$/;
+        if (time_jump_regex.test(split[0])) {
+            this.completing = "time_jump";
+            return [$t({defaultMessage: "Mention a timezone-aware time"})];
+        }
     }
-};
+    return false;
+}
 
-exports.content_typeahead_selected = function (item, event) {
-    const pieces = exports.split_at_cursor(this.query, this.$element);
+export function content_highlighter(item) {
+    switch (this.completing) {
+        case "emoji":
+            return typeahead_helper.render_emoji(item);
+        case "mention":
+            return typeahead_helper.render_person_or_user_group(item);
+        case "silent_mention":
+            return typeahead_helper.render_person_or_user_group(item);
+        case "slash":
+            return typeahead_helper.render_typeahead_item({
+                primary: item.text,
+            });
+        case "stream":
+            return typeahead_helper.render_stream(item);
+        case "syntax":
+            return typeahead_helper.render_typeahead_item({primary: item});
+        case "topic_jump":
+            return typeahead_helper.render_typeahead_item({primary: item});
+        case "topic_list":
+            return typeahead_helper.render_typeahead_item({primary: item});
+        case "time_jump":
+            return typeahead_helper.render_typeahead_item({primary: item});
+        default:
+            return undefined;
+    }
+}
+
+function is_numeric_key(key) {
+    return ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(key);
+}
+
+export function show_flatpickr(element, callback, default_timestamp, options = {}) {
+    const flatpickr_input = $("<input id='#timestamp_flatpickr'>");
+
+    const instance = flatpickr_input.flatpickr({
+        mode: "single",
+        enableTime: true,
+        clickOpens: false,
+        defaultDate: default_timestamp,
+        plugins: [
+            new ConfirmDatePlugin({
+                showAlways: true,
+                confirmText: $t({defaultMessage: "Confirm"}),
+                confirmIcon: "",
+            }),
+        ],
+        positionElement: element,
+        dateFormat: "Z",
+        formatDate: (date) => formatISO(date),
+        disableMobile: true,
+        onKeyDown: (selectedDates, dateStr, instance, event) => {
+            if (is_numeric_key(event.key)) {
+                // Don't attempt to get_keydown_hotkey for numeric inputs
+                // as it would return undefined.
+                return;
+            }
+
+            const hotkey = get_keydown_hotkey(event);
+
+            if (["tab", "shift_tab"].includes(hotkey.name)) {
+                const elems = [
+                    instance.selectedDateElem,
+                    instance.hourElement,
+                    instance.minuteElement,
+                    instance.amPM,
+                    $(".flatpickr-confirm")[0],
+                ];
+                const i = elems.indexOf(event.target);
+                const n = elems.length;
+                const remain = (i + (event.shiftKey ? -1 : 1)) % n;
+                const target = elems[Math.floor(remain >= 0 ? remain : remain + n)];
+                event.preventDefault();
+                event.stopPropagation();
+                target.focus();
+            }
+
+            event.stopPropagation();
+        },
+        ...options,
+    });
+
+    const container = $($(instance.innerContainer).parent());
+
+    container.on("keydown", (e) => {
+        if (is_numeric_key(e.key)) {
+            // Let users type numeric values
+            return true;
+        }
+
+        const hotkey = get_keydown_hotkey(e);
+
+        if (!hotkey) {
+            return false;
+        }
+
+        if (hotkey.name === "backspace" || hotkey.name === "delete") {
+            // Let backspace or delete be handled normally
+            return true;
+        }
+
+        if (hotkey.name === "enter") {
+            if (e.target.classList[0] === "flatpickr-day") {
+                return true; // use flatpickr default implementation
+            }
+            $(element).toggleClass("has_popover");
+            container.find(".flatpickr-confirm").trigger("click");
+        }
+
+        if (hotkey.name === "escape") {
+            $(element).toggleClass("has_popover");
+            instance.close();
+            instance.destroy();
+        }
+
+        if (["tab", "shift_tab"].includes(hotkey.name)) {
+            return true; // use flatpickr default implementation
+        }
+
+        if (["right_arrow", "up_arrow", "left_arrow", "down_arrow"].includes(hotkey.name)) {
+            return true; // use flatpickr default implementation
+        }
+
+        e.stopPropagation();
+        e.preventDefault();
+
+        return true;
+    });
+
+    container.on("click", ".flatpickr-confirm", () => {
+        callback(flatpickr_input.val());
+        instance.close();
+        instance.destroy();
+    });
+    instance.open();
+    instance.selectedDateElem.focus();
+
+    return instance;
+}
+
+export function content_typeahead_selected(item, event) {
+    const pieces = split_at_cursor(this.query, this.$element);
     let beginning = pieces[0];
     let rest = pieces[1];
     const textbox = this.$element;
 
-    if (this.completing === 'emoji') {
-        // leading and trailing spaces are required for emoji,
-        // except if it begins a message or a new line.
-        if (beginning.lastIndexOf(":") === 0 ||
-            beginning.charAt(beginning.lastIndexOf(":") - 1) === " " ||
-            beginning.charAt(beginning.lastIndexOf(":") - 1) === "\n") {
-            beginning = beginning.substring(0, beginning.length - this.token.length - 1) + ":" + item.emoji_name + ": ";
-        } else {
-            beginning = beginning.substring(0, beginning.length - this.token.length - 1) + " :" + item.emoji_name + ": ";
-        }
-    } else if (this.completing === 'mention' || this.completing === 'silent_mention') {
-        const is_silent = this.completing === 'silent_mention';
-        beginning = beginning.substring(0, beginning.length - this.token.length - 1);
-        if (beginning.endsWith('@_*')) {
-            beginning = beginning.substring(0, beginning.length - 3);
-        } else if (beginning.endsWith('@*') || beginning.endsWith('@_')) {
-            beginning = beginning.substring(0, beginning.length - 2);
-        } else if (beginning.endsWith('@')) {
-            beginning = beginning.substring(0, beginning.length - 1);
-        }
-        if (user_groups.is_user_group(item)) {
-            beginning += '@*' + item.name + '* ';
-            // We could theoretically warn folks if they are
-            // mentioning a user group that literally has zero
-            // members where we are posting to, but we don't have
-            // that functionality yet, and we haven't gotten much
-            // feedback on this being an actual pitfall.
-        } else {
-            const mention_text = people.get_mention_syntax(item.full_name, item.user_id, is_silent);
-            beginning += mention_text + ' ';
-            if (!is_silent) {
-                compose.warn_if_mentioning_unsubscribed_user(item);
+    switch (this.completing) {
+        case "emoji":
+            // leading and trailing spaces are required for emoji,
+            // except if it begins a message or a new line.
+            if (
+                beginning.lastIndexOf(":") === 0 ||
+                beginning.charAt(beginning.lastIndexOf(":") - 1) === " " ||
+                beginning.charAt(beginning.lastIndexOf(":") - 1) === "\n"
+            ) {
+                beginning =
+                    beginning.slice(0, -this.token.length - 1) + ":" + item.emoji_name + ": ";
+            } else {
+                beginning =
+                    beginning.slice(0, -this.token.length - 1) + " :" + item.emoji_name + ": ";
             }
+            break;
+        case "silent_mention":
+        case "mention": {
+            const is_silent = this.completing === "silent_mention";
+            beginning = beginning.slice(0, -this.token.length - 1);
+            if (beginning.endsWith("@_*")) {
+                beginning = beginning.slice(0, -3);
+            } else if (beginning.endsWith("@*") || beginning.endsWith("@_")) {
+                beginning = beginning.slice(0, -2);
+            } else if (beginning.endsWith("@")) {
+                beginning = beginning.slice(0, -1);
+            }
+            if (user_groups.is_user_group(item)) {
+                let user_group_mention_text = is_silent ? "@_*" : "@*";
+                user_group_mention_text += item.name + "* ";
+                beginning += user_group_mention_text;
+                // We could theoretically warn folks if they are
+                // mentioning a user group that literally has zero
+                // members where we are posting to, but we don't have
+                // that functionality yet, and we haven't gotten much
+                // feedback on this being an actual pitfall.
+            } else {
+                const mention_text = people.get_mention_syntax(
+                    item.full_name,
+                    item.user_id,
+                    is_silent,
+                );
+                beginning += mention_text + " ";
+                if (!is_silent) {
+                    compose_validate.warn_if_mentioning_unsubscribed_user(item);
+                }
+            }
+            break;
         }
-    } else if (this.completing === 'slash') {
-        beginning = beginning.substring(0, beginning.length - this.token.length - 1) + "/" + item.name + " ";
-    } else if (this.completing === 'stream') {
-        beginning = beginning.substring(0, beginning.length - this.token.length - 1);
-        if (beginning.endsWith('#*')) {
-            beginning = beginning.substring(0, beginning.length - 2);
+        case "slash":
+            beginning = beginning.slice(0, -this.token.length - 1) + "/" + item.name + " ";
+            break;
+        case "stream":
+            beginning = beginning.slice(0, -this.token.length - 1);
+            if (beginning.endsWith("#*")) {
+                beginning = beginning.slice(0, -2);
+            }
+            beginning += "#**" + item.name;
+            if (event && event.key === ">") {
+                // Normally, one accepts typeahead with `Tab` or `Enter`, but when completing
+                // stream typeahead, we allow `>`, the delimiter for stream+topic mentions,
+                // as a completion that automatically sets up stream+topic typeahead for you.
+                beginning += ">";
+            } else {
+                beginning += "** ";
+            }
+            compose_validate.warn_if_private_stream_is_linked(item);
+            break;
+        case "syntax": {
+            // Isolate the end index of the triple backticks/tildes, including
+            // possibly a space afterward
+            const backticks = beginning.length - this.token.length;
+            if (rest === "") {
+                // If cursor is at end of input ("rest" is empty), then
+                // complete the token before the cursor, and add a closing fence
+                // after the cursor
+                beginning = beginning.slice(0, backticks) + item + "\n";
+                rest = "\n" + beginning.slice(Math.max(0, backticks - 4), backticks).trim() + rest;
+            } else {
+                // If more text after the input, then complete the token, but don't touch
+                // "rest" (i.e. do not add a closing fence)
+                beginning = beginning.slice(0, backticks) + item;
+            }
+            break;
         }
-        beginning += '#**' + item.name;
-        if (event && event.key === '>') {
-            // Normally, one accepts typeahead with `tab` or `enter`, but when completing
-            // stream typeahead, we allow `>`, the delimiter for stream+topic mentions,
-            // as a completion that automatically sets up stream+topic typeahead for you.
-            beginning += '>';
-        } else {
-            beginning += '** ';
+        case "topic_jump": {
+            // Put the cursor at the end of immediately preceding stream mention syntax,
+            // just before where the `**` at the end of the syntax.  This will delete that
+            // final ** and set things up for the topic_list typeahead.
+            const index = beginning.lastIndexOf("**");
+            if (index !== -1) {
+                beginning = beginning.slice(0, index) + ">";
+            }
+            break;
         }
-        compose.warn_if_private_stream_is_linked(item);
-    } else if (this.completing === 'syntax') {
-        // Isolate the end index of the triple backticks/tildes, including
-        // possibly a space afterward
-        const backticks = beginning.length - this.token.length;
-        if (rest === '') {
-            // If cursor is at end of input ("rest" is empty), then
-            // complete the token before the cursor, and add a closing fence
-            // after the cursor
-            beginning = beginning.substring(0, backticks) + item + '\n';
-            rest = "\n" + beginning.substring(backticks - 4, backticks).trim() + rest;
-        } else {
-            // If more text after the input, then complete the token, but don't touch
-            // "rest" (i.e. do not add a closing fence)
-            beginning = beginning.substring(0, backticks) + item;
+        case "topic_list": {
+            // Stream + topic mention typeahead; close the stream+topic mention syntax
+            // with the topic and the final **.  Note that this.token.length can be 0
+            // if we are completing from `**streamname>`.
+            const start = beginning.length - this.token.length;
+            beginning = beginning.slice(0, start) + item + "** ";
+            break;
         }
-    } else if (this.completing === 'topic_jump') {
-        // Put the cursor at the end of immediately preceding stream mention syntax,
-        // just before where the `**` at the end of the syntax.  This will delete that
-        // final ** and set things up for the topic_list typeahead.
-        const index = beginning.lastIndexOf('**');
-        if (index !== -1) {
-            beginning = beginning.substring(0, index) + '>';
+        case "time_jump": {
+            let timestring = beginning.slice(Math.max(0, beginning.lastIndexOf("<time:")));
+            if (timestring.startsWith("<time:") && timestring.endsWith(">")) {
+                timestring = timestring.slice(6, -1);
+            }
+            const timestamp = timerender.get_timestamp_for_flatpickr(timestring);
+
+            const on_timestamp_selection = (val) => {
+                const datestr = val;
+                beginning =
+                    beginning.slice(0, Math.max(0, beginning.lastIndexOf("<time"))) +
+                    `<time:${datestr}> `;
+                if (rest.startsWith(">")) {
+                    rest = rest.slice(1);
+                }
+                textbox.val(beginning + rest);
+                textbox.caret(beginning.length, beginning.length);
+                compose_ui.autosize_textarea(textbox);
+            };
+            show_flatpickr(this.$element[0], on_timestamp_selection, timestamp);
+            return beginning + rest;
         }
-    } else if (this.completing === 'topic_list') {
-        // Stream + topic mention typeahead; close the stream+topic mention syntax
-        // with the topic and the final **.
-        const start = beginning.length - this.token.length;
-        beginning = beginning.substring(0, start) + item + '** ';
     }
 
     // Keep the cursor after the newly inserted text, as Bootstrap will call textbox.change() to
     // overwrite the text in the textbox.
-    setTimeout(function () {
+    setTimeout(() => {
         textbox.caret(beginning.length, beginning.length);
         // Also, trigger autosize to check if compose box needs to be resized.
-        compose_ui.autosize_textarea();
+        compose_ui.autosize_textarea(textbox);
     }, 0);
     return beginning + rest;
-};
+}
 
-exports.compose_content_matcher = function (completing, token) {
+export function compose_content_matcher(completing, token) {
     switch (completing) {
-    case 'emoji':
-        return typeahead.get_emoji_matcher(token);
-    case 'slash':
-        return get_slash_matcher(token);
-    case 'stream':
-        return get_stream_or_user_group_matcher(token);
-    case 'syntax':
-        return get_language_matcher(token);
-    case 'topic_list':
-        return get_topic_matcher(token);
+        case "emoji":
+            return typeahead.get_emoji_matcher(token);
+        case "slash":
+            return get_slash_matcher(token);
+        case "stream":
+            return get_stream_or_user_group_matcher(token);
+        case "syntax":
+            return get_language_matcher(token);
+        case "topic_list":
+            return get_topic_matcher(token);
     }
 
     return function () {
         switch (completing) {
-        case 'topic_jump':
-            // topic_jump doesn't actually have a typeahead popover, so we return quickly here.
-            return true;
+            case "topic_jump":
+            case "time_jump":
+                // these don't actually have a typeahead popover, so we return quickly here.
+                return true;
+            default:
+                return undefined;
         }
     };
-};
+}
 
-exports.sort_results = function (completing, matches, token) {
+export function sort_results(completing, matches, token) {
     switch (completing) {
-    case 'emoji':
-        return typeahead.sort_emojis(matches, token);
-    case 'slash':
-        return typeahead_helper.sort_slash_commands(matches, token);
-    case 'stream':
-        return typeahead_helper.sort_streams(matches, token);
-    case 'syntax':
-        return typeahead_helper.sort_languages(matches, token);
-    case 'topic_jump':
-        // topic_jump doesn't actually have a typeahead popover, so we return quickly here.
-        return matches;
-    case 'topic_list':
-        return typeahead_helper.sorter(token, matches, function (x) {return x;});
+        case "emoji":
+            return typeahead.sort_emojis(matches, token);
+        case "slash":
+            return typeahead_helper.sort_slash_commands(matches, token);
+        case "stream":
+            return typeahead_helper.sort_streams(matches, token);
+        case "syntax":
+            return typeahead_helper.sort_languages(matches, token);
+        case "topic_jump":
+        case "time_jump":
+            // topic_jump doesn't actually have a typeahead popover, so we return quickly here.
+            return matches;
+        case "topic_list":
+            return typeahead_helper.sorter(token, matches, (x) => x);
+        default:
+            return undefined;
     }
-};
+}
 
-exports.compose_automated_selection = function () {
-    if (this.completing === 'topic_jump') {
+export function compose_automated_selection() {
+    if (this.completing === "topic_jump") {
         // automatically jump inside stream mention on typing > just after
         // a stream mention, to begin stream+topic mention typeahead (topic_list).
         return true;
     }
     return false;
-};
+}
 
-exports.compose_trigger_selection = function (event) {
-    if (this.completing === 'stream' && event.key === '>') {
+export function compose_trigger_selection(event) {
+    if (this.completing === "stream" && event.key === ">") {
         // complete stream typeahead partially to immediately start the topic_list typeahead.
         return true;
     }
     return false;
-};
-
-function get_header_text() {
-    let tip_text = '';
-    switch (this.completing) {
-    case 'stream':
-        tip_text = i18n.t('Press > for list of topics');
-        break;
-    default:
-        return false;
-    }
-    return '<em>' + tip_text + '</em>';
 }
 
-exports.initialize_compose_typeahead = function (selector) {
+export function initialize_topic_edit_typeahead(form_field, stream_name, dropup) {
+    const options = {
+        fixed: true,
+        dropup,
+        highlighter(item) {
+            return typeahead_helper.render_typeahead_item({primary: item});
+        },
+        sorter(items) {
+            const sorted = typeahead_helper.sorter(this.query, items, (x) => x);
+            if (sorted.length > 0 && !sorted.includes(this.query)) {
+                sorted.unshift(this.query);
+            }
+            return sorted;
+        },
+        source() {
+            return topics_seen_for(stream_name);
+        },
+        items: 5,
+    };
+    form_field.typeahead(options);
+}
+
+function get_header_html() {
+    let tip_text = "";
+    switch (this.completing) {
+        case "stream":
+            tip_text = $t({defaultMessage: "Press > for list of topics"});
+            break;
+        case "silent_mention":
+            tip_text = $t({defaultMessage: "Silent mentions do not trigger notifications."});
+            break;
+        case "syntax":
+            if (page_params.realm_default_code_block_language !== null) {
+                tip_text = $t(
+                    {defaultMessage: "Default is {language}. Use 'text' to disable highlighting."},
+                    {language: page_params.realm_default_code_block_language},
+                );
+                break;
+            }
+            return false;
+        default:
+            return false;
+    }
+    return `<em>${_.escape(tip_text)}</em>`;
+}
+
+export function initialize_compose_typeahead(selector) {
     const completions = {
         mention: true,
         emoji: true,
@@ -880,78 +1141,52 @@ exports.initialize_compose_typeahead = function (selector) {
         stream: true,
         syntax: true,
         topic: true,
+        timestamp: true,
     };
 
     $(selector).typeahead({
-        items: exports.max_num_items,
+        items: max_num_items,
         dropup: true,
         fixed: true,
         // Performance note: We have trivial matcher/sorters to do
         // matching and sorting inside the `source` field to avoid
         // O(n) behavior in the number of users in the organization
         // inside the typeahead library.
-        source: exports.get_sorted_filtered_items,
-        highlighter: exports.content_highlighter,
-        matcher: function () {
+        source: get_sorted_filtered_items,
+        highlighter: content_highlighter,
+        matcher() {
             return true;
         },
-        sorter: function (items) {
+        sorter(items) {
             return items;
         },
-        updater: exports.content_typeahead_selected,
-        stopAdvance: true, // Do not advance to the next field on a tab or enter
-        completions: completions,
-        automated: exports.compose_automated_selection,
-        trigger_selection: exports.compose_trigger_selection,
-        header: get_header_text,
+        updater: content_typeahead_selected,
+        stopAdvance: true, // Do not advance to the next field on a Tab or Enter
+        completions,
+        automated: compose_automated_selection,
+        trigger_selection: compose_trigger_selection,
+        header: get_header_html,
     });
-};
+}
 
-exports.initialize = function () {
-    exports.update_emoji_data();
-    select_on_focus("stream_message_recipient_stream");
-    select_on_focus("stream_message_recipient_topic");
-    select_on_focus("private_message_recipient");
+export function initialize() {
+    update_emoji_data();
 
     // These handlers are at the "form" level so that they are called after typeahead
-    $("form#send_message_form").keydown(handle_keydown);
-    $("form#send_message_form").keyup(handle_keyup);
-
-    $("#enter_sends").click(function () {
-        const send_button = $("#compose-send-button");
-        page_params.enter_sends = $("#enter_sends").is(":checked");
-        if (page_params.enter_sends) {
-            send_button.fadeOut();
-        } else {
-            send_button.fadeIn();
-        }
-
-        // Refocus in the content box so you can continue typing or
-        // press Enter to send.
-        $("#compose-textarea").focus();
-
-        return channel.post({
-            url: '/json/users/me/enter-sends',
-            idempotent: true,
-            data: {enter_sends: page_params.enter_sends},
-        });
-    });
-    $("#enter_sends").prop('checked', page_params.enter_sends);
-    if (page_params.enter_sends) {
-        $("#compose-send-button").hide();
-    }
+    $("form#send_message_form").on("keydown", handle_keydown);
+    $("form#send_message_form").on("keyup", handle_keyup);
 
     // limit number of items so the list doesn't fall off the screen
     $("#stream_message_recipient_stream").typeahead({
-        source: function () {
+        source() {
             return stream_data.subscribed_streams();
         },
         items: 3,
         fixed: true,
-        highlighter: function (item) {
-            return typeahead_helper.render_typeahead_item({ primary: item });
+        highlighter(item) {
+            return typeahead_helper.render_typeahead_item({primary: item});
         },
-        matcher: function (item) {
+        matcher(item) {
             // The matcher for "stream" is strictly prefix-based,
             // because we want to avoid mixing up streams.
             const q = this.query.trim().toLowerCase();
@@ -960,17 +1195,17 @@ exports.initialize = function () {
     });
 
     $("#stream_message_recipient_topic").typeahead({
-        source: function () {
+        source() {
             const stream_name = compose_state.stream_name();
-            return exports.topics_seen_for(stream_name);
+            return topics_seen_for(stream_name);
         },
         items: 3,
         fixed: true,
-        highlighter: function (item) {
-            return typeahead_helper.render_typeahead_item({ primary: item });
+        highlighter(item) {
+            return typeahead_helper.render_typeahead_item({primary: item});
         },
-        sorter: function (items) {
-            const sorted = typeahead_helper.sorter(this.query, items, function (x) {return x;});
+        sorter(items) {
+            const sorted = typeahead_helper.sorter(this.query, items, (x) => x);
             if (sorted.length > 0 && !sorted.includes(this.query)) {
                 sorted.unshift(this.query);
             }
@@ -979,20 +1214,20 @@ exports.initialize = function () {
     });
 
     $("#private_message_recipient").typeahead({
-        source: exports.get_pm_people,
-        items: exports.max_num_items,
+        source: get_pm_people,
+        items: max_num_items,
         dropup: true,
         fixed: true,
-        highlighter: function (item) {
+        highlighter(item) {
             return typeahead_helper.render_person_or_user_group(item);
         },
-        matcher: function () {
+        matcher() {
             return true;
         },
-        sorter: function (items) {
+        sorter(items) {
             return items;
         },
-        updater: function (item) {
+        updater(item) {
             if (user_groups.is_user_group(item)) {
                 for (const user_id of item.members) {
                     const user = people.get_by_user_id(user_id);
@@ -1012,16 +1247,14 @@ exports.initialize = function () {
                 compose_pm_pill.set_from_typeahead(item);
             }
         },
-        stopAdvance: true, // Do not advance to the next field on a tab or enter
+        stopAdvance: true, // Do not advance to the next field on a Tab or Enter
     });
 
-    exports.initialize_compose_typeahead("#compose-textarea");
+    initialize_compose_typeahead("#compose-textarea");
 
-    $("#private_message_recipient").blur(function () {
+    $("#private_message_recipient").on("blur", function () {
         const val = $(this).val();
         const recipients = typeahead_helper.get_cleaned_pm_recipients(val);
         $(this).val(recipients.join(", "));
     });
-};
-
-window.composebox_typeahead = exports;
+}

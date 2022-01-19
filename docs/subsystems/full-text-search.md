@@ -1,7 +1,7 @@
 # Full-text search
 
 Zulip supports full-text search, which can be combined arbitrarily
-with Zulip's full suite of narrowing operators.  By default, it only
+with Zulip's full suite of narrowing operators. By default, it only
 supports English text, but there is an experimental
 [PGroonga](https://pgroonga.github.io/) integration that provides
 full-text search for all languages.
@@ -19,81 +19,85 @@ search results.
 
 In order to optimize the performance of delivering messages, the
 full-text search index is updated for newly sent messages in the
-background, after the message has been delivered.  This background
+background, after the message has been delivered. This background
 updating is done by
 `puppet/zulip/files/postgresql/process_fts_updates`, which is usually
 deployed on the database server, but could be deployed on an
 application server instead.
 
-## An optional full-text search implementation
+## Multi-language full-text search
 
-Zulip now supports using [PGroonga](https://pgroonga.github.io/) for
-full-text search. PGroonga is a PostgreSQL extension that provides
-full-text search feature. PostgreSQL's built-in full-text search
-feature supports only one language at a time (in Zulip's case,
-English).  PGroonga supports all languages simultaneously, including
-Japanese, Chinese and so on, all at once.  We expect to migrate
-Zulip's full-text search to only support PGroonga once we have tested
-this new extension fully.
+Zulip also supports using [PGroonga](https://pgroonga.github.io/) for
+full-text search. While PostgreSQL's built-in full-text search feature
+supports only one language at a time (in Zulip's case, English), the
+PGroonga full-text search engine supports all languages
+simultaneously, including Japanese and Chinese. Once we have tested
+this new backend sufficiently, we expect to switch Zulip deployments
+to always use PGroonga.
 
-The following processes should be executed as the root user. Run:
+### Enabling PGroonga
 
-    sudo -i
+All steps in this section should be run as the `root` user; on most installs, this can be done by running `sudo -i`.
 
-### How to enable full-text search across all languages
+1. Alter the deployment setting:
 
-This section describes how to enable using PGroonga to back the
-full-text search feature.
+   ```bash
+   crudini --set /etc/zulip/zulip.conf machine pgroonga enabled
+   ```
 
-To install PGroonga, add `pgroonga = enabled` in the `[machine]`
-section in `/etc/zulip/zulip.conf`:
+1. Update the deployment to respect that new setting:
 
-    [machine]
-    ...
-    pgroonga = enabled
+   ```bash
+   /home/zulip/deployments/current/scripts/zulip-puppet-apply
+   ```
 
-And then run as root:
+1. Edit `/etc/zulip/settings.py`, to add:
 
-    /home/zulip/deployments/current/scripts/zulip-puppet-apply
+   ```python
+   USING_PGROONGA = True
+   ```
 
-Then, add `USING_PGROONGA = True` in `/etc/zulip/settings.py`:
+1. Apply the PGroonga migrations:
 
-    USING_PGROONGA = True
+   ```bash
+   su zulip -c '/home/zulip/deployments/current/manage.py migrate pgroonga'
+   ```
 
-And apply the PGroonga migrations:
+   Note that the migration may take a long time, and users will be
+   unable to send new messages until the migration finishes.
 
-    su zulip -c '/home/zulip/deployments/current/manage.py migrate pgroonga'
+1. Once the migrations are complete, restart Zulip:
 
-Note that the migration may take a long time, and you can't send new
-messages until the migration finishes.
+   ```bash
+   su zulip -c '/home/zulip/deployments/current/scripts/restart-server'
+   ```
 
-Once the migrations are complete, restart Zulip:
+### Disabling PGroonga
 
-    su zulip -c '/home/zulip/deployments/current/scripts/restart-server'
+1. Remove the PGroonga migration:
 
-Now, you can use full-text search across all languages.
+   ```bash
+   su zulip -c '/home/zulip/deployments/current/manage.py migrate pgroonga zero'
+   ```
 
-### How to disable full-text search across all languages
+   If you intend to re-enable PGroonga later, you can skip this step,
+   at the cost of your Message table being slightly larger than it would
+   be otherwise.
 
-This section describes how to disable full-text search feature based
-on PGroonga.
+1. Edit `/etc/zulip/settings.py`, editing the line containing `USING_PGROONGA` to read:
 
-If you want to fully remove PGroonga, first you need to remove the
-PGroonga column (as above, this will take a long time and no messages
-can be sent while it is running).  If you intend to re-enable PGroonga
-later, you can skip this step (at the cost of your Message table being
-slightly larger than it would be otherwise).
+   ```python
+   USING_PGROONGA = False
+   ```
 
-    su zulip -c '/home/zulip/deployments/current/manage.py migrate pgroonga zero'
+1. Restart Zulip:
 
-Then, set `USING_PGROONGA = False` in `/etc/zulip/settings.py`:
+   ```bash
+   su zulip -c '/home/zulip/deployments/current/scripts/restart-server'
+   ```
 
-    USING_PGROONGA = False
+1. Finally, remove the deployment setting:
 
-And, restart Zulip:
-
-    su zulip -c '/home/zulip/deployments/current/scripts/restart-server'
-
-Now, full-text search feature based on PGroonga is disabled.  If you'd
-like, you can also remove the `pgroonga = enabled` line in
-`/etc/zulip/zulip.conf` and uninstall the `pgroonga` packages.
+   ```bash
+   crudini --del /etc/zulip/zulip.conf machine pgroonga
+   ```

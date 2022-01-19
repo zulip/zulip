@@ -12,7 +12,7 @@ into an existing Zulip organization.
 
 First, export your data from Mattermost.
 The instructions below correspond to various common ways Mattermost is installed; if
-yours isn't covered contact support@zulipchat.com and we'll help you out.
+yours isn't covered, [contact us](/help/contact-support) and we'll help you out.
 
 Replace `<username>` and `<server_ip>` with the appropriate values below.
 
@@ -36,10 +36,10 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
 3. Create an export of all your Mattermost teams, as a tar file.
 
     ```
-    sudo ./mattermost export bulk export.json --all-teams
+    sudo ./mattermost export bulk export.json --all-teams --attachments
     mkdir -p exported_emoji
     tar --transform 's|^|mattermost/|' -czf export.tar.gz \
-        exported_emoji/ export.json
+        data/ exported_emoji/ export.json
     ```
 
 4. Exit your shell on the Mattermost server.
@@ -73,11 +73,11 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
 
     ```
     docker exec -it mattermost-docker_app_1 mattermost \
-        export bulk data/export.json --all-teams
+        export bulk data/export.json --all-teams --attachments
     cd volumes/app/mattermost/data/
     mkdir -p exported_emoji
     tar --transform 's|^|mattermost/|' -czf export.tar.gz \
-        exported_emoji/ export.json
+        data/ exported_emoji/ export.json
     ```
 
 4. Exit your shell on the Mattermost server.
@@ -103,13 +103,13 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
     sudo -u \
         mattermost /opt/gitlab/embedded/bin/mattermost \
         --config=/var/opt/gitlab/mattermost/config.json \
-        export bulk export.json --all-teams
+        export bulk export.json --all-teams --attachments
     mkdir -p exported_emoji
     tar --transform 's|^|mattermost/|' -czf export.tar.gz \
-        exported_emoji/ export.json
+        data/ exported_emoji/ export.json
     ```
 
-3. Exit your shell on the Gitlab Omnibus server.
+3. Exit your shell on the GitLab Omnibus server.
 
     `exit`
 
@@ -120,9 +120,9 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
     ```
 {end_tabs}
 
-### Import into zulipchat.com
+### Import into Zulip Cloud
 
-Email support@zulipchat.com with your exported archive,
+Email support@zulip.com with your exported archive,
 the name of the Mattermost team you want to import, and your desired Zulip
 subdomain. Your imported organization will be hosted at
 `<subdomain>.zulipchat.com`.
@@ -139,7 +139,7 @@ skipping "Step 3: Create a Zulip organization, and log in" (you'll
 create your Zulip organization via the data import tool instead).
 
 Use [upgrade-zulip-from-git][upgrade-zulip-from-git] to
-upgrade your Zulip server to the latest `master` branch.
+upgrade your Zulip server to the latest `main` branch.
 
 Log in to a shell on your Zulip server as the `zulip` user. To import with
 the most common configuration, run the following commands, replacing
@@ -149,12 +149,16 @@ the most common configuration, run the following commands, replacing
 cd /home/zulip
 tar -xzvf export.tar.gz
 cd /home/zulip/deployments/current
+./scripts/stop-server
 ./manage.py convert_mattermost_data /home/zulip/mattermost --output /home/zulip/converted_mattermost_data
 ./manage.py import "" /home/zulip/converted_mattermost_data/<team-name>
+./scripts/start-server
 ```
 
-This could take several minutes to run, depending on how much data you're
-importing.
+This could take several minutes to run, depending on how much data
+you're importing.  The server stop/restart is only necessary when
+importing on a server with minimal RAM, where an OOM kill might
+otherwise occur.
 
 **Import options**
 
@@ -178,7 +182,6 @@ Mattermost's export tool is incomplete and does not support exporting
 the following data:
 
 * user avatars
-* uploaded files and message attachments.
 
 We expect to add support for importing these data from Mattermost once
 Mattermost's export tool includes them.

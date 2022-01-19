@@ -12,7 +12,7 @@ admins (or nobody) can view other users' email addresses.
 
 {settings_tab|organization-permissions}
 
-2. Under **Organization permissions**, configure **Who can access user email addresses**.
+2. Under **User identity**, configure **Who can access user email addresses**.
 
 {!save-changes.md!}
 

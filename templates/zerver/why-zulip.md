@@ -1,14 +1,14 @@
 There are a lot of team chat apps. So why did we build Zulip?
 
 We talk about Slack in the discussion below, but the problems apply equally
-to other apps with Slack’s conversation model, including Hipchat, IRC,
+to other apps with Slack’s conversation model, including IRC,
 Mattermost, Discord, Spark, and others.
 
 ## Reading busy Slack channels is extremely inefficient.
 
 Anyone who wakes up to this frequently can tell you it is not fun.
 
-<img src="/static/images/why-zulip/slack-unreads.png" class="slack-image" alt="Slack unreads">
+<img src="/static/images/why-zulip/slack-unreads.png" class="slack-image" alt="Slack unreads" />
 
 The lack of organization and context in Slack channels means that anyone
 using Slack heavily has to manually scan through hundreds of messages a day
@@ -124,13 +124,13 @@ effective threading model: Every channel message has a topic, just
 like every message in email has a subject line. (Channels are called
 streams in Zulip.)
 
-<img src="/static/images/why-zulip/zulip-topics.png" class="zulip-topics-image" alt="Zulip topics">
+<img src="/static/images/why-zulip/zulip-topics.png" class="zulip-topics-image" alt="Zulip topics" />
 
 Topics hold Zulip conversations together, just like subject lines hold email
 conversations together. They allow you to efficiently catch up on messages
 and reply in context, even to conversations that started hours or days ago.
 
-<img src="/static/images/why-zulip/zulip-reply-later.png" class="zulip-reply-later-image" alt="Zulip reply later">
+<img src="/static/images/why-zulip/zulip-reply-later.png" class="zulip-reply-later-image" alt="Zulip reply later" />
 
 ## Zulip changes how you can operate.
 
@@ -154,11 +154,3 @@ transform how your organization communicates:
 > experienced with Skype and Slack.
 >
 > &mdash;Grahame Grieve, founder, FHIR health care standards body
-
-## Further reading
-
-- [Zulip features](/features)
-- [Plans and pricing](/plans)
-- [Zulip for companies](/for/companies)
-- [Zulip for open source organizations](/for/open-source)
-- [Zulip for working groups and communities](/for/working-groups-and-communities)

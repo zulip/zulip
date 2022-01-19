@@ -1,4 +1,8 @@
-const render_feedback_container = require('../templates/feedback_container.hbs');
+import $ from "jquery";
+
+import render_feedback_container from "../templates/feedback_container.hbs";
+
+import * as blueslip from "./blueslip";
 
 /*
 
@@ -18,7 +22,6 @@ Codewise it's a singleton widget that controls the DOM inside
 
 */
 
-
 const meta = {
     hide_me_time: null,
     alert_hover_state: false,
@@ -27,19 +30,19 @@ const meta = {
 };
 
 const animate = {
-    maybe_close: function () {
+    maybe_close() {
         if (!meta.opened) {
             return;
         }
 
-        if (meta.hide_me_time < new Date().getTime() && !meta.alert_hover_state) {
+        if (meta.hide_me_time < Date.now() && !meta.alert_hover_state) {
             animate.fadeOut();
             return;
         }
 
         setTimeout(animate.maybe_close, 100);
     },
-    fadeOut: function () {
+    fadeOut() {
         if (!meta.opened) {
             return;
         }
@@ -50,7 +53,7 @@ const animate = {
             meta.alert_hover_state = false;
         }
     },
-    fadeIn: function () {
+    fadeIn() {
         if (meta.opened) {
             return;
         }
@@ -71,7 +74,7 @@ function set_up_handlers() {
     meta.handlers_set = true;
 
     // if the user mouses over the notification, don't hide it.
-    meta.$container.mouseenter(function () {
+    meta.$container.on("mouseenter", () => {
         if (!meta.opened) {
             return;
         }
@@ -80,7 +83,7 @@ function set_up_handlers() {
     });
 
     // once the user's mouse leaves the notification, restart the countdown.
-    meta.$container.mouseleave(function () {
+    meta.$container.on("mouseleave", () => {
         if (!meta.opened) {
             return;
         }
@@ -88,14 +91,14 @@ function set_up_handlers() {
         meta.alert_hover_state = false;
         // add at least 2000ms but if more than that exists just keep the
         // current amount.
-        meta.hide_me_time = Math.max(meta.hide_me_time, new Date().getTime() + 2000);
+        meta.hide_me_time = Math.max(meta.hide_me_time, Date.now() + 2000);
     });
 
-    meta.$container.on('click', '.exit-me', function () {
+    meta.$container.on("click", ".exit-me", () => {
         animate.fadeOut();
     });
 
-    meta.$container.on('click', '.feedback_undo', function () {
+    meta.$container.on("click", ".feedback_undo", () => {
         if (meta.undo) {
             meta.undo();
         }
@@ -103,21 +106,21 @@ function set_up_handlers() {
     });
 }
 
-exports.is_open = function () {
+export function is_open() {
     return meta.opened;
-};
+}
 
-exports.dismiss = function () {
+export function dismiss() {
     animate.fadeOut();
-};
+}
 
-exports.show = function (opts) {
+export function show(opts) {
     if (!opts.populate) {
-        blueslip.error('programmer needs to supply populate callback.');
+        blueslip.error("programmer needs to supply populate callback.");
         return;
     }
 
-    meta.$container = $('#feedback_container');
+    meta.$container = $("#feedback_container");
 
     const html = render_feedback_container();
     meta.$container.html(html);
@@ -127,13 +130,11 @@ exports.show = function (opts) {
     meta.undo = opts.on_undo;
 
     // add a four second delay before closing up.
-    meta.hide_me_time = new Date().getTime() + 4000;
+    meta.hide_me_time = Date.now() + 4000;
 
-    meta.$container.find('.feedback_title').text(opts.title_text);
-    meta.$container.find('.feedback_undo').text(opts.undo_button_text);
-    opts.populate(meta.$container.find('.feedback_content'));
+    meta.$container.find(".feedback_title").text(opts.title_text);
+    meta.$container.find(".feedback_undo").text(opts.undo_button_text);
+    opts.populate(meta.$container.find(".feedback_content"));
 
     animate.fadeIn();
-};
-
-window.feedback_widget = exports;
+}

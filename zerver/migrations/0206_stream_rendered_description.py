@@ -1,16 +1,13 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.db import migrations, models
-from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
-from zerver.lib.actions import render_stream_description
+from zerver.lib.streams import render_stream_description
 
 
 def render_all_stream_descriptions(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
-    Stream = apps.get_model('zerver', 'Stream')
-    all_streams = Stream.objects.exclude(description='')
+    Stream = apps.get_model("zerver", "Stream")
+    all_streams = Stream.objects.exclude(description="")
     for stream in all_streams:
         stream.rendered_description = render_stream_description(stream.description)
         stream.save(update_fields=["rendered_description"])
@@ -19,15 +16,16 @@ def render_all_stream_descriptions(apps: StateApps, schema_editor: DatabaseSchem
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0205_remove_realmauditlog_requires_billing_update'),
+        ("zerver", "0205_remove_realmauditlog_requires_billing_update"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='stream',
-            name='rendered_description',
-            field=models.TextField(default=''),
+            model_name="stream",
+            name="rendered_description",
+            field=models.TextField(default=""),
         ),
-        migrations.RunPython(render_all_stream_descriptions,
-                             reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(
+            render_all_stream_descriptions, reverse_code=migrations.RunPython.noop, elidable=True
+        ),
     ]

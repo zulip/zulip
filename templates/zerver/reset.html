@@ -11,15 +11,15 @@
 
             <p>Forgot your password? No problem, we'll send a link to reset your password to the email you signed up with.</p>
 
-            <form method="post" class="form-horizontal" action="{{ url('zerver.views.auth.password_reset') }}">
+            <form method="post" class="form-horizontal" action="{{ url('password_reset') }}">
                 {{ csrf_input }}
                 <div class="new-style">
-                    <div class="input-box horizontal moving-label">
+                    <div class="input-box horizontal">
                         <div class="inline-block relative">
+                            <label for="id_email" class="">{{ _('Email') }}</label>
                             <input id="id_email" class="required" type="text" name="email"
                               value="{% if form.email.value() %}{{ form.email.value() }}{% endif %}"
-                              maxlength="100" autofocus required />
-                            <label for="id_email" class="">{{ _('Email') }}</label>
+                              maxlength="100" placeholder="{{ _("Enter your email address") }}" autofocus required />
                             {% if form.email.errors %}
                                 {% for error in form.email.errors %}
                                 <div class="alert alert-error">{{ error }}</div>

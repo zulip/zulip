@@ -1,5 +1,5 @@
 from <%= @nagios_alert_email %>
-user postmaster@nagios.<%= @hosts_domain %>
+user postmaster@nagios.<%= @default_host_domain %>
 password <%= @nagios_mail_password %>
 
 host <%= @nagios_mail_host %>

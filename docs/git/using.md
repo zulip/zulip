@@ -8,7 +8,7 @@ determine the currently checked out branch several ways.
 
 One way is with [git status][gitbook-git-status]:
 
-```
+```console
 $ git status
 On branch issue-demo
 nothing to commit, working directory clean
@@ -17,23 +17,23 @@ nothing to commit, working directory clean
 Another is with [git branch][gitbook-git-branch] which will display all local
 branches, with a star next to the current branch:
 
-```
+```console
 $ git branch
 * issue-demo
-  master
+  main
 ```
 
 To see even more information about your branches, including remote branches,
 use `git branch -vva`:
 
-```
+```console
 $ git branch -vva
 * issue-123                 517468b troubleshooting tip about provisioning
-  master                    f0eaee6 [origin/master] bug: Fix traceback in get_missed_message_token_from_address().
-  remotes/origin/HEAD       -> origin/master
+  main                      f0eaee6 [origin/main] bug: Fix traceback in get_missed_message_token_from_address().
+  remotes/origin/HEAD       -> origin/main
   remotes/origin/issue-1234 4aeccb7 Another test commit, with longer message.
-  remotes/origin/master     f0eaee6 bug: Fix traceback in get_missed_message_token_from_address().
-  remotes/upstream/master   dbeab6a Optimize checks of test database state by moving into Python.
+  remotes/origin/main       f0eaee6 bug: Fix traceback in get_missed_message_token_from_address().
+  remotes/upstream/main     dbeab6a Optimize checks of test database state by moving into Python.
 ```
 
 You can also configure [Bash][gitbook-other-envs-bash] and
@@ -46,48 +46,48 @@ from Zulip's main repositories.
 
 **Note about git pull**: You might be used to using `git pull` on other
 projects. With Zulip, because we don't use merge commits, you'll want to avoid
-it. Rather that using `git pull`, which by default is a shortcut for `git fetch
-&& git merge FETCH_HEAD` ([docs][gitbook-git-pull]), you should use `git fetch`
-and then `git rebase`.
+it. Rather than using `git pull`, which by default is a shortcut for
+`git fetch && git merge FETCH_HEAD` ([docs][gitbook-git-pull]), you
+should use `git fetch` and then `git rebase`.
 
 First, [fetch][gitbook-fetch] changes from Zulip's upstream repository you
 configured in the step above:
 
-```
+```console
 $ git fetch upstream
 ```
 
-Next, checkout your `master` branch and [rebase][gitbook-git-rebase] it on top
-of `upstream/master`:
+Next, check out your `main` branch and [rebase][gitbook-git-rebase] it on top
+of `upstream/main`:
 
+```console
+$ git checkout main
+Switched to branch 'main'
+
+$ git rebase upstream/main
 ```
-$ git checkout master
-Switched to branch 'master'
 
-$ git rebase upstream/master
-```
-
-This will rollback any changes you've made to master, update it from
-`upstream/master`, and then re-apply your changes. Rebasing keeps the commit
+This will rollback any changes you've made to `main`, update it from
+`upstream/main`, and then re-apply your changes. Rebasing keeps the commit
 history clean and readable.
 
 When you're ready, [push your changes][github-help-push] to your remote fork.
-Make sure you're in branch `master` and the run `git push`:
+Make sure you're in branch `main` and then run `git push`:
 
-```
-$ git checkout master
-$ git push origin master
+```console
+$ git checkout main
+$ git push origin main
 ```
 
 You can keep any branch up to date using this method. If you're working on a
 feature branch (see next section), which we recommend, you would change the
-command slightly, using the name of your `feature-branch` rather than `master`:
+command slightly, using the name of your `feature-branch` rather than `main`:
 
-```
+```console
 $ git checkout feature-branch
 Switched to branch 'feature-branch'
 
-$ git rebase upstream/master
+$ git rebase upstream/main
 
 $ git push origin feature-branch
 ```
@@ -99,25 +99,25 @@ feature. Recall from [how Git is different][how-git-is-different] that
 **Git is designed for lightweight branching and merging.** You can and should
 create as many branches as you'd like.
 
-First, make sure your master branch is up-to-date with Zulip upstream ([see
+First, make sure your `main` branch is up-to-date with Zulip upstream ([see
 how][zulip-git-guide-up-to-date]).
 
-Next, from your master branch, create a new tracking branch, providing a
+Next, from your `main` branch, create a new tracking branch, providing a
 descriptive name for your feature branch:
 
-```
-$ git checkout master
-Switched to branch 'master'
+```console
+$ git checkout main
+Switched to branch 'main'
 
 $ git checkout -b issue-1755-fail2ban
 Switched to a new branch 'issue-1755-fail2ban'
 ```
 
 Alternatively, you can create a new branch explicitly based off
-`upstream/master`:
+`upstream/main`:
 
-```
-$ git checkout -b issue-1755-fail2ban upstream/master
+```console
+$ git checkout -b issue-1755-fail2ban upstream/main
 Switched to a new branch 'issue-1755-fail2ban'
 ```
 
@@ -125,8 +125,9 @@ Now you're ready to work on the issue or feature.
 
 ## Run linters and tests locally
 
-In addition to having Travis run tests and linters each time you push a new
-commit, you can also run them locally. See [testing](../testing/testing.md) for details.
+In addition to having GitHub Actions run tests and linters each time you
+push a new commit, you can also run them locally. See
+[testing](../testing/testing.md) for details.
 
 ## Stage changes
 
@@ -134,7 +135,7 @@ Recall that files tracked with Git have possible three states:
 committed, modified, and staged.
 
 To prepare a commit, first add the files with changes that you want
-to include in your commit to your staging area. You *add* both new files and
+to include in your commit to your staging area. You _add_ both new files and
 existing ones. You can also remove files from staging when necessary.
 
 ### Get status of working directory
@@ -145,7 +146,7 @@ staged, use `git status`.
 If you have no changes in the working directory, you'll see something like
 this:
 
-```
+```console
 $ git status
 On branch issue-123
 nothing to commit, working directory clean
@@ -153,7 +154,7 @@ nothing to commit, working directory clean
 
 If you have unstaged changes, you'll see something like this:
 
-```
+```console
 On branch issue-123
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
@@ -165,14 +166,15 @@ nothing added to commit but untracked files present (use "git add" to track)
 
 ### Stage additions with git add
 
-To add changes to your staging area, use `git add <filename>`. Because `git
-add` is all about staging the changes you want to commit, you use it to add
-*new files* as well as *files with changes* to your staging area.
+To add changes to your staging area, use `git add <filename>`. Because
+`git add` is all about staging the changes you want to commit, you use
+it to add _new files_ as well as _files with changes_ to your staging
+area.
 
 Continuing our example from above, after we run `git add newfile.py`, we'll see
 the following from `git status`:
 
-```
+```console
 On branch issue-123
 Changes to be committed:
   (use "git reset HEAD <file>..." to unstage)
@@ -186,13 +188,12 @@ view changes to files you haven't yet staged, just use `git diff`.
 If you want to add all changes in the working directory, use `git add -A`
 ([documentation][gitbook-add]).
 
-
 You can also stage changes using your graphical Git client.
 
 If you stage a file, you can undo it with `git reset HEAD <filename>`. Here's
 an example where we stage a file `test3.txt` and then unstage it:
 
-```
+```console
 $ git add test3.txt
 On branch issue-1234
 Changes to be committed:
@@ -221,7 +222,7 @@ stage the file for deletion and leave it in your working directory.
 To stage a file for deletion and **remove** it from your working directory, use
 `git rm <filename>`:
 
-```
+```console
 $ git rm test.txt
 rm 'test.txt'
 
@@ -239,7 +240,7 @@ ls: No such file or directory
 To stage a file for deletion and **keep** it in your working directory, use
 `git rm --cached <filename>`:
 
-```
+```console
 $ git rm --cached test2.txt
 rm 'test2.txt'
 
@@ -257,7 +258,7 @@ test2.txt
 If you stage a file for deletion with the `--cached` option, and haven't yet
 run `git commit`, you can undo it with `git reset HEAD <filename>`:
 
-```
+```console
 $ git reset HEAD test2.txt
 ```
 
@@ -272,7 +273,7 @@ with `git commit -m "My commit message."` to include a commit message.
 
 Here's an example of committing with the `-m` for a one-line commit message:
 
-```
+```console
 $ git commit -m "Add a test commit for docs."
 [issue-123 173e17a] Add a test commit for docs.
  1 file changed, 1 insertion(+)
@@ -294,7 +295,7 @@ messages][zulip-rtd-commit-messages] for details.
 
 Here's an example of a longer commit message that will be used for a pull request:
 
-```
+```text
 Integrate Fail2Ban.
 
 Updates Zulip logging to put an unambiguous entry into the logs such
@@ -316,9 +317,14 @@ testing in a more production-like environment.
 
 The final paragraph indicates that this commit addresses and fixes issue #1755.
 When you submit your pull request, GitHub will detect and link this reference
-to the appropriate issue. Once your commit is merged into zulip/master, GitHub
+to the appropriate issue. Once your commit is merged into `upstream/main`, GitHub
 will automatically close the referenced issue. See [Closing issues via commit
 messages][github-help-closing-issues] for details.
+
+Note in particular that GitHub's regular expressions for this feature
+are sloppy, so phrases like `Partially fixes #1234` will automatically
+close the issue. Phrases like `Fixes part of #1234` are a good
+alternative.
 
 Make as many commits as you need to to address the issue or implement your feature.
 
@@ -329,9 +335,9 @@ This ensures your work is backed up should something happen to your local
 machine and allows others to follow your progress. It also allows you to
 [work from multiple computers][self-multiple-computers] without losing work.
 
-Pushing to a feature branch is just like pushing to master:
+Pushing to a feature branch is just like pushing to `main`:
 
-```
+```console
 $ git push origin <branch-name>
 Counting objects: 6, done.
 Delta compression using up to 4 threads.
@@ -361,7 +367,7 @@ your commit history be able to clearly understand your progression of work?
 On the command line, you can use the `git log` command to display an easy to
 read list of your commits:
 
-```
+```console
 $ git log --all --graph --oneline --decorate
 
 * 4f8d75d (HEAD -> 1754-docs-add-git-workflow) docs: Add details about configuring Travis CI.
@@ -370,7 +376,7 @@ $ git log --all --graph --oneline --decorate
 * 985116b docs: Add graphic client recs to Git Guide.
 * 3c40103 docs: Add stubs for remaining Git Guide sections.
 * fc2c01e docs: Add git guide quickstart.
-| * f0eaee6 (upstream/master) bug: Fix traceback in get_missed_message_token_from_address().
+| * f0eaee6 (upstream/main) bug: Fix traceback in get_missed_message_token_from_address().
 ```
 
 Alternatively, use your graphical client to view the history for your feature branch.
@@ -398,7 +404,7 @@ Any time you alter history for commits you have already pushed to GitHub,
 you'll need to prefix the name of your branch with a `+`. Without this, your
 updates will be rejected with a message such as:
 
-```
+```console
 $ git push origin 1754-docs-add-git-workflow
 To git@github.com:christi3k/zulip.git
  ! [rejected] 1754-docs-add-git-workflow -> 1754-docs-add-git-workflow (non-fast-forward)
@@ -407,13 +413,12 @@ hint: Updates were rejected because the tip of your current branch is behind
 hint: its remote counterpart. Integrate the remote changes (e.g.
 hint: 'git pull ...') before pushing again.
 hint: See the 'Note about fast-forwards' in 'git push --help' for details.
-
 ```
 
 Re-running the command with `+<branch>` allows the push to continue by
 re-writing the history for the remote repository:
 
-```
+```console
 $ git push origin +1754-docs-add-git-workflow
 Counting objects: 12, done.
 Delta compression using up to 4 threads.
@@ -423,7 +428,6 @@ Total 12 (delta 8), reused 0 (delta 0)
 remote: Resolving deltas: 100% (8/8), completed with 2 local objects.
 To git@github.com:christi3k/zulip.git
  + 2d49e2d...bfb2433 1754-docs-add-git-workflow -> 1754-docs-add-git-workflow (forced update)
-
 ```
 
 This is perfectly okay to do on your own feature branches, especially if you're
@@ -447,6 +451,7 @@ complicated rebase.
 [github-help-rebase]: https://help.github.com/en/articles/using-git-rebase
 [github-help-sync-fork]: https://help.github.com/en/articles/syncing-a-fork
 [how-git-is-different]: ./the-git-difference.md
+[self-multiple-computers]: ../git/troubleshooting.html#working-from-multiple-computers
 [zulip-git-guide-up-to-date]: ../git/using.html#keep-your-fork-up-to-date
 [zulip-rtd-commit-discipline]: ../contributing/version-control.html#commit-discipline
 [zulip-rtd-commit-messages]: ../contributing/version-control.html#commit-messages

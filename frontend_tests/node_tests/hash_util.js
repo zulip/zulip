@@ -1,34 +1,42 @@
+"use strict";
 
-zrequire('hash_util');
-zrequire('stream_data');
-zrequire('people');
+const {strict: assert} = require("assert");
 
-set_global('location', {
-    protocol: "https:",
-    host: "example.com",
-    pathname: "/",
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
+const ui_report = mock_esm("../../static/js/ui_report", {
+    displayed_error: false,
+
+    error: () => {
+        ui_report.displayed_error = true;
+    },
 });
 
+const hash_util = zrequire("hash_util");
+const stream_data = zrequire("stream_data");
+const people = zrequire("people");
+
 const hamlet = {
-    user_id: 1,
-    email: 'hamlet@example.com',
-    full_name: 'Hamlet',
+    user_id: 15,
+    email: "hamlet@example.com",
+    full_name: "Hamlet",
 };
 
-people.add(hamlet);
+people.add_active_user(hamlet);
 
 const frontend = {
     stream_id: 99,
-    name: 'frontend',
+    name: "frontend",
 };
 
 stream_data.add_sub(frontend);
 
-run_test('hash_util', () => {
+run_test("hash_util", () => {
     // Test encodeHashComponent
-    const str = 'https://www.zulipexample.com';
+    const str = "https://www.zulipexample.com";
     const result1 = hash_util.encodeHashComponent(str);
-    assert.equal(result1, 'https.3A.2F.2Fwww.2Ezulipexample.2Ecom');
+    assert.equal(result1, "https.3A.2F.2Fwww.2Ezulipexample.2Ecom");
 
     // Test decodeHashComponent
     const result2 = hash_util.decodeHashComponent(result1);
@@ -44,112 +52,129 @@ run_test('hash_util', () => {
         assert.equal(decode_result, operand);
     }
 
-    let operator = 'sender';
+    let operator = "sender";
     let operand = hamlet.email;
 
-    encode_decode_operand(operator, operand, '1-hamlet');
+    encode_decode_operand(operator, operand, "15-hamlet");
 
-    operator = 'stream';
-    operand = 'frontend';
+    operator = "stream";
+    operand = "frontend";
 
-    encode_decode_operand(operator, operand, '99-frontend');
+    encode_decode_operand(operator, operand, "99-frontend");
 
-    operator = 'topic';
-    operand = 'testing 123';
+    operator = "topic";
+    operand = "testing 123";
 
-    encode_decode_operand(operator, operand, 'testing.20123');
+    encode_decode_operand(operator, operand, "testing.20123");
+
+    // Test invalid url decode.
+    const result = hash_util.decodeHashComponent("foo.foo");
+    assert.equal(result, "");
+    assert.equal(ui_report.displayed_error, true);
 });
 
-run_test('test_get_hash_category', () => {
-    assert.deepEqual(
-        hash_util.get_hash_category('streams/subscribed'),
-        'streams'
-    );
-    assert.deepEqual(
-        hash_util.get_hash_category('#settings/display-settings'),
-        'settings'
-    );
-    assert.deepEqual(
-        hash_util.get_hash_category('#drafts'),
-        'drafts'
-    );
-    assert.deepEqual(
-        hash_util.get_hash_category('invites'),
-        'invites'
-    );
+run_test("test_get_hash_category", () => {
+    assert.deepEqual(hash_util.get_hash_category("streams/subscribed"), "streams");
+    assert.deepEqual(hash_util.get_hash_category("#settings/display-settings"), "settings");
+    assert.deepEqual(hash_util.get_hash_category("#drafts"), "drafts");
+    assert.deepEqual(hash_util.get_hash_category("invites"), "invites");
+
+    window.location.hash = "#settings/profile";
+    assert.deepEqual(hash_util.get_current_hash_category(), "settings");
 });
 
-run_test('test_get_hash_section', () => {
-    assert.equal(
-        hash_util.get_hash_section('streams/subscribed'),
-        'subscribed'
-    );
-    assert.equal(
-        hash_util.get_hash_section('#settings/your-account'),
-        'your-account'
-    );
+run_test("test_get_hash_section", () => {
+    assert.equal(hash_util.get_hash_section("streams/subscribed"), "subscribed");
+    assert.equal(hash_util.get_hash_section("#settings/profile"), "profile");
 
-    assert.equal(
-        hash_util.get_hash_section('settings/10/general/'),
-        '10'
-    );
+    assert.equal(hash_util.get_hash_section("settings/10/general/"), "10");
 
-    assert.equal(
-        hash_util.get_hash_section('#drafts'),
-        ''
-    );
-    assert.equal(
-        hash_util.get_hash_section(''),
-        ''
-    );
+    assert.equal(hash_util.get_hash_section("#drafts"), "");
+    assert.equal(hash_util.get_hash_section(""), "");
+
+    window.location.hash = "#settings/profile";
+    assert.deepEqual(hash_util.get_current_hash_section(), "profile");
 });
 
-run_test('test_parse_narrow', () => {
-    assert.deepEqual(
-        hash_util.parse_narrow(['narrow', 'stream', '99-frontend']),
-        [{negated: false, operator: 'stream', operand: 'frontend'}]
-    );
+run_test("build_reload_url", () => {
+    window.location.hash = "#settings/profile";
+    assert.equal(hash_util.build_reload_url(), "+oldhash=settings%2Fprofile");
 
-    assert.deepEqual(
-        hash_util.parse_narrow(['narrow', '-stream', '99-frontend']),
-        [{negated: true, operator: 'stream', operand: 'frontend'}]
-    );
+    window.location.hash = "#test";
+    assert.equal(hash_util.build_reload_url(), "+oldhash=test");
 
-    assert.equal(
-        hash_util.parse_narrow(['narrow', 'BOGUS']),
-        undefined
-    );
+    window.location.hash = "#";
+    assert.equal(hash_util.build_reload_url(), "+oldhash=");
+
+    window.location.hash = "";
+    assert.equal(hash_util.build_reload_url(), "+oldhash=");
+});
+
+run_test("test is_editing_stream", () => {
+    window.location.hash = "#streams/1/announce";
+    assert.equal(hash_util.is_editing_stream(1), true);
+    assert.equal(hash_util.is_editing_stream(2), false);
+
+    // url is missing name at end
+    window.location.hash = "#streams/1";
+    assert.equal(hash_util.is_editing_stream(1), false);
+
+    window.location.hash = "#streams/bogus/bogus";
+    assert.equal(hash_util.is_editing_stream(1), false);
+
+    window.location.hash = "#test/narrow";
+    assert.equal(hash_util.is_editing_stream(1), false);
+});
+
+run_test("test_is_create_new_stream_narrow", () => {
+    window.location.hash = "#streams/new";
+    assert.equal(hash_util.is_create_new_stream_narrow(), true);
+
+    window.location.hash = "#some/random/hash";
+    assert.equal(hash_util.is_create_new_stream_narrow(), false);
+});
+
+run_test("test_parse_narrow", () => {
+    assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "99-frontend"]), [
+        {negated: false, operator: "stream", operand: "frontend"},
+    ]);
+
+    assert.deepEqual(hash_util.parse_narrow(["narrow", "-stream", "99-frontend"]), [
+        {negated: true, operator: "stream", operand: "frontend"},
+    ]);
+
+    assert.equal(hash_util.parse_narrow(["narrow", "BOGUS"]), undefined);
 
     // For nonexistent streams, we get the full slug.
     // We possibly should remove the prefix and fix this test.
-    assert.deepEqual(
-        hash_util.parse_narrow(['narrow', 'stream', '42-bogus']),
-        [{negated: false, operator: 'stream', operand: '42-bogus'}]
-    );
+    assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "42-bogus"]), [
+        {negated: false, operator: "stream", operand: "42-bogus"},
+    ]);
 });
 
-run_test('test_stream_edit_uri', () => {
+run_test("test_stream_edit_uri", () => {
     const sub = {
-        name: 'research & development',
+        name: "research & development",
         stream_id: 42,
     };
-    assert.equal(hash_util.stream_edit_uri(sub),
-                 '#streams/42/research.20.26.20development');
+    assert.equal(hash_util.stream_edit_uri(sub), "#streams/42/research.20.26.20development");
 });
 
-run_test('test_by_conversation_and_time_uri', () => {
+run_test("test_by_conversation_and_time_uri", () => {
     let message = {
-        type: 'stream',
+        type: "stream",
         stream_id: frontend.stream_id,
-        topic: 'testing',
+        topic: "testing",
         id: 42,
     };
 
-    assert.equal(hash_util.by_conversation_and_time_uri(message),
-                 'https://example.com/#narrow/stream/99-frontend/topic/testing/near/42');
+    assert.equal(
+        hash_util.by_conversation_and_time_uri(message),
+        "http://zulip.zulipdev.com/#narrow/stream/99-frontend/topic/testing/near/42",
+    );
 
     message = {
-        type: 'private',
+        type: "private",
         display_recipient: [
             {
                 id: hamlet.user_id,
@@ -158,6 +183,36 @@ run_test('test_by_conversation_and_time_uri', () => {
         id: 43,
     };
 
-    assert.equal(hash_util.by_conversation_and_time_uri(message),
-                 'https://example.com/#narrow/pm-with/1-pm/near/43');
+    assert.equal(
+        hash_util.by_conversation_and_time_uri(message),
+        "http://zulip.zulipdev.com/#narrow/pm-with/15-pm/near/43",
+    );
+});
+
+run_test("test_search_public_streams_notice_url", () => {
+    function get_operators(uri) {
+        return hash_util.parse_narrow(uri.split("/"));
+    }
+
+    assert.equal(
+        hash_util.search_public_streams_notice_url(get_operators("#narrow/search/abc")),
+        "#narrow/streams/public/search/abc",
+    );
+
+    assert.equal(
+        hash_util.search_public_streams_notice_url(
+            get_operators("#narrow/has/link/has/image/has/attachment"),
+        ),
+        "#narrow/streams/public/has/link/has/image/has/attachment",
+    );
+
+    assert.equal(
+        hash_util.search_public_streams_notice_url(get_operators("#narrow/sender/15")),
+        "#narrow/streams/public/sender/15-hamlet",
+    );
+});
+
+run_test("test_current_hash_as_next", () => {
+    window.location.hash = "#foo";
+    assert.equal(hash_util.current_hash_as_next(), "next=/%23foo");
 });

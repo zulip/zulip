@@ -16,9 +16,14 @@ Mirror an IRC channel in Zulip!
 1. Activate the virtualenv by running the `source` command printed
    at the end of the output of the previous step.
 
-1. Install the bridge software in your virtualenv, by running:
+1. Go to the directory containing the bridge script if you haven't already done so
+   ```
+   cd zulip/integrations/bridge_with_irc
+   ```
+
+1. Install the bridge dependencies in your virtualenv, by running:
     ```
-    pip install -r zulip/integrations/bridge_with_irc/requirements.txt
+    pip install -r requirements.txt
     ```
 
 ### Configure the bridge
@@ -52,8 +57,8 @@ Example command:
 
 Your Zulip messages may look like:
 
-![](/static/images/integrations/irc/001.png)
+![IRC message on Zulip](/static/images/integrations/irc/001.png)
 
 Your IRC messages may look like:
 
-![](/static/images/integrations/irc/002.png)
+![Zulip message on IRC](/static/images/integrations/irc/002.png)

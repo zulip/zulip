@@ -12,8 +12,8 @@ You can change the timezone Zulip displays to others.
 
 {start_tabs}
 
-{settings_tab|display-settings}
+{settings_tab|profile}
 
-2. Under **Time settings**, select a timezone.
+2. Under **Profile**, select a timezone.
 
 {end_tabs}

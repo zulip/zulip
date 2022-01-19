@@ -4,11 +4,11 @@ from typing import Any, Dict, Optional
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import api_key_only_webhook_view
+from zerver.decorator import webhook_view
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import UnexpectedWebhookEventType, \
-    check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import Realm, UserProfile
 
 IGNORED_EVENTS = [
@@ -17,7 +17,7 @@ IGNORED_EVENTS = [
     "uploadChart",
     "pullImage",
     "deleteImage",
-    "scanningFailed"
+    "scanningFailed",
 ]
 
 
@@ -27,27 +27,22 @@ def guess_zulip_user_from_harbor(harbor_username: str, realm: Realm) -> Optional
         # We search a user's full name, short name,
         # and beginning of email address
         user = UserProfile.objects.filter(
-            Q(full_name__iexact=harbor_username) |
-            Q(short_name__iexact=harbor_username) |
-            Q(email__istartswith=harbor_username),
+            Q(full_name__iexact=harbor_username) | Q(email__istartswith=harbor_username),
             is_active=True,
-            realm=realm).order_by("id")[0]
+            realm=realm,
+        ).order_by("id")[0]
         return user  # nocoverage
     except IndexError:
         return None
 
 
-def handle_push_image_event(payload: Dict[str, Any],
-                            user_profile: UserProfile,
-                            operator_username: str) -> str:
+def handle_push_image_event(
+    payload: Dict[str, Any], user_profile: UserProfile, operator_username: str
+) -> str:
     image_name = payload["event_data"]["repository"]["repo_full_name"]
     image_tag = payload["event_data"]["resources"][0]["tag"]
 
-    return u"{author} pushed image `{image_name}:{image_tag}`".format(
-        author=operator_username,
-        image_name=image_name,
-        image_tag=image_tag
-    )
+    return f"{operator_username} pushed image `{image_name}:{image_tag}`"
 
 
 VULNERABILITY_SEVERITY_NAME_MAP = {
@@ -65,21 +60,21 @@ Image scan completed for `{image_name}:{image_tag}`. Vulnerabilities by severity
 """.strip()
 
 
-def handle_scanning_completed_event(payload: Dict[str, Any],
-                                    user_profile: UserProfile,
-                                    operator_username: str) -> str:
-    scan_results = u""
+def handle_scanning_completed_event(
+    payload: Dict[str, Any], user_profile: UserProfile, operator_username: str
+) -> str:
+    scan_results = ""
     scan_summaries = payload["event_data"]["resources"][0]["scan_overview"]["components"]["summary"]
-    summaries_sorted = sorted(
-        scan_summaries, key=lambda x: x["severity"], reverse=True)
+    summaries_sorted = sorted(scan_summaries, key=lambda x: x["severity"], reverse=True)
     for scan_summary in summaries_sorted:
-        scan_results += u"* {}: **{}**\n".format(
-            VULNERABILITY_SEVERITY_NAME_MAP[scan_summary["severity"]], scan_summary["count"])
+        scan_results += "* {}: **{}**\n".format(
+            VULNERABILITY_SEVERITY_NAME_MAP[scan_summary["severity"]], scan_summary["count"]
+        )
 
     return SCANNING_COMPLETED_TEMPLATE.format(
         image_name=payload["event_data"]["repository"]["repo_full_name"],
         image_tag=payload["event_data"]["resources"][0]["tag"],
-        scan_results=scan_results
+        scan_results=scan_results,
     )
 
 
@@ -88,20 +83,24 @@ EVENT_FUNCTION_MAPPER = {
     "scanningCompleted": handle_scanning_completed_event,
 }
 
+ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
 
-@api_key_only_webhook_view("Harbor")
+
+@webhook_view("Harbor", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
-def api_harbor_webhook(request: HttpRequest, user_profile: UserProfile,
-                       payload: Dict[str, Any] = REQ(argument_type='body')) -> HttpResponse:
+def api_harbor_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type="body"),
+) -> HttpResponse:
 
-    operator_username = u"**{}**".format(payload["operator"])
+    operator_username = "**{}**".format(payload["operator"])
 
     if operator_username != "auto":
-        operator_profile = guess_zulip_user_from_harbor(
-            operator_username, user_profile.realm)
+        operator_profile = guess_zulip_user_from_harbor(operator_username, user_profile.realm)
 
     if operator_profile:
-        operator_username = u"@**{}**".format(operator_profile.full_name)  # nocoverage
+        operator_username = f"@**{operator_profile.full_name}**"  # nocoverage
 
     event = payload["type"]
     topic = payload["event_data"]["repository"]["repo_full_name"]
@@ -112,12 +111,11 @@ def api_harbor_webhook(request: HttpRequest, user_profile: UserProfile,
     content_func = EVENT_FUNCTION_MAPPER.get(event)
 
     if content_func is None:
-        raise UnexpectedWebhookEventType('Harbor', event)
+        raise UnsupportedWebhookEventType(event)
 
-    content = content_func(payload, user_profile,
-                           operator_username)  # type: str
+    content: str = content_func(payload, user_profile, operator_username)
 
-    check_send_webhook_message(request, user_profile,
-                               topic, content,
-                               unquote_url_parameters=True)
+    check_send_webhook_message(
+        request, user_profile, topic, content, event, unquote_url_parameters=True
+    )
     return json_success()

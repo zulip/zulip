@@ -1,21 +1,20 @@
 #!/usr/bin/env bash
 
-# Lint all commit messages that are newer than upstream/master if running
-# locally or the commits in the push or PR if in Travis CI.
+# Lint all commit messages that are newer than upstream/main if running
+# locally or the commits in the push or PR if in CircleCI.
 
 # The rules can be found in /.gitlint
 
-if [ "$TRAVIS" ]; then
-    # Work around https://github.com/travis-ci/travis-ci/issues/4596
-    range="${TRAVIS_COMMIT_RANGE/.../..}"
-elif [[ "
+repository="zulip/zulip"
+
+if [[ "
 $(git remote -v)
 " =~ '
-'([^[:space:]]*)[[:space:]]*(https://github\.com/|ssh://git@github\.com/|git@github\.com:)zulip/zulip(\.git|/)?\ \(fetch\)'
+'([^[:space:]]*)[[:space:]]*(https://github\.com/|ssh://git@github\.com/|git@github\.com:)"$repository"(\.git|/)?\ \(fetch\)'
 ' ]]; then
-    range="${BASH_REMATCH[1]}/master..HEAD"
+    range="${BASH_REMATCH[1]}/main..HEAD"
 else
-    range="upstream/master..HEAD"
+    range="upstream/main..HEAD"
 fi
 
 commits=$(git log "$range" | wc -l)

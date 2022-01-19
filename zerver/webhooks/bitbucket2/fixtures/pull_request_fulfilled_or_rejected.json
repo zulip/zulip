@@ -13,7 +13,7 @@
             "href":"https://bitbucket.org/account/kolaszek/avatar/32/"
          }
       },
-      "username":"kolaszek",
+      "nickname":"Tomasz Kolaszek",
       "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}"
    },
    "pullrequest":{
@@ -43,7 +43,7 @@
                "href":"https://bitbucket.org/account/kolaszek/avatar/32/"
             }
          },
-         "username":"kolaszek",
+         "nickname":"Tomasz Kolaszek",
          "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}"
       },
       "author":{
@@ -60,7 +60,7 @@
                "href":"https://bitbucket.org/account/kolaszek/avatar/32/"
             }
          },
-         "username":"kolaszek",
+         "nickname":"Tomasz Kolaszek",
          "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}"
       },
       "updated_on":"2016-07-04T20:17:13.680242+00:00",
@@ -167,7 +167,7 @@
                "href":"https://bitbucket.org/account/kolaszek/avatar/32/"
             }
          },
-         "username":"kolaszek",
+         "nickname":"Tomasz Kolaszek",
          "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}"
       },
       "full_name":"kolaszek/repository-name",

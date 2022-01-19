@@ -8,13 +8,14 @@ administrators can change who is allowed to use private messages.
 ### Configure who can use private messages
 
 !!! warn ""
+
     This feature is beta; see the notes below for details.
 
 {start_tabs}
 
 {settings_tab|organization-permissions}
 
-2. Under **Organization permissions**, configure **Who can use private messages**.
+2. Under **Other permissions**, configure **Who can use private messages**.
 
 {!save-changes.md!}
 

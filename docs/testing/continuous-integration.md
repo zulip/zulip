@@ -1,67 +1,74 @@
 # Continuous integration (CI)
 
-The Zulip server uses [CircleCI](https://circleci.com/) and
-[Travis CI](https://travis-ci.org/) for continuous
-integration. CircleCI is the primary CI, and runs frontend and backend
-tests across a wide range of Ubuntu distributions. Travis CI is
-legacy, used only for running the end-to-end production installer
-test.  This page documents useful tools and tips to know about when
-using CircleCI and Travis CI and debugging issues with them.
+The Zulip server uses [GitHub Actions](https://docs.github.com/en/actions) for continuous
+integration. GitHub Actions runs frontend, backend and end-to-end production
+installer tests. This page documents useful tools and tips when using
+GitHub Actions and debugging issues with it.
 
 ## Goals
 
 The overall goal of our CI is to avoid regressions and minimize the
-total time spent debugging Zulip.  We do that by trying to catch as
+total time spent debugging Zulip. We do that by trying to catch as
 many possible future bugs as possible, while minimizing both latency
 and false positives, both of which can waste a lot of developer time.
 There are a few implications of this overall goal:
 
-* If a test is failing nondeterministically in CI, we consider that to
-be an urgent problem.
-* If the tests become a lot slower, that is also an urgent problem.
-* Everything we do in CI should also have a way to run it quickly
-(under 1 minute, preferably under 3 seconds), in order to iterate fast
-in development. Except when working on the CI configuration itself, a
-developer should never have to repeatedly wait 10 minutes for a full CI
-run to iteratively debug something.
+- If a test is failing nondeterministically in CI, we consider that to
+  be an urgent problem.
+- If the tests become a lot slower, that is also an urgent problem.
+- Everything we do in CI should also have a way to run it quickly
+  (under 1 minute, preferably under 3 seconds), in order to iterate fast
+  in development. Except when working on the CI configuration itself, a
+  developer should never have to repeatedly wait 10 minutes for a full CI
+  run to iteratively debug something.
 
-## CircleCI
+## GitHub Actions
 
 ### Useful debugging tips and tools
 
-* Zulip uses the `ts` tool to log the current time on every line of the output in
-our Travis CI scripts.  You can use this output to determine which steps are
-actually consuming a lot of time.
+- GitHub Actions stores timestamps for every line in the logs. They
+  are hidden by default; you can see them by toggling the
+  `Show timestamps` option in the menu on any job's log page. (You can
+  get this sort of timestamp in a development environment by piping
+  output to `ts`).
 
-* You can [sign up your personal repo for CircleCI][circleci-setup] so
-that every remote branch you push will be tested, which can be helpful
-when debugging something complicated.
+- GitHub Actions runs on every branch you push on your Zulip fork.
+  This is helpful when debugging something complicated.
 
-* With your personal repo signed up, CircleCI
-[allows you to SSH][circleci-ssh] into the job container if a job
-fails. SSHing into the containers can be helpful, especially in rare
-cases where the tests are passing in your computer but failing in the
-CI. Make sure that you have uploaded your SSH keys to GitHub: CircleCI
-uses those SSH keys for authentication.
-
-[docker-hub]: https://hub.docker.com/
-[circleci-setup]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork
-[circleci-ssh]: https://circleci.com/docs/2.0/ssh-access-jobs/
+- You can also ssh into a container to debug failures. SSHing into
+  the containers can be helpful, especially in rare cases where the
+  tests are passing in your computer but failing in the CI. There are
+  various
+  [Actions](https://github.com/marketplace?type=actions&query=debug+ssh)
+  available on GitHub Marketplace to help you SSH into a container. Use
+  whichever you find easiest to set up.
 
 ### Suites
 
-The main CircleCI configuration file is
-[./circleci/config.yml](https://github.com/zulip/zulip/blob/master/.circleci/config.yml).
-We run multiple jobs during a CircleCI build to test different
-supported platforms. They are currently:
+We run multiple jobs during a GitHub Actions build to efficiently run
+Zulip's various test suites, some of them multiple times because we
+support multiple versions of the base OS. See the [Actions
+tabs](https://github.com/zulip/zulip/actions) for full list of Actions
+that we run.
 
-* xenial-backend-frontend-python3.5
-* bionic-backend-python3.6
+Files which define GitHub workflows live in `.github/workflows` directory.
+`zulip-ci.yml` is the main file where most of the tests are run.
+`production-suite.yml` builds a Zulip release tarball, which is
+then installed in a fresh container. Various Nagios and other
+checks are run to confirm the installation worked.
 
-Each runs the Zulip backend test suites, using the indicated
-platform/OS and Python version.  As suggested by the names, only one
-suite runs the frontend test suites, since those are not
-platform-dependent.
+`zulip-ci.yml` is designed to run our main test suites on all of our
+supported platforms. Out of them, only one of them runs the frontend
+tests, since `puppeteer` is slow and unlikely to catch issues that
+depend on the version of the base OS and/or Python.
+
+Our code for running the tests in CI lives under `tools/ci`; but that
+logic is mostly thin wrappers around [Zulip's test
+suites](../testing/testing.md) or production installer.
+
+The `Legacy OS` tests are designed to ensure we give good error
+messages when trying to upgrade Zulip servers running on very old base
+OS versions with EOL Python versions that Zulip no longer supports.
 
 ### Configuration
 
@@ -69,12 +76,12 @@ The remaining details in this section are primarily relevant for doing
 development on our CI system and/or provisioning process.
 
 The first key of the job section is `docker`. The docker key specifies
-the image CircleCI should get from [Docker Hub][docker-hub] for running
-the job. Once CircleCI fetches the image from Docker Hub, it will spin
+the image GitHub Actions should get from [Docker Hub][docker-hub] for running
+the job. Once GitHub Actions fetches the image from Docker Hub, it will spin
 up a docker container. See [images](#images) section to know more about
-the images we use in CircleCI for testing.
+the images we use in GitHub Actions for testing.
 
-After booting the container from the configured image, CircleCI will
+After booting the container from the configured image, GitHub Actions will
 create the directory mentioned in `working_directory` and all the
 steps are be run from here.
 
@@ -85,28 +92,24 @@ are defined in the `aliases` section at the top of the file.
 
 ### Images
 
-CircleCI tests are run in containers that are spun off from the images
-maintained by Zulip team. The Dockerfiles for the various images can be
-generated by running `./tools/circleci/generate-dockerfiles`. This command
-will generate the Dockerfiles of the three Ubuntu releases in
-`./tools/circleci/images/{release_name}` directories. Take a look at
-`./tools/circleci/images.yml` to see how the Dockerfiles for the three
-releases differ from each other. To further generate images from the
-Dockerfiles and upload it to Docker Hub follow the instructions in the
-generated Dockerfiles.
+GitHub Actions tests are run in containers that are spun off from the
+images maintained by Zulip team. The Docker images can be generated by
+running `tools/ci/build-docker-images`; see instructions at the top of
+`tools/ci/Dockerfile` for more information.
 
 ### Performance optimizations
 
 #### Caching
 
-An important element of making CircleCI perform effectively is
-caching the provisioning of a Zulip development environment. In
-particular, we cache the following.:
+An important element of making GitHub Actions perform effectively is caching
+between jobs the various caches that live under `/srv/` in a Zulip
+development or production environment. In particular, we cache the
+following:
 
-* Python virtualenvs
-* node_modules directories
+- Python virtualenvs
+- node_modules directories
 
-This has a huge impact on the performance of running tests in CircleCI
+This has a huge impact on the performance of running tests in GitHub Actions
 CI; without these caches, the average test time would be several times
 longer.
 
@@ -114,92 +117,10 @@ We have designed these caches carefully (they are also used in
 production and the Zulip development environment) to ensure that each
 is named by a hash of its dependencies and ubuntu distribution name,
 so Zulip should always be using the same version of dependencies it
-would have used had the cache not existed.  In practice, bugs are
+would have used had the cache not existed. In practice, bugs are
 always possible, so be mindful of this possibility.
 
 A consequence of this caching is that test jobs for branches which
 modify `package.json`, `requirements/`, and other key dependencies
 will be significantly slower than normal, because they won't get to
 benefit from the cache.
-
-## Travis CI
-
-### Configuration
-
-The main Travis configuration file is
-[.travis.yml](https://github.com/zulip/zulip/blob/master/.travis.yml).
-The specific test suites we have are listed in the `matrix` section,
-which has a matrix of Python versions and test suites (`$TEST_SUITE`).
-
-Currently there is only the production test suite in this section as we
-have moved the backend and frontend suite to CircleCI. So the value of
-the variable `$TEST_SUITE` would be always `production`.
-
-We've configured it to use a few helper scripts for each job:
-
-* `tools/ci/setup-$TEST_SUITE`: This script sets up the test
-  environment for the production suite. This is a complicated process
-  because of all the packages Travis installs.  See the comments in
-  `tools/ci/setup-production` for details.
-* `tools/ci/$TEST_SUITE`: The script that runs the actual test
-  production test suite.
-
-The main purpose of the distinction between the two is that if the
-`setup-production` job fails, Travis CI will report it as the suite
-having "Errored" (grey in their emails), whereas if the `production` job
-fails, it'll be reported as "Failed" failure (red in their emails).
-Note that Travis CI's web UI seems to make no visual distinction
-between these.
-
-An important detail is that Travis CI will by default hide most phases
-other than the actual test; you can see this easily by looking at the
-line numbers in the Travis CI output.  There are actually a bunch of
-phases (e.g. the project's setup job, downloading caches near the
-beginning, uploading caches at the end, etc.), and if you're debugging
-our configuration, you'll want to look at these closely.
-
-### Useful debugging tips and tools
-
-* Zulip uses the `ts` tool to log the current time on every line of
-  the output in our Travis CI scripts.  You can use this output to
-  determine which steps are actually consuming a lot of time.
-
-* For performance issues,
-  [this statistics tool](https://scribu.github.io/travis-stats/#zulip/zulip/master)
-  can give you test runtime history data that can help with
-  determining when a performance issue was introduced and whether it
-  was fixed.  Note you need to click the "Run" button for it to do
-  anything.
-
-* You can [sign up your personal repo for Travis CI][travis-fork] so
-  that every remote branch you push will be tested, which can be
-  helpful when debugging something complicated.
-
-[travis-fork]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork
-
-### Performance optimizations
-
-#### Caching
-
-We cache the following as well apart from what is mentioned in CircleCI
-caching section.
-
-* Built/downloaded emoji sprite sheets and data.
-
-This is probably worth eventually adding to the CircleCI caches, but
-because it only saves ~5s, it hasn't been a priority yet.
-
-#### Uninstalling packages
-
-In the production suite, we run `apt-get upgrade` at some point
-(effectively, because the Zulip installer does).  This carries a huge
-performance cost in Travis CI, because (1) they don't keep their test
-systems up to date and (2) literally everything is installed in their
-build workers (e.g. several copies of Postgres, Java, MySQL, etc.).
-
-In order to make Zulip's tests performance reasonably well, we
-uninstall (or mark with `apt-mark hold`) many of these dependencies
-that are irrelevant to Zulip in
-[`tools/ci/setup-production`][setup-production].
-
-[setup-production]: https://github.com/zulip/zulip/blob/master/tools/ci/setup-production

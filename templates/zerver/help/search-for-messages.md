@@ -5,13 +5,15 @@ the search bar at the top of the screen.
 
 ## Example
 
-* `stream:design has:link is:starred new logo`
+* `stream:design has:link -is:starred new logo`
 
-Searches for messages in `#design` that have a link, that you starred, and
-that have the words `new` and `logo`.
+Searches for messages in `#design` that have a link, that you haven't
+starred, and that contain the words `new` and `logo`.
 
 The permalink for that search (web only) will look something like
-`https://your-zulip-url/#narrow/stream/123-design/has/link/is/starred/search/new.20logo`.
+this:
+
+`https://your-zulip-url/#narrow/stream/123-design/has/link/-is/starred/search/new.20logo`.
 
 ## List of operators
 
@@ -34,9 +36,11 @@ Here is the **full list of search operators**.
 * `streams:public`: Search the history of all [public
   streams](/help/change-the-privacy-of-a-stream) in the organization.
 
-* `is:alerted`: See [alert words](/help/add-an-alert-word).
+* `is:alerted`: See [alert words](/help/pm-mention-alert-notifications#alert-words).
 * `is:mentioned`: See [mentions](/help/mention-a-user-or-group).
 * `is:starred`: See [starred messages](/help/star-a-message).
+* `is:resolved`: Search messages in [resolved topics](/help/resolve-a-topic).
+* `-is:resolved`: Search messages in [unresolved topics](/help/resolve-a-topic).
 * `is:unread`
 * `has:link`
 * `has:image`
@@ -46,6 +50,13 @@ Here is the **full list of search operators**.
 * `group-pm-with:ada@zulip.com,bob@zulip.com`: Search all group
   private messages that include Ada and Bob.
 
+### Excluding messages
+
+Zulip's search operators can be negated, to exclude messages matching
+the rule.  For example, `stream:design -is:resolved -has:image` will
+match all messages that don't contain an image and were sent to
+unresolved topics in the `#design` stream.
+
 ## Searching shared history
 
 Zulip's [stream permissions](/help/stream-permissions) model allows
@@ -54,7 +65,7 @@ shared history](/help/stream-permissions), including messages sent
 before you joined the stream (or organization) or those sent to public
 streams you are not subscribed to.
 
-By default, Zulip searches messages in your personal history, i.e. the
+By default, Zulip searches messages in your history, i.e. the
 messages you actually received.  This avoids cluttering search results
 with irrelevant messages from public streams you're not interested in.
 
@@ -87,4 +98,3 @@ class="emoji-small"/>.
 Note that Zulip ignores common words like `a`, `the`, and about 100
 others. A quirk in Zulip's current implementation means that if all of your
 keywords are ignored, we'll return 0 search results.
-

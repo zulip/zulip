@@ -13,7 +13,7 @@
             "href":"https://api.bitbucket.org/2.0/users/kolaszek"
          }
       },
-      "username":"kolaszek",
+      "nickname":"Tomasz Kolaszek",
       "type":"user"
    },
    "comment":{
@@ -37,7 +37,7 @@
                "href":"https://api.bitbucket.org/2.0/users/kolaszek"
             }
          },
-         "username":"kolaszek",
+         "nickname":"Tomasz Kolaszek",
          "type":"user"
       },
       "created_on":"2016-07-04T17:38:33.962551+00:00",
@@ -80,7 +80,7 @@
                "href":"https://api.bitbucket.org/2.0/users/kolaszek"
             }
          },
-         "username":"kolaszek",
+         "nickname":"Tomasz Kolaszek",
          "type":"user"
       },
       "type":"repository",
@@ -108,7 +108,7 @@
                "href":"https://api.bitbucket.org/2.0/users/kolaszek"
             }
          },
-         "username":"kolaszek",
+         "nickname":"Tomasz Kolaszek",
          "type":"user"
       },
       "links":{
@@ -180,7 +180,7 @@
                "href":"https://api.bitbucket.org/2.0/users/kolaszek"
             }
          },
-         "username":"kolaszek",
+         "nickname":"Tomasz Kolaszek",
          "type":"user"
       }
    }

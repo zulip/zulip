@@ -9,7 +9,7 @@ stream basis.
 
 1. Hover over the stream in the left sidebar.
 
-2. Click the down chevron (<i class="fa fa-chevron-down"></i>) to the
+2. Click the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>) to the
    right of the stream.
 
 3. Click **Stream settings**.
@@ -35,4 +35,9 @@ explicitly set a notification preference.
 
 ## Related articles
 
+* [Desktop notifications](/help/desktop-notifications)
+* [Email notifications](/help/email-notifications)
+* [Mobile notifications](/help/mobile-notifications)
 * [Mute a stream](/help/mute-a-stream)
+* [Mute a topic](/help/mute-a-topic)
+* [PMs, mentions, and alerts](/help/pm-mention-alert-notifications)

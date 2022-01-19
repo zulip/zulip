@@ -1,3 +1,8 @@
+import Handlebars from "handlebars/runtime";
+
+import {default_html_elements, intl} from "./i18n";
+import * as util from "./util";
+
 // Below, we register Zulip-specific extensions to the handlebars API.
 //
 // IMPORTANT: When adding a new handlebars helper, update the
@@ -10,13 +15,11 @@
 // Furthermore, waiting for DOM ready would introduce race conditions with
 // other DOM-ready callbacks that attempt to render templates.
 
-Handlebars.registerHelper('plural', function (condition, one, other) {
-    return condition === 1 ? one : other;
-});
-
 Handlebars.registerHelper({
-    eq: function (a, b) { return a === b; },
-    and: function (...args) {
+    eq(a, b) {
+        return a === b;
+    },
+    and(...args) {
         args.pop(); // Handlebars options
         if (args.length === 0) {
             return true;
@@ -29,7 +32,7 @@ Handlebars.registerHelper({
         }
         return last;
     },
-    or: function (...args) {
+    or(...args) {
         args.pop(); // Handlebars options
         if (args.length === 0) {
             return false;
@@ -42,49 +45,62 @@ Handlebars.registerHelper({
         }
         return last;
     },
-    not: function (a) { return !a || Handlebars.Utils.isEmpty(a); },
+    not(a) {
+        return !a || Handlebars.Utils.isEmpty(a);
+    },
 });
 
-// Note that this i18n caching strategy does not allow us to support
-// live-updating the UI language without reloading the Zulip browser
-// window.  That constraint would be very hard to change in any case,
-// though, because of how Zulip renders some strings using the backend
-// Jinja2 templating engine, so we don't consider this important.
-const t_cache = new Map();
-
-Handlebars.registerHelper('t', function (i18n_key) {
+Handlebars.registerHelper("t", (message) => {
     // Marks a string for translation.
     // Example usage:
     //     {{t "some English text"}}
 
-    const cache_result = t_cache.get(i18n_key);
-    if (cache_result !== undefined) {
-        return cache_result;
-    }
-    const result = i18n.t(i18n_key);
-    const safe_result = new Handlebars.SafeString(result);
-    t_cache.set(i18n_key, safe_result);
-    return safe_result;
+    const descriptor = {id: message, defaultMessage: message};
+    return intl.formatMessage(descriptor);
 });
 
-Handlebars.registerHelper('tr', function (context, options) {
+Handlebars.registerHelper("tr", function (options) {
     // Marks a block for translation.
     // Example usage 1:
-    //     {{#tr context}}
+    //     {{#tr}}
     //         <p>some English text</p>
     //     {{/tr}}
     //
     // Example usage 2:
-    //     {{#tr context}}
-    //         <p>This __variable__ will get value from context</p>
+    //     {{#tr}}
+    //         <p>This {variable} will get value from the current context</p>
     //     {{/tr}}
     //
-    // Notes:
-    //     1. `context` is very important. It can be `this` or an
-    //        object or key of the current context.
-    //     2. Use `__` instead of `{{` and `}}` to declare expressions
-    const result = i18n.t(options.fn(context).trim().split("\n").map(s => s.trim()).join(" "), context);
+    // Note: use `{` and `}` instead of `{{` and `}}` to declare
+    // variables.
+    const message = options
+        .fn(this)
+        .trim()
+        .split("\n")
+        .map((s) => s.trim())
+        .join(" ");
+    const descriptor = {id: message, defaultMessage: message};
+    const result = intl.formatMessage(descriptor, {
+        ...default_html_elements,
+        ...Object.fromEntries(
+            Object.entries(options.fn.partials ?? {}).map(([name, value]) => [
+                name,
+                (s) => value(this, {data: {"partial-block": () => s.join("")}}),
+            ]),
+        ),
+        ...Object.fromEntries(
+            Object.entries(this ?? {}).map(([key, value]) => [
+                key,
+                Handlebars.Utils.escapeExpression(value),
+            ]),
+        ),
+    });
     return new Handlebars.SafeString(result);
 });
 
-window.templates = exports;
+Handlebars.registerHelper(
+    "rendered_markdown",
+    (content) => new Handlebars.SafeString(util.clean_user_content_links(content)),
+);
+
+Handlebars.registerHelper("numberFormat", (number) => number.toLocaleString());

@@ -1,0 +1,13 @@
+<% if @tornado_ports.length > 1 -%>
+<% @tornado_ports.each do |port| -%>
+upstream tornado<%= port %> {
+    server 127.0.0.1:<%= port %>;
+    keepalive 10000;
+}
+<% end -%>
+<% else -%>
+upstream tornado {
+    server 127.0.0.1:9800;
+    keepalive 10000;
+}
+<% end -%>

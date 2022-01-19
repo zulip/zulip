@@ -1,303 +1,92 @@
-set_global('$', global.make_zjquery());
-set_global('blueslip', global.make_zblueslip());
+"use strict";
 
-let filter_key_handlers;
+const {strict: assert} = require("assert");
 
-const _page_params = {
-    realm_users: [],
-    user_id: 999,
-};
+const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
+const $ = require("../zjsunit/zjquery");
+const {page_params, user_settings} = require("../zjsunit/zpage_params");
+
+const window_stub = $.create("window-stub");
+set_global("to_$", () => window_stub);
+$(window).idle = () => {};
 
 const _document = {
-    hasFocus: function () {
+    hasFocus() {
         return true;
     },
 };
 
-const _channel = {};
+const channel = mock_esm("../../static/js/channel");
+const compose_state = mock_esm("../../static/js/compose_state");
+const padded_widget = mock_esm("../../static/js/padded_widget");
+const pm_list = mock_esm("../../static/js/pm_list");
+const popovers = mock_esm("../../static/js/popovers");
+const resize = mock_esm("../../static/js/resize");
+const scroll_util = mock_esm("../../static/js/scroll_util");
+const watchdog = mock_esm("../../static/js/watchdog");
 
-const _ui = {
-    get_content_element: element => element,
-};
+set_global("document", _document);
 
-const _keydown_util = {
-    handle: (opts) => {
-        filter_key_handlers = opts.handlers;
-    },
-};
-
-const _compose_state = {};
-
-const _scroll_util = {
-    scroll_element_into_container: () => {},
-};
-
-const _pm_list = {
-    update_private_messages: () => {},
-};
-
-const _popovers = {
-    hide_all_except_sidebars: function () {},
-    hide_all: function () {},
-    show_userlist_sidebar: function () {
-        $('.column-right').addClass('expanded');
-    },
-};
-
-const _stream_popover = {
-    show_streamlist_sidebar: function () {
-        $('.column-left').addClass('expanded');
-    },
-};
-
-const _resize = {
-    resize_page_components: () => {},
-};
-
-set_global('padded_widget', {
-    update_padding: () => {},
-});
-set_global('channel', _channel);
-set_global('compose_state', _compose_state);
-set_global('document', _document);
-set_global('keydown_util', _keydown_util);
-set_global('page_params', _page_params);
-set_global('pm_list', _pm_list);
-set_global('popovers', _popovers);
-set_global('resize', _resize);
-set_global('scroll_util', _scroll_util);
-set_global('stream_popover', _stream_popover);
-set_global('ui', _ui);
-
-zrequire('compose_fade');
-set_global('Handlebars', global.make_handlebars());
-zrequire('unread');
-zrequire('hash_util');
-zrequire('narrow');
-zrequire('presence');
-zrequire('people');
-zrequire('buddy_data');
-zrequire('buddy_list');
-zrequire('user_search');
-zrequire('user_status');
-zrequire('list_cursor');
-zrequire('activity');
+const huddle_data = zrequire("huddle_data");
+const compose_fade = zrequire("compose_fade");
+const keydown_util = zrequire("keydown_util");
+const muted_users = zrequire("muted_users");
+const narrow = zrequire("narrow");
+const presence = zrequire("presence");
+const people = zrequire("people");
+const buddy_data = zrequire("buddy_data");
+const {buddy_list} = zrequire("buddy_list");
+const user_status = zrequire("user_status");
+const activity = zrequire("activity");
 
 const me = {
-    email: 'me@zulip.com',
+    email: "me@zulip.com",
     user_id: 999,
-    full_name: 'Me Myself',
+    full_name: "Me Myself",
 };
 
 const alice = {
-    email: 'alice@zulip.com',
+    email: "alice@zulip.com",
     user_id: 1,
-    full_name: 'Alice Smith',
+    full_name: "Alice Smith",
 };
 const fred = {
-    email: 'fred@zulip.com',
+    email: "fred@zulip.com",
     user_id: 2,
     full_name: "Fred Flintstone",
 };
 const jill = {
-    email: 'jill@zulip.com',
+    email: "jill@zulip.com",
     user_id: 3,
-    full_name: 'Jill Hill',
+    full_name: "Jill Hill",
 };
 const mark = {
-    email: 'mark@zulip.com',
+    email: "mark@zulip.com",
     user_id: 4,
-    full_name: 'Marky Mark',
+    full_name: "Marky Mark",
 };
 const norbert = {
-    email: 'norbert@zulip.com',
+    email: "norbert@zulip.com",
     user_id: 5,
-    full_name: 'Norbert Oswald',
+    full_name: "Norbert Oswald",
 };
 
 const zoe = {
-    email: 'zoe@example.com',
+    email: "zoe@example.com",
     user_id: 6,
-    full_name: 'Zoe Yang',
+    full_name: "Zoe Yang",
 };
 
-people.add(alice);
-people.add(fred);
-people.add(jill);
-people.add(mark);
-people.add(norbert);
-people.add(zoe);
-people.add(me);
+people.add_active_user(alice);
+people.add_active_user(fred);
+people.add_active_user(jill);
+people.add_active_user(mark);
+people.add_active_user(norbert);
+people.add_active_user(zoe);
+people.add_active_user(me);
 people.initialize_current_user(me.user_id);
-
-const real_update_huddles = activity.update_huddles;
-activity.update_huddles = () => {};
-
-const presence_info = new Map();
-presence_info.set(alice.user_id, { status: 'inactive' });
-presence_info.set(fred.user_id, { status: 'active' });
-presence_info.set(jill.user_id, { status: 'active' });
-
-presence.presence_info = presence_info;
-
-// Simulate a small window by having the
-// fill_screen_with_content render the entire
-// list in one pass.  We will do more refined
-// testing in the buddy_list node tests.
-buddy_list.fill_screen_with_content = () => {
-    buddy_list.render_more({
-        chunk_size: 100,
-    });
-};
-
-run_test('get_status', () => {
-    assert.equal(presence.get_status(page_params.user_id), "active");
-    assert.equal(presence.get_status(alice.user_id), "inactive");
-    assert.equal(presence.get_status(fred.user_id), "active");
-    assert.equal(presence.get_status(zoe.user_id), "offline");
-});
-
-run_test('reload_defaults', () => {
-    blueslip.set_test_data('warn', 'get_filter_text() is called before initialization');
-    assert.equal(activity.get_filter_text(), '');
-    assert.equal(blueslip.get_test_logs('warn').length, 1);
-    blueslip.clear_test_data();
-});
-
-run_test('sort_users', () => {
-    const user_ids = [alice.user_id, fred.user_id, jill.user_id];
-
-    buddy_data.sort_users(user_ids);
-
-    assert.deepEqual(user_ids, [
-        fred.user_id,
-        jill.user_id,
-        alice.user_id,
-    ]);
-});
-
-run_test('process_loaded_messages', () => {
-
-    const huddle1 = 'jill@zulip.com,norbert@zulip.com';
-    const timestamp1 = 1382479029; // older
-
-    const huddle2 = 'alice@zulip.com,fred@zulip.com';
-    const timestamp2 = 1382479033; // newer
-
-    const old_timestamp = 1382479000;
-
-    const messages = [
-        {
-            type: 'private',
-            display_recipient: [{id: jill.user_id}, {id: norbert.user_id}],
-            timestamp: timestamp1,
-        },
-        {
-            type: 'stream',
-        },
-        {
-            type: 'private',
-            display_recipient: [{id: me.user_id}], // PM to myself
-        },
-        {
-            type: 'private',
-            display_recipient: [{id: alice.user_id}, {id: fred.user_id}],
-            timestamp: timestamp2,
-        },
-        {
-            type: 'private',
-            display_recipient: [{id: fred.user_id}, {id: alice.user_id}],
-            timestamp: old_timestamp,
-        },
-    ];
-
-    activity.process_loaded_messages(messages);
-
-    const user_ids_string1 = people.emails_strings_to_user_ids_string(huddle1);
-    const user_ids_string2 = people.emails_strings_to_user_ids_string(huddle2);
-    assert.deepEqual(activity.get_huddles(), [user_ids_string2, user_ids_string1]);
-});
-
-run_test('full_huddle_name', () => {
-    function full_name(emails_string) {
-        const user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
-        return activity.full_huddle_name(user_ids_string);
-    }
-
-    assert.equal(
-        full_name('alice@zulip.com,jill@zulip.com'),
-        'Alice Smith, Jill Hill');
-
-    assert.equal(
-        full_name('alice@zulip.com,fred@zulip.com,jill@zulip.com'),
-        'Alice Smith, Fred Flintstone, Jill Hill');
-});
-
-run_test('short_huddle_name', () => {
-    function short_name(emails_string) {
-        const user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
-        return activity.short_huddle_name(user_ids_string);
-    }
-
-    assert.equal(
-        short_name('alice@zulip.com'),
-        'Alice Smith');
-
-    assert.equal(
-        short_name('alice@zulip.com,jill@zulip.com'),
-        'Alice Smith, Jill Hill');
-
-    assert.equal(
-        short_name('alice@zulip.com,fred@zulip.com,jill@zulip.com'),
-        'Alice Smith, Fred Flintstone, Jill Hill');
-
-    assert.equal(
-        short_name('alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com'),
-        'Alice Smith, Fred Flintstone, Jill Hill, + 1 other');
-
-    assert.equal(
-        short_name('alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com,norbert@zulip.com'),
-        'Alice Smith, Fred Flintstone, Jill Hill, + 2 others');
-
-});
-
-run_test('huddle_fraction_present', () => {
-    let huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
-    huddle = people.emails_strings_to_user_ids_string(huddle);
-
-    let presence_info = new Map();
-    presence_info.set(alice.user_id, { status: 'active' }); // counts as present
-    presence_info.set(fred.user_id, { status: 'idle' }); // doest not count as present
-    // jill not in list
-    presence_info.set(mark.user_id, { status: 'offline' }); // does not count
-    presence.presence_info = presence_info;
-
-    assert.equal(
-        buddy_data.huddle_fraction_present(huddle),
-        0.5);
-
-    huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
-    huddle = people.emails_strings_to_user_ids_string(huddle);
-    presence_info = new Map();
-    presence_info.set(alice.user_id, { status: 'idle' });
-    presence_info.set(fred.user_id, { status: 'idle' }); // does not count as present
-    // jill not in list
-    presence_info.set(mark.user_id, { status: 'offline' }); // does not count
-    presence.presence_info = presence_info;
-
-    assert.equal(
-        buddy_data.huddle_fraction_present(huddle),
-        undefined);
-});
-
-presence.presence_info = new Map();
-presence.presence_info.set(alice.user_id, { status: activity.IDLE });
-presence.presence_info.set(fred.user_id, { status: activity.ACTIVE });
-presence.presence_info.set(jill.user_id, { status: activity.ACTIVE });
-presence.presence_info.set(mark.user_id, { status: activity.IDLE });
-presence.presence_info.set(norbert.user_id, { status: activity.ACTIVE });
-presence.presence_info.set(zoe.user_id, { status: activity.ACTIVE });
-presence.presence_info.set(me.user_id, { status: activity.ACTIVE });
 
 function clear_buddy_list() {
     buddy_list.populate({
@@ -305,20 +94,131 @@ function clear_buddy_list() {
     });
 }
 
-function reset_setup() {
-    $.clear_all_elements();
-    activity.set_cursor_and_filter();
+let presence_info;
 
-    buddy_list.container = $('#user_presences');
+function test(label, f) {
+    run_test(label, (helpers) => {
+        user_settings.presence_enabled = true;
+        // Simulate a small window by having the
+        // fill_screen_with_content render the entire
+        // list in one pass.  We will do more refined
+        // testing in the buddy_list node tests.
+        helpers.override(buddy_list, "fill_screen_with_content", () => {
+            buddy_list.render_more({
+                chunk_size: 100,
+            });
+        });
 
-    buddy_list.container.append = () => {};
-    clear_buddy_list();
+        presence_info = new Map();
+        presence.__Rewire__("presence_info", presence_info);
+
+        presence_info.set(alice.user_id, {status: "active"});
+        presence_info.set(fred.user_id, {status: "active"});
+        presence_info.set(jill.user_id, {status: "active"});
+        presence_info.set(mark.user_id, {status: "idle"});
+        presence_info.set(norbert.user_id, {status: "active"});
+        presence_info.set(zoe.user_id, {status: "active"});
+        presence_info.set(me.user_id, {status: "active"});
+
+        clear_buddy_list();
+        muted_users.set_muted_users([]);
+
+        activity.clear_for_testing();
+        activity.set_cursor_and_filter();
+
+        f(helpers);
+    });
 }
 
-reset_setup();
+run_test("reload_defaults", () => {
+    activity.clear_for_testing();
+    blueslip.expect("warn", "get_filter_text() is called before initialization");
+    assert.equal(activity.get_filter_text(), "");
+});
 
-run_test('presence_list_full_update', () => {
-    $('.user-list-filter').focus();
+test("get_status", () => {
+    page_params.realm_users = [];
+    page_params.user_id = 999;
+
+    assert.equal(presence.get_status(page_params.user_id), "active");
+    assert.equal(presence.get_status(alice.user_id), "active");
+    assert.equal(presence.get_status(mark.user_id), "idle");
+    assert.equal(presence.get_status(fred.user_id), "active");
+
+    user_settings.presence_enabled = false;
+    assert.equal(presence.get_status(page_params.user_id), "offline");
+    user_settings.presence_enabled = true;
+    assert.equal(presence.get_status(page_params.user_id), "active");
+
+    presence_info.delete(zoe.user_id);
+    assert.equal(presence.get_status(zoe.user_id), "offline");
+
+    presence_info.set(alice.user_id, {status: "whatever"});
+    assert.equal(presence.get_status(alice.user_id), "whatever");
+});
+
+test("sort_users", () => {
+    const user_ids = [alice.user_id, fred.user_id, jill.user_id];
+
+    presence_info.delete(alice.user_id);
+
+    buddy_data.sort_users(user_ids);
+
+    assert.deepEqual(user_ids, [fred.user_id, jill.user_id, alice.user_id]);
+});
+
+test("huddle_data.process_loaded_messages", () => {
+    // TODO: move this to a module for just testing `huddle_data`
+
+    const huddle1 = "jill@zulip.com,norbert@zulip.com";
+    const timestamp1 = 1382479029; // older
+
+    const huddle2 = "alice@zulip.com,fred@zulip.com";
+    const timestamp2 = 1382479033; // newer
+
+    const old_timestamp = 1382479000;
+
+    const messages = [
+        {
+            type: "private",
+            display_recipient: [{id: jill.user_id}, {id: norbert.user_id}],
+            timestamp: timestamp1,
+        },
+        {
+            type: "stream",
+        },
+        {
+            type: "private",
+            display_recipient: [{id: me.user_id}], // PM to myself
+        },
+        {
+            type: "private",
+            display_recipient: [{id: alice.user_id}, {id: fred.user_id}],
+            timestamp: timestamp2,
+        },
+        {
+            type: "private",
+            display_recipient: [{id: fred.user_id}, {id: alice.user_id}],
+            timestamp: old_timestamp,
+        },
+    ];
+
+    huddle_data.process_loaded_messages(messages);
+
+    const user_ids_string1 = people.emails_strings_to_user_ids_string(huddle1);
+    const user_ids_string2 = people.emails_strings_to_user_ids_string(huddle2);
+    assert.deepEqual(huddle_data.get_huddles(), [user_ids_string2, user_ids_string1]);
+});
+
+test("presence_list_full_update", ({override, mock_template}) => {
+    override(padded_widget, "update_padding", () => {});
+
+    mock_template("user_presence_rows.hbs", false, (data) => {
+        assert.equal(data.users.length, 7);
+        assert.equal(data.users[0].user_id, me.user_id);
+    });
+
+    $(".user-list-filter").trigger("focus");
     compose_state.private_message_recipient = () => fred.email;
     compose_fade.set_focused_recipient("private");
 
@@ -326,104 +226,90 @@ run_test('presence_list_full_update', () => {
 
     assert.deepEqual(user_ids, [
         me.user_id,
+        alice.user_id,
         fred.user_id,
         jill.user_id,
         norbert.user_id,
         zoe.user_id,
-        alice.user_id,
         mark.user_id,
     ]);
 });
 
 function simulate_right_column_buddy_list() {
-    $('.user-list-filter').closest = function (selector) {
+    $(".user-list-filter").closest = (selector) => {
         assert.equal(selector, ".app-main [class^='column-']");
-        return $.create('right-sidebar').addClass('column-right');
-    };
-}
-
-function simulate_left_column_buddy_list() {
-    $('.user-list-filter').closest = function (selector) {
-        assert.equal(selector, ".app-main [class^='column-']");
-        return $.create('left-sidebar').addClass('column-left');
+        return $.create("right-sidebar").addClass("column-right");
     };
 }
 
 function buddy_list_add(user_id, stub) {
     if (stub.attr) {
-        stub.attr('data-user-id', user_id);
+        stub.attr("data-user-id", user_id);
     }
     stub.length = 1;
-    const sel = `li.user_sidebar_entry[data-user-id='${user_id}']`;
-    $('#user_presences').set_find_results(sel, stub);
+    const sel = `li.user_sidebar_entry[data-user-id='${CSS.escape(user_id)}']`;
+    $("#user_presences").set_find_results(sel, stub);
 }
 
-run_test('PM_update_dom_counts', () => {
-    const value = $.create('alice-value');
-    const count = $.create('alice-count');
+test("PM_update_dom_counts", () => {
+    const count = $.create("alice-unread-count");
     const pm_key = alice.user_id.toString();
-    const li = $.create('alice stub');
+    const li = $.create("alice stub");
     buddy_list_add(pm_key, li);
-    count.set_find_results('.value', value);
-    li.set_find_results('.count', count);
-    count.set_parents_result('li', li);
+    li.set_find_results(".unread_count", count);
+    count.set_parents_result("li", li);
 
     const counts = new Map();
     counts.set(pm_key, 5);
-    li.addClass('user_sidebar_entry');
+    li.addClass("user_sidebar_entry");
 
     activity.update_dom_with_unread_counts({pm_count: counts});
-    assert(li.hasClass('user-with-count'));
-    assert.equal(value.text(), "5");
+    assert.equal(count.text(), "5");
 
     counts.set(pm_key, 0);
 
     activity.update_dom_with_unread_counts({pm_count: counts});
-    assert(!li.hasClass('user-with-count'));
-    assert.equal(value.text(), '');
+    assert.equal(count.text(), "");
 });
 
-run_test('group_update_dom_counts', () => {
-    const value = $.create('alice-fred-value');
-    const count = $.create('alice-fred-count');
-    const pm_key = alice.user_id.toString() + "," + fred.user_id.toString();
-    const li_selector = "li.group-pms-sidebar-entry[data-user-ids='" + pm_key + "']";
-    const li = $(li_selector);
-    count.set_find_results('.value', value);
-    li.set_find_results('.count', count);
-    count.set_parent(li);
+test("handlers", ({override, override_rewire, mock_template}) => {
+    let filter_key_handlers;
 
-    const counts = new Map();
-    counts.set(pm_key, 5);
-    li.addClass('group-pms-sidebar-entry');
+    mock_template("user_presence_rows.hbs", false, () => {});
 
-    activity.update_dom_with_unread_counts({pm_count: counts});
-    assert(li.hasClass('group-with-count'));
-    assert.equal(value.text(), "5");
+    override(keydown_util, "handle", (opts) => {
+        filter_key_handlers = opts.handlers;
+    });
+    override(scroll_util, "scroll_element_into_container", () => {});
+    override(padded_widget, "update_padding", () => {});
+    override(popovers, "hide_all", () => {});
+    override(popovers, "hide_all_except_sidebars", () => {});
+    override(popovers, "show_userlist_sidebar", () => {});
+    override(resize, "resize_sidebars", () => {});
 
-    counts.set(pm_key, 0);
-
-    activity.update_dom_with_unread_counts({pm_count: counts});
-    assert(!li.hasClass('group-with-count'));
-    assert.equal(value.text(), '');
-});
-
-run_test('handlers', () => {
     // This is kind of weak coverage; we are mostly making sure that
     // keys and clicks got mapped to functions that don't crash.
     let me_li;
     let alice_li;
     let fred_li;
 
+    let narrowed;
+
+    override_rewire(narrow, "by", (method, email) => {
+        assert.equal(email, "alice@zulip.com");
+        narrowed = true;
+    });
+
     function init() {
-        reset_setup();
+        $.clear_all_elements();
         buddy_list.populate({
             keys: [me.user_id, alice.user_id, fred.user_id],
         });
+        activity.set_cursor_and_filter();
 
-        me_li = $.create('me stub');
-        alice_li = $.create('alice stub');
-        fred_li = $.create('fred stub');
+        me_li = $.create("me stub");
+        alice_li = $.create("alice stub");
+        fred_li = $.create("fred stub");
 
         buddy_list_add(me.user_id, me_li);
         buddy_list_add(alice.user_id, alice_li);
@@ -433,9 +319,9 @@ run_test('handlers', () => {
     (function test_filter_keys() {
         init();
         activity.user_cursor.go_to(alice.user_id);
-        filter_key_handlers.down_arrow();
-        filter_key_handlers.up_arrow();
-    }());
+        filter_key_handlers.ArrowDown();
+        filter_key_handlers.ArrowUp();
+    })();
 
     (function test_click_filter() {
         init();
@@ -443,83 +329,98 @@ run_test('handlers', () => {
             stopPropagation: () => {},
         };
 
-        const handler = $('.user-list-filter').get_on_handler('focus');
+        const handler = $(".user-list-filter").get_on_handler("focus");
         handler(e);
-    }());
+    })();
 
     (function test_click_header_filter() {
         init();
         const e = {};
-        const handler = $('#userlist-header').get_on_handler('click');
+        const handler = $("#userlist-header").get_on_handler("click");
 
         simulate_right_column_buddy_list();
 
         handler(e);
         // and click again
         handler(e);
-    }());
+    })();
 
     (function test_enter_key() {
         init();
-        let narrowed;
 
-        narrow.by = (method, email) => {
-            assert.equal(email, 'alice@zulip.com');
-            narrowed = true;
-        };
-
-        $('.user-list-filter').val('al');
+        $(".user-list-filter").val("al");
+        narrowed = false;
         activity.user_cursor.go_to(alice.user_id);
-
-        filter_key_handlers.enter_key();
-        assert(narrowed);
+        filter_key_handlers.Enter();
+        assert.ok(narrowed);
 
         // get line coverage for cleared case
         activity.user_cursor.clear();
-        filter_key_handlers.enter_key();
-    }());
+        filter_key_handlers.Enter();
+    })();
 
     (function test_click_handler() {
         init();
         // We wire up the click handler in click_handlers.js,
         // so this just tests the called function.
-        let narrowed;
-
-        narrow.by = (method, email) => {
-            assert.equal(email, 'alice@zulip.com');
-            narrowed = true;
-        };
-
+        narrowed = false;
         activity.narrow_for_user({li: alice_li});
-        assert(narrowed);
-    }());
+        assert.ok(narrowed);
+    })();
 
     (function test_blur_filter() {
         init();
         const e = {};
-        const handler = $('.user-list-filter').get_on_handler('blur');
+        const handler = $(".user-list-filter").get_on_handler("blur");
         handler(e);
-    }());
+    })();
 });
 
-presence.presence_info = new Map();
-presence.presence_info.set(alice.user_id, { status: activity.ACTIVE });
-presence.presence_info.set(fred.user_id, { status: activity.ACTIVE });
-presence.presence_info.set(jill.user_id, { status: activity.ACTIVE });
-presence.presence_info.set(mark.user_id, { status: activity.IDLE });
-presence.presence_info.set(norbert.user_id, { status: activity.ACTIVE });
-presence.presence_info.set(zoe.user_id, { status: activity.ACTIVE });
+test("first/prev/next", ({override, mock_template}) => {
+    let rendered_alice;
+    let rendered_fred;
 
-reset_setup();
+    mock_template("user_presence_row.hbs", false, (data) => {
+        if (data.user_id === alice.user_id) {
+            rendered_alice = true;
+            assert.deepEqual(data, {
+                faded: true,
+                href: "#narrow/pm-with/1-alice",
+                is_current_user: false,
+                my_user_status: undefined,
+                name: "Alice Smith",
+                num_unread: 0,
+                user_circle_class: "user_circle_green",
+                user_circle_status: "translated: Active",
+                user_id: alice.user_id,
+                status_emoji_info: undefined,
+            });
+        } else if (data.user_id === fred.user_id) {
+            rendered_fred = true;
+            assert.deepEqual(data, {
+                href: "#narrow/pm-with/2-fred",
+                name: "Fred Flintstone",
+                user_id: fred.user_id,
+                my_user_status: undefined,
+                is_current_user: false,
+                num_unread: 0,
+                user_circle_class: "user_circle_green",
+                user_circle_status: "translated: Active",
+                faded: false,
+                status_emoji_info: undefined,
+            });
+        } else {
+            throw new Error(`we did not expect to have to render a row for  ${data.name}`);
+        }
+    });
 
-run_test('first/prev/next', () => {
-    clear_buddy_list();
+    override(padded_widget, "update_padding", () => {});
 
     assert.equal(buddy_list.first_key(), undefined);
     assert.equal(buddy_list.prev_key(alice.user_id), undefined);
     assert.equal(buddy_list.next_key(alice.user_id), undefined);
 
-    buddy_list.container.append = () => {};
+    override(buddy_list.container, "append", () => {});
 
     activity.redraw_user(alice.user_id);
     activity.redraw_user(fred.user_id);
@@ -530,107 +431,73 @@ run_test('first/prev/next', () => {
 
     assert.equal(buddy_list.next_key(alice.user_id), fred.user_id);
     assert.equal(buddy_list.next_key(fred.user_id), undefined);
+
+    assert.ok(rendered_alice);
+    assert.ok(rendered_fred);
 });
 
-reset_setup();
+test("insert_one_user_into_empty_list", ({override, mock_template}) => {
+    mock_template("user_presence_row.hbs", true, (data, html) => {
+        assert.deepEqual(data, {
+            href: "#narrow/pm-with/1-alice",
+            name: "Alice Smith",
+            user_id: 1,
+            my_user_status: undefined,
+            is_current_user: false,
+            num_unread: 0,
+            user_circle_class: "user_circle_green",
+            user_circle_status: "translated: Active",
+            faded: true,
+            status_emoji_info: undefined,
+        });
+        assert.ok(html.startsWith("<li data-user-id="));
+        return html;
+    });
 
-run_test('filter_user_ids', () => {
-    const user_filter = $('.user-list-filter');
-    user_filter.val(''); // no search filter
-
-    function get_user_ids() {
-        const filter_text = activity.get_filter_text();
-        const user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
-        return user_ids;
-    }
-
-    let user_ids = buddy_data.get_filtered_and_sorted_user_ids();
-    assert.deepEqual(user_ids, [
-        alice.user_id,
-        fred.user_id,
-        jill.user_id,
-        norbert.user_id,
-        zoe.user_id,
-        mark.user_id,
-    ]);
-
-    user_filter.val('abc'); // no match
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, []);
-
-    user_filter.val('fred'); // match fred
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, [fred.user_id]);
-
-    user_filter.val('fred,alice'); // match fred and alice
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
-
-    user_filter.val('fr,al'); // match fred and alice partials
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
-
-    user_filter.val('fr|al'); // test | as OR-operator
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
-
-    presence.presence_info.set(alice.user_id, { status: activity.IDLE });
-    user_filter.val('fr,al'); // match fred and alice partials and idle user
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, [fred.user_id, alice.user_id]);
-
-    $.stub_selector('.user-list-filter', []);
-    presence.presence_info.set(alice.user_id, { status: activity.ACTIVE });
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
-});
-
-run_test('insert_one_user_into_empty_list', () => {
-    let appended_html;
-    $('#user_presences').append = function (html) {
-        appended_html = html;
-    };
-
-    clear_buddy_list();
-    activity.redraw_user(alice.user_id);
-    assert(appended_html.indexOf('data-user-id="1"') > 0);
-    assert(appended_html.indexOf('user_circle_green') > 0);
-});
-
-reset_setup();
-
-run_test('insert_alice_then_fred', () => {
-    clear_buddy_list();
+    override(padded_widget, "update_padding", () => {});
 
     let appended_html;
-    $('#user_presences').append = function (html) {
+    override(buddy_list.container, "append", (html) => {
         appended_html = html;
-    };
+    });
 
     activity.redraw_user(alice.user_id);
-    assert(appended_html.indexOf('data-user-id="1"') > 0);
-    assert(appended_html.indexOf('user_circle_green') > 0);
-
-    activity.redraw_user(fred.user_id);
-    assert(appended_html.indexOf('data-user-id="2"') > 0);
-    assert(appended_html.indexOf('user_circle_green') > 0);
+    assert.ok(appended_html.indexOf('data-user-id="1"') > 0);
+    assert.ok(appended_html.indexOf("user_circle_green") > 0);
 });
 
-reset_setup();
-
-run_test('insert_fred_then_alice_then_rename', () => {
-    clear_buddy_list();
+test("insert_alice_then_fred", ({override, mock_template}) => {
+    mock_template("user_presence_row.hbs", true, (data, html) => html);
 
     let appended_html;
-    $('#user_presences').append = function (html) {
+    override(buddy_list.container, "append", (html) => {
         appended_html = html;
-    };
+    });
+    override(padded_widget, "update_padding", () => {});
+
+    activity.redraw_user(alice.user_id);
+    assert.ok(appended_html.indexOf('data-user-id="1"') > 0);
+    assert.ok(appended_html.indexOf("user_circle_green") > 0);
 
     activity.redraw_user(fred.user_id);
-    assert(appended_html.indexOf('data-user-id="2"') > 0);
-    assert(appended_html.indexOf('user_circle_green') > 0);
+    assert.ok(appended_html.indexOf('data-user-id="2"') > 0);
+    assert.ok(appended_html.indexOf("user_circle_green") > 0);
+});
 
-    const fred_stub = $.create('fred-first');
+test("insert_fred_then_alice_then_rename", ({override, mock_template}) => {
+    mock_template("user_presence_row.hbs", true, (data, html) => html);
+
+    let appended_html;
+    override(buddy_list.container, "append", (html) => {
+        appended_html = html;
+    });
+    override(padded_widget, "update_padding", () => {});
+
+    activity.redraw_user(fred.user_id);
+    assert.ok(appended_html.indexOf('data-user-id="2"') > 0);
+    assert.ok(appended_html.indexOf("user_circle_green") > 0);
+
+    const fred_stub = $.create("fred-first");
     buddy_list_add(fred.user_id, fred_stub);
 
     let inserted_html;
@@ -638,9 +505,14 @@ run_test('insert_fred_then_alice_then_rename', () => {
         inserted_html = html;
     };
 
+    let fred_removed;
+    fred_stub.remove = () => {
+        fred_removed = true;
+    };
+
     activity.redraw_user(alice.user_id);
-    assert(inserted_html.indexOf('data-user-id="1"') > 0);
-    assert(inserted_html.indexOf('user_circle_green') > 0);
+    assert.ok(inserted_html.indexOf('data-user-id="1"') > 0);
+    assert.ok(inserted_html.indexOf("user_circle_green") > 0);
 
     // Next rename fred to Aaron.
     const fred_with_new_name = {
@@ -648,9 +520,9 @@ run_test('insert_fred_then_alice_then_rename', () => {
         user_id: fred.user_id,
         full_name: "Aaron",
     };
-    people.add(fred_with_new_name);
+    people.add_active_user(fred_with_new_name);
 
-    const alice_stub = $.create('alice-first');
+    const alice_stub = $.create("alice-first");
     buddy_list_add(alice.user_id, alice_stub);
 
     alice_stub.before = (html) => {
@@ -658,112 +530,45 @@ run_test('insert_fred_then_alice_then_rename', () => {
     };
 
     activity.redraw_user(fred_with_new_name.user_id);
-    assert(appended_html.indexOf('data-user-id="2"') > 0);
+    assert.ok(fred_removed);
+    assert.ok(appended_html.indexOf('data-user-id="2"') > 0);
 
     // restore old Fred data
-    people.add(fred);
+    people.add_active_user(fred);
 });
 
-// Reset jquery here.
-reset_setup();
-
-run_test('insert_unfiltered_user_with_filter', () => {
+test("insert_unfiltered_user_with_filter", () => {
     // This test only tests that we do not explode when
     // try to insert Fred into a list where he does not
     // match the search filter.
-    const user_filter = $('.user-list-filter');
-    user_filter.val('do-not-match-filter');
+    const user_filter = $(".user-list-filter");
+    user_filter.val("do-not-match-filter");
     activity.redraw_user(fred.user_id);
 });
 
-run_test('realm_presence_disabled', () => {
+test("realm_presence_disabled", () => {
     page_params.realm_presence_disabled = true;
-    unread.set_suppress_unread_counts(false);
 
     activity.redraw_user();
     activity.build_user_sidebar();
-
-    real_update_huddles();
 });
 
-run_test('clear_search', () => {
-    $('.user-list-filter').val('somevalue');
-    activity.user_filter.clear_search();
-    assert.equal($('.user-list-filter').val(), '');
-    activity.user_filter.clear_search();
-    assert($('#user_search_section').hasClass('notdisplayed'));
-});
-
-run_test('escape_search', () => {
-    clear_buddy_list();
-    $('.user-list-filter').val('somevalue');
-    activity.escape_search();
-    assert.equal($('.user-list-filter').val(), '');
-    activity.escape_search();
-    assert($('#user_search_section').hasClass('notdisplayed'));
-});
-
-reset_setup();
-
-run_test('initiate_search', () => {
-    $('.user-list-filter').blur();
-    simulate_right_column_buddy_list();
-    activity.initiate_search();
-    assert.equal($('.column-right').hasClass('expanded'), true);
-    assert.equal($('.user-list-filter').is_focused(), true);
-
-    simulate_left_column_buddy_list();
-    activity.initiate_search();
-    assert.equal($('.column-left').hasClass('expanded'), true);
-    assert.equal($('.user-list-filter').is_focused(), true);
-});
-
-run_test('toggle_filter_display', () => {
-    activity.user_filter.toggle_filter_displayed();
-    assert($('#user_search_section').hasClass('notdisplayed'));
-    $('.user-list-filter').closest = function (selector) {
-        assert.equal(selector, ".app-main [class^='column-']");
-        return $.create('sidebar').addClass('column-right');
+test("redraw_muted_user", () => {
+    muted_users.add_muted_user(mark.user_id);
+    let appended_html;
+    $("#user_presences").append = function (html) {
+        appended_html = html;
     };
-    activity.user_filter.toggle_filter_displayed();
-    assert.equal($('#user_search_section').hasClass('notdisplayed'), false);
+
+    activity.redraw_user(mark.user_id);
+    assert.equal(appended_html, undefined);
 });
 
-run_test('searching', () => {
-    $('.user-list-filter').focus();
-    assert.equal(activity.searching(), true);
-    $('.user-list-filter').blur();
-    assert.equal(activity.searching(), false);
-});
+test("update_presence_info", ({override, override_rewire}) => {
+    override(pm_list, "update_private_messages", () => {});
 
-run_test('update_huddles_and_redraw', () => {
-    const value = $.create('alice-fred-value');
-    const count = $.create('alice-fred-count');
-    const pm_key = alice.user_id.toString() + "," + fred.user_id.toString();
-    const li_selector = "li.group-pms-sidebar-entry[data-user-ids='" + pm_key + "']";
-    const li = $(li_selector);
-    count.set_find_results('.value', value);
-    li.set_find_results('.count', count);
-    count.set_parent(li);
-
-    const real_get_huddles = activity.get_huddles;
-    activity.get_huddles = () => ['1,2'];
-    activity.update_huddles = real_update_huddles;
-    activity.redraw();
-    assert.equal($('#group-pm-list').hasClass('show'), false);
     page_params.realm_presence_disabled = false;
-    activity.redraw();
-    assert.equal($('#group-pm-list').hasClass('show'), true);
-    activity.get_huddles = () => [];
-    activity.redraw();
-    assert.equal($('#group-pm-list').hasClass('show'), false);
-    activity.get_huddles = real_get_huddles;
-    activity.update_huddles = function () {};
-});
 
-reset_setup();
-
-run_test('update_presence_info', () => {
     const server_time = 500;
     const info = {
         website: {
@@ -772,33 +577,43 @@ run_test('update_presence_info', () => {
         },
     };
 
-    buddy_data.matches_filter = () => true;
+    override_rewire(buddy_data, "matches_filter", () => true);
 
-    const alice_li = $.create('alice stub');
+    const alice_li = $.create("alice stub");
     buddy_list_add(alice.user_id, alice_li);
 
     let inserted;
-    buddy_list.insert_or_move = () => {
+    override(buddy_list, "insert_or_move", () => {
         inserted = true;
-    };
+    });
 
     presence.presence_info.delete(me.user_id);
     activity.update_presence_info(me.user_id, info, server_time);
-    assert(inserted);
-    assert.deepEqual(presence.presence_info.get(me.user_id).status, 'active');
+    assert.ok(inserted);
+    assert.deepEqual(presence.presence_info.get(me.user_id).status, "active");
 
     presence.presence_info.delete(alice.user_id);
     activity.update_presence_info(alice.user_id, info, server_time);
-    assert(inserted);
+    assert.ok(inserted);
 
-    const expected = { status: 'active', last_active: 500 };
+    const expected = {status: "active", last_active: 500};
     assert.deepEqual(presence.presence_info.get(alice.user_id), expected);
 });
 
-run_test('initialize', () => {
+test("initialize", ({override, mock_template}) => {
+    mock_template("user_presence_rows.hbs", false, () => {});
+    override(padded_widget, "update_padding", () => {});
+    override(pm_list, "update_private_messages", () => {});
+    override(watchdog, "check_for_unsuspend", () => {});
+
+    let payload;
+    override(channel, "post", (arg) => {
+        payload = arg;
+    });
+
     function clear() {
         $.clear_all_elements();
-        buddy_list.container = $('#user_presences');
+        buddy_list.container = $("#user_presences");
         buddy_list.container.append = () => {};
         clear_buddy_list();
         page_params.presences = {};
@@ -806,82 +621,101 @@ run_test('initialize', () => {
 
     clear();
 
-    $.stub_selector('html', {
-        on: function (name, func) {
-            func();
-        },
-    });
-    $(window).focus = func => func();
-    $(window).idle = () => {};
-
-    channel.post = function (payload) {
-        payload.success({});
-    };
-    global.server_events = {
-        check_for_unsuspend: function () {},
-    };
-
     let scroll_handler_started;
     buddy_list.start_scroll_handler = () => {
         scroll_handler_started = true;
     };
 
-    activity.client_is_active = false;
+    activity.mark_client_idle();
 
+    $(window).off("focus");
     activity.initialize();
+    payload.success({
+        zephyr_mirror_active: true,
+        presences: {},
+    });
+    $(window).trigger("focus");
     clear();
 
-    assert(scroll_handler_started);
-    assert(!activity.new_user_input);
-    assert(!$('#zephyr-mirror-error').hasClass('show'));
-    assert(activity.client_is_active);
-    $(window).idle = function (params) {
+    assert.ok(scroll_handler_started);
+    assert.ok(!activity.new_user_input);
+    assert.ok(!$("#zephyr-mirror-error").hasClass("show"));
+    assert.equal(activity.compute_active_status(), "active");
+
+    $(window).idle = (params) => {
         params.onIdle();
     };
-    channel.post = function (payload) {
-        payload.success({
-            zephyr_mirror_active: false,
-            presences: {},
-        });
-    };
-    global.setInterval = (func) => func();
 
+    set_global("setInterval", (func) => func());
+
+    $(window).off("focus");
     activity.initialize();
+    payload.success({
+        zephyr_mirror_active: false,
+        presences: {},
+    });
 
-    assert($('#zephyr-mirror-error').hasClass('show'));
-    assert(!activity.new_user_input);
-    assert(!activity.client_is_active);
+    assert.ok($("#zephyr-mirror-error").hasClass("show"));
+    assert.ok(!activity.new_user_input);
+    assert.equal(activity.compute_active_status(), "idle");
+
+    // Exercise the mousemove handler, which just
+    // sets a flag.
+    $("html").get_on_handler("mousemove")();
 
     clear();
 });
 
-run_test('away_status', () => {
-    assert(!user_status.is_away(alice.user_id));
+test("away_status", ({override}) => {
+    override(pm_list, "update_private_messages", () => {});
+    override(buddy_list, "insert_or_move", () => {});
+
+    assert.ok(!user_status.is_away(alice.user_id));
     activity.on_set_away(alice.user_id);
-    assert(user_status.is_away(alice.user_id));
+    assert.ok(user_status.is_away(alice.user_id));
     activity.on_revoke_away(alice.user_id);
-    assert(!user_status.is_away(alice.user_id));
+    assert.ok(!user_status.is_away(alice.user_id));
 });
 
-run_test('electron_bridge', () => {
-    activity.client_is_active = false;
-    window.electron_bridge = undefined;
-    assert.equal(activity.compute_active_status(), activity.IDLE);
+test("electron_bridge", ({override_rewire}) => {
+    override_rewire(activity, "send_presence_to_server", () => {});
 
-    activity.client_is_active = true;
-    assert.equal(activity.compute_active_status(), activity.ACTIVE);
+    function with_bridge_idle(bridge_idle, f) {
+        with_field(
+            window,
+            "electron_bridge",
+            {
+                get_idle_on_system: () => bridge_idle,
+            },
+            () => {
+                f();
+            },
+        );
+    }
 
-    window.electron_bridge = {
-        idle_on_system: true,
-    };
-    assert.equal(activity.compute_active_status(), activity.IDLE);
-    activity.client_is_active = false;
-    assert.equal(activity.compute_active_status(), activity.IDLE);
+    with_bridge_idle(true, () => {
+        activity.mark_client_idle();
+        assert.equal(activity.compute_active_status(), "idle");
+        activity.mark_client_active();
+        assert.equal(activity.compute_active_status(), "idle");
+    });
 
-    window.electron_bridge = {
-        idle_on_system: false,
-    };
-    assert.equal(activity.compute_active_status(), activity.ACTIVE);
-    activity.client_is_active = true;
-    assert.equal(activity.compute_active_status(), activity.ACTIVE);
+    with_field(window, "electron_bridge", undefined, () => {
+        activity.mark_client_idle();
+        assert.equal(activity.compute_active_status(), "idle");
+        activity.mark_client_active();
+        assert.equal(activity.compute_active_status(), "active");
+    });
+
+    with_bridge_idle(false, () => {
+        activity.mark_client_idle();
+        assert.equal(activity.compute_active_status(), "active");
+        activity.mark_client_active();
+        assert.equal(activity.compute_active_status(), "active");
+    });
+});
+
+test("test_send_or_receive_no_presence_for_spectator", () => {
+    page_params.is_spectator = true;
+    activity.send_presence_to_server();
 });

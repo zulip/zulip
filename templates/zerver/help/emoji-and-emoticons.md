@@ -37,7 +37,7 @@ emoji picker, or hover over the emoji in a message.
 
 ### Use emoticons
 
-Use `:)` and `:/` instead of typing `:slight_smile:` and `:confused:`.
+Use `:)` and `:/` instead of typing `:smile:` and `:confused:`.
 
 {start_tabs}
 
@@ -52,25 +52,24 @@ The list of supported emoticons is available
 
 ### Paste from another site
 
-Copying and pasting emoji from other sites generally works. Email us at
-support@zulipchat.com if you find a site where it doesn't!
+Copying and pasting emoji from other sites generally works.
+[Contact us](/help/contact-support) if you find a site where it doesn't!
 
 ## Change your emoji set
 
 Your emoji set determines how you see emoji. It has no effect on the emoji
-you send.
+you send. Zulip emoji are compatible with screenreaders and other accessibility tools.
 
 {start_tabs}
 
 {settings_tab|display-settings}
 
-1. Under **Emoji settings**, select **Google modern**, **Google classic**,
-   or **Twitter**.
+1. Under **Theme**, select **Google modern**, **Google classic**,
+   **Twitter** or **Plain text** for the emoji theme.
 
 {end_tabs}
 
 ## Related articles
 
-* [Add custom emoji](/help/add-custom-emoji)
+* [Add custom emoji](/help/custom-emoji)
 * [Emoji reactions](/help/emoji-reactions)
-* [View emoji as text](/help/view-emoji-as-text)

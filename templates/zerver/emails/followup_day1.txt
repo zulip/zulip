@@ -1,6 +1,11 @@
 {{ _('Welcome to Zulip!') }}
 
 {% if realm_creation %}
+    {% if is_demo_org %}
+        {% trans %}You've created a demo Zulip organization. Note that this organization will be automatically deleted in 30 days. Learn more about demo organizations here: https://zulip.com/help/demo-organizations{% endtrans %}
+    {% else %}
+        {% trans %}You've created the new Zulip organization {{ realm_name }}.{% endtrans %}
+    {% endif %}
 {% trans %}You've created the new Zulip organization {{ realm_name }}.{% endtrans %}
 {% else %}
 {% trans %}You've joined the Zulip organization {{ realm_name }}.{% endtrans %}
@@ -8,17 +13,17 @@
 
 
 {{ _('Your account details:') }}
-* {{ _('Organization URL:') }} {{ realm_uri }}
+* {% trans organization_url=realm_uri %}Organization URL: {{ organization_url }}{% endtrans %}
 {% if ldap %}
 {% if ldap_username %}
-* {{ _('Username:') }} {{ ldap_username }}
+* {% trans %}Username: {{ ldap_username }}{% endtrans %}
 {% else %}
-* {{ _('Use your LDAP account to login') }}
+* {{ _('Use your LDAP account to log in') }}
 {% endif %}
 {% else %}
-* {{ _('Email:') }} {{ email }}
+* {% trans %}Email: {{ email }}{% endtrans %}
 {% endif %}
-{% trans %}(you'll need these to sign in to the mobile and desktop apps (https://zulipchat.com/apps)){% endtrans %}
+{% trans apps_page_link="https://zulip.com/apps" %}(you'll need these to sign in to the mobile and desktop apps ({{ apps_page_link }})){% endtrans %}
 
 
 {% if is_realm_admin %}
@@ -31,4 +36,4 @@
 {{ _("Cheers,") }}
 {{ _("Team Zulip") }}
 
-{% trans %}PS: Check us out on Twitter (@zulip), star us on GitHub (https://github.com/zulip/zulip), or chat with us live on the Zulip community server (https://chat.zulip.org)!{% endtrans %}
+{% trans %}PS: Check us out on Twitter (@zulip), star us on GitHub (https://github.com/zulip/zulip), or chat with us live on the Zulip community server (https://zulip.com/development-community/)!{% endtrans %}

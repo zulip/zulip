@@ -4,7 +4,11 @@ Receive GitLab notifications in Zulip!
 
 1. {!create-bot-construct-url-indented.md!}
 
-   {!git-webhook-url-with-branches-indented.md!}
+    By default, the Zulip topics for merge requests will contain the
+    title of the GitLab merge request.  You can change the topic format to
+    just contain the merge request ID by adding
+    `&use_merge_request_title=false` at the end of the URL.
+    {!git-webhook-url-with-branches-indented.md!}
 
 1. Go to your repository on GitLab and click **Settings** on the left
    sidebar.  Click on **Integrations**.
@@ -18,6 +22,7 @@ Receive GitLab notifications in Zulip!
 ![](/static/images/integrations/gitlab/001.png)
 
 !!! tip ""
+
     If your GitLab server and your Zulip server are on a local network
     together, and you're running GitLab 10.5 or newer, you may need to enable
     GitLab's "Allow requests to the local network from hooks and

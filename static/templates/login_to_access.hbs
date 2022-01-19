@@ -1,0 +1,31 @@
+<div class="micromodal" id="login_to_access_modal" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="login_to_access_modal_label">
+            <header class="modal__header">
+                <h1 class="modal__title" id="login_to_access_modal_label">
+                    {{t "Login required" }}
+                </h1>
+                <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
+            </header>
+            <main class="modal__content">
+                <p>
+                    {{#tr}}
+                        Since you are not logged in, you can only view messages in
+                        <z-link>web public streams</z-link>.
+                        {{#*inline "z-link"}}<a target="_blank" href="https://zulipchat.com/help/stream-permissions">{{> @partial-block}}</a>{{/inline}}
+                    {{/tr}}
+                </p>
+            </main>
+            <footer class="modal__footer">
+                <a class="modal__btn dialog_submit_button" href="{{signup_link}}">
+                    <i class="fa fa-pencil-square-o"></i>
+                    <span>{{t "Sign up" }}</span>
+                </a>
+                <a class="modal__btn dialog_submit_button" href="{{login_link}}">
+                    <i class="fa fa-sign-in"></i>
+                    <span>{{t "Log in" }}</span>
+                </a>
+            </footer>
+        </div>
+    </div>
+</div>

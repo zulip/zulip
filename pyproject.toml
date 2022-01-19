@@ -1,0 +1,102 @@
+[tool.black]
+line-length = 100
+target-version = ["py36"]
+
+[tool.isort]
+src_paths = [".", "tools", "tools/setup/emoji"]
+known_third_party = "zulip"
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+# Logistics of what code to check and how to handle the data.
+scripts_are_modules = true
+show_traceback = true
+# See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-stubs-for-third-party-modules
+# for notes on how we manage mypy stubs.
+mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"
+cache_dir = "$MYPY_CONFIG_FILE_DIR/var/mypy-cache"
+
+# These are all the options that would be enabled by mypy --strict, in
+# the order listed by the mypy --help documentation of --strict.  We
+# do not yet enable all of them.
+warn_unused_configs = true
+disallow_any_generics = true
+disallow_subclassing_any = false
+disallow_untyped_calls = false
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = false
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = false
+no_implicit_reexport = true
+strict_equality = true
+
+# Display the codes needed for # type: ignore[code] annotations.
+show_error_codes = true
+
+# Warn of unreachable or redundant code.
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = ["zproject.configured_settings", "zproject.settings"]
+no_implicit_reexport = false
+
+[[tool.mypy.overrides]]
+module = [
+    "ahocorasick.*",
+    "aioapns.*",
+    "bitfield.*",
+    "bmemcached.*",
+    "bs4.*",
+    "bson.*",
+    "cairosvg.*",
+    "circuitbreaker.*",
+    "coverage.*",
+    "cssutils.*",
+    "defusedxml.*",
+    "digitalocean.*",
+    "disposable_email_domains.*",
+    "django.*",
+    "django_auth_ldap.*",
+    "django_cte.*",
+    "django_otp.*",
+    "django_scim.*",
+    "django_sendfile.*",
+    "django_statsd.*",
+    "DNS.*",
+    "fakeldap.*",
+    "gcm.*",
+    "gitlint.*",
+    "jsonref.*",
+    "ldap.*",
+    "markdown_include.*",
+    "moto.*",
+    "natsort.*",
+    "netifaces.*",
+    "onelogin.*",
+    "openapi_core.*",
+    "premailer.*",
+    "pyinotify.*",
+    "pyoembed.*",
+    "pyuca.*",
+    "re2.*",
+    "requests_oauthlib.*",
+    "scim2_filter_parser.attr_paths",
+    "scrapy.*",
+    "social_core.*",
+    "social_django.*",
+    "sourcemap.*",
+    "soupsieve.*",
+    "sphinx_rtd_theme.*",
+    "talon_core.*",
+    "tlds.*",
+    "tornado.*",
+    "twitter.*",
+    "two_factor.*",
+    "zxcvbn.*",
+]
+ignore_missing_imports = true

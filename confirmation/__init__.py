@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright: (c) 2008, Jarek Zgoda <jarek.zgoda@gmail.com>
 
 # Permission is hereby granted, free of charge, to any person obtaining a
@@ -21,4 +19,4 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-VERSION = (0, 9, 'pre')
+VERSION = (0, 9, "pre")

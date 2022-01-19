@@ -2,7 +2,7 @@
 
 Integrations allow you to send data from other products into or out of
 Zulip. Zulip natively integrates with dozens of products, and with hundreds
-more through Zapier, IFTTT, and Hubot.
+more through Zapier and IFTTT.
 
 Zulip also makes it very easy to write your own integration, and (if you'd
 like) to get it merged into the main Zulip repository.
@@ -28,19 +28,20 @@ Zulip.
   product. If it does, follow [these instructions](/integrations/doc/ifttt)
   to set it up.
 
-* Check if [Hubot](https://github.com/hubot-scripts) has an integration with
-  the product. If it does, follow
-  [these instructions](/integrations/doc/hubot) to set it up.
+* Use a third-party webhook integration designed to work with
+  [Slack's webhook API](https://api.slack.com/messaging/webhooks)
+  pointed at Zulip's
+  [Slack-compatible webhook API](/integrations/slack/slack_incoming).
 
 * If the product can send email notifications, you can
   [send those emails to a stream](/help/message-a-stream-by-email).
 
 ## Write your own integration
 
-We've put a lot of effort into making this as easy as possible, but all of
-the options below do require some comfort writing code. If you need an
-integration and don't have an engineer on staff, reach out to
-`support@zulipchat.com` and we'll see what we can do.
+We've put a lot of effort into making this as easy as possible, but
+all of the options below do require some comfort writing code. If you
+need an integration and don't have an engineer on staff, [contact
+us](/help/contact-support) and we'll see what we can do.
 
 ### Sending content into Zulip
 
@@ -57,12 +58,12 @@ integration and don't have an engineer on staff, reach out to
 
 * To react to activity inside Zulip, look at Zulip's
   [Python framework for interactive bots](/api/running-bots) or
-  [Zulip's real-time events API](/api/get-events-from-queue).
+  [Zulip's real-time events API](/api/get-events).
 
 * If what you want isn't covered by the above, check out the full
   [REST API](/api/rest). The web, mobile, desktop, and terminal apps are
   built on top of this API, so it can do anything a human user can do. Most
   but not all of the endpoints are documented on this site; if you need
   something that isn't there check out Zulip's
-  [REST endpoints](https://github.com/zulip/zulip/tree/master/zproject/urls.py)
-  or email `support@zulipchat.com` and we'll help you out.
+  [REST endpoints](https://github.com/zulip/zulip/blob/main/zproject/urls.py)
+  or [contact us](/help/contact-support) and we'll help you out.

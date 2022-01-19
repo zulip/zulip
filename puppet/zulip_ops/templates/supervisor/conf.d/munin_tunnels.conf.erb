@@ -5,7 +5,7 @@ i = 0
 @hosts.each do |host|
 -%>
 [program:munin-tunnel-<%= host %>]
-command=autossh -2 -N -M <%= 20000 + 2 * i %> -L <%= 5000 + i %>:localhost:4949 nagios@<%= host %>.<%= @hosts_domain %>
+command=autossh -2 -N -M <%= 20000 + 2 * i %> -L <%= 5000 + i %>:localhost:4949 nagios@<%= host %>.<%= @default_host_domain %>
 priority=200                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
 autorestart=true               ; whether/when to restart (default: unexpected)

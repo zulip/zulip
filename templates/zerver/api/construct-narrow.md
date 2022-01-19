@@ -7,7 +7,7 @@ API (most importantly, in the API for fetching messages).
 
 It is simplest to explain the algorithm for encoding a search as a
 narrow using a single example.  Consider the following search query
-(written as it would be entered in the Zulip webapp's search box).  It
+(written as it would be entered in the Zulip web app's search box).  It
 filters for messages sent on stream `announce`, not sent by
 `iago@zulip.com`, and containing the phrase `cool sunglasses`:
 
@@ -43,7 +43,7 @@ options, new in Zulip 2.1, that we don't document there because they
 are primarily useful to API clients:
 
 * `sender:1234`: Search messages sent by user ID `1234`.
-* `stream:1234`: Search messages sent to the stream with ID `123`.
+* `stream:1234`: Search messages sent to the stream with ID `1234`.
 * `pm-with:1234`: Search the private message conversation between
   you and user ID `1234`.
 * `pm-with:1234,5678`: Search the private message conversation between

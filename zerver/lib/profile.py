@@ -1,11 +1,11 @@
 import cProfile
-
 from functools import wraps
-from typing import Any, TypeVar, Callable
+from typing import Callable, TypeVar, cast
 
-ReturnT = TypeVar('ReturnT')
+FuncT = TypeVar("FuncT", bound=Callable[..., object])
 
-def profiled(func: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
+
+def profiled(func: FuncT) -> FuncT:
     """
     This decorator should obviously be used only in a dev environment.
     It works best when surrounding a function that you expect to be
@@ -22,11 +22,14 @@ def profiled(func: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
         ./tools/show-profile-results test_ratelimit_decrease.profile
 
     """
+    func_: Callable[..., object] = func  # work around https://github.com/python/mypy/issues/9075
+
     @wraps(func)
-    def wrapped_func(*args: Any, **kwargs: Any) -> ReturnT:
+    def wrapped_func(*args: object, **kwargs: object) -> object:
         fn = func.__name__ + ".profile"
         prof = cProfile.Profile()
-        retval = prof.runcall(func, *args, **kwargs)  # type: ReturnT
+        retval = prof.runcall(func_, *args, **kwargs)
         prof.dump_stats(fn)
         return retval
-    return wrapped_func
+
+    return cast(FuncT, wrapped_func)  # https://github.com/python/mypy/issues/1927

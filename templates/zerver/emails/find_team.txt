@@ -1,16 +1,13 @@
+{{ _("Thanks for your request!") }}
+
 {% trans -%}
-Hi {{ user_name }},
+Your email address {{ email }} has accounts with the following Zulip organizations hosted by {{ external_host }}:
 {%- endtrans %}
 
 
-{% trans -%}
-You can log in to your Zulip organization, {{ realm_name }}, at the following link:
-{%- endtrans %}
-
-    {{ realm_uri }}
-
-{% trans %}The email address associated with your account is {{ email }}.{% endtrans %}
-
+{% for realm in realms %}
+* {{ realm.name }}: {{ realm.uri }}
+{% endfor %}
 
 {% trans %}If you have trouble logging in, please contact Zulip support by replying to this email.{% endtrans %}
 

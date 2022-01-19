@@ -1,0 +1,98 @@
+<div class="left-sidebar" id="left-sidebar" role="navigation">
+    <div class="narrows_panel">
+        <ul id="global_filters" class="filters">
+            {{!-- Special-case this link so we don't actually go to page top. --}}
+            <li class="top_left_all_messages top_left_row" title="{{t 'All messages' }} (a)">
+                <a href="#all_messages" class="home-link">
+                    <span class="filter-icon">
+                        <i class="fa fa-align-left" aria-hidden="true"></i>
+                    </span>
+                    {{~!-- squash whitespace --~}}
+                    <span>{{t 'All messages' }}</span>
+                    <span class="unread_count"></span>
+                </a>
+                <span class="arrow all-messages-sidebar-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i></span>
+            </li>
+            <li class="top_left_private_messages hidden-for-spectators">
+                <div class="private_messages_header top_left_row" title="{{t 'Private messages' }} (P)">
+                    <a href="#narrow/is/private">
+                        <span class="filter-icon">
+                            <i class="fa fa-envelope" aria-hidden="true"></i>
+                        </span>
+                        {{~!-- squash whitespace --~}}
+                        <span>{{t 'Private messages' }}</span>
+                        <span class="unread_count"></span>
+                    </a>
+                </div>
+                <div id="private-container" class="scrolling_list" data-simplebar>
+                </div>
+            </li>
+            <li class="top_left_mentions top_left_row hidden-for-spectators" title="{{t 'Mentions' }}">
+                <a href="#narrow/is/mentioned">
+                    <span class="filter-icon">
+                        <i class="fa fa-at" aria-hidden="true"></i>
+                    </span>
+                    {{~!-- squash whitespace --~}}
+                    <span>{{t 'Mentions' }}</span>
+                    <span class="unread_count"></span>
+                </a>
+            </li>
+            <li class="top_left_starred_messages top_left_row hidden-for-spectators" title="{{t 'Starred messages' }}">
+                <a href="#narrow/is/starred">
+                    <span class="filter-icon">
+                        <i class="fa fa-star" aria-hidden="true"></i>
+                    </span>
+                    {{~!-- squash whitespace --~}}
+                    <span>{{t 'Starred messages' }}</span>
+                    <span class="unread_count"></span>
+                </a>
+                <span class="arrow starred-messages-sidebar-menu-icon"><i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i></span>
+            </li>
+            <li class="top_left_drafts top_left_row hidden-for-spectators" title="{{t 'Drafts' }} (d)">
+                <a href="#drafts">
+                    <span class="filter-icon">
+                        <i class="fa fa-pencil" aria-hidden="true"></i>
+                    </span>
+                    {{~!-- squash whitespace --~}}
+                    <span>{{t 'Drafts' }}</span>
+                    <span class="unread_count"></span>
+                </a>
+                <span class="arrow drafts-sidebar-menu-icon"><i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i></span>
+            </li>
+            <li class="top_left_recent_topics top_left_row" title="{{t 'Recent topics' }} (t)">
+                <a href="#recent_topics">
+                    <span class="filter-icon">
+                        <i class="fa fa-clock-o" aria-hidden="true"></i>
+                    </span>
+                    {{~!-- squash whitespace --~}}
+                    <span>{{t 'Recent topics' }}</span>
+                </a>
+            </li>
+        </ul>
+        <div id="streams_list" class="zoom-out">
+            <div id="streams_header" class="zoom-in-hide"><h4 class="sidebar-title" data-tippy-content="{{t 'Filter streams' }} (q)">{{t 'STREAMS' }}</h4>
+                <span class="tippy-zulip-tooltip streams_inline_cog_wrapper hidden-for-spectators" data-tippy-content="{{t 'Add streams' }}">
+                    <i id="streams_inline_cog" class='fa fa-plus' aria-hidden="true" ></i>
+                </span>
+                <i class="streams_filter_icon fa fa-filter tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Filter streams' }} (q)"></i>
+                <div class="input-append notdisplayed stream_search_section">
+                    <input class="stream-list-filter home-page-input" type="text" autocomplete="off" placeholder="{{t 'Filter streams' }}" />
+                    <button type="button" class="btn clear_search_button" id="clear_search_stream_button">
+                        <i class="fa fa-remove" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="topics_header">
+                <a href="" class="show-all-streams"> <i class="fa fa-chevron-left" aria-hidden="true"></i>{{t 'Back to streams' }}</a>
+            </div>
+            <div id="stream-filters-container" class="scrolling_list" data-simplebar>
+                <ul id="stream_filters" class="filters"></ul>
+            </div>
+            {{#unless is_guest }}
+            <div id="add-stream-link">
+                <a href="#streams/all"><i class="fa fa-plus-circle" aria-hidden="true"></i>{{t 'Subscribe to more streams' }}</a>
+            </div>
+            {{/unless}}
+        </div>
+    </div>
+</div>

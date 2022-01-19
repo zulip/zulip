@@ -12,11 +12,11 @@ The steps below assume that you are familiar with the material
 presented [here](https://packaging.python.org/tutorials/installing-packages/).
 
 1. [Reconfigure the package][2], if need be (upgrade version
-  number, development status, and so on).
+   number, development status, and so on).
 
 2. Create a [source distribution][3].
 
-3. Create a [pure Python Wheel][4].
+3. Create a [pure Python wheel][4].
 
 4. [Upload][5] the distribution file(s) to [zulip-beta][6].
 

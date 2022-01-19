@@ -1,4 +1,7 @@
 <div id="organization-auth-settings" class="settings-section" data-name="auth-methods">
+    {{#unless is_owner}}
+    <div class='tip'>{{t "Only organization owners can edit these settings."}}</div>
+    {{/unless}}
     <form class="form-horizontal admin-realm-form org-authentications-form">
         <div id="org-auth_settings" class="admin-table-wrapper org-subsection-parent">
             <div class ="subsection-header">

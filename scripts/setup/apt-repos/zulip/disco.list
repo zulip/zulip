@@ -1,0 +1,5 @@
+deb http://apt.postgresql.org/pub/repos/apt/ disco-pgdg main
+deb-src http://apt.postgresql.org/pub/repos/apt/ disco-pgdg main
+
+deb http://ppa.launchpad.net/groonga/ppa/ubuntu disco main
+deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu disco main

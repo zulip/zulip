@@ -1,16 +1,36 @@
-function send_message_ajax(request, success, error) {
+import * as blueslip from "./blueslip";
+import * as channel from "./channel";
+import {page_params} from "./page_params";
+import * as people from "./people";
+import * as reload from "./reload";
+import * as reload_state from "./reload_state";
+import * as sent_messages from "./sent_messages";
+
+export function send_message(request, on_success, error, future_message) {
     channel.post({
-        url: '/json/messages',
+        url: "/json/messages",
         data: request,
-        success: success,
-        error: function (xhr, error_type) {
-            if (error_type !== 'timeout' && reload_state.is_pending()) {
+        success: function success(data) {
+            // Call back to our callers to do things like closing the compose
+            // box and turning off spinners and reifying locally echoed messages.
+            on_success(data);
+
+            // For /schedule or /reminder messages don't ack.
+            if (!future_message) {
+                // Once everything is done, get ready to report times to the server.
+                sent_messages.report_server_ack(request.local_id);
+            }
+        },
+        error(xhr, error_type) {
+            if (error_type !== "timeout" && reload_state.is_pending()) {
                 // The error might be due to the server changing
-                reload.initiate({immediate: true,
-                                 save_pointer: true,
-                                 save_narrow: true,
-                                 save_compose: true,
-                                 send_after_reload: true});
+                reload.initiate({
+                    immediate: true,
+                    save_pointer: true,
+                    save_narrow: true,
+                    save_compose: true,
+                    send_after_reload: true,
+                });
                 return;
             }
 
@@ -20,20 +40,7 @@ function send_message_ajax(request, success, error) {
     });
 }
 
-exports.send_message = function (request, on_success, error) {
-    function success(data) {
-        // Call back to our callers to do things like closing the compose
-        // box and turning off spinners and reifying locally echoed messages.
-        on_success(data);
-
-        // Once everything is done, get ready to report times to the server.
-        sent_messages.report_server_ack(request.local_id);
-    }
-
-    send_message_ajax(request, success, error);
-};
-
-exports.reply_message = function (opts) {
+export function reply_message(opts) {
     // This code does an application-triggered reply to a message (as
     // opposed to the user themselves doing it).  Its only use case
     // for now is experimental widget-aware bots, so treat this as
@@ -64,42 +71,40 @@ exports.reply_message = function (opts) {
     const reply = {
         sender_id: page_params.user_id,
         queue_id: page_params.queue_id,
-        local_id: local_id,
+        local_id,
     };
 
     sent_messages.start_tracking_message({
-        local_id: local_id,
-        locally_echoed: locally_echoed,
+        local_id,
+        locally_echoed,
     });
 
-    if (message.type === 'stream') {
+    if (message.type === "stream") {
         const stream = message.stream;
 
         const mention = people.get_mention_syntax(message.sender_full_name, message.sender_id);
 
-        content = mention + ' ' + content;
+        content = mention + " " + content;
 
-        reply.type = 'stream';
-        reply.to  = stream;
+        reply.type = "stream";
+        reply.to = stream;
         reply.content = content;
         reply.topic = message.topic;
 
-        exports.send_message(reply, success, error);
+        send_message(reply, success, error);
         return;
     }
 
-    if (message.type === 'private') {
+    if (message.type === "private") {
         const pm_recipient = people.pm_reply_to(message);
 
-        reply.type = 'private';
-        reply.to = JSON.stringify(pm_recipient.split(','));
+        reply.type = "private";
+        reply.to = JSON.stringify(pm_recipient.split(","));
         reply.content = content;
 
-        exports.send_message(reply, success, error);
+        send_message(reply, success, error);
         return;
     }
 
-    blueslip.error('unknown message type: ' + message.type);
-};
-
-window.transmit = exports;
+    blueslip.error("unknown message type: " + message.type);
+}

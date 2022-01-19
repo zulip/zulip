@@ -5,7 +5,7 @@
         ]
     },
     "actor":{
-        "username":"eeshangarg",
+        "nickname":"Eeshan Garg",
         "type":"user",
         "display_name":"eeshangarg",
         "uuid":"{a161e482-30e8-47ef-b6ab-c4e4cfaa0dce}",
@@ -55,7 +55,7 @@
         },
         "full_name":"webhooktest/test-repo",
         "owner":{
-            "username":"webhooktest",
+            "nickname":"Webhook Test",
             "type":"team",
             "display_name":"webhooktest",
             "uuid":"{31358906-183f-4b53-b83c-f70ba0ca5d3c}",

@@ -18,7 +18,7 @@ Markdown
 
 HTML
 ```
-<a href="https://chat.zulip.org"><img src="https://img.shields.io/badge/zulip-join_chat-brightgreen.svg"></a>
+<a href="https://chat.zulip.org"><img src="https://img.shields.io/badge/zulip-join_chat-brightgreen.svg" /></a>
 ```
 
 ## Link to a stream or topic

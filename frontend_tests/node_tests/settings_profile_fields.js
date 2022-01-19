@@ -1,28 +1,31 @@
-set_global('page_params', {});
-set_global('$', global.make_zjquery());
-set_global('loading', {});
-set_global('Sortable', {create: () => {}});
+"use strict";
 
+const {strict: assert} = require("assert");
+
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
+
+const loading = mock_esm("../../static/js/loading");
 
 const SHORT_TEXT_ID = 1;
-const CHOICE_ID = 3;
+
+const SELECT_ID = 3;
 const EXTERNAL_ACCOUNT_ID = 7;
 
-const SHORT_TEXT_NAME = "Short Text";
-const CHOICE_NAME = "Choice";
+const SHORT_TEXT_NAME = "Short text";
+const SELECT_NAME = "Select";
 const EXTERNAL_ACCOUNT_NAME = "External account";
 
-page_params.custom_profile_fields = {};
-page_params.realm_default_external_accounts = JSON.stringify({});
-
-page_params.custom_profile_field_types = {
+const custom_profile_field_types = {
     SHORT_TEXT: {
         id: SHORT_TEXT_ID,
         name: SHORT_TEXT_NAME,
     },
-    CHOICE: {
-        id: CHOICE_ID,
-        name: CHOICE_NAME,
+    SELECT: {
+        id: SELECT_ID,
+        name: SELECT_NAME,
     },
     EXTERNAL_ACCOUNT: {
         id: EXTERNAL_ACCOUNT_ID,
@@ -30,17 +33,26 @@ page_params.custom_profile_field_types = {
     },
 };
 
-zrequire('settings_profile_fields');
+page_params.custom_profile_field_types = custom_profile_field_types;
 
-function test_populate(opts) {
+mock_esm("sortablejs", {Sortable: {create: () => {}}});
+
+const settings_profile_fields = zrequire("settings_profile_fields");
+
+function test_populate(opts, template_data) {
     const fields_data = opts.fields_data;
 
     page_params.is_admin = opts.is_admin;
-    const table = $('#admin_profile_fields_table');
-    const rows = $.create('rows');
-    const form = $.create('forms');
-    table.set_find_results('tr.profile-field-row', rows);
-    table.set_find_results('tr.profile-field-form', form);
+    const table = $("#admin_profile_fields_table");
+    const rows = $.create("rows");
+    const form = $.create("forms");
+    table.set_find_results("tr.profile-field-row", rows);
+    table.set_find_results("tr.profile-field-form", form);
+
+    table[0] = "stub";
+
+    rows.remove = () => {};
+    form.remove = () => {};
 
     let num_appends = 0;
     table.append = () => {
@@ -49,40 +61,42 @@ function test_populate(opts) {
 
     loading.destroy_indicator = () => {};
 
-    const template_data = [];
-    global.stub_templates((fn, data) => {
-        assert.equal(fn, 'admin_profile_field_list');
-        template_data.push(data);
-        return 'whatever';
-    });
-
     settings_profile_fields.do_populate_profile_fields(fields_data);
 
     assert.deepEqual(template_data, opts.expected_template_data);
     assert.equal(num_appends, fields_data.length);
 }
 
-run_test('populate_profile_fields', () => {
+run_test("populate_profile_fields", ({mock_template}) => {
+    page_params.custom_profile_fields = {};
+    page_params.realm_default_external_accounts = JSON.stringify({});
+
+    const template_data = [];
+    mock_template("settings/admin_profile_field_list.hbs", false, (data) => {
+        template_data.push(data);
+        return "whatever";
+    });
+
     const fields_data = [
         {
             type: SHORT_TEXT_ID,
             id: 10,
-            name: 'favorite color',
-            hint: 'blue?',
-            field_data: '',
+            name: "favorite color",
+            hint: "blue?",
+            field_data: "",
         },
         {
-            type: CHOICE_ID,
+            type: SELECT_ID,
             id: 30,
-            name: 'meal',
-            hint: 'lunch',
+            name: "meal",
+            hint: "lunch",
             field_data: JSON.stringify([
                 {
-                    text: 'lunch',
+                    text: "lunch",
                     order: 0,
                 },
                 {
-                    text: 'dinner',
+                    text: "dinner",
                     order: 1,
                 },
             ]),
@@ -90,20 +104,20 @@ run_test('populate_profile_fields', () => {
         {
             type: EXTERNAL_ACCOUNT_ID,
             id: 20,
-            name: 'github profile',
-            hint: 'username only',
+            name: "github profile",
+            hint: "username only",
             field_data: JSON.stringify({
-                subtype: 'github',
+                subtype: "github",
             }),
         },
         {
             type: EXTERNAL_ACCOUNT_ID,
             id: 21,
-            name: 'zulip profile',
-            hint: 'username only',
+            name: "zulip profile",
+            hint: "username only",
             field_data: JSON.stringify({
-                subtype: 'custom',
-                url_pattern: 'https://chat.zulip.com/%(username)s',
+                subtype: "custom",
+                url_pattern: "https://chat.zulip.com/%(username)s",
             }),
         },
     ];
@@ -111,67 +125,66 @@ run_test('populate_profile_fields', () => {
         {
             profile_field: {
                 id: 10,
-                name: 'favorite color',
-                hint: 'blue?',
+                name: "favorite color",
+                hint: "blue?",
                 type: SHORT_TEXT_NAME,
                 choices: [],
-                is_choice_field: false,
+                is_select_field: false,
                 is_external_account_field: false,
             },
             can_modify: true,
-            realm_default_external_accounts:
-                page_params.realm_default_external_accounts,
+            realm_default_external_accounts: page_params.realm_default_external_accounts,
         },
         {
             profile_field: {
                 id: 30,
-                name: 'meal',
-                hint: 'lunch',
-                type: CHOICE_NAME,
+                name: "meal",
+                hint: "lunch",
+                type: SELECT_NAME,
                 choices: [
-                    {order: 0, value: '0', text: 'lunch'},
-                    {order: 1, value: '1', text: 'dinner'},
+                    {order: 0, value: "0", text: "lunch"},
+                    {order: 1, value: "1", text: "dinner"},
                 ],
-                is_choice_field: true,
+                is_select_field: true,
                 is_external_account_field: false,
             },
             can_modify: true,
-            realm_default_external_accounts:
-                page_params.realm_default_external_accounts,
+            realm_default_external_accounts: page_params.realm_default_external_accounts,
         },
         {
             profile_field: {
                 id: 20,
-                name: 'github profile',
-                hint: 'username only',
+                name: "github profile",
+                hint: "username only",
                 type: EXTERNAL_ACCOUNT_NAME,
                 choices: [],
-                is_choice_field: false,
+                is_select_field: false,
                 is_external_account_field: true,
             },
             can_modify: true,
-            realm_default_external_accounts:
-                page_params.realm_default_external_accounts,
+            realm_default_external_accounts: page_params.realm_default_external_accounts,
         },
         {
             profile_field: {
                 id: 21,
-                name: 'zulip profile',
-                hint: 'username only',
+                name: "zulip profile",
+                hint: "username only",
                 type: EXTERNAL_ACCOUNT_NAME,
                 choices: [],
-                is_choice_field: false,
+                is_select_field: false,
                 is_external_account_field: true,
             },
             can_modify: true,
-            realm_default_external_accounts:
-                page_params.realm_default_external_accounts,
+            realm_default_external_accounts: page_params.realm_default_external_accounts,
         },
     ];
 
-    test_populate({
-        fields_data: fields_data,
-        expected_template_data: expected_template_data,
-        is_admin: true,
-    });
+    test_populate(
+        {
+            fields_data,
+            expected_template_data,
+            is_admin: true,
+        },
+        template_data,
+    );
 });

@@ -10,9 +10,9 @@ Organization administrators can
 
 {start_tabs}
 
-{settings_tab|your-account}
+{settings_tab|account-and-privacy}
 
-2. Under **User settings**, click on the button with your email address.
+2. Under **Account**, click on the button with your email address.
 
 3. Enter your new email, and click **Change**.
 
@@ -21,6 +21,7 @@ Organization administrators can
 {end_tabs}
 
 !!! warn ""
+
     **Note:** If you are unable to click on the button with your email address, check
     that your organization allows email changes. Follow the steps at
     [prevent users from changing their names](/help/restrict-name-and-email-changes)

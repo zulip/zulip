@@ -1,23 +1,24 @@
 # After editing this file, you MUST afterward run
 # /tools/update-locked-requirements to update requirements/dev.txt.
 # See requirements/README.md for more detail.
--r common.in
+-r pip.in
+-r prod.in
 -r docs.in
 
 # moto s3 mock
-moto
+moto[s3]
 
 # Needed for running tools/run-dev.py
 Twisted
 
 # Needed for documentation links test
-Scrapy
+https://github.com/scrapy/scrapy/archive/c5b1ee810167266fcd259f263dbfc0fe0204761a.zip#egg=Scrapy==2.5.0+git  # aioapns requires h2 ≥ 4.0: https://github.com/scrapy/scrapy/pull/5113
 
 # Needed to compute test coverage
 coverage
 
 # fake for LDAP testing
-https://github.com/zulip/fakeldap/archive/ff32deaad34b91d5ba5735f314362c0456c92607.zip#egg=fakeldap==0.6.1zulip
+fakeldap
 
 # For testing mock http requests
 responses
@@ -25,12 +26,14 @@ responses
 # For sorting imports
 isort
 
-# For doing highly usable Python profiling (temporary fork of
-# line_profiler: https://github.com/rkern/line_profiler/issues/127)
-lp37
+# For doing highly usable Python profiling
+line-profiler
 
 # for pep8 linter
 pycodestyle
+
+# Python reformatter
+black
 
 # Needed to run pyflakes linter
 pyflakes
@@ -41,26 +44,42 @@ pyinotify
 # Needed to run tests in parallel
 tblib
 
-# Needed to lint Git commit messages
-gitlint
+# For linting Git commit messages
+gitlint-core
 
 # Needed for visualising cprofile reports
 snakeviz
 
-# Needed for creating digital ocean droplets
+# Needed for creating DigitalOcean droplets
 python-digitalocean
 
 # Needed for updating the locked pip dependencies
-pip-tools
+pip-tools<6.3.0  # https://github.com/jazzband/pip-tools/pull/1455 breaks our hack for installing specific commits from Git
 
 # zulip's linting framework - zulint
-https://github.com/zulip/zulint/archive/aaed679f1ad38b230090eadd3870b7682500f60c.zip#egg=zulint==0.0.1
+https://github.com/zulip/zulint/archive/9908540b7734b51f86ccabab706befc2ff33212a.zip#egg=zulint==0.0.1
 
 -r mypy.in
 
-# These modules are built in later versions of python and will generate difference in locked files
-# if executed with python version > 3.6 so despite being dependent packages they have to be added separately.
-# built-in python > 3.7 needed by jsonschema
-importlib-metadata
-# built-in python > 3.6 needed by cfn-lint
-importlib-resources
+# These modules are built into later versions of Python and will
+# generate different locked files if executed with Python ≥ 3.7, so
+# despite being dependent packages, they have to be added separately.
+importlib-metadata;python_version<"3.10"  # for jsonpickle, jsonschema
+
+# Needed for using integration logo svg files as bot avatars
+cairosvg
+
+# Needed for tools/check-thirdparty
+python-debian<0.1.42  # https://bugs.debian.org/997857
+
+# Pattern-based lint tool
+semgrep
+
+# Contains Pysa, a security-focused static analyzer
+pyre-check
+
+# For sorting versions when uploading releases
+natsort
+
+# For spell check linter
+codespell

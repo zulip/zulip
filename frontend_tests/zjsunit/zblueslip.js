@@ -1,4 +1,6 @@
-exports.make_zblueslip = function () {
+"use strict";
+
+function make_zblueslip() {
     const lib = {};
 
     const opts = {
@@ -9,77 +11,119 @@ exports.make_zblueslip = function () {
         // Check against expected error values for the following.
         warn: true,
         error: true,
-        fatal: true,
+    };
+    const names = Array.from(Object.keys(opts));
+
+    // For fatal messages, we should use assert.throws
+    lib.fatal = (msg) => {
+        throw new Error(msg);
     };
 
     // Store valid test data for options.
     lib.test_data = {};
     lib.test_logs = {};
-    Object.keys(opts).forEach(name => {
+
+    for (const name of names) {
         lib.test_data[name] = [];
         lib.test_logs[name] = [];
-    });
-    lib.set_test_data = (name, message) => {
-        lib.test_data[name].push(message);
-    };
-    lib.clear_test_data = (name) => {
-        if (!name) {
-            // Clear all data
-            Object.keys(opts).forEach(name => {
-                lib.test_data[name] = [];
-                lib.test_logs[name] = [];
-            });
-            return;
+    }
+
+    lib.expect = (name, message, count = 1) => {
+        if (opts[name] === undefined) {
+            throw new Error("unexpected arg for expect: " + name);
         }
-        lib.test_data[name] = [];
-        lib.test_logs[name] = [];
+        if (count <= 0 && Number.isInteger(count)) {
+            throw new Error("expected count should be a positive integer");
+        }
+        const obj = {message, count, expected_count: count};
+        lib.test_data[name].push(obj);
     };
 
-    lib.get_test_logs = (name) => {
-        return lib.test_logs[name];
-    };
-
-    lib.check_error = (isblueslip = false) => {
-        return function (error) {
-            if (isblueslip) {
-                assert(error.blueslip, "Not a blueslip error.");
-                return true;
+    const check_seen_messages = () => {
+        for (const name of names) {
+            for (const obj of lib.test_logs[name]) {
+                const message = obj.message;
+                const i = lib.test_data[name].findIndex((x) => x.message === message);
+                if (i === -1) {
+                    // Only throw this for message types we want to explicitly track.
+                    // For example, we do not want to throw here for debug messages.
+                    if (opts[name]) {
+                        throw new Error(`Unexpected '${name}' message: ${message}`);
+                    }
+                    continue;
+                }
+                lib.test_data[name][i].count -= 1;
             }
-            // If an error was thrown by zblueslip, we know that that
-            // error was not in the list of expeccted errors for the test.
-            assert(!error.blueslip, "Error not in expected errors.");
-            return true;
-        };
+
+            for (const obj of lib.test_data[name]) {
+                const message = obj.message;
+                if (obj.count > 0) {
+                    throw new Error(
+                        `We did not see expected ${obj.expected_count} of '${name}': ${message}`,
+                    );
+                } else if (obj.count < 0) {
+                    throw new Error(
+                        `We saw ${obj.expected_count - obj.count} (expected ${
+                            obj.expected_count
+                        }) of '${name}': ${message}`,
+                    );
+                }
+            }
+        }
     };
+
+    lib.reset = (skip_checks = false) => {
+        if (!skip_checks) {
+            check_seen_messages();
+        }
+
+        for (const name of names) {
+            lib.test_data[name] = [];
+            lib.test_logs[name] = [];
+        }
+    };
+
+    lib.get_test_logs = (name) => lib.test_logs[name];
 
     // Create logging functions
-    Object.keys(opts).forEach(name => {
+    for (const name of names) {
         if (!opts[name]) {
             // should just log the message.
             lib[name] = function (message, more_info, stack) {
                 lib.test_logs[name].push({message, more_info, stack});
             };
-            return;
+            continue;
         }
         lib[name] = function (message, more_info, stack) {
+            if (typeof message !== "string") {
+                // We may catch exceptions in blueslip, and if
+                // so our stub should include that.
+                if (message.toString().includes("exception")) {
+                    message = message.toString();
+                } else {
+                    throw new Error("message should be string: " + message);
+                }
+            }
             lib.test_logs[name].push({message, more_info, stack});
-            const exact_match_fail = !lib.test_data[name].includes(message);
-            const string_match_fail = !lib.test_data[name].includes(message.toString());
-            if (exact_match_fail && string_match_fail) {
-                const error = Error(`Invalid ${name} message: "${message}".`);
+            const matched_error_message = lib.test_data[name].find((x) => x.message === message);
+            const exact_match_fail = !matched_error_message;
+            if (exact_match_fail) {
+                const error = new Error(`Invalid ${name} message: "${message}".`);
                 error.blueslip = true;
                 throw error;
             }
         };
-    });
+    }
 
     lib.exception_msg = function (ex) {
         return ex.message;
     };
 
-    lib.start_timing = () => {
-        return () => {};
-    };
+    lib.measure_time = (label, f) => f();
+
+    lib.preview_node = (node) => "node:" + node;
 
     return lib;
-};
+}
+
+module.exports = make_zblueslip();

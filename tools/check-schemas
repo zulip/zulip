@@ -1,0 +1,231 @@
+#!/usr/bin/env python3
+#
+# Validates that 3 data sources agree about the structure of Zulip's events API:
+#
+# * Node fixtures for the server_events_dispatch.js tests.
+# * OpenAPI definitions in zerver/openapi/zulip.yaml
+# * The schemas defined in zerver/lib/events_schema.py used for the
+#   Zulip server's test suite.
+#
+# We compare the Python and OpenAPI schemas by converting the OpenAPI data
+# into the event_schema style of types and the diffing the schemas.
+import argparse
+import difflib
+import os
+import subprocess
+import sys
+from typing import Any, Callable, Dict, List, Optional
+
+import orjson
+
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+ROOT_DIR = os.path.dirname(TOOLS_DIR)
+
+EVENTS_JS = "frontend_tests/node_tests/lib/events.js"
+
+# check for the venv
+from tools.lib import sanity_check
+
+sanity_check.check_venv(__file__)
+
+USAGE = """
+
+    This program reads in fixture data for our
+    node tests, and then it validates the fixture
+    data with checkers from event_schema.py (which
+    are the same Python functions we use to validate
+    events in test_events.py).
+
+    It currently takes no arguments.
+"""
+
+parser = argparse.ArgumentParser(usage=USAGE)
+parser.parse_args()
+
+# We can eliminate the django dependency in event_schema,
+# but unfortunately it"s coupled to modules like validate.py
+# and topic.py.
+import django
+
+os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.test_settings"
+django.setup()
+
+from zerver.lib import event_schema
+from zerver.lib.data_types import (
+    DictType,
+    EnumType,
+    ListType,
+    NumberType,
+    StringDictType,
+    UnionType,
+    make_checker,
+    schema,
+)
+from zerver.openapi.openapi import openapi_spec
+
+# This list of exemptions represents details we should fix in Zulip's
+# API structure and/or validators.
+EXEMPT_OPENAPI_NAMES = [
+    # users field missing
+    "update_display_settings_event",
+    "update_global_notifications_event",
+    # Additional keys(push_users_notify) due to bug in API.
+    "message_event",
+    # tuple handling
+    "muted_topics_event",
+    "realm_filters_event",
+    # bots, delivery_email, profile_data
+    "realm_user_add_event",
+    # OpenAPI is incomplete
+    "realm_update_dict_event",
+    # is_mirror_dummy
+    "reaction_add_event",
+    "reaction_remove_event",
+]
+
+
+def get_event_checker(event: Dict[str, Any]) -> Optional[Callable[[str, Dict[str, Any]], None]]:
+    name = event["type"]
+    if "op" in event:
+        name += "_" + event["op"]
+
+    name += "_event"
+
+    if hasattr(event_schema, name):
+        return make_checker(getattr(event_schema, name))
+    return None
+
+
+def check_event(name: str, event: Dict[str, Any]) -> None:
+    event["id"] = 1
+    checker = get_event_checker(event)
+    if checker is not None:
+        try:
+            checker(name, event)
+        except AssertionError:
+            print(f"\n{EVENTS_JS} has bad data for {name}:\n\n")
+            raise
+    else:
+        print(f"WARNING - NEED SCHEMA: {name}")
+
+
+def read_fixtures() -> Dict[str, Any]:
+    cmd = [
+        "node",
+        os.path.join(TOOLS_DIR, "node_lib/dump_fixtures.js"),
+    ]
+    schema = subprocess.check_output(cmd)
+    return orjson.loads(schema)
+
+
+def verify_fixtures_are_sorted(names: List[str]) -> None:
+    for i in range(1, len(names)):
+        if names[i] < names[i - 1]:
+            raise Exception(
+                f"""
+                Please keep your fixtures in order within
+                your events.js file.  The following
+                key is out of order
+
+                {names[i]}
+                """
+            )
+
+
+def from_openapi(node: Dict[str, Any]) -> Any:
+    """Converts the OpenAPI data into event_schema.py style type
+    definitions for convenient comparison with the types used for backend
+    tests declared there."""
+    if "oneOf" in node:
+        return UnionType([from_openapi(n) for n in node["oneOf"]])
+
+    if node["type"] == "object":
+        if "additionalProperties" in node:
+            # this might be a glitch in our current spec?  or
+            # maybe I just understand it yet
+            if isinstance(node["additionalProperties"], dict):
+                return StringDictType(from_openapi(node["additionalProperties"]))
+
+        if "properties" not in node:
+            return dict
+
+        required_keys = []
+        for key, sub_node in node["properties"].items():
+            required_keys.append((key, from_openapi(sub_node)))
+        return DictType(required_keys)
+
+    if node["type"] == "boolean":
+        return bool
+
+    if node["type"] == "integer":
+        if "enum" in node:
+            return EnumType(node["enum"])
+        return int
+
+    if node["type"] == "number":
+        return NumberType()
+
+    if node["type"] == "string":
+        if "enum" in node:
+            return EnumType(node["enum"])
+        return str
+
+    if node["type"] == "array":
+        return ListType(from_openapi(node["items"]))
+
+    raise AssertionError("cannot handle node")
+
+
+def validate_openapi_against_event_schema() -> None:
+    node = openapi_spec.openapi()["paths"]["/events"]["get"]["responses"]["200"]["content"][
+        "application/json"
+    ]["schema"]["properties"]["events"]["items"]["oneOf"]
+
+    for sub_node in node:
+        name = sub_node["properties"]["type"]["enum"][0]
+        if "op" in sub_node["properties"]:
+            name += "_" + sub_node["properties"]["op"]["enum"][0]
+
+        name += "_event"
+
+        if not hasattr(event_schema, name):
+            print("WARNING - NEED SCHEMA to match OpenAPI", name)
+            continue
+
+        openapi_type = from_openapi(sub_node)
+        openapi_schema = schema(name, openapi_type)
+
+        py_type = getattr(event_schema, name)
+        py_schema = schema(name, py_type)
+
+        if name in EXEMPT_OPENAPI_NAMES:
+            if openapi_schema == py_schema:
+                raise AssertionError(f"unnecessary exemption for {name}")
+            continue
+
+        if openapi_schema != py_schema:
+            print(f"py\n{py_schema}\n")
+            print(f"openapi\n{openapi_schema}\n")
+
+            for line in difflib.unified_diff(
+                py_schema.split("\n"),
+                openapi_schema.split("\n"),
+                fromfile="py",
+                tofile="openapi",
+            ):
+                print(line)
+            raise AssertionError("openapi schemas disagree")
+
+
+def run() -> None:
+    fixtures = read_fixtures()
+    verify_fixtures_are_sorted(list(fixtures.keys()))
+    for name, event in fixtures.items():
+        check_event(name, event)
+    validate_openapi_against_event_schema()
+    print("Successful check. All tests passed.")
+
+
+if __name__ == "__main__":
+    run()

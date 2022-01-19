@@ -12,7 +12,7 @@ Get Zulip notifications for Stripe events!
    **Add endpoint**.
 
 1. [Optional] In Zulip, add a
-   [linkification filter](/help/add-a-custom-linkification-filter) with
+   [linkification filter](/help/add-a-custom-linkifier) with
    **Pattern** `(?P<id>cus_[0-9a-zA-Z]+)` and **URL format string**
    `https://dashboard.stripe.com/customers/%(id)s`.
 
@@ -22,6 +22,7 @@ Sources, Subscriptions, Files, Invoices and Invoice items.
 {% if 'http:' in external_uri_scheme %}
 
 !!! tip ""
+
     Note that Stripe will only accept HTTPS webhooks!
 
 {% endif %}

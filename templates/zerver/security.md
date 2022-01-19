@@ -22,7 +22,7 @@ priority.
   [excluded from mobile push notifications][redact-content],
   to avoid displaying message content on locked mobile screens, and to
   comply with strict compliance policies such as the USA’s HIPAA standards.
-- Zulip operates a HackerOne bug bounty program to reward hackers for
+- Zulip operates a HackerOne disclosure program to reward hackers for
   finding and responsibly reporting security vulnerabilities in Zulip.  Our
   [completely open source codebase](https://github.com/zulip/zulip) means
   that HackerOne’s white-hat hackers can audit Zulip for potential security
@@ -36,7 +36,7 @@ priority.
   streams with any number of subscribers, as well as public streams
   available to all organization members.  We also support guest accounts,
   which only have access to a fixed set of streams, and announcement
-  streams, where only organization administrators can post.
+  streams, where only organization owners and administrators can post.
 - By default, users can maintain their own names and email addresses, but
   Zulip also supports
   [restricting changes](/help/restrict-name-and-email-changes) and
@@ -53,7 +53,7 @@ priority.
 - Zulip also supports customizing whether non-admins can
   [create streams](/help/configure-who-can-create-streams),
   [invite to streams](/help/configure-who-can-invite-to-streams),
-  [add custom emoji](/help/only-allow-admins-to-add-emoji),
+  [add custom emoji](/help/custom-emoji#change-who-can-add-custom-emoji),
   [add integrations and bots](/help/restrict-bot-creation),
   [edit or delete messages](/help/configure-message-editing-and-deletion),
   and more.
@@ -78,19 +78,20 @@ priority.
 - Users can rotate their accounts’ credentials, blocking further access from
   any compromised Zulip credentials.  With Zulip on-premise, server
   administrators can additionally revoke and reset any user’s credentials.
-- Administrators can deactivate any
-  [user](/help/deactivate-or-reactivate-a-user),
-  [bot, or integration](/help/deactivate-or-reactivate-a-bot).
+- Owners can deactivate any [user](/help/deactivate-or-reactivate-a-user),
+  [bot, or integration](/help/deactivate-or-reactivate-a-bot). Administrators
+  can also deactivate any [user](/help/deactivate-or-reactivate-a-user),
+  [bot, or integration](/help/deactivate-or-reactivate-a-bot) except owners.
 - With Zulip on-premise,
-  [session length](https://github.com/zulip/zulip/blob/master/zproject/prod_settings_template.py#L206)
-  and idle timeouts can be configured to match your organization’s security
-  policies.
+  [session length](https://github.com/zulip/zulip/search?q=SESSION_COOKIE_AGE&type=code) and
+  [idle timeouts](https://github.com/zulip/zulip/search?q=SESSION_EXPIRE_AT_BROWSER_CLOSE&type=code)
+  can be configured to match your organization’s security policies.
 
 [apache-sso]: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#apache-based-sso-with-remote-user
 
 ## Integrity and auditing
 
-- Zulip administrators can configure users’
+- Zulip owners and administrators can configure users’
   [ability to edit or delete messages](/help/configure-message-editing-and-deletion),
   and whether deleted messages are retained in the database or deleted
   permanently. Zulip by default stores the complete history of all message
@@ -129,7 +130,7 @@ the industry:
   including 100% of Zulip’s API layer (responsible for parsing user input).
   It is difficult to find any full-stack web application with as complete a
   set of automated tests as Zulip.
-- Zulip’s python codebase is written entirely in
+- Zulip’s Python codebase is written entirely in
   [statically typed Python 3](https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/),
   which automatically prevents a wide range of possible bugs.
 - All access to user data (messages, streams, uploaded files, etc.) in the

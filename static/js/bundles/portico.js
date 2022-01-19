@@ -1,4 +1,4 @@
-import "./common.js";
-import "../i18n.js";
-import "../portico/header.js";
-import "../../styles/portico/portico-styles.scss";
+import "./common";
+import "../portico/header";
+import "../portico/google-analytics";
+import "../../styles/portico/portico_styles.css";

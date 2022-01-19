@@ -1,4 +1,4 @@
-# Life of a Request
+# Life of a request
 
 It can sometimes be confusing to figure out how to write a new feature,
 or debug an existing one. Let us try to follow a request through the
@@ -16,11 +16,11 @@ application will serve the request (or deciding to serve the request
 itself for static content).
 
 In development, `tools/run-dev.py` fills the role of nginx. Static files
-are in your git checkout under `static`, and are served unminified.
+are in your Git checkout under `static`, and are served unminified.
 
 ## Static files are [served directly][served-directly] by Nginx
 
-[served-directly]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-frontend/app
+[served-directly]: https://github.com/zulip/zulip/blob/main/puppet/zulip/files/nginx/zulip-include-frontend/app
 
 Static files include JavaScript, css, static assets (like emoji, avatars),
 and user uploads (if stored locally and not on S3).
@@ -29,7 +29,7 @@ File not found errors (404) are served using a Django URL, so that we
 can use configuration variables (like whether the user is logged in)
 in the 404 error page.
 
-```
+```nginx
 location /static/ {
     alias /home/zulip/prod-static/;
     # Set a nonexistent path, so we just serve the nice Django 404 page.
@@ -37,7 +37,7 @@ location /static/ {
 }
 ```
 
-## Nginx routes other requests [between django and tornado][tornado-django]
+## Nginx routes other requests [between Django and Tornado][tornado-django]
 
 [tornado-django]: ../overview/architecture-overview.html?highlight=tornado#django-and-tornado
 
@@ -50,21 +50,18 @@ application.
 
 [Here is the relevant nginx routing configuration.][nginx-config-link]
 
-[nginx-config-link]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-frontend/app
+[nginx-config-link]: https://github.com/zulip/zulip/blob/main/puppet/zulip/files/nginx/zulip-include-frontend/app
 
 ## Django routes the request to a view in urls.py files
 
 There are various
-[urls.py](https://docs.djangoproject.com/en/1.8/topics/http/urls/)
+[urls.py](https://docs.djangoproject.com/en/3.2/topics/http/urls/)
 files throughout the server codebase, which are covered in more detail
 in
 [the directory structure doc](../overview/directory-structure.md).
 
 The main Zulip Django app is `zerver`. The routes are found in
-```
-zproject/urls.py
-zproject/legacy_urls.py
-```
+`zproject/urls.py` and `zproject/legacy_urls.py`.
 
 There are HTML-serving, REST API, legacy, and webhook url patterns. We
 will look at how each of these types of requests are handled, and focus
@@ -73,14 +70,14 @@ on how the REST API handles our user creation example.
 ## Views serving HTML are internationalized by server path
 
 If we look in
-[zproject/urls.py](https://github.com/zulip/zulip/blob/master/zproject/urls.py),
+[zproject/urls.py](https://github.com/zulip/zulip/blob/main/zproject/urls.py),
 we can see something called `i18n_urls`. These urls show up in the
 address bar of the browser, and serve HTML.
 
 For example, the `/features` page (preview
-[here](https://zulipchat.com/features/)) gets translated in Chinese at
+[here](https://zulip.com/features/)) gets translated in Chinese at
 `zh-hans/features/` (preview
-[here](https://zulipchat.com/zh-hans/features/)).
+[here](https://zulip.com/zh-hans/features/)).
 
 Note the `zh-hans` prefix--that url pattern gets added by `i18n_patterns`.
 
@@ -92,17 +89,17 @@ With the exception of incoming webhooks (which we do not usually control the
 format of), legacy endpoints, and logged-out endpoints, Zulip uses REST
 for its API. This means that we use:
 
-* POST for creating something new where we don't have a unique
+- POST for creating something new where we don't have a unique
   ID. Also used as a catch-all if no other verb is appropriate.
-* PUT for creating something for which we have a unique ID.
-* DELETE for deleting something
-* PATCH for updating or editing attributes of something.
-* GET to get something (read-only)
-* HEAD to check the existence of something to GET, without getting it;
+- PUT for creating something for which we have a unique ID.
+- DELETE for deleting something
+- PATCH for updating or editing attributes of something.
+- GET to get something (read-only)
+- HEAD to check the existence of something to GET, without getting it;
   useful to check a link without downloading a potentially large link
-* OPTIONS (handled automatically, see more below)
+- OPTIONS (handled automatically, see more below)
 
-Of these, PUT, DELETE, HEAD, OPTIONS, and GET are *idempotent*, which
+Of these, PUT, DELETE, HEAD, OPTIONS, and GET are _idempotent_, which
 means that we can send the request multiple times and get the same
 state on the server. You might get a different response after the first
 request, as we like to give our clients an error so they know that no
@@ -138,11 +135,13 @@ This request:
 yields a response with this HTTP header:
 `Allow: PUT, GET`
 
-We can see this reflected in [zproject/urls.py](https://github.com/zulip/zulip/blob/master/zproject/urls.py):
+We can see this reflected in [zproject/urls.py](https://github.com/zulip/zulip/blob/main/zproject/urls.py):
 
-    url(r'^users$', 'zerver.lib.rest.rest_dispatch',
-        {'GET': 'zerver.views.users.get_members_backend',
-         'PUT': 'zerver.views.users.create_user_backend'}),
+```python
+rest_path('users',
+          GET=get_members_backend,
+          PUT=create_user_backend),
+```
 
 In this way, the API is partially self-documenting.
 
@@ -152,7 +151,7 @@ The endpoints from the legacy JSON API are written without REST in
 mind. They are used extensively by the web client, and use POST.
 
 You can see them in
-[zproject/legacy_urls.py](https://github.com/zulip/zulip/blob/master/zproject/legacy_urls.py).
+[zproject/legacy_urls.py](https://github.com/zulip/zulip/blob/main/zproject/legacy_urls.py).
 
 ### Incoming webhook integrations may not be RESTful
 
@@ -164,10 +163,10 @@ only POST.
 
 For requests that correspond to a REST url pattern, Zulip configures
 its url patterns (see
-[zerver/lib/rest.py](https://github.com/zulip/zulip/blob/master/zerver/lib/rest.py))
+[zerver/lib/rest.py](https://github.com/zulip/zulip/blob/main/zerver/lib/rest.py))
 so that the action called is `rest_dispatch`. This method will
 authenticate the user, either through a session token from a cookie,
-or from an `email:api-key` string given via HTTP Basic Auth for API
+or from an `email:api-key` string given via HTTP basic auth for API
 clients.
 
 It will then look up what HTTP verb was used (GET, POST, etc) to make
@@ -175,13 +174,13 @@ the request, and then figure out which view to show from that.
 
 In our example,
 
-```
-{'GET': 'zerver.views.users.get_members_backend',
- 'PUT': 'zerver.views.users.create_user_backend'}
+```python
+GET=get_members_backend,
+PUT=create_user_backend
 ```
 
-is supplied as an argument to `rest_dispatch`, along with the
-[HTTPRequest](https://docs.djangoproject.com/en/1.8/ref/request-response/).
+are supplied as arguments to `rest_path`, along with the
+[HTTPRequest](https://docs.djangoproject.com/en/3.2/ref/request-response/).
 The request has the HTTP verb `PUT`, which `rest_dispatch` can use to
 find the correct view to show:
 `zerver.views.users.create_user_backend`.
@@ -193,21 +192,25 @@ This is covered in good detail in the [writing views doc](writing-views.md).
 ## Results are given as JSON
 
 Our API works on JSON requests and responses. Every API endpoint should
-return `json_error` in the case of an error, which gives a JSON string:
+`raise JsonableError` in the case of an error, which gives a JSON string:
 
-`{'result': 'error', 'msg': <some error message>}`
+```json
+{"result": "error", "msg": "<some error message>", "code": "BAD_REQUEST"}
+```
 
 in a
-[HTTP Response](https://docs.djangoproject.com/en/1.8/ref/request-response/)
+[HTTP response](https://docs.djangoproject.com/en/3.2/ref/request-response/)
 with a content type of 'application/json'.
 
 To pass back data from the server to the calling client, in the event of
 a successfully handled request, we use
-`json_success(data=<some python object which can be converted to a JSON string>`.
+`json_success(data=<some python object which can be converted to a JSON string>)`.
 
 This will result in a JSON string:
 
-`{'result': 'success', 'msg': '', 'data'='{'var_name1': 'var_value1', 'var_name2': 'var_value2'...}`
+```json
+{"result": "success", "msg": "", "data": {"var_name1": "var_value1", "var_name2": "var_value2"}}
+```
 
 with a HTTP 200 status and a content type of 'application/json'.
 

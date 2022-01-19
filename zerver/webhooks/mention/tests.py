@@ -1,14 +1,13 @@
-# -*- coding: utf-8 -*-
 from zerver.lib.test_classes import WebhookTestCase
 
 
 class MentionHookTests(WebhookTestCase):
-    STREAM_NAME = 'test'
+    STREAM_NAME = "test"
     URL_TEMPLATE = "/api/v1/external/mention?api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = 'mention'
+    WEBHOOK_DIR_NAME = "mention"
 
     def test_mention_webfeed(self) -> None:
-        expected_topic = u"news"
+        expected_topic = "news"
         expected_message = """
 **[Historical Sexual Abuse (Football): 29 Nov 2016: House of Commons debates - TheyWorkForYou](https://www.theyworkforyou.com/debates/?id=2016-11-29b.1398.7&p=24887)**:
 
@@ -19,8 +18,9 @@ Children up and down the country are \u2026
 """.strip()
 
         # use fixture named mention_webfeeds
-        self.send_and_test_stream_message('webfeeds', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("mention", fixture_name, file_type="json")
+        self.check_webhook(
+            "webfeeds",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )

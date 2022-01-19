@@ -2,10 +2,32 @@
 
 {% block portico_content %}
 
-<h1>{% trans %}Email settings updated{% endtrans %}</h1>
+<div class="app portico-page">
+    <div class="app-main portico-page-container center-block flex full-page new-style">
+        <div class="inline-block">
 
-<p>{% trans %}We've updated your email subscription settings, and you won't get {{ subscription_type }} emails anymore.{% endtrans %}</p>
+            <div class="get-started">
+                <h1>{{ _("Email settings updated") }}</h1>
+            </div>
 
-<p>{% trans %}To undo this change or review your other subscription settings, please visit your <a href="{{ realm_uri }}/#settings/notifications">Zulip Settings page</a>.{% endtrans %}</p>
+            <div class="white-box">
+                <p>
+                    {% trans %}
+                    You've successfully unsubscribed from Zulip {{ subscription_type }} emails.
+                    {% endtrans %}
+                </p>
+
+                <p>
+                    {% trans %}
+                    You can undo this change or review your
+                    preferences in your
+                    <a href="{{ realm_uri }}/#settings/notifications">Zulip notification
+                    settings</a>.
+                    {% endtrans %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

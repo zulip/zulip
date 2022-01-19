@@ -5,9 +5,9 @@
             <b>{{user_full_name}}</b>
             {{#if is_active }}
                 {{#if is_bot}}
-                <i class="zulip-icon bot" aria-hidden="true"></i>
+                <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
                 {{else}}
-                <span class="{{user_circle_class}} user_circle popover_user_presence" title="{{user_last_seen_time_status}}"></span>
+                <span class="{{user_circle_class}} user_circle popover_user_presence tippy-zulip-tooltip hidden-for-spectators" data-tippy-content="{{user_last_seen_time_status}}"></span>
                 {{/if}}
             {{/if}}
         </li>
@@ -15,129 +15,179 @@
 
         {{#if is_active }}
             {{#if show_email}}
-            <li class="user_popover_email">
-                <i class="fa fa-clone hide_copy_icon" data-clipboard-text="{{ user_email }}"></i>
-                {{ user_email }}
-                <div class="tooltip_holder">
-                    <span class="email_tooltip">{{ user_email }}</span>
-                </div>
-            </li>
+            {{!-- This div is added to enable interactivity for tooltip - https://atomiks.github.io/tippyjs/v5/accessibility/#interactivity --}}
+            <div>
+                <li class="user_popover_email">
+                    <i class="fa fa-clone hide_copy_icon" data-clipboard-text="{{ user_email }}"></i>
+                    {{ user_email }}
+                </li>
+            </div>
             {{/if}}
         {{else}}
-            <li class="user_popover_email half-opacity italic">{{#tr this}}(This user has been deactivated){{/tr}}</li>
+            <li class="user_popover_email half-opacity italic">{{#tr}}(This user has been deactivated){{/tr}}</li>
         {{/if}}
 
 
         {{#if user_time}}
-        <li>{{ user_time }} {{#tr this}}Local time{{/tr}}</li>
+        <li>{{ user_time }} {{#tr}}Local time{{/tr}}</li>
         {{/if}}
 
         {{#if is_bot}}
             {{#if bot_owner}}
-                <li>{{#tr this}}Owner{{/tr}}:
-                    <span class="bot-owner-name" data-bot-owner-id='{{ bot_owner.user_id }}'>
+                <li>{{#tr}}Owner{{/tr}}:
+                    <span class="bot-owner-name view_user_profile" data-user-id='{{ bot_owner.user_id }}'>
                         {{bot_owner.full_name}}
                     </span>
                 </li>
             {{else}}
-                {{#if is_cross_realm_bot}}
-                <li>{{#tr this}}System bot{{/tr}}</li>
+                {{#if is_system_bot}}
+                <li>{{#tr}}System bot{{/tr}}</li>
                 {{else}}
-                <li>{{#tr this}}Bot{{/tr}}</li>
+                <li>{{#tr}}Bot{{/tr}}</li>
                 {{/if}}
             {{/if}}
         {{else}}
             <li>{{ user_type }}</li>
         {{/if}}
+        <li class="only-visible-for-spectators">Joined {{date_joined}}</li>
     </div>
 
     {{#if is_me}}
         <hr />
         {{#if can_set_away}}
         <li>
-            <a href="#" class="set_away_status">
-                <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Set yourself as unavailable{{/tr}}
+            <a tabindex="0" class="set_away_status">
+                <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr}}Set yourself as unavailable{{/tr}}
             </a>
         </li>
         {{/if}}
         {{#if can_revoke_away}}
         <li>
-            <a href="#" class="revoke_away_status">
-                <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Set yourself as active{{/tr}}
+            <a tabindex="0" class="revoke_away_status">
+                <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr}}Set yourself as available{{/tr}}
             </a>
         </li>
         {{/if}}
         <li>
-            <a href="#" class="update_status_text">
+            <a tabindex="0" class="update_status_text">
                 <i class="fa fa-comments" aria-hidden="true"></i>
                 {{#if status_text}}
-                    {{#tr this}}Edit status message{{/tr}}
+                    {{#tr}}Edit status{{/tr}}
                 {{else}}
-                    {{#tr this}}Set a status message{{/tr}}
+                    {{#tr}}Set a status{{/tr}}
                 {{/if}}
             </a>
         </li>
     {{/if}}
 
-    {{#if status_text}}
+    {{#if status_content_available}}
         {{#unless is_me}}<hr />{{/unless}}
         <li class="user_info_status_text">
             <span id="status_message">
+                {{#if status_emoji_info}}
+                    {{#if status_emoji_info.emoji_alt_code}}
+                        <div class="emoji_alt_code">&nbsp:{{status_emoji_info.emoji_name}}:</div>
+                    {{else}}
+                        {{#if status_emoji_info.url}}
+                        <img src="{{status_emoji_info.url}}" class="emoji status_emoji" />
+                        {{else}}
+                        <div class="emoji status_emoji emoji-{{status_emoji_info.emoji_code}}"></div>
+                        {{/if}}
+                    {{/if}}
+                {{/if}}
                 {{status_text}}
-                {{#if is_me}}(<a href="#" class="clear_status">{{#tr this}}clear{{/tr}}</a>){{/if}}
+                {{#if is_me}}(<a tabindex="0" class="clear_status">{{#tr}}clear{{/tr}}</a>){{/if}}
             </span>
         </li>
     {{/if}}
 
-    <hr />
-    {{#if show_user_profile}}
-    <li>
-        <a href="#" class="view_user_profile">
-            {{#if is_me}}
-                <i class="fa fa-user" aria-hidden="true"></i> {{#tr this}}View your profile{{/tr}}
-            {{else}}
-                <i class="fa fa-user" aria-hidden="true"></i> {{#tr this}}View full profile{{/tr}}
-            {{/if}}
-        </a>
-    </li>
-    {{/if}}
-    {{#if is_active}}
-        {{#unless is_me}}
+    {{#if spectator_view}}
+    {{else}}
+
+        <hr />
+        {{#if show_user_profile}}
         <li>
-            <a href="#" class="{{ private_message_class }}">
-                <i class="fa fa-envelope" aria-hidden="true"></i> {{#tr this}}Send private message{{/tr}} {{#if is_sender_popover}}<span class="hotkey-hint">(R)</span>{{/if}}
+            <a tabindex="0" class="view_full_user_profile">
+                {{#if is_me}}
+                    <i class="fa fa-user" aria-hidden="true"></i> {{#tr}}View your profile{{/tr}}
+                {{else}}
+                    <i class="fa fa-user" aria-hidden="true"></i> {{#tr}}View full profile{{/tr}}
+                {{/if}}
             </a>
         </li>
-        {{/unless}}
-    {{/if}}
-    {{#unless is_me}}
-    <li>
-        <a href="#" class="mention_user">
-            <i class="fa fa-at" aria-hidden="true"></i> {{#tr this}}Reply mentioning user{{/tr}} {{#if is_sender_popover}}<span class="hotkey-hint">(@)</span>{{/if}}
-        </a>
-    </li>
-    {{/unless}}
-    {{#if is_me}}
-    <li>
-        <a href="/#settings/your-account">
-            <i class="fa fa-edit" aria-hidden="true"></i> {{#tr this}}Edit your profile{{/tr}}
-        </a>
-    </li>
-    {{/if}}
-    <hr />
-    <li>
-        <a href="{{ pm_with_uri }}" class="narrow_to_private_messages">
-            <i class="fa fa-lock" aria-hidden="true"></i>
-            {{#if is_me}}
-                {{#tr this}}View private messages to myself{{/tr}}
+        {{/if}}
+        {{#if is_active}}
+            {{#unless is_me}}
+            <li>
+                <a tabindex="0" class="{{ private_message_class }}">
+                    <i class="fa fa-envelope" aria-hidden="true"></i> {{#tr}}Send private message{{/tr}} {{#if is_sender_popover}}<span class="hotkey-hint">(R)</span>{{/if}}
+                </a>
+            </li>
+            {{/unless}}
+        {{/if}}
+        {{#unless is_me}}
+        <li>
+            {{#if has_message_context}}
+            <a tabindex="0" class="mention_user">
+                <i class="fa fa-at" aria-hidden="true"></i>
+                {{#tr}}Reply mentioning user{{/tr}}
+                {{#if is_sender_popover}}<span class="hotkey-hint">(@)</span>{{/if}}
+            </a>
             {{else}}
-                {{#tr this}}View private messages{{/tr}}
+            <a tabindex="0" class="copy_mention_syntax" data-clipboard-text="{{ user_mention_syntax }}">
+                <i class="fa fa-at" aria-hidden="true"></i>
+                {{#tr}}Copy mention syntax{{/tr}}
+                {{#if is_sender_popover}}<span class="hotkey-hint">(@)</span>{{/if}}
+            </a>
             {{/if}}
-        </a>
-    </li>
-    <li>
-        <a href="{{ sent_by_uri }}" class="narrow_to_messages_sent">
-            <i class="fa fa-bullhorn" aria-hidden="true"></i> {{#tr this}}View messages sent{{/tr}}
-        </a>
-    </li>
+        </li>
+        {{/unless}}
+        {{#if is_me}}
+        <li>
+            <a href="/#settings/profile">
+                <i class="fa fa-edit" aria-hidden="true"></i> {{#tr}}Edit your profile{{/tr}}
+            </a>
+        </li>
+        {{/if}}
+        <hr />
+        <li>
+            <a href="{{ pm_with_uri }}" class="narrow_to_private_messages">
+                <i class="fa fa-lock" aria-hidden="true"></i>
+                {{#if is_me}}
+                    {{#tr}}View private messages to myself{{/tr}}
+                {{else}}
+                    {{#tr}}View private messages{{/tr}}
+                {{/if}}
+            </a>
+        </li>
+        <li>
+            <a href="{{ sent_by_uri }}" class="narrow_to_messages_sent">
+                <i class="fa fa-paper-plane" aria-hidden="true"></i> {{#tr}}View messages sent{{/tr}}
+            </a>
+        </li>
+
+        {{#if can_mute }}
+        <hr />
+        <li>
+            <a tabindex="0" class="sidebar-popover-mute-user">
+                <i class="fa fa-eye-slash" aria-hidden="true"></i> {{#tr}}Mute this user{{/tr}}
+            </a>
+        </li>
+        {{/if}}
+        {{#if can_unmute}}
+        <hr />
+        <li>
+            <a tabindex="0" class="sidebar-popover-unmute-user">
+                <i class="fa fa-eye" aria-hidden="true"></i> {{#tr}}Unmute this user{{/tr}}
+            </a>
+        </li>
+        {{/if}}
+        {{#if show_manage_user_option}}
+        <li>
+            <a tabindex="0" class="sidebar-popover-manage-user">
+                <i class="fa fa-edit" aria-hidden="true"></i> {{#tr}}Manage this user{{/tr}}
+            </a>
+        </li>
+        {{/if}}
+    {{/if}}
 </ul>

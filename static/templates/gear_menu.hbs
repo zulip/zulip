@@ -1,0 +1,134 @@
+<ul class="nav" role="navigation">
+    <li class="dropdown actual-dropdown-menu" id="gear-menu">
+        <a id="settings-dropdown" href="#" role="button" class="dropdown-toggle" data-target="nada" data-toggle="dropdown" title="{{t 'Menu' }} (g)">
+            <i class="fa fa-cog settings-dropdown-cog" aria-hidden="true"></i>
+        </a>
+        <ul class="dropdown-menu" role="menu" aria-labelledby="settings-dropdown">
+            {{!-- It is quite ingrained in our frontend code that your Home
+            view is a Bootstrap nav tab, even though we don't show the tab
+            anymore --}}
+            <li class="invisible" style="display:none;" role="presentation"><a href="#message_feed_container" data-toggle="tab"></a></li>
+            <li class="hidden-for-spectators" role="presentation">
+                <a href="#streams/subscribed" role="menuitem">
+                    <i class="fa fa-exchange" aria-hidden="true"></i> {{t 'Manage streams' }}
+                </a>
+            </li>
+            <li class="hidden-for-spectators" role="presentation">
+                <a href="#settings" role="menuitem">
+                    <i class="fa fa-wrench" aria-hidden="true"></i> {{t 'Personal settings' }}
+                </a>
+            </li>
+            <li class="admin-menu-item hidden-for-spectators" role="presentation">
+                <a href="#organization" role="menuitem">
+                    <i class="fa fa-bolt" aria-hidden="true"></i>
+                    <span>{{t 'Manage organization' }}</span>
+                </a>
+            </li>
+            {{#unless is_guest}}
+            <li class="hidden-for-spectators" role="presentation">
+                <a href="/stats" target="_blank" rel="noopener noreferrer" role="menuitem">
+                    <i class="fa fa-bar-chart" aria-hidden="true"></i>
+                    <span>{{t 'Usage statistics' }}</span>
+                </a>
+            </li>
+            {{/unless}}
+            <li class="divider hidden-for-spectators" role="presentation"></li>
+            <li role="presentation">
+                <a href="/help" target="_blank" rel="noopener noreferrer" role="menuitem">
+                    <i class="fa fa-question-circle" aria-hidden="true"></i> {{t 'Help center' }}
+                </a>
+            </li>
+            <li role="presentation">
+                <a tabindex="0" role="menuitem" data-overlay-trigger="keyboard-shortcuts">
+                    <i class="fa fa-keyboard-o" aria-hidden="true"></i> {{t 'Keyboard shortcuts' }} <span class="hotkey-hint">(?)</span>
+                </a>
+            </li>
+            <li role="presentation">
+                <a tabindex="0" role="menuitem" data-overlay-trigger="message-formatting">
+                    <i class="fa fa-pencil" aria-hidden="true"></i> {{t 'Message formatting' }}
+                </a>
+            </li>
+            <li role="presentation">
+                <a tabindex="0" role="menuitem" data-overlay-trigger="search-operators">
+                    <i class="fa fa-search" aria-hidden="true"></i> {{t 'Search operators' }}
+                </a>
+            </li>
+            <li role="presentation" id="gear_menu_about_zulip">
+                <a href="#about-zulip" role="menuitem" class="menuitem-version">
+                    <span class="white_zulip_icon_without_text"></span>
+                    <span class="about_zulip_text">{{t "About Zulip" }}</span>
+                </a>
+            </li>
+            {{#if corporate_enabled}}
+            <li role="presentation">
+                <a href="/help/contact-support" target="_blank" rel="noopener noreferrer" role="menuitem">
+                    <i class="fa fa-envelope" aria-hidden="true"></i> {{t 'Contact support' }}
+                </a>
+            </li>
+            {{/if}}
+            <li class="divider" role="presentation"></li>
+            <li role="presentation">
+                <a href="{{ apps_page_url }}" target="_blank" rel="noopener noreferrer" role="menuitem">
+                    <i class="fa fa-desktop" aria-hidden="true"></i> {{t 'Desktop & mobile apps' }}
+                </a>
+            </li>
+            <li role="presentation">
+                <a href="/integrations" target="_blank" rel="noopener noreferrer" role="menuitem">
+                    <i class="fa fa-github" aria-hidden="true"></i> {{t 'Integrations' }}
+                </a>
+            </li>
+            <li role="presentation">
+                <a href="/api" target="_blank" rel="noopener noreferrer" role="menuitem">
+                    <i class="fa fa-sitemap" aria-hidden="true"></i> {{t 'API documentation' }}
+                </a>
+            </li>
+            {{#if show_billing}}
+            <li role="presentation">
+                <a href="/billing" target="_blank" rel="noopener noreferrer" role="menuitem">
+                    <i class="fa fa-credit-card" aria-hidden="true"></i> {{t 'Billing' }}
+                </a>
+            </li>
+            {{/if}}
+            {{#if promote_sponsoring_zulip}}
+            <li role="presentation">
+                <a href="https://github.com/sponsors/zulip" target="_blank" rel="noopener noreferrer" role="menuitem">
+                    <i class="fa fa-heart" aria-hidden="true"></i> {{t 'Support Zulip' }}
+                </a>
+            </li>
+            {{/if}}
+            {{#if show_plans}}
+            <li role="presentation">
+                <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">
+                    <i class="fa fa-rocket" aria-hidden="true"></i> {{t 'Plans and pricing' }}
+                </a>
+            </li>
+            {{/if}}
+            <li class="divider" role="presentation"></li>
+            {{#if can_invite_others_to_realm}}
+            <li role="presentation">
+                <a href="#invite" role="menuitem">
+                    <i class="fa fa-user-plus" aria-hidden="true"></i> {{t 'Invite users' }}
+                </a>
+            </li>
+            <li class="divider" role="presentation"></li>
+            {{/if}}
+            {{#if show_webathena}}
+            <li title="{{t 'Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena' }}" id="webathena_login_menu" role="presentation">
+                <a href="#webathena" class="webathena_login" role="menuitem">
+                    <i class="fa fa-bolt" aria-hidden="true"></i>{{t 'Link with Webathena' }}
+                </a>
+            </li>
+            {{/if}}
+            <li role="presentation" class="only-visible-for-spectators">
+                <a href="/login" role="menuitem">
+                    <i class="fa fa-sign-in" aria-hidden="true"></i> {{t 'Log in' }}
+                </a>
+            </li>
+            <li role="presentation">
+                <a href="#logout" class="logout_button hidden-for-spectators" role="menuitem">
+                    <i class="fa fa-power-off" aria-hidden="true"></i> {{t 'Log out' }}
+                </a>
+            </li>
+        </ul>
+    </li>
+</ul>

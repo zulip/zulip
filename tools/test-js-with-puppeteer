@@ -1,102 +1,150 @@
 #!/usr/bin/env python3
 import argparse
+import os
+import shlex
 import subprocess
 import sys
-import os
-import glob
-import shlex
+
+import requests
+
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+from scripts.lib.zulip_tools import ENDC, FAIL, OKGREEN
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from zerver.lib.test_fixtures import reset_zulip_test_database
 
+# Request the special webpack setup for frontend integration tests,
+# where webpack assets are compiled up front rather than running in
+# watch mode.
 os.environ["PUPPETEER_TESTS"] = "1"
-os.environ["CHROMIUM_EXECUTABLE"] = os.path.join(ZULIP_PATH, "node_modules/.bin/chromium")
+
+# The locale can have impact how Firefox does locale-aware sorting,
+# which we do verify in some tests.
+os.environ["LC_ALL"] = "C.UTF-8"
+
 os.environ.pop("http_proxy", "")
 os.environ.pop("https_proxy", "")
 
 usage = """test-js-with-puppeteer [options]
     test-js-with-puppeteer # Run all test files
-    test-js-with-puppeteer 09-navigation.js # Run a single test file
-    test-js-with-puppeteer 09 # Run a single test file 09-navigation.js
-    test-js-with-puppeteer 01-login.js 03-narrow.js # Run a few test files
-    test-js-with-puppeteer 01 03 # Run a few test files, 01-login.js and 03-narrow.js here"""
-parser = argparse.ArgumentParser(usage)
-
-parser.add_argument('--interactive', dest='interactive',
-                    action="store_true",
-                    default=False, help='Run tests interactively')
-parser.add_argument('--force', dest='force',
-                    action="store_true",
-                    default=False, help='Run tests despite possible problems.')
-parser.add_argument('tests', nargs=argparse.REMAINDER,
-                    help='Specific tests to run; by default, runs all tests')
-
-options = parser.parse_args()
+    test-js-with-puppeteer navigation.ts # Run a single test file
+    test-js-with-puppeteer navi # Run a single test file navigation.ts
+    test-js-with-puppeteer login.ts compose.ts # Run a few test files
+    test-js-with-puppeteer login compose # Run a few test files, login.ts and compose.ts here"""
 
 sys.path.insert(0, ZULIP_PATH)
 
 # check for the venv
 from tools.lib import sanity_check
+
 sanity_check.check_venv(__file__)
 
-from tools.lib.test_script import assert_provisioning_status_ok
+from typing import Iterable, Tuple
+
+from tools.lib.test_script import (
+    add_provision_check_override_param,
+    assert_provisioning_status_ok,
+    find_js_test_files,
+    prepare_puppeteer_run,
+)
 from tools.lib.test_server import test_server_running
 
-from typing import Iterable
+parser = argparse.ArgumentParser(usage)
 
-assert_provisioning_status_ok(options.force)
+parser.add_argument("--interactive", action="store_true", help="Run tests interactively")
+add_provision_check_override_param(parser)
+parser.add_argument("--firefox", action="store_true", help="Run tests with firefox.")
+parser.add_argument(
+    "tests", nargs=argparse.REMAINDER, help="Specific tests to run; by default, runs all tests"
+)
 
-os.chdir(ZULIP_PATH)
+options = parser.parse_args()
 
-subprocess.check_call(['node', 'node_modules/puppeteer/install.js'])
-
-os.makedirs('var/puppeteer', exist_ok=True)
-
-for f in glob.glob('var/puppeteer/puppeteer-failure*.png'):
-    os.remove(f)
 
 def run_tests(files: Iterable[str], external_host: str) -> None:
-    test_dir = os.path.join(ZULIP_PATH, 'frontend_tests/puppeteer_tests')
-    test_files = []
-    for file in files:
-        for file_name in os.listdir(test_dir):
-            if file_name.startswith(file):
-                file = file_name
-                break
-        if not os.path.exists(file):
-            file = os.path.join(test_dir, file)
-        test_files.append(os.path.abspath(file))
+    test_dir = os.path.join(ZULIP_PATH, "frontend_tests/puppeteer_tests")
+    test_files = find_js_test_files(test_dir, files)
+    total_tests = len(test_files)
 
-    if not test_files:
-        test_files = sorted(glob.glob(os.path.join(test_dir, '*.js')))
-
-    def run_tests() -> int:
+    def run_tests(test_number: int = 0) -> Tuple[int, int]:
         ret = 1
-        for test_file in test_files:
+        current_test_num = test_number
+        for test_file in test_files[test_number:]:
             test_name = os.path.basename(test_file)
-            cmd = ["node"] + [test_file]
-            print("\n\n===================== %s\nRunning %s\n\n" % (test_name, " ".join(map(shlex.quote, cmd))), flush=True)
+            cmd = [
+                "node",
+                "--unhandled-rejections=strict",
+                os.path.join(ZULIP_PATH, "node_modules/.bin/ts-node"),
+                "--script-mode",
+                "--transpile-only",
+                test_file,
+            ]
+            print(
+                "\n\n===================== ({}/{}) {}\nRunning {}\n\n".format(
+                    current_test_num + 1, total_tests, test_name, " ".join(map(shlex.quote, cmd))
+                ),
+                flush=True,
+            )
             ret = subprocess.call(cmd)
-            if ret != 0:
-                return ret
-        return 0
 
-    with test_server_running(False, external_host):
+            # Resetting test environment.
+            reset_zulip_test_database()
+            # We are calling to /flush_caches to remove all the server-side caches.
+            response = requests.post("http://zulip.zulipdev.com:9981/flush_caches")
+            assert response.status_code == 200
+
+            if ret != 0:
+                return ret, current_test_num
+            current_test_num += 1
+        return 0, -1
+
+    with test_server_running(options.skip_provision_check, external_host):
         # Important: do this next call inside the `with` block, when Django
         #            will be pointing at the test database.
-        subprocess.check_call('tools/setup/generate-test-credentials')
+        subprocess.check_call("tools/setup/generate-test-credentials")
         if options.interactive:
             response = input('Press Enter to run tests, "q" to quit: ')
             ret = 1
-            while response != 'q':
-                ret = run_tests()
+            failed_test_num = 0
+            while response != "q" and failed_test_num != -1:
+                ret, failed_test_num = run_tests(failed_test_num)
                 if ret != 0:
                     response = input('Tests failed. Press Enter to re-run tests, "q" to quit: ')
         else:
             ret = 1
-            ret = run_tests()
+            ret, current_test_num = run_tests()
     if ret != 0:
+        failed_test_file_name = os.path.basename(test_files[current_test_num])
+        print(
+            f"""
+{FAIL}The Puppeteer frontend tests failed! The failing test was:
+    ./tools/test-js-with-puppeteer {"--firefox " if options.firefox else ""}{failed_test_file_name}{ENDC}
+For help debugging, read:
+  https://zulip.readthedocs.io/en/latest/testing/testing-with-puppeteer.html
+or report and ask for help in chat.zulip.org""",
+            file=sys.stderr,
+        )
+        if os.environ.get("GITHUB_ACTIONS"):
+            print("", file=sys.stderr)
+            print(
+                """
+See https://docs.github.com/en/rest/reference/actions#artifacts for information
+on how to view the generated screenshots, which are uploaded as Artifacts.
+Screenshots are extremely helpful for understanding puppeteer test failures.
+            """,
+                file=sys.stderr,
+            )
+            print("", file=sys.stderr)
+        else:
+            print(
+                "It's also worthy to see screenshots generated on failure stored under var/puppeteer/*.png"
+            )
         sys.exit(ret)
 
+
 external_host = "zulipdev.com:9981"
+assert_provisioning_status_ok(options.skip_provision_check)
+prepare_puppeteer_run(is_firefox=options.firefox)
 run_tests(options.tests, external_host)
+print(f"{OKGREEN}All tests passed!{ENDC}")
 sys.exit(0)

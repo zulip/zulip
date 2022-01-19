@@ -1,40 +1,55 @@
-exports.t = function (str, context) {
-    // HAPPY PATH: most translations are a simple string:
-    if (context === undefined) {
-        return 'translated: ' + str;
-    }
+"use strict";
 
-    /*
-    context will be an ordinary JS object like this:
+const {createIntl, createIntlCache} = require("@formatjs/intl");
+const _ = require("lodash");
 
-        {minutes: minutes.toString()}
+const cache = createIntlCache();
 
-    This supports use cases like the following:
+exports.intl = createIntl(
+    {
+        locale: "en",
+        defaultLocale: "en",
+        defaultRichTextElements: Object.fromEntries(
+            ["b", "code", "em", "i", "kbd", "p", "strong"].map((tag) => [
+                tag,
+                (content_html) => `<${tag}>${content_html}</${tag}>`,
+            ]),
+        ),
+    },
+    cache,
+);
 
-        i18n.t("__minutes__ min to edit", {minutes: minutes.toString()})
+exports.$t = (descriptor, values) =>
+    "translated: " +
+    exports.intl.formatMessage(
+        {
+            ...descriptor,
+            id: `${descriptor.defaultMessage}#${descriptor.description}`,
+        },
+        values,
+    );
 
-    We have to munge in the context here.
-    */
-    const keyword_regex = /__(- )?(\w)+__/g;
-    const keys_in_str = str.match(keyword_regex) || [];
-    const substitutions = keys_in_str.map(key => {
-        let prefix_length;
-        if (key.startsWith("__- ")) {
-            prefix_length = 4;
-        } else {
-            prefix_length = 2;
-        }
-        return {
-            keyword: key.slice(prefix_length, key.length - 2),
-            prefix: key.slice(0, prefix_length),
-            suffix: key.slice(key.length - 2, key.length),
-        };
-    });
+const default_html_elements = Object.fromEntries(
+    ["b", "code", "em", "i", "kbd", "p", "strong"].map((tag) => [
+        tag,
+        (content_html) => `<${tag}>${content_html}</${tag}>`,
+    ]),
+);
 
-    for (const item of substitutions) {
-        str = str.replace(item.prefix + item.keyword + item.suffix,
-                          context[item.keyword]);
-    }
-
-    return 'translated: ' + str;
-};
+exports.$t_html = (descriptor, values) =>
+    "translated HTML: " +
+    exports.intl.formatMessage(
+        {
+            ...descriptor,
+            id: `${descriptor.defaultMessage}#${descriptor.description}`,
+        },
+        {
+            ...default_html_elements,
+            ...Object.fromEntries(
+                Object.entries(values ?? {}).map(([key, value]) => [
+                    key,
+                    typeof value === "function" ? value : _.escape(value),
+                ]),
+            ),
+        },
+    );

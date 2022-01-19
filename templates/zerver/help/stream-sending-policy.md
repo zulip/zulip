@@ -18,6 +18,6 @@ certain users can send messages.
 
 1. Under "Who can post to the stream?", select the option you prefer.
 
-1. Click **Save Changes**.
+1. Click **Save changes**.
 
 {end_tabs}

@@ -3,8 +3,11 @@ from typing import Any
 from django.core.management.base import CommandParser
 
 from zerver.lib.management import ZulipBaseCommand
-from zerver.lib.retention import restore_all_data_from_archive, \
-    restore_data_from_archive, restore_data_from_archive_by_realm
+from zerver.lib.retention import (
+    restore_all_data_from_archive,
+    restore_data_from_archive,
+    restore_data_from_archive_by_realm,
+)
 from zerver.models import ArchiveTransaction
 
 
@@ -19,29 +22,40 @@ Zulip's message retention and deletion features.
 
 Examples:
 To restore all recently deleted messages:
-  ./manage.py restore_messages
+  ./manage.py restore_messages --all --restore-deleted
 To restore a specific ArchiveTransaction:
   ./manage.py restore_messages --transaction-id=1
 """
 
     def add_arguments(self, parser: CommandParser) -> None:
-        parser.add_argument('-d', '--restore-deleted',
-                            dest='restore_deleted',
-                            action='store_true',
-                            help='Restore manually deleted messages.')
-        parser.add_argument('-t', '--transaction-id',
-                            dest='transaction_id',
-                            type=int,
-                            help='Restore a specific ArchiveTransaction.')
+        parser.add_argument(
+            "--all",
+            action="store_true",
+            help="Restore archived messages from all realms. "
+            "(Does not restore manually deleted messages.)",
+        )
+        parser.add_argument(
+            "--restore-deleted",
+            action="store_true",
+            help="With --all, also restores manually deleted messages.",
+        )
+        parser.add_argument(
+            "-t", "--transaction-id", type=int, help="Restore a specific ArchiveTransaction."
+        )
 
-        self.add_realm_args(parser, help='Restore archived messages from the specified realm. '
-                                         '(Does not restore manually deleted messages.)')
+        self.add_realm_args(
+            parser,
+            help="Restore archived messages from the specified realm. "
+            "(Does not restore manually deleted messages.)",
+        )
 
-    def handle(self, **options: Any) -> None:
+    def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         if realm:
             restore_data_from_archive_by_realm(realm)
-        elif options['transaction_id']:
-            restore_data_from_archive(ArchiveTransaction.objects.get(id=options['transaction_id']))
+        elif options["transaction_id"]:
+            restore_data_from_archive(ArchiveTransaction.objects.get(id=options["transaction_id"]))
+        elif options["all"]:
+            restore_all_data_from_archive(restore_manual_transactions=options["restore_deleted"])
         else:
-            restore_all_data_from_archive(restore_manual_transactions=options['restore_deleted'])
+            self.print_help("./manage.py", "restore_messages")

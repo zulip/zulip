@@ -1,7 +1,7 @@
 # Shell tips
 
-The *shell* is a **command line interpreter**. To use it you can open a
-*terminal* (sometimes called a *console*). This is how most terminal windows
+The _shell_ is a **command line interpreter**. To use it you can open a
+_terminal_ (sometimes called a _console_). This is how most terminal windows
 look like:
 
 ![An example shell window](../images/shell-screenshot.png)
@@ -26,12 +26,12 @@ awaiting new orders. The prompt can contain useful information, let's look
 at `(venv)john@laptop:~$`:
 
 - `(venv)` informs the user that they're currently in a virtual environment
-(more on [Python virtual
+  (more on [Python virtual
   environments](https://docs.python-guide.org/dev/virtualenvs/))
 - the `john` before `@` is the username
 - the `laptop` is the host machine name
 - the `~` after the colon informs the user they're currently in the home
-folder of the user `john`
+  folder of the user `john`
 
 You shouldn't type the prompt or the text preceding it, since it isn't a
 part of the commands.
@@ -44,7 +44,7 @@ abbreviation for your home directory (`/home/YOUR_USERNAME` most of the times).
 That's why the following is exactly the same, if the user running it is
 `john`:
 
-```
+```console
 $ cd ~
 $ cd /home/john
 ```
@@ -58,7 +58,7 @@ directory, instead of writing the whole path.
 Imagine you have a file called `ideas.txt` inside `/home/john/notes/`, and
 you want to edit it using `nano`. You could use:
 
-```
+```console
 $ nano /home/john/notes/ideas.txt
 ```
 
@@ -69,7 +69,7 @@ That's why it's very useful to change the path where you are currently
 located (usually known as **working directory**). To do that, you use `cd`
 (**c**hange **d**irectory):
 
-```
+```console
 $ cd /home/john/notes/
 ~/notes$ nano ideas.txt
 ```
@@ -89,7 +89,7 @@ shell that the following command must be run as the root - a user that by
 default has access to all commands and files on a Unix operating system (i.e.
 a user with administrator privileges). That's why you may be asked for a
 password in those cases: the system verifies you have permission to act as
-the *root* user.
+the _root_ user.
 
 In case you were wondering, the name `sudo` comes from **s**uper **u**ser
 **do**.
@@ -99,7 +99,7 @@ In case you were wondering, the name `sudo` comes from **s**uper **u**ser
 Some characters cannot be used directly in the shell, because they have a
 special meaning. Consider the following example:
 
-```
+```console
 $ echo "He said hello"
 He said hello
 ```
@@ -118,7 +118,7 @@ before it.
 
 Returning to our example:
 
-```
+```console
 $ echo "He said \"hello\""
 He said "hello"
 ```
@@ -138,7 +138,7 @@ the shell provides two different separators:
 - **Semicolon `;`**: runs a command, and once it has finished, runs the next
   one:
 
-  ```
+  ```console
   $ echo "Hello"; echo "World!"
   Hello
   World!
@@ -147,7 +147,7 @@ the shell provides two different separators:
 - **Double ampersand `&&`**: runs a command, and **only if** it finished
   without errors, it proceeds with the next one:
 
-  ```
+  ```console
   $ qwfvijwe && echo "Hello"
   qwfvijwe: command not found
   ```
@@ -158,7 +158,7 @@ the shell provides two different separators:
   When using an incorrect command with a semicolon, the `Hello` will still
   be printed:
 
-  ```
+  ```console
   $ qwfvijwe; echo "Hello"
   qwfvijwe: command not found
   Hello
@@ -176,9 +176,9 @@ shell "wait, there's more on the next line".
 This is an example, taken from the docs on how to install the Zulip development
 environment:
 
-```
+```bash
 sudo apt-get -y purge vagrant && \
-wget https://releases.hashicorp.com/vagrant/2.0.2/vagrant_2.0.2_x86_64.deb && \
+curl -fLO https://releases.hashicorp.com/vagrant/2.0.2/vagrant_2.0.2_x86_64.deb && \
 sudo dpkg -i vagrant*.deb && \
 sudo apt-get -y install build-essential git ruby lxc lxc-templates cgroup-lite redir && \
 vagrant plugin install vagrant-lxc && \
@@ -204,16 +204,16 @@ Most commands need additional data to work, like a path or a file. That extra
 information is called an **argument**, and it's specified after the name of the
 command, like this:
 
-```
+```console
 $ cd /home/john/notes
 ```
 
 Here, the command is `cd`, and the first (and only) argument is
 `/home/john/notes`:
 
-- `cd` - *command*: changes your current directory.
+- `cd` - _command_: changes your current directory.
 
-- `/home/john/notes` - *argument*: the directory where you want to go.
+- `/home/john/notes` - _argument_: the directory where you want to go.
 
 In each command the arguments are specified in different ways, and have
 different meanings.
@@ -221,7 +221,7 @@ different meanings.
 Sometimes, a command can accept arguments indicated with dashes. Here's another
 example of arguments usage:
 
-```
+```console
 $ nano -C /home/john/backups --mouse todo.txt
 ```
 
@@ -232,20 +232,20 @@ In this case, we're saying: "Bash, use the app `nano` to open the file
 `todo.txt`, enabling mouse support, and saving the backup files to
 `/home/john/backups`". The different parts are:
 
-- `nano` - *command*: program that allows editing text easily.
+- `nano` - _command_: program that allows editing text easily.
 
-- `-C` - *argument*: needs you to indicate where the backups should be stored,
+- `-C` - _argument_: needs you to indicate where the backups should be stored,
   and thus you have to add an additional argument after it, to specify the
   directory (`/home/john/backups` in the example).
 
-- `--mouse` - *argument*: is just an option you set, `nano` doesn't need
+- `--mouse` - _argument_: is just an option you set, `nano` doesn't need
   anything else to make it work. Thus, there isn't any extra argument for that.
 
 Note that the `todo.txt` is the file we want to open! It has nothing to do with
 the previous argument. This will probably clarify it (taken from `nano`'s
 help):
 
-```
+```console
 Usage: nano [OPTIONS] [FILE]...
 ```
 
@@ -263,13 +263,13 @@ them.
 That's why you may have seen cases, in the Zulip codebase or
 elsewhere, when some Python scripts are called with `python`:
 
-```
+```console
 $ python my_program.py
 ```
 
 While other times, `python` isn't used:
 
-```
+```console
 $ ./my_program.py
 ```
 
@@ -281,7 +281,7 @@ The note telling the OS how to interpret the file goes on the file's
 very first line, and it's called a **shebang**. In our Python scripts,
 it looks like this:
 
-```
+```python
 #!/usr/bin/env python3
 ```
 
@@ -294,17 +294,17 @@ added as a command-line argument. So, returning to our example with
 `my_program.py`, when you run `./my_program.py`, what happens under
 the hood is equivalent to:
 
-```
+```console
 $ /usr/bin/env python3 ./my_program.py
 ```
 
 The purpose of `/usr/bin/env` in our shebangs is as a way to locate
 the `python3` program in your current environment, the same one the
-shell would use if you ran `python3 my_program.py`.  You may see
+shell would use if you ran `python3 my_program.py`. You may see
 Python scripts outside of Zulip with a shebang like
 `#!/usr/bin/python3`; but because of the way Python virtualenvs work,
 this has the effect of running the script outside of any currently
-activated virtualenv.  We use `/usr/bin/env` to keep our scripts
+activated virtualenv. We use `/usr/bin/env` to keep our scripts
 running inside the virtualenv where we've installed all our
 dependencies.
 
@@ -340,7 +340,7 @@ extremely useful and even easy to use (at least the 99% of the time).
 
 To learn more about how to use it, read
 [our docs](../git/index.md) on Git and
-Github.
+GitHub.
 
 [This cheatsheet][git-cheat-detailed]
 will be useful in your journey, as well.

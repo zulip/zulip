@@ -1,5 +1,4 @@
 class zulip::static_asset_compiler {
-  include zulip::common
   case $::osfamily {
     'debian': {
       $static_asset_compiler_packages = [

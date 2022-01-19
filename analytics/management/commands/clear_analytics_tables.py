@@ -10,12 +10,12 @@ class Command(BaseCommand):
     help = """Clear analytics tables."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('--force',
-                            action='store_true',
-                            help="Clear analytics tables.")
+        parser.add_argument("--force", action="store_true", help="Clear analytics tables.")
 
     def handle(self, *args: Any, **options: Any) -> None:
-        if options['force']:
+        if options["force"]:
             do_drop_all_analytics_tables()
         else:
-            raise CommandError("Would delete all data from analytics tables (!); use --force to do so.")
+            raise CommandError(
+                "Would delete all data from analytics tables (!); use --force to do so."
+            )

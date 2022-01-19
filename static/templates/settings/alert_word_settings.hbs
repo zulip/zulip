@@ -10,5 +10,31 @@
         </button>
         <span class="alert_word_status_text"></span>
     </div>
-    <ul id="alert_words_list"></ul>
+    <form id="create_alert_word_form" class="form-horizontal">
+        <div class="add-new-alert-word-box grey-box">
+            <div class="new-alert-word-form">
+                <h4 class="new-alert-word-section-title settings-section-title no-padding">{{t "Add a new alert word"}}</h4>
+                <div class="new-alert-word-form">
+                    <div class="input-group">
+                        <label for="create_alert_word_name">{{t "New alert word" }}</label>
+                        <input type="text" name="alert_word_name" id="create_alert_word_name" class="required"
+                          maxlength=100 placeholder="{{t 'Alert word' }}" value="" />
+                    </div>
+                    <button class="button rounded sea-green add-alert-word" id="create_alert_word_button" type="button">
+                        {{t 'Add alert word'}}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+    <div class="progressive-table-wrapper" data-simplebar>
+        <table class="table table-condensed table-striped wrapped-table">
+            <thead>
+                <th class="active">{{t "Word" }}</th>
+                <th>{{t "Actions" }}</th>
+            </thead>
+            <tbody id="alert_words_list" class="alert_words_list required-text thick"
+              data-empty="{{t 'There are no current alert words.' }}"></tbody>
+        </table>
+    </div>
 </div>

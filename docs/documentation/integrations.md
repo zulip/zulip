@@ -1,49 +1,61 @@
 # Documenting an integration
 
-Every Zulip integration must be documented in
-`zerver/webhooks/mywebhook/doc.md` (or
-`templates/zerver/integrations/<integration_name>.md`, for non-webhook
+In order for a [Zulip
+integration](https://zulip.com/api/integrations-overview) to be useful
+to users, it must be documented. Zulip's common system for documenting
+integrations involves writing Markdown files, either at
+`zerver/webhooks/{webhook_name}/doc.md` (for webhook integrations) or
+`templates/zerver/integrations/{integration_name}.md` (for other
 integrations).
 
 Usually, this involves a few steps:
 
-* Add text explaining all of the steps required to setup the
+- Add text explaining all of the steps required to set up the
   integration, including what URLs to use, etc. See
   [Writing guidelines](#writing-guidelines) for detailed writing guidelines.
 
   Zulip's pre-defined Markdown macros can be used for some of these steps.
   See [Markdown macros](#markdown-macros) for further details.
 
-* Make sure you've added your integration to
-  `zerver/lib/integrations.py`; this results in your integration
-  appearing on the `/integrations` page.
+- Make sure you've added your integration to
+  `zerver/lib/integrations.py` in both the `WEBHOOK_INTEGRATIONS`
+  section (or `INTEGRATIONS` if not a webhook), and the
+  `DOC_SCREENSHOT_CONFIG` sections. These registries configure your
+  integration to appear on the `/integrations` page and make it
+  possible to automatically generate the screenshot of a sample
+  message (which is important for the screenshots to be updated as
+  Zulip's design changes).
 
-* You'll need to add a SVG graphic
+- You'll need to add an SVG graphic
   of your integration's logo under the
   `static/images/integrations/logos/<name>.svg`, where `<name>` is the
   name of the integration, all in lower case; you can usually find them in the
   product branding or press page. Make sure to optimize the SVG graphic by
-  running `svgo -f path-to-file`.
+  running `tools/setup/optimize-svg`. This will also run
+  `tools/setup/generate_integration_bots_avatars.py` automatically to generate
+  a smaller version of the image you just added and optimized. This smaller image will be
+  used as the bot avatar in the documentation screenshot that will be generated
+  in the next step.
 
-  If you cannot find a SVG graphic of the logo, please find and include a PNG
+  If you cannot find an SVG graphic of the logo, please find and include a PNG
   image of the logo instead.
 
-* Finally, generate a message sent by the integration and take a
-  screenshot of the message to provide an example message in the
-  documentation. If your new integration is an incoming webhook
-  integration, you can generate such a message from your test
-  fixtures using `send_webhook_fixture_message`:
+- Finally, generate a message sent by the integration and take a screenshot of
+  the message to provide an example message in the documentation.
 
-  ```
-  ./manage.py send_webhook_fixture_message \
-       --fixture=zerver/webhooks/pingdom/fixtures/imap_down_to_up.json \
-       '--url=/api/v1/external/pingdom?stream=stream_name&api_key=api_key'
+  If your new integration is an incoming webhook integration, you can generate
+  the screenshot using `tools/generate-integration-docs-screenshot`:
+
+  ```bash
+  ./tools/generate-integration-docs-screenshot --integration integrationname
   ```
 
-  When generating the screenshot of a sample message, give your test
-  bot a nice name like "GitHub Bot", use the project's logo as the
-  bot's avatar, and take the screenshot showing the stream/topic bar
-  for the message, not just the message body.
+  If you have trouble using this tool, you can also manually generate the
+  screenshot using `manage.py send_webhook_fixture_message`. When generating the
+  screenshot of a sample message using this method, give your test bot a nice
+  name like "GitHub Bot", use the project's logo as the bot's avatar, and take
+  the screenshot showing the stream/topic bar for the message, not just the
+  message body.
 
 ## Markdown macros
 
@@ -59,92 +71,93 @@ always create a new macro by adding a new file to that folder.
 
 Here are a few common macros used to document Zulip's integrations:
 
-* `{!create-stream.md!}` macro - Recommends that users create a dedicated
-  stream for a given integration. Usually the first step in setting up an
+- `{!create-stream.md!}` macro - Recommends that users create a dedicated
+  stream for a given integration. Usually the first step is setting up an
   integration or incoming webhook. For an example rendering, see **Step 1** of
-  [the docs for Zulip's GitHub integration][GitHub].
+  [the docs for Zulip's GitHub integration][github-integration].
 
-* `{!create-bot-construct-url.md!}` macro - Instructs users to create a bot
+- `{!create-bot-construct-url-indented.md!}` macro - Instructs users to create a bot
   for a given integration and construct a webhook URL using the bot API key
   and stream name. The URL is generated automatically for every incoming webhook
-  by using attributes in the [WebhookIntegration][1] class.
+  by using attributes in the `WebhookIntegration` class in
+  [zerver/lib/integrations.py][integrations-file].
   This macro is usually used right after `{!create-stream!}`. For an example
-  rendering, see **Step 2** of [the docs for Zulip's GitHub integration][GitHub].
+  rendering, see **Step 2** of [the docs for Zulip's GitHub integration][github-integration].
 
-    **Note:** If special configuration is
-    required to set up the URL and you can't use this macro, be sure to use the
-    `{{ api_url }}` template variable, so that your integration
-    documentation will provide the correct URL for whatever server it is
-    deployed on.  If special configuration is required to set the `SITE`
-    variable, you should document that too.
+  **Note:** If special configuration is
+  required to set up the URL and you can't use this macro, be sure to use the
+  `{{ api_url }}` template variable, so that your integration
+  documentation will provide the correct URL for whatever server it is
+  deployed on. If special configuration is required to set the `SITE`
+  variable, you should document that too.
 
-* `{!append-stream-name.md!}` macro - Recommends appending `&stream=stream_name`
+- `{!append-stream-name.md!}` macro - Recommends appending `&stream=stream_name`
   to a URL in cases where supplying a stream name in the URL is optional.
   Supplying a stream name is optional for most Zulip integrations. If you use
-  `{!create-bot-construct-url.md!}`, this macro need not be used.
+  `{!create-bot-construct-url-indented.md!}`, this macro need not be used.
 
-* `{!append-topic.md!}` macro - Recommends appending `&topic=my_topic` to a URL
+- `{!append-topic.md!}` macro - Recommends appending `&topic=my_topic` to a URL
   to supply a custom topic for webhook notification messages. Supplying a custom
   topic is optional for most Zulip integrations. If you use
-  `{!create-bot-construct-url.md!}`, this macro need not be used.
+  `{!create-bot-construct-url-indented.md!}`, this macro need not be used.
 
-* `{!congrats.md!}` macro - Inserts congratulatory lines signifying the
+- `{!congrats.md!}` macro - Inserts congratulatory lines signifying the
   successful setup of a given integration. This macro is usually used at
   the end of the documentation, right before the sample message screenshot.
   For an example rendering, see the end of
-  [the docs for Zulip's GitHub integration][GitHub].
+  [the docs for Zulip's GitHub integration][github-integration].
 
-* `{!download-python-bindings.md!}` macro - Links to Zulip's
-  [API page](https://zulipchat.com/api/) to download and install Zulip's
+- `{!download-python-bindings.md!}` macro - Links to Zulip's
+  [API page](https://zulip.com/api/) to download and install Zulip's
   API bindings. This macro is usually used in non-webhook integration docs under
   `templates/zerver/integrations/<integration_name>.md`. For an example
   rendering, see **Step 2** of
   [the docs for Zulip's Codebase integration][codebase].
 
-* `{!change-zulip-config-file.md!}` macro - Instructs users to create a bot and
+- `{!change-zulip-config-file.md!}` macro - Instructs users to create a bot and
   specify said bot's credentials in the config file for a given non-webhook
   integration. This macro is usually used in non-webhook integration docs under
   `templates/zerver/integrations/<integration_name>.md`. For an example
   rendering, see **Step 4** of
   [the docs for Zulip's Codebase integration][codebase].
 
-* `{!git-append-branches.md!}` and `{!git-webhook-url-with-branches.md!}` -
+- `{!git-append-branches.md!}` and `{!git-webhook-url-with-branches.md!}` -
   These two macros explain how to specify a list of branches in the webhook URL
   to filter notifications in our Git-related webhooks. For an example rendering,
   see the last paragraph of **Step 2** in
-  [the docs for Zulip's GitHub integration][GitHub].
+  [the docs for Zulip's GitHub integration][github-integration].
 
-* `{!webhook-url.md!}` - Used internally by `{!create-bot-construct-url.md!}`
+- `{!webhook-url.md!}` - Used internally by `{!create-bot-construct-url-indented.md!}`
   to generate the webhook URL.
 
-* `{!zulip-config.md!}` - Used internally by `{!change-zulip-config-file.md!}`
+- `{!zulip-config.md!}` - Used internally by `{!change-zulip-config-file.md!}`
   to specify the lines in the config file for a non-webhook integration.
 
-* `{!webhook-url-with-bot-email.md!}` - Used in certain non-webhook integrations
+- `{!webhook-url-with-bot-email.md!}` - Used in certain non-webhook integrations
   to generate URLs of the form:
 
-    ```
-    https://bot_email:bot_api_key@yourZulipDomain.zulipchat.com/api/v1/external/beanstalk
-    ```
+  ```text
+  https://bot_email:bot_api_key@yourZulipDomain.zulipchat.com/api/v1/external/beanstalk
+  ```
 
-    For an example rendering, see
-    [Zulip's Beanstalk integration](https://zulipchat.com/integrations/doc/beanstalk).
+  For an example rendering, see
+  [Zulip's Beanstalk integration](https://zulip.com/integrations/doc/beanstalk).
 
-[GitHub]: https://zulipchat.com/integrations/doc/github
-[codebase]: https://zulipchat.com/integrations/doc/codebase
-[beanstalk]: https://zulipchat.com/integrations/doc/beanstalk
-[1]: https://github.com/zulip/zulip/blob/708f3a4bb19c8e823c9ea1e577d360ac4229b199/zerver/lib/integrations.py#L78
+[github-integration]: https://zulip.com/integrations/doc/github
+[codebase]: https://zulip.com/integrations/doc/codebase
+[beanstalk]: https://zulip.com/integrations/doc/beanstalk
+[integrations-file]: https://github.com/zulip/zulip/blob/main/zerver/lib/integrations.py
 
 ## Writing guidelines
 
 For the vast majority of integrations, you should just copy the docs for a
 similar integration and edit it. [Basecamp][basecamp] is a good one to copy.
 
-[basecamp]: https://zulipchat.com/integrations/doc/basecamp
+[basecamp]: https://zulip.com/integrations/doc/basecamp
 
 ### General writing guidelines
 
-At at high level, the goals are for the instructions to feel simple, be easy to
+At a high level, the goals are for the instructions to feel simple, be easy to
 follow, and be easy to maintain. Easier said than done, but here are a few
 concrete guidelines.
 
@@ -176,7 +189,6 @@ concrete guidelines.
 
 - Follow the organization and wording of existing docs as much as possible.
 
-
 ### Guidelines for specific steps
 
 Most doc files should start with a generic sentence about the
@@ -190,7 +202,7 @@ A typical doc will then have the following steps.
 
 ##### "Create the bot" step
 
-- Typically, use the `create-bot-construct-url` macro.
+- Typically, use the `create-bot-construct-url-indented` macro.
 - [Existing macros](#markdown-macros) should be used for this if they exist, but if the macro
   defaults don’t work, it may make sense to write something custom for the
   integration in question. This step is mandatory for all integrations.

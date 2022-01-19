@@ -13,9 +13,10 @@ integration.
 The first step in creating an incoming webhook is to examine the data that the
 service you want to integrate will be sending to Zulip.
 
-Use <https://webhook.site/> or a similar tool to capture
-webhook payload(s) from the service you are integrating. Examining this
-data allows you to do two things:
+* Use [Zulip's JSON integration](/integrations/doc/json),
+<https://webhook.site/>, or a similar tool to capture webhook
+payload(s) from the service you are integrating. Examining this data
+allows you to do two things:
 
 1. Determine how you will need to structure your webhook code, including what
    message types your integration should support and how.
@@ -29,7 +30,7 @@ Because `Hello World` is a very simple integration that does one
 thing, it requires only one fixture,
 `zerver/webhooks/helloworld/fixtures/hello.json`:
 
-```
+```json
 {
   "featured_title":"Marilyn Monroe",
   "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe",
@@ -80,31 +81,33 @@ python file, `zerver/webhooks/mywebhook/view.py`.
 
 The Hello World integration is in `zerver/webhooks/helloworld/view.py`:
 
-```
-from typing import Any, Dict, Iterable, Optional
+```python
+from typing import Any, Dict, Sequence
 
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
 
-from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_error, json_success
-from zerver.lib.validator import check_dict, check_string
+from zerver.lib.response import json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-@api_key_only_webhook_view('HelloWorld')
+
+@webhook_view("HelloWorld")
 @has_request_variables
 def api_helloworld_webhook(
-        request: HttpRequest, user_profile: UserProfile,
-        payload: Dict[str, Iterable[Dict[str, Any]]]=REQ(argument_type='body')
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Sequence[Dict[str, Any]]] = REQ(argument_type="body"),
 ) -> HttpResponse:
 
     # construct the body of the message
-    body = 'Hello! I am happy to be here! :smile:'
+    body = "Hello! I am happy to be here! :smile:"
 
     # try to add the Wikipedia article of the day
-    body_template = '\nThe Wikipedia featured article for today is **[{featured_title}]({featured_url})**'
+    body_template = (
+        "\nThe Wikipedia featured article for today is **[{featured_title}]({featured_url})**"
+    )
     body += body_template.format(**payload)
 
     topic = "Hello World"
@@ -116,23 +119,23 @@ def api_helloworld_webhook(
 ```
 
 The above code imports the required functions and defines the main webhook
-function `api_helloworld_webhook`, decorating it with `api_key_only_webhook_view` and
+function `api_helloworld_webhook`, decorating it with `webhook_view` and
 `has_request_variables`. The `has_request_variables` decorator allows you to
 access request variables with `REQ()`. You can find more about `REQ` and request
 variables in [Writing views](
 https://zulip.readthedocs.io/en/latest/tutorials/writing-views.html#request-variables).
 
 You must pass the name of your integration to the
-`api_key_only_webhook_view` decorator; that name will be used to
+`webhook_view` decorator; that name will be used to
 describe your integration in Zulip's analytics (e.g. the `/stats`
 page). Here we have used `HelloWorld`. To be consistent with other
 integrations, use the name of the product you are integrating in camel
 case, spelled as the product spells its own name (except always first
 letter upper-case).
 
-The `api_key_only_webhook_view` decorator indicates that the 3rd party service will
+The `webhook_view` decorator indicates that the 3rd party service will
 send the authorization as an API key in the query parameters. If your service uses
-HTTP Basic authentication, you would instead use the `authenticated_rest_api_view`
+HTTP basic authentication, you would instead use the `authenticated_rest_api_view`
 decorator.
 
 You should name your webhook function as such
@@ -140,7 +143,7 @@ You should name your webhook function as such
 integration and is always lower-case.
 
 At minimum, the webhook function must accept `request` (Django
-[HttpRequest](https://docs.djangoproject.com/en/1.8/ref/request-response/#django.http.HttpRequest)
+[HttpRequest](https://docs.djangoproject.com/en/3.2/ref/request-response/#django.http.HttpRequest)
 object), and `user_profile` (Zulip's user object). You may also want to
 define additional parameters using the `REQ` object.
 
@@ -174,24 +177,24 @@ validate the message and do the following:
 Finally, we return a 200 http status with a JSON format success message via
 `json_success()`.
 
-## Step 3: Create an api endpoint for the webhook
+## Step 3: Create an API endpoint for the webhook
 
 In order for an incoming webhook to be externally available, it must be mapped
-to a url. This is done in `zerver/lib/integrations.py`.
+to a URL. This is done in `zerver/lib/integrations.py`.
 
 Look for the lines beginning with:
 
-```
+```python
 WEBHOOK_INTEGRATIONS = [
 ```
 
 And you'll find the entry for Hello World:
 
-```
+```python
   WebhookIntegration('helloworld', ['misc'], display_name='Hello World'),
 ```
 
-This tells the Zulip api to call the `api_helloworld_webhook` function in
+This tells the Zulip API to call the `api_helloworld_webhook` function in
 `zerver/webhooks/helloworld/view.py` when it receives a request at
 `/api/v1/external/helloworld`.
 
@@ -214,9 +217,9 @@ object ID that one would want to include in a Zulip notification.
 
 These configuration options are declared as follows:
 
-```
+```python
     WebhookIntegration('helloworld', ['misc'], display_name='Hello World',
-                       config_options=[('HelloWorld API Key', 'hw_api_key', check_string)])
+                       config_options=[('HelloWorld API key', 'hw_api_key', check_string)])
 ```
 
 `config_options` is a list describing the parameters the user should
@@ -229,30 +232,32 @@ Common validators are available in `zerver/lib/validators.py`.
 
 ## Step 4: Manually testing the webhook
 
-For either one of the command line tools, first, you'll need to get an API key
-from the **Your bots** section of your Zulip user's Settings page. To test the webhook,
-you'll need to [create a bot](https://zulipchat.com/help/add-a-bot-or-integration) with
-the **Incoming Webhook** type. Replace `<api_key>` with your bot's API key in the examples
-presented below! This is how Zulip knows that the request was made by an authorized user.
+For either one of the command line tools, first, you'll need to get an
+API key from the **Bots** section of your Zulip user's **Personal
+settings**. To test the webhook, you'll need to [create a
+bot](https://zulip.com/help/add-a-bot-or-integration) with the
+**Incoming webhook** type. Replace `<api_key>` with your bot's API key
+in the examples presented below! This is how Zulip knows that the
+request was made by an authorized user.
 
 ### Curl
 
 Using curl:
-```
+```bash
 curl -X POST -H "Content-Type: application/json" -d '{ "featured_title":"Marilyn Monroe", "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe" }' http://localhost:9991/api/v1/external/helloworld\?api_key\=<api_key>
 ```
 
 After running the above command, you should see something similar to:
 
-```
+```json
 {"msg":"","result":"success"}
 ```
 
-### Management Command: send_webhook_fixture_message
+### Management command: send_webhook_fixture_message
 
 Using `manage.py` from within the Zulip development environment:
 
-```
+```console
 (zulip-py3-venv) vagrant@ubuntu-bionic:/srv/zulip$
 ./manage.py send_webhook_fixture_message \
     --fixture=zerver/webhooks/helloworld/fixtures/hello.json \
@@ -280,9 +285,9 @@ This is the GUI tool.
 
 1. Run `./tools/run-dev.py` then go to http://localhost:9991/devtools/integrations/.
 
-2. Set the following mandatory fields:  
-**Bot** - Any incoming webhook bot.  
-**Integration** - One of the integrations.  
+2. Set the following mandatory fields:
+**Bot** - Any incoming webhook bot.
+**Integration** - One of the integrations.
 **Fixture** - Though not mandatory, it's recommended that you select one and then tweak it if necessary.
 The remaining fields are optional, and the URL will automatically be generated.
 
@@ -311,11 +316,11 @@ You should name the class `<WebhookName>HookTests` and have it inherit from
 the base class `WebhookTestCase`. For our HelloWorld webhook, we name the test
 class `HelloWorldHookTests`:
 
-```
+```python
 class HelloWorldHookTests(WebhookTestCase):
     STREAM_NAME = 'test'
     URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}"
-    FIXTURE_DIR_NAME = 'helloworld'
+    WEBHOOK_DIR_NAME = 'helloworld'
 
     # Note: Include a test function per each distinct message condition your integration supports
     def test_hello_message(self) -> None:
@@ -323,19 +328,16 @@ class HelloWorldHookTests(WebhookTestCase):
         expected_message = "Hello! I am happy to be here! :smile: \nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**";
 
         # use fixture named helloworld_hello
-        self.send_and_test_stream_message('hello', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("helloworld", fixture_name, file_type="json")
+        self.check_webhook('hello', expected_topic, expected_message,
+                           content_type="application/x-www-form-urlencoded")
 
 ```
 
-In the above example, `STREAM_NAME`, `URL_TEMPLATE`, and `FIXTURE_DIR_NAME` refer
+In the above example, `STREAM_NAME`, `URL_TEMPLATE`, and `WEBHOOK_DIR_NAME` refer
 to class attributes from the base class, `WebhookTestCase`. These are needed by
-the helper function `send_and_test_stream_message` to determine how to execute
+the helper function `check_webhook` to determine how to execute
 your test. `STREAM_NAME` should be set to your default stream. If it doesn't exist,
-`send_and_test_stream_message` will create it while executing your test.
+`check_webhook` will create it while executing your test.
 
 If your test expects a stream name from a test fixture, the value in the fixture
 and the value you set for `STREAM_NAME` must match. The test helpers use `STREAM_NAME`
@@ -346,10 +348,6 @@ value from the fixture. If these don't match, the test will fail.
  you would provide a webhook URL to the 3rd party service. `api_key={api_key}` says
 that an API key is expected.
 
-In `get_body`, the first argument in the call to `self.webhook_fixture_data` specifies the
-prefix of your fixture file names, and `file_type` their type. Common types are
-`json` and `txt`.
-
 When writing tests for your webhook, you'll want to include one test function
 (and corresponding fixture) per each distinct message condition that your
 integration supports.
@@ -358,20 +356,20 @@ If, for example, we added support for sending a goodbye message to our `Hello
 World` webhook, we would add another test function to `HelloWorldHookTests`
 class called something like `test_goodbye_message`:
 
-```
+```python
     def test_goodbye_message(self) -> None:
         expected_topic = "Hello World";
         expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Goodbye](https://en.wikipedia.org/wiki/Goodbye)**";
 
         # use fixture named helloworld_goodbye
-        self.send_and_test_stream_message('goodbye', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook('goodbye', expected_topic, expected_message,
+                           content_type="application/x-www-form-urlencoded")
 ```
 
 As well as a new fixture `goodbye.json` in
 `zerver/webhooks/helloworld/fixtures/`:
 
-```
+```json
 {
   "featured_title":"Goodbye",
   "featured_url":"https://en.wikipedia.org/wiki/Goodbye",
@@ -385,7 +383,7 @@ data from the test fixture should result in an error. For details see
 Once you have written some tests, you can run just these new tests from within
 the Zulip development environment with this command:
 
-```
+```console
 (zulip-py3-venv) vagrant@ubuntu-bionic:/srv/zulip$
 ./tools/test-backend zerver/webhooks/helloworld
 ```
@@ -396,7 +394,7 @@ using Vagrant, use the directory where you have your development environment.)
 
 You will see some script output and if all the tests have passed, you will see:
 
-```
+```console
 Running zerver.webhooks.helloworld.tests.HelloWorldHookTests.test_goodbye_message
 Running zerver.webhooks.helloworld.tests.HelloWorldHookTests.test_hello_message
 DONE!
@@ -405,7 +403,7 @@ DONE!
 ## Step 6: Create documentation
 
 Next, we add end-user documentation for our integration.  You
-can see the existing examples at <https://zulipchat.com/integrations>
+can see the existing examples at <https://zulip.com/integrations>
 or by accessing `/integrations` in your Zulip development environment.
 
 There are two parts to the end-user documentation on this page.
@@ -419,7 +417,7 @@ some customization via options to the `WebhookIntegration` class.
 Second, you need to write the actual documentation content in
 `zerver/webhooks/mywebhook/doc.md`.
 
-```
+```md
 Learn how Zulip integrations work with this simple Hello World example!
 
 The Hello World webhook will use the `test` stream, which is
@@ -446,7 +444,7 @@ Or, use curl:
 
 {!congrats.md!}
 
-![](/static/images/integrations/helloworld/001.png)
+![Hello World integration](/static/images/integrations/helloworld/001.png)
 
 ```
 
@@ -458,7 +456,7 @@ See
 [our guide on documenting an integration][integration-docs-guide]
 for further details, including how to easily create the message
 screenshot. Mostly you should plan on templating off an existing guide, like
-[this one](https://raw.githubusercontent.com/zulip/zulip/master/zerver/webhooks/github/doc.md).
+[this one](https://raw.githubusercontent.com/zulip/zulip/main/zerver/webhooks/github/doc.md).
 
 [integration-docs-guide]: https://zulip.readthedocs.io/en/latest/documentation/integrations.html
 
@@ -474,8 +472,8 @@ request:
 2. Read through [Code styles and conventions](
    https://zulip.readthedocs.io/en/latest/contributing/code-style.html) and take a look
    through your code to double-check that you've followed Zulip's guidelines.
-3. Take a look at your git history to ensure your commits have been clear and
-   logical (see [Version Control](
+3. Take a look at your Git history to ensure your commits have been clear and
+   logical (see [Version control](
    https://zulip.readthedocs.io/en/latest/contributing/version-control.html) for tips). If not,
    consider revising them with `git rebase --interactive`. For most incoming webhooks,
    you'll want to squash your changes into a single commit and include a good,
@@ -507,10 +505,10 @@ rather than call the usual helper function.
 
 Here is an example from the WordPress integration:
 
-```
+```python
 def test_unknown_action_no_data(self) -> None:
-    # Mimic send_and_test_stream_message() to manually execute a negative test.
-    # Otherwise its call to send_json_payload() would assert on the non-success
+    # Mimic check_webhook() to manually execute a negative test.
+    # Otherwise its call to send_webhook_payload() would assert on the non-success
     # we are testing. The value of result is the error message the webhook should
     # return if no params are sent. The fixture for this test is an empty file.
 
@@ -523,10 +521,10 @@ def test_unknown_action_no_data(self) -> None:
     result = self.client_post(self.url, 'unknown_action', **post_params)
 
     # check that we got the expected error message
-    self.assert_json_error(result, "Unknown WordPress webhook action: WordPress Action")
+    self.assert_json_error(result, "Unknown WordPress webhook action: WordPress action")
 ```
 
-In a normal test, `send_and_test_stream_message` would handle all the setup
+In a normal test, `check_webhook` would handle all the setup
 and then check that the incoming webhook's response matches the expected result. If
 the webhook returns an error, the test fails. Instead, explicitly do the
 setup it would have done, and check the result yourself.
@@ -540,8 +538,8 @@ webhook. As long as `self.url` is correct, you don't need to construct the webho
 URL yourself. (In most cases, it is.)
 
 `assert_json_error` then checks if the result matches the expected error.
-If you had used `send_and_test_stream_message`, it would have called
-`send_json_payload`, which checks the result with `assert_json_success`.
+If you had used `check_webhook`, it would have called
+`send_webhook_payload`, which checks the result with `assert_json_success`.
 
 ### Custom query parameters
 
@@ -551,7 +549,7 @@ code, but require special handling in tests.
 For example, here is the definition of a webhook function that gets both `stream`
 and `topic` from the query parameters:
 
-```
+```python
 def api_querytest_webhook(request: HttpRequest, user_profile: UserProfile,
                           payload: str=REQ(argument_type='body'),
                           stream: str=REQ(default='test'),
@@ -572,33 +570,32 @@ The new attribute `TOPIC` exists only in our class so far. In order to
 construct a URL with a query parameter for `topic`, you can pass the
 attribute `TOPIC` as a keyword argument to `build_webhook_url`, like so:
 
-```
+```python
 class QuerytestHookTests(WebhookTestCase):
 
     STREAM_NAME = 'querytest'
-    TOPIC = "Default Topic"
+    TOPIC = "Default topic"
     URL_TEMPLATE = "/api/v1/external/querytest?api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = 'querytest'
 
     def test_querytest_test_one(self) -> None:
         # construct the URL used for this test
-        self.TOPIC = "Query Test"
+        self.TOPIC = "Query test"
         self.url = self.build_webhook_url(topic=self.TOPIC)
 
         # define the expected message contents
-        expected_topic = "Query Test"
+        expected_topic = "Query test"
         expected_message = "This is a test of custom query parameters."
 
-        self.send_and_test_stream_message('test_one', expected_topic, expected_message,
+        self.check_webhook('test_one', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
-
-    def get_body(self, fixture_name: str) -> str:
-        return self.webhook_fixture_data("querytest", fixture_name, file_type="json")
 ```
 
-You can also override `get_body` if your test data needs to be constructed in
-an unusual way. For more, see the definition for the base class, `WebhookTestCase`
-in `zerver/lib/test_classes.py.`
+You can also override `get_body` or `get_payload` if your test data
+needs to be constructed in an unusual way.
+
+For more, see the definition for the base class, `WebhookTestCase`
+in `zerver/lib/test_classes.py`, or just grep for examples.
 
 
 ### Custom HTTP event-type headers
@@ -608,7 +605,7 @@ generates a particular payload. To extract such headers, we recommend using the
 `validate_extract_webhook_http_header` function in `zerver/lib/webhooks/common.py`,
 like so:
 
-```
+```python
 event = validate_extract_webhook_http_header(request, header, integration_name)
 ```
 
@@ -627,15 +624,13 @@ webhook bot, notifying them of the missing header.
 
 ### Handling unexpected webhook event types
 
-Many third-party services have dozens of different event types. In some cases, we
-may choose to explicitly ignore specific events. In other cases, there may be
-events that are new or events that we don't know about. In such cases, we
-recommend raising `UnexpectedWebhookEventType` (found in
-`zerver/lib/webhooks/common.py`), like so:
+Many third-party services have dozens of different event types. In
+some cases, we may choose to explicitly ignore specific events. In
+other cases, there may be events that are new or events that we don't
+know about. In such cases, we recommend raising
+`UnsupportedWebhookEventType` (found in `zerver/lib/exceptions.py`),
+with a string describing the unsupported event type, like so:
 
 ```
-raise UnexpectedWebhookEventType(webhook_name, event_type)
+raise UnsupportedWebhookEventType(event_type)
 ```
-
-`webhook_name` is the name of the integration that raises the exception.
-`event_type` is the name of the unexpected webhook event.

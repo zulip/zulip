@@ -8,30 +8,31 @@ This script works by just monitoring the files under
 mirrors when they receive the messages sent every minute by
 /etc/cron.d/test_zephyr_personal_mirrors
 """
-from typing import Dict
 import os
 import time
+from typing import Dict
 
-RESULTS_DIR = "/home/zulip/mirror_status"  # type: str
+RESULTS_DIR: str = "/home/zulip/mirror_status"
 
-states = {
+states: Dict[str, int] = {
     "OK": 0,
     "WARNING": 1,
     "CRITICAL": 2,
-    "UNKNOWN": 3
-}  # type: Dict[str, int]
+    "UNKNOWN": 3,
+}
 
-def report(state, output):
-    # type: (str, str) -> None
-    print("%s\n%s" % (state, output))
+
+def report(state: str, output: str) -> None:
+    print(f"{state}\n{output}")
     exit(states[state])
+
 
 output = ""
 down_count = 0
 for results_file_name in os.listdir(RESULTS_DIR):
     this_state = "OK"
     results_file = os.path.join(RESULTS_DIR, results_file_name)
-    with open(results_file, 'r') as f:
+    with open(results_file) as f:
         data = f.read().strip()
     last_check = os.stat(results_file).st_mtime
     time_since_last_check = time.time() - last_check
@@ -42,7 +43,7 @@ for results_file_name in os.listdir(RESULTS_DIR):
         down_count += 1
         this_state = "DOWN"
     last_check_ts = time.strftime("%Y-%m-%d %H:%M %Z", time.gmtime(last_check))
-    output += "%s: %s (%s)\n" % (results_file, this_state, last_check_ts)
+    output += f"{results_file}: {this_state} ({last_check_ts})\n"
 
 if down_count == 0:
     state = "OK"

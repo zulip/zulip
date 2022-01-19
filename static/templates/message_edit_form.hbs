@@ -1,6 +1,6 @@
 {{! Client-side Mustache template for rendering the message edit form. }}
 
-<form id="message_edit_form" class="form-horizontal new-style">
+<form id="edit_form_{{message_id}}" class="form-horizontal new-style">
     <div class="alert" id="message-edit-send-status-{{message_id}}">
         <span class="send-status-close">&times;</span>
         <span class="error-msg"></span>
@@ -8,45 +8,62 @@
     {{#if is_stream}}
     <div class="control-group no-margin">
         <div class="controls edit-controls">
-            <input type="text" placeholder="{{topic}}" value="{{topic}}" class="message_edit_topic" id="message_edit_topic" />
-            <select class='message_edit_topic_propagate' style='display:none;'>
-                <option selected="selected" value="change_later"> {{t "Change later messages to this topic" }}</option>
-                <option value="change_one"> {{t "Change only this message topic" }}</option>
-                <option value="change_all"> {{t "Change previous and following messages to this topic" }}</option>
-            </select>
+            <div class="message_edit_header">
+                <div class="stream_header_colorblock" {{#unless is_stream_editable}}style="display:none"{{/unless}}></div>
+                <div class="select_stream_setting" {{#unless is_stream_editable}}style="display:none"{{/unless}}>
+                    {{> settings/dropdown_list_widget
+                      widget_name=select_move_stream_widget_name
+                      list_placeholder=(t 'Filter streams')}}
+                </div>
+                <i class="fa fa-angle-right" aria-hidden="true" {{#unless is_stream_editable}}style="display:none"{{/unless}}></i>
+                <input type="text" placeholder="{{topic}}" value="{{topic}}" class="message_edit_topic" id="message_edit_topic" autocomplete="off" />
+                <div class="message_edit_breadcrumb_messages"  style='display:none;'>
+                    <label class="checkbox">
+                        <input class="send_notification_to_new_thread" name="send_notification_to_new_thread" type="checkbox" {{#if notify_new_thread}}checked="checked"{{/if}} />
+                        <span></span>
+                        {{t "Send notification to new topic" }}
+                    </label>
+                    <label class="checkbox">
+                        <input class="send_notification_to_old_thread" name="send_notification_to_old_thread" type="checkbox" {{#if notify_old_thread}}checked="checked"{{/if}} />
+                        <span></span>
+                        {{t "Send notification to old topic" }}
+                    </label>
+                </div>
+                <select class='message_edit_topic_propagate' style='display:none;'>
+                    <option selected="selected" value="change_later"> {{t "Change later messages to this topic" }}</option>
+                    <option value="change_one"> {{t "Change only this message topic" }}</option>
+                    <option value="change_all"> {{t "Change previous and following messages to this topic" }}</option>
+                </select>
+            </div>
         </div>
     </div>
     {{/if}}
     <div class="control-group no-margin">
         <div class="controls edit-controls">
-            <button class="btn pull-right copy_message" data-toggle="tooltip" title="{{t "Copy and close" }}" data-clipboard-target="#message_edit_content_{{message_id}}">
-                <svg height="20" width="18" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg" id="clipboard_image">
-                    <path fill="#777" d="M128 768h256v64H128v-64z m320-384H128v64h320v-64z m128 192V448L384 640l192 192V704h320V576H576z m-288-64H128v64h160v-64zM128 704h160v-64H128v64z m576 64h64v128c-1 18-7 33-19 45s-27 18-45 19H64c-35 0-64-29-64-64V192c0-35 29-64 64-64h192C256 57 313 0 384 0s128 57 128 128h192c35 0 64 29 64 64v320h-64V320H64v576h640V768zM128 256h512c0-35-29-64-64-64h-64c-35 0-64-29-64-64s-29-64-64-64-64 29-64 64-29 64-64 64h-64c-35 0-64 29-64 64z" />
-                </svg>
-            </button>
-            <textarea class="message_edit_content rendered_markdown" maxlength="10000" id="message_edit_content_{{message_id}}">{{content}}</textarea>
+            {{> copy_message_button message_id=this.message_id}}
+            <textarea class="message_edit_content" maxlength="10000">{{content}}</textarea>
             <div class="scrolling_list preview_message_area" id="preview_message_area_{{message_id}}" style="display:none;">
-                <div id="markdown_preview_spinner_{{message_id}}"></div>
-                <div id="preview_content_{{message_id}}" class="preview_content rendered_markdown"></div>
+                <div class="markdown_preview_spinner"></div>
+                <div class="preview_content rendered_markdown"></div>
             </div>
         </div>
     </div>
     <div class="control-group action-buttons">
+        <div class="message_edit_spinner"></div>
         <div class="controls edit-controls">
             {{#if is_editable}}
-                <button type="button" class="button small rounded sea-green message_edit_save">{{t "Save" }}</button>
-                <button type="button" class="button small rounded message_edit_cancel">{{t "Cancel" }}</button>
+                <div class="btn-wrapper inline-block">
+                    <button type="button" class="button small rounded sea-green message_edit_save">
+                        <img class="loader" alt="" src="" />
+                        <span>{{t "Save" }}</span>
+                    </button>
+                </div>
+                <div class="btn-wrapper inline-block">
+                    <button type="button" class="button small rounded message_edit_cancel">{{t "Cancel" }}</button>
+                </div>
                 {{#if is_content_editable}}
                 <div class="message-edit-feature-group">
-                    <input type="file" id="message_edit_file_input_{{message_id}}" class="notvisible pull-left" multiple />
-                    <a class="message-control-button fa fa-smile-o" aria-hidden="true" id="emoji_map" href="#" data-message-id="{{message_id}}" title="{{t 'Add emoji' }}"></a>
-                    <a class="message-control-button fa fa-font" aria-hidden="true" title="{{t 'Formatting' }}" data-overlay-trigger="message-formatting" ></a>
-                    {{#if file_upload_enabled}}
-                    <a class="message-control-button fa fa-paperclip notdisplayed" aria-hidden="true" id="attach_files_{{message_id}}" href="#" title="{{t "Attach files" }}"></a>
-                    {{/if}}
-                    <a class="message-control-button fa fa-video-camera video_link" aria-hidden="true" href="#" data-message-id="{{message_id}}" title="{{t "Add video call" }}"></a>
-                    <a id="undo_markdown_preview_{{message_id}}" class="message-control-button fa fa-edit" aria-hidden="true" style="display:none;" title="{{t 'Write' }}"></a>
-                    <a id="markdown_preview_{{message_id}}" class="message-control-button fa fa-eye" aria-hidden="true" title="{{t 'Preview' }}"></a>
+                    {{> compose_control_buttons }}
                 </div>
                 {{/if}}
             {{else}}
@@ -55,8 +72,10 @@
             {{#if has_been_editable}}
             <div class="message-edit-timer-control-group">
                 <span class="message_edit_countdown_timer"></span>
-                <span><i id="message_edit_tooltip" class="message_edit_tooltip fa fa-question-circle" aria-hidden="true" data-toggle="tooltip"
-                    title="{{#tr this}}This organization is configured to restrict editing of message content to __minutes_to_edit__ minutes after it is sent.{{/tr}}"></i>
+                <span>
+                    <i id="message_edit_tooltip" class="tippy-zulip-tooltip message_edit_tooltip fa fa-question-circle" aria-hidden="true"
+                      {{#if is_widget_message}} data-tippy-content="{{#tr}}Widgets cannot be edited.{{/tr}}" {{else}} data-tippy-content="{{#tr}}This organization is configured to restrict editing of message content to {minutes_to_edit} minutes after it is sent.{{/tr}}" {{/if}}>
+                    </i>
                 </span>
             </div>
             {{/if}}

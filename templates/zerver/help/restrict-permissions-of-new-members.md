@@ -17,6 +17,8 @@ Currently, the following actions support limiting access to full members.
 - [Creating streams](/help/configure-who-can-create-streams)
 - [Adding users to streams](/help/configure-who-can-invite-to-streams)
 - [Restricting posting to a stream](/help/stream-sending-policy)
+- [Restricting inviting users to organization](/help/invite-new-users)
+- [Restricting adding custom emoji](/help/custom-emoji#change-who-can-add-custom-emoji)
 
 ### Set waiting period for new members
 
@@ -24,8 +26,12 @@ Currently, the following actions support limiting access to full members.
 
 {settings_tab|organization-permissions}
 
-2. Under **Other permissions**, configure **Waiting period before new members turn into full members**.
+2. Under **Joining the organization**, configure **Waiting period before new members turn into full members**.
 
 {!save-changes.md!}
 
 {end_tabs}
+
+## Related articles
+
+- [Roles and permissions](/help/roles-and-permissions)

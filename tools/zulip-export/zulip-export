@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 # Copyright © 2014 Dropbox, Inc.
 #
@@ -20,14 +19,14 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-
-import sys
-import os
 import argparse
 import json
+import os
+import sys
+
 usage = """Export all messages on a given stream to a JSON dump.
 
-zulip-export --user=<your email address> --api-key=<your api key> --stream=<stream name>
+zulip-export --user=<your email address> --api-key=<your API key> --stream=<stream name>
 
 (You can find your API key on your Settings page.)
 
@@ -35,55 +34,59 @@ Example: zulip-export --user=wdaher@zulip.com --api-key=a0b1c2d3e4f5a6b7c8d9e0f1
 
 You can omit --user and --api-key arguments if you have a properly set up ~/.zuliprc
 This script requires the Zulip API bindings to be installed."""
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../api'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "../../api"))
 import zulip
 
 parser = zulip.add_default_arguments(argparse.ArgumentParser(usage=usage))
-parser.add_argument('--stream', default='', action="store")
+parser.add_argument("--stream", required=True)
 options = parser.parse_args()
 
 client = zulip.init_from_options(options)
 
-if options.stream == "":
-    print("Usage:", parser.usage, file=sys.stderr)
-    sys.exit(1)
-
 client.add_subscriptions([{"name": options.stream}])
-queue = client.register(event_types=['message'])
-max_id = queue['max_message_id']
+queue = client.register(event_types=["message"])
+max_id = queue["max_message_id"]
 messages = []
 request = {
-    'anchor': 0,
-    'num_before': 0,
-    'num_after': max_id,
-    'narrow': [{'operator': 'stream',
-                'operand': options.stream}],
-    'apply_markdown': False,
+    "anchor": 0,
+    "num_before": 0,
+    "num_after": max_id,
+    "narrow": [{"operator": "stream", "operand": options.stream}],
+    "apply_markdown": False,
 }
 
 print("Fetching messages...")
 result = client.call_endpoint(
-    url='messages',
-    method='GET',
+    url="messages",
+    method="GET",
     request=request,
 )
 
-if result['result'] != 'success':
+if result["result"] != "success":
     print("Unfortunately, there was an error fetching some old messages.")
     print(result)
     sys.exit(1)
-for msg in result['messages']:
-    if msg['type'] != 'stream':
+for msg in result["messages"]:
+    if msg["type"] != "stream":
         continue
     # Remove extraneous metadata
-    for k in ['flags', 'edit_history', 'topic_links',
-              'avatar_url', 'recipient_id', 'sender_short_name',
-              'content_type', 'client', 'sender_realm_str', 'id', 'type']:
+    for k in [
+        "flags",
+        "edit_history",
+        "topic_links",
+        "avatar_url",
+        "recipient_id",
+        "content_type",
+        "client",
+        "sender_realm_str",
+        "id",
+        "type",
+    ]:
         msg.pop(k, None)
     messages.append(msg)
 
-filename = "zulip-%s.json" % (options.stream,)
-with open(filename, 'wb') as f:
-    f.write(json.dumps(messages, indent=0, sort_keys=False).encode('utf-8'))
-print("%d messages exported to %s" % (len(messages), filename,))
+filename = f"zulip-{options.stream}.json"
+with open(filename, "w") as f:
+    json.dump(messages, f, indent=0, sort_keys=False)
+print(f"{len(messages)} messages exported to {filename}")
 sys.exit(0)

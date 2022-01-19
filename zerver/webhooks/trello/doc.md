@@ -1,4 +1,5 @@
 !!! tip ""
+
     Note that [Zapier][1] is usually a simpler way to
     integrate Trello with Zulip.
 
@@ -57,7 +58,7 @@ Get Zulip notifications from your Trello boards!
 
 1. You can delete `zulip_trello.py` from your computer if you'd like.
 
-[2]: https://raw.githubusercontent.com/zulip/python-zulip-api/master/zulip/integrations/trello/zulip_trello.py
+[2]: https://raw.githubusercontent.com/zulip/python-zulip-api/main/zulip/integrations/trello/zulip_trello.py
 
 {!congrats.md!}
 

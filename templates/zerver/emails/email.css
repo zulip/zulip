@@ -23,8 +23,8 @@ body {
 
 table {
     border-collapse: separate;
-    mso-table-lspace: 0pt;
-    mso-table-rspace: 0pt;
+    mso-table-lspace: 0;
+    mso-table-rspace: 0;
     width: 100%;
 }
 
@@ -46,23 +46,31 @@ table td {
     padding: 10px;
 }
 
+.container.wide-container {
+    max-width: 700px;
+}
+
 .content {
     box-sizing: border-box;
     display: block;
-    margin: 20px auto 0 auto;
+    margin: 20px auto 0;
     max-width: 580px;
     padding: 10px;
 }
 
+.content.wide-content {
+    max-width: 780px;
+}
+
 .main {
-    background-color: #ffffff;
+    background-color: #fff;
     border-radius: 3px;
     width: 100%;
 }
 
 .wrapper {
     box-sizing: border-box;
-    padding: 0px 20px 20px 20px;
+    padding: 0 20px 20px;
 }
 
 .footer {
@@ -77,24 +85,23 @@ table td {
 .footer p,
 .footer span,
 .footer a {
-    color: #999999;
+    color: #5f5ec7;
     font-size: 12px;
     text-align: center;
 }
 
 .footer .content-block p {
-    margin-top: 0px;
+    margin-top: 0;
 }
 
 h1,
 h2,
 h3,
 h4 {
-    color: #000000;
+    color: #4e4d4d !important;
     font-family: sans-serif;
-    font-weight: 400;
+    font-weight: 600;
     line-height: 1.4;
-    margin: 0;
     margin-bottom: 30px;
 }
 
@@ -105,29 +112,41 @@ h1 {
     text-transform: capitalize;
 }
 
+h2 {
+    font-size: 24px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+ul,
+ol {
+    /* Override excessive indentation seen in Gmail. */
+    padding-left: 5px;
+}
+
 p,
 ul,
 ol {
     font-family: sans-serif;
     font-size: 14px;
     font-weight: normal;
-    margin: 10px 0px;
+    margin: 10px 0;
 }
 
 p li,
 ul li,
 ol li {
-    list-style-position: inside;
-    margin-left: 5px;
+    list-style-position: outside;
+    margin-left: 15px;
 }
 
 a {
-    color: #46aa8f;
+    color: #5f5ec7;
     text-decoration: underline;
 }
 
 a:hover {
-    color: #52c7a8;
+    color: #434388;
 }
 
 .important {
@@ -136,15 +155,15 @@ a:hover {
 
 .button {
     display: block;
-    padding: 10px 0px;
+    padding: 10px 0;
     margin: 20px auto;
     width: 200px;
-    border: 1px solid #80d1ba;
-    background-color: #80d1ba;
+    color: #5f5ec7;
+    border: 2px solid #5f5ec7;
+    background-color: #fff;
     border-radius: 4px;
     font-size: 16px;
     outline: none;
-    color: #ffffff;
     font-family: sans-serif;
     text-decoration: none;
     text-align: center;
@@ -152,7 +171,8 @@ a:hover {
 }
 
 a.button:hover {
-    color: #caf7ea;
+    background-color: #5f5ec7;
+    color: #fff;
     text-decoration: none;
 }
 
@@ -178,19 +198,19 @@ a.button:hover {
 #private-messages {
     width: 600px;
     font-size: 12px;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .recipient_block {
     background-color: #f0f4f5;
-    border: 1px solid #000000;
+    border: 1px solid #000;
     margin-bottom: 4px;
 }
 
 .recipient_header {
     color: #e0dada;
-    background-color: #444444;
-    border-bottom: 1px solid #000000;
+    background-color: #444;
+    border-bottom: 1px solid #000;
     font-weight: bold;
     padding: 2px;
 }
@@ -214,18 +234,18 @@ a.button:hover {
 .messages {
     width: 600px;
     font-size: 12px;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     overflow-y: auto;
 }
 
 .hot_convo_recipient_block {
-    border: 1px solid #000000;
+    border: 1px solid #000;
     margin-bottom: 4px;
 }
 
 .hot_convo_recipient_header {
     background-color: #9ec9ff;
-    border-bottom: 1px solid #000000;
+    border-bottom: 1px solid #000;
     font-weight: bold;
     padding: 2px;
 }
@@ -241,13 +261,13 @@ a.button:hover {
 }
 
 .recipient_block_with_messages {
-    border: 1px solid #000000;
+    border: 1px solid #000;
     margin-bottom: 4px;
 }
 
 .recipient_header_with_messages {
     background-color: #9ecaff;
-    border-bottom: 1px solid #000000;
+    border-bottom: 1px solid #000;
     font-weight: bold;
     padding: 2px;
 }
@@ -259,14 +279,14 @@ a.button:hover {
 
 .recipient_block_without_messages {
     background-color: #f0f4f5;
-    border: 1px solid #000000;
+    border: 1px solid #000;
     margin-bottom: 4px;
 }
 
 .recipient_header_without_messages {
-    color: #ffffff;
-    background-color: #444444;
-    border-bottom: 1px solid #000000;
+    color: #fff;
+    background-color: #444;
+    border-bottom: 1px solid #000;
     font-weight: bold;
     padding: 2px;
 }
@@ -304,52 +324,52 @@ a.button:hover {
 }
 
 @media only screen and (max-width: 620px) {
-    table[class=body] h1 {
+    table[class="body"] h1 {
         font-size: 28px !important;
         margin-bottom: 10px !important;
     }
 
-    table[class=body] p,
-    table[class=body] ul,
-    table[class=body] ol,
-    table[class=body] td,
-    table[class=body] span,
-    table[class=body] a {
+    table[class="body"] p,
+    table[class="body"] ul,
+    table[class="body"] ol,
+    table[class="body"] td,
+    table[class="body"] span,
+    table[class="body"] a {
         font-size: 16px !important;
     }
 
-    table[class=body] .wrapper {
-        padding: 0px 10px 10px 10px;
+    table[class="body"] .wrapper {
+        padding: 0 10px 10px;
     }
 
-    table[class=body] .article {
+    table[class="body"] .article {
         padding: 10px !important;
     }
 
-    table[class=body] .content {
+    table[class="body"] .content {
         padding: 0 !important;
     }
 
-    table[class=body] .container {
+    table[class="body"] .container {
         padding: 0 !important;
         width: 100% !important;
     }
 
-    table[class=body] .main {
+    table[class="body"] .main {
         border-left-width: 0 !important;
         border-radius: 0 !important;
         border-right-width: 0 !important;
     }
 
-    table[class=body] .btn table {
+    table[class="body"] .btn table {
         width: 100% !important;
     }
 
-    table[class=body] .btn a {
+    table[class="body"] .btn a {
         width: 100% !important;
     }
 
-    table[class=body] .img-responsive {
+    table[class="body"] .img-responsive {
         height: auto !important;
         max-width: 100% !important;
         width: auto !important;
@@ -378,5 +398,19 @@ a.button:hover {
         font-weight: inherit !important;
         line-height: inherit !important;
         text-decoration: none !important;
+    }
+}
+
+.float-right-image {
+    float: right;
+}
+
+/* The 450px cutoff was determined by testing in Gmail as a point
+   where an image looks good in either state. Logically it makes senes
+   since then the text still has the majority of the space in the
+   side-by-side view. */
+@media only screen and (min-width: 450px) {
+    .float-right-image {
+        max-width: 200px;
     }
 }

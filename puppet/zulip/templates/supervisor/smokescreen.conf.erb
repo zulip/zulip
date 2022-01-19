@@ -1,0 +1,8 @@
+[program:smokescreen]
+command=<%= @bin %> --listen-ip <%= @listen_address %>
+priority=15
+autostart=true
+autorestart=true
+user=zulip
+redirect_stderr=true
+stdout_logfile=/var/log/zulip/smokescreen.log

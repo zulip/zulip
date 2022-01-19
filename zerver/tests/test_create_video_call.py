@@ -1,63 +1,249 @@
-import json
-import mock
+from unittest import mock
+
+import responses
+from django.http import HttpResponseRedirect
+
 from zerver.lib.test_classes import ZulipTestCase
-from typing import Dict
+
 
 class TestVideoCall(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
-        user_profile = self.example_user('hamlet')
-        self.login_user(user_profile)
+        self.user = self.example_user("hamlet")
+        self.login_user(self.user)
 
-    def test_create_video_call_success(self) -> None:
-        with mock.patch('zerver.lib.actions.request_zoom_video_call_url', return_value={'join_url': 'example.com'}):
-            result = self.client_get("/json/calls/create")
-            self.assert_json_success(result)
-            self.assertEqual(200, result.status_code)
-            content = result.json()
-            self.assertEqual(content['zoom_url'], 'example.com')
+    def test_register_video_request_no_settings(self) -> None:
+        with self.settings(VIDEO_ZOOM_CLIENT_ID=None):
+            response = self.client_get("/calls/zoom/register")
+            self.assert_json_error(
+                response,
+                "Zoom credentials have not been configured",
+            )
 
-    def test_create_video_call_failure(self) -> None:
-        with mock.patch('zerver.lib.actions.request_zoom_video_call_url', return_value=None):
-            result = self.client_get("/json/calls/create")
-            self.assert_json_success(result)
-            self.assertEqual(200, result.status_code)
-            content = result.json()
-            self.assertEqual(content['zoom_url'], '')
+    def test_register_video_request(self) -> None:
+        response = self.client_get("/calls/zoom/register")
+        self.assertEqual(response.status_code, 302)
 
+    @responses.activate
     def test_create_video_request_success(self) -> None:
-        class MockResponse:
-            def __init__(self) -> None:
-                self.status_code = 200
+        responses.add(
+            responses.POST,
+            "https://zoom.us/oauth/token",
+            json={"access_token": "oldtoken", "expires_in": -60},
+        )
 
-            def json(self) -> Dict[str, str]:
-                return {"join_url": "example.com"}
+        response = self.client_get(
+            "/calls/zoom/complete",
+            {"code": "code", "state": '{"realm":"zulip","sid":""}'},
+        )
+        self.assertEqual(response.status_code, 200)
 
-            def raise_for_status(self) -> None:
-                return None
+        responses.replace(
+            responses.POST,
+            "https://zoom.us/oauth/token",
+            json={"access_token": "newtoken", "expires_in": 60},
+        )
 
-        with mock.patch('requests.post', return_value=MockResponse()):
-            result = self.client_get("/json/calls/create")
-            self.assert_json_success(result)
+        responses.add(
+            responses.POST,
+            "https://api.zoom.us/v2/users/me/meetings",
+            json={"join_url": "example.com"},
+        )
 
-    def test_create_video_request_http_error(self) -> None:
-        class MockResponse:
-            def __init__(self) -> None:
-                self.status_code = 401
+        response = self.client_post("/json/calls/zoom/create")
+        self.assertEqual(
+            responses.calls[-1].request.url,
+            "https://api.zoom.us/v2/users/me/meetings",
+        )
+        self.assertEqual(
+            responses.calls[-1].request.headers["Authorization"],
+            "Bearer newtoken",
+        )
+        json = self.assert_json_success(response)
+        self.assertEqual(json["url"], "example.com")
 
-            def raise_for_status(self) -> None:
-                raise Exception("Invalid request!")
+        self.logout()
+        self.login_user(self.user)
 
-        with mock.patch('requests.post', return_value=MockResponse()):
-            result = self.client_get("/json/calls/create")
-            self.assert_json_success(result)
-            result_dict = json.loads(result.content.decode('utf-8'))
+        response = self.client_post("/json/calls/zoom/create")
+        self.assert_json_error(response, "Invalid Zoom access token")
 
-            # TODO: Arguably this is the wrong result for errors, but
-            # in any case we should test it.
-            self.assertEqual(result_dict['zoom_url'], '')
+    def test_create_video_realm_redirect(self) -> None:
+        response = self.client_get(
+            "/calls/zoom/complete",
+            {"code": "code", "state": '{"realm":"zephyr","sid":"somesid"}'},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("http://zephyr.testserver/", response.url)
+        self.assertIn("somesid", response.url)
 
-    def test_create_video_request(self) -> None:
-        with mock.patch('requests.post'):
-            result = self.client_get("/json/calls/create")
-            self.assert_json_success(result)
+    def test_create_video_sid_error(self) -> None:
+        response = self.client_get(
+            "/calls/zoom/complete",
+            {"code": "code", "state": '{"realm":"zulip","sid":"bad"}'},
+        )
+        self.assert_json_error(response, "Invalid Zoom session identifier")
+
+    @responses.activate
+    def test_create_video_credential_error(self) -> None:
+        responses.add(responses.POST, "https://zoom.us/oauth/token", status=400)
+
+        response = self.client_get(
+            "/calls/zoom/complete",
+            {"code": "code", "state": '{"realm":"zulip","sid":""}'},
+        )
+        self.assert_json_error(response, "Invalid Zoom credentials")
+
+    @responses.activate
+    def test_create_video_refresh_error(self) -> None:
+        responses.add(
+            responses.POST,
+            "https://zoom.us/oauth/token",
+            json={"access_token": "token", "expires_in": -60},
+        )
+
+        response = self.client_get(
+            "/calls/zoom/complete",
+            {"code": "code", "state": '{"realm":"zulip","sid":""}'},
+        )
+        self.assertEqual(response.status_code, 200)
+
+        responses.replace(responses.POST, "https://zoom.us/oauth/token", status=400)
+
+        response = self.client_post("/json/calls/zoom/create")
+        self.assert_json_error(response, "Invalid Zoom access token")
+
+    @responses.activate
+    def test_create_video_request_error(self) -> None:
+        responses.add(
+            responses.POST,
+            "https://zoom.us/oauth/token",
+            json={"access_token": "token"},
+        )
+
+        responses.add(
+            responses.POST,
+            "https://api.zoom.us/v2/users/me/meetings",
+            status=400,
+        )
+
+        response = self.client_get(
+            "/calls/zoom/complete",
+            {"code": "code", "state": '{"realm":"zulip","sid":""}'},
+        )
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client_post("/json/calls/zoom/create")
+        self.assert_json_error(response, "Failed to create Zoom call")
+
+        responses.replace(
+            responses.POST,
+            "https://api.zoom.us/v2/users/me/meetings",
+            status=401,
+        )
+
+        response = self.client_post("/json/calls/zoom/create")
+        self.assert_json_error(response, "Invalid Zoom access token")
+
+    @responses.activate
+    def test_deauthorize_zoom_user(self) -> None:
+        response = self.client_post(
+            "/calls/zoom/deauthorize",
+            """\
+{
+  "event": "app_deauthorized",
+  "payload": {
+    "user_data_retention": "false",
+    "account_id": "EabCDEFghiLHMA",
+    "user_id": "z9jkdsfsdfjhdkfjQ",
+    "signature": "827edc3452044f0bc86bdd5684afb7d1e6becfa1a767f24df1b287853cf73000",
+    "deauthorization_time": "2019-06-17T13:52:28.632Z",
+    "client_id": "ADZ9k9bTWmGUoUbECUKU_a"
+  }
+}
+""",
+            content_type="application/json",
+        )
+        self.assert_json_success(response)
+
+    def test_create_bigbluebutton_link(self) -> None:
+        with mock.patch("zerver.views.video_calls.random.randint", return_value="1"), mock.patch(
+            "secrets.token_bytes", return_value=b"\x00" * 7
+        ):
+            response = self.client_get("/json/calls/bigbluebutton/create")
+            self.assert_json_success(response)
+            self.assertEqual(
+                response.json()["url"],
+                "/calls/bigbluebutton/join?meeting_id=zulip-1&password=AAAAAAAAAA"
+                "&checksum=d5eb2098bcd0e69a33caf2b18490991b843c8fa6be779316b4303c7990aca687",
+            )
+
+    @responses.activate
+    def test_join_bigbluebutton_redirect(self) -> None:
+        responses.add(
+            responses.GET,
+            "https://bbb.example.com/bigbluebutton/api/create?meetingID=zulip-1&moderatorPW=a&attendeePW=aa&checksum=check",
+            "<response><returncode>SUCCESS</returncode><messageKey/></response>",
+        )
+        response = self.client_get(
+            "/calls/bigbluebutton/join",
+            {"meeting_id": "zulip-1", "password": "a", "checksum": "check"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(isinstance(response, HttpResponseRedirect), True)
+        self.assertEqual(
+            response.url,
+            "https://bbb.example.com/bigbluebutton/api/join?meetingID=zulip-1&password=a"
+            "&fullName=King%20Hamlet&checksum=ca78d6d3c3e04918bfab9d7d6cbc6e50602ab2bdfe1365314570943346a71a00",
+        )
+
+    @responses.activate
+    def test_join_bigbluebutton_redirect_wrong_check(self) -> None:
+        responses.add(
+            responses.GET,
+            "https://bbb.example.com/bigbluebutton/api/create?meetingID=zulip-1&moderatorPW=a&attendeePW=aa&checksum=check",
+            "<response><returncode>FAILED</returncode><messageKey>checksumError</messageKey>"
+            "<message>You did not pass the checksum security check</message></response>",
+        )
+        response = self.client_get(
+            "/calls/bigbluebutton/join",
+            {"meeting_id": "zulip-1", "password": "a", "checksum": "check"},
+        )
+        self.assert_json_error(response, "Error authenticating to the BigBlueButton server.")
+
+    @responses.activate
+    def test_join_bigbluebutton_redirect_server_error(self) -> None:
+        # Simulate bbb server error
+        responses.add(
+            responses.GET,
+            "https://bbb.example.com/bigbluebutton/api/create?meetingID=zulip-1&moderatorPW=a&attendeePW=aa&checksum=check",
+            "",
+            status=500,
+        )
+        response = self.client_get(
+            "/calls/bigbluebutton/join",
+            {"meeting_id": "zulip-1", "password": "a", "checksum": "check"},
+        )
+        self.assert_json_error(response, "Error connecting to the BigBlueButton server.")
+
+    @responses.activate
+    def test_join_bigbluebutton_redirect_error_by_server(self) -> None:
+        # Simulate bbb server error
+        responses.add(
+            responses.GET,
+            "https://bbb.example.com/bigbluebutton/api/create?meetingID=zulip-1&moderatorPW=a&attendeePW=aa&checksum=check",
+            "<response><returncode>FAILURE</returncode><messageKey>otherFailure</messageKey></response>",
+        )
+        response = self.client_get(
+            "/calls/bigbluebutton/join",
+            {"meeting_id": "zulip-1", "password": "a", "checksum": "check"},
+        )
+        self.assert_json_error(response, "BigBlueButton server returned an unexpected error.")
+
+    def test_join_bigbluebutton_redirect_not_configured(self) -> None:
+        with self.settings(BIG_BLUE_BUTTON_SECRET=None, BIG_BLUE_BUTTON_URL=None):
+            response = self.client_get(
+                "/calls/bigbluebutton/join",
+                {"meeting_id": "zulip-1", "password": "a", "checksum": "check"},
+            )
+            self.assert_json_error(response, "BigBlueButton is not configured.")

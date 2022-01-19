@@ -1,0 +1,41 @@
+{{#with invite}}
+<tr class="invite_row">
+    <td>
+        {{#if is_multiuse}}
+        <span class="email">
+            <a href="{{link_url}}" target="_blank" rel="noopener noreferrer">
+                {{t 'Invite link'}}
+            </a>
+        </span>
+        {{else}}
+        <span class="email">{{email}}</span>
+        {{/if}}
+    </td>
+    {{#if is_admin}}
+    <td>
+        <span class="referred_by">
+            <a data-user-id="{{invited_by_user_id}}" href="#" class="view_user_profile">{{referrer_name}}</a>
+        </span>
+    </td>
+    {{/if}}
+    <td>
+        <span class="invited_at">{{invited_absolute_time}}</span>
+    </td>
+    <td>
+        <span class="expires_at">{{expiry_date_absolute_time}}</span>
+    </td>
+    <td>
+        <span>{{invited_as_text}}</span>
+    </td>
+    <td class="actions">
+        {{#unless is_multiuse}}
+        <button class="button rounded small resend btn-warning" {{#if disable_buttons}}disabled="disabled"{{/if}} data-invite-id="{{id}}">
+            {{t "Resend" }}
+        </button>
+        {{/unless}}
+        <button class="button rounded small revoke btn-danger" {{#if disable_buttons}}disabled="disabled"{{/if}} data-invite-id="{{id}}" data-is-multiuse="{{is_multiuse}}">
+            {{t "Revoke" }}
+        </button>
+    </td>
+</tr>
+{{/with}}

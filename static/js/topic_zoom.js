@@ -1,8 +1,14 @@
+import $ from "jquery";
+
+import * as popovers from "./popovers";
+import * as stream_list from "./stream_list";
+import * as topic_list from "./topic_list";
+
 let zoomed_in = false;
 
-exports.is_zoomed_in = function () {
+export function is_zoomed_in() {
     return zoomed_in;
-};
+}
 
 function zoom_in() {
     const stream_id = topic_list.active_stream_id();
@@ -10,13 +16,13 @@ function zoom_in() {
     popovers.hide_all_except_sidebars();
     topic_list.zoom_in();
     stream_list.zoom_in_topics({
-        stream_id: stream_id,
+        stream_id,
     });
 
     zoomed_in = true;
 }
 
-exports.zoom_out = function () {
+export function zoom_out() {
     const stream_li = topic_list.get_stream_li();
 
     popovers.hide_all_except_sidebars();
@@ -28,9 +34,9 @@ exports.zoom_out = function () {
     }
 
     zoomed_in = false;
-};
+}
 
-exports.clear_topics = function () {
+export function clear_topics() {
     const stream_li = topic_list.get_stream_li();
 
     topic_list.close();
@@ -44,22 +50,20 @@ exports.clear_topics = function () {
     }
 
     zoomed_in = false;
-};
+}
 
-exports.initialize = function () {
-    $('#stream_filters').on('click', '.show-more-topics', function (e) {
+export function initialize() {
+    $("#stream_filters").on("click", ".show-more-topics", (e) => {
         zoom_in();
 
         e.preventDefault();
         e.stopPropagation();
     });
 
-    $('.show-all-streams').on('click', function (e) {
-        exports.zoom_out();
+    $(".show-all-streams").on("click", (e) => {
+        zoom_out();
 
         e.preventDefault();
         e.stopPropagation();
     });
-};
-
-window.topic_zoom = exports;
+}

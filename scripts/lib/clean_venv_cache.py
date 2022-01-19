@@ -3,24 +3,24 @@ import argparse
 import glob
 import os
 import sys
-
 from typing import Set
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(ZULIP_PATH)
 from scripts.lib.hash_reqs import expand_reqs, hash_deps
-from scripts.lib.zulip_tools import \
-    get_environment, get_recent_deployments, parse_cache_script_args, \
-    purge_unused_caches
+from scripts.lib.zulip_tools import (
+    get_environment,
+    get_recent_deployments,
+    parse_cache_script_args,
+    purge_unused_caches,
+)
 
 ENV = get_environment()
-VENV_CACHE_DIR = '/srv/zulip-venv-cache'
-if ENV == "travis":
-    VENV_CACHE_DIR = os.path.join(os.environ["HOME"], "zulip-venv-cache")
+VENV_CACHE_DIR = "/srv/zulip-venv-cache"
 
-def get_caches_in_use(threshold_days):
-    # type: (int) -> Set[str]
-    setups_to_check = set([ZULIP_PATH, ])
+
+def get_caches_in_use(threshold_days: int) -> Set[str]:
+    setups_to_check = {ZULIP_PATH}
     caches_in_use = set()
 
     def add_current_venv_cache(venv_name: str) -> None:
@@ -32,7 +32,6 @@ def get_caches_in_use(threshold_days):
         setups_to_check |= get_recent_deployments(threshold_days)
     if ENV == "dev":
         add_current_venv_cache("zulip-py3-venv")
-        add_current_venv_cache("zulip-thumbor-venv")
 
     for path in setups_to_check:
         reqs_dir = os.path.join(path, "requirements")
@@ -49,11 +48,12 @@ def get_caches_in_use(threshold_days):
 
     return caches_in_use
 
+
 def main(args: argparse.Namespace) -> None:
     caches_in_use = get_caches_in_use(args.threshold_days)
-    purge_unused_caches(
-        VENV_CACHE_DIR, caches_in_use, "venv cache", args)
+    purge_unused_caches(VENV_CACHE_DIR, caches_in_use, "venv cache", args)
+
 
 if __name__ == "__main__":
-    args = parse_cache_script_args("This script cleans unused zulip venv caches.")
+    args = parse_cache_script_args("This script cleans unused Zulip venv caches.")
     main(args)

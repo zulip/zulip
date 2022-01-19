@@ -12,23 +12,28 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
     <div class="center-block new-style" style="padding: 20px 0px">
 
         <div class="pitch">
+            {% if creating_new_team %}
+            <h1>{{ _('Create your organization') }}</h1>
+            {% else %}
+            <h1>{{ _('Create your account') }}</h1>
+            {% endif %}
+
             {% trans %}
-            <h1>You&rsquo;re almost there.</h1>
-            <p>We just need you to do one last thing.</p>
+            <p>You&rsquo;re almost there! We just need you to do one last thing.</p>
             {% endtrans %}
         </div>
 
-        <form method="post" class="form-horizontal white-box" id="registration" action="{{ url('zerver.views.registration.accounts_register') }}">
+        <form method="post" class="form-horizontal white-box" id="registration" action="{{ url('accounts_register') }}">
             {{ csrf_input }}
 
-            <section class="org-registration">
+            <fieldset class="org-registration">
                 {% if creating_new_team %}
                 <div class="input-box">
                     <div class="inline-block relative">
                         <input id="id_team_name" class="required" type="text"
                           placeholder="Acme or Ακμή"
                           value="{% if form.realm_name.value() %}{{ form.realm_name.value() }}{% endif %}"
-                          name="realm_name" maxlength={{ MAX_REALM_NAME_LENGTH }} required />
+                          name="realm_name" maxlength="{{ MAX_REALM_NAME_LENGTH }}" required />
                     </div>
                     <label for="id_team_name" class="inline-block label-title">{{ _('Organization name') }}</label>
                     {% if form.realm_name.errors %}
@@ -37,9 +42,23 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                         {% endfor %}
                     {% endif %}
 
-                    <div class="help-box margin-top">
+                    <div class="help-text">
                         {{ _('Shorter is better than longer.') }}
                     </div>
+                </div>
+
+                <div class="input-box">
+                    <div class="inline-block relative">
+                        <select name="realm_type" id="realm_type">
+                            {% for realm_type in sorted_realm_types %}
+                                {% if not realm_type.hidden %}
+                                <option value="{{ realm_type.id }}">{{ _(realm_type.name) }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <label for="realm_type" class="inline-block label-title">{{ _('Organization type') }}</label>
                 </div>
 
                 <div class="input-box">
@@ -63,7 +82,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                               class="{% if root_domain_landing_page %}required{% endif %} subdomain" type="text"
                               placeholder="acme"
                               value="{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}{% endif %}"
-                              name="realm_subdomain" maxlength={{ MAX_REALM_SUBDOMAIN_LENGTH }}
+                              name="realm_subdomain" maxlength="{{ MAX_REALM_SUBDOMAIN_LENGTH }}"
                               {% if root_domain_landing_page %}required{% endif %} />
                             <label for="id_team_subdomain" class="realm_subdomain_label">.{{ external_host }}</label>
                             <p id="id_team_subdomain_error_client" class="error help-inline text-error"></p>
@@ -74,14 +93,17 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                             {% endfor %}
                         {% endif %}
                     </div>
-                    <div class="help-box margin-top">
-                        {{ _("The address you'll use to log in to your organization.") }}
+                    <div class="help-text">
+                        {{ _("The URL users will use to access the new organization.") }}
                     </div>
                 </div>
                 {% endif %}
-            </section>
+            </fieldset>
 
-            <section class="user-registration">
+            <fieldset class="user-registration">
+                {% if creating_new_team %}
+                <legend>{{ _('Your account') }}</legend>
+                {% endif %}
                 {% if realm_name and not creating_new_team %}
                 <img class="avatar inline-block" src="{{ realm_icon }}" alt="" />
                 <div class="info-box inline-block">
@@ -93,24 +115,24 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 <div class="input-box no-validation">
                     <input type='hidden' name='key' value='{{ key }}' />
                     <input type='hidden' name='timezone' id='timezone'/>
-                    <input id="id_email" type='text' disabled="true" placeholder="{{ email }}" required />
                     <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
+                    <div id="id_email">{{ email }}</div>
                 </div>
 
                 {% if accounts %}
                 <div class="input-box">
-                    <label for="source_realm" class="inline-block">{{ _('Import settings from existing Zulip account') }}</label>
+                    <label for="source_realm_id" class="inline-block">{{ _('Import settings from existing Zulip account') }}</label>
                 </div>
                 <div id="source_realm_select_section" class="input-group m-10 inline-block">
-                    <select class="select" name="source_realm" id="source_realm_select">
-                        <option value="on"
-                          {% if "source_realm" in form.data and form.data["source_realm"] == "on" %}selected {% endif %}>
+                    <select class="select" name="source_realm_id" id="source_realm_select">
+                        <option value=""
+                          {% if "source_realm_id" in form.data and form.data["source_realm_id"] == "" %}selected {% endif %}>
                             {{ _('Don&rsquo;t import settings') }}
                         </option>
                         {% for account in accounts %}
-                        <option value="{{ account.string_id }}" data-full-name="{{account.full_name}}" data-avatar="{{account.avatar}}"
-                          {% if ("source_realm" in form.data and account.string_id == form.data["source_realm"])
-                          or ("source_realm" not in form.data and loop.index0 == 0) %} selected {% endif %}>
+                        <option value="{{ account.realm_id }}" data-full-name="{{account.full_name}}" data-avatar="{{account.avatar}}"
+                          {% if ("source_realm_id" in form.data and account.realm_id == form.data["source_realm_id"]|int)
+                          or ("source_realm_id" not in form.data and loop.index0 == 0) %} selected {% endif %}>
                             {{ account.realm_name }}
                         </option>
                         {% endfor %}
@@ -124,7 +146,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     {% else %}
                         <input id="id_full_name" class="required" type="text" name="full_name"
                           value="{% if full_name %}{{ full_name }}{% elif form.full_name.value() %}{{ form.full_name.value() }}{% endif %}"
-                          maxlength={{ MAX_NAME_LENGTH }} placeholder="{% trans %}Full name or 名前{% endtrans %}" required />
+                          maxlength="{{ MAX_NAME_LENGTH }}" placeholder="{% trans %}Full name or 名前{% endtrans %}" required />
                         <label for="id_full_name" class="inline-block label-title">{{ _('Full name') }}</label>
                         {% if form.full_name.errors %}
                             {% for error in form.full_name.errors %}
@@ -140,21 +162,23 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 </div>
 
                 {% if require_ldap_password %}
-                <div class="input-box">
-                    <input id="ldap-password" class="required" type="password" name="password" required />
+                <div class="input-box password-div">
+                    <input id="ldap-password" class="required" type="password" name="password" autocomplete="off" required />
                     <label for="ldap-password" class="inline-block">{{ _('Password') }}</label>
+                    <i class="fa fa-eye-slash password_visibility_toggle" role="button"></i>
                     <span class="help-inline">
                         {{ _('Enter your LDAP/Active Directory password.') }}
                     </span>
                 </div>
                 {% elif password_required %}
-                <div class="input-box">
-                    <input id="id_password" class="required" type="password" name="password"
+                <div class="input-box password-div">
+                    <input id="id_password" class="required" type="password" name="password" autocomplete="new-password"
                       value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
-                      maxlength={{ MAX_PASSWORD_LENGTH }}
+                      maxlength="{{ MAX_PASSWORD_LENGTH }}"
                       data-min-length="{{password_min_length}}"
                       data-min-guesses="{{password_min_guesses}}" required />
                     <label for="id_password" class="inline-block">{{ _('Password') }}</label>
+                    <i class="fa fa-eye-slash password_visibility_toggle" role="button"></i>
                     {% if full_name %}
                     <span class="help-inline">
                         {{ _('This is used for mobile applications and other tools that require a password.') }}
@@ -170,8 +194,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     </div>
                 </div>
                 {% endif %}
-            </section>
-
+            </fieldset>
             {% if default_stream_groups %}
             <hr />
             <div class="default-stream-groups">
@@ -217,7 +240,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                         <input id="id_terms" class="required" type="checkbox" name="terms"
                           {% if form.terms.value() %}checked="checked"{% endif %} />
                         <span></span>
-                        {% trans %}I agree to the <a href="{{ root_domain_uri }}/terms" target="_blank">Terms of Service</a>.{% endtrans %}
+                        {% trans %}I agree to the <a href="{{ root_domain_uri }}/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>.{% endtrans %}
                     </label>
                     {% if form.terms.errors %}
                         {% for error in form.terms.errors %}
@@ -226,8 +249,21 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     {% endif %}
                 </div>
                 {% endif %}
+                {% if corporate_enabled %}
+                <div class="input-group">
+                    <label for="id_enable_marketing_emails" class="inline-block checkbox marketing_emails_checkbox">
+                        <input id="id_enable_marketing_emails" type="checkbox" name="enable_marketing_emails"
+                          checked="checked" />
+                        <span></span>
+                        {% trans %}Subscribe me to Zulip's low-traffic newsletter (a few emails a year).{% endtrans %}
+                    </label>
+                </div>
+                {% endif %}
                 <div class="register-button-box">
-                    <button class="register-button" type="submit">{{ _('Sign up') }}</button>
+                    <button class="register-button" type="submit">
+                        <span>{{ _('Sign up') }}</span>
+                        <object class="loader" type="image/svg+xml" data="/static/images/loader-white.svg"></object>
+                    </button>
                     <input type="hidden" name="next" value="{{ next }}" />
                 </div>
             </div>

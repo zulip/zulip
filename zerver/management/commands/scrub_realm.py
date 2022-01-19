@@ -9,7 +9,7 @@ class Command(ZulipBaseCommand):
     help = """Script to scrub a deactivated realm."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        self.add_realm_args(parser, True)
+        self.add_realm_args(parser, required=True)
 
     def handle(self, *args: Any, **options: str) -> None:
         realm = self.get_realm(options)
@@ -18,5 +18,5 @@ class Command(ZulipBaseCommand):
             print("Realm", options["realm_id"], "is active. Please deactivate the Realm the first.")
             exit(0)
         print("Scrubbing", options["realm_id"])
-        do_scrub_realm(realm)
+        do_scrub_realm(realm, acting_user=None)
         print("Done!")

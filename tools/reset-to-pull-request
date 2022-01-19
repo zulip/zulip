@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-usage () {
+usage() {
     cat >&2 <<EOF
 usage: $0 PULL_REQUEST_ID [REMOTE]
 
@@ -39,13 +39,11 @@ if [ -z "$request_id" ]; then
     usage
 fi
 
-if ! git diff-index --quiet HEAD; then
-    set +x
-    echo "There are uncommitted changes:"
-    git status --short
-    echo "Doing nothing to avoid losing your work."
-    exit 1
-fi
+this_dir=${BASH_SOURCE[0]%/*}
+# shellcheck source=lib/git-tools.bash
+. "${this_dir}"/lib/git-tools.bash
+
+require_clean_work_tree 'reset to PR'
 
 if [ -z "$pseudo_remote" ]; then
     set -x

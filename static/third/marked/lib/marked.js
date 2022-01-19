@@ -17,7 +17,7 @@ var block = {
   hr: /^( *[-*_]){3,} *(?:\n+|$)/,
   heading: /^ {0,3}(#{1,6}) +([^\n]*?)(?: +#+)? *(?:\n+|$)/,
   nptable: noop,
-  blockquote: /^(?!( *>\s*($|\n))*($|\n))( *>[^\n]*(\n(?!def)[^\n]+)*\n*)+/,
+  blockquote: /^(?!( *>\s*($|\n))*($|\n))( *>[^\n]*(\n(?!def)[^\n]+)*)+/,
   list: /^( *)(bull) [\s\S]+?(?:hr|def|\n{2,}(?! )(?!\1bull )\n*|\s*$)/,
   html: /^ *(?:comment *(?:\n|\s*$)|closed *(?:\n{2,}|\s*$)|closing *(?:\n{2,}|\s*$))/,
   def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/,
@@ -482,10 +482,9 @@ var inline = {
   usermention: noop,
   groupmention: noop,
   stream: noop,
-  avatar: noop,
   tex: noop,
-  gravatar: noop,
-  realm_filters: [],
+  timestamp: noop,
+  linkifiers: [],
   text: /^[\s\S]+?(?=[\\<!\[_*`$]| {2,}\n|$)/
 };
 
@@ -545,14 +544,13 @@ inline.zulip = merge({}, inline.breaks, {
                        '\ud83d[\ude80-\udeff]|\ud83e[\udd00-\uddff]|' +
                        '[\u2000-\u206F]|[\u2300-\u27BF]|[\u2B00-\u2BFF]|' +
                        '[\u3000-\u303F]|[\u3200-\u32FF])'),
-  usermention: /^(@(_?)(?:\*\*([^\*]+)\*\*))/, // Match potentially multi-word string between @** **
-  groupmention: /^@\*([^\*]+)\*/, // Match multi-word string between @* *
+  usermention: /^@(_?)(?:\*\*([^\*]+)\*\*)/, // Match potentially multi-word string between @** **
+  groupmention: /^@(_?)(?:\*([^\*]+)\*)/, // Match multi-word string between @* *
   stream_topic: /^#\*\*([^\*>]+)>([^\*]+)\*\*/,
   stream: /^#\*\*([^\*]+)\*\*/,
-  avatar: /^!avatar\(([^)]+)\)/,
-  gravatar: /^!gravatar\(([^)]+)\)/,
   tex: /^(\$\$([^\n_$](\\\$|[^\n$])*)\$\$(?!\$))\B/,
-  realm_filters: [],
+  timestamp: /^<time:([^>]+)>/,
+  linkifiers: [],
   text: replace(inline.breaks.text)
     ('|', '|(\ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f]|' +
           '\ud83d[\ude80-\udeff]|\ud83e[\udd00-\uddff]|' +
@@ -647,12 +645,12 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
-    // realm_filters (zulip)
+    // linkifier (Zulip)
     var self = this;
-    this.rules.realm_filters.forEach(function (realm_filter) {
-      var ret = self.inlineReplacement(realm_filter, src, function(regex, groups, match) {
+    this.rules.linkifiers.forEach(function (linkifier) {
+      var ret = self.inlineReplacement(linkifier, src, function(regex, groups, match) {
         // Insert the created URL
-        href = self.realm_filter(regex, groups, match);
+        href = self.linkifier(regex, groups, match);
         if (href !== undefined) {
           href = escape(href);
           return self.renderer.link(href, href, match);
@@ -687,6 +685,13 @@ InlineLexer.prototype.output = function(src) {
       text = escape(cap[1]);
       href = text;
       out += this.renderer.link(href, null, text);
+      continue;
+    }
+
+    // timestamp
+    if (cap = this.rules.timestamp.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.timestamp(cap[1]);
       continue;
     }
 
@@ -735,28 +740,28 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
-    // usermention (zulip)
+    // usermention (Zulip)
     if (cap = this.rules.usermention.exec(src)) {
       src = src.substring(cap[0].length);
-      out += this.usermention(unescape(cap[3] || cap[4]), cap[1], cap[2]);
+      out += this.usermention(unescape(cap[2]), cap[0], cap[1]);
       continue;
     }
 
-    // groupmention (zulip)
+    // groupmention (Zulip)
     if (cap = this.rules.groupmention.exec(src)) {
       src = src.substring(cap[0].length);
-      out += this.groupmention(unescape(cap[1]), cap[0]);
+      out += this.groupmention(unescape(cap[2]), cap[0], cap[1]);
       continue;
     }
 
-    // stream_topic (zulip)
+    // stream_topic (Zulip)
     if (cap = this.rules.stream_topic.exec(src)) {
       src = src.substring(cap[0].length);
       out += this.stream_topic(unescape(cap[1]), unescape(cap[2]), cap[0]);
       continue;
     }
 
-    // stream (zulip)
+    // stream (Zulip)
     if (cap = this.rules.stream.exec(src)) {
       src = src.substring(cap[0].length);
       out += this.stream(unescape(cap[1]), cap[0]);
@@ -805,24 +810,17 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
-    // unicode emoji
+    // Unicode emoji
     if (cap = this.rules.unicodeemoji.exec(src)) {
       src = src.substring(cap[0].length);
       out += this.unicodeEmoji(cap[1]);
       continue;
     }
 
-    // user avatar
-    if (cap = this.rules.avatar.exec(src)) {
+    // timestamp
+    if (cap = this.rules.timestamp.exec(src)) {
       src = src.substring(cap[0].length);
-      out += this.userAvatar(cap[1]);
-      continue;
-    }
-
-    // user gravatar
-    if (cap = this.rules.gravatar.exec(src)) {
-      src = src.substring(cap[0].length);
-      out += this.userGravatar(cap[1]);
+      out += this.timestamp(cap[1]);
       continue;
     }
 
@@ -886,25 +884,17 @@ InlineLexer.prototype.tex = function (tex, fullmatch) {
   return this.options.texHandler(tex, fullmatch);
 };
 
-InlineLexer.prototype.userAvatar = function (email) {
-  email = escape(email);
-  if (typeof this.options.avatarHandler !== 'function')
-    return '!avatar(' + email + ')';
-  return this.options.avatarHandler(email);
+InlineLexer.prototype.timestamp = function (time) {
+  if (typeof this.options.timestampHandler !== 'function')
+    return '&lt;time:' + time + '&gt;';
+  return this.options.timestampHandler(time);
 };
 
-InlineLexer.prototype.userGravatar = function (email) {
-  email = escape(email);
-  if (typeof this.options.avatarHandler !== 'function')
-    return '!gravatar(' + email + ')';
-  return this.options.avatarHandler(email);
-};
-
-InlineLexer.prototype.realm_filter = function (filter, matches, orig) {
-  if (typeof this.options.realmFilterHandler !== 'function')
+InlineLexer.prototype.linkifier = function (linkifier, matches, orig) {
+  if (typeof this.options.linkifierHandler !== 'function')
     return;
 
-  return this.options.realmFilterHandler(filter, matches);
+  return this.options.linkifierHandler(linkifier, matches);
 };
 
 InlineLexer.prototype.usermention = function (username, orig, silent) {
@@ -921,14 +911,14 @@ InlineLexer.prototype.usermention = function (username, orig, silent) {
   return orig;
 };
 
-InlineLexer.prototype.groupmention = function (groupname, orig) {
+InlineLexer.prototype.groupmention = function (groupname, orig, silent) {
   orig = escape(orig);
   if (typeof this.options.groupMentionHandler !== 'function')
   {
     return orig;
   }
 
-  var handled = this.options.groupMentionHandler(groupname);
+  var handled = this.options.groupMentionHandler(groupname, silent === '_');
   if (handled !== undefined) {
     return handled;
   }
@@ -1097,7 +1087,6 @@ Renderer.prototype.strong = function(text) {
 };
 
 Renderer.prototype.em = function(text) {
-  text = escape(text);
   return '<em>' + text + '</em>';
 };
 
@@ -1198,8 +1187,6 @@ Parser.prototype.parse = function(src) {
         safe = stash[2];
     if (!safe) {
       html = escape(html);
-    } else {
-      html += '\n';
     }
     output = output.replace('<p>' + key + '</p>', html)
   }
@@ -1522,8 +1509,7 @@ marked.defaults = {
   gfm: true,
   emoji: false,
   unicodeemoji: false,
-  avatar: false,
-  gravatar: false,
+  timestamp: true,
   tables: true,
   breaks: false,
   pedantic: false,
