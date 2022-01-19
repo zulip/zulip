@@ -43,7 +43,7 @@ export function DropdownListWidget({
 DropdownListWidget.prototype.render_default_text = function (elem) {
     elem.text(this.default_text);
     elem.addClass("text-warning");
-    elem.closest(".input-group").find(".dropdown_list_reset_button:enabled").hide();
+    elem.closest(".input-group").find(".dropdown_list_reset_button").hide();
 };
 
 DropdownListWidget.prototype.render = function (value) {
@@ -67,7 +67,7 @@ DropdownListWidget.prototype.render = function (value) {
     const text = this.render_text(item.name);
     elem.text(text);
     elem.removeClass("text-warning");
-    elem.closest(".input-group").find(".dropdown_list_reset_button:enabled").show();
+    elem.closest(".input-group").find(".dropdown_list_reset_button").show();
 };
 
 DropdownListWidget.prototype.update = function (value) {
@@ -320,7 +320,7 @@ MultiSelectDropdownListWidget.prototype.render_button_text = function (elem, lim
 
     elem.text(text);
     elem.removeClass("text-warning");
-    elem.closest(".input-group").find(".dropdown_list_reset_button:enabled").show();
+    elem.closest(".input-group").find(".dropdown_list_reset_button").show();
 };
 
 // Override the DrodownListWidget `render` function.
