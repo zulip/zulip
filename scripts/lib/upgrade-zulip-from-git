@@ -77,7 +77,7 @@ try:
     remotes = subprocess.check_output(["git", "remote"], preexec_fn=su_to_zulip).split(b"\n")
     if b"upstream" not in remotes:
         subprocess.check_call(
-            ["git", "remote", "add", "upstream", remote_url], preexec_fn=su_to_zulip
+            ["git", "remote", "add", "upstream", upstream_url], preexec_fn=su_to_zulip
         )
 
     logging.info("Fetching the latest commits")
