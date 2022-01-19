@@ -9,8 +9,8 @@ project](https://leanprover-community.github.io/) to develop the [Lean theorem
 prover](https://leanprover.github.io/) mathematics library.
 
 The Lean prover project was [featured in Nature magazine in June
-2021](https://www.nature.com/articles/d41586-021-01627-2), when an automated
-proof system was successfully used to [verify a result at the cutting edge of
+2021](https://www.nature.com/articles/d41586-021-01627-2), when the interactive
+theorem prover was successfully used to [verify a result at the cutting edge of
 mathematical
 research](https://www.quantamagazine.org/lean-computer-program-confirms-peter-scholze-proof-20210728/).
 This accomplishment was the result of a deep multi-month collaboration between
@@ -54,7 +54,7 @@ mathematics is taught.
 
 ## Unified library of mathematics developed by a diverse community
 
-Lean is an interactive theorem-prover and a programming language. Like C++ or
+Lean is an interactive theorem prover and a programming language. Like C++ or
 Python, it would be impossible to use in practice without a library of
 pre-defined components — imagine writing a function from scratch every time you
 need to sort a list!  The functions that make it possible to “program” in Lean
