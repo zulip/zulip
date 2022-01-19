@@ -6630,6 +6630,21 @@ paths:
                 type: array
                 items:
                   type: object
+                  additionalProperties: false
+                  properties:
+                    name:
+                      type: string
+                      description: The name of a stream.
+                    description:
+                      type: string
+                      description: A short description of the stream.
+                  required:
+                    - name
+                  example:
+                    no-description:
+                      value: {"name": "Verona"}
+                    with-description:
+                      value: {"name": "Verona", "description": "Italian city"}
               example: [{"name": "Verona", "description": "Italian city"}]
           required: true
         - $ref: "#/components/parameters/Principals"
