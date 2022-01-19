@@ -8,6 +8,7 @@ import * as fenced_code from "../shared/js/fenced_code";
 import render_compose from "../templates/compose.hbs";
 import render_edit_content_button from "../templates/edit_content_button.hbs";
 import render_left_sidebar from "../templates/left_sidebar.hbs";
+import render_message_feed_errors from "../templates/message_feed_errors.hbs";
 import render_navbar from "../templates/navbar.hbs";
 import render_right_sidebar from "../templates/right_sidebar.hbs";
 
@@ -197,6 +198,10 @@ function initialize_compose_box() {
     );
     $(`.enter_sends_${user_settings.enter_sends}`).show();
     common.adjust_mac_shortcuts(".enter_sends kbd");
+}
+
+function initialize_message_feed_errors() {
+    $("#message_feed_errors_container").html(render_message_feed_errors());
 }
 
 export function initialize_kitchen_sink_stuff() {
@@ -571,6 +576,7 @@ export function initialize_everything() {
     initialize_compose_box();
     settings.initialize();
     initialize_navbar();
+    initialize_message_feed_errors();
     realm_logo.render();
 
     message_lists.initialize();
