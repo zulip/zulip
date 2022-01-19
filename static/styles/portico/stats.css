@@ -242,9 +242,6 @@ p {
 }
 
 /*  css for dark dark-theme  */
-body.dark-theme {
-    color: hsl(0, 100%, 100%);
-}
 
 body.dark-theme .alert {
     background-color: hsl(170, 46%, 54%);

@@ -9,11 +9,34 @@ import {page_params} from "../page_params";
 
 Plotly.register([PlotlyBar, PlotlyPie]);
 
-const font_14pt = {
+var font_14pt = {
     family: "Source Sans 3",
     size: 14,
-    color: "#000000",
+    color: "rgb(0,0,0)",
 };
+
+var plot_color = "rgb(255,255,255)";
+
+//  function to set theme for stats page
+function setTheme(theme) {
+    "use strict";
+
+    if (theme === "dark-theme") {
+        document.querySelector("body").classList.remove("color-scheme-automatic");
+        document.querySelector("body").classList.add("dark-theme");
+        plot_color = "rgb(0,0,0)";
+        font_14pt.color = "rgb(255,255,255)";
+    } else {
+        document.querySelector("body").classList.remove("dark-theme");
+        document.querySelector("body").classList.add("color-scheme-automatic");
+        plot_color = "rgb(255,255,255)";
+        font_14pt.color = "rgb(0,0,0)";
+    }
+}
+
+//  Reading value of theme
+const theme = localStorage.getItem("theme-value");
+setTheme(theme);
 
 let last_full_update = Number.POSITIVE_INFINITY;
 
@@ -136,13 +159,16 @@ function populate_messages_sent_over_time(data) {
         barmode: "group",
         width: 750,
         height: 400,
+        plot_bgcolor: plot_color,
+        paper_bgcolor: plot_color,
         margin: {l: 40, r: 0, b: 40, t: 0},
         xaxis: {
             fixedrange: true,
-            rangeslider: {bordercolor: "#D8D8D8", borderwidth: 1},
+            rangeslider: {bordercolor: font_14pt.color/*"#D8D8D8"*/, borderwidth: 1},
             type: "date",
+            color: font_14pt.color,
         },
-        yaxis: {fixedrange: true, rangemode: "tozero"},
+        yaxis: {fixedrange: true, rangemode: "tozero", color: font_14pt.color},
         legend: {
             x: 0.62,
             y: 1.12,
@@ -423,9 +449,11 @@ function populate_messages_sent_by_client(data) {
         width: 750,
         height: null, // set in draw_plot()
         margin: {l: 3, r: 40, b: 40, t: 0},
+        plot_bgcolor: plot_color,
+        paper_bgcolor: plot_color,
         font: font_14pt,
-        xaxis: {range: null}, // set in draw_plot()
-        yaxis: {showticklabels: false},
+        xaxis: {range: null, color: font_14pt.color}, // set in draw_plot()
+        yaxis: {showticklabels: false, color: font_14pt.color},
         showlegend: false,
     };
 
@@ -580,6 +608,8 @@ function populate_messages_sent_by_message_type(data) {
         margin: {l: 90, r: 0, b: 0, t: 0},
         width: 750,
         height: 300,
+        plot_bgcolor: plot_color,
+        paper_bgcolor: plot_color,
         font: font_14pt,
     };
 
@@ -695,9 +725,12 @@ function populate_number_of_users(data) {
         width: 750,
         height: 370,
         margin: {l: 40, r: 0, b: 65, t: 20},
+        plot_bgcolor: plot_color,
+        paper_bgcolor: plot_color,
         xaxis: {
             fixedrange: true,
-            rangeslider: {bordercolor: "#D8D8D8", borderwidth: 1},
+            rangeslider: {bordercolor: font_14pt.color, borderwidth: 1.2},
+            color: font_14pt.color,
             rangeselector: {
                 x: 0.64,
                 y: -0.79,
@@ -718,7 +751,7 @@ function populate_number_of_users(data) {
                 ],
             },
         },
-        yaxis: {fixedrange: true, rangemode: "tozero"},
+        yaxis: {fixedrange: true, rangemode: "tozero", color: font_14pt.color},
         font: font_14pt,
     };
 
@@ -830,12 +863,15 @@ function populate_messages_read_over_time(data) {
         width: 750,
         height: 400,
         margin: {l: 40, r: 0, b: 40, t: 0},
+        plot_bgcolor: plot_color,
+        paper_bgcolor: plot_color,
         xaxis: {
+            color: font_14pt.color,
             fixedrange: true,
-            rangeslider: {bordercolor: "#D8D8D8", borderwidth: 1},
+            rangeslider: {bordercolor: font_14pt.color, borderwidth: 1},
             type: "date",
         },
-        yaxis: {fixedrange: true, rangemode: "tozero"},
+        yaxis: {fixedrange: true, rangemode: "tozero", color: font_14pt.color},
         legend: {
             x: 0.62,
             y: 1.12,
