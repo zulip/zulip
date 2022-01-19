@@ -79,6 +79,10 @@ try:
         subprocess.check_call(
             ["git", "remote", "add", "upstream", upstream_url], preexec_fn=su_to_zulip
         )
+    else:
+        subprocess.check_call(
+            ["git", "remote", "set-url", "upstream", upstream_url], preexec_fn=su_to_zulip
+        )
 
     logging.info("Fetching the latest commits")
     subprocess.check_call(
