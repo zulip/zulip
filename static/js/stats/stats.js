@@ -9,28 +9,30 @@ import {page_params} from "../page_params";
 
 Plotly.register([PlotlyBar, PlotlyPie]);
 
-var font_14pt = {
+const font_14pt = {
     family: "Source Sans 3",
     size: 14,
     color: "rgb(0,0,0)",
 };
 
-var plot_color = "rgb(255,255,255)";
+let button_color = "rgb(235,235,235)";
+
+let plot_color = "rgb(255,255,255)";
 
 //  function to set theme for stats page
 function setTheme(theme) {
-    "use strict";
-
     if (theme === "dark-theme") {
         document.querySelector("body").classList.remove("color-scheme-automatic");
         document.querySelector("body").classList.add("dark-theme");
         plot_color = "rgb(0,0,0)";
         font_14pt.color = "rgb(255,255,255)";
+        button_color = "rgb(20,20,20)";
     } else {
         document.querySelector("body").classList.remove("dark-theme");
         document.querySelector("body").classList.add("color-scheme-automatic");
         plot_color = "rgb(255,255,255)";
         font_14pt.color = "rgb(0,0,0)";
+        button_color = "rgb(235,235,235)";
     }
 }
 
@@ -164,7 +166,7 @@ function populate_messages_sent_over_time(data) {
         margin: {l: 40, r: 0, b: 40, t: 0},
         xaxis: {
             fixedrange: true,
-            rangeslider: {bordercolor: font_14pt.color/*"#D8D8D8"*/, borderwidth: 1},
+            rangeslider: {bordercolor: font_14pt.color /* "#D8D8D8"*/, borderwidth: 1},
             type: "date",
             color: font_14pt.color,
         },
@@ -187,6 +189,7 @@ function populate_messages_sent_over_time(data) {
                 {stepmode: "backward", ...button2},
                 {step: "all", label: $t({defaultMessage: "All time"})},
             ],
+            bgcolor: button_color,
         };
     }
 
@@ -749,6 +752,7 @@ function populate_number_of_users(data) {
                     },
                     {step: "all", label: $t({defaultMessage: "All time"})},
                 ],
+                bgcolor: button_color,
             },
         },
         yaxis: {fixedrange: true, rangemode: "tozero", color: font_14pt.color},
@@ -890,6 +894,7 @@ function populate_messages_read_over_time(data) {
                 {stepmode: "backward", ...button2},
                 {step: "all", label: $t({defaultMessage: "All time"})},
             ],
+            bgcolor: button_color,
         };
     }
 

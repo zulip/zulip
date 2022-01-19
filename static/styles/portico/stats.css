@@ -243,32 +243,36 @@ p {
 
 /*  css for dark dark-theme  */
 
+body.dark-theme .analytics-page-header {
+    color: hsl(180, 100%, 50%);
+}
+
 body.dark-theme .alert {
     background-color: hsl(170, 46%, 54%);
     color: hsl(0, 0%, 100%);
 }
 
 body.dark-theme .chart-container {
-    background-color: hsl(212, 28%, 10%);
+    background-color: hsl(212, 28%, 8%);
 
     h1 {
-        color: hsl(0, 100%, 100%);
+        color: hsl(180, 100%, 50%);
     }
 }
 
 body.dark-theme .buttons button {
-    background-color: hsl(200, 20%, 10%);
-    color: hsl(180, 60%, 50%);
+    background-color: hsl(0, 0%, 7.8%);
+    color: hsl(0, 0%, 100%);
 
     &.selected {
-        background-color: hsl(0, 0%, 0%);
-        color: hsl(212, 100%, 60%);
+        background-color: hsl(0, 0%, 29.4%);
+        color: hsl(0, 0%, 100%);
     }
 }
 
 body.dark-theme .button {
     &:hover {
-        background-color: hsl(200, 20%, 10%) !important;
-        color: hsl(212, 100%, 70%);
+        background-color: hsl(0, 0%, 29.4%) !important;
+        color: hsl(0, 0%, 100%);
     }
 }
