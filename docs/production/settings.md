@@ -118,10 +118,11 @@ Some popular settings in `/etc/zulip/settings.py` include:
 
 ## Zulip announcement list
 
-If you haven't already, subscribe to the
-[zulip-announce](https://groups.google.com/g/zulip-announce)
-list so that you can receive important announces like new Zulip
-releases or major changes to the app ecosystem.
+Subscribe to the [Zulip announcements email
+list](https://groups.google.com/g/zulip-announce) for server administrators, if
+you have not done so already. This extremely low-traffic list is for important
+announcements, including [new releases](../overview/release-lifecycle.md) and
+security issues.
 
 ## Enjoy your Zulip installation!
 
