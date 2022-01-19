@@ -420,6 +420,18 @@ function create_handlers_for_users(container) {
         }
     });
 
+    container.on("click", ".subs_unset_guest_users", (e) => {
+        e.preventDefault();
+        const guests_list = [];
+        const users_displayed = all_users_list_widget.get_current_list();
+        for (const user of users_displayed) {
+            if (people.get_user_type(user.user_id) === "Guest") {
+                guests_list.push(user.user_id);
+            }
+        }
+        update_checked_state_for_users(false, guests_list);
+    });
+
     container.on("click", "#copy-from-stream-expand-collapse", (e) => {
         e.preventDefault();
         $("#stream-checkboxes").toggle();
