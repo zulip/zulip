@@ -370,7 +370,7 @@ same as with GSoC, and ZSoC has no separate application process; your
 GSoC application is your ZSoC application. If we'd like to select you
 for ZSoC, we'll contact you when the GSoC results are announced.
 
-[gsoc-guide]: https://zulip.readthedocs.io/en/latest/contributing/gsoc-ideas.html
+[gsoc-guide]: https://zulip.readthedocs.io/en/latest/contributing/gsoc.html
 [gsoc-faq]: https://developers.google.com/open-source/gsoc/faq
 
 ## Stay connected
