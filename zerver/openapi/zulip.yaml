@@ -4324,7 +4324,17 @@ paths:
                           Returns all of the current user's drafts, in order of last edit time
                           (with the most recently edited draft appearing first).
                         items:
-                          $ref: "#/components/schemas/Draft"
+                          allOf:
+                            - required:
+                                - id
+                              properties:
+                                id:
+                                  type: integer
+                                  description: |
+                                    The unique ID of the draft. It will only used whenever the drafts are
+                                    fetched. This field should not be specified when the draft is being
+                                    created or edited
+                            - $ref: "#/components/schemas/Draft"
                     example:
                       {
                         "result": "success",
@@ -14698,12 +14708,6 @@ components:
       description: |
         A dictionary for representing a message draft.
       properties:
-        id:
-          type: integer
-          description: |
-            The unique ID of the draft. It will only used whenever the drafts are
-            fetched. This field should not be specified when the draft is being
-            created or edited.
         type:
           type: string
           description: |
@@ -14740,7 +14744,12 @@ components:
             last edited. When creating a draft, this key need not be present
             and it will be filled in automatically by the server.
           example: 1595479019
-      additionalProperties: false
+      additionalProperties:
+        type: integer
+        description: |
+          The unique ID of the draft. It will only used whenever the drafts are
+          fetched. This field should not be specified when the draft is being
+          created or edited
       required:
         - type
         - to
