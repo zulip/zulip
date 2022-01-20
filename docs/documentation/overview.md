@@ -103,7 +103,7 @@ designed to explain how the product works to end users. We aim for
 this to be clear, concise, correct, and readable to nontechnical
 audiences where possible.
 
-See our guide on [writing help center articles](user.md).
+See our guide on [writing help center articles](helpcenter.md).
 
 ### Integrations documentation
 
