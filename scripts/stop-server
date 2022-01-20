@@ -48,8 +48,10 @@ if has_application_server():
         # if they currently exist according to `supervisorctl`.
         services.extend(
             list_supervisor_processes(
-                "zulip_deliver_scheduled_emails",
-                "zulip_deliver_scheduled_messages",
+                [
+                    "zulip_deliver_scheduled_emails",
+                    "zulip_deliver_scheduled_messages",
+                ]
             ),
         )
 

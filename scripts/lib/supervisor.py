@@ -27,7 +27,9 @@ def rpc() -> client.ServerProxy:
     )
 
 
-def list_supervisor_processes(*filter_names: str) -> List[str]:
+def list_supervisor_processes(
+    filter_names: Optional[List[str]] = None, *, only_running: Optional[bool] = None
+) -> List[str]:
     results = []
     processes = rpc().supervisor.getAllProcessInfo()
     assert isinstance(processes, list)
@@ -49,5 +51,8 @@ def list_supervisor_processes(*filter_names: str) -> List[str]:
             if not match:
                 continue
 
-        results.append(name)
+        if only_running is None:
+            results.append(name)
+        elif only_running == (process["statename"] == "RUNNING"):
+            results.append(name)
     return results
