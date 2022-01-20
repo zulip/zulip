@@ -276,12 +276,13 @@
     position: absolute;
 }
 
-.compose_resolved_topic_close,
-.compose_invite_close,
-.compose_private_stream_alert_close {
+.compose_resolved_topic_user_controls .compose_resolved_topic_close,
+.compose_invite_user_controls .compose_invite_close,
+.compose_private_stream_alert_controls .compose_private_stream_alert_close {
     display: inline-block;
-    margin-top: 4px;
-
+    position: absolute;
+    margin-top: -2px;
+    margin-right: -2px;
     width: 10px;
 }
 
