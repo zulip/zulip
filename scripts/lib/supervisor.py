@@ -25,3 +25,29 @@ def rpc() -> client.ServerProxy:
     return client.ServerProxy(
         "http://localhost", transport=UnixStreamTransport("/var/run/supervisor.sock")
     )
+
+
+def list_supervisor_processes(*filter_names: str) -> List[str]:
+    results = []
+    processes = rpc().supervisor.getAllProcessInfo()
+    assert isinstance(processes, list)
+    for process in processes:
+        if process["group"] != process["name"]:
+            name = f"{process['group']}:{process['name']}"
+        else:
+            name = process["name"]
+
+        if filter_names:
+            match = False
+            for filter_name in filter_names:
+                if filter_name.endswith(":*") and name.startswith(filter_name[:-1]):
+                    match = True
+                    break
+                if name == filter_name:
+                    match = True
+                    break
+            if not match:
+                continue
+
+        results.append(name)
+    return results
