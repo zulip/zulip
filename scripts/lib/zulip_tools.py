@@ -617,25 +617,6 @@ def has_application_server(once: bool = False) -> bool:
     )
 
 
-def list_supervisor_processes(*args: str) -> List[str]:
-    worker_status = subprocess.run(
-        ["supervisorctl", "status", *args],
-        text=True,
-        stdout=subprocess.PIPE,
-    )
-    # `supervisorctl status` returns 3 if any are stopped, which is
-    # fine here; and exit code 4 is for no such process, which is
-    # handled below.
-    if worker_status.returncode not in (0, 3, 4):
-        worker_status.check_returncode()
-
-    processes = []
-    for status_line in worker_status.stdout.splitlines():
-        if not re.search(r"ERROR \(no such (process|group)\)", status_line):
-            processes.append(status_line.split()[0])
-    return processes
-
-
 def has_process_fts_updates() -> bool:
     return (
         # Current path
