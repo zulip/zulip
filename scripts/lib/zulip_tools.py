@@ -595,6 +595,16 @@ def get_config(
     return default_value
 
 
+def get_config_bool(
+    config_file: configparser.RawConfigParser, section: str, key: str, default_value: bool = False
+) -> bool:
+    if config_file.has_option(section, key):
+        val = config_file.get(section, key)
+        # This list is parallel to puppet/zulip/lib/puppet/parser/functions/zulipconf.rb
+        return val in ["1", "y", "t", "true", "yes", "enable", "enabled"]
+    return default_value
+
+
 def get_config_file() -> configparser.RawConfigParser:
     config_file = configparser.RawConfigParser()
     config_file.read("/etc/zulip/zulip.conf")
