@@ -106,7 +106,7 @@ run_test("big_list", ({override}) => {
     // the screen.
     let chunks_inserted = 0;
 
-    override(buddy_list, "render_more", () => {
+    override(buddy_list, "_render_more", () => {
         elem.scrollHeight += 100;
         chunks_inserted += 1;
     });
@@ -139,7 +139,7 @@ run_test("force_render", ({override}) => {
     buddy_list.users_render_count = 50;
 
     let num_rendered = 0;
-    override(buddy_list, "render_more", (opts) => {
+    override(buddy_list, "_render_more", (opts) => {
         num_rendered += opts.chunk_size;
     });
 

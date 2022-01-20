@@ -102,7 +102,7 @@ function test(label, f) {
         // list in one pass.  We will do more refined
         // testing in the buddy_list node tests.
         helpers.override(buddy_list, "fill_screen_with_content", () => {
-            buddy_list.render_more({
+            buddy_list.users_render_more({
                 chunk_size: 100,
             });
         });

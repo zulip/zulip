@@ -68,36 +68,44 @@ export class BuddyList extends BuddyListConf {
         this.fill_screen_with_content();
     }
 
-    render_more(opts) {
-        const chunk_size = opts.chunk_size;
-
-        const begin = this.users_render_count;
+    _render_more({chunk_size, begin, keys, section_sel}) {
         const end = begin + chunk_size;
-
-        const more_keys = this.user_keys.slice(begin, end);
+        const more_keys = keys.slice(begin, end);
 
         if (more_keys.length === 0) {
-            return;
+            return 0;
         }
 
-        const user_items = this.get_data_from_keys({
-            keys: this.user_keys,
+        const items = this.get_data_from_keys({
+            keys: more_keys,
         });
 
         const html = this.items_to_html({
-            items: user_items,
+            items,
         });
-        this.$container = $(this.container_sel);
-        this.$container.append(html);
+
+        this.$section = $(section_sel);
+        this.$section.append(html);
 
         // Invariant: more_keys.length >= items.length.
         // (Usually they're the same, but occasionally keys
         // won't return valid items.  Even though we don't
         // actually render these keys, we still "count" them
         // as rendered.
+        return more_keys.length;
+    }
 
-        this.users_render_count += more_keys.length;
-        this.update_padding();
+    users_render_more(opts) {
+        const render_count = this._render_more({
+            chunk_size: opts.chunk_size,
+            begin: this.users_render_count,
+            keys: this.user_keys,
+            section_sel: this.container_sel,
+        });
+        if (render_count > 0) {
+            this.users_render_count += render_count;
+            this.update_padding();
+        }
     }
 
     get_items() {
@@ -130,6 +138,10 @@ export class BuddyList extends BuddyListConf {
     }
 
     maybe_remove_key(opts) {
+        this.maybe_remove_user_key(opts);
+    }
+
+    maybe_remove_user_key(opts) {
         const pos = this.user_keys.indexOf(opts.key);
 
         if (pos < 0) {
@@ -140,25 +152,35 @@ export class BuddyList extends BuddyListConf {
 
         if (pos < this.users_render_count) {
             this.users_render_count -= 1;
-            const $li = this.find_li({key: opts.key});
-            $li.remove();
-            this.update_padding();
+            this._remove_key_and_update_padding(opts);
         }
     }
 
-    find_position(opts) {
-        const key = opts.key;
+    _remove_key_and_update_padding(opts) {
+        const $li = this.find_li({key: opts.key});
+        $li.remove();
+        this.update_padding();
+    }
+
+    _find_position({key, keys}) {
         let i;
 
-        for (i = 0; i < this.user_keys.length; i += 1) {
-            const list_key = this.user_keys[i];
+        for (i = 0; i < keys.length; i += 1) {
+            const list_key = keys[i];
 
             if (this.compare_function(key, list_key) < 0) {
                 return i;
             }
         }
 
-        return this.user_keys.length;
+        return keys.length;
+    }
+
+    find_user_position(opts) {
+        return this._find_position({
+            key: opts.key,
+            keys: this.user_keys,
+        });
     }
 
     force_render(opts) {
@@ -172,7 +194,7 @@ export class BuddyList extends BuddyListConf {
             blueslip.error("cannot show key at this position: " + pos);
         }
 
-        this.render_more({
+        this.users_render_more({
             chunk_size,
         });
     }
@@ -242,7 +264,7 @@ export class BuddyList extends BuddyListConf {
 
         this.maybe_remove_key({key});
 
-        const pos = this.find_position({
+        const pos = this.find_user_position({
             key,
         });
 
@@ -279,7 +301,7 @@ export class BuddyList extends BuddyListConf {
 
             const chunk_size = 20;
 
-            this.render_more({
+            this.users_render_more({
                 chunk_size,
             });
         }
