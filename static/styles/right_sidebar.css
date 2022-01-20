@@ -247,3 +247,14 @@
         padding-bottom: 0;
     }
 }
+
+.right-sidebar-shortcuts .realm-description {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .color_animated_button {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}

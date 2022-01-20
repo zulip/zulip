@@ -1150,14 +1150,14 @@ body.dark-theme {
     }
 
     .color_animated_button {
-        background-color: hsl(209, 32%, 5%);
+        background-color: hsl(211, 29%, 14%);
 
         * {
             color: hsl(0, 0%, 100%);
         }
 
         &:hover {
-            background-color: hsl(228, 96%, 71%);
+            background-color: hsl(240, 96%, 68%);
         }
     }
 

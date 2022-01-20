@@ -26,9 +26,22 @@
             {{#if can_invite_others_to_realm}}
             <a id="invite-user-link" href="#invite"><i class="fa fa-user-plus" aria-hidden="true"></i>{{t 'Invite more users' }}</a>
             {{/if}}
-            <a id="sidebar-keyboard-shortcuts" data-overlay-trigger="keyboard-shortcuts">
+            <a id="sidebar-keyboard-shortcuts" data-overlay-trigger="keyboard-shortcuts" class="hidden-for-spectators">
                 <i class="fa fa-keyboard-o fa-2x tippy-zulip-tooltip" id="keyboard-icon" data-tippy-allowHtml="true" data-tippy-content="{{t 'Keyboard shortcuts' }} <span class='hotkey-hint'>(?)</span>"></i>
             </a>
+            <div class="only-visible-for-spectators">
+                <div class="realm-description">
+                    <p>{{ realm_description }}</p>
+                    <a href="/register"  class="signup_button color_animated_button">
+                        <i class="fa fa-pencil-square-o"></i>
+                        <span>{{t 'Sign up' }}</span>
+                    </a>
+                    <a href="/login" class="login_button color_animated_button">
+                        <i class="fa fa-sign-in"></i>
+                        <span>{{t 'Log in' }}</span>
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
