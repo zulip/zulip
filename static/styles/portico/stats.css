@@ -262,17 +262,17 @@ body.dark-theme .chart-container {
 
 body.dark-theme .buttons button {
     background-color: hsl(0, 0%, 7.8%);
-    color: hsl(0, 0%, 100%);
+    color: hsl(236, 33.3%, 90%);
 
     &.selected {
         background-color: hsl(0, 0%, 29.4%);
-        color: hsl(0, 0%, 100%);
+        color: hsl(236, 33.3%, 90%);
     }
 }
 
 body.dark-theme .button {
     &:hover {
         background-color: hsl(0, 0%, 29.4%) !important;
-        color: hsl(0, 0%, 100%);
+        color: hsl(236, 33.3%, 90%);
     }
 }

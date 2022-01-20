@@ -25,7 +25,7 @@ function setTheme(theme) {
         document.querySelector("body").classList.remove("color-scheme-automatic");
         document.querySelector("body").classList.add("dark-theme");
         plot_color = "rgb(0,0,0)";
-        font_14pt.color = "rgb(255,255,255)";
+        font_14pt.color = "rgb(221,222,238)";
         button_color = "rgb(20,20,20)";
     } else {
         document.querySelector("body").classList.remove("dark-theme");
