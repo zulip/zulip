@@ -71,7 +71,7 @@ if has_application_server():
     if action == "start" or args.less_graceful:
         workers.append("zulip-workers:*")
     else:
-        workers.extend(list_supervisor_processes("zulip-workers:*"))
+        workers.extend(list_supervisor_processes(["zulip-workers:*"]))
 
     if has_application_server(once=True):
         # These used to be included in "zulip-workers:*"; since we may
@@ -81,8 +81,10 @@ if has_application_server():
         # `supervisorctl`.
         workers.extend(
             list_supervisor_processes(
-                "zulip_deliver_scheduled_emails",
-                "zulip_deliver_scheduled_messages",
+                [
+                    "zulip_deliver_scheduled_emails",
+                    "zulip_deliver_scheduled_messages",
+                ]
             )
         )
 
