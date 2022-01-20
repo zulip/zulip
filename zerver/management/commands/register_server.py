@@ -1,6 +1,6 @@
 import subprocess
 from argparse import ArgumentParser
-from typing import Any
+from typing import Any, Dict
 
 import requests
 from django.conf import settings
@@ -63,10 +63,7 @@ class Command(ZulipBaseCommand):
         if options["rotate_key"]:
             request["new_org_key"] = get_random_string(64)
 
-        print("The following data will be submitted to the push notification service:")
-        for key in sorted(request.keys()):
-            print(f"  {key}: {request[key]}")
-        print("")
+        self._log_params(request)
 
         if not options["agree_to_terms_of_service"] and not options["rotate_key"]:
             print(
@@ -120,3 +117,9 @@ class Command(ZulipBaseCommand):
                     ]
                 )
             print("Mobile Push Notification Service registration successfully updated!")
+
+    def _log_params(self, params: Dict[str, Any]) -> None:
+        print("The following data will be submitted to the push notification service:")
+        for key in sorted(params.keys()):
+            print(f"  {key}: {params[key]}")
+        print("")
