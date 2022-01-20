@@ -754,10 +754,10 @@ RabbitMQ.
 
 #### `rolling_restart`
 
-If set to a non-empty value, when using `./scripts/restart-server` to
-restart Zulip, restart the uwsgi processes one-at-a-time, instead of
-all at once. This decreases the number of 502's served to clients, at
-the cost of slightly increased memory usage, and the possibility that
+If set to true, when using `./scripts/restart-server` to restart
+Zulip, restart the uwsgi processes one-at-a-time, instead of all at
+once. This decreases the number of 502's served to clients, at the
+cost of slightly increased memory usage, and the possibility that
 different requests will be served by different versions of the code.
 
 #### `s3_memory_cache_size`

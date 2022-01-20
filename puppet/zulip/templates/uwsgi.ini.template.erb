@@ -53,7 +53,7 @@ post-buffering=4096
 stats=/home/zulip/deployments/uwsgi-stats
 
 
-<% if @uwsgi_rolling_restart != '' -%>
+<% if @uwsgi_rolling_restart -%>
 # If we are doing a rolling restart, re-chdir to the current "current"
 # directory in each forked process
 hook-post-fork=chdir:/home/zulip/deployments/current
