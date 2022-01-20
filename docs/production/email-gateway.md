@@ -125,7 +125,7 @@ Congratulations! The integration should be fully operational.
    su zulip -c '/home/zulip/deployments/current/manage.py email_mirror'
    ```
 
-1. Once everything is working, Install the cron job which will poll
+1. Once everything is working, install the cron job which will poll
    the inbox every minute for new messages using the tool you tested
    in the last step:
    ```bash

@@ -23,7 +23,7 @@ su zulip -c '/home/zulip/deployments/current/scripts/restart-server'
 Zulip has dozens of settings documented in the comments in
 `/etc/zulip/settings.py`; you can review [the latest version of the
 settings.py template][settings-py-template], and if you've upgraded
-from an old versions of Zulip, we recommend [carefully updating your
+from an old version of Zulip, we recommend [carefully updating your
 `/etc/zulip/settings.py`][update-settings-docs] to fold in the inline
 comment documentation for new configuration settings after upgrading
 to each new major release.

@@ -20,7 +20,7 @@ installation, you'll need to register a custom Zoom app as follows:
    - Disable the option to publish the app on the Marketplace.
    - Click **Create**.
 
-1. Inside of the Zoom app management page:
+1. Inside the Zoom app management page:
 
    - On the **App Credentials** tab, set both the **Redirect URL for
      OAuth** and the **Whitelist URL** to

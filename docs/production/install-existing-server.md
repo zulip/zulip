@@ -2,9 +2,9 @@
 :orphan:
 ```
 
-# Production installation on existing server
+# Production installation on an existing server
 
-Here are some tips for installing the latest release Zulip on a
+Here are some tips for installing the latest release of Zulip on a
 production server running Debian or Ubuntu. The Zulip installation
 scripts assume that it has carte blanche to overwrite your
 configuration files in /etc, so we recommend against installing it on
