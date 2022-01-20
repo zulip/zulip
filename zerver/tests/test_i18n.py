@@ -9,7 +9,9 @@ from django.http import HttpResponse
 from django.utils import translation
 
 from zerver.lib.email_notifications import enqueue_welcome_emails
+from zerver.lib.i18n import get_browser_language_code
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import HostRequestMock
 from zerver.management.commands import makemessages
 from zerver.models import get_realm_stream
 
@@ -127,6 +129,28 @@ class TranslationTestCase(ZulipTestCase):
         for lang, word in languages:
             response = self.fetch("get", f"/{lang}/integrations/", 200)
             self.assert_in_response(word, response)
+
+    def test_get_browser_language_code(self) -> None:
+        req = HostRequestMock()
+
+        self.assertIsNone(get_browser_language_code(req))
+
+        req.META["HTTP_ACCEPT_LANGUAGE"] = "de"
+        self.assertEqual(get_browser_language_code(req), "de")
+
+        req.META["HTTP_ACCEPT_LANGUAGE"] = "en-GB,en;q=0.8"
+        self.assertEqual(get_browser_language_code(req), "en-gb")
+
+        # Case when unsupported language has higher weight.
+        req.META["HTTP_ACCEPT_LANGUAGE"] = "en-IND;q=0.9,de;q=0.8"
+        self.assertEqual(get_browser_language_code(req), "de")
+
+        # Browser locale is set to unsupported language.
+        req.META["HTTP_ACCEPT_LANGUAGE"] = "en-IND"
+        self.assertIsNone(get_browser_language_code(req))
+
+        req.META["HTTP_ACCEPT_LANGUAGE"] = "*"
+        self.assertIsNone(get_browser_language_code(req))
 
 
 class JsonTranslationTestCase(ZulipTestCase):

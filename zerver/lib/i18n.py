@@ -9,6 +9,7 @@ import orjson
 from django.conf import settings
 from django.http import HttpRequest
 from django.utils import translation
+from django.utils.translation.trans_real import parse_accept_lang_header
 
 from zerver.lib.request import RequestNotes
 
@@ -67,3 +68,17 @@ def get_and_set_request_language(
     RequestNotes.get_notes(request).set_language = translation.get_language()
 
     return request_language
+
+
+def get_browser_language_code(request: HttpRequest) -> Optional[str]:
+    accept_lang_header = request.META.get("HTTP_ACCEPT_LANGUAGE")
+    if accept_lang_header is None:
+        return None
+
+    available_language_codes = get_available_language_codes()
+    for accept_lang, priority in parse_accept_lang_header(request.META.get("HTTP_ACCEPT_LANGUAGE")):
+        if accept_lang == "*":
+            return None
+        if accept_lang in available_language_codes:
+            return accept_lang
+    return None
