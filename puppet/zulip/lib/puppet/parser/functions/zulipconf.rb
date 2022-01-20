@@ -6,7 +6,8 @@ module Puppet::Parser::Functions
     output = `/usr/bin/crudini --get #{zulip_conf_path} #{joined} 2>&1`; result = $?.success?
     if result
       if [true, false].include? default
-        # If the default is a bool, coerce into a bool
+        # If the default is a bool, coerce into a bool.  This list is also
+        # maintained in scripts/lib/zulip_tools.py
         ['1','y','t','true','yes','enable','enabled'].include? output.strip.downcase
       else
         output.strip
