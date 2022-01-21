@@ -6634,10 +6634,13 @@ paths:
                   properties:
                     name:
                       type: string
-                      description: The name of a stream.
+                      description: |
+                        The name of the stream.
                     description:
                       type: string
-                      description: A short description of the stream.
+                      description: |
+                        The [description](/help/change-the-stream-description)
+                        to use for a new stream being created, in text/markdown format.
                   required:
                     - name
                   example:
@@ -14140,13 +14143,15 @@ components:
         description:
           type: string
           description: |
-            The short description of a stream in text/markdown format,
+            The [description](/help/change-the-stream-description) of the stream in text/markdown format,
             intended to be used to prepopulate UI for editing a stream's
             description.
+
+            See also `rendered_description`.
         rendered_description:
           type: string
           description: |
-            A short description of a stream rendered as HTML, intended to
+            The [description](/help/change-the-stream-description) of the stream rendered as HTML, intended to
             be used when displaying the stream description in a UI.
 
             One should use the standard Zulip rendered_markdown CSS when
@@ -14154,6 +14159,8 @@ components:
             work correctly. And any client-side security logic for
             user-generated message content should be applied when displaying
             this HTML as though it were the body of a Zulip message.
+
+            See also `description`.
         date_created:
           type: integer
           description: |
