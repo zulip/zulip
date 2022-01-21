@@ -114,6 +114,6 @@ class TestQueueImplementation(ZulipTestCase):
     def setUp(self) -> None:
         queue_client = get_queue_client()
         assert queue_client.channel
-        if "test_suite" in queue_client.queues:
-            queue_client.channel.queue_purge("test_suite")
+        queue_client.channel.queue_declare("test_suite", durable=True)
+        queue_client.channel.queue_purge("test_suite")
         super().setUp()
