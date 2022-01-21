@@ -3,10 +3,9 @@
   role="listitem">
     <div class="unread_marker"><div class="unread-marker-fill"></div></div>
     {{#if want_date_divider}}
-    <div class="date_row no-select" {{#if msg/is_stream}}style="box-shadow: inset 1px 0px 0px 0px {{background_color}}, -1px 0px 0px 0px {{background_color}};"{{/if}}>{{{date_divider_html}}}</div>
+    <div class="date_row no-select">{{{date_divider_html}}}</div>
     {{/if}}
-    <div class="messagebox {{#if next_is_same_sender}}next_is_same_sender{{/if}}"
-      {{#if msg/is_stream}}style="box-shadow: inset 1px 0px 0px 0px {{background_color}}, -1px 0px 0px 0px {{background_color}};"{{/if}}>
+    <div class="messagebox {{#if next_is_same_sender}}next_is_same_sender{{/if}}">
         <div class="messagebox-content">
             {{> message_body}}
         </div>

@@ -15,19 +15,6 @@ function update_table_stream_color(table, stream_name, color) {
     for (const label of stream_labels) {
         const $label = $(label);
         if ($label.text().trim() === stream_name) {
-            const messages = $label.closest(".recipient_row").children(".message_row");
-            messages
-                .children(".messagebox")
-                .css(
-                    "box-shadow",
-                    "inset 1px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style,
-                );
-            messages
-                .children(".date_row")
-                .css(
-                    "box-shadow",
-                    "inset 1px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style,
-                );
             $label.css({background: style, "border-left-color": style});
             $label.removeClass("dark_background");
             $label.addClass(color_class.get_css_class(color));
