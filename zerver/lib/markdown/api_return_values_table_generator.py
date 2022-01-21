@@ -92,7 +92,8 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                 + ": "
                 + '<span class="api-field-type">'
                 + data_type
-                + "</span> "
+                + "</span>\n\n"
+                + (spacing + 4) * " "
                 + key_description
             )
         return (
@@ -102,7 +103,8 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
             + "`: "
             + '<span class="api-field-type">'
             + data_type
-            + "</span> "
+            + "</span>\n\n"
+            + (spacing + 4) * " "
             + description
         )
 
