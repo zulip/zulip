@@ -19,6 +19,9 @@ listen=<%= @uwsgi_listen_backlog_limit %>
 master-fifo=/home/zulip/deployments/uwsgi-control
 
 
+# Let threads run when processes aren't responding to requests;
+# required for Sentry background worker
+enable-threads=true
 
 # How many serving processes to fork
 processes=<%= @uwsgi_processes %>
