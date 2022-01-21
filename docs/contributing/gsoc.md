@@ -2,7 +2,7 @@
 
 ## About us
 
-[Zulip](https://zulip.com) the only modern team chat app that is ideal for both
+[Zulip](https://zulip.com) is the only modern team chat app that is ideal for both
 live and asynchronous conversations. Zulip has a web app, a cross-platform
 mobile app for iOS and Android, cross-platform desktop and terminal apps, and
 over 100 native integrations. The entire Zulip codebase is 100% open source.
@@ -35,7 +35,7 @@ post](https://blog.zulip.com/2021/04/28/why-zulip-is-on-github-sponsors/)!
 
 ## The Zulip GSoC experience
 
-Zulip has been a GSoC mentoring organization since 2016, and we to accept 15-20
+Zulip has been a GSoC mentoring organization since 2016, and we accept 15-20
 GSoC participants each summer. We have also mentored several interns through the
 [Outreachy](https://www.outreachy.org/) program, and hundreds of Google Code-In
 participants.
@@ -117,7 +117,7 @@ is correct.
 For all of our projects, an important skill to develop is a good
 command of Git; read [our Git guide](../git/overview.md) in full to
 learn how to use it well. Of particular importance is mastering using
-Git rebase so that you can construct commits that are clearly correct
+`git rebase` so that you can construct commits that are clearly correct
 and explain why they are correct. We highly recommend investing in
 learning a [graphical Git client](../git/setup.md) and learning to
 write good commit structures and messages; this is more important than
