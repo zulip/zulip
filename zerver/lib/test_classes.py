@@ -924,8 +924,7 @@ Output:
 
         return [subscription.user_profile for subscription in subscriptions]
 
-    def assert_url_serves_contents_of_file(self, url: str, result: bytes) -> None:
-        response = self.client_get(url)
+    def assert_streaming_content(self, response: HttpResponse, result: bytes) -> None:
         assert isinstance(response, StreamingHttpResponse)
         data = b"".join(response.streaming_content)
         self.assertEqual(result, data)

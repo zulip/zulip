@@ -102,13 +102,11 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.logout()
         response = self.api_get(self.example_user("hamlet"), uri)
         self.assertEqual(response.status_code, 200)
-        assert isinstance(response, StreamingHttpResponse)
-        data = b"".join(response.streaming_content)
-        self.assertEqual(b"zulip!", data)
+        self.assert_streaming_content(response, b"zulip!")
 
         # Files uploaded through the API should be accessible via the web client
         self.login("hamlet")
-        self.assert_url_serves_contents_of_file(uri, b"zulip!")
+        self.assert_streaming_content(self.client_get(uri), b"zulip!")
 
     def test_mobile_api_endpoint(self) -> None:
         """
@@ -136,9 +134,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         response = self.client_get(uri, {"api_key": get_api_key(user_profile)})
         self.assertEqual(response.status_code, 200)
-        assert isinstance(response, StreamingHttpResponse)
-        data = b"".join(response.streaming_content)
-        self.assertEqual(b"zulip!", data)
+        self.assert_streaming_content(response, b"zulip!")
 
     def test_upload_file_with_supplied_mimetype(self) -> None:
         """
@@ -212,7 +208,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # In the future, local file requests will follow the same style as S3
         # requests; they will be first authenthicated and redirected
-        self.assert_url_serves_contents_of_file(uri, b"zulip!")
+        self.assert_streaming_content(self.client_get(uri), b"zulip!")
 
         # check if DB has attachment marked as unclaimed
         entry = Attachment.objects.get(file_name="zulip.txt")
@@ -235,7 +231,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # The generated URL has a token authorizing the requestor to access the file
         # without being logged in.
         self.logout()
-        self.assert_url_serves_contents_of_file(url_only_url, b"zulip!")
+        self.assert_streaming_content(self.client_get(url_only_url), b"zulip!")
         # The original uri shouldn't work when logged out:
         result = self.client_get(uri)
         self.assertEqual(result.status_code, 401)
@@ -276,7 +272,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             url_only_url = data["url"]
 
             self.logout()
-            self.assert_url_serves_contents_of_file(url_only_url, b"zulip!")
+            self.assert_streaming_content(self.client_get(url_only_url), b"zulip!")
 
         # After over 60 seconds, the token should become invalid:
         with mock.patch("django.core.signing.time.time", return_value=start_time + 61):
@@ -601,9 +597,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.login_user(user_1)
         response = self.client_get(uri, subdomain=test_subdomain)
         self.assertEqual(response.status_code, 200)
-        assert isinstance(response, StreamingHttpResponse)
-        data = b"".join(response.streaming_content)
-        self.assertEqual(b"zulip!", data)
+        self.assert_streaming_content(response, b"zulip!")
         self.logout()
 
         # Confirm other cross-realm users can't read it.
@@ -641,9 +635,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         with queries_captured() as queries:
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 200)
-            assert isinstance(response, StreamingHttpResponse)
-            data = b"".join(response.streaming_content)
-            self.assertEqual(b"zulip!", data)
+            self.assert_streaming_content(response, b"zulip!")
         self.logout()
         self.assert_length(queries, 5)
 
@@ -652,9 +644,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         with queries_captured() as queries:
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 200)
-            assert isinstance(response, StreamingHttpResponse)
-            data = b"".join(response.streaming_content)
-            self.assertEqual(b"zulip!", data)
+            self.assert_streaming_content(response, b"zulip!")
         self.logout()
         self.assert_length(queries, 6)
 
@@ -708,9 +698,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         with queries_captured() as queries:
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 200)
-            assert isinstance(response, StreamingHttpResponse)
-            data = b"".join(response.streaming_content)
-            self.assertEqual(b"zulip!", data)
+            self.assert_streaming_content(response, b"zulip!")
         self.logout()
         self.assert_length(queries, 5)
 
@@ -719,9 +707,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         with queries_captured() as queries:
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 200)
-            assert isinstance(response, StreamingHttpResponse)
-            data = b"".join(response.streaming_content)
-            self.assertEqual(b"zulip!", data)
+            self.assert_streaming_content(response, b"zulip!")
         self.logout()
         self.assert_length(queries, 6)
 
@@ -730,9 +716,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         with queries_captured() as queries:
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 200)
-            assert isinstance(response, StreamingHttpResponse)
-            data = b"".join(response.streaming_content)
-            self.assertEqual(b"zulip!", data)
+            self.assert_streaming_content(response, b"zulip!")
         self.logout()
         # It takes a few extra queries to verify access because of shared history.
         self.assert_length(queries, 9)
@@ -794,9 +778,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         with queries_captured() as queries:
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 200)
-            assert isinstance(response, StreamingHttpResponse)
-            data = b"".join(response.streaming_content)
-            self.assertEqual(b"zulip!", data)
+            self.assert_streaming_content(response, b"zulip!")
         # If we were accidentally one query per message, this would be 20+
         self.assert_length(queries, 9)
 
@@ -827,9 +809,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         for user in subscribed_users + unsubscribed_users:
             self.login_user(user)
             response = self.client_get(uri)
-            assert isinstance(response, StreamingHttpResponse)
-            data = b"".join(response.streaming_content)
-            self.assertEqual(b"zulip!", data)
+            self.assert_streaming_content(response, b"zulip!")
             self.logout()
 
     def test_serve_local(self) -> None:
