@@ -23,6 +23,10 @@ master-fifo=/home/zulip/deployments/uwsgi-control
 # How many serving processes to fork
 processes=<%= @uwsgi_processes %>
 
+# Give the processes short process names
+auto-procname=true
+procname-prefix-spaced=zulip-django
+
 # Longest response allowed, in seconds, before killing the worker
 harakiri=20
 
