@@ -15,6 +15,9 @@ chown-socket=zulip:zulip
 socket=/home/zulip/deployments/uwsgi-socket
 listen=<%= @uwsgi_listen_backlog_limit %>
 
+# Create a control socket, allowing fancier runtime control
+master-fifo=/home/zulip/deployments/uwsgi-control
+
 
 
 # How many serving processes to fork
@@ -46,9 +49,6 @@ hook-post-fork=chdir:/home/zulip/deployments/current
 # lazy-apps are required for rolling restarts:
 # https://uwsgi-docs.readthedocs.io/en/latest/articles/TheArtOfGracefulReloading.html#preforking-vs-lazy-apps-vs-lazy
 lazy-apps=true
-
-# Create a control socket, allowing fancier runtime control
-master-fifo=/home/zulip/deployments/uwsgi-control
 
 
 
