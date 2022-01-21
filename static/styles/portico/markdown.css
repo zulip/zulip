@@ -171,7 +171,15 @@
         }
 
         & > li {
-            margin: 5px 0;
+            margin: 5px 0 10px;
+
+            & > p {
+                margin: 0 0 5px;
+            }
+
+            & > p:first-child {
+                margin: 0;
+            }
         }
     }
 
