@@ -1,29 +1,59 @@
 [uwsgi]
-socket=/home/zulip/deployments/uwsgi-socket
-module=zproject.wsgi:application
-chdir=/home/zulip/deployments/current/
-master=true
-chmod-socket=700
-chown-socket=zulip:zulip
-processes=<%= @uwsgi_processes %>
-harakiri=20
-buffer-size=<%= @uwsgi_buffer_size %>
-listen=<%= @uwsgi_listen_backlog_limit %>
-post-buffering=4096
-env= LANG=C.UTF-8
+# Basic environment
+env=LANG=C.UTF-8
 uid=zulip
 gid=zulip
 
+# Where the main application is located
+chdir=/home/zulip/deployments/current/
+module=zproject.wsgi:application
+
+# Start a master process listening on this socket
+master=true
+chmod-socket=700
+chown-socket=zulip:zulip
+socket=/home/zulip/deployments/uwsgi-socket
+listen=<%= @uwsgi_listen_backlog_limit %>
+
+
+
+# How many serving processes to fork
+processes=<%= @uwsgi_processes %>
+
+# Longest response allowed, in seconds, before killing the worker
+harakiri=20
+
+
+
+# Size of HTTP headers to read
+buffer-size=<%= @uwsgi_buffer_size %>
+
+# The master process will buffer requests with bodies longer than 4096
+# bytes, freeing up workers from hanging around waiting to read them.
+post-buffering=4096
+
+
+
+# Create a socket to serve very basic UWSGI stats
 stats=/home/zulip/deployments/uwsgi-stats
 
+
 <% if @uwsgi_rolling_restart != '' -%>
-master-fifo=/home/zulip/deployments/uwsgi-control
+# If we are doing a rolling restart, re-chdir to the current "current"
+# directory in each forked process
 hook-post-fork=chdir:/home/zulip/deployments/current
+
 # lazy-apps are required for rolling restarts:
 # https://uwsgi-docs.readthedocs.io/en/latest/articles/TheArtOfGracefulReloading.html#preforking-vs-lazy-apps-vs-lazy
 lazy-apps=true
-<% end -%>
 
+# Create a control socket, allowing fancier runtime control
+master-fifo=/home/zulip/deployments/uwsgi-control
+
+
+
+<% end -%>
+# Silence warnings from clients closing their connection early
 ignore-sigpipe = true
 ignore-write-errors = true
 disable-write-exception = true
