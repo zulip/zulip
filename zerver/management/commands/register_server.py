@@ -118,8 +118,13 @@ class Command(ZulipBaseCommand):
             )
         try:
             response.raise_for_status()
-        except requests.HTTPError:
-            content_dict = response.json()
+        except requests.HTTPError as e:
+            # Report nice errors from the Zulip API if possible.
+            try:
+                content_dict = response.json()
+            except Exception:
+                raise e
+
             raise CommandError("Error: " + content_dict["msg"])
 
         return response
