@@ -2,6 +2,7 @@ import base64
 import copy
 import datetime
 import json
+import os
 import re
 import secrets
 import time
@@ -70,7 +71,7 @@ from zerver.lib.test_helpers import (
     use_s3_backend,
 )
 from zerver.lib.types import Validator
-from zerver.lib.upload import MEDIUM_AVATAR_SIZE, resize_avatar
+from zerver.lib.upload import DEFAULT_AVATAR_SIZE, MEDIUM_AVATAR_SIZE, resize_avatar
 from zerver.lib.users import get_all_api_keys
 from zerver.lib.validator import (
     check_bool,
@@ -5950,8 +5951,11 @@ class TestLDAP(ZulipLDAPTestCase):
             self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_USER)
             url = avatar_url(user_profile)
             assert url is not None
-            result = self.client_get(url)
-            self.assertEqual(result.status_code, 200)
+            response = self.client_get(url)
+            self.assertEqual(response.status_code, 200)
+            with open(os.path.join(settings.DEPLOY_ROOT, "static/images/team/tim.png"), "rb") as f:
+                tim = f.read()
+            self.assert_streaming_content(response, resize_avatar(tim, DEFAULT_AVATAR_SIZE))
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_login_success_when_user_does_not_exist_with_split_full_name_mapping(self) -> None:
