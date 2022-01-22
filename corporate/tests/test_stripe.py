@@ -497,7 +497,7 @@ class StripeTestCase(ZulipTestCase):
         stripe_session_dict["setup_intent"] = stripe_setup_intent.id
 
         event_payload = {
-            "id": "evt_{}".format(get_random_string(24)),
+            "id": f"evt_{get_random_string(24)}",
             "object": "event",
             "data": {"object": stripe_session_dict},
             "type": "checkout.session.completed",
