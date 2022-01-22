@@ -2016,6 +2016,10 @@ types-six==1.16.10 \
     # via
     #   -r requirements/mypy.in
     #   types-boto
+types-stripe==2.59.4 \
+    --hash=sha256:4c83320ff7b5f88eb2fec94114709d6af6439bdb31a2fc1ec2f4b197b1716e30 \
+    --hash=sha256:e38aaba73806ec5ab4b0861ec43e4d24cec94793d80bdef9e414a7268ae2aef1
+    # via -r requirements/mypy.in
 types-urllib3==1.26.7 \
     --hash=sha256:3adcf2cb5981809091dbff456e6999fe55f201652d8c360f99997de5ac2f556e \
     --hash=sha256:cfd1fbbe4ba9a605ed148294008aac8a7b8b7472651d1cc357d507ae5962e3d2
