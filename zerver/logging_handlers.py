@@ -25,7 +25,7 @@ def try_git_describe() -> Optional[str]:
             ["git", "describe", "--tags", "--match=[0-9]*", "--always", "--dirty", "--long"],
             stderr=subprocess.PIPE,
             cwd=os.path.join(os.path.dirname(__file__), ".."),
-            universal_newlines=True,
+            text=True,
         ).strip()
     except (FileNotFoundError, subprocess.CalledProcessError):  # nocoverage
         return None

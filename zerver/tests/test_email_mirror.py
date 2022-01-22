@@ -1283,7 +1283,7 @@ class TestScriptMTA(ZulipTestCase):
             [script, "-r", stream_to_address, "-s", settings.SHARED_SECRET, "-t"],
             input=mail,
             check=True,
-            universal_newlines=True,
+            text=True,
         )
 
     def test_error_no_recipient(self) -> None:
@@ -1298,7 +1298,7 @@ class TestScriptMTA(ZulipTestCase):
             [script, "-s", settings.SHARED_SECRET, "-t"],
             input=mail,
             stdout=subprocess.PIPE,
-            universal_newlines=True,
+            text=True,
         )
         self.assertEqual(
             p.stdout,
