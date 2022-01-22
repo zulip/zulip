@@ -1,5 +1,7 @@
 from typing import Dict, Optional
 
+from bs4.element import Tag
+
 from zerver.lib.url_preview.parsers.base import BaseParser
 
 
@@ -22,7 +24,8 @@ class GenericParser(BaseParser):
     def _get_description(self) -> Optional[str]:
         soup = self._soup
         meta_description = soup.find("meta", attrs={"name": "description"})
-        if meta_description and meta_description.get("content", "") != "":
+        if isinstance(meta_description, Tag) and meta_description.get("content", "") != "":
+            assert isinstance(meta_description["content"], str)
             return meta_description["content"]
         first_h1 = soup.find("h1")
         if first_h1:
@@ -43,6 +46,7 @@ class GenericParser(BaseParser):
         first_h1 = soup.find("h1")
         if first_h1:
             first_image = first_h1.find_next_sibling("img", src=True)
-            if first_image and first_image["src"] != "":
+            if isinstance(first_image, Tag) and first_image["src"] != "":
+                assert isinstance(first_image["src"], str)
                 return first_image["src"]
         return None
