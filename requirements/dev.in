@@ -62,7 +62,7 @@ https://github.com/zulip/zulint/archive/9908540b7734b51f86ccabab706befc2ff33212a
 -r mypy.in
 
 # These modules are built into later versions of Python and will
-# generate different locked files if executed with Python ≥ 3.7, so
+# generate different locked files if executed with Python ≥ 3.8, so
 # despite being dependent packages, they have to be added separately.
 importlib-metadata;python_version<"3.10"  # for jsonpickle, jsonschema
 
@@ -70,7 +70,7 @@ importlib-metadata;python_version<"3.10"  # for jsonpickle, jsonschema
 cairosvg
 
 # Needed for tools/check-thirdparty
-python-debian<0.1.42  # https://bugs.debian.org/997857
+python-debian
 
 # Pattern-based lint tool
 semgrep
