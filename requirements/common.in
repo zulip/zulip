@@ -20,11 +20,6 @@ jsx-lexer
 # Needed for manage.py
 ipython
 
-# Needed for compatibility with ipython < 7.20, which we cannot
-# install on Python <3.7; see
-# https://github.com/ipython/ipython/issues/12740
-jedi<0.18.0
-
 # Needed for image processing
 Pillow
 
@@ -164,6 +159,7 @@ requests-oauthlib
 
 # For OpenAPI schema validation.
 openapi-core
+openapi-schema-validator<0.2.0  # https://github.com/p1c2u/openapi-spec-validator/issues/135
 
 # For reporting errors to sentry.io
 sentry-sdk
