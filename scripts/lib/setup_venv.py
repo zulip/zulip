@@ -178,9 +178,7 @@ def try_to_copy_venv(venv_path: str, new_packages: Set[str]) -> bool:
         venv_python3 = os.path.join(curr_venv_path, "bin", "python3")
         if not os.path.exists(venv_python3):
             continue
-        venv_python_version = subprocess.check_output(
-            [venv_python3, "-VV"], universal_newlines=True
-        )
+        venv_python_version = subprocess.check_output([venv_python3, "-VV"], text=True)
         if desired_python_version != venv_python_version:
             continue
 
@@ -282,7 +280,7 @@ def do_patch_activate_script(venv_path: str) -> None:
 
 def generate_hash(requirements_file: str) -> str:
     path = os.path.join(ZULIP_PATH, "scripts", "lib", "hash_reqs.py")
-    output = subprocess.check_output([path, requirements_file], universal_newlines=True)
+    output = subprocess.check_output([path, requirements_file], text=True)
     return output.split()[0]
 
 

@@ -370,7 +370,7 @@ def destroy_leaked_test_databases(expiry_time: int = 60 * 60) -> int:
         ["psql", "-q", "-v", "ON_ERROR_STOP=1", "-h", "localhost", "postgres", "zulip_test"],
         input=commands,
         check=True,
-        universal_newlines=True,
+        text=True,
     )
     return len(databases_to_drop)
 

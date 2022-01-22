@@ -33,9 +33,7 @@ options = parser.parse_args()
 config_file = get_config_file()
 TORNADO_PROCESSES = len(get_tornado_ports(config_file))
 
-output = subprocess.check_output(
-    ["/usr/sbin/rabbitmqctl", "list_consumers"], universal_newlines=True
-)
+output = subprocess.check_output(["/usr/sbin/rabbitmqctl", "list_consumers"], text=True)
 
 consumers: Dict[str, int] = defaultdict(int)
 
