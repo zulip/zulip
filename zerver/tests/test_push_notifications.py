@@ -2290,7 +2290,7 @@ class GCMSendTest(PushNotificationTest):
             )
 
     def test_json_request_raises_ioerror(self, mock_gcm: mock.MagicMock) -> None:
-        mock_gcm.json_request.side_effect = IOError("error")
+        mock_gcm.json_request.side_effect = OSError("error")
         with self.assertLogs("zerver.lib.push_notifications", level="WARNING") as logger:
             send_android_push_notification_to_user(self.user_profile, {}, {})
             self.assertIn(
