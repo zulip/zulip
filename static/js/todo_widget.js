@@ -6,6 +6,7 @@ import render_widgets_todo_widget_tasks from "../templates/widgets/todo_widget_t
 import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
+import * as people from "./people";
 import * as util from "./util";
 
 // Any single user should send add a finite number of tasks
@@ -15,6 +16,10 @@ const MAX_IDX = 1000;
 export class TaskData {
     task_map = new Map();
     my_idx = 1;
+
+    constructor({current_user_id}) {
+        this.me = current_user_id;
+    }
 
     get_widget_data() {
         const all_tasks = Array.from(this.task_map.values());
@@ -156,7 +161,9 @@ export function activate(opts) {
     const elem = opts.elem;
     const callback = opts.callback;
 
-    const task_data = new TaskData();
+    const task_data = new TaskData({
+        current_user_id: people.my_current_user_id(),
+    });
 
     function render() {
         const html = render_widgets_todo_widget();
