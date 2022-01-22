@@ -523,6 +523,10 @@ export function set_up() {
                                         data.avatar_url + "&v=" + image_version.toString(),
                                     );
                             }
+                            if (bot.owner_id != bot_owner_id) {
+                                bot_data.del(bot_id);
+                                render_bots();
+                            }
                             dialog_widget.close_modal();
                         },
                         error(xhr) {
