@@ -2996,7 +2996,7 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
             m.output,
             [
                 self.logger_output(
-                    "AuthFailed: Authentication failed: Token validation failed", "info"
+                    "AuthFailed: Authentication failed: Token validation failed by ", "info"
                 ),
             ],
         )
@@ -3175,7 +3175,8 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
             info_log.output,
             [
                 self.logger_output(
-                    "/complete/apple/: Authentication failed: Token validation failed", "info"
+                    "/complete/apple/: Authentication failed: Token validation failed by Not enough segments",
+                    "info",
                 )
             ],
         )
@@ -3190,7 +3191,8 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
             info_log.output,
             [
                 self.logger_output(
-                    "/complete/apple/: Authentication failed: Token validation failed", "info"
+                    "/complete/apple/: Authentication failed: Token validation failed by Not enough segments",
+                    "info",
                 )
             ],
         )
@@ -3211,7 +3213,8 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
             m.output,
             [
                 self.logger_output(
-                    "/complete/apple/: Authentication failed: Token validation failed", "info"
+                    "/complete/apple/: Authentication failed: Token validation failed by Invalid audience",
+                    "info",
                 )
             ],
         )
