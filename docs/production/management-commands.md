@@ -16,7 +16,7 @@ cd /home/zulip/deployments/current
 # Start by reading the help
 ./manage.py <command_name> --help
 
-# Once you've determine this is the command for you, run it!
+# Once you've determined this is the command for you, run it!
 ./manage.py <command_name> <args>
 ```
 
