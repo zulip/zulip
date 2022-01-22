@@ -914,7 +914,7 @@ def get_tor_ips() -> Set[str]:
     # Circuit-breaking will ensure that we back off on re-reading the
     # file.
     if len(exit_node_list) == 0:
-        raise IOError("File is empty")
+        raise OSError("File is empty")
 
     return set(exit_node_list)
 
@@ -940,7 +940,7 @@ def rate_limit_request_by_ip(request: HttpRequest, domain: str) -> None:
             pass
         elif ip_addr in get_tor_ips():
             ip_addr = "tor-exit-node"
-    except (IOError, CircuitBreakerError) as err:
+    except (OSError, CircuitBreakerError) as err:
         # In the event that we can't get an updated list of TOR exit
         # nodes, assume the IP is _not_ one, and leave it unchanged.
         # We log a warning so that this endpoint being taken out of
