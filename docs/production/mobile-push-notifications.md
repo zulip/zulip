@@ -115,7 +115,7 @@ to these terms.
 We've designed this push notification bouncer service with security
 and privacy in mind:
 
-- A central design goal of the the Push Notification Service is to
+- A central design goal of the Push Notification Service is to
   avoid any message content being stored or logged by the service,
   even in error cases.
 - The Push Notification Service only stores the necessary metadata for
@@ -237,7 +237,7 @@ the app stores yourself.
 If you've done that work, the Zulip server configuration for sending
 push notifications through the new app is quite straightforward:
 
-- Create a
+- Create an
   [FCM push notifications](https://firebase.google.com/docs/cloud-messaging)
   key in the Google Developer console and set `android_gcm_api_key` in
   `/etc/zulip/zulip-secrets.conf` to that key.
