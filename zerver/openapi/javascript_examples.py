@@ -20,7 +20,7 @@ def test_js_bindings(client: Client) -> None:
 
     output = subprocess.check_output(
         args=["node", "--unhandled-rejections=strict", "zerver/openapi/javascript_examples.js"],
-        universal_newlines=True,
+        text=True,
     )
     endpoint_responses = json.loads(output)
 

@@ -53,7 +53,7 @@ def write_updated_configs() -> None:
         shard_map: Dict[str, int] = {}
         external_host = subprocess.check_output(
             [os.path.join(BASE_DIR, "scripts/get-django-setting"), "EXTERNAL_HOST"],
-            universal_newlines=True,
+            text=True,
         ).strip()
         for port in config_file["tornado_sharding"]:
             shards = config_file["tornado_sharding"][port].strip()

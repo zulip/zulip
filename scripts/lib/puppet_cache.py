@@ -23,7 +23,7 @@ def generate_sha1sum_puppet_modules() -> str:
     data["puppet-version"] = subprocess.check_output(
         # This is 10x faster than `puppet --version`
         ["ruby", "-r", "puppet/version", "-e", "puts Puppet.version"],
-        universal_newlines=True,
+        text=True,
     ).strip()
 
     sha1sum = hashlib.sha1()

@@ -620,7 +620,7 @@ def has_application_server(once: bool = False) -> bool:
 def list_supervisor_processes(*args: str) -> List[str]:
     worker_status = subprocess.run(
         ["supervisorctl", "status", *args],
-        universal_newlines=True,
+        text=True,
         stdout=subprocess.PIPE,
     )
     # `supervisorctl status` returns 3 if any are stopped, which is

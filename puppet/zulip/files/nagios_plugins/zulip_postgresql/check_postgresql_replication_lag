@@ -57,9 +57,7 @@ def run_sql_query(query: str) -> List[List[str]]:
         f"SELECT {query}",
     ]
     try:
-        output = subprocess.check_output(
-            command, stderr=subprocess.STDOUT, universal_newlines=True
-        ).strip()
+        output = subprocess.check_output(command, stderr=subprocess.STDOUT, text=True).strip()
         if not output:
             return []
         return [x.split("\0") for x in output.split("\n")]

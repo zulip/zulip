@@ -17,7 +17,7 @@ def run(command: List[str]) -> None:
 
 
 def check_output(command: List[str]) -> str:
-    return subprocess.check_output(command, universal_newlines=True)
+    return subprocess.check_output(command, text=True)
 
 
 def get_git_branch() -> str:

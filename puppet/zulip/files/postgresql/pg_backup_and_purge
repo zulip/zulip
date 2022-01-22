@@ -21,7 +21,7 @@ def run(args: List[str], dry_run: bool = False) -> str:
         print("Would have run: " + " ".join(map(shlex.quote, args)))
         return ""
 
-    return subprocess.check_output(args, stdin=subprocess.DEVNULL, universal_newlines=True)
+    return subprocess.check_output(args, stdin=subprocess.DEVNULL, text=True)
 
 
 recovery_val = run(

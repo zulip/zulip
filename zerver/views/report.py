@@ -134,7 +134,7 @@ def report_error(
     try:
         version: Optional[str] = subprocess.check_output(
             ["git", "show", "-s", "--oneline"],
-            universal_newlines=True,
+            text=True,
         )
     except (FileNotFoundError, subprocess.CalledProcessError):
         version = None
