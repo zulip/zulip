@@ -324,7 +324,7 @@ export function initialize_kitchen_sink_stuff() {
         $(this).removeClass("active");
     });
 
-    $("#stream_message_recipient_stream").on("blur", function () {
+    $("#stream_message_recipient_stream").on("change", function () {
         stream_bar.decorate(this.value, $("#stream-message .message_header_stream"), true);
     });
 
