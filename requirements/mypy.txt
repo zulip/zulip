@@ -184,6 +184,10 @@ typed-ast==1.5.1 \
     --hash=sha256:ca9e8300d8ba0b66d140820cf463438c8e7b4cdc6fd710c059bfcfb1531d03fb \
     --hash=sha256:de4ecae89c7d8b56169473e08f6bfd2df7f95015591f43126e4ea7865928677e
     # via mypy
+types-beautifulsoup4==4.10.11 \
+    --hash=sha256:29d1c71b378e75c722bc63845dde8d69832f5fa398c8c1322a5fd144ff6df714 \
+    --hash=sha256:2fad472ea689a457c97098069ad133ddffe45c1f758bc81273b43b5c3a2258da
+    # via -r requirements/mypy.in
 types-boto==2.49.6 \
     --hash=sha256:c23e97e5bed847fce1578c7f07e14d278b6f18bb2085b24467a9a6520848acf7 \
     --hash=sha256:d3ac75943063d43108b46140143c7fa9ae9d3f7007633d7119b63f722e3e02b0

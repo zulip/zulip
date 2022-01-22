@@ -8,6 +8,7 @@ backoff-stubs
 boto3-stubs[s3]
 lxml-stubs
 sqlalchemy[mypy]
+types-beautifulsoup4
 types-boto
 types-certifi
 types-chardet
