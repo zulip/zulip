@@ -1,0 +1,79 @@
+{
+    "schemaId": "azureMonitorCommonAlertSchema",
+    "data": {
+        "essentials": {
+            "alertId": "/subscriptions/11111111-1111-1111-1111-111111111111/providers/Microsoft.AlertsManagement/alerts/12345678-1234-1234-1234-1234567890ab",
+            "alertRule": "test-logAlertRule-v1-metricMeasurement",
+            "severity": "Sev3",
+            "signalType": "Log",
+            "monitorCondition": "Fired",
+            "monitoringService": "Log Analytics",
+            "alertTargetIDs": [
+                "/subscriptions/11111111-1111-1111-1111-111111111111/resourcegroups/test-RG/providers/microsoft.operationalinsights/workspaces/test-logAnalyticsWorkspace"
+            ],
+            "configurationItems": [],
+            "originAlertId": "12345678-4444-4444-4444-1234567890ab",
+            "firedDateTime": "2021-11-16T15:17:21.9232467Z",
+            "description": "Alert rule description",
+            "essentialsVersion": "1.0",
+            "alertContextVersion": "1.1"
+        },
+        "alertContext": {
+            "SearchQuery": "Heartbeat | summarize AggregatedValue=count() by bin(TimeGenerated, 5m)",
+            "SearchIntervalStartTimeUtc": "2021-11-15T15:16:49Z",
+            "SearchIntervalEndtimeUtc": "2021-11-16T15:16:49Z",
+            "ResultCount": 2,
+            "LinkToSearchResults": "https://portal.azure.com#@aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/blade/Microsoft_Azure_Monitoring_Logs/LogsBlade/source/Alerts.EmailLinks/scope/%7B%22resources%22%3A%5B%7B%22resourceId%22%3A%22%2Fsubscriptions%2F11111111-1111-1111-1111-111111111111%2FresourceGroups%2Ftest-RG%2Fproviders%2FMicrosoft.OperationalInsights%2Fworkspaces%2Ftest-logAnalyticsWorkspace%22%7D%5D%7D/q/aBcDeFgHi%2BWqUSguzc1NLMqsSlVwTE8vSk1PLElNCUvMKU21Tc4vzSvRaBcDeFgHiaBcDeFgHiaBcDeFgHiaBcDeFgHi/prettify/1/timespan/2021-11-15T15%3a16%3a49.0000000Z%2f2021-11-16T15%3a16%3a49.0000000Z",
+            "LinkToFilteredSearchResultsUI": "https://portal.azure.com#@aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/blade/Microsoft_Azure_Monitoring_Logs/LogsBlade/source/Alerts.EmailLinks/scope/%7B%22resources%22%3A%5B%7B%22resourceId%22%3A%22%2Fsubscriptions%2F11111111-1111-1111-1111-111111111111%2FresourceGroups%2Ftest-RG%2Fproviders%2FMicrosoft.OperationalInsights%2Fworkspaces%2Ftest-logAnalyticsWorkspace%22%7D%5D%7D/q/aBcDeFgHiaBcDeFgHiaBcDeFgHiaBcDeFgHiaBcDeFgHidp%2BOPOhDKsHR%2FFeJXsTgzGJRmVui3KF3RpLyEJCX9A2iMl6jgxMn6jRevng3JmIHLdYtKP4DRI9mhc%3D/prettify/1/timespan/2021-11-15T15%3a16%3a49.0000000Z%2f2021-11-16T15%3a16%3a49.0000000Z",
+            "LinkToSearchResultsAPI": "https://api.loganalytics.io/v1/workspaces/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/query?query=Heartbeat%20%0A%7C%20summarize%20AggregatedValue%3Dcount%28%29%20by%20bin%28TimeGenerated%2C%205m%29&timespan=2021-11-15T15%3a16%3a49.0000000Z%2f2021-11-16T15%3a16%3a49.0000000Z",
+            "LinkToFilteredSearchResultsAPI": "https://api.loganalytics.io/v1/workspaces/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/query?query=Heartbeat%20%0A%7C%20summarize%20AggregatedValue%3Dcount%28%29%20by%20bin%28TimeGenerated%2C%205m%29%7C%20where%20todouble%28AggregatedValue%29%20%3E%200&timespan=2021-11-15T15%3a16%3a49.0000000Z%2f2021-11-16T15%3a16%3a49.0000000Z",
+            "SeverityDescription": "Informational",
+            "WorkspaceId": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+            "SearchIntervalDurationMin": "1440",
+            "AffectedConfigurationItems": [],
+            "AlertType": "Metric measurement",
+            "IncludeSearchResults": true,
+            "Dimensions": [],
+            "SearchIntervalInMinutes": "1440",
+            "SearchResults": {
+                "tables": [
+                    {
+                        "name": "PrimaryResult",
+                        "columns": [
+                            {
+                                "name": "TimeGenerated",
+                                "type": "datetime"
+                            },
+                            {
+                                "name": "AggregatedValue",
+                                "type": "long"
+                            }
+                        ],
+                        "rows": [
+                            [
+                                "2021-11-16T10:56:49Z",
+                                11
+                            ],
+                            [
+                                "2021-11-16T11:56:49Z",
+                                11
+                            ]
+                        ]
+                    }
+                ],
+                "dataSources": [
+                    {
+                        "resourceId": "/subscriptions/11111111-1111-1111-1111-111111111111/resourcegroups/test-RG/providers/microsoft.operationalinsights/workspaces/test-logAnalyticsWorkspace",
+                        "region": "eastus",
+                        "tables": [
+                            "Heartbeat"
+                        ]
+                    }
+                ]
+            },
+            "Threshold": 0,
+            "Operator": "Greater Than",
+            "IncludedSearchResults": "True"
+        }
+    }
+}
