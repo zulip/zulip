@@ -159,55 +159,59 @@ function display_video(payload) {
     $(".image-actions .open").attr("href", payload.url);
 }
 
-export function open($image) {
-    // if the asset_map already contains the metadata required to display the
-    // asset, just recall that metadata.
-    let $preview_src = $image.attr("src");
-    let payload = asset_map.get($preview_src);
-    if (payload === undefined) {
-        if ($preview_src.endsWith("&size=full")) {
-            // while fetching an image for canvas, `src` attribute supplies
-            // full-sized image instead of thumbnail, so we have to replace
-            // `size=full` with `size=thumbnail`.
-            //
-            // TODO: This is a hack to work around the fact that for
-            // the lightbox canvas, the `src` is the data-fullsize-src
-            // for the image, not the original thumbnail used to open
-            // the lightbox.  A better fix will be to check a
-            // `data-thumbnail-src` attribute that we add to the
-            // canvas elements.
-            $preview_src = $preview_src.replace(/.{4}$/, "thumbnail");
-            payload = asset_map.get($preview_src);
-        }
+export function build_open_image_function(on_close) {
+    if (on_close === undefined) {
+        on_close = function () {
+            $(".player-container iframe").remove();
+            is_open = false;
+            document.activeElement.blur();
+        };
+    }
+
+    return function ($image) {
+        // if the asset_map already contains the metadata required to display the
+        // asset, just recall that metadata.
+        let $preview_src = $image.attr("src");
+        let payload = asset_map.get($preview_src);
         if (payload === undefined) {
-            payload = parse_image_data($image);
+            if ($preview_src.endsWith("&size=full")) {
+                // while fetching an image for canvas, `src` attribute supplies
+                // full-sized image instead of thumbnail, so we have to replace
+                // `size=full` with `size=thumbnail`.
+                //
+                // TODO: This is a hack to work around the fact that for
+                // the lightbox canvas, the `src` is the data-fullsize-src
+                // for the image, not the original thumbnail used to open
+                // the lightbox.  A better fix will be to check a
+                // `data-thumbnail-src` attribute that we add to the
+                // canvas elements.
+                $preview_src = $preview_src.replace(/.{4}$/, "thumbnail");
+                payload = asset_map.get($preview_src);
+            }
+            if (payload === undefined) {
+                payload = parse_image_data($image);
+            }
         }
-    }
 
-    if (payload.type.match("-video")) {
-        display_video(payload);
-    } else if (payload.type === "image") {
-        display_image(payload);
-    }
+        if (payload.type.match("-video")) {
+            display_video(payload);
+        } else if (payload.type === "image") {
+            display_image(payload);
+        }
 
-    if (is_open) {
-        return;
-    }
+        if (is_open) {
+            return;
+        }
 
-    function lightbox_close_overlay() {
-        $(".player-container iframe").remove();
-        is_open = false;
-        document.activeElement.blur();
-    }
+        overlays.open_overlay({
+            name: "lightbox",
+            overlay: $("#lightbox_overlay"),
+            on_close,
+        });
 
-    overlays.open_overlay({
-        name: "lightbox",
-        overlay: $("#lightbox_overlay"),
-        on_close: lightbox_close_overlay,
-    });
-
-    popovers.hide_all();
-    is_open = true;
+        popovers.hide_all();
+        is_open = true;
+    };
 }
 
 export function show_from_selected_message() {
@@ -249,7 +253,8 @@ export function show_from_selected_message() {
     }
 
     if ($image.length !== 0) {
-        open($image);
+        const open_image = build_open_image_function();
+        open_image($image);
     }
 }
 
@@ -338,13 +343,23 @@ export function initialize() {
         $("#lightbox_overlay .image-preview > .zoom-element")[0],
     );
 
+    const reset_lightbox_state = function () {
+        $(".player-container iframe").remove();
+        is_open = false;
+        document.activeElement.blur();
+        pan_zoom_control.disablePanZoom();
+        $(".lightbox-canvas-trigger").removeClass("enabled");
+    };
+
+    const open_image = build_open_image_function(reset_lightbox_state);
+
     $("#main_div, #compose .preview_content").on("click", ".message_inline_image a", function (e) {
         // prevent the link from opening in a new page.
         e.preventDefault();
         // prevent the message compose dialog from happening.
         e.stopPropagation();
         const $img = $(this).find("img");
-        open($img);
+        open_image($img);
     });
 
     $("#lightbox_overlay .download").on("click", function () {
@@ -357,7 +372,7 @@ export function initialize() {
             `.message_row img[src='${CSS.escape($(this).attr("data-src"))}']`,
         );
 
-        open($original_image);
+        open_image($original_image);
 
         $(".image-list .image.selected").removeClass("selected");
         $(this).addClass("selected");
@@ -396,7 +411,7 @@ export function initialize() {
 
     $("#lightbox_overlay").on("click", ".lightbox-canvas-trigger", function () {
         const $img = $("#lightbox_overlay").find(".image-preview img");
-        open($img);
+        open_image($img);
 
         if ($(this).hasClass("enabled")) {
             pan_zoom_control.disablePanZoom();
@@ -414,12 +429,14 @@ export function initialize() {
 
     $("#lightbox_overlay .player-container").on("click", function () {
         if ($(this).is(".player-container")) {
+            reset_lightbox_state();
             overlays.close_active();
         }
     });
 
     $("#lightbox_overlay").on("click", ".image-info-wrapper, .center", (e) => {
         if ($(e.target).is(".image-info-wrapper, .center")) {
+            reset_lightbox_state();
             overlays.close_overlay("lightbox");
         }
     });
