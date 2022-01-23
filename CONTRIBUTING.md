@@ -151,7 +151,7 @@ repository](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3
 Post a comment with `@zulipbot claim` to
 the issue thread. [Zulipbot](https://github.com/zulip/zulipbot) is a GitHub
 workflow bot; it will assign you to the issue and label the issue as "in
-progress". You can only claim issues with the
+progress". Until your first pull request is merged, you can only claim issues with the
 [good first issue](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
 or
 [help wanted](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
