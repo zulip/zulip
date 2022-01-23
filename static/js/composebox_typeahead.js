@@ -422,6 +422,7 @@ export const slash_commands = [
         text: $t({defaultMessage: "/poll Where should we go to lunch today? (Create a poll)"}),
         name: "poll",
         aliases: "",
+        placeholder: "Question",
     },
     {
         text: $t({defaultMessage: "/todo (Create a todo list)"}),
@@ -884,6 +885,9 @@ export function content_typeahead_selected(item, event) {
     let beginning = pieces[0];
     let rest = pieces[1];
     const textbox = this.$element;
+    // this highlight object will hold the start and end indices
+    // for highlighting any placeholder text
+    const highlight = {};
 
     switch (this.completing) {
         case "emoji":
@@ -936,6 +940,11 @@ export function content_typeahead_selected(item, event) {
         }
         case "slash":
             beginning = beginning.slice(0, -this.token.length - 1) + "/" + item.name + " ";
+            if (item.placeholder) {
+                beginning = beginning + item.placeholder;
+                highlight.start = item.name.length + 2;
+                highlight.end = highlight.start + item.placeholder.length;
+            }
             break;
         case "stream":
             beginning = beginning.slice(0, -this.token.length - 1);
@@ -1012,10 +1021,18 @@ export function content_typeahead_selected(item, event) {
         }
     }
 
-    // Keep the cursor after the newly inserted text, as Bootstrap will call textbox.change() to
+    // Keep the cursor after the newly inserted text / selecting the
+    // placeholder text, as Bootstrap will call textbox.change() to
     // overwrite the text in the textbox.
     setTimeout(() => {
-        textbox.caret(beginning.length, beginning.length);
+        if (item.placeholder) {
+            // This placeholder block is exclusively for slash
+            // commands, which always appear at the start of the message.
+            textbox.get(0).setSelectionRange(highlight.start, highlight.end);
+            textbox.trigger("focus");
+        } else {
+            textbox.caret(beginning.length, beginning.length);
+        }
         // Also, trigger autosize to check if compose box needs to be resized.
         compose_ui.autosize_textarea(textbox);
     }, 0);
