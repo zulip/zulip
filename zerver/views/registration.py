@@ -634,7 +634,11 @@ def accounts_home(
     invited_as = None
 
     if multiuse_object:
-        realm = multiuse_object.realm
+        # multiuse_object's realm should have been validated by the caller,
+        # so this code shouldn't be reachable with a multiuse_object which
+        # has its realm mismatching the realm of the request.
+        assert realm == multiuse_object.realm
+
         streams_to_subscribe = multiuse_object.streams.all()
         from_multiuse_invite = True
         invited_as = multiuse_object.invited_as
@@ -675,12 +679,14 @@ def accounts_home(
 
 
 def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: str) -> HttpResponse:
+    realm = get_realm_from_request(request)
     multiuse_object = None
     try:
         multiuse_object = get_object_from_key(confirmation_key, Confirmation.MULTIUSE_INVITE)
+        if realm != multiuse_object.realm:
+            return render(request, "confirmation/link_does_not_exist.html", status=404)
         # Required for OAuth 2
     except ConfirmationKeyException as exception:
-        realm = get_realm_from_request(request)
         if realm is None or realm.invite_required:
             return render_confirmation_key_error(request, exception)
     return accounts_home(

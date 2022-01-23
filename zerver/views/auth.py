@@ -158,18 +158,23 @@ def maybe_send_to_registration(
             request.session, "registration_desktop_flow_otp", desktop_flow_otp, expiry_seconds=3600
         )
 
+    try:
+        # TODO: This should use get_realm_from_request, but a bunch of tests
+        # rely on mocking get_subdomain here, so they'll need to be tweaked first.
+        realm: Optional[Realm] = get_realm(get_subdomain(request))
+    except Realm.DoesNotExist:
+        realm = None
+
     if multiuse_object_key:
         from_multiuse_invite = True
         multiuse_obj = Confirmation.objects.get(confirmation_key=multiuse_object_key).content_object
-        realm = multiuse_obj.realm
+        assert multiuse_obj is not None
+        if realm != multiuse_obj.realm:
+            return render(request, "confirmation/link_does_not_exist.html", status=404)
         invited_as = multiuse_obj.invited_as
     else:
         from_multiuse_invite = False
         multiuse_obj = None
-        try:
-            realm = get_realm(get_subdomain(request))
-        except Realm.DoesNotExist:
-            realm = None
         invited_as = PreregistrationUser.INVITE_AS["MEMBER"]
 
     form = HomepageForm({"email": email}, realm=realm, from_multiuse_invite=from_multiuse_invite)
