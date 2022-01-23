@@ -3704,6 +3704,11 @@ class UserSignUpTest(InviteUserBase):
         hamlet_in_zulip.tutorial_status = UserProfile.TUTORIAL_FINISHED
         hamlet_in_zulip.save()
 
+        # Now we'll be making requests to another subdomain, so we need to logout
+        # to avoid polluting the session in the test environment by still being
+        # logged in.
+        self.logout()
+
         result = self.client_post("/accounts/home/", {"email": email}, subdomain=subdomain)
         self.assertEqual(result.status_code, 302)
         result = self.client_get(result["Location"], subdomain=subdomain)

@@ -2293,6 +2293,10 @@ class TestCrossRealmPMs(ZulipTestCase):
     def create_user(self, email: str) -> UserProfile:
         subdomain = email.split("@")[1]
         self.register(email, "test", subdomain=subdomain)
+        # self.register has the side-effect of ending up with a logged in session
+        # for the new user. We don't want that in these tests.
+        self.logout()
+
         return get_user(email, get_realm(subdomain))
 
     @override_settings(
