@@ -11,7 +11,7 @@ from django.conf import settings
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.test import Client, override_settings
 from django.urls import reverse
 from django.utils.timezone import now as timezone_now
@@ -107,6 +107,7 @@ from zerver.models import (
 from zerver.views.auth import redirect_and_log_into_subdomain, start_two_factor_auth
 from zerver.views.development.registration import confirmation_key
 from zerver.views.invite import get_invitee_emails_set
+from zerver.views.registration import accounts_home
 from zproject.backends import ExternalAuthDataDict, ExternalAuthResult
 
 
@@ -2902,6 +2903,34 @@ class MultiuseInviteTest(ZulipTestCase):
         invite_link = self.generate_multiuse_invite_link(streams=streams)
         self.check_user_able_to_register(email2, invite_link)
         self.check_user_subscribed_only_to_streams(name2, streams)
+
+    def test_multiuse_link_different_realms(self) -> None:
+        """
+        Verify that an invitation generated for one realm can't be used
+        to join another.
+        """
+        lear_realm = get_realm("lear")
+        self.realm = lear_realm
+        invite_link = self.generate_multiuse_invite_link(streams=[])
+        key = invite_link.split("/")[-2]
+
+        result = self.client_get(f"/join/{key}/", subdomain="zulip")
+        self.assertEqual(result.status_code, 404)
+        self.assert_in_response(
+            "Whoops. We couldn't find your confirmation link in the system.", result
+        )
+
+        # Now we want to test the accounts_home function, which can't be used
+        # for the multiuse invite case via an HTTP request, but is still supposed
+        # to do its own verification that the realms match as a hardening measure
+        # against a caller that fails to do that.
+        request = HttpRequest()
+        confirmation = Confirmation.objects.get(confirmation_key=key)
+        multiuse_object = confirmation.content_object
+        with patch(
+            "zerver.views.registration.get_subdomain", return_value="zulip"
+        ), self.assertRaises(AssertionError):
+            accounts_home(request, multiuse_object=multiuse_object)
 
     def test_create_multiuse_link_api_call(self) -> None:
         self.login("iago")
