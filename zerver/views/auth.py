@@ -91,18 +91,14 @@ def get_safe_redirect_to(url: str, redirect_host: str) -> str:
 
 def create_preregistration_user(
     email: str,
-    request: HttpRequest,
+    realm: Optional[Realm],
     realm_creation: bool = False,
     password_required: bool = True,
     full_name: Optional[str] = None,
     full_name_validated: bool = False,
-) -> HttpResponse:
-    realm = None
-    if not realm_creation:
-        try:
-            realm = get_realm(get_subdomain(request))
-        except Realm.DoesNotExist:
-            pass
+) -> PreregistrationUser:
+    assert not (realm_creation and realm is not None)
+
     return PreregistrationUser.objects.create(
         email=email,
         realm_creation=realm_creation,
@@ -202,7 +198,7 @@ def maybe_send_to_registration(
         except PreregistrationUser.DoesNotExist:
             prereg_user = create_preregistration_user(
                 email,
-                request,
+                realm,
                 password_required=password_required,
                 full_name=full_name,
                 full_name_validated=full_name_validated,
