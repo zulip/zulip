@@ -225,7 +225,7 @@ export function dispatch_normal_event(event) {
             };
             switch (event.op) {
                 case "update":
-                    if (Object.prototype.hasOwnProperty.call(realm_settings, event.property)) {
+                    if (Object.hasOwn(realm_settings, event.property)) {
                         page_params["realm_" + event.property] = event.value;
                         realm_settings[event.property]();
                         settings_org.sync_realm_settings(event.property);
@@ -258,7 +258,7 @@ export function dispatch_normal_event(event) {
                                 if (key === "allow_message_editing") {
                                     message_edit.update_message_topic_editing_pencil();
                                 }
-                                if (Object.prototype.hasOwnProperty.call(realm_settings, key)) {
+                                if (Object.hasOwn(realm_settings, key)) {
                                     settings_org.sync_realm_settings(key);
                                 }
                             }

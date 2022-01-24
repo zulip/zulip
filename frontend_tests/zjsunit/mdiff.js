@@ -133,7 +133,7 @@ if (require.main === module) {
     // First two args are just "node" and "mdiff.js"
     const argv = require("minimist")(process.argv.slice(2));
 
-    if (Object.prototype.hasOwnProperty.call(argv, "help")) {
+    if (Object.hasOwn(argv, "help")) {
         console.log(
             process.argv[0] +
                 " " +

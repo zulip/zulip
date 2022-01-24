@@ -32,7 +32,7 @@ function make_person_highlighter(query) {
 function match_criteria(operators, criteria) {
     const filter = new Filter(operators);
     return criteria.some((cr) => {
-        if (Object.prototype.hasOwnProperty.call(cr, "operand")) {
+        if (Object.hasOwn(cr, "operand")) {
             return filter.has_operand(cr.operator, cr.operand);
         }
         return filter.has_operator(cr.operator);
