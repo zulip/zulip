@@ -217,39 +217,11 @@ async function test_custom_realm_emoji(page: Page): Promise<void> {
     await test_delete_emoji(page);
 }
 
-async function get_suggestions(page: Page, str: string): Promise<void> {
-    await page.evaluate((str: string) => {
-        $(".create_default_stream")
-            .trigger("focus")
-            .val(str)
-            .trigger(new $.Event("keyup", {which: 0}));
-    }, str);
-}
-
-async function select_from_suggestions(page: Page, item: string): Promise<void> {
-    await page.evaluate((item: string) => {
-        const tah = $(".create_default_stream").data().typeahead;
-        tah.mousemove({
-            currentTarget: $(`.typeahead:visible li:contains("${CSS.escape(item)}")`)[0],
-        });
-        tah.mouseenter({
-            currentTarget: $(`.typeahead:visible li:contains("${CSS.escape(item)}")`)[0],
-        });
-        tah.select();
-    }, item);
-}
-
-async function test_add_default_stream(
-    page: Page,
-    stream_name: string,
-    row: string,
-): Promise<void> {
+async function test_add_default_stream(page: Page, row: string): Promise<void> {
     // It matches with all the stream names which has 'O' as a substring (Rome, Scotland, Verona
     // etc). 'O' is used to make sure that it works even if there are multiple suggestions.
     // Uppercase 'O' is used instead of the lowercase version to make sure that the suggestions
     // are case insensitive.
-    await get_suggestions(page, "o");
-    await select_from_suggestions(page, stream_name);
     await page.click(".default-stream-form #do_submit_stream");
 
     await page.waitForSelector(row, {visible: true});
@@ -264,13 +236,24 @@ async function test_remove_default_stream(page: Page, row: string): Promise<void
 
 async function test_default_streams(page: Page): Promise<void> {
     await page.click("li[data-section='default-streams-list']");
-    await page.waitForSelector(".create_default_stream", {visible: true});
+    await page.click("#default_stream_id_widget button.dropdown-toggle");
+    await page.waitForSelector("#default_stream_id_widget ul.dropdown-menu", {
+        visible: true,
+    });
 
-    const stream_name = "Scotland";
+    await page.type("#default_stream_id_widget  .dropdown-search > input[type=text]", "rome");
+
+    const verona_in_dropdown = await page.waitForXPath(
+        '//*[@id="default_stream_id_widget"]//*[@class="dropdown-list-body"]/li[1]',
+        {visible: true},
+    );
+    await verona_in_dropdown!.click();
+
+    const stream_name = "Verona";
     const stream_id = await common.get_stream_id(page, stream_name);
     const row = `.default_stream_row[data-stream-id='${CSS.escape(stream_id.toString())}']`;
 
-    await test_add_default_stream(page, stream_name, row);
+    await test_add_default_stream(page, row);
     await test_remove_default_stream(page, row);
 }
 

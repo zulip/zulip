@@ -3,20 +3,53 @@ import $ from "jquery";
 import render_admin_default_streams_list from "../templates/settings/admin_default_streams_list.hbs";
 
 import * as channel from "./channel";
+import {DropdownListWidget} from "./dropdown_list_widget";
 import * as hash_util from "./hash_util";
-import {$t_html} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as stream_data from "./stream_data";
+import * as stream_settings_data from "./stream_settings_data";
 import * as sub_store from "./sub_store";
-import * as typeahead_helper from "./typeahead_helper";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 
 const meta = {
     loaded: false,
 };
+
+export let default_stream_widget = null;
+
+export function init_dropdown_widgets() {
+    const streams = stream_settings_data.get_streams_for_settings_page();
+    const non_default_streams = streams.filter(
+        (x) => !stream_data.is_default_stream_id(x.stream_id),
+    );
+    const streams_list = {
+        data: non_default_streams.map((x) => ({
+            name: x.name,
+            value: x.stream_id.toString(),
+        })),
+        default_text: $t({defaultMessage: "None"}),
+        render_text: (x) => `#${x}`,
+        null_value: -1,
+    };
+    default_stream_widget = new DropdownListWidget({
+        widget_name: "default_stream_id",
+        value: page_params.default_stream_id,
+        ...streams_list,
+    });
+
+    $(".default-stream-form").on("click", "#default_stream_id_widget", () => {
+        const stream_name = $("#default_stream_id_widget")[0].outerText;
+        if (stream_name === "None") {
+            $("#do_submit_stream").prop("disabled", true);
+        } else {
+            $("#do_submit_stream").prop("disabled", false);
+        }
+    });
+}
 
 export function reset() {
     meta.loaded = false;
@@ -108,35 +141,17 @@ export function build_page() {
     meta.loaded = true;
 
     update_default_streams_table();
-
-    $(".create_default_stream").on("keypress", (e) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            e.stopPropagation();
-            const $default_stream_input = $(".create_default_stream");
-            make_stream_default(stream_data.get_stream_id($default_stream_input.val()));
-            $default_stream_input[0].value = "";
-        }
-    });
-
-    $(".create_default_stream").typeahead({
-        items: 5,
-        fixed: true,
-        source() {
-            return stream_data.get_non_default_stream_names();
-        },
-        highlighter(item) {
-            return typeahead_helper.render_typeahead_item({primary: item});
-        },
-    });
+    init_dropdown_widgets();
 
     $(".default-stream-form").on("click", "#do_submit_stream", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const $default_stream_input = $(".create_default_stream");
-        make_stream_default(stream_data.get_stream_id($default_stream_input.val()));
-        // Clear value inside input box
-        $default_stream_input[0].value = "";
+        const default_stream_input = stream_data.maybe_get_stream_name(
+            Number.parseInt(default_stream_widget.value(), 10),
+        );
+        make_stream_default(stream_data.get_stream_id(default_stream_input));
+        $("#do_submit_stream").prop("disabled", true);
+        init_dropdown_widgets();
     });
 
     $("body").on("click", ".default_stream_row .remove-default-stream", function (e) {
