@@ -437,8 +437,8 @@ export class MessageListView {
         if (first_group === undefined || second_group === undefined) {
             return false;
         }
-        const last_msg_container = _.last(first_group.message_containers);
-        const first_msg_container = _.first(second_group.message_containers);
+        const last_msg_container = first_group.message_containers.at(-1);
+        const first_msg_container = second_group.message_containers[0];
 
         // Join two groups into one.
         if (
@@ -498,19 +498,19 @@ export class MessageListView {
         let prev_msg_container;
 
         if (where === "top") {
-            first_group = _.last(new_message_groups);
-            second_group = _.first(this._message_groups);
+            first_group = new_message_groups.at(-1);
+            second_group = this._message_groups[0];
         } else {
-            first_group = _.last(this._message_groups);
-            second_group = _.first(new_message_groups);
+            first_group = this._message_groups.at(-1);
+            second_group = new_message_groups[0];
         }
 
         if (first_group) {
-            prev_msg_container = _.last(first_group.message_containers);
+            prev_msg_container = first_group.message_containers.at(-1);
         }
 
         if (second_group) {
-            curr_msg_container = _.first(second_group.message_containers);
+            curr_msg_container = second_group.message_containers[0];
         }
 
         const was_joined = this.join_message_groups(first_group, second_group);
@@ -536,7 +536,7 @@ export class MessageListView {
                 this._message_groups.shift();
                 this._message_groups.unshift(first_group);
 
-                new_message_groups = _.initial(new_message_groups);
+                new_message_groups = new_message_groups.slice(0, -1);
             } else if (
                 !same_day(second_group.message_containers[0], first_group.message_containers[0])
             ) {
@@ -551,8 +551,8 @@ export class MessageListView {
             if (was_joined) {
                 // rerender the last message
                 message_actions.rerender_messages_next_same_sender.push(prev_msg_container);
-                message_actions.append_messages = _.first(new_message_groups).message_containers;
-                new_message_groups = _.tail(new_message_groups);
+                message_actions.append_messages = new_message_groups[0].message_containers;
+                new_message_groups = new_message_groups.slice(1);
             } else if (first_group !== undefined && second_group !== undefined) {
                 if (same_day(prev_msg_container, curr_msg_container)) {
                     clear_group_date_divider(second_group);
@@ -825,11 +825,10 @@ export class MessageListView {
 
         restore_scroll_position();
 
-        const last_message_group = _.last(this._message_groups);
+        const last_message_group = this._message_groups.at(-1);
         if (last_message_group !== undefined) {
-            list.last_message_historical = _.last(
-                last_message_group.message_containers,
-            ).msg.historical;
+            list.last_message_historical =
+                last_message_group.message_containers.at(-1).msg.historical;
         }
 
         const stream_name = narrow_state.stream();
