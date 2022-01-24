@@ -563,7 +563,7 @@ export function emoji_select_tab(elt) {
     // Handles the corner case of the last category being
     // smaller than half of the emoji picker height.
     if (elt_height + scrolltop === scrollheight) {
-        currently_selected = section_head_offsets[section_head_offsets.length - 1].section;
+        currently_selected = section_head_offsets.at(-1).section;
     }
     // Handles the corner case of the scrolling back to top.
     if (scrolltop === 0) {

@@ -242,7 +242,7 @@ export function setup_upload(config) {
             return;
         }
         const split_uri = uri.split("/");
-        const filename = split_uri[split_uri.length - 1];
+        const filename = split_uri.at(-1);
         if (config.mode === "compose" && !compose_state.composing()) {
             compose_actions.start("stream");
         }

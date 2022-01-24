@@ -39,7 +39,7 @@ export class MessageListData {
     }
 
     last() {
-        return this._items[this._items.length - 1];
+        return this._items.at(-1);
     }
 
     select_idx() {

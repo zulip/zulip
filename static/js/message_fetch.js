@@ -440,7 +440,7 @@ export function initialize(home_view_loaded) {
         // If we fall through here, we need to keep fetching more data, and
         // we'll call back to the function we're in.
         const messages = data.messages;
-        const latest_id = messages[messages.length - 1].id;
+        const latest_id = messages.at(-1).id;
 
         load_messages({
             anchor: latest_id,
