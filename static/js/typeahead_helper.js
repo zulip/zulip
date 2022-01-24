@@ -260,7 +260,7 @@ function retain_unique_language_aliases(matches) {
     for (const lang of matches) {
         // The matched list is already sorted based on popularity and has exact matches
         // at the top, so we don't need to worry about sorting again.
-        const canonical_name = _.get(pygments_data.langs, [lang, "pretty_name"], lang);
+        const canonical_name = pygments_data.langs[lang]?.pretty_name ?? lang;
         if (!seen_aliases.has(canonical_name)) {
             seen_aliases.add(canonical_name);
             unique_aliases.push(lang);
