@@ -108,7 +108,7 @@
     "eslint-plugin-unicorn": "^39.0.0",
     "jsdom": "^19.0.0",
     "mockdate": "^3.0.2",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^2.6.7",
     "nyc": "^15.0.0",
     "openapi-examples-validator": "^4.0.0",
     "prettier": "^2.0.5",
