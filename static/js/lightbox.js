@@ -26,6 +26,23 @@ export class PanZoomControl {
             cursor: "auto",
         });
 
+        // The following events are necessary to prevent the click event
+        // firing where the user "unclicks" at the end of the drag, which
+        // was causing accidental overlay closes in some situations.
+        this.container.addEventListener("panzoomstart", () => {
+            // Marks this overlay as needing to stay open.
+            $("#lightbox_overlay").data("noclose", true);
+        });
+
+        this.container.addEventListener("panzoomend", () => {
+            // Don't remove the noclose attribute on this overlay until after paint,
+            // otherwise it will be removed too early and close the lightbox
+            // unintentionally.
+            setTimeout(() => {
+                $("#lightbox_overlay").data("noclose", false);
+            }, 0);
+        });
+
         // keybinds
         document.addEventListener("keydown", (e) => {
             if (!overlays.lightbox_open()) {

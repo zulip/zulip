@@ -337,6 +337,11 @@ export function initialize() {
             return;
         }
 
+        if ($target.data("noclose")) {
+            // This overlay has been marked explicitly to not be closed.
+            return;
+        }
+
         const target_name = $target.attr("data-overlay");
 
         close_overlay(target_name);
