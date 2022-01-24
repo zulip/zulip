@@ -17432,10 +17432,15 @@ components:
             The `retry-after` parameter in the response indicates how many seconds
             the client must wait before making additional requests.
 
+            Zulip sets a few [HTTP response headers][rate-limit-headers]
+            to help with preventing rate limit errors.
+
             **Changes**: The `code` field was not present in rate
             limit errors before Zulip 4.0 (feature level 36).
 
             A typical failed JSON response for when a rate limit is exceeded:
+
+            [rate-limit-headers]: /api/http-headers#rate-limiting-response-headers
     RealmDeactivatedError:
       allOf:
         - $ref: "#/components/schemas/CodedError"
