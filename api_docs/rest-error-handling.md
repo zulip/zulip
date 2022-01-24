@@ -14,36 +14,10 @@ for specific error conditions, since the `msg` strings are
 internationalized (e.g. the server will send the error message
 translated into French if the user has a French locale).
 
-Each endpoint documents its own unique errors; below, we document
+Each endpoint documents its own unique errors; documented below are
 errors common to many endpoints:
 
 {generate_code_example|/rest-error-handling:post|fixture}
-
-To help clients avoid exceeding rate limits, Zulip sets the following
-HTTP headers in all API responses:
-
-* `X-RateLimit-Remaining`: The number of additional requests of this
-  type that the client can send before exceeding its limit.
-* `X-RateLimit-Limit`: The limit that would be applicable to a client
-  that had not made any recent requests of this type. This is useful
-  for designing a client's burst behavior so as to avoid ever reaching
-  a rate limit.
-* `X-RateLimit-Reset`: The time at which the client will no longer
-  have any rate limits applied to it (and thus could do a burst of
-  `X-RateLimit-Limit` requests).
-
-[Zulip's rate limiting rules are configurable][rate-limiting-rules],
-and can vary by server and over time. The default configuration
-currently limits:
-
-* Every user is limited to 200 total API requests per minute.
-* Separate, much lower limits for authentication/login attempts.
-
-When the Zulip server has configured multiple rate limits that apply
-to a given request, the values returned will be for the strictest
-limit.
-
-[rate-limiting-rules]: https://zulip.readthedocs.io/en/latest/production/security-model.html#rate-limiting
 
 ## Ignored Parameters
 

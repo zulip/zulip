@@ -18,6 +18,7 @@
 * [Installation instructions](/api/installation-instructions)
 * [API keys](/api/api-keys)
 * [Configuring the Python bindings](/api/configuring-python-bindings)
+* [HTTP headers](/api/http-headers)
 * [Error handling](/api/rest-error-handling)
 * [Roles and permissions](/api/roles-and-permissions)
 * [Client libraries](/api/client-libraries)
