@@ -104,9 +104,10 @@ IS_SERVER_UP = True
 def shutdown_server() -> None:
     global IS_SERVER_UP
 
-    logging.info("Stopping Zulip...")
-    subprocess.check_call(["./scripts/stop-server"], preexec_fn=su_to_zulip)
-    IS_SERVER_UP = False
+    if IS_SERVER_UP:
+        logging.info("Stopping Zulip...")
+        subprocess.check_call(["./scripts/stop-server"], preexec_fn=su_to_zulip)
+        IS_SERVER_UP = False
 
 
 # postgresql.version is required for database servers, but wasn't
