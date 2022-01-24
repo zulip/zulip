@@ -109,10 +109,7 @@ function diff_strings(string_0, string_1) {
             output_lines.push(line);
         } else if (line.startsWith("?")) {
             changes_list = parse_questionmark_line(line);
-            output_lines[output_lines.length - 1] = apply_color(
-                output_lines[output_lines.length - 1],
-                changes_list,
-            );
+            output_lines.push(apply_color(output_lines.pop(), changes_list));
         } else {
             output_lines.push(line);
         }

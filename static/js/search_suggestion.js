@@ -641,7 +641,6 @@ export function get_search_result(base_query, query) {
     }
 
     const person_suggestion_ops = ["sender", "pm-with", "from", "group-pm"];
-    const search_operators_len = search_operators.length;
 
     // Handle spaces in person name in new suggestions only. Checks if the last operator is 'search'
     // and the second last operator in search_operators is one out of person_suggestion_ops.
@@ -650,11 +649,11 @@ export function get_search_result(base_query, query) {
     // is an email of a user, both of these operators remain unchanged. Otherwise search operator
     // will be deleted and new last will become {operator:'sender', operand: 'Ted sm`....}.
     if (
-        search_operators_len > 1 &&
+        search_operators.length > 1 &&
         last.operator === "search" &&
-        person_suggestion_ops.includes(search_operators[search_operators_len - 2].operator)
+        person_suggestion_ops.includes(search_operators.at(-2).operator)
     ) {
-        const person_op = search_operators[search_operators_len - 2];
+        const person_op = search_operators.at(-2);
         if (!people.reply_to_to_user_ids_string(person_op.operand)) {
             last = {
                 operator: person_op.operator,
@@ -662,11 +661,11 @@ export function get_search_result(base_query, query) {
                 negated: person_op.negated,
             };
             if (page_params.search_pills_enabled) {
-                all_operators[all_operators.length - 2] = last;
-                all_operators.splice(-1, 1);
+                all_operators.splice(-2);
+                all_operators.push(last);
             }
-            search_operators[search_operators_len - 2] = last;
-            search_operators.splice(-1, 1);
+            search_operators.splice(-2);
+            search_operators.push(last);
         }
     }
 

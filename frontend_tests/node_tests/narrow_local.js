@@ -54,7 +54,7 @@ function test_with(fixture) {
         },
         last: () => {
             assert.notEqual(fixture.all_messages, undefined);
-            return fixture.all_messages[fixture.all_messages.length - 1];
+            return fixture.all_messages.at(-1);
         },
     };
 

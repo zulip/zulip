@@ -470,7 +470,7 @@ function drafts_initialize_focus(event_name) {
     let draft_element;
     if (event_name === "up_arrow") {
         draft_element = document.querySelectorAll(
-            '[data-draft-id="' + draft_id_arrow[draft_id_arrow.length - 1] + '"]',
+            '[data-draft-id="' + draft_id_arrow.at(-1) + '"]',
         );
     } else if (event_name === "down_arrow") {
         draft_element = document.querySelectorAll('[data-draft-id="' + draft_id_arrow[0] + '"]');
@@ -565,7 +565,7 @@ export function drafts_handle_events(e, event_key) {
         if (document.activeElement.parentElement.hasAttribute("data-draft-id")) {
             restore_draft(focused_draft_id);
         } else {
-            const first_draft = draft_id_arrow[draft_id_arrow.length - 1];
+            const first_draft = draft_id_arrow.at(-1);
             restore_draft(first_draft);
         }
     }
