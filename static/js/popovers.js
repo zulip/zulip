@@ -1235,7 +1235,7 @@ export function register_click_handlers() {
     clipboard_enable(".copy_link").on("success", (e) => {
         hide_actions_popover();
         // e.trigger returns the DOM element triggering the copy action
-        const message_id = e.trigger.getAttribute("data-message-id");
+        const message_id = e.trigger.dataset.messageId;
         const row = $(`[zid='${CSS.escape(message_id)}']`);
         row.find(".alert-msg")
             .text($t({defaultMessage: "Copied!"}))

@@ -562,7 +562,7 @@ export function drafts_handle_events(e, event_key) {
     // This handles when pressing Enter while looking at drafts.
     // It restores draft that is focused.
     if (event_key === "enter") {
-        if (document.activeElement.parentElement.hasAttribute("data-draft-id")) {
+        if (Object.hasOwn(document.activeElement.parentElement.dataset, "draftId")) {
             restore_draft(focused_draft_id);
         } else {
             const first_draft = draft_id_arrow.at(-1);

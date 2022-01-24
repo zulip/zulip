@@ -241,7 +241,7 @@ export class LightboxCanvas {
         this.context = this.canvas.getContext("2d");
 
         this.meta.image = new Image();
-        this.meta.image.src = this.canvas.getAttribute("data-src");
+        this.meta.image.src = this.canvas.dataset.src;
         this.meta.image.addEventListener("load", () => {
             this.meta.ratio = funcs.imageRatio(this.meta.image);
 
