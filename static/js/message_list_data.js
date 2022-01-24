@@ -397,7 +397,7 @@ export class MessageListData {
         } else {
             // Any of the ids that we skipped over (due to them being local-only) might be the
             // closest ID to the desired one, in case there is no exact match.
-            potential_closest_matches.unshift(_.last(potential_closest_matches) - 1);
+            potential_closest_matches.unshift(closest - 1);
             let best_match = items[closest].id;
 
             for (const potential_idx of potential_closest_matches) {

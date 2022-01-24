@@ -1,5 +1,4 @@
 import $ from "jquery";
-import _ from "lodash";
 
 import * as emoji from "../shared/js/emoji";
 import render_message_reaction from "../templates/message_reaction.hbs";
@@ -172,8 +171,8 @@ function generate_title(emoji_name, user_ids) {
         );
     }
 
-    context.comma_separated_usernames = _.initial(usernames).join(", ");
-    context.last_username = _.last(usernames);
+    context.comma_separated_usernames = usernames.slice(0, -1).join(", ");
+    context.last_username = usernames.at(-1);
     if (current_user_reacted) {
         return $t(
             {
