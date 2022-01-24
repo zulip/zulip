@@ -87,7 +87,7 @@
     position: relative;
     page-break-inside: avoid;
 
-    &:after {
+    &::after {
         content: "";
         display: block;
         height: 200px;
