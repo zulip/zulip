@@ -83,6 +83,18 @@
     }
 }
 
+.question-section {
+    position: relative;
+    page-break-inside: avoid;
+
+    &:after {
+        content: "";
+        display: block;
+        height: 200px;
+        margin-bottom: -200px;
+    }
+}
+
 button {
     &.task {
         height: 20px;
@@ -151,8 +163,8 @@ button {
 
 .poll-edit-question {
     opacity: 0.4;
-    display: inline-block;
-    margin-left: 5px;
+    display: inline;
+    margin: 0 0 8px 5px;
 
     &:hover {
         opacity: 1;
@@ -160,7 +172,7 @@ button {
 }
 
 .poll-question-header {
-    display: inline-block;
+    display: inline;
 }
 
 .current-user-vote {
