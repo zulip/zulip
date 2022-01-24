@@ -7,6 +7,8 @@ up-to-date list of raw changes.
 
 ## Zulip 4.x series
 
+## Zulip 4.9 -- 2022-01-24
+
 - CVE-2021-43799: Remote execution of code involving RabbitMQ.
 - Closed access to RabbitMQ port 25672; initial installs tried to
   close this port, but failed to restart RabbitMQ for the
@@ -15,6 +17,33 @@ up-to-date list of raw changes.
   RabbitMQ instances will be reconfigured to have a nodename of
   `zulip@localhost`. You can remove this setting from your
   `zulip.conf` configuration file, if it exists.
+- Added missing support for the Camo image proxy in the Docker
+  image. This resolves a longstanding issue with image previews, if
+  enabled, appearing as broken images for Docker-based installs.
+- Fixed a bug which allowed a user to edit a message to add a wildcard
+  mention when they did not have permissions to send such messages
+  originally.
+- Fixed a bug in the tool that corrects database corruption caused by
+  updating the operating system hosting PostgreSQL, which previously
+  omitted some indexes from its verification. If you updated the
+  operating system of your Zulip instance from Ubuntu 18.04 to 20.04,
+  or from Debian Stretch to Debian Buster, you should run the tool,
+  even if you did so previously; full details and instructions are
+  available in the previous blog post.
+- Began routing requests from the Camo image proxy through a
+  non-Smokescreen proxy, if one is configured; because Camo includes
+  logic to deny access to private subnets, routing its requests
+  through Smokescreen is generally not necessary.
+- Fixed a bug where changing the Camo secret required running
+  `zulip-puppet-apply`.
+- Fixed `scripts/setup/compare-settings-to-template` to be able to run
+  from any directory.
+- Switched Let's Encrypt renewal to use its own timer, rather than our
+  custom cron job. This fixes a bug where occasionally `nginx` would
+  not reload after getting an updated certificate.
+- Updated documentation and tooling to note that installs using
+  `upgrade-zulip-from-git` require 3 GB of RAM, or 2 GB and at least 1
+  GB of swap.
 
 ## Zulip 4.8 -- 2021-12-01
 
