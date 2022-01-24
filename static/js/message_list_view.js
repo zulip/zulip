@@ -344,9 +344,7 @@ export class MessageListView {
                     current_group,
                     current_group.message_containers[0],
                 );
-                current_group.message_containers[
-                    current_group.message_containers.length - 1
-                ].include_footer = true;
+                current_group.message_containers.at(-1).include_footer = true;
                 new_message_groups.push(current_group);
             }
         };
@@ -1212,7 +1210,7 @@ export class MessageListView {
         for (const message_container of message_containers) {
             if (
                 current_group.length === 0 ||
-                same_recipient(current_group[current_group.length - 1], message_container)
+                same_recipient(current_group.at(-1), message_container)
             ) {
                 current_group.push(message_container);
             } else {

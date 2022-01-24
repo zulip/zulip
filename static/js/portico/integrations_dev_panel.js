@@ -74,8 +74,7 @@ function get_selected_integration_name() {
 }
 
 function get_fixture_format(fixture_name) {
-    const pieces = fixture_name.split(".");
-    return pieces[pieces.length - 1];
+    return fixture_name.split(".").at(-1);
 }
 
 function get_custom_http_headers() {
