@@ -5,12 +5,12 @@ import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as popovers from "./popovers";
 
-let active_overlay;
+let $active_overlay;
 let close_handler;
 let open_overlay_name;
 
 function reset_state() {
-    active_overlay = undefined;
+    $active_overlay = undefined;
     close_handler = undefined;
     open_overlay_name = undefined;
 }
@@ -69,9 +69,9 @@ export function active_modal() {
     }
 
     // Check for Micromodal modals.
-    const micromodal = $(".micromodal.modal--open");
-    if (micromodal.length) {
-        return `#${CSS.escape(micromodal.attr("id"))}`;
+    const $micromodal = $(".micromodal.modal--open");
+    if ($micromodal.length) {
+        return `#${CSS.escape($micromodal.attr("id"))}`;
     }
     return `#${CSS.escape($(".modal.in").attr("id"))}`;
 }
@@ -79,12 +79,12 @@ export function active_modal() {
 export function open_overlay(opts) {
     popovers.hide_all();
 
-    if (!opts.name || !opts.overlay || !opts.on_close) {
+    if (!opts.name || !opts.$overlay || !opts.on_close) {
         blueslip.error("Programming error in open_overlay");
         return;
     }
 
-    if (active_overlay || open_overlay_name || close_handler) {
+    if ($active_overlay || open_overlay_name || close_handler) {
         blueslip.error(
             "Programming error — trying to open " +
                 opts.name +
@@ -99,16 +99,16 @@ export function open_overlay(opts) {
     // Our overlays are kind of crufty...we have an HTML id
     // attribute for them and then a data-overlay attribute for
     // them.  Make sure they match.
-    if (opts.overlay.attr("data-overlay") !== opts.name) {
+    if (opts.$overlay.attr("data-overlay") !== opts.name) {
         blueslip.error("Bad overlay setup for " + opts.name);
         return;
     }
 
     open_overlay_name = opts.name;
-    active_overlay = opts.overlay;
-    opts.overlay.addClass("show");
+    $active_overlay = opts.$overlay;
+    opts.$overlay.addClass("show");
 
-    opts.overlay.attr("aria-hidden", "false");
+    opts.$overlay.attr("aria-hidden", "false");
     $(".app").attr("aria-hidden", "true");
     $(".fixed-app").attr("aria-hidden", "true");
     $(".header").attr("aria-hidden", "true");
@@ -157,9 +157,9 @@ export function open_modal(selector, conf) {
         // Micromodal gets elements using the getElementById DOM function
         // which doesn't require the hash. We add it manually here.
         const id_selector = `#${selector}`;
-        const micromodal = $(id_selector);
+        const $micromodal = $(id_selector);
 
-        micromodal.find(".modal__container").on("animationend", (event) => {
+        $micromodal.find(".modal__container").on("animationend", (event) => {
             // Micromodal doesn't support Bootstrap-style `shown.bs.modal` and
             // `hidden.bs.modal` events. We workaround this by using the animationName
             // from the native event and running the required functions after the
@@ -172,8 +172,8 @@ export function open_modal(selector, conf) {
                 // is complete, which isn't really helpful since a modal is open after the
                 // animation is complete. So, we manually add a class after the
                 // animation is complete.
-                micromodal.addClass("modal--open");
-                micromodal.removeClass("modal--opening");
+                $micromodal.addClass("modal--open");
+                $micromodal.removeClass("modal--opening");
 
                 if (conf.on_shown) {
                     conf.on_shown();
@@ -183,9 +183,9 @@ export function open_modal(selector, conf) {
                 //
                 // Call the on_hidden callback after the modal finishes hiding.
 
-                micromodal.removeClass("modal--open");
+                $micromodal.removeClass("modal--open");
                 if (conf.autoremove) {
-                    micromodal.remove();
+                    $micromodal.remove();
                 }
                 if (conf.on_hidden) {
                     conf.on_hidden();
@@ -202,17 +202,17 @@ export function open_modal(selector, conf) {
         return;
     }
 
-    const elem = $(selector).expectOne();
-    elem.modal("show").attr("aria-hidden", false);
+    const $elem = $(selector).expectOne();
+    $elem.modal("show").attr("aria-hidden", false);
     // Disable background mouse events when modal is active
     disable_background_mouse_events();
     // Remove previous alert messages from modal, if exists.
-    elem.find(".alert").hide();
-    elem.find(".alert-notification").html("");
+    $elem.find(".alert").hide();
+    $elem.find(".alert-notification").html("");
 
     if (conf && conf.autoremove) {
-        elem.on("hidden.bs.modal", () => {
-            elem.remove();
+        $elem.on("hidden.bs.modal", () => {
+            $elem.remove();
         });
     }
 }
@@ -232,9 +232,9 @@ export function close_overlay(name) {
 
     blueslip.debug("close overlay: " + name);
 
-    active_overlay.removeClass("show");
+    $active_overlay.removeClass("show");
 
-    active_overlay.attr("aria-hidden", "true");
+    $active_overlay.attr("aria-hidden", "true");
     $(".app").attr("aria-hidden", "false");
     $(".fixed-app").attr("aria-hidden", "false");
     $(".header").attr("aria-hidden", "false");
@@ -284,13 +284,13 @@ export function close_modal(selector, conf) {
 
     if (conf && conf.micromodal) {
         const id_selector = `#${selector}`;
-        const micromodal = $(id_selector);
+        const $micromodal = $(id_selector);
 
         // On-hidden hooks should typically be registered in
         // overlays.open_modal.  However, we offer this alternative
         // mechanism as a convenience for hooks only known when
         // closing the modal.
-        micromodal.find(".modal__container").on("animationend", (event) => {
+        $micromodal.find(".modal__container").on("animationend", (event) => {
             const animation_name = event.originalEvent.animationName;
             if (animation_name === "mmfadeOut" && conf.on_hidden) {
                 conf.on_hidden();
@@ -301,8 +301,8 @@ export function close_modal(selector, conf) {
         return;
     }
 
-    const elem = $(selector).expectOne();
-    elem.modal("hide").attr("aria-hidden", true);
+    const $elem = $(selector).expectOne();
+    $elem.modal("hide").attr("aria-hidden", true);
 }
 
 export function close_active_modal() {
@@ -312,9 +312,9 @@ export function close_active_modal() {
     }
 
     // Check for Micromodal modals.
-    const micromodal = $(".micromodal.modal--open");
-    if (micromodal.length) {
-        Micromodal.close(`${CSS.escape(micromodal.attr("id"))}`);
+    const $micromodal = $(".micromodal.modal--open");
+    if ($micromodal.length) {
+        Micromodal.close(`${CSS.escape($micromodal.attr("id"))}`);
         return;
     }
 
@@ -323,7 +323,7 @@ export function close_active_modal() {
 
 export function close_for_hash_change() {
     $("div.overlay.show").removeClass("show");
-    if (active_overlay) {
+    if ($active_overlay) {
         close_handler();
     }
 }
@@ -331,7 +331,7 @@ export function close_for_hash_change() {
 export function open_settings() {
     open_overlay({
         name: "settings",
-        overlay: $("#settings_overlay_container"),
+        $overlay: $("#settings_overlay_container"),
         on_close() {
             browser_history.exit_overlay();
         },

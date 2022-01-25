@@ -56,7 +56,7 @@ export function do_process_submessages(in_opts) {
         return;
     }
 
-    const row = in_opts.row;
+    const $row = in_opts.$row;
 
     // Right now, our only use of submessages is widgets.
 
@@ -78,7 +78,7 @@ export function do_process_submessages(in_opts) {
         widget_type,
         extra_data: data.extra_data,
         events,
-        row,
+        $row,
         message,
         post_to_server,
     });

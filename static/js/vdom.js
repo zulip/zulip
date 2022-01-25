@@ -57,19 +57,19 @@ export function render_tag(tag) {
     return start_tag + "\n" + innards + "\n" + end_tag;
 }
 
-export function update_attrs(elem, new_attrs, old_attrs) {
+export function update_attrs($elem, new_attrs, old_attrs) {
     const new_dict = new Map(new_attrs);
     const old_dict = new Map(old_attrs);
 
     for (const [k, v] of new_attrs) {
         if (v !== old_dict.get(k)) {
-            elem.attr(k, v);
+            $elem.attr(k, v);
         }
     }
 
     for (const [k] of old_attrs) {
         if (!new_dict.has(k)) {
-            elem.removeAttr(k);
+            $elem.removeAttr(k);
         }
     }
 }
@@ -172,7 +172,7 @@ export function update(replace_content, find, new_dom, old_dom) {
         We will only update nodes whose data has changed.
     */
 
-    const child_elems = find().children();
+    const $child_elems = find().children();
 
     for (const [i, new_node] of new_opts.keyed_nodes.entries()) {
         const old_node = old_opts.keyed_nodes[i];
@@ -180,7 +180,7 @@ export function update(replace_content, find, new_dom, old_dom) {
             continue;
         }
         const rendered_dom = new_node.render();
-        child_elems.eq(i).replaceWith(rendered_dom);
+        $child_elems.eq(i).replaceWith(rendered_dom);
     }
 
     update_attrs(find(), new_opts.attrs, old_opts.attrs);

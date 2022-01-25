@@ -110,24 +110,24 @@ import * as user_status_ui from "./user_status_ui";
    because we want to reserve space for the email address.  This avoids
    things jumping around slightly when the email address is shown. */
 
-let current_message_hover;
+let $current_message_hover;
 function message_unhover() {
-    if (current_message_hover === undefined) {
+    if ($current_message_hover === undefined) {
         return;
     }
-    current_message_hover.find("span.edit_content").html("");
-    current_message_hover = undefined;
+    $current_message_hover.find("span.edit_content").html("");
+    $current_message_hover = undefined;
 }
 
-function message_hover(message_row) {
-    const id = rows.id(message_row);
-    if (current_message_hover && rows.id(current_message_hover) === id) {
+function message_hover($message_row) {
+    const id = rows.id($message_row);
+    if ($current_message_hover && rows.id($current_message_hover) === id) {
         return;
     }
 
-    const message = message_lists.current.get(rows.id(message_row));
+    const message = message_lists.current.get(rows.id($message_row));
     message_unhover();
-    current_message_hover = message_row;
+    $current_message_hover = $message_row;
 
     // Locally echoed messages have !is_topic_editable and thus go
     // through this code path.
@@ -143,7 +143,7 @@ function message_hover(message_row) {
         is_editable: is_message_editable && !message.status_message,
         msg_id: id,
     };
-    message_row.find(".edit_content").html(render_edit_content_button(args));
+    $message_row.find(".edit_content").html(render_edit_content_button(args));
 }
 
 function initialize_left_sidebar() {
@@ -168,21 +168,21 @@ function initialize_right_sidebar() {
     }
 
     $("#user_presences").on("mouseenter", ".user_sidebar_entry", (e) => {
-        const status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status_emoji");
-        if (status_emoji.length) {
-            const animated_url = status_emoji.data("animated-url");
+        const $status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status_emoji");
+        if ($status_emoji.length) {
+            const animated_url = $status_emoji.data("animated-url");
             if (animated_url) {
-                status_emoji.attr("src", animated_url);
+                $status_emoji.attr("src", animated_url);
             }
         }
     });
 
     $("#user_presences").on("mouseleave", ".user_sidebar_entry", (e) => {
-        const status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status_emoji");
-        if (status_emoji.length) {
-            const still_url = status_emoji.data("still-url");
+        const $status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status_emoji");
+        if ($status_emoji.length) {
+            const still_url = $status_emoji.data("still-url");
             if (still_url) {
-                status_emoji.attr("src", still_url);
+                $status_emoji.attr("src", still_url);
             }
         }
     });
@@ -237,7 +237,7 @@ export function initialize_kitchen_sink_stuff() {
         message_viewport.set_last_movement_direction(delta);
     }, 50);
 
-    message_viewport.message_pane.on("wheel", (e) => {
+    message_viewport.$message_pane.on("wheel", (e) => {
         const delta = e.originalEvent.deltaY;
         if (!overlays.is_active() && !recent_topics_util.is_visible()) {
             // In the message view, we use a throttled mousewheel handler.
@@ -255,13 +255,13 @@ export function initialize_kitchen_sink_stuff() {
     // element is already at the top or bottom.  Otherwise we get a
     // new scroll event on the parent (?).
     $(".modal-body, .scrolling_list, input, textarea").on("wheel", function (e) {
-        const self = ui.get_scroll_element($(this));
-        const scroll = self.scrollTop();
+        const $self = ui.get_scroll_element($(this));
+        const scroll = $self.scrollTop();
         const delta = e.originalEvent.deltaY;
 
         // The -1 fudge factor is important here due to rounding errors.  Better
         // to err on the side of not scrolling.
-        const max_scroll = self.prop("scrollHeight") - self.innerHeight() - 1;
+        const max_scroll = $self.prop("scrollHeight") - $self.innerHeight() - 1;
 
         e.stopPropagation();
         if ((delta < 0 && scroll <= 0) || (delta > 0 && scroll >= max_scroll)) {
@@ -299,8 +299,8 @@ export function initialize_kitchen_sink_stuff() {
     }
 
     $("#main_div").on("mouseover", ".message_table .message_row", function () {
-        const row = $(this).closest(".message_row");
-        message_hover(row);
+        const $row = $(this).closest(".message_row");
+        message_hover($row);
     });
 
     $("#main_div").on("mouseleave", ".message_table .message_row", () => {
@@ -308,13 +308,13 @@ export function initialize_kitchen_sink_stuff() {
     });
 
     $("#main_div").on("mouseover", ".sender_info_hover", function () {
-        const row = $(this).closest(".message_row");
-        row.addClass("sender_name_hovered");
+        const $row = $(this).closest(".message_row");
+        $row.addClass("sender_name_hovered");
     });
 
     $("#main_div").on("mouseout", ".sender_info_hover", function () {
-        const row = $(this).closest(".message_row");
-        row.removeClass("sender_name_hovered");
+        const $row = $(this).closest(".message_row");
+        $row.removeClass("sender_name_hovered");
     });
 
     $("#main_div").on("mouseenter", ".youtube-video a", function () {
@@ -326,21 +326,21 @@ export function initialize_kitchen_sink_stuff() {
     });
 
     $("#main_div").on("mouseenter", ".embed-video a", function () {
-        const elem = $(this);
+        const $elem = $(this);
         // Set image height and css vars for play button position, if not done already
-        const setPosition = !elem.data("entered-before");
+        const setPosition = !$elem.data("entered-before");
         if (setPosition) {
-            const imgW = elem.find("img")[0].width;
-            const imgH = elem.find("img")[0].height;
+            const imgW = $elem.find("img")[0].width;
+            const imgH = $elem.find("img")[0].height;
             // Ensure height doesn't change on mouse enter
-            elem.css("height", `${imgH}px`);
+            $elem.css("height", `${imgH}px`);
             // variables to set play button position
             const marginLeft = (imgW - 30) / 2;
             const marginTop = (imgH - 26) / 2;
-            elem.css("--margin-left", `${marginLeft}px`).css("--margin-top", `${marginTop}px`);
-            elem.data("entered-before", true);
+            $elem.css("--margin-left", `${marginLeft}px`).css("--margin-top", `${marginTop}px`);
+            $elem.data("entered-before", true);
         }
-        elem.addClass("fa fa-play");
+        $elem.addClass("fa fa-play");
     });
 
     $("#main_div").on("mouseleave", ".embed-video a", function () {
@@ -375,13 +375,13 @@ export function initialize_kitchen_sink_stuff() {
             // If the message list is empty, don't do anything
             return;
         }
-        const row = event.msg_list.get_row(event.id);
+        const $row = event.msg_list.get_row(event.id);
         $(".selected_message").removeClass("selected_message");
-        row.addClass("selected_message");
+        $row.addClass("selected_message");
 
         if (event.then_scroll) {
-            if (row.length === 0) {
-                const row_from_dom = message_lists.current.get_row(event.id);
+            if ($row.length === 0) {
+                const $row_from_dom = message_lists.current.get_row(event.id);
                 const messages = event.msg_list.all_messages();
                 blueslip.debug("message_selected missing selected row", {
                     previously_selected_id: event.previously_selected_id,
@@ -398,7 +398,7 @@ export function initialize_kitchen_sink_stuff() {
                             .map((message) => message.id)
                             .sort(),
                     ),
-                    found_in_dom: row_from_dom.length,
+                    found_in_dom: $row_from_dom.length,
                 });
             }
             if (event.target_scroll_offset !== undefined) {
@@ -407,7 +407,7 @@ export function initialize_kitchen_sink_stuff() {
                 // Scroll to place the message within the current view;
                 // but if this is the initial placement of the pointer,
                 // just place it in the very center
-                message_viewport.recenter_view(row, {
+                message_viewport.recenter_view($row, {
                     from_scroll: event.from_scroll,
                     force_center: event.previously_selected_id === -1,
                 });

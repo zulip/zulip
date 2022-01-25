@@ -50,21 +50,21 @@ import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
 import * as util from "./util";
 
-let current_actions_popover_elem;
+let $current_actions_popover_elem;
 let current_flatpickr_instance;
-let current_message_info_popover_elem;
-let current_user_info_popover_elem;
-let current_playground_links_popover_elem;
+let $current_message_info_popover_elem;
+let $current_user_info_popover_elem;
+let $current_playground_links_popover_elem;
 let userlist_placement = "right";
 
 let list_of_popovers = [];
 
 export function clear_for_testing() {
-    current_actions_popover_elem = undefined;
+    $current_actions_popover_elem = undefined;
     current_flatpickr_instance = undefined;
-    current_message_info_popover_elem = undefined;
-    current_user_info_popover_elem = undefined;
-    current_playground_links_popover_elem = undefined;
+    $current_message_info_popover_elem = undefined;
+    $current_user_info_popover_elem = undefined;
+    $current_playground_links_popover_elem = undefined;
     list_of_popovers.length = 0;
     userlist_placement = "right";
 }
@@ -75,8 +75,8 @@ export function clipboard_enable(arg) {
     return new ClipboardJS(arg);
 }
 
-export function elem_to_user_id(elem) {
-    return Number.parseInt(elem.attr("data-user-id"), 10);
+export function elem_to_user_id($elem) {
+    return Number.parseInt($elem.attr("data-user-id"), 10);
 }
 
 // this utilizes the proxy pattern to intercept all calls to $.fn.popover
@@ -96,19 +96,19 @@ $.fn.popover = Object.assign(function (...args) {
 }, old_popover);
 
 function copy_email_handler(e) {
-    const email_el = $(e.trigger.parentElement);
-    const copy_icon = email_el.find("i");
+    const $email_el = $(e.trigger.parentElement);
+    const $copy_icon = $email_el.find("i");
 
     // only change the parent element's text back to email
     // and not overwrite the tooltip.
-    const email_textnode = email_el[0].childNodes[2];
+    const email_textnode = $email_el[0].childNodes[2];
 
-    email_el.addClass("email_copied");
+    $email_el.addClass("email_copied");
     email_textnode.nodeValue = $t({defaultMessage: "Email copied"});
 
     setTimeout(() => {
-        email_el.removeClass("email_copied");
-        email_textnode.nodeValue = copy_icon.attr("data-clipboard-text");
+        $email_el.removeClass("email_copied");
+        email_textnode.nodeValue = $copy_icon.attr("data-clipboard-text");
     }, 1500);
     e.clearSelection();
 }
@@ -121,8 +121,8 @@ function init_email_clipboard() {
     */
     $(".user_popover_email").each(function () {
         if (this.clientWidth < this.scrollWidth) {
-            const email_el = $(this);
-            const copy_email_icon = email_el.find("i");
+            const $email_el = $(this);
+            const $copy_email_icon = $email_el.find("i");
 
             /*
                 For deactivated users, the copy-email icon will
@@ -130,9 +130,9 @@ function init_email_clipboard() {
                 anything.  We don't reveal emails for deactivated
                 users.
             */
-            if (copy_email_icon[0]) {
-                copy_email_icon.removeClass("hide_copy_icon");
-                const copy_email_clipboard = clipboard_enable(copy_email_icon[0]);
+            if ($copy_email_icon[0]) {
+                $copy_email_icon.removeClass("hide_copy_icon");
+                const copy_email_clipboard = clipboard_enable($copy_email_icon[0]);
                 copy_email_clipboard.on("success", copy_email_handler);
             }
         }
@@ -157,18 +157,18 @@ function init_email_tooltip(user) {
     });
 }
 
-function load_medium_avatar(user, elt) {
+function load_medium_avatar(user, $elt) {
     const user_avatar_url = people.medium_avatar_url_for_person(user);
     const sender_avatar_medium = new Image();
 
     sender_avatar_medium.src = user_avatar_url;
     $(sender_avatar_medium).on("load", function () {
-        elt.css("background-image", "url(" + $(this).attr("src") + ")");
+        $elt.css("background-image", "url(" + $(this).attr("src") + ")");
     });
 }
 
-function calculate_info_popover_placement(size, elt) {
-    const ypos = elt.offset().top;
+function calculate_info_popover_placement(size, $elt) {
+    const ypos = $elt.offset().top;
 
     if (!(ypos + size / 2 < message_viewport.height() && ypos > size / 2)) {
         if (ypos + size < message_viewport.height()) {
@@ -297,16 +297,16 @@ export const _test_calculate_info_popover_placement = calculate_info_popover_pla
 // user is the user whose profile to show
 // message is the message containing it, which should be selected
 function show_user_info_popover_for_message(element, user, message) {
-    const last_popover_elem = current_message_info_popover_elem;
+    const $last_popover_elem = $current_message_info_popover_elem;
     hide_all();
-    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
+    if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
         // We want it to be the case that a user can dismiss a popover
         // by clicking on the same element that caused the popover.
         return;
     }
     message_lists.current.select_id(message.id);
-    const elt = $(element);
-    if (elt.data("popover") === undefined) {
+    const $elt = $(element);
+    if ($elt.data("popover") === undefined) {
         if (user === undefined) {
             // This is never supposed to happen, not even for deactivated
             // users, so we'll need to debug this error if it occurs.
@@ -317,7 +317,7 @@ function show_user_info_popover_for_message(element, user, message) {
         const is_sender_popover = message.sender_id === user.user_id;
         render_user_info_popover(
             user,
-            elt,
+            $elt,
             is_sender_popover,
             true,
             "respond_personal_button",
@@ -325,36 +325,36 @@ function show_user_info_popover_for_message(element, user, message) {
             "right",
         );
 
-        current_message_info_popover_elem = elt;
+        $current_message_info_popover_elem = $elt;
     }
 }
 
 export function show_user_info_popover(element, user) {
-    const last_popover_elem = current_user_info_popover_elem;
+    const $last_popover_elem = $current_user_info_popover_elem;
     hide_all();
-    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
+    if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
         return;
     }
-    const elt = $(element);
+    const $elt = $(element);
     render_user_info_popover(
         user,
-        elt,
+        $elt,
         false,
         false,
         "compose_private_message",
         "user-info-popover",
         "right",
     );
-    current_user_info_popover_elem = elt;
+    $current_user_info_popover_elem = $elt;
 }
 
 function get_user_info_popover_for_message_items() {
-    if (!current_message_info_popover_elem) {
+    if (!$current_message_info_popover_elem) {
         blueslip.error("Trying to get menu items when action popover is closed.");
         return undefined;
     }
 
-    const popover_data = current_message_info_popover_elem.data("popover");
+    const popover_data = $current_message_info_popover_elem.data("popover");
     if (!popover_data) {
         blueslip.error("Cannot find popover data for actions menu.");
         return undefined;
@@ -364,18 +364,18 @@ function get_user_info_popover_for_message_items() {
 }
 
 function get_user_info_popover_items() {
-    const popover_elt = $("div.user-info-popover");
-    if (!current_user_info_popover_elem || !popover_elt.length) {
+    const $popover_elt = $("div.user-info-popover");
+    if (!$current_user_info_popover_elem || !$popover_elt.length) {
         blueslip.error("Trying to get menu items when action popover is closed.");
         return undefined;
     }
 
-    if (popover_elt.length >= 2) {
+    if ($popover_elt.length >= 2) {
         blueslip.error("More than one user info popovers cannot be opened at same time.");
         return undefined;
     }
 
-    return $("li:not(.divider):visible a", popover_elt);
+    return $("li:not(.divider):visible a", $popover_elt);
 }
 
 function fetch_group_members(member_ids) {
@@ -403,40 +403,40 @@ export const _test_sort_group_members = sort_group_members;
 // user is the user whose profile to show
 // message is the message containing it, which should be selected
 function show_user_group_info_popover(element, group, message) {
-    const last_popover_elem = current_message_info_popover_elem;
+    const $last_popover_elem = $current_message_info_popover_elem;
     // hardcoded pixel height of the popover
     // note that the actual size varies (in group size), but this is about as big as it gets
     const popover_size = 390;
     hide_all();
-    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
+    if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
         // We want it to be the case that a user can dismiss a popover
         // by clicking on the same element that caused the popover.
         return;
     }
     message_lists.current.select_id(message.id);
-    const elt = $(element);
-    if (elt.data("popover") === undefined) {
+    const $elt = $(element);
+    if ($elt.data("popover") === undefined) {
         const args = {
             group_name: group.name,
             group_description: group.description,
             members: sort_group_members(fetch_group_members(Array.from(group.members))),
         };
-        elt.popover({
-            placement: calculate_info_popover_placement(popover_size, elt),
+        $elt.popover({
+            placement: calculate_info_popover_placement(popover_size, $elt),
             template: render_user_group_info_popover({class: "message-info-popover"}),
             content: render_user_group_info_popover_content(args),
             html: true,
             trigger: "manual",
         });
-        elt.popover("show");
-        current_message_info_popover_elem = elt;
+        $elt.popover("show");
+        $current_message_info_popover_elem = $elt;
     }
 }
 
 export function toggle_actions_popover(element, id) {
-    const last_popover_elem = current_actions_popover_elem;
+    const $last_popover_elem = $current_actions_popover_elem;
     hide_all();
-    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
+    if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
         // We want it to be the case that a user can dismiss a popover
         // by clicking on the same element that caused the popover.
         return;
@@ -445,8 +445,8 @@ export function toggle_actions_popover(element, id) {
     $(element).closest(".message_row").toggleClass("has_popover has_actions_popover");
     message_lists.current.select_id(id);
     const not_spectator = !page_params.is_spectator;
-    const elt = $(element);
-    if (elt.data("popover") === undefined) {
+    const $elt = $(element);
+    if ($elt.data("popover") === undefined) {
         const message = message_lists.current.get(id);
         const message_container = message_lists.current.view.message_containers.get(message.id);
         const should_display_hide_option =
@@ -530,8 +530,8 @@ export function toggle_actions_popover(element, id) {
             should_display_quote_and_reply,
         };
 
-        const ypos = elt.offset().top;
-        elt.popover({
+        const ypos = $elt.offset().top;
+        $elt.popover({
             // Popover height with 7 items in it is ~190 px
             placement: message_viewport.height() - ypos < 220 ? "top" : "bottom",
             title: "",
@@ -539,8 +539,8 @@ export function toggle_actions_popover(element, id) {
             html: true,
             trigger: "manual",
         });
-        elt.popover("show");
-        current_actions_popover_elem = elt;
+        $elt.popover("show");
+        $current_actions_popover_elem = $elt;
     }
 }
 
@@ -548,14 +548,14 @@ export function render_actions_remind_popover(element, id) {
     hide_all();
     $(element).closest(".message_row").toggleClass("has_popover has_actions_popover");
     message_lists.current.select_id(id);
-    const elt = $(element);
-    if (elt.data("popover") === undefined) {
+    const $elt = $(element);
+    if ($elt.data("popover") === undefined) {
         const message = message_lists.current.get(id);
         const args = {
             message,
         };
-        const ypos = elt.offset().top;
-        elt.popover({
+        const ypos = $elt.offset().top;
+        $elt.popover({
             // Popover height with 7 items in it is ~190 px
             placement: message_viewport.height() - ypos < 220 ? "top" : "bottom",
             title: "",
@@ -563,7 +563,7 @@ export function render_actions_remind_popover(element, id) {
             html: true,
             trigger: "manual",
         });
-        elt.popover("show");
+        $elt.popover("show");
         current_flatpickr_instance = $(
             `.remind.custom[data-message-id="${CSS.escape(message.id)}"]`,
         ).flatpickr({
@@ -573,17 +573,17 @@ export function render_actions_remind_popover(element, id) {
             minDate: "today",
             plugins: [new ConfirmDatePlugin({})],
         });
-        current_actions_popover_elem = elt;
+        $current_actions_popover_elem = $elt;
     }
 }
 
 function get_action_menu_menu_items() {
-    if (!current_actions_popover_elem) {
+    if (!$current_actions_popover_elem) {
         blueslip.error("Trying to get menu items when action popover is closed.");
         return undefined;
     }
 
-    const popover_data = current_actions_popover_elem.data("popover");
+    const popover_data = $current_actions_popover_elem.data("popover");
     if (!popover_data) {
         blueslip.error("Cannot find popover data for actions menu.");
         return undefined;
@@ -592,40 +592,40 @@ function get_action_menu_menu_items() {
     return $("li:not(.divider):visible a", popover_data.$tip);
 }
 
-export function focus_first_popover_item(items) {
-    if (!items) {
+export function focus_first_popover_item($items) {
+    if (!$items) {
         return;
     }
 
-    items.eq(0).expectOne().trigger("focus");
+    $items.eq(0).expectOne().trigger("focus");
 }
 
-export function popover_items_handle_keyboard(key, items) {
-    if (!items) {
+export function popover_items_handle_keyboard(key, $items) {
+    if (!$items) {
         return;
     }
 
-    let index = items.index(items.filter(":focus"));
+    let index = $items.index($items.filter(":focus"));
 
-    if (key === "enter" && index >= 0 && index < items.length) {
-        items[index].click();
+    if (key === "enter" && index >= 0 && index < $items.length) {
+        $items[index].click();
         return;
     }
     if (index === -1) {
         index = 0;
-    } else if ((key === "down_arrow" || key === "vim_down") && index < items.length - 1) {
+    } else if ((key === "down_arrow" || key === "vim_down") && index < $items.length - 1) {
         index += 1;
     } else if ((key === "up_arrow" || key === "vim_up") && index > 0) {
         index -= 1;
     }
-    items.eq(index).trigger("focus");
+    $items.eq(index).trigger("focus");
 }
 
 function focus_first_action_popover_item() {
     // For now I recommend only calling this when the user opens the menu with a hotkey.
     // Our popup menus act kind of funny when you mix keyboard and mouse.
-    const items = get_action_menu_menu_items();
-    focus_first_popover_item(items);
+    const $items = get_action_menu_menu_items();
+    focus_first_popover_item($items);
 }
 
 export function open_message_menu(message) {
@@ -638,26 +638,26 @@ export function open_message_menu(message) {
 
     const message_id = message.id;
     toggle_actions_popover($(".selected_message .actions_hover")[0], message_id);
-    if (current_actions_popover_elem) {
+    if ($current_actions_popover_elem) {
         focus_first_action_popover_item();
     }
     return true;
 }
 
 export function actions_menu_handle_keyboard(key) {
-    const items = get_action_menu_menu_items();
-    popover_items_handle_keyboard(key, items);
+    const $items = get_action_menu_menu_items();
+    popover_items_handle_keyboard(key, $items);
 }
 
 export function actions_popped() {
-    return current_actions_popover_elem !== undefined;
+    return $current_actions_popover_elem !== undefined;
 }
 
 export function hide_actions_popover() {
     if (actions_popped()) {
         $(".has_popover").removeClass("has_popover has_actions_popover");
-        current_actions_popover_elem.popover("destroy");
-        current_actions_popover_elem = undefined;
+        $current_actions_popover_elem.popover("destroy");
+        $current_actions_popover_elem = undefined;
     }
     if (current_flatpickr_instance !== undefined) {
         current_flatpickr_instance.destroy();
@@ -666,24 +666,24 @@ export function hide_actions_popover() {
 }
 
 export function message_info_popped() {
-    return current_message_info_popover_elem !== undefined;
+    return $current_message_info_popover_elem !== undefined;
 }
 
 export function hide_message_info_popover() {
     if (message_info_popped()) {
-        current_message_info_popover_elem.popover("destroy");
-        current_message_info_popover_elem = undefined;
+        $current_message_info_popover_elem.popover("destroy");
+        $current_message_info_popover_elem = undefined;
     }
 }
 
 export function user_info_popped() {
-    return current_user_info_popover_elem !== undefined;
+    return $current_user_info_popover_elem !== undefined;
 }
 
 export function hide_user_info_popover() {
     if (user_info_popped()) {
-        current_user_info_popover_elem.popover("destroy");
-        current_user_info_popover_elem = undefined;
+        $current_user_info_popover_elem.popover("destroy");
+        $current_user_info_popover_elem = undefined;
     }
 }
 
@@ -729,8 +729,8 @@ export function hide_user_sidebar_popover() {
 function focus_user_info_popover_item() {
     // For now I recommend only calling this when the user opens the menu with a hotkey.
     // Our popup menus act kind of funny when you mix keyboard and mouse.
-    const items = get_user_info_popover_for_message_items();
-    focus_first_popover_item(items);
+    const $items = get_user_info_popover_for_message_items();
+    focus_first_popover_item($items);
 }
 
 function get_user_sidebar_popover_items() {
@@ -743,18 +743,18 @@ function get_user_sidebar_popover_items() {
 }
 
 export function user_sidebar_popover_handle_keyboard(key) {
-    const items = get_user_sidebar_popover_items();
-    popover_items_handle_keyboard(key, items);
+    const $items = get_user_sidebar_popover_items();
+    popover_items_handle_keyboard(key, $items);
 }
 
 export function user_info_popover_for_message_handle_keyboard(key) {
-    const items = get_user_info_popover_for_message_items();
-    popover_items_handle_keyboard(key, items);
+    const $items = get_user_info_popover_for_message_items();
+    popover_items_handle_keyboard(key, $items);
 }
 
 export function user_info_popover_handle_keyboard(key) {
-    const items = get_user_info_popover_items();
-    popover_items_handle_keyboard(key, items);
+    const $items = get_user_info_popover_items();
+    popover_items_handle_keyboard(key, $items);
 }
 
 export function show_sender_info() {
@@ -764,7 +764,7 @@ export function show_sender_info() {
     const message = message_lists.current.get(rows.id($message));
     const user = people.get_by_user_id(message.sender_id);
     show_user_info_popover_for_message($sender[0], user, message);
-    if (current_message_info_popover_elem && !page_params.is_spectator) {
+    if ($current_message_info_popover_elem && !page_params.is_spectator) {
         focus_user_info_popover_item();
     }
 }
@@ -784,17 +784,17 @@ export function set_suppress_scroll_hide() {
 // playground links for each code block. The element is the target element
 // to pop off of.
 export function toggle_playground_link_popover(element, playground_info) {
-    const last_popover_elem = current_playground_links_popover_elem;
+    const $last_popover_elem = $current_playground_links_popover_elem;
     hide_all();
-    if (last_popover_elem !== undefined && last_popover_elem.get()[0] === element) {
+    if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
         // We want it to be the case that a user can dismiss a popover
         // by clicking on the same element that caused the popover.
         return;
     }
-    const elt = $(element);
-    if (elt.data("popover") === undefined) {
-        const ypos = elt.offset().top;
-        elt.popover({
+    const $elt = $(element);
+    if ($elt.data("popover") === undefined) {
+        const ypos = $elt.offset().top;
+        $elt.popover({
             // It's unlikely we'll have more than 3-4 playground links
             // for one language, so it should be OK to hardcode 120 here.
             placement: message_viewport.height() - ypos < 120 ? "top" : "bottom",
@@ -803,32 +803,32 @@ export function toggle_playground_link_popover(element, playground_info) {
             html: true,
             trigger: "manual",
         });
-        elt.popover("show");
-        current_playground_links_popover_elem = elt;
+        $elt.popover("show");
+        $current_playground_links_popover_elem = $elt;
     }
 }
 
 export function hide_playground_links_popover() {
-    if (current_playground_links_popover_elem !== undefined) {
-        current_playground_links_popover_elem.popover("destroy");
-        current_playground_links_popover_elem = undefined;
+    if ($current_playground_links_popover_elem !== undefined) {
+        $current_playground_links_popover_elem.popover("destroy");
+        $current_playground_links_popover_elem = undefined;
     }
 }
 
 export function register_click_handlers() {
     $("#main_div").on("click", ".actions_hover", function (e) {
-        const row = $(this).closest(".message_row");
+        const $row = $(this).closest(".message_row");
         e.stopPropagation();
-        toggle_actions_popover(this, rows.id(row));
+        toggle_actions_popover(this, rows.id($row));
     });
 
     $("#main_div").on(
         "click",
         ".sender_name, .sender_name-in-status, .inline_profile_picture",
         function (e) {
-            const row = $(this).closest(".message_row");
+            const $row = $(this).closest(".message_row");
             e.stopPropagation();
-            const message = message_lists.current.get(rows.id(row));
+            const message = message_lists.current.get(rows.id($row));
             const user = people.get_by_user_id(message.sender_id);
             show_user_info_popover_for_message(this, user, message);
         },
@@ -842,9 +842,9 @@ export function register_click_handlers() {
         if (id_string === "*" || email === "*") {
             return;
         }
-        const row = $(this).closest(".message_row");
+        const $row = $(this).closest(".message_row");
         e.stopPropagation();
-        const message = message_lists.current.get(rows.id(row));
+        const message = message_lists.current.get(rows.id($row));
         let user;
         if (id_string) {
             const user_id = Number.parseInt(id_string, 10);
@@ -857,9 +857,9 @@ export function register_click_handlers() {
 
     $("#main_div").on("click", ".user-group-mention", function (e) {
         const user_group_id = Number.parseInt($(this).attr("data-user-group-id"), 10);
-        const row = $(this).closest(".message_row");
+        const $row = $(this).closest(".message_row");
         e.stopPropagation();
-        const message = message_lists.current.get(rows.id(row));
+        const message = message_lists.current.get(rows.id($row));
         try {
             const group = user_groups.get_user_group_from_id(user_group_id);
             show_user_group_info_popover(this, group, message);
@@ -873,19 +873,19 @@ export function register_click_handlers() {
         "click",
         ".code_external_link",
         function (e) {
-            const view_in_playground_button = $(this);
-            const codehilite_div = $(this).closest(".codehilite");
+            const $view_in_playground_button = $(this);
+            const $codehilite_div = $(this).closest(".codehilite");
             e.stopPropagation();
             const playground_info = realm_playground.get_playground_info_for_languages(
-                codehilite_div.data("code-language"),
+                $codehilite_div.data("code-language"),
             );
             // We do the code extraction here and set the target href combining the url_prefix
             // and the extracted code. Depending on whether the language has multiple playground
             // links configured, a popover is show.
-            const extracted_code = codehilite_div.find("code").text();
+            const extracted_code = $codehilite_div.find("code").text();
             if (playground_info.length === 1) {
                 const url_prefix = playground_info[0].url_prefix;
-                view_in_playground_button.attr(
+                $view_in_playground_button.attr(
                     "href",
                     url_prefix + encodeURIComponent(extracted_code),
                 );
@@ -1036,8 +1036,8 @@ export function register_click_handlers() {
 
         // use email of currently selected user, rather than some elem comparison,
         // as the presence list may be redrawn with new elements.
-        const target = $(this).closest("li");
-        const user_id = elem_to_user_id(target.find("a"));
+        const $target = $(this).closest("li");
+        const user_id = elem_to_user_id($target.find("a"));
 
         if (current_user_sidebar_user_id === user_id) {
             // If the popover is already shown, clicking again should toggle it.
@@ -1059,7 +1059,7 @@ export function register_click_handlers() {
 
         render_user_info_popover(
             user,
-            target,
+            $target,
             false,
             false,
             "compose_private_message",
@@ -1068,7 +1068,7 @@ export function register_click_handlers() {
         );
 
         current_user_sidebar_user_id = user.user_id;
-        current_user_sidebar_popover = target.data("popover");
+        current_user_sidebar_popover = $target.data("popover");
     });
 
     $("body").on("click", ".respond_button", (e) => {
@@ -1161,16 +1161,16 @@ export function register_click_handlers() {
     });
     $("body").on("click", ".popover_toggle_collapse", (e) => {
         const message_id = $(e.currentTarget).data("message-id");
-        const row = message_lists.current.get_row(message_id);
-        const message = message_lists.current.get(rows.id(row));
+        const $row = message_lists.current.get_row(message_id);
+        const message = message_lists.current.get(rows.id($row));
 
         hide_actions_popover();
 
-        if (row) {
+        if ($row) {
             if (message.collapsed) {
-                condense.uncollapse(row);
+                condense.uncollapse($row);
             } else {
-                condense.collapse(row);
+                condense.collapse($row);
             }
         }
 
@@ -1179,21 +1179,21 @@ export function register_click_handlers() {
     });
     $("body").on("click", ".popover_edit_message", (e) => {
         const message_id = $(e.currentTarget).data("message-id");
-        const row = message_lists.current.get_row(message_id);
+        const $row = message_lists.current.get_row(message_id);
         hide_actions_popover();
-        message_edit.start(row);
+        message_edit.start($row);
         e.stopPropagation();
         e.preventDefault();
     });
     $("body").on("click", ".rehide_muted_user_message", (e) => {
         const message_id = $(e.currentTarget).data("message-id");
-        const row = message_lists.current.get_row(message_id);
-        const message = message_lists.current.get(rows.id(row));
+        const $row = message_lists.current.get_row(message_id);
+        const message = message_lists.current.get(rows.id($row));
         const message_container = message_lists.current.view.message_containers.get(message.id);
 
         hide_actions_popover();
 
-        if (row && !message_container.is_hidden) {
+        if ($row && !message_container.is_hidden) {
             message_lists.current.view.hide_revealed_message(message_id);
         }
 
@@ -1202,8 +1202,8 @@ export function register_click_handlers() {
     });
     $("body").on("click", ".view_edit_history", (e) => {
         const message_id = $(e.currentTarget).data("message-id");
-        const row = message_lists.current.get_row(message_id);
-        const message = message_lists.current.get(rows.id(row));
+        const $row = message_lists.current.get_row(message_id);
+        const message = message_lists.current.get(rows.id($row));
 
         hide_actions_popover();
         message_edit_history.show_history(message);
@@ -1244,8 +1244,8 @@ export function register_click_handlers() {
         hide_actions_popover();
         // e.trigger returns the DOM element triggering the copy action
         const message_id = e.trigger.dataset.messageId;
-        const row = $(`[zid='${CSS.escape(message_id)}']`);
-        row.find(".alert-msg")
+        const $row = $(`[zid='${CSS.escape(message_id)}']`);
+        $row.find(".alert-msg")
             .text($t({defaultMessage: "Copied!"}))
             .css("display", "block")
             .delay(1000)
@@ -1359,20 +1359,25 @@ export function set_userlist_placement(placement) {
     userlist_placement = placement || "right";
 }
 
-export function compute_placement(elt, popover_height, popover_width, prefer_vertical_positioning) {
-    const client_rect = elt.get(0).getBoundingClientRect();
+export function compute_placement(
+    $elt,
+    popover_height,
+    popover_width,
+    prefer_vertical_positioning,
+) {
+    const client_rect = $elt.get(0).getBoundingClientRect();
     const distance_from_top = client_rect.top;
     const distance_from_bottom = message_viewport.height() - client_rect.bottom;
     const distance_from_left = client_rect.left;
     const distance_from_right = message_viewport.width() - client_rect.right;
 
     const elt_will_fit_horizontally =
-        distance_from_left + elt.width() / 2 > popover_width / 2 &&
-        distance_from_right + elt.width() / 2 > popover_width / 2;
+        distance_from_left + $elt.width() / 2 > popover_width / 2 &&
+        distance_from_right + $elt.width() / 2 > popover_width / 2;
 
     const elt_will_fit_vertically =
-        distance_from_bottom + elt.height() / 2 > popover_height / 2 &&
-        distance_from_top + elt.height() / 2 > popover_height / 2;
+        distance_from_bottom + $elt.height() / 2 > popover_height / 2 &&
+        distance_from_top + $elt.height() / 2 > popover_height / 2;
 
     // default to placing the popover in the center of the screen
     let placement = "viewport_center";

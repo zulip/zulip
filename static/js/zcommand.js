@@ -65,9 +65,9 @@ export function switch_to_light_theme() {
         on_success(data) {
             dark_theme.disable();
             feedback_widget.show({
-                populate(container) {
+                populate($container) {
                     const rendered_msg = marked(data.msg).trim();
-                    container.html(rendered_msg);
+                    $container.html(rendered_msg);
                 },
                 on_undo() {
                     send({
@@ -87,9 +87,9 @@ export function switch_to_dark_theme() {
         on_success(data) {
             dark_theme.enable();
             feedback_widget.show({
-                populate(container) {
+                populate($container) {
                     const rendered_msg = marked(data.msg).trim();
-                    container.html(rendered_msg);
+                    $container.html(rendered_msg);
                 },
                 on_undo() {
                     send({
@@ -109,9 +109,9 @@ export function enter_fluid_mode() {
         on_success(data) {
             scroll_bar.set_layout_width();
             feedback_widget.show({
-                populate(container) {
+                populate($container) {
                     const rendered_msg = marked(data.msg).trim();
-                    container.html(rendered_msg);
+                    $container.html(rendered_msg);
                 },
                 on_undo() {
                     send({
@@ -131,9 +131,9 @@ export function enter_fixed_mode() {
         on_success(data) {
             scroll_bar.set_layout_width();
             feedback_widget.show({
-                populate(container) {
+                populate($container) {
                     const rendered_msg = marked(data.msg).trim();
-                    container.html(rendered_msg);
+                    $container.html(rendered_msg);
                 },
                 on_undo() {
                     send({

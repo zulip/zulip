@@ -32,16 +32,16 @@ export function phrase_match(query: string, phrase: string): boolean {
     return false;
 }
 
-export function copy_data_attribute_value(elem: JQuery, key: string): void {
+export function copy_data_attribute_value($elem: JQuery, key: string): void {
     // function to copy the value of data-key
     // attribute of the element to clipboard
-    const temp = $(document.createElement("input"));
-    $("body").append(temp);
-    temp.val(elem.data(key)).trigger("select");
+    const $temp = $(document.createElement("input"));
+    $("body").append($temp);
+    $temp.val($elem.data(key)).trigger("select");
     document.execCommand("copy");
-    temp.remove();
-    elem.fadeOut(250);
-    elem.fadeIn(1000);
+    $temp.remove();
+    $elem.fadeOut(250);
+    $elem.fadeIn(1000);
 }
 
 export function has_mac_keyboard(): boolean {
@@ -105,14 +105,14 @@ function toggle_password_visibility(
     tippy_tooltips: boolean,
 ): void {
     let label;
-    const password_field = $(password_field_id);
+    const $password_field = $(password_field_id);
 
-    if (password_field.attr("type") === "password") {
-        password_field.attr("type", "text");
+    if ($password_field.attr("type") === "password") {
+        $password_field.attr("type", "text");
         $(password_selector).removeClass("fa-eye-slash").addClass("fa-eye");
         label = $t({defaultMessage: "Hide password"});
     } else {
-        password_field.attr("type", "password");
+        $password_field.attr("type", "password");
         $(password_selector).removeClass("fa-eye").addClass("fa-eye-slash");
         label = $t({defaultMessage: "Show password"});
     }

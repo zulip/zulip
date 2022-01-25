@@ -12,17 +12,17 @@ async function stars_count(page: Page): Promise<number> {
 
 async function toggle_test_star_message(page: Page): Promise<void> {
     await page.evaluate((message: string) => {
-        const msg = $(`.message_content:contains("${CSS.escape(message)}"):visible`).last();
-        if (msg.length !== 1) {
+        const $msg = $(`.message_content:contains("${CSS.escape(message)}"):visible`).last();
+        if ($msg.length !== 1) {
             throw new Error("cannot find test star message");
         }
 
-        const star_icon = msg.closest(".messagebox").find(".star");
-        if (star_icon.length !== 1) {
+        const $star_icon = $msg.closest(".messagebox").find(".star");
+        if ($star_icon.length !== 1) {
             throw new Error("cannot find star icon");
         }
 
-        star_icon.trigger("click");
+        $star_icon.trigger("click");
     }, message);
 }
 

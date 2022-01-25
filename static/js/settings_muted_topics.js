@@ -11,25 +11,25 @@ export let loaded = false;
 
 export function populate_list() {
     const all_muted_topics = muted_topics.get_muted_topics();
-    const muted_topics_table = $("#muted_topics_table");
+    const $muted_topics_table = $("#muted_topics_table");
     const $search_input = $("#muted_topics_search");
 
-    ListWidget.create(muted_topics_table, all_muted_topics, {
+    ListWidget.create($muted_topics_table, all_muted_topics, {
         name: "muted-topics-list",
         modifier(muted_topic) {
             return render_muted_topic_ui_row({muted_topic});
         },
         filter: {
-            element: $search_input,
+            $element: $search_input,
             predicate(item, value) {
                 return item.topic.toLocaleLowerCase().includes(value);
             },
             onupdate() {
-                ui.reset_scrollbar(muted_topics_table.closest(".progressive-table-wrapper"));
+                ui.reset_scrollbar($muted_topics_table.closest(".progressive-table-wrapper"));
             },
         },
-        parent_container: $("#muted-topic-settings"),
-        simplebar_container: $("#muted-topic-settings .progressive-table-wrapper"),
+        $parent_container: $("#muted-topic-settings"),
+        $simplebar_container: $("#muted-topic-settings .progressive-table-wrapper"),
     });
 }
 

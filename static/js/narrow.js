@@ -277,9 +277,9 @@ export function activate(raw_operators, opts) {
         // having a near: narrow auto-reloaded.
         id_info.target_id = opts.then_select_id;
         if (opts.then_select_offset === undefined) {
-            const row = message_lists.current.get_row(opts.then_select_id);
-            if (row.length > 0) {
-                opts.then_select_offset = row.offset().top;
+            const $row = message_lists.current.get_row(opts.then_select_id);
+            if ($row.length > 0) {
+                opts.then_select_offset = $row.offset().top;
             }
         }
     }

@@ -47,7 +47,7 @@ const MAX_EXTRA_SENDERS = 10;
 // So, we use table as a grid system and
 // track the coordinates of the focus element via
 // `row_focus` and `col_focus`.
-export let current_focus_elem = "table";
+export let $current_focus_elem = "table";
 
 // If user clicks a topic in recent topics, then
 // we store that topic here so that we can restore focus
@@ -93,8 +93,8 @@ export function load_filters() {
 export function set_default_focus() {
     // If at any point we are confused about the currently
     // focused element, we switch focus to search.
-    current_focus_elem = $("#recent_topics_search");
-    current_focus_elem.trigger("focus");
+    $current_focus_elem = $("#recent_topics_search");
+    $current_focus_elem.trigger("focus");
     compose_closed_ui.set_standard_text_for_reply_button();
 }
 
@@ -107,32 +107,32 @@ function get_min_load_count(already_rendered_count, load_count) {
 }
 
 function is_table_focused() {
-    return current_focus_elem === "table";
+    return $current_focus_elem === "table";
 }
 
 function set_table_focus(row, col, using_keyboard) {
-    const topic_rows = $("#recent_topics_table table tbody tr");
-    if (topic_rows.length === 0 || row < 0 || row >= topic_rows.length) {
+    const $topic_rows = $("#recent_topics_table table tbody tr");
+    if ($topic_rows.length === 0 || row < 0 || row >= $topic_rows.length) {
         row_focus = 0;
         // return focus back to filters if we cannot focus on the table.
         set_default_focus();
         return true;
     }
 
-    const topic_row = topic_rows.eq(row);
+    const $topic_row = $topic_rows.eq(row);
     // We need to allow table to render first before setting focus.
     setTimeout(
-        () => topic_row.find(".recent_topics_focusable").eq(col).children().trigger("focus"),
+        () => $topic_row.find(".recent_topics_focusable").eq(col).children().trigger("focus"),
         0,
     );
-    current_focus_elem = "table";
+    $current_focus_elem = "table";
 
     if (using_keyboard) {
         const scroll_element = document.querySelector(
             "#recent_topics_table .table_fix_head .simplebar-content-wrapper",
         );
         const half_height_of_visible_area = scroll_element.offsetHeight / 2;
-        const topic_offset = topic_offset_to_visible_area(topic_row);
+        const topic_offset = topic_offset_to_visible_area($topic_row);
 
         if (topic_offset === "above") {
             scroll_element.scrollBy({top: -1 * half_height_of_visible_area});
@@ -142,8 +142,8 @@ function set_table_focus(row, col, using_keyboard) {
     }
 
     const message = {
-        stream: topic_row.find(".recent_topic_stream a").text(),
-        topic: topic_row.find(".recent_topic_name a").text(),
+        stream: $topic_row.find(".recent_topic_stream a").text(),
+        topic: $topic_row.find(".recent_topic_name a").text(),
     };
     compose_closed_ui.update_reply_recipient_label(message);
     return true;
@@ -152,13 +152,13 @@ function set_table_focus(row, col, using_keyboard) {
 export function get_focused_row_message() {
     if (is_table_focused()) {
         const recent_topic_id_prefix_len = "recent_topic:".length;
-        const topic_rows = $("#recent_topics_table table tbody tr");
-        if (topic_rows.length === 0) {
+        const $topic_rows = $("#recent_topics_table table tbody tr");
+        if ($topic_rows.length === 0) {
             return undefined;
         }
 
-        const topic_row = topic_rows.eq(row_focus);
-        const topic_id = topic_row.attr("id").slice(recent_topic_id_prefix_len);
+        const $topic_row = $topic_rows.eq(row_focus);
+        const topic_id = $topic_row.attr("id").slice(recent_topic_id_prefix_len);
         const topic_last_msg_id = topics.get(topic_id).last_msg_id;
         return message_store.get(topic_last_msg_id);
     }
@@ -176,7 +176,7 @@ export function revive_current_focus() {
         return false;
     }
 
-    if (!current_focus_elem) {
+    if (!$current_focus_elem) {
         set_default_focus();
         return false;
     }
@@ -198,14 +198,14 @@ export function revive_current_focus() {
         return true;
     }
 
-    const filter_button = current_focus_elem.data("filter");
+    const filter_button = $current_focus_elem.data("filter");
     if (!filter_button) {
         set_default_focus();
     } else {
-        current_focus_elem = $("#recent_topics_filter_buttons").find(
+        $current_focus_elem = $("#recent_topics_filter_buttons").find(
             `[data-filter='${CSS.escape(filter_button)}']`,
         );
-        current_focus_elem.trigger("focus");
+        $current_focus_elem.trigger("focus");
     }
     return true;
 }
@@ -439,7 +439,7 @@ export function set_filter(filter) {
     // set `filters`.
 
     // Get the button which was clicked.
-    const filter_elem = $("#recent_topics_filter_buttons").find(
+    const $filter_elem = $("#recent_topics_filter_buttons").find(
         `[data-filter="${CSS.escape(filter)}"]`,
     );
 
@@ -447,7 +447,7 @@ export function set_filter(filter) {
     if (filter === "all" && filters.size !== 0) {
         filters = new Set();
         // If the button was already selected, remove the filter.
-    } else if (filter_elem.hasClass("btn-recent-selected")) {
+    } else if ($filter_elem.hasClass("btn-recent-selected")) {
         filters.delete(filter);
         // If the button was not selected, we add the filter.
     } else {
@@ -510,13 +510,13 @@ function topic_sort(a, b) {
 }
 
 function topic_offset_to_visible_area(topic_row) {
-    const scroll_container = $("#recent_topics_table .table_fix_head");
+    const $scroll_container = $("#recent_topics_table .table_fix_head");
     const thead_height = 30;
     const under_closed_compose_region_height = 50;
 
-    const scroll_container_top = $(scroll_container).offset().top + thead_height;
+    const scroll_container_top = $($scroll_container).offset().top + thead_height;
     const scroll_container_bottom =
-        scroll_container_top + $(scroll_container).height() - under_closed_compose_region_height;
+        scroll_container_top + $($scroll_container).height() - under_closed_compose_region_height;
 
     const topic_row_top = $(topic_row).offset().top;
     const topic_row_bottom = topic_row_top + $(topic_row).height();
@@ -535,24 +535,24 @@ function topic_offset_to_visible_area(topic_row) {
 
 function set_focus_to_element_in_center() {
     const table_wrapper_element = document.querySelector("#recent_topics_table .table_fix_head");
-    const topic_rows = $("#recent_topics_table table tbody tr");
+    const $topic_rows = $("#recent_topics_table table tbody tr");
 
-    if (row_focus > topic_rows.length) {
+    if (row_focus > $topic_rows.length) {
         // User used a filter which reduced
         // the number of visible rows.
         return;
     }
-    let topic_row = topic_rows.eq(row_focus);
-    const topic_offset = topic_offset_to_visible_area(topic_row);
+    let $topic_row = $topic_rows.eq(row_focus);
+    const topic_offset = topic_offset_to_visible_area($topic_row);
     if (topic_offset !== "visible") {
         // Get the element at the center of the table.
         const position = table_wrapper_element.getBoundingClientRect();
         const topic_center_x = (position.left + position.right) / 2;
         const topic_center_y = (position.top + position.bottom) / 2;
 
-        topic_row = $(document.elementFromPoint(topic_center_x, topic_center_y)).closest("tr");
+        $topic_row = $(document.elementFromPoint(topic_center_x, topic_center_y)).closest("tr");
 
-        row_focus = topic_rows.index(topic_row);
+        row_focus = $topic_rows.index($topic_row);
         set_table_focus(row_focus, col_focus);
     }
 }
@@ -593,11 +593,11 @@ export function complete_rerender() {
         search_val: $("#recent_topics_search").val() || "",
     });
     $("#recent_topics_table").html(rendered_body);
-    const container = $("#recent_topics_table table tbody");
-    container.empty();
-    topics_widget = ListWidget.create(container, mapped_topic_values, {
+    const $container = $("#recent_topics_table table tbody");
+    $container.empty();
+    topics_widget = ListWidget.create($container, mapped_topic_values, {
         name: "recent_topics_table",
-        parent_container: $("#recent_topics_table"),
+        $parent_container: $("#recent_topics_table"),
         modifier(item) {
             return render_recent_topic_row(format_topic(item));
         },
@@ -613,7 +613,7 @@ export function complete_rerender() {
             topic_sort,
         },
         html_selector: get_topic_row,
-        simplebar_container: $("#recent_topics_table .table_fix_head"),
+        $simplebar_container: $("#recent_topics_table .table_fix_head"),
         callback_after_render: revive_current_focus,
         is_scroll_position_for_render,
         post_scroll__pre_render_callback: set_focus_to_element_in_center,
@@ -662,9 +662,9 @@ export function hide() {
     // remains on the focused element even after it is hidden. We
     // forcefully blur it so that focus returns to the visible
     // focused element.
-    const focused_element = $(document.activeElement);
-    if ($("#recent_topics_view").has(focused_element)) {
-        focused_element.trigger("blur");
+    const $focused_element = $(document.activeElement);
+    if ($("#recent_topics_view").has($focused_element)) {
+        $focused_element.trigger("blur");
     }
 
     $("#message_view_header_underpadding").show();
@@ -690,12 +690,12 @@ export function hide() {
 }
 
 function is_focus_at_last_table_row() {
-    const topic_rows = $("#recent_topics_table table tbody tr");
-    return row_focus === topic_rows.length - 1;
+    const $topic_rows = $("#recent_topics_table table tbody tr");
+    return row_focus === $topic_rows.length - 1;
 }
 
 export function focus_clicked_element(topic_row_index, col, topic_key) {
-    current_focus_elem = "table";
+    $current_focus_elem = "table";
     col_focus = col;
     row_focus = topic_row_index;
 
@@ -736,22 +736,22 @@ export function change_focused_element($elt, input_key) {
             case "open_recent_topics":
                 return false;
             case "shift_tab":
-                current_focus_elem = filter_buttons().last();
+                $current_focus_elem = filter_buttons().last();
                 break;
             case "left_arrow":
                 if (start !== 0 || is_selected) {
                     return false;
                 }
-                current_focus_elem = filter_buttons().last();
+                $current_focus_elem = filter_buttons().last();
                 break;
             case "tab":
-                current_focus_elem = filter_buttons().first();
+                $current_focus_elem = filter_buttons().first();
                 break;
             case "right_arrow":
                 if (end !== text_length || is_selected) {
                     return false;
                 }
-                current_focus_elem = filter_buttons().first();
+                $current_focus_elem = filter_buttons().first();
                 break;
             case "down_arrow":
                 set_table_focus(row_focus, col_focus);
@@ -763,7 +763,7 @@ export function change_focused_element($elt, input_key) {
                 // We only do this for search because we don't want the focus to
                 // go away from the input box when `revive_current_focus` is called
                 // on rerender when user is typing.
-                current_focus_elem = $("#recent_topics_search");
+                $current_focus_elem = $("#recent_topics_search");
                 compose_closed_ui.set_standard_text_for_reply_button();
                 return true;
             case "escape":
@@ -776,24 +776,24 @@ export function change_focused_element($elt, input_key) {
     } else if ($elt.hasClass("btn-recent-filters")) {
         switch (input_key) {
             case "click":
-                current_focus_elem = $elt;
+                $current_focus_elem = $elt;
                 return true;
             case "shift_tab":
             case "vim_left":
             case "left_arrow":
                 if (filter_buttons().first()[0] === $elt[0]) {
-                    current_focus_elem = $("#recent_topics_search");
+                    $current_focus_elem = $("#recent_topics_search");
                 } else {
-                    current_focus_elem = $elt.prev();
+                    $current_focus_elem = $elt.prev();
                 }
                 break;
             case "tab":
             case "vim_right":
             case "right_arrow":
                 if (filter_buttons().last()[0] === $elt[0]) {
-                    current_focus_elem = $("#recent_topics_search");
+                    $current_focus_elem = $("#recent_topics_search");
                 } else {
-                    current_focus_elem = $elt.next();
+                    $current_focus_elem = $elt.next();
                 }
                 break;
             case "vim_down":
@@ -865,9 +865,9 @@ export function change_focused_element($elt, input_key) {
         set_table_focus(row_focus, col_focus, true);
         return true;
     }
-    if (current_focus_elem && input_key !== "escape") {
-        current_focus_elem.trigger("focus");
-        if (current_focus_elem.hasClass("btn-recent-filters")) {
+    if ($current_focus_elem && input_key !== "escape") {
+        $current_focus_elem.trigger("focus");
+        if ($current_focus_elem.hasClass("btn-recent-filters")) {
             compose_closed_ui.set_standard_text_for_reply_button();
         }
         return true;

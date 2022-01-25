@@ -42,15 +42,15 @@ run_test("settings", ({override_rewire}) => {
         stopPropagation: noop,
     };
 
-    const unmute_button = $.create("settings-unmute-user");
-    const fake_row = $('tr[data-user-id="5"]');
-    unmute_button.closest = (opts) => {
+    const $unmute_button = $.create("settings-unmute-user");
+    const $fake_row = $('tr[data-user-id="5"]');
+    $unmute_button.closest = (opts) => {
         assert.equal(opts, "tr");
-        return fake_row;
+        return $fake_row;
     };
 
     let row_attribute_fetched = false;
-    fake_row.attr = (opts) => {
+    $fake_row.attr = (opts) => {
         if (opts === "data-user-id") {
             row_attribute_fetched += 1;
             return "5";
@@ -64,7 +64,7 @@ run_test("settings", ({override_rewire}) => {
         unmute_user_called = true;
     };
 
-    unmute_click_handler.call(unmute_button, event);
+    unmute_click_handler.call($unmute_button, event);
     assert.ok(unmute_user_called);
     assert.ok(row_attribute_fetched);
 });

@@ -7,18 +7,18 @@ $(() => {
     // NB: this file is included on multiple pages.  In each context,
     // some of the jQuery selectors below will return empty lists.
 
-    const password_field = $("#id_password, #id_new_password1");
-    if (password_field.length > 0) {
+    const $password_field = $("#id_password, #id_new_password1");
+    if ($password_field.length > 0) {
         $.validator.addMethod(
             "password_strength",
-            (value) => password_quality(value, undefined, password_field),
-            () => password_warning(password_field.val(), password_field),
+            (value) => password_quality(value, undefined, $password_field),
+            () => password_warning($password_field.val(), $password_field),
         );
         // Reset the state of the password strength bar if the page
         // was just reloaded due to a validation failure on the backend.
-        password_quality(password_field.val(), $("#pw_strength .bar"), password_field);
+        password_quality($password_field.val(), $("#pw_strength .bar"), $password_field);
 
-        password_field.on("input", function () {
+        $password_field.on("input", function () {
             // Update the password strength bar even if we aren't validating
             // the field yet.
             password_quality($(this).val(), $("#pw_strength .bar"), $(this));
@@ -58,17 +58,17 @@ $(() => {
             new_password1: "password_strength",
         },
         errorElement: "p",
-        errorPlacement(error, element) {
+        errorPlacement($error, $element) {
             // NB: this is called at most once, when the error element
             // is created.
-            element.next(".help-inline.alert.alert-error").remove();
-            if (element.next().is('label[for="' + element.attr("id") + '"]')) {
-                error.insertAfter(element.next()).addClass("help-inline alert alert-error");
-            } else if (element.parent().is('label[for="' + element.attr("id") + '"]')) {
+            $element.next(".help-inline.alert.alert-error").remove();
+            if ($element.next().is('label[for="' + $element.attr("id") + '"]')) {
+                $error.insertAfter($element.next()).addClass("help-inline alert alert-error");
+            } else if ($element.parent().is('label[for="' + $element.attr("id") + '"]')) {
                 // For checkboxes and radio-buttons
-                error.insertAfter(element.parent()).addClass("help-inline alert alert-error");
+                $error.insertAfter($element.parent()).addClass("help-inline alert alert-error");
             } else {
-                error.insertAfter(element).addClass("help-inline alert alert-error");
+                $error.insertAfter($element).addClass("help-inline alert alert-error");
             }
         },
         highlight: highlight("error"),
@@ -80,18 +80,18 @@ $(() => {
         if ($(".help-inline:not(:empty)").length === 0) {
             // Find the first input field present in the form that is
             // not hidden and disabled and store it in a variable.
-            const firstInputElement = $("input:not(:hidden, :disabled)").first();
+            const $firstInputElement = $("input:not(:hidden, :disabled)").first();
             // Focus on the first input field in the form.
-            common.autofocus(firstInputElement);
+            common.autofocus($firstInputElement);
         } else {
             // If input field with errors is present.
             // Find the input field having errors and stores it in a variable.
-            const inputElementWithError = $(".help-inline:not(:empty)")
+            const $inputElementWithError = $(".help-inline:not(:empty)")
                 .first()
                 .parent()
                 .find("input");
             // Focus on the input field having errors.
-            common.autofocus(inputElementWithError);
+            common.autofocus($inputElementWithError);
         }
 
         // reset error message displays
@@ -144,10 +144,10 @@ $(() => {
 
     $("#send_confirm").validate({
         errorElement: "div",
-        errorPlacement(error) {
+        errorPlacement($error) {
             $(".email-frontend-error").empty();
             $("#send_confirm .alert.email-backend-error").remove();
-            error.appendTo(".email-frontend-error").addClass("text-error");
+            $error.appendTo(".email-frontend-error").addClass("text-error");
         },
         success() {
             $("#errors").empty();

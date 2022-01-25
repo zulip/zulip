@@ -17,36 +17,36 @@ export function build_bot_create_widget() {
         return $("#bot_avatar_file_input");
     };
 
-    const file_name_field = $("#bot_avatar_file");
-    const input_error = $("#bot_avatar_file_input_error");
-    const clear_button = $("#bot_avatar_clear_button");
-    const upload_button = $("#bot_avatar_upload_button");
+    const $file_name_field = $("#bot_avatar_file");
+    const $input_error = $("#bot_avatar_file_input_error");
+    const $clear_button = $("#bot_avatar_clear_button");
+    const $upload_button = $("#bot_avatar_upload_button");
 
     return upload_widget.build_widget(
         get_file_input,
-        file_name_field,
-        input_error,
-        clear_button,
-        upload_button,
+        $file_name_field,
+        $input_error,
+        $clear_button,
+        $upload_button,
     );
 }
 
-export function build_bot_edit_widget(target) {
+export function build_bot_edit_widget($target) {
     const get_file_input = function () {
-        return target.find(".edit_bot_avatar_file_input");
+        return $target.find(".edit_bot_avatar_file_input");
     };
 
-    const file_name_field = target.find(".edit_bot_avatar_file");
-    const input_error = target.find(".edit_bot_avatar_error");
-    const clear_button = target.find(".edit_bot_avatar_clear_button");
-    const upload_button = target.find(".edit_bot_avatar_upload_button");
+    const $file_name_field = $target.find(".edit_bot_avatar_file");
+    const $input_error = $target.find(".edit_bot_avatar_error");
+    const $clear_button = $target.find(".edit_bot_avatar_clear_button");
+    const $upload_button = $target.find(".edit_bot_avatar_upload_button");
 
     return upload_widget.build_widget(
         get_file_input,
-        file_name_field,
-        input_error,
-        clear_button,
-        upload_button,
+        $file_name_field,
+        $input_error,
+        $clear_button,
+        $upload_button,
     );
 }
 

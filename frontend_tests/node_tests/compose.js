@@ -552,27 +552,28 @@ test_ui("on_events", ({override, override_rewire}) => {
     override(rendered_markdown, "update_elements", () => {});
 
     function setup_parents_and_mock_remove(container_sel, target_sel, parent) {
-        const container = $.create("fake " + container_sel);
+        const $container = $.create("fake " + container_sel);
         let container_removed = false;
 
-        container.remove = () => {
+        $container.remove = () => {
             container_removed = true;
         };
 
-        const target = $.create("fake click target (" + target_sel + ")");
+        const $target = $.create("fake click target (" + target_sel + ")");
 
-        target.set_parents_result(parent, container);
+        $target.set_parents_result(parent, $container);
 
         const event = {
             preventDefault: noop,
             stopPropagation: noop,
-            target,
+            // FIXME: event.target should not be a jQuery object
+            target: $target,
         };
 
         const helper = {
             event,
-            container,
-            target,
+            $container,
+            $target,
             container_was_removed: () => container_removed,
         };
 
@@ -633,7 +634,7 @@ test_ui("on_events", ({override, override_rewire}) => {
             ".compose_invite_user",
         );
 
-        helper.container.data = (field) => {
+        helper.$container.data = (field) => {
             if (field === "user-id") {
                 return "34";
             }
@@ -642,7 +643,7 @@ test_ui("on_events", ({override, override_rewire}) => {
             }
             throw new Error(`Unknown field ${field}`);
         };
-        helper.target.prop("disabled", false);
+        helper.$target.prop("disabled", false);
 
         // !sub will result in true here and we check the success code path.
         stream_data.add_sub(subscription);

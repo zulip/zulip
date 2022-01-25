@@ -540,14 +540,14 @@ function populate_messages_sent_by_client(data) {
     draw_plot();
 
     // Click handlers
-    function set_user_button(button) {
+    function set_user_button($button) {
         $("#pie_messages_sent_by_client button[data-user]").removeClass("selected");
-        button.addClass("selected");
+        $button.addClass("selected");
     }
 
-    function set_time_button(button) {
+    function set_time_button($button) {
         $("#pie_messages_sent_by_client button[data-time]").removeClass("selected");
-        button.addClass("selected");
+        $button.addClass("selected");
     }
 
     $("#pie_messages_sent_by_client button").on("click", function () {
@@ -670,14 +670,14 @@ function populate_messages_sent_by_message_type(data) {
     draw_plot();
 
     // Click handlers
-    function set_user_button(button) {
+    function set_user_button($button) {
         $("#pie_messages_sent_by_type button[data-user]").removeClass("selected");
-        button.addClass("selected");
+        $button.addClass("selected");
     }
 
-    function set_time_button(button) {
+    function set_time_button($button) {
         $("#pie_messages_sent_by_type button[data-time]").removeClass("selected");
-        button.addClass("selected");
+        $button.addClass("selected");
     }
 
     $("#pie_messages_sent_by_type button").on("click", function () {

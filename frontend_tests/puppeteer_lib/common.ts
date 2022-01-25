@@ -331,8 +331,8 @@ class CommonUtils {
                     return false;
                 }
 
-                const row = zulip_test.last_visible_row();
-                if (zulip_test.row_id(row) !== last_msg.id) {
+                const $row = zulip_test.last_visible_row();
+                if (zulip_test.row_id($row) !== last_msg.id) {
                     return false;
                 }
 
@@ -343,7 +343,7 @@ class CommonUtils {
                 don't add the star icon until the server
                 responds.
             */
-                return row.find(".star").length === 1;
+                return $row.find(".star").length === 1;
             },
             {},
             content,

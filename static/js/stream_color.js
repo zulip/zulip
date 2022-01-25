@@ -10,19 +10,19 @@ function update_table_stream_color(table, stream_name, color) {
     // so that we only have color in the headers.
     const style = color;
 
-    const stream_labels = $("#floating_recipient_bar").add(table).find(".stream_label");
+    const $stream_labels = $("#floating_recipient_bar").add(table).find(".stream_label");
 
-    for (const label of stream_labels) {
+    for (const label of $stream_labels) {
         const $label = $(label);
         if ($label.text().trim() === stream_name) {
-            const messages = $label.closest(".recipient_row").children(".message_row");
-            messages
+            const $messages = $label.closest(".recipient_row").children(".message_row");
+            $messages
                 .children(".messagebox")
                 .css(
                     "box-shadow",
                     "inset 2px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style,
                 );
-            messages
+            $messages
                 .children(".date_row")
                 .css(
                     "box-shadow",

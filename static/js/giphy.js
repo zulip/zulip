@@ -15,13 +15,13 @@ import * as ui_util from "./ui_util";
 let giphy_fetch;
 let search_term = "";
 let gifs_grid;
-let active_popover_element;
+let $active_popover_element;
 
 // Only used if popover called from edit message, otherwise it is `undefined`.
 let edit_message_id;
 
 export function is_popped_from_edit_messsage() {
-    return active_popover_element && edit_message_id !== undefined;
+    return $active_popover_element && edit_message_id !== undefined;
 }
 
 export function focus_current_edit_message() {
@@ -102,16 +102,16 @@ async function renderGIPHYGrid(targetEl) {
                 // GIF; nice in principle but too distracting.
                 hideAttribution: true,
                 onGifClick: (props) => {
-                    let textarea = $("#compose-textarea");
+                    let $textarea = $("#compose-textarea");
                     if (edit_message_id !== undefined) {
-                        textarea = $(
+                        $textarea = $(
                             `#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`,
                         );
                     }
 
                     compose_ui.insert_syntax_and_focus(
                         `[](${props.images.downsized_medium.url})`,
-                        textarea,
+                        $textarea,
                     );
                     hide_giphy_popover();
                 },
@@ -146,11 +146,11 @@ async function update_grid_with_search_term() {
         return;
     }
 
-    const search_elem = $("#giphy-search-query");
+    const $search_elem = $("#giphy-search-query");
     // GIPHY popover may have been hidden by the
     // time this function is called.
-    if (search_elem.length) {
-        search_term = search_elem[0].value;
+    if ($search_elem.length) {
+        search_term = $search_elem[0].value;
         gifs_grid.remove();
         gifs_grid = await renderGIPHYGrid($("#giphy_grid_in_popover .giphy-content")[0]);
         return;
@@ -162,15 +162,15 @@ async function update_grid_with_search_term() {
 
 export function hide_giphy_popover() {
     // Returns `true` if the popover was open.
-    if (active_popover_element) {
+    if ($active_popover_element) {
         // We need to destroy the popover because when
         // we hide it, bootstrap popover
         // library removes `giphy-content` element
         // as part of cleaning up everything inside
         // `popover-content`, so we need to reinitialize
         // the popover by destroying it.
-        active_popover_element.popover("destroy");
-        active_popover_element = undefined;
+        $active_popover_element.popover("destroy");
+        $active_popover_element = undefined;
         edit_message_id = undefined;
         gifs_grid = undefined;
         return true;
@@ -188,7 +188,7 @@ function get_popover_content() {
 
 function get_popover_placement() {
     let placement = popovers.compute_placement(
-        active_popover_element,
+        $active_popover_element,
         APPROX_HEIGHT,
         APPROX_WIDTH,
         true,
@@ -221,7 +221,7 @@ export function initialize() {
         e.stopPropagation();
 
         const compose_click_target = compose_ui.get_compose_click_target(e);
-        if (active_popover_element && active_popover_element.get()[0] === compose_click_target) {
+        if ($active_popover_element && $active_popover_element.get()[0] === compose_click_target) {
             // Hide giphy popover if already active.
             hide_giphy_popover();
             return;
@@ -237,8 +237,8 @@ export function initialize() {
             edit_message_id = undefined;
         }
 
-        active_popover_element = $elt;
-        active_popover_element.popover({
+        $active_popover_element = $elt;
+        $active_popover_element.popover({
             animation: true,
             placement: get_popover_placement(),
             html: true,
@@ -250,7 +250,7 @@ export function initialize() {
             content: " ",
         });
 
-        active_popover_element.popover("show");
+        $active_popover_element.popover("show");
         // It takes about 1s for the popover to show; So,
         // we wait for popover to display before rendering GIFs
         // in it, otherwise popover is rendered with empty content.

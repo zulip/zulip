@@ -50,15 +50,15 @@ function set_upload_space_stats() {
 }
 
 function delete_attachments(attachment) {
-    const status = $("#delete-upload-status");
+    const $status = $("#delete-upload-status");
     channel.del({
         url: "/json/attachments/" + attachment,
         idempotent: true,
         error(xhr) {
-            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, status);
+            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $status);
         },
         success() {
-            ui_report.success($t_html({defaultMessage: "Attachment deleted"}), status);
+            ui_report.success($t_html({defaultMessage: "Attachment deleted"}), $status);
         },
     });
 }
@@ -86,32 +86,32 @@ function sort_mentioned_in(a, b) {
 function render_attachments_ui() {
     set_upload_space_stats();
 
-    const uploaded_files_table = $("#uploaded_files_table").expectOne();
+    const $uploaded_files_table = $("#uploaded_files_table").expectOne();
     const $search_input = $("#upload_file_search");
 
-    ListWidget.create(uploaded_files_table, attachments, {
+    ListWidget.create($uploaded_files_table, attachments, {
         name: "uploaded-files-list",
         modifier(attachment) {
             return render_uploaded_files_list({attachment});
         },
         filter: {
-            element: $search_input,
+            $element: $search_input,
             predicate(item, value) {
                 return item.name.toLocaleLowerCase().includes(value);
             },
             onupdate() {
-                ui.reset_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
+                ui.reset_scrollbar($uploaded_files_table.closest(".progressive-table-wrapper"));
             },
         },
-        parent_container: $("#attachments-settings").expectOne(),
+        $parent_container: $("#attachments-settings").expectOne(),
         init_sort: ["numeric", "create_time"],
         sort_fields: {
             mentioned_in: sort_mentioned_in,
         },
-        simplebar_container: $("#attachments-settings .progressive-table-wrapper"),
+        $simplebar_container: $("#attachments-settings .progressive-table-wrapper"),
     });
 
-    ui.reset_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
+    ui.reset_scrollbar($uploaded_files_table.closest(".progressive-table-wrapper"));
 }
 
 function format_attachment_data(new_attachments) {
@@ -143,7 +143,7 @@ export function update_attachments(event) {
 export function set_up_attachments() {
     // The settings page must be rendered before this function gets called.
 
-    const status = $("#delete-upload-status");
+    const $status = $("#delete-upload-status");
     loading.make_indicator($("#attachments_loading_indicator"), {text: "Loading..."});
 
     $("#uploaded_files_table").on("click", ".remove-attachment", (e) => {
@@ -162,7 +162,7 @@ export function set_up_attachments() {
         },
         error(xhr) {
             loading.destroy_indicator($("#attachments_loading_indicator"));
-            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, status);
+            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $status);
         },
     });
 }

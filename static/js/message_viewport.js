@@ -9,29 +9,29 @@ import * as overlays from "./overlays";
 import * as rows from "./rows";
 import * as util from "./util";
 
-export let message_pane;
+export let $message_pane;
 
-let jwindow;
+let $jwindow;
 const dimensions = {};
 let in_stoppable_autoscroll = false;
 
 function make_dimen_wrapper(dimen_name, dimen_func) {
     dimensions[dimen_name] = new util.CachedValue({
         compute_value() {
-            return dimen_func.call(message_pane);
+            return dimen_func.call($message_pane);
         },
     });
     return function viewport_dimension_wrapper(...args) {
         if (args.length !== 0) {
             dimensions[dimen_name].reset();
-            return dimen_func.apply(message_pane, args);
+            return dimen_func.apply($message_pane, args);
         }
         return dimensions[dimen_name].get();
     };
 }
 
-export const height = make_dimen_wrapper("height", $(message_pane).height);
-export const width = make_dimen_wrapper("width", $(message_pane).width);
+export const height = make_dimen_wrapper("height", $($message_pane).height);
+export const width = make_dimen_wrapper("width", $($message_pane).width);
 
 // Includes both scroll and arrow events. Negative means scroll up,
 // positive means scroll down.
@@ -56,12 +56,13 @@ export function message_viewport_info() {
 
     const res = {};
 
-    const element_just_above_us = $(".floating_recipient");
-    const element_just_below_us = $("#compose");
+    const $element_just_above_us = $(".floating_recipient");
+    const $element_just_below_us = $("#compose");
 
-    res.visible_top = element_just_above_us.offset().top + element_just_above_us.safeOuterHeight();
+    res.visible_top =
+        $element_just_above_us.offset().top + $element_just_above_us.safeOuterHeight();
 
-    res.visible_bottom = element_just_below_us.position().top;
+    res.visible_bottom = $element_just_below_us.position().top;
 
     res.visible_height = res.visible_bottom - res.visible_top;
 
@@ -70,7 +71,7 @@ export function message_viewport_info() {
 
 export function at_bottom() {
     const bottom = scrollTop() + height();
-    const full_height = message_pane.prop("scrollHeight");
+    const full_height = $message_pane.prop("scrollHeight");
 
     // We only know within a pixel or two if we're
     // exactly at the bottom, due to browser quirkiness,
@@ -82,9 +83,9 @@ export function at_bottom() {
 // This differs from at_bottom in that it only requires the bottom message to
 // be visible, but you may be able to scroll down further.
 export function bottom_message_visible() {
-    const last_row = rows.last_visible();
-    if (last_row.length) {
-        const message_bottom = last_row[0].getBoundingClientRect().bottom;
+    const $last_row = rows.last_visible();
+    if ($last_row.length) {
+        const message_bottom = $last_row[0].getBoundingClientRect().bottom;
         const bottom_of_feed = $("#compose")[0].getBoundingClientRect().top;
         return bottom_of_feed > message_bottom;
     }
@@ -99,21 +100,21 @@ export function is_scrolled_up() {
     // Let's determine whether the user was already dealing
     // with messages off the screen, which can guide auto
     // scrolling decisions.
-    const last_row = rows.last_visible();
-    if (last_row.length === 0) {
+    const $last_row = rows.last_visible();
+    if ($last_row.length === 0) {
         return false;
     }
 
-    const offset = offset_from_bottom(last_row);
+    const offset = offset_from_bottom($last_row);
 
     return offset > 0;
 }
 
-export function offset_from_bottom(last_row) {
+export function offset_from_bottom($last_row) {
     // A positive return value here means the last row is
     // below the bottom of the feed (i.e. obscured by the compose
     // box or even further below the bottom).
-    const message_bottom = last_row.offset().top + last_row.height();
+    const message_bottom = $last_row.offset().top + $last_row.height();
     const info = message_viewport_info();
 
     return message_bottom - info.visible_bottom;
@@ -162,14 +163,14 @@ function in_viewport_or_tall(rect, top_of_feed, bottom_of_feed, require_fully_vi
 }
 
 function add_to_visible(
-    candidates,
+    $candidates,
     visible,
     top_of_feed,
     bottom_of_feed,
     require_fully_visible,
     row_to_id,
 ) {
-    for (const row of candidates) {
+    for (const row of $candidates) {
         const row_rect = row.getBoundingClientRect();
         // Mark very tall messages as read once we've gotten past them
         if (in_viewport_or_tall(row_rect, top_of_feed, bottom_of_feed, require_fully_visible)) {
@@ -193,7 +194,7 @@ const bottom_of_feed = new util.CachedValue({
 });
 
 function _visible_divs(
-    selected_row,
+    $selected_row,
     row_min_height,
     row_to_output,
     div_class,
@@ -209,10 +210,10 @@ function _visible_divs(
     // We do this explicitly without merges and without recalculating
     // the feed bounds to keep this computation as cheap as possible.
     const visible = [];
-    const above_pointer = selected_row.prevAll("div." + div_class).slice(0, num_neighbors);
-    const below_pointer = selected_row.nextAll("div." + div_class).slice(0, num_neighbors);
+    const $above_pointer = $selected_row.prevAll("div." + div_class).slice(0, num_neighbors);
+    const $below_pointer = $selected_row.nextAll("div." + div_class).slice(0, num_neighbors);
     add_to_visible(
-        selected_row,
+        $selected_row,
         visible,
         top_of_feed.get(),
         bottom_of_feed.get(),
@@ -220,7 +221,7 @@ function _visible_divs(
         row_to_output,
     );
     add_to_visible(
-        above_pointer,
+        $above_pointer,
         visible,
         top_of_feed.get(),
         bottom_of_feed.get(),
@@ -228,7 +229,7 @@ function _visible_divs(
         row_to_output,
     );
     add_to_visible(
-        below_pointer,
+        $below_pointer,
         visible,
         top_of_feed.get(),
         bottom_of_feed.get(),
@@ -240,39 +241,39 @@ function _visible_divs(
 }
 
 export function visible_groups(require_fully_visible) {
-    const selected_row = message_lists.current.selected_row();
-    if (selected_row === undefined || selected_row.length === 0) {
+    const $selected_row = message_lists.current.selected_row();
+    if ($selected_row === undefined || $selected_row.length === 0) {
         return [];
     }
 
-    const selected_group = rows.get_message_recipient_row(selected_row);
+    const $selected_group = rows.get_message_recipient_row($selected_row);
 
     function get_row(row) {
         return row;
     }
 
     // Being simplistic about this, the smallest group is about 75 px high.
-    return _visible_divs(selected_group, 75, get_row, "recipient_row", require_fully_visible);
+    return _visible_divs($selected_group, 75, get_row, "recipient_row", require_fully_visible);
 }
 
 export function visible_messages(require_fully_visible) {
-    const selected_row = message_lists.current.selected_row();
+    const $selected_row = message_lists.current.selected_row();
 
     function row_to_id(row) {
         return message_lists.current.get(rows.id($(row)));
     }
 
     // Being simplistic about this, the smallest message is 25 px high.
-    return _visible_divs(selected_row, 25, row_to_id, "message_row", require_fully_visible);
+    return _visible_divs($selected_row, 25, row_to_id, "message_row", require_fully_visible);
 }
 
 export function scrollTop(target_scrollTop) {
-    const orig_scrollTop = message_pane.scrollTop();
+    const orig_scrollTop = $message_pane.scrollTop();
     if (target_scrollTop === undefined) {
         return orig_scrollTop;
     }
-    let ret = message_pane.scrollTop(target_scrollTop);
-    const new_scrollTop = message_pane.scrollTop();
+    let $ret = $message_pane.scrollTop(target_scrollTop);
+    const new_scrollTop = $message_pane.scrollTop();
     const space_to_scroll = $("#bottom_whitespace").offset().top - height();
 
     // Check whether our scrollTop didn't move even though one could have scrolled down
@@ -291,10 +292,10 @@ export function scrollTop(target_scrollTop) {
             "ScrollTop did nothing when scrolling to " + target_scrollTop + ", fixing...",
         );
         // First scroll to 1 in order to clear the stuck state
-        message_pane.scrollTop(1);
+        $message_pane.scrollTop(1);
         // And then scroll where we intended to scroll to
-        ret = message_pane.scrollTop(target_scrollTop);
-        if (message_pane.scrollTop() === 0) {
+        $ret = $message_pane.scrollTop(target_scrollTop);
+        if ($message_pane.scrollTop() === 0) {
             blueslip.info(
                 "ScrollTop fix did not work when scrolling to " +
                     target_scrollTop +
@@ -303,12 +304,12 @@ export function scrollTop(target_scrollTop) {
             );
         }
     }
-    return ret;
+    return $ret;
 }
 
 export function stop_auto_scrolling() {
     if (in_stoppable_autoscroll) {
-        message_pane.stop();
+        $message_pane.stop();
     }
 }
 
@@ -323,7 +324,7 @@ export function system_initiated_animate_scroll(scroll_amount) {
     message_scroll.suppress_selection_update_on_next_scroll();
     const viewport_offset = scrollTop();
     in_stoppable_autoscroll = true;
-    message_pane.animate({
+    $message_pane.animate({
         scrollTop: viewport_offset + scroll_amount,
         always() {
             in_stoppable_autoscroll = false;
@@ -337,12 +338,12 @@ export function user_initiated_animate_scroll(scroll_amount) {
 
     const viewport_offset = scrollTop();
 
-    message_pane.animate({
+    $message_pane.animate({
         scrollTop: viewport_offset + scroll_amount,
     });
 }
 
-export function recenter_view(message, {from_scroll = false, force_center = false} = {}) {
+export function recenter_view($message, {from_scroll = false, force_center = false} = {}) {
     // BarnOwl-style recentering: if the pointer is too high, move it to
     // the 1/2 marks. If the pointer is too low, move it to the 1/7 mark.
     // See keep_pointer_in_view() for related logic to keep the pointer onscreen.
@@ -352,8 +353,8 @@ export function recenter_view(message, {from_scroll = false, force_center = fals
 
     const bottom_threshold = viewport_info.visible_bottom;
 
-    const message_top = message.offset().top;
-    const message_height = message.safeOuterHeight(true);
+    const message_top = $message.offset().top;
+    const message_height = $message.safeOuterHeight(true);
     const message_bottom = message_top + message_height;
 
     const is_above = message_top < top_threshold;
@@ -387,10 +388,10 @@ export function keep_pointer_in_view() {
     // mouse, the pointer is kind of meaningless to them, but keyboard
     // users will occasionally do big mouse scrolls, so this gives them
     // a pointer reasonably close to the middle of the screen.
-    let candidate;
-    let next_row = message_lists.current.selected_row();
+    let $candidate;
+    let $next_row = message_lists.current.selected_row();
 
-    if (next_row.length === 0) {
+    if ($next_row.length === 0) {
         return;
     }
 
@@ -403,7 +404,7 @@ export function keep_pointer_in_view() {
             return true;
         }
 
-        const message_top = next_row.offset().top;
+        const message_top = $next_row.offset().top;
 
         // If the message starts after the very top of the screen, we just
         // leave it alone.  This avoids bugs like #1608, where overzealousness
@@ -414,7 +415,7 @@ export function keep_pointer_in_view() {
 
         // If at least part of the message is below top_threshold (10% from
         // the top), then we also leave it alone.
-        const bottom_offset = message_top + next_row.safeOuterHeight(true);
+        const bottom_offset = message_top + $next_row.safeOuterHeight(true);
         if (bottom_offset >= top_threshold) {
             return true;
         }
@@ -424,21 +425,21 @@ export function keep_pointer_in_view() {
     }
 
     function message_is_far_enough_up() {
-        return at_bottom() || next_row.offset().top <= bottom_threshold;
+        return at_bottom() || $next_row.offset().top <= bottom_threshold;
     }
 
     function adjust(in_view, get_next_row) {
         // return true only if we make an actual adjustment, so
         // that we know to short circuit the other direction
-        if (in_view(next_row)) {
+        if (in_view($next_row)) {
             return false; // try other side
         }
-        while (!in_view(next_row)) {
-            candidate = get_next_row(next_row);
-            if (candidate.length === 0) {
+        while (!in_view($next_row)) {
+            $candidate = get_next_row($next_row);
+            if ($candidate.length === 0) {
                 break;
             }
-            next_row = candidate;
+            $next_row = $candidate;
         }
         return true;
     }
@@ -447,14 +448,14 @@ export function keep_pointer_in_view() {
         adjust(message_is_far_enough_up, rows.prev_visible);
     }
 
-    message_lists.current.select_id(rows.id(next_row), {from_scroll: true});
+    message_lists.current.select_id(rows.id($next_row), {from_scroll: true});
 }
 
 export function initialize() {
-    jwindow = $(window);
-    message_pane = $(".app");
+    $jwindow = $(window);
+    $message_pane = $(".app");
     // This handler must be placed before all resize handlers in our application
-    jwindow.on("resize", () => {
+    $jwindow.on("resize", () => {
         dimensions.height.reset();
         dimensions.width.reset();
         top_of_feed.reset();

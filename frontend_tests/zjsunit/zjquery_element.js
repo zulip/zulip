@@ -15,38 +15,38 @@ function FakeElement(selector, opts) {
     let height;
 
     const find_results = new Map();
-    let my_parent;
+    let $my_parent;
     const parents_result = new Map();
     const properties = new Map();
     const attrs = new Map();
     const classes = new Map();
     const event_store = make_event_store(selector);
 
-    const self = {
+    const $self = {
         addClass(class_name) {
             classes.set(class_name, true);
-            return self;
+            return $self;
         },
         append(arg) {
             html = html + arg;
-            return self;
+            return $self;
         },
         attr(name, val) {
             if (val === undefined) {
                 return attrs.get(name);
             }
             attrs.set(name, val);
-            return self;
+            return $self;
         },
         data(name, val) {
             if (val === undefined) {
                 return attrs.get("data-" + name);
             }
             attrs.set("data-" + name, val);
-            return self;
+            return $self;
         },
         delay() {
-            return self;
+            return $self;
         },
         debug() {
             return {
@@ -59,22 +59,22 @@ function FakeElement(selector, opts) {
             if (arg === undefined) {
                 find_results.clear();
             }
-            return self;
+            return $self;
         },
         eq() {
-            return self;
+            return $self;
         },
         expectOne() {
             // silently do nothing
-            return self;
+            return $self;
         },
         fadeTo: noop,
         find(child_selector) {
-            const child = find_results.get(child_selector);
-            if (child) {
-                return child;
+            const $child = find_results.get(child_selector);
+            if ($child) {
+                return $child;
             }
-            if (child === false) {
+            if ($child === false) {
                 // This is deliberately set to simulate missing find results.
                 // Return an empty array, the most common check is
                 // if ($.find().length) { //success }
@@ -84,12 +84,12 @@ function FakeElement(selector, opts) {
                 We need you to simulate the results of $(...).find(...)
                 by using set_find_results. You want something like this:
 
-                    const container = ...;
-                    const child = ...;
-                    container.set_find_results("${child_selector}", child);
+                    const $container = ...;
+                    const $child = ...;
+                    $container.set_find_results("${child_selector}", $child);
 
-                Then calling container.find("${child_selector}") will return
-                the "child" zjquery element.
+                Then calling $container.find("${child_selector}") will return
+                the "$child" zjquery element.
 
                 `);
         },
@@ -107,12 +107,12 @@ function FakeElement(selector, opts) {
         },
         hide() {
             shown = false;
-            return self;
+            return $self;
         },
         html(arg) {
             if (arg !== undefined) {
                 html = arg;
-                return self;
+                return $self;
             }
             return html;
         },
@@ -121,9 +121,9 @@ function FakeElement(selector, opts) {
                 return shown;
             }
             if (arg === ":focus") {
-                return self.is_focused();
+                return $self.is_focused();
             }
-            return self;
+            return $self;
         },
         is_focused() {
             // is_focused is not a jQuery thing; this is
@@ -132,7 +132,7 @@ function FakeElement(selector, opts) {
         },
         off(...args) {
             event_store.off(...args);
-            return self;
+            return $self;
         },
         offset() {
             return {
@@ -142,44 +142,44 @@ function FakeElement(selector, opts) {
         },
         on(...args) {
             event_store.on(...args);
-            return self;
+            return $self;
         },
         one(...args) {
             event_store.one(...args);
-            return self;
+            return $self;
         },
         parent() {
-            return my_parent;
+            return $my_parent;
         },
         parents(parents_selector) {
-            const result = parents_result.get(parents_selector);
+            const $result = parents_result.get(parents_selector);
             assert.ok(
-                result,
+                $result,
                 "You need to call set_parents_result for " + parents_selector + " in " + selector,
             );
-            return result;
+            return $result;
         },
         prepend(arg) {
             html = arg + html;
-            return self;
+            return $self;
         },
         prop(name, val) {
             if (val === undefined) {
                 return properties.get(name);
             }
             properties.set(name, val);
-            return self;
+            return $self;
         },
         removeAttr(name) {
             attrs.delete(name);
-            return self;
+            return $self;
         },
         removeClass(class_names) {
             class_names = class_names.split(" ");
             for (const class_name of class_names) {
                 classes.delete(class_name);
             }
-            return self;
+            return $self;
         },
         remove() {
             throw new Error(`
@@ -193,68 +193,68 @@ function FakeElement(selector, opts) {
         },
         removeData: noop,
         replaceWith() {
-            return self;
+            return $self;
         },
         scrollTop() {
-            return self;
+            return $self;
         },
         serializeArray() {
-            return self;
+            return $self;
         },
-        set_find_results(find_selector, jquery_object) {
-            if (jquery_object === undefined) {
+        set_find_results(find_selector, $jquery_object) {
+            if ($jquery_object === undefined) {
                 throw new Error(
                     "Please make the 'find result' be something like $.create('unused')",
                 );
             }
-            find_results.set(find_selector, jquery_object);
+            find_results.set(find_selector, $jquery_object);
         },
         set_height(fake_height) {
             height = fake_height;
         },
-        set_parent(parent_elem) {
-            my_parent = parent_elem;
+        set_parent($parent_elem) {
+            $my_parent = $parent_elem;
         },
-        set_parents_result(selector, result) {
-            parents_result.set(selector, result);
+        set_parents_result(selector, $result) {
+            parents_result.set(selector, $result);
         },
         show() {
             shown = true;
-            return self;
+            return $self;
         },
         slice() {
-            return self;
+            return $self;
         },
         stop() {
-            return self;
+            return $self;
         },
         text(...args) {
             if (args.length !== 0) {
                 if (args[0] !== undefined) {
                     text = args[0].toString();
                 }
-                return self;
+                return $self;
             }
             return text;
         },
         toggle(show) {
             assert.ok([true, false].includes(show));
             shown = show;
-            return self;
+            return $self;
         },
         tooltip() {
-            return self;
+            return $self;
         },
         trigger(ev) {
-            event_store.trigger(self, ev);
-            return self;
+            event_store.trigger($self, ev);
+            return $self;
         },
         val(...args) {
             if (args.length === 0) {
                 return value || "";
             }
             [value] = args;
-            return self;
+            return $self;
         },
         visible() {
             return shown;
@@ -262,34 +262,34 @@ function FakeElement(selector, opts) {
     };
 
     if (opts.children) {
-        self.map = (f) => opts.children.map((i, elem) => f(elem, i));
-        self.each = (f) => {
+        $self.map = (f) => opts.children.map((i, elem) => f(elem, i));
+        $self.each = (f) => {
             for (const child of opts.children) {
                 f.call(child);
             }
         };
-        self[Symbol.iterator] = function* () {
+        $self[Symbol.iterator] = function* () {
             for (const child of opts.children) {
                 yield child;
             }
         };
 
         for (const [i, child] of opts.children.entries()) {
-            self[i] = child;
+            $self[i] = child;
         }
 
-        self.length = opts.children.length;
+        $self.length = opts.children.length;
     }
 
     if (selector[0] === "<") {
-        self.html(selector);
+        $self.html(selector);
     }
 
-    self.selector = selector;
+    $self.selector = selector;
 
-    self.__zjquery = true;
+    $self.__zjquery = true;
 
-    return self;
+    return $self;
 }
 
 function make_event_store(selector) {
@@ -394,7 +394,8 @@ function make_event_store(selector) {
                 ev = new FakeEvent(ev);
             }
             if (!ev.target) {
-                ev.target = $element;
+                // FIXME: event.target should not be a jQuery object
+                ev.target = $element; // eslint-disable-line no-jquery/variable-pattern
             }
             const func = on_functions.get(ev.type);
 

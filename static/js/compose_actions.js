@@ -72,8 +72,8 @@ export const _get_focus_area = get_focus_area;
 export function set_focus(msg_type, opts) {
     const focus_area = get_focus_area(msg_type, opts);
     if (window.getSelection().toString() === "" || opts.trigger !== "message click") {
-        const elt = $(focus_area);
-        elt.trigger("focus").trigger("select");
+        const $elt = $(focus_area);
+        $elt.trigger("focus").trigger("select");
     }
 }
 
@@ -156,9 +156,9 @@ export function maybe_scroll_up_selected_message() {
         // scroll the compose box to avoid it.
         return;
     }
-    const selected_row = message_lists.current.selected_row();
+    const $selected_row = message_lists.current.selected_row();
 
-    if (selected_row.height() > message_viewport.height() - 100) {
+    if ($selected_row.height() > message_viewport.height() - 100) {
         // For very tall messages whose height is close to the entire
         // height of the viewport, don't auto-scroll the viewport to
         // the end of the message (since that makes it feel annoying
@@ -166,7 +166,7 @@ export function maybe_scroll_up_selected_message() {
         return;
     }
 
-    const cover = selected_row.offset().top + selected_row.height() - $("#compose").offset().top;
+    const cover = $selected_row.offset().top + $selected_row.height() - $("#compose").offset().top;
     if (cover > 0) {
         message_viewport.user_initiated_animate_scroll(cover + 20);
     }
@@ -471,7 +471,7 @@ export function on_topic_narrow() {
 }
 
 export function quote_and_reply(opts) {
-    const textarea = $("#compose-textarea");
+    const $textarea = $("#compose-textarea");
     const message_id = message_lists.current.selected_id();
     const message = message_lists.current.selected_message();
     const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
@@ -484,17 +484,17 @@ export function quote_and_reply(opts) {
         // text, plus it's a complicated codepath that
         // can have other unintended consequences.)
 
-        if (textarea.caret() !== 0) {
+        if ($textarea.caret() !== 0) {
             // Insert a newline before quoted message if there is
             // already some content in the compose box and quoted
             // message is not being inserted at the beginning.
-            textarea.caret("\n");
+            $textarea.caret("\n");
         }
     } else {
         respond_to_message(opts);
     }
 
-    compose_ui.insert_syntax_and_focus(quoting_placeholder + "\n", textarea);
+    compose_ui.insert_syntax_and_focus(quoting_placeholder + "\n", $textarea);
 
     function replace_content(message) {
         // Final message looks like:
@@ -502,7 +502,7 @@ export function quote_and_reply(opts) {
         //     ```quote
         //     message content
         //     ```
-        const prev_caret = textarea.caret();
+        const prev_caret = $textarea.caret();
         let content = $t(
             {defaultMessage: "{username} [said]({link_to_message}):"},
             {
@@ -514,8 +514,8 @@ export function quote_and_reply(opts) {
         const fence = fenced_code.get_unused_fence(message.raw_content);
         content += `${fence}quote\n${message.raw_content}\n${fence}`;
 
-        const placeholder_offset = $(textarea).val().indexOf(quoting_placeholder);
-        compose_ui.replace_syntax(quoting_placeholder, content, textarea);
+        const placeholder_offset = $($textarea).val().indexOf(quoting_placeholder);
+        compose_ui.replace_syntax(quoting_placeholder, content, $textarea);
         compose_ui.autosize_textarea($("#compose-textarea"));
 
         // When replacing content in a textarea, we need to move the
@@ -524,14 +524,14 @@ export function quote_and_reply(opts) {
         // position.  If we do, we need to move it by the increase in
         // the length of the content before the placeholder.
         if (prev_caret >= placeholder_offset + quoting_placeholder.length) {
-            textarea.caret(prev_caret + content.length - quoting_placeholder.length);
+            $textarea.caret(prev_caret + content.length - quoting_placeholder.length);
         } else if (prev_caret > placeholder_offset) {
             /* In the rare case that our cursor was inside the
              * placeholder, we treat that as though the cursor was
              * just after the placeholder. */
-            textarea.caret(placeholder_offset + content.length + 1);
+            $textarea.caret(placeholder_offset + content.length + 1);
         } else {
-            textarea.caret(prev_caret);
+            $textarea.caret(prev_caret);
         }
     }
 

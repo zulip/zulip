@@ -39,18 +39,18 @@ people.add_active_user(alice);
 run_test("get_items", () => {
     const buddy_list = new BuddyList();
 
-    // We don't make alice_li an actual jQuery stub,
+    // We don't make $alice_li an actual jQuery stub,
     // because our test only cares that it comes
     // back from get_items.
-    const alice_li = "alice stub";
+    const $alice_li = "alice stub";
     const sel = "li.user_sidebar_entry";
-    const container = $.create("get_items container", {
-        children: [{to_$: () => alice_li}],
+    const $container = $.create("get_items container", {
+        children: [{to_$: () => $alice_li}],
     });
-    buddy_list.container.set_find_results(sel, container);
+    buddy_list.$container.set_find_results(sel, $container);
 
     const items = buddy_list.get_items();
-    assert.deepEqual(items, [alice_li]);
+    assert.deepEqual(items, [$alice_li]);
 });
 
 run_test("basics", ({override}) => {
@@ -83,19 +83,19 @@ run_test("basics", ({override}) => {
     });
     assert.ok(appended);
 
-    const alice_li = {length: 1};
+    const $alice_li = {length: 1};
 
     override(buddy_list, "get_li_from_key", (opts) => {
         const key = opts.key;
 
         assert.equal(key, alice.user_id);
-        return alice_li;
+        return $alice_li;
     });
 
-    const li = buddy_list.find_li({
+    const $li = buddy_list.find_li({
         key: alice.user_id,
     });
-    assert.equal(li, alice_li);
+    assert.equal($li, $alice_li);
 });
 
 run_test("big_list", ({override}) => {
@@ -163,11 +163,11 @@ run_test("find_li w/force_render", ({override}) => {
     // key is not already rendered in DOM, then the
     // widget will call show_key to force-render it.
     const key = "999";
-    const stub_li = {length: 0};
+    const $stub_li = {length: 0};
 
     override(buddy_list, "get_li_from_key", (opts) => {
         assert.equal(opts.key, key);
-        return stub_li;
+        return $stub_li;
     });
 
     buddy_list.keys = ["foo", "bar", key, "baz"];
@@ -179,18 +179,18 @@ run_test("find_li w/force_render", ({override}) => {
         shown = true;
     });
 
-    const empty_li = buddy_list.find_li({
+    const $empty_li = buddy_list.find_li({
         key,
     });
-    assert.equal(empty_li, stub_li);
+    assert.equal($empty_li, $stub_li);
     assert.ok(!shown);
 
-    const li = buddy_list.find_li({
+    const $li = buddy_list.find_li({
         key,
         force_render: true,
     });
 
-    assert.equal(li, stub_li);
+    assert.equal($li, $stub_li);
     assert.ok(shown);
 });
 
@@ -198,12 +198,12 @@ run_test("find_li w/bad key", ({override}) => {
     const buddy_list = new BuddyList();
     override(buddy_list, "get_li_from_key", () => ({length: 0}));
 
-    const undefined_li = buddy_list.find_li({
+    const $undefined_li = buddy_list.find_li({
         key: "not-there",
         force_render: true,
     });
 
-    assert.deepEqual(undefined_li, []);
+    assert.deepEqual($undefined_li, []);
 });
 
 run_test("scrolling", ({override}) => {

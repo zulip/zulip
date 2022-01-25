@@ -34,19 +34,19 @@ function get_text_from_item(item) {
     return undefined;
 }
 
-function set_up_pill_typeahead({pill_widget, pill_container, get_users}) {
+function set_up_pill_typeahead({pill_widget, $pill_container, get_users}) {
     const opts = {
         user_source: get_users,
         stream: true,
         user_group: true,
         user: true,
     };
-    pill_typeahead.set_up(pill_container.find(".input"), pill_widget, opts);
+    pill_typeahead.set_up($pill_container.find(".input"), pill_widget, opts);
 }
 
-export function create({pill_container, get_potential_subscribers}) {
+export function create({$pill_container, get_potential_subscribers}) {
     const pill_widget = input_pill.create({
-        container: pill_container,
+        $container: $pill_container,
         create_item_from_text,
         get_text_from_item,
     });
@@ -56,7 +56,7 @@ export function create({pill_container, get_potential_subscribers}) {
         return user_pill.filter_taken_users(potential_subscribers, pill_widget);
     }
 
-    set_up_pill_typeahead({pill_widget, pill_container, get_users});
+    set_up_pill_typeahead({pill_widget, $pill_container, get_users});
 
     return pill_widget;
 }
@@ -70,7 +70,7 @@ function get_pill_user_ids(pill_widget) {
 
 export function set_up_handlers({
     get_pill_widget,
-    parent_container,
+    $parent_container,
     pill_selector,
     button_selector,
     action,
@@ -108,14 +108,14 @@ export function set_up_handlers({
         action({pill_user_ids});
     }
 
-    parent_container.on("keyup", pill_selector, (e) => {
+    $parent_container.on("keyup", pill_selector, (e) => {
         if (e.key === "Enter") {
             e.preventDefault();
             callback();
         }
     });
 
-    parent_container.on("click", button_selector, (e) => {
+    $parent_container.on("click", button_selector, (e) => {
         e.preventDefault();
         callback();
     });

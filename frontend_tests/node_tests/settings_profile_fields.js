@@ -43,19 +43,19 @@ function test_populate(opts, template_data) {
     const fields_data = opts.fields_data;
 
     page_params.is_admin = opts.is_admin;
-    const table = $("#admin_profile_fields_table");
-    const rows = $.create("rows");
-    const form = $.create("forms");
-    table.set_find_results("tr.profile-field-row", rows);
-    table.set_find_results("tr.profile-field-form", form);
+    const $table = $("#admin_profile_fields_table");
+    const $rows = $.create("rows");
+    const $form = $.create("forms");
+    $table.set_find_results("tr.profile-field-row", $rows);
+    $table.set_find_results("tr.profile-field-form", $form);
 
-    table[0] = "stub";
+    $table[0] = "stub";
 
-    rows.remove = () => {};
-    form.remove = () => {};
+    $rows.remove = () => {};
+    $form.remove = () => {};
 
     let num_appends = 0;
-    table.append = () => {
+    $table.append = () => {
         num_appends += 1;
     };
 

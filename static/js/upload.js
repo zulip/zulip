@@ -11,9 +11,9 @@ import {$t} from "./i18n";
 import {page_params} from "./page_params";
 
 // Show the upload button only if the browser supports it.
-export function feature_check(upload_button) {
+export function feature_check($upload_button) {
     if (window.XMLHttpRequest && new window.XMLHttpRequest().upload) {
-        upload_button.removeClass("notdisplayed");
+        $upload_button.removeClass("notdisplayed");
     }
 }
 
@@ -209,17 +209,17 @@ export function setup_upload(config) {
         event.target.value = "";
     });
 
-    const drag_drop_container = get_item("drag_drop_container", config);
-    drag_drop_container.on("dragover", (event) => event.preventDefault());
-    drag_drop_container.on("dragenter", (event) => event.preventDefault());
+    const $drag_drop_container = get_item("drag_drop_container", config);
+    $drag_drop_container.on("dragover", (event) => event.preventDefault());
+    $drag_drop_container.on("dragenter", (event) => event.preventDefault());
 
-    drag_drop_container.on("drop", (event) => {
+    $drag_drop_container.on("drop", (event) => {
         event.preventDefault();
         const files = event.originalEvent.dataTransfer.files;
         upload_files(uppy, config, files);
     });
 
-    drag_drop_container.on("paste", (event) => {
+    $drag_drop_container.on("paste", (event) => {
         const clipboard_data = event.clipboardData || event.originalEvent.clipboardData;
         if (!clipboard_data) {
             return;

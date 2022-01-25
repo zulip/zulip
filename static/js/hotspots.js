@@ -69,30 +69,30 @@ export function post_hotspot_as_read(hotspot_name) {
 }
 
 function place_icon(hotspot) {
-    const element = $(hotspot.location.element);
-    const icon = $(`#hotspot_${CSS.escape(hotspot.name)}_icon`);
+    const $element = $(hotspot.location.element);
+    const $icon = $(`#hotspot_${CSS.escape(hotspot.name)}_icon`);
 
     if (
-        element.length === 0 ||
-        element.css("display") === "none" ||
-        !element.is(":visible") ||
-        element.is(":hidden")
+        $element.length === 0 ||
+        $element.css("display") === "none" ||
+        !$element.is(":visible") ||
+        $element.is(":hidden")
     ) {
-        icon.css("display", "none");
+        $icon.css("display", "none");
         return false;
     }
 
     const offset = {
-        top: element.outerHeight() * hotspot.location.offset_y,
-        left: element.outerWidth() * hotspot.location.offset_x,
+        top: $element.outerHeight() * hotspot.location.offset_y,
+        left: $element.outerWidth() * hotspot.location.offset_x,
     };
-    const client_rect = element.get(0).getBoundingClientRect();
+    const client_rect = $element.get(0).getBoundingClientRect();
     const placement = {
         top: client_rect.top + offset.top,
         left: client_rect.left + offset.left,
     };
-    icon.css("display", "block");
-    icon.css(placement);
+    $icon.css("display", "block");
+    $icon.css(placement);
     return true;
 }
 

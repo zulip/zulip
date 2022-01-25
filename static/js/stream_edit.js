@@ -113,10 +113,10 @@ function set_stream_message_retention_setting_dropdown(stream) {
 }
 
 function get_stream_id(target) {
-    const row = $(target).closest(
+    const $row = $(target).closest(
         ".stream-row, .stream_settings_header, .subscription_settings, .save-button",
     );
-    return Number.parseInt(row.attr("data-stream-id"), 10);
+    return Number.parseInt($row.attr("data-stream-id"), 10);
 }
 
 function get_sub_for_target(target) {
@@ -145,16 +145,16 @@ export function open_edit_panel_for_row(stream_row) {
 }
 
 export function open_edit_panel_empty() {
-    const tab_key = $(stream_settings_ui.get_active_data().tabs[0]).attr("data-tab-key");
+    const tab_key = $(stream_settings_ui.get_active_data().$tabs[0]).attr("data-tab-key");
     $(".stream-row.active").removeClass("active");
     stream_settings_ui.show_subs_pane.nothing_selected();
     setup_subscriptions_tab_hash(tab_key);
 }
 
 export function update_stream_name(sub, new_name) {
-    const edit_container = stream_settings_containers.get_edit_container(sub);
-    edit_container.find(".email-address").text(sub.email_address);
-    edit_container.find(".sub-stream-name").text(new_name);
+    const $edit_container = stream_settings_containers.get_edit_container(sub);
+    $edit_container.find(".email-address").text(sub.email_address);
+    $edit_container.find(".sub-stream-name").text(new_name);
 
     const active_data = stream_settings_ui.get_active_data();
     if (active_data.id === sub.stream_id) {
@@ -163,20 +163,20 @@ export function update_stream_name(sub, new_name) {
 }
 
 export function update_stream_description(sub) {
-    const edit_container = stream_settings_containers.get_edit_container(sub);
-    edit_container.find("input.description").val(sub.description);
+    const $edit_container = stream_settings_containers.get_edit_container(sub);
+    $edit_container.find("input.description").val(sub.description);
     const html = render_stream_description({
         rendered_description: util.clean_user_content_links(sub.rendered_description),
     });
-    edit_container.find(".stream-description").html(html);
+    $edit_container.find(".stream-description").html(html);
 }
 
 function show_subscription_settings(sub) {
-    const edit_container = stream_settings_containers.get_edit_container(sub);
+    const $edit_container = stream_settings_containers.get_edit_container(sub);
 
-    const colorpicker = edit_container.find(".colorpicker");
+    const $colorpicker = $edit_container.find(".colorpicker");
     const color = stream_data.get_color(sub.name);
-    stream_color.set_colorpicker_color(colorpicker, color);
+    stream_color.set_colorpicker_color($colorpicker, color);
     stream_ui_updates.update_add_subscriptions_elements(sub);
 
     if (!sub.render_subscribers) {
@@ -187,10 +187,10 @@ function show_subscription_settings(sub) {
         stream_ui_updates.initialize_cant_subscribe_popover(sub);
     }
 
-    const subscriber_container = edit_container.find(".edit_subscribers_for_stream");
+    const $subscriber_container = $edit_container.find(".edit_subscribers_for_stream");
     stream_edit_subscribers.enable_subscriber_management({
         sub,
-        parent_container: subscriber_container,
+        $parent_container: $subscriber_container,
     });
 }
 
@@ -261,12 +261,12 @@ export function show_settings_for(node) {
     $("#stream_settings .tab-container").prepend(toggler.get());
     stream_ui_updates.update_toggler_for_sub(sub);
 
-    const edit_container = stream_settings_containers.get_edit_container(sub);
+    const $edit_container = stream_settings_containers.get_edit_container(sub);
 
     $(".nothing-selected").hide();
     $("#subscription_overlay .stream_change_property_info").hide();
 
-    edit_container.addClass("show");
+    $edit_container.addClass("show");
 
     show_subscription_settings(sub);
 }
@@ -290,14 +290,14 @@ export function setup_stream_settings(node) {
 }
 
 export function update_muting_rendering(sub) {
-    const edit_container = stream_settings_containers.get_edit_container(sub);
-    const notification_checkboxes = edit_container.find(".sub_notification_setting");
-    const is_muted_checkbox = edit_container.find("#sub_is_muted_setting .sub_setting_control");
+    const $edit_container = stream_settings_containers.get_edit_container(sub);
+    const $notification_checkboxes = $edit_container.find(".sub_notification_setting");
+    const $is_muted_checkbox = $edit_container.find("#sub_is_muted_setting .sub_setting_control");
 
-    is_muted_checkbox.prop("checked", sub.is_muted);
-    edit_container.find(".mute-note").toggleClass("hide-mute-note", !sub.is_muted);
-    notification_checkboxes.toggleClass("muted-sub", sub.is_muted);
-    notification_checkboxes.find("input[type='checkbox']").prop("disabled", sub.is_muted);
+    $is_muted_checkbox.prop("checked", sub.is_muted);
+    $edit_container.find(".mute-note").toggleClass("hide-mute-note", !sub.is_muted);
+    $notification_checkboxes.toggleClass("muted-sub", sub.is_muted);
+    $notification_checkboxes.find("input[type='checkbox']").prop("disabled", sub.is_muted);
 }
 
 function stream_is_muted_changed(e) {
@@ -374,7 +374,7 @@ function change_stream_privacy(e) {
     const data = {};
     const stream_id = $(e.target).closest(".dialog_submit_button").data("stream-id");
     const url = "/json/streams/" + stream_id;
-    const status_element = $(".stream_permission_change_info");
+    const $status_element = $(".stream_permission_change_info");
     const sub = sub_store.get(stream_id);
 
     const privacy_setting = $("#stream_privacy_modal input[name=privacy]:checked").val();
@@ -450,17 +450,17 @@ function change_stream_privacy(e) {
         return;
     }
 
-    settings_ui.do_settings_change(channel.patch, url, data, status_element);
+    settings_ui.do_settings_change(channel.patch, url, data, $status_element);
 }
 
-export function archive_stream(stream_id, alert_element, stream_row) {
+export function archive_stream(stream_id, $alert_element, $stream_row) {
     channel.del({
         url: "/json/streams/" + stream_id,
         error(xhr) {
-            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, alert_element);
+            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $alert_element);
         },
         success() {
-            stream_row.remove();
+            $stream_row.remove();
         },
     });
 }
@@ -584,9 +584,9 @@ export function initialize() {
             data.description = new_description;
         }
 
-        const status_element = $(".stream_change_property_info");
+        const $status_element = $(".stream_change_property_info");
         dialog_widget.close_modal();
-        settings_ui.do_settings_change(channel.patch, url, data, status_element);
+        settings_ui.do_settings_change(channel.patch, url, data, $status_element);
     }
 
     $("#manage_streams_container").on(
@@ -616,15 +616,15 @@ export function initialize() {
     $("#manage_streams_container").on("click", ".sub_unsub_button", (e) => {
         const sub = get_sub_for_target(e.target);
         // Makes sure we take the correct stream_row.
-        const stream_row = $(
+        const $stream_row = $(
             `#manage_streams_container div.stream-row[data-stream-id='${CSS.escape(
                 sub.stream_id,
             )}']`,
         );
-        stream_settings_ui.sub_or_unsub(sub, stream_row);
+        stream_settings_ui.sub_or_unsub(sub, $stream_row);
 
         if (!sub.subscribed) {
-            open_edit_panel_for_row(stream_row);
+            open_edit_panel_for_row($stream_row);
         }
         stream_ui_updates.update_regular_sub_settings(sub);
 
@@ -654,8 +654,8 @@ export function initialize() {
                 );
                 return;
             }
-            const row = $(".stream-row.active");
-            archive_stream(stream_id, $(".stream_change_property_info"), row);
+            const $row = $(".stream-row.active");
+            archive_stream(stream_id, $(".stream_change_property_info"), $row);
         }
 
         const stream_name = stream_data.maybe_get_stream_name(stream_id);

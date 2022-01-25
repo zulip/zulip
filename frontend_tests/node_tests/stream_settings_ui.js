@@ -9,8 +9,8 @@ const $ = require("../zjsunit/zjquery");
 const denmark_stream_id = 101;
 
 const ui = mock_esm("../../static/js/ui", {
-    get_content_element: (element) => element,
-    get_scroll_element: (element) => element,
+    get_content_element: ($element) => $element,
+    get_scroll_element: ($element) => $element,
 });
 
 mock_esm("../../static/js/hash_util", {
@@ -103,16 +103,16 @@ run_test("redraw_left_panel", ({mock_template}) => {
     $.create("#manage_streams_container .stream-row", {children: sub_stubs});
 
     let ui_called = false;
-    ui.reset_scrollbar = (elem) => {
+    ui.reset_scrollbar = ($elem) => {
         ui_called = true;
-        assert.equal(elem, $("#subscription_overlay .streams-list"));
+        assert.equal($elem, $("#subscription_overlay .streams-list"));
     };
 
     // Filtering has the side effect of setting the "active" class
     // on our current stream, even if it doesn't match the filter.
-    const denmark_row = $(`.stream-row[data-stream-id='${CSS.escape(denmark_stream_id)}']`);
+    const $denmark_row = $(`.stream-row[data-stream-id='${CSS.escape(denmark_stream_id)}']`);
     // sanity check it's not set to active
-    assert.ok(!denmark_row.hasClass("active"));
+    assert.ok(!$denmark_row.hasClass("active"));
 
     function test_filter(params, expected_streams) {
         const stream_ids = stream_settings_ui.redraw_left_panel(params);
@@ -127,7 +127,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
     assert.ok(ui_called);
 
     // The denmark row is active, even though it's not displayed.
-    assert.ok(denmark_row.hasClass("active"));
+    assert.ok($denmark_row.hasClass("active"));
 
     // Search with multiple keywords
     test_filter({input: "Denmark, Pol", subscribed_only: false}, [denmark, poland]);

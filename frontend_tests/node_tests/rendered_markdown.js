@@ -104,12 +104,12 @@ const get_content_element = () => {
 };
 
 run_test("misc_helpers", () => {
-    const elem = $.create("user-mention");
-    rm.set_name_in_mention_element(elem, "Aaron");
-    assert.equal(elem.text(), "@Aaron");
-    elem.addClass("silent");
-    rm.set_name_in_mention_element(elem, "Aaron, but silent");
-    assert.equal(elem.text(), "Aaron, but silent");
+    const $elem = $.create("user-mention");
+    rm.set_name_in_mention_element($elem, "Aaron");
+    assert.equal($elem.text(), "@Aaron");
+    $elem.addClass("silent");
+    rm.set_name_in_mention_element($elem, "Aaron, but silent");
+    assert.equal($elem.text(), "Aaron, but silent");
 });
 
 run_test("user-mention", () => {
@@ -423,8 +423,8 @@ function test_code_playground(mock_template, viewing_code) {
 
     return {
         prepends,
-        copy_code: $copy_code_button,
-        view_code: $view_code_in_playground,
+        $copy_code: $copy_code_button,
+        $view_code: $view_code_in_playground,
     };
 }
 
@@ -434,12 +434,12 @@ run_test("code playground none", ({override, mock_template}) => {
         return undefined;
     });
 
-    const {prepends, copy_code, view_code} = test_code_playground(mock_template, false);
-    assert.deepEqual(prepends, [copy_code]);
+    const {prepends, $copy_code, $view_code} = test_code_playground(mock_template, false);
+    assert.deepEqual(prepends, [$copy_code]);
     assert_clipboard_setup();
 
-    assert.equal(view_code.attr("data-tippy-content"), undefined);
-    assert.equal(view_code.attr("aria-label"), undefined);
+    assert.equal($view_code.attr("data-tippy-content"), undefined);
+    assert.equal($view_code.attr("aria-label"), undefined);
 });
 
 run_test("code playground single", ({override, mock_template}) => {
@@ -448,16 +448,16 @@ run_test("code playground single", ({override, mock_template}) => {
         return [{name: "Some Javascript Playground"}];
     });
 
-    const {prepends, copy_code, view_code} = test_code_playground(mock_template, true);
-    assert.deepEqual(prepends, [view_code, copy_code]);
+    const {prepends, $copy_code, $view_code} = test_code_playground(mock_template, true);
+    assert.deepEqual(prepends, [$view_code, $copy_code]);
     assert_clipboard_setup();
 
     assert.equal(
-        view_code.attr("data-tippy-content"),
+        $view_code.attr("data-tippy-content"),
         "translated: View in Some Javascript Playground",
     );
-    assert.equal(view_code.attr("aria-label"), "translated: View in Some Javascript Playground");
-    assert.equal(view_code.attr("aria-haspopup"), undefined);
+    assert.equal($view_code.attr("aria-label"), "translated: View in Some Javascript Playground");
+    assert.equal($view_code.attr("aria-haspopup"), undefined);
 });
 
 run_test("code playground multiple", ({override, mock_template}) => {
@@ -466,13 +466,13 @@ run_test("code playground multiple", ({override, mock_template}) => {
         return ["whatever", "whatever"];
     });
 
-    const {prepends, copy_code, view_code} = test_code_playground(mock_template, true);
-    assert.deepEqual(prepends, [view_code, copy_code]);
+    const {prepends, $copy_code, $view_code} = test_code_playground(mock_template, true);
+    assert.deepEqual(prepends, [$view_code, $copy_code]);
     assert_clipboard_setup();
 
-    assert.equal(view_code.attr("data-tippy-content"), "translated: View in playground");
-    assert.equal(view_code.attr("aria-label"), "translated: View in playground");
-    assert.equal(view_code.attr("aria-haspopup"), "true");
+    assert.equal($view_code.attr("data-tippy-content"), "translated: View in playground");
+    assert.equal($view_code.attr("aria-label"), "translated: View in playground");
+    assert.equal($view_code.attr("aria-haspopup"), "true");
 });
 
 run_test("rtl", () => {

@@ -476,20 +476,20 @@ export function process_tab_key() {
     // TODO: See if browsers like Safari can now handle tabbing correctly
     // without our intervention.
 
-    let message_edit_form;
+    let $message_edit_form;
 
-    const focused_message_edit_content = $(".message_edit_content:focus");
-    if (focused_message_edit_content.length > 0) {
-        message_edit_form = focused_message_edit_content.closest(".message_edit_form");
+    const $focused_message_edit_content = $(".message_edit_content:focus");
+    if ($focused_message_edit_content.length > 0) {
+        $message_edit_form = $focused_message_edit_content.closest(".message_edit_form");
         // Open message edit forms either have a save button or a close button, but not both.
-        message_edit_form.find(".message_edit_save,.message_edit_close").trigger("focus");
+        $message_edit_form.find(".message_edit_save,.message_edit_close").trigger("focus");
         return true;
     }
 
-    const focused_message_edit_save = $(".message_edit_save:focus");
-    if (focused_message_edit_save.length > 0) {
-        message_edit_form = focused_message_edit_save.closest(".message_edit_form");
-        message_edit_form.find(".message_edit_cancel").trigger("focus");
+    const $focused_message_edit_save = $(".message_edit_save:focus");
+    if ($focused_message_edit_save.length > 0) {
+        $message_edit_form = $focused_message_edit_save.closest(".message_edit_form");
+        $message_edit_form.find(".message_edit_cancel").trigger("focus");
         return true;
     }
 
@@ -519,9 +519,9 @@ export function process_shift_tab_key() {
     }
 
     // Shift-Tabbing from the edit message save button takes you to the content.
-    const focused_message_edit_save = $(".message_edit_save:focus");
-    if (focused_message_edit_save.length > 0) {
-        focused_message_edit_save
+    const $focused_message_edit_save = $(".message_edit_save:focus");
+    if ($focused_message_edit_save.length > 0) {
+        $focused_message_edit_save
             .closest(".message_edit_form")
             .find(".message_edit_content")
             .trigger("focus");
@@ -925,8 +925,8 @@ export function process_hotkey(e, hotkey) {
             compose_actions.quote_and_reply({trigger: "hotkey"});
             return true;
         case "edit_message": {
-            const row = message_lists.current.get_row(msg.id);
-            message_edit.start(row);
+            const $row = message_lists.current.get_row(msg.id);
+            message_edit.start($row);
             return true;
         }
     }

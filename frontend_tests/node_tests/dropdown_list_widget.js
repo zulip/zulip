@@ -25,12 +25,12 @@ const {DropdownListWidget, MultiSelectDropdownListWidget} = zrequire("dropdown_l
 
 // For DropdownListWidget
 const setup_dropdown_zjquery_data = (name) => {
-    const input_group = $(".input_group");
-    const reset_button = $(".dropdown_list_reset_button");
-    input_group.set_find_results(".dropdown_list_reset_button", reset_button);
-    $(`#${CSS.escape(name)}_widget #${CSS.escape(name)}_name`).closest = () => input_group;
+    const $input_group = $(".input_group");
+    const $reset_button = $(".dropdown_list_reset_button");
+    $input_group.set_find_results(".dropdown_list_reset_button", $reset_button);
+    $(`#${CSS.escape(name)}_widget #${CSS.escape(name)}_name`).closest = () => $input_group;
     const $widget = $(`#${CSS.escape(name)}_widget #${CSS.escape(name)}_name`);
-    return {reset_button, $widget};
+    return {$reset_button, $widget};
 };
 
 run_test("basic_functions", () => {
@@ -46,31 +46,31 @@ run_test("basic_functions", () => {
         render_text: (text) => `rendered: ${text}`,
     };
 
-    const {reset_button, $widget} = setup_dropdown_zjquery_data(opts.widget_name);
+    const {$reset_button, $widget} = setup_dropdown_zjquery_data(opts.widget_name);
 
     const widget = new DropdownListWidget(opts);
 
     assert.equal(widget.value(), "one");
     assert.equal(updated_value, undefined); // We haven't 'updated' the widget yet.
-    assert.ok(reset_button.visible());
+    assert.ok($reset_button.visible());
 
     widget.update("two");
     assert.equal($widget.text(), "rendered: two");
     assert.equal(widget.value(), "two");
     assert.equal(updated_value, "two");
-    assert.ok(reset_button.visible());
+    assert.ok($reset_button.visible());
 
     widget.update(null);
     assert.equal($widget.text(), "translated: not set");
     assert.equal(widget.value(), "");
     assert.equal(updated_value, null);
-    assert.ok(!reset_button.visible());
+    assert.ok(!$reset_button.visible());
 
     widget.update("four");
     assert.equal($widget.text(), "translated: not set");
     assert.equal(widget.value(), "four");
     assert.equal(updated_value, "four");
-    assert.ok(!reset_button.visible());
+    assert.ok(!$reset_button.visible());
 });
 
 run_test("no_default_value", () => {
@@ -110,7 +110,7 @@ run_test("basic MDLW functions", () => {
         default_text: $t({defaultMessage: "not set"}),
     };
 
-    const {reset_button, $widget} = setup_multiselect_dropdown_zjquery_data(opts.widget_name);
+    const {$reset_button, $widget} = setup_multiselect_dropdown_zjquery_data(opts.widget_name);
     const widget = new MultiSelectDropdownListWidget(opts);
 
     function set_dropdown_variables(widget, value) {
@@ -121,7 +121,7 @@ run_test("basic MDLW functions", () => {
     assert.deepEqual(widget.value(), ["one"]);
     assert.equal(updated_value, undefined);
     assert.equal($widget.text(), "one");
-    assert.ok(reset_button.visible());
+    assert.ok($reset_button.visible());
 
     set_dropdown_variables(widget, ["one", "two"]);
     widget.update(widget.data_selected);
@@ -129,7 +129,7 @@ run_test("basic MDLW functions", () => {
     assert.equal($widget.text(), "one,two");
     assert.deepEqual(widget.value(), ["one", "two"]);
     assert.deepEqual(updated_value, ["one", "two"]);
-    assert.ok(reset_button.visible());
+    assert.ok($reset_button.visible());
 
     set_dropdown_variables(widget, ["one", "two", "three"]);
     widget.update(widget.data_selected);
@@ -137,7 +137,7 @@ run_test("basic MDLW functions", () => {
     assert.equal($widget.text(), "translated: 3 selected");
     assert.deepEqual(widget.value(), ["one", "two", "three"]);
     assert.deepEqual(updated_value, ["one", "two", "three"]);
-    assert.ok(reset_button.visible());
+    assert.ok($reset_button.visible());
 
     set_dropdown_variables(widget, null);
     widget.update(widget.data_selected);
@@ -145,7 +145,7 @@ run_test("basic MDLW functions", () => {
     assert.equal($widget.text(), "translated: not set");
     assert.equal(widget.value(), null);
     assert.equal(updated_value, null);
-    assert.ok(!reset_button.visible());
+    assert.ok(!$reset_button.visible());
 
     set_dropdown_variables(widget, ["one"]);
     widget.update(widget.data_selected);
@@ -153,7 +153,7 @@ run_test("basic MDLW functions", () => {
     assert.equal($widget.text(), "one");
     assert.deepEqual(widget.value(), ["one"]);
     assert.deepEqual(updated_value, ["one"]);
-    assert.ok(reset_button.visible());
+    assert.ok($reset_button.visible());
 });
 
 run_test("MDLW no_default_value", () => {

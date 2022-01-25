@@ -117,9 +117,9 @@ run_test("update_messages", () => {
     page_params.realm_allow_edit_history = false;
     message_list.narrowed = "stub-to-ignore";
 
-    const message_edit_history_modal = $.create("#message-edit-history");
-    const modal = $.create("micromodal").addClass("modal--open");
-    message_edit_history_modal.set_parents_result(".micromodal", modal);
+    const $message_edit_history_modal = $.create("#message-edit-history");
+    const $modal = $.create("micromodal").addClass("modal--open");
+    $message_edit_history_modal.set_parents_result(".micromodal", $modal);
 
     // TEST THIS:
     message_events.update_messages(events);

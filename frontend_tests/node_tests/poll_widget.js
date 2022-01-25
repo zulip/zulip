@@ -210,7 +210,7 @@ run_test("activate another person poll", ({mock_template}) => {
     mock_template("widgets/poll_widget.hbs", false, () => "widgets/poll_widget");
     mock_template("widgets/poll_widget_results.hbs", false, () => "widgets/poll_widget_results");
 
-    const widget_elem = $("<div>").addClass("widget-content");
+    const $widget_elem = $("<div>").addClass("widget-content");
 
     let out_data; // Used to check the event data sent to the server
     const callback = (data) => {
@@ -218,7 +218,7 @@ run_test("activate another person poll", ({mock_template}) => {
     };
 
     const opts = {
-        elem: widget_elem,
+        $elem: $widget_elem,
         callback,
         message: {
             sender_id: alice.user_id,
@@ -229,53 +229,53 @@ run_test("activate another person poll", ({mock_template}) => {
     };
 
     const set_widget_find_result = (selector) => {
-        const elem = $.create(selector);
-        widget_elem.set_find_results(selector, elem);
-        return elem;
+        const $elem = $.create(selector);
+        $widget_elem.set_find_results(selector, $elem);
+        return $elem;
     };
 
-    const poll_option = set_widget_find_result("button.poll-option");
-    const poll_option_input = set_widget_find_result("input.poll-option");
-    const widget_option_container = set_widget_find_result("ul.poll-widget");
+    const $poll_option = set_widget_find_result("button.poll-option");
+    const $poll_option_input = set_widget_find_result("input.poll-option");
+    const $widget_option_container = set_widget_find_result("ul.poll-widget");
 
-    const poll_question_submit = set_widget_find_result("button.poll-question-check");
-    const poll_edit_question = set_widget_find_result(".poll-edit-question");
-    const poll_question_header = set_widget_find_result(".poll-question-header");
-    const poll_question_container = set_widget_find_result(".poll-question-bar");
-    const poll_option_container = set_widget_find_result(".poll-option-bar");
+    const $poll_question_submit = set_widget_find_result("button.poll-question-check");
+    const $poll_edit_question = set_widget_find_result(".poll-edit-question");
+    const $poll_question_header = set_widget_find_result(".poll-question-header");
+    const $poll_question_container = set_widget_find_result(".poll-question-bar");
+    const $poll_option_container = set_widget_find_result(".poll-option-bar");
 
-    const poll_vote_button = set_widget_find_result("button.poll-vote");
-    const poll_please_wait = set_widget_find_result(".poll-please-wait");
-    const poll_author_help = set_widget_find_result(".poll-author-help");
+    const $poll_vote_button = set_widget_find_result("button.poll-vote");
+    const $poll_please_wait = set_widget_find_result(".poll-please-wait");
+    const $poll_author_help = set_widget_find_result(".poll-author-help");
 
     set_widget_find_result("button.poll-question-remove");
     set_widget_find_result("input.poll-question");
 
     poll_widget.activate(opts);
 
-    assert.ok(poll_option_container.visible());
-    assert.ok(poll_question_header.visible());
+    assert.ok($poll_option_container.visible());
+    assert.ok($poll_question_header.visible());
 
-    assert.ok(!poll_question_container.visible());
-    assert.ok(!poll_question_submit.visible());
-    assert.ok(!poll_edit_question.visible());
-    assert.ok(!poll_please_wait.visible());
-    assert.ok(!poll_author_help.visible());
+    assert.ok(!$poll_question_container.visible());
+    assert.ok(!$poll_question_submit.visible());
+    assert.ok(!$poll_edit_question.visible());
+    assert.ok(!$poll_please_wait.visible());
+    assert.ok(!$poll_author_help.visible());
 
-    assert.equal(widget_elem.html(), "widgets/poll_widget");
-    assert.equal(widget_option_container.html(), "widgets/poll_widget_results");
-    assert.equal(poll_question_header.text(), "What do you want?");
+    assert.equal($widget_elem.html(), "widgets/poll_widget");
+    assert.equal($widget_option_container.html(), "widgets/poll_widget_results");
+    assert.equal($poll_question_header.text(), "What do you want?");
 
     {
         /* Testing data sent to server on adding option */
-        poll_option_input.val("cool choice");
+        $poll_option_input.val("cool choice");
         out_data = undefined;
-        poll_option.trigger("click");
+        $poll_option.trigger("click");
         assert.deepEqual(out_data, {type: "new_option", idx: 1, option: "cool choice"});
 
-        poll_option_input.val("");
+        $poll_option_input.val("");
         out_data = undefined;
-        poll_option.trigger("click");
+        $poll_option.trigger("click");
         assert.deepEqual(out_data, undefined);
     }
 
@@ -298,13 +298,13 @@ run_test("activate another person poll", ({mock_template}) => {
         },
     ];
 
-    widget_elem.handle_events(vote_events);
+    $widget_elem.handle_events(vote_events);
 
     {
         /* Testing data sent to server on voting */
-        poll_vote_button.attr("data-key", "100,1");
+        $poll_vote_button.attr("data-key", "100,1");
         out_data = undefined;
-        poll_vote_button.trigger("click");
+        $poll_vote_button.trigger("click");
         assert.deepEqual(out_data, {type: "vote", key: "100,1", vote: 1});
     }
 
@@ -318,20 +318,20 @@ run_test("activate another person poll", ({mock_template}) => {
         },
     ];
 
-    widget_elem.handle_events(add_question_event);
+    $widget_elem.handle_events(add_question_event);
 });
 
 run_test("activate own poll", ({mock_template}) => {
     mock_template("widgets/poll_widget.hbs", false, () => "widgets/poll_widget");
     mock_template("widgets/poll_widget_results.hbs", false, () => "widgets/poll_widget_results");
 
-    const widget_elem = $("<div>").addClass("widget-content");
+    const $widget_elem = $("<div>").addClass("widget-content");
     let out_data;
     const callback = (data) => {
         out_data = data;
     };
     const opts = {
-        elem: widget_elem,
+        $elem: $widget_elem,
         callback,
         message: {
             sender_id: me.user_id,
@@ -342,59 +342,59 @@ run_test("activate own poll", ({mock_template}) => {
     };
 
     const set_widget_find_result = (selector) => {
-        const elem = $.create(selector);
-        widget_elem.set_find_results(selector, elem);
-        return elem;
+        const $elem = $.create(selector);
+        $widget_elem.set_find_results(selector, $elem);
+        return $elem;
     };
 
     set_widget_find_result("button.poll-option");
-    const poll_option_input = set_widget_find_result("input.poll-option");
-    const widget_option_container = set_widget_find_result("ul.poll-widget");
+    const $poll_option_input = set_widget_find_result("input.poll-option");
+    const $widget_option_container = set_widget_find_result("ul.poll-widget");
 
-    const poll_question_submit = set_widget_find_result("button.poll-question-check");
-    const poll_edit_question = set_widget_find_result(".poll-edit-question");
-    const poll_question_input = set_widget_find_result("input.poll-question");
-    const poll_question_header = set_widget_find_result(".poll-question-header");
-    const poll_question_container = set_widget_find_result(".poll-question-bar");
-    const poll_option_container = set_widget_find_result(".poll-option-bar");
+    const $poll_question_submit = set_widget_find_result("button.poll-question-check");
+    const $poll_edit_question = set_widget_find_result(".poll-edit-question");
+    const $poll_question_input = set_widget_find_result("input.poll-question");
+    const $poll_question_header = set_widget_find_result(".poll-question-header");
+    const $poll_question_container = set_widget_find_result(".poll-question-bar");
+    const $poll_option_container = set_widget_find_result(".poll-option-bar");
 
     set_widget_find_result("button.poll-vote");
-    const poll_please_wait = set_widget_find_result(".poll-please-wait");
-    const poll_author_help = set_widget_find_result(".poll-author-help");
+    const $poll_please_wait = set_widget_find_result(".poll-please-wait");
+    const $poll_author_help = set_widget_find_result(".poll-author-help");
 
     set_widget_find_result("button.poll-question-remove");
 
     function assert_visibility() {
-        assert.ok(poll_option_container.visible());
-        assert.ok(poll_question_header.visible());
-        assert.ok(!poll_question_container.visible());
-        assert.ok(poll_edit_question.visible());
-        assert.ok(!poll_please_wait.visible());
-        assert.ok(!poll_author_help.visible());
+        assert.ok($poll_option_container.visible());
+        assert.ok($poll_question_header.visible());
+        assert.ok(!$poll_question_container.visible());
+        assert.ok($poll_edit_question.visible());
+        assert.ok(!$poll_please_wait.visible());
+        assert.ok(!$poll_author_help.visible());
     }
 
     poll_widget.activate(opts);
 
     assert_visibility();
-    assert.ok(!poll_question_submit.visible());
+    assert.ok(!$poll_question_submit.visible());
 
-    assert.equal(widget_elem.html(), "widgets/poll_widget");
-    assert.equal(widget_option_container.html(), "widgets/poll_widget_results");
-    assert.equal(poll_question_header.text(), "Where to go?");
+    assert.equal($widget_elem.html(), "widgets/poll_widget");
+    assert.equal($widget_option_container.html(), "widgets/poll_widget_results");
+    assert.equal($poll_question_header.text(), "Where to go?");
 
     {
         /* Testing data sent to server on editing question */
-        poll_question_input.val("Is it new?");
+        $poll_question_input.val("Is it new?");
         out_data = undefined;
-        poll_question_submit.trigger("click");
+        $poll_question_submit.trigger("click");
         assert.deepEqual(out_data, {type: "question", question: "Is it new?"});
 
         assert_visibility();
-        assert.ok(poll_question_submit.visible());
+        assert.ok($poll_question_submit.visible());
 
-        poll_option_input.val("");
+        $poll_option_input.val("");
         out_data = undefined;
-        poll_question_submit.trigger("click");
+        $poll_question_submit.trigger("click");
         assert.deepEqual(out_data, undefined);
     }
 });

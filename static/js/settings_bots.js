@@ -55,20 +55,20 @@ export function get_bot_info_div(bot_id) {
 }
 
 export function bot_error(bot_id, xhr) {
-    const bot_info = get_bot_info_div(bot_id);
-    const bot_error_div = bot_info.find(".bot_error");
-    bot_error_div.text(JSON.parse(xhr.responseText).msg);
-    bot_error_div.show();
-    const bot_box = bot_info.closest(".bot-information-box");
-    bot_box.scrollTop(bot_box[0].scrollHeight - bot_box[0].clientHeight);
+    const $bot_info = get_bot_info_div(bot_id);
+    const $bot_error_div = $bot_info.find(".bot_error");
+    $bot_error_div.text(JSON.parse(xhr.responseText).msg);
+    $bot_error_div.show();
+    const $bot_box = $bot_info.closest(".bot-information-box");
+    $bot_box.scrollTop($bot_box[0].scrollHeight - $bot_box[0].clientHeight);
 }
 
 function add_bot_row(info) {
-    const row = $(render_bot_avatar_row(info));
+    const $row = $(render_bot_avatar_row(info));
     if (info.is_active) {
-        $("#active_bots_list").append(row);
+        $("#active_bots_list").append($row);
     } else {
-        $("#inactive_bots_list").append(row);
+        $("#inactive_bots_list").append($row);
     }
 }
 
@@ -277,7 +277,7 @@ export function set_up() {
             const interface_type = $("#create_interface_type").val();
             const service_name = $("#select_service_name :selected").val();
             const formData = new FormData();
-            const spinner = $(".create_bot_spinner");
+            const $spinner = $(".create_bot_spinner");
 
             formData.append("csrfmiddlewaretoken", csrf_token);
             formData.append("bot_type", bot_type);
@@ -301,7 +301,7 @@ export function set_up() {
             )) {
                 formData.append("file-" + i, file);
             }
-            loading.make_indicator(spinner, {text: $t({defaultMessage: "Creating bot"})});
+            loading.make_indicator($spinner, {text: $t({defaultMessage: "Creating bot"})});
             channel.post({
                 url: "/json/bots",
                 data: formData,
@@ -330,7 +330,7 @@ export function set_up() {
                     $("#bot_table_error").text(JSON.parse(xhr.responseText).msg).show();
                 },
                 complete() {
-                    loading.destroy_indicator(spinner);
+                    loading.destroy_indicator($spinner);
                 },
             });
         },
@@ -368,9 +368,9 @@ export function set_up() {
         channel.del({
             url: "/json/bots/" + encodeURIComponent(bot_id),
             success() {
-                const row = $(e.currentTarget).closest("li");
-                row.hide("slow", () => {
-                    row.remove();
+                const $row = $(e.currentTarget).closest("li");
+                $row.hide("slow", () => {
+                    $row.remove();
                 });
             },
             error(xhr) {
@@ -396,13 +396,13 @@ export function set_up() {
             url: "/json/bots/" + encodeURIComponent(bot_id) + "/api_key/regenerate",
             idempotent: true,
             success(data) {
-                const row = $(e.currentTarget).closest("li");
-                row.find(".api_key").find(".value").text(data.api_key);
-                row.find("api_key_error").hide();
+                const $row = $(e.currentTarget).closest("li");
+                $row.find(".api_key").find(".value").text(data.api_key);
+                $row.find("api_key_error").hide();
             },
             error(xhr) {
-                const row = $(e.currentTarget).closest("li");
-                row.find(".api_key_error").text(JSON.parse(xhr.responseText).msg).show();
+                const $row = $(e.currentTarget).closest("li");
+                $row.find(".api_key_error").text(JSON.parse(xhr.responseText).msg).show();
             },
         });
     });
@@ -412,8 +412,8 @@ export function set_up() {
     $("#active_bots_list").on("click", "button.open_edit_bot_form", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const li = $(e.currentTarget).closest("li");
-        const bot_id = Number.parseInt(li.find(".bot_info").attr("data-user-id"), 10);
+        const $li = $(e.currentTarget).closest("li");
+        const bot_id = Number.parseInt($li.find(".bot_info").attr("data-user-id"), 10);
         const bot = bot_data.get(bot_id);
         const user_ids = people.get_active_human_ids();
         const users_list = user_ids.map((user_id) => ({
@@ -439,9 +439,9 @@ export function set_up() {
 
         function edit_bot_post_render() {
             const avatar_widget = avatar.build_bot_edit_widget($(".edit_bot_form"));
-            const form = $(".edit_bot_form");
-            const image = li.find(".image");
-            const errors = form.find(".bot_edit_errors");
+            const $form = $(".edit_bot_form");
+            const $image = $li.find(".image");
+            const $errors = $form.find(".bot_edit_errors");
 
             const opts = {
                 widget_name: "bot_owner",
@@ -470,18 +470,18 @@ export function set_up() {
 
             avatar_widget.clear();
 
-            form.validate({
+            $form.validate({
                 errorClass: "text-error",
                 success() {
-                    errors.hide();
+                    $errors.hide();
                 },
                 submitHandler() {
-                    const bot_id = Number.parseInt(form.attr("data-user-id"), 10);
-                    const type = form.attr("data-type");
+                    const bot_id = Number.parseInt($form.attr("data-user-id"), 10);
+                    const type = $form.attr("data-type");
 
-                    const full_name = form.find(".edit_bot_name").val();
+                    const full_name = $form.find(".edit_bot_name").val();
                     const bot_owner_id = owner_widget.value();
-                    const file_input = $(".edit_bot_form").find(".edit_bot_avatar_file_input");
+                    const $file_input = $(".edit_bot_form").find(".edit_bot_avatar_file_input");
 
                     const formData = new FormData();
                     formData.append("csrfmiddlewaretoken", csrf_token);
@@ -500,7 +500,7 @@ export function set_up() {
                         });
                         formData.append("config_data", JSON.stringify(config_data));
                     }
-                    for (const [i, file] of Array.prototype.entries.call(file_input[0].files)) {
+                    for (const [i, file] of Array.prototype.entries.call($file_input[0].files)) {
                         formData.append("file-" + i, file);
                     }
                     channel.patch({
@@ -516,7 +516,7 @@ export function set_up() {
                                 // when the user had a previous uploaded avatar.  Only the content
                                 // changes, so we version it to get an uncached copy.
                                 image_version += 1;
-                                image
+                                $image
                                     .find("img")
                                     .attr(
                                         "src",
@@ -527,7 +527,7 @@ export function set_up() {
                         },
                         error(xhr) {
                             dialog_widget.hide_dialog_spinner();
-                            errors.text(JSON.parse(xhr.responseText).msg).show();
+                            $errors.text(JSON.parse(xhr.responseText).msg).show();
                         },
                     });
                 },
@@ -536,15 +536,15 @@ export function set_up() {
     });
 
     $("#active_bots_list").on("click", "a.download_bot_zuliprc", function () {
-        const bot_info = $(this).closest(".bot-information-box").find(".bot_info");
-        const bot_id = Number.parseInt(bot_info.attr("data-user-id"), 10);
+        const $bot_info = $(this).closest(".bot-information-box").find(".bot_info");
+        const bot_id = Number.parseInt($bot_info.attr("data-user-id"), 10);
         $(this).attr("href", generate_zuliprc_uri(bot_id));
     });
 
     new ClipboardJS("#copy_zuliprc", {
         text(trigger) {
-            const bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
-            const bot_id = Number.parseInt(bot_info.attr("data-user-id"), 10);
+            const $bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
+            const bot_id = Number.parseInt($bot_info.attr("data-user-id"), 10);
             const bot = bot_data.get(bot_id);
             const data = generate_zuliprc_content(bot);
             return data;

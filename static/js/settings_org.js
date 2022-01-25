@@ -201,29 +201,29 @@ function get_property_value(property_name, for_realm_default_settings) {
     return page_params[property_name];
 }
 
-export function extract_property_name(elem, for_realm_default_settings) {
+export function extract_property_name($elem, for_realm_default_settings) {
     if (for_realm_default_settings) {
         // We use the name attribute, rather than the ID attribute,
         // for realm_user_default_settings. This is because the
         // display/notification settings elements do not always have
         // IDs, and also the emojiset input is not compatible with the
         // ID approach.
-        return elem.attr("name");
+        return $elem.attr("name");
     }
-    return /^id_(.*)$/.exec(elem.attr("id").replace(/-/g, "_"))[1];
+    return /^id_(.*)$/.exec($elem.attr("id").replace(/-/g, "_"))[1];
 }
 
 function get_subsection_property_elements(element) {
-    const subsection = $(element).closest(".org-subsection-parent");
-    if (subsection.hasClass("theme-settings")) {
+    const $subsection = $(element).closest(".org-subsection-parent");
+    if ($subsection.hasClass("theme-settings")) {
         // Because the emojiset widget has a unique radio button
         // structure, it needs custom code.
-        const color_scheme_elem = subsection.find(".setting_color_scheme");
-        const emojiset_elem = subsection.find("input[name='emojiset']:checked");
-        const translate_emoticons_elem = subsection.find(".translate_emoticons");
-        return [color_scheme_elem, emojiset_elem, translate_emoticons_elem];
+        const $color_scheme_elem = $subsection.find(".setting_color_scheme");
+        const $emojiset_elem = $subsection.find("input[name='emojiset']:checked");
+        const $translate_emoticons_elem = $subsection.find(".translate_emoticons");
+        return [$color_scheme_elem, $emojiset_elem, $translate_emoticons_elem];
     }
-    return Array.from(subsection.find(".prop-element"));
+    return Array.from($subsection.find(".prop-element"));
 }
 
 const simple_dropdown_properties = [
@@ -245,11 +245,11 @@ function set_property_dropdown_value(property_name) {
 }
 
 export function change_element_block_display_property(elem_id, show_element) {
-    const elem = $(`#${CSS.escape(elem_id)}`);
+    const $elem = $(`#${CSS.escape(elem_id)}`);
     if (show_element) {
-        elem.parent().show();
+        $elem.parent().show();
     } else {
-        elem.parent().hide();
+        $elem.parent().hide();
     }
 }
 
@@ -382,11 +382,11 @@ export function populate_realm_domains(realm_domains) {
     }
     $("#allowed_domains_label").text($t({defaultMessage: "Allowed domains: {domains}"}, {domains}));
 
-    const realm_domains_table_body = $("#realm_domains_table tbody").expectOne();
-    realm_domains_table_body.find("tr").remove();
+    const $realm_domains_table_body = $("#realm_domains_table tbody").expectOne();
+    $realm_domains_table_body.find("tr").remove();
 
     for (const realm_domain of realm_domains) {
-        realm_domains_table_body.append(
+        $realm_domains_table_body.append(
             render_settings_admin_realm_domains_list({
                 realm_domain,
             }),
@@ -409,7 +409,7 @@ export function populate_auth_methods(auth_methods) {
     if (!meta.loaded) {
         return;
     }
-    const auth_methods_table = $("#id_realm_authentication_methods").expectOne();
+    const $auth_methods_table = $("#id_realm_authentication_methods").expectOne();
     auth_methods = sort_object_by_key(auth_methods);
     let rendered_auth_method_rows = "";
     for (const [auth_method, value] of Object.entries(auth_methods)) {
@@ -419,7 +419,7 @@ export function populate_auth_methods(auth_methods) {
             is_owner: page_params.is_owner,
         });
     }
-    auth_methods_table.html(rendered_auth_method_rows);
+    $auth_methods_table.html(rendered_auth_method_rows);
 }
 
 function update_dependent_subsettings(property_name) {
@@ -475,8 +475,8 @@ export let notifications_stream_widget = null;
 export let signup_notifications_stream_widget = null;
 
 function discard_property_element_changes(elem, for_realm_default_settings) {
-    elem = $(elem);
-    const property_name = extract_property_name(elem, for_realm_default_settings);
+    const $elem = $(elem);
+    const property_name = extract_property_name($elem, for_realm_default_settings);
     const property_value = get_property_value(property_name, for_realm_default_settings);
 
     switch (property_name) {
@@ -495,7 +495,8 @@ function discard_property_element_changes(elem, for_realm_default_settings) {
         case "emojiset":
             // Because the emojiset widget has a unique radio button
             // structure, it needs custom reset code.
-            elem.closest(".org-subsection-parent")
+            $elem
+                .closest(".org-subsection-parent")
                 .find(`.setting_emojiset_choice[value='${CSS.escape(property_value)}'`)
                 .prop("checked", true);
             break;
@@ -508,7 +509,7 @@ function discard_property_element_changes(elem, for_realm_default_settings) {
             break;
         default:
             if (property_value !== undefined) {
-                set_input_element_value(elem, property_value);
+                set_input_element_value($elem, property_value);
             } else {
                 blueslip.error("Element refers to unknown property " + property_name);
             }
@@ -550,9 +551,9 @@ export function sync_realm_settings(property) {
             property = "message_content_delete_limit_minutes";
             break;
     }
-    const element = $(`#id_realm_${CSS.escape(property)}`);
-    if (element.length) {
-        discard_property_element_changes(element);
+    const $element = $(`#id_realm_${CSS.escape(property)}`);
+    if ($element.length) {
+        discard_property_element_changes($element);
     }
 }
 
@@ -620,46 +621,46 @@ export function change_save_button_state($element, state) {
     show_hide_element($element, is_show, 800);
 }
 
-export function save_organization_settings(data, save_button, patch_url) {
-    const subsection_parent = save_button.closest(".org-subsection-parent");
-    const save_btn_container = subsection_parent.find(".save-button-controls");
-    const failed_alert_elem = subsection_parent.find(".subsection-failed-status p");
-    change_save_button_state(save_btn_container, "saving");
+export function save_organization_settings(data, $save_button, patch_url) {
+    const $subsection_parent = $save_button.closest(".org-subsection-parent");
+    const $save_btn_container = $subsection_parent.find(".save-button-controls");
+    const $failed_alert_elem = $subsection_parent.find(".subsection-failed-status p");
+    change_save_button_state($save_btn_container, "saving");
     channel.patch({
         url: patch_url,
         data,
         success() {
-            failed_alert_elem.hide();
-            change_save_button_state(save_btn_container, "succeeded");
+            $failed_alert_elem.hide();
+            change_save_button_state($save_btn_container, "succeeded");
         },
         error(xhr) {
-            change_save_button_state(save_btn_container, "failed");
-            save_button.hide();
-            ui_report.error($t_html({defaultMessage: "Save failed"}), xhr, failed_alert_elem);
+            change_save_button_state($save_btn_container, "failed");
+            $save_button.hide();
+            ui_report.error($t_html({defaultMessage: "Save failed"}), xhr, $failed_alert_elem);
         },
     });
 }
 
-function get_input_type(input_elem, input_type) {
+function get_input_type($input_elem, input_type) {
     if (["boolean", "string", "number"].includes(input_type)) {
         return input_type;
     }
-    return input_elem.data("setting-widget-type");
+    return $input_elem.data("setting-widget-type");
 }
 
 export function get_input_element_value(input_elem, input_type) {
-    input_elem = $(input_elem);
-    input_type = get_input_type(input_elem, input_type);
+    const $input_elem = $(input_elem);
+    input_type = get_input_type($input_elem, input_type);
     switch (input_type) {
         case "boolean":
-            return input_elem.prop("checked");
+            return $input_elem.prop("checked");
         case "string":
-            return input_elem.val().trim();
+            return $input_elem.val().trim();
         case "number":
-            return Number.parseInt(input_elem.val().trim(), 10);
+            return Number.parseInt($input_elem.val().trim(), 10);
         case "radio-group":
-            if (input_elem.prop("checked")) {
-                return input_elem.val().trim();
+            if ($input_elem.prop("checked")) {
+                return $input_elem.val().trim();
             }
             return undefined;
         default:
@@ -667,16 +668,16 @@ export function get_input_element_value(input_elem, input_type) {
     }
 }
 
-export function set_input_element_value(input_elem, value) {
-    const input_type = get_input_type(input_elem, typeof value);
+export function set_input_element_value($input_elem, value) {
+    const input_type = get_input_type($input_elem, typeof value);
     if (input_type) {
         if (input_type === "boolean") {
-            return input_elem.prop("checked", value);
+            return $input_elem.prop("checked", value);
         } else if (input_type === "string" || input_type === "number") {
-            return input_elem.val(value);
+            return $input_elem.val(value);
         }
     }
-    blueslip.error(`Failed to set value of property ${extract_property_name(input_elem)}`);
+    blueslip.error(`Failed to set value of property ${extract_property_name($input_elem)}`);
     return undefined;
 }
 
@@ -687,9 +688,9 @@ export function set_up() {
 
 function get_auth_method_table_data() {
     const new_auth_methods = {};
-    const auth_method_rows = $("#id_realm_authentication_methods").find("tr.method_row");
+    const $auth_method_rows = $("#id_realm_authentication_methods").find("tr.method_row");
 
-    for (const method_row of auth_method_rows) {
+    for (const method_row of $auth_method_rows) {
         new_auth_methods[$(method_row).data("method")] = $(method_row)
             .find("input")
             .prop("checked");
@@ -711,8 +712,8 @@ function get_email_notification_batching_setting_element_value() {
 }
 
 function check_property_changed(elem, for_realm_default_settings) {
-    elem = $(elem);
-    const property_name = extract_property_name(elem, for_realm_default_settings);
+    const $elem = $(elem);
+    const property_name = extract_property_name($elem, for_realm_default_settings);
     let current_val = get_property_value(property_name, for_realm_default_settings);
     let changed_val;
 
@@ -739,7 +740,7 @@ function check_property_changed(elem, for_realm_default_settings) {
         }
         default:
             if (current_val !== undefined) {
-                changed_val = get_input_element_value(elem, typeof current_val);
+                changed_val = get_input_element_value($elem, typeof current_val);
             } else {
                 blueslip.error("Element refers to unknown property " + property_name);
             }
@@ -747,17 +748,17 @@ function check_property_changed(elem, for_realm_default_settings) {
     return current_val !== changed_val;
 }
 
-export function save_discard_widget_status_handler(subsection, for_realm_default_settings) {
-    subsection.find(".subsection-failed-status p").hide();
-    subsection.find(".save-button").show();
-    const properties_elements = get_subsection_property_elements(subsection);
+export function save_discard_widget_status_handler($subsection, for_realm_default_settings) {
+    $subsection.find(".subsection-failed-status p").hide();
+    $subsection.find(".save-button").show();
+    const properties_elements = get_subsection_property_elements($subsection);
     const show_change_process_button = properties_elements.some((elem) =>
         check_property_changed(elem, for_realm_default_settings),
     );
 
-    const save_btn_controls = subsection.find(".subsection-header .save-button-controls");
+    const $save_btn_controls = $subsection.find(".subsection-header .save-button-controls");
     const button_state = show_change_process_button ? "unsaved" : "discarded";
-    change_save_button_state(save_btn_controls, button_state);
+    change_save_button_state($save_btn_controls, button_state);
 }
 
 export function init_dropdown_widgets() {
@@ -799,11 +800,11 @@ export function init_dropdown_widgets() {
 }
 
 export function register_save_discard_widget_handlers(
-    container,
+    $container,
     patch_url,
     for_realm_default_settings,
 ) {
-    container.on("change input", "input, select, textarea", (e) => {
+    $container.on("change input", "input, select, textarea", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -829,23 +830,23 @@ export function register_save_discard_widget_handlers(
             );
         }
 
-        const subsection = $(e.target).closest(".org-subsection-parent");
-        save_discard_widget_status_handler(subsection, for_realm_default_settings);
+        const $subsection = $(e.target).closest(".org-subsection-parent");
+        save_discard_widget_status_handler($subsection, for_realm_default_settings);
         return undefined;
     });
 
-    container.on("click", ".subsection-header .subsection-changes-discard button", (e) => {
+    $container.on("click", ".subsection-header .subsection-changes-discard button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         for (const elem of get_subsection_property_elements(e.target)) {
             discard_property_element_changes(elem, for_realm_default_settings);
         }
-        const save_btn_controls = $(e.target).closest(".save-button-controls");
-        change_save_button_state(save_btn_controls, "discarded");
+        const $save_btn_controls = $(e.target).closest(".save-button-controls");
+        change_save_button_state($save_btn_controls, "discarded");
     });
 
-    parse_time_limit = function parse_time_limit(elem) {
-        return Math.floor(Number.parseFloat(elem.val(), 10).toFixed(1) * 60);
+    parse_time_limit = function parse_time_limit($elem) {
+        return Math.floor(Number.parseFloat($elem.val(), 10).toFixed(1) * 60);
     };
 
     function get_complete_data_for_subsection(subsection) {
@@ -967,18 +968,18 @@ export function register_save_discard_widget_handlers(
         const data = {};
         const properties_elements = get_subsection_property_elements(subsection);
 
-        for (let input_elem of properties_elements) {
-            input_elem = $(input_elem);
-            if (check_property_changed(input_elem, for_realm_default_settings)) {
+        for (const input_elem of properties_elements) {
+            const $input_elem = $(input_elem);
+            if (check_property_changed($input_elem, for_realm_default_settings)) {
                 if (
-                    input_elem.hasClass("email_notification_batching_period_edit_minutes") ||
-                    input_elem.hasClass("setting_email_notifications_batching_period_seconds")
+                    $input_elem.hasClass("email_notification_batching_period_edit_minutes") ||
+                    $input_elem.hasClass("setting_email_notifications_batching_period_seconds")
                 ) {
                     const setting_value = get_email_notification_batching_setting_element_value();
                     data.email_notifications_batching_period_seconds = setting_value;
                     continue;
                 }
-                const input_value = get_input_element_value(input_elem);
+                const input_value = get_input_element_value($input_elem);
                 if (input_value !== undefined) {
                     let property_name;
                     if (for_realm_default_settings) {
@@ -987,9 +988,9 @@ export function register_save_discard_widget_handlers(
                         // display/notification settings elements do not always have
                         // IDs, and also the emojiset input is not compatible with the
                         // ID approach.
-                        property_name = input_elem.attr("name");
+                        property_name = $input_elem.attr("name");
                     } else {
-                        [, property_name] = /^id_realm_(.*)$/.exec(input_elem.attr("id"));
+                        [, property_name] = /^id_realm_(.*)$/.exec($input_elem.attr("id"));
                     }
                     data[property_name] = input_value;
                 }
@@ -999,27 +1000,27 @@ export function register_save_discard_widget_handlers(
         return data;
     }
 
-    container.on("click", ".subsection-header .subsection-changes-save button", (e) => {
+    $container.on("click", ".subsection-header .subsection-changes-save button", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const save_button = $(e.currentTarget);
-        const subsection_elem = save_button.closest(".org-subsection-parent");
+        const $save_button = $(e.currentTarget);
+        const $subsection_elem = $save_button.closest(".org-subsection-parent");
         let extra_data = {};
 
         if (!for_realm_default_settings) {
             // The organization settings system has some coupled
             // fields that must be submitted together, which is
             // managed by the get_complete_data_for_subsection function.
-            const [, subsection_id] = /^org-submit-(.*)$/.exec(save_button.attr("id"));
+            const [, subsection_id] = /^org-submit-(.*)$/.exec($save_button.attr("id"));
             const subsection = subsection_id.replace(/-/g, "_");
             extra_data = get_complete_data_for_subsection(subsection);
         }
 
         const data = {
-            ...populate_data_for_request(subsection_elem),
+            ...populate_data_for_request($subsection_elem),
             ...extra_data,
         };
-        save_organization_settings(data, save_button, patch_url);
+        save_organization_settings(data, $save_button, patch_url);
     });
 }
 
@@ -1107,14 +1108,14 @@ export function build_page() {
 
     $("#id_realm_org_join_restrictions").on("change", (e) => {
         const org_join_restrictions = e.target.value;
-        const node = $("#allowed_domains_label").parent();
+        const $node = $("#allowed_domains_label").parent();
         if (org_join_restrictions === "only_selected_domain") {
-            node.show();
+            $node.show();
             if (page_params.realm_domains.length === 0) {
                 overlays.open_modal("#realm_domains_modal");
             }
         } else {
-            node.hide();
+            $node.hide();
         }
     });
 
@@ -1125,38 +1126,38 @@ export function build_page() {
         e.stopPropagation();
     });
 
-    function fade_status_element(elem) {
+    function fade_status_element($elem) {
         setTimeout(() => {
-            elem.fadeOut(500);
+            $elem.fadeOut(500);
         }, 1000);
     }
 
     $("#realm_domains_table").on("click", ".delete_realm_domain", function () {
         const domain = $(this).parents("tr").find(".domain").text();
         const url = "/json/realm/domains/" + domain;
-        const realm_domains_info = $(".realm_domains_info");
+        const $realm_domains_info = $(".realm_domains_info");
 
         channel.del({
             url,
             success() {
                 ui_report.success(
                     $t_html({defaultMessage: "Deleted successfully!"}),
-                    realm_domains_info,
+                    $realm_domains_info,
                 );
-                fade_status_element(realm_domains_info);
+                fade_status_element($realm_domains_info);
             },
             error(xhr) {
-                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, realm_domains_info);
-                fade_status_element(realm_domains_info);
+                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $realm_domains_info);
+                fade_status_element($realm_domains_info);
             },
         });
     });
 
     $("#submit-add-realm-domain").on("click", () => {
-        const realm_domains_info = $(".realm_domains_info");
-        const widget = $("#add-realm-domain-widget");
-        const domain = widget.find(".new-realm-domain").val();
-        const allow_subdomains = widget.find(".new-realm-domain-allow-subdomains").prop("checked");
+        const $realm_domains_info = $(".realm_domains_info");
+        const $widget = $("#add-realm-domain-widget");
+        const domain = $widget.find(".new-realm-domain").val();
+        const allow_subdomains = $widget.find(".new-realm-domain-allow-subdomains").prop("checked");
         const data = {
             domain,
             allow_subdomains: JSON.stringify(allow_subdomains),
@@ -1173,20 +1174,20 @@ export function build_page() {
                 );
                 ui_report.success(
                     $t_html({defaultMessage: "Added successfully!"}),
-                    realm_domains_info,
+                    $realm_domains_info,
                 );
-                fade_status_element(realm_domains_info);
+                fade_status_element($realm_domains_info);
             },
             error(xhr) {
-                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, realm_domains_info);
-                fade_status_element(realm_domains_info);
+                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $realm_domains_info);
+                fade_status_element($realm_domains_info);
             },
         });
     });
 
     $("#realm_domains_table").on("change", ".allow-subdomains", function (e) {
         e.stopPropagation();
-        const realm_domains_info = $(".realm_domains_info");
+        const $realm_domains_info = $(".realm_domains_info");
         const domain = $(this).parents("tr").find(".domain").text();
         const allow_subdomains = $(this).prop("checked");
         const url = "/json/realm/domains/" + domain;
@@ -1204,7 +1205,7 @@ export function build_page() {
                             {defaultMessage: "Update successful: Subdomains allowed for {domain}"},
                             {domain},
                         ),
-                        realm_domains_info,
+                        $realm_domains_info,
                     );
                 } else {
                     ui_report.success(
@@ -1215,37 +1216,37 @@ export function build_page() {
                             },
                             {domain},
                         ),
-                        realm_domains_info,
+                        $realm_domains_info,
                     );
                 }
-                fade_status_element(realm_domains_info);
+                fade_status_element($realm_domains_info);
             },
             error(xhr) {
-                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, realm_domains_info);
-                fade_status_element(realm_domains_info);
+                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $realm_domains_info);
+                fade_status_element($realm_domains_info);
             },
         });
     });
 
-    function realm_icon_logo_upload_complete(spinner, upload_text, delete_button) {
-        spinner.css({visibility: "hidden"});
-        upload_text.show();
-        delete_button.show();
+    function realm_icon_logo_upload_complete($spinner, $upload_text, $delete_button) {
+        $spinner.css({visibility: "hidden"});
+        $upload_text.show();
+        $delete_button.show();
     }
 
-    function realm_icon_logo_upload_start(spinner, upload_text, delete_button) {
-        spinner.css({visibility: "visible"});
-        upload_text.hide();
-        delete_button.hide();
+    function realm_icon_logo_upload_start($spinner, $upload_text, $delete_button) {
+        $spinner.css({visibility: "visible"});
+        $upload_text.hide();
+        $delete_button.hide();
     }
 
-    function upload_realm_logo_or_icon(file_input, night, icon) {
+    function upload_realm_logo_or_icon($file_input, night, icon) {
         const form_data = new FormData();
         let widget;
         let url;
 
         form_data.append("csrfmiddlewaretoken", csrf_token);
-        for (const [i, file] of Array.prototype.entries.call(file_input[0].files)) {
+        for (const [i, file] of Array.prototype.entries.call($file_input[0].files)) {
             form_data.append("file-" + i, file);
         }
         if (icon) {
@@ -1260,12 +1261,12 @@ export function build_page() {
             url = "/json/realm/logo";
             form_data.append("night", JSON.stringify(night));
         }
-        const spinner = $(`${widget} .upload-spinner-background`).expectOne();
-        const upload_text = $(`${widget}  .image-upload-text`).expectOne();
-        const delete_button = $(`${widget}  .image-delete-button`).expectOne();
-        const error_field = $(`${widget}  .image_file_input_error`).expectOne();
-        realm_icon_logo_upload_start(spinner, upload_text, delete_button);
-        error_field.hide();
+        const $spinner = $(`${widget} .upload-spinner-background`).expectOne();
+        const $upload_text = $(`${widget}  .image-upload-text`).expectOne();
+        const $delete_button = $(`${widget}  .image-delete-button`).expectOne();
+        const $error_field = $(`${widget}  .image_file_input_error`).expectOne();
+        realm_icon_logo_upload_start($spinner, $upload_text, $delete_button);
+        $error_field.hide();
         channel.post({
             url,
             data: form_data,
@@ -1273,11 +1274,11 @@ export function build_page() {
             processData: false,
             contentType: false,
             success() {
-                realm_icon_logo_upload_complete(spinner, upload_text, delete_button);
+                realm_icon_logo_upload_complete($spinner, $upload_text, $delete_button);
             },
             error(xhr) {
-                realm_icon_logo_upload_complete(spinner, upload_text, delete_button);
-                ui_report.error("", xhr, error_field);
+                realm_icon_logo_upload_complete($spinner, $upload_text, $delete_button);
+                ui_report.error("", xhr, $error_field);
             },
         });
     }

@@ -281,49 +281,49 @@ export class MessageList {
         this.rerender();
     }
 
-    show_edit_message(row, edit_obj) {
-        if (row.find(".message_edit_form form").length !== 0) {
+    show_edit_message($row, edit_obj) {
+        if ($row.find(".message_edit_form form").length !== 0) {
             return;
         }
-        row.find(".message_edit_form").append(edit_obj.form);
-        row.find(".message_content, .status-message, .message_controls").hide();
-        row.find(".message_edit").css("display", "block");
-        autosize(row.find(".message_edit_content"));
+        $row.find(".message_edit_form").append(edit_obj.$form);
+        $row.find(".message_content, .status-message, .message_controls").hide();
+        $row.find(".message_edit").css("display", "block");
+        autosize($row.find(".message_edit_content"));
     }
 
-    hide_edit_message(row) {
-        row.find(".message_content, .status-message, .message_controls").show();
-        row.find(".message_edit_form").empty();
-        row.find(".message_edit").hide();
-        row.trigger("mouseleave");
+    hide_edit_message($row) {
+        $row.find(".message_content, .status-message, .message_controls").show();
+        $row.find(".message_edit_form").empty();
+        $row.find(".message_edit").hide();
+        $row.trigger("mouseleave");
     }
 
-    show_edit_topic_on_recipient_row(recipient_row, form) {
-        recipient_row.find(".topic_edit_form").append(form);
-        recipient_row.find(".on_hover_topic_edit").hide();
-        recipient_row.find(".edit_content_button").hide();
-        recipient_row.find(".stream_topic").hide();
-        recipient_row.find(".topic_edit").show();
-        recipient_row.find(".always_visible_topic_edit").hide();
+    show_edit_topic_on_recipient_row($recipient_row, $form) {
+        $recipient_row.find(".topic_edit_form").append($form);
+        $recipient_row.find(".on_hover_topic_edit").hide();
+        $recipient_row.find(".edit_content_button").hide();
+        $recipient_row.find(".stream_topic").hide();
+        $recipient_row.find(".topic_edit").show();
+        $recipient_row.find(".always_visible_topic_edit").hide();
     }
 
-    hide_edit_topic_on_recipient_row(recipient_row) {
-        recipient_row.find(".stream_topic").show();
-        recipient_row.find(".on_hover_topic_edit").show();
-        recipient_row.find(".edit_content_button").show();
-        recipient_row.find(".topic_edit_form").empty();
-        recipient_row.find(".topic_edit").hide();
-        recipient_row.find(".always_visible_topic_edit").show();
+    hide_edit_topic_on_recipient_row($recipient_row) {
+        $recipient_row.find(".stream_topic").show();
+        $recipient_row.find(".on_hover_topic_edit").show();
+        $recipient_row.find(".edit_content_button").show();
+        $recipient_row.find(".topic_edit_form").empty();
+        $recipient_row.find(".topic_edit").hide();
+        $recipient_row.find(".always_visible_topic_edit").show();
     }
 
     show_message_as_read(message, options) {
-        const row = this.get_row(message.id);
+        const $row = this.get_row(message.id);
         if (options.from === "pointer" || options.from === "server") {
-            row.find(".unread_marker").addClass("fast_fade");
+            $row.find(".unread_marker").addClass("fast_fade");
         } else {
-            row.find(".unread_marker").addClass("slow_fade");
+            $row.find(".unread_marker").addClass("slow_fade");
         }
-        row.removeClass("unread");
+        $row.removeClass("unread");
     }
 
     rerender_view() {

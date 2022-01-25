@@ -16,15 +16,15 @@ export function rerender_alert_words_ui() {
 
     const words = alert_words.get_word_list();
     words.sort();
-    const word_list = $("#alert-words-table");
+    const $word_list = $("#alert-words-table");
 
-    ListWidget.create(word_list, words, {
+    ListWidget.create($word_list, words, {
         name: "alert-words-list",
         modifier(alert_word) {
             return render_alert_word_settings_item({alert_word});
         },
-        parent_container: $("#alert-word-settings"),
-        simplebar_container: $("#alert-word-settings .progressive-table-wrapper"),
+        $parent_container: $("#alert-word-settings"),
+        $simplebar_container: $("#alert-word-settings .progressive-table-wrapper"),
     });
 
     // Focus new alert word name text box.
@@ -32,14 +32,14 @@ export function rerender_alert_words_ui() {
 }
 
 function update_alert_word_status(status_text, is_error) {
-    const alert_word_status = $("#alert_word_status");
+    const $alert_word_status = $("#alert_word_status");
     if (is_error) {
-        alert_word_status.removeClass("alert-success").addClass("alert-danger");
+        $alert_word_status.removeClass("alert-success").addClass("alert-danger");
     } else {
-        alert_word_status.removeClass("alert-danger").addClass("alert-success");
+        $alert_word_status.removeClass("alert-danger").addClass("alert-success");
     }
-    alert_word_status.find(".alert_word_status_text").text(status_text);
-    alert_word_status.show();
+    $alert_word_status.find(".alert_word_status_text").text(status_text);
+    $alert_word_status.show();
 }
 
 function add_alert_word(alert_word) {
@@ -114,8 +114,8 @@ export function set_up_alert_words() {
 
     $("#alert-word-settings").on("click", ".close-alert-word-status", (event) => {
         event.preventDefault();
-        const alert = $(event.currentTarget).parents(".alert");
-        alert.hide();
+        const $alert = $(event.currentTarget).parents(".alert");
+        $alert.hide();
     });
 }
 

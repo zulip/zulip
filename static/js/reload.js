@@ -65,10 +65,10 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     }
 
     if (save_narrow) {
-        const row = message_lists.home.selected_row();
+        const $row = message_lists.home.selected_row();
         if (!narrow_state.active()) {
-            if (row.length > 0) {
-                url += "+offset=" + row.offset().top;
+            if ($row.length > 0) {
+                url += "+offset=" + $row.offset().top;
             }
         } else {
             url += "+offset=" + message_lists.home.pre_narrow_offset;
@@ -77,9 +77,9 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
             if (narrow_pointer !== -1) {
                 url += "+narrow_pointer=" + narrow_pointer;
             }
-            const narrow_row = message_list.narrowed.selected_row();
-            if (narrow_row.length > 0) {
-                url += "+narrow_offset=" + narrow_row.offset().top;
+            const $narrow_row = message_list.narrowed.selected_row();
+            if ($narrow_row.length > 0) {
+                url += "+narrow_offset=" + $narrow_row.offset().top;
             }
         }
     }

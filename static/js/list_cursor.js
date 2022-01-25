@@ -49,29 +49,29 @@ export class ListCursor {
             return undefined;
         }
 
-        const li = this.list.find_li({
+        const $li = this.list.find_li({
             key,
             force_render: true,
         });
 
-        if (!li || li.length === 0) {
+        if (!$li || $li.length === 0) {
             return undefined;
         }
 
         return {
             highlight: () => {
-                li.addClass(this.highlight_class);
-                this.adjust_scroll(li);
+                $li.addClass(this.highlight_class);
+                this.adjust_scroll($li);
             },
             clear: () => {
-                li.removeClass(this.highlight_class);
+                $li.removeClass(this.highlight_class);
             },
         };
     }
 
-    adjust_scroll(li) {
-        const scroll_container = $(this.list.scroll_container_sel);
-        scroll_util.scroll_element_into_container(li, scroll_container);
+    adjust_scroll($li) {
+        const $scroll_container = $(this.list.scroll_container_sel);
+        scroll_util.scroll_element_into_container($li, $scroll_container);
     }
 
     redraw() {

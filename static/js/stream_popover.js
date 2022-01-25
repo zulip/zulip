@@ -46,7 +46,7 @@ let all_messages_sidebar_elem;
 let starred_messages_sidebar_elem;
 let drafts_sidebar_elem;
 let stream_widget;
-let stream_header_colorblock;
+let $stream_header_colorblock;
 
 function get_popover_menu_items(sidebar_elem) {
     if (!sidebar_elem) {
@@ -82,8 +82,8 @@ export function starred_messages_sidebar_menu_handle_keyboard(key) {
     popovers.popover_items_handle_keyboard(key, items);
 }
 
-function elem_to_stream_id(elem) {
-    const stream_id = Number.parseInt(elem.attr("data-stream-id"), 10);
+function elem_to_stream_id($elem) {
+    const stream_id = Number.parseInt($elem.attr("data-stream-id"), 10);
 
     if (stream_id === undefined) {
         blueslip.error("could not find stream id");
@@ -164,8 +164,8 @@ export function hide_streamlist_sidebar() {
 }
 
 function stream_popover_sub(e) {
-    const elem = $(e.currentTarget).parents("ul");
-    const stream_id = elem_to_stream_id(elem);
+    const $elem = $(e.currentTarget).parents("ul");
+    const stream_id = elem_to_stream_id($elem);
     const sub = sub_store.get(stream_id);
     if (!sub) {
         blueslip.error("Unknown stream: " + stream_id);
@@ -178,30 +178,30 @@ function stream_popover_sub(e) {
 // Bootstrap popovers don't properly handle being resized --
 // so after resizing our popover to add in the spectrum color
 // picker, we need to adjust its height accordingly.
-function update_spectrum(popover, update_func) {
-    const initial_height = popover[0].offsetHeight;
+function update_spectrum($popover, update_func) {
+    const initial_height = $popover[0].offsetHeight;
 
-    const colorpicker = popover.find(".colorpicker-container").find(".colorpicker");
-    update_func(colorpicker);
-    const after_height = popover[0].offsetHeight;
+    const $colorpicker = $popover.find(".colorpicker-container").find(".colorpicker");
+    update_func($colorpicker);
+    const after_height = $popover[0].offsetHeight;
 
-    const popover_root = popover.closest(".popover");
-    const current_top_px = Number.parseFloat(popover_root.css("top").replace("px", ""));
+    const $popover_root = $popover.closest(".popover");
+    const current_top_px = Number.parseFloat($popover_root.css("top").replace("px", ""));
     const height_delta = after_height - initial_height;
     let top = current_top_px - height_delta / 2;
 
     if (top < 0) {
         top = 0;
-        popover_root.find("div.arrow").hide();
+        $popover_root.find("div.arrow").hide();
     } else if (top + after_height > $(window).height() - 20) {
         top = $(window).height() - after_height - 20;
         if (top < 0) {
             top = 0;
         }
-        popover_root.find("div.arrow").hide();
+        $popover_root.find("div.arrow").hide();
     }
 
-    popover_root.css("top", top + "px");
+    $popover_root.css("top", top + "px");
 }
 
 // Builds the `Copy link to topic` topic action.
@@ -249,10 +249,10 @@ function build_stream_popover(opts) {
     });
 
     $(elt).popover("show");
-    const popover = $(`.streams_popover[data-stream-id="${CSS.escape(stream_id)}"]`);
+    const $popover = $(`.streams_popover[data-stream-id="${CSS.escape(stream_id)}"]`);
 
-    update_spectrum(popover, (colorpicker) => {
-        colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options);
+    update_spectrum($popover, ($colorpicker) => {
+        $colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options);
     });
 
     current_stream_sidebar_elem = elt;
@@ -472,10 +472,10 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
     }
 
     function move_topic_post_render() {
-        stream_header_colorblock = $("#dialog_widget_modal .topic_stream_edit_header").find(
+        $stream_header_colorblock = $("#dialog_widget_modal .topic_stream_edit_header").find(
             ".stream_header_colorblock",
         );
-        stream_bar.decorate(current_stream_name, stream_header_colorblock, false);
+        stream_bar.decorate(current_stream_name, $stream_header_colorblock, false);
         const streams_list = stream_data.subscribed_subs().map((stream) => ({
             name: stream.name,
             value: stream.stream_id.toString(),
@@ -506,8 +506,8 @@ export function register_click_handlers() {
         e.stopPropagation();
 
         const elt = e.target;
-        const stream_li = $(elt).parents("li");
-        const stream_id = elem_to_stream_id(stream_li);
+        const $stream_li = $(elt).parents("li");
+        const stream_id = elem_to_stream_id($stream_li);
 
         build_stream_popover({
             elt,
@@ -519,8 +519,8 @@ export function register_click_handlers() {
         e.stopPropagation();
 
         const elt = $(e.target).closest(".topic-sidebar-menu-icon").expectOne()[0];
-        const stream_li = $(elt).closest(".narrow-filter").expectOne();
-        const stream_id = elem_to_stream_id(stream_li);
+        const $stream_li = $(elt).closest(".narrow-filter").expectOne();
+        const stream_id = elem_to_stream_id($stream_li);
         const topic_name = $(elt).closest("li").expectOne().attr("data-topic-name");
         const url = $(elt).closest("li").find(".topic-name").expectOne().prop("href");
 
@@ -555,7 +555,7 @@ export function register_click_handlers() {
             Number.parseInt(stream_widget.value(), 10),
         );
 
-        stream_bar.decorate(stream_name, stream_header_colorblock, false);
+        stream_bar.decorate(stream_name, $stream_header_colorblock, false);
     });
 
     register_stream_handlers();
@@ -670,16 +670,16 @@ export function register_stream_handlers() {
 
     // Choose a different color.
     $("body").on("click", ".choose_stream_color", (e) => {
-        update_spectrum($(e.target).closest(".streams_popover"), (colorpicker) => {
+        update_spectrum($(e.target).closest(".streams_popover"), ($colorpicker) => {
             $(".colorpicker-container").show();
-            colorpicker.spectrum("destroy");
-            colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options_full);
+            $colorpicker.spectrum("destroy");
+            $colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options_full);
             // In theory this should clean up the old color picker,
             // but this seems a bit flaky -- the new colorpicker
             // doesn't fire until you click a button, but the buttons
             // have been hidden.  We work around this by just manually
             // fixing it up here.
-            colorpicker.parent().find(".sp-container").removeClass("sp-buttons-disabled");
+            $colorpicker.parent().find(".sp-container").removeClass("sp-buttons-disabled");
             $(e.target).hide();
         });
 
@@ -762,9 +762,9 @@ export function register_topic_handlers() {
     });
 
     $("body").on("click", ".sidebar-popover-toggle-resolved", (e) => {
-        const topic_row = $(e.currentTarget);
-        const stream_id = Number.parseInt(topic_row.attr("data-stream-id"), 10);
-        const topic_name = topic_row.attr("data-topic-name");
+        const $topic_row = $(e.currentTarget);
+        const stream_id = Number.parseInt($topic_row.attr("data-stream-id"), 10);
+        const topic_name = $topic_row.attr("data-topic-name");
         message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
             message_edit.toggle_resolve_topic(message_id, topic_name);
         });
@@ -775,9 +775,9 @@ export function register_topic_handlers() {
     });
 
     $("body").on("click", ".sidebar-popover-move-topic-messages", (e) => {
-        const topic_row = $(e.currentTarget);
-        const stream_id = Number.parseInt(topic_row.attr("data-stream-id"), 10);
-        const topic_name = topic_row.attr("data-topic-name");
+        const $topic_row = $(e.currentTarget);
+        const stream_id = Number.parseInt($topic_row.attr("data-stream-id"), 10);
+        const topic_name = $topic_row.attr("data-topic-name");
         build_move_topic_to_stream_popover(e, stream_id, topic_name);
         e.stopPropagation();
         e.preventDefault();

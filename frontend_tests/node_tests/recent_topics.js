@@ -323,9 +323,9 @@ function stub_out_filter_buttons() {
     //       See show_selected_filters() and set_filter() in the
     //       implementation.
     for (const filter of ["all", "unread", "muted", "participated"]) {
-        const stub = $.create(`filter-${filter}-stub`);
+        const $stub = $.create(`filter-${filter}-stub`);
         const selector = `[data-filter="${filter}"]`;
-        $("#recent_topics_filter_buttons").set_find_results(selector, stub);
+        $("#recent_topics_filter_buttons").set_find_results(selector, $stub);
     }
 }
 

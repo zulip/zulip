@@ -188,7 +188,7 @@ exports.mock_cjs = (module_path, obj) => {
 };
 
 exports.mock_jquery = ($) => {
-    jquery_function = $;
+    jquery_function = $; // eslint-disable-line no-jquery/variable-pattern
     return $;
 };
 

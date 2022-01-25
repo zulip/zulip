@@ -15,38 +15,38 @@ import {notify_server_messages_read} from "./unread_ops";
 
 let last_mention_count = 0;
 
-function do_new_messages_animation(li) {
-    li.addClass("new_messages");
+function do_new_messages_animation($li) {
+    $li.addClass("new_messages");
     function mid_animation() {
-        li.removeClass("new_messages");
-        li.addClass("new_messages_fadeout");
+        $li.removeClass("new_messages");
+        $li.addClass("new_messages_fadeout");
     }
     function end_animation() {
-        li.removeClass("new_messages_fadeout");
+        $li.removeClass("new_messages_fadeout");
     }
     setTimeout(mid_animation, 3000);
     setTimeout(end_animation, 6000);
 }
 
-export function animate_mention_changes(li, new_mention_count) {
+export function animate_mention_changes($li, new_mention_count) {
     if (new_mention_count > last_mention_count) {
-        do_new_messages_animation(li);
+        do_new_messages_animation($li);
     }
     last_mention_count = new_mention_count;
 }
 
-export function set_count_toggle_button(elem, count) {
+export function set_count_toggle_button($elem, count) {
     if (count === 0) {
-        if (elem.is(":animated")) {
-            return elem.stop(true, true).hide();
+        if ($elem.is(":animated")) {
+            return $elem.stop(true, true).hide();
         }
-        return elem.hide(500);
+        return $elem.hide(500);
     } else if (count > 0 && count < 1000) {
-        elem.show(500);
-        return elem.text(count);
+        $elem.show(500);
+        return $elem.text(count);
     }
-    elem.show(500);
-    return elem.text("1k+");
+    $elem.show(500);
+    return $elem.text("1k+");
 }
 
 export function update_unread_counts() {

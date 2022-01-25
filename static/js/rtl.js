@@ -137,15 +137,15 @@ export function get_direction(str) {
     return "ltr";
 }
 
-export function set_rtl_class_for_textarea(textarea) {
+export function set_rtl_class_for_textarea($textarea) {
     // Set the rtl class if the text has an rtl direction, remove it otherwise
-    let text = textarea.val();
+    let text = $textarea.val();
     if (text.startsWith("```quote")) {
         text = text.slice(8);
     }
     if (get_direction(text) === "rtl") {
-        textarea.addClass("rtl");
+        $textarea.addClass("rtl");
     } else {
-        textarea.removeClass("rtl");
+        $textarea.removeClass("rtl");
     }
 }

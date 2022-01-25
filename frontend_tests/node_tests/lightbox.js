@@ -30,21 +30,21 @@ function test(label, f) {
 }
 
 test("pan_and_zoom", ({override_rewire}) => {
-    const img = $.create("img-stub");
-    const link = $.create("link-stub");
-    const msg = $.create("msg-stub");
+    const $img = $.create("img-stub");
+    const $link = $.create("link-stub");
+    const $msg = $.create("msg-stub");
 
-    $(img).closest = () => [];
+    $($img).closest = () => [];
 
-    img.set_parent(link);
-    link.closest = () => msg;
+    $img.set_parent($link);
+    $link.closest = () => $msg;
 
-    override_rewire(rows, "id", (row) => {
-        assert.equal(row, msg);
+    override_rewire(rows, "id", ($row) => {
+        assert.equal($row, $msg);
         return 1234;
     });
 
-    img.attr("src", "example");
+    $img.attr("src", "example");
 
     let fetched_zid;
 
@@ -55,25 +55,25 @@ test("pan_and_zoom", ({override_rewire}) => {
 
     override_rewire(lightbox, "render_lightbox_list_images", () => {});
     const open_image = lightbox.build_open_image_function();
-    open_image(img);
+    open_image($img);
 
     assert.equal(fetched_zid, 1234);
 });
 
 test("youtube", ({override_rewire}) => {
     const href = "https://youtube.com/some-random-clip";
-    const img = $.create("img-stub");
-    const link = $.create("link-stub");
-    const msg = $.create("msg-stub");
+    const $img = $.create("img-stub");
+    const $link = $.create("link-stub");
+    const $msg = $.create("msg-stub");
 
-    override_rewire(rows, "id", (row) => {
-        assert.equal(row, msg);
+    override_rewire(rows, "id", ($row) => {
+        assert.equal($row, $msg);
         return 4321;
     });
 
-    $(img).attr("src", href);
+    $($img).attr("src", href);
 
-    $(img).closest = (sel) => {
+    $($img).closest = (sel) => {
         if (sel === ".youtube-video") {
             // We just need a nonempty array to
             // set is_youtube_video to true.
@@ -82,13 +82,13 @@ test("youtube", ({override_rewire}) => {
         return [];
     };
 
-    img.set_parent(link);
-    link.closest = () => msg;
-    link.attr("href", href);
+    $img.set_parent($link);
+    $link.closest = () => $msg;
+    $link.attr("href", href);
 
     override_rewire(lightbox, "render_lightbox_list_images", () => {});
 
     const open_image = lightbox.build_open_image_function();
-    open_image(img);
+    open_image($img);
     assert.equal($(".image-actions .open").attr("href"), href);
 });

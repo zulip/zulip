@@ -328,7 +328,7 @@ function insert_video_call_url(url, target_textarea) {
     compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, target_textarea);
 }
 
-export function render_and_show_preview(preview_spinner, preview_content_box, content) {
+export function render_and_show_preview($preview_spinner, $preview_content_box, content) {
     function show_preview(rendered_content, raw_content) {
         // content is passed to check for status messages ("/me ...")
         // and will be undefined in case of errors
@@ -344,16 +344,16 @@ export function render_and_show_preview(preview_spinner, preview_content_box, co
             rendered_preview_html = rendered_content;
         }
 
-        preview_content_box.html(util.clean_user_content_links(rendered_preview_html));
-        rendered_markdown.update_elements(preview_content_box);
+        $preview_content_box.html(util.clean_user_content_links(rendered_preview_html));
+        rendered_markdown.update_elements($preview_content_box);
     }
 
     if (content.length === 0) {
         show_preview($t_html({defaultMessage: "Nothing to preview"}));
     } else {
         if (markdown.contains_backend_only_syntax(content)) {
-            const spinner = preview_spinner.expectOne();
-            loading.make_indicator(spinner);
+            const $spinner = $preview_spinner.expectOne();
+            loading.make_indicator($spinner);
         } else {
             // For messages that don't appear to contain syntax that
             // is only supported by our backend Markdown processor, we
@@ -374,13 +374,13 @@ export function render_and_show_preview(preview_spinner, preview_content_box, co
             data: {content},
             success(response_data) {
                 if (markdown.contains_backend_only_syntax(content)) {
-                    loading.destroy_indicator(preview_spinner);
+                    loading.destroy_indicator($preview_spinner);
                 }
                 show_preview(response_data.rendered, content);
             },
             error() {
                 if (markdown.contains_backend_only_syntax(content)) {
-                    loading.destroy_indicator(preview_spinner);
+                    loading.destroy_indicator($preview_spinner);
                 }
                 show_preview($t_html({defaultMessage: "Failed to generate preview"}));
             },
@@ -463,9 +463,9 @@ export function initialize() {
     $("#compose_resolved_topic").on("click", ".compose_unresolve_topic", (event) => {
         event.preventDefault();
 
-        const target = $(event.target).parents(".compose_resolved_topic");
-        const stream_id = Number.parseInt(target.attr("data-stream-id"), 10);
-        const topic_name = target.attr("data-topic-name");
+        const $target = $(event.target).parents(".compose_resolved_topic");
+        const stream_id = Number.parseInt($target.attr("data-stream-id"), 10);
+        const topic_name = $target.attr("data-topic-name");
 
         message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
             message_edit.toggle_resolve_topic(message_id, topic_name);
@@ -482,17 +482,17 @@ export function initialize() {
     $("#compose_invite_users").on("click", ".compose_invite_link", (event) => {
         event.preventDefault();
 
-        const invite_row = $(event.target).parents(".compose_invite_user");
+        const $invite_row = $(event.target).parents(".compose_invite_user");
 
-        const user_id = Number.parseInt($(invite_row).data("user-id"), 10);
-        const stream_id = Number.parseInt($(invite_row).data("stream-id"), 10);
+        const user_id = Number.parseInt($($invite_row).data("user-id"), 10);
+        const stream_id = Number.parseInt($($invite_row).data("stream-id"), 10);
 
         function success() {
-            const all_invites = $("#compose_invite_users");
-            invite_row.remove();
+            const $all_invites = $("#compose_invite_users");
+            $invite_row.remove();
 
-            if (all_invites.children().length === 0) {
-                all_invites.hide();
+            if ($all_invites.children().length === 0) {
+                $all_invites.hide();
             }
         }
 
@@ -513,13 +513,13 @@ export function initialize() {
     });
 
     $("#compose_invite_users").on("click", ".compose_invite_close", (event) => {
-        const invite_row = $(event.target).parents(".compose_invite_user");
-        const all_invites = $("#compose_invite_users");
+        const $invite_row = $(event.target).parents(".compose_invite_user");
+        const $all_invites = $("#compose_invite_users");
 
-        invite_row.remove();
+        $invite_row.remove();
 
-        if (all_invites.children().length === 0) {
-            all_invites.hide();
+        if ($all_invites.children().length === 0) {
+            $all_invites.hide();
         }
     });
 
@@ -527,13 +527,13 @@ export function initialize() {
         "click",
         ".compose_private_stream_alert_close",
         (event) => {
-            const stream_alert_row = $(event.target).parents(".compose_private_stream_alert");
-            const stream_alert = $("#compose_private_stream_alert");
+            const $stream_alert_row = $(event.target).parents(".compose_private_stream_alert");
+            const $stream_alert = $("#compose_private_stream_alert");
 
-            stream_alert_row.remove();
+            $stream_alert_row.remove();
 
-            if (stream_alert.children().length === 0) {
-                stream_alert.hide();
+            if ($stream_alert.children().length === 0) {
+                $stream_alert.hide();
             }
         },
     );
@@ -552,11 +552,11 @@ export function initialize() {
         e.preventDefault();
         e.stopPropagation();
 
-        let target_textarea;
+        let $target_textarea;
         let edit_message_id;
         if ($(e.target).parents(".message_edit_form").length === 1) {
             edit_message_id = rows.id($(e.target).parents(".message_row"));
-            target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
+            $target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
         }
 
         let video_call_link;
@@ -581,7 +581,7 @@ export function initialize() {
                         url: "/json/calls/zoom/create",
                         success(res) {
                             video_call_xhrs.delete(key);
-                            insert_video_call_url(res.url, target_textarea);
+                            insert_video_call_url(res.url, $target_textarea);
                         },
                         error(xhr, status) {
                             video_call_xhrs.delete(key);
@@ -619,13 +619,13 @@ export function initialize() {
             channel.get({
                 url: "/json/calls/bigbluebutton/create",
                 success(response) {
-                    insert_video_call_url(response.url, target_textarea);
+                    insert_video_call_url(response.url, $target_textarea);
                 },
             });
         } else {
             const video_call_id = util.random_int(100000000000000, 999999999999999);
             video_call_link = page_params.jitsi_server_url + "/" + video_call_id;
-            insert_video_call_url(video_call_link, target_textarea);
+            insert_video_call_url(video_call_link, $target_textarea);
         }
     });
 
@@ -635,20 +635,20 @@ export function initialize() {
 
         $(e.target).toggleClass("has_popover");
 
-        let target_textarea;
+        let $target_textarea;
         let edit_message_id;
         const compose_click_target = compose_ui.get_compose_click_target(e);
         if ($(compose_click_target).parents(".message_edit_form").length === 1) {
             edit_message_id = rows.id($(compose_click_target).parents(".message_row"));
-            target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
+            $target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
         } else {
-            target_textarea = $(compose_click_target).closest("form").find("textarea");
+            $target_textarea = $(compose_click_target).closest("form").find("textarea");
         }
 
         if ($(e.target).hasClass("has_popover")) {
             const on_timestamp_selection = (val) => {
                 const timestr = `<time:${val}> `;
-                compose_ui.insert_syntax_and_focus(timestr, target_textarea);
+                compose_ui.insert_syntax_and_focus(timestr, $target_textarea);
             };
 
             flatpickr.show_flatpickr(
@@ -716,10 +716,10 @@ export function initialize() {
 
     $("body").on("click", ".formatting_button", (e) => {
         const $compose_click_target = $(compose_ui.get_compose_click_target(e));
-        const textarea = $compose_click_target.closest("form").find("textarea");
+        const $textarea = $compose_click_target.closest("form").find("textarea");
         const format_type = $(e.target).attr("data-format-type");
-        compose_ui.format_text(textarea, format_type);
-        textarea.trigger("focus");
+        compose_ui.format_text($textarea, format_type);
+        $textarea.trigger("focus");
         e.preventDefault();
         e.stopPropagation();
     });

@@ -10,7 +10,7 @@ import {page_params} from "./page_params";
 export function launch() {
     overlays.open_overlay({
         name: "about-zulip",
-        overlay: $("#about-zulip"),
+        $overlay: $("#about-zulip"),
         on_close() {
             browser_history.exit_overlay();
         },

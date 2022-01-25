@@ -20,8 +20,8 @@ import {user_settings} from "./user_settings";
 export const user_settings_panel = {};
 
 function rerender_ui() {
-    const unmatched_streams_table = $("#stream-specific-notify-table");
-    if (unmatched_streams_table.length === 0) {
+    const $unmatched_streams_table = $("#stream-specific-notify-table");
+    if ($unmatched_streams_table.length === 0) {
         // If we haven't rendered "notification settings" yet, do nothing.
         return;
     }
@@ -29,12 +29,12 @@ function rerender_ui() {
     const unmatched_streams =
         stream_settings_data.get_unmatched_streams_for_notification_settings();
 
-    unmatched_streams_table.find(".stream-row").remove();
+    $unmatched_streams_table.find(".stream-row").remove();
 
     const muted_stream_ids = stream_data.muted_stream_ids();
 
     for (const stream of unmatched_streams) {
-        unmatched_streams_table.append(
+        $unmatched_streams_table.append(
             render_stream_specific_notification_row({
                 stream,
                 stream_specific_notification_settings:
@@ -48,9 +48,9 @@ function rerender_ui() {
     }
 
     if (unmatched_streams.length === 0) {
-        unmatched_streams_table.css("display", "none");
+        $unmatched_streams_table.css("display", "none");
     } else {
-        unmatched_streams_table.css("display", "table-row-group");
+        $unmatched_streams_table.css("display", "table-row-group");
     }
 }
 
@@ -61,9 +61,9 @@ function change_notification_setting(setting, value, status_element) {
 }
 
 function update_desktop_icon_count_display(settings_panel) {
-    const container = $(settings_panel.container);
+    const $container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
-    container
+    $container
         .find(".setting_desktop_icon_count_display")
         .val(settings_object.desktop_icon_count_display);
     if (!settings_panel.for_realm_settings) {
@@ -71,8 +71,8 @@ function update_desktop_icon_count_display(settings_panel) {
     }
 }
 
-export function set_notification_batching_ui(container, setting_seconds, force_custom) {
-    const edit_elem = container.find(".email_notification_batching_period_edit_minutes");
+export function set_notification_batching_ui($container, setting_seconds, force_custom) {
+    const $edit_elem = $container.find(".email_notification_batching_period_edit_minutes");
     const valid_period_values = settings_config.email_notifications_batching_period_values.map(
         (x) => x.value,
     );
@@ -83,70 +83,70 @@ export function set_notification_batching_ui(container, setting_seconds, force_c
     const show_edit_elem = force_custom || !valid_period_values.includes(setting_seconds);
     const select_elem_val = show_edit_elem ? "custom_period" : setting_seconds;
 
-    container.find(".setting_email_notifications_batching_period_seconds").val(select_elem_val);
-    edit_elem.val(setting_seconds / 60);
-    settings_org.change_element_block_display_property(edit_elem.attr("id"), show_edit_elem);
+    $container.find(".setting_email_notifications_batching_period_seconds").val(select_elem_val);
+    $edit_elem.val(setting_seconds / 60);
+    settings_org.change_element_block_display_property($edit_elem.attr("id"), show_edit_elem);
 }
 
 export function set_enable_digest_emails_visibility(settings_panel) {
-    const container = $(settings_panel.container);
+    const $container = $(settings_panel.container);
     const for_realm_settings = settings_panel.for_realm_settings;
     if (page_params.realm_digest_emails_enabled) {
         if (for_realm_settings) {
-            container.find(".other_email_notifications").show();
+            $container.find(".other_email_notifications").show();
             return;
         }
-        container.find(".enable_digest_emails_label").parent().show();
+        $container.find(".enable_digest_emails_label").parent().show();
     } else {
         if (for_realm_settings) {
-            container.find(".other_email_notifications").hide();
+            $container.find(".other_email_notifications").hide();
             return;
         }
-        container.find(".enable_digest_emails_label").parent().hide();
+        $container.find(".enable_digest_emails_label").parent().hide();
     }
 }
 
 export function set_enable_marketing_emails_visibility() {
-    const container = $("#user-notification-settings");
+    const $container = $("#user-notification-settings");
     if (page_params.corporate_enabled) {
-        container.find(".enable_marketing_emails_label").parent().show();
+        $container.find(".enable_marketing_emails_label").parent().show();
     } else {
-        container.find(".enable_marketing_emails_label").parent().hide();
+        $container.find(".enable_marketing_emails_label").parent().hide();
     }
 }
 
 export function set_up(settings_panel) {
-    const container = $(settings_panel.container);
+    const $container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
-    const notification_sound_elem = $(settings_panel.notification_sound_elem);
+    const $notification_sound_elem = $(settings_panel.notification_sound_elem);
     const for_realm_settings = settings_panel.for_realm_settings;
 
-    container.find(".play_notification_sound").on("click", () => {
+    $container.find(".play_notification_sound").on("click", () => {
         if (settings_object.notification_sound !== "none") {
-            notification_sound_elem[0].play();
+            $notification_sound_elem[0].play();
         }
     });
 
     update_desktop_icon_count_display(settings_panel);
 
-    const notification_sound_dropdown = container.find(".setting_notification_sound");
-    notification_sound_dropdown.val(settings_object.notification_sound);
+    const $notification_sound_dropdown = $container.find(".setting_notification_sound");
+    $notification_sound_dropdown.val(settings_object.notification_sound);
 
-    container.find(".enable_sounds, .enable_stream_audible_notifications").on("change", () => {
+    $container.find(".enable_sounds, .enable_stream_audible_notifications").on("change", () => {
         if (
-            container.find(".enable_stream_audible_notifications").prop("checked") ||
-            container.find(".enable_sounds").prop("checked")
+            $container.find(".enable_stream_audible_notifications").prop("checked") ||
+            $container.find(".enable_sounds").prop("checked")
         ) {
-            notification_sound_dropdown.prop("disabled", false);
-            notification_sound_dropdown.parent().removeClass("control-label-disabled");
+            $notification_sound_dropdown.prop("disabled", false);
+            $notification_sound_dropdown.parent().removeClass("control-label-disabled");
         } else {
-            notification_sound_dropdown.prop("disabled", true);
-            notification_sound_dropdown.parent().addClass("control-label-disabled");
+            $notification_sound_dropdown.prop("disabled", true);
+            $notification_sound_dropdown.parent().addClass("control-label-disabled");
         }
     });
 
     set_notification_batching_ui(
-        container,
+        $container,
         settings_object.email_notifications_batching_period_seconds,
     );
 
@@ -160,45 +160,45 @@ export function set_up(settings_panel) {
 
     // Common handler for sending requests to the server when an input
     // element is changed.
-    container.find(".notification-settings-form").on("change", "input, select", function (e) {
+    $container.find(".notification-settings-form").on("change", "input, select", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        const input_elem = $(e.currentTarget);
-        if (input_elem.parents("#stream-specific-notify-table").length) {
+        const $input_elem = $(e.currentTarget);
+        if ($input_elem.parents("#stream-specific-notify-table").length) {
             stream_edit.stream_setting_changed(e, true);
             return;
         }
-        let setting_name = input_elem.attr("name");
+        let setting_name = $input_elem.attr("name");
         let setting_value = settings_org.get_input_element_value(this);
 
         if (setting_name === "email_notifications_batching_period_seconds") {
-            if (input_elem.val() === "custom_period") {
+            if ($input_elem.val() === "custom_period") {
                 set_notification_batching_ui(
-                    container,
+                    $container,
                     settings_object.email_notifications_batching_period_seconds,
                     true,
                 );
                 return;
             }
-            set_notification_batching_ui(container, setting_value);
+            set_notification_batching_ui($container, setting_value);
         } else if (setting_name === "email_notification_batching_period_edit_minutes") {
             // This field is in minutes, but the actual setting is seconds
             setting_value = setting_value * 60;
-            set_notification_batching_ui(container, setting_value);
+            set_notification_batching_ui($container, setting_value);
             setting_name = "email_notifications_batching_period_seconds";
         }
 
         change_notification_setting(
             setting_name,
             setting_value,
-            input_elem.closest(".subsection-parent").find(".alert-notification"),
+            $input_elem.closest(".subsection-parent").find(".alert-notification"),
         );
     });
 
     // This final patch of settings are ones for which we
     // intentionally don't let organization administrators set
     // organization-level defaults.
-    container.find(".send_test_notification").on("click", () => {
+    $container.find(".send_test_notification").on("click", () => {
         notifications.send_test_notification(
             $t({defaultMessage: "This is what a Zulip notification looks like."}),
         );
@@ -209,7 +209,7 @@ export function set_up(settings_panel) {
 }
 
 export function update_page(settings_panel) {
-    const container = $(settings_panel.container);
+    const $container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
     for (const setting of settings_config.all_notification_settings) {
         switch (setting) {
@@ -219,7 +219,9 @@ export function update_page(settings_panel) {
                     // we should just leave the checkbox always off.
                     break;
                 }
-                container.find(`.${CSS.escape(setting)}`).prop("checked", settings_object[setting]);
+                $container
+                    .find(`.${CSS.escape(setting)}`)
+                    .prop("checked", settings_object[setting]);
                 break;
             }
             case "desktop_icon_count_display": {
@@ -227,15 +229,17 @@ export function update_page(settings_panel) {
                 break;
             }
             case "email_notifications_batching_period_seconds": {
-                set_notification_batching_ui(container, settings_object[setting]);
+                set_notification_batching_ui($container, settings_object[setting]);
                 break;
             }
             case "notification_sound": {
-                container.find(`.setting_${CSS.escape(setting)}`).val(settings_object[setting]);
+                $container.find(`.setting_${CSS.escape(setting)}`).val(settings_object[setting]);
                 break;
             }
             default: {
-                container.find(`.${CSS.escape(setting)}`).prop("checked", settings_object[setting]);
+                $container
+                    .find(`.${CSS.escape(setting)}`)
+                    .prop("checked", settings_object[setting]);
                 break;
             }
         }
@@ -244,18 +248,18 @@ export function update_page(settings_panel) {
 }
 
 export function update_muted_stream_state(sub) {
-    const row = $(
+    const $row = $(
         `#stream-specific-notify-table .stream-row[data-stream-id='${CSS.escape(sub.stream_id)}']`,
     );
 
-    $(row).toggleClass("control-label-disabled", sub.is_muted);
+    $($row).toggleClass("control-label-disabled", sub.is_muted);
     if (sub.is_muted) {
-        $(row).find(".unmute_stream").show();
+        $($row).find(".unmute_stream").show();
     } else {
-        $(row).find(".unmute_stream").hide();
+        $($row).find(".unmute_stream").hide();
     }
-    $(row).find("input").prop("disabled", sub.is_muted);
-    $(row)
+    $($row).find("input").prop("disabled", sub.is_muted);
+    $($row)
         .find('[name="push_notifications"]')
         .prop("disabled", !page_params.realm_push_notifications_enabled || sub.is_muted);
 }
@@ -270,14 +274,14 @@ export function initialize() {
     $("body").on("click", "#stream-specific-notify-table .unmute_stream", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const row = $(e.currentTarget).closest(".stream-row");
-        const stream_id = Number.parseInt(row.attr("data-stream-id"), 10);
+        const $row = $(e.currentTarget).closest(".stream-row");
+        const stream_id = Number.parseInt($row.attr("data-stream-id"), 10);
         const sub = sub_store.get(stream_id);
 
         stream_settings_ui.set_muted(
             sub,
             !sub.is_muted,
-            row.closest(".subsection-parent").find(".alert-notification"),
+            $row.closest(".subsection-parent").find(".alert-notification"),
         );
     });
 }

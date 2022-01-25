@@ -146,9 +146,9 @@ test_ui("sender_hover", ({override, mock_template}) => {
         assert.equal(msg_id, message.id);
     };
 
-    const target = $.create("click target");
+    const $target = $.create("click target");
 
-    target.closest = (sel) => {
+    $target.closest = (sel) => {
         assert.equal(sel, ".message_row");
         return {};
     };
@@ -205,7 +205,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
 
     $.create(".user_popover_email", {children: []});
     const image_stubber = make_image_stubber();
-    handler.call(target, e);
+    handler.call($target, e);
 
     const avatar_img = image_stubber.get(0);
     assert.equal(avatar_img.src.toString(), "/avatar/42/medium");
@@ -216,7 +216,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
 test_ui("actions_popover", ({override, override_rewire, mock_template}) => {
     override($.fn, "popover", noop);
 
-    const target = $.create("click target");
+    const $target = $.create("click target");
 
     const handler = $("#main_div").get_on_handler("click", ".actions_hover");
 
@@ -241,7 +241,7 @@ test_ui("actions_popover", ({override, override_rewire, mock_template}) => {
 
     override_rewire(message_edit, "get_editability", () => 4);
 
-    target.closest = (sel) => {
+    $target.closest = (sel) => {
         assert.equal(sel, ".message_row");
         return {
             toggleClass: noop,
@@ -257,5 +257,5 @@ test_ui("actions_popover", ({override, override_rewire, mock_template}) => {
         return "actions-content";
     });
 
-    handler.call(target, e);
+    handler.call($target, e);
 });

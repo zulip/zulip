@@ -45,15 +45,15 @@ export function update_private_messages() {
     }
 
     if (private_messages_open) {
-        const container = ui.get_content_element($("#private-container"));
+        const $container = ui.get_content_element($("#private-container"));
         const new_dom = _build_private_messages_list();
 
         function replace_content(html) {
-            container.html(html);
+            $container.html(html);
         }
 
         function find() {
-            return container.find("ul");
+            return $container.find("ul");
         }
 
         vdom.update(replace_content, find, new_dom, prior_dom);

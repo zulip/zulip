@@ -47,7 +47,7 @@ export function validate_extra_data(data) {
 export function activate(opts) {
     const self = {};
 
-    const outer_elem = opts.elem;
+    const $outer_elem = opts.$elem;
     const data = opts.extra_data;
 
     if (!validate_extra_data(data)) {
@@ -64,9 +64,9 @@ export function activate(opts) {
         }
 
         const html = render_widgets_zform_choices(data);
-        const elem = $(html);
+        const $elem = $(html);
 
-        elem.find("button").on("click", (e) => {
+        $elem.find("button").on("click", (e) => {
             e.stopPropagation();
 
             // Grab our index from the markup.
@@ -82,7 +82,7 @@ export function activate(opts) {
             });
         });
 
-        return elem;
+        return $elem;
     }
 
     function render() {
@@ -90,7 +90,7 @@ export function activate(opts) {
 
         if (data.type === "choices") {
             rendered_widget = make_choices(data);
-            outer_elem.html(rendered_widget);
+            $outer_elem.html(rendered_widget);
         }
     }
 

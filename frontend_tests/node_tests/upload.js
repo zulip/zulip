@@ -36,14 +36,14 @@ function test(label, f) {
 }
 
 test("feature_check", ({override}) => {
-    const upload_button = $.create("upload-button-stub");
-    upload_button.addClass("notdisplayed");
-    upload.feature_check(upload_button);
-    assert.ok(upload_button.hasClass("notdisplayed"));
+    const $upload_button = $.create("upload-button-stub");
+    $upload_button.addClass("notdisplayed");
+    upload.feature_check($upload_button);
+    assert.ok($upload_button.hasClass("notdisplayed"));
 
     override(window, "XMLHttpRequest", () => ({upload: true}));
-    upload.feature_check(upload_button);
-    assert.ok(!upload_button.hasClass("notdisplayed"));
+    upload.feature_check($upload_button);
+    assert.ok(!$upload_button.hasClass("notdisplayed"));
 });
 
 test("get_item", () => {
