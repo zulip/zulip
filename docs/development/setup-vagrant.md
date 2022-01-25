@@ -898,7 +898,7 @@ check the running version of VirtualBox Guest Additions with this
 command:
 
 ```bash
-vagrant ssh -- 'modinfo -F version vboxsf'
+vagrant ssh -- 'sudo modinfo -F version vboxsf'
 ```
 
 The bug has not been fixed upstream as of this writing, but you may be
