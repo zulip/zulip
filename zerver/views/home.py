@@ -45,19 +45,19 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
         form = ToSForm()
 
     email = request.user.delivery_email
-    special_message_template = None
+    first_time_terms_of_service_message_template = None
     if (
         request.user.tos_version is None
         and settings.FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE is not None
     ):
-        special_message_template = settings.FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE
+        first_time_terms_of_service_message_template = settings.FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE
     return render(
         request,
         "zerver/accounts_accept_terms.html",
         context={
             "form": form,
             "email": email,
-            "special_message_template": special_message_template,
+            "first_time_terms_of_service_message_template": first_time_terms_of_service_message_template,
         },
     )
 
