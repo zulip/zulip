@@ -151,6 +151,13 @@ export function initialize() {
         },
     });
 
+    $("body").on("blur", ".message_control_button", (e) => {
+        // Remove tooltip when user is trying to tab through all the icons.
+        // If user tabs slowly, tooltips are displayed otherwise they are
+        // distroyed before they can be displayed.
+        e.currentTarget._tippy.destroy();
+    });
+
     delegate("body", {
         target: ".message_table .message_time",
         appendTo: () => document.body,
