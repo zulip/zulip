@@ -90,7 +90,7 @@ the backend, but does in JavaScript.
 
 ## System packages
 
-For the third-party services like PostgreSQL, Redis, Nginx, and RabbitMQ
+For the third-party services like PostgreSQL, Redis, nginx, and RabbitMQ
 that are documented in the
 [architecture overview](../overview/architecture-overview.md), we rely on the
 versions of those packages provided alongside the Linux distribution
