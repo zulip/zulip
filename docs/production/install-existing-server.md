@@ -21,7 +21,7 @@ Linux sysadmin, you will have a much better experience if you get a
 dedicated VM to install Zulip on instead (or [use
 zulip.com](https://zulip.com)).
 
-### Nginx
+### nginx
 
 Copy your existing nginx configuration to a backup and then merge the
 one created by Zulip into it:

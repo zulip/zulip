@@ -282,7 +282,7 @@ instructions for other supported platforms.
 
    When `do-release-upgrade` asks you how to upgrade configuration
    files for services that Zulip manages like Redis, PostgreSQL,
-   Nginx, and memcached, the best choice is `N` to keep the
+   nginx, and memcached, the best choice is `N` to keep the
    currently installed version. But it's not important; the next
    step will re-install Zulip's configuration in any case.
 
@@ -429,7 +429,7 @@ instructions for other supported platforms.
 
    When prompted for you how to upgrade configuration
    files for services that Zulip manages like Redis, PostgreSQL,
-   Nginx, and memcached, the best choice is `N` to keep the
+   nginx, and memcached, the best choice is `N` to keep the
    currently installed version. But it's not important; the next
    step will re-install Zulip's configuration in any case.
 
@@ -492,7 +492,7 @@ instructions for other supported platforms.
 
    When prompted for you how to upgrade configuration
    files for services that Zulip manages like Redis, PostgreSQL,
-   Nginx, and memcached, the best choice is `N` to keep the
+   nginx, and memcached, the best choice is `N` to keep the
    currently installed version. But it's not important; the next
    step will re-install Zulip's configuration in any case.
 

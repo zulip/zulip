@@ -23,7 +23,7 @@ For details on each of these requirements, see below.
 #### General
 
 The installer expects Zulip to be the **only thing** running on the
-system; it will install system packages with `apt` (like Nginx,
+system; it will install system packages with `apt` (like nginx,
 PostgreSQL, and Redis) and configure them for its own use. We strongly
 recommend using either a fresh machine instance in a cloud provider, a
 fresh VM, [our Docker image][docker-zulip-homepage], or a dedicated

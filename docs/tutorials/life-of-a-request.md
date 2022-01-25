@@ -7,18 +7,18 @@ Zulip codebase, and dive deep into how each part works.
 We will use as our example the creation of users through the API, but we
 will also highlight how alternative requests are handled.
 
-## A request is sent to the server, and handled by [Nginx](https://nginx.org/en/docs/)
+## A request is sent to the server, and handled by [nginx](https://nginx.org/en/docs/)
 
 When Zulip is deployed in production, all requests go through nginx.
 For the most part we don't need to know how this works, except for when
-it isn't working. Nginx does the first level of routing--deciding which
+it isn't working. nginx does the first level of routing--deciding which
 application will serve the request (or deciding to serve the request
 itself for static content).
 
 In development, `tools/run-dev.py` fills the role of nginx. Static files
 are in your Git checkout under `static`, and are served unminified.
 
-## Static files are [served directly][served-directly] by Nginx
+## Static files are [served directly][served-directly] by nginx
 
 [served-directly]: https://github.com/zulip/zulip/blob/main/puppet/zulip/files/nginx/zulip-include-frontend/app
 
@@ -37,7 +37,7 @@ location /static/ {
 }
 ```
 
-## Nginx routes other requests [between Django and Tornado][tornado-django]
+## nginx routes other requests [between Django and Tornado][tornado-django]
 
 [tornado-django]: ../overview/architecture-overview.html?highlight=tornado#django-and-tornado
 

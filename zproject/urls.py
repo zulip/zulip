@@ -226,7 +226,7 @@ if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
 #   - runtornado.py has its own URL list for Tornado views.  See the
 #     invocation of web.Application in that file.
 #
-#   - The Nginx config knows which URLs to route to Django or Tornado.
+#   - The nginx config knows which URLs to route to Django or Tornado.
 #
 #   - Likewise for the local dev server in tools/run-dev.py.
 
