@@ -37,7 +37,7 @@ OBJECT_DETAILS_TEMPLATE = """
 
 OBJECT_LIST_ITEM_TEMPLATE = """
 <li>
-<code>{value}</code>: <span class=api-field-type>{data_type}</span> {description}{object_details}
+<code>{value}</code>: <span class=api-field-type>{data_type}</span> {required} {description}{object_details}
 </li>
 """.strip()
 
@@ -239,16 +239,12 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                 ]
                 additions += "Must be one of: {}. ".format(", ".join(formatted_enums))
 
-            if "required" in schema:
-                if value in schema["required"]:
-                    additions += "Required value. "
-                else:
-                    additions += "Optional value. "
-
             if "example" in object_values[value]:
                 example = json.dumps(object_values[value]["example"])
                 formatted_example = OBJECT_CODE_TEMPLATE.format(value=escape_html(example))
-                additions += f"Example: {formatted_example}"
+                additions += (
+                    f'<span class="api-argument-example-label">Example</span>: {formatted_example}'
+                )
 
             if len(additions) > 0:
                 additional_information = "".join(additions).strip()
@@ -259,6 +255,13 @@ class APIArgumentsTablePreprocessor(Preprocessor):
             else:
                 description_final = md_engine.convert(description)
 
+            required_block = ""
+            if "required" in schema:
+                if value in schema["required"]:
+                    required_block = '<span class="api-argument-required">required</span>'
+                else:
+                    required_block = '<span class="api-argument-optional">optional</span>'
+
             data_type = generate_data_type(object_values[value])
 
             details = ""
@@ -268,6 +271,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
             li = OBJECT_LIST_ITEM_TEMPLATE.format(
                 value=value,
                 data_type=data_type,
+                required=required_block,
                 description=description_final,
                 object_details=details,
             )
