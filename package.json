@@ -105,6 +105,7 @@
     "eslint-import-resolver-webpack": "^0.13.0",
     "eslint-plugin-formatjs": "^3.0.0",
     "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-no-jquery": "^2.7.0",
     "eslint-plugin-unicorn": "^41.0.0",
     "jsdom": "^19.0.0",
     "mockdate": "^3.0.2",

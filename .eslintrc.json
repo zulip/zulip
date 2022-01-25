@@ -7,6 +7,7 @@
         "eslint:recommended",
         "plugin:import/errors",
         "plugin:import/warnings",
+        "plugin:no-jquery/recommended",
         "plugin:unicorn/recommended",
         "prettier"
     ],
@@ -15,9 +16,15 @@
         "warnOnUnsupportedTypeScriptVersion": false,
         "sourceType": "unambiguous"
     },
-    "plugins": ["formatjs"],
+    "plugins": ["formatjs", "no-jquery"],
     "settings": {
-        "additionalFunctionNames": ["$t", "$t_html"]
+        "additionalFunctionNames": ["$t", "$t_html"],
+        "no-jquery": {
+            "collectionReturningPlugins": {
+                "expectOne": "always"
+            },
+            "variablePattern": "^\\$(?!t$|t_html$)."
+        }
     },
     "reportUnusedDisableDirectives": true,
     "rules": {
