@@ -1528,6 +1528,11 @@ nav {
     opacity: 0.4;
 }
 
+.tour .carousel-inner .start-image:hover {
+    box-shadow: 5px 10px 18px hsl(0, 0%, 87%);
+    cursor: pointer;
+}
+
 .tour .carousel-inner .tour-item-header {
     margin: 0 0 30px 54px;
     max-width: 700px;
