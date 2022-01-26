@@ -479,7 +479,7 @@ export function set_up() {
 
             if (new_password !== confirm_new_password) {
                 ui_report.error(
-                    $t_html({defaultMessage: "New and Confirm Password didn't match"}),
+                    $t_html({defaultMessage: "New and confirm password didn't match"}),
                     undefined,
                     $("#dialog_error"),
                 );
