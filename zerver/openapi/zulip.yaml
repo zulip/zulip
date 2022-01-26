@@ -6131,8 +6131,8 @@ paths:
                           - 400
                           - 600
                         description: |
-                          [Organization-level role](/help/roles-and-permissions)) of the user.
-                          Poosible values are:
+                          [Organization-level role](/help/roles-and-permissions) of the user.
+                          Possible values are:
 
                           - Organization owner => 100
                           - Organization administrator => 200
