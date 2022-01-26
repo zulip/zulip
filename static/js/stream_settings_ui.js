@@ -557,7 +557,7 @@ export function setup_page(callback) {
                 },
                 {
                     label_html: `<i class="fa fa-bar-chart tippy-bottom tippy-zulip-tooltip" data-tippy-content="${$t(
-                        { defaultMessage: "Sort by estimated weekly traffic" },
+                        {defaultMessage: "Sort by estimated weekly traffic"},
                     )}"></i>`,
                     key: "by-weekly-traffic",
                 },
@@ -580,8 +580,8 @@ export function setup_page(callback) {
         toggler = components.toggle({
             child_wants_focus: true,
             values: [
-                { label: $t({ defaultMessage: "Subscribed" }), key: "subscribed" },
-                { label: $t({ defaultMessage: "All streams" }), key: "all-streams" },
+                {label: $t({defaultMessage: "Subscribed"}), key: "subscribed"},
+                {label: $t({defaultMessage: "All streams"}), key: "all-streams"},
             ],
             callback(value, key) {
                 switch_stream_tab(key);
@@ -677,7 +677,7 @@ export function setup_page(callback) {
     populate_and_fill();
 
     if (!should_list_all_streams()) {
-        $(".create_stream_button").val($t({ defaultMessage: "Subscribe" }));
+        $(".create_stream_button").val($t({defaultMessage: "Subscribe"}));
     }
 }
 
@@ -866,7 +866,7 @@ function ajaxSubscribe(stream, color, stream_row) {
     }
     return channel.post({
         url: "/json/users/me/subscriptions",
-        data: { subscriptions: JSON.stringify([{ name: stream, color }]) },
+        data: {subscriptions: JSON.stringify([{name: stream, color}])},
         success(resp, statusText, xhr) {
             if (overlays.streams_open()) {
                 $("#create_stream_name").val("");
@@ -878,8 +878,8 @@ function ajaxSubscribe(stream, color, stream_row) {
                 true_stream_name = res.already_subscribed[people.my_current_email()][0];
                 ui_report.success(
                     $t_html(
-                        { defaultMessage: "Already subscribed to {stream}" },
-                        { stream: true_stream_name },
+                        {defaultMessage: "Already subscribed to {stream}"},
+                        {stream: true_stream_name},
                     ),
                     $(".stream_change_property_info"),
                 );
@@ -895,7 +895,7 @@ function ajaxSubscribe(stream, color, stream_row) {
                 hide_subscribe_toggle_spinner(stream_row);
             }
             ui_report.error(
-                $t_html({ defaultMessage: "Error adding subscription" }),
+                $t_html({defaultMessage: "Error adding subscription"}),
                 xhr,
                 $(".stream_change_property_info"),
             );
@@ -910,7 +910,7 @@ function ajaxUnsubscribe(sub, stream_row) {
     }
     return channel.del({
         url: "/json/users/me/subscriptions",
-        data: { subscriptions: JSON.stringify([sub.name]) },
+        data: {subscriptions: JSON.stringify([sub.name])},
         success() {
             $(".stream_change_property_info").hide();
             // The rest of the work is done via the unsubscribe event we will get
@@ -924,7 +924,7 @@ function ajaxUnsubscribe(sub, stream_row) {
                 hide_subscribe_toggle_spinner(stream_row);
             }
             ui_report.error(
-                $t_html({ defaultMessage: "Error removing subscription" }),
+                $t_html({defaultMessage: "Error removing subscription"}),
                 xhr,
                 $(".stream_change_property_info"),
             );
@@ -969,7 +969,7 @@ export function unsubscribe_from_private_stream(sub) {
 
     confirm_dialog.launch({
         html_heading: $t_html(
-            { defaultMessage: "Unsubscribe from {stream_name}" },
+            {defaultMessage: "Unsubscribe from {stream_name}"},
             { stream_name: sub.name },
         ),
         html_body,
