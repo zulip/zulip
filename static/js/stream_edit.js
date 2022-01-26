@@ -138,7 +138,7 @@ export function open_edit_panel_for_row(stream_row) {
     const sub = get_sub_for_target(stream_row);
 
     $(".stream-row.active").removeClass("active");
-    stream_settings_ui.show_subs_pane.settings(sub.name);
+    stream_settings_ui.show_subs_pane.settings(sub.name, sub.invite_only, sub.is_web_public);
     $(stream_row).addClass("active");
     setup_subscriptions_stream_hash(sub);
     setup_stream_settings(stream_row);
