@@ -1520,7 +1520,7 @@ paths:
                                     This will be "" for users who set a status without selecting
                                     an emoji.
 
-                                    **Changes**; New in Zulip 5.0 (feature level 86).
+                                    **Changes**: New in Zulip 5.0 (feature level 86).
                                 emoji_code:
                                   type: string
                                   description: |
@@ -1530,7 +1530,7 @@ paths:
                                     This will be "" for users who set a status without selecting
                                     an emoji.
 
-                                    **Changes**; New in Zulip 5.0 (feature level 86).
+                                    **Changes**: New in Zulip 5.0 (feature level 86).
                                 reaction_type:
                                   type: string
                                   description: |
@@ -1540,7 +1540,7 @@ paths:
                                     This will be "" for users who set a status without selecting
                                     an emoji.
 
-                                    **Changes**; New in Zulip 5.0 (feature level 86).
+                                    **Changes**: New in Zulip 5.0 (feature level 86).
                                 user_id:
                                   type: integer
                                   description: |
@@ -9470,7 +9470,7 @@ paths:
                             away:
                               type: boolean
                               description: |
-                                Whether the user has marked themself "away".
+                                Whether the user has marked themself "away" with this status.
                             status_text:
                               type: string
                               description: |
@@ -9478,19 +9478,31 @@ paths:
                             emoji_name:
                               type: string
                               description: |
-                                The [emoji name](/api/add-reaction#parameters) for the emoji associated with the new status.
+                                The [emoji name](/api/add-reaction#parameters) for the emoji
+                                the user selected for their new status.
+
+                                This will be "" for users who set a status without selecting
+                                an emoji.
 
                                 **Changes**: New in Zulip 5.0 (feature level 86).
                             emoji_code:
                               type: string
                               description: |
-                                The [emoji code](/api/add-reaction#parameters) for the emoji associated with the new status.
+                                The [emoji code](/api/add-reaction#parameters) for the emoji
+                                the user selected for their new status.
+
+                                This will be "" for users who set a status without selecting
+                                an emoji.
 
                                 **Changes**: New in Zulip 5.0 (feature level 86).
                             reaction_type:
                               type: string
                               description: |
-                                The [emoji type](/api/add-reaction#parameters) for the emoji associated with the new status.
+                                The [emoji type](/api/add-reaction#parameters) for the emoji
+                                the user selected for their new status.
+
+                                This will be "" for users who set a status without selecting
+                                an emoji.
 
                                 **Changes**: New in Zulip 5.0 (feature level 86).
                       user_settings:
