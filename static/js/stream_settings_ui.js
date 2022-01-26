@@ -52,7 +52,7 @@ export const show_subs_pane = {
     create_stream() {
         $(".nothing-selected, .settings, #stream-creation").hide();
         $("#stream-creation").show();
-        $("#subscription_overlay .stream-info-title").text($t({defaultMessage: "Create stream"}));
+        $("#subscription_overlay .stream-info-title").text($t({ defaultMessage: "Create stream" }));
     },
 };
 
@@ -292,6 +292,7 @@ export function update_settings_for_subscribed(slim_sub) {
     if (is_sub_already_present(sub)) {
         update_left_panel_row(sub);
         stream_ui_updates.update_toggler_for_sub(sub);
+        stream_ui_updates.update_toggler_for_sub_private_settings(sub);
         stream_ui_updates.update_stream_row_in_settings_tab(sub);
         stream_ui_updates.update_settings_button_for_sub(sub);
         stream_ui_updates.update_change_stream_privacy_settings(sub);
@@ -319,6 +320,7 @@ export function update_settings_for_unsubscribed(slim_sub) {
     update_left_panel_row(sub);
     stream_subscribers_ui.update_subscribers_list(sub);
     stream_ui_updates.update_toggler_for_sub(sub);
+    stream_ui_updates.update_toggler_for_sub_private_settings(sub);
     stream_ui_updates.update_settings_button_for_sub(sub);
     stream_ui_updates.update_regular_sub_settings(sub);
     stream_ui_updates.update_change_stream_privacy_settings(sub);
@@ -543,19 +545,19 @@ export function setup_page(callback) {
             values: [
                 {
                     label_html: `<i class="fa fa-sort-alpha-asc tippy-bottom tippy-zulip-tooltip" data-tippy-content="${$t(
-                        {defaultMessage: "Sort by name"},
+                        { defaultMessage: "Sort by name" },
                     )}"></i>`,
                     key: "by-stream-name",
                 },
                 {
                     label_html: `<i class="fa fa-user-o tippy-bottom tippy-zulip-tooltip" data-tippy-content="${$t(
-                        {defaultMessage: "Sort by number of subscribers"},
+                        { defaultMessage: "Sort by number of subscribers" },
                     )}"></i>`,
                     key: "by-subscriber-count",
                 },
                 {
                     label_html: `<i class="fa fa-bar-chart tippy-bottom tippy-zulip-tooltip" data-tippy-content="${$t(
-                        {defaultMessage: "Sort by estimated weekly traffic"},
+                        { defaultMessage: "Sort by estimated weekly traffic" },
                     )}"></i>`,
                     key: "by-weekly-traffic",
                 },
@@ -578,8 +580,8 @@ export function setup_page(callback) {
         toggler = components.toggle({
             child_wants_focus: true,
             values: [
-                {label: $t({defaultMessage: "Subscribed"}), key: "subscribed"},
-                {label: $t({defaultMessage: "All streams"}), key: "all-streams"},
+                { label: $t({ defaultMessage: "Subscribed" }), key: "subscribed" },
+                { label: $t({ defaultMessage: "All streams" }), key: "all-streams" },
             ],
             callback(value, key) {
                 switch_stream_tab(key);
@@ -675,7 +677,7 @@ export function setup_page(callback) {
     populate_and_fill();
 
     if (!should_list_all_streams()) {
-        $(".create_stream_button").val($t({defaultMessage: "Subscribe"}));
+        $(".create_stream_button").val($t({ defaultMessage: "Subscribe" }));
     }
 }
 
@@ -864,7 +866,7 @@ function ajaxSubscribe(stream, color, stream_row) {
     }
     return channel.post({
         url: "/json/users/me/subscriptions",
-        data: {subscriptions: JSON.stringify([{name: stream, color}])},
+        data: { subscriptions: JSON.stringify([{ name: stream, color }]) },
         success(resp, statusText, xhr) {
             if (overlays.streams_open()) {
                 $("#create_stream_name").val("");
@@ -876,8 +878,8 @@ function ajaxSubscribe(stream, color, stream_row) {
                 true_stream_name = res.already_subscribed[people.my_current_email()][0];
                 ui_report.success(
                     $t_html(
-                        {defaultMessage: "Already subscribed to {stream}"},
-                        {stream: true_stream_name},
+                        { defaultMessage: "Already subscribed to {stream}" },
+                        { stream: true_stream_name },
                     ),
                     $(".stream_change_property_info"),
                 );
@@ -893,7 +895,7 @@ function ajaxSubscribe(stream, color, stream_row) {
                 hide_subscribe_toggle_spinner(stream_row);
             }
             ui_report.error(
-                $t_html({defaultMessage: "Error adding subscription"}),
+                $t_html({ defaultMessage: "Error adding subscription" }),
                 xhr,
                 $(".stream_change_property_info"),
             );
@@ -908,7 +910,7 @@ function ajaxUnsubscribe(sub, stream_row) {
     }
     return channel.del({
         url: "/json/users/me/subscriptions",
-        data: {subscriptions: JSON.stringify([sub.name])},
+        data: { subscriptions: JSON.stringify([sub.name]) },
         success() {
             $(".stream_change_property_info").hide();
             // The rest of the work is done via the unsubscribe event we will get
@@ -922,7 +924,7 @@ function ajaxUnsubscribe(sub, stream_row) {
                 hide_subscribe_toggle_spinner(stream_row);
             }
             ui_report.error(
-                $t_html({defaultMessage: "Error removing subscription"}),
+                $t_html({ defaultMessage: "Error removing subscription" }),
                 xhr,
                 $(".stream_change_property_info"),
             );
@@ -967,8 +969,8 @@ export function unsubscribe_from_private_stream(sub) {
 
     confirm_dialog.launch({
         html_heading: $t_html(
-            {defaultMessage: "Unsubscribe from {stream_name}"},
-            {stream_name: sub.name},
+            { defaultMessage: "Unsubscribe from {stream_name}" },
+            { stream_name: sub.name },
         ),
         html_body,
         on_click: unsubscribe_from_stream,
