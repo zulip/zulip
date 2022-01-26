@@ -313,10 +313,10 @@ export function set_up() {
                     $("#show_api_key").show();
                     $("#api_key_buttons").show();
                 },
-                error(xhr) {
+                error() {
                     ui_report.error(
-                        $t_html({defaultMessage: "Error"}),
-                        xhr,
+                        $t_html({defaultMessage: "Error: Entered Password is incorrect."}),
+                        undefined,
                         $("#api_key_status").expectOne(),
                     );
                     $("#show_api_key").hide();
