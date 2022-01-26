@@ -52,7 +52,7 @@ export const show_subs_pane = {
     create_stream() {
         $(".nothing-selected, .settings, #stream-creation").hide();
         $("#stream-creation").show();
-        $("#subscription_overlay .stream-info-title").text($t({ defaultMessage: "Create stream" }));
+        $("#subscription_overlay .stream-info-title").text($t({defaultMessage: "Create stream"}));
     },
 };
 
@@ -545,13 +545,13 @@ export function setup_page(callback) {
             values: [
                 {
                     label_html: `<i class="fa fa-sort-alpha-asc tippy-bottom tippy-zulip-tooltip" data-tippy-content="${$t(
-                        { defaultMessage: "Sort by name" },
+                        {defaultMessage: "Sort by name"},
                     )}"></i>`,
                     key: "by-stream-name",
                 },
                 {
                     label_html: `<i class="fa fa-user-o tippy-bottom tippy-zulip-tooltip" data-tippy-content="${$t(
-                        { defaultMessage: "Sort by number of subscribers" },
+                        {defaultMessage: "Sort by number of subscribers"},
                     )}"></i>`,
                     key: "by-subscriber-count",
                 },
