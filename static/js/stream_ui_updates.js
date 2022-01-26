@@ -81,7 +81,6 @@ export function update_toggler_for_sub_private_settings(sub){
     }
 }
 
-
 export function update_settings_button_for_sub(sub) {
     // This is for the Subscribe/Unsubscribe button in the right panel.
     const settings_button = stream_settings_ui.settings_button_for_sub(sub);
