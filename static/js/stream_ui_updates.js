@@ -76,7 +76,6 @@ export function update_toggler_for_sub_private_settings(sub){
     if (!hash_util.is_editing_stream(sub.stream_id)) {
         return;
     }
-    
     if (sub.invite_only && sub.history_public_to_subscribers){
         stream_edit.toggler.disable_tab("subscriber_settings");
     }
