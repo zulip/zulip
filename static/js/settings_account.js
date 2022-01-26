@@ -416,7 +416,11 @@ export function set_up() {
             "#new_password",
             "#new_password + .password_visibility_toggle",
         );
-        $("#old_password, #new_password").val("");
+        common.reset_password_toggle_icons(
+            "#confirm_new_password",
+            "#confirm_new_password + .password_visibility_toggle",
+        );
+        $("#old_password, #new_password, #confirm_new_password").val("");
         password_quality?.("", $("#pw_strength .bar"), $("#new_password"));
     }
 
@@ -436,6 +440,11 @@ export function set_up() {
             "#new_password + .password_visibility_toggle",
             {tippy_tooltips: true},
         );
+        common.setup_password_visibility_toggle(
+            "#confirm_new_password",
+            "#confirm_new_password + .password_visibility_toggle",
+            {tippy_tooltips: true},
+        );
         clear_password_change();
     }
 
@@ -448,6 +457,7 @@ export function set_up() {
             e.stopPropagation();
             const old_password = $("#old_password").val();
             const new_password = $("#new_password").val();
+            const confirm_new_password = $("#confirm_new_password").val();
 
             if (old_password === "") {
                 ui_report.error(
@@ -461,6 +471,15 @@ export function set_up() {
             if (new_password === "") {
                 ui_report.error(
                     $t_html({defaultMessage: "Please choose a new password"}),
+                    undefined,
+                    $("#dialog_error"),
+                );
+                return false;
+            }
+
+            if(new_password !== confirm_new_password){
+                ui_report.error(
+                    $t_html({defaultMessage: "New and Confirm Password didn't match"}),
                     undefined,
                     $("#dialog_error"),
                 );
