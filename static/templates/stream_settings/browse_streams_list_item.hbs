@@ -8,7 +8,11 @@
         </svg>
         <div class='sub_unsub_status'></div>
     </div>
-    {{> subscription_setting_icon }}
+    <div class="icon" style="background-color: {{color}}">
+        <div class="flex">
+            {{> ../stream_privacy_icon }}
+        </div>
+    </div>
     <div class="sub-info-box">
         <div class="top-bar">
             <div class="stream-name">{{name}}</div>

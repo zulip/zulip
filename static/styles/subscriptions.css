@@ -679,7 +679,8 @@ h4.stream_setting_subsection_title {
             font-size: 1.1em;
         }
 
-        .fa-lock {
+        .fa-lock,
+        .fa-globe {
             font-size: 1.4em;
         }
 
@@ -904,10 +905,13 @@ h4.stream_setting_subsection_title {
             margin-right: 5px;
             margin-top: -5px;
             font-size: 1.5em;
+        }
 
-            &.hash::after {
-                top: 1px;
-            }
+        .hashtag::after {
+            top: 1px;
+            position: relative;
+            font-size: 1.09em;
+            font-weight: 800;
         }
 
         .stream_change_property_info {
@@ -964,11 +968,8 @@ h4.stream_setting_subsection_title {
         }
     }
 
-    .hash::after {
-        position: relative;
+    .hashtag::after {
         content: "#";
-        font-size: 1.09em;
-        font-weight: 800;
     }
 
     .settings {
