@@ -33,7 +33,14 @@ from PIL.Image import DecompressionBombError
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Attachment, Message, Realm, RealmEmoji, UserProfile
+from zerver.models import (
+    Attachment,
+    Message,
+    Realm,
+    RealmEmoji,
+    UserProfile,
+    is_cross_realm_bot_email,
+)
 
 DEFAULT_AVATAR_SIZE = 100
 MEDIUM_AVATAR_SIZE = 500
@@ -496,7 +503,9 @@ class S3UploadBackend(ZulipUploadBackend):
             file_data,
         )
 
-        create_attachment(uploaded_file_name, s3_file_name, user_profile, uploaded_file_size)
+        create_attachment(
+            uploaded_file_name, s3_file_name, user_profile, target_realm, uploaded_file_size
+        )
         return url
 
     def delete_message_image(self, path_id: str) -> bool:
@@ -835,10 +844,13 @@ class LocalUploadBackend(ZulipUploadBackend):
         user_profile: UserProfile,
         target_realm: Optional[Realm] = None,
     ) -> str:
-        path = self.generate_message_upload_path(str(user_profile.realm_id), uploaded_file_name)
+        if target_realm is None:
+            target_realm = user_profile.realm
+
+        path = self.generate_message_upload_path(str(target_realm.id), uploaded_file_name)
 
         write_local_file("files", path, file_data)
-        create_attachment(uploaded_file_name, path, user_profile, uploaded_file_size)
+        create_attachment(uploaded_file_name, path, user_profile, target_realm, uploaded_file_size)
         return "/user_uploads/" + path
 
     def delete_message_image(self, path_id: str) -> bool:
@@ -1094,13 +1106,16 @@ def claim_attachment(
 
 
 def create_attachment(
-    file_name: str, path_id: str, user_profile: UserProfile, file_size: int
+    file_name: str, path_id: str, user_profile: UserProfile, realm: Realm, file_size: int
 ) -> bool:
+    assert (user_profile.realm_id == realm.id) or is_cross_realm_bot_email(
+        user_profile.delivery_email
+    )
     attachment = Attachment.objects.create(
         file_name=file_name,
         path_id=path_id,
         owner=user_profile,
-        realm=user_profile.realm,
+        realm=realm,
         size=file_size,
     )
     from zerver.lib.actions import notify_attachment_update

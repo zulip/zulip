@@ -174,7 +174,7 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
         ]
 
         for file_name, path_id, size in dummy_files:
-            create_attachment(file_name, path_id, user_profile, size)
+            create_attachment(file_name, path_id, user_profile, user_profile.realm, size)
 
         self.subscribe(user_profile, "Denmark")
         body = (
@@ -573,7 +573,7 @@ class MoveMessageToArchiveBase(RetentionTestingBase):
         ]
         user_profile = self.example_user("hamlet")
         for file_name, path_id, size in dummy_files:
-            create_attachment(file_name, path_id, user_profile, size)
+            create_attachment(file_name, path_id, user_profile, user_profile.realm, size)
 
     def _assert_archive_empty(self) -> None:
         self.assertFalse(ArchivedUserMessage.objects.exists())

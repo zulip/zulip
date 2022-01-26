@@ -1691,6 +1691,23 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
         self.assert_length(b"zulip!", uploaded_file.size)
 
+    def test_file_upload_local_cross_realm_path(self) -> None:
+        """
+        Verifies that the path of a file uploaded by a cross-realm bot to another
+        realm is correct.
+        """
+
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        zulip_realm = get_realm("zulip")
+        user_profile = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
+        self.assertEqual(user_profile.realm, internal_realm)
+
+        uri = upload_message_file(
+            "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile, zulip_realm
+        )
+        # Ensure the correct realm id of the target realm is used instead of the bot's realm.
+        self.assertTrue(uri.startswith(f"/user_uploads/{zulip_realm.id}/"))
+
     def test_delete_message_image_local(self) -> None:
         self.login("hamlet")
         fp = StringIO("zulip!")
@@ -1836,6 +1853,25 @@ class S3Test(ZulipTestCase):
         self.subscribe(self.example_user("hamlet"), "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
         self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
+
+    @use_s3_backend
+    def test_file_upload_s3_cross_realm_path(self) -> None:
+        """
+        Verifies that the path of a file uploaded by a cross-realm bot to another
+        realm is correct.
+        """
+        create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
+
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        zulip_realm = get_realm("zulip")
+        user_profile = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
+        self.assertEqual(user_profile.realm, internal_realm)
+
+        uri = upload_message_file(
+            "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile, zulip_realm
+        )
+        # Ensure the correct realm id of the target realm is used instead of the bot's realm.
+        self.assertTrue(uri.startswith(f"/user_uploads/{zulip_realm.id}/"))
 
     @use_s3_backend
     def test_file_upload_s3_with_undefined_content_type(self) -> None:

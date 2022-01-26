@@ -40,6 +40,7 @@ from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish, most_recent_message, most_recent_usermessage
 from zerver.models import (
+    Attachment,
     MissedMessageEmailAddress,
     Recipient,
     Stream,
@@ -534,6 +535,46 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
 
         message = most_recent_message(user_profile)
         self.assertEqual(message.content, "Test body\n[image.png](https://test_url)")
+
+    def test_message_with_valid_attachment_model_attributes_set_correctly(self) -> None:
+        """
+        Verifies that the Attachment attributes are set correctly.
+        """
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+        stream_to_address = encode_email_address(stream)
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("Test body")
+        with open(
+            os.path.join(settings.DEPLOY_ROOT, "static/images/default-avatar.png"), "rb"
+        ) as f:
+            image_bytes = f.read()
+
+        incoming_valid_message.add_attachment(
+            image_bytes,
+            maintype="image",
+            subtype="png",
+            filename="image.png",
+        )
+
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
+        incoming_valid_message["From"] = self.example_email("hamlet")
+        incoming_valid_message["To"] = stream_to_address
+        incoming_valid_message["Reply-to"] = self.example_email("othello")
+
+        process_message(incoming_valid_message)
+
+        message = most_recent_message(user_profile)
+        attachment = Attachment.objects.last()
+        self.assertEqual(list(attachment.messages.values_list("id", flat=True)), [message.id])
+        self.assertEqual(
+            message.sender, get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id)
+        )
+        self.assertEqual(attachment.realm, stream.realm)
+        self.assertEqual(attachment.is_realm_public, True)
 
     def test_message_with_attachment_utf8_filename(self) -> None:
         user_profile = self.example_user("hamlet")
