@@ -970,7 +970,7 @@ export function unsubscribe_from_private_stream(sub) {
     confirm_dialog.launch({
         html_heading: $t_html(
             {defaultMessage: "Unsubscribe from {stream_name}"},
-            { stream_name: sub.name },
+            {stream_name: sub.name},
         ),
         html_body,
         on_click: unsubscribe_from_stream,
