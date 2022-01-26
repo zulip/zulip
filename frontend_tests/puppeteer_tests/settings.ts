@@ -57,6 +57,7 @@ async function test_change_password(page: Page): Promise<void> {
     await page.type("#old_password", test_credentials.default_user.password);
     test_credentials.default_user.password = "new_password";
     await page.type("#new_password", test_credentials.default_user.password);
+    await page.type("#confirm_new_password", test_credentials.default_user.password);
     await page.click(change_password_button_selector);
 
     // On success the change password modal gets closed.
