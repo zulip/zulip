@@ -477,7 +477,7 @@ export function set_up() {
                 return false;
             }
 
-            if(new_password !== confirm_new_password){
+            if (new_password !== confirm_new_password) {
                 ui_report.error(
                     $t_html({defaultMessage: "New and Confirm Password didn't match"}),
                     undefined,
