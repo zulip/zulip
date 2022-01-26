@@ -438,7 +438,7 @@ def get_repo_updated_body(payload: Dict[str, Any], include_title: bool) -> str:
                 old=old,
                 new=new,
             )
-            message = append_punctuation(new, message) + "\n"
+            message = append_punctuation(str(new), message) + "\n"
             body += message
         elif new and not old:
             message = BITBUCKET_REPO_UPDATED_ADDED.format(
@@ -447,7 +447,7 @@ def get_repo_updated_body(payload: Dict[str, Any], include_title: bool) -> str:
                 repo_name=repo_name,
                 new=new,
             )
-            message = append_punctuation(new, message) + "\n"
+            message = append_punctuation(str(new), message) + "\n"
             body += message
 
     return body
