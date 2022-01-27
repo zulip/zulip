@@ -6599,7 +6599,7 @@ class TestRequireEmailFormatUsernames(ZulipTestCase):
 
 class TestMaybeSendToRegistration(ZulipTestCase):
     def test_sso_only_when_preregistration_user_does_not_exist(self) -> None:
-        rf = RequestFactory()
+        rf = RequestFactory(HTTP_HOST=Realm.host_for_subdomain("zulip"))
         request = rf.get("/")
         request.session = {}
         request.user = None
@@ -6629,10 +6629,12 @@ class TestMaybeSendToRegistration(ZulipTestCase):
         self.assert_in_response(f'value="{confirmation_key}" name="key"', result)
 
     def test_sso_only_when_preregistration_user_exists(self) -> None:
-        rf = RequestFactory()
+        rf = RequestFactory(HTTP_HOST=Realm.host_for_subdomain("zulip"))
         request = rf.get("/")
         request.session = {}
         request.user = None
+
+        realm = get_realm("zulip")
 
         # Creating a mock Django form in order to keep the test simple.
         # This form will be returned by the create_homepage_form function
@@ -6643,7 +6645,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
                 return True
 
         email = self.example_email("hamlet")
-        user = PreregistrationUser(email=email)
+        user = PreregistrationUser(email=email, realm=realm)
         user.save()
         create_confirmation_link(user, Confirmation.USER_REGISTRATION)
 
