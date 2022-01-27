@@ -9,7 +9,7 @@ import {page_params} from "../page_params";
 
 Plotly.register([PlotlyBar, PlotlyPie]);
 
-let font_14pt = {
+const font_14pt = {
     family: "Source Sans 3",
     size: 14,
     color: "rgb(0,0,0)",
