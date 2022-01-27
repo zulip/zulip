@@ -154,6 +154,10 @@ def truncate_topic(topic: str) -> str:
     return truncate_content(topic, MAX_TOPIC_NAME_LENGTH, "...")
 
 
+def prepend_topic_to_content(topic: str, content: str) -> str:
+    return f"Subject: {topic}\n{content}"
+
+
 def messages_for_ids(
     message_ids: List[int],
     user_message_flags: Dict[int, List[str]],

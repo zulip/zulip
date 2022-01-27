@@ -23,12 +23,14 @@ from zerver.lib.email_mirror_helpers import (
 )
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.exceptions import JsonableError, RateLimited
-from zerver.lib.message import normalize_body, truncate_topic
+from zerver.lib.message import normalize_body, prepend_topic_to_content, truncate_topic
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.send_email import FromAddress
+from zerver.lib.topic import messages_for_topic
 from zerver.lib.upload import upload_message_file
 from zerver.models import (
+    MAX_TOPIC_NAME_LENGTH,
     Message,
     MissedMessageEmailAddress,
     Realm,
@@ -201,10 +203,16 @@ def construct_zulip_body(
 
 
 def send_zulip(sender: UserProfile, stream: Stream, topic: str, content: str) -> None:
+    truncated_topic = truncate_topic(topic)
+    is_first_message_of_topic = not messages_for_topic(stream.id, truncated_topic).exists()
+
+    if is_first_message_of_topic and len(topic) > MAX_TOPIC_NAME_LENGTH:
+        content = prepend_topic_to_content(topic, content)
+
     internal_send_stream_message(
         sender,
         stream,
-        truncate_topic(topic),
+        truncated_topic,
         normalize_body(content),
         email_gateway=True,
     )
