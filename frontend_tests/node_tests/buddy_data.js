@@ -180,7 +180,7 @@ test("user_circle, level, status_description", () => {
     assert.equal(buddy_data.get_user_circle_class(me.user_id), "user_circle_green");
 
     set_presence(fred.user_id, "idle");
-    assert.equal(buddy_data.get_user_circle_class(fred.user_id), "user_circle_orange");
+    assert.equal(buddy_data.get_user_circle_class(fred.user_id), "user_circle_idle");
     assert.equal(buddy_data.level(fred.user_id), 2);
     assert.equal(buddy_data.status_description(fred.user_id), "translated: Idle");
 

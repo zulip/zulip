@@ -41,7 +41,7 @@ export function get_user_circle_class(user_id) {
         case "active":
             return "user_circle_green";
         case "idle":
-            return "user_circle_orange";
+            return "user_circle_idle";
         case "away_them":
         case "away_me":
             return "user_circle_empty_line";

@@ -1,5 +1,7 @@
+$idle_color: hsl(29, 84%, 51%);
+
 .user_circle_green,
-.user_circle_orange,
+.user_circle_idle,
 .user_circle_empty,
 .user_circle_empty_line {
     border-radius: 50%;
@@ -14,12 +16,12 @@
     border-color: hsl(106, 74%, 44%);
 }
 
-.user_circle_orange {
-    border-color: hsl(29, 84%, 51%);
+.user_circle_idle {
+    border-color: $idle_color;
     background: linear-gradient(
         to bottom,
         hsla(0, 0%, 100%, 0) 50%,
-        hsla(29, 84%, 51%, 1) 50%
+        $idle_color 50%
     );
 }
 
