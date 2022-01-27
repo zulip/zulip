@@ -282,6 +282,38 @@ function get_default_suggestion(operators) {
     return format_as_suggestion(operators);
 }
 
+export function get_topic_suggestions_from_candidates({candidate_topics, guess}) {
+    // This function is exported for unit testing purposes.
+    const max_num_topics = 10;
+
+    if (guess === "") {
+        // In the search UI, once you autocomplete the stream,
+        // we just show you the most recent topics before you even
+        // need to start typing any characters.
+        return candidate_topics.slice(0, max_num_topics);
+    }
+
+    // Once the user starts typing characters for a topic name,
+    // it is pretty likely they want to get suggestions for
+    // topics that may be fairly low in our list of candidates,
+    // so we do an aggressive search here.
+    //
+    // The following loop can be expensive if you have lots
+    // of topics in a stream, so we try to exit the loop as
+    // soon as we find enough matches.
+    const topics = [];
+    for (const topic of candidate_topics) {
+        if (common.phrase_match(guess, topic)) {
+            topics.push(topic);
+            if (topics.length >= max_num_topics) {
+                break;
+            }
+        }
+    }
+
+    return topics;
+}
+
 function get_topic_suggestions(last, operators) {
     const invalid = [
         {operator: "pm-with"},
@@ -343,22 +375,21 @@ function get_topic_suggestions(last, operators) {
     }
 
     // Fetch topic history from the server, in case we will need it.
+    // Note that we won't actually use the results from the server here
+    // for this particular keystroke from the user, because we want to
+    // show results immediately. Assuming the server responds quickly,
+    // as the user makes their search more specific, subsequent calls to
+    // this function will get more candidates from calling
+    // stream_topic_history.get_recent_topic_names.
     stream_topic_history_util.get_server_history(stream_id, () => {});
-    let topics = stream_topic_history.get_recent_topic_names(stream_id);
 
-    if (!topics || !topics.length) {
+    const candidate_topics = stream_topic_history.get_recent_topic_names(stream_id);
+
+    if (!candidate_topics || !candidate_topics.length) {
         return [];
     }
 
-    // Be defensive here in case stream_data.get_recent_topics gets
-    // super huge, but still slice off enough topics to find matches.
-    topics = topics.slice(0, 300);
-
-    if (guess !== "") {
-        topics = topics.filter((topic) => common.phrase_match(guess, topic));
-    }
-
-    topics = topics.slice(0, 10);
+    const topics = get_topic_suggestions_from_candidates({candidate_topics, guess});
 
     // Just use alphabetical order.  While recency and read/unreadness of
     // topics do matter in some contexts, you can get that from the left sidebar,

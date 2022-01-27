@@ -5,6 +5,7 @@ import tippy from "tippy.js";
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
 import render_browse_streams_list_item from "../templates/stream_settings/browse_streams_list_item.hbs";
+import render_selected_stream_title from "../templates/stream_settings/selected_stream_title.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
 import render_stream_settings_overlay from "../templates/stream_settings/stream_settings_overlay.hbs";
 
@@ -44,10 +45,16 @@ export const show_subs_pane = {
         $(".nothing-selected").show();
         $("#subscription_overlay .stream-info-title").text($t({defaultMessage: "Stream settings"}));
     },
-    settings(stream_name) {
+    settings(stream_name, invite_only, is_web_public) {
         $(".settings, #stream-creation").hide();
         $(".settings").show();
-        $("#subscription_overlay .stream-info-title").text("#" + stream_name);
+        $("#subscription_overlay .stream-info-title").html(
+            render_selected_stream_title({
+                stream_name,
+                invite_only,
+                is_web_public,
+            }),
+        );
     },
     create_stream() {
         $(".nothing-selected, .settings, #stream-creation").hide();

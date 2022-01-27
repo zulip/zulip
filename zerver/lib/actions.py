@@ -1435,13 +1435,17 @@ def do_deactivate_stream(
 
 def send_user_email_update_event(user_profile: UserProfile) -> None:
     payload = dict(user_id=user_profile.id, new_email=user_profile.email)
-    send_event(
-        user_profile.realm,
-        dict(type="realm_user", op="update", person=payload),
-        active_user_ids(user_profile.realm_id),
+    event = dict(type="realm_user", op="update", person=payload)
+    transaction.on_commit(
+        lambda: send_event(
+            user_profile.realm,
+            event,
+            active_user_ids(user_profile.realm_id),
+        )
     )
 
 
+@transaction.atomic(savepoint=False)
 def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> None:
     delete_user_profile_caches([user_profile])
 
@@ -1457,7 +1461,7 @@ def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> 
     # about their new delivery email, since that field is private.
     payload = dict(user_id=user_profile.id, delivery_email=new_email)
     event = dict(type="realm_user", op="update", person=payload)
-    send_event(user_profile.realm, event, [user_profile.id])
+    transaction.on_commit(lambda: send_event(user_profile.realm, event, [user_profile.id]))
 
     if user_profile.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
         # If the user is using Gravatar to manage their email address,
@@ -4637,17 +4641,20 @@ def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -
 
 def notify_avatar_url_change(user_profile: UserProfile) -> None:
     if user_profile.is_bot:
-        send_event(
-            user_profile.realm,
-            dict(
-                type="realm_bot",
-                op="update",
-                bot=dict(
-                    user_id=user_profile.id,
-                    avatar_url=avatar_url(user_profile),
-                ),
+        bot_event = dict(
+            type="realm_bot",
+            op="update",
+            bot=dict(
+                user_id=user_profile.id,
+                avatar_url=avatar_url(user_profile),
             ),
-            bot_owner_user_ids(user_profile),
+        )
+        transaction.on_commit(
+            lambda: send_event(
+                user_profile.realm,
+                bot_event,
+                bot_owner_user_ids(user_profile),
+            )
         )
 
     payload = dict(
@@ -4660,13 +4667,17 @@ def notify_avatar_url_change(user_profile: UserProfile) -> None:
         user_id=user_profile.id,
     )
 
-    send_event(
-        user_profile.realm,
-        dict(type="realm_user", op="update", person=payload),
-        active_user_ids(user_profile.realm_id),
+    event = dict(type="realm_user", op="update", person=payload)
+    transaction.on_commit(
+        lambda: send_event(
+            user_profile.realm,
+            event,
+            active_user_ids(user_profile.realm_id),
+        )
     )
 
 
+@transaction.atomic(savepoint=False)
 def do_change_avatar_fields(
     user_profile: UserProfile,
     avatar_source: str,
@@ -4777,6 +4788,7 @@ def do_change_realm_org_type(
     )
 
 
+@transaction.atomic(savepoint=False)
 def do_change_realm_plan_type(
     realm: Realm, plan_type: int, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -4825,7 +4837,7 @@ def do_change_realm_plan_type(
         "value": plan_type,
         "extra_data": {"upload_quota": realm.upload_quota_bytes()},
     }
-    send_event(realm, event, active_user_ids(realm.id))
+    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
 
 
 @transaction.atomic(durable=True)
@@ -6561,7 +6573,14 @@ def do_update_embedded_data(
     content: Optional[str],
     rendering_result: MessageRenderingResult,
 ) -> None:
-    event: Dict[str, Any] = {"type": "update_message", "message_id": message.id}
+    timestamp = timezone_now()
+    event: Dict[str, Any] = {
+        "type": "update_message",
+        "user_id": None,
+        "edit_timestamp": datetime_to_timestamp(timestamp),
+        "message_id": message.id,
+        "rendering_only": True,
+    }
     changed_messages = [message]
     rendered_content: Optional[str] = None
 
@@ -6630,6 +6649,7 @@ def do_update_message(
         "user_id": user_profile.id,
         "edit_timestamp": datetime_to_timestamp(timestamp),
         "message_id": target_message.id,
+        "rendering_only": False,
     }
 
     edit_history_event: Dict[str, Any] = {

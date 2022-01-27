@@ -128,6 +128,11 @@ test_ui("subscriber_pills", ({override_rewire, mock_template}) => {
         false,
         () => "stream_subscription_request_result",
     );
+    mock_template(
+        "stream_settings/selected_stream_title.hbs",
+        false,
+        () => "selected_stream_title",
+    );
 
     override_rewire(people, "sort_but_pin_current_user_on_top", noop);
 
