@@ -39,6 +39,10 @@ import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
 
+export function set_right_panel_title(sub) {
+    $("#subscription_overlay .stream-info-title").html(render_selected_stream_title(sub));
+}
+
 export const show_subs_pane = {
     nothing_selected() {
         $(".settings, #stream-creation").hide();
@@ -48,7 +52,7 @@ export const show_subs_pane = {
     settings(sub) {
         $(".settings, #stream-creation").hide();
         $(".settings").show();
-        $("#subscription_overlay .stream-info-title").html(render_selected_stream_title(sub));
+        set_right_panel_title(sub);
     },
     create_stream() {
         $(".nothing-selected, .settings, #stream-creation").hide();
