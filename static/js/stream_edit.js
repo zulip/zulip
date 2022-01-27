@@ -155,6 +155,11 @@ export function update_stream_name(sub, new_name) {
     const edit_container = stream_settings_containers.get_edit_container(sub);
     edit_container.find(".email-address").text(sub.email_address);
     edit_container.find(".sub-stream-name").text(new_name);
+
+    const active_data = stream_settings_ui.get_active_data();
+    if (active_data.id === sub.stream_id) {
+        stream_settings_ui.set_right_panel_title(sub);
+    }
 }
 
 export function update_stream_description(sub) {
