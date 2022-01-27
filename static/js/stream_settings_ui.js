@@ -212,6 +212,11 @@ export function update_stream_privacy(slim_sub, values) {
     stream_ui_updates.update_add_subscriptions_elements(sub);
     stream_list.redraw_stream_privacy(sub);
 
+    const active_data = get_active_data();
+    if (active_data.id === sub.stream_id) {
+        set_right_panel_title(sub);
+    }
+
     // Update navbar if needed
     message_view_header.maybe_rerender_title_area_for_stream(sub);
 }
