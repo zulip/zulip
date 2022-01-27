@@ -720,7 +720,9 @@ input[type="checkbox"] {
         white-space: pre;
     }
 
-    .regenerate_bot_api_key {
+    .regenerate_bot_api_key,
+    .copy_api_key,
+    .copy_bot_email {
         position: relative;
         margin-left: 5px;
         color: hsl(0, 0%, 67%);
@@ -729,6 +731,10 @@ input[type="checkbox"] {
         &:hover {
             color: hsl(0, 0%, 27%);
         }
+    }
+
+    .copy_bot_email {
+        font-size: 12px;
     }
 
     .edit-bot-buttons {

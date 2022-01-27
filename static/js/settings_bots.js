@@ -607,6 +607,32 @@ export function set_up() {
         },
     });
 
+    new ClipboardJS("#copy_bot_email", {
+        text(trigger) {
+            const bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
+            const bot_id = Number.parseInt(bot_info.attr("data-user-id"), 10);
+            const bot = bot_data.get(bot_id);
+            const email = bot.email;
+            return email;
+        },
+    });
+
+    new ClipboardJS("#copy_api_key", {
+        text(trigger) {
+            const bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
+            const bot_id = Number.parseInt(bot_info.attr("data-user-id"), 10);
+            const bot = bot_data.get(bot_id);
+            const api_key = bot.api_key;
+            return api_key;
+        },
+    });
+
+    $("#bots_lists_navbar .add-a-new-bot-tab").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        focus_tab.add_a_new_bot_tab();
+    });
+
     $("#bots_lists_navbar .active-bots-tab").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();

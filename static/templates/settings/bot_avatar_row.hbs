@@ -31,7 +31,12 @@
         </div>
         <div class="email">
             <div class="field">{{t "Bot email" }}</div>
-            <div class="value">{{email}}</div>
+            <div class="value">
+                {{email}}
+                <button type="submit" id="copy_bot_email" class="button no-style btn-secondary copy_bot_email" title="{{t 'Copy email' }}">
+                    <i class="fa fa-clipboard"></i>
+                </button>
+            </div>
         </div>
         {{#if is_active}}
         <div class="api_key">
@@ -39,6 +44,10 @@
             <div class="api-key-value-and-button no-select">
                 <!-- have the `.text-select` in `.no-select` so that the value doesn't have trailing whitespace. -->
                 <span class="value text-select">{{api_key}}</span>
+                <button type="submit" id="copy_api_key" class="button no-style btn-secondary copy_api_key" title="{{t 'Copy API key' }}">
+                    <i class="fa fa-clipboard"></i>
+                </button>
+
                 <button type="submit" class="button no-style btn-secondary regenerate_bot_api_key" title="{{t 'Generate new API key' }}" data-user-id="{{user_id}}">
                     <i class="fa fa-refresh" aria-hidden="true"></i>
                 </button>
