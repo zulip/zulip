@@ -98,6 +98,7 @@ def create_preregistration_user(
     full_name_validated: bool = False,
 ) -> PreregistrationUser:
     assert not (realm_creation and realm is not None)
+    assert not (realm is None and not realm_creation)
 
     return PreregistrationUser.objects.create(
         email=email,
