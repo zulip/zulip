@@ -14,6 +14,7 @@ import * as narrow_state from "./narrow_state";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
+import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as stream_popover from "./stream_popover";
 import * as stream_sort from "./stream_sort";
@@ -524,6 +525,10 @@ export function set_event_handlers() {
         .on("click", (e) => {
             e.preventDefault();
             if (e.target.id === "streams_inline_cog") {
+                if(!(settings_data.user_can_create_private_streams() || settings_data.user_can_create_public_streams() || settings_data.user_can_create_web_public_streams())){
+                    e.stopPropagation();
+                    location.assign("#streams/all");
+                }
                 return;
             }
             toggle_filter_displayed(e);
