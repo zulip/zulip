@@ -2216,14 +2216,14 @@ paths:
 
                                     [status-messages]: /help/format-your-message-using-markdown#status-messages
                               required:
-                                - "type"
-                                - "id"
-                                - "user_id"
-                                - "message_id"
-                                - "message_ids"
-                                - "flags"
-                                - "edit_timestamp"
-                                - "rendering_only"
+                                - type
+                                - id
+                                - user_id
+                                - message_id
+                                - message_ids
+                                - flags
+                                - edit_timestamp
+                                - rendering_only
                               example:
                                 {
                                   "type": "update_message",
@@ -3894,11 +3894,11 @@ paths:
                                   allOf:
                                     - $ref: "#/components/schemas/EventTypeSchema"
                                     - enum:
-                                        - "drafts"
+                                        - drafts
                                 op:
                                   type: string
                                   enum:
-                                    - "add"
+                                    - add
                                 drafts:
                                   type: array
                                   description: |
@@ -3932,11 +3932,11 @@ paths:
                                   allOf:
                                     - $ref: "#/components/schemas/EventTypeSchema"
                                     - enum:
-                                        - "drafts"
+                                        - drafts
                                 op:
                                   type: string
                                   enum:
-                                    - "update"
+                                    - update
                                 draft:
                                   $ref: "#/components/schemas/Draft"
                               example:
@@ -3964,11 +3964,11 @@ paths:
                                   allOf:
                                     - $ref: "#/components/schemas/EventTypeSchema"
                                     - enum:
-                                        - "drafts"
+                                        - drafts
                                 op:
                                   type: string
                                   enum:
-                                    - "remove"
+                                    - remove
                                 draft_id:
                                   type: integer
                                   description: |
@@ -7966,15 +7966,15 @@ paths:
                     property:
                       type: string
                       enum:
-                        - "color"
-                        - "is_muted"
-                        - "in_home_view"
-                        - "pin_to_top"
-                        - "desktop_notifications"
-                        - "audible_notifications"
-                        - "push_notifications"
-                        - "email_notifications"
-                        - "wildcard_mentions_notify"
+                        - color
+                        - is_muted
+                        - in_home_view
+                        - pin_to_top
+                        - desktop_notifications
+                        - audible_notifications
+                        - push_notifications
+                        - email_notifications
+                        - wildcard_mentions_notify
                       description: |
                         One of the stream properties described below:
 
@@ -14815,8 +14815,8 @@ components:
             or "private" (for PMs and private group messages).
           enum:
             - ""
-            - "stream"
-            - "private"
+            - stream
+            - private
         to:
           type: array
           description: |
