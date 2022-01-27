@@ -700,6 +700,15 @@ input[type="checkbox"] {
     margin-bottom: 2px;
 }
 
+.bot-info-copy-alert {
+    position: absolute;
+    top: 2px;
+    right: 8px;
+    color: hsl(170, 48%, 54%);
+    background-color: hsl(0, 0%, 100%);
+    font-weight: 400;
+}
+
 .bots_list {
     display: none;
     list-style-type: none;

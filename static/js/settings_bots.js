@@ -497,6 +497,12 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
     });
 }
 
+function show_alert_on_copy_handler(box) {
+    box.find("span.bot-info-copy-alert").text($t({defaultMessage: "Copied!"}));
+    box.find("span.bot-info-copy-alert").css("display", "block");
+    box.find("span.bot-info-copy-alert").delay(1000).fadeOut(300);
+}
+
 export function set_up() {
     $("#download_botserverrc").on("click", function () {
         const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
@@ -599,38 +605,38 @@ export function set_up() {
 
     new ClipboardJS("#copy_zuliprc", {
         text(trigger) {
-            const $bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
+            const $bot_info_box = $(trigger).closest(".bot-information-box");
+            const $bot_info = $bot_info_box.find(".bot_info");
             const bot_id = Number.parseInt($bot_info.attr("data-user-id"), 10);
             const bot = bot_data.get(bot_id);
             const data = generate_zuliprc_content(bot);
+            show_alert_on_copy_handler($bot_info_box);
             return data;
         },
     });
 
     new ClipboardJS("#copy_bot_email", {
         text(trigger) {
-            const bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
-            const bot_id = Number.parseInt(bot_info.attr("data-user-id"), 10);
+            const $bot_info_box = $(trigger).closest(".bot-information-box");
+            const $bot_info = $bot_info_box.find(".bot_info");
+            const bot_id = Number.parseInt($bot_info.attr("data-user-id"), 10);
             const bot = bot_data.get(bot_id);
             const email = bot.email;
+            show_alert_on_copy_handler($bot_info_box);
             return email;
         },
     });
 
     new ClipboardJS("#copy_api_key", {
         text(trigger) {
-            const bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
-            const bot_id = Number.parseInt(bot_info.attr("data-user-id"), 10);
+            const $bot_info_box = $(trigger).closest(".bot-information-box");
+            const $bot_info = $bot_info_box.find(".bot_info");
+            const bot_id = Number.parseInt($bot_info.attr("data-user-id"), 10);
             const bot = bot_data.get(bot_id);
             const api_key = bot.api_key;
+            show_alert_on_copy_handler($bot_info_box);
             return api_key;
         },
-    });
-
-    $("#bots_lists_navbar .add-a-new-bot-tab").on("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        focus_tab.add_a_new_bot_tab();
     });
 
     $("#bots_lists_navbar .active-bots-tab").on("click", (e) => {
