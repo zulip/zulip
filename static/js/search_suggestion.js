@@ -375,7 +375,14 @@ function get_topic_suggestions(last, operators) {
     }
 
     // Fetch topic history from the server, in case we will need it.
+    // Note that we won't actually use the results from the server here
+    // for this particular keystroke from the user, because we want to
+    // show results immediately. Assuming the server responds quickly,
+    // as the user makes their search more specific, subsequent calls to
+    // this function will get more candidates from calling
+    // stream_topic_history.get_recent_topic_names.
     stream_topic_history_util.get_server_history(stream_id, () => {});
+
     const candidate_topics = stream_topic_history.get_recent_topic_names(stream_id);
 
     if (!candidate_topics || !candidate_topics.length) {
