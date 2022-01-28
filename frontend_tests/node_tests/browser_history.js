@@ -66,7 +66,7 @@ test("update internal hash if required", ({override_rewire}) => {
     assert.equal(stub.num_calls, 1);
 });
 
-test("web public view hash restore", () => {
+test("web-public view hash restore", () => {
     browser_history.update("#");
     assert.equal(window.location.hash, "");
     const new_hash = "#narrow/is/private";

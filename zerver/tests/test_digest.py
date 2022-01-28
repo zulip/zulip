@@ -425,7 +425,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.assertEqual(stream_count, 0)
         self.assertEqual(stream_info["html"], [])
 
-        # but they do if we make it web public
+        # but they do if we make it web-public
         stream.is_web_public = True
         stream.save()
 

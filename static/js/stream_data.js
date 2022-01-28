@@ -105,7 +105,7 @@ const default_stream_ids = new Set();
 export const stream_privacy_policy_values = {
     web_public: {
         code: "web-public",
-        name: $t({defaultMessage: "Web public"}),
+        name: $t({defaultMessage: "Web-public"}),
         description: $t({
             defaultMessage:
                 "Organization members can join (guests must be invited by a subscriber); anyone on the Internet can view complete message history without creating an account",

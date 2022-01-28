@@ -600,7 +600,7 @@ def filter_stream_authorization(
         if stream.recipient_id in subscribed_recipient_ids:
             continue
 
-        # Web public streams are accessible even to guests
+        # Web-public streams are accessible even to guests
         if stream.is_web_public:
             continue
 
@@ -698,7 +698,7 @@ def list_to_streams(
 
         if web_public_stream_requested:
             if not user_profile.realm.web_public_streams_enabled():
-                raise JsonableError(_("Web public streams are not enabled."))
+                raise JsonableError(_("Web-public streams are not enabled."))
             if not user_profile.can_create_web_public_streams():
                 # We set create_web_public_stream_policy to allow only organization owners
                 # to create web-public streams, because of their sensitive nature.

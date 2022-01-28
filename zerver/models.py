@@ -250,8 +250,8 @@ class Realm(models.Model):
         default=2 ** 31 - 1,
     )
 
-    # Allow users to access web public streams without login. This
-    # setting also controls API access of web public streams.
+    # Allow users to access web-public streams without login. This
+    # setting also controls API access of web-public streams.
     enable_spectator_access: bool = models.BooleanField(default=False)
 
     # Whether the organization has enabled inline image and URL previews.
@@ -924,7 +924,7 @@ class Realm(models.Model):
         If any of the streams in the realm is web
         public and `enable_spectator_access` and
         settings.WEB_PUBLIC_STREAMS_ENABLED is True,
-        then the Realm is web public.
+        then the Realm is web-public.
         """
         return self.has_web_public_streams()
 
@@ -2245,7 +2245,7 @@ class Stream(models.Model):
             "invite_only": False,
             "history_public_to_subscribers": True,
             "is_web_public": True,
-            "policy_name": gettext_lazy("Web public"),
+            "policy_name": gettext_lazy("Web-public"),
         },
         "public": {
             "invite_only": False,

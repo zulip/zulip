@@ -316,7 +316,7 @@ def update_stream_backend(
     if is_web_public:
         # Enforce restrictions on creating web-public streams.
         if not user_profile.realm.web_public_streams_enabled():
-            raise JsonableError(_("Web public streams are not enabled."))
+            raise JsonableError(_("Web-public streams are not enabled."))
         if not user_profile.can_create_web_public_streams():
             raise JsonableError(_("Insufficient permission"))
         # Forbid parameter combinations that are inconsistent

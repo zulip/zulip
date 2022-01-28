@@ -360,7 +360,7 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(actual_keys, expected_keys)
         self.assertEqual(self.client.session.get("prefers_web_public_view"), True)
 
-        # Web public session key should clear once user is logged in
+        # Web-public session key should clear once user is logged in
         self.login("hamlet")
         self.client_get("/")
         self.assertEqual(self.client.session.get("prefers_web_public_view"), None)

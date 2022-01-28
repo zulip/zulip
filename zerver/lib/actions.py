@@ -3763,7 +3763,7 @@ def validate_user_access_to_subscribers_helper(
     if stream_dict["is_web_public"]:
         return
 
-    # With the exception of web public streams, a guest must
+    # With the exception of web-public streams, a guest must
     # be subscribed to a stream (even a public one) in order
     # to see subscribers.
     if user_profile.is_guest:

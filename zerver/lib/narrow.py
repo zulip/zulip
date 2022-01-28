@@ -45,7 +45,7 @@ def is_web_public_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> bool:
         return False
 
     for term in narrow:
-        # Web public queries are only allowed for limited types of narrows.
+        # Web-public queries are only allowed for limited types of narrows.
         # term == {'operator': 'streams', 'operand': 'web-public', 'negated': False}
         if (
             term["operator"] == "streams"
