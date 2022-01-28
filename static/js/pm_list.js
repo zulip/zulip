@@ -76,9 +76,7 @@ export function _get_convos() {
 
         let user_circle_class;
 
-        if (is_group) {
-            user_circle_class = "user_circle_fraction";
-        } else {
+        if (!is_group) {
             const user_id = Number.parseInt(user_ids_string, 10);
             user_circle_class = buddy_data.get_user_circle_class(user_id);
             const recipient_user_obj = people.get_by_user_id(user_id);
