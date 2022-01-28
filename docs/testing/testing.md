@@ -35,8 +35,8 @@ typically involve running subsets of the tests with commands like these:
 ./tools/lint zerver/lib/actions.py # Lint the file you just changed
 ./tools/test-backend zerver.tests.test_markdown.MarkdownTest.test_inline_youtube
 ./tools/test-backend MarkdownTest # Run `test-backend --help` for more options
-./tools/test-js-with-puppeteer navigation.ts
-./tools/test-js-with-node utils.js
+./tools/test-js-with-node util
+# etc.
 ```
 
 The commands above will all run in just a few seconds. Many more
