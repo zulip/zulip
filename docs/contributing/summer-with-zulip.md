@@ -1,16 +1,16 @@
 # How to have an amazing summer with Zulip
 
-The purpose of this doc is to provide advice to GSoC/ZSoC mentors and students
+The purpose of this doc is to provide advice to GSoC/ZSoC mentors and contributors
 on how to make the summer as successful as possible. It's mandatory reading, in
 addition to [Google's
 materials](https://developers.google.com/open-source/gsoc/resources/manual).
 
 - Don't focus too much on doing precisely what's in the project proposal or
-  following precisely that schedule. The goals are for students to learn and to
+  following precisely that schedule. The goals are for contributors to learn and to
   advance Zulip, not to do in July what we guessed would be the right plan in
   March with limited information.
 
-  - We probably will want to create a Dropbox Paper document for each student to
+  - We probably will want to create a Dropbox Paper document for each contributor to
     keep track of the current version of their project plan, but make sure to
     keep GitHub up to date with what issues you're working on.
 
@@ -31,7 +31,7 @@ materials](https://developers.google.com/open-source/gsoc/resources/manual).
     administrator debug their installation problem or playing with the mobile
     app until you can get something to break are great ways to contribute.
 
-- Mentors and students should stay in close contact, both with each other and
+- Mentors and contributors should stay in close contact, both with each other and
   the rest of the Zulip community. We recommend the following:
 
   - Daily checkins on #checkins in
@@ -48,7 +48,7 @@ materials](https://developers.google.com/open-source/gsoc/resources/manual).
     - If a mentor will be traveling or otherwise offline, mentors should make
       sure another mentor is paying attention in the meantime.
 
-  - Video calls are great! Mentors should do 1-2 video calls with their students
+  - Video calls are great! Mentors should do 1-2 video calls with their contributors
     calls per week, depending on length, schedules, and what's happening.
 
   - Make sure to talk about not just the current project, but also meta-issues
@@ -102,8 +102,8 @@ materials](https://developers.google.com/open-source/gsoc/resources/manual).
     be a member of the Zulip organization to see them;
     ask Tim for an invite if needed).
 
-- Everyone's goal is to avoid students ending up blocked and feeling stuck.
-  There are lots of things that students can do (and mentors can help them to)
+- Everyone's goal is to avoid contributors ending up blocked and feeling stuck.
+  There are lots of things that contributors can do (and mentors can help them to)
   to avoid this:
 
   - Get really good at using `git rebase -i` to produce a really clean
@@ -154,7 +154,7 @@ materials](https://developers.google.com/open-source/gsoc/resources/manual).
     - Look at Steve Howell's closed PRs to get a feel for how to do this well
       for even complex changes.
 
-    - Or Eklavya Sharma's (from GSoC 2016) to see a fellow GSoC student doing
+    - Or Eklavya Sharma's (from GSoC 2016) to see a fellow GSoC contributor doing
       this well. (`git log -p --author=Eklavya` is a fast way to skim).
 
   - Team up with other developers close to or in your time zone who are working
@@ -229,67 +229,67 @@ materials](https://developers.google.com/open-source/gsoc/resources/manual).
 
 ## What makes a successful summer
 
-Success for the student means a few things, in order of importance:
+Success for the contributor means a few things, in order of importance:
 
 - Mastery of the skills needed to be a self-sufficient and effective open source
-  developer. Ideally, by the end of the summer, most of the student's PRs should
+  developer. Ideally, by the end of the summer, most of the contributor's PRs should
   go through only a couple rounds of code review before being merged, both in
   Zulip and in any future open source projects they choose to join.
-  Our most successful students end up as the maintainer for one or
+  Our most successful contributors end up as the maintainer for one or
   more areas within Zulip.
 
-- The student has become a valued member of the Zulip community, and has made
+- The contributor has become a valued member of the Zulip community, and has made
   the Zulip community a better place through their efforts. Reviewing PRs,
   helping others debug, providing feedback, and finding bugs are all essential
   ways to contribute beyond the code in your own project.
 
-- Zulip becoming significantly better in the areas the student focused on. The
+- Zulip becoming significantly better in the areas the contributor focused on. The
   area should feel more polished, and have several new major features the
-  student has implemented. That section of code should be more readable,
+  contributor has implemented. That section of code should be more readable,
   better-tested, and have clearer documentation.
 
 ## Extra notes for mentors
 
-- You're personally accountable for your student having a successful summer. If
+- You're personally accountable for your contributor having a successful summer. If
   you get swamped and find you don't have enough time, tell the org admins so
   that we can make sure someone is covering for you. Yes, it sucks when you
   can't do what you signed up for, but even worse is to not tell anyone and thus
   prevent the project from finding a replacement.
 
 - Mentors are expected to provide on the mentors stream a **brief report
-  weekly** on (1) how your students' projects are going, (2) what (if anything)
+  weekly** on (1) how your contributors' projects are going, (2) what (if anything)
   you're worried about, and (3) what new things you'd like to try this week to
-  help your student. A great time to do this is after a weekly scheduled call
-  with your student, while your recollection of the state is fresh.
+  help your contributor. A great time to do this is after a weekly scheduled call
+  with your contributor, while your recollection of the state is fresh.
 
 - Timely feedback is more important than complete feedback, so get a fast
-  feedback cadence going with your student. It's amazing how useful just 5
+  feedback cadence going with your contributor. It's amazing how useful just 5
   minutes of feedback can be. Pay attention to the relative timezones; if you
   plan it, you can get several round trips in per day even with big timezone
   differences like USA + India.
 
 - What exactly you focus on in your mentorship will vary from week to week and
-  depend somewhat on what the student needs. It might be any combination of
+  depend somewhat on what the contributor needs. It might be any combination of
   these things:
 
-  - Helping the student plan, chunk, and prioritize their work.
+  - Helping the contributor plan, chunk, and prioritize their work.
 
   - Manually testing UI changes and helping find bugs.
 
-  - Doing code review of your student's work
+  - Doing code review of your contributor's work
 
   - Providing early feedback on visual and technical design questions.
 
-  - Helping the student figure out how to test their changes.
+  - Helping the contributor figure out how to test their changes.
 
-  - Helping the student break their PRs into reviewing chunks.
+  - Helping the contributor break their PRs into reviewing chunks.
 
   - Making sure busy maintainers like Tim Abbott provide any necessary feedback
-    so that the student's project doesn't get stuck.
+    so that the contributor's project doesn't get stuck.
 
   - Helping with the technical design of projects and making sure they're aware
     of useful and relevant reference materials.
 
-  - Pair programming with the student to help make sure you share useful tricks.
+  - Pair programming with the contributor to help make sure you share useful tricks.
 
   - Emotional support when things feel like they aren't going well.
