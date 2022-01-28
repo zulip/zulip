@@ -3605,7 +3605,7 @@ paths:
                                     enable_spectator_access:
                                       type: boolean
                                       description: |
-                                        Whether web public streams are enabled in this organization.
+                                        Whether web-public streams are enabled in this organization.
 
                                         Can only be enabled if the `WEB_PUBLIC_STREAMS_ENABLED`
                                         [server setting][server-settings] is enabled on the Zulip
@@ -6732,9 +6732,9 @@ paths:
           in: query
           description: |
             This parameter determines whether any newly created streams will be
-            web public streams.
+            web-public streams.
 
-            Note that creating web public streams requires the
+            Note that creating web-public streams requires the
             `WEB_PUBLIC_STREAMS_ENABLED` [server setting][server-settings]
             to be enabled on the Zulip server in question, the organization
             to have enabled the `enable_spectator_access` realm setting, and
@@ -10663,7 +10663,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Whether web public streams and related anonymous access APIs/features
+                          Whether web-public streams and related anonymous access APIs/features
                           are enabled in this organization.
 
                           Can only be enabled if the `WEB_PUBLIC_STREAMS_ENABLED`
@@ -12663,7 +12663,7 @@ paths:
         - name: include_web_public
           in: query
           description: |
-            Include all web public streams.
+            Include all web-public streams.
           schema:
             type: boolean
             default: false
@@ -12914,7 +12914,7 @@ paths:
           description: |
             Change whether the stream is a web-public stream.
 
-            Note that creating web public streams requires the
+            Note that creating web-public streams requires the
             `WEB_PUBLIC_STREAMS_ENABLED` [server setting][server-settings]
             to be enabled on the Zulip server in question, the organization
             to have enabled the `enable_spectator_access` realm setting, and
