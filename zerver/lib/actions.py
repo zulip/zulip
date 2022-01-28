@@ -4069,7 +4069,7 @@ def bulk_add_subscriptions(
 # subscribing users to streams; we use a transaction to ensure that
 # the RealmAuditLog entries are created atomically with the
 # Subscription object creation (and updates).
-@transaction.atomic
+@transaction.atomic(savepoint=False)
 def bulk_add_subs_to_db_with_logging(
     realm: Realm,
     acting_user: Optional[UserProfile],
@@ -4976,7 +4976,7 @@ def do_change_default_all_public_streams(
         )
 
 
-@transaction.atomic
+@transaction.atomic(durable=True)
 def do_change_user_role(
     user_profile: UserProfile, value: int, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -6621,7 +6621,7 @@ class DeleteMessagesEvent(TypedDict, total=False):
 
 
 # We use transaction.atomic to support select_for_update in the attachment codepath.
-@transaction.atomic
+@transaction.atomic(savepoint=False)
 def do_update_message(
     user_profile: UserProfile,
     target_message: Message,
