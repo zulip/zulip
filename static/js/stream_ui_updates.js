@@ -70,6 +70,7 @@ export function update_toggler_for_sub(sub) {
         }
         stream_edit.toggler.disable_tab("personal_settings");
     }
+    update_toggler_for_sub_private_settings(sub);
 }
 
 export function update_settings_button_for_sub(sub) {
@@ -88,7 +89,10 @@ export function update_settings_button_for_sub(sub) {
         settings_button.attr("title", "");
         initialize_cant_subscribe_popover(sub);
         settings_button.prop("disabled", true);
+<<<<<<< HEAD
 
+=======
+>>>>>>> Update stream_ui_updates.js
         update_toggler_for_sub_private_settings(sub);
     }
 }
