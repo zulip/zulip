@@ -977,7 +977,7 @@ def json_fetch_api_key(
         if not authenticate(
             request=request, username=user_profile.delivery_email, password=password, realm=realm
         ):
-            raise JsonableError(_("Your username or password is incorrect."))
+            raise JsonableError(_("Password is incorrect."))
 
     api_key = get_api_key(user_profile)
     return json_success({"api_key": api_key, "email": user_profile.delivery_email})

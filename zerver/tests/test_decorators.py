@@ -1143,7 +1143,7 @@ class FetchAPIKeyTest(ZulipTestCase):
     def test_fetch_api_key_wrong_password(self) -> None:
         self.login("cordelia")
         result = self.client_post("/json/fetch_api_key", dict(password="wrong_password"))
-        self.assert_json_error_contains(result, "password is incorrect")
+        self.assert_json_error_contains(result, "Password is incorrect")
 
 
 class InactiveUserTest(ZulipTestCase):

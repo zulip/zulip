@@ -4345,7 +4345,7 @@ class JSONFetchAPIKeyTest(ZulipTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
         result = self.client_post("/json/fetch_api_key", dict(password="wrong"))
-        self.assert_json_error(result, "Your username or password is incorrect.", 400)
+        self.assert_json_error(result, "Password is incorrect.", 400)
 
     def test_invalid_subdomain(self) -> None:
         username = "hamlet"
