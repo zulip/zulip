@@ -45,16 +45,10 @@ export const show_subs_pane = {
         $(".nothing-selected").show();
         $("#subscription_overlay .stream-info-title").text($t({defaultMessage: "Stream settings"}));
     },
-    settings(stream_name, invite_only, is_web_public) {
+    settings(sub) {
         $(".settings, #stream-creation").hide();
         $(".settings").show();
-        $("#subscription_overlay .stream-info-title").html(
-            render_selected_stream_title({
-                stream_name,
-                invite_only,
-                is_web_public,
-            }),
-        );
+        $("#subscription_overlay .stream-info-title").html(render_selected_stream_title(sub));
     },
     create_stream() {
         $(".nothing-selected, .settings, #stream-creation").hide();
