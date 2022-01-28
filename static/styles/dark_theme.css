@@ -357,6 +357,10 @@ body.dark-theme {
         border-color: hsla(0, 0%, 0%, 0.9);
     }
 
+    .ind-tab.disabled {
+        color: hsla(0, 0%, 42%, 0.9) !important;
+    }
+
     .message_reactions:hover .message_reaction + .reaction_button,
     .message_reactions .message_reaction {
         background-color: transparent;

@@ -8,6 +8,7 @@ import sys
 import time
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+from scripts.lib.supervisor import list_supervisor_processes
 from scripts.lib.zulip_tools import (
     DEPLOYMENTS_DIR,
     ENDC,
@@ -18,7 +19,6 @@ from scripts.lib.zulip_tools import (
     get_tornado_ports,
     has_application_server,
     has_process_fts_updates,
-    list_supervisor_processes,
     overwrite_symlink,
     start_arg_parser,
 )
@@ -71,7 +71,7 @@ if has_application_server():
     if action == "start" or args.less_graceful:
         workers.append("zulip-workers:*")
     else:
-        workers.extend(list_supervisor_processes("zulip-workers:*"))
+        workers.extend(list_supervisor_processes(["zulip-workers:*"]))
 
     if has_application_server(once=True):
         # These used to be included in "zulip-workers:*"; since we may
@@ -81,13 +81,22 @@ if has_application_server():
         # `supervisorctl`.
         workers.extend(
             list_supervisor_processes(
-                "zulip_deliver_scheduled_emails",
-                "zulip_deliver_scheduled_messages",
+                [
+                    "zulip_deliver_scheduled_emails",
+                    "zulip_deliver_scheduled_messages",
+                ]
             )
         )
 
 if has_process_fts_updates():
     workers.append("process-fts-updates")
+
+# Before we start (re)starting main services, make sure to start any
+# optional auxiliary services that we don't stop, but do expect to be
+# running, and aren't currently.
+aux_services = list_supervisor_processes(["go-camo", "smokescreen"], only_running=False)
+if aux_services:
+    subprocess.check_call(["supervisorctl", "start", *aux_services])
 
 if action == "restart" and len(workers) > 0:
     if args.less_graceful:

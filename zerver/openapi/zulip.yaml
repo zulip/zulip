@@ -1966,9 +1966,14 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent when a message has been edited.
+                                Event sent when a message's content, topic and/or
+                                stream has been edited or when a message's content
+                                has a rendering update, such as for an
+                                [inline URL preview][inline-url-previews].
                                 Sent to all users who had received the original
                                 message.
+
+                                [inline-url-previews]: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#inline-url-previews
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1979,20 +1984,42 @@ paths:
                                         - update_message
                                 user_id:
                                   type: integer
+                                  nullable: true
                                   description: |
                                     The ID of the user who sent the message.
 
-                                    Not present if update_message event is for providing inline URL
-                                    preview in message.
+                                    Null when event is for a rendering update of the original message,
+                                    such as for an [inline URL preview][inline-url-previews].
+
+                                    **Changes**: As of Zulip 5.0 (feature level 114), this field
+                                    is present for all `update_message` events. Previously, this
+                                    field was omitted for [inline URL preview][inline-url-previews]
+                                    updates.
+                                rendering_only:
+                                  type: boolean
+                                  description: |
+                                    Whether the event only updates the rendered content of the message.
+
+                                    This field should be used by clients to determine if the event
+                                    only provides a rendering update to the message content,
+                                    such as for an [inline URL preview][inline-url-previews].
+                                    When `True`, the event does not reflect a user-generated edit
+                                    and does not modify the message history.
+
+                                    **Changes**: New in Zulip 5.0 (feature level 114). Clients can
+                                    correctly identify these rendering update event with earlier
+                                    Zulip versions by checking whether the `user_id` field was omitted.
                                 message_id:
                                   type: integer
                                   description: |
-                                    The ID of the message which was edited.
+                                    The ID of the message which was edited or updated.
 
                                     This field should be used to apply content edits to the client's
-                                    cached message history. If the stream or topic was changed, the
-                                    set of moved messages is encoded in the separate `message_ids`
-                                    field, which is guaranteed to include `message_id`.
+                                    cached message history, or to apply rendered content updates.
+
+                                    If the stream or topic was changed, the set of moved messages is
+                                    encoded in the separate `message_ids` field, which is guaranteed
+                                    to include `message_id`.
                                 message_ids:
                                   type: array
                                   items:
@@ -2033,19 +2060,21 @@ paths:
                                     The time when this message edit operation was processed by the
                                     server.
 
-                                    Not present if update_message event is for providing inline URL
-                                    preview in message.
+                                    **Changes**: As of Zulip 5.0 (feature level 114), this field
+                                    is present for all `update_message` events. Previously, this
+                                    field was omitted for [inline URL preview][inline-url-previews]
+                                    updates.
                                 stream_name:
                                   type: string
                                   description: |
-                                    Only present if the message was originally sent to a stream.
+                                    Only present if the message was edited and originally sent to a stream.
 
                                     The name of the stream that the message was sent to. Clients
                                     are recommended to use the `stream_id` field instead.
                                 stream_id:
                                   type: integer
                                   description: |
-                                    Only present if the message was originally sent to a stream.
+                                    Only present if the message was edited and originally sent to a stream.
 
                                     The pre-edit stream for all of the messages with IDs in
                                     `message_ids`.
@@ -2068,9 +2097,12 @@ paths:
                                     topic and/or stream.
 
                                     The choice the editing user made about which messages should be
-                                    affected by a stream/topic edit: just the one indicated in
-                                    `message_id`, messages in the same topic that had been sent
-                                    after this one, or all messages in that topic.
+                                    affected by a stream/topic edit:
+
+                                    - `change_one` => Just change the one indicated in `message_id`.
+                                    - `change_later` => Change messages in the same topic that had
+                                      been sent after this one.
+                                    - `change_all`=> Change all messages in that topic.
 
                                     This parameter should be used to decide whether to change
                                     navigation and compose box state in response to the edit. For
@@ -2159,14 +2191,18 @@ paths:
                                 content:
                                   type: string
                                   description: |
-                                    Only present if this event changed the message content.
+                                    Only present if this event changed the message content or
+                                    updated the message content for an
+                                    [inline URL preview][inline-url-previews].
 
                                     The new content of the message with ID `message_id`, in the
                                     original Markdown.
                                 rendered_content:
                                   type: string
                                   description: |
-                                    Only present if this event changed the message content.
+                                    Only present if this event changed the message content or
+                                    updated the message content for an
+                                    [inline URL preview][inline-url-previews].
 
                                     The new content of the message with ID `message_id`,
                                     rendered in HTML.
@@ -2182,9 +2218,12 @@ paths:
                               required:
                                 - "type"
                                 - "id"
+                                - "user_id"
                                 - "message_id"
                                 - "message_ids"
                                 - "flags"
+                                - "edit_timestamp"
+                                - "rendering_only"
                               example:
                                 {
                                   "type": "update_message",
@@ -2205,6 +2244,7 @@ paths:
                                   "topic_links": [],
                                   "message_ids": [58, 57],
                                   "flags": [],
+                                  "rendering_only": false,
                                   "id": 0,
                                 }
                             - type: object
@@ -6131,8 +6171,8 @@ paths:
                           - 400
                           - 600
                         description: |
-                          [Organization-level role](/help/roles-and-permissions)) of the user.
-                          Poosible values are:
+                          [Organization-level role](/help/roles-and-permissions) of the user.
+                          Possible values are:
 
                           - Organization owner => 100
                           - Organization administrator => 200
@@ -15190,8 +15230,8 @@ components:
           description: |
             ## Missing request parameter(s)
 
-            A typical failed JSON response for when a required request parameter:
-            is not supplied
+            A typical failed JSON response for when a required request parameter
+            is not supplied:
           properties:
             result: {}
             msg: {}
@@ -15249,6 +15289,12 @@ components:
             }
           description: |
             ## Rate limit exceeded
+
+            The `retry-after` parameter in the response indicates how many seconds
+            the client must wait before making additional requests.
+
+            **Changes**: The `code` field was not present in rate
+            limit errors before Zulip 4.0 (feature level 36).
 
             A typical failed JSON response for when a rate limit is exceeded:
     RealmDeactivatedError:

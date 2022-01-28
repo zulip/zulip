@@ -20,6 +20,19 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 5.0
 
+**Feature level 114**
+
+* [`GET /events`](/api/get-events): Added `rendering_only` field to
+  `update_message` event type to indicate if the message change only
+  updated the rendering of the message or if it was the result of a
+  user interaction.
+
+* [`GET /events`](/api/get-events): Updated `update_message` event type
+  to always include `edit_timestamp` and `user_id` fields. If the event
+  only updates the rendering of the message, then the `user_id` field
+  will be present, but with a value of null as the update was not the
+  result of a user interaction.
+
 **Feature level 113**
 
 * `GET /realm/emoji`, `POST /realm/emoji/{emoji_name}`, [`GET
@@ -590,7 +603,7 @@ field with an integer field `invite_to_realm_policy`.
 * [`POST /users`](/api/create-user): Restricted access to organization
   administrators with the `can_create_users` permission.
 * [Error handling](/api/rest-error-handling): The `code` property will
-  not be present in errors due to rate limits.
+  now be present in errors due to rate limits.
 
 **Feature level 35**
 

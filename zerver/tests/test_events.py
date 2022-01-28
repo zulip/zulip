@@ -154,7 +154,6 @@ from zerver.lib.event_schema import (
     check_update_display_settings,
     check_update_global_notifications,
     check_update_message,
-    check_update_message_embedded,
     check_update_message_flags_add,
     check_update_message_flags_remove,
     check_user_group_add,
@@ -466,6 +465,7 @@ class NormalActionsTest(BaseAction):
             has_content=True,
             has_topic=False,
             has_new_stream_id=False,
+            is_embedded_update_only=False,
         )
 
     def test_huddle_send_message_events(self) -> None:
@@ -526,6 +526,7 @@ class NormalActionsTest(BaseAction):
             has_content=True,
             has_topic=False,
             has_new_stream_id=False,
+            is_embedded_update_only=False,
         )
 
         # Verify stream message editing - topic only
@@ -555,15 +556,25 @@ class NormalActionsTest(BaseAction):
             has_content=False,
             has_topic=True,
             has_new_stream_id=False,
+            is_embedded_update_only=False,
         )
 
+        # Verify special case of embedded content update
         content = "embed_content"
         rendering_result = render_markdown(message, content)
         events = self.verify_action(
             lambda: do_update_embedded_data(self.user_profile, message, content, rendering_result),
             state_change_expected=False,
         )
-        check_update_message_embedded("events[0]", events[0])
+        check_update_message(
+            "events[0]",
+            events[0],
+            is_stream_message=False,
+            has_content=False,
+            has_topic=False,
+            has_new_stream_id=False,
+            is_embedded_update_only=True,
+        )
 
         # Verify move topic to different stream.
 
@@ -602,6 +613,7 @@ class NormalActionsTest(BaseAction):
             has_content=False,
             has_topic=False,
             has_new_stream_id=True,
+            is_embedded_update_only=False,
         )
 
     def test_update_message_flags(self) -> None:
