@@ -22,11 +22,18 @@ import * as markdown from "./markdown";
 import * as narrow from "./narrow";
 import * as overlays from "./overlays";
 import * as people from "./people";
+import * as rendered_markdown from "./rendered_markdown";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as ui_util from "./ui_util";
 import * as util from "./util";
+
+function update_rendered_elements(parent) {
+    parent.find(".rendered_markdown").each(function () {
+        rendered_markdown.update_elements($(this));
+    });
+}
 
 function set_count(count) {
     const drafts_li = $(".top_left_drafts");
@@ -410,6 +417,7 @@ export function launch() {
         if ($("#drafts_table .draft-row").length > 0) {
             $("#drafts_table .no-drafts").hide();
         }
+        update_rendered_elements($("#drafts_table"));
     }
 
     function setup_event_handlers() {

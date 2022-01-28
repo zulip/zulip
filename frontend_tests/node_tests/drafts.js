@@ -412,6 +412,10 @@ test("format_drafts", ({override_rewire, mock_template}) => {
 
     $("#drafts_table").append = noop;
 
+    override_rewire(drafts, "update_rendered_elements", (obj) => {
+        assert.equal(obj, $("#drafts_table"));
+    });
+
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     const data = {id1: draft_1, id2: draft_2, id3: draft_3, id4: draft_4, id5: draft_5};
