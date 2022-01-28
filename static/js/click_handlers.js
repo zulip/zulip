@@ -6,6 +6,7 @@ import WinChan from "winchan";
 // You won't find every click handler here, but it's a good place to start!
 
 import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
+import render_status_emoji_name_tooltip_content from "../templates/status_emoji_name_tooltip_content.hbs";
 
 import * as activity from "./activity";
 import * as blueslip from "./blueslip";
@@ -544,25 +545,41 @@ export function initialize() {
             $(".tooltip").remove();
         });
 
-    function do_render_buddy_list_tooltip(elem, title_data) {
-        let placement = "left";
-        let observer;
+    // Common properties of do_render_buddy_list_tooltip(elem, title_data)
+    // and do_render_status_emoji_name_tooltip(elem, title_data).
+    let placement;
+    const user_list_tooltip_props = {
+        delay: 0,
+        arrow: true,
+        allowHTML: true,
+        showOnCreate: true,
+    };
+
+    let status_emoji_name_tooltip;
+
+    function calculate_tooltip_placement(placement) {
         if (window.innerWidth < media_breakpoints_num.md) {
             // On small devices display tooltips based on available space.
             // This will default to "bottom" placement for this tooltip.
             placement = "auto";
         }
+        return placement;
+    }
+
+    function do_render_buddy_list_tooltip(elem, title_data) {
+        placement = calculate_tooltip_placement("left");
+        let observer;
         tippy(elem[0], {
             // Quickly display and hide right sidebar tooltips
             // so that they don't stick and overlap with
             // each other.
-            delay: 0,
-            content: render_buddy_list_tooltip_content(title_data),
-            arrow: true,
+            ...user_list_tooltip_props,
             placement,
-            allowHTML: true,
-            showOnCreate: true,
+            content: render_buddy_list_tooltip_content(title_data),
             onHidden: (instance) => {
+                if (status_emoji_name_tooltip) {
+                    status_emoji_name_tooltip.destroy();
+                }
                 instance.destroy();
                 observer.disconnect();
             },
@@ -602,6 +619,32 @@ export function initialize() {
         const user_id_string = elem.attr("data-user-id");
         const title_data = buddy_data.get_title_data(user_id_string, false);
         do_render_buddy_list_tooltip(elem.parent(), title_data);
+    });
+
+    function do_render_status_emoji_name_tooltip(elem, title_data) {
+        placement = calculate_tooltip_placement("bottom");
+        tippy(elem[0], {
+            // Quickly display and hide status emoji name tooltips
+            // so that they don't stick and overlap with
+            // each other.
+            ...user_list_tooltip_props,
+            placement,
+            content: render_status_emoji_name_tooltip_content(title_data),
+            onShow: (instance) => {
+                status_emoji_name_tooltip = instance;
+            },
+            appendTo: () => document.body,
+        });
+    }
+
+    // STATUS EMOJI TOOLTIPS
+    $("#user_presences").on("mouseenter", ".status_emoji", (e) => {
+        e.stopPropagation();
+        const elem = $(e.currentTarget).closest(".user_sidebar_entry").find(".user-presence-link");
+        const user_id = Number.parseInt(elem.attr("data-user-id"), 10);
+        const status_emoji_name = buddy_data.info_for(user_id).status_emoji_info.emoji_name;
+        const status_emoji_elem = $(e.currentTarget);
+        do_render_status_emoji_name_tooltip(status_emoji_elem, {status_emoji_name});
     });
 
     // PM LIST TOOLTIPS
