@@ -140,9 +140,12 @@ class APIArgumentsTablePreprocessor(Preprocessor):
         for argument in arguments:
             name = argument.get("argument") or argument.get("name")
             description = argument["description"]
-            oneof = ["`" + str(item) + "`" for item in argument.get("schema", {}).get("enum", [])]
-            if oneof:
-                description += "\nMust be one of: {}.".format(", ".join(oneof))
+            enums = argument.get("schema", {}).get("enum")
+            if enums is not None:
+                formatted_enums = [
+                    OBJECT_CODE_TEMPLATE.format(value=json.dumps(enum)) for enum in enums
+                ]
+                description += "\nMust be one of: {}. ".format(", ".join(formatted_enums))
 
             default = argument.get("schema", {}).get("default")
             if default is not None:
