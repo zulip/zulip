@@ -93,7 +93,7 @@ test("build_private_messages_list", ({override}) => {
             is_zero: false,
             is_active: false,
             url: "#narrow/pm-with/101,102-group",
-            user_circle_class: "user_circle_fraction",
+            user_circle_class: undefined,
             is_group: true,
         },
     ];
@@ -143,7 +143,7 @@ test("build_private_messages_list_bot", ({override}) => {
             is_zero: false,
             is_active: false,
             url: "#narrow/pm-with/101,102-group",
-            user_circle_class: "user_circle_fraction",
+            user_circle_class: undefined,
             is_group: true,
         },
     ];
