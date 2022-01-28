@@ -1272,7 +1272,7 @@ td.pointer {
     opacity: 1;
 }
 
-.selected_message {
+.enable_selections .selected_message {
     .messagebox {
         z-index: 1;
     }

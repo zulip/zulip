@@ -3,6 +3,7 @@ import $ from "jquery";
 import * as emoji from "../shared/js/emoji";
 
 import * as activity from "./activity";
+import * as blue from "./blue";
 import * as browser_history from "./browser_history";
 import * as common from "./common";
 import * as compose from "./compose";
@@ -663,6 +664,7 @@ export function process_hotkey(e, hotkey) {
     }
 
     if (event_name === "narrow_to_compose_target") {
+        blue.hotkey();
         narrow.to_compose_target();
         return true;
     }
@@ -759,6 +761,7 @@ export function process_hotkey(e, hotkey) {
     // Shortcuts that don't require a message
     switch (event_name) {
         case "narrow_private":
+            blue.hotkey();
             return do_narrow_action((target, opts) => {
                 narrow.by("is", "private", opts);
             });
@@ -770,6 +773,7 @@ export function process_hotkey(e, hotkey) {
             return true;
         case "search":
         case "search_with_k":
+            blue.hotkey();
             search.initiate_search();
             return true;
         case "gear_menu":
@@ -785,9 +789,11 @@ export function process_hotkey(e, hotkey) {
             narrow.stream_cycle_forward();
             return true;
         case "n_key":
+            blue.hotkey();
             narrow.narrow_to_next_topic();
             return true;
         case "p_key":
+            blue.hotkey();
             narrow.narrow_to_next_pm_string();
             return true;
         case "open_recent_topics":
@@ -837,31 +843,47 @@ export function process_hotkey(e, hotkey) {
     switch (event_name) {
         case "down_arrow":
         case "vim_down":
-            navigate.down(true); // with_centering
+            if (blue.is_enabled()) {
+                navigate.down(true); // with_centering
+            } else {
+                blue.enable();
+            }
             return true;
         case "up_arrow":
         case "vim_up":
-            navigate.up();
+            if (blue.is_enabled()) {
+                navigate.up();
+            } else {
+                blue.enable();
+            }
             return true;
         case "home":
+            blue.enable();
             navigate.to_home();
             return true;
         case "end":
         case "G_end":
+            blue.enable();
             navigate.to_end();
             return true;
         case "page_up":
         case "vim_page_up":
         case "shift_spacebar":
+            blue.enable();
             navigate.page_up();
             return true;
         case "page_down":
         case "vim_page_down":
         case "spacebar":
+            blue.enable();
             navigate.page_down();
             return true;
         case "copy_with_c":
-            copy_and_paste.copy_handler();
+            if (blue.is_enabled()) {
+                copy_and_paste.copy_handler();
+            } else {
+                blue.enable();
+            }
             return true;
     }
 
@@ -885,8 +907,10 @@ export function process_hotkey(e, hotkey) {
             message_flags.toggle_starred_and_update_server(msg);
             return true;
         case "narrow_by_recipient":
+            blue.hotkey();
             return do_narrow_action(narrow.by_recipient);
         case "narrow_by_topic":
+            blue.hotkey();
             return do_narrow_action(narrow.by_topic);
         case "respond_to_author": // 'R': respond to author
             compose_actions.respond_to_message({reply_type: "personal", trigger: "hotkey pm"});

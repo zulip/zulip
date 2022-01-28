@@ -8,6 +8,7 @@ import WinChan from "winchan";
 import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
 
 import * as activity from "./activity";
+import * as blue from "./blue";
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as buddy_data from "./buddy_data";
@@ -824,6 +825,7 @@ export function initialize() {
             return;
         }
 
+        blue.disable();
         // Dismiss popovers if the user has clicked outside them
         if (
             $(

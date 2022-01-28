@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import {all_messages_data} from "./all_messages_data";
+import * as blue from "./blue";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
@@ -197,6 +198,7 @@ export function activate(raw_operators, opts) {
          or rerendering due to server-side changes.
     */
 
+    blue.maybe_disable();
     const start_time = new Date();
 
     reset_ui_state();
@@ -856,6 +858,7 @@ export function deactivate(coming_from_recent_topics = false) {
       message_list_data structure caching system that happens to have
       message_lists.home in it.
      */
+    blue.maybe_disable();
     search.clear_search_form();
     // Both All messages and Recent topics have `undefined` filter.
     // Return if already in the All message narrow.
