@@ -7624,15 +7624,13 @@ paths:
 
             Automatic detection is implementing using the standard `prefers-color-scheme`
             media query.
-          content:
-            application/json:
-              schema:
-                type: integer
-                enum:
-                  - 1
-                  - 2
-                  - 3
-              example: 1
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
         - name: enable_drafts_synchronization
           in: query
           description: |
@@ -7704,15 +7702,13 @@ paths:
             - 1 - Automatic
             - 2 - Always
             - 3 - Never
-          content:
-            application/json:
-              schema:
-                type: integer
-                enum:
-                  - 1
-                  - 2
-                  - 3
-              example: 1
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
         - name: enable_stream_desktop_notifications
           in: query
           description: |
@@ -7832,15 +7828,13 @@ paths:
             - 1 - All unreads
             - 2 - Private messages and mentions
             - 3 - None
-          content:
-            application/json:
-              schema:
-                type: integer
-                enum:
-                  - 1
-                  - 2
-                  - 3
-              example: 1
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
         - name: realm_name_in_notifications
           in: query
           description: |
@@ -12171,16 +12165,13 @@ paths:
             media query.
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
-            the `PATCH /settings/display` endpoint.
-          content:
-            application/json:
-              schema:
-                type: integer
-                enum:
-                  - 1
-                  - 2
-                  - 3
-              example: 1
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
         - name: enable_drafts_synchronization
           in: query
           description: |
@@ -12290,15 +12281,13 @@ paths:
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
             the `PATCH /settings/display` endpoint.
-          content:
-            application/json:
-              schema:
-                type: integer
-                enum:
-                  - 1
-                  - 2
-                  - 3
-              example: 1
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
         - name: timezone
           in: query
           description: |
@@ -12502,15 +12491,13 @@ paths:
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
             the `PATCH /settings/notifications` endpoint.
-          content:
-            application/json:
-              schema:
-                type: integer
-                enum:
-                  - 1
-                  - 2
-                  - 3
-              example: 1
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
         - name: realm_name_in_notifications
           in: query
           description: |
