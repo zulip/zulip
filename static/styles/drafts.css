@@ -87,6 +87,8 @@
 
         &.active {
             outline: 2px solid hsl(215, 47%, 50%);
+            /* this offset ensures no gap between the blue box and the draft in active state */
+            outline-offset: -1px;
         }
 
         .message_row {
