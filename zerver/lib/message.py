@@ -717,7 +717,7 @@ def access_web_public_message(
     message_id: int,
 ) -> Message:
     """Access control method for unauthenticated requests interacting
-    with a message in web public streams.
+    with a message in web-public streams.
     """
 
     # We throw a MissingAuthenticationError for all errors in this
