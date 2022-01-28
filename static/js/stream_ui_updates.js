@@ -69,18 +69,24 @@ export function update_toggler_for_sub(sub) {
             stream_edit.toggler.goto(stream_edit.select_tab);
         }
         stream_edit.toggler.disable_tab("personal_settings");
+
+        update_toggler_for_sub_private_settings(sub);
     }
 }
 
 export function update_toggler_for_sub_private_settings(sub) {
     if (!hash_util.is_editing_stream(sub.stream_id)) {
         return;
-        // this is for the sub to see only when if a person issub ifhe un subs he
-        // will not see that again until
-        // subs
     }
+    // this is for the sub to see only when if a person issub ifhe un subs he
+    // will not see that again until
+    // subs
+
     if (!sub.subscribed) {
         if (sub.invite_only && !sub.history_public_to_subscribers) {
+            stream_edit.toggler.disable_tab("subscriber_settings");
+        }
+        if (sub.invite_only && sub.history_public_to_subscribers) {
             stream_edit.toggler.disable_tab("subscriber_settings");
         } else {
             return;

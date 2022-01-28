@@ -255,7 +255,6 @@ export function show_settings_for(node) {
 
     $("#stream_settings .tab-container").prepend(toggler.get());
     stream_ui_updates.update_toggler_for_sub(sub);
-    stream_ui_updates.update_toggler_for_sub_private_settings(sub);
 
     const edit_container = stream_settings_containers.get_edit_container(sub);
 
