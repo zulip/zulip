@@ -1285,6 +1285,7 @@ td.pointer {
 .unread_marker {
     display: block;
     position: absolute;
+    height: 100%;
     left: 2px;
     top: 0;
     opacity: 0;
