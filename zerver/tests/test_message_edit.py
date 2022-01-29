@@ -9,6 +9,7 @@ from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import (
+    do_add_reaction,
     do_change_realm_plan_type,
     do_change_stream_post_policy,
     do_change_user_role,
@@ -2165,6 +2166,8 @@ class EditMessageTest(EditMessageTestCase):
         self.login("iago")
         admin_user = self.example_user("iago")
         hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        aaron = self.example_user("aaron")
 
         # Set the user's translation language to German to test that
         # it is overridden by the realm's default language.
@@ -2173,10 +2176,15 @@ class EditMessageTest(EditMessageTestCase):
         stream = self.make_stream("new")
         self.subscribe(admin_user, stream.name)
         self.subscribe(hamlet, stream.name)
+        self.subscribe(cordelia, stream.name)
+        self.subscribe(aaron, stream.name)
 
         original_topic = "topic 1"
         id1 = self.send_stream_message(hamlet, "new", topic_name=original_topic)
         id2 = self.send_stream_message(admin_user, "new", topic_name=original_topic)
+
+        msg1 = Message.objects.get(id=id1)
+        do_add_reaction(aaron, msg1, "tada", "1f389", "unicode_emoji")
 
         # Check that we don't incorrectly send "unresolve topic"
         # notifications when asking the preserve the current topic.
@@ -2214,6 +2222,23 @@ class EditMessageTest(EditMessageTestCase):
         self.assertEqual(
             messages[2].content,
             f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
+        )
+
+        # Check topic resolved notification message is only unread for participants.
+        assert (
+            UserMessage.objects.filter(
+                user_profile__in=[admin_user, hamlet, aaron], message__id=messages[2].id
+            )
+            .extra(where=[UserMessage.where_unread()])
+            .count()
+            == 3
+        )
+
+        assert (
+            UserMessage.objects.filter(user_profile=cordelia, message__id=messages[2].id)
+            .extra(where=[UserMessage.where_unread()])
+            .count()
+            == 0
         )
 
         # Now move to a weird state and confirm no new messages
@@ -2265,6 +2290,23 @@ class EditMessageTest(EditMessageTestCase):
         self.assertEqual(
             messages[3].content,
             f"@_**Iago|{admin_user.id}** has marked this topic as unresolved.",
+        )
+
+        # Check topic unresolved notification message is only unread for participants.
+        assert (
+            UserMessage.objects.filter(
+                user_profile__in=[admin_user, hamlet, aaron], message__id=messages[3].id
+            )
+            .extra(where=[UserMessage.where_unread()])
+            .count()
+            == 3
+        )
+
+        assert (
+            UserMessage.objects.filter(user_profile=cordelia, message__id=messages[3].id)
+            .extra(where=[UserMessage.where_unread()])
+            .count()
+            == 0
         )
 
 

@@ -1910,6 +1910,7 @@ def build_message_send_dict(
     widget_content_dict: Optional[Dict[str, Any]] = None,
     email_gateway: bool = False,
     mention_backend: Optional[MentionBackend] = None,
+    limit_unread_user_ids: Optional[Set[int]] = None,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -2015,6 +2016,7 @@ def build_message_send_dict(
         wildcard_mention_user_ids=wildcard_mention_user_ids,
         links_for_embed=links_for_embed,
         widget_content=widget_content_dict,
+        limit_unread_user_ids=limit_unread_user_ids,
     )
 
     return message_send_dict
@@ -2069,6 +2071,7 @@ def do_send_messages(
                 stream_email_user_ids=send_request.stream_email_user_ids,
                 mentioned_user_ids=mentioned_user_ids,
                 mark_as_read_for_users=mark_as_read_for_users,
+                limit_unread_user_ids=send_request.limit_unread_user_ids,
             )
 
             for um in user_messages:
@@ -2280,6 +2283,7 @@ def create_user_messages(
     stream_email_user_ids: AbstractSet[int],
     mentioned_user_ids: AbstractSet[int],
     mark_as_read_for_users: Set[int],
+    limit_unread_user_ids: Optional[Set[int]],
 ) -> List[UserMessageLite]:
     # These properties on the Message are set via
     # render_markdown by code in the Markdown inline patterns
@@ -2316,8 +2320,10 @@ def create_user_messages(
     for user_profile_id in um_eligible_user_ids:
         flags = base_flags
         if (
-            user_profile_id == sender_id and message.sent_by_human()
-        ) or user_profile_id in mark_as_read_for_users:
+            (user_profile_id == sender_id and message.sent_by_human())
+            or user_profile_id in mark_as_read_for_users
+            or (limit_unread_user_ids is not None and user_profile_id not in limit_unread_user_ids)
+        ):
             flags |= UserMessage.flags.read
         if user_profile_id in mentioned_user_ids:
             flags |= UserMessage.flags.mentioned
@@ -3364,6 +3370,7 @@ def check_message(
     *,
     skip_stream_access_check: bool = False,
     mention_backend: Optional[MentionBackend] = None,
+    limit_unread_user_ids: Optional[Set[int]] = None,
 ) -> SendMessageRequest:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -3490,6 +3497,7 @@ def check_message(
         widget_content_dict=widget_content_dict,
         email_gateway=email_gateway,
         mention_backend=mention_backend,
+        limit_unread_user_ids=limit_unread_user_ids,
     )
 
     if stream is not None and message_send_dict.rendering_result.mentions_wildcard:
@@ -3507,6 +3515,7 @@ def _internal_prep_message(
     content: str,
     email_gateway: bool = False,
     mention_backend: Optional[MentionBackend] = None,
+    limit_unread_user_ids: Optional[Set[int]] = None,
 ) -> Optional[SendMessageRequest]:
     """
     Create a message object and checks it, but doesn't send it or save it to the database.
@@ -3537,6 +3546,7 @@ def _internal_prep_message(
             realm=realm,
             email_gateway=email_gateway,
             mention_backend=mention_backend,
+            limit_unread_user_ids=limit_unread_user_ids,
         )
     except JsonableError as e:
         logging.exception(
@@ -3555,6 +3565,7 @@ def internal_prep_stream_message(
     topic: str,
     content: str,
     email_gateway: bool = False,
+    limit_unread_user_ids: Optional[Set[int]] = None,
 ) -> Optional[SendMessageRequest]:
     """
     See _internal_prep_message for details of how this works.
@@ -3568,6 +3579,7 @@ def internal_prep_stream_message(
         addressee=addressee,
         content=content,
         email_gateway=email_gateway,
+        limit_unread_user_ids=limit_unread_user_ids,
     )
 
 
@@ -3629,9 +3641,12 @@ def internal_send_stream_message(
     topic: str,
     content: str,
     email_gateway: bool = False,
+    limit_unread_user_ids: Optional[Set[int]] = None,
 ) -> Optional[int]:
 
-    message = internal_prep_stream_message(sender, stream, topic, content, email_gateway)
+    message = internal_prep_stream_message(
+        sender, stream, topic, content, email_gateway, limit_unread_user_ids=limit_unread_user_ids
+    )
 
     if message is None:
         return None
@@ -6403,6 +6418,7 @@ def maybe_send_resolve_topic_notifications(
     stream: Stream,
     old_topic: str,
     new_topic: str,
+    changed_messages: List[Message],
 ) -> None:
     # Note that topics will have already been stripped in check_update_message.
     #
@@ -6434,6 +6450,14 @@ def maybe_send_resolve_topic_notifications(
         # not a bug with the "resolve topics" feature.
         return
 
+    # Compute the users who either sent or reacted to messages that
+    # were moved via the "resolve topic' action. Only those users
+    # should be eligible for this message being managed as unread.
+    affected_participant_ids = (set(message.sender_id for message in changed_messages)) | set(
+        Reaction.objects.filter(message__in=changed_messages).values_list(
+            "user_profile_id", flat=True
+        )
+    )
     sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
     user_mention = silent_mention_syntax_for_user(user_profile)
     with override_language(stream.realm.default_language):
@@ -6449,6 +6473,7 @@ def maybe_send_resolve_topic_notifications(
             notification_string.format(
                 user=user_mention,
             ),
+            limit_unread_user_ids=affected_participant_ids,
         )
 
 
@@ -7023,6 +7048,7 @@ def do_update_message(
             stream=stream_being_edited,
             old_topic=orig_topic_name,
             new_topic=topic_name,
+            changed_messages=changed_messages,
         )
 
     return len(changed_messages)

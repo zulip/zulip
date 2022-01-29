@@ -126,6 +126,7 @@ class SendMessageRequest:
     submessages: List[Dict[str, Any]] = field(default_factory=list)
     deliver_at: Optional[datetime.datetime] = None
     delivery_type: Optional[str] = None
+    limit_unread_user_ids: Optional[Set[int]] = None
 
 
 # We won't try to fetch more unread message IDs from the database than
