@@ -1717,6 +1717,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "sender_email": self.sender.email,
                     "sender_id": self.sender.id,
                     "stream": get_display_recipient(message.recipient),
+                    "stream_id": stream.id,
                     "topic": message.topic_name(),
                     "server": settings.EXTERNAL_HOST,
                     "realm_id": self.sender.realm.id,
@@ -1747,6 +1748,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "sender_email": self.sender.email,
                     "sender_id": self.sender.id,
                     "stream": get_display_recipient(message.recipient),
+                    "stream_id": stream.id,
                     "topic": message.topic_name(),
                     "server": settings.EXTERNAL_HOST,
                     "realm_id": self.sender.realm.id,
@@ -1780,6 +1782,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "sender_email": self.sender.email,
                     "sender_id": self.sender.id,
                     "stream": get_display_recipient(message.recipient),
+                    "stream_id": stream.id,
                     "topic": message.topic_name(),
                     "server": settings.EXTERNAL_HOST,
                     "realm_id": self.sender.realm.id,
@@ -1814,6 +1817,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "sender_email": self.sender.email,
                     "sender_id": self.sender.id,
                     "stream": get_display_recipient(message.recipient),
+                    "stream_id": stream.id,
                     "topic": message.topic_name(),
                     "server": settings.EXTERNAL_HOST,
                     "realm_id": self.sender.realm.id,
@@ -1901,6 +1905,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "sender_avatar_url": absolute_avatar_url(message.sender),
             "recipient_type": "stream",
             "stream": get_display_recipient(message.recipient),
+            "stream_id": stream.id,
             "topic": message.topic_name(),
         }
 
@@ -1995,6 +2000,7 @@ class TestGetGCMPayload(PushNotificationTest):
                 "recipient_type": "stream",
                 "topic": "Test topic",
                 "stream": "Denmark",
+                "stream_id": stream.id,
             },
         )
         self.assertDictEqual(
@@ -2032,6 +2038,7 @@ class TestGetGCMPayload(PushNotificationTest):
                 "recipient_type": "stream",
                 "topic": "Test topic",
                 "stream": "Denmark",
+                "stream_id": stream.id,
             },
         )
         self.assertDictEqual(

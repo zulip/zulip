@@ -714,6 +714,7 @@ def get_message_payload(
     if message.recipient.type == Recipient.STREAM:
         data["recipient_type"] = "stream"
         data["stream"] = get_display_recipient(message.recipient)
+        data["stream_id"] = message.recipient.type_id
         data["topic"] = message.topic_name()
     elif message.recipient.type == Recipient.HUDDLE:
         data["recipient_type"] = "private"
