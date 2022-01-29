@@ -8544,9 +8544,12 @@ def do_send_user_group_members_update_event(
     event_name: str, user_group: UserGroup, user_ids: List[int]
 ) -> None:
     event = dict(type="user_group", op=event_name, group_id=user_group.id, user_ids=user_ids)
-    send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
+    transaction.on_commit(
+        lambda: send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
+    )
 
 
+@transaction.atomic(savepoint=False)
 def bulk_add_members_to_user_group(user_group: UserGroup, user_profiles: List[UserProfile]) -> None:
     memberships = [
         UserGroupMembership(user_group_id=user_group.id, user_profile=user_profile)
@@ -8558,6 +8561,7 @@ def bulk_add_members_to_user_group(user_group: UserGroup, user_profiles: List[Us
     do_send_user_group_members_update_event("add_members", user_group, user_ids)
 
 
+@transaction.atomic(savepoint=False)
 def remove_members_from_user_group(user_group: UserGroup, user_profiles: List[UserProfile]) -> None:
     UserGroupMembership.objects.filter(
         user_group_id=user_group.id, user_profile__in=user_profiles
