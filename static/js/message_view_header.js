@@ -127,6 +127,9 @@ function build_message_view_header(filter) {
         const message_view_header_data = make_message_view_header(filter);
         append_and_display_title_area(message_view_header_data);
         bind_title_area_handlers();
+        if (recent_topics_util.is_visible) {
+            $("#search_query").val("");
+        }
         if (page_params.search_pills_enabled && $("#search_query").is(":focus")) {
             open_search_bar_and_close_narrow_description();
         } else {
