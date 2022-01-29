@@ -5,6 +5,7 @@ import generated_emoji_codes from "../generated/emoji/emoji_codes.json";
 import generated_pygments_data from "../generated/pygments_data.json";
 import * as emoji from "../shared/js/emoji";
 import * as fenced_code from "../shared/js/fenced_code";
+import render_compose from "../templates/compose.hbs";
 import render_edit_content_button from "../templates/edit_content_button.hbs";
 import render_left_sidebar from "../templates/left_sidebar.hbs";
 import render_navbar from "../templates/navbar.hbs";
@@ -16,6 +17,7 @@ import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as click_handlers from "./click_handlers";
+import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
@@ -183,6 +185,18 @@ function initialize_navbar() {
     });
 
     $("#navbar-container").html(rendered_navbar);
+}
+
+function initialize_compose_box() {
+    $("#compose-container").append(
+        render_compose({
+            embedded: $("#compose").attr("data-embedded") === "",
+            file_upload_enabled: page_params.max_file_upload_size_mib > 0,
+            giphy_enabled: giphy.is_giphy_enabled(),
+        }),
+    );
+    $(`.enter_sends_${user_settings.enter_sends}`).show();
+    common.adjust_mac_shortcuts(".enter_sends kbd");
 }
 
 export function initialize_kitchen_sink_stuff() {
@@ -554,8 +568,8 @@ export function initialize_everything() {
     // modules were migrated from Django templates to handlebars).
     initialize_left_sidebar();
     initialize_right_sidebar();
+    initialize_compose_box();
     settings.initialize();
-    compose.initialize();
     initialize_navbar();
     realm_logo.render();
 
@@ -598,6 +612,7 @@ export function initialize_everything() {
     markdown.initialize(markdown_config.get_helpers());
     linkifiers.initialize(page_params.realm_linkifiers);
     realm_playground.initialize(page_params.realm_playgrounds, generated_pygments_data);
+    compose.initialize();
     composebox_typeahead.initialize(); // Must happen after compose.initialize()
     search.initialize();
     tutorial.initialize();
