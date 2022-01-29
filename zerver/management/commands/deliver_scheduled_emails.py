@@ -48,4 +48,4 @@ Usage: ./manage.py deliver_scheduled_emails
                     except EmailNotDeliveredException:
                         logger.warning("%r not delivered", job)
                 else:
-                    time.sleep(2)
+                    time.sleep(10)
