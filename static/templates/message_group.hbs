@@ -2,7 +2,6 @@
 
 {{#each message_groups}}
     {{#with this}}
-
         {{#if show_group_date_divider}}
         <div class="date_row no-select">{{{group_date_divider_html}}}</div>
         {{/if}}
@@ -19,10 +18,5 @@
                 {{/with}}
             {{/each}}
         </div>
-
-        {{#if bookend_bottom}}
-        {{> bookend}}
-        {{/if}}
-
     {{/with}}
 {{/each}}
