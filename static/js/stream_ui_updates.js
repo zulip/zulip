@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import render_stream_permission_description from "../templates/stream_settings/stream_permission_description.hbs";
+import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
 import render_stream_settings_tip from "../templates/stream_settings/stream_settings_tip.hbs";
 
 import * as hash_util from "./hash_util";
@@ -136,6 +137,22 @@ export function update_change_stream_privacy_settings(sub) {
     } else {
         $stream_privacy_btn.hide();
     }
+}
+
+export function update_stream_privacy_icon_in_settings(sub) {
+    if (!hash_util.is_editing_stream(sub.stream_id)) {
+        return;
+    }
+
+    const $stream_settings = stream_settings_containers.get_edit_container(sub);
+
+    $stream_settings.find(".general_settings .large-icon").replaceWith(
+        render_stream_privacy_icon({
+            invite_only: sub.invite_only,
+            color: sub.color,
+            is_web_public: sub.is_web_public,
+        }),
+    );
 }
 
 export function update_permissions_banner(sub) {

@@ -212,6 +212,7 @@ export function update_stream_privacy(slim_sub, values) {
 
     // Update UI elements
     update_left_panel_row(sub);
+    stream_ui_updates.update_stream_privacy_icon_in_settings(sub);
     stream_ui_updates.update_stream_subscription_type_text(sub);
     stream_ui_updates.update_change_stream_privacy_settings(sub);
     stream_ui_updates.update_settings_button_for_sub(sub);
