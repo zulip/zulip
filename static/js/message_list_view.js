@@ -466,7 +466,6 @@ export class MessageListView {
             this.list !== message_lists.home &&
             last_msg_container.msg.historical !== first_msg_container.msg.historical
         ) {
-            second_group.bookend_top = true;
             this.add_subscription_marker(second_group, last_msg_container, first_msg_container);
         }
         return false;
