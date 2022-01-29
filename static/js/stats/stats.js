@@ -12,12 +12,12 @@ Plotly.register([PlotlyBar, PlotlyPie]);
 const font_14pt = {
     family: "Source Sans 3",
     size: 14,
-    color: "rgb(0,0,0)",
+    color: "hsl(0,0%,0%)",
 };
 
-let button_color = "rgb(235,235,235)";
+let button_color = "hsl(0,0%,92.2%)";
 
-let plot_color = "rgb(255,255,255)";
+let plot_color = "hsl(0,0%,100%)";
 
 //  function to set theme for stats page
 function setTheme(theme) {
@@ -25,14 +25,14 @@ function setTheme(theme) {
         document.querySelector("body").classList.remove("color-scheme-automatic");
         document.querySelector("body").classList.add("dark-theme");
         plot_color = "rgb(0,0,0)";
-        font_14pt.color = "rgb(221,222,238)";
-        button_color = "rgb(20,20,20)";
+        font_14pt.color = "hsl(236,33.3%,90%)";
+        button_color = "hsl(0,0%,7.8%)";
     } else {
         document.querySelector("body").classList.remove("dark-theme");
         document.querySelector("body").classList.add("color-scheme-automatic");
-        plot_color = "rgb(255,255,255)";
-        font_14pt.color = "rgb(0,0,0)";
-        button_color = "rgb(235,235,235)";
+        plot_color = "hsl(0,0%,100%)";
+        font_14pt.color = "hsl(0,0%,0%)";
+        button_color = "hsl(0,0%,92.2%)";
     }
 }
 
