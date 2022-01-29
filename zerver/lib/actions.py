@@ -2059,8 +2059,8 @@ def do_send_messages(
             mentioned_user_ids = send_request.rendering_result.mentions_user_ids
 
             # Extend the set with users who have muted the sender.
-            mark_as_read_for_users = send_request.muted_sender_user_ids
-            mark_as_read_for_users.update(mark_as_read)
+            mark_as_read_user_ids = send_request.muted_sender_user_ids
+            mark_as_read_user_ids.update(mark_as_read)
 
             user_messages = create_user_messages(
                 message=send_request.message,
@@ -2070,7 +2070,7 @@ def do_send_messages(
                 stream_push_user_ids=send_request.stream_push_user_ids,
                 stream_email_user_ids=send_request.stream_email_user_ids,
                 mentioned_user_ids=mentioned_user_ids,
-                mark_as_read_for_users=mark_as_read_for_users,
+                mark_as_read_user_ids=mark_as_read_user_ids,
                 limit_unread_user_ids=send_request.limit_unread_user_ids,
             )
 
@@ -2282,7 +2282,7 @@ def create_user_messages(
     stream_push_user_ids: AbstractSet[int],
     stream_email_user_ids: AbstractSet[int],
     mentioned_user_ids: AbstractSet[int],
-    mark_as_read_for_users: Set[int],
+    mark_as_read_user_ids: Set[int],
     limit_unread_user_ids: Optional[Set[int]],
 ) -> List[UserMessageLite]:
     # These properties on the Message are set via
@@ -2321,7 +2321,7 @@ def create_user_messages(
         flags = base_flags
         if (
             (user_profile_id == sender_id and message.sent_by_human())
-            or user_profile_id in mark_as_read_for_users
+            or user_profile_id in mark_as_read_user_ids
             or (limit_unread_user_ids is not None and user_profile_id not in limit_unread_user_ids)
         ):
             flags |= UserMessage.flags.read
