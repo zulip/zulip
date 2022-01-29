@@ -298,7 +298,7 @@ instructions for other supported platforms.
    collations. Regenerate the affected indexes by running:
 
    ```bash
-   /srv/zulip-py3-venv/bin/python /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
+   /home/zulip/deployments/current/zulip-py3-venv/bin/python /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
    ```
 
 6. Finally, we need to reinstall the current version of Zulip, which
@@ -461,7 +461,7 @@ instructions for other supported platforms.
    collations. Regenerate the affected indexes by running:
 
    ```bash
-   /srv/zulip-py3-venv/bin/python /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
+   /home/zulip/deployments/current/zulip-py3-venv/bin/python /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
    ```
 
 7. As root, finish by verifying the contents of the full-text indexes:
@@ -534,7 +534,7 @@ instructions for other supported platforms.
    collations. Regenerate the affected indexes by running:
 
    ```bash
-   /srv/zulip-py3-venv/bin/python /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
+   /home/zulip/deployments/current/zulip-py3-venv/bin/python /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
    ```
 
 8. As root, finish by verifying the contents of the full-text indexes:
