@@ -1,5 +1,6 @@
-$active_color: hsl(106, 74%, 44%);
-$idle_color: hsl(29, 84%, 51%);
+$active_color: hsl(137, 37%, 60%);
+$idle_color: hsl(54, 31%, 75%);
+$empty_border_color: hsl(0, 0%, 66%);
 
 .user_circle_green,
 .user_circle_idle,
@@ -34,11 +35,11 @@ $idle_color: hsl(29, 84%, 51%);
 
 .user_circle_empty {
     background-color: none;
-    border-color: hsl(0, 0%, 50%);
+    border-color: $empty_border_color;
 }
 
 .user_circle_empty_line {
-    border-color: hsl(0, 0%, 50%);
+    border-color: $empty_border_color;
 
     &::after {
         content: "";
