@@ -1557,14 +1557,17 @@ def social_associate_user_helper(
     full_name = kwargs["details"].get("fullname")
     first_name = kwargs["details"].get("first_name")
     last_name = kwargs["details"].get("last_name")
+
     if all(name is None for name in [full_name, first_name, last_name]) and backend.name not in [
         "apple",
         "saml",
+        "oidc",
     ]:
         # (1) Apple authentication provides the user's name only the very first time a user tries to log in.
         # So if the user aborts login or otherwise is doing this the second time,
         # we won't have any name data.
-        # (2) Some IdPs may not send any name value if the user doesn't have them set in the IdP's directory.
+        # (2) Some SAML or OIDC IdPs may not send any name value if the user doesn't
+        # have them set in the IdP's directory.
         #
         # The name will just default to the empty string in the code below.
 
