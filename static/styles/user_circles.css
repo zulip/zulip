@@ -9,21 +9,27 @@ $idle_color: hsl(29, 84%, 51%);
     border: 1px solid;
     float: left;
     position: relative;
-    top: 5px;
+}
+
+.user_circle {
+    top: 6px;
+    height: 6px;
+    width: 6px;
 }
 
 .user_circle_green {
     background-color: $active_color;
     border-color: $active_color;
+    top: 5px;
+    width: 8px;
+    height: 8px;
 }
 
 .user_circle_idle {
     border-color: $idle_color;
-    background: linear-gradient(
-        to bottom,
-        hsla(0, 0%, 100%, 0) 50%,
-        $idle_color 50%
-    );
+    background: $idle_color;
+    width: 7px;
+    height: 7px;
 }
 
 .user_circle_empty {
