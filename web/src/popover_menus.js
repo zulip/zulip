@@ -515,6 +515,7 @@ export function initialize() {
                 parse_html(
                     render_compose_control_buttons_popover({
                         giphy_enabled: giphy.is_giphy_enabled(),
+                        preview_mode_on: $("#compose").hasClass("preview_mode"),
                     }),
                 ),
             );

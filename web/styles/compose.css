@@ -943,3 +943,14 @@ input.recipient_box {
         flex: 1;
     }
 }
+
+.preview_mode {
+    .preview_mode_disabled {
+        cursor: not-allowed;
+        opacity: 0.3;
+
+        .compose_control_button {
+            pointer-events: none;
+        }
+    }
+}
