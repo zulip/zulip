@@ -3336,13 +3336,21 @@ class GenericOpenIdConnectTest(SocialAuthBase):
             }
         )
 
-    def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
+    def get_account_data_dict(self, email: str, name: Optional[str]) -> Dict[str, Any]:
+        if name is not None:
+            name_parts = name.split(" ")
+            given_name = name_parts[0]
+            family_name = name_parts[1]
+        else:
+            given_name = None
+            family_name = None
+
         return dict(
             email=email,
             name=name,
             nickname="somenickname",
-            given_name=name.split(" ")[0],
-            family_name=name.split(" ")[1],
+            given_name=given_name,
+            family_name=family_name,
         )
 
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
@@ -3376,6 +3384,28 @@ class GenericOpenIdConnectTest(SocialAuthBase):
                 self.BACKEND_CLASS.full_name_validated,
                 expect_confirm_registration_page=False,
             )
+
+    def test_auth_registration_with_no_name_provided(self) -> None:
+        """
+        The OIDC IdP may not send the name information. The
+        signup flow should proceed normally, without pre-filling the name in the
+        registration form.
+        """
+        email = "newuser@zulip.com"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+        account_data_dict = self.get_account_data_dict(email=email, name=None)
+        result = self.social_auth_test(account_data_dict, subdomain=subdomain, is_signup=True)
+        self.stage_two_of_registration(
+            result,
+            realm,
+            subdomain,
+            email,
+            "",
+            "Full Name",
+            skip_registration_form=False,
+            expect_full_name_prepopulated=False,
+        )
 
     def test_social_auth_no_key(self) -> None:
         """
