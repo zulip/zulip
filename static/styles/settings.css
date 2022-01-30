@@ -1076,6 +1076,7 @@ input[type="checkbox"] {
         text-decoration: none;
         color: hsl(0, 0%, 47%);
         min-width: 80px;
+        /* Limit the height of the button */
         line-height: 1.2;
         vertical-align: text-bottom;
 
@@ -1117,6 +1118,11 @@ input[type="checkbox"] {
             margin-right: 3px;
             font-size: 15px;
             font-weight: 500;
+        }
+
+        .save-discard-widget-button-text {
+            vertical-align: middle;
+            line-height: 1;
         }
     }
 
