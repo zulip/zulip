@@ -123,6 +123,11 @@ export function clear_preview_area() {
     $("#compose .preview_content").empty();
     $("#compose .markdown_preview").show();
     autosize.update($("#compose-textarea"));
+
+    // While in preview mode we disable unneeded compose_control_buttons,
+    // so here we are re-enabling that compose_control_buttons
+    $("#compose").removeClass("preview_mode");
+    $("#compose .preview_mode_disabled .compose_control_button").attr("tabindex", 0);
 }
 
 export function abort_xhr() {
@@ -718,6 +723,11 @@ export function initialize() {
     $("#compose").on("click", ".markdown_preview", (e) => {
         e.preventDefault();
         e.stopPropagation();
+
+        // Disable unneeded compose_control_buttons as we don't
+        // need them in preview mode.
+        $("#compose").addClass("preview_mode");
+        $("#compose .preview_mode_disabled .compose_control_button").attr("tabindex", -1);
 
         const content = $("#compose-textarea").val();
         $("#compose-textarea").hide();
