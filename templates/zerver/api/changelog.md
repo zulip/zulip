@@ -20,12 +20,6 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 5.0
 
-
-**Feature level 115**
-
-* Mobile push notifications about stream messages now include the
-  `stream_id` field.
-
 **Feature level 114**
 
 * [`GET /events`](/api/get-events): Added `rendering_only` field to
