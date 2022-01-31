@@ -193,6 +193,16 @@ body.dark-theme {
         border-color: hsla(0, 0%, 100%, 0.4);
     }
 
+    #checkbox_todo input[type="checkbox"] ~ span {
+        border-color: hsl(185, 40%, 45%);
+        opacity: 0.7;
+    }
+
+    #checkbox_todo input[type="checkbox"]:checked ~ span {
+        background-color: hsl(185, 40%, 45%);
+        opacity: 0.7;
+    }
+
     .streams_popover .sp-container {
         background-color: transparent;
 
@@ -263,7 +273,7 @@ body.dark-theme {
     .new-style .button {
         background-color: hsla(0, 0%, 0%, 0.2);
 
-        &:not(.sea-green):not(.btn-danger):not(.btn-warning):not(.btn-link):not(.poll-vote) {
+        &:not(.sea-green):not(.btn-danger):not(.btn-warning):not(.btn-link):not(.poll-vote):not(.poll-button):not(.add-task-button) {
             border-color: hsla(0, 0%, 0%, 0.6);
             color: inherit;
         }
@@ -1137,7 +1147,7 @@ body.dark-theme {
     }
 
     a:not(:active):focus,
-    button:focus,
+    button:not(.add-task-button):not(.poll-button):focus,
     .new-style label.checkbox input[type="checkbox"]:focus ~ span,
     i.fa:focus,
     i.zulip-icon:focus,
