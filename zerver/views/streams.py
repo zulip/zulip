@@ -374,10 +374,12 @@ def update_subscriptions_backend(
         lambda: add_subscriptions_backend(request, user_profile, streams_raw=add),
         lambda: remove_subscriptions_backend(request, user_profile, streams_raw=delete),
     ]
-    return compose_views(thunks)
+    data = compose_views(thunks)
+
+    return json_success(data)
 
 
-def compose_views(thunks: List[Callable[[], HttpResponse]]) -> HttpResponse:
+def compose_views(thunks: List[Callable[[], HttpResponse]]) -> Dict[str, Any]:
     """
     This takes a series of thunks and calls them in sequence, and it
     smushes all the json results into a single response when
@@ -391,7 +393,7 @@ def compose_views(thunks: List[Callable[[], HttpResponse]]) -> HttpResponse:
         for thunk in thunks:
             response = thunk()
             json_dict.update(orjson.loads(response.content))
-    return json_success(json_dict)
+    return json_dict
 
 
 check_principals: Validator[Union[List[str], List[int]]] = check_union(

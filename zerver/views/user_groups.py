@@ -103,7 +103,9 @@ def update_user_group_backend(
             request, user_profile, user_group_id=user_group_id, members=delete
         ),
     ]
-    return compose_views(thunks)
+    data = compose_views(thunks)
+
+    return json_success(data)
 
 
 def add_members_to_group_backend(
