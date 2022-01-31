@@ -54,18 +54,14 @@
     }
 
     #checkbox_todo {
-
         input[type="checkbox"] {
-
             ~ span {
-
                 height: 12px;
                 width: 12px;
                 border: 2px solid hsl(156, 28%, 70%);
 
                 border-radius: 4px;
                 filter: brightness(1);
-
             }
 
             &:checked ~ span {
