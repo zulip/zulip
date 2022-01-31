@@ -797,6 +797,9 @@ class PushNotificationsWorker(QueueProcessingWorker):
 @assign_queue("error_reports")
 class ErrorReporter(QueueProcessingWorker):
     def consume(self, event: Mapping[str, Any]) -> None:
+        error_types = ["browser", "server"]
+        assert event["type"] in error_types
+
         logging.info(
             "Processing traceback with type %s for %s", event["type"], event.get("user_email")
         )
