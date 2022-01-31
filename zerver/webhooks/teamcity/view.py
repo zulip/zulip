@@ -65,7 +65,7 @@ def api_teamcity_webhook(
         ).strip()
         send_rate_limited_pm_notification_to_bot_owner(user_profile, user_profile.realm, message)
 
-        return json_success()
+        return json_success(request)
 
     build_name = message["buildFullName"]
     build_url = message["buildStatusUrl"]
@@ -134,14 +134,14 @@ def api_teamcity_webhook(
                 teamcity_fullname,
                 teamcity_shortname,
             )
-            return json_success()
+            return json_success(request)
 
         body = f"Your personal build for {body}"
         client = RequestNotes.get_notes(request).client
         assert client is not None
         check_send_private_message(user_profile, client, teamcity_user, body)
 
-        return json_success()
+        return json_success(request)
 
     check_send_webhook_message(request, user_profile, topic, body)
-    return json_success()
+    return json_success(request)

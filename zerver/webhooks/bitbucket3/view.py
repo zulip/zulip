@@ -416,4 +416,4 @@ def api_bitbucket3_webhook(
             unquote_url_parameters=True,
         )
 
-    return json_success()
+    return json_success(request)

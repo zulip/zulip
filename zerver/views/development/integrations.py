@@ -91,7 +91,7 @@ def get_fixtures(request: HttpResponse, integration_name: str = REQ()) -> HttpRe
         headers = {fix_name(k): v for k, v in headers_raw.items()}
         fixtures[fixture] = {"body": body, "headers": headers}
 
-    return json_success({"fixtures": fixtures})
+    return json_success(request, data={"fixtures": fixtures})
 
 
 @has_request_variables
@@ -110,7 +110,7 @@ def check_send_webhook_fixture_message(
     response = send_webhook_fixture_message(url, body, is_json, custom_headers_dict)
     if response.status_code == 200:
         responses = [{"status_code": response.status_code, "message": response.content.decode()}]
-        return json_success({"responses": responses})
+        return json_success(request, data={"responses": responses})
     else:
         return response
 
@@ -150,4 +150,4 @@ def send_all_webhook_fixture_messages(
                 "message": response.content.decode(),
             }
         )
-    return json_success({"responses": responses})
+    return json_success(request, data={"responses": responses})

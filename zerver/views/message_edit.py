@@ -87,7 +87,7 @@ def get_message_edit_history(
 
     # Fill in all the extra data that will make it usable
     fill_edit_history_entries(message_edit_history, message)
-    return json_success({"message_history": list(reversed(message_edit_history))})
+    return json_success(request, data={"message_history": list(reversed(message_edit_history))})
 
 
 PROPAGATE_MODE_VALUES = ["change_later", "change_one", "change_all"]
@@ -123,7 +123,7 @@ def update_message_backend(
     assert log_data is not None
     log_data["extra"] = f"[{number_changed}]"
 
-    return json_success()
+    return json_success(request)
 
 
 def validate_can_delete_message(user_profile: UserProfile, message: Message) -> None:
@@ -164,7 +164,7 @@ def delete_message_backend(
         do_delete_messages(user_profile.realm, [message])
     except (Message.DoesNotExist, IntegrityError):
         raise JsonableError(_("Message already deleted"))
-    return json_success()
+    return json_success(request)
 
 
 @has_request_variables
@@ -180,4 +180,4 @@ def json_fetch_raw_message(
     else:
         (message, user_message) = access_message(maybe_user_profile, message_id)
 
-    return json_success({"raw_content": message.content})
+    return json_success(request, data={"raw_content": message.content})

@@ -19,7 +19,7 @@ from zerver.models import Draft, UserProfile
 def fetch_drafts(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     user_drafts = Draft.objects.filter(user_profile=user_profile).order_by("last_edit_time")
     draft_dicts = [draft.to_dict() for draft in user_drafts]
-    return json_success({"count": user_drafts.count(), "drafts": draft_dicts})
+    return json_success(request, data={"count": user_drafts.count(), "drafts": draft_dicts})
 
 
 @draft_endpoint
@@ -33,7 +33,7 @@ def create_drafts(
 ) -> HttpResponse:
     created_draft_objects = do_create_drafts(draft_dicts, user_profile)
     draft_ids = [draft_object.id for draft_object in created_draft_objects]
-    return json_success({"ids": draft_ids})
+    return json_success(request, data={"ids": draft_ids})
 
 
 @draft_endpoint
@@ -45,10 +45,10 @@ def edit_draft(
     draft_dict: Dict[str, Any] = REQ("draft", json_validator=draft_dict_validator),
 ) -> HttpResponse:
     do_edit_draft(draft_id, draft_dict, user_profile)
-    return json_success()
+    return json_success(request)
 
 
 @draft_endpoint
 def delete_draft(request: HttpRequest, user_profile: UserProfile, draft_id: int) -> HttpResponse:
     do_delete_draft(draft_id, user_profile)
-    return json_success()
+    return json_success(request)

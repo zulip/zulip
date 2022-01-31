@@ -101,4 +101,4 @@ def api_opsgenie_webhook(
     body = body_template.format(**info)
     check_send_webhook_message(request, user_profile, topic, body, info["alert_type"])
 
-    return json_success()
+    return json_success(request)

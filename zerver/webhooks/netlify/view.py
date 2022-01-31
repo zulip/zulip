@@ -45,7 +45,7 @@ def api_netlify_webhook(
 
     check_send_webhook_message(request, user_profile, topic, body, event)
 
-    return json_success()
+    return json_success(request)
 
 
 def get_template(request: HttpRequest, payload: Dict[str, Any]) -> Tuple[str, str]:

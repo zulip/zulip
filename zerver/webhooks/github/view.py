@@ -733,7 +733,7 @@ def api_github_webhook(
         # This is nothing to worry about--get_event() returns None
         # for events that are valid but not yet handled by us.
         # See IGNORED_EVENTS, for example.
-        return json_success()
+        return json_success(request)
 
     subject = get_subject_based_on_type(payload, event)
 
@@ -746,7 +746,7 @@ def api_github_webhook(
     body = body_function(helper)
 
     check_send_webhook_message(request, user_profile, subject, body, event)
-    return json_success()
+    return json_success(request)
 
 
 def get_zulip_event_name(

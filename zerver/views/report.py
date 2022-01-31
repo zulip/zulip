@@ -70,7 +70,7 @@ def report_send_times(
         statsd.incr("locally_echoed")
     if rendered_content_disparity:
         statsd.incr("render_disparity")
-    return json_success()
+    return json_success(request)
 
 
 @has_request_variables
@@ -89,7 +89,7 @@ def report_narrow_times(
     statsd.timing(f"narrow.initial_core.{base_key}", initial_core)
     statsd.timing(f"narrow.initial_free.{base_key}", initial_free)
     statsd.timing(f"narrow.network.{base_key}", network)
-    return json_success()
+    return json_success(request)
 
 
 @has_request_variables
@@ -106,7 +106,7 @@ def report_unnarrow_times(
     base_key = statsd_key(realm.string_id, clean_periods=True)
     statsd.timing(f"unnarrow.initial_core.{base_key}", initial_core)
     statsd.timing(f"unnarrow.initial_free.{base_key}", initial_free)
-    return json_success()
+    return json_success(request)
 
 
 @has_request_variables
@@ -124,7 +124,7 @@ def report_error(
     """Accepts an error report and stores in a queue for processing.  The
     actual error reports are later handled by do_report_error"""
     if not settings.BROWSER_ERROR_REPORTING:
-        return json_success()
+        return json_success(request)
     more_info = dict(more_info)
 
     js_source_map = get_js_source_map()
@@ -177,7 +177,7 @@ def report_error(
         ),
     )
 
-    return json_success()
+    return json_success(request)
 
 
 @csrf_exempt
@@ -206,4 +206,4 @@ def report_csp_violations(
         get_attr("script-sample"),
     )
 
-    return json_success()
+    return json_success(request)

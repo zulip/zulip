@@ -84,7 +84,7 @@ def deactivate_remote_server(
     remote_server: RemoteZulipServer,
 ) -> HttpResponse:
     do_deactivate_remote_server(remote_server)
-    return json_success()
+    return json_success(request)
 
 
 @csrf_exempt
@@ -146,7 +146,7 @@ def register_remote_server(
                     remote_server.api_key = new_org_key
                 remote_server.save()
 
-    return json_success({"created": created})
+    return json_success(request, data={"created": created})
 
 
 @has_request_variables
@@ -174,7 +174,7 @@ def register_remote_push_device(
     except IntegrityError:
         pass
 
-    return json_success()
+    return json_success(request)
 
 
 @has_request_variables
@@ -193,7 +193,7 @@ def unregister_remote_push_device(
     if deleted[0] == 0:
         raise JsonableError(err_("Token does not exist"))
 
-    return json_success()
+    return json_success(request)
 
 
 @has_request_variables
@@ -204,7 +204,7 @@ def unregister_all_remote_push_devices(
 ) -> HttpResponse:
     server = validate_entity(entity)
     RemotePushDeviceToken.objects.filter(user_id=user_id, server=server).delete()
-    return json_success()
+    return json_success(request)
 
 
 @has_request_variables
@@ -269,7 +269,11 @@ def remote_server_notify_push(
     send_apple_push_notification(user_id, apple_devices, apns_payload, remote=server)
 
     return json_success(
-        {"total_android_devices": len(android_devices), "total_apple_devices": len(apple_devices)}
+        request,
+        data={
+            "total_android_devices": len(android_devices),
+            "total_apple_devices": len(apple_devices),
+        },
     )
 
 
@@ -403,7 +407,7 @@ def remote_server_post_analytics(
         ]
         batch_create_table_data(server, RemoteRealmAuditLog, row_objects)
 
-    return json_success()
+    return json_success(request)
 
 
 def get_last_id_from_server(server: RemoteZulipServer, model: Any) -> int:
@@ -424,4 +428,4 @@ def remote_server_check_analytics(
         "last_installation_count_id": get_last_id_from_server(server, RemoteInstallationCount),
         "last_realmauditlog_id": get_last_id_from_server(server, RemoteRealmAuditLog),
     }
-    return json_success(result)
+    return json_success(request, data=result)

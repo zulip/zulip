@@ -1,7 +1,7 @@
 from typing import Any, List, Mapping, Optional
 
 import orjson
-from django.http import HttpResponse, HttpResponseNotAllowed
+from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
@@ -60,7 +60,7 @@ def json_response(
     )
 
 
-def json_success(data: Mapping[str, Any] = {}) -> HttpResponse:
+def json_success(request: HttpRequest, data: Mapping[str, Any] = {}) -> HttpResponse:
     return json_response(data=data)
 
 

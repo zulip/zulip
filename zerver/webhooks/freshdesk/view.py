@@ -164,7 +164,7 @@ def api_freshdesk_webhook(
         content = format_freshdesk_property_change_message(ticket, event_info)
     else:
         # Not an event we know handle; do nothing.
-        return json_success()
+        return json_success(request)
 
     check_send_webhook_message(request, user_profile, subject, content)
-    return json_success()
+    return json_success(request)

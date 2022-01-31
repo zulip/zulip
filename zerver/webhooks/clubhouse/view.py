@@ -723,7 +723,7 @@ def api_clubhouse_webhook(
     # such requests correspond to. So, it is best to ignore such
     # requests for now.
     if payload is None:
-        return json_success()
+        return json_success(request)
 
     if payload.get("primary_id") is not None:
         action = get_action_with_primary_id(payload)
@@ -743,4 +743,4 @@ def api_clubhouse_webhook(
         else:
             send_stream_messages_for_actions(request, user_profile, payload, primary_action, event)
 
-    return json_success()
+    return json_success(request)

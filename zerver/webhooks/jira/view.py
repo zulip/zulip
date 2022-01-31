@@ -347,7 +347,7 @@ def api_jira_webhook(
 
     event = get_event_type(payload)
     if event in IGNORED_EVENTS:
-        return json_success()
+        return json_success(request)
 
     if event is None:
         raise AnomalousWebhookPayload()
@@ -364,4 +364,4 @@ def api_jira_webhook(
     check_send_webhook_message(
         request, user_profile, subject, content, event, unquote_url_parameters=True
     )
-    return json_success()
+    return json_success(request)

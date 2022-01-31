@@ -39,7 +39,7 @@ def api_greenhouse_webhook(
     payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
     if payload["action"] == "ping":
-        return json_success()
+        return json_success(request)
 
     if payload["action"] == "update_candidate":
         candidate = payload["payload"]["candidate"]
@@ -61,4 +61,4 @@ def api_greenhouse_webhook(
     topic = "{} - {}".format(action, str(candidate["id"]))
 
     check_send_webhook_message(request, user_profile, topic, body)
-    return json_success()
+    return json_success(request)

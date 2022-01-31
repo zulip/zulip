@@ -297,7 +297,7 @@ def send_message_backend(
             forwarder_user_profile=user_profile,
             realm=realm,
         )
-        return json_success(data={"deliver_at": deliver_at})
+        return json_success(request, data={"deliver_at": deliver_at})
 
     ret = check_send_message(
         sender,
@@ -314,14 +314,14 @@ def send_message_backend(
         sender_queue_id=queue_id,
         widget_content=widget_content,
     )
-    return json_success({"id": ret})
+    return json_success(request, data={"id": ret})
 
 
 @has_request_variables
 def zcommand_backend(
     request: HttpRequest, user_profile: UserProfile, command: str = REQ("command")
 ) -> HttpResponse:
-    return json_success(process_zcommands(command, user_profile))
+    return json_success(request, data=process_zcommands(command, user_profile))
 
 
 @has_request_variables
@@ -336,4 +336,4 @@ def render_message_backend(
     message.sending_client = client
 
     rendering_result = render_markdown(message, content, realm=user_profile.realm)
-    return json_success({"rendered": rendering_result.rendered_content})
+    return json_success(request, data={"rendered": rendering_result.rendered_content})

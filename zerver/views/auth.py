@@ -898,7 +898,7 @@ def api_fetch_api_key(
     RequestNotes.get_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
 
     api_key = get_api_key(user_profile)
-    return json_success({"api_key": api_key, "email": user_profile.delivery_email})
+    return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})
 
 
 def get_auth_backends_data(request: HttpRequest) -> Dict[str, Any]:
@@ -963,7 +963,7 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
     ]:
         if context[settings_item] is not None:
             result[settings_item] = context[settings_item]
-    return json_success(result)
+    return json_success(request, data=result)
 
 
 @has_request_variables
@@ -980,7 +980,7 @@ def json_fetch_api_key(
             raise JsonableError(_("Password is incorrect."))
 
     api_key = get_api_key(user_profile)
-    return json_success({"api_key": api_key, "email": user_profile.delivery_email})
+    return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})
 
 
 @require_post

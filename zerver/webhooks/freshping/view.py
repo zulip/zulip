@@ -33,7 +33,7 @@ def api_freshping_webhook(
     check_send_webhook_message(
         request, user_profile, subject, body, payload["webhook_event_data"]["check_state_name"]
     )
-    return json_success()
+    return json_success(request)
 
 
 def get_subject_for_http_request(payload: Dict[str, Any]) -> str:

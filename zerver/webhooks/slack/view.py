@@ -38,4 +38,4 @@ def api_slack_webhook(
     client = RequestNotes.get_notes(request).client
     assert client is not None
     check_send_stream_message(user_profile, client, stream, subject, content)
-    return json_success()
+    return json_success(request)

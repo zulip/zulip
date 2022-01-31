@@ -106,7 +106,7 @@ def api_semaphore_webhook(
         else project_name
     )
     check_send_webhook_message(request, user_profile, subject, content, event)
-    return json_success()
+    return json_success(request)
 
 
 def semaphore_classic(payload: Dict[str, Any]) -> Tuple[str, str, str, str]:
