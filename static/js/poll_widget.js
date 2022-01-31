@@ -153,7 +153,7 @@ export function activate({
             abort_edit();
         });
 
-        elem.find("button.poll-option").on("click", (e) => {
+        elem.find("button.poll-button").on("click", (e) => {
             e.stopPropagation();
             check_option_button();
             submit_option();
@@ -181,14 +181,14 @@ export function activate({
         const options = poll_data.get_widget_data().options;
 
         if (poll_data.is_option_present(options, option)) {
-            elem.find("button.poll-option").attr("disabled", true);
-            elem.find("button.poll-option").attr(
+            elem.find("button.poll-button").attr("disabled", true);
+            elem.find("button.poll-button").attr(
                 "title",
                 $t({defaultMessage: "Option already present."}),
             );
         } else {
-            elem.find("button.poll-option").attr("disabled", false);
-            elem.find("button.poll-option").removeAttr("title");
+            elem.find("button.poll-button").attr("disabled", false);
+            elem.find("button.poll-button").removeAttr("title");
         }
     }
 

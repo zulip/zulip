@@ -1,7 +1,7 @@
 /* Reusable, object-oriented CSS base components for all Zulip pages
    (both web app and portico). */
 
-.new-style {
+   .new-style {
     label.checkbox {
         padding: 0;
         display: inline-block;
@@ -51,6 +51,41 @@
 
     a.no-style {
         color: inherit;
+    }
+
+    #checkbox_todo {
+
+        input[type="checkbox"] {
+
+            ~ span {
+
+                height: 12px;
+                width: 12px;
+                border: 2px solid hsl(156, 28%, 70%);
+
+                border-radius: 4px;
+                filter: brightness(1);
+
+            }
+
+            &:checked ~ span {
+                background-image: url("../images/checkbox-white.svg");
+                background-size: 75%;
+                background-position: 50% 50%;
+                background-repeat: no-repeat;
+                background-color: hsl(156, 41%, 40%);
+                border: 2px solid hsl(156, 41%, 40%);
+            }
+
+            &:disabled ~ span {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            &:hover ~ span {
+                border-color: hsl(156, 41%, 40%);
+            }
+        }
     }
 }
 

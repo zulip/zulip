@@ -234,7 +234,7 @@ run_test("activate another person poll", ({mock_template}) => {
         return elem;
     };
 
-    const poll_option = set_widget_find_result("button.poll-option");
+    const poll_option = set_widget_find_result("button.poll-button");
     const poll_option_input = set_widget_find_result("input.poll-option");
     const widget_option_container = set_widget_find_result("ul.poll-widget");
 
@@ -347,7 +347,7 @@ run_test("activate own poll", ({mock_template}) => {
         return elem;
     };
 
-    set_widget_find_result("button.poll-option");
+    set_widget_find_result("button.poll-button");
     const poll_option_input = set_widget_find_result("input.poll-option");
     const widget_option_container = set_widget_find_result("ul.poll-widget");
 
