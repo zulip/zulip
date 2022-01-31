@@ -109,7 +109,7 @@ def api_groove_webhook(
     if body is not None:
         check_send_webhook_message(request, user_profile, topic, body, event)
 
-    return json_success()
+    return json_success(request)
 
 
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GROOVE_EVENT")

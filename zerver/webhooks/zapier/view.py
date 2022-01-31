@@ -23,11 +23,12 @@ def api_zapier_webhook(
         # label for users to be able to distinguish between different Zulip
         # bots and API keys in their UI
         return json_success(
-            {
+            request,
+            data={
                 "full_name": user_profile.full_name,
                 "email": user_profile.email,
                 "id": user_profile.id,
-            }
+            },
         )
 
     topic = payload.get("topic")
@@ -42,4 +43,4 @@ def api_zapier_webhook(
         raise JsonableError(_("Content can't be empty"))
 
     check_send_webhook_message(request, user_profile, topic, content)
-    return json_success()
+    return json_success(request)

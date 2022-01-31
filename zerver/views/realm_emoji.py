@@ -15,7 +15,7 @@ def list_emoji(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
 
     # We don't do any checks here because the list of realm
     # emoji is public.
-    return json_success({"emoji": user_profile.realm.get_emoji()})
+    return json_success(request, data={"emoji": user_profile.realm.get_emoji()})
 
 
 @require_member_or_admin
@@ -50,7 +50,7 @@ def upload_emoji(
     realm_emoji = check_add_realm_emoji(user_profile.realm, emoji_name, user_profile, emoji_file)
     if realm_emoji is None:
         raise JsonableError(_("Image file upload failed."))
-    return json_success()
+    return json_success(request)
 
 
 def delete_emoji(request: HttpRequest, user_profile: UserProfile, emoji_name: str) -> HttpResponse:
@@ -60,4 +60,4 @@ def delete_emoji(request: HttpRequest, user_profile: UserProfile, emoji_name: st
         raise JsonableError(_("Emoji '{}' does not exist").format(emoji_name))
     check_remove_custom_emoji(user_profile, emoji_name)
     do_remove_realm_emoji(user_profile.realm, emoji_name)
-    return json_success()
+    return json_success(request)

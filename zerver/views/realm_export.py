@@ -73,13 +73,13 @@ def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
         "id": row.id,
     }
     queue_json_publish("deferred_work", event)
-    return json_success()
+    return json_success(request)
 
 
 @require_realm_admin
 def get_realm_exports(request: HttpRequest, user: UserProfile) -> HttpResponse:
     realm_exports = get_realm_exports_serialized(user)
-    return json_success({"exports": realm_exports})
+    return json_success(request, data={"exports": realm_exports})
 
 
 @require_realm_admin
@@ -95,4 +95,4 @@ def delete_realm_export(request: HttpRequest, user: UserProfile, export_id: int)
     if "deleted_timestamp" in export_data:
         raise JsonableError(_("Export already deleted"))
     do_delete_realm_export(user, audit_log_entry)
-    return json_success()
+    return json_success(request)

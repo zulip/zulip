@@ -78,7 +78,7 @@ def api_updown_webhook(
 ) -> HttpResponse:
     for event in payload:
         send_message_for_event(request, user_profile, event)
-    return json_success()
+    return json_success(request)
 
 
 def get_event_type(event: Dict[str, Any]) -> str:

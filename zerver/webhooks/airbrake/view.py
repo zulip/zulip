@@ -23,7 +23,7 @@ def api_airbrake_webhook(
     subject = get_subject(payload)
     body = get_body(payload)
     check_send_webhook_message(request, user_profile, subject, body)
-    return json_success()
+    return json_success(request)
 
 
 def get_subject(payload: Dict[str, Any]) -> str:

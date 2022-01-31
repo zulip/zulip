@@ -189,4 +189,4 @@ def api_pivotal_webhook(request: HttpRequest, user_profile: UserProfile) -> Http
         raise JsonableError(_("Unable to handle Pivotal payload"))
 
     check_send_webhook_message(request, user_profile, subject, content, event_type)
-    return json_success()
+    return json_success(request)

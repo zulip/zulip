@@ -17,4 +17,4 @@ def email_mirror_message(
     result = mirror_email_message(rcpt_to, msg_base64)
     if result["status"] == "error":
         raise JsonableError(result["msg"])
-    return json_success()
+    return json_success(request)

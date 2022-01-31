@@ -79,7 +79,7 @@ def update_muted_topic(
             topic_name=topic,
             date_muted=timezone_now(),
         )
-        return json_success()
+        return json_success(request)
     elif op == "remove":
         unmute_topic(
             user_profile=user_profile,
@@ -87,7 +87,7 @@ def update_muted_topic(
             stream_name=stream,
             topic_name=topic,
         )
-        return json_success()
+        return json_success(request)
 
 
 def mute_user(request: HttpRequest, user_profile: UserProfile, muted_user_id: int) -> HttpResponse:
@@ -103,7 +103,7 @@ def mute_user(request: HttpRequest, user_profile: UserProfile, muted_user_id: in
         raise JsonableError(_("User already muted"))
 
     do_mute_user(user_profile, muted_user, date_muted)
-    return json_success()
+    return json_success(request)
 
 
 def unmute_user(
@@ -118,4 +118,4 @@ def unmute_user(
         raise JsonableError(_("User is not muted"))
 
     do_unmute_user(mute_object)
-    return json_success()
+    return json_success(request)

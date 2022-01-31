@@ -28,4 +28,4 @@ def api_flock_webhook(
 
     check_send_webhook_message(request, user_profile, topic, body)
 
-    return json_success()
+    return json_success(request)

@@ -1168,7 +1168,7 @@ def get_messages_backend(
         history_limited=query_info["history_limited"],
         anchor=anchor,
     )
-    return json_success(ret)
+    return json_success(request, data=ret)
 
 
 def limit_query_to_range(
@@ -1372,4 +1372,4 @@ def messages_in_narrow_backend(
             topic_matches,
         )
 
-    return json_success({"messages": search_fields})
+    return json_success(request, data={"messages": search_fields})

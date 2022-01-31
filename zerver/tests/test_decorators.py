@@ -395,11 +395,11 @@ class SkipRateLimitingTest(ZulipTestCase):
     def test_authenticated_rest_api_view(self) -> None:
         @authenticated_rest_api_view(skip_rate_limiting=False)
         def my_rate_limited_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-            return json_success()  # nocoverage # mock prevents this from being called
+            return json_success(request)  # nocoverage # mock prevents this from being called
 
         @authenticated_rest_api_view(skip_rate_limiting=True)
         def my_unlimited_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-            return json_success()
+            return json_success(request)
 
         request = HostRequestMock(host="zulip.testserver")
         request.META["HTTP_AUTHORIZATION"] = self.encode_email(self.example_email("hamlet"))
@@ -418,11 +418,11 @@ class SkipRateLimitingTest(ZulipTestCase):
     def test_authenticated_uploads_api_view(self) -> None:
         @authenticated_uploads_api_view(skip_rate_limiting=False)
         def my_rate_limited_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-            return json_success()  # nocoverage # mock prevents this from being called
+            return json_success(request)  # nocoverage # mock prevents this from being called
 
         @authenticated_uploads_api_view(skip_rate_limiting=True)
         def my_unlimited_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-            return json_success()
+            return json_success(request)
 
         request = HostRequestMock(host="zulip.testserver")
         request.method = "POST"
@@ -440,7 +440,7 @@ class SkipRateLimitingTest(ZulipTestCase):
 
     def test_authenticated_json_view(self) -> None:
         def my_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-            return json_success()
+            return json_success(request)
 
         my_rate_limited_view = authenticated_json_view(my_view, skip_rate_limiting=False)
         my_unlimited_view = authenticated_json_view(my_view, skip_rate_limiting=True)

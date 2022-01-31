@@ -23,7 +23,7 @@ def api_buildbot_webhook(
         topic = "general"
     body = get_message(payload)
     check_send_webhook_message(request, user_profile, topic, body, payload["event"])
-    return json_success()
+    return json_success(request)
 
 
 def get_message(payload: Dict[str, Any]) -> str:

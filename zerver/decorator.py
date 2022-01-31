@@ -1000,7 +1000,7 @@ def return_success_on_head_request(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
         if request.method == "HEAD":
-            return json_success()
+            return json_success(request)
         return view_func(request, *args, **kwargs)
 
     return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927

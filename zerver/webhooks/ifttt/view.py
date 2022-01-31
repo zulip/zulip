@@ -36,4 +36,4 @@ def api_iftt_app_webhook(
         raise JsonableError(_("Content must be a string"))
 
     check_send_webhook_message(request, user_profile, topic, content)
-    return json_success()
+    return json_success(request)

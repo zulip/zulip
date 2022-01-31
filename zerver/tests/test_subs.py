@@ -3516,7 +3516,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
         def thunk1() -> HttpResponse:
             user_profile.full_name = "Should not be committed"
             user_profile.save()
-            return json_success()
+            return json_success(request)
 
         def thunk2() -> HttpResponse:
             raise JsonableError("random failure")

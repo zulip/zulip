@@ -294,7 +294,7 @@ def update_realm(
         do_change_realm_subdomain(realm, string_id, acting_user=user_profile)
         data["realm_uri"] = realm.uri
 
-    return json_success(data)
+    return json_success(request, data)
 
 
 @require_realm_owner
@@ -302,16 +302,16 @@ def update_realm(
 def deactivate_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
     realm = user.realm
     do_deactivate_realm(realm, acting_user=user)
-    return json_success()
+    return json_success(request)
 
 
 @require_safe
 def check_subdomain_available(request: HttpRequest, subdomain: str) -> HttpResponse:
     try:
         check_subdomain(subdomain)
-        return json_success({"msg": "available"})
+        return json_success(request, data={"msg": "available"})
     except ValidationError as e:
-        return json_success({"msg": e.message})
+        return json_success(request, data={"msg": e.message})
 
 
 def realm_reactivation(request: HttpRequest, confirmation_key: str) -> HttpResponse:
@@ -426,4 +426,4 @@ def update_realm_user_settings_defaults(
     if len(request_notes.ignored_parameters) > 0:
         result["ignored_parameters_unsupported"] = list(request_notes.ignored_parameters)
 
-    return json_success(result)
+    return json_success(request, data=result)

@@ -66,4 +66,4 @@ def api_hellosign_webhook(
         topic = payload["signature_request"]["title"]
         check_send_webhook_message(request, user_profile, topic, body)
 
-    return json_success({"msg": "Hello API Event Received"})
+    return json_success(request, data={"msg": "Hello API Event Received"})

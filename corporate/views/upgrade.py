@@ -192,10 +192,11 @@ def upgrade(
                 onboarding,
             )
             return json_success(
+                request,
                 data={
                     "stripe_session_url": stripe_checkout_session.url,
                     "stripe_session_id": stripe_checkout_session.id,
-                }
+                },
             )
         else:
             process_initial_upgrade(
@@ -206,7 +207,7 @@ def upgrade(
                 False,
                 is_free_trial_offer_enabled(),
             )
-            return json_success(data={})
+            return json_success(request)
 
     except BillingError as e:
         billing_logger.warning(
@@ -357,7 +358,7 @@ def sponsorship(
             context=context,
         )
 
-        return json_success()
+        return json_success(request)
     else:
         messages = []
         for error_list in form.errors.get_json_data().values():

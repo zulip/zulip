@@ -35,7 +35,7 @@ def upload_icon(request: HttpRequest, user_profile: UserProfile) -> HttpResponse
     json_result = dict(
         icon_url=icon_url,
     )
-    return json_success(json_result)
+    return json_success(request, data=json_result)
 
 
 @require_realm_admin
@@ -50,7 +50,7 @@ def delete_icon_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     json_result = dict(
         icon_url=gravatar_url,
     )
-    return json_success(json_result)
+    return json_success(request, data=json_result)
 
 
 def get_icon_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:

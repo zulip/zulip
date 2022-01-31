@@ -32,7 +32,7 @@ def api_ansibletower_webhook(
     subject = payload["name"]
 
     check_send_webhook_message(request, user_profile, subject, body)
-    return json_success()
+    return json_success(request)
 
 
 def extract_friendly_name(payload: Dict[str, Any]) -> str:

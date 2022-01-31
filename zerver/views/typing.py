@@ -54,4 +54,4 @@ def send_notification_backend(
         user_ids = notification_to
         check_send_typing_notification(user_profile, user_ids, operator)
 
-    return json_success()
+    return json_success(request)

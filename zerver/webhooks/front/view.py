@@ -152,4 +152,4 @@ def api_front_webhook(
     body = get_body_based_on_event(event)(payload)
     check_send_webhook_message(request, user_profile, topic, body, event)
 
-    return json_success()
+    return json_success(request)

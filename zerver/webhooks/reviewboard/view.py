@@ -195,4 +195,4 @@ def api_reviewboard_webhook(
     else:
         raise UnsupportedWebhookEventType(event_type)
 
-    return json_success()
+    return json_success(request)

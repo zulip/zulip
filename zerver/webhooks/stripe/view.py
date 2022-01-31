@@ -56,9 +56,9 @@ def api_stripe_webhook(
     try:
         topic, body = topic_and_body(payload)
     except SuppressedEvent:  # nocoverage
-        return json_success()
+        return json_success(request)
     check_send_webhook_message(request, user_profile, topic, body, payload["type"])
-    return json_success()
+    return json_success(request)
 
 
 def topic_and_body(payload: Dict[str, Any]) -> Tuple[str, str]:
