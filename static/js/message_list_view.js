@@ -56,6 +56,19 @@ function same_recipient(a, b) {
     return util.same_recipient(a.msg, b.msg);
 }
 
+function message_was_resolved(message) {
+    if (message.topic === undefined) {
+        return false;
+    }
+
+    // if the message topic starts with the resolved topic prefix, the
+    // topic is just resolved, nothing more.
+    if (message.topic.startsWith(message_edit.RESOLVED_TOPIC_PREFIX)) {
+        return true;
+    }
+    return false;
+}
+
 function message_was_only_moved(message) {
     // Returns true if the message has had its stream/topic edited
     // (i.e. the message was moved), but its content has not been
@@ -254,6 +267,7 @@ export class MessageListView {
             message_container.edited_alongside_sender = include_sender && !status_message;
             message_container.edited_status_msg = include_sender && status_message;
             message_container.moved = message_was_only_moved(message_container.msg);
+            message_container.resolved = message_was_resolved(message_container.msg);
         } else {
             delete message_container.last_edit_timestr;
             message_container.edited_in_left_col = false;

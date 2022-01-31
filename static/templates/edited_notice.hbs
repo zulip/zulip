@@ -4,12 +4,14 @@
 </div>
 {{else}}
 {{#if moved}}
+{{#unless resolved}}
     <div class="message_edit_notice auto-select" title="{{#tr}}Moved ({last_edit_timestr}){{/tr}}">
         ({{t "MOVED" }})
     </div>
+{{/unless}}
 {{else}}
-    <div class="message_edit_notice auto-select" title="{{#tr}}Edited ({last_edit_timestr}){{/tr}}">
-        ({{t "EDITED" }})
-    </div>
+<div class="message_edit_notice auto-select" title="{{#tr}}Edited ({last_edit_timestr}){{/tr}}">
+    ({{t "EDITED" }})
+</div>
 {{/if}}
 {{/if}}
