@@ -1,10 +1,11 @@
 from datetime import timedelta
 from typing import Optional
+from unittest import mock
 
 import orjson
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import do_set_realm_property, ensure_stream
+from zerver.lib.actions import do_set_realm_property, ensure_stream, promote_new_full_members
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_usermessage
 from zerver.lib.user_groups import (
@@ -726,3 +727,47 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_support_group_permission(desdemona)
         check_support_group_permission(iago)
         check_support_group_permission(othello)
+
+    def test_promote_new_full_members(self) -> None:
+        realm = get_realm("zulip")
+
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        cordelia.date_joined = timezone_now() - timedelta(days=11)
+        cordelia.save()
+
+        hamlet.date_joined = timezone_now() - timedelta(days=8)
+        hamlet.save()
+
+        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
+        full_members_group = UserGroup.objects.get(
+            realm=realm, name="@role:fullmembers", is_system_group=True
+        )
+
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_profile=cordelia, user_group=full_members_group
+            ).exists()
+        )
+        self.assertFalse(
+            UserGroupMembership.objects.filter(
+                user_profile=hamlet, user_group=full_members_group
+            ).exists()
+        )
+
+        current_time = timezone_now()
+        with mock.patch(
+            "zerver.lib.actions.timezone_now", return_value=current_time + timedelta(days=3)
+        ):
+            promote_new_full_members()
+
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_profile=cordelia, user_group=full_members_group
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_profile=hamlet, user_group=full_members_group
+            ).exists()
+        )

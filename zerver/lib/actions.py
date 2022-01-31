@@ -923,6 +923,11 @@ def update_users_in_full_members_system_group(
         bulk_add_members_to_user_group(full_members_system_group, new_full_member_ids)
 
 
+def promote_new_full_members() -> None:
+    for realm in Realm.objects.filter(deactivated=False).exclude(waiting_period_threshold=0):
+        update_users_in_full_members_system_group(realm)
+
+
 @transaction.atomic(savepoint=False)
 def do_set_realm_property(
     realm: Realm, name: str, value: Any, *, acting_user: Optional[UserProfile]
