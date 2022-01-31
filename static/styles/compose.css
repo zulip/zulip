@@ -721,14 +721,9 @@ a.compose_control_button.hide {
         flex-flow: column;
     }
 
-    #compose-textarea {
-        max-height: none !important;
-        flex: 1;
-    }
-
+    #compose-textarea,
     #preview_message_area {
-        max-height: none;
-        height: 1.5em;
+        max-height: none !important;
         flex: 1;
     }
 }
