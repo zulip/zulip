@@ -1,3 +1,4 @@
+import autosize from "autosize";
 import $ from "jquery";
 import _ from "lodash";
 
@@ -85,6 +86,7 @@ export function clear_preview_area() {
     $("#compose .preview_message_area").hide();
     $("#compose .preview_content").empty();
     $("#compose .markdown_preview").show();
+    autosize.update($("#compose-textarea"));
 }
 
 export function update_fade() {
