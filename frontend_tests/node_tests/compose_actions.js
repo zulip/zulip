@@ -117,6 +117,7 @@ test("start", ({override, override_rewire}) => {
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
     override_rewire(compose_actions, "blur_compose_inputs", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});
+    $("#compose .preview_mode_hidden").css = () => {};
 
     let compose_defaults;
     override(narrow_state, "set_compose_defaults", () => compose_defaults);

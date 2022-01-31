@@ -289,6 +289,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
         assert.equal(spinner.selector, "#compose-send-button .loader");
         show_button_spinner_called = true;
     });
+    $("#compose .preview_mode_hidden").css = () => {};
 
     page_params.user_id = new_user.user_id;
 
@@ -329,6 +330,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
 });
 
 test_ui("finish", ({override, override_rewire}) => {
+    $("#compose .preview_mode_hidden").css = () => {};
     override(notifications, "clear_compose_notifications", () => {});
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
@@ -548,8 +550,8 @@ test_ui("trigger_submit_compose_form", ({override, override_rewire}) => {
 
 test_ui("on_events", ({override, override_rewire}) => {
     initialize_handlers({override, override_rewire});
-
     override(rendered_markdown, "update_elements", () => {});
+    $("#compose .preview_mode_hidden").css = () => {};
 
     function setup_parents_and_mock_remove(container_sel, target_sel, parent) {
         const container = $.create("fake " + container_sel);

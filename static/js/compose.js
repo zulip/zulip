@@ -87,6 +87,10 @@ export function clear_preview_area() {
     $("#compose .preview_content").empty();
     $("#compose .markdown_preview").show();
     autosize.update($("#compose-textarea"));
+
+    // While in preview mode we hide unneeded compose_control_buttons,
+    // so here we are re-showing them.
+    $("#compose .preview_mode_hidden").css({visibility: "visible"});
 }
 
 export function update_fade() {
@@ -664,6 +668,9 @@ export function initialize() {
     $("#compose").on("click", ".markdown_preview", (e) => {
         e.preventDefault();
         e.stopPropagation();
+
+        // Hide unneeded compose_control_buttons in preview mode.
+        $("#compose .preview_mode_hidden").css({visibility: "hidden"});
 
         const content = $("#compose-textarea").val();
         $("#compose-textarea").hide();
