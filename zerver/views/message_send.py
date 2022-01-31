@@ -146,7 +146,7 @@ def handle_deferred_message(
     tz_guess: Optional[str],
     forwarder_user_profile: UserProfile,
     realm: Optional[Realm],
-) -> HttpResponse:
+) -> str:
     deliver_at = None
     local_tz = "UTC"
     if tz_guess:
@@ -179,7 +179,7 @@ def handle_deferred_message(
         realm=realm,
         forwarder_user_profile=forwarder_user_profile,
     )
-    return json_success({"deliver_at": str(deliver_at_usertz)})
+    return str(deliver_at_usertz)
 
 
 @has_request_variables
@@ -284,7 +284,7 @@ def send_message_backend(
         raise JsonableError(_("Missing deliver_at in a request for delayed message delivery"))
 
     if (delivery_type == "send_later" or delivery_type == "remind") and defer_until is not None:
-        return handle_deferred_message(
+        deliver_at = handle_deferred_message(
             sender,
             client,
             message_type_name,
@@ -297,6 +297,7 @@ def send_message_backend(
             forwarder_user_profile=user_profile,
             realm=realm,
         )
+        return json_success(data={"deliver_at": deliver_at})
 
     ret = check_send_message(
         sender,

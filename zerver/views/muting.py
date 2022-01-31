@@ -29,7 +29,7 @@ def mute_topic(
     stream_name: Optional[str],
     topic_name: str,
     date_muted: datetime.datetime,
-) -> HttpResponse:
+) -> None:
     if stream_name is not None:
         (stream, sub) = access_stream_by_name(user_profile, stream_name)
     else:
@@ -40,12 +40,14 @@ def mute_topic(
         raise JsonableError(_("Topic already muted"))
 
     do_mute_topic(user_profile, stream, topic_name, date_muted)
-    return json_success()
 
 
 def unmute_topic(
-    user_profile: UserProfile, stream_id: Optional[int], stream_name: Optional[str], topic_name: str
-) -> HttpResponse:
+    user_profile: UserProfile,
+    stream_id: Optional[int],
+    stream_name: Optional[str],
+    topic_name: str,
+) -> None:
     error = _("Topic is not muted")
 
     if stream_name is not None:
@@ -55,7 +57,6 @@ def unmute_topic(
         stream = access_stream_for_unmute_topic_by_id(user_profile, stream_id, error)
 
     do_unmute_topic(user_profile, stream, topic_name)
-    return json_success()
 
 
 @has_request_variables
@@ -71,20 +72,22 @@ def update_muted_topic(
     check_for_exactly_one_stream_arg(stream_id=stream_id, stream=stream)
 
     if op == "add":
-        return mute_topic(
+        mute_topic(
             user_profile=user_profile,
             stream_id=stream_id,
             stream_name=stream,
             topic_name=topic,
             date_muted=timezone_now(),
         )
+        return json_success()
     elif op == "remove":
-        return unmute_topic(
+        unmute_topic(
             user_profile=user_profile,
             stream_id=stream_id,
             stream_name=stream,
             topic_name=topic,
         )
+        return json_success()
 
 
 def mute_user(request: HttpRequest, user_profile: UserProfile, muted_user_id: int) -> HttpResponse:
