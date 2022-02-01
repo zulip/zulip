@@ -66,6 +66,27 @@ function message_was_resolved(message) {
     if (message.topic.startsWith(message_edit.RESOLVED_TOPIC_PREFIX)) {
         return true;
     }
+
+    // To find unresolved situation we will have to dig information
+    // from edit_history. We use prev_topic and consider message resolved/unresolved when:
+    // 1. are either same as current topic
+    // 2. or they start with ✔
+    if (message.edit_history !== undefined) {
+        const last_edit = message.edit_history.at(-1);
+        let prev_topic;
+        if (util.get_edit_event_prev_topic(last_edit) !== undefined) {
+            prev_topic = util.get_edit_event_prev_topic(last_edit);
+        } else {
+            prev_topic = last_edit.prev_topic;
+        }
+        if (
+            prev_topic !== undefined &&
+            (prev_topic === message.topic ||
+                prev_topic.startsWith(message_edit.RESOLVED_TOPIC_PREFIX))
+        ) {
+            return true;
+        }
+    }
     return false;
 }
 
