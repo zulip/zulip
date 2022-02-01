@@ -325,12 +325,6 @@ python_rules = RuleList(
             "good_lines": ["id = alice.user_id"],
             "bad_lines": ["id = alice.userid"],
         },
-        {
-            "pattern": r"json_success\({}\)",
-            "description": "Use json_success() to return nothing",
-            "good_lines": ["return json_success()"],
-            "bad_lines": ["return json_success({})"],
-        },
         # To avoid JsonableError(_variable) and JsonableError(_(variable))
         {
             "pattern": r"\WJsonableError\(_\(?\w.+\)",
