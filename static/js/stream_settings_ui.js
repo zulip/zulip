@@ -40,7 +40,13 @@ import * as ui_report from "./ui_report";
 import * as util from "./util";
 
 export function set_right_panel_title(sub) {
-    $("#subscription_overlay .stream-info-title").html(render_selected_stream_title(sub));
+    let title_icon_color = "#333333";
+    if (settings_data.using_dark_theme()) {
+        title_icon_color = "#dddeee";
+    }
+    $("#subscription_overlay .stream-info-title").html(
+        render_selected_stream_title({sub, title_icon_color}),
+    );
 }
 
 export const show_subs_pane = {
