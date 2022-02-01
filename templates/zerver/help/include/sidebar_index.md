@@ -138,6 +138,7 @@
 * [Deactivate your organization](/help/deactivate-your-organization)
 * [View organization statistics](/help/analytics)
 * [Linking to your organization](/help/linking-to-zulip)
+* [Data and privacy](/help/data-and-privacy)
 * [GDPR compliance](/help/gdpr-compliance)
 
 ## Users
