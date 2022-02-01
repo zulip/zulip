@@ -86,9 +86,10 @@ the [main Zulip server and web app
 repository](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
 alone.
 
-Any issue with the "good first issue"
-label is a good candidate when you are getting started. In addition, many of the
-issues with the "help wanted" label may be approachable as well.
+You can look through issues tagged with the "help wanted" label, which is used
+to indicate the issues that are ready for contributions. Some repositories also
+use the "good first issue" label to tag issues that are especially approachable
+for new contributors.
 
 - [Server and web app](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
 - [Mobile apps](https://github.com/zulip/zulip-mobile/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
@@ -104,7 +105,8 @@ changes to tests).
 
 We recommend the following process for finding an issue to work on:
 
-1. Read the description of an issue and make sure you understand it.
+1. Read the description of an issue tagged with the "help wanted" label and make
+   sure you understand it.
 2. If it seems promising, poke around the product
    (on [chat.zulip.org](https://chat.zulip.org) or in the development
    environment) until you know how the piece being
@@ -148,15 +150,11 @@ repository](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3
 
 #### In the main server and web app repository
 
-Post a comment with `@zulipbot claim` to
-the issue thread. [Zulipbot](https://github.com/zulip/zulipbot) is a GitHub
-workflow bot; it will assign you to the issue and label the issue as "in
-progress". You can only claim issues with the
-[good first issue](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
-or
-[help wanted](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
-labels. Zulipbot will give you an error if you try to claim an issue
-without one of those labels.
+After making sure the issue is tagged with a [help
+wanted](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
+label, post a comment with `@zulipbot claim` to the issue thread.
+[Zulipbot](https://github.com/zulip/zulipbot) is a GitHub workflow bot; it will
+assign you to the issue and label the issue as "in progress".
 
 New contributors can only claim one issue until their first pull request is
 merged. This is to encourage folks to finish ongoing work before starting
@@ -170,8 +168,7 @@ There is no bot for other repositories, so you can simply post a comment saying
 that you'd like to work on the issue.
 
 Please follow the same guidelines as described above: find an issue labeled
-"good first issue" or "help wanted", and only pick up one issue at a time to
-start with.
+"help wanted", and only pick up one issue at a time to start with.
 
 ### Working on an issue
 
