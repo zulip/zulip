@@ -7912,7 +7912,10 @@ def do_mute_topic(
 ) -> None:
     if date_muted is None:
         date_muted = timezone_now()
-    add_topic_mute(user_profile, stream.id, stream.recipient_id, topic, date_muted)
+    try:
+        add_topic_mute(user_profile, stream.id, stream.recipient_id, topic, date_muted)
+    except IntegrityError:
+        raise JsonableError(_("Topic already muted"))
     event = dict(type="muted_topics", muted_topics=get_topic_mutes(user_profile))
     send_event(user_profile.realm, event, [user_profile.id])
 
@@ -7933,19 +7936,21 @@ def do_mute_user(
 ) -> None:
     if date_muted is None:
         date_muted = timezone_now()
-    add_user_mute(user_profile, muted_user, date_muted)
-    do_mark_muted_user_messages_as_read(user_profile, muted_user)
+    try:
+        add_user_mute(user_profile, muted_user, date_muted)
+        do_mark_muted_user_messages_as_read(user_profile, muted_user)
+        RealmAuditLog.objects.create(
+            realm=user_profile.realm,
+            acting_user=user_profile,
+            modified_user=user_profile,
+            event_type=RealmAuditLog.USER_MUTED,
+            event_time=date_muted,
+            extra_data=orjson.dumps({"muted_user_id": muted_user.id}).decode(),
+        )
+    except django.db.utils.IntegrityError:
+        raise JsonableError(_("User already muted"))
     event = dict(type="muted_users", muted_users=get_user_mutes(user_profile))
     send_event(user_profile.realm, event, [user_profile.id])
-
-    RealmAuditLog.objects.create(
-        realm=user_profile.realm,
-        acting_user=user_profile,
-        modified_user=user_profile,
-        event_type=RealmAuditLog.USER_MUTED,
-        event_time=date_muted,
-        extra_data=orjson.dumps({"muted_user_id": muted_user.id}).decode(),
-    )
 
 
 def do_unmute_user(mute_object: MutedUser) -> None:
