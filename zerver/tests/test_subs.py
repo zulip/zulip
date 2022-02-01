@@ -1781,9 +1781,10 @@ class StreamAdminTest(ZulipTestCase):
         messages = get_topic_messages(user_profile, stream, "stream events")
         self.assert_length(messages, 1)
         expected_notification = (
-            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) "
-            "for this stream from **Forever** to **2 days**. Messages will be automatically "
-            "deleted after 2 days."
+            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) for this stream:\n"
+            "* **Old retention period**: Forever\n"
+            "* **New retention period**: 2 days\n\n"
+            "Messages in this stream will now be automatically deleted 2 days after they are sent."
         )
         self.assertEqual(messages[0].content, expected_notification)
         realm_audit_log = RealmAuditLog.objects.filter(
@@ -1803,9 +1804,10 @@ class StreamAdminTest(ZulipTestCase):
         messages = get_topic_messages(user_profile, stream, "stream events")
         self.assert_length(messages, 2)
         expected_notification = (
-            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) "
-            "for this stream from **2 days** to **8 days**. Messages will be automatically "
-            "deleted after 8 days."
+            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) for this stream:\n"
+            "* **Old retention period**: 2 days\n"
+            "* **New retention period**: 8 days\n\n"
+            "Messages in this stream will now be automatically deleted 8 days after they are sent."
         )
         self.assertEqual(messages[1].content, expected_notification)
         realm_audit_log = RealmAuditLog.objects.filter(
@@ -1826,8 +1828,10 @@ class StreamAdminTest(ZulipTestCase):
         messages = get_topic_messages(user_profile, stream, "stream events")
         self.assert_length(messages, 3)
         expected_notification = (
-            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) "
-            "for this stream from **8 days** to **Forever**."
+            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) for this stream:\n"
+            "* **Old retention period**: 8 days\n"
+            "* **New retention period**: Forever\n\n"
+            "Messages in this stream will now be retained forever."
         )
         self.assertEqual(messages[2].content, expected_notification)
         realm_audit_log = RealmAuditLog.objects.filter(
