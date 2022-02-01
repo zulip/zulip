@@ -276,6 +276,14 @@ td .button {
         z-index: 1;
     }
 
+    #id_realm_authentication_methods {
+        width: 20%;
+
+        td {
+            border: none;
+        }
+    }
+
     .table-striped {
         table-layout: auto;
         border-collapse: separate;
