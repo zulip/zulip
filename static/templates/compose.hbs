@@ -51,38 +51,40 @@
         <div id="compose_private_stream_alert" class="alert home-error-bar"></div>
         <div id="out-of-view-notification" class="notification-alert"></div>
         <div class="composition-area">
-            <div id="compose_top_right">
-                <button type="button" class="expand_composebox_button fa fa-angle-up" aria-label="{{t 'Expand compose' }}" tabindex=0 data-tippy-content="{{t 'Expand compose' }}"></button>
-                <button type="button" class="collapse_composebox_button fa fa-angle-down" aria-label="{{t 'Collapse compose' }}" tabindex=0 data-tippy-content="{{t 'Collapse compose' }}"></button>
-                <button type="button" class="close" id='compose_close' data-tippy-content="{{t 'Cancel compose' }}  <span class='hotkey-hint'>(Esc)</span>">&times;</button>
-            </div>
             <form id="send_message_form" action="/json/messages" method="post">
                 {{ csrf_input }}
                 <div class="compose_table">
-                    <div id="stream-message">
-                        <div class="stream-selection-header-colorblock message_header_stream left_part"></div>
-                        <div class="right_part">
-                            <span id="compose-lock-icon">
-                                <i class="fa fa-lock" title="{{t 'This is a private stream' }}" aria-hidden="true"></i>
-                            </span>
-                            <span id="compose-globe-icon">
-                                <i class="fa fa-globe" title="{{t 'This is a web-public stream' }}" aria-hidden="true"></i>
-                            </span>
-                            <input type="text" class="recipient_box" name="stream_message_recipient_stream" id="stream_message_recipient_stream" maxlength="30" value="" placeholder="{{t 'Stream' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Stream' }}" />
-                            <i class="fa fa-angle-right" aria-hidden="true"></i>
-                            <input type="text" class="recipient_box" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="60" value="" placeholder="{{t 'Topic' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Topic' }}" />
+                    <div id="compose_top">
+                        <div id="stream-message">
+                            <div class="stream-selection-header-colorblock message_header_stream left_part"></div>
+                            <div class="right_part">
+                                <span id="compose-lock-icon">
+                                    <i class="fa fa-lock" title="{{t 'This is a private stream' }}" aria-hidden="true"></i>
+                                </span>
+                                <span id="compose-globe-icon">
+                                    <i class="fa fa-globe" title="{{t 'This is a web-public stream' }}" aria-hidden="true"></i>
+                                </span>
+                                <input type="text" class="recipient_box" name="stream_message_recipient_stream" id="stream_message_recipient_stream" maxlength="30" value="" placeholder="{{t 'Stream' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Stream' }}" />
+                                <i class="fa fa-angle-right" aria-hidden="true"></i>
+                                <input type="text" class="recipient_box" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="60" value="" placeholder="{{t 'Topic' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Topic' }}" />
+                            </div>
                         </div>
-                    </div>
-                    <div id="private-message">
-                        <div class="to_text">
-                            <span>{{t 'To' }}:</span>
-                        </div>
-                        <div class="right_part">
-                            <div class="pm_recipient">
-                                <div class="pill-container" data-before="{{t 'You and' }}">
-                                    <div class="input" contenteditable="true" id="private_message_recipient" data-no-recipients-text="{{t 'Add one or more users' }}" data-some-recipients-text="{{t 'Add another user...' }}"></div>
+                        <div id="private-message">
+                            <div class="to_text">
+                                <span>{{t 'To' }}:</span>
+                            </div>
+                            <div class="right_part">
+                                <div class="pm_recipient">
+                                    <div class="pill-container" data-before="{{t 'You and' }}">
+                                        <div class="input" contenteditable="true" id="private_message_recipient" data-no-recipients-text="{{t 'Add one or more users' }}" data-some-recipients-text="{{t 'Add another user...' }}"></div>
+                                    </div>
                                 </div>
                             </div>
+                        </div>
+                        <div id="compose_top_right">
+                            <button type="button" class="expand_composebox_button fa fa-angle-up" aria-label="{{t 'Expand compose' }}" tabindex=0 data-tippy-content="{{t 'Expand compose' }}"></button>
+                            <button type="button" class="collapse_composebox_button fa fa-angle-down" aria-label="{{t 'Collapse compose' }}" tabindex=0 data-tippy-content="{{t 'Collapse compose' }}"></button>
+                            <button type="button" class="close" id='compose_close' data-tippy-content="{{t 'Cancel compose' }}  <span class='hotkey-hint'>(Esc)</span>">&times;</button>
                         </div>
                     </div>
                     <div class="messagebox-wrapper">

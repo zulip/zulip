@@ -73,7 +73,7 @@
 
 .message_comp {
     display: none;
-    padding: 10px 10px 0 5px;
+    padding: 5px 10px 0 5px;
 }
 
 .autocomplete_secondary {
@@ -228,10 +228,15 @@
     margin: auto;
 }
 
+#compose_top {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 5px;
+}
+
 #compose_top_right {
-    position: absolute;
-    right: 0;
-    float: right;
+    display: flex;
+    align-items: center;
 
     button {
         background: transparent;
@@ -416,7 +421,10 @@ input.recipient_box {
     width: 20%;
     border-radius: 0 3px 3px 0;
     border-left: 0;
-    min-width: 120px;
+
+    @media (width > $sm_min) {
+        min-width: 120px;
+    }
 
     &:focus {
         border-left: none;
@@ -528,6 +536,7 @@ input.recipient_box {
 
 #private-message {
     align-items: center;
+    width: 100%;
 }
 
 .tippy-content .compose_control_buttons_container {
@@ -699,7 +708,7 @@ a.compose_control_button.hide {
 @media (width < $mm_min) {
     #stream_message_recipient_topic.recipient_box {
         width: calc(100% - 192px);
-        min-width: 75px;
+        min-width: 110px;
     }
 
     #compose-content {
