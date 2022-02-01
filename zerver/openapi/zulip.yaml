@@ -1491,60 +1491,29 @@ paths:
                                   "id": 28,
                                 }
                             - type: object
-                              additionalProperties: false
                               description: |
                                 Event sent to all users in a Zulip organization when the
                                 status of a user changes.
-                              properties:
-                                id:
-                                  $ref: "#/components/schemas/EventIdSchema"
-                                type:
-                                  allOf:
-                                    - $ref: "#/components/schemas/EventTypeSchema"
-                                    - enum:
-                                        - user_status
-                                away:
-                                  type: boolean
-                                  description: |
-                                    Whether the user has marked themself "away" with this status.
-                                status_text:
-                                  type: string
-                                  description: |
-                                    The text content of the status message.
-                                emoji_name:
-                                  type: string
-                                  description: |
-                                    The [emoji name](/api/add-reaction#parameters) for the emoji
-                                    the user selected for their new status.
-
-                                    This will be "" for users who set a status without selecting
-                                    an emoji.
-
-                                    **Changes**: New in Zulip 5.0 (feature level 86).
-                                emoji_code:
-                                  type: string
-                                  description: |
-                                    The [emoji code](/api/add-reaction#parameters) for the emoji
-                                    the user selected for their new status.
-
-                                    This will be "" for users who set a status without selecting
-                                    an emoji.
-
-                                    **Changes**: New in Zulip 5.0 (feature level 86).
-                                reaction_type:
-                                  type: string
-                                  description: |
-                                    The [emoji type](/api/add-reaction#parameters) for the emoji
-                                    the user selected for their new status.
-
-                                    This will be "" for users who set a status without selecting
-                                    an emoji.
-
-                                    **Changes**: New in Zulip 5.0 (feature level 86).
-                                user_id:
-                                  type: integer
-                                  description: |
-                                    The ID of the user whose status changed.
+                              allOf:
+                                - $ref: "#/components/schemas/UserStatusBase"
+                                - additionalProperties: false
+                                  properties:
+                                    id:
+                                      $ref: "#/components/schemas/EventIdSchema"
+                                    type:
+                                      allOf:
+                                        - $ref: "#/components/schemas/EventTypeSchema"
+                                        - enum:
+                                            - user_status
+                                    user_id:
+                                      type: integer
+                                      description: |
+                                        The ID of the user whose status changed.
+                                    away: {}
+                                    status_text: {}
+                                    emoji_name: {}
+                                    emoji_code: {}
+                                    reaction_type: {}
                               example:
                                 {
                                   "type": "user_status",
@@ -9465,46 +9434,10 @@ paths:
                             `{user_id}`: Object containing the status details of a user
                             with the key of the object being the id of the user.
                           type: object
-                          additionalProperties: false
-                          properties:
-                            away:
-                              type: boolean
-                              description: |
-                                Whether the user has marked themself "away" with this status.
-                            status_text:
-                              type: string
-                              description: |
-                                The text content of the status message.
-                            emoji_name:
-                              type: string
-                              description: |
-                                The [emoji name](/api/add-reaction#parameters) for the emoji
-                                the user selected for their new status.
-
-                                This will be "" for users who set a status without selecting
-                                an emoji.
-
-                                **Changes**: New in Zulip 5.0 (feature level 86).
-                            emoji_code:
-                              type: string
-                              description: |
-                                The [emoji code](/api/add-reaction#parameters) for the emoji
-                                the user selected for their new status.
-
-                                This will be "" for users who set a status without selecting
-                                an emoji.
-
-                                **Changes**: New in Zulip 5.0 (feature level 86).
-                            reaction_type:
-                              type: string
-                              description: |
-                                The [emoji type](/api/add-reaction#parameters) for the emoji
-                                the user selected for their new status.
-
-                                This will be "" for users who set a status without selecting
-                                an emoji.
-
-                                **Changes**: New in Zulip 5.0 (feature level 86).
+                          additionalProperties:
+                            allOf:
+                              - $ref: "#/components/schemas/UserStatusBase"
+                              - additionalProperties: false
                       user_settings:
                         type: object
                         description: |
@@ -14537,6 +14470,49 @@ components:
                   type: boolean
                   description: |
                     Whether the user is a mirror dummy.
+    UserStatusBase:
+      type: object
+      description: |
+        Object containing details of a user's status.
+      properties:
+        away:
+          type: boolean
+          description: |
+            Whether the user has marked themself "away" with this status.
+        status_text:
+          type: string
+          description: |
+            The text content of the status message.
+        emoji_name:
+          type: string
+          description: |
+            The [emoji name](/api/add-reaction#parameters) for the emoji
+            the user selected for their new status.
+
+            This will be "" for users who set a status without selecting
+            an emoji.
+
+            **Changes**: New in Zulip 5.0 (feature level 86).
+        emoji_code:
+          type: string
+          description: |
+            The [emoji code](/api/add-reaction#parameters) for the emoji
+            the user selected for their new status.
+
+            This will be "" for users who set a status without selecting
+            an emoji.
+
+            **Changes**: New in Zulip 5.0 (feature level 86).
+        reaction_type:
+          type: string
+          description: |
+            The [emoji type](/api/add-reaction#parameters) for the emoji
+            the user selected for their new status.
+
+            This will be "" for users who set a status without selecting
+            an emoji.
+
+            **Changes**: New in Zulip 5.0 (feature level 86).
     Messages:
       allOf:
         - $ref: "#/components/schemas/MessagesBase"
