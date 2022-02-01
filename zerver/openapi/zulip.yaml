@@ -14485,8 +14485,7 @@ components:
         emoji_name:
           type: string
           description: |
-            The [emoji name](/api/add-reaction#parameters) for the emoji
-            the user selected for their new status.
+            The status emoji's human-readable name.
 
             This will be "" for users who set a status without selecting
             an emoji.
@@ -14495,8 +14494,8 @@ components:
         emoji_code:
           type: string
           description: |
-            The [emoji code](/api/add-reaction#parameters) for the emoji
-            the user selected for their new status.
+            A unique identifier for the status emoji, within the namespace
+            specified by `reaction_type`.
 
             This will be "" for users who set a status without selecting
             an emoji.
@@ -14505,8 +14504,15 @@ components:
         reaction_type:
           type: string
           description: |
-            The [emoji type](/api/add-reaction#parameters) for the emoji
-            the user selected for their new status.
+            One of the following values, specifying the namespace used for
+            `emoji_code`:
+
+            - `unicode_emoji`: Unicode emoji. (`emoji_code` will be the
+              status emoji's Unicode codepoint.)
+            - `realm_emoji`: Custom emoji. (`emoji_code` will be the status
+              emoji's ID.)
+            - `zulip_extra_emoji`: Special emoji included with Zulip. Exists to
+              namespace the `zulip` emoji.
 
             This will be "" for users who set a status without selecting
             an emoji.
