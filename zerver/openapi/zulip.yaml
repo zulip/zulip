@@ -9416,8 +9416,7 @@ paths:
                           error messages when a search returns limited results because
                           a stop word in the query was ignored.
                       user_status:
-                        allOf:
-                          - $ref: "#/components/schemas/EmojiBase"
+                        type: object
                         description: |
                           Present if `user_status` is present in `fetch_event_types`.
 
