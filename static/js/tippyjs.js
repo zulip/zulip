@@ -190,7 +190,11 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: [".rendered_markdown time", ".rendered_markdown .copy_codeblock"],
+        target: [
+            ".rendered_markdown time",
+            ".rendered_markdown .copy_codeblock",
+            "#compose_top_right [data-tippy-content]",
+        ],
         allowHTML: true,
         appendTo: () => document.body,
         onHidden(instance) {
