@@ -35,23 +35,34 @@ export function fetch_and_render_message_history(message) {
                     show_date_row: prev_time === null || !isSameDay(time, prev_time),
                 };
 
-                if (msg.user_id) {
-                    const person = people.get_by_user_id(msg.user_id);
-                    item.edited_by = person.full_name;
+                if (!msg.user_id) {
+                    continue;
                 }
 
+                const person = people.get_by_user_id(msg.user_id);
+                const full_name = person.full_name;
+
                 if (index === 0) {
-                    item.posted_or_edited = $t({defaultMessage: "Posted by"});
+                    item.edited_by_notice = $t(
+                        {defaultMessage: "Posted by {full_name}"},
+                        {full_name},
+                    );
                     item.body_to_render = msg.rendered_content;
                 } else if (msg.prev_topic && msg.prev_content) {
-                    item.posted_or_edited = $t({defaultMessage: "Edited by"});
+                    item.edited_by_notice = $t(
+                        {defaultMessage: "Edited by {full_name}"},
+                        {full_name},
+                    );
                     item.body_to_render = msg.content_html_diff;
                     item.topic_edited = true;
                     item.prev_topic = msg.prev_topic;
                     item.new_topic = msg.topic;
                 } else if (msg.prev_topic && msg.prev_stream) {
                     const sub = sub_store.get(msg.prev_stream);
-                    item.posted_or_edited = $t({defaultMessage: "Edited by"});
+                    item.edited_by_notice = $t(
+                        {defaultMessage: "Moved by {full_name}"},
+                        {full_name},
+                    );
                     item.topic_edited = true;
                     item.prev_topic = msg.prev_topic;
                     item.new_topic = msg.topic;
@@ -68,13 +79,19 @@ export function fetch_and_render_message_history(message) {
                     }
                     prev_stream_item = item;
                 } else if (msg.prev_topic) {
-                    item.posted_or_edited = $t({defaultMessage: "Topic edited by"});
+                    item.edited_by_notice = $t(
+                        {defaultMessage: "Moved by {full_name}"},
+                        {full_name},
+                    );
                     item.topic_edited = true;
                     item.prev_topic = msg.prev_topic;
                     item.new_topic = msg.topic;
                 } else if (msg.prev_stream) {
                     const sub = sub_store.get(msg.prev_stream);
-                    item.posted_or_edited = $t({defaultMessage: "Stream edited by"});
+                    item.edited_by_notice = $t(
+                        {defaultMessage: "Moved by {full_name}"},
+                        {full_name},
+                    );
                     item.stream_changed = true;
                     if (!sub) {
                         item.prev_stream = $t({defaultMessage: "Unknown stream"});
@@ -89,7 +106,10 @@ export function fetch_and_render_message_history(message) {
                     prev_stream_item = item;
                 } else {
                     // just a content edit
-                    item.posted_or_edited = $t({defaultMessage: "Edited by"});
+                    item.edited_by_notice = $t(
+                        {defaultMessage: "Edited by {full_name}"},
+                        {full_name},
+                    );
                     item.body_to_render = msg.content_html_diff;
                 }
 
