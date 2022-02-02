@@ -5,6 +5,7 @@ import render_compose_announce from "../templates/compose_announce.hbs";
 import render_compose_invite_users from "../templates/compose_invite_users.hbs";
 import render_compose_not_subscribed from "../templates/compose_not_subscribed.hbs";
 import render_compose_private_stream_alert from "../templates/compose_private_stream_alert.hbs";
+import render_compose_resolved_topic from "../templates/compose_resolved_topic.hbs";
 
 import * as channel from "./channel";
 import * as compose_error from "./compose_error";
@@ -12,6 +13,7 @@ import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import {$t_html} from "./i18n";
+import * as message_edit from "./message_edit";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
@@ -161,6 +163,40 @@ export function warn_if_mentioning_unsubscribed_user(mentioned) {
         }
 
         error_area.show();
+    }
+}
+
+export function clear_topic_resolved_warning() {
+    $("#compose_resolved_topic").hide();
+    $("#compose_resolved_topic").empty();
+    $("#compose-send-status").hide();
+}
+
+export function warn_if_topic_resolved() {
+    const stream_name = compose_state.stream_name();
+    const topic_name = compose_state.topic();
+
+    const sub = stream_data.get_sub(stream_name);
+
+    if (sub && topic_name.startsWith(message_edit.RESOLVED_TOPIC_PREFIX)) {
+        const error_area = $("#compose_resolved_topic");
+
+        if (error_area.html()) {
+            clear_topic_resolved_warning(); // This warning already exists
+        }
+
+        const context = {
+            stream_id: sub.stream_id,
+            topic_name,
+            can_move_topic: settings_data.user_can_move_messages_between_streams(),
+        };
+
+        const new_row = render_compose_resolved_topic(context);
+        error_area.append(new_row);
+
+        error_area.show();
+    } else {
+        clear_topic_resolved_warning();
     }
 }
 

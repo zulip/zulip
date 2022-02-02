@@ -255,6 +255,7 @@
     display: none;
 }
 
+.compose_resolved_topic,
 .compose_invite_user,
 .compose_private_stream_alert,
 .compose-all-everyone,
@@ -272,6 +273,7 @@
     position: absolute;
 }
 
+.compose_resolved_topic_close,
 .compose_invite_close,
 .compose_private_stream_alert_close {
     display: inline-block;
@@ -280,6 +282,7 @@
     width: 10px;
 }
 
+.compose_resolved_topic_user_controls,
 .compose-all-everyone-controls,
 .compose-announce-controls,
 .compose_invite_user_controls,
@@ -289,8 +292,9 @@
 }
 
 .compose_invite_user p,
+.compose_resolved_topic p,
 .compose_not_subscribed p {
-    margin: 0 20px;
+    margin: 5px 20px;
     display: inline-block;
     max-width: calc(100% - 100px);
 }
