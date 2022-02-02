@@ -1166,6 +1166,137 @@ run_test("format_text - quote", ({override}) => {
     assert.equal(wrap_selection_called, false);
 });
 
+run_test("format_text - spoiler", ({override}) => {
+    override(text_field_edit, "set", (_field, text) => {
+        set_text = text;
+    });
+    override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
+        wrap_selection_called = true;
+        wrap_syntax_start = syntax_start;
+        wrap_syntax_end = syntax_end;
+    });
+
+    const spoiler_syntax_start_with_header = "```spoiler Header\n";
+    const spoiler_syntax_end = "\n```";
+
+    // Spoiler selected text
+    reset_state();
+    init_textarea("abc", {
+        start: 0,
+        end: 3,
+        text: "abc",
+        length: 3,
+    });
+    compose_ui.format_text($textarea, "spoiler");
+    assert.equal(set_text, "");
+    assert.equal(wrap_selection_called, true);
+    assert.equal(wrap_syntax_start, spoiler_syntax_start_with_header);
+    assert.equal(wrap_syntax_end, spoiler_syntax_end);
+
+    // Undo spoiler, header selected
+    reset_state();
+    init_textarea("```spoiler Header\nabc\n```", {
+        start: 11,
+        end: 17,
+        text: "Header",
+        length: 6,
+    });
+    compose_ui.format_text($textarea, "spoiler");
+    assert.equal(set_text, "Header\nabc");
+    assert.equal(wrap_selection_called, false);
+
+    reset_state();
+    init_textarea("abc\n```spoiler \ndef\n```\nghi", {
+        start: 15,
+        end: 15,
+        text: "",
+        length: 0,
+    });
+    compose_ui.format_text($textarea, "spoiler");
+    assert.equal(set_text, "abc\ndef\nghi");
+    assert.equal(wrap_selection_called, false);
+
+    // Undo spoiler selected text, only content selected
+    reset_state();
+    init_textarea("```spoiler \nabc\n```", {
+        start: 12,
+        end: 15,
+        text: "abc",
+        length: 3,
+    });
+    compose_ui.format_text($textarea, "spoiler");
+    assert.equal(set_text, "abc");
+    assert.equal(wrap_selection_called, false);
+
+    reset_state();
+    init_textarea("```spoiler abc\ndef\n```", {
+        start: 15,
+        end: 18,
+        text: "def",
+        length: 3,
+    });
+    compose_ui.format_text($textarea, "spoiler");
+    assert.equal(set_text, "abc\ndef");
+    assert.equal(wrap_selection_called, false);
+
+    reset_state();
+    init_textarea("abc\n```spoiler d\nef\n```\nghi", {
+        start: 17,
+        end: 19,
+        text: "ef",
+        length: 2,
+    });
+    compose_ui.format_text($textarea, "spoiler");
+    assert.equal(set_text, "abc\nd\nef\nghi");
+    assert.equal(wrap_selection_called, false);
+
+    // Undo spoiler selected text, content and title selected
+    reset_state();
+    init_textarea("```spoiler abc\ndef\n```", {
+        start: 11,
+        end: 18,
+        text: "abc\ndef",
+        length: 7,
+    });
+    compose_ui.format_text($textarea, "spoiler");
+    assert.equal(set_text, "abc\ndef");
+    assert.equal(wrap_selection_called, false);
+
+    reset_state();
+    init_textarea("abc\n```spoiler d\nef\n```\nghi", {
+        start: 15,
+        end: 19,
+        text: "d\nef",
+        length: 4,
+    });
+    compose_ui.format_text($textarea, "spoiler");
+    assert.equal(set_text, "abc\nd\nef\nghi");
+    assert.equal(wrap_selection_called, false);
+
+    // Undo spoiler selected text, syntax selected
+    reset_state();
+    init_textarea("```spoiler abc\ndef\n```", {
+        start: 0,
+        end: 22,
+        text: "```spoiler abc\ndef\n```",
+        length: 22,
+    });
+    compose_ui.format_text($textarea, "spoiler");
+    assert.equal(set_text, "abc\ndef");
+    assert.equal(wrap_selection_called, false);
+
+    reset_state();
+    init_textarea("abc\n```spoiler d\nef\n```\nghi", {
+        start: 4,
+        end: 23,
+        text: "```spoiler d\nef\n```",
+        length: 19,
+    });
+    compose_ui.format_text($textarea, "spoiler");
+    assert.equal(set_text, "abc\nd\nef\nghi");
+    assert.equal(wrap_selection_called, false);
+});
+
 run_test("markdown_shortcuts", ({override_rewire}) => {
     let format_text_type;
     override_rewire(compose_ui, "format_text", (_$textarea, type) => {

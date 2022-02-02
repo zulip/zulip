@@ -580,6 +580,151 @@ export function format_text($textarea, type, inserted_content) {
         wrapSelection(field, syntax_start, syntax_end);
     };
 
+    const format_spoiler = () => {
+        let spoiler_syntax_start = "```spoiler \n";
+        const spoiler_syntax_start_without_break = "```spoiler ";
+        let spoiler_syntax_end = "\n```";
+
+        // For when the entire spoiler block (with no header) is selected.
+        if (is_inner_text_formatted(spoiler_syntax_start, spoiler_syntax_end)) {
+            text =
+                text.slice(0, range.start) +
+                text.slice(
+                    range.start + spoiler_syntax_start.length,
+                    range.end - spoiler_syntax_end.length,
+                ) +
+                text.slice(range.end);
+            if (text.startsWith("\n")) {
+                text = text.slice(1);
+            }
+            set(field, text);
+            field.setSelectionRange(
+                range.start,
+                range.end - spoiler_syntax_start.length - spoiler_syntax_end.length,
+            );
+            return;
+        }
+
+        // For when the entire spoiler block (with a header) is selected.
+        if (is_inner_text_formatted(spoiler_syntax_start_without_break, spoiler_syntax_end)) {
+            text =
+                text.slice(0, range.start) +
+                text.slice(
+                    range.start + spoiler_syntax_start_without_break.length,
+                    range.end - spoiler_syntax_end.length,
+                ) +
+                text.slice(range.end);
+            if (text.startsWith("\n")) {
+                text = text.slice(1);
+            }
+            set(field, text);
+            field.setSelectionRange(
+                range.start,
+                range.end - spoiler_syntax_start_without_break.length - spoiler_syntax_end.length,
+            );
+            return;
+        }
+
+        // For when the text (including the header) inside a spoiler block is selected.
+        if (is_selection_formatted(spoiler_syntax_start_without_break, spoiler_syntax_end)) {
+            text =
+                text.slice(0, range.start - spoiler_syntax_start_without_break.length) +
+                selected_text +
+                text.slice(range.end + spoiler_syntax_end.length);
+            set(field, text);
+            field.setSelectionRange(
+                range.start - spoiler_syntax_start_without_break.length,
+                range.end - spoiler_syntax_start_without_break.length,
+            );
+            return;
+        }
+
+        // For when only the text inside a spoiler block (without a header) is selected.
+        if (is_selection_formatted(spoiler_syntax_start, spoiler_syntax_end)) {
+            text =
+                text.slice(0, range.start - spoiler_syntax_start.length) +
+                selected_text +
+                text.slice(range.end + spoiler_syntax_end.length);
+            set(field, text);
+            field.setSelectionRange(
+                range.start - spoiler_syntax_start.length,
+                range.end - spoiler_syntax_start.length,
+            );
+            return;
+        }
+
+        const is_inner_content_selected = () =>
+            range.start >= spoiler_syntax_start.length &&
+            text.length - range.end >= spoiler_syntax_end.length &&
+            text.slice(range.end, range.end + spoiler_syntax_end.length) === spoiler_syntax_end &&
+            text[range.start - 1] === "\n" &&
+            text.lastIndexOf(spoiler_syntax_start_without_break, range.start - 1) ===
+                text.lastIndexOf("\n", range.start - 2) + 1;
+
+        // For when only the text inside a spoiler block (with a header) is selected.
+        if (is_inner_content_selected()) {
+            const new_selection_start = text.lastIndexOf(
+                spoiler_syntax_start_without_break,
+                range.start,
+            );
+            text =
+                text.slice(0, new_selection_start) +
+                text.slice(
+                    new_selection_start + spoiler_syntax_start_without_break.length,
+                    range.start,
+                ) +
+                selected_text +
+                text.slice(range.end + spoiler_syntax_end.length);
+            set(field, text);
+            field.setSelectionRange(
+                new_selection_start,
+                range.end - spoiler_syntax_start_without_break.length,
+            );
+            return;
+        }
+
+        const is_header_selected = () =>
+            range.start >= spoiler_syntax_start_without_break.length &&
+            text.slice(range.start - spoiler_syntax_start_without_break.length, range.start) ===
+                spoiler_syntax_start_without_break &&
+            text.length - range.end >= spoiler_syntax_end.length &&
+            text[range.end] === "\n";
+
+        // For when only the header of a spoiler block  is selected.
+        if (is_header_selected()) {
+            const header = range.text;
+            const new_range_end = text.indexOf(spoiler_syntax_end, range.start);
+            const new_range_start = header ? range.start : range.start + 1;
+            text =
+                text.slice(0, range.start - spoiler_syntax_start_without_break.length) +
+                text.slice(new_range_start, new_range_end) +
+                text.slice(new_range_end + spoiler_syntax_end.length);
+            set(field, text);
+            field.setSelectionRange(
+                new_range_start - spoiler_syntax_start_without_break.length - (header ? 0 : 1),
+                new_range_end - spoiler_syntax_start_without_break.length - (header ? 0 : 1),
+            );
+            return;
+        }
+
+        if (range.start > 0 && text[range.start - 1] !== "\n") {
+            spoiler_syntax_start = "\n" + spoiler_syntax_start;
+        }
+        if (range.end < text.length && text[range.end] !== "\n") {
+            spoiler_syntax_end = spoiler_syntax_end + "\n";
+        }
+
+        const spoiler_syntax_start_with_header = spoiler_syntax_start_without_break + "Header\n";
+
+        // Otherwise, we don't have spoiler syntax, so we add it.
+        wrapSelection(field, spoiler_syntax_start_with_header, spoiler_syntax_end);
+
+        field.setSelectionRange(
+            range.start + spoiler_syntax_start.length - 1,
+            range.start + spoiler_syntax_start_with_header.length - 1,
+        );
+    };
+
     switch (type) {
         case "bold":
             // Ctrl + B: Toggle bold syntax on selection.
@@ -739,6 +884,9 @@ export function format_text($textarea, type, inserted_content) {
             format(quote_syntax_start, quote_syntax_end);
             break;
         }
+        case "spoiler":
+            format_spoiler();
+            break;
         case "latex": {
             const inline_latex_syntax = "$$";
             let block_latex_syntax_start = "```math\n";
