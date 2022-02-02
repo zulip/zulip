@@ -242,6 +242,8 @@ export function format_text($textarea, type) {
     const bold_syntax = "**";
     const bold_and_italic_syntax = "***";
     const strikethrough_syntax = "~~";
+    let quote_syntax_start = "```quote\n";
+    let quote_syntax_end = "\n```";
     let latex_syntax_start = "$$";
     let latex_syntax_end = "$$";
     let is_selected_text_italic = false;
@@ -267,6 +269,15 @@ export function format_text($textarea, type) {
         case "bold":
             // Ctrl + B: Toggle bold syntax on selection.
             add_formatting(bold_syntax, bold_syntax, field, range, text, selected_text);
+            break;
+        case "quote":
+            if (range.start !== 0 && !text.includes("\n" + selected_text)) {
+                quote_syntax_start = "\n```quote\n";
+            }
+            if (range.end !== text.length && !text.includes(selected_text + "\n")) {
+                quote_syntax_end = "\n```\n";
+            }
+            add_formatting(quote_syntax_start, quote_syntax_end, field, range, text, selected_text);
             break;
         case "strikethrough":
             add_formatting(
