@@ -702,6 +702,30 @@ export function format_text($textarea, type, inserted_content) {
             $textarea.caret(range.end + `[](${inserted_content})`.length);
             break;
         }
+        case "latex": {
+            const inline_latex_syntax = "$$";
+            let block_latex_syntax_start = "```math\n";
+            let block_latex_syntax_end = "\n```";
+            // If there is no text selected or the selected text is either multiline or
+            // already using multiline math syntax, we use multiline math syntax.
+            if (
+                selected_text === "" ||
+                selected_text.includes("\n") ||
+                is_selection_formatted(block_latex_syntax_start, block_latex_syntax_end)
+            ) {
+                // Add newlines before and after, if not already present.
+                if (range.start > 0 && text[range.start - 1] !== "\n") {
+                    block_latex_syntax_start = "\n" + block_latex_syntax_start;
+                }
+                if (range.end < text.length && text[range.end] !== "\n") {
+                    block_latex_syntax_end = block_latex_syntax_end + "\n";
+                }
+                format(block_latex_syntax_start, block_latex_syntax_end);
+            } else {
+                format(inline_latex_syntax);
+            }
+            break;
+        }
     }
 }
 
