@@ -52,9 +52,61 @@
         }
     }
 
-    /* Arrange that a multi-line description line wraps properly. */
     label.checkbox {
-        display: flex;
+        padding: 0;
+        display: inline-block;
+        position: relative;
+        vertical-align: top;
+
+        input[type="checkbox"] {
+            position: absolute;
+            clip: rect(0, 0, 0, 0);
+
+            ~ span {
+                display: inline-block;
+                vertical-align: middle;
+                position: relative;
+                top: -2px;
+
+                padding: 2px;
+                margin: 0 5px 0 0;
+                height: 12px;
+                width: 12px;
+
+                font-weight: 300;
+                line-height: 0.8;
+                font-size: 1.3rem;
+                text-align: center;
+                border: 2px solid hsl(156, 28%, 70%);
+
+                border-radius: 4px;
+                filter: brightness(1);
+
+                cursor: pointer;
+            }
+
+            &:checked ~ span {
+                background-image: url("../images/checkbox-white.svg");
+                background-size: 75%;
+                background-position: 50% 50%;
+                background-repeat: no-repeat;
+                background-color: hsl(156, 41%, 40%);
+                border: 2px solid hsl(156, 41%, 40%);
+            }
+
+            &:disabled ~ span {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            &:hover ~ span {
+                border-color: hsl(156, 41%, 40%);
+            }
+
+            &:focus ~ span {
+                outline-color: hsla(0, 0%, 100%, 0);
+            }
+        }
     }
 }
 
