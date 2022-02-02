@@ -302,6 +302,9 @@ export function format_text($textarea, type) {
             }
             add_formatting(quote_syntax_start, quote_syntax_end, field, range, text, selected_text);
             break;
+        case "spoiler":
+            add_spoiler_formatting(field, range, text, selected_text);
+            break;
         case "strikethrough":
             add_formatting(
                 strikethrough_syntax,
@@ -445,7 +448,6 @@ function add_formatting(syntax_start, syntax_end, field, range, text, selected_t
         field.setSelectionRange(range.start - syntax_start.length, range.end - syntax_start.length);
         return;
     } else if (is_inner_text_formatted(syntax_start, syntax_end, range, selected_text)) {
-        // Remove syntax inside the selection, if present.
         text = text.replace(syntax_start, linebreak_start).replace(syntax_end, linebreak_end);
         set(field, text);
         field.setSelectionRange(range.start, range.end - syntax_start.length - syntax_end.length);
@@ -539,6 +541,107 @@ function add_link_formatting(field, range, text, selected_text) {
     const new_start = range.end + "[](".length;
     const new_end = new_start + "url".length;
     field.setSelectionRange(new_start, new_end);
+}
+
+function add_spoiler_formatting(field, range, text, selected_text) {
+    let spoiler_syntax_start = "```spoiler \n";
+    const spoiler_syntax_start_without_break = "```spoiler ";
+    let spoiler_syntax_end = "\n```";
+
+    // Captures:
+    // ```spoiler |
+    // <text>
+    // ```
+    // (with | as placeholder for the cursor)
+    const is_curser_at_header_position = () =>
+        range.length === 0 &&
+        text.slice(range.start - spoiler_syntax_start_without_break.length, range.start) ===
+            spoiler_syntax_start_without_break;
+
+    // Captures:
+    // ```spoiler <header>
+    // <text>
+    // ```
+    // with <header><text> selected
+    const is_content_selected = () =>
+        text.slice(range.end, range.end + spoiler_syntax_end.length) === spoiler_syntax_end &&
+        text.slice(range.start - 1, range.start) === "\n" &&
+        text.includes(spoiler_syntax_start_without_break) &&
+        text.lastIndexOf(spoiler_syntax_start_without_break) <
+            range.start - spoiler_syntax_start_without_break.length;
+
+    if (is_curser_at_header_position()) {
+        const new_range_end = text.indexOf(spoiler_syntax_end, range.start);
+        text =
+            text.slice(0, text.indexOf(spoiler_syntax_start)) +
+            text.slice(range.start + 1, new_range_end) +
+            text.slice(new_range_end + spoiler_syntax_end.length, text.length);
+        set(field, text);
+        field.setSelectionRange(
+            range.start - spoiler_syntax_start_without_break.length,
+            new_range_end - spoiler_syntax_start_without_break.length - 1,
+        );
+        return;
+    } else if (
+        is_inner_text_formatted(
+            spoiler_syntax_start_without_break,
+            spoiler_syntax_end,
+            range,
+            selected_text,
+        )
+    ) {
+        text =
+            text.slice(0, range.start) +
+            text.slice(
+                range.start + spoiler_syntax_start_without_break.length,
+                range.end - spoiler_syntax_end.length,
+            ) +
+            text.slice(range.end, text.length);
+        if (text.startsWith("\n")) {
+            text = text.slice(1, text.length);
+        }
+        set(field, text);
+        field.setSelectionRange(
+            range.start,
+            range.end - spoiler_syntax_start_without_break.length - spoiler_syntax_end.length,
+        );
+        return;
+    } else if (is_content_selected()) {
+        text =
+            text.slice(0, text.indexOf(spoiler_syntax_start_without_break)) +
+            selected_text +
+            text.slice(range.end + spoiler_syntax_end.length, text.length);
+        set(field, text);
+        field.setSelectionRange(range.start, range.end);
+        return;
+    } else if (
+        is_selection_formatted(spoiler_syntax_start_without_break, spoiler_syntax_end, range, text)
+    ) {
+        text =
+            text.slice(0, text.indexOf(spoiler_syntax_start_without_break)) +
+            selected_text +
+            text.slice(range.end + spoiler_syntax_end.length, text.length);
+        set(field, text);
+        field.setSelectionRange(
+            range.start - spoiler_syntax_start_without_break.length,
+            range.end - spoiler_syntax_start_without_break.length,
+        );
+        return;
+    }
+
+    if (range.start !== 0 && !text.includes("\n" + selected_text)) {
+        spoiler_syntax_start = "\n```spoiler \n";
+    }
+    if (range.end !== text.length && !text.includes(selected_text + "\n")) {
+        spoiler_syntax_end = "\n```\n";
+    }
+
+    wrapSelection(field, spoiler_syntax_start, spoiler_syntax_end);
+
+    field.setSelectionRange(
+        range.start + spoiler_syntax_start.length - 1,
+        range.start + spoiler_syntax_start.length - 1,
+    );
 }
 
 export function hide_compose_spinner() {
