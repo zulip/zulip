@@ -682,6 +682,30 @@ export function format_text($textarea, type, inserted_content) {
             format(strikethrough_syntax);
             break;
         }
+        case "code": {
+            const inline_code_syntax = "`";
+            let block_code_syntax_start = "```\n";
+            let block_code_syntax_end = "\n```";
+            // If there is no text selected or the selected text is either multiline or
+            // already using multiline code syntax, we use multiline code syntax.
+            if (
+                selected_text === "" ||
+                selected_text.includes("\n") ||
+                is_selection_formatted(block_code_syntax_start, block_code_syntax_end)
+            ) {
+                // Add newlines before and after, if not already present.
+                if (range.start > 0 && text[range.start - 1] !== "\n") {
+                    block_code_syntax_start = "\n" + block_code_syntax_start;
+                }
+                if (range.end < text.length && text[range.end] !== "\n") {
+                    block_code_syntax_end = block_code_syntax_end + "\n";
+                }
+                format(block_code_syntax_start, block_code_syntax_end);
+            } else {
+                format(inline_code_syntax);
+            }
+            break;
+        }
         case "link": {
             // Ctrl + L: Insert a link to selected text
             wrapSelection(field, "[", "](url)");
