@@ -765,6 +765,50 @@ run_test("format_text - bold and italic", ({override}) => {
     assert.equal(wrap_selection_called, false);
 });
 
+run_test("format_text - strikethrough", ({override}) => {
+    override(text_field_edit, "set", (_field, text) => {
+        set_text = text;
+    });
+    override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
+        wrap_selection_called = true;
+        wrap_syntax_start = syntax_start;
+        wrap_syntax_end = syntax_end;
+    });
+
+    const strikethrough_syntax = "~~";
+
+    // Strikethrough selected text
+    reset_state();
+    compose_ui.format_text($textarea, "strikethrough");
+    assert.equal(set_text, "");
+    assert.equal(wrap_selection_called, true);
+    assert.equal(wrap_syntax_start, strikethrough_syntax);
+    assert.equal(wrap_syntax_end, strikethrough_syntax);
+
+    // Undo strikethrough selected text, syntax not selected
+    reset_state();
+    init_textarea("~~abc~~", {
+        start: 2,
+        end: 5,
+        text: "abc",
+        length: 3,
+    });
+    compose_ui.format_text($textarea, "strikethrough");
+    assert.equal(set_text, "abc");
+    assert.equal(wrap_selection_called, false);
+
+    // Undo strikethrough selected text, syntax selected
+    reset_state();
+    init_textarea("~~abc~~", {
+        start: 0,
+        end: 7,
+        text: "~~abc~~",
+        length: 7,
+    });
+    compose_ui.format_text($textarea, "strikethrough");
+    assert.equal(set_text, "abc");
+});
+
 run_test("markdown_shortcuts", ({override_rewire}) => {
     let format_text_type;
     override_rewire(compose_ui, "format_text", (_$textarea, type) => {
