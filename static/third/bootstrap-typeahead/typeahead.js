@@ -376,6 +376,11 @@
     }
 
   , keydown: function (e) {
+    if (this.trigger_selection(e)) {
+      if (!this.shown) return;
+      e.preventDefault();
+      this.select(e);
+    }
       this.suppressKeyPressRepeat = !~$.inArray(e.keyCode, [40,38,9,13,27])
       this.move(e)
     }
@@ -406,10 +411,6 @@
           break
 
         default:
-          if (this.trigger_selection(e)) {
-            if (!this.shown) return;
-            this.select(e);
-          }
           var hideOnEmpty = false
           if (e.keyCode === 8 && this.options.helpOnEmptyStrings) { // backspace
             hideOnEmpty = true
