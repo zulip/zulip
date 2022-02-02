@@ -1232,18 +1232,14 @@ paths:
                                   "name": "test_stream",
                                   "id": 0,
                                 }
-                            - description: |
+                            - type: object
+                              description: |
                                 Event sent when a reaction is added to a message.
                                 Sent to all users who were recipients of the message.
                               allOf:
                                 - $ref: "#/components/schemas/EmojiReactionBase"
                                 - additionalProperties: false
                                   properties:
-                                    emoji_code: {}
-                                    emoji_name: {}
-                                    reaction_type: {}
-                                    user_id: {}
-                                    user: {}
                                     id:
                                       $ref: "#/components/schemas/EventIdSchema"
                                     type:
@@ -1260,6 +1256,11 @@ paths:
                                       description: |
                                         The ID of the message to which a reaction was
                                         added.
+                                    emoji_code: {}
+                                    emoji_name: {}
+                                    reaction_type: {}
+                                    user_id: {}
+                                    user: {}
                                   example:
                                     {
                                       "type": "reaction",
@@ -1277,18 +1278,14 @@ paths:
                                       "reaction_type": "unicode_emoji",
                                       "id": 0,
                                     }
-                            - description: |
+                            - type: object
+                              description: |
                                 Event sent when a reaction is removed from a message.
                                 Sent to all users who were recipients of the message.
                               allOf:
                                 - $ref: "#/components/schemas/EmojiReactionBase"
                                 - additionalProperties: false
                                   properties:
-                                    emoji_code: {}
-                                    emoji_name: {}
-                                    reaction_type: {}
-                                    user_id: {}
-                                    user: {}
                                     id:
                                       $ref: "#/components/schemas/EventIdSchema"
                                     type:
@@ -1305,6 +1302,11 @@ paths:
                                       description: |
                                         The ID of the message from which the reaction was
                                         removed.
+                                    emoji_code: {}
+                                    emoji_name: {}
+                                    reaction_type: {}
+                                    user_id: {}
+                                    user: {}
                                   example:
                                     {
                                       "type": "reaction",
@@ -9757,8 +9759,7 @@ paths:
                           error messages when a search returns limited results because
                           a stop word in the query was ignored.
                       user_status:
-                        allOf:
-                          - $ref: "#/components/schemas/EmojiBase"
+                        type: object
                         description: |
                           Present if `user_status` is present in `fetch_event_types`.
 
@@ -9767,9 +9768,6 @@ paths:
 
                           **Changes**: The emoji parameters are new in Zulip 5.0 (feature level 86).
                           Previously, Zulip did not support emoji associated with statuses.
-
-                          A status that does not have an emoji associated with it is encoded
-                          with `emoji_name=""`.
                         additionalProperties:
                           description: |
                             `{user_id}`: Object containing the status details of a user
@@ -9780,27 +9778,35 @@ paths:
                             away:
                               type: boolean
                               description: |
-                                Whether the user has marked themself "away".
+                                If present, the user has marked themself "away".
                             status_text:
                               type: string
                               description: |
-                                The text content of the status message.
+                                If present, the text content of the user's status message.
                             emoji_name:
                               type: string
                               description: |
-                                The [emoji name](/api/add-reaction#parameters) for the emoji associated with the new status.
+                                If present, the name for the emoji to associate with the user's status.
 
                                 **Changes**: New in Zulip 5.0 (feature level 86).
                             emoji_code:
                               type: string
                               description: |
-                                The [emoji code](/api/add-reaction#parameters) for the emoji associated with the new status.
+                                If present, a unique identifier, defining the specific emoji codepoint
+                                requested, within the namespace of the `reaction_type`.
 
                                 **Changes**: New in Zulip 5.0 (feature level 86).
                             reaction_type:
                               type: string
                               description: |
-                                The [emoji type](/api/add-reaction#parameters) for the emoji associated with the new status.
+                                If present, one of the following values:
+
+                                - `unicode_emoji`: Unicode emoji (`emoji_code` will be its Unicode
+                                  codepoint).
+                                - `realm_emoji`: [Custom emoji](/help/custom-emoji).
+                                  (`emoji_code` will be its ID).
+                                - `zulip_extra_emoji`: Special emoji included with Zulip. Exists to
+                                  namespace the `zulip` emoji.
 
                                 **Changes**: New in Zulip 5.0 (feature level 86).
                       user_settings:
