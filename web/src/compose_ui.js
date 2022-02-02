@@ -677,6 +677,11 @@ export function format_text($textarea, type, inserted_content) {
         case "numbered":
             format_list(type);
             break;
+        case "strikethrough": {
+            const strikethrough_syntax = "~~";
+            format(strikethrough_syntax);
+            break;
+        }
         case "link": {
             // Ctrl + L: Insert a link to selected text
             wrapSelection(field, "[", "](url)");
