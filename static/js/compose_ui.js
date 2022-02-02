@@ -255,51 +255,10 @@ export function format_text($textarea, type) {
     field.setSelectionRange(range.start + left_trim_length, range.end - right_trim_length);
     range = $textarea.range();
 
-    const is_selection_bold = () =>
-        // First check if there are enough characters before/after selection.
-        range.start >= bold_syntax.length &&
-        text.length - range.end >= bold_syntax.length &&
-        // And then if the characters have bold_syntax around them.
-        text.slice(range.start - bold_syntax.length, range.start) === bold_syntax &&
-        text.slice(range.end, range.end + bold_syntax.length) === bold_syntax;
-
-    const is_inner_text_bold = () =>
-        // Check if selected text itself has bold_syntax inside it.
-        range.length > 4 &&
-        selected_text.slice(0, bold_syntax.length) === bold_syntax &&
-        selected_text.slice(-bold_syntax.length) === bold_syntax;
-
     switch (type) {
         case "bold":
             // Ctrl + B: Toggle bold syntax on selection.
-
-            // If the selection is already surrounded by bold syntax,
-            // remove it rather than adding another copy.
-            if (is_selection_bold()) {
-                // Remove the bold_syntax from text.
-                text =
-                    text.slice(0, range.start - bold_syntax.length) +
-                    text.slice(range.start, range.end) +
-                    text.slice(range.end + bold_syntax.length);
-                set(field, text);
-                field.setSelectionRange(
-                    range.start - bold_syntax.length,
-                    range.end - bold_syntax.length,
-                );
-                break;
-            } else if (is_inner_text_bold()) {
-                // Remove bold syntax inside the selection, if present.
-                text =
-                    text.slice(0, range.start) +
-                    text.slice(range.start + bold_syntax.length, range.end - bold_syntax.length) +
-                    text.slice(range.end);
-                set(field, text);
-                field.setSelectionRange(range.start, range.end - bold_syntax.length * 2);
-                break;
-            }
-
-            // Otherwise, we don't have bold syntax, so we add it.
-            wrapSelection(field, bold_syntax);
+            add_formatting(bold_syntax, bold_syntax, field, range, text, selected_text);
             break;
         case "italic":
             // Ctrl + I: Toggle italic syntax on selection. This is
@@ -316,10 +275,10 @@ export function format_text($textarea, type) {
                     text.slice(range.start - italic_syntax.length, range.start) === italic_syntax &&
                     text.slice(range.end, range.end + italic_syntax.length) === italic_syntax;
 
-                if (is_selection_bold()) {
+                if (is_selection_formatted(bold_syntax, bold_syntax, range, text)) {
                     // If text has bold_syntax around it.
                     if (
-                        range.start >= 3 &&
+                        range.start > bold_syntax.length &&
                         text.length - range.end >= bold_and_italic_syntax.length
                     ) {
                         // If text is both bold and italic.
@@ -356,7 +315,7 @@ export function format_text($textarea, type) {
                 selected_text.slice(0, italic_syntax.length) === italic_syntax &&
                 selected_text.slice(-italic_syntax.length) === italic_syntax
             ) {
-                if (is_inner_text_bold()) {
+                if (is_inner_text_formatted(bold_syntax, bold_syntax, range, selected_text)) {
                     if (
                         selected_text.length > bold_and_italic_syntax.length * 2 &&
                         selected_text.slice(0, bold_and_italic_syntax.length) ===
@@ -387,7 +346,7 @@ export function format_text($textarea, type) {
                 break;
             }
 
-            wrapSelection(field, italic_syntax);
+            wrapSelection(field, italic_syntax, italic_syntax);
             break;
         case "link": {
             // Ctrl + L: Insert a link to selected text
@@ -402,6 +361,51 @@ export function format_text($textarea, type) {
             break;
         }
     }
+}
+
+// Check if the selection is already surrounded by syntax
+function is_selection_formatted(syntax_start, syntax_end, range, text) {
+    return (
+        range.start >= syntax_start.length &&
+        text.length - range.end >= syntax_end.length &&
+        text.slice(range.start - syntax_start.length, range.start) === syntax_start &&
+        text.slice(range.end, range.end + syntax_end.length) === syntax_end
+    );
+}
+
+// Check if selected text itself has syntax inside it.
+function is_inner_text_formatted(syntax_start, syntax_end, range, selected_text) {
+    return (
+        range.length >= syntax_start.length + syntax_end.length &&
+        selected_text.slice(0, syntax_start.length) === syntax_start &&
+        selected_text.slice(-syntax_end.length) === syntax_end
+    );
+}
+
+function add_formatting(syntax_start, syntax_end, field, range, text, selected_text) {
+    let linebreak_start = "";
+    let linebreak_end = "";
+    if (syntax_start[0] === "\n") {
+        linebreak_start = "\n";
+    }
+    if (syntax_end[syntax_end.length - 1] === "\n") {
+        linebreak_end = "\n";
+    }
+    if (is_selection_formatted(syntax_start, syntax_end, range, text)) {
+        text = text.replace(syntax_start, linebreak_start).replace(syntax_end, linebreak_end);
+        set(field, text);
+        field.setSelectionRange(range.start - syntax_start.length, range.end - syntax_start.length);
+        return;
+    } else if (is_inner_text_formatted(syntax_start, syntax_end, range, selected_text)) {
+        // Remove syntax inside the selection, if present.
+        text = text.replace(syntax_start, linebreak_start).replace(syntax_end, linebreak_end);
+        set(field, text);
+        field.setSelectionRange(range.start, range.end - syntax_start.length - syntax_end.length);
+        return;
+    }
+
+    // Otherwise, we don't have code syntax, so we add it.
+    wrapSelection(field, syntax_start, syntax_end);
 }
 
 export function hide_compose_spinner() {

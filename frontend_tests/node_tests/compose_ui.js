@@ -437,34 +437,37 @@ run_test("test_compose_height_changes", ({override, override_rewire}) => {
     assert.ok(!compose_box_top_set);
 });
 
-run_test("format_text", ({override}) => {
-    let set_text = "";
-    let wrap_selection_called = false;
-    let wrap_syntax = "";
+let set_text = "";
+let wrap_selection_called = false;
+let wrap_syntax_start = "";
+let wrap_syntax_end = "";
 
+function reset_state() {
+    set_text = "";
+    wrap_selection_called = false;
+    wrap_syntax_start = "";
+    wrap_syntax_end = "";
+}
+
+const $textarea = $("#compose-textarea");
+$textarea.get = () => ({
+    setSelectionRange() {},
+});
+
+function init_textarea(val, range) {
+    $textarea.val = () => val;
+    $textarea.range = () => range;
+}
+
+run_test("format_text - bold and italic", ({override}) => {
     override(text_field_edit, "set", (field, text) => {
         set_text = text;
     });
-    override(text_field_edit, "wrapSelection", (field, syntax) => {
+    override(text_field_edit, "wrapSelection", (field, syntax_start, syntax_end) => {
         wrap_selection_called = true;
-        wrap_syntax = syntax;
+        wrap_syntax_start = syntax_start;
+        wrap_syntax_end = syntax_end;
     });
-
-    function reset_state() {
-        set_text = "";
-        wrap_selection_called = false;
-        wrap_syntax = "";
-    }
-
-    const $textarea = $("#compose-textarea");
-    $textarea.get = () => ({
-        setSelectionRange() {},
-    });
-
-    function init_textarea(val, range) {
-        $textarea.val = () => val;
-        $textarea.range = () => range;
-    }
 
     const italic_syntax = "*";
     const bold_syntax = "**";
@@ -480,7 +483,8 @@ run_test("format_text", ({override}) => {
     compose_ui.format_text($textarea, "bold");
     assert.equal(set_text, "");
     assert.equal(wrap_selection_called, true);
-    assert.equal(wrap_syntax, bold_syntax);
+    assert.equal(wrap_syntax_start, bold_syntax);
+    assert.equal(wrap_syntax_end, bold_syntax);
 
     // Undo bold selected text, syntax not selected
     reset_state();
@@ -517,7 +521,8 @@ run_test("format_text", ({override}) => {
     compose_ui.format_text($textarea, "italic");
     assert.equal(set_text, "");
     assert.equal(wrap_selection_called, true);
-    assert.equal(wrap_syntax, italic_syntax);
+    assert.equal(wrap_syntax_start, italic_syntax);
+    assert.equal(wrap_syntax_end, italic_syntax);
 
     // Undo italic selected text, syntax not selected
     reset_state();
