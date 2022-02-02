@@ -157,6 +157,15 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                         return_values[return_value]["additionalProperties"]["properties"],
                         spacing + 8,
                     )
+                elif return_values[return_value]["additionalProperties"].get(
+                    "additionalProperties", False
+                ):
+                    ans += self.render_table(
+                        return_values[return_value]["additionalProperties"]["additionalProperties"][
+                            "properties"
+                        ],
+                        spacing + 8,
+                    )
             if (
                 "items" in return_values[return_value]
                 and "properties" in return_values[return_value]["items"]
