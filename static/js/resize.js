@@ -159,7 +159,7 @@ export function watch_manual_resize(element) {
     return [box_handler, body_handler];
 }
 
-export function reset_compose_textarea_max_height(bottom_whitespace_height) {
+export function reset_compose_message_max_height(bottom_whitespace_height) {
     // If the compose-box is open, we set the `max-height` property of
     // `compose-textarea` and `preview-textarea`, so that the
     // compose-box's maximum extent does not overlap the last message
@@ -194,11 +194,11 @@ export function resize_bottom_whitespace(h) {
     // The height of the compose box is tied to that of
     // bottom_whitespace, so update it if necessary.
     //
-    // reset_compose_textarea_max_height cannot compute the right
+    // reset_compose_message_max_height cannot compute the right
     // height correctly while compose is hidden. This is OK, because
     // we also resize compose every time it is opened.
     if ($(".message_comp").is(":visible")) {
-        reset_compose_textarea_max_height(h.bottom_whitespace_height);
+        reset_compose_message_max_height(h.bottom_whitespace_height);
     }
 }
 

@@ -749,9 +749,9 @@ test_ui("on_events", ({override, override_rewire}) => {
     })();
 
     (function test_markdown_preview_compose_clicked() {
-        let reset_compose_textarea_max_height_called = false;
-        override(resize, "reset_compose_textarea_max_height", () => {
-            reset_compose_textarea_max_height_called = true;
+        let reset_compose_message_max_height_called = false;
+        override(resize, "reset_compose_message_max_height", () => {
+            reset_compose_message_max_height_called = true;
         });
 
         // Tests setup
@@ -839,7 +839,7 @@ test_ui("on_events", ({override, override_rewire}) => {
 
         assert.equal($("#compose .preview_content").html(), "translated HTML: Nothing to preview");
         assert_visibilities();
-        assert.ok(reset_compose_textarea_max_height_called);
+        assert.ok(reset_compose_message_max_height_called);
 
         let make_indicator_called = false;
         $("#compose-textarea").val("```foobarfoobar```");

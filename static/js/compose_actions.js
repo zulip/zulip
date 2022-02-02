@@ -292,7 +292,7 @@ export function start(msg_type, opts) {
     // Reset the `max-height` property of `compose-textarea` so that the
     // compose-box do not cover the last messages of the current stream
     // while writing a long message.
-    resize.reset_compose_textarea_max_height();
+    resize.reset_compose_message_max_height();
 
     complete_starting_tasks(msg_type, opts);
 }
