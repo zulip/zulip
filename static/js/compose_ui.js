@@ -241,6 +241,8 @@ export function format_text($textarea, type) {
     const italic_syntax = "*";
     const bold_syntax = "**";
     const bold_and_italic_syntax = "***";
+    let code_syntax_start = "```\n";
+    let code_syntax_end = "\n```";
     const strikethrough_syntax = "~~";
     let quote_syntax_start = "```quote\n";
     let quote_syntax_end = "\n```";
@@ -257,6 +259,16 @@ export function format_text($textarea, type) {
         latex_syntax_start = "```math\n";
         latex_syntax_end = "\n```";
     }
+    if (
+        !selected_text.slice(1, -1).includes("\n") &&
+        selected_text.length > 0 &&
+        selected_text.length < text.length &&
+        ((range.start !== 0 && text[range.start - 1] !== "\n") ||
+            (range.end !== text.length && text[range.end] !== "\n"))
+    ) {
+        code_syntax_start = "`";
+        code_syntax_end = "`";
+    }
 
     // Remove new line and space around selected text.
     const left_trim_length = range.text.length - range.text.trimStart().length;
@@ -269,6 +281,17 @@ export function format_text($textarea, type) {
         case "bold":
             // Ctrl + B: Toggle bold syntax on selection.
             add_formatting(bold_syntax, bold_syntax, field, range, text, selected_text);
+            break;
+        case "code":
+            if (code_syntax_start !== "`") {
+                if (range.start !== 0 && !text.includes("\n" + selected_text)) {
+                    code_syntax_start = "\n```\n";
+                }
+                if (range.end !== text.length && !text.includes(selected_text + "\n")) {
+                    code_syntax_end = "\n```\n";
+                }
+            }
+            add_formatting(code_syntax_start, code_syntax_end, field, range, text, selected_text);
             break;
         case "quote":
             if (range.start !== 0 && !text.includes("\n" + selected_text)) {
