@@ -1474,55 +1474,45 @@ class GetOldMessagesTest(ZulipTestCase):
             ),
         )
 
-    def test_unauthenticated_get_messages_non_existent_realm(self) -> None:
-        post_params = {
+    def test_unauthenticated_get_messages(self) -> None:
+        # Require `streams:web-public` as narrow to get web-public messages.
+        get_params = {
             "anchor": 10000000000000000,
             "num_before": 5,
             "num_after": 1,
+        }
+        result = self.client_get("/json/messages", dict(get_params))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", status_code=401
+        )
+
+        # Successful access to web-public stream messages.
+        web_public_stream_get_params: Dict[str, Union[int, str, bool]] = {
+            **get_params,
             "narrow": orjson.dumps([dict(operator="streams", operand="web-public")]).decode(),
         }
+        result = self.client_get("/json/messages", dict(web_public_stream_get_params))
+        # More detailed check of message parameters is done in `test_get_messages_with_web_public`.
+        self.assert_json_success(result)
 
+        # Realm doesn't exist in our database.
         with mock.patch("zerver.context_processors.get_realm", side_effect=Realm.DoesNotExist):
-            result = self.client_get("/json/messages", dict(post_params))
+            result = self.client_get("/json/messages", dict(web_public_stream_get_params))
             self.assert_json_error(result, "Invalid subdomain", status_code=404)
 
-    def test_unauthenticated_get_messages_without_web_public(self) -> None:
-        """
-        An unauthenticated call to GET /json/messages with valid parameters
-        returns a 401.
-        """
-        do_set_realm_property(get_realm("zulip"), "enable_spectator_access", True, acting_user=None)
-        post_params = {
-            "anchor": 1,
-            "num_before": 1,
-            "num_after": 1,
+        # Cannot access private messages without login.
+        private_message_get_params: Dict[str, Union[int, str, bool]] = {
+            **get_params,
             "narrow": orjson.dumps([dict(operator="is", operand="private")]).decode(),
         }
-        result = self.client_get("/json/messages", dict(post_params))
+        result = self.client_get("/json/messages", dict(private_message_get_params))
         self.assert_json_error(
             result, "Not logged in: API authentication or user session required", status_code=401
         )
 
-        post_params = {
-            "anchor": 10000000000000000,
-            "num_before": 5,
-            "num_after": 1,
-        }
-        result = self.client_get("/json/messages", dict(post_params))
-        self.assert_json_error(
-            result, "Not logged in: API authentication or user session required", status_code=401
-        )
-
-    def test_unauthenticated_get_messages_with_web_public(self) -> None:
-        """
-        An unauthenticated call to GET /json/messages without valid
-        parameters in the `streams:web-public` narrow returns a 401.
-        """
-        do_set_realm_property(get_realm("zulip"), "enable_spectator_access", True, acting_user=None)
-        post_params: Dict[str, Union[int, str, bool]] = {
-            "anchor": 1,
-            "num_before": 1,
-            "num_after": 1,
+        # narrow should pass conditions in `is_spectator_compatible`.
+        non_spectator_compatible_narrow_get_params: Dict[str, Union[int, str, bool]] = {
+            **get_params,
             # "is:private" is not a is_spectator_compatible narrow.
             "narrow": orjson.dumps(
                 [
@@ -1531,70 +1521,60 @@ class GetOldMessagesTest(ZulipTestCase):
                 ]
             ).decode(),
         }
-        result = self.client_get("/json/messages", dict(post_params))
+        result = self.client_get("/json/messages", dict(non_spectator_compatible_narrow_get_params))
         self.assert_json_error(
             result, "Not logged in: API authentication or user session required", status_code=401
         )
 
-    def test_unauthenticated_get_messages_disabled_spectator_login(self) -> None:
-        """
-        An unauthenticated call to GET /json/messages without valid
-        parameters in the `streams:web-public` narrow returns a 401.
-        """
+        # Spectator login disabled in Realm.
         do_set_realm_property(
             get_realm("zulip"), "enable_spectator_access", False, acting_user=None
         )
-        post_params: Dict[str, Union[int, str, bool]] = {
-            "anchor": 1,
-            "num_before": 1,
-            "num_after": 1,
-            "narrow": orjson.dumps(
-                [
-                    dict(operator="streams", operand="web-public"),
-                    dict(operator="stream", operand="Scotland"),
-                ]
-            ).decode(),
+        result = self.client_get("/json/messages", dict(web_public_stream_get_params))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", status_code=401
+        )
+        do_set_realm_property(get_realm("zulip"), "enable_spectator_access", True, acting_user=None)
+        # Verify works after enabling `realm.enable_spectator_access` again.
+        result = self.client_get("/json/messages", dict(web_public_stream_get_params))
+        self.assert_json_success(result)
+
+        # Cannot access even web-public streams without `streams:web-public` narrow.
+        non_web_public_stream_get_params: Dict[str, Union[int, str, bool]] = {
+            **get_params,
+            "narrow": orjson.dumps([dict(operator="stream", operand="Rome")]).decode(),
         }
-        result = self.client_get("/json/messages", dict(post_params))
+        result = self.client_get("/json/messages", dict(non_web_public_stream_get_params))
         self.assert_json_error(
             result, "Not logged in: API authentication or user session required", status_code=401
         )
 
-    def test_unauthenticated_narrow_to_non_web_public_streams_without_web_public(self) -> None:
-        """
-        An unauthenticated call to GET /json/messages without `streams:web-public` narrow returns a 401.
-        """
-        do_set_realm_property(get_realm("zulip"), "enable_spectator_access", True, acting_user=None)
-        post_params: Dict[str, Union[int, str, bool]] = {
-            "anchor": 1,
-            "num_before": 1,
-            "num_after": 1,
-            "narrow": orjson.dumps([dict(operator="stream", operand="Scotland")]).decode(),
-        }
-        result = self.client_get("/json/messages", dict(post_params))
-        self.assert_json_error(
-            result, "Not logged in: API authentication or user session required", status_code=401
-        )
-
-    def test_unauthenticated_narrow_to_non_web_public_streams_with_web_public(self) -> None:
-        """
-        An unauthenticated call to GET /json/messages with valid
-        parameters in the `streams:web-public` narrow + narrow to stream returns
-        a 400 if the target stream is not web-public.
-        """
-        do_set_realm_property(get_realm("zulip"), "enable_spectator_access", True, acting_user=None)
-        post_params: Dict[str, Union[int, str, bool]] = {
-            "anchor": 1,
-            "num_before": 1,
-            "num_after": 1,
+        # Verify that same request would work with `streams:web-public` added.
+        rome_web_public_get_params: Dict[str, Union[int, str, bool]] = {
+            **get_params,
             "narrow": orjson.dumps(
                 [
                     dict(operator="streams", operand="web-public"),
+                    # Rome is a web-public stream.
+                    dict(operator="stream", operand="Rome"),
+                ]
+            ).decode(),
+        }
+        result = self.client_get("/json/messages", dict(rome_web_public_get_params))
+        self.assert_json_success(result)
+
+        # Cannot access non web-public stream even with `streams:web-public` narrow.
+        scotland_web_public_get_params: Dict[str, Union[int, str, bool]] = {
+            **get_params,
+            "narrow": orjson.dumps(
+                [
+                    dict(operator="streams", operand="web-public"),
+                    # Scotland is not a web-public stream.
                     dict(operator="stream", operand="Scotland"),
                 ]
             ).decode(),
         }
-        result = self.client_get("/json/messages", dict(post_params))
+        result = self.client_get("/json/messages", dict(scotland_web_public_get_params))
         self.assert_json_error(
             result, "Invalid narrow operator: unknown web-public stream Scotland", status_code=400
         )
