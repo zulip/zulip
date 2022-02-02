@@ -1297,6 +1297,93 @@ run_test("format_text - spoiler", ({override}) => {
     assert.equal(wrap_selection_called, false);
 });
 
+run_test("format_text - link", ({override}) => {
+    override(text_field_edit, "set", (_field, text) => {
+        set_text = text;
+    });
+    override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
+        wrap_selection_called = true;
+        wrap_syntax_start = syntax_start;
+        wrap_syntax_end = syntax_end;
+    });
+
+    const link_syntax_start = "[";
+    const link_syntax_end = "](url)";
+
+    // Link selected text
+    reset_state();
+    init_textarea("abc", {
+        start: 0,
+        end: 3,
+        text: "abc",
+        length: 3,
+    });
+    compose_ui.format_text($textarea, "link");
+    assert.equal(set_text, "");
+    assert.equal(wrap_selection_called, true);
+    assert.equal(wrap_syntax_start, link_syntax_start);
+    assert.equal(wrap_syntax_end, link_syntax_end);
+
+    // Undo link selected text, url selected
+    reset_state();
+    init_textarea("[abc](def)", {
+        start: 6,
+        end: 9,
+        text: "def",
+        length: 3,
+    });
+    compose_ui.format_text($textarea, "link");
+    assert.equal(set_text, "abc def");
+    assert.equal(wrap_selection_called, false);
+
+    reset_state();
+    init_textarea("[abc](url)", {
+        start: 6,
+        end: 9,
+        text: "url",
+        length: 3,
+    });
+    compose_ui.format_text($textarea, "link");
+    assert.equal(set_text, "abc");
+    assert.equal(wrap_selection_called, false);
+
+    // Undo link selected text, description selected
+    reset_state();
+    init_textarea("[abc](def)", {
+        start: 1,
+        end: 4,
+        text: "abc",
+        length: 3,
+    });
+    compose_ui.format_text($textarea, "link");
+    assert.equal(set_text, "abc def");
+    assert.equal(wrap_selection_called, false);
+
+    // Undo link selected text, description selected, without disturbing other links
+    reset_state();
+    init_textarea("[xyz](uvw) [abc](def)", {
+        start: 12,
+        end: 15,
+        text: "abc",
+        length: 3,
+    });
+    compose_ui.format_text($textarea, "link");
+    assert.equal(set_text, "[xyz](uvw) abc def");
+    assert.equal(wrap_selection_called, false);
+
+    // Undo link selected text, syntax selected
+    reset_state();
+    init_textarea("[abc](def)", {
+        start: 0,
+        end: 10,
+        text: "[abc](def)",
+        length: 10,
+    });
+    compose_ui.format_text($textarea, "link");
+    assert.equal(set_text, "abc def");
+    assert.equal(wrap_selection_called, false);
+});
+
 run_test("markdown_shortcuts", ({override_rewire}) => {
     let format_text_type;
     override_rewire(compose_ui, "format_text", (_$textarea, type) => {

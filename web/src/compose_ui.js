@@ -725,6 +725,93 @@ export function format_text($textarea, type, inserted_content) {
         );
     };
 
+    // Links have to be formatted differently because formatting is not only
+    // at the beginning and end of the text, but also in the middle
+    // Therefore more checks are necessary if selected text is already formatted
+    const format_link = () => {
+        const link_syntax_start = "[";
+        const link_syntax_end = "](url)";
+
+        // Captures:
+        // [<description>](<url>)
+        // with just <url> selected
+        const is_selection_url = () =>
+            range.start >= "[](".length &&
+            text.length - range.end >= ")".length &&
+            text.slice(range.start - 2, range.start) === "](" &&
+            text[range.end] === ")" &&
+            text.lastIndexOf("[", range.start - 3) < text.lastIndexOf("]", range.start - 2);
+
+        if (is_selection_url()) {
+            const beginning = text.lastIndexOf("[", range.start);
+            const url = selected_text === "url" ? "" : " " + selected_text;
+            text =
+                text.slice(0, beginning) +
+                text.slice(beginning + 1, text.indexOf("]", beginning)) +
+                url +
+                text.slice(range.end + 1);
+            set(field, text);
+            field.setSelectionRange(range.start - 2, range.start - 3 + url.length);
+            return;
+        }
+
+        // Captures:
+        // [<description>](<url>)
+        // with just <description> selected
+        const is_selection_description_of_link = () =>
+            range.start >= "[".length &&
+            text.length - range.end >= "]()".length &&
+            text.slice(range.start - 1, range.start) === "[" &&
+            text.slice(range.end, range.end + 2) === "](" &&
+            text.includes(")", range.end + 2) &&
+            (text.includes("(", range.end + 2)
+                ? text.indexOf(")", range.end + 2) < text.indexOf("(", range.end + 2)
+                : true);
+
+        if (is_selection_description_of_link()) {
+            let url = text.slice(range.end + 2, text.indexOf(")", range.end));
+            url = url === "url" ? "" : " " + url;
+            text =
+                text.slice(0, range.start - 1) +
+                text.slice(range.start, range.end) +
+                url +
+                text.slice(text.indexOf(")", range.end) + 1);
+            set(field, text);
+            field.setSelectionRange(range.start - 1, range.end - 1);
+            return;
+        }
+
+        // Captures:
+        // [<description>](<url>)
+        // with [<description>](<url>) selected
+        const is_selection_link = () =>
+            range.length >= "[]()".length &&
+            text[range.start] === "[" &&
+            text[range.end - 1] === ")" &&
+            text.slice(range.start + 1, range.end - 1).includes("](");
+
+        if (is_selection_link()) {
+            const description = selected_text.split("](")[0].slice(1);
+            let url = selected_text.split("](")[1].slice(0, -1);
+            url = url === "url" ? "" : " " + url;
+            text = text.slice(0, range.start) + description + url + text.slice(range.end);
+            set(field, text);
+            const new_range_end = url === "" ? range.end - "url".length : range.end;
+            field.setSelectionRange(range.start, new_range_end - "[](".length);
+            return;
+        }
+
+        // Otherwise, we don't have link syntax, so we add it.
+        wrapSelection(field, link_syntax_start, link_syntax_end);
+
+        // Highlight the new `url` part of the syntax.
+        // If <text> marks the selected region, we're mapping:
+        // <text> => [text](<url>).
+        const new_start = range.end + "[](".length;
+        const new_end = new_start + "url".length;
+        field.setSelectionRange(new_start, new_end);
+    };
+
     switch (type) {
         case "bold":
             // Ctrl + B: Toggle bold syntax on selection.
@@ -853,14 +940,7 @@ export function format_text($textarea, type, inserted_content) {
         }
         case "link": {
             // Ctrl + L: Insert a link to selected text
-            wrapSelection(field, "[", "](url)");
-
-            // Change selected text to `url` part of the syntax.
-            // If <text> marks the selected region, we're mapping:
-            // <text> => [text](<url>).
-            const new_start = range.end + "[](".length;
-            const new_end = new_start + "url".length;
-            field.setSelectionRange(new_start, new_end);
+            format_link();
             break;
         }
         case "linked": {
