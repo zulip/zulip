@@ -526,7 +526,7 @@ function validate_stream_message() {
         const topic = compose_state.topic();
         if (topic === "") {
             compose_error.show(
-                $t_html({defaultMessage: "Please specify a topic"}),
+                $t_html({defaultMessage: "Topics are required in this organization"}),
                 $("#stream_message_recipient_topic"),
             );
             return false;
