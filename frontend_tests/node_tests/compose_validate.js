@@ -245,7 +245,7 @@ test_ui("validate", ({override, mock_template}) => {
     assert.ok(!compose_validate.validate());
     assert.equal(
         $("#compose-error-msg").html(),
-        $t_html({defaultMessage: "Please specify a topic"}),
+        $t_html({defaultMessage: "Topics are required in this organization"}),
     );
 });
 
