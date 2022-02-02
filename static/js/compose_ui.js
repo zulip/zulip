@@ -350,14 +350,7 @@ export function format_text($textarea, type) {
             break;
         case "link": {
             // Ctrl + L: Insert a link to selected text
-            wrapSelection(field, "[", "](url)");
-
-            // Change selected text to `url` part of the syntax.
-            // If <text> marks the selected region, we're mapping:
-            // <text> => [text](<url>).
-            const new_start = range.end + "[](".length;
-            const new_end = new_start + "url".length;
-            field.setSelectionRange(new_start, new_end);
+            add_link_formatting(field, range, text, selected_text);
             break;
         }
     }
@@ -406,6 +399,91 @@ function add_formatting(syntax_start, syntax_end, field, range, text, selected_t
 
     // Otherwise, we don't have code syntax, so we add it.
     wrapSelection(field, syntax_start, syntax_end);
+}
+
+// Links have to be formatted differently because formatting is not only
+// at the beginning and end of the text, but also in the middle
+// Therefore more checks are necessary if selected text is already formatted
+function add_link_formatting(field, range, text, selected_text) {
+    const link_syntax_start = "[";
+    const link_syntax_end = "](url)";
+
+    // Captures:
+    // [<description>](<url>)
+    // with just <url> selected
+    const is_selection_url = () =>
+        range.start >= "[](".length &&
+        text.length - range.end >= ")".length &&
+        text.slice(range.start - 2, range.start) === "](" &&
+        text.slice(range.end, range.end + 1) === ")" &&
+        text.includes("[") &&
+        text.indexOf("[") < range.start - 2;
+
+    // Captures:
+    // [<description>](<url>)
+    // with just <description> selected
+    const is_selection_description_of_link = () =>
+        range.start >= "[".length &&
+        text.length - range.end >= "]()".length &&
+        text.slice(range.start - 1, range.start) === "[" &&
+        text.slice(range.end, range.end + 2) === "](" &&
+        text.includes(")") &&
+        text.indexOf(")") >= range.end + 2;
+
+    // Captures:
+    // [<description>](<url>)
+    // with [<description>](<url>) selected
+    const is_selection_link = () =>
+        range.length >= "[]()".length &&
+        text[range.start] === "[" &&
+        text[range.end - 1] === ")" &&
+        text.includes("](") &&
+        text.indexOf("](") > range.start &&
+        text.indexOf("](") < range.end - 2;
+
+    if (is_selection_url()) {
+        const beginning = text.lastIndexOf("[", range.start);
+        const url = selected_text === "url" ? "" : " " + selected_text;
+        text =
+            text.slice(0, beginning) +
+            text.slice(beginning + 1, text.indexOf("]", beginning)) +
+            url +
+            text.slice(range.end + 1, text.length);
+
+        set(field, text);
+        field.setSelectionRange(range.start - 2, range.start - 3 + url.length);
+        return;
+    } else if (is_selection_description_of_link()) {
+        let url = text.slice(range.end + 2, text.indexOf(")", range.end));
+        url = url === "url" ? "" : " " + url;
+        text =
+            text.slice(0, range.start - 1) +
+            text.slice(range.start, range.end) +
+            url +
+            text.slice(text.indexOf(")", range.end) + 1, text.length);
+        set(field, text);
+        field.setSelectionRange(range.start - 1, range.end - 1);
+        return;
+    } else if (is_selection_link()) {
+        const description = selected_text.split("](")[0].replace("[", "");
+        let url = selected_text.split("](")[1].replace(")", "");
+        url = url === "url" ? "" : " " + url;
+        text = text.slice(0, range.start) + description + url + text.slice(range.end, text.length);
+        set(field, text);
+        const new_range_end = url === "" ? range.end - 3 : range.end;
+        field.setSelectionRange(range.start, new_range_end - "[](".length);
+        return;
+    }
+
+    // Otherwise, we don't have code syntax, so we add it.
+    wrapSelection(field, link_syntax_start, link_syntax_end);
+
+    // Change selected text to `url` part of the syntax.
+    // If <text> marks the selected region, we're mapping:
+    // <text> => [text](<url>).
+    const new_start = range.end + "[](".length;
+    const new_end = new_start + "url".length;
+    field.setSelectionRange(new_start, new_end);
 }
 
 export function hide_compose_spinner() {
