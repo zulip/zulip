@@ -241,6 +241,7 @@ export function format_text($textarea, type) {
     const italic_syntax = "*";
     const bold_syntax = "**";
     const bold_and_italic_syntax = "***";
+    const strikethrough_syntax = "~~";
     let is_selected_text_italic = false;
     let is_inner_text_italic = false;
     const field = $textarea.get(0);
@@ -259,6 +260,16 @@ export function format_text($textarea, type) {
         case "bold":
             // Ctrl + B: Toggle bold syntax on selection.
             add_formatting(bold_syntax, bold_syntax, field, range, text, selected_text);
+            break;
+        case "strikethrough":
+            add_formatting(
+                strikethrough_syntax,
+                strikethrough_syntax,
+                field,
+                range,
+                text,
+                selected_text,
+            );
             break;
         case "italic":
             // Ctrl + I: Toggle italic syntax on selection. This is
