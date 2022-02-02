@@ -944,6 +944,93 @@ run_test("format_text - latex", ({override}) => {
     assert.equal(wrap_selection_called, false);
 });
 
+run_test("format_text - quote", ({override}) => {
+    override(text_field_edit, "set", (_field, text) => {
+        set_text = text;
+    });
+    override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
+        wrap_selection_called = true;
+        wrap_syntax_start = syntax_start;
+        wrap_syntax_end = syntax_end;
+    });
+
+    const quote_syntax_start = "```quote\n";
+    const quote_syntax_end = "\n```";
+
+    // Quote selected text
+    reset_state();
+    init_textarea("abc", {
+        start: 0,
+        end: 3,
+        text: "abc",
+        length: 3,
+    });
+    compose_ui.format_text($textarea, "quote");
+    assert.equal(set_text, "");
+    assert.equal(wrap_selection_called, true);
+    assert.equal(wrap_syntax_start, quote_syntax_start);
+    assert.equal(wrap_syntax_end, quote_syntax_end);
+
+    reset_state();
+    init_textarea("abc\ndef\nghi", {
+        start: 4,
+        end: 7,
+        text: "def",
+        length: 3,
+    });
+    compose_ui.format_text($textarea, "quote");
+    assert.equal(set_text, "");
+    assert.equal(wrap_selection_called, true);
+    assert.equal(wrap_syntax_start, quote_syntax_start);
+    assert.equal(wrap_syntax_end, quote_syntax_end);
+
+    // Undo quote selected text, syntax not selected
+    reset_state();
+    init_textarea("```quote\nabc\n```", {
+        start: 9,
+        end: 12,
+        text: "abc",
+        length: 3,
+    });
+    compose_ui.format_text($textarea, "quote");
+    assert.equal(set_text, "abc");
+    assert.equal(wrap_selection_called, false);
+
+    reset_state();
+    init_textarea("abc\n```quote\ndef\n```\nghi", {
+        start: 13,
+        end: 16,
+        text: "abc",
+        length: 3,
+    });
+    compose_ui.format_text($textarea, "quote");
+    assert.equal(set_text, "abc\ndef\nghi");
+    assert.equal(wrap_selection_called, false);
+
+    // Undo quote selected text, syntax selected
+    reset_state();
+    init_textarea("```quote\nabc\n```", {
+        start: 0,
+        end: 16,
+        text: "```quote\nabc\n```",
+        length: 16,
+    });
+    compose_ui.format_text($textarea, "quote");
+    assert.equal(set_text, "abc");
+    assert.equal(wrap_selection_called, false);
+
+    reset_state();
+    init_textarea("abc\n```quote\ndef\n```\nghi", {
+        start: 4,
+        end: 20,
+        text: "```quote\ndef\n```",
+        length: 16,
+    });
+    compose_ui.format_text($textarea, "quote");
+    assert.equal(set_text, "abc\ndef\nghi");
+    assert.equal(wrap_selection_called, false);
+});
+
 run_test("markdown_shortcuts", ({override_rewire}) => {
     let format_text_type;
     override_rewire(compose_ui, "format_text", (_$textarea, type) => {

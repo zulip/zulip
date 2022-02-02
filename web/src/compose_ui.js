@@ -702,6 +702,19 @@ export function format_text($textarea, type, inserted_content) {
             $textarea.caret(range.end + `[](${inserted_content})`.length);
             break;
         }
+        case "quote": {
+            let quote_syntax_start = "```quote\n";
+            let quote_syntax_end = "\n```";
+            // Add newlines before and after, if not already present.
+            if (range.start > 0 && text[range.start - 1] !== "\n") {
+                quote_syntax_start = "\n" + quote_syntax_start;
+            }
+            if (range.end < text.length && text[range.end] !== "\n") {
+                quote_syntax_end = quote_syntax_end + "\n";
+            }
+            format(quote_syntax_start, quote_syntax_end);
+            break;
+        }
         case "latex": {
             const inline_latex_syntax = "$$";
             let block_latex_syntax_start = "```math\n";
