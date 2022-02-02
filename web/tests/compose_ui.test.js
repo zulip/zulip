@@ -944,6 +944,141 @@ run_test("format_text - latex", ({override}) => {
     assert.equal(wrap_selection_called, false);
 });
 
+run_test("format_text - code", ({override}) => {
+    override(text_field_edit, "set", (_field, text) => {
+        set_text = text;
+    });
+    override(text_field_edit, "wrapSelection", (_field, syntax_start, syntax_end) => {
+        wrap_selection_called = true;
+        wrap_syntax_start = syntax_start;
+        wrap_syntax_end = syntax_end;
+    });
+
+    const code_syntax = "`";
+    const code_block_syntax_start = "```\n";
+    const code_block_syntax_end = "\n```";
+
+    // Code selected text
+    reset_state();
+    init_textarea("abc def", {
+        start: 0,
+        end: 3,
+        text: "abc",
+        length: 3,
+    });
+    compose_ui.format_text($textarea, "code");
+    assert.equal(set_text, "");
+    assert.equal(wrap_selection_called, true);
+    assert.equal(wrap_syntax_start, code_syntax);
+    assert.equal(wrap_syntax_end, code_syntax);
+
+    reset_state();
+    init_textarea("abc", {
+        start: 0,
+        end: 3,
+        text: "abc",
+        length: 3,
+    });
+    compose_ui.format_text($textarea, "code");
+    assert.equal(set_text, "");
+    assert.equal(wrap_selection_called, true);
+    assert.equal(wrap_syntax_start, code_syntax);
+    assert.equal(wrap_syntax_end, code_syntax);
+
+    reset_state();
+    init_textarea("abc\ndef\nghi\njkl", {
+        start: 4,
+        end: 11,
+        text: "def\nghi",
+        length: 7,
+    });
+    compose_ui.format_text($textarea, "code");
+    assert.equal(set_text, "");
+    assert.equal(wrap_selection_called, true);
+    assert.equal(wrap_syntax_start, code_block_syntax_start);
+    assert.equal(wrap_syntax_end, code_block_syntax_end);
+
+    // No text selected
+    reset_state();
+    init_textarea("", {
+        start: 0,
+        end: 0,
+        text: "",
+        length: 0,
+    });
+    compose_ui.format_text($textarea, "code");
+    assert.equal(set_text, "");
+    assert.equal(wrap_selection_called, true);
+
+    // Undo code selected text, syntax not selected
+    reset_state();
+    init_textarea("`abc`", {
+        start: 1,
+        end: 4,
+        text: "abc",
+        length: 3,
+    });
+    compose_ui.format_text($textarea, "code");
+    assert.equal(set_text, "abc");
+    assert.equal(wrap_selection_called, false);
+
+    reset_state();
+    init_textarea("```\nabc\n```", {
+        start: 4,
+        end: 7,
+        text: "abc",
+        length: 3,
+    });
+    compose_ui.format_text($textarea, "code");
+    assert.equal(set_text, "abc");
+    assert.equal(wrap_selection_called, false);
+
+    reset_state();
+    init_textarea("abc\n```\ndef\n```\nghi", {
+        start: 8,
+        end: 11,
+        text: "abc",
+        length: 3,
+    });
+    compose_ui.format_text($textarea, "code");
+    assert.equal(set_text, "abc\ndef\nghi");
+    assert.equal(wrap_selection_called, false);
+
+    // Undo code selected text, syntax selected
+    reset_state();
+    init_textarea("`abc` def", {
+        start: 0,
+        end: 5,
+        text: "`abc`",
+        length: 5,
+    });
+    compose_ui.format_text($textarea, "code");
+    assert.equal(set_text, "abc def");
+    assert.equal(wrap_selection_called, false);
+
+    reset_state();
+    init_textarea("```\nabc\ndef\n```", {
+        start: 0,
+        end: 15,
+        text: "```\nabc\ndef\n```",
+        length: 15,
+    });
+    compose_ui.format_text($textarea, "code");
+    assert.equal(set_text, "abc\ndef");
+    assert.equal(wrap_selection_called, false);
+
+    reset_state();
+    init_textarea("abc\n```\ndef\n```\nghi", {
+        start: 3,
+        end: 16,
+        text: "\n```\ndef\n```\n",
+        length: 13,
+    });
+    compose_ui.format_text($textarea, "code");
+    assert.equal(set_text, "abc\ndef\nghi");
+    assert.equal(wrap_selection_called, false);
+});
+
 run_test("format_text - quote", ({override}) => {
     override(text_field_edit, "set", (_field, text) => {
         set_text = text;
