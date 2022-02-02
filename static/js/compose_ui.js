@@ -242,12 +242,19 @@ export function format_text($textarea, type) {
     const bold_syntax = "**";
     const bold_and_italic_syntax = "***";
     const strikethrough_syntax = "~~";
+    let latex_syntax_start = "$$";
+    let latex_syntax_end = "$$";
     let is_selected_text_italic = false;
     let is_inner_text_italic = false;
     const field = $textarea.get(0);
     let range = $textarea.range();
     let text = $textarea.val();
     const selected_text = range.text;
+
+    if (selected_text.includes("\n")) {
+        latex_syntax_start = "```math\n";
+        latex_syntax_end = "\n```";
+    }
 
     // Remove new line and space around selected text.
     const left_trim_length = range.text.length - range.text.trimStart().length;
@@ -270,6 +277,9 @@ export function format_text($textarea, type) {
                 text,
                 selected_text,
             );
+            break;
+        case "latex":
+            add_formatting(latex_syntax_start, latex_syntax_end, field, range, text, selected_text);
             break;
         case "italic":
             // Ctrl + I: Toggle italic syntax on selection. This is

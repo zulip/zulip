@@ -716,6 +716,116 @@ run_test("format_text - strikethrough", ({override}) => {
     assert.equal(set_text, "abc");
 });
 
+run_test("format_text - latex", ({override}) => {
+    override(text_field_edit, "set", (field, text) => {
+        set_text = text;
+    });
+    override(text_field_edit, "wrapSelection", (field, syntax_start, syntax_end) => {
+        wrap_selection_called = true;
+        wrap_syntax_start = syntax_start;
+        wrap_syntax_end = syntax_end;
+    });
+
+    const latex_syntax = "$$";
+    const block_latex_syntax_start = "```math\n";
+    const block_latex_syntax_end = "\n```";
+
+    // Latex selected text
+    reset_state();
+    init_textarea("abc", {
+        start: 0,
+        end: 3,
+        text: "abc",
+        length: 3,
+    });
+    compose_ui.format_text($textarea, "latex");
+    assert.equal(set_text, "");
+    assert.equal(wrap_selection_called, true);
+    assert.equal(wrap_syntax_start, latex_syntax);
+    assert.equal(wrap_syntax_end, latex_syntax);
+
+    reset_state();
+    init_textarea("abc\ndef", {
+        start: 0,
+        end: 7,
+        text: "abc\ndef",
+        length: 7,
+    });
+    compose_ui.format_text($textarea, "latex");
+    assert.equal(set_text, "");
+    assert.equal(wrap_selection_called, true);
+    assert.equal(wrap_syntax_start, block_latex_syntax_start);
+    assert.equal(wrap_syntax_end, block_latex_syntax_end);
+
+    // Undo latex selected text, syntax not selected
+    reset_state();
+    init_textarea("$$abc$$", {
+        start: 2,
+        end: 5,
+        text: "abc",
+        length: 3,
+    });
+    compose_ui.format_text($textarea, "latex");
+    assert.equal(set_text, "abc");
+    assert.equal(wrap_selection_called, false);
+
+    reset_state();
+    init_textarea("```math\nabc\ndef\n```", {
+        start: 8,
+        end: 15,
+        text: "abc\ndef",
+        length: 7,
+    });
+    compose_ui.format_text($textarea, "latex");
+    assert.equal(set_text, "abc\ndef");
+    assert.equal(wrap_selection_called, false);
+
+    reset_state();
+    init_textarea("abc\n```math\nde\nf\n```\nghi", {
+        start: 12,
+        end: 16,
+        text: "de\nf",
+        length: 4,
+    });
+    compose_ui.format_text($textarea, "latex");
+    assert.equal(set_text, "abc\nde\nf\nghi");
+    assert.equal(wrap_selection_called, false);
+
+    // Undo latex selected text, syntax selected
+    reset_state();
+    init_textarea("$$abc$$", {
+        start: 0,
+        end: 7,
+        text: "$$abc$$",
+        length: 7,
+    });
+    compose_ui.format_text($textarea, "latex");
+    assert.equal(set_text, "abc");
+    assert.equal(wrap_selection_called, false);
+
+    reset_state();
+    init_textarea("```math\nabc\ndef\n```", {
+        start: 0,
+        end: 19,
+        text: "```math\nabc\ndef\n```",
+        length: 19,
+    });
+    compose_ui.format_text($textarea, "latex");
+    assert.equal(set_text, "abc\ndef");
+    assert.equal(wrap_selection_called, false);
+
+    reset_state();
+    init_textarea("abc\n```math\nde\nf\n```\nghi", {
+        start: 4,
+        end: 19,
+        text: "```math\nde\nf\n```",
+        length: 16,
+    });
+    compose_ui.format_text($textarea, "latex");
+    assert.equal(set_text, "abc\nde\nf\nghi");
+    assert.equal(wrap_selection_called, false);
+});
+
 run_test("markdown_shortcuts", ({override_rewire}) => {
     let format_text_type;
     override_rewire(compose_ui, "format_text", ($textarea, type) => {
