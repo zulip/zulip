@@ -14414,6 +14414,10 @@ components:
             Name of the emoji.
         reaction_type:
           type: string
+          enum:
+            - unicode_emoji
+            - realm_emoji
+            - zulip_extra_emoji
           description: |
             One of the following values:
 
@@ -14503,6 +14507,10 @@ components:
             **Changes**: New in Zulip 5.0 (feature level 86).
         reaction_type:
           type: string
+          enum:
+            - unicode_emoji
+            - realm_emoji
+            - zulip_extra_emoji
           description: |
             One of the following values, specifying the namespace used for
             `emoji_code`:
@@ -15563,6 +15571,10 @@ components:
         parameter was not specified.
       schema:
         type: string
+        enum:
+          - unicode_emoji
+          - realm_emoji
+          - zulip_extra_emoji
       example: "unicode_emoji"
       required: false
     EmojiCode:
