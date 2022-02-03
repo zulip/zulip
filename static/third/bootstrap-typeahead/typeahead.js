@@ -39,7 +39,11 @@
  *   If `this.trigger_selection` returns true, we complete the typeahead and
  *   pass the keyup event to the updater.
  *
- *   Our custom changes include all mentions of this.trigger_selection.
+ *   The implementation of this feature is slightly tricky. You should read
+ *   the description in https://github.com/zulip/zulip/issues/14246.
+ *
+ *   Our custom changes include all mentions of this.trigger_selection and
+ *   this.custom_selection_event.
  *
  * 3. Header text:
  *
@@ -103,6 +107,7 @@
     this.on_move = this.options.on_move;
     this.on_escape = this.options.on_escape;
     this.header = this.options.header || this.header;
+    this.custom_selection_event = undefined;
 
     if (this.fixed) {
       this.$container.css('position', 'fixed');
@@ -381,6 +386,11 @@
     }
 
   , keypress: function (e) {
+      // Calculate the trigger_selection on keypress but use the result on keyup.
+      // See https://github.com/zulip/zulip/issues/14246.
+      if (this.trigger_selection(e)) {
+        this.custom_selection_event = jQuery.Event("keyup", { key: e.key });
+      }
       if (this.suppressKeyPressRepeat) return
       this.move(e)
     }
@@ -406,9 +416,12 @@
           break
 
         default:
-          if (this.trigger_selection(e)) {
+          if (this.custom_selection_event) {
+            // Trigger the selection using the stored keypress event and
+            // then remove this event since it has been processed.
             if (!this.shown) return;
-            this.select(e);
+            this.select(this.custom_selection_event);
+            this.custom_selection_event = undefined;
           }
           var hideOnEmpty = false
           if (e.keyCode === 8 && this.options.helpOnEmptyStrings) { // backspace
