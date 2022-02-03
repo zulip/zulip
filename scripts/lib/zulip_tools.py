@@ -105,15 +105,20 @@ def get_deploy_root() -> str:
     )
 
 
+def parse_version_from(deploy_path: str) -> str:
+    with open(os.path.join(deploy_path, "version.py")) as f:
+        result = re.search('ZULIP_VERSION = "(.*)"', f.read())
+        if result:
+            return result.groups()[0]
+    return "0.0.0"
+
+
 def get_deployment_version(extract_path: str) -> str:
     version = "0.0.0"
     for item in os.listdir(extract_path):
         item_path = os.path.join(extract_path, item)
         if item.startswith("zulip-server") and os.path.isdir(item_path):
-            with open(os.path.join(item_path, "version.py")) as f:
-                result = re.search('ZULIP_VERSION = "(.*)"', f.read())
-                if result:
-                    version = result.groups()[0]
+            version = parse_version_from(item_path)
             break
     return version
 
