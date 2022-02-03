@@ -386,7 +386,7 @@ msgid ""
 "\n"
 "                    Anyway, shoot us a line at %(support_email_html_tag)s and we'll get this resolved shortly.\n"
 "                    "
-msgstr "\nEnvoyez nous un ligne à%(support_email_html_tag)s et nous allons résoudre ce bientôt."
+msgstr "\nEnvoyez nous un message à %(support_email_html_tag)s et nous résoudrons ça sous peu."
 
 #: templates/confirmation/link_expired.html:10
 msgid "Whoops. The confirmation link has expired or been deactivated."
