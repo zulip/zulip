@@ -29,16 +29,6 @@ const OFFLINE_THRESHOLD_SECS = 140;
 
 const BIG_REALM_COUNT = 250;
 
-export function is_active(user_id) {
-    if (presence_info.has(user_id)) {
-        const status = presence_info.get(user_id).status;
-        if (status === "active") {
-            return true;
-        }
-    }
-    return false;
-}
-
 export function get_status(user_id) {
     if (people.is_my_user_id(user_id)) {
         if (user_settings.presence_enabled) {
