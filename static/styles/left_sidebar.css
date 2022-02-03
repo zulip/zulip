@@ -343,9 +343,9 @@ li.top_left_recent_topics {
     height: 20px;
 }
 
-/* stylelint-disable */
 .conversation-partners,
 .topic-name {
+    /* stylelint-disable-next-line  value-no-vendor-prefix */
     display: -webkit-box;
     width: calc(100% - 5px);
     overflow: hidden;
@@ -354,7 +354,6 @@ li.top_left_recent_topics {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
 }
-/* stylelint-enable */
 
 .topic-name {
     /* TODO: We should figure out how to remove this without changing the spacing */
