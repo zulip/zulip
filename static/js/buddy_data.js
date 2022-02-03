@@ -267,25 +267,6 @@ export function get_items_for_users(user_ids) {
     return user_info;
 }
 
-export function huddle_fraction_present(huddle) {
-    const user_ids = huddle.split(",").map((s) => Number.parseInt(s, 10));
-
-    let num_present = 0;
-
-    for (const user_id of user_ids) {
-        if (presence.is_active(user_id)) {
-            num_present += 1;
-        }
-    }
-
-    if (num_present === user_ids.length) {
-        return 1;
-    } else if (num_present !== 0) {
-        return 0.5;
-    }
-    return undefined;
-}
-
 function user_is_recently_active(user_id) {
     // return true if the user has a green/orange circle
     return level(user_id) <= 2;
