@@ -165,6 +165,7 @@ test("basics", () => {
             emoji_code: "1f641",
             local_id: "unicode_emoji,1f641",
             count: 1,
+            vote_text: "Cali",
             user_ids: [7],
             label: "translated: Cali reacted with :frown:",
             emoji_alt_code: false,
@@ -177,6 +178,7 @@ test("basics", () => {
             emoji_code: "992",
             local_id: "realm_emoji,992",
             count: 1,
+            vote_text: "Alice",
             user_ids: [5],
             label: "translated: You (click to remove) reacted with :inactive_realm_emoji:",
             emoji_alt_code: false,
@@ -191,6 +193,7 @@ test("basics", () => {
             emoji_code: "1f642",
             local_id: "unicode_emoji,1f642",
             count: 2,
+            vote_text: "2",
             user_ids: [5, 6],
             label: "translated: You (click to remove) and Bob van Roberts reacted with :smile:",
             emoji_alt_code: false,
@@ -203,6 +206,7 @@ test("basics", () => {
             emoji_code: "1f389",
             local_id: "unicode_emoji,1f389",
             count: 2,
+            vote_text: "2",
             user_ids: [7, 8],
             label: "translated: Cali and Alexus reacted with :tada:",
             emoji_alt_code: false,
@@ -215,6 +219,7 @@ test("basics", () => {
             emoji_code: "1f680",
             local_id: "unicode_emoji,1f680",
             count: 3,
+            vote_text: "3",
             user_ids: [5, 6, 7],
             label: "translated: You (click to remove), Bob van Roberts and Cali reacted with :rocket:",
             emoji_alt_code: false,
@@ -227,6 +232,7 @@ test("basics", () => {
             emoji_code: "1f44b",
             local_id: "unicode_emoji,1f44b",
             count: 3,
+            vote_text: "3",
             user_ids: [6, 7, 8],
             label: "translated: Bob van Roberts, Cali and Alexus reacted with :wave:",
             emoji_alt_code: false,
@@ -244,7 +250,7 @@ test("unknown realm emojis (add)", () => {
                 reaction_type: "realm_emoji",
                 emoji_name: "false_emoji",
                 emoji_code: "broken",
-                user_ids: [alice.user_id],
+                user_id: alice.user_id,
             }),
         {
             name: "Error",
@@ -361,14 +367,15 @@ test("sending", ({override, override_rewire}) => {
 });
 
 test("set_reaction_count", () => {
-    const count_element = $.create("count-stub");
+    const name_or_count_element = $.create("count-stub");
     const reaction_element = $.create("reaction-stub");
+    const user_list = [5, 6, 7, 8];
 
-    reaction_element.set_find_results(".message_reaction_count", count_element);
+    reaction_element.set_find_results(".message_reaction_count", name_or_count_element);
 
-    reactions.set_reaction_count(reaction_element, 5);
+    reactions.set_reaction_count(reaction_element, user_list);
 
-    assert.equal(count_element.text(), "5");
+    assert.equal(name_or_count_element.text(), "4");
 });
 
 test("find_reaction", ({override_rewire}) => {
@@ -614,6 +621,7 @@ test("view.insert_new_reaction (me w/unicode emoji)", ({override_rewire, mock_te
     mock_template("message_reaction.hbs", false, (data) => {
         assert.deepEqual(data, {
             count: 1,
+            vote_text: "Alice",
             emoji_alt_code: false,
             emoji_name: "8ball",
             emoji_code: "1f3b1",
@@ -661,6 +669,7 @@ test("view.insert_new_reaction (them w/zulip emoji)", ({override_rewire, mock_te
     mock_template("message_reaction.hbs", false, (data) => {
         assert.deepEqual(data, {
             count: 1,
+            vote_text: "Bob van Roberts",
             url: "/static/generated/emoji/images/emoji/unicode/zulip.png",
             is_realm_emoji: true,
             emoji_alt_code: false,
@@ -704,9 +713,9 @@ test("view.update_existing_reaction (me)", ({override_rewire}) => {
         return our_reaction;
     });
 
-    override_rewire(reactions, "set_reaction_count", (reaction, count) => {
+    override_rewire(reactions, "set_reaction_count", (reaction, user_list) => {
         assert.equal(reaction, our_reaction);
-        assert.equal(count, 2);
+        assert.equal(user_list, opts.user_list);
     });
 
     reactions.view.update_existing_reaction(opts);
@@ -736,9 +745,9 @@ test("view.update_existing_reaction (them)", ({override_rewire}) => {
         return our_reaction;
     });
 
-    override_rewire(reactions, "set_reaction_count", (reaction, count) => {
+    override_rewire(reactions, "set_reaction_count", (reaction, user_list) => {
         assert.equal(reaction, our_reaction);
-        assert.equal(count, 4);
+        assert.equal(user_list, opts.user_list);
     });
 
     reactions.view.update_existing_reaction(opts);
@@ -769,9 +778,9 @@ test("view.remove_reaction (me)", ({override_rewire}) => {
         return our_reaction;
     });
 
-    override_rewire(reactions, "set_reaction_count", (reaction, count) => {
+    override_rewire(reactions, "set_reaction_count", (reaction, user_list) => {
         assert.equal(reaction, our_reaction);
-        assert.equal(count, 2);
+        assert.equal(user_list, opts.user_list);
     });
 
     reactions.view.remove_reaction(opts);
@@ -802,9 +811,9 @@ test("view.remove_reaction (them)", ({override_rewire}) => {
         return our_reaction;
     });
 
-    override_rewire(reactions, "set_reaction_count", (reaction, count) => {
+    override_rewire(reactions, "set_reaction_count", (reaction, user_list) => {
         assert.equal(reaction, our_reaction);
-        assert.equal(count, 1);
+        assert.equal(user_list, opts.user_list);
     });
 
     our_reaction.addClass("reacted");

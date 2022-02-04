@@ -221,9 +221,10 @@ export function get_add_reaction_button(message_id) {
     return add_button;
 }
 
-export function set_reaction_count(reaction, count) {
+export function set_reaction_count(reaction, user_list) {
     const count_element = reaction.find(".message_reaction_count");
-    count_element.text(count);
+    const vote_text = get_vote_text(user_list);
+    count_element.text(vote_text);
 }
 
 export function add_reaction(event) {
@@ -294,7 +295,7 @@ view.update_existing_reaction = function ({
     const local_id = get_local_reaction_id({reaction_type, emoji_code});
     const reaction = find_reaction(message_id, local_id);
 
-    set_reaction_count(reaction, user_list.length);
+    set_reaction_count(reaction, user_list);
 
     const new_label = generate_title(emoji_name, user_list);
     reaction.attr("aria-label", new_label);
@@ -311,6 +312,7 @@ view.insert_new_reaction = function ({message_id, user_id, emoji_name, emoji_cod
     // before the add button.
 
     const user_list = [user_id];
+    const vote_text = get_vote_text(user_list);
 
     const context = {
         message_id,
@@ -320,6 +322,7 @@ view.insert_new_reaction = function ({message_id, user_id, emoji_name, emoji_cod
     const new_label = generate_title(emoji_name, user_list);
 
     context.count = 1;
+    context.vote_text = vote_text;
     context.label = new_label;
     context.local_id = get_local_reaction_id({reaction_type, emoji_code});
     context.emoji_alt_code = user_settings.emojiset === "text";
@@ -411,7 +414,7 @@ view.remove_reaction = function ({
 
     // If the user is the current user, turn off the "reacted" class.
 
-    set_reaction_count(reaction, user_list.length);
+    set_reaction_count(reaction, user_list);
 
     if (user_id === page_params.user_id) {
         reaction.removeClass("reacted");
@@ -523,10 +526,22 @@ function make_clean_reaction({local_id, user_ids, emoji_name, emoji_code, reacti
 
 export function update_user_fields(r) {
     r.count = r.user_ids.length;
+    r.vote_text = get_vote_text(r.user_ids);
     r.label = generate_title(r.emoji_name, r.user_ids);
     if (r.user_ids.includes(page_params.user_id)) {
         r.class = "message_reaction reacted";
     } else {
         r.class = "message_reaction";
     }
+}
+
+// helper function for setting name/count text for a reaction
+function get_vote_text(user_list) {
+    const usernames = people.get_display_full_names(user_list);
+    if (usernames.length === 1) {
+        return usernames[0];
+    }
+
+    // returning length as a string instead of integer for consistency
+    return `${usernames.length}`;
 }
