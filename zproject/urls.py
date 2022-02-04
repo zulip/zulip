@@ -627,6 +627,7 @@ i18n_urls = [
     path("for/research/", landing_view, {"template_name": "zerver/for-research.html"}),
     path("for/business/", landing_view, {"template_name": "zerver/for-business.html"}),
     path("for/companies/", RedirectView.as_view(url="/for/business/", permanent=True)),
+    path("case-studies/idrift/", landing_view, {"template_name": "zerver/idrift-case-study.html"}),
     path("case-studies/tum/", landing_view, {"template_name": "zerver/tum-case-study.html"}),
     path("case-studies/ucsd/", landing_view, {"template_name": "zerver/ucsd-case-study.html"}),
     path("case-studies/rust/", landing_view, {"template_name": "zerver/rust-case-study.html"}),
