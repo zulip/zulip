@@ -203,8 +203,13 @@ in a
 with a content type of 'application/json'.
 
 To pass back data from the server to the calling client, in the event of
-a successfully handled request, we use
-`json_success(data=<some python object which can be converted to a JSON string>)`.
+a successfully handled request, we use `json_success(request, data)`.
+
+The request argument is a
+[HTTP request](https://docs.djangoproject.com/en/3.2/ref/request-response/)
+with additional metadata that Zulip associates with the request object.
+The data argument is a python object which can be converted to a JSON string
+and has a default value of an empty python dictionary.
 
 This will result in a JSON string:
 
