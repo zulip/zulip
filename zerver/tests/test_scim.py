@@ -101,7 +101,7 @@ class TestExceptionDetailsNotRevealedToClient(SCIMTestCase):
                 result.json(),
                 {
                     "schemas": ["urn:ietf:params:scim:api:messages:2.0:Error"],
-                    "detail": "Exception while processing SCIM request.",
+                    "detail": "Exception occurred while processing the SCIM request",
                     "status": 500,
                 },
             )

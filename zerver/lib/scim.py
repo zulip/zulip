@@ -2,17 +2,11 @@ from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 import django_scim.constants as scim_constants
 import django_scim.exceptions as scim_exceptions
-import orjson
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
-from django.http import HttpRequest, HttpResponse
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpRequest
 from django_scim.adapters import SCIMUser
-from django_scim.views import SCIMView, SearchView, UserSearchView, UsersView
-from django_scim.views import logger as scim_views_logger
 from scim2_filter_parser.attr_paths import AttrPath
 
 from zerver.lib.actions import (
@@ -368,58 +362,3 @@ class ConflictError(scim_exceptions.IntegrityError):
     """
 
     scim_type = "uniqueness"
-
-
-class ZulipSCIMViewMixin(SCIMView):
-    """
-    Default django-scim2 behavior is to convert any exception that occurs while processing
-    the request within the view code to a string and put it
-    in the HttpResponse. We don't want that due to the risk of leaking sensitive information
-    through the error message.
-
-    The way we implement this override is by having this mixin override the main dispatch()
-    method - and then all the specific view classes are re-defined to inherit from this mixin
-    and the original django-scim2 class. This means that we have to also re-register all
-    the URL patterns so that our View classes are used.
-    """
-
-    @method_decorator(csrf_exempt)
-    @method_decorator(login_required)
-    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        """
-        This method through which all SCIM views are processed needs to be forked
-        to change its logic of how exceptions are handled.
-        """
-        if not self.implemented:
-            return self.status_501(request, *args, **kwargs)
-
-        try:
-            return super(SCIMView, self).dispatch(request, *args, **kwargs)
-        except Exception as e:
-            if not isinstance(e, scim_exceptions.SCIMException):
-                # This is where we adjust the exception-handling behavior. Instead of
-                # putting str(e) in the response, we use a generic error that won't leak
-                # information.
-                scim_views_logger.exception("Unable to complete SCIM call.")
-                e = scim_exceptions.SCIMException("Exception while processing SCIM request.")
-
-            content = orjson.dumps(e.to_dict())
-            return HttpResponse(
-                content=content, content_type=scim_constants.SCIM_CONTENT_TYPE, status=e.status
-            )
-
-
-class ZulipSCIMView(ZulipSCIMViewMixin, SCIMView):
-    pass
-
-
-class ZulipSCIMUsersView(ZulipSCIMViewMixin, UsersView):
-    pass
-
-
-class ZulipSCIMSearchView(ZulipSCIMViewMixin, SearchView):
-    pass
-
-
-class ZulipSCIMUserSearchView(ZulipSCIMViewMixin, UserSearchView):
-    pass
