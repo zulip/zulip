@@ -1,6 +1,8 @@
 # Privacy Policy
 
-**Effective date: January 1, 2022**
+**Effective date: January 1, 2022.** View [change history][changes-privacy].
+
+[changes-privacy]: https://github.com/zulip/zulip/commits/main/templates/corporate/policies/privacy.md
 
 At Kandra Labs, Inc. (“Zulip”), we take your privacy seriously. Please read this
 Privacy Policy to learn how we treat your personal data. **By using or accessing

@@ -1,6 +1,8 @@
 # Terms of Service
 
-**Effective date: January 1, 2022**
+**Effective date: January 1, 2022.** View [change history][changes-terms].
+
+[changes-terms]: https://github.com/zulip/zulip/commits/main/templates/corporate/policies/terms.md
 
 Welcome to Zulip. Please read on to learn the rules and restrictions that govern
 your use of our website(s), products, services and applications (the

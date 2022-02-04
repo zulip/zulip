@@ -1,6 +1,8 @@
 # Zulip Rules of Use
 
-**Last updated: December 13, 2021**
+**Last updated: December 13, 2021.** View [change history][changes-rules].
+
+[changes-rules]: https://github.com/zulip/zulip/commits/main/templates/corporate/policies/rules.md
 
 Zulip is designed to help thoughtful people work on difficult problems together,
 whether they work from a shared office or from all over the world. Zulip offers
