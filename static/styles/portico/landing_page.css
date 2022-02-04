@@ -1533,11 +1533,11 @@ nav {
     cursor: pointer;
 }
 
-.tour .carousel-inner .item-inner{
+.tour .carousel-inner .item-container{
     cursor: pointer;
 }
 .tour .carousel-inner .item-start:hover{
-    box-shadow: 5px 10px 18px hsl(0, 0%, 87%);
+    box-shadow: 5px 10px 18px hsl(0, 0%, 75%);
     cursor: pointer;
 }
 
