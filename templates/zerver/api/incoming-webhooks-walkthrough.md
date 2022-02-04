@@ -115,7 +115,7 @@ def api_helloworld_webhook(
     # send the message
     check_send_webhook_message(request, user_profile, topic, body)
 
-    return json_success()
+    return json_success(request)
 ```
 
 The above code imports the required functions and defines the main webhook
@@ -175,7 +175,7 @@ validate the message and do the following:
   message to the owner of the webhook bot.
 
 Finally, we return a 200 http status with a JSON format success message via
-`json_success()`.
+`json_success(request)`.
 
 ## Step 3: Create an API endpoint for the webhook
 
