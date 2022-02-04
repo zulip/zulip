@@ -1,6 +1,6 @@
 # Terms of Service
 
-**Effective date: January 1, 2022.** View [change history][changes-terms].
+**Effective date: February 7, 2022.** View [change history][changes-terms].
 
 [changes-terms]: https://github.com/zulip/zulip/commits/main/templates/corporate/policies/terms.md
 
@@ -19,12 +19,7 @@ and these Terms will remain in effect while you use the
 Services. These Terms include the provisions in this document as well
 as those in the [Privacy Policy](/policies/privacy), [Rules of
 Use](/policies/rules), and, if applicable, [Data Processing
-Addendum](/static/images/policies/Zulip-Data-Processing-Addendum.pdf). **Your
-use of or participation in certain Services may also be subject to
-additional policies, rules and/or conditions (“Additional Terms”),
-which are incorporated herein by reference, and you understand and
-agree that by using or participating in any such Services, you agree
-to also comply with these Additional Terms.**
+Addendum](/static/images/policies/Zulip-Data-Processing-Addendum.pdf).
 
 **Please read these Terms carefully.** They cover important information about
 Services provided to you and any charges, taxes, and fees we bill you. **These
