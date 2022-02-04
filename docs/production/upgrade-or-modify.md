@@ -147,9 +147,9 @@ suggest using that updated template to update
    `/etc/zulip/settings-new.py`, check the [changelog][changelog] to see
    if they have been removed.
 
-1. Overwriting the configuration with the updated file, and restart
-   the server to pick up the new file; this should be a no-op, but it
-   is much better to discover immediately if it is not:
+1. Overwrite the configuration with the updated file, and restart the
+   server to pick up the updates; this should be a no-op, but it is
+   much better to discover immediately if it is not:
 
    ```bash
    cp -a /etc/zulip/settings-new.py /etc/zulip/settings.py
