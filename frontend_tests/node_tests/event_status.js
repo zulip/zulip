@@ -153,7 +153,7 @@ run_test("check_status", async ({override}) => {
     assert.ok(completed);
     assert.equal(
         $("#webhook-success").text(),
-        "Your free trial of Zulip Standard has been activated. You would be redirected to the billing page soon.",
+        "Your free trial of Zulip Cloud Standard has been activated. You would be redirected to the billing page soon.",
     );
 
     override($, "get", async (url, data) => {
@@ -180,7 +180,7 @@ run_test("check_status", async ({override}) => {
     assert.ok(completed);
     assert.equal(
         $("#webhook-success").text(),
-        "Your free trial of Zulip Standard has been activated. You would be redirected to the billing page soon.",
+        "Your free trial of Zulip Cloud Standard has been activated. You would be redirected to the billing page soon.",
     );
 
     override($, "get", async (url, data) => {

@@ -46,7 +46,7 @@
           {
             "amount": 960000,
             "currency": "usd",
-            "description": "Zulip Standard - renewal",
+            "description": "Zulip Cloud Standard - renewal",
             "discount_amounts": [],
             "discountable": false,
             "discounts": [],
@@ -106,7 +106,7 @@
       "pre_payment_credit_notes_amount": 0,
       "receipt_number": null,
       "starting_balance": 0,
-      "statement_descriptor": "Zulip Standard",
+      "statement_descriptor": "Zulip Cloud Standard",
       "status": "open",
       "status_transitions": {
         "finalized_at": 1000000000,
@@ -170,7 +170,7 @@
           {
             "amount": 1200000,
             "currency": "usd",
-            "description": "Zulip Standard - renewal",
+            "description": "Zulip Cloud Standard - renewal",
             "discount_amounts": [],
             "discountable": false,
             "discounts": [],
@@ -274,7 +274,7 @@
       "pre_payment_credit_notes_amount": 0,
       "receipt_number": null,
       "starting_balance": 0,
-      "statement_descriptor": "Zulip Standard",
+      "statement_descriptor": "Zulip Cloud Standard",
       "status": "open",
       "status_transitions": {
         "finalized_at": 1000000000,
@@ -338,7 +338,7 @@
           {
             "amount": 800000,
             "currency": "usd",
-            "description": "Zulip Standard",
+            "description": "Zulip Cloud Standard",
             "discount_amounts": [],
             "discountable": false,
             "discounts": [],
@@ -398,7 +398,7 @@
       "pre_payment_credit_notes_amount": 0,
       "receipt_number": null,
       "starting_balance": 0,
-      "statement_descriptor": "Zulip Standard",
+      "statement_descriptor": "Zulip Cloud Standard",
       "status": "open",
       "status_transitions": {
         "finalized_at": 1000000000,

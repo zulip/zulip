@@ -117,7 +117,7 @@
           "quote": null,
           "receipt_number": null,
           "starting_balance": 0,
-          "statement_descriptor": "Zulip Standard Credit",
+          "statement_descriptor": "Zulip Cloud Standard Credit",
           "status": "paid",
           "status_transitions": {
             "finalized_at": 1000000000,

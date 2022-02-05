@@ -103,7 +103,7 @@ class TestSupportEndpoint(ZulipTestCase):
                     '<option value="deactivated" >Deactivated</option>',
                     'scrub-realm-button">',
                     'data-string-id="lear"',
-                    "<b>Name</b>: Zulip Standard",
+                    "<b>Name</b>: Zulip Cloud Standard",
                     "<b>Status</b>: Active",
                     "<b>Billing schedule</b>: Annual",
                     "<b>Licenses</b>: 2/10 (Manual)",
