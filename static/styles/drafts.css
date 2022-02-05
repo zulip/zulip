@@ -69,6 +69,17 @@
             color: hsl(0, 0%, 67%);
             pointer-events: none;
         }
+
+        /* Hide duplicate default scrollbar for IE, Edge and Firefox.  In
+           theory simplebar should be doing this for us. */
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    /* Hide duplicate default scrollbar for IE, Edge and Firefox.  In
+       theory simplebar should be doing this for us. */
+    .drafts-list::-webkit-scrollbar {
+        display: none;
     }
 }
 
