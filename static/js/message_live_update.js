@@ -43,3 +43,8 @@ export function update_avatar(user_id, avatar_url) {
     message_store.update_property("small_avatar_url", url, {user_id});
     rerender_messages_view_for_user(user_id);
 }
+
+export function update_user_status_emoji(user_id, status_emoji_info) {
+    message_store.update_property("status_emoji_info", status_emoji_info, {user_id});
+    rerender_messages_view_for_user(user_id);
+}

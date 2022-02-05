@@ -23,6 +23,7 @@ import * as message_events from "./message_events";
 import * as message_flags from "./message_flags";
 import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
+import * as message_live_update from "./message_live_update";
 import * as muted_topics_ui from "./muted_topics_ui";
 import * as muted_users_ui from "./muted_users_ui";
 import * as narrow_state from "./narrow_state";
@@ -771,6 +772,10 @@ export function dispatch_normal_event(event) {
                 user_status.set_status_emoji(event);
                 activity.redraw_user(event.user_id);
                 pm_list.update_private_messages();
+                message_live_update.update_user_status_emoji(
+                    event.user_id,
+                    user_status.get_status_emoji(event.user_id),
+                );
             }
             break;
         case "realm_export":

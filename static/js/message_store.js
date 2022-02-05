@@ -124,6 +124,13 @@ export function update_property(property, value, info) {
                 }
             }
             break;
+        case "status_emoji_info":
+            for (const msg of stored_messages.values()) {
+                if (msg.sender_id && msg.sender_id === info.user_id) {
+                    msg[property] = value;
+                }
+            }
+            break;
     }
 }
 
