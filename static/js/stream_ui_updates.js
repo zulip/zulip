@@ -89,10 +89,6 @@ export function update_settings_button_for_sub(sub) {
         settings_button.attr("title", "");
         initialize_cant_subscribe_popover(sub);
         settings_button.prop("disabled", true);
-<<<<<<< HEAD
-
-=======
->>>>>>> Update stream_ui_updates.js
         update_toggler_for_sub_private_settings(sub);
     }
 }
@@ -101,15 +97,10 @@ export function update_toggler_for_sub_private_settings(sub) {
     if (!hash_util.is_editing_stream(sub.stream_id)) {
         return;
     }
-    // this is for the sub to see only when if a person issub ifhe un subs he
-    // will not see that again until
-    // subs
-
+    // this is for the sub to see only when if a person issub if they un-subs
+    // they will not see that again until subscribed
     if (!sub.subscribed) {
-        if (sub.invite_only && !sub.history_public_to_subscribers) {
-            stream_edit.toggler.disable_tab("subscriber_settings");
-        }
-        if (sub.invite_only && sub.history_public_to_subscribers) {
+        if (sub.invite_only) {
             stream_edit.toggler.disable_tab("subscriber_settings");
         } else {
             return;
