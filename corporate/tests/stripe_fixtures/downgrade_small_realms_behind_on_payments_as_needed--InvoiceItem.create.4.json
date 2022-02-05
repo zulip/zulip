@@ -3,7 +3,7 @@
   "currency": "usd",
   "customer": "cus_NORMALIZED0005",
   "date": 1000000000,
-  "description": "Zulip standard",
+  "description": "Zulip Cloud Standard",
   "discountable": false,
   "discounts": [],
   "id": "ii_NORMALIZED00000000000004",
