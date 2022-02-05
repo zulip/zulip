@@ -18,7 +18,7 @@ three types of Zulip Cloud exports.
 * **Full export without member consent**: All the data in the organization.
 
 All organizations have access to the first two kinds of export. Only corporate
-Zulip Standard customers have access to **full export without member consent**.
+Zulip Cloud Standard customers have access to **full export without member consent**.
 
 ## Export of public data
 
@@ -74,7 +74,7 @@ import.
 
 {!owner-only.md!}
 
-This export is limited to paid Zulip Standard customers, though in rare
+This export is limited to paid Zulip Cloud Standard customers, though in rare
 cases may be available to other organizations in case of due legal process.
 
 To start this export, email support@zulip.com with your zulip.com

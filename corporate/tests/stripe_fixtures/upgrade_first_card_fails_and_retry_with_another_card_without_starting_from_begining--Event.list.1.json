@@ -51,7 +51,7 @@
               {
                 "amount": 184000,
                 "currency": "usd",
-                "description": "Zulip Standard",
+                "description": "Zulip Cloud Standard",
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
@@ -161,7 +161,7 @@
           "quote": null,
           "receipt_number": null,
           "starting_balance": 0,
-          "statement_descriptor": "Zulip Standard",
+          "statement_descriptor": "Zulip Cloud Standard",
           "status": "paid",
           "status_transitions": {
             "finalized_at": 1000000000,
