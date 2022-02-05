@@ -3518,7 +3518,7 @@ class StripeTest(StripeTestCase):
         stripe.InvoiceItem.create(
             currency="usd",
             customer=zulip_customer.stripe_customer_id,
-            description="Zulip standard upgrade",
+            description="Zulip Cloud Standard upgrade",
             discountable=False,
             unit_amount=800,
             quantity=8,
@@ -3536,7 +3536,7 @@ class StripeTest(StripeTestCase):
         stripe.InvoiceItem.create(
             currency="usd",
             customer=lear_customer.stripe_customer_id,
-            description="Zulip standard upgrade",
+            description="Zulip Cloud Standard upgrade",
             discountable=False,
             unit_amount=800,
             quantity=8,
@@ -3577,7 +3577,7 @@ class StripeTest(StripeTestCase):
                 amount=10000,
                 currency="usd",
                 customer=customer.stripe_customer_id,
-                description="Zulip standard",
+                description="Zulip Cloud Standard",
                 discountable=False,
             )
             invoice = stripe.Invoice.create(
