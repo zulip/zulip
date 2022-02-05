@@ -4278,6 +4278,8 @@ nav {
     border-radius: 1em;
     font-weight: 400;
     margin: 40px 5px;
+    display: flex;
+    flex-direction: column;
 
     a {
         color: hsl(0, 0%, 100%);
