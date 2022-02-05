@@ -62,8 +62,13 @@ export function populate_user_groups() {
                 },
             }),
         );
+
+        const pill_config = {
+            show_user_status_emoji: false,
+        };
+
         const pill_container = $(`.pill-container[data-group-pills="${CSS.escape(data.id)}"]`);
-        const pills = user_pill.create_pills(pill_container);
+        const pills = user_pill.create_pills(pill_container, pill_config);
 
         function get_pill_user_ids() {
             return user_pill.get_user_ids(pills);
