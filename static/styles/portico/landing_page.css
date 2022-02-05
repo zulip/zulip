@@ -3350,10 +3350,6 @@ nav {
 }
 
 @media (width <= 906px) {
-    .portico-landing.why-page .hero p br {
-        display: none;
-    }
-
     .portico-landing.features-app {
         section {
             &.notifications {
