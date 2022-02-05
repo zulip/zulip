@@ -8,11 +8,16 @@ import * as util from "./util";
 
 export let widget;
 
+const pill_config = {
+    show_user_status_emoji: true,
+};
+
 export function initialize_pill() {
     const container = $("#private_message_recipient").parent();
 
     const pill = input_pill.create({
         container,
+        pill_config,
         create_item_from_text: user_pill.create_item_from_email,
         get_text_from_item: user_pill.get_email_from_item,
     });
@@ -37,7 +42,6 @@ export function clear() {
 }
 
 export function set_from_typeahead(person) {
-    // We expect person to be an object returned from people.js.
     user_pill.append_person({
         pill_widget: widget,
         person,
