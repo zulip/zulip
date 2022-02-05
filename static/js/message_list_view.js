@@ -238,7 +238,7 @@ export class MessageListView {
 
     _add_msg_edited_vars(message_container) {
         // This adds variables to message_container object which calculate bools for
-        // checking position of "(EDITED)" label as well as the edited timestring
+        // checking the position of the "EDITED" label as well as the edited timestring.
         // The bools can be defined only when the message is edited
         // (or when the `last_edit_timestr` is defined). The bools are:
         //   * `edited_in_left_col`      -- when label appears in left column.

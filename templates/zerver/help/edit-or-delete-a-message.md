@@ -28,7 +28,7 @@ content.
 !!! warn ""
 
     **Note:** After you have edited a message, the message is publicly marked as
-    `(EDITED)`. You can [view](/help/view-a-messages-edit-history) a message's
+    `EDITED`. You can [view](/help/view-a-messages-edit-history) a message's
     edit history, assuming that feature has not been
     [disabled by an organization administrator](/help/disable-message-edit-history).
 
