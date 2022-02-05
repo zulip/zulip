@@ -32,6 +32,7 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
+import * as pm_list from "./pm_list";
 import * as reactions from "./reactions";
 import * as realm_icon from "./realm_icon";
 import * as realm_logo from "./realm_logo";
@@ -769,6 +770,7 @@ export function dispatch_normal_event(event) {
             if (event.emoji_name !== undefined) {
                 user_status.set_status_emoji(event);
                 activity.redraw_user(event.user_id);
+                pm_list.update_private_messages();
             }
             break;
         case "realm_export":
