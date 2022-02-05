@@ -51,7 +51,7 @@
               {
                 "amount": 4800,
                 "currency": "usd",
-                "description": "Zulip Standard",
+                "description": "Zulip Cloud Standard",
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
@@ -161,7 +161,7 @@
           "quote": null,
           "receipt_number": null,
           "starting_balance": 0,
-          "statement_descriptor": "Zulip Standard",
+          "statement_descriptor": "Zulip Cloud Standard",
           "status": "paid",
           "status_transitions": {
             "finalized_at": 1000000000,
@@ -255,7 +255,7 @@
               {
                 "amount": 4800,
                 "currency": "usd",
-                "description": "Zulip Standard",
+                "description": "Zulip Cloud Standard",
                 "discount_amounts": [],
                 "discountable": false,
                 "discounts": [],
@@ -365,7 +365,7 @@
           "quote": null,
           "receipt_number": null,
           "starting_balance": 0,
-          "statement_descriptor": "Zulip Standard",
+          "statement_descriptor": "Zulip Cloud Standard",
           "status": "draft",
           "status_transitions": {
             "finalized_at": null,
@@ -465,7 +465,7 @@
           "currency": "usd",
           "customer": "cus_NORMALIZED0001",
           "date": 1000000000,
-          "description": "Zulip Standard",
+          "description": "Zulip Cloud Standard",
           "discountable": false,
           "discounts": [],
           "id": "ii_NORMALIZED00000000000001",
@@ -528,7 +528,7 @@
           "currency": "usd",
           "customer": "cus_NORMALIZED0001",
           "date": 1000000000,
-          "description": "Zulip Standard",
+          "description": "Zulip Cloud Standard",
           "discountable": false,
           "discounts": [],
           "id": "ii_NORMALIZED00000000000001",
