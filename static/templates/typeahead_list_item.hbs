@@ -24,6 +24,9 @@
 <strong>
     {{~ primary ~}}
 </strong>
+{{~#if has_status}}
+{{> status_emoji status_emoji_info}}
+{{~/if}}
 {{~#if has_secondary}}
 &nbsp;&nbsp;
 <small class="autocomplete_secondary">

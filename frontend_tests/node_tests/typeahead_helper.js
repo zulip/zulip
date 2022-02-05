@@ -697,6 +697,7 @@ test("render_emoji", ({mock_template}) => {
         is_emoji: true,
         has_image: false,
         has_secondary: false,
+        has_status: false,
     };
     let rendered = false;
     let test_emoji = {
@@ -725,6 +726,7 @@ test("render_emoji", ({mock_template}) => {
         is_emoji: true,
         has_image: true,
         has_secondary: false,
+        has_status: false,
     };
     test_emoji = {
         emoji_name: "realm_emoji",
