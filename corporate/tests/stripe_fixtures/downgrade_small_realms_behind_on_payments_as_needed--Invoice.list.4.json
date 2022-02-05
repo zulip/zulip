@@ -47,7 +47,7 @@
           {
             "amount": 10000,
             "currency": "usd",
-            "description": "Zulip standard",
+            "description": "Zulip Cloud Standard",
             "discount_amounts": [],
             "discountable": false,
             "discounts": [],
