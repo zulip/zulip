@@ -147,3 +147,24 @@ class TestSendEmail(ZulipTestCase):
                     f"INFO:{logger.name}:Sending password_reset email to {mail.to}",
                 )
                 self.assertTrue(info_log.output[1].startswith(f"ERROR:zulip.send_email:{message}"))
+
+    def test_send_email_config_error_logging(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        with self.settings(EMAIL_HOST_USER="test", EMAIL_HOST_PASSWORD=None):
+            with self.assertLogs(logger=logger, level="ERROR") as error_log:
+                send_email(
+                    "zerver/emails/password_reset",
+                    to_emails=[hamlet],
+                    from_name="From Name",
+                    from_address=FromAddress.NOREPLY,
+                    language="en",
+                )
+
+        self.assertEqual(
+            error_log.output,
+            [
+                "ERROR:zulip.send_email:"
+                "An SMTP username was set (EMAIL_HOST_USER), but password is unset (EMAIL_HOST_PASSWORD)."
+            ],
+        )
