@@ -29,9 +29,12 @@
             .selected_emoji {
                 width: 20px;
                 height: 20px;
-                top: 50%;
-                transform: translateY(-50%);
                 cursor: pointer;
+                /*
+                    the following rule is not necessarily better than the one
+                    from a6bef5154197b15c20445526fd3f219b4f2e5379 but it works.
+                */
+                top: -2px;
             }
 
             /* For custom emojis and smiley icon to take full width. */
