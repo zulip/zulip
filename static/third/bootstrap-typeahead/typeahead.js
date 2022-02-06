@@ -96,6 +96,7 @@
     this.$header = $(this.options.header_html).appendTo(this.$container)
     this.source = this.options.source
     this.shown = false
+    this.mouse_moved_since_typeahead = false
     this.dropup = this.options.dropup
     this.fixed = this.options.fixed || false;
     this.automated = this.options.automated || this.automated;
@@ -199,6 +200,7 @@
 
       this.$container.show()
       this.shown = true
+      this.mouse_moved_since_typeahead = false
       return this
     }
 
@@ -328,11 +330,12 @@
       this.$menu
         .on('click', 'li', this.click.bind(this))
         .on('mouseenter', 'li', this.mouseenter.bind(this))
+        .on('mousemove', 'li', this.mousemove.bind(this))
     }
 
   , unlisten: function () {
       this.$container.remove();
-      var events = ["blur", "keydown", "keyup", "keypress"];
+      var events = ["blur", "keydown", "keyup", "keypress", "mousemove"];
       for (var i=0; i<events.length; i++) {
         this.$element.off(events[i]);
       }
@@ -372,6 +375,15 @@
       if ((this.options.stopAdvance || (e.keyCode != 9 && e.keyCode != 13))
           && $.inArray(e.keyCode, this.options.advanceKeyCodes)) {
           e.stopPropagation()
+      }
+    }
+
+  , mousemove: function(e) {
+      if (!this.mouse_moved_since_typeahead) {
+        /* Undo cursor disabling in mouseenter handler. */
+        $(e.currentTarget).find('a').css('cursor', '');
+        this.mouse_moved_since_typeahead = true;
+        this.mouseenter(e)
       }
     }
 
@@ -450,6 +462,18 @@
     }
 
   , mouseenter: function (e) {
+      if (!this.mouse_moved_since_typeahead) {
+        // Prevent the annoying interaction where your mouse happens
+        // to be in the space where typeahead will open.  (This would
+        // result in the mouse taking priority over the keyboard for
+        // what you selected). If the mouse has not been moved since
+        // the appearance of the typeahead menu, we disable the
+        // cursor, which in turn prevents the currently hovered
+        // element from being selected.  The mousemove handler
+        // overrides this logic.
+        $(e.currentTarget).find('a').css('cursor', 'none')
+        return
+      }
       this.$menu.find('.active').removeClass('active')
       $(e.currentTarget).addClass('active')
     }
