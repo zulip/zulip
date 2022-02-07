@@ -27,6 +27,17 @@ body.dark-theme {
         color: inherit;
     }
 
+    .narrows_panel {
+        li a {
+            color: inherit;
+
+            &:hover {
+                text-decoration: none;
+                color: inherit;
+            }
+        }
+    }
+
     /************************* MODAL DARK THEME *******************/
     .dialog_cancel_button {
         background-color: hsl(211, 29%, 14%);
