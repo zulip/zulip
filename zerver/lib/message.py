@@ -1308,7 +1308,7 @@ def update_first_visible_message_id(realm: Realm) -> None:
 
 def get_last_message_id() -> int:
     # We generally use this function to populate RealmAuditLog, and
-    # the max id here is actually systemwide, not per-realm.  I
+    # the max id here is actually system-wide, not per-realm.  I
     # assume there's some advantage in not filtering by realm.
     last_id = Message.objects.aggregate(Max("id"))["id__max"]
     if last_id is None:

@@ -171,7 +171,7 @@ def write_log_line(
             statsd_path = "webreq"
         else:
             statsd_path = "webreq.{}".format(path[1:].replace("/", "."))
-            # Remove non-ascii chars from path (there should be none, if there are it's
+            # Remove non-ascii chars from path (there should be none; if there are, it's
             # because someone manually entered a nonexistent path), as UTF-8 chars make
             # statsd sad when it sends the key name over the socket
             statsd_path = statsd_path.encode("ascii", errors="ignore").decode("ascii")

@@ -524,7 +524,7 @@ test("sort_recipients subscribers", () => {
 
 test("sort_recipients pm partners", () => {
     // b_user_3 is a pm partner and b_user_2 is not and
-    // both are not subscribered to the stream Linux.
+    // both are not subscribed to the stream Linux.
     const small_matches = [b_user_3, b_user_2];
     const recipients = th.sort_recipients({
         users: small_matches,

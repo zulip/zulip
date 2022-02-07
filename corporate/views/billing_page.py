@@ -49,7 +49,7 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
             brand=default_payment_method.card.brand,
             last4=default_payment_method.card.last4,
         )
-    # There might be oneoff stuff we do for a particular customer that
+    # There might be one-off stuff we do for a particular customer that
     # would land them here. E.g. by default we don't support ACH for
     # automatic payments, but in theory we could add it for a customer via
     # the Stripe dashboard.

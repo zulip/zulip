@@ -1154,7 +1154,7 @@ class TestGetRawUserDataSystemBotRealm(ZulipTestCase):
 
 
 class TestUserPresenceUpdatesDisabled(ZulipTestCase):
-    def test_presence_events_diabled_on_larger_realm(self) -> None:
+    def test_presence_events_disabled_on_larger_realm(self) -> None:
         # First check that normally the mocked function gets called.
         events: List[Mapping[str, Any]] = []
         with self.tornado_redirected_to_list(events, expected_num_events=1):

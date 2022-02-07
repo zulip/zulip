@@ -253,7 +253,7 @@ export function add_sub_to_table(sub) {
         // If a stream is already listed/added in subscription modal,
         // display stream in `Subscribed` tab and return.
         // This can happen in some corner cases (which might
-        // be backend bugs) where a realm adminsitrator is subscribed
+        // be backend bugs) where a realm administrator is subscribed
         // to a private stream, in which case they might get two
         // stream-create events.
         stream_ui_updates.update_stream_row_in_settings_tab(sub);

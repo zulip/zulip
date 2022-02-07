@@ -129,7 +129,7 @@ migrations.
     the migration can even continue where it left off, without needing
     to redo work.
   - **Multi-step migrations**. For really big migrations, one wants
-    to split the transition into into several commits that are each
+    to split the transition into several commits that are each
     individually correct, and can each be deployed independently:
 
     1. First, do a migration to add the new column to the Message table

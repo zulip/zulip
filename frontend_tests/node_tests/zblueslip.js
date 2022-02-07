@@ -62,7 +62,7 @@ run_test("basics", () => {
         blueslip.reset();
     });
 
-    // Let's repeat the above procedue with warnings. Unlike errors,
+    // Let's repeat the above procedure with warnings. Unlike errors,
     // warnings shouldn't stop the code execution, and thus, the
     // behaviour is slightly different.
 

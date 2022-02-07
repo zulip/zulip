@@ -29,7 +29,7 @@ assert_provisioning_status_ok(options.skip_provision_check)
 with test_server_running(
     skip_provision_check=options.skip_provision_check, external_host="zulipdev.com:9981"
 ):
-    # Zerver imports should happen after `django.setup()` is run
+    # zerver imports should happen after `django.setup()` is run
     # by the test_server_running decorator.
     from zerver.lib.actions import (
         change_user_is_active,

@@ -114,7 +114,7 @@ def bulk_fetch_display_recipients(
     )
 
     # Now we have to create display_recipients for personal and huddle messages.
-    # We do this via generic_bulk_cached_fetch, supplying apprioprate functions to it.
+    # We do this via generic_bulk_cached_fetch, supplying appropriate functions to it.
 
     def personal_and_huddle_query_function(
         recipient_ids: List[int],

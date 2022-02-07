@@ -18,7 +18,7 @@ function test_with(fixture) {
     narrow_state.set_current_filter(filter);
 
     // Make sure our simulated tests data satisfies the
-    // invarariant that the first unread message we find
+    // invariant that the first unread message we find
     // does indeed satisfy our filter.
     if (fixture.unread_info.flavor === "found") {
         for (const msg of fixture.all_messages) {

@@ -20,7 +20,7 @@ async function realm_creation_tests(page: Page): Promise<void> {
         page.$eval("#send_confirm", (form) => (form as HTMLFormElement).submit()),
     ]);
 
-    // Make sure onfirmation email is sent.
+    // Make sure confirmation email is sent.
     assert.ok(page.url().includes("/accounts/new/send_confirm/" + email));
 
     // Special endpoint enabled only during tests for extracting confirmation key

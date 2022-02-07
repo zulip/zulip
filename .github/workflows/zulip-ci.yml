@@ -41,7 +41,7 @@ jobs:
     container: ${{ matrix.docker_image }}
     env:
       # GitHub Actions sets HOME to /github/home which causes
-      # problem later in provison and frontend test that runs
+      # problem later in provision and frontend test that runs
       # tools/setup/postgresql-init-dev-db because of the .pgpass
       # location. PostgreSQL (psql) expects .pgpass to be at
       # /home/github/.pgpass and setting home to `/home/github/`
@@ -195,7 +195,7 @@ jobs:
       - name: Upload coverage reports
 
         # Only upload coverage when both frontend and backend
-        # tests are ran.
+        # tests are run.
         if: ${{ matrix.include_frontend_tests }}
         uses: codecov/codecov-action@v2
         with:

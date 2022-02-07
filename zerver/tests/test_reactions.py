@@ -601,7 +601,7 @@ class ReactionEventTest(ZulipTestCase):
         huddle_message_id = self.send_huddle_message(
             hamlet,
             [polonius, iago],
-            "hello message to muliple receiver",
+            "hello message to multiple receiver",
         )
         with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.api_post(

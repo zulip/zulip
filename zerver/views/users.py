@@ -235,7 +235,7 @@ def avatar(
         is_email = True
 
     if not maybe_user_profile.is_authenticated:
-        # Allow anonynous access to avatars only if spectators are
+        # Allow anonymous access to avatars only if spectators are
         # enabled in the organization.
         realm = get_valid_realm_from_request(request)
         if not realm.allow_web_public_streams_access():

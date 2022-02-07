@@ -457,7 +457,7 @@ class FencedBlockPreprocessor(Preprocessor):
             self.checked_for_codehilite = True
 
         # If config is not empty, then the codehighlite extension
-        # is enabled, so we call it to highlite the code
+        # is enabled, so we call it to highlight the code
         if self.codehilite_conf:
             highliter = CodeHilite(
                 text,

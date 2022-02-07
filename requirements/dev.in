@@ -47,7 +47,7 @@ tblib
 # For linting Git commit messages
 gitlint-core
 
-# Needed for visualising cprofile reports
+# Needed for visualising cProfile reports
 snakeviz
 
 # Needed for creating DigitalOcean droplets

@@ -396,7 +396,7 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(term, "WHERE id != %(param_1)s")
 
     def test_add_term_using_group_pm_operator_and_not_the_same_user_as_operand(self) -> None:
-        # Test wtihout any such group PM threads existing
+        # Test without any such group PM threads existing
         term = dict(operator="group-pm-with", operand=self.othello_email)
         self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
 
@@ -1474,7 +1474,7 @@ class GetOldMessagesTest(ZulipTestCase):
             ),
         )
 
-    def test_unauthenticated_get_messages_non_existant_realm(self) -> None:
+    def test_unauthenticated_get_messages_non_existent_realm(self) -> None:
         post_params = {
             "anchor": 10000000000000000,
             "num_before": 5,
@@ -1758,7 +1758,7 @@ class GetOldMessagesTest(ZulipTestCase):
             for message in result["messages"]:
                 self.assertEqual(dr_emails(message["display_recipient"]), emails)
 
-            # check passing id is conistent with passing emails as operand
+            # check passing id is consistent with passing emails as operand
             ids = dr_ids(get_display_recipient(personal.recipient))
             narrow = [dict(operator="pm-with", operand=ids)]
             result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
@@ -1950,7 +1950,7 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         user = self.mit_user("starnine")
         self.login_user(user)
-        # We need to susbcribe to a stream and then send a message to
+        # We need to subscribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
         lambda_stream_name = "\u03bb-stream"
@@ -1984,7 +1984,7 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         mit_user_profile = self.mit_user("starnine")
         self.login_user(mit_user_profile)
-        # We need to susbcribe to a stream and then send a message to
+        # We need to subscribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
         self.subscribe(mit_user_profile, "Scotland")
@@ -2013,7 +2013,7 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         mit_user_profile = self.mit_user("starnine")
 
-        # We need to susbcribe to a stream and then send a message to
+        # We need to subscribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
         self.login_user(mit_user_profile)

@@ -29,7 +29,7 @@ export let stream_cursor;
 let has_scrolled = false;
 
 export function update_count_in_dom(stream_li, count) {
-    // The subsription_block properly excludes the topic list,
+    // The subscription_block properly excludes the topic list,
     // and it also has sensitive margins related to whether the
     // count is there or not.
     const subscription_block = stream_li.find(".subscription_block");

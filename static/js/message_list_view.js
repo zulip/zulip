@@ -660,7 +660,7 @@ export class MessageListView {
 
         // The messages we are being asked to render are shared with between
         // all messages lists. To prevent having both list views overwriting
-        // each others data we will make a new message object to add data to
+        // each others' data we will make a new message object to add data to
         // for rendering.
         const message_containers = messages.map((message) => {
             if (message.starred) {
@@ -723,7 +723,7 @@ export class MessageListView {
             this._post_process(dom_messages);
 
             // The date row will be included in the message groups or will be
-            // added in a rerenderd in the group below
+            // added in a rerendered in the group below
             table.find(".recipient_row").first().prev(".date_row").remove();
             table.prepend(rendered_groups);
             condense.condense_and_collapse(dom_messages);
@@ -932,7 +932,7 @@ export class MessageListView {
             // background and might be having some functionality
             // throttled by modern Chrome's aggressive power-saving
             // features.
-            blueslip.log("Suppressing scrolldown due to inactivity");
+            blueslip.log("Suppressing scroll down due to inactivity");
             return false;
         }
 

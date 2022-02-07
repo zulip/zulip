@@ -1,6 +1,6 @@
 # Stream privacy settings
 
-Streams are similar to chatrooms, IRC channels, or email lists in that they
+Streams are similar to chat rooms, IRC channels, or email lists in that they
 determine who receives a message. Zulip supports a few types of streams:
 
 * **Public** (**#**): Members can join and view the complete message history.

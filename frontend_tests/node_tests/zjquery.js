@@ -19,7 +19,7 @@ What is zjquery?
     complexity of jQuery.  It also allows you to mostly simulate DOM for the
     purposes of unit testing, so that your tests focus on component interactions
     that aren't super tightly coupled to building the DOM.  The tests also run
-    faster! Inorder to keep zjquery light, it only has stubs for the most commonly
+    faster! In order to keep zjquery light, it only has stubs for the most commonly
     used functions of jQuery. This means that it is possible that you may need to
     stub out additional functions manually in the relevant test module.
 

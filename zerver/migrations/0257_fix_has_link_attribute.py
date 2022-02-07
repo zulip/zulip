@@ -26,7 +26,7 @@ def process_batch(apps: StateApps, id_start: int, id_end: int, last_id: int) -> 
             print(f"Processed {message.id} / {last_id}")
 
         # Because we maintain the Attachment table, this should be as
-        # simple as just just checking if there's any Attachment
+        # simple as just checking if there's any Attachment
         # objects associated with this message.
         has_attachment = message.attachment_set.exists()
 

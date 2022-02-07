@@ -110,8 +110,8 @@ class WebhooksCommonTestCase(ZulipTestCase):
         headers = get_fixture_http_headers("some_integration", "complex_fixture")
         self.assertEqual(headers, {"key": "value"})
 
-    def test_get_fixture_http_headers_for_non_existant_integration(self) -> None:
-        headers = get_fixture_http_headers("some_random_nonexistant_integration", "fixture_name")
+    def test_get_fixture_http_headers_for_non_existent_integration(self) -> None:
+        headers = get_fixture_http_headers("some_random_nonexistent_integration", "fixture_name")
         self.assertEqual(headers, {})
 
     @patch("zerver.lib.webhooks.common.importlib.import_module")
