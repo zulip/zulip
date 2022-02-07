@@ -10,7 +10,7 @@ First, [open the compose box](/help/open-the-compose-box). Then
   the bottom of the compose box to find files on your computer.
 
 Zulip will insert a link to the file, in Markdown format:
-`[link text](URL)`. You can modily the `link text` to whatever you want.
+`[link text](URL)`. You can modify the `link text` to whatever you want.
 
 Zulip will automatically generate a **thumbnail** of the file when you send
 it, if it can. You can

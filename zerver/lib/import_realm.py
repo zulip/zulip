@@ -622,7 +622,7 @@ def update_model_ids(model: Any, data: TableData, related_table: TableName) -> N
     table = get_db_table(model)
 
     # Important: remapping usermessage rows is
-    # not only unnessary, it's expensive and can cause
+    # not only unnecessary, it's expensive and can cause
     # memory errors. We don't even use ids from ID_MAP.
     assert "usermessage" not in table
 

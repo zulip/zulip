@@ -175,7 +175,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             401,
         )
 
-    def test_register_remote_push_user_paramas(self) -> None:
+    def test_register_remote_push_user_params(self) -> None:
         token = "111222"
         user_id = 11
         token_kind = PushDeviceToken.GCM
@@ -1115,7 +1115,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         mock_send_android.assert_not_called()
 
     def test_deleted_message(self) -> None:
-        """Simulates the race where message is deleted before handlingx push notifications"""
+        """Simulates the race where message is deleted before handling push notifications"""
         user_profile = self.example_user("hamlet")
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(

@@ -108,7 +108,7 @@ These tools/features are often useful when debugging:
   of Puppeteer so you can watch what's happening, and document how to
   make that work with Vagrant.
 - TODO: Document `--interactive`.
-- TODO: Document how to run 100x in CI to check for nondeterminstic
+- TODO: Document how to run 100x in CI to check for nondeterministic
   failures.
 - TODO: Document any other techniques/ideas that were helpful when porting
   the Casper suite.
@@ -135,7 +135,7 @@ notes above:
 - Run just the file containing your new tests as described above to
   have a fast debugging cycle.
 - When you're done writing a test, run it 100 times in a loop to
-  verify it does not fail nondeterminstically (see above for notes on
+  verify it does not fail nondeterministically (see above for notes on
   how to get CI to do it for you); this is important to avoid
   introducing extremely annoying nondeterministic failures into
   `main`.

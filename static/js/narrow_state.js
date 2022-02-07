@@ -175,7 +175,7 @@ export function get_first_unread_info() {
 
     if (!current_filter.can_apply_locally()) {
         // For things like search queries, where the server has info
-        // that the client isn't privvy to, we need to wait for the
+        // that the client isn't privy to, we need to wait for the
         // server to give us a definitive list of messages before
         // deciding where we'll move the selection.
         return {

@@ -309,7 +309,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         realm = get_realm("zulip")
         users = self.active_human_users(realm)
 
-        # Check that all users without an a UserActivityInterval entry are considered
+        # Check that all users without a UserActivityInterval entry are considered
         # inactive users and get enqueued.
         with mock.patch("zerver.worker.queue_processors.bulk_handle_digest_email") as queue_mock:
             _enqueue_emails_for_realm(realm, cutoff)

@@ -141,7 +141,7 @@ def get_issue_id(payload: Dict[str, Any]) -> str:
     if "issue" not in payload:
         # Some ancient version of Jira or one of its extensions posts
         # comment_created events without an "issue" element.  For
-        # these, the best we can do is extract the Jira-intenral
+        # these, the best we can do is extract the Jira-internal
         # issue number and use that in the topic.
         #
         # Users who want better formatting can upgrade Jira.
@@ -154,7 +154,7 @@ def get_issue_title(payload: Dict[str, Any]) -> str:
     if "issue" not in payload:
         # Some ancient version of Jira or one of its extensions posts
         # comment_created events without an "issue" element.  For
-        # these, the best we can do is extract the Jira-intenral
+        # these, the best we can do is extract the Jira-internal
         # issue number and use that in the topic.
         #
         # Users who want better formatting can upgrade Jira.

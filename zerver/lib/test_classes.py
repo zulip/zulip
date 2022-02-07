@@ -205,7 +205,7 @@ Output:
 
     The linter will prevent direct calls to self.client.foo, so the wrapper
     functions have to fake out the linter by using a local variable called
-    django_client to fool the regext.
+    django_client to fool the regex.
     """
     DEFAULT_SUBDOMAIN = "zulip"
     TOKENIZED_NOREPLY_REGEX = settings.TOKENIZED_NOREPLY_EMAIL_ADDRESS.format(token="[a-z0-9_]{24}")
@@ -1485,7 +1485,7 @@ Output:
         """
         DB tables that refer to RealmEmoji use int(emoji_code) as the
         foreign key. Those tables tend to de-normalize emoji_name due
-        to our inherintance-based setup. This helper makes sure those
+        to our inheritance-based setup. This helper makes sure those
         invariants are intact, which is particularly tricky during
         the import/export process (or during conversions from things
         like Slack/RocketChat/MatterMost/etc.).

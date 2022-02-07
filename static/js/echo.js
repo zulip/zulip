@@ -263,7 +263,7 @@ export function try_deliver_locally(message_request) {
 
 export function edit_locally(message, request) {
     // Responsible for doing the rendering work of locally editing the
-    // content ofa message.  This is used in several code paths:
+    // content of a message.  This is used in several code paths:
     // * Editing a message where a message was locally echoed but
     //   it got an error back from the server
     // * Locally echoing any content-only edits to fully sent messages

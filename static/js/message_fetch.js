@@ -491,7 +491,7 @@ export function initialize(home_view_loaded) {
     // (Users will see a weird artifact where Recent topics has a gap
     // between E.g. 6 days ago and 37 days ago while the catchup
     // process runs, so this strategy still results in problematic
-    // visual artifacts shortly after page load; just more forgiveable
+    // visual artifacts shortly after page load; just more forgivable
     // ones).
     //
     // This MessageList is defined similarly to home_message_list,

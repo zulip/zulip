@@ -3,7 +3,7 @@ Run your favorite chatbot in Zulip!
 0. [Install errbot](https://errbot.readthedocs.io/en/latest/user_guide/setup.html)
    and follow to instructions to set up a `config.py`.
 
-0. Check our our [Errbot integration package for Zulip](https://github.com/zulip/errbot-backend-zulip)
+0. Check out our [Errbot integration package for Zulip](https://github.com/zulip/errbot-backend-zulip).
    Clone this repository somewhere convenient.
 
 0. Install the requirements listed in `errbot-backend-zulip/requirements.txt`.

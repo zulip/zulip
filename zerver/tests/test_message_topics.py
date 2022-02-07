@@ -176,7 +176,7 @@ class TopicHistoryTest(ZulipTestCase):
 
     def test_get_topics_web_public_stream_web_public_request(self) -> None:
         iago = self.example_user("iago")
-        stream = self.make_stream("web-public-steram", is_web_public=True)
+        stream = self.make_stream("web-public-stream", is_web_public=True)
         self.subscribe(iago, stream.name)
 
         for i in range(3):
@@ -201,9 +201,9 @@ class TopicHistoryTest(ZulipTestCase):
         result = self.client_get(endpoint)
         self.assert_json_error(result, "Invalid stream id", 400)
 
-    def test_get_topics_non_existant_stream_web_public_request(self) -> None:
-        non_existant_stream_id = 10000000000000000000000
-        endpoint = f"/json/users/me/{non_existant_stream_id}/topics"
+    def test_get_topics_non_existent_stream_web_public_request(self) -> None:
+        non_existent_stream_id = 10000000000000000000000
+        endpoint = f"/json/users/me/{non_existent_stream_id}/topics"
         result = self.client_get(endpoint)
         self.assert_json_error(result, "Invalid stream id", 400)
 

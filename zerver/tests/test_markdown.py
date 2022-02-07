@@ -1752,7 +1752,7 @@ class MarkdownTest(ZulipTestCase):
         expected_user_ids: Set[int] = set()
         self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
 
-    def test_alert_words_retuns_user_ids_with_alert_words_with_huge_alert_words(self) -> None:
+    def test_alert_words_returns_user_ids_with_alert_words_with_huge_alert_words(self) -> None:
 
         alert_words_for_users: Dict[str, List[str]] = {
             "hamlet": ["issue124"],
@@ -1778,7 +1778,7 @@ class MarkdownTest(ZulipTestCase):
         The second line, for x in range(10), determines how many values will be printed (when you use
         range(x), the number that you use in place of x will be the amount of values that you'll have
         printed. if you want 20 values, use range(20). use range(5) if you only want 5 values returned,
-        etc.). I was talking abou the issue124 on github. Then the third line: print random.randint(1,101) will automatically select a random integer
+        etc.). I was talking about the issue124 on github. Then the third line: print random.randint(1,101) will automatically select a random integer
         between 1 and 100 for you. The process is fairly simple
         """
         rendering_result = render(msg, content)
@@ -1992,7 +1992,7 @@ class MarkdownTest(ZulipTestCase):
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
         # Even though King Hamlet will be present in mention data as
-        # it was was fetched for first mention but second mention is
+        # it was fetched for first mention but second mention is
         # incorrect(as it uses hamlet's id) so it should not be able
         # to use that data for creating a valid mention.
 

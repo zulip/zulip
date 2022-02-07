@@ -141,7 +141,7 @@ export function create(opts) {
             return true;
         },
 
-        // this searches given a particlar pill ID for it, removes the node
+        // this searches given a particular pill ID for it, removes the node
         // from the DOM, removes it from the array and returns it.
         // this would generally be used for DOM-provoked actions, such as a user
         // clicking on a pill to remove it.
@@ -200,7 +200,7 @@ export function create(opts) {
             // of pills for the user to fix.
             const drafts = pills.filter(
                 (pill) =>
-                    // if this returns `false`, it erroed and we should push it to
+                    // if this returns `false`, it errored and we should push it to
                     // the draft pills.
                     funcs.appendPill(pill) === false,
             );

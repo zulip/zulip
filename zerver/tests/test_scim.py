@@ -499,7 +499,7 @@ class TestSCIMUser(SCIMTestCase):
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
         # This payload will attempt to change hamlet's email to cordelia's email.
-        # That would would violate email uniqueness of course, so should fail.
+        # That would violate email uniqueness of course, so should fail.
         payload = {
             "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
             "id": hamlet.id,

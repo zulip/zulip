@@ -714,7 +714,7 @@ export function user_sidebar_popped() {
 export function hide_user_sidebar_popover() {
     if (user_sidebar_popped()) {
         // this hide_* method looks different from all the others since
-        // the presence list may be redrawn. Due to funkiness with jquery's .data()
+        // the presence list may be redrawn. Due to funkiness with jQuery's .data()
         // this would confuse $.popover("destroy"), which looks at the .data() attached
         // to a certain element. We thus save off the .data("popover") in the
         // show_user_sidebar_popover and inject it here before calling destroy.
@@ -1244,7 +1244,7 @@ export function register_click_handlers() {
             .fadeOut(300);
 
         setTimeout(() => {
-            // The Cliboard library works by focusing to a hidden textarea.
+            // The Clipboard library works by focusing to a hidden textarea.
             // We unfocus this so keyboard shortcuts, etc., will work again.
             $(":focus").trigger("blur");
         }, 0);

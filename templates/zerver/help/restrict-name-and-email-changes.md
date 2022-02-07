@@ -26,7 +26,7 @@ source, and synced into Zulip via the [Zulip API](/api) or another method.
 By default, any user can
 [change their email address](/help/change-your-email-address). However, you
 can instead prevent all email changes. This is especially useful for
-organizations that are using LDAP or a another single
+organizations that are using LDAP or another single
 sign-on solution to manage user emails.
 
 {start_tabs}

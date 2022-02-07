@@ -17,7 +17,7 @@ This code lets you show something like this:
 And then you configure the undo behavior, and
 everything else is controlled by the widget.
 
-Codewise it's a singleton widget that controls the DOM inside
+Code-wise it's a singleton widget that controls the DOM inside
 #feedback_container, which gets served up by server.
 
 */

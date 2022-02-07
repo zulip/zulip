@@ -48,7 +48,7 @@ paths:
         This API endpoint is used by clients such as the Zulip mobile and
         terminal apps to implement password-based authentication. Given the
         user's Zulip login credentials, it returns a Zulip API key that the client
-        can use to make requests requests as the user.
+        can use to make requests as the user.
 
         This endpoint is only useful for Zulip servers/organizations with
         EmailAuthBackend or LDAPAuthBackend enabled.
@@ -243,7 +243,7 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent to clients that that have requested the
+                                Event sent to clients that have requested the
                                 `update_display_settings` event type and did not include
                                 `user_settings_object` in their `client_capabilities` when
                                 registering the event queue.
@@ -1366,7 +1366,7 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent sent to a user's clients when details of a file that user
+                                Event sent to a user's clients when details of a file that user
                                 uploaded are changed. Most updates will be changes in the list of
                                 messages that reference the uploaded file.
                               properties:
@@ -3726,7 +3726,7 @@ paths:
                                         Indicates whether users are
                                         [allowed to change](/help/restrict-name-and-email-changes) their name
                                         via the Zulip UI in this organization. Typically disabled
-                                        in organizations syncing this this type of account information
+                                        in organizations syncing this type of account information from
                                         an external user database like LDAP.
                                     night_logo_source:
                                       type: string
@@ -3818,7 +3818,7 @@ paths:
                                         - 4 => Only stream and organization administrators can use wildcard mentions in large streams.
                                         - 5 => Only organization administrators can use wildcard mentions in large streams.
                                         - 6 => Nobody can use wildcard mentions in large streams.
-                                        - 7 => Only organization adminstartors and moderators can use wildcard mentions in large streams.
+                                        - 7 => Only organization administrators and moderators can use wildcard mentions in large streams.
 
                                         All users will receive a warning/reminder when using
                                         mentions in large streams, even when permitted to do so.
@@ -6707,7 +6707,7 @@ paths:
         - name: announce
           in: query
           description: |
-            If one of the streams specified did not exist previously and is thus craeted
+            If one of the streams specified did not exist previously and is thus created
             by this call, this determines whether [notification bot](/help/configure-notification-bot)
             will send an announcement about the new stream's creation.
           schema:
@@ -6802,7 +6802,7 @@ paths:
       summary: Update subscriptions
       tags: ["streams"]
       description: |
-        Update which streams you are are subscribed to.
+        Update which streams you are subscribed to.
       parameters:
         - name: delete
           in: query
@@ -7935,7 +7935,7 @@ paths:
 
         **Changes**: Prior to Zulip 5.0 (feature level 111), response
         object included the `subscription_data` in the the
-        request. The endpoint now returns the more ergonimic
+        request. The endpoint now returns the more ergonomic
         `ignored_parameters_unsupported` field instead.
       parameters:
         - name: subscription_data
@@ -10487,7 +10487,7 @@ paths:
                           - 4 => Only stream and organization administrators can use wildcard mentions in large streams.
                           - 5 => Only organization administrators can use wildcard mentions in large streams.
                           - 6 => Nobody can use wildcard mentions in large streams.
-                          - 7 => Only organization adminstartors and moderators can use wildcard mentions in large streams.
+                          - 7 => Only organization administrators and moderators can use wildcard mentions in large streams.
 
                           All users will receive a warning/reminder when using
                           mentions in large streams, even when permitted to do so.
@@ -10623,7 +10623,7 @@ paths:
                           Indicates whether users are
                           [allowed to change](/help/restrict-name-and-email-changes) their name
                           via the Zulip UI in this organization. Typically disabled
-                          in organizations syncing this this type of account information
+                          in organizations syncing this type of account information from
                           an external user database like LDAP.
                       realm_avatar_changes_disabled:
                         type: boolean
@@ -10633,7 +10633,7 @@ paths:
                           Indicates whether users are
                           [allowed to change](/help/restrict-name-and-email-changes) their avatar
                           via the Zulip UI in this organization. Typically disabled
-                          in organizations syncing this this type of account information
+                          in organizations syncing this type of account information from
                           an external user database like LDAP.
                       realm_emails_restricted_to_domains:
                         type: boolean
@@ -13452,7 +13452,7 @@ paths:
       summary: Outgoing webhooks
       tags: ["webhooks"]
       description: |
-        Outgoing webhooks allows to build or set up Zulip integrations which are
+        Outgoing webhooks allow you to build or set up Zulip integrations which are
         notified when certain types of messages are sent in Zulip.
       responses:
         "200":
@@ -15589,7 +15589,7 @@ components:
         Unicode codepoints and human-readable names, sending the
         `emoji_code` in the data for the original reaction allows the
         Zulip server to correctly interpret your upvote as an upvote
-        rather than a reaction with a "diffenent" emoji.
+        rather than a reaction with a "different" emoji.
       schema:
         type: string
       example: "1f419"

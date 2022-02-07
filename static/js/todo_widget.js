@@ -203,7 +203,7 @@ export function activate(opts) {
             e.stopPropagation();
 
             if (page_params.is_spectator) {
-                // Logically, spectators should not be able totoggle
+                // Logically, spectators should not be able to toggle
                 // TODO checkboxes. However, the browser changes the
                 // checkbox's state before calling handlers like this,
                 // so we need to just toggle the checkbox back to its

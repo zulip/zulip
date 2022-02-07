@@ -317,7 +317,7 @@ export function sort_recipients({
         The following optimization is important for large realms.
         If we know we're only showing 5 suggestions, and we
         get 5 matches from `best_users`, then we want to avoid
-        calling the expensives sorts for `ok_users` and `worst_users`,
+        calling the expensive sorts for `ok_users` and `worst_users`,
         since they just get dropped.
     */
 

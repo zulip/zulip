@@ -39,7 +39,7 @@ continually recheck the files as you edit them.
 
 ## Linting and style
 
-We use the Eslint plugin for TypeScript to lint TypeScript code, just
+We use the ESLint plugin for TypeScript to lint TypeScript code, just
 like we do for JavaScript. Our long-term goal is to use an idiomatic
 TypeScript style for our TypeScript codebase.
 
@@ -49,7 +49,7 @@ JavaScript code, so that we can easily migrate individual modules
 without too much code churn. A few examples:
 
 - TypeScript generally prefers explicit `return undefined;`, whereas
-  our existing JavasScript style uses just `return;`.
+  our existing JavaScript style uses just `return;`.
 - With TypeScript, we expect to make heavy use of `let` and `const`
   rather than `var`.
 - With TypeScript/ES6, we may no longer need to use `_.each()` as our

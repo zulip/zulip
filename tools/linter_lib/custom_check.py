@@ -582,8 +582,8 @@ html_rules: List["Rule"] = [
     {
         "pattern": " '}}",
         "description": "Likely misplaced quoting in translation tags",
-        "good_lines": ["{{t 'translateable string' }}"],
-        "bad_lines": ["{{t 'translateable string '}}"],
+        "good_lines": ["{{t 'translatable string' }}"],
+        "bad_lines": ["{{t 'translatable string '}}"],
     },
     {
         "pattern": "placeholder='[^{]",
@@ -784,7 +784,7 @@ jinja2_rules = RuleList(
         {
             "pattern": r'{% set entrypoint = "dev-',
             "exclude": {"templates/zerver/development/"},
-            "description": "Development entrypoints (dev-) must not be imported in production.",
+            "description": "Development entry points (dev-) must not be imported in production.",
         },
     ],
 )

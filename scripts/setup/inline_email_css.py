@@ -55,7 +55,7 @@ def inline_template(template_source_name: str) -> None:
     # adding html, head, and body tags if they aren't there.
     # While this is correct for the email_base_default template,
     # it is wrong for the other templates that extend this
-    # template, since we'll end up with 2 copipes of those tags.
+    # template, since we'll end up with 2 copies of those tags.
     # Thus, we strip this stuff out if the template extends
     # another template.
     if template_name not in ["email_base_default", "email_base_marketing", "macros"]:

@@ -109,7 +109,7 @@ export function initialize() {
 
     // We need to hide instance manually for popover due to
     // `$("body").on("click"...` method not being triggered for
-    // the elements when when we do:
+    // the elements when we do:
     // `$(instance.popper).one("click", instance.hide); in onShow.
     // Cannot reproduce it on codepen -
     // https://codepen.io/amanagr/pen/jOLoKVg

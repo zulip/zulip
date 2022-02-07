@@ -44,7 +44,7 @@ which is used to help ensure developers don't spend time debugging
 test/linter/etc. failures that actually were caused by the developer
 rebasing and forgetting to provision". `PROVISION_VERSION` has a
 format of `x.y`; when `x` doesn't match the value from the last time
-the user provisioned, or `y` is higher than than the value from last
+the user provisioned, or `y` is higher than the value from last
 time, most Zulip tools will crash early and ask the user to provision.
 This has empirically made a huge impact on how often developers spend
 time debugging a "weird failure" after rebasing that had an easy

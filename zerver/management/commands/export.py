@@ -31,7 +31,7 @@ class Command(ZulipBaseCommand):
     * Mobile tokens for APNS/GCM (users will need to reconnect their mobile devices)
     * ScheduledEmail (not relevant on a new server)
     * RemoteZulipServer (unlikely to be migrated)
-    * third_party_api_results cache (this means rerending all old
+    * third_party_api_results cache (this means rerendering all old
       messages could be expensive)
 
     Things that will break as a result of the export:
