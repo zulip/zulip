@@ -28,9 +28,11 @@ import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
+import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics_ui from "./recent_topics_ui";
+import * as resize from "./resize";
 import * as rows from "./rows";
 import * as server_events from "./server_events";
 import * as settings_panel_menu from "./settings_panel_menu";
@@ -507,6 +509,29 @@ export function initialize() {
         if (sidebarHidden) {
             stream_popover.show_streamlist_sidebar();
         }
+    });
+
+    $("#toggle_private_messages_section_icon").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        $("#toggle_private_messages_section_icon").toggleClass(
+            "'fa fa-caret-down fa-lg' 'fa fa-caret-right fa-lg'",
+        );
+
+        const active_li = $(".expanded_private_messages li.active-sub-filter");
+        if ($(".expanded_private_messages").children().length === 0) {
+            pm_list.expand();
+        } else if (
+            active_li.is($(".expanded_private_messages").children()[0]) &&
+            $(".expanded_private_messages").children().length === 1
+        ) {
+            pm_list.expand();
+        } else {
+            pm_list.close();
+        }
+        setTimeout(() => {
+            resize.resize_sidebars();
+        }, 0);
     });
 
     $("#user_presences")
