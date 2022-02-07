@@ -64,7 +64,7 @@ function compare_by_huddle(huddle) {
         return person && person.user_id;
     });
 
-    // Construct dict for all huddles, so we can lookup each's recency
+    // Construct dict for all huddles, so we can look up each's recency
     const huddles = huddle_data.get_huddles();
     const huddle_dict = new Map();
     for (const [i, huddle] of huddles.entries()) {

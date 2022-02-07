@@ -928,7 +928,7 @@ class RestartEventsTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         realm = hamlet.realm
 
-        # Setup an empty event queue
+        # Set up an empty event queue
         clear_client_event_queues_for_testing()
 
         queue_data = dict(

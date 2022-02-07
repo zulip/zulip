@@ -566,7 +566,7 @@ to the root and `engineering` subdomains:
 
 4. If you want to sign SAML requests, you have to do two things in Keycloak:
 
-   1. In the Keycloak client settings you setup previously, open the
+   1. In the Keycloak client settings you set up previously, open the
       `Settings` tab and **enable** `Client Signature Required`.
    2. Keycloak can generate the Client private key and certificate
       automatically, but Zulip's SAML library does not support the
@@ -636,7 +636,7 @@ another IdP.
    logging out from Zulip, logging back in using SAML, and then using
    the SAML logout feature from KeyCloak. Check
    `/var/log/zulip/errors.log` for error output if it doesn't work.
-1. Once SAML logout is working for you, you can use the `manage.py logout_all_users` management command to logout all users so that
+1. Once SAML logout is working for you, you can use the `manage.py logout_all_users` management command to log out all users so that
    SAML logout works for everyone.
 
    ```bash
@@ -837,9 +837,9 @@ Note that `SOCIAL_AUTH_OIDC_ENABLED_IDPS` only supports a single IdP currently.
 The Return URL to authorize with the provider is
 `https://yourzulipdomain.example.com/complete/oidc/`.
 
-By default, users who attempt to login with OIDC using an email
+By default, users who attempt to log in with OIDC using an email
 address that does not have a current Zulip account will be prompted
-for whether they intend to create a new account or would like to login
+for whether they intend to create a new account or would like to log in
 using another authentication method. You can configure automatic
 account creation on first login attempt by setting
 `"auto_signup": True` in the IdP configuration dictionary.

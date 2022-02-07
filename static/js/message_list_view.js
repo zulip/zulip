@@ -1139,7 +1139,7 @@ export class MessageListView {
         const message_group_id = recipient_row.attr("id");
 
         // Since there might be multiple dates within the message
-        // group, it's important to lookup the original/full message
+        // group, it's important to look up the original/full message
         // group rather than doing an artificial rerendering of the
         // message header from the set of message containers passed in
         // here.

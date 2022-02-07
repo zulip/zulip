@@ -2458,7 +2458,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.assertEqual(result.url, realm.uri + "/register/")
 
     def test_social_auth_saml_multiple_idps_configured(self) -> None:
-        # Setup a new SOCIAL_AUTH_SAML_ENABLED_IDPS dict with two idps.
+        # Set up a new SOCIAL_AUTH_SAML_ENABLED_IDPS dict with two idps.
         # We deepcopy() dictionaries around for the sake of brevity,
         # to avoid having to spell them out explicitly here.
         # The second idp's configuration is a copy of the first one,
@@ -4884,7 +4884,7 @@ class TestTwoFactor(ZulipTestCase):
 
         mock_totp.side_effect = totp
 
-        # Setup LDAP
+        # Set up LDAP
         self.init_default_ldap_database()
         ldap_user_attr_map = {"full_name": "cn"}
         with self.settings(
