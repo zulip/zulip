@@ -412,7 +412,7 @@ it as follows:
      4. The values needed in the `attr_` fields are often configurable
         in your IdP's interface when setting up SAML authentication
         (referred to as "Attribute Statements" with Okta, or
-        "Attribute Mapping" with GSuite). You'll want to connect
+        "Attribute Mapping" with Google Workspace). You'll want to connect
         these so that Zulip gets the email address (used as a unique
         user ID) and name for the user.
      5. The `display_name` and `display_icon` fields are used to
