@@ -1,10 +1,43 @@
 # Data and privacy
 
-The makers of Zulip take your data and privacy very seriously. This page
-provides detailed documentation on the data Zulip collects. For more information,
-see also the [Zulip Privacy Policy](/policies/privacy).
+The makers of Zulip take your data and privacy very seriously. This
+page provides detailed documentation on some aspects of how Zulip
+collects data. For more information, see also the [Zulip Privacy
+Policy](/policies/privacy).
 
-## Desktop application
+## Zulip Cloud
+
+Zulip Cloud's privacy and data security practices are detailed in the
+[Zulip Privacy Policy](/policies/privacy) and our [security
+page](https://zulip.com/security).
+
+## Self-hosted Zulip servers
+
+Conceptually, our goal is for self-hosted servers to not make any
+connections to servers managed by Zulip unless its operators configure
+them to do so. Because Zulip installs various dependencies over the
+network, including `apt`, `pip`, `yarn`, and from GitHub, installing a
+Zulip server will make various outgoing network requests, most of them
+to third parties that distribute software.  (The [Docker
+image](https://github.com/zulip/docker-zulip) is a good way to install
+Zulip on airgapped networks, if you want that).
+
+By default, a self-hosted Zulip server makes no connections to servers
+managed by Kandra Labs.
+
+If you set up the [mobile push notifications
+service](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html),
+your self-hosted Zulip server will make requests to the Zulip Cloud in
+order to have mobile push notifications delivered to their users, as
+detailed on the documentation for that feature.  Installations may
+want to consider disabling the optional feature to send usage metadata
+to Kandra Labs.
+
+## Mobile apps
+
+The mobile apps...
+
+## Desktop app
 
 When connected to a self-hosted Zulip server, the Zulip desktop app will send
 data to Zulip only when it encounters an error. The error reports are processed
@@ -20,9 +53,9 @@ potentially the hostname of the self-hosted Zulip server involved in the error.
 Error reports do not have any information about other installed
 applications.
 
-You can disable error reporting in the Zulip desktop app. If you do so, and the
-app is connected only to self-hosted Zulip servers, no data will be uploaded to
-Zulip.
+You can disable error reporting in the Zulip desktop app by following
+the below instructions. If you do so, and the app is connected only to
+self-hosted Zulip servers, no data will be uploaded to Zulip.
 
 ### Disable desktop app error reporting
 
