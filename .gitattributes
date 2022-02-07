@@ -26,3 +26,7 @@ corporate/tests/stripe_fixtures/*.json -diff
 *.otf binary
 *.tif binary
 *.ogg binary
+*.bson binary
+*.bmp binary
+*.mp3 binary
+*.pdf binary
