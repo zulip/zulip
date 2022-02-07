@@ -259,21 +259,6 @@ async function search_tests(page: Page): Promise<void> {
     );
 }
 
-async function expect_all_pm(page: Page): Promise<void> {
-    await page.waitForSelector("#zfilt", {visible: true});
-    await common.check_messages_sent(page, "zfilt", [
-        ["You and Cordelia, Lear's daughter, King Hamlet", ["group pm a", "group pm b"]],
-        ["You and Cordelia, Lear's daughter", ["pm c"]],
-        ["You and Cordelia, Lear's daughter, King Hamlet", ["group pm d"]],
-        ["You and Cordelia, Lear's daughter", ["pm e"]],
-    ]);
-    assert.strictEqual(
-        await common.get_text_from_selector(page, "#left_bar_compose_stream_button_big"),
-        "New stream message",
-    );
-    assert.strictEqual(await page.title(), "Private messages - Zulip Dev - Zulip");
-}
-
 async function test_narrow_by_clicking_the_left_sidebar(page: Page): Promise<void> {
     console.log("Narrowing with left sidebar");
 
@@ -282,9 +267,6 @@ async function test_narrow_by_clicking_the_left_sidebar(page: Page): Promise<voi
 
     await page.click(".top_left_all_messages a");
     await expect_home(page);
-
-    await page.click(".top_left_private_messages a");
-    await expect_all_pm(page);
 
     await un_narrow(page);
 }
