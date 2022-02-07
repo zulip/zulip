@@ -345,14 +345,12 @@ li.top_left_recent_topics {
 
 .conversation-partners,
 .topic-name {
-    /* stylelint-disable-next-line  value-no-vendor-prefix */
-    display: -webkit-box;
+    display: block;
     width: calc(100% - 5px);
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     padding-right: 2px;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
 }
 
 .topic-name {
