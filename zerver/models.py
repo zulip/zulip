@@ -1471,6 +1471,7 @@ class UserBaseSettings(models.Model):
     dense_mode: bool = models.BooleanField(default=True)
     fluid_layout_width: bool = models.BooleanField(default=False)
     high_contrast_mode: bool = models.BooleanField(default=False)
+    display_organization_name: bool = models.BooleanField(default=True)
     translate_emoticons: bool = models.BooleanField(default=False)
     display_emoji_reaction_users: bool = models.BooleanField(default=True)
     twenty_four_hour_time: bool = models.BooleanField(default=False)
@@ -1610,6 +1611,7 @@ class UserBaseSettings(models.Model):
         **dict(
             # Add new general settings here.
             display_emoji_reaction_users=bool,
+            display_organization_name=bool,
             escape_navigates_to_default_view=bool,
             send_private_typing_notifications=bool,
             send_read_receipts=bool,

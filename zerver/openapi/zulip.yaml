@@ -8028,6 +8028,15 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: display_organization_name
+          in: query
+          description: |
+            Whether to display the organization name in left-sidebar.
+
+            **Changes**: New in Zulip 6.0 (feature level 131).
+          schema:
+            type: boolean
+          example: true
         - name: color_scheme
           in: query
           description: |
@@ -9990,6 +9999,12 @@ paths:
                             description: |
                               This setting is reserved for use to control variations in Zulip's design
                               to help visually impaired users.
+                          display_organization_name:
+                            type: boolean
+                            description: |
+                              Whether to display the organization name in left-sidebar.
+
+                              **Changes**: New in Zulip 6.0 (feature level 131).
                           color_scheme:
                             type: integer
                             description: |
@@ -11809,6 +11824,12 @@ paths:
                             description: |
                               This setting is reserved for use to control variations in Zulip's design
                               to help visually impaired users.
+                          display_organization_name:
+                            type: boolean
+                            description: |
+                              Whether to display organization name in left-sidebar.
+
+                              **Changes**: New in Zulip 6.0 (feature level 131).
                           color_scheme:
                             type: integer
                             description: |
@@ -12740,6 +12761,15 @@ paths:
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
             the `PATCH /settings/display` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: display_organization_name
+          in: query
+          description: |
+            Whether to display organization name in left-sidebar.
+
+            **Changes**: New in Zulip 6.0 (feature level 131).
           schema:
             type: boolean
           example: true

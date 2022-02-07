@@ -5,6 +5,7 @@ export type RealmDefaultSettingsType = {
     desktop_icon_count_display: number;
     demote_inactive_streams: number;
     dense_mode: boolean;
+    display_organization_name: boolean;
     email_notifications_batching_period_seconds: number;
     emojiset: string;
     enable_desktop_notifications: boolean;

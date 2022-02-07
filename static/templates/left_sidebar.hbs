@@ -1,5 +1,8 @@
 <div class="left-sidebar" id="left-sidebar" role="navigation">
     <div class="narrows_panel">
+        <div {{display_organization_name}} class= "organization-name">
+            {{realm_name}}
+        </div>
         <ul id="global_filters" class="filters">
             {{!-- Special-case this link so we don't actually go to page top. --}}
             <li class="top_left_all_messages top_left_row" title="{{t 'All messages' }} (a)">

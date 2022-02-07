@@ -847,6 +847,13 @@ exports.fixtures = {
         value: true,
     },
 
+    user_settings__display_organization_name: {
+        type: "user_settings",
+        op: "update",
+        property: "display_organization_name",
+        value: true,
+    },
+
     user_settings__emojiset: {
         type: "user_settings",
         op: "update",

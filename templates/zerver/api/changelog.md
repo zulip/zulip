@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 131**
+
+* [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
+  [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added user setting `display_organization_name` to display organization name in left sidebar for user and for admin to control the default for new users.
+
 **Feature level 130**
 
 * `PATCH /bots/{bot_user_id}`: Added support for changing a bot's role
