@@ -82,12 +82,12 @@ to test their appearance too:
 Here's how we're going to test the message appearances:
 
 - narrow to a new topic and send a message (this message will include sender)
-  - edit the message ("(EDITED)" label should appear beside sender name)
+  - edit the message ("EDITED" label should appear beside sender name)
 - send another message (will not include sender)
-  - edit the message ("(EDITED)" label should appear in the left column, where the avatar is)
+  - edit the message ("EDITED" label should appear in the left column, where the avatar is)
 - send a "/me" message (`/me test message`)
   - message should appear alongside sender name
-  - edit the message ("(EDITED)" label should appear beside the message)
+  - edit the message ("EDITED" label should appear beside the message)
 
 For all the three cases, we need to test the click handlers and
 the hotkeys too:
