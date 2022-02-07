@@ -358,7 +358,7 @@ v1_api_and_json_patterns = [
         "users/me/apns_device_token", POST=add_apns_device_token, DELETE=remove_apns_device_token
     ),
     rest_path("users/me/android_gcm_reg_id", POST=add_android_reg_id, DELETE=remove_android_reg_id),
-    # users/*/presnece => zerver.views.presence.
+    # users/*/presence => zerver.views.presence.
     rest_path("users/me/presence", POST=update_active_status_backend),
     # It's important that this sit after users/me/presence so that
     # Django's URL resolution order doesn't break the

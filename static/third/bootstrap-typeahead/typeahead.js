@@ -34,7 +34,7 @@
  *
  *   This adds support for completing a typeahead on custom keyup input. By
  *   default, we only support Tab and Enter to complete a typeahead, but we
- *   have usecases where we want to complete using custom characters like: >.
+ *   have use cases where we want to complete using custom characters like: >.
  *
  *   If `this.trigger_selection` returns true, we complete the typeahead and
  *   pass the keyup event to the updater.

@@ -162,7 +162,7 @@ class MarkdownComparer {
                 message:
                     message +
                     [
-                        "actual and expected output produce semantially identical HTML",
+                        "actual and expected output produce semantically identical HTML",
                         actual,
                         "==",
                         expected,

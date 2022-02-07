@@ -207,7 +207,7 @@ def users_to_zerver_userprofile(
     """
     Returns:
     1. zerver_userprofile, which is a list of user profile
-    2. avatar_list, which is list to map avatars to Zulip avatard records.json
+    2. avatar_list, which is list to map avatars to Zulip avatar records.json
     3. slack_user_id_to_zulip_user_id, which is a dictionary to map from Slack user ID to Zulip
        user id
     4. zerver_customprofilefield, which is a list of all custom profile fields

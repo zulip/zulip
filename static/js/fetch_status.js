@@ -9,7 +9,7 @@ function max_id_for_messages(messages) {
 }
 
 export class FetchStatus {
-    // The FetchStatus object tracks tracks the state of a
+    // The FetchStatus object tracks the state of a
     // message_list_data object, whether rendered in the DOM or not,
     // and is the source of truth for whether the message_list_data
     // object has the complete history of the view or whether more
@@ -82,7 +82,7 @@ export class FetchStatus {
             // When a new message arrives matching the current view
             // and found_newest is false, we cannot add the message to
             // the view in-order without creating invalid output
-            // (where two messages are displaye adjacent but might be
+            // (where two messages are display adjacent but might be
             // weeks and hundreds of messages apart in actuality).
             //
             // So we have to discard those messages.  Usually, this is

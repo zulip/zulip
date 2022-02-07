@@ -242,7 +242,7 @@ test("compose fade interactions (PMs)", () => {
         return buddy_data.get_item(fred.user_id).faded;
     }
 
-    // Dont fade if we're not in a narrow.
+    // Don't fade if we're not in a narrow.
     assert.equal(faded(), false);
 
     // Fade fred if we are narrowed to a PM narrow that does

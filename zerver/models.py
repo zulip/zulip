@@ -4215,7 +4215,7 @@ class Service(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     name: str = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH)
     # Bot user corresponding to the Service.  The bot_type of this user
-    # deterines the type of service.  If non-bot services are added later,
+    # determines the type of service.  If non-bot services are added later,
     # user_profile can also represent the owner of the Service.
     user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     base_url: str = models.TextField()

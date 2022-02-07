@@ -78,7 +78,7 @@ function call(args, idempotent) {
             }
 
             if (page_params.is_spectator) {
-                // In theory, the specator implementation should be
+                // In theory, the spectator implementation should be
                 // designed to prevent accessing widgets that would
                 // make network requests not available to spectators.
                 //

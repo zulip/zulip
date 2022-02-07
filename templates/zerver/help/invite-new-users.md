@@ -149,7 +149,7 @@ users to other sets of roles:
 ## Manage pending invitations
 
 Organization owners can revoke or resend any invitation or reusable
-invitation link. Organization administrators can can do the same
+invitation link. Organization administrators can do the same
 except for invitations for the organization owners role.
 
 {start_tabs}

@@ -27,7 +27,7 @@ def validate_disposable(email: str) -> None:
 
 def get_realm_email_validator(realm: Realm) -> Callable[[str], None]:
     if not realm.emails_restricted_to_domains:
-        # Should we also do '+' check for non-resticted realms?
+        # Should we also do '+' check for non-restricted realms?
         if realm.disallow_disposable_email_addresses:
             return validate_disposable
 

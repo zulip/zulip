@@ -97,7 +97,7 @@ export function get_language_list_columns(default_language: string): LanguageLis
     const seconds = _.range(firsts_end, language_len);
     const longest_zip: [number, number][] = [];
 
-    // Create a zip (itertool.zip_longest in python)
+    // Create a zip (itertools.zip_longest in python)
     for (const value of firsts) {
         longest_zip.push([value, seconds[value]]);
     }

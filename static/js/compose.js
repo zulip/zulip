@@ -647,7 +647,7 @@ export function initialize() {
                 on_timestamp_selection,
                 new Date(),
                 {
-                    // place the time picker above the icon and centerize it horizontally
+                    // place the time picker above the icon and center it horizontally
                     position: "above center",
                 },
             );

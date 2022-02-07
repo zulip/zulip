@@ -477,7 +477,7 @@
         }
     }
 
-    /* Style copy-to-clipboard button inside codeblocks */
+    /* Style copy-to-clipboard button inside code blocks */
     .copy_codeblock {
         visibility: hidden;
         /* Having absolute positioning here ensures that the element

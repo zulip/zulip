@@ -399,7 +399,7 @@ function get_human_profile_data(fields_user_pills) {
     */
     const new_profile_data = [];
     $("#edit-user-form .custom_user_field_value").each(function () {
-        // Remove duplicate datepicker input element generated flatpicker library
+        // Remove duplicate datepicker input element generated flatpickr library
         if (!$(this).hasClass("form-control")) {
             new_profile_data.push({
                 id: Number.parseInt(

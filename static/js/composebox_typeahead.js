@@ -34,7 +34,7 @@ import {user_settings} from "./user_settings";
 // And your input to them is rendered as though it were HTML by
 // the default highlighter.
 //
-// So if you are not using trusted input, you MUST use the a
+// So if you are not using trusted input, you MUST use a
 // highlighter that escapes (i.e. one that calls
 // typeahead_helper.highlight_with_escaping).
 

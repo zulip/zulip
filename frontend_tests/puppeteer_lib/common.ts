@@ -409,7 +409,7 @@ class CommonUtils {
     }
 
     /**
-     * This method returns a array, which is formmated as:
+     * This method returns a array, which is formatted as:
      *  [
      *    ['stream > topic', ['message 1', 'message 2']],
      *    ['You and Cordelia, Lear's daughter', ['message 1', 'message 2']]

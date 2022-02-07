@@ -62,14 +62,14 @@ test("add_and_remove_mutes", () => {
     muted_topics.add_muted_topic(devel.stream_id, "java");
     assert.ok(muted_topics.is_topic_muted(devel.stream_id, "java"));
 
-    // test idempotentcy
+    // test idempotency
     muted_topics.add_muted_topic(devel.stream_id, "java");
     assert.ok(muted_topics.is_topic_muted(devel.stream_id, "java"));
 
     muted_topics.remove_muted_topic(devel.stream_id, "java");
     assert.ok(!muted_topics.is_topic_muted(devel.stream_id, "java"));
 
-    // test idempotentcy
+    // test idempotency
     muted_topics.remove_muted_topic(devel.stream_id, "java");
     assert.ok(!muted_topics.is_topic_muted(devel.stream_id, "java"));
 
@@ -81,14 +81,14 @@ test("add_and_remove_mutes", () => {
     muted_users.add_muted_user(1);
     assert.ok(muted_users.is_user_muted(1));
 
-    // test idempotentcy
+    // test idempotency
     muted_users.add_muted_user(1);
     assert.ok(muted_users.is_user_muted(1));
 
     muted_users.remove_muted_user(1);
     assert.ok(!muted_users.is_user_muted(1));
 
-    // test idempotentcy
+    // test idempotency
     muted_users.remove_muted_user(1);
     assert.ok(!muted_users.is_user_muted(1));
 });

@@ -576,7 +576,7 @@ def compute_plan_parameters(
 ) -> Tuple[datetime, datetime, datetime, int]:
     # Everything in Stripe is stored as timestamps with 1 second resolution,
     # so standardize on 1 second resolution.
-    # TODO talk about leapseconds?
+    # TODO talk about leap seconds?
     billing_cycle_anchor = timezone_now().replace(microsecond=0)
     if billing_schedule == CustomerPlan.ANNUAL:
         period_end = add_months(billing_cycle_anchor, 12)

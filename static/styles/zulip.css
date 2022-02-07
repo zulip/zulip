@@ -470,7 +470,7 @@ li,
     padding: 6px;
     display: block;
     /* The below two avoids the padded element from displaying
-    it's own border and background color */
+    its own border and background color */
     border: none;
     background-clip: content-box;
     /* The z-index here ensures that the copy-message
@@ -1188,7 +1188,7 @@ td.pointer {
         border-left-color: hsl(0, 0%, 27%);
     }
 
-    /* Base color backgrounds for messageboxes,
+    /* Base color backgrounds for message boxes,
        private messages, mentions, and unread messages */
 
     .message-header-contents {

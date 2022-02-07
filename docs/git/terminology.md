@@ -41,7 +41,7 @@ current state of the index and advancing HEAD to point at the new
 A fast-forward is a special type of merge where you have a revision
 and you are "merging" another branch's changes that happen to be a
 descendant of what you have. In such these cases, you do not make a
-new mergecommit but instead just update to their revision. This will
+new merge commit but instead just update to their revision. This will
 happen frequently on a remote-tracking branch of a remote
 repository.
 

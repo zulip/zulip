@@ -305,7 +305,7 @@ class AuthBackendTest(ZulipTestCase):
         user_profile.set_password(password)
         user_profile.save()
 
-        # First, verify authentication works with the a nonempty
+        # First, verify authentication works with a nonempty
         # password so we know we've set up the test correctly.
         self.assertIsNotNone(
             EmailAuthBackend().authenticate(
@@ -959,7 +959,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         user_agent: Optional[str] = None,
         **extra_data: Any,
     ) -> HttpResponse:
-        """Main entrypoint for all social authentication tests.
+        """Main entry point for all social authentication tests.
 
         * account_data_dict: Dictionary containing the name/email data
           that should be returned by the social auth backend.
@@ -3229,7 +3229,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
     def test_social_auth_desktop_success(self) -> None:
         """
         The desktop app doesn't use the native flow currently and the desktop app flow in its
-        current form happens in the browser, thus only the webflow is viable there.
+        current form happens in the browser, thus only the web flow is viable there.
         """
         pass
 
@@ -3489,7 +3489,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
             # "partial" state of the python-social-auth pipeline).
             #
             # TODO: Generalize this testing code for use with other
-            # authentication backends when a new authentacation backend
+            # authentication backends when a new authentication backend
             # that requires "choose email" screen;
             self.assert_in_success_response(["Select account"], result)
             # Verify that all the emails returned by GitHub auth
@@ -3945,7 +3945,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
     def test_github_unverified_email_with_existing_account(self) -> None:
         # check if a user is denied to log in if the user manages to
         # send an unverified email that has an existing account in
-        # organisation through `email` GET parameter.
+        # organization through `email` GET parameter.
         subdomain = "zulip"
         realm = get_realm(subdomain)
         account_data_dict = dict(email="hamlet@zulip.com", name=self.name)
@@ -6438,7 +6438,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         with self.settings(
             AUTH_LDAP_USER_ATTR_MAP={
                 "full_name": "cn",
-                "custom_profile_field__birthday": "nonExistantAttr",
+                "custom_profile_field__birthday": "nonExistentAttr",
             }
         ), self.assertLogs("django_auth_ldap", "WARNING") as warn_log:
             self.perform_ldap_sync(self.example_user("hamlet"))
@@ -6450,7 +6450,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         self.assertEqual(
             warn_log.output,
             [
-                "WARNING:django_auth_ldap:uid=hamlet,ou=users,dc=zulip,dc=com does not have a value for the attribute nonExistantAttr"
+                "WARNING:django_auth_ldap:uid=hamlet,ou=users,dc=zulip,dc=com does not have a value for the attribute nonExistentAttr"
             ],
         )
 
@@ -6563,7 +6563,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
         request.user = None
 
         # Creating a mock Django form in order to keep the test simple.
-        # This form will be returned by the create_hompage_form function
+        # This form will be returned by the create_homepage_form function
         # and will always be valid so that the code that we want to test
         # actually runs.
         class Form:
@@ -6593,7 +6593,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
         request.user = None
 
         # Creating a mock Django form in order to keep the test simple.
-        # This form will be returned by the create_hompage_form function
+        # This form will be returned by the create_homepage_form function
         # and will always be valid so that the code that we want to test
         # actually runs.
         class Form:

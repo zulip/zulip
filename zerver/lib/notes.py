@@ -21,7 +21,7 @@ class BaseNotes(Generic[_KeyT, _DataT], metaclass=ABCMeta):
     longer has other references (avoiding memory leaks).
 
     We still need to be careful to avoid any of the attributes of
-    _NoteT having points to the original object, as that can create a
+    _DataT having points to the original object, as that can create a
     cyclic reference cycle that the Python garbage collect may not
     handle correctly.
     """

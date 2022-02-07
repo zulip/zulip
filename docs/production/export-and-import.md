@@ -293,7 +293,7 @@ archive of all the organization's uploaded files.
      version of Zulip as the server you're exporting from.
 
    - For exports from Zulip Cloud (zulip.com), you need to [upgrade to
-     `main`][upgrade-zulip-from-git], since we run run `main` on
+     `main`][upgrade-zulip-from-git], since we run `main` on
      Zulip Cloud:
 
      ```bash

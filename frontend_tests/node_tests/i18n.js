@@ -21,7 +21,7 @@ page_params.translation_data = {
 };
 
 // Re-register Zulip extensions so extensions registered previously with
-// mocked i18n.ts do not interefere with following tests.
+// mocked i18n.ts do not interfere with following tests.
 require("../../static/js/templates");
 
 // All of our other tests stub out i18n activity;

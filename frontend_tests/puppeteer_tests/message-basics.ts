@@ -338,7 +338,7 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
     await page.click(".stream-list-filter");
 
     await page.waitForSelector("#stream_filters .highlighted_stream", {visible: true});
-    // First stream in list gets highlihted on clicking search.
+    // First stream in list gets highlighted on clicking search.
     await page.waitForSelector((await get_stream_li(page, "core team")) + ".highlighted_stream", {
         visible: true,
     });

@@ -404,7 +404,7 @@ CUSTOM_LOGO_URL: Optional[str] = None
 # development.
 INITIAL_PASSWORD_SALT: Optional[str] = None
 
-# Settings configuring the special instrumention of the send_event
+# Settings configuring the special instrumentation of the send_event
 # code path used in generating API documentation for /events.
 LOG_API_EVENT_TYPES = False
 

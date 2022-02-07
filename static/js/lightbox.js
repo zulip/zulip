@@ -43,7 +43,7 @@ export class PanZoomControl {
             }, 0);
         });
 
-        // keybinds
+        // key bindings
         document.addEventListener("keydown", (e) => {
             if (!overlays.lightbox_open()) {
                 return;

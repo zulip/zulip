@@ -75,7 +75,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertTrue(UserProfile.objects.filter(email="hambot-bot@zulip.testserver").exists())
         # The other cases are hard to test directly, since we don't allow creating bots from
         # the wrong subdomain, and because 'testserver.example.com' is not a valid domain for the bot's email.
-        # So we just test the Raelm.get_bot_domain function.
+        # So we just test the Realm.get_bot_domain function.
         realm = get_realm("zulip")
         self.assertEqual(realm.get_bot_domain(), "zulip.testserver")
 

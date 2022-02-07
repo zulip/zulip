@@ -166,7 +166,7 @@ class TestReport(ZulipTestCase):
         self.assertEqual(report["more_info"], dict(foo="bar", draft_content="'**xxxxx**'"))
         self.assertEqual(report["user_email"], user.delivery_email)
 
-        # Teset with no more_info
+        # Test with no more_info
         del params["more_info"]
         with mock_queue_publish("zerver.views.report.queue_json_publish") as m, subprocess_mock:
             result = self.client_post("/json/report/error", params)

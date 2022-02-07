@@ -5,7 +5,7 @@ formatting. Our Markdown flavor is unique primarily to add important
 extensions, such as quote blocks and math blocks, and also to do
 previews and correct issues specific to the chat context. Beyond
 that, it has a number of minor historical variations resulting from
-its history predacting CommonMark (and thus Zulip choosing different
+its history predating CommonMark (and thus Zulip choosing different
 solutions to some problems) and based in part on Python-Markdown,
 which is proudly a classic Markdown implementation. We reduce these
 variations with every major Zulip release.

@@ -2519,7 +2519,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             and then change the RelayState param to the idp_name, because that's what
             SAMLAuth.auth_complete() expects.
 
-        Additionally, this handles incoming LogoutRequests for IdP-initated logout.
+        Additionally, this handles incoming LogoutRequests for IdP-initiated logout.
         """
 
         encoded_saml_request = self.strategy.request_data().get("SAMLRequest")

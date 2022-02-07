@@ -687,7 +687,7 @@
       "expected_output": "<p>:skin-tone-2: :skin-tone-3:</p>"
     },
     {
-      "name": "fried_egg_emoji_nonexistant",
+      "name": "fried_egg_emoji_nonexistent",
       "input": "new :fried_egg: emoji is banned for now.",
       "expected_output": "<p>new :fried_egg: emoji is banned for now.</p>"
     },
