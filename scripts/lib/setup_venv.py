@@ -321,7 +321,7 @@ def add_cert_to_pipconf() -> None:
 
 def do_setup_virtualenv(venv_path: str, requirements_file: str) -> None:
 
-    # Setup Python virtualenv
+    # Set up Python virtualenv
     new_packages = set(get_package_names(requirements_file))
 
     run_as_root(["rm", "-rf", venv_path])
