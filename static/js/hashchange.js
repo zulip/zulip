@@ -15,6 +15,7 @@ import * as narrow from "./narrow";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
+import * as pm_list from "./pm_list";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as search from "./search";
@@ -91,6 +92,7 @@ function show_all_message_view() {
     ui_util.change_tab_to("#message_feed_container");
     narrow.deactivate(coming_from_recent_topics);
     top_left_corner.handle_narrow_deactivated();
+    pm_list.handle_narrow_deactivated();
     floating_recipient_bar.update();
     search.update_button_visibility();
     // We need to maybe scroll to the selected message

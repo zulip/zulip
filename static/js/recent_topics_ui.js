@@ -18,6 +18,7 @@ import * as narrow_state from "./narrow_state";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import * as people from "./people";
+import * as pm_list from "./pm_list";
 import * as recent_senders from "./recent_senders";
 import {get, process_message, topics} from "./recent_topics_data";
 import {get_topic_key, is_in_focus, is_visible, set_visible} from "./recent_topics_util";
@@ -612,6 +613,7 @@ export function show() {
     }
     // Hide selected elements in the left sidebar.
     top_left_corner.narrow_to_recent_topics();
+    pm_list.handle_narrow_deactivated();
     stream_list.handle_narrow_deactivated();
 
     // Hide "middle-column" which has html for rendering
