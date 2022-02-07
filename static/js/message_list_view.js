@@ -57,14 +57,9 @@ function same_recipient(a, b) {
 }
 
 function message_was_resolved(message) {
+    let resolved = false;
     if (message.topic === undefined) {
-        return false;
-    }
-
-    // if the message topic starts with the resolved topic prefix, the
-    // topic is just resolved, nothing more.
-    if (message.topic.startsWith(message_edit.RESOLVED_TOPIC_PREFIX)) {
-        return true;
+        return resolved;
     }
 
     // To find unresolved situation we will have to dig information
@@ -72,22 +67,44 @@ function message_was_resolved(message) {
     // 1. are either same as current topic
     // 2. or they start with ✔
     if (message.edit_history !== undefined) {
-        const last_edit = message.edit_history.at(-1);
-        let prev_topic;
-        if (util.get_edit_event_prev_topic(last_edit) !== undefined) {
-            prev_topic = util.get_edit_event_prev_topic(last_edit);
+        let current_topic;
+        if (message.topic.startsWith(message_edit.RESOLVED_TOPIC_PREFIX)) {
+            current_topic = message.topic.replace(message_edit.RESOLVED_TOPIC_PREFIX, "");
         } else {
-            prev_topic = last_edit.prev_topic;
+            current_topic = message.topic;
         }
-        if (
-            prev_topic !== undefined &&
-            (prev_topic === message.topic ||
-                prev_topic.startsWith(message_edit.RESOLVED_TOPIC_PREFIX))
-        ) {
-            return true;
+        for (const msg of message.edit_history) {
+            // Message is edited, preserve the Edited label
+            if (msg.prev_content) {
+                return false;
+            }
+            let prev_topic;
+            if (util.get_edit_event_prev_topic(msg) !== undefined) {
+                prev_topic = util.get_edit_event_prev_topic(msg);
+            } else {
+                prev_topic = msg.prev_topic;
+            }
+            if (prev_topic === undefined) {
+                resolved = false;
+            } else {
+                if (prev_topic !== current_topic) {
+                    if (prev_topic.startsWith(message_edit.RESOLVED_TOPIC_PREFIX)) {
+                        if (prev_topic.replace(message_edit.RESOLVED_TOPIC_PREFIX, "") === current_topic) {
+                            resolved = true;
+                        } else {
+                            // Message was Moved into the subject, preserve the Moved label
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
+                } else {
+                    resolved = true;
+                }
+            }
         }
     }
-    return false;
+    return resolved;
 }
 
 function message_was_only_moved(message) {
