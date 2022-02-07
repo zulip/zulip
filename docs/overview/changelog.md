@@ -1858,7 +1858,7 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 - Added new "getting started" guides to the user documentation.
 - Added support for installing a Zulip server from a Git checkout.
 - Added support for mentioning a user when editing a message.
-- Added OpsGenie, Google Code-In, Google Search, and xkcd integrations.
+- Added Opsgenie, Google Code-In, Google Search, and xkcd integrations.
 - Added support for organization administrators deleting private streams.
 - Added support for using any LDAP attribute for login username.
 - Added support for searching by group-pm-with.
