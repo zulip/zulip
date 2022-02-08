@@ -20,7 +20,7 @@ class zulip_ops::prometheus::uwsgi {
     require => [
       User[zulip],
       Package[supervisor],
-      Zulip::External_Dep['node_exporter'],
+      Zulip::External_Dep['uwsgi_exporter'],
     ],
     owner   => 'root',
     group   => 'root',
