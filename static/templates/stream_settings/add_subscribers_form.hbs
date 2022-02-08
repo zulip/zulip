@@ -1,0 +1,15 @@
+<form>
+    <div class="add_subscribers_container">
+        <div class="pill-container person_picker">
+            <div class="input" contenteditable="true"
+              data-placeholder="{{t 'Add subscribers. Use @usergroup or #streamname to bulk add subscribers.' }}">
+                {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
+            </div>
+        </div>
+        <div class="add_subscriber_btn_wrapper inline-block">
+            <button type="submit" name="add_subscriber" class="button add-subscriber-button small rounded" tabindex="0">
+                {{t 'Add' }}
+            </button>
+        </div>
+    </div>
+</form>
