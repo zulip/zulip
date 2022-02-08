@@ -212,5 +212,6 @@ export function initialize() {
             }
             return true;
         },
+        appendTo: () => document.body,
     });
 }
