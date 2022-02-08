@@ -280,6 +280,14 @@ body.dark-theme {
         }
     }
 
+    .rendered_markdown .message_inline_image {
+        background: hsla(0, 0%, 100%, 0.03);
+
+        &:hover {
+            background: hsla(0, 0%, 100%, 0.15);
+        }
+    }
+
     input[type="text"],
     input[type="email"],
     input[type="password"],
