@@ -805,8 +805,22 @@ h4.stream_setting_subsection_title {
             margin: 8px 0;
         }
 
+        .add_all_users_to_stream {
+            margin-left: 10px;
+        }
+
+        .create_stream_subscriber_list_header {
+            margin-top: 10px;
+            margin-bottom: 3px;
+
+            h5 {
+                display: inline-block;
+            }
+        }
+
         .add-user-list-filter {
-            width: calc(100% - 10px);
+            width: 140px;
+            float: right;
         }
 
         #stream_creation_form {

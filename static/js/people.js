@@ -1067,44 +1067,6 @@ export function get_user_id_from_name(full_name) {
     return person.user_id;
 }
 
-function people_cmp(person1, person2) {
-    const name_cmp = util.strcmp(person1.full_name, person2.full_name);
-    if (name_cmp < 0) {
-        return -1;
-    } else if (name_cmp > 0) {
-        return 1;
-    }
-    return util.strcmp(person1.email, person2.email);
-}
-
-export function get_people_for_stream_create() {
-    /*
-        If you are thinking of reusing this function,
-        a better option in most cases is to just
-        call `get_realm_users()` and then filter out
-        the "me" user yourself as part of any other
-        filtering that you are doing.
-
-        In particular, this function does a sort
-        that is kinda expensive and may not apply
-        to your use case.
-    */
-    const people_minus_you = [];
-    for (const person of active_user_dict.values()) {
-        if (!is_my_user_id(person.user_id)) {
-            people_minus_you.push({
-                email: get_visible_email(person),
-                show_email: settings_data.show_email(),
-                user_id: person.user_id,
-                full_name: person.full_name,
-                checked: false,
-                disabled: false,
-            });
-        }
-    }
-    return people_minus_you.sort(people_cmp);
-}
-
 export function track_duplicate_full_name(full_name, user_id, to_remove) {
     let ids;
     if (duplicate_full_name_data.has(full_name)) {

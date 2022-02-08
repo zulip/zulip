@@ -1,0 +1,14 @@
+<tr>
+    <td>
+        {{full_name}}{{#if is_current_user}} <span class="my_user_status">{{t "(you)"}}</span>{{/if}}
+    </td>
+    {{#if show_email}}
+        <td class="subscriber-email">{{email}}</td>
+    {{else}}
+        <td class="hidden-subscriber-email">{{t "(hidden)"}}</td>
+    {{/if}}
+    <td>{{user_id}} </td>
+    <td>
+        <button {{#if disabled}} disabled="disabled"{{/if}} data-user-id="{{user_id}}" class="remove_potential_subscriber button small rounded btn-danger">Remove</button>
+    </td>
+</tr>

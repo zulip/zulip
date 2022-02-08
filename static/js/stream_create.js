@@ -2,26 +2,19 @@ import $ from "jquery";
 
 import render_announce_stream_docs from "../templates/announce_stream_docs.hbs";
 import render_subscription_invites_warning_modal from "../templates/confirm_dialog/confirm_subscription_invites_warning.hbs";
-import render_new_stream_user from "../templates/new_stream_user.hbs";
-import render_new_stream_users from "../templates/stream_settings/new_stream_users.hbs";
 
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import {$t, $t_html} from "./i18n";
-import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
-import * as peer_data from "./peer_data";
 import * as people from "./people";
-import * as settings_data from "./settings_data";
+import * as stream_create_subscribers from "./stream_create_subscribers";
 import * as stream_data from "./stream_data";
-import * as stream_settings_data from "./stream_settings_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as ui_report from "./ui_report";
 
 let created_stream;
-let all_users;
-let all_users_list_widget;
 
 export function reset_created_stream() {
     created_stream = undefined;
@@ -146,11 +139,6 @@ function update_announce_stream_state() {
     $("#announce-new-stream").show();
 }
 
-function get_principals() {
-    // Return list of user ids which were selected by user.
-    return all_users.filter((user) => user.checked === true).map((user) => user.user_id);
-}
-
 function create_stream() {
     const data = {};
     const stream_name = $("#create_stream_name").val().trim();
@@ -233,7 +221,7 @@ function create_stream() {
 
     // TODO: We can eliminate the user_ids -> principals conversion
     //       once we upgrade the backend to accept user_ids.
-    const user_ids = get_principals();
+    const user_ids = stream_create_subscribers.get_principals();
     data.principals = JSON.stringify(user_ids);
 
     loading.make_indicator($("#stream_creating_indicator"), {
@@ -303,40 +291,7 @@ export function show_new_stream_modal() {
     $(".right .settings").hide();
     stream_settings_ui.hide_or_disable_stream_privacy_options_if_required($("#stream-creation"));
 
-    const add_people_container = $("#people_to_add");
-    add_people_container.html(
-        render_new_stream_users({
-            streams: stream_settings_data.get_streams_for_settings_page(),
-        }),
-    );
-
-    all_users = people.get_people_for_stream_create();
-    // Add current user on top of list
-    const current_user = people.get_by_user_id(page_params.user_id);
-    all_users.unshift({
-        show_email: settings_data.show_email(),
-        email: people.get_visible_email(current_user),
-        user_id: current_user.user_id,
-        full_name: current_user.full_name,
-        checked: true,
-        disabled: !page_params.is_admin,
-    });
-
-    all_users_list_widget = ListWidget.create($("#user-checkboxes"), all_users, {
-        name: "new_stream_add_users",
-        parent_container: add_people_container,
-        modifier(item) {
-            return render_new_stream_user(item);
-        },
-        filter: {
-            element: $("#people_to_add .add-user-list-filter"),
-            predicate(user, search_term) {
-                return people.build_person_matcher(search_term)(user);
-            },
-        },
-        simplebar_container: $("#user-checkboxes-simplebar-wrapper"),
-        html_selector: (user) => $(`#${CSS.escape("user_checkbox_" + user.user_id)}`),
-    });
+    stream_create_subscribers.build_widgets();
 
     // Select the first visible and enabled choice for stream privacy.
     $("#make-invite-only input:visible:not([disabled]):first").prop("checked", true);
@@ -365,82 +320,9 @@ export function show_new_stream_modal() {
     clear_error_display();
 }
 
-function create_handlers_for_users(container) {
-    // container should be $('#people_to_add')...see caller to verify
-    function update_checked_state_for_users(value, users) {
-        // Update the all_users backing data structure for
-        // which users will be submitted should the user click save,
-        // and also ensure that any visible checkboxes reflect
-        // the state of that data structure.
-
-        // If we have to rerender a very large number of users, it's
-        // eventually faster to just do a full redraw rather than
-        // many hundreds of single-item rerenders.
-        const full_redraw = !users || users.length > 250;
-        for (const user of all_users) {
-            // We don't want to uncheck the user creating the stream if it is not admin.
-            if (user.user_id === page_params.user_id && value === false && !page_params.is_admin) {
-                continue;
-            }
-            // We update for all users if `users` parameter is empty.
-            if (users === undefined || users.includes(user.user_id)) {
-                user.checked = value;
-
-                if (!full_redraw) {
-                    all_users_list_widget.render_item(user);
-                }
-            }
-        }
-
-        if (full_redraw) {
-            all_users_list_widget.hard_redraw();
-        }
-    }
-
-    container.on("change", "#user-checkboxes input", (e) => {
-        const elem = $(e.target);
-        const user_id = Number.parseInt(elem.attr("data-user-id"), 10);
-        const checked = elem.prop("checked");
-        update_checked_state_for_users(checked, [user_id]);
-    });
-
-    // 'Check all' and 'Uncheck all' visible users
-    container.on("click", ".subs_set_all_users, .subs_unset_all_users", (e) => {
-        e.preventDefault();
-        // Only `check / uncheck` users who are displayed.
-        const mark_checked = e.target.classList.contains("subs_set_all_users");
-        const users_displayed = all_users_list_widget.get_current_list();
-        if (all_users.length !== users_displayed.length) {
-            update_checked_state_for_users(
-                mark_checked,
-                users_displayed.map((user) => user.user_id),
-            );
-        } else {
-            update_checked_state_for_users(mark_checked);
-        }
-    });
-
-    container.on("click", "#copy-from-stream-expand-collapse", (e) => {
-        e.preventDefault();
-        $("#stream-checkboxes").toggle();
-        $("#copy-from-stream-expand-collapse .toggle").toggleClass("fa-caret-right fa-caret-down");
-    });
-
-    container.on("change", "#stream-checkboxes label.checkbox", (e) => {
-        e.preventDefault();
-        const elem = $(e.target).closest("[data-stream-id]");
-        const stream_id = Number.parseInt(elem.attr("data-stream-id"), 10);
-        const checked = elem.find("input").prop("checked");
-        const subscriber_ids = peer_data.get_subscribers(stream_id);
-        update_checked_state_for_users(checked, subscriber_ids);
-    });
-}
-
 export function set_up_handlers() {
-    // Sets up all the event handlers concerning the `People to add`
-    // section in Create stream UI.
     const people_to_add_holder = $("#people_to_add").expectOne();
-    create_handlers_for_users(people_to_add_holder);
+    stream_create_subscribers.create_handlers(people_to_add_holder);
 
     const container = $("#stream-creation").expectOne();
 
@@ -457,7 +339,7 @@ export function set_up_handlers() {
             return;
         }
 
-        const principals = get_principals();
+        const principals = stream_create_subscribers.get_principals();
         if (principals.length === 0) {
             stream_subscription_error.report_no_subs_to_stream();
             return;

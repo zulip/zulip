@@ -163,13 +163,6 @@ const bob = {
     full_name: "Bob van Roberts",
 };
 
-const alice2 = {
-    email: "alice2@example.com",
-    delivery_email: "alice2-delivery@example.com",
-    user_id: 204,
-    full_name: "Alice",
-};
-
 const charles = {
     email: "charles@example.com",
     user_id: 301,
@@ -582,77 +575,6 @@ test_people("set_custom_profile_field_data", () => {
     assert.equal(person.profile_data[field.id].rendered_value, "<p>Field value</p>");
 });
 
-test_people("get_people_for_stream_create", () => {
-    people.add_active_user(alice1);
-    people.add_active_user(bob);
-    people.add_active_user(alice2);
-    assert.equal(people.get_active_human_count(), 4);
-    page_params.is_admin = true;
-    page_params.realm_email_address_visibility = admins_only;
-
-    let others = people.get_people_for_stream_create();
-    let expected = [
-        {
-            email: "alice1-delivery@example.com",
-            user_id: alice1.user_id,
-            full_name: "Alice",
-            checked: false,
-            disabled: false,
-            show_email: true,
-        },
-        {
-            email: "alice2-delivery@example.com",
-            user_id: alice2.user_id,
-            full_name: "Alice",
-            checked: false,
-            disabled: false,
-            show_email: true,
-        },
-        {
-            email: "bob-delivery@example.com",
-            user_id: bob.user_id,
-            full_name: "Bob van Roberts",
-            checked: false,
-            disabled: false,
-            show_email: true,
-        },
-    ];
-    assert.deepEqual(others, expected);
-
-    page_params.is_admin = false;
-    alice1.delivery_email = undefined;
-    alice2.delivery_email = undefined;
-    bob.delivery_email = undefined;
-    others = people.get_people_for_stream_create();
-    expected = [
-        {
-            email: "alice1@example.com",
-            user_id: alice1.user_id,
-            full_name: "Alice",
-            checked: false,
-            disabled: false,
-            show_email: false,
-        },
-        {
-            email: "alice2@example.com",
-            user_id: alice2.user_id,
-            full_name: "Alice",
-            checked: false,
-            disabled: false,
-            show_email: false,
-        },
-        {
-            email: "bob@example.com",
-            user_id: bob.user_id,
-            full_name: "Bob van Roberts",
-            checked: false,
-            disabled: false,
-            show_email: false,
-        },
-    ];
-    assert.deepEqual(others, expected);
-});
-
 test_people("recipient_counts", () => {
     const user_id = 99;
     assert.equal(people.get_recipient_count({user_id}), 0);
@@ -672,7 +594,7 @@ test_people("filtered_users", () => {
     people.add_active_user(plain_noah);
 
     const search_term = "a";
-    const users = people.get_people_for_stream_create();
+    const users = people.get_realm_users();
     let filtered_people = people.filter_people_by_search_terms(users, [search_term]);
     assert.equal(filtered_people.size, 2);
     assert.ok(filtered_people.has(ashton.user_id));

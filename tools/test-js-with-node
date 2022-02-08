@@ -167,6 +167,7 @@ EXEMPT_FILES = make_set(
         "static/js/stream_bar.js",
         "static/js/stream_color.js",
         "static/js/stream_create.js",
+        "static/js/stream_create_subscribers.js",
         "static/js/stream_edit.js",
         "static/js/stream_edit_subscribers.js",
         "static/js/stream_list.js",

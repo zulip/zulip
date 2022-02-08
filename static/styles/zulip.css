@@ -2298,12 +2298,7 @@ div.floating_recipient {
     color: hsl(0, 0%, 100%);
 }
 
-#user-checkboxes-simplebar-wrapper {
-    max-height: 500px;
-    overflow-y: auto;
-}
-
-#user-checkboxes {
+#create_stream_subscribers {
     margin-top: 10px;
 
     .checkbox {
@@ -2314,24 +2309,6 @@ div.floating_recipient {
             float: none;
         }
     }
-}
-
-#stream-checkboxes {
-    margin-top: 10px;
-    display: none;
-
-    .checkbox {
-        display: block;
-    }
-
-    input[type="checkbox"] {
-        margin: 5px 0;
-        float: none;
-    }
-}
-
-#copy-from-stream-expand-collapse {
-    cursor: pointer;
 }
 
 .sub_button_row {
