@@ -16,6 +16,17 @@ from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.message import SendMessageRequest
 from zerver.models import Message, Realm, UserProfile, get_system_bot
 
+WELCOME_BOT_COMMANDS = [
+    "apps",
+    "profile",
+    "theme",
+    "streams",
+    "topics",
+    "message formatting",
+    "keyboard shortcuts",
+    "help",
+]
+
 
 def missing_any_realm_internal_bots() -> bool:
     bot_emails = [
@@ -58,6 +69,13 @@ def create_if_missing_realm_internal_bots() -> None:
     if missing_any_realm_internal_bots():
         for realm in Realm.objects.all():
             setup_realm_internal_bots(realm)
+
+
+def bot_commands(include_help_command: bool = True) -> str:
+    commands = WELCOME_BOT_COMMANDS.copy()
+    if not include_help_command:
+        commands.remove("help")
+    return ", ".join(["`" + command + "`" for command in commands]) + "."
 
 
 def send_initial_pms(user: UserProfile) -> None:
@@ -107,21 +125,6 @@ def send_initial_pms(user: UserProfile) -> None:
     internal_send_private_message(
         get_system_bot(settings.WELCOME_BOT, user.realm_id), user, content
     )
-
-
-def bot_commands(no_help_command: bool = False) -> str:
-    commands = [
-        "apps",
-        "profile",
-        "theme",
-        "streams",
-        "topics",
-        "message formatting",
-        "keyboard shortcuts",
-    ]
-    if not no_help_command:
-        commands.append("help")
-    return ", ".join(["`" + command + "`" for command in commands]) + "."
 
 
 def select_welcome_bot_response(human_response_lower: str) -> str:
@@ -201,7 +204,7 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
         return "".join(
             [
                 _("Here are a few messages I understand:") + " ",
-                bot_commands(no_help_command=True) + "\n\n",
+                bot_commands(include_help_command=False) + "\n\n",
                 _(
                     "Check out our [Getting started guide](/help/getting-started-with-zulip), "
                     "or browse the [Help center](/help/) to learn more!"
