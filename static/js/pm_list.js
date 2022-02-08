@@ -202,36 +202,86 @@ export function update_dom_with_unread_counts(counts) {
     set_count(counts.private_message_count);
 }
 
-export function handle_narrow_activated(filter) {
-    const active_filter = filter;
-    if (active_filter.operands("pm-with").length !== 0) {
-        expand();
-    } else {
-        if (
-            $(".expanded_private_messages").children().length === 1 &&
-            $(".expanded_private_messages li.active-sub-filter").is(
-                $(".expanded_private_messages").children()[0],
-            )
-        ) {
-            $(".expanded_private_messages").empty();
-            close();
-        }
-        $(".expanded_private_messages li.active-sub-filter").removeClass("active-sub-filter");
-    }
-}
-
-export function handle_narrow_deactivated() {
-    hide_more_pms();
-    update_private_messages();
-    $("#private_messages").removeClass("zoom-in").addClass("zoom-out");
-    $("#streams_list").show();
-    $(".left-sidebar .right-sidebar-items").show();
+export function only_active_pm_out_of_collapsed_pms() {
+    // check for only the presence of active pm outside the list of the collapsed pms.
     if (
         $(".expanded_private_messages").children().length === 1 &&
         $(".expanded_private_messages li.active-sub-filter").is(
             $(".expanded_private_messages").children()[0],
         )
     ) {
+        return true;
+    }
+    return false;
+}
+
+export function append_new_active_pm_in_collapsed_pms() {
+    // We check for the new activated pm in our dom and append it inside the list of pms visible out of
+    // collapsed pms.
+    const convos = _get_convos();
+    const active_convo = convos.find((convo) => {
+        if (convo.is_active === true) {
+            return convo;
+        }
+        return false;
+    });
+    if (active_convo) {
+        // If we find a the new active PM to be present in out convos list then we make a node of
+        // through keyed_pm_li and update the dom with vdom.update() function.
+        const node = [pm_list_dom.keyed_pm_li(active_convo)];
+        const new_dom = pm_list_dom.pm_ul(node);
+        const container = ui.get_content_element($("#private-container"));
+        function replace_content(html) {
+            container.html(html);
+        }
+
+        function find() {
+            return container.find("ul");
+        }
+        vdom.update(replace_content, find, new_dom, prior_dom);
+        prior_dom = new_dom;
+    } else {
+        // If we do not find any other active pm in our convos then we remove clear the list of PMs and
+        // collapse the section.
+        $(".expanded_private_messages").empty();
+        close();
+    }
+}
+
+export function handle_narrow_activated(filter) {
+    const active_filter = filter;
+    // We check whether the new narrow is also related to a PM or not
+    if (active_filter.operands("pm-with").length !== 0) {
+        // If we find the new narrow to also be a PM then check for number of PMs present and state of PM section
+        if (
+            // If we find all PMs to be collapsed and only 1 previously active PM outside of the collapsed
+            // pms, then we remove the previous one and append the newly active PM inside the collapsed PMs.
+            only_active_pm_out_of_collapsed_pms()
+        ) {
+            append_new_active_pm_in_collapsed_pms();
+        }
+    } else {
+        // If we find one previously activated PM in collapsed PMs, then we remove it from the list
+        // and make PM section empty and collapse it.
+        if (only_active_pm_out_of_collapsed_pms()) {
+            $(".expanded_private_messages").empty();
+            close();
+        }
+        // We always deactivate the previously activated PM in case of new narrow not belonging to PMs.
+        $(".expanded_private_messages li.active-sub-filter").removeClass("active-sub-filter");
+    }
+}
+
+export function handle_narrow_deactivated() {
+    // In case of the new narrow not belonging to PMs, we revert the state of current PM section
+    // to it's initial state (even in the cae of zoomed PM section) and deactivate the previously activated
+    // PM and resize the stream bar again.
+    hide_more_pms();
+    update_private_messages();
+    $("#private_messages").removeClass("zoom-in").addClass("zoom-out");
+    $("#streams_list").show();
+    $(".left-sidebar .right-sidebar-items").show();
+    if (only_active_pm_out_of_collapsed_pms()) {
         $(".expanded_private_messages").empty();
     }
     $(".expanded_private_messages li.active-sub-filter").removeClass("active-sub-filter");

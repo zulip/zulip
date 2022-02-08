@@ -613,7 +613,6 @@ export function show() {
     }
     // Hide selected elements in the left sidebar.
     top_left_corner.narrow_to_recent_topics();
-    pm_list.handle_narrow_deactivated();
     stream_list.handle_narrow_deactivated();
 
     // Hide "middle-column" which has html for rendering
@@ -630,6 +629,7 @@ export function show() {
     compose_closed_ui.update_buttons_for_recent_topics();
 
     narrow_state.reset_current_filter();
+    pm_list.handle_narrow_deactivated();
     narrow.set_narrow_title("Recent topics");
     message_view_header.render_title_area();
 
