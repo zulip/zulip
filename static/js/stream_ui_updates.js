@@ -171,16 +171,19 @@ export function update_add_subscriptions_elements(sub) {
         return;
     }
 
+    // We are only concerned with the Subscribers tab for editing streams.
+    const add_subscribers_container = $(".edit_subscribers_for_stream .add_subscribers_container");
+
     if (page_params.is_guest || page_params.realm_is_zephyr_mirror_realm) {
         // For guest users, we just hide the add_subscribers feature.
-        $(".add_subscribers_container").hide();
+        add_subscribers_container.hide();
         return;
     }
 
     // Otherwise, we adjust whether the widgets are disabled based on
     // whether this user is authorized to add subscribers.
-    const input_element = $(".add_subscribers_container").find(".input").expectOne();
-    const button_element = $(".add_subscribers_container")
+    const input_element = add_subscribers_container.find(".input").expectOne();
+    const button_element = add_subscribers_container
         .find('button[name="add_subscriber"]')
         .expectOne();
     const allow_user_to_add_subs = sub.can_add_subscribers;
@@ -189,13 +192,13 @@ export function update_add_subscriptions_elements(sub) {
         input_element.prop("disabled", false);
         button_element.prop("disabled", false);
         button_element.css("pointer-events", "");
-        $(".add_subscribers_container input").popover("destroy");
+        input_element.popover("destroy");
     } else {
         input_element.prop("disabled", true);
         button_element.prop("disabled", true);
 
         initialize_disable_btn_hint_popover(
-            $(".add_subscribers_container"),
+            add_subscribers_container,
             input_element,
             button_element,
             $t({defaultMessage: "Only stream members can add users to a private stream"}),
