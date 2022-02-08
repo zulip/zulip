@@ -85,13 +85,16 @@ def get_apns_context() -> Optional[APNsContext]:
     # That's a little sloppy, but harmless unless a server gets
     # hammered with a ton of these all at once after startup.
     loop = asyncio.new_event_loop()
-    apns = aioapns.APNs(
-        client_cert=settings.APNS_CERT_FILE,
-        topic=settings.APNS_TOPIC,
-        max_connection_attempts=APNS_MAX_RETRIES,
-        loop=loop,
-        use_sandbox=settings.APNS_SANDBOX,
-    )
+
+    async def make_apns() -> aioapns.APNs:
+        return aioapns.APNs(
+            client_cert=settings.APNS_CERT_FILE,
+            topic=settings.APNS_TOPIC,
+            max_connection_attempts=APNS_MAX_RETRIES,
+            use_sandbox=settings.APNS_SANDBOX,
+        )
+
+    apns = loop.run_until_complete(make_apns())
     return APNsContext(apns=apns, loop=loop)
 
 
