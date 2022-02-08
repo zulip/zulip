@@ -38,7 +38,7 @@ run(["./scripts/setup/inline_email_css.py"])
 # Copy over static files from the zulip_bots package
 run(["./tools/setup/generate_zulip_bots_static_files.py"])
 
-# Build pygment data
+# Build pygments data
 run(["./tools/setup/build_pygments_data"])
 
 # Build timezones data

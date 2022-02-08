@@ -162,7 +162,7 @@ export function make_compose_box_full_size() {
     set_full_size(true);
 
     // The autosize should be destroyed for the full size compose
-    // box else it will interfare and shrink its size accordingly.
+    // box else it will interfere and shrink its size accordingly.
     autosize.destroy($("#compose-textarea"));
 
     $("#compose").addClass("compose-fullscreen");
@@ -195,7 +195,7 @@ export function make_compose_box_original_size() {
 export function handle_keydown(event, textarea) {
     // The event.key property will have uppercase letter if
     // the "Shift + <key>" combo was used or the Caps Lock
-    // key was on. We turn to key to lowercase so the keybindings
+    // key was on. We turn to key to lowercase so the key bindings
     // work regardless of whether Caps Lock was on or not.
     const key = event.key.toLowerCase();
     let type;

@@ -320,7 +320,7 @@ test("sending", ({override, override_rewire}) => {
 
     emoji_name = "inactive_realm_emoji";
     {
-        // Test removing a deactivated realm emoji. An user can interact with a
+        // Test removing a deactivated realm emoji. A user can interact with a
         // deactivated realm emoji only by clicking on a reaction, hence, only
         // `process_reaction_click()` codepath supports deleting/adding a deactivated
         // realm emoji.

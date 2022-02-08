@@ -21,7 +21,7 @@ function getScrollbarWidth() {
     // force scrollbars
     outer.style.overflow = "scroll";
 
-    // add innerdiv
+    // add inner div
     const inner = document.createElement("div");
     inner.style.width = "100%";
     outer.append(inner);

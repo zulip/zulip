@@ -504,7 +504,7 @@ def validate_schema(schema: Dict[str, Any]) -> None:
     elif schema["type"] == "object":
         if "additionalProperties" not in schema:
             raise SchemaError(
-                "additionalProperties needs to be defined for objects to make"
+                "additionalProperties needs to be defined for objects to make "
                 + "sure they have no additional properties left to be documented."
             )
         for property_schema in schema.get("properties", {}).values():

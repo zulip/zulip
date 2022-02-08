@@ -66,7 +66,7 @@ model GitHub supports).
   message-editing** and **area: message view** labels are both related
   to the
   [Server message view](https://github.com/orgs/zulip/teams/server-message-view)
-  team. Feel free to join as many area label teams as as you'd like!
+  team. Feel free to join as many area label teams as you'd like!
 
   After your request to join an area label team is approved, you'll receive
   notifications for any issues labeled with the team's corresponding area

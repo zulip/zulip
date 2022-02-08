@@ -1858,7 +1858,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
         ]
 
     def get_verified_emails(self, realm: Realm, *args: Any, **kwargs: Any) -> List[str]:
-        # We only let users login using email addresses that are
+        # We only let users log in using email addresses that are
         # verified by GitHub, because the whole point is for the user
         # to demonstrate that they control the target email address.
         verified_emails: List[str] = []
@@ -2437,10 +2437,10 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         callback function without arguments, to delete the session. We're not
         happy with that for two reasons:
         1. These implementations don't look at the NameID in the LogoutRequest, which
-           is not quite correct, as a LogoutRequest to logout user X can be delivered
+           is not quite correct, as a LogoutRequest to log out user X can be delivered
            through any means, and doesn't need a session to be valid.
            E.g. a backchannel logout request sent by the IdP wouldn't have a session cookie.
-           Also, hypothetically, a LogoutRequest to logout user Y shouldn't logout user X, even if the
+           Also, hypothetically, a LogoutRequest to log out user Y shouldn't log out user X, even if the
            request is made with a session cookie belonging to user X.
         2. We want to revoke all sessions for the user, not just the current session
            of the request, so after validating the LogoutRequest, we need to identify
@@ -2519,7 +2519,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             and then change the RelayState param to the idp_name, because that's what
             SAMLAuth.auth_complete() expects.
 
-        Additionally, this handles incoming LogoutRequests for IdP-initated logout.
+        Additionally, this handles incoming LogoutRequests for IdP-initiated logout.
         """
 
         encoded_saml_request = self.strategy.request_data().get("SAMLRequest")

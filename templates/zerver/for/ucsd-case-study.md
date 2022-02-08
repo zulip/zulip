@@ -6,7 +6,7 @@ top universities worldwide. The UCSD math department offers
 prestigious graduate and undergraduate programs, with course topics
 ranging from foundational material to cutting-edge research.
 
-In response to the covid pandemic, UCSD instruction moved online early
+In response to the COVID-19 pandemic, UCSD instruction moved online early
 in 2020. As instructors scrambled to figure out online education,
 Kiran Kedlaya, Professor of Mathematics at UCSD, gave himself a bigger
 challenge: “Seeing the unique opportunity, I decided to open my

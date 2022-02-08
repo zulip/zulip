@@ -25,12 +25,12 @@ feature to billing.
 
 ### Setup
 
-Apart from the common setup mentioned above, you also need to setup your
+Apart from the common setup mentioned above, you also need to set up your
 development environment to receive webhook events from Stripe.
 
 - Install the Stripe CLI locally by following the instructions
   [here](https://stripe.com/docs/webhooks/test).
-- Login to Stripe CLI using the command `stripe login`.
+- Log in to Stripe CLI using the command `stripe login`.
 - You can get Stripe CLI to forward all Stripe webhook events to our local
   webhook endpoint using the following command:
   `stripe listen --forward-to http://localhost:9991/stripe/webhook/`

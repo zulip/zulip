@@ -109,7 +109,7 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
         # we can skip all of that.
         #
         # Security implications of this portion of the code are minimal,
-        # as we should worst-case fail closed if we miscategorise a request.
+        # as we should worst-case fail closed if we miscategorize a request.
 
         # for some special views (e.g. serving a file that has been
         # uploaded), we support using the same URL for web and API clients.

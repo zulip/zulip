@@ -866,7 +866,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
 
         # The count here reflects the count of unread messages that we will
         # report to users in the bankruptcy dialog, and for now it excludes unread messages
-        # from muted treams, but it doesn't exclude unread messages from muted topics yet.
+        # from muted streams, but it doesn't exclude unread messages from muted topics yet.
         self.assertEqual(result["count"], 4)
         self.assertFalse(result["old_unreads_missing"])
 

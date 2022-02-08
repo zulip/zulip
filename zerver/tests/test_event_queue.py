@@ -885,7 +885,7 @@ class EventQueueTest(ZulipTestCase):
 
     def test_collapse_event(self) -> None:
         """
-        This mostly focues on the internals of
+        This mostly focuses on the internals of
         how we store "virtual_events" that we
         can collapse if subsequent events are
         of the same form.  See the code in

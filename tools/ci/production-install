@@ -13,7 +13,7 @@ Usage:
 
 Options:
   --test-custom-db
-      This will instruct the install test to be ran with a custom database name and user.
+      This will instruct the install test to be run with a custom database name and user.
 
 EOF
 }

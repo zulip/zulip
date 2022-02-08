@@ -72,7 +72,7 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
             expect_noop=True,
         )
 
-    def test_travis_exlude_push_event_sent(self) -> None:
+    def test_travis_exclude_push_event_sent(self) -> None:
         self.url = f'{self.build_webhook_url()}&exclude_events=["push"]&ignore_pull_requests=false'
 
         self.check_webhook(

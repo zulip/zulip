@@ -114,7 +114,7 @@ export function initialize() {
         update_reply_recipient_label();
     });
 
-    // Click handlers for buttons in the compose compose box.
+    // Click handlers for buttons in the compose box.
     $("body").on("click", ".compose_stream_button", () => {
         compose_actions.start("stream", {trigger: "new topic button"});
     });

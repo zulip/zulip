@@ -118,7 +118,7 @@ async function test_webhook_bot_creation(page: Page): Promise<void> {
     assert.match(
         zuliprc_decoded_url,
         outgoing_webhook_zuliprc_regex,
-        "Incorrect outgoing webhook bot zulirc format",
+        "Incorrect outgoing webhook bot zuliprc format",
     );
 }
 

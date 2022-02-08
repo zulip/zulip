@@ -256,7 +256,7 @@ Zulip, you need to update your local Git database with new refs from your
 GitHub fork. You do this with `git fetch`:
 
 ```console
-$ git fetch <usermame>
+$ git fetch <username>
 ```
 
 Ideally you should do this before you have made any commits on the same branch

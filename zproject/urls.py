@@ -358,7 +358,7 @@ v1_api_and_json_patterns = [
         "users/me/apns_device_token", POST=add_apns_device_token, DELETE=remove_apns_device_token
     ),
     rest_path("users/me/android_gcm_reg_id", POST=add_android_reg_id, DELETE=remove_android_reg_id),
-    # users/*/presnece => zerver.views.presence.
+    # users/*/presence => zerver.views.presence.
     rest_path("users/me/presence", POST=update_active_status_backend),
     # It's important that this sit after users/me/presence so that
     # Django's URL resolution order doesn't break the
@@ -627,6 +627,7 @@ i18n_urls = [
     path("for/research/", landing_view, {"template_name": "zerver/for-research.html"}),
     path("for/business/", landing_view, {"template_name": "zerver/for-business.html"}),
     path("for/companies/", RedirectView.as_view(url="/for/business/", permanent=True)),
+    path("case-studies/idrift/", landing_view, {"template_name": "zerver/idrift-case-study.html"}),
     path("case-studies/tum/", landing_view, {"template_name": "zerver/tum-case-study.html"}),
     path("case-studies/ucsd/", landing_view, {"template_name": "zerver/ucsd-case-study.html"}),
     path("case-studies/rust/", landing_view, {"template_name": "zerver/rust-case-study.html"}),

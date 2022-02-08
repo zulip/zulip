@@ -58,7 +58,7 @@ Copying and pasting emoji from other sites generally works.
 ## Change your emoji set
 
 Your emoji set determines how you see emoji. It has no effect on the emoji
-you send. Zulip emoji are compatible with screenreaders and other accessibility tools.
+you send. Zulip emoji are compatible with screen readers and other accessibility tools.
 
 {start_tabs}
 

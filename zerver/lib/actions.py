@@ -2547,7 +2547,7 @@ def check_add_reaction(
         # In this "voting for an existing reaction" case, we shouldn't
         # check whether the emoji code and emoji name match, since
         # it's possible that the (emoji_type, emoji_name, emoji_code)
-        # triple for this existing rection xmay not pass validation
+        # triple for this existing reaction may not pass validation
         # now (e.g. because it is for a realm emoji that has been
         # since deactivated).  We still want to allow users to add a
         # vote any old reaction they see in the UI even if that is a
@@ -3078,7 +3078,7 @@ def check_update_message(
     if not user_profile.realm.allow_message_editing:
         raise JsonableError(_("Your organization has turned off message editing"))
 
-    # The zerver/views/message_edit.py callpoint already strips this
+    # The zerver/views/message_edit.py call point already strips this
     # via REQ_topic; so we can delete this line if we arrange a
     # contract where future callers in the embedded bots system strip
     # use REQ_topic as well (or otherwise are guaranteed to strip input).
@@ -5095,7 +5095,7 @@ def do_change_stream_permission(
         stream.history_public_to_subscribers = True
     else:
         assert invite_only is not None
-        # is_web_public is Falsey
+        # is_web_public is falsey
         history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
             stream.realm,
             invite_only,
@@ -5708,7 +5708,7 @@ def do_change_user_setting(
     transaction.on_commit(lambda: send_event(user_profile.realm, event, [user_profile.id]))
 
     if setting_name in UserProfile.notification_settings_legacy:
-        # This legacy event format is for backwards-compatiblity with
+        # This legacy event format is for backwards-compatibility with
         # clients that don't support the new user_settings event type.
         # We only send this for settings added before Feature level 89.
         legacy_event = {
@@ -5722,7 +5722,7 @@ def do_change_user_setting(
         )
 
     if setting_name in UserProfile.display_settings_legacy or setting_name == "timezone":
-        # This legacy event format is for backwards-compatiblity with
+        # This legacy event format is for backwards-compatibility with
         # clients that don't support the new user_settings event type.
         # We only send this for settings added before Feature level 89.
         legacy_event = {
@@ -5918,7 +5918,7 @@ def get_default_subs(user_profile: UserProfile) -> List[Stream]:
     return get_default_streams_for_realm(user_profile.realm_id)
 
 
-# returns default streams in json serializeable format
+# returns default streams in JSON serializable format
 def streams_to_dicts_sorted(streams: List[Stream]) -> List[Dict[str, Any]]:
     return sorted((stream.to_dict() for stream in streams), key=lambda elt: elt["name"])
 
@@ -6993,7 +6993,7 @@ def do_update_message(
                 # TODO: Guest users don't see the new moved topic
                 # unless breadcrumb message for new stream is
                 # enabled. Excluding these users from receiving this
-                # event helps us avoid a error trackeback for our
+                # event helps us avoid a error traceback for our
                 # clients. We should figure out a way to inform the
                 # guest users of this new topic if sending a 'message'
                 # event for these messages is not an option.

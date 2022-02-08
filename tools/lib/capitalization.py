@@ -20,7 +20,6 @@ IGNORED_PHRASES = [
     r"Dropbox",
     r"GCM",
     r"GitHub",
-    r"G Suite",
     r"Google",
     r"Gravatar",
     r"Hamlet",

@@ -313,7 +313,7 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, "/login/")
 
-        # Tell server that user wants to login anonymously
+        # Tell server that user wants to log in anonymously
         # Redirects to load webapp.
         realm = get_realm("zulip")
         result = self.client_post("/", {"prefers_web_public_view": "true"})

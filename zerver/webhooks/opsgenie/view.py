@@ -26,7 +26,7 @@ ALL_EVENT_TYPES = [
 ]
 
 
-@webhook_view("OpsGenie", all_event_types=ALL_EVENT_TYPES)
+@webhook_view("Opsgenie", all_event_types=ALL_EVENT_TYPES)
 @has_request_variables
 def api_opsgenie_webhook(
     request: HttpRequest,
@@ -93,7 +93,7 @@ def api_opsgenie_webhook(
         )
 
     body_template = """
-[OpsGenie alert for {integration_name}](https://app.opsgenie.com/alert/V2#/show/{alert_id}):
+[Opsgenie alert for {integration_name}](https://app.opsgenie.com/alert/V2#/show/{alert_id}):
 * **Type**: {alert_type}
 {additional_info}
 """.strip()

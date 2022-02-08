@@ -63,7 +63,7 @@ the current documentation as a resource and guide as you begin.
 
 - Read through the existing articles in that section and pay attention
   to the writing style and [voice](#voice), as well as any
-  [Markdown features](#markdown-features) used to enchance the
+  [Markdown features](#markdown-features) used to enhance the
   readability of the documentation.
 
 - Should the feature you're documenting be added or merged into an

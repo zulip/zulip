@@ -7,7 +7,7 @@ class StreamTopicTarget:
     """
     This class is designed to help us move to a
     StreamTopic table or something similar.  It isolates
-    places where we are are still using `topic_name` as
+    places where we are still using `topic_name` as
     a key into tables.
     """
 

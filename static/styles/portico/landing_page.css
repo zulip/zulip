@@ -2371,7 +2371,7 @@ nav {
     font-size: 1.3em;
     text-align: center;
 
-    opacity: 0.7;
+    opacity: 0.9;
 }
 
 .portico-landing.why-page .markdown {
@@ -3350,10 +3350,6 @@ nav {
 }
 
 @media (width <= 906px) {
-    .portico-landing.why-page .hero p br {
-        display: none;
-    }
-
     .portico-landing.features-app {
         section {
             &.notifications {
@@ -4282,6 +4278,8 @@ nav {
     border-radius: 1em;
     font-weight: 400;
     margin: 40px 5px;
+    display: flex;
+    flex-direction: column;
 
     a {
         color: hsl(0, 0%, 100%);
@@ -4332,6 +4330,7 @@ nav {
     }
 }
 
+.case-study-page,
 .solutions-page {
     .hero-text {
         position: relative;
@@ -4485,13 +4484,6 @@ nav {
 .portico-landing.why-page.case-study-page {
     .bg-dimmer {
         background-color: hsl(224, 52%, 12%, 0.86);
-    }
-
-    .hero-text {
-        margin: 0 auto;
-        font-size: 25px;
-        font-weight: 500;
-        opacity: 0.8;
     }
 }
 

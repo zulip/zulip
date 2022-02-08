@@ -20,7 +20,7 @@ in a more colloquial style, German translations should be rather informal as wel
   say _"Dieser Fehler tritt häufiger auf."_
 
 - "Das ist die Seite, wo der Quelltext steht." - the "_wo_" is regional,
-  say _"Das ist die Seite, auf der der Quelltext steht."_ instead.
+  say _"Das ist die Seite, auf der Quelltext steht."_ instead.
 
 ### Form of address
 

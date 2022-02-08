@@ -80,7 +80,7 @@ def stripe_webhook(request: HttpRequest) -> HttpResponse:
             )
         except PaymentIntent.DoesNotExist:
             # PaymentIntent that was not manually created from the billing system.
-            # Could be an Invoice getting paid which is is not an event we are interested in.
+            # Could be an Invoice getting paid which is not an event we are interested in.
             return HttpResponse(status=200)
         event.content_type = ContentType.objects.get_for_model(PaymentIntent)
         event.object_id = payment_intent.id
@@ -95,7 +95,7 @@ def stripe_webhook(request: HttpRequest) -> HttpResponse:
             )
         except PaymentIntent.DoesNotExist:
             # PaymentIntent that was not manually created from the billing system.
-            # Could be an Invoice getting paid which is is not an event we are interested in.
+            # Could be an Invoice getting paid which is not an event we are interested in.
             return HttpResponse(status=200)
         event.content_type = ContentType.objects.get_for_model(PaymentIntent)
         event.object_id = payment_intent.id

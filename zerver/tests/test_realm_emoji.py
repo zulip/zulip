@@ -286,7 +286,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_json_error(result, "A custom emoji with this name already exists.")
 
     def test_reupload(self) -> None:
-        # An user should be able to reupload an emoji with same name.
+        # A user should be able to reupload an emoji with same name.
         self.login("iago")
         with get_test_image_file("img.png") as fp1:
             emoji_data = {"f1": fp1}

@@ -162,7 +162,7 @@ class OpenAPIToolsTest(ZulipTestCase):
                 )
             with self.assertRaisesRegex(
                 SchemaError,
-                r"additionalProperties needs to be defined for objects to makesure they have no additional properties left to be documented\.",
+                r"additionalProperties needs to be defined for objects to make sure they have no additional properties left to be documented\.",
             ):
                 # Checks for opaque objects
                 validate_schema(
@@ -286,7 +286,7 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
         except KeyError:
             return
 
-    def check_for_non_existant_openapi_endpoints(self) -> None:
+    def check_for_non_existent_openapi_endpoints(self) -> None:
         """Here, we check to see if every endpoint documented in the OpenAPI
         documentation actually exists in urls.py and thus in actual code.
         Note: We define this as a helper called at the end of
@@ -600,7 +600,7 @@ so maybe we shouldn't include it in pending_endpoints.
                         self.check_argument_types(function, openapi_parameters)
                         self.checked_endpoints.add(url_pattern)
 
-        self.check_for_non_existant_openapi_endpoints()
+        self.check_for_non_existent_openapi_endpoints()
 
 
 class TestCurlExampleGeneration(ZulipTestCase):
@@ -767,7 +767,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
-    def test_generate_and_render_curl_example_with_nonexistant_endpoints(self) -> None:
+    def test_generate_and_render_curl_example_with_nonexistent_endpoints(self) -> None:
         with self.assertRaises(KeyError):
             self.curl_example("/mark_this_stream_as_read", "POST")
         with self.assertRaises(KeyError):
@@ -946,7 +946,7 @@ class OpenAPIRegexTest(ZulipTestCase):
         Calls a few documented  and undocumented endpoints and checks whether they
         find a match or not.
         """
-        # Some of the undocumentd endpoints which are very similar to
+        # Some of the undocumented endpoints which are very similar to
         # some of the documented endpoints.
         assert find_openapi_endpoint("/users/me/presence") is None
         assert find_openapi_endpoint("/users/me/subscriptions/23") is None
@@ -971,7 +971,7 @@ class OpenAPIRequestValidatorTest(ZulipTestCase):
         """
         Test to make sure the request validator works properly
         The tests cover both cases such as catching valid requests marked
-        as invalid and making sure invalid requests are markded properly
+        as invalid and making sure invalid requests are marked properly
         """
         # `/users/me/subscriptions` doesn't require any parameters
         validate_request("/users/me/subscriptions", "get", {}, {}, False, "200")

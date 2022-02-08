@@ -4,7 +4,7 @@ import type {Page} from "puppeteer";
 
 import common from "../puppeteer_lib/common";
 
-async function wait_for_drafts_to_dissapear(page: Page): Promise<void> {
+async function wait_for_drafts_to_disappear(page: Page): Promise<void> {
     await page.waitForFunction(
         () => $("#draft_overlay").length === 0 || $("#draft_overlay").css("opacity") === "0",
     );
@@ -32,7 +32,7 @@ async function test_empty_drafts(page: Page): Promise<void> {
     assert.strictEqual(await common.get_text_from_selector(page, ".drafts-list"), "No drafts.");
 
     await page.click(`${drafts_overlay} .exit`);
-    await wait_for_drafts_to_dissapear(page);
+    await wait_for_drafts_to_disappear(page);
 }
 
 async function create_stream_message_draft(page: Page): Promise<void> {
@@ -117,7 +117,7 @@ async function test_previously_created_drafts_rendered(page: Page): Promise<void
 async function test_restore_message_draft(page: Page): Promise<void> {
     console.log("Restoring stream message draft");
     await page.click("#drafts_table .message_row:not(.private-message) .restore-draft");
-    await wait_for_drafts_to_dissapear(page);
+    await wait_for_drafts_to_disappear(page);
     await page.waitForSelector("#stream-message", {visible: true});
     await page.waitForSelector("#preview_message_area", {hidden: true});
     await common.check_form_contents(page, "form#send_message_form", {
@@ -172,7 +172,7 @@ async function test_edited_draft_message(page: Page): Promise<void> {
 async function test_restore_private_message_draft(page: Page): Promise<void> {
     console.log("Restoring private message draft.");
     await page.click("#drafts_table .message_row.private-message .restore-draft");
-    await wait_for_drafts_to_dissapear(page);
+    await wait_for_drafts_to_disappear(page);
     await page.waitForSelector("#private-message", {visible: true});
     await common.check_form_contents(page, "form#send_message_form", {
         content: "Test private message.",
@@ -198,7 +198,7 @@ async function test_delete_draft(page: Page): Promise<void> {
     assert.strictEqual(drafts_count, 1, "Draft not deleted.");
     await page.waitForSelector("#drafts_table .message_row.private-message", {hidden: true});
     await page.click(`${drafts_overlay} .exit`);
-    await wait_for_drafts_to_dissapear(page);
+    await wait_for_drafts_to_disappear(page);
     await page.click("body");
 }
 

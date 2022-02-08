@@ -21,7 +21,7 @@ let sort_recipients_called = false;
 let sort_streams_called = false;
 const fake_rendered_person = $.create("fake-rendered-person");
 const fake_rendered_stream = $.create("fake-rendered-stream");
-const fake_rendered_group = $.create("fake-redered-group");
+const fake_rendered_group = $.create("fake-rendered-group");
 
 mock_esm("../../static/js/typeahead_helper", {
     render_person() {

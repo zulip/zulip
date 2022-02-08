@@ -347,7 +347,7 @@ test("muted_message_vars", () => {
 
 test("merge_message_groups", () => {
     // MessageListView has lots of DOM code, so we are going to test the message
-    // group mearging logic on its own.
+    // group merging logic on its own.
 
     function build_message_context(message = {}, message_context = {}) {
         message_context = {

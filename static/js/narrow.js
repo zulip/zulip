@@ -162,7 +162,7 @@ export function reset_ui_state() {
 }
 
 export function activate(raw_operators, opts) {
-    /* Main entrypoint for switching to a new view / message list.
+    /* Main entry point for switching to a new view / message list.
        Note that for historical reasons related to the current
        client-side caching structure, the "All messages"/message_lists.home
        view is reached via `narrow.deactivate()`.

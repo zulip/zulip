@@ -48,7 +48,7 @@ to understand when implementing an internationalized application:
   translate the content.
 - **Word order** varies between languages (e.g. some languages put
   subjects before verbs, others the other way around). This means
-  that **concatenating translateable strings** produces broken results
+  that **concatenating translatable strings** produces broken results
   (more details with examples are below).
 - The **width of the string needed to express something** varies
   dramatically between languages; this means you can't just hardcode a
@@ -202,7 +202,7 @@ class Realm(models.Model):
     STREAM_EVENTS_NOTIFICATION_TOPIC = gettext_lazy('stream events')
 ```
 
-To ensure we always internationalize our JSON errors messages, the
+To ensure we always internationalize our JSON error messages, the
 Zulip linter (`tools/lint`) attempts to verify correct usage.
 
 ## Frontend translations

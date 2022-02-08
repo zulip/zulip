@@ -158,7 +158,7 @@ regularly install apt upgrades manually!
 :::
 
 Restarting one of the system services that Zulip uses (PostgreSQL,
-memcached, Redis, or Rabbitmq) will drop the connections that
+memcached, Redis, or RabbitMQ) will drop the connections that
 Zulip processes have to the service, resulting in future operations on
 those connections throwing errors.
 

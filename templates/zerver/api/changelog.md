@@ -100,7 +100,7 @@ format used by the Zulip server that they are interacting with.
 
 * [`PATCH /realm`]: Added `string_id` parameter for changing an
   organization's subdomain. Currently, this is only allowed for
-  changing changing a demo organization to a normal one.
+  changing a demo organization to a normal one.
 
 **Feature level 103**
 

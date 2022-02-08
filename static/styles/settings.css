@@ -1518,7 +1518,7 @@ input[type="checkbox"] {
     .content-wrapper {
         position: absolute;
         left: 251px;
-        /* the width of the settings sidbar this is right of is 250px + 1px border. */
+        /* the width of the settings sidebar this is right of is 250px + 1px border. */
         width: calc(100% - 250px - 1px);
         height: 100%;
         overflow: hidden;
