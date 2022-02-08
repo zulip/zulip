@@ -223,13 +223,28 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
         )
 
 
+@transaction.atomic
 def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
     """Given the send_request object for a private message from the user
     to welcome-bot, trigger the welcome-bot reply."""
-    welcome_bot = get_system_bot(settings.WELCOME_BOT, send_request.message.sender.realm_id)
-    human_response_lower = send_request.message.content.lower()
-    content = select_welcome_bot_response(human_response_lower)
-    internal_send_private_message(welcome_bot, send_request.message.sender, content)
+
+    # Locking the message row to add a reaction.
+    message = Message.objects.select_for_update().get(id=send_request.message.id)
+    welcome_bot = get_system_bot(settings.WELCOME_BOT, message.sender.realm_id)
+    human_response_lower = message.content.lower()
+    human_recipient_id = message.sender.recipient_id
+    assert human_recipient_id is not None
+    content = ""
+    if Message.objects.filter(sender=welcome_bot, recipient_id=human_recipient_id).count() < 2:
+        # This block adds a ":tada:" reaction and a special message on first reply by the user.
+        emoji_reaction = "tada"
+        (emoji_code, reaction_type) = emoji_name_to_emoji_code(message.sender.realm, emoji_reaction)
+        do_add_reaction(welcome_bot, message, emoji_reaction, emoji_code, reaction_type)
+
+        content += _("I'm happy to help you out!") + " " ":tada:" "\n" "\n"
+
+    content += select_welcome_bot_response(human_response_lower)
+    internal_send_private_message(welcome_bot, message.sender, content)
 
 
 @transaction.atomic
