@@ -309,8 +309,15 @@
         margin-bottom: 5px;
         margin-left: 5px;
         height: 100px;
-        display: block !important;
+        width: 150px;
+        display: inline-block !important;
         border: none !important;
+
+        a {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+        }
     }
 
     &.rtl .twitter-image,
@@ -350,8 +357,9 @@
     .twitter-image img,
     .message_inline_image img,
     .message_inline_ref img {
-        height: auto;
-        max-height: 100%;
+        height: 100%;
+        width: 100%;
+        object-fit: cover;
         float: left;
         margin-right: 10px;
     }
