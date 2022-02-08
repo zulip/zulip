@@ -213,6 +213,10 @@ function do_hashchange_overlay(old_hash) {
         );
     }
 
+    if (base === "streams" && !section) {
+        history.replaceState(null, "", get_full_url("streams/subscribed"));
+    }
+
     // Start by handling the specific case of going
     // from something like streams/all to streams_subscribed.
     //
