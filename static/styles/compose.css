@@ -547,8 +547,7 @@ input.recipient_box {
     .compose_gif_icon {
         font-size: 22px;
         height: 18px;
-        position: relative;
-        bottom: 6px;
+        line-height: 18px;
     }
 
     .compose_control_menu {
