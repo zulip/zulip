@@ -556,6 +556,7 @@ export function initialize() {
     };
 
     let status_emoji_name_tooltip;
+    let buddy_list_tooltip;
 
     function calculate_tooltip_placement(placement) {
         if (window.innerWidth < media_breakpoints_num.md) {
@@ -584,6 +585,7 @@ export function initialize() {
                 observer.disconnect();
             },
             onShow: (instance) => {
+                buddy_list_tooltip = instance;
                 // For both buddy list and top left corner pm list, `target_node`
                 // is their parent `ul` element. We cannot use MutationObserver
                 // directly on the reference element because it will be removed
@@ -631,6 +633,7 @@ export function initialize() {
             placement,
             content: render_status_emoji_name_tooltip_content(title_data),
             onShow: (instance) => {
+                buddy_list_tooltip.hide();
                 status_emoji_name_tooltip = instance;
             },
             appendTo: () => document.body,
