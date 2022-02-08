@@ -27,6 +27,10 @@ export let pill_widget;
 let current_stream_id;
 let subscribers_list_widget;
 
+export function clear_pill_widget() {
+    pill_widget.clear();
+}
+
 function create_item_from_text(text, current_items) {
     const funcs = [
         stream_pill.create_item_from_stream_name,
@@ -110,6 +114,24 @@ function show_stream_subscription_request_result({
     if (remove_class) {
         stream_subscription_req_result_elem.removeClass(remove_class);
     }
+}
+
+export function enable_subscriber_creation({parent_container}) {
+    const pill_container = parent_container.find(".pill-container");
+
+    pill_widget = input_pill.create({
+        container: pill_container,
+        create_item_from_text,
+        get_text_from_item,
+    });
+
+    function get_users_for_subscriber_typeahead() {
+        // TODO: refine this when we go away from checkboxes
+        const potential_subscribers = people.get_people_for_stream_create();
+        return user_pill.filter_taken_users(potential_subscribers, pill_widget);
+    }
+
+    set_up_pill_typeahead({pill_container, get_users: get_users_for_subscriber_typeahead});
 }
 
 export function enable_subscriber_management({sub, parent_container}) {

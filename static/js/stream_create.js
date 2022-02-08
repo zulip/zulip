@@ -15,6 +15,7 @@ import * as people from "./people";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as stream_settings_ui from "./stream_settings_ui";
+import * as stream_subscribers_ui from "./stream_subscribers_ui";
 import * as ui_report from "./ui_report";
 
 let created_stream;
@@ -304,6 +305,8 @@ export function show_new_stream_modal() {
     const add_people_container = $("#people_to_add");
     add_people_container.html(render_new_stream_users({}));
 
+    stream_subscribers_ui.enable_subscriber_creation({parent_container: add_people_container});
+
     all_users = people.get_people_for_stream_create();
     // Add current user on top of list
     const current_user = people.get_by_user_id(page_params.user_id);
@@ -412,6 +415,26 @@ function create_handlers_for_users(container) {
         } else {
             update_checked_state_for_users(mark_checked);
         }
+    });
+
+    function add_users() {
+        const user_ids = stream_subscribers_ui.get_pill_user_ids();
+
+        update_checked_state_for_users(true, user_ids);
+
+        stream_subscribers_ui.clear_pill_widget();
+    }
+
+    container.on("keyup", ".add_subscribers_container .input", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            add_users();
+        }
+    });
+
+    container.on("click", ".add_subscribers_container button.add-subscriber-button", (e) => {
+        e.preventDefault();
+        add_users();
     });
 }
 
