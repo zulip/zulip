@@ -11,11 +11,9 @@ import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
-import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
-import * as stream_settings_data from "./stream_settings_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as ui_report from "./ui_report";
 
@@ -304,11 +302,7 @@ export function show_new_stream_modal() {
     stream_settings_ui.hide_or_disable_stream_privacy_options_if_required($("#stream-creation"));
 
     const add_people_container = $("#people_to_add");
-    add_people_container.html(
-        render_new_stream_users({
-            streams: stream_settings_data.get_streams_for_settings_page(),
-        }),
-    );
+    add_people_container.html(render_new_stream_users({}));
 
     all_users = people.get_people_for_stream_create();
     // Add current user on top of list
@@ -418,21 +412,6 @@ function create_handlers_for_users(container) {
         } else {
             update_checked_state_for_users(mark_checked);
         }
-    });
-
-    container.on("click", "#copy-from-stream-expand-collapse", (e) => {
-        e.preventDefault();
-        $("#stream-checkboxes").toggle();
-        $("#copy-from-stream-expand-collapse .toggle").toggleClass("fa-caret-right fa-caret-down");
-    });
-
-    container.on("change", "#stream-checkboxes label.checkbox", (e) => {
-        e.preventDefault();
-        const elem = $(e.target).closest("[data-stream-id]");
-        const stream_id = Number.parseInt(elem.attr("data-stream-id"), 10);
-        const checked = elem.find("input").prop("checked");
-        const subscriber_ids = peer_data.get_subscribers(stream_id);
-        update_checked_state_for_users(checked, subscriber_ids);
     });
 }
 

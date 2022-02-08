@@ -2306,24 +2306,6 @@ div.floating_recipient {
     }
 }
 
-#stream-checkboxes {
-    margin-top: 10px;
-    display: none;
-
-    .checkbox {
-        display: block;
-    }
-
-    input[type="checkbox"] {
-        margin: 5px 0;
-        float: none;
-    }
-}
-
-#copy-from-stream-expand-collapse {
-    cursor: pointer;
-}
-
 .sub_button_row {
     text-align: center;
 }
