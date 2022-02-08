@@ -78,7 +78,7 @@ def get_apns_context() -> Optional[APNsContext]:
     # which fills the logs; see https://github.com/Fatal1ty/aioapns/issues/15
     logging.getLogger("aioapns").setLevel(logging.CRITICAL)
 
-    if settings.APNS_CERT_FILE is None:
+    if settings.APNS_CERT_FILE is None:  # nocoverage
         return None
 
     # NB if called concurrently, this will make excess connections.
@@ -99,7 +99,7 @@ def get_apns_context() -> Optional[APNsContext]:
 
 
 def apns_enabled() -> bool:
-    return get_apns_context() is not None
+    return settings.APNS_CERT_FILE is not None
 
 
 def modernize_apns_payload(data: Dict[str, Any]) -> Dict[str, Any]:
