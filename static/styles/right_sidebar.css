@@ -78,6 +78,24 @@
         height: 8px;
         margin: 0 5px;
         display: block;
+        top: -9px;
+        left: 21px;
+    }
+
+    .first-line {
+        display: flex;
+        position: absolute;
+        top: 10px;
+    }
+    
+    .with-status {
+        position: absolute;
+        top: 0;
+    }
+    
+    .second-line {
+        position: absolute;
+        top: 20px;
     }
 
     a {
@@ -98,6 +116,7 @@
     overflow: hidden;
 
     .user-name {
+        max-width: 130px;
         overflow: hidden;
         text-overflow: ellipsis;
     }
@@ -105,6 +124,7 @@
 
 .user_sidebar_entry .selectable_sidebar_block {
     width: calc(100% - 16px);
+    height: 40px;
     display: flex;
     flex-direction: row;
 }
@@ -117,7 +137,8 @@
     }
 }
 
-.my_user_status {
+.my_user_status,
+.user-status {
     opacity: 0.5;
 }
 

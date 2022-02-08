@@ -1,12 +1,36 @@
 <li data-user-id="{{user_id}}" class="user_sidebar_entry {{#if is_current_user}}user_sidebar_entry_me {{/if}}{{#if num_unread}} user-with-count {{/if}} narrow-filter {{#if faded}} user-fade {{/if}}">
     <div class="selectable_sidebar_block">
-        <span class="{{user_circle_class}} user_circle"></span>
         <a class="user-presence-link"
           href="{{href}}"
           data-user-id="{{user_id}}"
           data-name="{{name}}">
-            <span class="user-name">{{name}}</span>
-            {{> status_emoji status_emoji_info}}
+            <div class="user-profile-picture">
+                <img src="{{profile_picture}}"/>
+                <span class="{{user_circle_class}} user_circle"></span>
+            </div>
+            <div class="user-info">
+                <div class="first-line {{#if status}} with-status {{/if}}">
+                    <span class="user-name">{{name}}</span>
+                    {{#if status_emoji_info}}
+                        {{#if status_emoji_info.emoji_alt_code}}
+                            <div class="emoji_alt_code">&nbsp:{{status_emoji_info.emoji_name}}:</div>
+                        {{else}}
+                            {{#if status_emoji_info.still_url}}
+                            <img src="{{status_emoji_info.still_url}}" class="emoji status_emoji" data-animated-url="{{status_emoji_info.url}}" data-still-url="{{status_emoji_info.still_url}}" />
+                            {{else if status_emoji_info.url}}
+                            <img src="{{status_emoji_info.url}}" class="emoji status_emoji" data-animated-url="{{status_emoji_info.url}}" data-still-url="{{status_emoji_info.still_url}}" />
+                            {{else}}
+                            <div class="emoji status_emoji emoji-{{status_emoji_info.emoji_code}}"></div>
+                            {{/if}}
+                        {{/if}}
+                    {{/if}}
+                </div>
+                {{#if status}}
+                <div class="second-line">
+                    <span class="user-status">{{status}}</span>
+                </div>
+                {{/if}}
+            </div>
         </a>
         <span class="unread_count">{{#if num_unread}}{{num_unread}}{{/if}}</span>
     </div>

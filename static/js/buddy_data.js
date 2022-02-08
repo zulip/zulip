@@ -182,7 +182,9 @@ export function info_for(user_id) {
 
     return {
         href: hash_util.pm_with_url(person.email),
+        profile_picture: people.small_avatar_url_for_person(person),
         name: person.full_name,
+        status: user_status.get_status_text(user_id),
         user_id,
         my_user_status,
         status_emoji_info,

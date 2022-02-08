@@ -1660,7 +1660,8 @@ div.focused_table {
     padding-bottom: 0;
 }
 
-.inline_profile_picture {
+.inline_profile_picture,
+.user-profile-picture {
     display: inline-block;
     width: 35px;
     height: 35px;
