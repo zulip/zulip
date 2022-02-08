@@ -99,7 +99,20 @@ export function update_stream_color(sub, color, {update_historical = false} = {}
     message_view_header.colorize_message_view_header();
 }
 
+export const sidebar_popover_colorpicker_options_full = {
+    clickoutFiresChange: false,
+    showPalette: true,
+    showInput: true,
+    flat: true,
+    cancelText: "",
+    chooseText: $t({defaultMessage: "Confirm"}),
+    palette: stream_color_palette,
+    change: picker_do_change_color,
+};
+
 function picker_do_change_color(color) {
+    $(".colorpicker").spectrum("destroy");
+    $(".colorpicker").spectrum(sidebar_popover_colorpicker_options_full);
     const stream_id = Number.parseInt($(this).attr("stream_id"), 10);
     const hex_color = color.toHexString();
     stream_settings_ui.set_color(stream_id, hex_color);
@@ -112,17 +125,6 @@ export const sidebar_popover_colorpicker_options = {
     showPalette: true,
     showInput: true,
     flat: true,
-    palette: stream_color_palette,
-    change: picker_do_change_color,
-};
-
-export const sidebar_popover_colorpicker_options_full = {
-    clickoutFiresChange: false,
-    showPalette: true,
-    showInput: true,
-    flat: true,
-    cancelText: "",
-    chooseText: $t({defaultMessage: "Confirm"}),
     palette: stream_color_palette,
     change: picker_do_change_color,
 };
