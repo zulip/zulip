@@ -48,8 +48,9 @@ async function open_streams_modal(page: Page): Promise<void> {
     assert.ok(url.includes("#streams/all"));
 }
 
-async function test_subscription_button_verona_stream(page: Page): Promise<void> {
-    const button_selector = "[data-stream-name='Verona'] .sub_unsub_button";
+async function test_subscription_button(page: Page): Promise<void> {
+    const stream_selector = "[data-stream-name='Venice']";
+    const button_selector = `${stream_selector} .sub_unsub_button`;
     const subscribed_selector = `${button_selector}.checked`;
     const unsubscribed_selector = `${button_selector}:not(.checked)`;
 
@@ -61,11 +62,15 @@ async function test_subscription_button_verona_stream(page: Page): Promise<void>
         return await page.waitForSelector(unsubscribed_selector, {visible: true});
     }
 
+    // Make sure that Venice is even in our list of streams.
+    await page.waitForSelector(stream_selector, {visible: true});
+    await page.waitForSelector(button_selector, {visible: true});
+
     // Note that we intentionally re-find the button after each click, since
     // the live-update code may replace the whole row.
     let button;
 
-    // We assume Verona is already subscribed, so the first line here
+    // We assume Venice is already subscribed, so the first line here
     // should happen immediately.
     button = await subscribed();
     await button!.click();
@@ -263,7 +268,7 @@ async function test_streams_search_feature(page: Page): Promise<void> {
 async function subscriptions_tests(page: Page): Promise<void> {
     await common.log_in(page);
     await open_streams_modal(page);
-    await test_subscription_button_verona_stream(page);
+    await test_subscription_button(page);
     await test_stream_creation(page);
     await test_streams_search_feature(page);
 }
