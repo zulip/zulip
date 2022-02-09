@@ -2,7 +2,7 @@
 <ul class="nav nav-list actions_popover">
     {{#if should_display_hide_option}}
     <li>
-        <a href="#" class="rehide_muted_user_message" data-message-id="{{message_id}}">
+        <a class="rehide_muted_user_message" data-message-id="{{message_id}}">
             <i class="fa fa-eye-slash" aria-hidden="true"></i>
             {{t "Hide muted message again" }}
         </a>
@@ -11,7 +11,7 @@
 
     {{#if should_display_edit_and_view_source}}
     <li>
-        <a href="#" class="popover_edit_message" data-message-id="{{message_id}}">
+        <a class="popover_edit_message" data-message-id="{{message_id}}">
             <i class="{{#if use_edit_icon}}fa fa-pencil{{else}}fa fa-file-code-o{{/if}}" aria-hidden="true"></i> {{editability_menu_item}}
             <span class="hotkey-hint">(e)</span>
         </a>
@@ -20,7 +20,7 @@
 
     {{#if should_display_quote_and_reply}}
     <li>
-        <a href="#" class="respond_button" data-message-id="{{message_id}}">
+        <a class="respond_button" data-message-id="{{message_id}}">
             <i class="fa fa-reply" aria-hidden="true"></i> {{t "Quote and reply or forward" }}
             <span class="hotkey-hint">(>)</span>
         </a>
@@ -29,7 +29,7 @@
 
     {{#if should_display_reminder_option}}
     <li>
-        <a href="#" class='reminder_button' data-message-id="{{message_id}}">
+        <a class='reminder_button' data-message-id="{{message_id}}">
             <i class="fa fa-bell" aria-hidden="true"></i> {{t "Remind me about this" }}
         </a>
     </li>
@@ -37,7 +37,7 @@
 
     {{#if should_display_collapse}}
     <li>
-        <a href="#" class="popover_toggle_collapse" data-message-id="{{message_id}}">
+        <a class="popover_toggle_collapse" data-message-id="{{message_id}}">
             <i class="fa fa-minus" aria-hidden="true"></i>
             {{t "Collapse" }} <span class="hotkey-hint">(–)</span>
         </a>
@@ -46,7 +46,7 @@
 
     {{#if should_display_uncollapse}}
     <li>
-        <a href="#" class="popover_toggle_collapse" data-message-id="{{message_id}}">
+        <a class="popover_toggle_collapse" data-message-id="{{message_id}}">
             <i class="fa fa-plus" aria-hidden="true"></i>
             {{t "Un-collapse" }} <span class="hotkey-hint">(–)</span>
         </a>
@@ -55,7 +55,7 @@
 
     {{#if should_display_edit_history_option}}
     <li>
-        <a href="#" class="view_edit_history" data-message-id="{{message_id}}">
+        <a class="view_edit_history" data-message-id="{{message_id}}">
             <i class="fa fa-clock-o" aria-hidden="true"></i>
             {{t "View edit history" }}
         </a>
@@ -63,7 +63,7 @@
     {{/if}}
     {{#if should_display_delete_option}}
     <li>
-        <a href="#" class="delete_message" data-message-id="{{message_id}}">
+        <a class="delete_message" data-message-id="{{message_id}}">
             <i class="fa fa-times" aria-hidden="true"></i>
             {{t "Delete message" }}
         </a>
@@ -71,7 +71,7 @@
     {{/if}}
     {{#if can_mute_topic}}
     <li>
-        <a href="#" class="popover_mute_topic" data-msg-stream-id="{{stream_id}}" data-msg-topic="{{topic}}">
+        <a class="popover_mute_topic" data-msg-stream-id="{{stream_id}}" data-msg-topic="{{topic}}">
             <i class="fa fa-bell-slash" aria-hidden="true"></i>
             {{#tr}}Mute the topic <b>{topic}</b>{{/tr}} <span class="hotkey-hint">(M)</span>
         </a>
@@ -80,7 +80,7 @@
 
     {{#if can_unmute_topic}}
     <li>
-        <a href="#" class="popover_unmute_topic" data-msg-stream-id="{{stream_id}}" data-msg-topic="{{topic}}">
+        <a class="popover_unmute_topic" data-msg-stream-id="{{stream_id}}" data-msg-topic="{{topic}}">
             <i class="fa fa-bell" aria-hidden="true"></i>
             {{#tr}}Unmute the topic <b>{topic}</b>{{/tr}}
         </a>
@@ -89,7 +89,7 @@
 
     {{#if should_display_add_reaction_option}}
     <li>
-        <a href="#" class="reaction_button" data-message-id="{{message_id}}">
+        <a class="reaction_button" data-message-id="{{message_id}}">
             <i class="fa fa-smile-o" aria-hidden="true"></i>
             {{#tr}}Add emoji reaction{{/tr}}
         </a>
