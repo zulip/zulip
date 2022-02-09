@@ -92,6 +92,24 @@ run_test("basics", () => {
 
     mld.clear();
     assert_contents(mld, []);
+    const msgs_sent_by_6 = [
+        {id: 2, sender_id: 6, type: "stream", stream_id: 1, topic: "whatever"},
+        {id: 4, sender_id: 6, type: "private", to_user_ids: "6,9,10"},
+        {id: 6, sender_id: 6, type: "private", to_user_ids: "6, 11"},
+    ];
+    const msgs_with_sender_ids = [
+        {id: 1, sender_id: 1, type: "stream", stream_id: 1, topic: "random1"},
+        {id: 3, sender_id: 4, type: "stream", stream_id: 1, topic: "random2"},
+        {id: 5, sender_id: 2, type: "private", to_user_ids: "2,10,11"},
+        {id: 8, sender_id: 11, type: "private", to_user_ids: "10"},
+        {id: 9, sender_id: 11, type: "private", to_user_ids: "9"},
+        ...msgs_sent_by_6,
+    ];
+    mld.add_messages(msgs_with_sender_ids);
+    assert.deepEqual(mld.get_messages_sent_by_user(6), msgs_sent_by_6);
+
+    mld.clear();
+    assert_contents(mld, []);
     assert.equal(mld.closest_id(99), -1);
     assert.equal(mld.get_last_message_sent_by_me(), undefined);
 

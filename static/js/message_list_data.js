@@ -521,6 +521,14 @@ export class MessageListData {
         return false;
     }
 
+    get_messages_sent_by_user(user_id) {
+        const msgs = _.filter(this._items, {sender_id: user_id});
+        if (msgs.length === 0) {
+            return [];
+        }
+        return msgs;
+    }
+
     get_last_message_sent_by_me() {
         const msg_index = _.findLastIndex(this._items, {sender_id: page_params.user_id});
         if (msg_index === -1) {
