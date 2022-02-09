@@ -62,11 +62,14 @@ function message_was_only_moved(message) {
     // edited.
     let moved = false;
     if (message.edit_history !== undefined) {
-        for (const msg of message.edit_history) {
-            if (msg.prev_content) {
+        for (const edit_history_event of message.edit_history) {
+            if (edit_history_event.prev_content) {
                 return false;
             }
-            if (util.get_edit_event_prev_topic(msg) || msg.prev_stream) {
+            if (
+                util.get_edit_event_prev_topic(edit_history_event) ||
+                edit_history_event.prev_stream
+            ) {
                 moved = true;
             }
         }
