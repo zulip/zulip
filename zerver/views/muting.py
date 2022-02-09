@@ -1,6 +1,7 @@
 import datetime
 from typing import Optional
 
+from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -39,7 +40,10 @@ def mute_topic(
     if topic_is_muted(user_profile, stream.id, topic_name):
         raise JsonableError(_("Topic already muted"))
 
-    do_mute_topic(user_profile, stream, topic_name, date_muted)
+    try:
+        do_mute_topic(user_profile, stream, topic_name, date_muted)
+    except IntegrityError:
+        raise JsonableError(_("Topic already muted"))
 
 
 def unmute_topic(
