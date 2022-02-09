@@ -44,6 +44,12 @@ mock_esm("../../static/js/rows", {
     },
 });
 
+mock_esm("../../static/js/people", {
+    sender_is_bot: () => false,
+    sender_is_guest: () => false,
+    small_avatar_url: () => "fake/small/avatar/url",
+});
+
 const {Filter} = zrequire("../js/filter");
 const {MessageListView} = zrequire("../js/message_list_view");
 const message_list = zrequire("message_list");
@@ -282,6 +288,11 @@ test("muted_message_vars", () => {
 
         // Sender is not muted.
         let result = calculate_variables(list, messages);
+
+        // sanity check on mocked values
+        assert.equal(result[1].sender_is_bot, false);
+        assert.equal(result[1].sender_is_guest, false);
+        assert.equal(result[1].small_avatar_url, "fake/small/avatar/url");
 
         // Check that `is_hidden` is false on all messages, and `include_sender` has not changed.
         assert.equal(result[0].is_hidden, false);
