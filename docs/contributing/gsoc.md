@@ -249,6 +249,14 @@ backend and core web app.
 **Please note that the project ideas described below have not yet been updated
 for GSoC 2022.**
 
+### Project size
+
+GSoC offers two project size options: 175 hours and 350 hours. We have designed
+all our projects to have incremental milestones that can be completed throughout
+the summer. Consequently, all Zulip projects described below are compatible with
+either project size. Of course, the amount of progress you will be expected to
+make depends on whether you are doing a 175-hour or 350-hour project.
+
 ### Full stack and web frontend focused projects
 
 Code: [github.com/zulip/zulip -- Python, Django, JavaScript, and
