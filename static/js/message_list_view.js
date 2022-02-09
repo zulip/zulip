@@ -295,6 +295,16 @@ export class MessageListView {
             message_container.include_sender = true;
         }
 
+        message_container.sender_is_bot = people.sender_is_bot(message_container.msg);
+        message_container.sender_is_guest = people.sender_is_guest(message_container.msg);
+
+        message_container.small_avatar_url = people.small_avatar_url(message_container.msg);
+        if (message_container.msg.stream) {
+            message_container.background_color = stream_data.get_color(
+                message_container.msg.stream,
+            );
+        }
+
         this._maybe_format_me_message(message_container);
         // Once all other variables are updated
         this._add_msg_edited_vars(message_container);
@@ -409,16 +419,6 @@ export class MessageListView {
                 same_sender(prev, message_container)
             ) {
                 message_container.include_sender = false;
-            }
-
-            message_container.sender_is_bot = people.sender_is_bot(message_container.msg);
-            message_container.sender_is_guest = people.sender_is_guest(message_container.msg);
-
-            message_container.small_avatar_url = people.small_avatar_url(message_container.msg);
-            if (message_container.msg.stream) {
-                message_container.background_color = stream_data.get_color(
-                    message_container.msg.stream,
-                );
             }
 
             this.set_calculated_message_container_variables(message_container);
