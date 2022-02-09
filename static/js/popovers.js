@@ -480,6 +480,7 @@ export function toggle_actions_popover(element, id) {
             message.edit_history.some(
                 (entry) =>
                     entry.prev_content !== undefined ||
+                    entry.prev_stream !== undefined ||
                     util.get_edit_event_prev_topic(entry) !== undefined,
             ) &&
             page_params.realm_allow_edit_history &&
