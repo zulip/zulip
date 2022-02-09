@@ -766,6 +766,11 @@ handlebars_rules = RuleList(
             "pattern": r'"{{t "',
             "description": "Invalid quoting for HTML element with translated string.",
         },
+        {
+            "pattern": r'href="#"',
+            "description": 'Avoid href="#" for elements with a JavaScript click handler.',
+            "exclude": {"static/templates/navbar.hbs"},
+        },
     ],
 )
 
