@@ -114,6 +114,78 @@ run_test("render_now_returns_month_and_day", () => {
     assert.equal(actual.needs_update, expected.needs_update);
 });
 
+run_test("format_time_modern", () => {
+    const today = date_2021;
+
+    const few_minutes_in_future = add(today, {minutes: 30});
+    const weeks_in_future = add(today, {days: 20});
+    const less_than_24_hours_ago = add(today, {hours: -23});
+    const twenty_four_hours_ago = add(today, {hours: -24});
+    const more_than_24_hours_ago = add(today, {hours: -25});
+    const less_than_a_week_ago = add(today, {days: -6});
+    const one_week_ago = add(today, {days: -7});
+    const less_than_6_months_ago = add(today, {months: -3});
+    const more_than_6_months_ago = add(today, {months: -9});
+    const previous_year_but_less_than_6_months = add(today, {months: -1});
+
+    assert.equal(timerender.format_time_modern(few_minutes_in_future, today), "Jan 27, 2021");
+    assert.equal(timerender.format_time_modern(weeks_in_future, today), "Feb 16, 2021");
+    assert.equal(timerender.format_time_modern(less_than_24_hours_ago, today), "2:53 AM");
+    assert.equal(
+        timerender.format_time_modern(twenty_four_hours_ago, today),
+        "translated: Yesterday",
+    );
+    assert.equal(
+        timerender.format_time_modern(more_than_24_hours_ago, today),
+        "translated: Yesterday",
+    );
+    assert.equal(timerender.format_time_modern(less_than_a_week_ago, today), "Thursday");
+    assert.equal(timerender.format_time_modern(one_week_ago, today), "Jan 20");
+    assert.equal(
+        timerender.format_time_modern(previous_year_but_less_than_6_months, today),
+        "Dec 27",
+    );
+    assert.equal(timerender.format_time_modern(less_than_6_months_ago, today), "Oct 27");
+    assert.equal(timerender.format_time_modern(more_than_6_months_ago, today), "Apr 27, 2020");
+});
+
+run_test("format_time_modern_different_timezones", () => {
+    const utc_tz = process.env.TZ;
+
+    // Day is yesterday in UTC+0 but is 2 days ago in local timezone hence DOW is returned.
+    let today = date_2017_PM;
+    let yesterday = add(date_2017, {days: -1});
+    assert.equal(timerender.format_time_modern(yesterday, today), "translated: Yesterday");
+
+    process.env.TZ = "America/Juneau";
+    let expected = "translated: 5/16/2017 at 11:12:53 PM AKDT (UTC-08:00)";
+    assert.equal(timerender.get_full_datetime(yesterday), expected);
+    assert.equal(timerender.format_time_modern(yesterday, today), "Tuesday");
+    process.env.TZ = utc_tz;
+
+    // Day is 2 days ago in UTC+0 but is yesterday in local timezone.
+    today = date_2017;
+    yesterday = add(date_2017_PM, {days: -2});
+    assert.equal(timerender.format_time_modern(yesterday, today), "Tuesday");
+
+    process.env.TZ = "Asia/Brunei";
+    expected = "translated: 5/17/2017 at 5:12:53 AM (UTC+08:00)";
+    assert.equal(timerender.get_full_datetime(yesterday), expected);
+    assert.equal(timerender.format_time_modern(yesterday, today), "translated: Yesterday");
+    process.env.TZ = utc_tz;
+
+    // Day is 6 days ago in UTC+0 but a week ago in local timezone hence difference in returned strings.
+    today = date_2017_PM;
+    yesterday = add(date_2017, {days: -6});
+    assert.equal(timerender.format_time_modern(yesterday, today), "Friday");
+
+    process.env.TZ = "America/Juneau";
+    expected = "translated: 5/11/2017 at 11:12:53 PM AKDT (UTC-08:00)";
+    assert.equal(timerender.get_full_datetime(yesterday), expected);
+    assert.equal(timerender.format_time_modern(yesterday, today), "May 11");
+    process.env.TZ = utc_tz;
+});
+
 run_test("render_now_returns_year_with_year_boundary", () => {
     const today = date_2019;
 

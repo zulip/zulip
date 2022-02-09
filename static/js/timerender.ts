@@ -1,5 +1,6 @@
 import {
     differenceInCalendarDays,
+    differenceInHours,
     differenceInMinutes,
     format,
     formatISO,
@@ -302,6 +303,26 @@ export function stringify_time(time: number | Date): string {
         return format(time, "HH:mm");
     }
     return format(time, "h:mm a");
+}
+
+export function format_time_modern(time: number | Date, today = new Date()): String {
+    const hours = differenceInHours(today, time);
+    const days_old = differenceInCalendarDays(today, time);
+
+    if (time > today) {
+        /* For timestamps in the future, we always show the year*/
+        return format(time, "MMM\u00A0dd,\u00A0yyyy");
+    } else if (hours < 24) {
+        return stringify_time(time);
+    } else if (days_old === 1) {
+        return $t({defaultMessage: "Yesterday"});
+    } else if (days_old < 7) {
+        return format(time, "EEEE");
+    } else if (days_old <= 180) {
+        return format(time, "MMM\u00A0dd");
+    }
+
+    return format(time, "MMM\u00A0dd,\u00A0yyyy");
 }
 
 // this is for rendering absolute time based off the preferences for twenty-four
