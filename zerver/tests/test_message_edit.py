@@ -117,9 +117,7 @@ class EditMessagePayloadTest(EditMessageTestCase):
         )
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
-            {
-                "message_id": msg_id,
-            },
+            {},
         )
         self.assert_json_error(result, "Nothing to change")
 
@@ -134,7 +132,6 @@ class EditMessagePayloadTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "stream_id": verona.id,
             },
         )
@@ -150,7 +147,6 @@ class EditMessagePayloadTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "topic": "Should not exist",
             },
         )
@@ -189,7 +185,6 @@ class EditMessagePayloadTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "topic": " ",
             },
         )
@@ -203,7 +198,6 @@ class EditMessagePayloadTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "topic": "editing\nfun",
             },
         )
@@ -217,7 +211,6 @@ class EditMessagePayloadTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
                 "content": "Not allowed",
@@ -243,7 +236,6 @@ class EditMessagePayloadTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "content": "/poll Games?\nYES\nNO\nMaybe",
             },
         )
@@ -297,7 +289,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "content": "after edit",
             },
         )
@@ -307,7 +298,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "topic": "edited",
             },
         )
@@ -459,7 +449,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "content": "content after edit",
             },
         )
@@ -473,7 +462,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "content": " ",
             },
         )
@@ -498,7 +486,6 @@ class EditMessageTest(EditMessageTestCase):
         result_1 = self.client_patch(
             f"/json/messages/{msg_id_1}",
             {
-                "message_id": msg_id_1,
                 "content": new_content_1,
             },
         )
@@ -531,7 +518,6 @@ class EditMessageTest(EditMessageTestCase):
         result_1 = self.client_patch(
             f"/json/messages/{msg_id_1}",
             {
-                "message_id": msg_id_1,
                 "content": new_content_1,
             },
         )
@@ -573,7 +559,6 @@ class EditMessageTest(EditMessageTestCase):
         result_2 = self.client_patch(
             f"/json/messages/{msg_id_2}",
             {
-                "message_id": msg_id_2,
                 "content": new_content_2,
             },
         )
@@ -625,7 +610,6 @@ class EditMessageTest(EditMessageTestCase):
             self.client_patch(
                 "/json/messages/" + str(msg_id),
                 {
-                    "message_id": msg_id,
                     "content": "We will edit this to also render as empty.",
                 },
             )
@@ -654,7 +638,6 @@ class EditMessageTest(EditMessageTestCase):
         result_1 = self.client_patch(
             f"/json/messages/{msg_id_1}",
             {
-                "message_id": msg_id_1,
                 "content": new_content_1,
             },
         )
@@ -732,7 +715,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "content": "content 2",
             },
         )
@@ -754,7 +736,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "topic": "topic 2",
             },
         )
@@ -767,7 +748,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "content": "content 3",
                 "topic": "topic 3",
             },
@@ -792,7 +772,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "content": "content 4",
             },
         )
@@ -805,7 +784,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "topic": "topic 4",
             },
         )
@@ -1168,7 +1146,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{message_id}",
             {
-                "message_id": message_id,
                 "content": "Hello @**everyone**",
             },
         )
@@ -1210,7 +1187,6 @@ class EditMessageTest(EditMessageTestCase):
             result = self.client_patch(
                 "/json/messages/" + str(message_id),
                 {
-                    "message_id": message_id,
                     "content": "Hello @**everyone**",
                 },
             )
@@ -1222,7 +1198,6 @@ class EditMessageTest(EditMessageTestCase):
             result = self.client_patch(
                 "/json/messages/" + str(message_id),
                 {
-                    "message_id": message_id,
                     "content": "Hello @**everyone**",
                 },
             )
@@ -1234,7 +1209,6 @@ class EditMessageTest(EditMessageTestCase):
             result = self.client_patch(
                 "/json/messages/" + str(message_id),
                 {
-                    "message_id": message_id,
                     "content": "Hello @**everyone**",
                 },
             )
@@ -1269,7 +1243,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{id1}",
             {
-                "message_id": id1,
                 "topic": new_topic,
                 "propagate_mode": "change_later",
             },
@@ -1282,7 +1255,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{id1}",
             {
-                "message_id": id1,
                 "topic": new_topic,
                 "propagate_mode": "change_later",
             },
@@ -1301,7 +1273,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(id1),
             {
-                "message_id": id1,
                 "topic": new_topic,
                 "propagate_mode": "change_later",
                 "content": "edited message",
@@ -1340,7 +1311,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{id1}",
             {
-                "message_id": id1,
                 "topic": "edited",
                 "propagate_mode": "change_later",
             },
@@ -1365,7 +1335,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{id2}",
             {
-                "message_id": id2,
                 "topic": "edited",
                 "propagate_mode": "change_all",
             },
@@ -1389,7 +1358,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{id2}",
             {
-                "message_id": id2,
                 "topic": "edited",
                 "propagate_mode": "change_all",
             },
@@ -1415,7 +1383,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
             },
@@ -1451,7 +1418,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
             },
@@ -1472,7 +1438,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
             },
@@ -1497,7 +1462,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "stream_id": verona.id,
                 "propagate_mode": "change_all",
             },
@@ -1541,7 +1505,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(new_msg_id),
             {
-                "message_id": new_msg_id,
                 "stream_id": verona.id,
                 "propagate_mode": "change_all",
             },
@@ -1568,7 +1531,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id_later}",
             {
-                "message_id": msg_id_later,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_later",
             },
@@ -1628,7 +1590,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id_later),
             {
-                "message_id": msg_id_later,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_one",
             },
@@ -1659,7 +1620,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id_later),
             {
-                "message_id": msg_id_later,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
             },
@@ -1692,7 +1652,6 @@ class EditMessageTest(EditMessageTestCase):
             result = self.client_patch(
                 "/json/messages/" + str(msg_id),
                 {
-                    "message_id": msg_id,
                     "stream_id": new_stream.id,
                     "propagate_mode": "change_all",
                 },
@@ -1782,7 +1741,6 @@ class EditMessageTest(EditMessageTestCase):
             result = self.client_patch(
                 "/json/messages/" + str(msg_id),
                 {
-                    "message_id": msg_id,
                     "stream_id": new_stream.id,
                     "propagate_mode": "change_all",
                 },
@@ -1878,7 +1836,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
                 "topic": "new topic",
@@ -1889,7 +1846,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
             },
@@ -1909,7 +1865,6 @@ class EditMessageTest(EditMessageTestCase):
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {
-                    "message_id": msg_id,
                     "stream_id": new_stream.id,
                     "propagate_mode": "change_all",
                     "topic": "new topic",
@@ -1975,7 +1930,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
                 "topic": "new topic",
@@ -2055,7 +2009,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
                 "send_notification_to_old_thread": "false",
@@ -2079,7 +2032,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
                 "send_notification_to_old_thread": "false",
@@ -2107,7 +2059,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
                 "send_notification_to_old_thread": "true",
@@ -2175,7 +2126,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
             },
@@ -2281,7 +2231,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(id1),
             {
-                "message_id": id1,
                 "topic": original_topic,
                 "propagate_mode": "change_all",
             },
@@ -2292,7 +2241,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(id1),
             {
-                "message_id": id1,
                 "topic": resolved_topic,
                 "propagate_mode": "change_all",
             },
@@ -2336,7 +2284,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(id1),
             {
-                "message_id": id1,
                 "topic": weird_topic,
                 "propagate_mode": "change_all",
             },
@@ -2361,7 +2308,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(id1),
             {
-                "message_id": id1,
                 "topic": unresolved_topic,
                 "propagate_mode": "change_all",
             },
