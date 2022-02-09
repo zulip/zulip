@@ -59,16 +59,18 @@
         <div id="private_messages" class="zoom-out">
             <div id="private_messages_header" class="zoom-in-hide">
                 <i id="toggle_private_messages_section_icon" class="fa fa-caret-down fa-lg" aria-hidden="true" ></i>
-                <h4 class="sidebar-title" data-tippy-content="{{t 'Private messages' }} (q)">{{t 'PRIVATE MESSAGES' }}</h4>
-                <span>
-                    {{~!-- squash whitespace --~}}
-                    {{!-- <a href="#narrow/is/private">
-                    </a> --}}
-                    <span class="unread_count" id="private_messages_unread_count"></span>
-                </span>
+                <h4 class="sidebar-title" data-tippy-content="{{t 'Private messages' }}">{{t 'PRIVATE MESSAGES' }}</h4>
+                {{~!-- squash whitespace --~}}
+                <span class="unread_count" id="private_messages_unread_count"></span>
+                <a href="#narrow/is/private">
+                    <i id="all_private_messages_icon" class="fa fa-align-right tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'All private messages (P)'}}"></i>
+                </a>
             </div>
             <div id="more_pms_header">
                 <a class="show-all-pms"> <i class="fa fa-chevron-left" aria-hidden="true"></i>{{t 'Back to streams' }}</a>
+                <a href="#narrow/is/private">
+                    <i id="all_private_messages_icon" class="fa fa-align-right tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'All private messages (P)'}}"></i>
+                </a>
             </div>
             <div id="private-container" class="scrolling_list" data-simplebar>
             </div>

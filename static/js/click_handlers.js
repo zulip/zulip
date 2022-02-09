@@ -39,6 +39,7 @@ import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
+import * as top_left_corner from "./top_left_corner";
 import * as topic_list from "./topic_list";
 import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
@@ -509,6 +510,13 @@ export function initialize() {
         if (sidebarHidden) {
             stream_popover.show_streamlist_sidebar();
         }
+    });
+
+    $("body").on("click", "#all_private_messages_icon", (e) => {
+        e.preventDefault();
+        $("#private_messages").addClass("active_private_messages_section");
+        top_left_corner.deselect_top_left_corner_items();
+        window.location.href = "#narrow/is/private";
     });
 
     $("#toggle_private_messages_section_icon").on("click", (e) => {

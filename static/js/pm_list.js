@@ -260,6 +260,7 @@ export function handle_narrow_activated(filter) {
         ) {
             append_new_active_pm_in_collapsed_pms();
         }
+        $("#private_messages").removeClass("active_private_messages_section");
     } else {
         // If we find one previously activated PM in collapsed PMs, then we remove it from the list
         // and make PM section empty and collapse it.
@@ -278,6 +279,7 @@ export function handle_narrow_deactivated() {
     // PM and resize the stream bar again.
     hide_more_pms();
     update_private_messages();
+    $("#private_messages").removeClass("active_private_messages_section");
     $("#private_messages").removeClass("zoom-in").addClass("zoom-out");
     $("#streams_list").show();
     $(".left-sidebar .right-sidebar-items").show();
@@ -301,7 +303,7 @@ export function initialize() {
         $(".left-sidebar .right-sidebar-items").hide();
     });
 
-    $("#private_messages").on("click", "#more_pms_header", (e) => {
+    $("#private_messages").on("click", ".show-all-pms", (e) => {
         e.stopPropagation();
         e.preventDefault();
         hide_more_pms();

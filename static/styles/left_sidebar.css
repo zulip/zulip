@@ -55,11 +55,25 @@ li.show-more-topics {
     }
 }
 
+#all_private_messages_icon {
+    opacity: 0.5;
+    display: inline;
+    right: 0;
+    position: absolute;
+    margin-right: 24px;
+    margin-top: 3px;
+
+    &:hover {
+        opacity: 1;
+        cursor: pointer;
+    }
+}
+
 #toggle_private_messages_section_icon {
     opacity: 0.5;
     padding: 1px;
     width: 11px;
-    margin-left: 2.5px;
+    margin-left: 4.5px;
 
     &:hover {
         opacity: 1;
@@ -542,11 +556,23 @@ li.expanded_private_message {
             top: 1px;
         }
     }
+
+    #all_private_messages_icon {
+        margin-left: 95px;
+    }
 }
 
 #private_messages {
     margin-bottom: 16px;
     margin-right: 2px;
+    padding-top: 5px;
+}
+
+.active_private_messages_section {
+    font-weight: 600 !important;
+    background-color: hsl(202, 56%, 91%);
+    position: relative;
+    border-radius: 4px;
 }
 
 #private_messages_header {

@@ -26,7 +26,7 @@ function remove(elem) {
     elem.removeClass("active-filter active-sub-filter");
 }
 
-function deselect_top_left_corner_items() {
+export function deselect_top_left_corner_items() {
     remove($(".top_left_all_messages"));
     remove($(".top_left_starred_messages"));
     remove($(".top_left_mentions"));
