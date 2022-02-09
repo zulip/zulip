@@ -48,9 +48,9 @@
                 </h3>
                 <div class="stream_permission_change_info alert-notification"></div>
                 <div class="button-group">
-                    <a class="change-stream-privacy button rounded small btn-warning" {{#unless can_change_stream_permissions}}style="display:none"{{/unless}} role="button">
+                    <button class="change-stream-privacy button rounded small btn-warning" title="{{t 'Change stream permissions' }}" {{#unless can_change_stream_permissions}}style="display:none"{{/unless}}>
                         <i class="fa fa-pencil" aria-hidden="true"></i>
-                    </a>
+                    </button>
                 </div>
             </div>
             <div class="subscription-type">
