@@ -57,22 +57,50 @@ function same_recipient(a, b) {
     return util.same_recipient(a.msg, b.msg);
 }
 
-function message_was_only_moved(message) {
-    // Returns true if the message has had its stream/topic edited
-    // (i.e. the message was moved), but its content has not been
-    // edited.
+function analyze_edit_history(message) {
+    // Returns a dict of booleans that describe the message's history:
+    //   * edited: if the message has had its content edited
+    //   * moved: if the message has had its stream/topic edited
+    //   * resolve_toggled: if the message has had a topic resolve/unresolve edit
+    let edited = false;
     let moved = false;
+    let resolve_toggled = false;
+
     if (message.edit_history !== undefined) {
         for (const edit_history_event of message.edit_history) {
             if (edit_history_event.prev_content) {
-                return false;
+                edited = true;
             }
-            if (edit_history_event.prev_topic || edit_history_event.prev_stream) {
+
+            if (edit_history_event.prev_stream) {
+                moved = true;
+            }
+
+            if (edit_history_event.prev_topic) {
+                // We know it has a topic edit. Now we need to determine if
+                // it was a true move or a resolve/unresolve.
+                if (
+                    resolved_topic.is_resolved(edit_history_event.topic) &&
+                    edit_history_event.topic.slice(2) === edit_history_event.prev_topic
+                ) {
+                    // Resolved.
+                    resolve_toggled = true;
+                    continue;
+                }
+                if (
+                    resolved_topic.is_resolved(edit_history_event.prev_topic) &&
+                    edit_history_event.prev_topic.slice(2) === edit_history_event.topic
+                ) {
+                    // Unresolved.
+                    resolve_toggled = true;
+                    continue;
+                }
+                // Otherwise, it is a real topic rename/move.
                 moved = true;
             }
         }
     }
-    return moved;
+    return {edited, moved, resolve_toggled};
 }
 
 function render_group_display_date(group, message_container) {
@@ -238,8 +266,11 @@ export class MessageListView {
     }
 
     _add_msg_edited_vars(message_container) {
-        // This adds variables to message_container object which calculate bools for
-        // checking position of "EDITED" label as well as the edited timestring
+        // This function computes data on whether the message was edited
+        // and in what ways, as well as where the "EDITED" or "MOVED"
+        // label should be located, and adds it to the message_container
+        // object.
+        //
         // The bools can be defined only when the message is edited
         // (or when the `last_edit_timestr` is defined). The bools are:
         //   * `edited_in_left_col`      -- when label appears in left column.
@@ -249,18 +280,29 @@ export class MessageListView {
         const include_sender = message_container.include_sender;
         const is_hidden = message_container.is_hidden;
         const status_message = Boolean(message_container.status_message);
-        if (last_edit_timestr !== undefined) {
-            message_container.last_edit_timestr = last_edit_timestr;
-            message_container.edited_in_left_col = !include_sender && !is_hidden;
-            message_container.edited_alongside_sender = include_sender && !status_message;
-            message_container.edited_status_msg = include_sender && status_message;
-            message_container.moved = message_was_only_moved(message_container.msg);
-        } else {
+        const edit_history_details = analyze_edit_history(message_container.msg);
+
+        if (
+            last_edit_timestr === undefined ||
+            !(edit_history_details.moved || edit_history_details.edited)
+        ) {
+            // For messages whose edit history at most includes
+            // resolving topics, we don't display an EDITED/MOVED
+            // notice at all. (The message actions popover will still
+            // display an edit history option, so you can see when it
+            // was marked as resolved if you need to).
             delete message_container.last_edit_timestr;
             message_container.edited_in_left_col = false;
             message_container.edited_alongside_sender = false;
             message_container.edited_status_msg = false;
+            return;
         }
+
+        message_container.last_edit_timestr = last_edit_timestr;
+        message_container.edited_in_left_col = !include_sender && !is_hidden;
+        message_container.edited_alongside_sender = include_sender && !status_message;
+        message_container.edited_status_msg = include_sender && status_message;
+        message_container.moved = edit_history_details.moved && !edit_history_details.edited;
     }
 
     set_calculated_message_container_variables(message_container, is_revealed) {

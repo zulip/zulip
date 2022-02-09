@@ -184,7 +184,37 @@ export function update_messages(events) {
 
         const old_stream = sub_store.get(event.stream_id);
 
-        // A topic edit may affect multiple messages, listed in
+        // Save the content edit to the front end msg.edit_history
+        // before topic edits to ensure that combined topic / content
+        // edits have edit_history logged for both before any
+        // potential narrowing as part of the topic edit loop.
+        if (event.orig_content !== undefined) {
+            if (page_params.realm_allow_edit_history) {
+                // Note that we do this for topic edits separately, below.
+                // If an event changed both content and topic, we'll generate
+                // two client-side events, which is probably good for display.
+                const edit_history_entry = {
+                    user_id: event.user_id,
+                    prev_content: event.orig_content,
+                    prev_rendered_content: event.orig_rendered_content,
+                    prev_rendered_content_version: event.prev_rendered_content_version,
+                    timestamp: event.edit_timestamp,
+                };
+                // Add message's edit_history in message dict
+                // For messages that are edited, edit_history needs to
+                // be added to message in frontend.
+                if (msg.edit_history === undefined) {
+                    msg.edit_history = [];
+                }
+                msg.edit_history = [edit_history_entry].concat(msg.edit_history);
+            }
+            message_content_edited = true;
+
+            // Update raw_content, so that editing a few times in a row is fast.
+            msg.raw_content = event.content;
+        }
+
+        // A topic or stream edit may affect multiple messages, listed in
         // event.message_ids. event.message_id is still the first message
         // where the user initiated the edit.
         topic_edited = new_topic !== undefined;
@@ -392,32 +422,6 @@ export function update_messages(events) {
                     );
                 }
             }
-        }
-
-        if (event.orig_content !== undefined) {
-            if (page_params.realm_allow_edit_history) {
-                // Note that we do this for topic edits separately, above.
-                // If an event changed both content and topic, we'll generate
-                // two client-side events, which is probably good for display.
-                const edit_history_entry = {
-                    user_id: event.user_id,
-                    prev_content: event.orig_content,
-                    prev_rendered_content: event.orig_rendered_content,
-                    prev_rendered_content_version: event.prev_rendered_content_version,
-                    timestamp: event.edit_timestamp,
-                };
-                // Add message's edit_history in message dict
-                // For messages that are edited, edit_history needs to
-                // be added to message in frontend.
-                if (msg.edit_history === undefined) {
-                    msg.edit_history = [];
-                }
-                msg.edit_history = [edit_history_entry].concat(msg.edit_history);
-            }
-            message_content_edited = true;
-
-            // Update raw_content, so that editing a few times in a row is fast.
-            msg.raw_content = event.content;
         }
 
         // Mark the message as edited for the UI. The rendering_only
