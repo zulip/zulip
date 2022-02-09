@@ -105,7 +105,6 @@ class MutedTopicsTests(ZulipTestCase):
                 self.assert_json_success(result)
 
             self.assertIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
-            self.assertTrue(topic_is_muted(user, stream.id, "Verona3"))
             self.assertTrue(topic_is_muted(user, stream.id, "verona3"))
 
             remove_topic_mute(
