@@ -105,6 +105,7 @@ from zerver.lib.message import (
     MessageDict,
     SendMessageRequest,
     access_message,
+    bulk_access_messages,
     get_last_message_id,
     normalize_body,
     render_markdown,
@@ -167,6 +168,7 @@ from zerver.lib.topic import (
     TOPIC_NAME,
     filter_by_exact_message_topic,
     filter_by_topic_name_via_message,
+    messages_for_topic,
     save_message_for_edit_use_case,
     update_edit_history,
     update_messages_for_topic_edit,
@@ -7022,13 +7024,41 @@ def do_update_message(
         # Notify users that the topic was moved.
         changed_messages_count = len(changed_messages)
 
+        if propagate_mode == "change_all":
+            moved_all_visible_messages = True
+        else:
+            # With other propagate modes, if the user in fact moved
+            # all messages in the stream, we want to explain it was a
+            # full-topic move.
+            #
+            # For security model reasons, we don't want to allow a
+            # user to take any action that would leak information
+            # about older messages they cannot access (E.g. the only
+            # remaining messages are in a stream without shared
+            # history). The bulk_access_messages call below addresses
+            # that concern.
+            #
+            # bulk_access_messages is inefficient for this task, since
+            # we just want to do the exists() version of this
+            # query. But it's nice to reuse code, and this bulk
+            # operation is likely cheaper than a `GET /messages`
+            # unless the topic has thousands of messages of history.
+            unmoved_messages = messages_for_topic(
+                stream_being_edited.recipient_id,
+                orig_topic_name,
+            )
+            visible_unmoved_messages = bulk_access_messages(
+                user_profile, unmoved_messages, stream=stream_being_edited
+            )
+            moved_all_visible_messages = len(visible_unmoved_messages) == 0
+
         old_thread_notification_string = None
         if send_notification_to_old_thread:
-            if propagate_mode == "change_all":
+            if moved_all_visible_messages:
                 old_thread_notification_string = gettext_lazy(
                     "This topic was moved to {new_location} by {user}."
                 )
-            elif propagate_mode == "change_one":
+            elif changed_messages_count == 1:
                 old_thread_notification_string = gettext_lazy(
                     "A message was moved from this topic to {new_location} by {user}."
                 )
@@ -7039,11 +7069,11 @@ def do_update_message(
 
         new_thread_notification_string = None
         if send_notification_to_new_thread:
-            if propagate_mode == "change_all":
+            if moved_all_visible_messages:
                 new_thread_notification_string = gettext_lazy(
                     "This topic was moved here from {old_location} by {user}."
                 )
-            elif propagate_mode == "change_one":
+            elif changed_messages_count == 1:
                 new_thread_notification_string = gettext_lazy(
                     "A message was moved here from {old_location} by {user}."
                 )

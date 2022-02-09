@@ -1591,6 +1591,35 @@ class EditMessageTest(EditMessageTestCase):
             f"2 messages were moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
         )
 
+    def test_move_message_to_stream_change_later_all_moved(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test"
+        )
+
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_later",
+            },
+        )
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assert_length(messages, 1)
+        self.assertEqual(
+            messages[0].content,
+            f"This topic was moved to #**new stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assert_length(messages, 4)
+        self.assertEqual(messages[0].id, msg_id)
+        self.assertEqual(
+            messages[3].content,
+            f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
     def test_move_message_to_stream_change_one(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
