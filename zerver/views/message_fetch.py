@@ -15,8 +15,6 @@ from sqlalchemy.sql import (
     ClauseElement,
     ColumnElement,
     Select,
-    Selectable,
-    alias,
     and_,
     column,
     func,
@@ -29,6 +27,7 @@ from sqlalchemy.sql import (
     table,
     union_all,
 )
+from sqlalchemy.sql.selectable import SelectBase
 from sqlalchemy.types import ARRAY, Boolean, Integer, Text
 
 from zerver.context_processors import get_valid_realm_from_request
@@ -1021,7 +1020,7 @@ def get_messages_backend(
         need_message = True
         need_user_message = True
 
-    query: Selectable
+    query: SelectBase
     query, inner_msg_id_col = get_base_query_for_search(
         user_profile=user_profile,
         need_message=need_message,
@@ -1080,7 +1079,7 @@ def get_messages_backend(
         first_visible_message_id=first_visible_message_id,
     )
 
-    main_query = alias(query)
+    main_query = query.subquery()
     query = select(main_query.c, None, main_query).order_by(column("message_id", Integer).asc())
     # This is a hack to tag the query we use for testing
     query = query.prefix_with("/* get_messages */")
@@ -1180,7 +1179,7 @@ def limit_query_to_range(
     anchored_to_right: bool,
     id_col: "ColumnElement[Integer]",
     first_visible_message_id: int,
-) -> Selectable:
+) -> SelectBase:
     """
     This code is actually generic enough that we could move it to a
     library, but our only caller for now is message search.
