@@ -1358,16 +1358,15 @@ def messages_in_narrow_backend(
             query = builder.add_term(query, term)
 
     sa_conn = get_sqlalchemy_connection()
-    query_result = list(sa_conn.execute(query).fetchall())
 
     search_fields = {}
-    for row in query_result:
-        message_id = row["message_id"]
-        topic_name = row[DB_TOPIC_NAME]
-        rendered_content = row["rendered_content"]
-        if "content_matches" in row:
-            content_matches = row["content_matches"]
-            topic_matches = row["topic_matches"]
+    for row in sa_conn.execute(query).fetchall():
+        message_id = row._mapping["message_id"]
+        topic_name = row._mapping[DB_TOPIC_NAME]
+        rendered_content = row._mapping["rendered_content"]
+        if "content_matches" in row._mapping:
+            content_matches = row._mapping["content_matches"]
+            topic_matches = row._mapping["topic_matches"]
         else:
             content_matches = topic_matches = []
         search_fields[str(message_id)] = get_search_fields(
