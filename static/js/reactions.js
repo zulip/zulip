@@ -412,10 +412,9 @@ view.remove_reaction = function ({
     const new_label = generate_title(emoji_name, user_list);
     reaction.attr("aria-label", new_label);
 
-    // If the user is the current user, turn off the "reacted" class.
-
     set_reaction_count(reaction, user_list);
 
+    // If the user is the current user, turn off the "reacted" class.
     if (user_id === page_params.user_id) {
         reaction.removeClass("reacted");
     }
@@ -539,6 +538,12 @@ export function update_user_fields(r) {
 function get_vote_text(user_list) {
     const usernames = people.get_display_full_names(user_list);
     if (usernames.length === 1) {
+        const current_user_reacted = user_list.includes(page_params.user_id);
+        if (current_user_reacted) {
+            return $t({
+                defaultMessage: "You",
+            });
+        }
         return usernames[0];
     }
 
