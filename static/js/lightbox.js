@@ -217,8 +217,10 @@ function display_image(payload) {
     img.src = payload.source;
     img_container.html(img).show();
 
-    $(".image-description .title").text(payload.title || "N/A");
-    $(".image-description .user").text(payload.user);
+    $(".image-description .title")
+        .text(payload.title || "N/A")
+        .prop("title", payload.title || "N/A");
+    $(".image-description .user").text(payload.user).prop("title", payload.user);
 
     $(".image-actions .open, .image-actions .download").attr("href", payload.source);
 }
