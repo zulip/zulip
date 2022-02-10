@@ -118,7 +118,7 @@ def ts_locs_array(
     match_pos = func.sum(part_len, type_=Integer).over(rows=(None, -1)) + len(TS_STOP)
     match_len = func.strpos(part, TS_STOP, type_=Integer) - 1
     return func.array(
-        select([postgresql.array([match_pos, match_len])]).offset(1).scalar_subquery(),
+        select(postgresql.array([match_pos, match_len])).offset(1).scalar_subquery(),
         type_=ARRAY(Integer),
     )
 
@@ -774,29 +774,33 @@ def get_base_query_for_search(
     # Handle the simple case where user_message isn't involved first.
     if not need_user_message:
         assert need_message
-        query = select([column("id", Integer).label("message_id")], None, table("zerver_message"))
+        query = select(column("id", Integer).label("message_id")).select_from(
+            table("zerver_message")
+        )
         inner_msg_id_col = literal_column("zerver_message.id", Integer)
         return (query, inner_msg_id_col)
 
     assert user_profile is not None
     if need_message:
-        query = select(
-            [column("message_id", Integer), column("flags", Integer)],
-            column("user_profile_id", Integer) == literal(user_profile.id),
-            join(
-                table("zerver_usermessage"),
-                table("zerver_message"),
-                literal_column("zerver_usermessage.message_id", Integer)
-                == literal_column("zerver_message.id", Integer),
-            ),
+        query = (
+            select(column("message_id", Integer), column("flags", Integer))
+            .where(column("user_profile_id", Integer) == literal(user_profile.id))
+            .select_from(
+                join(
+                    table("zerver_usermessage"),
+                    table("zerver_message"),
+                    literal_column("zerver_usermessage.message_id", Integer)
+                    == literal_column("zerver_message.id", Integer),
+                )
+            )
         )
         inner_msg_id_col = column("message_id", Integer)
         return (query, inner_msg_id_col)
 
-    query = select(
-        [column("message_id", Integer), column("flags", Integer)],
-        column("user_profile_id", Integer) == literal(user_profile.id),
-        table("zerver_usermessage"),
+    query = (
+        select(column("message_id", Integer), column("flags", Integer))
+        .where(column("user_profile_id", Integer) == literal(user_profile.id))
+        .select_from(table("zerver_usermessage"))
     )
     inner_msg_id_col = column("message_id", Integer)
     return (query, inner_msg_id_col)
@@ -1076,7 +1080,9 @@ def get_messages_backend(
     )
 
     main_query = query.subquery()
-    query = select(main_query.c, None, main_query).order_by(column("message_id", Integer).asc())
+    query = (
+        select(*main_query.c).select_from(main_query).order_by(column("message_id", Integer).asc())
+    )
     # This is a hack to tag the query we use for testing
     query = query.prefix_with("/* get_messages */")
     rows = list(sa_conn.execute(query).fetchall())
@@ -1328,18 +1334,22 @@ def messages_in_narrow_backend(
     msg_ids = [message_id for message_id in msg_ids if message_id >= first_visible_message_id]
     # This query is limited to messages the user has access to because they
     # actually received them, as reflected in `zerver_usermessage`.
-    query = select(
-        [column("message_id", Integer), topic_column_sa(), column("rendered_content", Text)],
-        and_(
-            column("user_profile_id", Integer) == literal(user_profile.id),
-            column("message_id", Integer).in_(msg_ids),
-        ),
-        join(
-            table("zerver_usermessage"),
-            table("zerver_message"),
-            literal_column("zerver_usermessage.message_id", Integer)
-            == literal_column("zerver_message.id", Integer),
-        ),
+    query = (
+        select(column("message_id", Integer), topic_column_sa(), column("rendered_content", Text))
+        .where(
+            and_(
+                column("user_profile_id", Integer) == literal(user_profile.id),
+                column("message_id", Integer).in_(msg_ids),
+            )
+        )
+        .select_from(
+            join(
+                table("zerver_usermessage"),
+                table("zerver_message"),
+                literal_column("zerver_usermessage.message_id", Integer)
+                == literal_column("zerver_message.id", Integer),
+            )
+        )
     )
 
     builder = NarrowBuilder(user_profile, column("message_id", Integer), user_profile.realm)
