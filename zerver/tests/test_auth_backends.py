@@ -1505,7 +1505,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         realm = get_realm("zulip")
 
         iago = self.example_user("iago")
-        do_invite_users(iago, [email], [], invite_expires_in_days=2)
+        do_invite_users(iago, [email], [], invite_expires_in_minutes=2 * 24 * 60)
 
         account_data_dict = self.get_account_data_dict(email=email, name=name)
         result = self.social_auth_test(
@@ -1555,9 +1555,9 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         referrer = self.example_user("hamlet")
         multiuse_obj = MultiuseInvite.objects.create(realm=realm, referred_by=referrer)
         multiuse_obj.streams.set(streams)
-        validity_in_days = 2
+        validity_in_minutes = 2 * 24 * 60
         create_confirmation_link(
-            multiuse_obj, Confirmation.MULTIUSE_INVITE, validity_in_days=validity_in_days
+            multiuse_obj, Confirmation.MULTIUSE_INVITE, validity_in_minutes=validity_in_minutes
         )
         multiuse_confirmation = Confirmation.objects.all().last()
         assert multiuse_confirmation is not None
@@ -1602,9 +1602,9 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             realm=lear_realm, referred_by=UserProfile.objects.filter(realm=lear_realm).first()
         )
         multiuse_obj.streams.set(streams)
-        validity_in_days = 2
+        validity_in_minutes = 2 * 24 * 60
         create_confirmation_link(
-            multiuse_obj, Confirmation.MULTIUSE_INVITE, validity_in_days=validity_in_days
+            multiuse_obj, Confirmation.MULTIUSE_INVITE, validity_in_minutes=validity_in_minutes
         )
         multiuse_confirmation = Confirmation.objects.all().last()
         assert multiuse_confirmation is not None
@@ -1840,15 +1840,15 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         email = self.nonreg_email("alice")
         name = "Alice Jones"
 
-        invite_expires_in_days = 2
+        invite_expires_in_minutes = 2 * 24 * 60
         do_invite_users(
             iago,
             [email],
             [],
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
             invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
         )
-        now = timezone_now() + datetime.timedelta(days=invite_expires_in_days + 1)
+        now = timezone_now() + datetime.timedelta(days=3)
 
         subdomain = "zulip"
         realm = get_realm("zulip")
@@ -4320,9 +4320,9 @@ class GoogleAuthBackendTest(SocialAuthBase):
         referrer = self.example_user("hamlet")
         multiuse_obj = MultiuseInvite.objects.create(realm=realm, referred_by=referrer)
         multiuse_obj.streams.set(streams)
-        validity_in_days = 2
+        validity_in_minutes = 2 * 24 * 60
         create_confirmation_link(
-            multiuse_obj, Confirmation.MULTIUSE_INVITE, validity_in_days=validity_in_days
+            multiuse_obj, Confirmation.MULTIUSE_INVITE, validity_in_minutes=validity_in_minutes
         )
         multiuse_confirmation = Confirmation.objects.all().last()
         assert multiuse_confirmation is not None

@@ -1371,12 +1371,12 @@ class TestLoggingCountStats(AnalyticsTestCase):
         user = self.create_user(email="first@domain.tld")
         stream, _ = self.create_stream_with_recipient()
 
-        invite_expires_in_days = 2
+        invite_expires_in_minutes = 2 * 24 * 60
         do_invite_users(
             user,
             ["user1@domain.tld", "user2@domain.tld"],
             [stream],
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
         )
         assertInviteCountEquals(2)
 
@@ -1386,7 +1386,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
             user,
             ["user1@domain.tld", "user2@domain.tld"],
             [stream],
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
         )
         assertInviteCountEquals(4)
 
@@ -1396,7 +1396,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
                 user,
                 ["user3@domain.tld", "malformed"],
                 [stream],
-                invite_expires_in_days=invite_expires_in_days,
+                invite_expires_in_minutes=invite_expires_in_minutes,
             )
         except InvitationError:
             pass
@@ -1408,7 +1408,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
                 user,
                 ["first@domain.tld", "user4@domain.tld"],
                 [stream],
-                invite_expires_in_days=invite_expires_in_days,
+                invite_expires_in_minutes=invite_expires_in_minutes,
             )
         except InvitationError:
             pass

@@ -41,13 +41,13 @@ def do_send_confirmation_email(
     invitee: PreregistrationUser,
     referrer: UserProfile,
     email_language: str,
-    invite_expires_in_days: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
+    invite_expires_in_minutes: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
 ) -> str:
     """
     Send the confirmation/welcome e-mail to an invited user.
     """
     activation_url = create_confirmation_link(
-        invitee, Confirmation.INVITATION, validity_in_days=invite_expires_in_days
+        invitee, Confirmation.INVITATION, validity_in_minutes=invite_expires_in_minutes
     )
     context = {
         "referrer_full_name": referrer.full_name,
@@ -129,7 +129,7 @@ def do_invite_users(
     invitee_emails: Collection[str],
     streams: Collection[Stream],
     *,
-    invite_expires_in_days: Optional[int],
+    invite_expires_in_minutes: Optional[int],
     invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
 ) -> None:
     num_invites = len(invitee_emails)
@@ -224,7 +224,7 @@ def do_invite_users(
             "prereg_id": prereg_user.id,
             "referrer_id": user_profile.id,
             "email_language": user_profile.realm.default_language,
-            "invite_expires_in_days": invite_expires_in_days,
+            "invite_expires_in_minutes": invite_expires_in_minutes,
         }
         queue_json_publish("invites", event)
 
@@ -343,7 +343,7 @@ def revoke_invites_generated_by_user(user_profile: UserProfile) -> None:
 def do_create_multiuse_invite_link(
     referred_by: UserProfile,
     invited_as: int,
-    invite_expires_in_days: Optional[int],
+    invite_expires_in_minutes: Optional[int],
     streams: Sequence[Stream] = [],
 ) -> str:
     realm = referred_by.realm
@@ -354,7 +354,7 @@ def do_create_multiuse_invite_link(
     invite.save()
     notify_invites_changed(referred_by.realm)
     return create_confirmation_link(
-        invite, Confirmation.MULTIUSE_INVITE, validity_in_days=invite_expires_in_days
+        invite, Confirmation.MULTIUSE_INVITE, validity_in_minutes=invite_expires_in_minutes
     )
 
 
@@ -395,11 +395,11 @@ def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
 
     expiry_date = prereg_user.confirmation.get().expiry_date
     if expiry_date is None:
-        invite_expires_in_days = None
+        invite_expires_in_minutes = None
     else:
         # The resent invitation is reset to expire as long after the
         # reminder is sent as it lasted originally.
-        invite_expires_in_days = (expiry_date - prereg_user.invited_at).days
+        invite_expires_in_minutes = (expiry_date - prereg_user.invited_at).total_seconds() / 60
     prereg_user.confirmation.clear()
 
     do_increment_logging_stat(
@@ -412,7 +412,7 @@ def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
         "prereg_id": prereg_user.id,
         "referrer_id": prereg_user.referred_by.id,
         "email_language": prereg_user.referred_by.realm.default_language,
-        "invite_expires_in_days": invite_expires_in_days,
+        "invite_expires_in_minutes": invite_expires_in_minutes,
     }
     queue_json_publish("invites", event)
 

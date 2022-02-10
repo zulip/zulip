@@ -36,8 +36,8 @@ def invite_users_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     invitee_emails_raw: str = REQ("invitee_emails"),
-    invite_expires_in_days: Optional[int] = REQ(
-        json_validator=check_none_or(check_int), default=settings.INVITATION_LINK_VALIDITY_DAYS
+    invite_expires_in_minutes: Optional[int] = REQ(
+        json_validator=check_none_or(check_int), default=settings.INVITATION_LINK_VALIDITY_MINUTES
     ),
     invite_as: int = REQ(json_validator=check_int, default=PreregistrationUser.INVITE_AS["MEMBER"]),
     stream_ids: List[int] = REQ(json_validator=check_list(check_int)),
@@ -80,7 +80,7 @@ def invite_users_backend(
         user_profile,
         invitee_emails,
         streams,
-        invite_expires_in_days=invite_expires_in_days,
+        invite_expires_in_minutes=invite_expires_in_minutes,
         invite_as=invite_as,
     )
     return json_success(request)
@@ -174,8 +174,8 @@ def resend_user_invite_email(
 def generate_multiuse_invite_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    invite_expires_in_days: Optional[int] = REQ(
-        json_validator=check_none_or(check_int), default=settings.INVITATION_LINK_VALIDITY_DAYS
+    invite_expires_in_minutes: Optional[int] = REQ(
+        json_validator=check_none_or(check_int), default=settings.INVITATION_LINK_VALIDITY_MINUTES
     ),
     invite_as: int = REQ(json_validator=check_int, default=PreregistrationUser.INVITE_AS["MEMBER"]),
     stream_ids: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
@@ -191,6 +191,6 @@ def generate_multiuse_invite_backend(
         streams.append(stream)
 
     invite_link = do_create_multiuse_invite_link(
-        user_profile, invite_as, invite_expires_in_days, streams
+        user_profile, invite_as, invite_expires_in_minutes, streams
     )
     return json_success(request, data={"invite_link": invite_link})

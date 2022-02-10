@@ -449,22 +449,22 @@ export const expires_in_values = {
     //     default: false,
     // },
     day: {
-        value: 1,
+        value: 24 * 60,
         description: $t({defaultMessage: "1 day"}),
         default: false,
     },
     threeDays: {
-        value: 3,
+        value: 3 * 24 * 60,
         description: $t({defaultMessage: "3 days"}),
         default: false,
     },
     tenDays: {
-        value: 10,
+        value: 10 * 24 * 60,
         description: $t({defaultMessage: "10 days"}),
         default: true,
     },
     thirtyDays: {
-        value: 30,
+        value: 30 * 24 * 60,
         description: $t({defaultMessage: "30 days"}),
         default: false,
     },

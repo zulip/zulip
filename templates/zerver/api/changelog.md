@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 126**
+
+* `POST /invites`, `POST /invites/multiuse`: Replaced `invite_expires_in_days`
+  parameter with `invite_expires_in_minutes`.
+
 **Feature level 125**
 
 * [`POST /register`](/api/register-queue), [`PATCH
