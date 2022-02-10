@@ -63,13 +63,15 @@ from zerver.views.message_fetch import (
 
 
 def get_sqlalchemy_sql(query: ClauseElement) -> str:
-    dialect = get_sqlalchemy_connection().dialect
+    with get_sqlalchemy_connection() as conn:
+        dialect = conn.dialect
     comp = query.compile(dialect=dialect)
     return str(comp)
 
 
 def get_sqlalchemy_query_params(query: ClauseElement) -> Dict[str, object]:
-    dialect = get_sqlalchemy_connection().dialect
+    with get_sqlalchemy_connection() as conn:
+        dialect = conn.dialect
     comp = query.compile(dialect=dialect)
     return comp.params
 
@@ -3015,15 +3017,14 @@ class GetOldMessagesTest(ZulipTestCase):
         extra_message_id = self.send_stream_message(cordelia, "England")
         self.send_personal_message(cordelia, hamlet)
 
-        sa_conn = get_sqlalchemy_connection()
-
         user_profile = hamlet
 
-        anchor = find_first_unread_anchor(
-            sa_conn=sa_conn,
-            user_profile=user_profile,
-            narrow=[],
-        )
+        with get_sqlalchemy_connection() as sa_conn:
+            anchor = find_first_unread_anchor(
+                sa_conn=sa_conn,
+                user_profile=user_profile,
+                narrow=[],
+            )
         self.assertEqual(anchor, first_message_id)
 
         # With the same data setup, we now want to test that a reasonable

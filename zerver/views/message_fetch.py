@@ -1048,44 +1048,45 @@ def get_messages_backend(
         assert log_data is not None
         log_data["extra"] = "[{}]".format(",".join(verbose_operators))
 
-    sa_conn = get_sqlalchemy_connection()
+    with get_sqlalchemy_connection() as sa_conn:
+        if anchor is None:
+            # `anchor=None` corresponds to the anchor="first_unread" parameter.
+            anchor = find_first_unread_anchor(
+                sa_conn,
+                user_profile,
+                narrow,
+            )
 
-    if anchor is None:
-        # `anchor=None` corresponds to the anchor="first_unread" parameter.
-        anchor = find_first_unread_anchor(
-            sa_conn,
-            user_profile,
-            narrow,
+        anchored_to_left = anchor == 0
+
+        # Set value that will be used to short circuit the after_query
+        # altogether and avoid needless conditions in the before_query.
+        anchored_to_right = anchor >= LARGER_THAN_MAX_MESSAGE_ID
+        if anchored_to_right:
+            num_after = 0
+
+        first_visible_message_id = get_first_visible_message_id(realm)
+
+        query = limit_query_to_range(
+            query=query,
+            num_before=num_before,
+            num_after=num_after,
+            anchor=anchor,
+            anchored_to_left=anchored_to_left,
+            anchored_to_right=anchored_to_right,
+            id_col=inner_msg_id_col,
+            first_visible_message_id=first_visible_message_id,
         )
 
-    anchored_to_left = anchor == 0
-
-    # Set value that will be used to short circuit the after_query
-    # altogether and avoid needless conditions in the before_query.
-    anchored_to_right = anchor >= LARGER_THAN_MAX_MESSAGE_ID
-    if anchored_to_right:
-        num_after = 0
-
-    first_visible_message_id = get_first_visible_message_id(realm)
-
-    query = limit_query_to_range(
-        query=query,
-        num_before=num_before,
-        num_after=num_after,
-        anchor=anchor,
-        anchored_to_left=anchored_to_left,
-        anchored_to_right=anchored_to_right,
-        id_col=inner_msg_id_col,
-        first_visible_message_id=first_visible_message_id,
-    )
-
-    main_query = query.subquery()
-    query = (
-        select(*main_query.c).select_from(main_query).order_by(column("message_id", Integer).asc())
-    )
-    # This is a hack to tag the query we use for testing
-    query = query.prefix_with("/* get_messages */")
-    rows = list(sa_conn.execute(query).fetchall())
+        main_query = query.subquery()
+        query = (
+            select(*main_query.c)
+            .select_from(main_query)
+            .order_by(column("message_id", Integer).asc())
+        )
+        # This is a hack to tag the query we use for testing
+        query = query.prefix_with("/* get_messages */")
+        rows = list(sa_conn.execute(query).fetchall())
 
     query_info = post_process_limited_query(
         rows=rows,
@@ -1357,23 +1358,22 @@ def messages_in_narrow_backend(
         for term in narrow:
             query = builder.add_term(query, term)
 
-    sa_conn = get_sqlalchemy_connection()
-
     search_fields = {}
-    for row in sa_conn.execute(query).fetchall():
-        message_id = row._mapping["message_id"]
-        topic_name = row._mapping[DB_TOPIC_NAME]
-        rendered_content = row._mapping["rendered_content"]
-        if "content_matches" in row._mapping:
-            content_matches = row._mapping["content_matches"]
-            topic_matches = row._mapping["topic_matches"]
-        else:
-            content_matches = topic_matches = []
-        search_fields[str(message_id)] = get_search_fields(
-            rendered_content,
-            topic_name,
-            content_matches,
-            topic_matches,
-        )
+    with get_sqlalchemy_connection() as sa_conn:
+        for row in sa_conn.execute(query).fetchall():
+            message_id = row._mapping["message_id"]
+            topic_name = row._mapping[DB_TOPIC_NAME]
+            rendered_content = row._mapping["rendered_content"]
+            if "content_matches" in row._mapping:
+                content_matches = row._mapping["content_matches"]
+                topic_matches = row._mapping["topic_matches"]
+            else:
+                content_matches = topic_matches = []
+            search_fields[str(message_id)] = get_search_fields(
+                rendered_content,
+                topic_name,
+                content_matches,
+                topic_matches,
+            )
 
     return json_success(request, data={"messages": search_fields})
