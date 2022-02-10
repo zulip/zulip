@@ -92,10 +92,10 @@ class zulip::common {
 
     # https://prometheus.io/download/#prometheus
     'prometheus' => {
-      'version' => '2.32.1',
+      'version' => '2.33.1',
       'sha256' => {
-        'amd64'   => 'f08e96d73330a9ee7e6922a9f5b72ea188988a083bbfa9932359339fcf504a74',
-        'aarch64' => '2d185a8ed46161babeaaac8ce00ef1efdeccf3ef4ed234cd181eac6cad1ae4b2',
+        'amd64'   => '55de29727fc4d3977d3400c54fa222ebb52755bd0201936f1e1052fea6f2b44b',
+        'aarch64' => '21d89df7a98882a1a872bd3210aeaac3915a7f7be9f2ad28c986c80ad64ee77d',
       },
     },
 
