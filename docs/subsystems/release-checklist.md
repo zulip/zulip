@@ -9,6 +9,9 @@ preparing a new release.
   - Upgrade all Python dependencies in
     `requirements` to latest upstream versions so they can burn in (use
     `pip list --outdated`).
+  - Upgrade all puppet dependencies in `puppet/deps.yaml`
+  - Upgrade all puppet-installed dependencies (e.g. Smokescreen, go,
+    etc) in `puppet/zulip/manifests/common.pp`
   - [Upload strings to
     Transifex](../translating/internationalization.html#translation-process)
     using `push-translations`. Post a Transifex
