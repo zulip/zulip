@@ -6,6 +6,7 @@ from django.contrib.auth.models import UserManager
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.hotspots import copy_hotspots
+from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.upload import copy_avatar
 from zerver.lib.utils import generate_api_key
 from zerver.models import (
@@ -42,7 +43,7 @@ def copy_default_settings(
         return
 
     setattr(target_profile, "full_name", settings_source.full_name)
-    setattr(target_profile, "timezone", settings_source.timezone)
+    setattr(target_profile, "timezone", canonicalize_timezone(settings_source.timezone))
     target_profile.save()
 
     if settings_source.avatar_source == UserProfile.AVATAR_FROM_USER:

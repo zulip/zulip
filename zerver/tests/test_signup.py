@@ -3786,7 +3786,7 @@ class UserSignUpTest(InviteUserBase):
         """
         email = self.nonreg_email("newguy")
         password = "newpassword"
-        timezone = "US/Mountain"
+        timezone = "America/Denver"
         realm = get_realm("zulip")
         do_set_realm_property(realm, "default_language", "de", acting_user=None)
 

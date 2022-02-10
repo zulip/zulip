@@ -52,6 +52,7 @@ from django.core.validators import URLValidator, validate_email
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.types import ProfileFieldData, Validator
 
 ResultT = TypeVar("ResultT")
@@ -548,7 +549,7 @@ def to_decimal(s: str) -> Decimal:
 
 def to_timezone_or_empty(s: str) -> str:
     if s in pytz.all_timezones_set:
-        return s
+        return canonicalize_timezone(s)
     else:
         return ""
 
