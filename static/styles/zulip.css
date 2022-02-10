@@ -767,7 +767,8 @@ td.pointer {
         display: inline-block;
         vertical-align: top;
         line-height: 14px;
-        margin-left: 0;
+        /* A bit of margin here helps these not look associated with the name. */
+        margin-left: 4px;
         position: static;
         padding: 0;
         width: auto;
