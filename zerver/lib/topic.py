@@ -8,6 +8,7 @@ from sqlalchemy.sql import ColumnElement, column, func, literal
 from sqlalchemy.types import Boolean, Text
 
 from zerver.lib.request import REQ
+from zerver.lib.types import EditHistoryEvent
 from zerver.models import Message, Stream, UserMessage, UserProfile
 
 # Only use these constants for events.
@@ -116,6 +117,7 @@ def save_message_for_edit_use_case(message: Message) -> None:
             "rendered_content_version",
             "last_edit_time",
             "edit_history",
+            "edit_history_update_fields",
             "has_attachment",
             "has_image",
             "has_link",
@@ -135,14 +137,74 @@ def user_message_exists_for_topic(
 
 
 def update_edit_history(
-    message: Message, last_edit_time: datetime, edit_history_event: Dict[str, Any]
+    message: Message,
+    last_edit_time: datetime,
+    edit_history_event: Dict[str, Any],
 ) -> None:
+    new_type_dict_edit_history: EditHistoryEvent = {}
+
     message.last_edit_time = last_edit_time
     if message.edit_history is not None:
         edit_history = orjson.loads(message.edit_history)
         edit_history.insert(0, edit_history_event)
+
+        # Temporary addition during migration,
+        # if both columns are not None in the database,
+        # then this message.edit_history had already been
+        # migrated and we need to capture this new
+        # edit in the updated edit_history column.
+        if message.edit_history_update_fields is not None:
+            new_edit_history = message.edit_history_update_fields
+
+            new_type_dict_edit_history["user_id"] = edit_history_event["user_id"]
+            new_type_dict_edit_history["timestamp"] = edit_history_event["timestamp"]
+            if "prev_stream" in edit_history_event:
+                new_type_dict_edit_history["stream"] = edit_history_event["stream"]
+                new_type_dict_edit_history["prev_stream"] = edit_history_event["prev_stream"]
+            if "prev_subject" in edit_history_event:
+                new_type_dict_edit_history["topic"] = edit_history_event["topic"]
+                new_type_dict_edit_history["prev_topic"] = edit_history_event["prev_topic"]
+            if "prev_content" in edit_history_event:
+                new_type_dict_edit_history["prev_content"] = edit_history_event["prev_content"]
+                new_type_dict_edit_history["prev_rendered_content"] = edit_history_event[
+                    "prev_rendered_content"
+                ]
+                new_type_dict_edit_history["prev_rendered_content_version"] = edit_history_event[
+                    "prev_rendered_content_version"
+                ]
+            new_edit_history.insert(0, new_type_dict_edit_history)
+
+            message.edit_history_update_fields = new_edit_history
+
     else:
         edit_history = [edit_history_event]
+
+        # Similarly, if this is the first edit to this message,
+        # we need to defensively fill the new column during the migration,
+        # in case the message.id had already been checked/passed in the migration.
+        # If the message hasn't been updated, then the migration should just
+        # recreate what we add here during the migration process.
+        new_type_dict_edit_history["user_id"] = edit_history_event["user_id"]
+        new_type_dict_edit_history["timestamp"] = edit_history_event["timestamp"]
+        if "prev_stream" in edit_history_event:
+            new_type_dict_edit_history["stream"] = edit_history_event["stream"]
+            new_type_dict_edit_history["prev_stream"] = edit_history_event["prev_stream"]
+        if "prev_subject" in edit_history_event:
+            new_type_dict_edit_history["topic"] = edit_history_event["topic"]
+            new_type_dict_edit_history["prev_topic"] = edit_history_event["prev_topic"]
+        if "prev_content" in edit_history_event:
+            new_type_dict_edit_history["prev_content"] = edit_history_event["prev_content"]
+            new_type_dict_edit_history["prev_rendered_content"] = edit_history_event[
+                "prev_rendered_content"
+            ]
+            new_type_dict_edit_history["prev_rendered_content_version"] = edit_history_event[
+                "prev_rendered_content_version"
+            ]
+
+        new_edit_history = [new_type_dict_edit_history]
+
+        message.edit_history_update_fields = new_edit_history
+
     message.edit_history = orjson.dumps(edit_history).decode()
 
 
@@ -165,7 +227,7 @@ def update_messages_for_topic_edit(
 
     messages = Message.objects.filter(propagate_query).select_related()
 
-    update_fields = ["edit_history", "last_edit_time"]
+    update_fields = ["edit_history", "last_edit_time", "edit_history_update_fields"]
 
     if new_stream is not None:
         # If we're moving the messages between streams, only move
