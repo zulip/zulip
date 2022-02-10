@@ -1,7 +1,9 @@
-from typing import Any, Optional
+from contextlib import contextmanager
+from typing import Iterator, Optional
 
 import sqlalchemy
 from django.db import connection
+from sqlalchemy.engine import Connection, Engine
 
 from zerver.lib.db import TimeTrackingConnection
 
@@ -26,10 +28,11 @@ class NonClosingPool(sqlalchemy.pool.NullPool):
         )
 
 
-sqlalchemy_engine: Optional[Any] = None
+sqlalchemy_engine: Optional[Engine] = None
 
 
-def get_sqlalchemy_connection() -> sqlalchemy.engine.base.Connection:
+@contextmanager
+def get_sqlalchemy_connection() -> Iterator[Connection]:
     global sqlalchemy_engine
     if sqlalchemy_engine is None:
 
@@ -43,6 +46,5 @@ def get_sqlalchemy_connection() -> sqlalchemy.engine.base.Connection:
             poolclass=NonClosingPool,
             pool_reset_on_return=None,
         )
-    sa_connection = sqlalchemy_engine.connect()
-    sa_connection.execution_options(autocommit=False)
-    return sa_connection
+    with sqlalchemy_engine.connect().execution_options(autocommit=False) as sa_connection:
+        yield sa_connection
