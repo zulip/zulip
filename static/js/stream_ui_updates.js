@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import render_stream_permission_description from "../templates/stream_settings/stream_permission_description.hbs";
+import render_stream_settings_tip from "../templates/stream_settings/stream_settings_tip.hbs";
 
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
@@ -120,6 +121,13 @@ export function update_change_stream_privacy_settings(sub) {
     } else {
         $stream_privacy_btn.hide();
     }
+}
+
+export function update_permissions_banner(sub) {
+    const $settings = $(`.subscription_settings[data-stream-id='${CSS.escape(sub.stream_id)}']`);
+
+    const rendered_tip = render_stream_settings_tip(sub);
+    $settings.find(".stream-settings-tip-container").html(rendered_tip);
 }
 
 export function update_notification_setting_checkbox(notification_name) {
