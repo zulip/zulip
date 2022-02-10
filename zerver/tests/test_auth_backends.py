@@ -1022,7 +1022,6 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             requests_mock.add(
                 requests_mock.POST,
                 self.ACCESS_TOKEN_URL,
-                match_querystring=False,
                 status=200,
                 body=self.generate_access_token_url_payload(account_data_dict),
             )
@@ -3293,7 +3292,6 @@ class GenericOpenIdConnectTest(SocialAuthBase):
             requests_mock.add(
                 requests_mock.GET,
                 f"{self.BASE_OIDC_URL}/.well-known/openid-configuration",
-                match_querystring=False,
                 status=200,
                 body=json.dumps(idp_discovery_endpoint_payload_dict),
             )
