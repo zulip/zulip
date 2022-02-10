@@ -507,15 +507,13 @@ class NarrowBuilder:
         query_extract_keywords = func.pgroonga_query_extract_keywords
         operand_escaped = func.escape_html(operand, type_=Text)
         keywords = query_extract_keywords(operand_escaped)
-        query = query.column(
+        query = query.add_columns(
             match_positions_character(column("rendered_content", Text), keywords).label(
                 "content_matches"
-            )
-        )
-        query = query.column(
+            ),
             match_positions_character(
                 func.escape_html(topic_column_sa(), type_=Text), keywords
-            ).label("topic_matches")
+            ).label("topic_matches"),
         )
         condition = column("search_pgroonga", Text).op("&@~")(operand_escaped)
         return query.where(maybe_negate(condition))
@@ -524,18 +522,16 @@ class NarrowBuilder:
         self, query: Select, operand: str, maybe_negate: ConditionTransform
     ) -> Select:
         tsquery = func.plainto_tsquery(literal("zulip.english_us_search"), literal(operand))
-        query = query.column(
+        query = query.add_columns(
             ts_locs_array(
                 literal("zulip.english_us_search", Text), column("rendered_content", Text), tsquery
-            ).label("content_matches")
-        )
-        # We HTML-escape the topic in PostgreSQL to avoid doing a server round-trip
-        query = query.column(
+            ).label("content_matches"),
+            # We HTML-escape the topic in PostgreSQL to avoid doing a server round-trip
             ts_locs_array(
                 literal("zulip.english_us_search", Text),
                 func.escape_html(topic_column_sa(), type_=Text),
                 tsquery,
-            ).label("topic_matches")
+            ).label("topic_matches"),
         )
 
         # Do quoted string matching.  We really want phrase
@@ -834,7 +830,7 @@ def add_narrow_conditions(
 
     if search_operands:
         is_search = True
-        query = query.column(topic_column_sa()).column(column("rendered_content", Text))
+        query = query.add_columns(topic_column_sa(), column("rendered_content", Text))
         search_term = dict(
             operator="search",
             operand=" ".join(search_operands),
