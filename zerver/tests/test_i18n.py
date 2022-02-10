@@ -35,7 +35,7 @@ class EmailTranslationTestCase(ZulipTestCase):
         realm.default_language = "de"
         realm.save()
         stream = get_realm_stream("Denmark", realm.id)
-        invite_expires_in_days = 2
+        invite_expires_in_minutes = 2 * 24 * 60
         self.login_user(hamlet)
 
         # TODO: Uncomment and replace with translation once we have German translations for the strings
@@ -59,7 +59,7 @@ class EmailTranslationTestCase(ZulipTestCase):
             {
                 "invitee_emails": "new-email@zulip.com",
                 "stream_ids": orjson.dumps([stream.id]).decode(),
-                "invite_expires_in_days": invite_expires_in_days,
+                "invite_expires_in_minutes": invite_expires_in_minutes,
             },
         )
 

@@ -795,12 +795,12 @@ class QueryCountTest(ZulipTestCase):
         ]
         streams = [get_stream(stream_name, realm) for stream_name in stream_names]
 
-        invite_expires_in_days = 4
+        invite_expires_in_minutes = 4 * 24 * 60
         do_invite_users(
             user_profile=self.example_user("hamlet"),
             invitee_emails=["fred@zulip.com"],
             streams=streams,
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
         )
 
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
@@ -1461,19 +1461,19 @@ class ActivateTest(ZulipTestCase):
         iago = self.example_user("iago")
         desdemona = self.example_user("desdemona")
 
-        invite_expires_in_days = 2
+        invite_expires_in_minutes = 2 * 24 * 60
         do_invite_users(
             iago,
             ["new1@zulip.com", "new2@zulip.com"],
             [],
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
             invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
         )
         do_invite_users(
             desdemona,
             ["new3@zulip.com", "new4@zulip.com"],
             [],
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
             invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
         )
 
@@ -1481,22 +1481,22 @@ class ActivateTest(ZulipTestCase):
             iago,
             ["new5@zulip.com"],
             [],
-            invite_expires_in_days=None,
+            invite_expires_in_minutes=None,
             invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
         )
         do_invite_users(
             desdemona,
             ["new6@zulip.com"],
             [],
-            invite_expires_in_days=None,
+            invite_expires_in_minutes=None,
             invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
         )
 
         iago_multiuse_key = do_create_multiuse_invite_link(
-            iago, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_days
+            iago, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_minutes
         ).split("/")[-2]
         desdemona_multiuse_key = do_create_multiuse_invite_link(
-            desdemona, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_days
+            desdemona, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_minutes
         ).split("/")[-2]
 
         iago_never_expire_multiuse_key = do_create_multiuse_invite_link(

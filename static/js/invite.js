@@ -1,6 +1,6 @@
 import autosize from "autosize";
 import ClipboardJS from "clipboard";
-import {addDays} from "date-fns";
+import {add} from "date-fns";
 import $ from "jquery";
 
 import copy_invite_link from "../templates/copy_invite_link.hbs";
@@ -52,7 +52,7 @@ function get_common_invitation_data() {
         csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').attr("value"),
         invite_as,
         stream_ids: JSON.stringify(stream_ids),
-        invite_expires_in_days: expires_in,
+        invite_expires_in_minutes: expires_in,
     };
     return data;
 }
@@ -208,7 +208,7 @@ function valid_to() {
     if (!time_valid) {
         return $t({defaultMessage: "Never expires"});
     }
-    const valid_to = addDays(new Date(), time_valid);
+    const valid_to = add(new Date(), {minutes: time_valid});
     return $t({defaultMessage: "Expires on {date}"}, {date: valid_to.toLocaleDateString()});
 }
 

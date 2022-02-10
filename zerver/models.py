@@ -2246,7 +2246,7 @@ class PreregistrationUser(models.Model):
 
 def filter_to_valid_prereg_users(
     query: QuerySet,
-    invite_expires_in_days: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
+    invite_expires_in_minutes: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
 ) -> QuerySet:
     """
     If invite_expires_in_days is specified, we return only those PreregistrationUser
@@ -2256,15 +2256,15 @@ def filter_to_valid_prereg_users(
     revoked_value = confirmation_settings.STATUS_REVOKED
 
     query = query.exclude(status__in=[active_value, revoked_value])
-    if invite_expires_in_days is None:
-        # Since invite_expires_in_days is None, we're invitation will never
+    if invite_expires_in_minutes is None:
+        # Since invite_expires_in_minutes is None, we're invitation will never
         # expire, we do not need to check anything else and can simply return
         # after excluding objects with active and revoked status.
         return query
 
-    assert invite_expires_in_days is not None
-    if not isinstance(invite_expires_in_days, UnspecifiedValue):
-        lowest_datetime = timezone_now() - datetime.timedelta(days=invite_expires_in_days)
+    assert invite_expires_in_minutes is not None
+    if not isinstance(invite_expires_in_minutes, UnspecifiedValue):
+        lowest_datetime = timezone_now() - datetime.timedelta(minutes=invite_expires_in_minutes)
         return query.filter(invited_at__gte=lowest_datetime)
     else:
         return query.filter(

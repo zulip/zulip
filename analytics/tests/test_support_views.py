@@ -258,7 +258,7 @@ class TestSupportEndpoint(ZulipTestCase):
             check_preregistration_user_query_result(result, self.nonreg_email("test"))
             check_zulip_realm_query_result(result)
 
-            invite_expires_in_days = 10
+            invite_expires_in_minutes = 10 * 24 * 60
             stream_ids = [self.get_stream_id("Denmark")]
             invitee_emails = [self.nonreg_email("test1")]
             self.client_post(
@@ -266,7 +266,7 @@ class TestSupportEndpoint(ZulipTestCase):
                 {
                     "invitee_emails": invitee_emails,
                     "stream_ids": orjson.dumps(stream_ids).decode(),
-                    "invite_expires_in_days": invite_expires_in_days,
+                    "invite_expires_in_minutes": invite_expires_in_minutes,
                     "invite_as": PreregistrationUser.INVITE_AS["MEMBER"],
                 },
             )
@@ -282,7 +282,7 @@ class TestSupportEndpoint(ZulipTestCase):
             do_create_multiuse_invite_link(
                 self.example_user("hamlet"),
                 invited_as=1,
-                invite_expires_in_days=invite_expires_in_days,
+                invite_expires_in_minutes=invite_expires_in_minutes,
             )
             result = self.client_get("/activity/support", {"q": "zulip"})
             check_multiuse_invite_link_query_result(result)

@@ -438,9 +438,12 @@ class LoopQueueProcessingWorker(QueueProcessingWorker):
 @assign_queue("invites")
 class ConfirmationEmailWorker(QueueProcessingWorker):
     def consume(self, data: Mapping[str, Any]) -> None:
-        invite_expires_in_days = data["invite_expires_in_days"]
+        if "invite_expires_in_days" in data:
+            invite_expires_in_minutes = data["invite_expires_in_days"] * 24 * 60
+        elif "invite_expires_in_minutes" in data:
+            invite_expires_in_minutes = data["invite_expires_in_minutes"]
         invitee = filter_to_valid_prereg_users(
-            PreregistrationUser.objects.filter(id=data["prereg_id"]), invite_expires_in_days
+            PreregistrationUser.objects.filter(id=data["prereg_id"]), invite_expires_in_minutes
         ).first()
         if invitee is None:
             # The invitation could have been revoked
@@ -456,9 +459,9 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
             email_language = referrer.realm.default_language
 
         activate_url = do_send_confirmation_email(
-            invitee, referrer, email_language, invite_expires_in_days
+            invitee, referrer, email_language, invite_expires_in_minutes
         )
-        if invite_expires_in_days is None:
+        if invite_expires_in_minutes is None:
             # We do not queue reminder email for never expiring
             # invitations. This is probably a low importance bug; it
             # would likely be more natural to send a reminder after 7
@@ -466,7 +469,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
             return
 
         # queue invitation reminder
-        if invite_expires_in_days >= 4:
+        if invite_expires_in_minutes >= 4 * 24 * 60:
             context = common_context(referrer)
             context.update(
                 activate_url=activate_url,
@@ -481,7 +484,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
                 from_address=FromAddress.tokenized_no_reply_placeholder,
                 language=email_language,
                 context=context,
-                delay=datetime.timedelta(days=invite_expires_in_days - 2),
+                delay=datetime.timedelta(minutes=invite_expires_in_minutes - (2 * 24 * 60)),
             )
 
 
