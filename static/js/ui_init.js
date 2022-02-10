@@ -25,6 +25,7 @@ import * as compose_pm_pill from "./compose_pm_pill";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
+import * as dark_theme from "./dark_theme";
 import * as drafts from "./drafts";
 import * as echo from "./echo";
 import * as emoji_picker from "./emoji_picker";
@@ -37,6 +38,7 @@ import * as i18n from "./i18n";
 import * as invite from "./invite";
 import * as lightbox from "./lightbox";
 import * as linkifiers from "./linkifiers";
+import {localstorage} from "./localstorage";
 import * as markdown from "./markdown";
 import * as markdown_config from "./markdown_config";
 import * as message_edit from "./message_edit";
@@ -546,6 +548,16 @@ export function initialize_everything() {
     const i18n_params = pop_fields("language_list");
     const user_settings_params = pop_fields("user_settings");
     const realm_settings_defaults_params = pop_fields("realm_user_settings_defaults");
+
+    if (page_params.is_spectator) {
+        const ls = localstorage();
+        const preferred_theme = ls.get("spectator-theme-preference");
+        if (preferred_theme === "dark") {
+            dark_theme.enable();
+        } else if (preferred_theme === "light") {
+            dark_theme.disable();
+        }
+    }
 
     i18n.initialize(i18n_params);
     tippyjs.initialize();

@@ -32,7 +32,17 @@
                 </a>
             </li>
             {{/unless}}
-            <li class="divider hidden-for-spectators" role="presentation"></li>
+            <li role="presentation" class="only-visible-for-spectators">
+                <a class="dark-theme" role="menuitem">
+                    <i class="fa fa-moon-o" aria-hidden="true"></i> {{t 'Switch to dark theme' }}
+                </a>
+            </li>
+            <li role="presentation" class="only-visible-for-spectators">
+                <a class="light-theme" role="menuitem">
+                    <i class="fa fa-sun-o" aria-hidden="true"></i> {{t 'Switch to light theme' }}
+                </a>
+            </li>
+            <li class="divider" role="presentation"></li>
             <li role="presentation">
                 <a href="/help" target="_blank" rel="noopener noreferrer" role="menuitem">
                     <i class="fa fa-question-circle" aria-hidden="true"></i> {{t 'Help center' }}

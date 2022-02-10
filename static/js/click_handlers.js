@@ -17,6 +17,7 @@ import * as compose_actions from "./compose_actions";
 import * as compose_error from "./compose_error";
 import * as compose_state from "./compose_state";
 import {media_breakpoints_num} from "./css_variables";
+import * as dark_theme from "./dark_theme";
 import * as emoji_picker from "./emoji_picker";
 import * as hash_util from "./hash_util";
 import * as hotspots from "./hotspots";
@@ -829,6 +830,20 @@ export function initialize() {
         // TODO: Remove this once Bootstrap is upgraded.
         // See: https://github.com/zulip/zulip/pull/18720
         $(".modal.in").removeClass("in");
+    });
+
+    // GEAR MENU
+
+    $("body").on("click", "#gear-menu .dark-theme", (e) => {
+        // Allow propagation to close gear menu.
+        e.preventDefault();
+        dark_theme.enable();
+    });
+
+    $("body").on("click", "#gear-menu .light-theme", (e) => {
+        // Allow propagation to close gear menu.
+        e.preventDefault();
+        dark_theme.disable();
     });
 
     // MAIN CLICK HANDLER

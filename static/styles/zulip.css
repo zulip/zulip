@@ -660,6 +660,10 @@ strong {
     color: inherit;
 }
 
+#gear-menu .light-theme {
+    display: none;
+}
+
 /* .dropdown-menu from v2.3.2
    + https://github.com/zulip/zulip/commit/7a3a3be7e547d3e8f0ed00820835104867f2433d
    basic idea of this fix is to remove decorations from :hover and apply them only
