@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
 import json
 import os
+import sys
 
 import pytz
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
+sys.path.insert(0, ZULIP_PATH)
+
+from zerver.lib.timezone import get_canonical_timezone_map
+
 OUT_PATH = os.path.join(ZULIP_PATH, "static", "generated", "timezones.json")
 
 with open(OUT_PATH, "w") as f:
-    json.dump({"timezones": pytz.all_timezones}, f)
+    json.dump({"timezones": sorted(pytz.all_timezones_set - set(get_canonical_timezone_map()))}, f)
