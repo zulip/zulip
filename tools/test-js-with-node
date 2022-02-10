@@ -69,7 +69,7 @@ EXEMPT_FILES = make_set(
         "static/js/copy_and_paste.js",
         "static/js/csrf.ts",
         "static/js/css_variables.js",
-        "static/js/dark_theme.ts",
+        "static/js/dark_theme.js",
         "static/js/debug.js",
         "static/js/deprecated_feature_notice.js",
         "static/js/desktop_integration.js",

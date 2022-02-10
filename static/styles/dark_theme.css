@@ -466,6 +466,16 @@ body.dark-theme {
         }
     }
 
+    #gear-menu {
+        .dark-theme {
+            display: none;
+        }
+
+        .light-theme {
+            display: block;
+        }
+    }
+
     .nav .dropdown-menu::after,
     .popover.bottom .arrow {
         border-bottom-color: hsl(235, 18%, 7%);
