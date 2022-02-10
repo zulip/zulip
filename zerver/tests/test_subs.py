@@ -3252,7 +3252,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
 
         subs = gather_subscriptions(test_user)[0]
         sub = subs[0]
-        json_result = self.api_post(
+        result = self.api_post(
             test_user,
             "/api/v1/users/me/subscriptions/properties",
             {
@@ -3271,10 +3271,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
             },
         )
 
-        self.assert_json_success(json_result)
-        result = orjson.loads(json_result.content)
-        self.assertIn("ignored_parameters_unsupported", result)
-        self.assertEqual(result["ignored_parameters_unsupported"], ["invalid_parameter"])
+        self.assert_json_success(result, ["invalid_parameter"])
 
 
 class SubscriptionRestApiTest(ZulipTestCase):

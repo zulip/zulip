@@ -1269,16 +1269,12 @@ class RealmAPITest(ZulipTestCase):
 
     def test_ignored_parameters_in_realm_default_endpoint(self) -> None:
         params = {"starred_message_counts": orjson.dumps(False).decode(), "emoji_set": "twitter"}
-        json_result = self.client_patch("/json/realm/user_settings_defaults", params)
-        self.assert_json_success(json_result)
+        result = self.client_patch("/json/realm/user_settings_defaults", params)
+        self.assert_json_success(result, ["emoji_set"])
 
         realm = get_realm("zulip")
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         self.assertEqual(realm_user_default.starred_message_counts, False)
-
-        result = orjson.loads(json_result.content)
-        self.assertIn("ignored_parameters_unsupported", result)
-        self.assertEqual(result["ignored_parameters_unsupported"], ["emoji_set"])
 
     def test_update_realm_allow_message_editing(self) -> None:
         """Tests updating the realm property 'allow_message_editing'."""

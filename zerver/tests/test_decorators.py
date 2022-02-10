@@ -2244,3 +2244,41 @@ class TestRequestNotes(ZulipTestCase):
                 "There is no Zulip organization hosted at this subdomain.", result
             )
             mock_home_real.assert_not_called()
+
+
+class TestIgnoredParametersUnsupported(ZulipTestCase):
+    def test_ignored_parameters_json_success(self) -> None:
+        """
+        This test verifies json_success returns an ignored_parameters_unsupported
+        array when the view is passed parameters not processed by REQ framework.
+        """
+
+        @has_request_variables
+        def test_view(
+            request: HttpRequest,
+            name: Optional[str] = REQ(default=None),
+            age: Optional[int] = 0,
+        ) -> HttpResponse:
+            return json_success(request)
+
+        # ignored parameter (not processed through REQ)
+        request = HostRequestMock()
+        request.POST["age"] = 30
+        result = test_view(request)
+        self.assert_json_success(result, ["age"])
+
+        # valid parameter, returns no ignored parameters
+        request = HostRequestMock()
+        request.POST["name"] = "Hamlet"
+        result = test_view(request)
+        self.assert_json_success(result)
+
+        # both valid and ignored parameters
+        request = HostRequestMock()
+        request.POST["name"] = "Hamlet"
+        request.POST["age"] = 30
+        request.POST["location"] = "Denmark"
+        request.POST["dies"] = True
+        result = test_view(request)
+        ignored_parameters = ["age", "location", "dies"]
+        self.assert_json_success(result, ignored_parameters)

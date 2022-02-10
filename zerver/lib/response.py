@@ -1,9 +1,10 @@
-from typing import Any, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional
 
 import orjson
 from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed
 
 from zerver.lib.exceptions import JsonableError, UnauthorizedError
+from zerver.lib.request import RequestNotes
 
 
 def json_unauthorized(
@@ -42,6 +43,23 @@ def json_response(
 
 
 def json_success(request: HttpRequest, data: Mapping[str, Any] = {}) -> HttpResponse:
+    request_notes = RequestNotes.get_notes(request)
+
+    if not request_notes.is_webhook_view:
+        for req_var in request.POST:
+            if req_var not in request_notes.processed_parameters:
+                request_notes.ignored_parameters.add(req_var)
+        for req_var in request.GET:
+            if req_var not in request_notes.processed_parameters:
+                request_notes.ignored_parameters.add(req_var)
+        if len(request_notes.ignored_parameters) > 0:
+            data_with_ignored_parameters: Dict[str, Any] = {}
+            data_with_ignored_parameters.update(data)
+            data_with_ignored_parameters["ignored_parameters_unsupported"] = list(
+                request_notes.ignored_parameters
+            )
+            return json_response(data=data_with_ignored_parameters)
+
     return json_response(data=data)
 
 

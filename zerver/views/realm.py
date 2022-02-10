@@ -452,16 +452,4 @@ def update_realm_user_settings_defaults(
         if v is not None and getattr(realm_user_default, k) != v:
             do_set_realm_user_default_setting(realm_user_default, k, v, acting_user=user_profile)
 
-    # TODO: Extract `ignored_parameters_unsupported` to be a common feature of the REQ framework.
-    from zerver.lib.request import RequestNotes
-
-    request_notes = RequestNotes.get_notes(request)
-    for req_var in request.POST:
-        if req_var not in request_notes.processed_parameters:
-            request_notes.ignored_parameters.add(req_var)
-
-    result: Dict[str, Any] = {}
-    if len(request_notes.ignored_parameters) > 0:
-        result["ignored_parameters_unsupported"] = list(request_notes.ignored_parameters)
-
-    return json_success(request, data=result)
+    return json_success(request)

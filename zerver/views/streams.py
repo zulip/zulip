@@ -988,16 +988,4 @@ def update_subscription_properties_backend(
             user_profile, sub, stream, property, value, acting_user=user_profile
         )
 
-    # TODO: Do this more generally, see update_realm_user_settings_defaults.realm.py
-    from zerver.lib.request import RequestNotes
-
-    request_notes = RequestNotes.get_notes(request)
-    for req_var in request.POST:
-        if req_var not in request_notes.processed_parameters:
-            request_notes.ignored_parameters.add(req_var)
-
-    result: Dict[str, Any] = {}
-    if len(request_notes.ignored_parameters) > 0:
-        result["ignored_parameters_unsupported"] = list(request_notes.ignored_parameters)
-
-    return json_success(request, data=result)
+    return json_success(request)

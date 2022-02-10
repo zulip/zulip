@@ -1501,7 +1501,10 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         email = "hambot-bot@zulip.testserver"
         # Important: We intentionally use the wrong method, post, here.
         result = self.client_post(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
-        response_dict = self.assert_json_success(result)
+
+        # TODO: The "method" parameter is not currently tracked as a processed parameter
+        # by has_request_variables. Assert it is returned as an ignored parameter.
+        response_dict = self.assert_json_success(result, ["method"])
 
         self.assertEqual("Fred", response_dict["full_name"])
 

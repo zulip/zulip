@@ -1077,7 +1077,9 @@ Output:
         self.assertEqual(result, data)
 
     def assert_json_success(
-        self, result: Union["TestHttpResponse", HttpResponse]
+        self,
+        result: Union["TestHttpResponse", HttpResponse],
+        ignored_parameters: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """
         Successful POSTs return a 200 and JSON of the form {"result": "success",
@@ -1093,6 +1095,14 @@ Output:
         # empty value.
         self.assertIn("msg", json)
         self.assertNotEqual(json["msg"], "Error parsing JSON in response!")
+        # Check ignored parameters.
+        if ignored_parameters is None:
+            self.assertNotIn("ignored_parameters_unsupported", json)
+        else:
+            self.assertIn("ignored_parameters_unsupported", json)
+            self.assert_length(json["ignored_parameters_unsupported"], len(ignored_parameters))
+            for param in ignored_parameters:
+                self.assertTrue(param in json["ignored_parameters_unsupported"])
         return json
 
     def get_json_error(self, result: "TestHttpResponse", status_code: int = 400) -> str:
