@@ -41,8 +41,9 @@ class zulip::common {
   $versions = {
     # https://github.com/cactus/go-camo/releases
     'go-camo' => {
-      'version' => '2.3.0',
-      'sha256' => {
+      'version'   => '2.3.0',
+      'goversion' => '1171',
+      'sha256'    => {
         'amd64'   => '965506e6edb9d974c810519d71e847afb7ca69d1d01ae7d8be6d7a91de669c0c',
         'aarch64' => '40463f6790eb0d2da69ad6a902fcc4c6b0c0ac24106a6c28fbfce9dfa4cb15cd',
       },
