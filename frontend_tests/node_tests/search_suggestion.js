@@ -101,20 +101,7 @@ test("basic_get_suggestions_for_spectator", ({override_rewire}) => {
 
     const query = "";
     const suggestions = get_suggestions("", query);
-    assert.deepEqual(suggestions.strings, [
-        "",
-        "streams:public",
-        "is:private",
-        "is:starred",
-        "is:mentioned",
-        "is:alerted",
-        "is:unread",
-        "is:resolved",
-        "has:link",
-        "has:image",
-        "has:attachment",
-        // "sender:myself@zulip.com",
-    ]);
+    assert.deepEqual(suggestions.strings, ["", "has:link", "has:image", "has:attachment"]);
     page_params.is_spectator = false;
 });
 
