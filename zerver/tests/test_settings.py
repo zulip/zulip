@@ -350,7 +350,7 @@ class ChangeSettingsTest(ZulipTestCase):
             default_language="de",
             default_view="all_messages",
             emojiset="google",
-            timezone="US/Mountain",
+            timezone="America/Denver",
             demote_inactive_streams=2,
             color_scheme=2,
             email_notifications_batching_period_seconds=100,

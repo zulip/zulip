@@ -5660,6 +5660,7 @@ def do_change_user_setting(
 
     if setting_name == "timezone":
         assert isinstance(setting_value, str)
+        setting_value = canonicalize_timezone(setting_value)
     else:
         property_type = UserProfile.property_types[setting_name]
         assert isinstance(setting_value, property_type)
