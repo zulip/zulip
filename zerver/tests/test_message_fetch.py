@@ -100,7 +100,7 @@ class NarrowBuilderTest(ZulipTestCase):
         self.realm = get_realm("zulip")
         self.user_profile = self.example_user("hamlet")
         self.builder = NarrowBuilder(self.user_profile, column("id", Integer), self.realm)
-        self.raw_query = select([column("id", Integer)], None, table("zerver_message"))
+        self.raw_query = select(column("id", Integer)).select_from(table("zerver_message"))
         self.hamlet_email = self.example_user("hamlet").email
         self.othello_email = self.example_user("othello").email
 
@@ -3341,7 +3341,9 @@ class GetOldMessagesTest(ZulipTestCase):
         ]
 
         muting_conditions = exclude_muting_conditions(user_profile, narrow)
-        query = select([column("id", Integer).label("message_id")], None, table("zerver_message"))
+        query = select(column("id", Integer).label("message_id")).select_from(
+            table("zerver_message")
+        )
         query = query.where(*muting_conditions)
         expected_query = """\
 SELECT id AS message_id \n\
@@ -3366,7 +3368,7 @@ WHERE NOT (recipient_id = %(recipient_id_1)s AND upper(subject) = upper(%(param_
         ]
 
         muting_conditions = exclude_muting_conditions(user_profile, narrow)
-        query = select([column("id", Integer)], None, table("zerver_message"))
+        query = select(column("id", Integer)).select_from(table("zerver_message"))
         query = query.where(and_(*muting_conditions))
 
         expected_query = """\
