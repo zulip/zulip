@@ -78,6 +78,7 @@ from zerver.lib.pysa import mark_sanitized
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import (
     DisplayRecipientT,
+    EditHistoryEvent,
     ExtendedFieldElement,
     ExtendedValidator,
     FieldElement,
@@ -2704,6 +2705,7 @@ class AbstractMessage(models.Model):
     # A JSON-encoded list of objects describing any past edits to this
     # message, oldest first.
     edit_history: Optional[str] = models.TextField(null=True)
+    edit_history_update_fields: Optional[List[EditHistoryEvent]] = models.JSONField(null=True)
 
     has_attachment: bool = models.BooleanField(default=False, db_index=True)
     has_image: bool = models.BooleanField(default=False, db_index=True)

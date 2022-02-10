@@ -89,3 +89,15 @@ class UnspecifiedValue:
     """
 
     pass
+
+
+class EditHistoryEvent(TypedDict, total=False):
+    user_id: int
+    timestamp: int
+    prev_stream: int
+    stream: int
+    prev_topic: str
+    topic: str
+    prev_content: str
+    prev_rendered_content: Optional[str]
+    prev_rendered_content_version: Optional[int]
