@@ -13,7 +13,7 @@ class zulip::camo (String $listen_address = '0.0.0.0') {
 
   zulip::external_dep { 'go-camo':
     version        => $version,
-    url            => "https://github.com/cactus/go-camo/releases/download/v${version}/go-camo-${version}.go${goversion}.linux-${::architecture}.tar.gz",
+    url            => "https://github.com/cactus/go-camo/releases/download/v${version}/go-camo-${version}.go${goversion}.linux-${zulip::common::goarch}.tar.gz",
     tarball_prefix => "go-camo-${version}",
   }
 
