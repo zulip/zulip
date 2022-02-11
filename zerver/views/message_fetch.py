@@ -495,14 +495,14 @@ class NarrowBuilder:
         return query.where(maybe_negate(cond))
 
     def by_search(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
-        if settings.USING_PGROONGA:
+        if settings.USING_PGROONGA:  # nocoverage
             return self._by_search_pgroonga(query, operand, maybe_negate)
         else:
             return self._by_search_tsearch(query, operand, maybe_negate)
 
     def _by_search_pgroonga(
         self, query: Select, operand: str, maybe_negate: ConditionTransform
-    ) -> Select:
+    ) -> Select:  # nocoverage
         match_positions_character = func.pgroonga_match_positions_character
         query_extract_keywords = func.pgroonga_query_extract_keywords
         operand_escaped = func.escape_html(operand, type_=Text)
@@ -574,7 +574,7 @@ def highlight_string(text: str, locs: Iterable[Tuple[int, int]]) -> str:
                 in_tag = True
             elif character == ">":
                 in_tag = False
-        if in_tag:
+        if in_tag:  # nocoverage
             result += prefix
             result += match
         else:
