@@ -5,7 +5,7 @@ class zulip::postgresql_backups {
 
   $wal_g_version = $zulip::common::versions['wal-g']['version']
   $bin = "/srv/zulip-wal-g-${wal_g_version}"
-  $package = "wal-g-pg-ubuntu-20.04-${::architecture}"
+  $package = "wal-g-pg-ubuntu-20.04-${zulip::common::goarch}"
 
   # This tarball contains only a single file
   zulip::external_dep { 'wal-g':
