@@ -2478,8 +2478,13 @@ div.topic_edit_spinner .loading_indicator_spinner {
     /* We are setting minimum width here because when the user's name is very long,
     emoji's width decreases and causes it to break. */
     min-width: 16px;
-    margin-left: 4px;
-    margin-right: 4px;
+    /* In most contexts, status emoji appear immediately after a name
+      field with no margin. Position the status emoji with 2px of left
+      margin to space it from the name, and set no right margin so
+      that any components to the right appear equally distant as they
+      would be from a name. */
+    margin-left: 2px;
+    margin-right: 0;
 }
 
 /* FIXME: Combine this rule with the one in portico.css somehow? */
