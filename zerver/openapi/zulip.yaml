@@ -4581,8 +4581,11 @@ paths:
         this endpoint to fetch the messages matching any search query that is
         supported by Zulip's powerful full-text search backend.
 
-        When a narrow is not specified, it can be used to fetch a user's
-        message history. (We recommend paginating to 1000 messages at a time.)
+        When a narrow filter is not specified, this endpoint will
+        fetch messages from the user's personal message history. (We
+        recommend paginating to 1000 messages at a time). Note that
+        bots have no personal message history, so requests by bots
+        without a `narrow` specified will always return no messages.
 
         In either case, you specify an `anchor` message (or ask the server to
         calculate the first unread message for you and use that as the
@@ -4654,8 +4657,17 @@ paths:
         - name: narrow
           in: query
           description: |
-            The narrow where you want to fetch the messages from. See how to
-            [construct a narrow](/api/construct-narrow).
+            A search filter defining what type of messages to fetch.
+            See [construct a narrow](/api/construct-narrow) for a
+            detailed explanation of this parameter.
+
+            When not specified, messages will be fetched from the
+            current user's full personal history, equivalent to the
+            [all messages](/help/reading-strategies#all-messages)
+            view.
+
+            Note that bot users do not have any messages in their
+            personal history.
           content:
             application/json:
               schema:

@@ -5,6 +5,13 @@ on many different factors (like sender, stream, topic, search
 keywords, etc.).  Narrows are used in various places in the the Zulip
 API (most importantly, in the API for fetching messages).
 
+The default behavior for a [`GET /messages`](/api/get-messages) query
+that does not specify a narrow is to return messages from the current
+user's personal bot history (Equivalent to the [all
+messages](/help/reading-strategies#all-messages) view).  Because bot
+users do not store personal message history, you should always specify
+a narrow when making API requests as a bot user.
+
 It is simplest to explain the algorithm for encoding a search as a
 narrow using a single example.  Consider the following search query
 (written as it would be entered in the Zulip web app's search box).  It
