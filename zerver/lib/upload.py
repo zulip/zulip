@@ -1149,7 +1149,7 @@ def delete_export_tarball(export_path: str) -> Optional[str]:
 
 def get_emoji_file_content(
     session: OutgoingSession, emoji_url: str, emoji_id: int, logger: logging.Logger
-) -> bytes:
+) -> bytes:  # nocoverage
     original_emoji_url = emoji_url + ".original"
 
     logger.info("Downloading %s", original_emoji_url)
@@ -1169,7 +1169,7 @@ def get_emoji_file_content(
     raise AssertionError(f"Could not fetch emoji {emoji_id}")
 
 
-def handle_reupload_emojis_event(realm: Realm, logger: logging.Logger) -> None:
+def handle_reupload_emojis_event(realm: Realm, logger: logging.Logger) -> None:  # nocoverage
     from zerver.lib.emoji import get_emoji_url
 
     session = OutgoingSession(role="reupload_emoji", timeout=3, max_retries=3)
