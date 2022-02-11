@@ -1018,6 +1018,18 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         update_model_ids(model, data, related_table)
         bulk_import_model(data, model)
 
+    # Ensure RealmEmoji get the .author set to a reasonable default, if the value
+    # wasn't provided in the import data.
+    first_user_profile = (
+        UserProfile.objects.filter(realm=realm, is_active=True, role=UserProfile.ROLE_REALM_OWNER)
+        .order_by("id")
+        .first()
+    )
+    for realm_emoji in RealmEmoji.objects.filter(realm=realm):
+        if realm_emoji.author_id is None:
+            realm_emoji.author_id = first_user_profile.id
+            realm_emoji.save(update_fields=["author_id"])
+
     if "zerver_huddle" in data:
         update_model_ids(Huddle, data, "huddle")
         # We don't import Huddle yet, since we don't have the data to
