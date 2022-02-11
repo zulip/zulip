@@ -19,6 +19,7 @@ import * as message_edit from "./message_edit";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as pm_list from "./pm_list";
 import * as reminder from "./reminder";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
@@ -250,6 +251,9 @@ export function send_message(request = create_message_object()) {
     }
 
     transmit.send_message(request, success, error);
+    if (request.type === "private" && $(".expanded_private_messages").children().length === 0) {
+        pm_list.append_new_active_pm_in_collapsed_pms();
+    }
     server_events.assert_get_events_running(
         "Restarting get_events because it was not running during send",
     );

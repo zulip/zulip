@@ -18,6 +18,7 @@ import * as narrow_state from "./narrow_state";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import * as people from "./people";
+import * as pm_list from "./pm_list";
 import * as recent_senders from "./recent_senders";
 import {get, process_message, topics} from "./recent_topics_data";
 import {get_topic_key, is_in_focus, is_visible, set_visible} from "./recent_topics_util";
@@ -628,6 +629,7 @@ export function show() {
     compose_closed_ui.update_buttons_for_recent_topics();
 
     narrow_state.reset_current_filter();
+    pm_list.handle_narrow_deactivated();
     narrow.set_narrow_title("Recent topics");
     message_view_header.render_title_area();
 
