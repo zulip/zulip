@@ -344,8 +344,8 @@ class MessageEditHistoryMultipleStreamTopicEdits(MigrationsTestCase):
         )
 
 
-class MessageEditAfterMigrationWithEditHistory(MigrationsTestCase):
-    __unittest_skip__ = False
+class MessageEditAfterMigrationWithEditHistory(MigrationsTestCase):  # nocoverage
+    __unittest_skip__ = True
 
     migrate_from = "0377_message_edit_history_new_column"
     migrate_to = "0378_message_edit_history_update_fields"
@@ -440,8 +440,8 @@ class MessageEditAfterMigrationWithEditHistory(MigrationsTestCase):
         )
 
 
-class MessageEditAfterMigrationNoEditHistory(MigrationsTestCase):
-    __unittest_skip__ = False
+class MessageEditAfterMigrationNoEditHistory(MigrationsTestCase):  # nocoverage
+    __unittest_skip__ = True
 
     migrate_from = "0377_message_edit_history_new_column"
     migrate_to = "0378_message_edit_history_update_fields"
