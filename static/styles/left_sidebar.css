@@ -55,7 +55,7 @@ li.show-more-topics {
     }
 }
 
-#streams_inline_cog,
+#streams_inline_icon,
 .streams_filter_icon {
     float: right;
     opacity: 0.5;
@@ -68,7 +68,7 @@ li.show-more-topics {
     }
 }
 
-.streams_inline_cog_wrapper {
+.streams_inline_icon_wrapper {
     float: right;
 }
 
@@ -76,7 +76,7 @@ li.show-more-topics {
     margin-right: 10px;
 }
 
-#streams_inline_cog {
+#streams_inline_icon {
     margin-right: 10px;
 }
 

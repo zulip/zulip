@@ -523,7 +523,7 @@ export function set_event_handlers() {
         .expectOne()
         .on("click", (e) => {
             e.preventDefault();
-            if (e.target.id === "streams_inline_cog") {
+            if (e.target.id === "streams_inline_icon") {
                 return;
             }
             toggle_filter_displayed(e);

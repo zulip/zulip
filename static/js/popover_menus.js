@@ -59,7 +59,7 @@ function on_show_prep(instance) {
 export function initialize() {
     delegate("body", {
         ...default_popover_props,
-        target: "#streams_inline_cog",
+        target: "#streams_inline_icon",
         onShow(instance) {
             on_show_prep(instance);
             instance.setContent(
