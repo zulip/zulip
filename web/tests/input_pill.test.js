@@ -16,6 +16,8 @@ mock_esm("../src/ui_util", {
     place_caret_at_end: noop,
 });
 
+const emoji_ui = mock_esm("../src/emoji_ui");
+
 set_global("getSelection", () => ({
     anchorOffset: 0,
 }));
@@ -43,10 +45,15 @@ function pill_html(value, img_src, status_emoji_info) {
     return require("../templates/input_pill.hbs")(opts);
 }
 
-run_test("basics", ({mock_template}) => {
+run_test("basics", ({override, mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(data.display_value, "JavaScript");
-        return html;
+        return {to_$: () => ({0: html})};
+    });
+    const status_emoji_info = {emoji_code: 5};
+    const $expected_html = $(pill_html("JavaScript", example_img_link, status_emoji_info));
+    override(emoji_ui, "bind_handlers_for_status_emoji", (html) => {
+        assert.equal(html, $expected_html[0]);
     });
 
     const config = {};
@@ -71,7 +78,6 @@ run_test("basics", ({mock_template}) => {
         show_user_status_emoji: true,
     };
     const widget = input_pill.create(config);
-    const status_emoji_info = {emoji_code: 5};
 
     // type for a pill can be any string but it needs to be
     // defined while creating any pill.
@@ -84,11 +90,10 @@ run_test("basics", ({mock_template}) => {
     };
 
     let inserted_before;
-    const expected_html = pill_html("JavaScript", example_img_link, status_emoji_info);
 
     $pill_input.before = ($elem) => {
         inserted_before = true;
-        assert.equal($elem.html(), expected_html);
+        assert.deepEqual($elem, $expected_html);
     };
 
     widget.appendValidatedData(item);

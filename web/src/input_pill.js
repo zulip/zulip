@@ -6,6 +6,7 @@ import render_input_pill from "../templates/input_pill.hbs";
 
 import * as blueslip from "./blueslip";
 import * as compose from "./compose";
+import * as emoji_ui from "./emoji_ui";
 import * as keydown_util from "./keydown_util";
 import * as ui_util from "./ui_util";
 
@@ -121,6 +122,10 @@ export function create(opts) {
 
             const pill_html = render_input_pill(opts);
             payload.$element = $(pill_html);
+
+            if (opts.has_status) {
+                emoji_ui.bind_handlers_for_status_emoji(payload.$element[0]);
+            }
             store.$input.before(payload.$element);
         },
 
