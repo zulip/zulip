@@ -4,14 +4,11 @@ class zulip_ops::prometheus::uwsgi {
   $version = $zulip::common::versions['uwsgi_exporter']['version']
   $dir = "/srv/zulip-uwsgi_exporter-${version}"
   $bin = "${dir}/uwsgi_exporter"
-  $arch = $::architecture ? {
-    'amd64'   => 'amd64',
-    'aarch64' => 'arm64',
-  }
+
   zulip::external_dep { 'uwsgi_exporter':
     version        => $version,
-    url            => "https://github.com/timonwong/uwsgi_exporter/releases/download/v${version}/uwsgi_exporter-${version}.linux-${arch}.tar.gz",
-    tarball_prefix => "uwsgi_exporter-${version}.linux-${arch}",
+    url            => "https://github.com/timonwong/uwsgi_exporter/releases/download/v${version}/uwsgi_exporter-${version}.linux-${zulip::common::goarch}.tar.gz",
+    tarball_prefix => "uwsgi_exporter-${version}.linux-${zulip::common::goarch}",
   }
 
   zulip_ops::firewall_allow { 'uwsgi_exporter': port => '9238' }
