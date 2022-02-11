@@ -29,7 +29,7 @@ if not missing:
 current_version = parse_version_from(os.path.join(DEPLOYMENTS_DIR, "current"))
 logging.error(
     "This is not an upgrade -- the current deployment (version %s) "
-    "contains database migrations which %s (version %s) does not.",
+    "contains %s database migrations which %s (version %s) does not.",
     current_version,
     len(missing),
     ZULIP_PATH,
