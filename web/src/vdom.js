@@ -74,7 +74,14 @@ export function update_attrs($elem, new_attrs, old_attrs) {
     }
 }
 
-export function update(replace_content, find, new_dom, old_dom) {
+export function update(
+    replace_content,
+    find,
+    new_dom,
+    old_dom,
+    bind_handlers_on_all_list_items,
+    bind_handlers_on_row,
+) {
     /*
         The update method allows you to continually
         update a "virtual" representation of your DOM,
@@ -129,6 +136,12 @@ export function update(replace_content, find, new_dom, old_dom) {
     function do_full_update() {
         const rendered_dom = render_tag(new_dom);
         replace_content(rendered_dom);
+        if (
+            bind_handlers_on_all_list_items !== undefined &&
+            typeof bind_handlers_on_all_list_items === "function"
+        ) {
+            bind_handlers_on_all_list_items();
+        }
     }
 
     if (old_dom === undefined) {
@@ -172,7 +185,8 @@ export function update(replace_content, find, new_dom, old_dom) {
         We will only update nodes whose data has changed.
     */
 
-    const $child_elems = find().children();
+    const parent = find();
+    const $child_elems = parent.children();
 
     for (const [i, new_node] of new_opts.keyed_nodes.entries()) {
         const old_node = old_opts.keyed_nodes[i];
@@ -180,7 +194,13 @@ export function update(replace_content, find, new_dom, old_dom) {
             continue;
         }
         const rendered_dom = new_node.render();
+        // .replaceWith returns the removed elements
         $child_elems.eq(i).replaceWith(rendered_dom);
+        // so we have to select the new elements from the DOM
+        const $elem = parent.children().eq(i);
+        if (bind_handlers_on_row !== undefined && typeof bind_handlers_on_row === "function") {
+            bind_handlers_on_row($elem[0]);
+        }
     }
 
     update_attrs(find(), new_opts.attrs, old_opts.attrs);

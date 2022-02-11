@@ -136,7 +136,15 @@ run_test("children", () => {
 
     const ul = vdom.ul(opts);
 
-    vdom.update(replace_content, find, ul);
+    let bind_handlers_on_all_list_items_called = false;
+    function bind_handlers_on_all_list_items() {
+        bind_handlers_on_all_list_items_called = true;
+    }
+
+    const old_dom = undefined;
+    vdom.update(replace_content, find, ul, old_dom, bind_handlers_on_all_list_items, () => {});
+
+    assert.ok(bind_handlers_on_all_list_items_called);
 
     assert.equal(rendered_html, "<ul>\n<li>foo1</li>\n<li>foo2</li>\n<li>foo3</li>\n</ul>");
 
@@ -203,8 +211,13 @@ run_test("partial updates", () => {
         attrs: [],
     };
 
+    let bind_handlers_on_row_called = false;
+    function bind_handlers_on_row() {
+        bind_handlers_on_row_called = true;
+    }
     const new_ul = vdom.ul(new_opts);
-    vdom.update(replace_content, find, new_ul, ul);
+    vdom.update(replace_content, find, new_ul, ul, () => {}, bind_handlers_on_row);
+    assert.ok(bind_handlers_on_row_called);
 
     assert.equal(patched_html, "<li>modified1</li>");
 });
