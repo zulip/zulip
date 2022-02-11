@@ -40,6 +40,16 @@
                     </div>
                     <p id="expires_on"></p>
                 </div>
+                <div id="custom-invite-expiration-time" class="dependent-block">
+                    <label for="expires_in">{{t "Custom time" }}</label>
+                    <input type="text" autocomplete="off" name="custom-expiration-time" id="custom-expiration-time-input" class="custom-expiration-time inline-block" value="{{time_input}}" maxlength="3"/>
+                    <select class="custom-expiration-time" id="custom-expiration-time-unit">
+                        {{#each time_choices}}
+                            <option name="custom_time_choice" class="custom_time_choice" value="{{this}}">{{this}}</option>
+                        {{/each}}
+                    </select>
+                    <p id="custom_expires_on"></p>
+                </div>
                 <div class="input-group">
                     <label for="invite_as">{{t "User(s) join as" }}
                         <a href="/help/roles-and-permissions" target="_blank" rel="noopener noreferrer">
