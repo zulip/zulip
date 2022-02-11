@@ -87,12 +87,12 @@
             </div>
             <div id="stream-filters-container" class="scrolling_list" data-simplebar>
                 <ul id="stream_filters" class="filters"></ul>
+                {{#unless is_guest }}
+                    <div id="add-stream-link">
+                        <a href="#streams/all"><i class="fa fa-plus-circle" aria-hidden="true"></i>{{t 'Subscribe to more streams' }}</a>
+                    </div>
+                {{/unless}}
             </div>
-            {{#unless is_guest }}
-            <div id="add-stream-link">
-                <a href="#streams/all"><i class="fa fa-plus-circle" aria-hidden="true"></i>{{t 'Subscribe to more streams' }}</a>
-            </div>
-            {{/unless}}
         </div>
     </div>
 </div>
