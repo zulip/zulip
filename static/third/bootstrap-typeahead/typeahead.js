@@ -476,7 +476,7 @@
   , container: '<div class="typeahead dropdown-menu"></div>'
   , header_html: '<p class="typeahead-header"><span id="typeahead-header-text"></span></p>'
   , menu: '<ul class="typeahead-menu"></ul>'
-  , item: '<li><a href="#"></a></li>'
+  , item: '<li><a></a></li>'
   , minLength: 1
   , stopAdvance: false
   , dropup: false
