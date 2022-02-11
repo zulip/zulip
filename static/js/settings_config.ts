@@ -477,6 +477,11 @@ export const expires_in_values = {
         description: $t({defaultMessage: "Never expires"}),
         default: false,
     },
+    custom: {
+        value: "custom",
+        description: $t({defaultMessage: "Custom"}),
+        default: false,
+    },
 };
 
 const user_role_array = Object.values(user_role_values);
