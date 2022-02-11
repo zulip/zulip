@@ -241,10 +241,6 @@ export function get_edit_event_orig_topic(obj) {
     return obj.orig_subject;
 }
 
-export function get_edit_event_prev_topic(obj) {
-    return obj.prev_subject;
-}
-
 export function is_topic_synonym(operator) {
     return operator === "subject";
 }

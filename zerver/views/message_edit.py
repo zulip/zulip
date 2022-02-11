@@ -16,7 +16,7 @@ from zerver.lib.message import access_message, access_web_public_message
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.topic import LEGACY_PREV_TOPIC, REQ_topic
+from zerver.lib.topic import REQ_topic
 from zerver.lib.validator import check_bool, check_string_in, to_non_negative_int
 from zerver.models import Message, UserProfile
 
@@ -41,11 +41,12 @@ def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Me
         assert datetime_to_timestamp(message.last_edit_time) == message_history[0]["timestamp"]
 
     for entry in message_history:
-        entry["topic"] = prev_topic
-        if LEGACY_PREV_TOPIC in entry:
-            prev_topic = entry[LEGACY_PREV_TOPIC]
-            entry["prev_topic"] = prev_topic
-            del entry[LEGACY_PREV_TOPIC]
+
+        if "topic" not in entry:
+            entry["topic"] = prev_topic
+
+        if "prev_topic" in entry:
+            prev_topic = entry["prev_topic"]
 
         entry["content"] = prev_content
         entry["rendered_content"] = prev_rendered_content

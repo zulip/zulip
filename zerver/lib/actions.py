@@ -161,7 +161,6 @@ from zerver.lib.string_validation import check_stream_name, check_stream_topic
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import (
-    LEGACY_PREV_TOPIC,
     ORIG_TOPIC,
     RESOLVED_TOPIC_PREFIX,
     TOPIC_LINKS,
@@ -6870,7 +6869,6 @@ def do_update_message(
         event[ORIG_TOPIC] = orig_topic_name
         event[TOPIC_NAME] = topic_name
         event[TOPIC_LINKS] = topic_links(target_message.sender.realm_id, topic_name)
-        edit_history_event[LEGACY_PREV_TOPIC] = orig_topic_name
         edit_history_event["prev_topic"] = orig_topic_name
         edit_history_event["topic"] = topic_name
 

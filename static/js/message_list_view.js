@@ -66,10 +66,7 @@ function message_was_only_moved(message) {
             if (edit_history_event.prev_content) {
                 return false;
             }
-            if (
-                util.get_edit_event_prev_topic(edit_history_event) ||
-                edit_history_event.prev_stream
-            ) {
+            if (edit_history_event.prev_topic || edit_history_event.prev_stream) {
                 moved = true;
             }
         }
