@@ -182,6 +182,26 @@ export function initialize_custom_date_type_fields(element_id) {
         altInput: true,
         altFormat: "F j, Y",
         allowInput: true,
+        dateFormat: "Y-m-d",
+        parseDate: function(dateString) {
+            var match;
+            // dateFormat
+            match = dateString.match(/(\d{4})-(\d{2})-(\d{2})/);
+            if (match != null) {
+                console.log("match1: ");
+                console.log(new Date(match[1], match[2] - 1, match[3]));
+                return new Date(match[1], match[2] - 1, match[3]);
+            }
+            // altFormat
+            match = dateString.match(/([A-Za-z]+) (\d{1,2}), (\d{4})/);
+            if (match != null) {
+                console.log("match2: ");
+                console.log(new Date(dateString));
+                return new Date(dateString);
+            }
+            // unparseable
+            return new Date();
+          }
     });
 
     $(element_id)

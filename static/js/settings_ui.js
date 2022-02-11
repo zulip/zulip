@@ -46,21 +46,35 @@ export function do_settings_change(
         success(reponse_data) {
             setTimeout(() => {
                 ui_report.success(success_msg_html, spinner, remove_after);
+                console.log("success_msg_html: ");
+                console.log(success_msg_html);
                 display_checkmark(spinner);
             }, appear_after);
             if (success_continuation !== undefined) {
                 success_continuation(reponse_data);
+                console.log("response_data: ");
+                console.log(response_data);
+                console.log("success_continuation: ");
+                console.log(success_continuation);
             }
         },
         error(xhr) {
             if (error_msg_element) {
                 loading.destroy_indicator(spinner);
                 ui_report.error(failure_msg_html, xhr, error_msg_element);
+                console.log("error_msg_element: ");
+                console.log(error_msg_element);
             } else {
                 ui_report.error(failure_msg_html, xhr, spinner);
+                console.log("failure_msg_html: ");
+                console.log(failure_msg_html);
             }
             if (error_continuation !== undefined) {
                 error_continuation(xhr);
+                console.log("xhr: ");
+                console.log(xhr);
+                console.log("error_continuation: ");
+                console.log(error_continuation);
             }
         },
     });
