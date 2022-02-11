@@ -9,9 +9,14 @@ const unread = mock_esm("../../static/js/unread");
 
 mock_esm("../../static/js/user_status", {
     is_away: () => false,
-    get_status_emoji: () => ({
-        emoji_code: 20,
-    }),
+    get_status_emoji: (user_id) => {
+        if (user_id === 314) {
+            // user is bot
+            return undefined;
+        }
+        // else
+        return {emoji_code: 20};
+    },
 });
 
 const narrow_state = zrequire("narrow_state");
@@ -71,23 +76,29 @@ test("get_convos", ({override}) => {
             recipients: [
                 {
                     full_name: "Me Myself",
+                    status_emoji_info: {
+                        emoji_code: 20,
+                    },
                 },
             ],
             unread: 1,
             url: "#narrow/pm-with/103-me",
             user_circle_class: "user_circle_empty",
             user_ids_string: "103",
-            status_emoji_info: {
-                emoji_code: 20,
-            },
         },
         {
             recipients: [
                 {
                     full_name: "Alice",
+                    status_emoji_info: {
+                        emoji_code: 20,
+                    },
                 },
                 {
                     full_name: "Bob",
+                    status_emoji_info: {
+                        emoji_code: 20,
+                    },
                 },
             ],
             user_ids_string: "101,102",
@@ -97,7 +108,6 @@ test("get_convos", ({override}) => {
             url: "#narrow/pm-with/101,102-group",
             user_circle_class: undefined,
             is_group: true,
-            status_emoji_info: undefined,
         },
     ];
 
@@ -130,6 +140,7 @@ test("get_convos bot", ({override}) => {
             recipients: [
                 {
                     full_name: "Outgoing webhook",
+                    status_emoji_info: undefined,
                 },
             ],
             user_ids_string: "314",
@@ -139,15 +150,20 @@ test("get_convos bot", ({override}) => {
             url: "#narrow/pm-with/314-outgoingwebhook",
             user_circle_class: "user_circle_green",
             is_group: false,
-            status_emoji_info: undefined,
         },
         {
             recipients: [
                 {
                     full_name: "Alice",
+                    status_emoji_info: {
+                        emoji_code: 20,
+                    },
                 },
                 {
                     full_name: "Bob",
+                    status_emoji_info: {
+                        emoji_code: 20,
+                    },
                 },
             ],
             user_ids_string: "101,102",
@@ -156,7 +172,6 @@ test("get_convos bot", ({override}) => {
             is_active: false,
             url: "#narrow/pm-with/101,102-group",
             user_circle_class: undefined,
-            status_emoji_info: undefined,
             is_group: true,
         },
     ];

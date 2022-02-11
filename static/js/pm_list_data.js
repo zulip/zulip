@@ -5,7 +5,6 @@ import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as unread from "./unread";
 import * as user_display from "./user_display";
-import * as user_status from "./user_status";
 
 export function get_active_user_ids_string() {
     const filter = narrow_state.filter();
@@ -31,16 +30,14 @@ export function get_convos() {
     for (const private_message_obj of private_messages) {
         const user_ids_string = private_message_obj.user_ids_string;
         const reply_to = people.user_ids_string_to_emails_string(user_ids_string);
-        const recipients = user_display.get_recipients_obj(user_ids_string);
+        const recipients = user_display.get_recipients_with_status_emoji_info(user_ids_string);
 
         const num_unread = unread.num_unread_for_person(user_ids_string);
 
         const is_group = user_ids_string.includes(",");
-
         const is_active = user_ids_string === active_user_ids_string;
 
         let user_circle_class;
-        let status_emoji_info;
 
         if (!is_group) {
             const user_id = Number.parseInt(user_ids_string, 10);
@@ -49,9 +46,6 @@ export function get_convos() {
 
             if (recipient_user_obj.is_bot) {
                 user_circle_class = "user_circle_green";
-                // bots do not have status emoji
-            } else {
-                status_emoji_info = user_status.get_status_emoji(user_id);
             }
         }
 
@@ -62,7 +56,6 @@ export function get_convos() {
             is_zero: num_unread === 0,
             is_active,
             url: hash_util.pm_with_url(reply_to),
-            status_emoji_info,
             user_circle_class,
             is_group,
         };
