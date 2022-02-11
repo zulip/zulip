@@ -4,10 +4,6 @@ class zulip_ops::profile::grafana {
   include zulip_ops::profile::base
   include zulip::supervisor
 
-  $arch = $::architecture ? {
-    'amd64'   => 'amd64',
-    'aarch64' => 'arm64',
-  }
   $version = $zulip::common::versions['grafana']['version']
   $dir = "/srv/zulip-grafana-${version}"
   $bin = "${dir}/bin/grafana-server"
@@ -15,7 +11,7 @@ class zulip_ops::profile::grafana {
 
   zulip::external_dep { 'grafana':
     version        => $version,
-    url            => "https://dl.grafana.com/oss/release/grafana-${version}.linux-${arch}.tar.gz",
+    url            => "https://dl.grafana.com/oss/release/grafana-${version}.linux-${zulip::common::goarch}.tar.gz",
     tarball_prefix => "grafana-${version}",
   }
 
