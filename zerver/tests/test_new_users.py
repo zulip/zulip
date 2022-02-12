@@ -1,5 +1,4 @@
 import datetime
-import random
 from typing import Sequence
 from unittest import mock
 
@@ -294,10 +293,13 @@ class TestNotifyNewUser(ZulipTestCase):
             realm, user_count + 5, user_count + 5
         )
 
+        user_no = 0
+
         def create_new_user_and_verify_strings_in_notification_message(
             strings_present: Sequence[str] = [], strings_absent: Sequence[str] = []
         ) -> None:
-            user_no = random.randrange(100000)
+            nonlocal user_no
+            user_no += 1
             new_user = UserProfile.objects.create(
                 realm=realm,
                 full_name=f"new user {user_no}",
