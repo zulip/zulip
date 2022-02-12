@@ -78,7 +78,19 @@ export class PanZoomControl {
 
     enablePanZoom() {
         this.panzoom.setOptions({disableZoom: false, disablePan: false, cursor: "move"});
-        this.container.addEventListener("wheel", this.panzoom.zoomWithWheel);
+
+        this.container.addEventListener("wheel", (event) => {
+            // Use the scroll delta to normalize the speed at which the image is zoomed.
+            // We are using this instead of panzoom's built in ZoomWithWheel because with certain
+            // hardware combinations and Firefox, repeatedly zooming in and out of the image may
+            // cause the image to drift. See https://github.com/timmywil/panzoom/issues/538
+            const delta = event.deltaY === 0 && event.deltaX ? event.deltaX : event.deltaY;
+            const scale = this.panzoom.getScale();
+            const step = this.panzoom.getOptions().step;
+            const toScale = scale * Math.exp((delta * step * -1) / 300);
+
+            this.panzoom.zoom(toScale, {animate: true});
+        });
     }
 
     zoomIn() {
