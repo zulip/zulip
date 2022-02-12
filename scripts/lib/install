@@ -334,7 +334,7 @@ fi
 # installation process more seamless.
 if [ -z "$NO_DIST_UPGRADE" ]; then
     if [ "$package_system" = apt ]; then
-        apt-get -y dist-upgrade "${APT_OPTIONS[@]}"
+        apt-get -y --allow-downgrades dist-upgrade "${APT_OPTIONS[@]}"
     elif [ "$package_system" = yum ]; then
         # On CentOS, there is no need to do `yum -y upgrade` because `yum -y
         # update` already does the same thing.
@@ -452,7 +452,7 @@ fi
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f
 
 if [ "$package_system" = apt ]; then
-    apt-get -y upgrade
+    apt-get -y --allow-downgrades upgrade
 elif [ "$package_system" = yum ]; then
     # No action is required because `yum update` already does upgrade.
     :
