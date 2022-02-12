@@ -324,7 +324,6 @@ export function activate(raw_operators, opts) {
     const msg_list = new message_list.MessageList({
         data: msg_data,
         table_name: "zfilt",
-        collapse_messages: !narrow_state.filter().is_search(),
     });
 
     msg_list.start_time = start_time;
