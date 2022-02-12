@@ -83,7 +83,7 @@ fi
 # Hash to check if the configuration is changed by the script later.
 hashes=$(sha256sum "$SOURCES_FILE" "$PREF_FILE" 2>/dev/null || true)
 
-pre_setup_deps=(lsb-release apt-transport-https ca-certificates gnupg curl)
+pre_setup_deps=(apt-transport-https ca-certificates gnupg curl)
 if ! apt-get -dy install "${pre_setup_deps[@]}"; then
     apt-get update
 fi
