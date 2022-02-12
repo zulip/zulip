@@ -85,6 +85,42 @@ pre {
      */
     font-family: "Source Sans 3", sans-serif !important;
 
+    .tippy-box {
+        background-color: hsl(0, 0%, 12%);
+
+        &[data-placement^="top"] {
+            > .tippy-arrow {
+                &::before {
+                    border-top-color: hsl(0, 0%, 12%);
+                }
+            }
+        }
+
+        &[data-placement^="bottom"] {
+            > .tippy-arrow {
+                &::before {
+                    border-bottom-color: hsl(0, 0%, 12%);
+                }
+            }
+        }
+
+        &[data-placement^="left"] {
+            > .tippy-arrow {
+                &::before {
+                    border-left-color: hsl(0, 0%, 12%);
+                }
+            }
+        }
+
+        &[data-placement^="right"] {
+            > .tippy-arrow {
+                &::before {
+                    border-right-color: hsl(0, 0%, 12%);
+                }
+            }
+        }
+    }
+
     .tippy-content {
         font-size: 13px;
     }
