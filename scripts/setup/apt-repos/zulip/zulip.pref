@@ -1,0 +1,19 @@
+Package: postgresql-10 postgresql-client-10 postgresql-server-dev-10
+Pin: version 10.19-*
+Pin-Priority: 1000
+
+Package: postgresql-11 postgresql-client-11 postgresql-server-dev-11
+Pin: version 11.14-*
+Pin-Priority: 1000
+
+Package: postgresql-12 postgresql-client-12 postgresql-server-dev-12
+Pin: version 12.9-*
+Pin-Priority: 1000
+
+Package: postgresql-13 postgresql-client-13 postgresql-server-dev-13
+Pin: version 13.5-*
+Pin-Priority: 1000
+
+Package: postgresql-14 postgresql-client-14 postgresql-server-dev-14
+Pin: version 14.1-*
+Pin-Priority: 1000
