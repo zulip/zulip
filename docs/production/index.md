@@ -6,7 +6,7 @@ maxdepth: 3
 ---
 
 requirements
-Installing a production server <install>
+install
 troubleshooting
 management-commands
 settings
