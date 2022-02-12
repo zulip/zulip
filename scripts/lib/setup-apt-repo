@@ -52,6 +52,8 @@ if ! [ -d "$LIST_PATH" ]; then
     exit 1
 fi
 
+release="$(. /etc/os-release && printf '%s' "$VERSION_CODENAME")"
+
 DEPENDENCIES_HASH=$(sha1sum "$LIST_PATH/"*.asc "$0")
 DEPENDENCIES_HASH_FILE="/var/lib/zulip/setup-repositories-state-$LIST"
 # Ensure that DEPENDENCIES_HASH_FILE exists before hashing it.
@@ -78,7 +80,6 @@ if ! apt-get -dy install "${pre_setup_deps[@]}"; then
 fi
 apt-get -y install "${pre_setup_deps[@]}"
 
-release=$(lsb_release -sc)
 if [ -f "$LIST_PATH/$release.list" ]; then
     apt-key add "$LIST_PATH/"*.asc
     cp "$LIST_PATH/$release.list" "$SOURCES_FILE"
