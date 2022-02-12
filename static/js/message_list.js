@@ -28,9 +28,7 @@ export class MessageList {
             });
         }
 
-        opts.collapse_messages = true;
-
-        const collapse_messages = opts.collapse_messages;
+        const collapse_messages = this.data.filter.supports_collapsing_recipients();
         const table_name = opts.table_name;
         this.view = new MessageListView(this, table_name, collapse_messages);
         this.table_name = table_name;
