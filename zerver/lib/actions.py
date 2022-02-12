@@ -4012,10 +4012,10 @@ def bulk_add_subscriptions(
                 new_recipient_ids.remove(sub.recipient_id)
                 stream = recipient_id_to_stream[sub.recipient_id]
                 sub_info = SubInfo(user_profile, sub, stream)
-                if sub.active:
-                    already_subscribed.append(sub_info)
-                else:
-                    subs_to_activate.append(sub_info)
+                # if sub.active:
+                #     already_subscribed.append(sub_info)
+                # else:
+                subs_to_activate.append(sub_info)
 
         used_colors = used_colors_for_user_ids.get(user_profile.id, set())
         user_color_map = pick_colors(used_colors, recipient_color_map, list(new_recipient_ids))
@@ -4034,12 +4034,16 @@ def bulk_add_subscriptions(
             sub_info = SubInfo(user_profile, sub, stream)
             subs_to_add.append(sub_info)
 
-    bulk_add_subs_to_db_with_logging(
-        realm=realm,
-        acting_user=acting_user,
-        subs_to_add=subs_to_add,
-        subs_to_activate=subs_to_activate,
-    )
+    subs_to_add.append(subs_to_add[0])
+    try:
+        bulk_add_subs_to_db_with_logging(
+            realm=realm,
+            acting_user=acting_user,
+            subs_to_add=subs_to_add,
+            subs_to_activate=subs_to_activate,
+        )
+    except IntegrityError:
+        raise JsonableError(_("Stream already subscribed."))
 
     altered_user_dict: Dict[int, Set[int]] = defaultdict(set)
     for sub_info in subs_to_add + subs_to_activate:
