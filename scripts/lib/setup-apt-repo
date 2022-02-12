@@ -54,6 +54,16 @@ fi
 
 release="$(. /etc/os-release && printf '%s' "$VERSION_CODENAME")"
 
+if [ ! -f "$LIST_PATH/$release.list" ]; then
+    cat <<EOF
+Unsupported release $release for sources.list file $LIST.  To add a
+new release, make a $LIST_PATH/$release.list file based on existing
+.list files in that directory.
+
+EOF
+    exit 1
+fi
+
 DEPENDENCIES_HASH=$(sha1sum "$LIST_PATH/"*.asc "$0")
 DEPENDENCIES_HASH_FILE="/var/lib/zulip/setup-repositories-state-$LIST"
 # Ensure that DEPENDENCIES_HASH_FILE exists before hashing it.
@@ -80,18 +90,8 @@ if ! apt-get -dy install "${pre_setup_deps[@]}"; then
 fi
 apt-get -y install "${pre_setup_deps[@]}"
 
-if [ -f "$LIST_PATH/$release.list" ]; then
-    apt-key add "$LIST_PATH/"*.asc
-    cp "$LIST_PATH/$release.list" "$SOURCES_FILE"
-else
-    cat <<EOF
-Unsupported release $release for sources.list file $LIST.  To add a
-new release, make a $LIST_PATH/$release.list file based on existing
-.list files in that directory.
-
-EOF
-    exit 1
-fi
+apt-key add "$LIST_PATH/"*.asc
+cp "$LIST_PATH/$release.list" "$SOURCES_FILE"
 
 if [ -e "$LIST_PATH/custom.sh" ]; then
     export LIST_PATH
