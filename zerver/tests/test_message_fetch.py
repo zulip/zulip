@@ -1,7 +1,7 @@
 import datetime
 import os
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
-from unittest import mock, skip
+from unittest import mock
 
 import orjson
 from django.db import connection
@@ -436,13 +436,11 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s) AND NOT (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
         )
 
-    @skip
     @override_settings(USING_PGROONGA=True)
     def test_add_term_using_search_operator_pgroonga(self) -> None:
         term = dict(operator="search", operand='"french fries"')
         self._do_add_term_test(term, "WHERE search_pgroonga &@~ escape_html(%(escape_html_1)s)")
 
-    @skip
     @override_settings(USING_PGROONGA=True)
     def test_add_term_using_search_operator_and_negated_pgroonga(self) -> None:  # NEGATED
         term = dict(operator="search", operand='"french fries"', negated=True)
@@ -2305,7 +2303,6 @@ class GetOldMessagesTest(ZulipTestCase):
             '<p>Public <span class="highlight">special</span> content!</p>',
         )
 
-    @skip
     @override_settings(USING_PGROONGA=True)
     def test_get_messages_with_search_pgroonga(self) -> None:
         self.login("cordelia")
