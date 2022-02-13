@@ -107,6 +107,12 @@ h3 .fa-question-circle-o {
     }
 }
 
+.profile-settings-form {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap-reverse;
+}
+
 .user-avatar-section {
     float: right;
 
@@ -1896,6 +1902,12 @@ input[type="checkbox"] {
 /* This value needs to match with the same in subscriptions.css, as
    we have some shared styles declared there */
 @media (width < $md_min) {
+    .profile-settings-form {
+        .user-avatar-section {
+            flex: 100%;
+        }
+    }
+
     #settings_overlay_container {
         /* this variable allows JavaScript to detect this media query */
         --single-column: yes;
