@@ -562,6 +562,7 @@ div.overlay {
     border-radius: 4px;
     background-color: hsl(105, 2%, 50%);
     color: hsl(0, 0%, 100%);
+    margin-right: -10px;
 }
 
 /* Implement the web app's default-hidden convention for alert
