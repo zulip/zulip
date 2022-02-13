@@ -7685,7 +7685,7 @@ paths:
           in: query
           description: |
             The user's configured [emoji set](/help/emoji-and-emoticons#use-emoticons),
-            used to display emoji to the user everything they appear in the UI.
+            used to display emoji to the user everywhere they appear in the UI.
 
             - "google" - Google modern
             - "google-blob" - Google classic
@@ -9580,7 +9580,7 @@ paths:
                             type: string
                             description: |
                               The user's configured [emoji set](/help/emoji-and-emoticons#use-emoticons),
-                              used to display emoji to the user everything they appear in the UI.
+                              used to display emoji to the user everywhere they appear in the UI.
 
                               - "google" - Google modern
                               - "google-blob" - Google classic
@@ -11303,7 +11303,7 @@ paths:
                             type: string
                             description: |
                               The user's configured [emoji set](/help/emoji-and-emoticons#use-emoticons),
-                              used to display emoji to the user everything they appear in the UI.
+                              used to display emoji to the user everywhere they appear in the UI.
 
                               - "google" - Google modern
                               - "google-blob" - Google classic
@@ -12269,7 +12269,7 @@ paths:
           in: query
           description: |
             The user's configured [emoji set](/help/emoji-and-emoticons#use-emoticons),
-            used to display emoji to the user everything they appear in the UI.
+            used to display emoji to the user everywhere they appear in the UI.
 
             - "google" - Google modern
             - "google-blob" - Google classic
