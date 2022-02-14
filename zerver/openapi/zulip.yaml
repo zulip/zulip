@@ -4963,9 +4963,8 @@ paths:
         `topic`, `content`, `rendered_content`, `timestamp` and `user_id`. This
         snapshot will be the only one present if the message has never been edited.
 
-        Also note that if a message's content was edited (but not the topic)
-        or the topic was edited (but not the content), the snapshot object
-        will only contain data for the modified fields (e.g. if only the topic
+        Also note that each snapshot object will only contain additional data for the
+        modified fields for that particular edit (e.g. if only the topic or stream
         was edited, `prev_content`, `prev_rendered_content`, and
         `content_html_diff` will not appear).
       responses:
@@ -4990,45 +4989,67 @@ paths:
                             topic:
                               type: string
                               description: |
-                                the topic for the message.
+                                The topic of the message.
                             prev_topic:
                               type: string
                               description: |
-                                the topic for the message before being edited.
+                                Only present if message's topic was edited.
+
+                                The topic of the message before being edited.
+                            stream:
+                              type: integer
+                              description: |
+                                Only present if message's stream was edited.
+
+                                The stream of the message after being edited.
+
+                                **Changes**: New in Zulip 5.0 (feature level 116).
+                            prev_stream:
+                              type: integer
+                              description: |
+                                Only present if message's stream was edited.
+
+                                The stream of the message prior to being edited.
                             content:
                               type: string
                               description: |
-                                the body of the message.
+                                The body of the message.
                             rendered_content:
                               type: string
                               description: |
-                                the already rendered, HTML version of `content`.
+                                The already rendered, HTML version of `content`.
                             prev_content:
                               type: string
                               description: |
-                                the body of the message before being edited.
+                                Only present if message's content was edited.
+
+                                The body of the message before being edited.
                             prev_rendered_content:
                               type: string
                               description: |
-                                the already rendered, HTML version of
+                                Only present if message's content was edited.
+
+                                The already rendered, HTML version of
                                 `prev_content`.
                             user_id:
                               type: integer
                               description: |
-                                the ID of the user that made the edit.
+                                The ID of the user that made the edit.
                             content_html_diff:
                               type: string
                               description: |
-                                an HTML diff between this version of the message
+                                Only present if message's content was edited.
+
+                                An HTML diff between this version of the message
                                 and the previous one.
                             timestamp:
                               type: integer
                               description: |
-                                the UNIX timestamp for this edit.
+                                The UNIX timestamp for this edit.
                         description: |
-                          A chronologically sorted array of `snapshot`
-                          objects, each one with the values of the
-                          message after the edit.
+                          A chronologically sorted, oldest to newest, array
+                          of `snapshot` objects, each one with the values of
+                          the message after the edit.
                     example:
                       {
                         "message_history":
@@ -14619,6 +14640,78 @@ components:
             Data on the recipient of the message;
             either the name of a stream or a dictionary containing basic data on
             the users who received the message.
+        edit_history:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              prev_content:
+                type: string
+                description: |
+                  The body of the message before being edited.
+              prev_rendered_content:
+                type: string
+                description: |
+                  The already rendered, HTML version of `prev_content`.
+              prev_rendered_content_version:
+                type: string
+                description: |
+                  The Markdown processor version number for the message
+                  before being edited.
+              prev_stream:
+                type: integer
+                description: |
+                  The stream ID of the message before being edited.
+              prev_topic:
+                type: string
+                description: |
+                  The topic of the message before being edited.
+
+                  **Changes**: New in Zulip 5.0 (feature level 116).
+                  Previously, this field was called `prev_subject`;
+                  clients are recommended to rename `prev_subject` to
+                  `prev_topic` if present for compatibility with
+                  older Zulip servers.
+              stream:
+                type: integer
+                description: |
+                  The stream ID of the message after being edited.
+
+                  **Changes**: New in Zulip 5.0 (feature level 116).
+              timestamp:
+                type: integer
+                description: |
+                  The UNIX timestamp for the edit.
+              topic:
+                type: string
+                description: |
+                  The topic of the message after being edited.
+
+                  **Changes**: New in Zulip 5.0 (feature level 116).
+              user_id:
+                type: integer
+                description: |
+                  The ID of the user that made the edit.
+            required:
+              - user_id
+              - timestamp
+          description: |
+            An array of objects with each object documenting the changes
+            made in each edit to the message, ordered chronologically
+            from most recent to least recent edit.
+
+            Not present if the message has never been edited or if the realm has
+            [disabled viewing of message edit history][disable-edit-history].
+
+            When present, every object will contain `user_id` and `timestamp`.
+
+            The other fields in each object will depend on the changes
+            made in that specific edit to the message (e.g. if only the
+            topic was edited, only `prev_topic` and `topic` will be present
+            in addition to `user_id` and `timestamp`).
+
+            [disable-edit-history]: /help/disable-message-edit-history
         id:
           type: integer
           description: |
