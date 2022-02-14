@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import migrations
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
@@ -10,6 +11,7 @@ def set_emoji_author(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> No
     This migration establishes the invariant that all RealmEmoji objects have .author set
     and queues events for reuploading all RealmEmoji.
     """
+
     RealmEmoji = apps.get_model("zerver", "RealmEmoji")
     Realm = apps.get_model("zerver", "Realm")
     UserProfile = apps.get_model("zerver", "UserProfile")
@@ -29,6 +31,12 @@ def set_emoji_author(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> No
             realm_emoji_to_update.append(realm_emoji)
 
     RealmEmoji.objects.bulk_update(realm_emoji_to_update, ["author_id"])
+
+    if settings.TEST_SUITE:
+        # There are no custom emoji in the test suite data set, and
+        # the below code won't work because RabbitMQ isn't enabled for
+        # the test suite.
+        return
 
     for realm_id in Realm.objects.order_by("id").values_list("id", flat=True):
         event = {
