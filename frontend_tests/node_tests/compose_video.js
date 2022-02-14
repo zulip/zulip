@@ -14,7 +14,16 @@ const upload = mock_esm("../../static/js/upload");
 mock_esm("../../static/js/resize", {
     watch_manual_resize() {},
 });
+set_global("document", {
+    querySelector: () => {},
+});
 set_global("navigator", {});
+// eslint-disable-next-line prefer-arrow-callback
+set_global("ResizeObserver", function () {
+    return {
+        observe: () => {},
+    };
+});
 
 const server_events_dispatch = zrequire("server_events_dispatch");
 const compose_ui = zrequire("compose_ui");

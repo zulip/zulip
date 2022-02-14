@@ -13,8 +13,16 @@ const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
-set_global("document", {});
+set_global("document", {
+    querySelector: () => {},
+});
 set_global("navigator", {});
+// eslint-disable-next-line prefer-arrow-callback
+set_global("ResizeObserver", function () {
+    return {
+        observe: () => {},
+    };
+});
 
 const fake_now = 555;
 

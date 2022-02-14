@@ -413,6 +413,13 @@ export function initialize() {
 
     resize.watch_manual_resize("#compose-textarea");
 
+    // Update position of scroll to bottom button based on
+    // height of the compose box.
+    const update_scroll_to_bottom_position = new ResizeObserver(() => {
+        $("#scroll-to-bottom-button-container").css("bottom", $("#compose").outerHeight());
+    });
+    update_scroll_to_bottom_position.observe(document.querySelector("#compose"));
+
     upload.feature_check($("#compose .compose_upload_file"));
 
     $("#compose-all-everyone").on("click", ".compose-all-everyone-confirm", (event) => {
