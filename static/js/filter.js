@@ -467,6 +467,7 @@ export class Filter {
             "not-streams-public",
             "streams-web-public",
             "not-streams-web-public",
+            "near",
         ]);
 
         for (const term of term_types) {
