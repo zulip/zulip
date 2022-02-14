@@ -16,7 +16,7 @@ from zerver.lib.message import access_message, access_web_public_message
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.topic import LEGACY_PREV_TOPIC, REQ_topic
+from zerver.lib.topic import REQ_topic
 from zerver.lib.types import EditHistoryEvent, FormattedEditHistoryEvent
 from zerver.lib.validator import check_bool, check_string_in, to_non_negative_int
 from zerver.models import Message, UserProfile
@@ -70,7 +70,7 @@ def fill_edit_history_entries(
 
         if "prev_stream" in edit_history_event:
             formatted_entry["prev_stream"] = edit_history_event["prev_stream"]
-            # TODO: Include current stream here.
+            formatted_entry["stream"] = edit_history_event["stream"]
 
         formatted_edit_history.append(formatted_entry)
 

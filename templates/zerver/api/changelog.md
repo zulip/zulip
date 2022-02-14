@@ -20,6 +20,21 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 5.0
 
+**Feature level 118**
+
+* [`GET /messages`](/api/get-messages), [`GET
+  /events`](/api/get-events): Improved the format of the
+  `edit_history` object within message objects. Entries for stream
+  edits now include a both a `prev_stream` and `stream` field to
+  indicate the previous and current stream IDs. Entries for topic
+  edits now include both a `prev_topic` and `topic` field to indicate
+  the previous and current topic, replacing the `prev_subject`
+  field. These changes substantially simplify client complexity for
+  processing historical message edits.
+
+* [`GET messages/{message_id}/history`](/api/get-message-history):
+  Added `stream` field to message history `snapshot` indicating
+  the updated stream ID of messages moved to a new stream.
 
 **Feature level 117**
 
