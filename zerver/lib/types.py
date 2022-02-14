@@ -100,11 +100,11 @@ class APIEditHistoryEvent(TypedDict, total=False):
     user_id: int
     timestamp: int
     prev_stream: int
-    # stream: int
+    stream: int
     # TODO: Remove prev_subject from the API.
     prev_subject: str
-    # prev_topic: str
-    # topic: str
+    prev_topic: str
+    topic: str
     prev_content: str
     prev_rendered_content: Optional[str]
     prev_rendered_content_version: Optional[int]

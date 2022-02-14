@@ -515,12 +515,7 @@ class MessageDict:
                     # The prev_subject field has been renamed in the
                     # database, but not the API.
                     edit_history_event["prev_subject"] = edit_history_event["prev_topic"]
-                    del edit_history_event["prev_topic"]
 
-                # New fields not consistently available, and thus
-                # intentionally not exposed to the API.
-                del edit_history_event["stream"]
-                del edit_history_event["topic"]
                 edit_history.append(edit_history_event)
             obj["edit_history"] = edit_history
 
