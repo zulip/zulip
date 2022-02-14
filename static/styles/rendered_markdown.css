@@ -307,7 +307,7 @@
     .message_inline_image {
         position: relative;
         margin-bottom: 5px;
-        margin-left: 5px;
+        margin-right: 5px;
         height: 100px;
         display: block !important;
         border: none !important;
