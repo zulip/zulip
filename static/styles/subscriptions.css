@@ -807,7 +807,8 @@ h4.stream_setting_subsection_title {
         }
 
         .add-user-list-filter {
-            width: calc(100% - 10px);
+            width: 100px;
+            margin-left: 20px;
         }
 
         #stream_creation_form {
