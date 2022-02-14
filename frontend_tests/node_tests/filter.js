@@ -111,6 +111,23 @@ test("basics", () => {
     assert.ok(filter.can_bucket_by("stream"));
     assert.ok(filter.can_bucket_by("stream", "topic"));
 
+    operators = [
+        {operator: "stream", operand: "foo"},
+        {operator: "topic", operand: "bar"},
+        {operator: "near", operand: 17},
+    ];
+    filter = new Filter(operators);
+
+    assert.ok(!filter.is_search());
+    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(!filter.allow_use_first_unread_when_narrowing());
+    assert.ok(filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(filter.can_bucket_by("stream"));
+    assert.ok(filter.can_bucket_by("stream", "topic"));
+
     // If our only stream operator is negated, then for all intents and purposes,
     // we don't consider ourselves to have a stream operator, because we don't
     // want to have the stream in the tab bar or unsubscribe messaging, etc.
