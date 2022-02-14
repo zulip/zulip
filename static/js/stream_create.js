@@ -362,38 +362,38 @@ export function show_new_stream_modal() {
     clear_error_display();
 }
 
-function create_handlers_for_users(container) {
-    // container should be $('#people_to_add')...see caller to verify
-    function update_checked_state_for_users(value, users) {
-        // Update the all_users backing data structure for
-        // which users will be submitted should the user click save,
-        // and also ensure that any visible checkboxes reflect
-        // the state of that data structure.
+function update_checked_state_for_users(value, users) {
+    // Update the all_users backing data structure for
+    // which users will be submitted should the user click save,
+    // and also ensure that any visible checkboxes reflect
+    // the state of that data structure.
 
-        // If we have to rerender a very large number of users, it's
-        // eventually faster to just do a full redraw rather than
-        // many hundreds of single-item rerenders.
-        const full_redraw = !users || users.length > 250;
-        for (const user of all_users) {
-            // We don't want to uncheck the user creating the stream if it is not admin.
-            if (user.user_id === page_params.user_id && value === false && !page_params.is_admin) {
-                continue;
-            }
-            // We update for all users if `users` parameter is empty.
-            if (users === undefined || users.includes(user.user_id)) {
-                user.checked = value;
-
-                if (!full_redraw) {
-                    all_users_list_widget.render_item(user);
-                }
-            }
+    // If we have to rerender a very large number of users, it's
+    // eventually faster to just do a full redraw rather than
+    // many hundreds of single-item rerenders.
+    const full_redraw = !users || users.length > 250;
+    for (const user of all_users) {
+        // We don't want to uncheck the user creating the stream if it is not admin.
+        if (user.user_id === page_params.user_id && value === false && !page_params.is_admin) {
+            continue;
         }
+        // We update for all users if `users` parameter is empty.
+        if (users === undefined || users.includes(user.user_id)) {
+            user.checked = value;
 
-        if (full_redraw) {
-            all_users_list_widget.hard_redraw();
+            if (!full_redraw) {
+                all_users_list_widget.render_item(user);
+            }
         }
     }
 
+    if (full_redraw) {
+        all_users_list_widget.hard_redraw();
+    }
+}
+
+function create_handlers_for_users(container) {
+    // container should be $('#people_to_add')...see caller to verify
     container.on("change", "#user-checkboxes input", (e) => {
         const elem = $(e.target);
         const user_id = Number.parseInt(elem.attr("data-user-id"), 10);
