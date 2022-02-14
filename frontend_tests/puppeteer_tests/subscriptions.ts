@@ -4,13 +4,17 @@ import type {ElementHandle, Page} from "puppeteer";
 
 import common from "../puppeteer_lib/common";
 
+async function add_user_to_stream(page: Page, name: string): Promise<void> {
+    const user_id = await common.get_user_id_from_name(page, name);
+    await page.evaluate(
+        (user_id: Number) => zulip_test.add_user_id_to_new_stream(user_id),
+        user_id,
+    );
+}
+
 async function user_checkbox(page: Page, name: string): Promise<string> {
     const user_id = await common.get_user_id_from_name(page, name);
     return `#user_checkbox_${CSS.escape(user_id.toString())}`;
-}
-
-async function user_span(page: Page, name: string): Promise<string> {
-    return (await user_checkbox(page, name)) + " span";
 }
 
 async function wait_for_checked(page: Page, user_name: string, is_checked: boolean): Promise<void> {
@@ -143,8 +147,8 @@ async function create_stream(page: Page): Promise<void> {
         stream_name: "Puppeteer",
         stream_description: "Everything Puppeteer",
     });
-    await page.click(await user_span(page, "cordelia")); // Add cordelia.
-    await page.click(await user_span(page, "desdemona")); // Add cordelia.
+    await add_user_to_stream(page, "cordelia");
+    await add_user_to_stream(page, "desdemona");
     await wait_for_checked(page, "cordelia", true);
     await wait_for_checked(page, "desdemona", true); // Add desdemona back as we did unset all in last test.
     await page.click("form#stream_creation_form button.button.sea-green");

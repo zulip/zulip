@@ -392,6 +392,11 @@ function update_checked_state_for_users(value, users) {
     }
 }
 
+export function add_user_id_to_new_stream(user_id) {
+    // This is only used by puppeteer tests.
+    update_checked_state_for_users(true, [user_id]);
+}
+
 function create_handlers_for_users(container) {
     // container should be $('#people_to_add')...see caller to verify
     container.on("change", "#user-checkboxes input", (e) => {
