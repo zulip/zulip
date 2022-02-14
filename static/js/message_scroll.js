@@ -129,12 +129,57 @@ export function hide_top_of_narrow_notices() {
     hide_history_limit_notice();
 }
 
+let hide_scroll_to_bottom_timer;
+export function hide_scroll_to_bottom() {
+    const $show_scroll_to_bottom_button = $("#scroll-to-bottom-button-container");
+    if (message_viewport.bottom_message_visible() || message_lists.current.empty()) {
+        // If last message is visible, just hide the
+        // scroll to bottom button.
+        $show_scroll_to_bottom_button.hide();
+        return;
+    }
+
+    // Wait before hiding to allow user time to click on the button.
+    hide_scroll_to_bottom_timer = setTimeout(() => {
+        // Don't hide if user is hovered on it.
+        if (
+            !narrow_state.narrowed_by_topic_reply() &&
+            !$show_scroll_to_bottom_button.get(0).matches(":hover")
+        ) {
+            $show_scroll_to_bottom_button.fadeOut(500);
+        }
+    }, 3000);
+}
+
+export function show_scroll_to_bottom_button() {
+    if (message_viewport.bottom_message_visible()) {
+        // Only show scroll to bottom button when
+        // last message is not visible in the
+        // current scroll position.
+        return;
+    }
+
+    clearTimeout(hide_scroll_to_bottom_timer);
+    $("#scroll-to-bottom-button-container").fadeIn(500);
+}
+
+$(document).on("keydown", (e) => {
+    if (e.shiftKey || e.ctrlKey || e.metaKey) {
+        return;
+    }
+
+    // Instantly hide scroll to bottom button on any keypress.
+    // Keyboard users are very less likely to use this button.
+    $("#scroll-to-bottom-button-container").hide();
+});
+
 export function is_actively_scrolling() {
     return actively_scrolling;
 }
 
 export function scroll_finished() {
     actively_scrolling = false;
+    hide_scroll_to_bottom();
 
     if (!$("#message_feed_container").hasClass("active")) {
         return;
@@ -170,6 +215,7 @@ export function scroll_finished() {
 let scroll_timer;
 function scroll_finish() {
     actively_scrolling = true;
+    show_scroll_to_bottom_button();
     clearTimeout(scroll_timer);
     scroll_timer = setTimeout(scroll_finished, 100);
 }

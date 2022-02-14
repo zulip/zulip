@@ -215,6 +215,8 @@
 }
 
 #compose-container {
+    display: flex;
+    flex-direction: column;
     width: 100%;
     /* This should match the value for .app-main */
     max-width: 1400px;

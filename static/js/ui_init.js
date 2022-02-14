@@ -203,6 +203,7 @@ function initialize_compose_box() {
             embedded: $("#compose").attr("data-embedded") === "",
             file_upload_enabled: page_params.max_file_upload_size_mib > 0,
             giphy_enabled: giphy.is_giphy_enabled(),
+            scroll_to_bottom_key: common.has_mac_keyboard() ? "Fn + Right arrow" : "End",
         }),
     );
     $(`.enter_sends_${user_settings.enter_sends}`).show();

@@ -148,6 +148,14 @@ body.dark-theme {
         background-color: hsl(212, 28%, 18%);
     }
 
+    #scroll-to-bottom-button-container {
+        background: transparent;
+
+        span {
+            color: hsl(0, 0%, 27%);
+        }
+    }
+
     #compose_buttons
         .reply_button_container
         .compose_reply_button

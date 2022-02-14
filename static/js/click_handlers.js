@@ -27,6 +27,7 @@ import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
+import * as navigate from "./navigate";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -247,6 +248,13 @@ export function initialize() {
             return;
         }
         window.location.href = $(this).attr("href");
+    });
+
+    $("body").on("click", "#scroll-to-bottom-button-clickable-area", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        navigate.to_end();
     });
 
     // MESSAGE EDITING

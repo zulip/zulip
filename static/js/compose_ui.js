@@ -172,6 +172,7 @@ export function make_compose_box_full_size() {
 
     $(".collapse_composebox_button").show();
     $(".expand_composebox_button").hide();
+    $("#scroll-to-bottom-button-container").hide();
     $("#compose-textarea").trigger("focus");
 }
 
