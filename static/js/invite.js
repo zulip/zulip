@@ -203,8 +203,8 @@ export function launch() {
     });
 }
 
-function valid_to() {
-    const time_valid = Number.parseFloat($("#expires_in").val());
+function valid_to(expires_in) {
+    const time_valid = Number.parseFloat(expires_in);
     if (!time_valid) {
         return $t({defaultMessage: "Never expires"});
     }
@@ -259,8 +259,8 @@ export function initialize() {
         reset_error_messages();
     });
 
-    $("#expires_on").text(valid_to());
+    $("#expires_on").text(valid_to($("#expires_in").val()));
     $("#expires_in").on("change", () => {
-        $("#expires_on").text(valid_to());
+        $("#expires_on").text(valid_to($("#expires_in").val()));
     });
 }
