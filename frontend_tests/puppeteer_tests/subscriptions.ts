@@ -4,14 +4,6 @@ import type {ElementHandle, Page} from "puppeteer";
 
 import common from "../puppeteer_lib/common";
 
-async function add_user_to_stream(page: Page, name: string): Promise<void> {
-    const user_id = await common.get_user_id_from_name(page, name);
-    await page.evaluate(
-        (user_id: Number) => zulip_test.add_user_id_to_new_stream(user_id),
-        user_id,
-    );
-}
-
 async function user_checkbox(page: Page, name: string): Promise<string> {
     const user_id = await common.get_user_id_from_name(page, name);
     return `#user_checkbox_${CSS.escape(user_id.toString())}`;
@@ -26,6 +18,15 @@ async function wait_for_checked(page: Page, user_name: string, is_checked: boole
         selector,
         is_checked,
     );
+}
+
+async function add_user_to_stream(page: Page, name: string): Promise<void> {
+    const user_id = await common.get_user_id_from_name(page, name);
+    await page.evaluate(
+        (user_id: Number) => zulip_test.add_user_id_to_new_stream(user_id),
+        user_id,
+    );
+    await wait_for_checked(page, name, true);
 }
 
 async function stream_name_error(page: Page): Promise<string> {
@@ -78,19 +79,10 @@ async function test_subscription_button(page: Page): Promise<void> {
     button = await subscribed();
 }
 
-async function click_create_new_stream(
-    page: Page,
-    cordelia_checkbox: string,
-    othello_checkbox: string,
-): Promise<void> {
+async function click_create_new_stream(page: Page): Promise<void> {
+    const desdemona_checkbox = await user_checkbox(page, "desdemona");
     await page.click("#add_new_subscription .create_stream_button");
-    await page.waitForSelector(cordelia_checkbox, {visible: true});
-    await page.waitForSelector(othello_checkbox, {visible: true});
-}
-
-async function verify_check_all_only_affects_visible_users(page: Page): Promise<void> {
-    await wait_for_checked(page, "cordelia", false);
-    await wait_for_checked(page, "othello", true);
+    await page.waitForSelector(desdemona_checkbox, {visible: true});
 }
 
 async function clear_ot_filter_with_backspace(page: Page): Promise<void> {
@@ -99,23 +91,17 @@ async function clear_ot_filter_with_backspace(page: Page): Promise<void> {
     await page.keyboard.press("Backspace");
 }
 
-async function verify_filtered_users_are_visible_again(
-    page: Page,
-    cordelia_checkbox: string,
-    othello_checkbox: string,
-): Promise<void> {
-    await page.waitForSelector(cordelia_checkbox, {visible: true});
-    await page.waitForSelector(othello_checkbox, {visible: true});
-}
-
-async function test_user_filter_ui(
-    page: Page,
-    cordelia_checkbox: string,
-    othello_checkbox: string,
-): Promise<void> {
+async function test_user_filter_ui(page: Page): Promise<void> {
     await page.waitForSelector("form#stream_creation_form", {visible: true});
     // Desdemona should be checked by default
     await wait_for_checked(page, "desdemona", true);
+
+    await add_user_to_stream(page, "cordelia");
+    await add_user_to_stream(page, "othello");
+
+    const cordelia_checkbox = await user_checkbox(page, "cordelia");
+    const desdemona_checkbox = await user_checkbox(page, "desdemona");
+    const othello_checkbox = await user_checkbox(page, "othello");
 
     await page.type(`form#stream_creation_form [name="user_list_filter"]`, "ot", {delay: 100});
     await page.waitForSelector("#user-checkboxes", {visible: true});
@@ -125,20 +111,43 @@ async function test_user_filter_ui(
     );
 
     await page.waitForSelector(cordelia_checkbox, {hidden: true});
+    await page.waitForSelector(desdemona_checkbox, {hidden: true});
     await page.waitForSelector(othello_checkbox, {visible: true});
 
-    // Test check all
+    // Test unset all with filter
+    await page.click(".subs_unset_all_users");
+    await wait_for_checked(page, "othello", false);
+
+    // Test check all with filter
     await page.click(".subs_set_all_users");
     await wait_for_checked(page, "othello", true);
+
+    // And unset othello again.
+    await page.click(".subs_unset_all_users");
+    await wait_for_checked(page, "othello", false);
+
+    // Clear the filter.
     await clear_ot_filter_with_backspace(page);
-    await verify_filtered_users_are_visible_again(page, cordelia_checkbox, othello_checkbox);
-    await verify_check_all_only_affects_visible_users(page);
+
+    await page.waitForSelector(cordelia_checkbox, {visible: true});
+    await page.waitForSelector(desdemona_checkbox, {visible: true});
+    await page.waitForSelector(othello_checkbox, {visible: true});
+
+    // Make sure desdemona and cordelia are still set.
+    await wait_for_checked(page, "cordelia", true);
+    await wait_for_checked(page, "desdemona", true);
 
     // Test unset all
     await page.click(".subs_unset_all_users");
-    await verify_filtered_users_are_visible_again(page, cordelia_checkbox, othello_checkbox);
     await wait_for_checked(page, "cordelia", false);
+    await wait_for_checked(page, "desdemona", false);
     await wait_for_checked(page, "othello", false);
+
+    // Test check all
+    await page.click(".subs_set_all_users");
+    await wait_for_checked(page, "cordelia", true);
+    await wait_for_checked(page, "desdemona", true);
+    await wait_for_checked(page, "othello", true);
 }
 
 async function create_stream(page: Page): Promise<void> {
@@ -149,8 +158,6 @@ async function create_stream(page: Page): Promise<void> {
     });
     await add_user_to_stream(page, "cordelia");
     await add_user_to_stream(page, "desdemona");
-    await wait_for_checked(page, "cordelia", true);
-    await wait_for_checked(page, "desdemona", true); // Add desdemona back as we did unset all in last test.
     await page.click("form#stream_creation_form button.button.sea-green");
     await page.waitForFunction(() => $(".stream-name").is(':contains("Puppeteer")'));
     const stream_name = await common.get_text_from_selector(
@@ -165,9 +172,9 @@ async function create_stream(page: Page): Promise<void> {
     assert.strictEqual(stream_name, "Puppeteer");
     assert.strictEqual(stream_description, "Everything Puppeteer");
 
-    // Assert subscriber count becomes 2(cordelia(+1), Desdemona(+1)).
+    // Assert subscriber count becomes 3 (cordelia, desdemona, othello)
     await page.waitForFunction(
-        (subscriber_count_selector: string) => $(subscriber_count_selector).text().trim() === "2",
+        (subscriber_count_selector: string) => $(subscriber_count_selector).text().trim() === "3",
         {},
         subscriber_count_selector,
     );
@@ -191,11 +198,8 @@ async function test_streams_with_duplicate_names_cannot_be_created(page: Page): 
 }
 
 async function test_stream_creation(page: Page): Promise<void> {
-    const cordelia_checkbox = await user_checkbox(page, "cordelia");
-    const othello_checkbox = await user_checkbox(page, "othello");
-
-    await click_create_new_stream(page, cordelia_checkbox, othello_checkbox);
-    await test_user_filter_ui(page, cordelia_checkbox, othello_checkbox);
+    await click_create_new_stream(page);
+    await test_user_filter_ui(page);
     await create_stream(page);
     await test_streams_with_empty_names_cannot_be_created(page);
     await test_streams_with_duplicate_names_cannot_be_created(page);

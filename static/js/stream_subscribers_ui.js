@@ -116,7 +116,7 @@ function show_stream_subscription_request_result({
     }
 }
 
-export function enable_subscriber_creation({parent_container}) {
+export function enable_subscriber_creation({parent_container, get_available_users}) {
     const pill_container = parent_container.find(".pill-container");
 
     pill_widget = input_pill.create({
@@ -126,8 +126,7 @@ export function enable_subscriber_creation({parent_container}) {
     });
 
     function get_users_for_subscriber_typeahead() {
-        // TODO: refine this when we go away from checkboxes
-        const potential_subscribers = people.get_people_for_stream_create();
+        const potential_subscribers = get_available_users();
         return user_pill.filter_taken_users(potential_subscribers, pill_widget);
     }
 

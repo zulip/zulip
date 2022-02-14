@@ -19,7 +19,8 @@ import * as stream_subscribers_ui from "./stream_subscribers_ui";
 import * as ui_report from "./ui_report";
 
 let created_stream;
-let all_users;
+let user_id_set;
+let is_user_id_checked = {};
 let all_users_list_widget;
 
 export function reset_created_stream() {
@@ -145,9 +146,75 @@ function update_announce_stream_state() {
     $("#announce-new-stream").show();
 }
 
+function sorted_user_ids() {
+    const users = people.get_users_from_ids(Array.from(user_id_set));
+    people.sort_but_pin_current_user_on_top(users);
+    return users.map((user) => user.user_id);
+}
+
 function get_principals() {
     // Return list of user ids which were selected by user.
-    return all_users.filter((user) => user.checked === true).map((user) => user.user_id);
+    return Array.from(user_id_set).filter((user_id) => is_user_id_checked[user_id]);
+}
+
+function is_principal(user_id) {
+    return user_id_set.has(user_id) && is_user_id_checked[user_id];
+}
+
+function get_available_users() {
+    const potential_subscribers = people.get_people_for_stream_create();
+
+    return potential_subscribers.filter((user) => !is_principal(user.user_id));
+}
+
+function must_be_subscribed(user_id) {
+    return !page_params.is_admin && user_id === page_params.user_id;
+}
+
+function redraw_subscriber_list() {
+    all_users_list_widget.replace_list_data(sorted_user_ids());
+}
+
+function visible_user_ids() {
+    // For check-all/uncheck-all we want to respect the current filter
+    // for our subscribers.
+    return all_users_list_widget.get_current_list();
+}
+
+function check_all_users() {
+    for (const user_id of visible_user_ids()) {
+        is_user_id_checked[user_id] = true;
+    }
+
+    redraw_subscriber_list();
+}
+
+function uncheck_all_users() {
+    for (const user_id of visible_user_ids()) {
+        if (!must_be_subscribed(user_id)) {
+            is_user_id_checked[user_id] = false;
+        }
+    }
+
+    redraw_subscriber_list();
+}
+
+function add_user_ids(user_ids) {
+    for (const user_id of user_ids) {
+        const user = people.get_by_user_id(user_id);
+        if (user) {
+            user_id_set.add(user_id);
+            is_user_id_checked[user_id] = true;
+        }
+    }
+    redraw_subscriber_list();
+}
+
+function remove_user_ids(user_ids) {
+    for (const user_id of user_ids) {
+        is_user_id_checked[user_id] = false;
+        all_users_list_widget.render_item(user_id);
+    }
 }
 
 function create_stream() {
@@ -305,34 +372,45 @@ export function show_new_stream_modal() {
     const add_people_container = $("#people_to_add");
     add_people_container.html(render_new_stream_users({}));
 
-    stream_subscribers_ui.enable_subscriber_creation({parent_container: add_people_container});
-
-    all_users = people.get_people_for_stream_create();
-    // Add current user on top of list
-    const current_user = people.get_by_user_id(page_params.user_id);
-    all_users.unshift({
-        show_email: settings_data.show_email(),
-        email: people.get_visible_email(current_user),
-        user_id: current_user.user_id,
-        full_name: current_user.full_name,
-        checked: true,
-        disabled: !page_params.is_admin,
+    stream_subscribers_ui.enable_subscriber_creation({
+        parent_container: add_people_container,
+        get_available_users,
     });
 
-    all_users_list_widget = ListWidget.create($("#user-checkboxes"), all_users, {
+    // Add current user on top of list
+    const current_user_id = page_params.user_id;
+    user_id_set = new Set();
+    user_id_set.add(current_user_id);
+    is_user_id_checked = {};
+    is_user_id_checked[current_user_id] = true;
+
+    all_users_list_widget = ListWidget.create($("#user-checkboxes"), [current_user_id], {
         name: "new_stream_add_users",
         parent_container: add_people_container,
-        modifier(item) {
+        modifier(user_id) {
+            const user = people.get_by_user_id(user_id);
+            const item = {
+                show_email: settings_data.show_email(),
+                email: people.get_visible_email(user),
+                user_id,
+                full_name: user.full_name,
+                checked: is_user_id_checked[user_id],
+                disabled: must_be_subscribed(user_id),
+            };
             return render_new_stream_user(item);
         },
         filter: {
             element: $("#people_to_add .add-user-list-filter"),
-            predicate(user, search_term) {
+            predicate(user_id, search_term) {
+                const user = people.get_by_user_id(user_id);
                 return people.build_person_matcher(search_term)(user);
             },
         },
         simplebar_container: $("#user-checkboxes-simplebar-wrapper"),
-        html_selector: (user) => $(`#${CSS.escape("user_checkbox_" + user.user_id)}`),
+        html_selector: (user_id) => {
+            const user = people.get_by_user_id(user_id);
+            return $(`#${CSS.escape("user_checkbox_" + user.user_id)}`);
+        },
     });
 
     // Select the first visible and enabled choice for stream privacy.
@@ -362,39 +440,9 @@ export function show_new_stream_modal() {
     clear_error_display();
 }
 
-function update_checked_state_for_users(value, users) {
-    // Update the all_users backing data structure for
-    // which users will be submitted should the user click save,
-    // and also ensure that any visible checkboxes reflect
-    // the state of that data structure.
-
-    // If we have to rerender a very large number of users, it's
-    // eventually faster to just do a full redraw rather than
-    // many hundreds of single-item rerenders.
-    const full_redraw = !users || users.length > 250;
-    for (const user of all_users) {
-        // We don't want to uncheck the user creating the stream if it is not admin.
-        if (user.user_id === page_params.user_id && value === false && !page_params.is_admin) {
-            continue;
-        }
-        // We update for all users if `users` parameter is empty.
-        if (users === undefined || users.includes(user.user_id)) {
-            user.checked = value;
-
-            if (!full_redraw) {
-                all_users_list_widget.render_item(user);
-            }
-        }
-    }
-
-    if (full_redraw) {
-        all_users_list_widget.hard_redraw();
-    }
-}
-
 export function add_user_id_to_new_stream(user_id) {
     // This is only used by puppeteer tests.
-    update_checked_state_for_users(true, [user_id]);
+    add_user_ids([user_id]);
 }
 
 function create_handlers_for_users(container) {
@@ -403,29 +451,29 @@ function create_handlers_for_users(container) {
         const elem = $(e.target);
         const user_id = Number.parseInt(elem.attr("data-user-id"), 10);
         const checked = elem.prop("checked");
-        update_checked_state_for_users(checked, [user_id]);
+        if (checked) {
+            add_user_ids([user_id]);
+        } else {
+            remove_user_ids([user_id]);
+        }
     });
 
-    // 'Check all' and 'Uncheck all' visible users
-    container.on("click", ".subs_set_all_users, .subs_unset_all_users", (e) => {
+    // 'Check all'
+    container.on("click", ".subs_set_all_users", (e) => {
         e.preventDefault();
-        // Only `check / uncheck` users who are displayed.
-        const mark_checked = e.target.classList.contains("subs_set_all_users");
-        const users_displayed = all_users_list_widget.get_current_list();
-        if (all_users.length !== users_displayed.length) {
-            update_checked_state_for_users(
-                mark_checked,
-                users_displayed.map((user) => user.user_id),
-            );
-        } else {
-            update_checked_state_for_users(mark_checked);
-        }
+        check_all_users();
+    });
+
+    // 'Uncheck all'
+    container.on("click", ".subs_unset_all_users", (e) => {
+        e.preventDefault();
+        uncheck_all_users();
     });
 
     function add_users() {
         const user_ids = stream_subscribers_ui.get_pill_user_ids();
 
-        update_checked_state_for_users(true, user_ids);
+        add_user_ids(user_ids);
 
         stream_subscribers_ui.clear_pill_widget();
     }
