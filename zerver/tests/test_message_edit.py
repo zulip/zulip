@@ -73,12 +73,11 @@ class EditMessageTestCase(ZulipTestCase):
             msg.sender_id,
         )
 
-        # TODO: uncomment assertion when edit_history fields in API match fields in database.
-        # if msg.edit_history:
-        #     self.assertEqual(
-        #         fetch_message_dict["edit_history"],
-        #         orjson.loads(msg.edit_history),
-        #     )
+        if msg.edit_history:
+            self.assertEqual(
+                fetch_message_dict["edit_history"],
+                orjson.loads(msg.edit_history),
+            )
 
     def prepare_move_topics(
         self,
@@ -879,14 +878,13 @@ class EditMessageTest(EditMessageTestCase):
                 expected_entries.add("content_html_diff")
             if i in {0, 3}:
                 expected_entries.add("prev_stream")
-                # TODO: uncomment when stream field is added to API
-                # expected_entries.add("stream")
+                expected_entries.add("stream")
             i += 1
             self.assertEqual(expected_entries, set(entry.keys()))
         self.assert_length(message_history, 7)
         self.assertEqual(message_history[0]["topic"], "topic 4")
         self.assertEqual(message_history[0]["prev_topic"], "topic 3")
-        # self.assertEqual(message_history[0]["stream"], stream_3.id)
+        self.assertEqual(message_history[0]["stream"], stream_3.id)
         self.assertEqual(message_history[0]["prev_stream"], stream_2.id)
         self.assertEqual(message_history[0]["content"], "content 4")
 
@@ -900,7 +898,7 @@ class EditMessageTest(EditMessageTestCase):
         self.assertEqual(message_history[2]["prev_content"], "content 2")
 
         self.assertEqual(message_history[3]["topic"], "topic 2")
-        # self.assertEqual(message_history[3]["stream"], stream_2.id)
+        self.assertEqual(message_history[3]["stream"], stream_2.id)
         self.assertEqual(message_history[3]["prev_stream"], stream_1.id)
         self.assertEqual(message_history[3]["content"], "content 2")
 
