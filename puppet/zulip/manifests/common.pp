@@ -31,7 +31,8 @@ class zulip::common {
   }
   $supervisor_conf_dir = "${supervisor_system_conf_dir}/zulip"
 
-  $total_memory_mb = Integer($::memorysize_mb)
+  $total_memory_bytes = $::memory['system']['total_bytes']
+  $total_memory_mb = $total_memory_bytes / 1024 / 1024
 
   $goarch = $::os['architecture'] ? {
     'amd64'   => 'amd64',
