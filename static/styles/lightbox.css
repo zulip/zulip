@@ -9,6 +9,7 @@
         width: 100%;
         height: calc(100% - 65px - 95px);
         margin: 0;
+        overflow: hidden;
 
         background-size: contain;
         background-repeat: no-repeat;

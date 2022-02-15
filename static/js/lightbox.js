@@ -1,5 +1,5 @@
-import panzoom from "@panzoom/panzoom";
 import $ from "jquery";
+import panzoom from "panzoom";
 
 import render_lightbox_overlay from "../templates/lightbox_overlay.hbs";
 
@@ -21,20 +21,27 @@ export class PanZoomControl {
     constructor(container) {
         this.container = container;
         this.panzoom = panzoom(this.container, {
-            disablePan: true,
-            disableZoom: true,
-            cursor: "auto",
+            smoothScroll: false,
+            bounds: true,
+            maxZoom: 5,
+            minZoom: 0.1,
+            filterKey() {
+                // Disable the library's built in keybindings
+                return true;
+            },
         });
+        // Start with pan/zoom disabled.
+        this.disablePanZoom();
 
         // The following events are necessary to prevent the click event
         // firing where the user "unclicks" at the end of the drag, which
         // was causing accidental overlay closes in some situations.
-        this.container.addEventListener("panzoomstart", () => {
+        this.panzoom.on("pan", () => {
             // Marks this overlay as needing to stay open.
             $("#lightbox_overlay").data("noclose", true);
         });
 
-        this.container.addEventListener("panzoomend", () => {
+        this.panzoom.on("panend", () => {
             // Don't remove the noclose attribute on this overlay until after paint,
             // otherwise it will be removed too early and close the lightbox
             // unintentionally.
@@ -67,26 +74,36 @@ export class PanZoomControl {
     }
 
     reset() {
-        this.panzoom.reset();
+        this.panzoom.zoomAbs(0, 0, 1);
+        this.panzoom.moveTo(0, 0);
+        $("#lightbox_overlay").data("noclose", false);
     }
 
     disablePanZoom() {
-        this.container.removeEventListener("wheel", this.panzoom.zoomWithWheel);
-        this.panzoom.setOptions({disableZoom: true, disablePan: true, cursor: "auto"});
+        $(".image-preview .zoom-element img").css("cursor", "auto");
         this.reset();
+        this.panzoom.pause();
     }
 
     enablePanZoom() {
-        this.panzoom.setOptions({disableZoom: false, disablePan: false, cursor: "move"});
-        this.container.addEventListener("wheel", this.panzoom.zoomWithWheel);
+        $(".image-preview .zoom-element img").css("cursor", "move");
+        this.panzoom.resume();
     }
 
     zoomIn() {
-        this.panzoom.zoomIn();
+        const w = $(".image-preview").width();
+        const h = $(".image-preview").height();
+        this.panzoom.smoothZoom(w / 2, h / 2, 1.5);
     }
 
     zoomOut() {
-        this.panzoom.zoomOut();
+        const w = $(".image-preview").width();
+        const h = $(".image-preview").height();
+        this.panzoom.smoothZoom(w / 2, h / 2, 0.5);
+    }
+
+    isActive() {
+        return $(".image-preview .zoom-element img").length > 0;
     }
 }
 
@@ -124,7 +141,9 @@ function display_image(payload) {
     render_lightbox_list_images(payload.preview);
 
     $(".player-container").hide();
-    $(".image-actions, .image-description, .download, .lightbox-canvas-trigger").show();
+    $(
+        ".image-preview, .image-actions, .image-description, .download, .lightbox-canvas-trigger",
+    ).show();
 
     const img_container = $("#lightbox_overlay .image-preview > .zoom-element");
     const img = new Image();
@@ -364,7 +383,9 @@ export function initialize() {
         $(".player-container iframe").remove();
         is_open = false;
         document.activeElement.blur();
-        pan_zoom_control.disablePanZoom();
+        if (pan_zoom_control.isActive()) {
+            pan_zoom_control.disablePanZoom();
+        }
         $(".lightbox-canvas-trigger").removeClass("enabled");
     };
 
@@ -453,6 +474,15 @@ export function initialize() {
 
     $("#lightbox_overlay").on("click", ".image-info-wrapper, .center", (e) => {
         if ($(e.target).is(".image-info-wrapper, .center")) {
+            reset_lightbox_state();
+            overlays.close_overlay("lightbox");
+        }
+    });
+
+    $("#lightbox_overlay .image-preview").on("click", (e) => {
+        // Ensure that the click isn't on the image itself, and that
+        // the window isn't marked as disabled to click to close.
+        if (!$(e.target).is("img") && !$("#lightbox_overlay").data("noclose")) {
             reset_lightbox_state();
             overlays.close_overlay("lightbox");
         }
