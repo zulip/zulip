@@ -11,8 +11,8 @@ class zulip::profile::app_frontend {
     $nginx_listen_port = zulipconf('application_server', 'nginx_listen_port', 443)
   }
   $ssl_dir = $::os['family'] ? {
-    'debian' => '/etc/ssl',
-    'redhat' => '/etc/pki/tls',
+    'Debian' => '/etc/ssl',
+    'RedHat' => '/etc/pki/tls',
   }
   file { '/etc/nginx/sites-available/zulip-enterprise':
     ensure  => file,

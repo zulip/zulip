@@ -1,12 +1,12 @@
 class zulip::static_asset_compiler {
   case $::os['family'] {
-    'debian': {
+    'Debian': {
       $static_asset_compiler_packages = [
         # Used by makemessages i18n
         'gettext',
       ]
     }
-    'redhat': {
+    'RedHat': {
       $static_asset_compiler_packages = [
         'gettext',
       ]
