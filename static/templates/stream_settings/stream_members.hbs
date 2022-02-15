@@ -8,7 +8,9 @@
             <input type="text" class="search" placeholder="{{t 'Search subscribers' }}" />
         </div>
         <div class="subscriber_list_add float-left">
-            {{> add_subscribers_form}}
+            <form>
+                {{> add_subscribers_form}}
+            </form>
             <div class="stream_subscription_request_result"></div>
         </div>
         <div class="clear-float"></div>
