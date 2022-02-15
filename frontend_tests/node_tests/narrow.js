@@ -228,6 +228,34 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
+    // for non web public stream for spectator
+    page_params.is_spectator = true;
+    set_filter([["stream", "Rome"]]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "",
+            'translated HTML: This stream does not exist or is not <a href="https://zulip.com/help/web-public-streams">web-public</a>.',
+        ),
+    );
+
+    set_filter([
+        ["stream", "Rome"],
+        ["topic", "foo"],
+    ]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "",
+            'translated HTML: This stream does not exist or is not <a href="https://zulip.com/help/web-public-streams">web-public</a>.',
+        ),
+    );
+    page_params.is_spectator = false;
+
     set_filter([["is", "starred"]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
