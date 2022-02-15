@@ -1,6 +1,6 @@
 class zulip::common {
   # Common parameters
-  case $::osfamily {
+  case $::os['family'] {
     'debian': {
       $nagios_plugins = 'monitoring-plugins-basic'
       $nagios_plugins_dir = '/usr/lib/nagios/plugins'

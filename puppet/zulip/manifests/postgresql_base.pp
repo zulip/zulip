@@ -3,7 +3,7 @@ class zulip::postgresql_base {
   include zulip::postgresql_common
   include zulip::process_fts_updates
 
-  case $::osfamily {
+  case $::os['family'] {
     'debian': {
       $postgresql = "postgresql-${zulip::postgresql_common::version}"
       $postgresql_sharedir = "/usr/share/postgresql/${zulip::postgresql_common::version}"
