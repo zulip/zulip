@@ -446,7 +446,7 @@ export function set_up_handlers() {
 
     container.on("change", "#make-invite-only input", update_announce_stream_state);
 
-    container.on("submit", "#stream_creation_form", (e) => {
+    container.on("click", ".finalize_create_stream", (e) => {
         e.preventDefault();
         clear_error_display();
 
