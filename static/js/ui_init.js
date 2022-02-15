@@ -62,6 +62,7 @@ import * as realm_playground from "./realm_playground";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults";
 import * as recent_topics_util from "./recent_topics_util";
 import * as reload from "./reload";
+import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as scroll_bar from "./scroll_bar";
@@ -158,6 +159,11 @@ function initialize_right_sidebar() {
     });
 
     $("#right-sidebar-container").html(rendered_sidebar);
+    if (page_params.is_spectator) {
+        rendered_markdown.update_elements(
+            $(".right-sidebar .realm-description .rendered_markdown"),
+        );
+    }
 
     $("#user_presences").on("mouseenter", ".user_sidebar_entry", (e) => {
         const status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status_emoji");
