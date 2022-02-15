@@ -1,5 +1,8 @@
 import $ from "jquery";
 
+import {emoji_animation_config_values} from "./settings_config";
+import {user_settings} from "./user_settings";
+
 // exported for testing
 export function stop_animation($emoji) {
     if ($emoji.length) {
@@ -25,7 +28,19 @@ export function animate($emoji) {
 // time.
 // An anonymous function would always be a different listener.
 // see: https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener.
-export function handle_mouseenter_for_status_emoji(event) {
+function handle_mouseenter_for_status_emoji_with_config(event) {
+    if (user_settings.emoji_animation_config === emoji_animation_config_values.on_hover.code) {
+        handle_mouseenter_for_status_emoji(event);
+    }
+}
+
+function handle_mouseleave_for_status_emoji_with_config(event) {
+    if (user_settings.emoji_animation_config === emoji_animation_config_values.on_hover.code) {
+        handle_mouseleave_for_status_emoji(event);
+    }
+}
+
+function handle_mouseenter_for_status_emoji(event) {
     const $animatable_status_emoji = $(event.target).find("img.status_emoji[data-still-url]");
     animate($animatable_status_emoji);
 }
@@ -35,10 +50,17 @@ export function handle_mouseleave_for_status_emoji(event) {
     stop_animation($animatable_status_emoji);
 }
 
-// This function expects DOM elements, it will not work if passed jquery elements!
+// These functions expects DOM elements, it will not work if passed jquery elements!
 export function bind_handlers_for_status_emoji(elem) {
     if ($(elem).find("img.status_emoji[data-still-url]").length > 0) {
         elem.addEventListener("mouseenter", handle_mouseenter_for_status_emoji);
         elem.addEventListener("mouseleave", handle_mouseleave_for_status_emoji);
+    }
+}
+
+export function bind_config_based_status_emoji_handlers(elem) {
+    if ($(elem).find("img.status_emoji[data-still-url]").length > 0) {
+        elem.addEventListener("mouseenter", handle_mouseenter_for_status_emoji_with_config);
+        elem.addEventListener("mouseleave", handle_mouseleave_for_status_emoji_with_config);
     }
 }

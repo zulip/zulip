@@ -1,10 +1,25 @@
 {{#if emoji_alt_code}}
-<span class="emoji_alt_code">&nbsp:{{emoji_name}}:</span>
-{{else if still_url}}
+<div class="emoji_alt_code">&nbsp:{{emoji_name}}:</div>
+{{else if emoji_animation_config}}
+{{#if still_url}}
+{{#if (eq emoji_animation_config emoji_animation_config_values.always.code)}}
+<img src="{{url}}" class="status_emoji emoji" data-animated-url="{{url}}" data-still-url="{{still_url}}" />
+{{else}}
+<img src="{{still_url}}" class="status_emoji emoji" data-animated-url="{{url}}" data-still-url="{{still_url}}" />
+{{/if}}
+{{else if url}}
+{{!-- note that we have no still_url --}}
+<img src="{{url}}" class="emoji status_emoji" data-animated-url="{{url}}" />
+{{else if emoji_code}}
+<div class="emoji status_emoji emoji-{{emoji_code}}"></div>
+{{/if}}
+{{else}}
+{{#if still_url}}
 <img src="{{still_url}}" class="emoji status_emoji" data-animated-url="{{url}}" data-still-url="{{still_url}}" />
 {{else if url}}
 {{!-- note that we have no still_url --}}
 <img src="{{url}}" class="emoji status_emoji" data-animated-url="{{url}}" />
 {{else if emoji_code}}
 <span class="emoji status_emoji emoji-{{emoji_code}}"></span>
+{{/if}}
 {{/if}}

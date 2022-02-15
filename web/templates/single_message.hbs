@@ -8,7 +8,7 @@
     <div class="messagebox"
       {{#if msg/is_stream}}style="box-shadow: inset 3px 0px 0px -1px {{background_color}}, -1px 0px 0px 0px {{background_color}};"{{/if}}>
         <div class="messagebox-content">
-            {{> message_body}}
+            {{> message_body emoji_animation_config=emoji_animation_config emoji_animation_config_values=emoji_animation_config_values}}
         </div>
     </div>
 </div>

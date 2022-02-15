@@ -5,7 +5,7 @@
         {{> message_avatar ~}}
         <span class="sender_name auto-select" role="button" tabindex="0">
             <span class="sender_name_padding view_user_card_tooltip"></span>
-            <span class="view_user_card_tooltip">{{msg/sender_full_name}}{{> status_emoji msg/status_emoji_info}}</span>
+            <span class="view_user_card_tooltip">{{msg/sender_full_name}}{{> status_emoji msg/status_emoji_info emoji_animation_config=emoji_animation_config emoji_animation_config_values=emoji_animation_config_values}}</span>
         </span>
         {{#if sender_is_bot}}
         <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
