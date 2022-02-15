@@ -1,7 +1,7 @@
 class zulip::apache_sso {
   include zulip::localhost_sso
 
-  case $::osfamily {
+  case $::os['family'] {
     'debian': {
       $apache_packages = [ 'apache2', 'libapache2-mod-wsgi-py3', ]
       $conf_dir = '/etc/apache2'

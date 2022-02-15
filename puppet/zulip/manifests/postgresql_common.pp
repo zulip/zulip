@@ -1,7 +1,7 @@
 class zulip::postgresql_common {
   include zulip::snakeoil
   $version = zulipconf('postgresql', 'version', undef)
-  case $::osfamily {
+  case $::os['family'] {
     'debian': {
       $postgresql = "postgresql-${version}"
       $postgresql_packages = [
@@ -63,7 +63,7 @@ class zulip::postgresql_common {
     require => Exec['generate-default-snakeoil'],
   }
 
-  if $::osfamily == 'debian' {
+  if $::os['family'] == 'debian' {
     # The logrotate file only created in debian-based systems
     exec { 'disable_logrotate':
       # lint:ignore:140chars
