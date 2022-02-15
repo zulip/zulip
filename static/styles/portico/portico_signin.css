@@ -716,6 +716,10 @@ html {
     button {
         /* Avoid excessive space at top of login form */
         margin-top: 0;
+
+        .spectator_beta_text {
+            color: hsl(0, 0%, 90%);
+        }
     }
 }
 
