@@ -625,6 +625,10 @@ body.dark-theme {
     .btn-recent-selected,
     #recent_topics_table thead th {
         background-color: hsl(0, 0%, 0%) !important;
+
+        &[data-sort]:hover {
+            background-color: hsl(211, 29%, 14%) !important;
+        }
     }
 
     #recent_topics_table td a {

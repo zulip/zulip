@@ -256,6 +256,8 @@
 
             &[data-sort]:hover {
                 cursor: pointer;
+                background-color: hsla(0, 0%, 95%);
+                transition: background-color 100ms ease-in-out;
 
                 &:not(.active)::after {
                     opacity: 0.3;
