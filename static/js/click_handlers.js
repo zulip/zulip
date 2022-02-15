@@ -28,6 +28,7 @@ import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics_ui from "./recent_topics_ui";
@@ -173,6 +174,10 @@ export function initialize() {
         }
 
         message_lists.current.select_id(id);
+
+        if (page_params.is_spectator) {
+            return;
+        }
         compose_actions.respond_to_message({trigger: "message click"});
         e.stopPropagation();
         popovers.hide_all();
