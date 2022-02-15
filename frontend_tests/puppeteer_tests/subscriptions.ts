@@ -175,7 +175,7 @@ async function create_stream(page: Page): Promise<void> {
     await wait_for_checked(page, "cordelia", true);
     await wait_for_checked(page, "desdemona", true); // Add desdemona back as we did unset all in last test.
     await wait_for_checked(page, "othello", false);
-    await page.click("form#stream_creation_form button.button.sea-green");
+    await page.click("form#stream_creation_form .finalize_create_stream");
     await page.waitForFunction(() => $(".stream-name").is(':contains("Puppeteer")'));
     const stream_name = await common.get_text_from_selector(
         page,
