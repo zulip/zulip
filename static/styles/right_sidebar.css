@@ -246,10 +246,16 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-right: 10px;
+    margin-right: 20px;
+    width: 230px;
 
     .color_animated_button {
         width: 100%;
         margin-bottom: 10px;
+    }
+
+    ul,
+    ol {
+        margin-left: 0;
     }
 }
