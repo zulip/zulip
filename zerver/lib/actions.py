@@ -480,10 +480,10 @@ def process_new_human_user(
     mit_beta_user = realm.is_zephyr_mirror_realm
     if prereg_user is not None:
         streams: List[Stream] = list(prereg_user.streams.all())
-        acting_user: Optional[UserProfile] = prereg_user.referred_by
+        referring_user: Optional[UserProfile] = prereg_user.referred_by
     else:
         streams = []
-        acting_user = None
+        referring_user = None
 
     # If the user's invitation didn't explicitly list some streams, we
     # add the default streams
@@ -501,7 +501,7 @@ def process_new_human_user(
         streams,
         [user_profile],
         from_user_creation=True,
-        acting_user=acting_user,
+        acting_user=referring_user,
     )
 
     add_new_user_history(user_profile, streams)
