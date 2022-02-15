@@ -1,11 +1,11 @@
 class zulip::profile::redis {
   include zulip::profile::base
   case $::os['family'] {
-    'debian': {
+    'Debian': {
       $redis = 'redis-server'
       $redis_dir = '/etc/redis'
     }
-    'redhat': {
+    'RedHat': {
       $redis = 'redis'
       $redis_dir = '/etc'
     }

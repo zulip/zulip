@@ -1,7 +1,7 @@
 class zulip::common {
   # Common parameters
   case $::os['family'] {
-    'debian': {
+    'Debian': {
       $nagios_plugins = 'monitoring-plugins-basic'
       $nagios_plugins_dir = '/usr/lib/nagios/plugins'
       $nginx = 'nginx-full'
@@ -14,7 +14,7 @@ class zulip::common {
       $supervisor_reload = '/etc/init.d/supervisor restart && (/etc/init.d/supervisor start || /bin/true) && /etc/init.d/supervisor status'
       $supervisor_status = '/etc/init.d/supervisor status'
     }
-    'redhat': {
+    'RedHat': {
       $nagios_plugins = 'nagios-plugins'
       $nagios_plugins_dir = '/usr/lib64/nagios/plugins'
       $nginx = 'nginx'

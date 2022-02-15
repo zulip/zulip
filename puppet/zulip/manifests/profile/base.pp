@@ -5,10 +5,10 @@
 class zulip::profile::base {
   include zulip::common
   case $::os['family'] {
-    'debian': {
+    'Debian': {
       include zulip::apt_repository
     }
-    'redhat': {
+    'RedHat': {
       include zulip::yum_repository
     }
     default: {
@@ -16,7 +16,7 @@ class zulip::profile::base {
     }
   }
   case $::os['family'] {
-    'debian': {
+    'Debian': {
       $base_packages = [
         # Basics
         'python3',
@@ -40,7 +40,7 @@ class zulip::profile::base {
         'cron',
       ]
     }
-    'redhat': {
+    'RedHat': {
       $base_packages = [
         'python3',
         'python3-pyyaml',
