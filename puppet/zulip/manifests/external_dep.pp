@@ -6,9 +6,9 @@ define zulip::external_dep(
 ) {
   if $sha256 == '' {
     if $zulip::common::versions[$title]['sha256'] =~ Hash {
-      $sha256_filled = $zulip::common::versions[$title]['sha256'][$::architecture]
+      $sha256_filled = $zulip::common::versions[$title]['sha256'][$::os['architecture']]
       if $sha256_filled == undef {
-        err("No sha256 found for ${title} for architecture ${::architecture}")
+        err("No sha256 found for ${title} for architecture ${::os['architecture']}")
         fail()
       }
     } else {

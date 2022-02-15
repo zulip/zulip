@@ -33,7 +33,7 @@ class zulip::common {
 
   $total_memory_mb = Integer($::memorysize_mb)
 
-  $goarch = $::architecture ? {
+  $goarch = $::os['architecture'] ? {
     'amd64'   => 'amd64',
     'aarch64' => 'arm64',
   }
