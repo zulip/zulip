@@ -153,6 +153,12 @@
                   is_checked=realm_mandatory_topics
                   label=admin_settings_label.realm_mandatory_topics}}
 
+                {{> settings_checkbox
+                  setting_name="realm_signup_notifications_include_referrer"
+                  prefix="id_"
+                  is_checked=realm_signup_notifications_include_referrer
+                  label=admin_settings_label.realm_signup_notifications_include_referrer}}
+
                 {{#if server_inline_image_preview}}
                 {{> settings_checkbox
                   setting_name="realm_inline_image_preview"

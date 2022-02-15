@@ -170,6 +170,7 @@ class HomeTest(ZulipTestCase):
         "realm_private_message_policy",
         "realm_push_notifications_enabled",
         "realm_send_welcome_emails",
+        "realm_signup_notifications_include_referrer",
         "realm_signup_notifications_stream_id",
         "realm_upload_quota_mib",
         "realm_uri",

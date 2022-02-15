@@ -477,6 +477,8 @@ class Realm(models.Model):
         on_delete=models.SET_NULL,
     )
 
+    signup_notifications_include_referrer: bool = models.BooleanField(default=True)
+
     MESSAGE_RETENTION_SPECIAL_VALUES_MAP = {
         "unlimited": -1,
     }
@@ -701,6 +703,7 @@ class Realm(models.Model):
         name_changes_disabled=bool,
         private_message_policy=int,
         send_welcome_emails=bool,
+        signup_notifications_include_referrer=bool,
         user_group_edit_policy=int,
         video_chat_provider=int,
         waiting_period_threshold=int,
