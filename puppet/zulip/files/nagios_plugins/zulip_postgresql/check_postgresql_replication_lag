@@ -104,9 +104,9 @@ if is_in_recovery[0][0] == "t":
             report("CRITICAL", f"replica is in state {state}, not streaming")
 
         msg = f"replica is {replay_lag} bytes behind in replay of WAL logs from {primary_server}"
-        if replay_lag > 5 * 16 * 1024 ** 2:
+        if replay_lag > 5 * 16 * 1024**2:
             report("CRITICAL", msg)
-        elif replay_lag > 16 * 1024 ** 2:
+        elif replay_lag > 16 * 1024**2:
             report("WARNING", msg)
         else:
             report("OK", msg)
@@ -135,9 +135,9 @@ else:
         for lag_type in ("write", "flush", "replay"):
             lag_bytes = lag[lag_type]
             msg = f"replica {client_addr} is {lag_bytes} bytes behind in {lag_type} of WAL logs"
-            if lag_bytes > 5 * 16 * 1024 ** 2:
+            if lag_bytes > 5 * 16 * 1024**2:
                 report("CRITICAL", msg)
-            elif lag_bytes > 16 * 1024 ** 2:
+            elif lag_bytes > 16 * 1024**2:
                 report("WARNING", msg)
             else:
                 report("OK", msg)

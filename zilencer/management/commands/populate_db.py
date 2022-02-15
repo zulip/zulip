@@ -895,7 +895,7 @@ class Command(BaseCommand):
             count = options["num_messages"] // threads
             if i < options["num_messages"] % threads:
                 count += 1
-            jobs.append((count, personals_pairs, options, random.randint(0, 10 ** 10)))
+            jobs.append((count, personals_pairs, options, random.randint(0, 10**10)))
 
         for job in jobs:
             generate_and_send_messages(job)

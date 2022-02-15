@@ -247,7 +247,7 @@ class Realm(models.Model):
     disallow_disposable_email_addresses: bool = models.BooleanField(default=True)
     authentication_methods: BitHandler = BitField(
         flags=AUTHENTICATION_FLAGS,
-        default=2 ** 31 - 1,
+        default=2**31 - 1,
     )
 
     # Allow users to access web-public streams without login. This
