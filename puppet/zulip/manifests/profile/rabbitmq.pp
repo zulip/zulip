@@ -1,6 +1,6 @@
 class zulip::profile::rabbitmq {
   include zulip::profile::base
-  $erlang = $::osfamily ? {
+  $erlang = $::os['family'] ? {
     'debian' => 'erlang-base',
     'redhat' => 'erlang',
   }

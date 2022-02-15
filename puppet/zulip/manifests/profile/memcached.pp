@@ -3,7 +3,7 @@ class zulip::profile::memcached {
   include zulip::sasl_modules
   include zulip::systemd_daemon_reload
 
-  case $::osfamily {
+  case $::os['family'] {
     'debian': {
       $memcached_packages = [ 'memcached', 'sasl2-bin' ]
       $memcached_user = 'memcache'

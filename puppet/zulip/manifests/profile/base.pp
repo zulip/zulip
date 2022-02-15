@@ -4,7 +4,7 @@
 # be able to be deployed on their own host.
 class zulip::profile::base {
   include zulip::common
-  case $::osfamily {
+  case $::os['family'] {
     'debian': {
       include zulip::apt_repository
     }
@@ -15,7 +15,7 @@ class zulip::profile::base {
       fail('osfamily not supported')
     }
   }
-  case $::osfamily {
+  case $::os['family'] {
     'debian': {
       $base_packages = [
         # Basics
