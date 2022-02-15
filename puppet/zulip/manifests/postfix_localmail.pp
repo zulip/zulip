@@ -2,10 +2,11 @@ class zulip::postfix_localmail {
   include zulip::snakeoil
   $postfix_packages = [ 'postfix', ]
 
-  if $::fqdn == '' {
+  $fqdn = $::networking['fqdn']
+  if $fqdn == '' {
     fail('Your system does not have a fully-qualified domain name defined. See hostname(1).')
   }
-  $postfix_mailname = zulipconf('postfix', 'mailname', $::fqdn)
+  $postfix_mailname = zulipconf('postfix', 'mailname', $fqdn)
   package { $postfix_packages:
     ensure  => 'installed',
     require => File['/etc/mailname'],
@@ -20,7 +21,7 @@ class zulip::postfix_localmail {
     mode    => '0644',
     owner   => root,
     group   => root,
-    content => $::fqdn,
+    content => $fqdn,
   }
 
   file {'/etc/postfix/main.cf':
