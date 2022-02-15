@@ -530,7 +530,7 @@ def validate_todo_data(todo_data: object) -> None:
 
 
 # Converter functions for use with has_request_variables
-def to_non_negative_int(s: str, max_int_size: int = 2 ** 32 - 1) -> int:
+def to_non_negative_int(s: str, max_int_size: int = 2**32 - 1) -> int:
     x = int(s)
     if x < 0:
         raise ValueError("argument is negative")

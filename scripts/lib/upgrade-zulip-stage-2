@@ -259,7 +259,7 @@ elif args.from_git:
     # Because `upgrade-zulip-from-git` needs to build static assets, it
     # is at risk of being OOM killed on systems with limited free RAM.
     mem_bytes = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
-    mem_gib = mem_bytes / (1024.0 ** 3)  # e.g. 3.74
+    mem_gib = mem_bytes / (1024.0**3)  # e.g. 3.74
 
     # Ideally, we'd have 2 thresholds here, depending on whether the
     # system is running queue workers multithreaded or multiprocess.

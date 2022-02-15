@@ -3860,7 +3860,7 @@ class StripeWebhookEndpointTest(ZulipTestCase):
             "data": {"object": {"object": "checkout.session", "id": "stripe_session_id"}},
         }
 
-        expected_error_message = fr"Mismatch between billing system Stripe API version({STRIPE_API_VERSION}) and Stripe webhook event API version(1991-02-20)."
+        expected_error_message = rf"Mismatch between billing system Stripe API version({STRIPE_API_VERSION}) and Stripe webhook event API version(1991-02-20)."
         with self.assertLogs("corporate.stripe", "ERROR") as error_log:
             self.client_post(
                 "/stripe/webhook/",

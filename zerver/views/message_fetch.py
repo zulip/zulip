@@ -291,7 +291,7 @@ class NarrowBuilder:
             base_stream_name = m.group(1)
 
             matching_streams = get_active_streams(self.realm).filter(
-                name__iregex=fr"^(un)*{self._pg_re_escape(base_stream_name)}(\.d)*$"
+                name__iregex=rf"^(un)*{self._pg_re_escape(base_stream_name)}(\.d)*$"
             )
             recipient_ids = [matching_stream.recipient_id for matching_stream in matching_streams]
             cond = column("recipient_id", Integer).in_(recipient_ids)
