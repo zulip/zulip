@@ -368,6 +368,17 @@ export function update_messages(events) {
                     message_lists.current.remove_and_rerender(message_ids_to_remove);
                     message_lists.current.add_messages(event_messages);
                 } else {
+                    // Remove existing message that were updated, since
+                    // they may not be a part of the filter now. Also,
+                    // this will help us rerender them via
+                    // maybe_add_narrowed_messages, if they were
+                    // simply updated.
+                    const updated_messages = event_messages.filter(
+                        (msg) => message_lists.current.data.get(msg.id) !== undefined,
+                    );
+                    message_lists.current.remove_and_rerender(
+                        updated_messages.map((msg) => msg.id),
+                    );
                     // For filters that cannot be processed locally, ask server.
                     maybe_add_narrowed_messages(
                         event_messages,
