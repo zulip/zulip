@@ -627,6 +627,7 @@ strong {
 
 .buddy_list_tooltip_content {
     text-align: left;
+    word-wrap: break-word;
 }
 
 #message_edit_tooltip {
