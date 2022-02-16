@@ -169,7 +169,7 @@ def resize_gif(im: GifImageFile, size: int = DEFAULT_EMOJI_SIZE) -> bytes:
         format="GIF",
         append_images=frames[1:],
         duration=duration_info,
-        disposal=disposals,
+        disposal=disposals if len(frames) > 1 else disposals[0],
         loop=loop,
     )
     return out.getvalue()
@@ -211,7 +211,10 @@ def resize_emoji(
             if should_resize:
                 image_data = resize_gif(im, size)
 
-            return image_data, True, still_image_data
+            if im.n_frames > 1:
+                return image_data, True, still_image_data
+            else:
+                return image_data, False, None
         else:
             # Note that this is essentially duplicated in the
             # still_image code path, above.
