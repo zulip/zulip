@@ -355,19 +355,26 @@ export function update_messages(events) {
             // this should be a loop over all valid message_list_data
             // objects, without the rerender (which will naturally
             // happen in the following code).
-            if (!changed_narrow) {
+            if (!changed_narrow && current_filter) {
                 let message_ids_to_remove = [];
-                if (current_filter && current_filter.can_apply_locally()) {
+                if (current_filter.can_apply_locally()) {
                     const predicate = current_filter.predicate();
                     message_ids_to_remove = event_messages.filter((msg) => !predicate(msg));
                     message_ids_to_remove = message_ids_to_remove.map((msg) => msg.id);
+                    // We filter out messages that do not belong to the message
+                    // list and then pass these to the remove messages codepath.
+                    // While we can pass all our messages to the add messages
+                    // codepath as the filtering is done within the method.
+                    message_lists.current.remove_and_rerender(message_ids_to_remove);
+                    message_lists.current.add_messages(event_messages);
+                } else {
+                    // For filters that cannot be processed locally, ask server.
+                    maybe_add_narrowed_messages(
+                        event_messages,
+                        message_lists.current,
+                        message_util.add_messages,
+                    );
                 }
-                // We filter out messages that do not belong to the message
-                // list and then pass these to the remove messages codepath.
-                // While we can pass all our messages to the add messages
-                // codepath as the filtering is done within the method.
-                message_lists.current.remove_and_rerender(message_ids_to_remove);
-                message_lists.current.add_messages(event_messages);
             }
         }
 
