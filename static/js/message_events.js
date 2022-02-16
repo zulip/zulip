@@ -31,7 +31,7 @@ import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as util from "./util";
 
-function maybe_add_narrowed_messages(messages, msg_list) {
+function maybe_add_narrowed_messages(messages, msg_list, callback) {
     const ids = [];
 
     for (const elem of messages) {
@@ -73,7 +73,7 @@ function maybe_add_narrowed_messages(messages, msg_list) {
                 message_helper.process_new_message(message),
             );
 
-            message_util.add_new_messages(new_messages, msg_list);
+            callback(new_messages, msg_list);
             unread_ops.process_visible();
             notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
@@ -83,7 +83,7 @@ function maybe_add_narrowed_messages(messages, msg_list) {
                 if (msg_list === message_lists.current) {
                     // Don't actually try again if we unnarrowed
                     // while waiting
-                    maybe_add_narrowed_messages(messages, msg_list);
+                    maybe_add_narrowed_messages(messages, msg_list, callback);
                 }
             }, 5000);
         },
@@ -111,7 +111,11 @@ export function insert_new_messages(messages, sent_by_this_client) {
             render_info = message_util.add_new_messages(messages, message_list.narrowed);
         } else {
             // if we cannot apply locally, we have to wait for this callback to happen to notify
-            maybe_add_narrowed_messages(messages, message_list.narrowed);
+            maybe_add_narrowed_messages(
+                messages,
+                message_list.narrowed,
+                message_util.add_new_messages,
+            );
         }
     } else {
         // we're in the home view, so update its list
