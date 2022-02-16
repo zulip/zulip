@@ -1343,6 +1343,14 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
             still_image = Image.open(io.BytesIO(still_img_data))
             self.assertEqual((50, 50), still_image.size)
 
+        # Test a non-animated image which does need to be resized
+        still_large_img_data = read_test_image_file("still_large_img.gif")
+        resized_img_data, is_animated, no_still_data = resize_emoji(still_large_img_data, size=50)
+        im = Image.open(io.BytesIO(resized_img_data))
+        self.assertEqual((50, 50), im.size)
+        self.assertFalse(is_animated)
+        assert no_still_data is None
+
     def tearDown(self) -> None:
         destroy_uploads()
         super().tearDown()
