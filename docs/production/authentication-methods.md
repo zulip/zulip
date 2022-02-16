@@ -384,7 +384,7 @@ it as follows:
      the "SAML ACS url" in SAML terminology.
 
      If you're
-     [hosting multiple organizations](multiple-organizations.html#authentication),
+     [hosting multiple organizations](multiple-organizations.md#authentication),
      you need to use `SOCIAL_AUTH_SUBDOMAIN`. For example,
      if `SOCIAL_AUTH_SUBDOMAIN="auth"` and `EXTERNAL_HOST=zulip.example.com`,
      this should be `https://auth.zulip.example.com/complete/saml/`.
@@ -876,4 +876,4 @@ passwordless login as any user in a development environment. It's
 mentioned on this page only for completeness.
 
 [custom-profile-fields]: https://zulip.com/help/add-custom-profile-fields
-[update-inline-comments]: upgrade-or-modify.html#updating-settings-py-inline-documentation
+[update-inline-comments]: upgrade-or-modify.md#updating-settingspy-inline-documentation

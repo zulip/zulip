@@ -12,7 +12,7 @@ all related services will run.
 Contents:
 
 - [Requirements](#requirements)
-- [Step 0: Set up Git & GitHub](#step-0-set-up-git-github)
+- [Step 0: Set up Git & GitHub](#step-0-set-up-git--github)
 - [Step 1: Install prerequisites](#step-1-install-prerequisites)
 - [Step 2: Get Zulip code](#step-2-get-zulip-code)
 - [Step 3: Start the development environment](#step-3-start-the-development-environment)
@@ -151,7 +151,7 @@ Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
 #### Windows 10
 
 :::{note}
-We recommend using [WSL 2 for Windows development](setup-advanced.html#installing-directly-on-windows-10-with-wsl-2).
+We recommend using [WSL 2 for Windows development](setup-advanced.md#installing-directly-on-windows-10-with-wsl-2).
 :::
 
 1. Install [Git for Windows][git-bash], which installs _Git BASH_.
@@ -236,8 +236,8 @@ projects and to instead follow these instructions exactly.)
 2. Open Terminal (macOS/Linux) or Git BASH (Windows; must
    **run as an Administrator**).
 3. In Terminal/Git BASH,
-   [clone your fork of the Zulip repository](../git/cloning.html#step-1b-clone-to-your-machine) and
-   [connect the Zulip upstream repository](../git/cloning.html#step-1c-connect-your-fork-to-zulip-upstream):
+   [clone your fork of the Zulip repository](../git/cloning.md#step-1b-clone-to-your-machine) and
+   [connect the Zulip upstream repository](../git/cloning.md#step-1c-connect-your-fork-to-zulip-upstream):
 
 ```bash
 git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git
@@ -1049,4 +1049,4 @@ remove the `GUEST_CPUS` and `GUEST_MEMORY_MB` lines from
 [git-bash]: https://git-for-windows.github.io/
 [bash-admin-setup]: https://superuser.com/questions/1002262/run-applications-as-administrator-by-default-in-windows-10
 [set-up-git]: ../git/setup.md
-[ci]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork
+[ci]: ../git/cloning.md#step-3-configure-continuous-integration-for-your-fork

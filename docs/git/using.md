@@ -451,7 +451,7 @@ complicated rebase.
 [github-help-rebase]: https://help.github.com/en/articles/using-git-rebase
 [github-help-sync-fork]: https://help.github.com/en/articles/syncing-a-fork
 [how-git-is-different]: the-git-difference.md
-[self-multiple-computers]: troubleshooting.html#working-from-multiple-computers
+[self-multiple-computers]: troubleshooting.md#working-from-multiple-computers
 [zulip-git-guide-up-to-date]: #keep-your-fork-up-to-date
-[zulip-rtd-commit-discipline]: ../contributing/version-control.html#commit-discipline
-[zulip-rtd-commit-messages]: ../contributing/version-control.html#commit-messages
+[zulip-rtd-commit-discipline]: ../contributing/version-control.md#commit-discipline
+[zulip-rtd-commit-messages]: ../contributing/version-control.md#commit-messages

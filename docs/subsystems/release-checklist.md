@@ -13,7 +13,7 @@ preparing a new release.
   - Upgrade all puppet-installed dependencies (e.g. Smokescreen, go,
     etc) in `puppet/zulip/manifests/common.pp`
   - [Upload strings to
-    Transifex](../translating/internationalization.html#translation-process)
+    Transifex](../translating/internationalization.md#translation-process)
     using `push-translations`. Post a Transifex
     [Announcement](https://www.transifex.com/zulip/zulip/announcements/)
     notifying translators that we're approaching a release.
