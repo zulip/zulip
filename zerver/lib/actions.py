@@ -7908,7 +7908,7 @@ def notify_realm_emoji(realm: Realm) -> None:
 
 def check_add_realm_emoji(
     realm: Realm, name: str, author: UserProfile, image_file: IO[bytes]
-) -> Optional[RealmEmoji]:
+) -> RealmEmoji:
     try:
         realm_emoji = RealmEmoji(realm=realm, name=name, author=author)
         realm_emoji.full_clean()
@@ -7931,12 +7931,10 @@ def check_add_realm_emoji(
     finally:
         if not emoji_uploaded_successfully:
             realm_emoji.delete()
-            return None
-        else:
-            realm_emoji.file_name = emoji_file_name
-            realm_emoji.is_animated = is_animated
-            realm_emoji.save(update_fields=["file_name", "is_animated"])
-            notify_realm_emoji(realm_emoji.realm)
+    realm_emoji.file_name = emoji_file_name
+    realm_emoji.is_animated = is_animated
+    realm_emoji.save(update_fields=["file_name", "is_animated"])
+    notify_realm_emoji(realm_emoji.realm)
     return realm_emoji
 
 
