@@ -1012,7 +1012,7 @@ def password_reset(request: HttpRequest) -> HttpResponse:
 
 
 @csrf_exempt
-def saml_sp_metadata(request: HttpRequest, **kwargs: Any) -> HttpResponse:  # nocoverage
+def saml_sp_metadata(request: HttpRequest) -> HttpResponse:  # nocoverage
     """
     This is the view function for generating our SP metadata
     for SAML authentication. It's meant for helping check the correctness
