@@ -87,8 +87,10 @@ run_test("basics", () => {
     assert.equal(mld.selected_idx(), 7);
 
     assert.equal(mld.first_unread_message_id(), 10);
+    assert.equal(mld.has_unread_messages(), true);
     mld.get(10).unread = false;
     assert.equal(mld.first_unread_message_id(), 15);
+    assert.equal(mld.has_unread_messages(), true);
 
     mld.clear();
     assert_contents(mld, []);
@@ -127,6 +129,7 @@ run_test("basics", () => {
     }
 
     assert.equal(mld.first_unread_message_id(), 145);
+    assert.equal(mld.has_unread_messages(), false);
 });
 
 run_test("muting", () => {
