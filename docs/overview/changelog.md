@@ -414,8 +414,8 @@ log][commit-log] for an up-to-date list of raw changes.
   major release.
 
 [docker-zulip-manual]: https://github.com/zulip/docker-zulip#manual-configuration
-[smokescreen]: ../production/deployment.html#customizing-the-outgoing-http-proxy
-[update-settings-docs]: ../production/upgrade-or-modify.html#updating-settings-py-inline-documentation
+[smokescreen]: ../production/deployment.md#customizing-the-outgoing-http-proxy
+[update-settings-docs]: ../production/upgrade-or-modify.md#updating-settingspy-inline-documentation
 
 #### Full feature changelog
 
@@ -534,7 +534,7 @@ log][commit-log] for an up-to-date list of raw changes.
   codebase with Prettier.
 - Migrated testing from CircleCI to GitHub Actions.
 
-[zulip-conf-settings]: ../production/deployment.html#system-and-deployment-configuration
+[zulip-conf-settings]: ../production/deployment.md#system-and-deployment-configuration
 
 ## Zulip 3.x series
 
@@ -703,8 +703,8 @@ log][commit-log] for an up-to-date list of raw changes.
 - The changelog now has a section that makes it easy to find the
   Upgrade notes for all releases one is upgrading across.
 
-[manage-shell]: ../production/management-commands.html#manage-py-shell
-[postgresql-upgrade]: ../production/upgrade-or-modify.html#upgrading-postgresql
+[manage-shell]: ../production/management-commands.md#managepy-shell
+[postgresql-upgrade]: ../production/upgrade-or-modify.md#upgrading-postgresql
 
 #### Full feature changelog
 
@@ -998,7 +998,7 @@ details.
 - We merged significant preparatory work for supporting RHEL/CentOS in
   production. We're now interested in beta testers for this feature.
 - Reorganized Zulip's documentation for sysadmins, and added [new
-  documentation](../production/upgrade-or-modify.html#modifying-zulip)
+  documentation](../production/upgrade-or-modify.md#modifying-zulip)
   on maintaining a fork of Zulip.
 - Added new `streams:public` search operator that searches the public
   history of all streams in the organization (even before you joined).
@@ -1034,7 +1034,7 @@ details.
   Zulip how to look up a user in LDAP given their email address:
   `AUTH_LDAP_REVERSE_EMAIL_SEARCH` and `AUTH_LDAP_USERNAME_ATTR`. See
   the [LDAP configuration
-  instructions](../production/authentication-methods.html#ldap-including-active-directory)
+  instructions](../production/authentication-methods.md#ldap-including-active-directory)
   for details. You can use the usual `manage.py query_ldap` method to
   verify whether your configuration is working correctly.
 - The Zulip web and desktop apps have been converted to directly count
@@ -1302,7 +1302,7 @@ details.
   and is enabled by default in that case. To disable it, set
   `SUBMIT_USAGE_STATISTICS = False` in `/etc/zulip/settings.py`.
 
-[mpns-statistics-docs]: ../production/mobile-push-notifications.html#submitting-statistics
+[mpns-statistics-docs]: ../production/mobile-push-notifications.md#submitting-statistics
 
 #### Full feature changelog
 
@@ -1460,7 +1460,7 @@ Zulip installations; it has minimal changes for existing servers.
 - Renamed the hotkey for starring a message to Ctrl+S.
 - Added the new `SOCIAL_AUTH_SUBDOMAIN` setting, which all servers using
   both GitHub authentication and hosting multiple Zulip organizations
-  should set (see [the docs for details](../production/multiple-organizations.html#authentication)).
+  should set (see [the docs for details](../production/multiple-organizations.md#authentication)).
 - Added automatic thumbnailing of images, powered by thumbor. The new
   THUMBOR_URL setting controls this feature; it is disabled by default
   in this release, because the mobile apps don't support it yet.
@@ -2462,15 +2462,15 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 This section links to the upgrade notes from past releases, so you can
 easily read them all when upgrading across multiple releases.
 
-- [Draft upgrade notes for 5.0](#upgrade-notes-for-5-0)
-- [Upgrade notes for 4.0](#upgrade-notes-for-4-0)
-- [Upgrade notes for 3.0](#upgrade-notes-for-3-0)
-- [Upgrade notes for 2.1.5](#upgrade-notes-for-2-1-5)
-- [Upgrade notes for 2.1.0](#upgrade-notes-for-2-1-0)
-- [Upgrade notes for 2.0.0](#upgrade-notes-for-2-0-0)
-- [Upgrade notes for 1.9.0](#upgrade-notes-for-1-9-0)
-- [Upgrade notes for 1.8.0](#upgrade-notes-for-1-8-0)
-- [Upgrade notes for 1.7.0](#upgrade-notes-for-1-7-0)
+- [Draft upgrade notes for 5.0](#upgrade-notes-for-50)
+- [Upgrade notes for 4.0](#upgrade-notes-for-40)
+- [Upgrade notes for 3.0](#upgrade-notes-for-30)
+- [Upgrade notes for 2.1.5](#upgrade-notes-for-215)
+- [Upgrade notes for 2.1.0](#upgrade-notes-for-210)
+- [Upgrade notes for 2.0.0](#upgrade-notes-for-200)
+- [Upgrade notes for 1.9.0](#upgrade-notes-for-190)
+- [Upgrade notes for 1.8.0](#upgrade-notes-for-180)
+- [Upgrade notes for 1.7.0](#upgrade-notes-for-170)
 
 [docker-zulip]: https://github.com/zulip/docker-zulip
 [commit-log]: https://github.com/zulip/zulip/commits/main

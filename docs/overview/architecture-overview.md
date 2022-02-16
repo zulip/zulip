@@ -108,9 +108,9 @@ feed.
 
 For more details on the frontend, see our documentation on
 [translation](../translating/translating.md),
-[templates](../subsystems/html-css.html#html-templates),
+[templates](../subsystems/html-css.md#html-templates),
 [directory structure](directory-structure.md), and
-[the static asset pipeline](../subsystems/html-css.html#static-asset-pipeline).
+[the static asset pipeline](../subsystems/html-css.md#static-asset-pipeline).
 
 [jinja2]: http://jinja.pocoo.org/
 [handlebars]: https://handlebarsjs.com/

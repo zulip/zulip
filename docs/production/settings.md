@@ -28,7 +28,7 @@ from an old version of Zulip, we recommend [carefully updating your
 comment documentation for new configuration settings after upgrading
 to each new major release.
 
-[update-settings-docs]: upgrade-or-modify.html#updating-settings-py-inline-documentation
+[update-settings-docs]: upgrade-or-modify.md#updating-settingspy-inline-documentation
 [settings-py-template]: https://github.com/zulip/zulip/blob/main/zproject/prod_settings_template.py
 
 Since Zulip's settings file is a Python script, there are a number of

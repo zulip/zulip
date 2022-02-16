@@ -139,7 +139,7 @@ commit message.
 **Tip:** You can set up [Zulip's Git pre-commit hook][commit-hook] to
 automatically catch common mistakes in the commit message itself.
 
-[commit-hook]: ../git/zulip-tools.html#set-up-git-repo-script
+[commit-hook]: ../git/zulip-tools.md#set-up-git-repo-script
 
 ### Message body:
 

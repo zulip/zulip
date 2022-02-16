@@ -4,7 +4,7 @@ This page explains how to upgrade, patch, or modify Zulip, including:
 
 - [Upgrading to a release](#upgrading-to-a-release)
 - [Upgrading from a Git repository](#upgrading-from-a-git-repository)
-- [Updating `settings.py` inline documentation](#updating-settings-py-inline-documentation)
+- [Updating `settings.py` inline documentation](#updating-settingspy-inline-documentation)
 - [Troubleshooting and rollback](#troubleshooting-and-rollback)
 - [Preserving local changes to service configuration files](#preserving-local-changes-to-service-configuration-files)
 - [Upgrading the operating system](#upgrading-the-operating-system)
@@ -20,7 +20,7 @@ or have [modified Zulip-managed configuration
 files](#preserving-local-changes-to-service-configuration-files). To upgrade
 to a new Zulip release:
 
-1. Read the [upgrade notes](../overview/changelog.html#upgrade-notes)
+1. Read the [upgrade notes](../overview/changelog.md#upgrade-notes)
    for all releases newer than what is currently installed.
 
 1. Download the appropriate release tarball from
@@ -60,7 +60,7 @@ involved (these will be documented in the [release
 notes](../overview/changelog.md), and usually can be avoided with
 some care). If downtime is problematic for your organization,
 consider testing the upgrade on a
-[backup](export-and-import.html#backups) in advance,
+[backup](export-and-import.md#backups) in advance,
 doing the final upgrade at off hours, or buying a support contract.
 
 See the [troubleshooting guide](#troubleshooting-and-rollback) if you
@@ -156,7 +156,7 @@ suggest using that updated template to update
    su zulip -c '/home/zulip/deployments/current/scripts/restart-server'
    ```
 
-[backups]: export-and-import.html#backups
+[backups]: export-and-import.md#backups
 [changelog]: ../overview/changelog.md
 
 ## Troubleshooting and rollback
@@ -365,7 +365,7 @@ instructions for other supported platforms.
    ```
 
 8. [Upgrade from Ubuntu 18.04 to
-   20.04](#upgrading-from-ubuntu-18-04-bionic-to-20-04-focal), so that
+   20.04](#upgrading-from-ubuntu-1804-bionic-to-2004-focal), so that
    you are running a supported operating system.
 
 ### Upgrading from Ubuntu 14.04 Trusty to 16.04 Xenial
@@ -408,7 +408,7 @@ instructions for other supported platforms.
    correctly.
 
 6. [Upgrade from Ubuntu 16.04 to
-   18.04](#upgrading-from-ubuntu-16-04-xenial-to-18-04-bionic), so
+   18.04](#upgrading-from-ubuntu-1604-xenial-to-1804-bionic), so
    that you are running a supported operating system.
 
 ### Upgrading from Debian 10 to 11
@@ -800,7 +800,7 @@ upgrading to `main`, make sure you understand:
 - We do not support downgrading from `main` to earlier versions, so
   if downtime for your Zulip server is unacceptable, make sure you
   have a current
-  [backup](export-and-import.html#backups) in case the
+  [backup](export-and-import.md#backups) in case the
   upgrade fails.
 - Our changelog contains [draft release
   notes](../overview/changelog.md) available listing major changes
@@ -821,7 +821,7 @@ contributors like you. If your changes are likely to be of useful to
 other organizations, consider [contributing
 them](../overview/contributing.md).
 
-[fork-clone]: ../git/cloning.html#get-zulip-code
+[fork-clone]: ../git/cloning.md#get-zulip-code
 [upgrade-zulip-from-git]: #upgrading-from-a-git-repository
 [upgrade-zulip]: #upgrading
 [git-guide]: ../git/index.md

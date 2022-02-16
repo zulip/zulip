@@ -18,8 +18,8 @@ git clone https://github.com/zulip/zulip.git zulip-server-git
 ```
 
 and then
-[continue the normal installation instructions](install.html#step-2-install-zulip).
-You can also [upgrade Zulip from Git](upgrade-or-modify.html#upgrading-from-a-git-repository).
+[continue the normal installation instructions](install.md#step-2-install-zulip).
+You can also [upgrade Zulip from Git](upgrade-or-modify.md#upgrading-from-a-git-repository).
 
 The most common use case for this is upgrading to `main` to get a
 feature that hasn't made it into an official release yet (often
@@ -33,8 +33,8 @@ In particular, we are always very glad to investigate problems with
 installing Zulip from `main`; they are rare and help us ensure that
 our next major release has a reliable install experience.
 
-[upgrade-to-main]: upgrade-or-modify.html#upgrading-to-main
-[upgrade-to-future-release]: upgrade-or-modify.html#upgrading-to-future-releases
+[upgrade-to-main]: upgrade-or-modify.md#upgrading-to-main
+[upgrade-to-future-release]: upgrade-or-modify.md#upgrading-to-future-releases
 
 ## Zulip in Docker
 
@@ -49,7 +49,7 @@ specific reason to prefer Docker.
 
 The Zulip installer supports the following advanced installer options
 as well as those mentioned in the
-[install](install.html#installer-options) documentation:
+[install](install.md#installer-options) documentation:
 
 - `--postgresql-version`: Sets the version of PostgreSQL that will be
   installed. We currently support PostgreSQL 10, 11, 12, 13, and 14.
@@ -269,7 +269,7 @@ In Zulip 4.7 and older, to enable SSRF protection via Smokescreen, you
 will need to explicitly add the `zulip::profile::smokescreen` Puppet
 class, and configure the `[http_proxy]` block as above.
 
-[proxy.enable_for_camo]: #enable-for-camo
+[proxy.enable_for_camo]: #enable_for_camo
 [smokescreen]: https://github.com/stripe/smokescreen
 [smokescreen-acls]: https://github.com/stripe/smokescreen#acls
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
@@ -535,7 +535,7 @@ configuration of `pg_hba.conf` and client certificates on the
 replica.
 
 [warm-standby]: https://www.postgresql.org/docs/current/warm-standby.html
-[wal-g]: export-and-import.html#backup-details
+[wal-g]: export-and-import.md#backup-details
 
 ## System and deployment configuration
 
@@ -565,7 +565,7 @@ Any other value (including the empty string) is considered false.
 A comma-separated list of the Puppet classes to install on the server.
 The most common is **`zulip::profile::standalone`**, used for a
 stand-alone single-host deployment.
-[Components](../overview/architecture-overview.html#components) of
+[Components](../overview/architecture-overview.md#components) of
 that include:
 
 - **`zulip::profile::app_frontend`**
@@ -575,13 +575,13 @@ that include:
 - **`zulip::profile::rabbitmq`**
 
 If you are using a [Apache as a single-sign-on
-authenticator](authentication-methods.html#apache-based-sso-with-remote-user),
+authenticator](authentication-methods.md#apache-based-sso-with-remote_user),
 you will need to add **`zulip::apache_sso`** to the list.
 
 #### `pgroonga`
 
 Set to true if enabling the [multi-language PGroonga search
-extension](../subsystems/full-text-search.html#multi-language-full-text-search).
+extension](../subsystems/full-text-search.md#multi-language-full-text-search).
 
 ### `[deployment]`
 
@@ -604,7 +604,7 @@ for servers that are upgraded frequently by core Zulip developers.
 #### `git_repo_url`
 
 Default repository URL used when [upgrading from a Git
-repository](upgrade-or-modify.html#upgrading-from-a-git-repository).
+repository](upgrade-or-modify.md#upgrading-from-a-git-repository).
 
 ### `[application_server]`
 
@@ -626,7 +626,7 @@ configure `settings.py` and set this to true to configure
 `nginx`. Remove this field to return to the local uploads backend (any
 non-empty value is currently equivalent to true).
 
-[s3-uploads]: upload-backends.html#s3-backend-configuration
+[s3-uploads]: upload-backends.md#s3-backend-configuration
 
 #### `queue_workers_multiprocess`
 
@@ -669,7 +669,7 @@ more than 3.5GiB of RAM, 4 on hosts with less.
 #### `mailname`
 
 The hostname that [Postfix should be configured to receive mail
-at](email-gateway.html#local-delivery-setup).
+at](email-gateway.md#local-delivery-setup).
 
 ### `[postgresql]`
 
@@ -694,7 +694,7 @@ Set to true to enable replication to enable [log shipping replication
 between PostgreSQL servers](#postgresql-warm-standby). This should be
 enabled on the primary, as well as any replicas, and further requires
 configuration of
-[wal-g](export-and-import.html#backup-details).
+[wal-g](export-and-import.md#backup-details).
 
 #### `replication_primary`
 
@@ -726,7 +726,7 @@ connections.
 #### `version`
 
 The version of PostgreSQL that is in use. Do not set by hand; use the
-[PostgreSQL upgrade tool](upgrade-or-modify.html#upgrading-postgresql).
+[PostgreSQL upgrade tool](upgrade-or-modify.md#upgrading-postgresql).
 
 ### `[memcached]`
 

@@ -115,7 +115,7 @@ can usually just deploy the latest translations there.
 
 - First, download the updated resource files from Transifex using the
   `tools/i18n/sync-translations` command (it will require some [initial
-  setup](internationalization.html#transifex-cli-setup)). This
+  setup](internationalization.md#transifex-cli-setup)). This
   command will download the resource files from Transifex and replace
   your local resource files with them, and then compile them. You can
   now test your translation work in the Zulip UI.
@@ -199,7 +199,7 @@ capitalization in general. This means that:
 
 The Zulip test suite enforces these capitalization guidelines in the
 web app codebase [in our test
-suite](../testing/testing.html#other-test-suites)
+suite](../testing/testing.md#other-test-suites)
 (`./tools/check-capitalization`; `tools/lib/capitalization.py` has
 some exclude lists, e.g. `IGNORED_PHRASES`).
 

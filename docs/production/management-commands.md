@@ -148,7 +148,7 @@ self-hosted Zulip server:
   [webhook integration][webhook-integrations] or [bot][writing-bots].
 - Writing a program using the [Zulip API][zulip-api].
 - [Modifying the Zulip server][modifying-zulip].
-- Using the interactive [management shell](#manage-py-shell),
+- Using the interactive [management shell](#managepy-shell),
   documented above, for one-time work or prototyping.
 - Writing a custom management command, detailed here.
 
@@ -171,12 +171,12 @@ the Zulip server.
 Instead, we recommend deploying custom management commands either via
 the [modifying Zulip][modifying-zulip] process or by storing them in
 `/etc/zulip` (so they are included in
-[backups](export-and-import.html#backups)) and then
+[backups](export-and-import.md#backups)) and then
 symlinking them into
 `/home/zulip/deployments/current/zerver/management/` after each
 upgrade.
 
-[modifying-zulip]: upgrade-or-modify.html#modifying-zulip
+[modifying-zulip]: upgrade-or-modify.md#modifying-zulip
 [writing-bots]: https://zulip.com/api/writing-bots
 [integrations]: https://zulip.com/integrations
 [zulip-api]: https://zulip.com/api/rest
