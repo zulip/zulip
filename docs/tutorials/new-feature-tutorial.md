@@ -89,7 +89,7 @@ to learn more about creating and applying database migrations.
 
 **Test your changes:** Once you've run the migration, flush memcached
 on your development server (`./scripts/setup/flush-memcached`) and then
-[restart the development server](../development/remote.html?highlight=tools%2Frun-dev.py#running-the-development-server)
+[restart the development server](../development/remote.html#running-the-development-server)
 to avoid interacting with cached objects.
 
 ### Backend changes
@@ -265,7 +265,7 @@ Running migrations:
 ```
 
 Once you've run the migration, restart memcached on your development
-server (`/etc/init.d/memcached restart`) and then [restart the development server](../development/remote.html?highlight=tools%2Frun-dev.py#running-the-development-server)
+server (`/etc/init.d/memcached restart`) and then [restart the development server](../development/remote.html#running-the-development-server)
 to avoid interacting with cached objects.
 
 ### Handle database interactions
