@@ -507,7 +507,9 @@ class Command(BaseCommand):
             for i in range(options["extra_bots"]):
                 zulip_realm_bots.append((f"Extra Bot {i}", f"extrabot{i}@zulip.com"))
 
-            create_users(zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
+            create_users(
+                zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT, bot_owner=desdemona
+            )
 
             zoe = get_user_by_delivery_email("zoe@zulip.com", zulip_realm)
             zulip_webhook_bots = [
@@ -911,7 +913,10 @@ class Command(BaseCommand):
                     ("Zulip Nagios Bot", "nagios-bot@zulip.com"),
                 ]
                 create_users(
-                    zulip_realm, internal_zulip_users_nosubs, bot_type=UserProfile.DEFAULT_BOT
+                    zulip_realm,
+                    internal_zulip_users_nosubs,
+                    bot_type=UserProfile.DEFAULT_BOT,
+                    bot_owner=desdemona,
                 )
 
             mark_all_messages_as_read()
