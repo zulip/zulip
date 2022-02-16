@@ -983,9 +983,7 @@ def json_fetch_api_key(
     return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})
 
 
-@require_post
-def logout_then_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
-    return django_logout_then_login(request, kwargs)
+logout_then_login = require_post(django_logout_then_login)
 
 
 def password_reset(request: HttpRequest) -> HttpResponse:
