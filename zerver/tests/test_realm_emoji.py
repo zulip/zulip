@@ -271,6 +271,18 @@ class RealmEmojiTest(ZulipTestCase):
             result = self.client_post("/json/realm/emoji/my_emoji", {"f1": fp1, "f2": fp2})
         self.assert_json_error(result, "You must upload exactly one file.")
 
+    def test_emoji_upload_success(self) -> None:
+        self.login("iago")
+        with get_test_image_file("img.gif") as fp:
+            result = self.client_post("/json/realm/emoji/my_emoji", {"file": fp})
+        self.assert_json_success(result)
+
+    def test_emoji_upload_resize_success(self) -> None:
+        self.login("iago")
+        with get_test_image_file("still_large_img.gif") as fp:
+            result = self.client_post("/json/realm/emoji/my_emoji", {"file": fp})
+        self.assert_json_success(result)
+
     def test_emoji_upload_file_size_error(self) -> None:
         self.login("iago")
         with get_test_image_file("img.png") as fp:
