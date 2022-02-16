@@ -11,7 +11,6 @@ RUN echo locales locales/default_environment_locale select C.UTF-8 | debconf-set
            ca-certificates \
            curl \
            locales \
-           lsb-release \
            openssh-server \
            python3 \
            sudo \

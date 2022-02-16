@@ -382,7 +382,7 @@ def accounts_register(
             # But if the realm is using LDAPAuthBackend, we need to verify
             # their LDAP password (which will, as a side effect, create
             # the user account) here using authenticate.
-            # pregeg_user.realm_creation carries the information about whether
+            # prereg_user.realm_creation carries the information about whether
             # we're in realm creation mode, and the ldap flow will handle
             # that and create the user with the appropriate parameters.
             user_profile = authenticate(

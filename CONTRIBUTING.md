@@ -86,9 +86,10 @@ the [main Zulip server and web app
 repository](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
 alone.
 
-Any issue with the "good first issue"
-label is a good candidate when you are getting started. In addition, many of the
-issues with the "help wanted" label may be approachable as well.
+You can look through issues tagged with the "help wanted" label, which is used
+to indicate the issues that are ready for contributions. Some repositories also
+use the "good first issue" label to tag issues that are especially approachable
+for new contributors.
 
 - [Server and web app](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
 - [Mobile apps](https://github.com/zulip/zulip-mobile/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
@@ -104,7 +105,8 @@ changes to tests).
 
 We recommend the following process for finding an issue to work on:
 
-1. Read the description of an issue and make sure you understand it.
+1. Read the description of an issue tagged with the "help wanted" label and make
+   sure you understand it.
 2. If it seems promising, poke around the product
    (on [chat.zulip.org](https://chat.zulip.org) or in the development
    environment) until you know how the piece being
@@ -148,15 +150,11 @@ repository](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3
 
 #### In the main server and web app repository
 
-Post a comment with `@zulipbot claim` to
-the issue thread. [Zulipbot](https://github.com/zulip/zulipbot) is a GitHub
-workflow bot; it will assign you to the issue and label the issue as "in
-progress". You can only claim issues with the
-[good first issue](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
-or
-[help wanted](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
-labels. Zulipbot will give you an error if you try to claim an issue
-without one of those labels.
+After making sure the issue is tagged with a [help
+wanted](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
+label, post a comment with `@zulipbot claim` to the issue thread.
+[Zulipbot](https://github.com/zulip/zulipbot) is a GitHub workflow bot; it will
+assign you to the issue and label the issue as "in progress".
 
 New contributors can only claim one issue until their first pull request is
 merged. This is to encourage folks to finish ongoing work before starting
@@ -170,8 +168,7 @@ There is no bot for other repositories, so you can simply post a comment saying
 that you'd like to work on the issue.
 
 Please follow the same guidelines as described above: find an issue labeled
-"good first issue" or "help wanted", and only pick up one issue at a time to
-start with.
+"help wanted", and only pick up one issue at a time to start with.
 
 ### Working on an issue
 
@@ -224,6 +221,33 @@ labels.
   have a new feature you'd like to add, you can start a conversation [in our
   development community](https://zulip.com/development-community/#where-do-i-send-my-message)
   explaining the feature idea and the problem that you're hoping to solve.
+- **I think my PR is done, but it hasn't been merged yet. What's going on?**
+  1. **Double-check that you have addressed all the feedback**, including any comments
+     on [Git commit
+     discipline](https://zulip.readthedocs.io/en/latest/contributing/version-control.html#commit-discipline).
+  2. If all the feedback has been addressed, did you leave a comment explaining that
+     you have done so and **requesting another review**? If not, it may not be a
+     clear to project maintainers that your PR is ready for another look.
+  3. It is common for PRs to require **multiple rounds of review**. For example,
+     prior to getting code review from project maintainers, you may receive
+     feedback on the UI (without regard for the implementation), and your code
+     may be [reviewed by other
+     contributors](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html).
+     This helps us make good use of project maintainers' time, and helps you
+     make progress on the PR by getting more frequent feedback.
+  4. If you think the PR is ready and haven't seen any updates for a couple
+     of weeks, it can be helpful to post a **comment summarizing your
+     understanding of the state of the review process**. Your comment should
+     make it easy to understand what has been done and what remains by:
+     - Summarizing the changes made since the last review you received.
+     - Highlighting remaining questions or decisions, with links to any
+       relevant chat.zulip.org threads.
+     - Providing updated screenshots and information on manual testing if
+       appropriate.
+  5. Finally, **Zulip project maintainers are people too**! They may be busy
+     with other work, and sometimes they might even take a vacation. ;) It can
+     occasionally take a few weeks for a PR in the final stages of the review
+     process to be merged.
 
 ## What makes a great Zulip contributor?
 

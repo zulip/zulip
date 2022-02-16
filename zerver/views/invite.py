@@ -83,7 +83,7 @@ def invite_users_backend(
         invite_expires_in_days=invite_expires_in_days,
         invite_as=invite_as,
     )
-    return json_success()
+    return json_success(request)
 
 
 def get_invitee_emails_set(invitee_emails_raw: str) -> Set[str]:
@@ -100,7 +100,7 @@ def get_invitee_emails_set(invitee_emails_raw: str) -> Set[str]:
 @require_member_or_admin
 def get_user_invites(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     all_users = do_get_invites_controlled_by_user(user_profile)
-    return json_success({"invites": all_users})
+    return json_success(request, data={"invites": all_users})
 
 
 @require_member_or_admin
@@ -122,7 +122,7 @@ def revoke_user_invite(
             raise JsonableError(_("Must be an organization administrator"))
 
     do_revoke_user_invite(prereg_user)
-    return json_success()
+    return json_success(request)
 
 
 @require_realm_admin
@@ -142,7 +142,7 @@ def revoke_multiuse_invite(
     check_if_owner_required(invite.invited_as, user_profile)
 
     do_revoke_multi_use_invite(invite)
-    return json_success()
+    return json_success(request)
 
 
 @require_member_or_admin
@@ -166,7 +166,7 @@ def resend_user_invite_email(
             raise JsonableError(_("Must be an organization administrator"))
 
     timestamp = do_resend_user_invite_email(prereg_user)
-    return json_success({"timestamp": timestamp})
+    return json_success(request, data={"timestamp": timestamp})
 
 
 @require_realm_admin
@@ -193,4 +193,4 @@ def generate_multiuse_invite_backend(
     invite_link = do_create_multiuse_invite_link(
         user_profile, invite_as, invite_expires_in_days, streams
     )
-    return json_success({"invite_link": invite_link})
+    return json_success(request, data={"invite_link": invite_link})

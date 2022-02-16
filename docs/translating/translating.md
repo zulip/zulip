@@ -7,7 +7,7 @@ Zulip.
 Additionally, the Zulip UI is translated into more than a dozen major
 languages, including Spanish, German, Hindi, French, Chinese, Russian,
 and Japanese, and we're always excited to add more. If you speak a
-language other than English, your help with translating Zulip is be
+language other than English, your help with translating Zulip would be
 greatly appreciated!
 
 If you are interested in knowing about the technical end-to-end

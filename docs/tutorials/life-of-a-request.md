@@ -198,13 +198,22 @@ Our API works on JSON requests and responses. Every API endpoint should
 {"result": "error", "msg": "<some error message>", "code": "BAD_REQUEST"}
 ```
 
-in a
-[HTTP response](https://docs.djangoproject.com/en/3.2/ref/request-response/)
-with a content type of 'application/json'.
+in a [Django HttpResponse
+object](https://docs.djangoproject.com/en/3.2/ref/request-response/)
+with a `Content-Type` of 'application/json'.
 
 To pass back data from the server to the calling client, in the event of
-a successfully handled request, we use
-`json_success(data=<some python object which can be converted to a JSON string>)`.
+a successfully handled request, we use `json_success(request, data)`.
+
+The `request` argument is a [Django HttpRequest
+object](https://docs.djangoproject.com/en/3.2/ref/request-response/).
+The `data` argument is a Python object which can be converted to a JSON
+string and has a default value of an empty Python dictionary.
+
+Zulip stores additional metadata it has associated with that HTTP
+request in a `RequestNotes` object, which is primarily accessed in
+common code used in all requests (middleware, logging, rate limiting,
+etc.).
 
 This will result in a JSON string:
 
@@ -212,6 +221,6 @@ This will result in a JSON string:
 {"result": "success", "msg": "", "data": {"var_name1": "var_value1", "var_name2": "var_value2"}}
 ```
 
-with a HTTP 200 status and a content type of 'application/json'.
+with a HTTP 200 status and a `Content-Type` of 'application/json'.
 
 That's it!

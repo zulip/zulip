@@ -284,7 +284,7 @@ variable reverse proxy implementations.
 
 If your Zulip server will not be on the public Internet, we recommend,
 installing with the `--self-signed-cert` option (rather than the
-`--certbot` option), since CertBot requires the server to be on the
+`--certbot` option), since Certbot requires the server to be on the
 public Internet.
 
 #### Configuring Zulip to allow HTTP

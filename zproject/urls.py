@@ -358,7 +358,7 @@ v1_api_and_json_patterns = [
         "users/me/apns_device_token", POST=add_apns_device_token, DELETE=remove_apns_device_token
     ),
     rest_path("users/me/android_gcm_reg_id", POST=add_android_reg_id, DELETE=remove_android_reg_id),
-    # users/*/presnece => zerver.views.presence.
+    # users/*/presence => zerver.views.presence.
     rest_path("users/me/presence", POST=update_active_status_backend),
     # It's important that this sit after users/me/presence so that
     # Django's URL resolution order doesn't break the
@@ -627,6 +627,7 @@ i18n_urls = [
     path("for/research/", landing_view, {"template_name": "zerver/for-research.html"}),
     path("for/business/", landing_view, {"template_name": "zerver/for-business.html"}),
     path("for/companies/", RedirectView.as_view(url="/for/business/", permanent=True)),
+    path("case-studies/idrift/", landing_view, {"template_name": "zerver/idrift-case-study.html"}),
     path("case-studies/tum/", landing_view, {"template_name": "zerver/tum-case-study.html"}),
     path("case-studies/ucsd/", landing_view, {"template_name": "zerver/ucsd-case-study.html"}),
     path("case-studies/rust/", landing_view, {"template_name": "zerver/rust-case-study.html"}),
@@ -754,45 +755,34 @@ urls += [path("saml/metadata.xml", saml_sp_metadata)]
 
 # SCIM2
 
-from zerver.lib.scim import (
-    ZulipSCIMSearchView,
-    ZulipSCIMUserSearchView,
-    ZulipSCIMUsersView,
-    ZulipSCIMView,
-)
+from django_scim import views as scim_views
 
 urls += [
-    # We have to register all the SCIM URL patterns first, because we override
-    # all the SCIM View classes and we need Django to use them instead of
-    # the django-scim2 Views that the app will register.
-    re_path(r"^scim/v2/$", ZulipSCIMView.as_view(implemented=False)),
-    re_path(r"^scim/v2/.search$", ZulipSCIMSearchView.as_view(implemented=False)),
-    re_path(r"^scim/v2/Users/.search$", ZulipSCIMUserSearchView.as_view()),
-    re_path(r"^scim/v2/Users(?:/(?P<uuid>[^/]+))?$", ZulipSCIMUsersView.as_view()),
     # Everything below here are features that we don't yet support and we want
     # to explicitly mark them to return "Not Implemented" rather than running
     # the django-scim2 code for them.
     re_path(
         r"^scim/v2/Groups/.search$",
-        ZulipSCIMView.as_view(implemented=False),
+        scim_views.SCIMView.as_view(implemented=False),
     ),
     re_path(
         r"^scim/v2/Groups(?:/(?P<uuid>[^/]+))?$",
-        ZulipSCIMView.as_view(implemented=False),
+        scim_views.SCIMView.as_view(implemented=False),
     ),
-    re_path(r"^scim/v2/Me$", ZulipSCIMView.as_view(implemented=False)),
+    re_path(r"^scim/v2/Me$", scim_views.SCIMView.as_view(implemented=False)),
     re_path(
         r"^scim/v2/ServiceProviderConfig$",
-        ZulipSCIMView.as_view(implemented=False),
+        scim_views.SCIMView.as_view(implemented=False),
     ),
     re_path(
         r"^scim/v2/ResourceTypes(?:/(?P<uuid>[^/]+))?$",
-        ZulipSCIMView.as_view(implemented=False),
+        scim_views.SCIMView.as_view(implemented=False),
     ),
-    re_path(r"^scim/v2/Schemas(?:/(?P<uuid>[^/]+))?$", ZulipSCIMView.as_view(implemented=False)),
-    re_path(r"^scim/v2/Bulk$", ZulipSCIMView.as_view(implemented=False)),
-    # At the end we still register the django-scim2 url patterns (even though we override them all above)
-    # so that reverse("scim:viewname") still works like the internal library code expects.
+    re_path(
+        r"^scim/v2/Schemas(?:/(?P<uuid>[^/]+))?$", scim_views.SCIMView.as_view(implemented=False)
+    ),
+    re_path(r"^scim/v2/Bulk$", scim_views.SCIMView.as_view(implemented=False)),
+    # This registers the remaining SCIM endpoints.
     path("scim/v2/", include("django_scim.urls", namespace="scim")),
 ]
 

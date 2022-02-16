@@ -576,7 +576,7 @@ def compute_plan_parameters(
 ) -> Tuple[datetime, datetime, datetime, int]:
     # Everything in Stripe is stored as timestamps with 1 second resolution,
     # so standardize on 1 second resolution.
-    # TODO talk about leapseconds?
+    # TODO talk about leap seconds?
     billing_cycle_anchor = timezone_now().replace(microsecond=0)
     if billing_schedule == CustomerPlan.ANNUAL:
         period_end = add_months(billing_cycle_anchor, 12)
@@ -720,7 +720,7 @@ def process_initial_upgrade(
         stripe.InvoiceItem.create(
             currency="usd",
             customer=customer.stripe_customer_id,
-            description="Zulip Standard",
+            description="Zulip Cloud Standard",
             discountable=False,
             period={
                 "start": datetime_to_timestamp(billing_cycle_anchor),
@@ -742,7 +742,7 @@ def process_initial_upgrade(
             collection_method=collection_method,
             customer=customer.stripe_customer_id,
             days_until_due=days_until_due,
-            statement_descriptor="Zulip Standard",
+            statement_descriptor="Zulip Cloud Standard",
         )
         stripe.Invoice.finalize_invoice(stripe_invoice)
 

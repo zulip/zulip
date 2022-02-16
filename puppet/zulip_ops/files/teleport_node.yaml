@@ -16,7 +16,8 @@ ssh_service:
       command: ["/usr/bin/uptrack-uname", "-r"]
       period: 1h0m0s
     - name: distro
-      command: ["/usr/bin/lsb_release", "-ds"]
+      command:
+        ["/bin/sh", "-c", '. /etc/os-release && printf "%s\n" "$PRETTY_NAME"']
       period: 1h0m0s
     - name: classes
       command:

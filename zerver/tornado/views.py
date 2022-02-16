@@ -24,7 +24,7 @@ from zerver.tornado.exceptions import BadEventQueueIdError
 @internal_notify_view(True)
 def notify(request: HttpRequest) -> HttpResponse:
     process_notification(orjson.loads(request.POST["data"]))
-    return json_success()
+    return json_success(request)
 
 
 @has_request_variables
@@ -40,7 +40,7 @@ def cleanup_event_queue(
     assert log_data is not None
     log_data["extra"] = f"[{queue_id}]"
     client.cleanup()
-    return json_success()
+    return json_success(request)
 
 
 @internal_notify_view(True)
@@ -164,9 +164,9 @@ def get_events_backend(
         # Tornado discarding the response and instead long-polling the
         # request.  See zulip_finish for more design details.
         handler._request = request
-        response = json_success()
+        response = json_success(request)
         response.asynchronous = True
         return response
     if result["type"] == "error":
         raise result["exception"]
-    return json_success(result["response"])
+    return json_success(request, data=result["response"])

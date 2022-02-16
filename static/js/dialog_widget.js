@@ -1,5 +1,4 @@
 import $ from "jquery";
-import Micromodal from "micromodal";
 
 import render_dialog_widget from "../templates/dialog_widget.hbs";
 
@@ -59,8 +58,9 @@ export function show_dialog_spinner() {
     loading.make_indicator(spinner);
 }
 
-export function close_modal() {
-    Micromodal.close("dialog_widget_modal");
+// Supports a callback to be called once the modal finishes closing.
+export function close_modal(on_hidden_callback) {
+    overlays.close_modal("dialog_widget_modal", {micromodal: true, on_hidden: on_hidden_callback});
 }
 
 export function launch(conf) {

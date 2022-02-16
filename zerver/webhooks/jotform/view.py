@@ -28,4 +28,4 @@ def api_jotform_webhook(
     message = form_response.strip()
 
     check_send_webhook_message(request, user_profile, topic, message)
-    return json_success()
+    return json_success(request)

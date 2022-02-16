@@ -64,7 +64,7 @@ function compare_by_huddle(huddle) {
         return person && person.user_id;
     });
 
-    // Construct dict for all huddles, so we can lookup each's recency
+    // Construct dict for all huddles, so we can look up each's recency
     const huddles = huddle_data.get_huddles();
     const huddle_dict = new Map();
     for (const [i, huddle] of huddles.entries()) {
@@ -543,10 +543,6 @@ function get_has_filter_suggestions(last, operators) {
 }
 
 function get_sent_by_me_suggestions(last, operators) {
-    if (page_params.is_spectator) {
-        return [];
-    }
-
     const last_string = Filter.unparse([last]).toLowerCase();
     const negated = last.negated || (last.operator === "search" && last.operand[0] === "-");
     const negated_symbol = negated ? "-" : "";
@@ -721,7 +717,8 @@ export function get_search_result(base_query, query) {
         };
     }
 
-    const filterers = [
+    // Remember to update the spectator list when changing this.
+    let filterers = [
         get_streams_filter_suggestions,
         get_is_filter_suggestions,
         get_sent_by_me_suggestions,
@@ -735,6 +732,17 @@ export function get_search_result(base_query, query) {
         get_operator_suggestions,
         get_has_filter_suggestions,
     ];
+
+    if (page_params.is_spectator) {
+        filterers = [
+            get_stream_suggestions,
+            get_people("sender"),
+            get_people("from"),
+            get_topic_suggestions,
+            get_operator_suggestions,
+            get_has_filter_suggestions,
+        ];
+    }
 
     if (!page_params.search_pills_enabled) {
         all_operators = search_operators;

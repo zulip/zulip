@@ -24,7 +24,7 @@ from typing import Any, Dict, List
 import digitalocean
 import requests
 
-parser = argparse.ArgumentParser(description="Create a Zulip devopment VM DigitalOcean droplet.")
+parser = argparse.ArgumentParser(description="Create a Zulip development VM DigitalOcean droplet.")
 parser.add_argument(
     "username", help="GitHub username for whom you want to create a Zulip dev droplet"
 )

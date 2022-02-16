@@ -118,9 +118,9 @@ class Addressee:
             else:
                 # This is a hack to deal with the fact that we still support
                 # default streams (and the None will be converted later in the
-                # callpath).
+                # call path).
                 if sender.default_sending_stream:
-                    # Use the users default stream
+                    # Use the user's default stream
                     stream_name_or_id = sender.default_sending_stream.id
                 else:
                     raise JsonableError(_("Missing stream"))

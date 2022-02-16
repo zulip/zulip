@@ -39,6 +39,7 @@ rules:
         - zerver/migrations/0206_stream_rendered_description.py
         - zerver/migrations/0209_user_profile_no_empty_password.py
         - zerver/migrations/0260_missed_message_addresses_from_redis_to_db.py
+        - zerver/migrations/0376_set_realmemoji_author_and_reupload_realmemoji.py
         - pgroonga/migrations/0002_html_escape_subject.py
 
   - id: logging-format

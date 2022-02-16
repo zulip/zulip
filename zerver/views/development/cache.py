@@ -18,4 +18,4 @@ def remove_caches(request: HttpRequest) -> HttpResponse:
     cache.clear()
     clear_client_cache()
     flush_per_request_caches()
-    return json_success()
+    return json_success(request)

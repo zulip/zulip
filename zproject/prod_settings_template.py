@@ -195,8 +195,8 @@ AUTH_LDAP_USER_SEARCH = LDAPSearch(
     "ou=users,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(uid=%(user)s)"
 )
 
-## Configuration to lookup a user's LDAP data given their email address
-## (For Zulip reverse mapping).  If users log in as e.g. "sam" when
+## Configuration to look up a user's LDAP data given their email address
+## (for Zulip reverse mapping).  If users log in as e.g. "sam" when
 ## their email address is "sam@example.com", set LDAP_APPEND_DOMAIN to
 ## "example.com".  Otherwise, leave LDAP_APPEND_DOMAIN=None and set
 ## AUTH_LDAP_REVERSE_EMAIL_SEARCH and AUTH_LDAP_USERNAME_ATTR below.
@@ -403,7 +403,7 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, Any] = {
         "url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",
         ##
         ## The part below corresponds to what's likely referred to as something like
-        ## "Attribute Statements" (with Okta as your IdP) or "Attribute Mapping" (with G Suite).
+        ## "Attribute Statements" (with Okta as your IdP) or "Attribute Mapping" (with Google Workspace).
         ## The names on the right side need to correspond to the names under which
         ## the IdP will send the user attributes. With these defaults, it's expected
         ## that the user's email will be sent with the "email" attribute name,

@@ -59,18 +59,25 @@ function on_show_prep(instance) {
 export function initialize() {
     delegate("body", {
         ...default_popover_props,
-        target: "#streams_inline_cog",
+        target: "#streams_inline_icon",
         onShow(instance) {
+            const can_create_streams =
+                settings_data.user_can_create_private_streams() ||
+                settings_data.user_can_create_public_streams() ||
+                settings_data.user_can_create_web_public_streams();
             on_show_prep(instance);
-            instance.setContent(
-                render_left_sidebar_stream_setting_popover({
-                    can_create_streams:
-                        settings_data.user_can_create_private_streams() ||
-                        settings_data.user_can_create_public_streams() ||
-                        settings_data.user_can_create_web_public_streams(),
-                }),
-            );
+
+            if (!can_create_streams) {
+                // If the user can't create streams, we directly
+                // navigate them to the Manage streams subscribe UI.
+                window.location.assign("#streams/all");
+                // Returning false from an onShow handler cancels the show.
+                return false;
+            }
+
+            instance.setContent(render_left_sidebar_stream_setting_popover());
             left_sidebar_stream_setting_popover_displayed = true;
+            return true;
         },
         onHidden() {
             left_sidebar_stream_setting_popover_displayed = false;
@@ -109,7 +116,7 @@ export function initialize() {
 
     // We need to hide instance manually for popover due to
     // `$("body").on("click"...` method not being triggered for
-    // the elements when when we do:
+    // the elements when we do:
     // `$(instance.popper).one("click", instance.hide); in onShow.
     // Cannot reproduce it on codepen -
     // https://codepen.io/amanagr/pen/jOLoKVg

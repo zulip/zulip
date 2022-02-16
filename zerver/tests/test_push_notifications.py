@@ -8,6 +8,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 from unittest import mock, skipUnless
 from urllib import parse
 
+import aioapns
 import orjson
 import responses
 from django.conf import settings
@@ -175,7 +176,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             401,
         )
 
-    def test_register_remote_push_user_paramas(self) -> None:
+    def test_register_remote_push_user_params(self) -> None:
         token = "111222"
         user_id = 11
         token_kind = PushDeviceToken.GCM
@@ -1115,7 +1116,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         mock_send_android.assert_not_called()
 
     def test_deleted_message(self) -> None:
-        """Simulates the race where message is deleted before handlingx push notifications"""
+        """Simulates the race where message is deleted before handling push notifications"""
         user_profile = self.example_user("hamlet")
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(
@@ -1478,11 +1479,14 @@ class TestAPNs(PushNotificationTest):
 
         zerver.lib.push_notifications.get_apns_context.cache_clear()
         try:
-            with self.settings(APNS_CERT_FILE="/foo.pem"), mock.patch("aioapns.APNs") as mock_apns:
+            with self.settings(APNS_CERT_FILE="/foo.pem"), mock.patch(
+                "ssl.SSLContext.load_cert_chain"
+            ) as mock_load_cert_chain:
                 apns_context = get_apns_context()
                 assert apns_context is not None
                 try:
-                    self.assertEqual(mock_apns.return_value, apns_context.apns)
+                    mock_load_cert_chain.assert_called_once_with("/foo.pem")
+                    assert apns_context.apns.pool.loop == apns_context.loop
                 finally:
                     apns_context.loop.close()
         finally:
@@ -1535,8 +1539,6 @@ class TestAPNs(PushNotificationTest):
                 )
 
     def test_http_retry_eventually_fails(self) -> None:
-        import aioapns
-
         self.setup_apns_tokens()
         with self.mock_apns() as apns_context, self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
@@ -1717,6 +1719,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "sender_email": self.sender.email,
                     "sender_id": self.sender.id,
                     "stream": get_display_recipient(message.recipient),
+                    "stream_id": stream.id,
                     "topic": message.topic_name(),
                     "server": settings.EXTERNAL_HOST,
                     "realm_id": self.sender.realm.id,
@@ -1747,6 +1750,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "sender_email": self.sender.email,
                     "sender_id": self.sender.id,
                     "stream": get_display_recipient(message.recipient),
+                    "stream_id": stream.id,
                     "topic": message.topic_name(),
                     "server": settings.EXTERNAL_HOST,
                     "realm_id": self.sender.realm.id,
@@ -1780,6 +1784,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "sender_email": self.sender.email,
                     "sender_id": self.sender.id,
                     "stream": get_display_recipient(message.recipient),
+                    "stream_id": stream.id,
                     "topic": message.topic_name(),
                     "server": settings.EXTERNAL_HOST,
                     "realm_id": self.sender.realm.id,
@@ -1814,6 +1819,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "sender_email": self.sender.email,
                     "sender_id": self.sender.id,
                     "stream": get_display_recipient(message.recipient),
+                    "stream_id": stream.id,
                     "topic": message.topic_name(),
                     "server": settings.EXTERNAL_HOST,
                     "realm_id": self.sender.realm.id,
@@ -1901,6 +1907,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "sender_avatar_url": absolute_avatar_url(message.sender),
             "recipient_type": "stream",
             "stream": get_display_recipient(message.recipient),
+            "stream_id": stream.id,
             "topic": message.topic_name(),
         }
 
@@ -1995,6 +2002,7 @@ class TestGetGCMPayload(PushNotificationTest):
                 "recipient_type": "stream",
                 "topic": "Test topic",
                 "stream": "Denmark",
+                "stream_id": stream.id,
             },
         )
         self.assertDictEqual(
@@ -2032,6 +2040,7 @@ class TestGetGCMPayload(PushNotificationTest):
                 "recipient_type": "stream",
                 "topic": "Test topic",
                 "stream": "Denmark",
+                "stream_id": stream.id,
             },
         )
         self.assertDictEqual(

@@ -2588,7 +2588,7 @@ class SubscribeActionTest(BaseAction):
         check_stream_update("events[0]", events[0])
         check_message("events[1]", events[1])
 
-        # Update stream privacy - make stream web public
+        # Update stream privacy - make stream web-public
         action = lambda: do_change_stream_permission(
             stream,
             invite_only=False,

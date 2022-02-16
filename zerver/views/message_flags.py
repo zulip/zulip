@@ -45,7 +45,7 @@ def update_message_flags(
     log_data_str = f"[{operation} {flag}/{target_count_str}] actually {count}"
     request_notes.log_data["extra"] = log_data_str
 
-    return json_success({"result": "success", "messages": messages, "msg": ""})
+    return json_success(request, data={"messages": messages})
 
 
 @has_request_variables
@@ -58,7 +58,7 @@ def mark_all_as_read(request: HttpRequest, user_profile: UserProfile) -> HttpRes
     assert request_notes.log_data is not None
     request_notes.log_data["extra"] = log_data_str
 
-    return json_success({"result": "success", "msg": ""})
+    return json_success(request)
 
 
 @has_request_variables
@@ -73,7 +73,7 @@ def mark_stream_as_read(
     assert log_data is not None
     log_data["extra"] = log_data_str
 
-    return json_success({"result": "success", "msg": ""})
+    return json_success(request)
 
 
 @has_request_variables
@@ -102,4 +102,4 @@ def mark_topic_as_read(
     assert log_data is not None
     log_data["extra"] = log_data_str
 
-    return json_success({"result": "success", "msg": ""})
+    return json_success(request)

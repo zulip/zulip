@@ -241,7 +241,7 @@ run_test("stream-links", () => {
 
 run_test("timestamp without time", () => {
     const $content = get_content_element();
-    const $timestamp = $.create("timestampe without actual time");
+    const $timestamp = $.create("timestamp without actual time");
     $content.set_find_results("time", $array([$timestamp]));
 
     rm.update_elements($content);

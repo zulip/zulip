@@ -85,6 +85,42 @@ pre {
      */
     font-family: "Source Sans 3", sans-serif !important;
 
+    .tippy-box {
+        background-color: hsl(0, 0%, 12%);
+
+        &[data-placement^="top"] {
+            > .tippy-arrow {
+                &::before {
+                    border-top-color: hsl(0, 0%, 12%);
+                }
+            }
+        }
+
+        &[data-placement^="bottom"] {
+            > .tippy-arrow {
+                &::before {
+                    border-bottom-color: hsl(0, 0%, 12%);
+                }
+            }
+        }
+
+        &[data-placement^="left"] {
+            > .tippy-arrow {
+                &::before {
+                    border-left-color: hsl(0, 0%, 12%);
+                }
+            }
+        }
+
+        &[data-placement^="right"] {
+            > .tippy-arrow {
+                &::before {
+                    border-right-color: hsl(0, 0%, 12%);
+                }
+            }
+        }
+    }
+
     .tippy-content {
         font-size: 13px;
     }
@@ -339,16 +375,9 @@ p.n-margin {
 .app-main,
 .header-main {
     width: 100%;
-    /* TODO: This 1400px is wrong, but it's hard to do better.  On
-       browsers with a nonzero default scrollbar width (i.e. not
-       macOS), we actually want a max-width of 1400px+the width of the
-       scrollbar, which is done as an override in
-       static/js/scroll_bar.js.
-
-       And with the fluid_layout_width setting, we don't want a
-       max-width at all.  The consequence is that if you reload a
-       Zulip window, there's a brief flash where the content is
-       misplaced before the JS code can fix it. */
+    /* `max-width` is changed based on `fluid_layout_width` setting in
+       `scroll_bar.js`. User may or may not see a flash of mispositioned content
+       based on how quickly the JS code is executed. */
     max-width: 1400px;
     min-width: 950px;
     margin: 0 auto;
@@ -477,7 +506,7 @@ li,
     padding: 6px;
     display: block;
     /* The below two avoids the padded element from displaying
-    it's own border and background color */
+    its own border and background color */
     border: none;
     background-clip: content-box;
     /* The z-index here ensures that the copy-message
@@ -774,7 +803,8 @@ td.pointer {
         display: inline-block;
         vertical-align: top;
         line-height: 14px;
-        margin-left: 0;
+        /* A bit of margin here helps these not look associated with the name. */
+        margin-left: 4px;
         position: static;
         padding: 0;
         width: auto;
@@ -1195,7 +1225,7 @@ td.pointer {
         border-left-color: hsl(0, 0%, 27%);
     }
 
-    /* Base color backgrounds for messageboxes,
+    /* Base color backgrounds for message boxes,
        private messages, mentions, and unread messages */
 
     .message-header-contents {
@@ -1538,6 +1568,7 @@ div.focused_table {
 
 #message_edit_topic {
     margin: 0 5px 5px 0;
+    width: auto;
 }
 
 .message_edit_header {
@@ -1561,8 +1592,7 @@ div.focused_table {
 }
 
 .message_edit_topic_propagate {
-    display: inline-block;
-    width: 300px;
+    width: auto;
     margin-bottom: 5px !important;
     max-width: 100%;
 }
@@ -2460,6 +2490,21 @@ div.topic_edit_spinner .loading_indicator_spinner {
     top: 3px;
 }
 
+.status_emoji {
+    height: 16px;
+    width: 16px;
+    /* We are setting minimum width here because when the user's name is very long,
+    emoji's width decreases and causes it to break. */
+    min-width: 16px;
+    /* In most contexts, status emoji appear immediately after a name
+      field with no margin. Position the status emoji with 2px of left
+      margin to space it from the name, and set no right margin so
+      that any components to the right appear equally distant as they
+      would be from a name. */
+    margin-left: 2px;
+    margin-right: 0;
+}
+
 /* FIXME: Combine this rule with the one in portico.css somehow? */
 #pw_strength {
     width: 100%;
@@ -2507,6 +2552,10 @@ div.topic_edit_spinner .loading_indicator_spinner {
     overflow: hidden;
     text-transform: uppercase;
     font-size: 0.8em;
+}
+
+.sub-unsub-message .stream-status,
+.date_row span {
     opacity: 0.5;
 }
 
@@ -2564,8 +2613,9 @@ div.topic_edit_spinner .loading_indicator_spinner {
         border-radius: 1px 4px 4px 1px !important;
     }
 
+    .dropdown-list-widget,
     .stream_header_colorblock {
-        margin-bottom: 20px;
+        margin-bottom: 10px;
     }
 
     textarea {

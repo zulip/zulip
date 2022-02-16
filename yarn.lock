@@ -1377,6 +1377,11 @@
     mkdirp "^1.0.4"
     rimraf "^3.0.2"
 
+"@panzoom/panzoom@^4.4.3":
+  version "4.4.3"
+  resolved "https://registry.yarnpkg.com/@panzoom/panzoom/-/panzoom-4.4.3.tgz#439ef0c3eba1cba0ad9b661fda5961aa2e2eec64"
+  integrity sha512-fTAr7/bc9ukvWKxxqdoAuIhKhvu6TwuNiGcA0N3lrSj5OZGlISGLXcSZZyN7kgqH/6icYS7b18UT/Iq/W2rTOA==
+
 "@plotly/d3-sankey-circular@0.33.1":
   version "0.33.1"
   resolved "https://registry.yarnpkg.com/@plotly/d3-sankey-circular/-/d3-sankey-circular-0.33.1.tgz#15d1e0337e0e4b1135bdf0e2195c88adacace1a7"

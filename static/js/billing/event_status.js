@@ -36,12 +36,12 @@ function handle_session_complete_event(session) {
             break;
         case "free_trial_upgrade_from_billing_page":
             message =
-                "Your free trial of Zulip Standard has been activated. You would be redirected to the billing page soon.";
+                "Your free trial of Zulip Cloud Standard has been activated. You would be redirected to the billing page soon.";
             redirect_to = "/billing";
             break;
         case "free_trial_upgrade_from_onboarding_page":
             message =
-                "Your free trial of Zulip Standard has been activated. You would be redirected to the billing page soon.";
+                "Your free trial of Zulip Cloud Standard has been activated. You would be redirected to the billing page soon.";
             redirect_to = "/billing?onboarding=true";
             break;
         case "card_update_from_billing_page":

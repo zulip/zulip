@@ -384,7 +384,7 @@ def write_table_data(output_file: str, data: Dict[str, Any]) -> None:
 
 
 def write_records_json_file(output_dir: str, records: List[Dict[str, Any]]) -> None:
-    # We want a somewhat determistic sorting order here. All of our
+    # We want a somewhat deterministic sorting order here. All of our
     # versions of records.json include a "path" field in each element,
     # even though there's some variation among avatars/emoji/realm_icons/uploads
     # in other fields that get written.

@@ -6,7 +6,7 @@ class zulip::nginx {
   ]
   package { $web_packages: ensure => 'installed' }
 
-  if $::osfamily == 'redhat' {
+  if $::os['family'] == 'RedHat' {
     file { '/etc/nginx/sites-available':
       ensure => 'directory',
       owner  => 'root',
@@ -80,7 +80,7 @@ class zulip::nginx {
     source  => 'puppet:///modules/zulip/nginx/dhparam.pem',
   }
 
-  if $::osfamily == 'debian' {
+  if $::os['family'] == 'Debian' {
       $ca_crt = '/etc/ssl/certs/ca-certificates.crt'
   } else {
       $ca_crt = '/etc/pki/tls/certs/ca-bundle.crt'

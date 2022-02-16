@@ -179,7 +179,9 @@ export function open_modal(selector, conf) {
                     conf.on_shown();
                 }
             } else if (animation_name === "mmfadeOut") {
-                // Equivalent to bootstrap's "hidden.bs.modal" event
+                // Equivalent to bootstrap's "hidden.bs.modal" event.
+                //
+                // Call the on_hidden callback after the modal finishes hiding.
 
                 micromodal.removeClass("modal--open");
                 if (conf.autoremove) {
@@ -254,7 +256,9 @@ export function close_active() {
     close_overlay(open_overlay_name);
 }
 
-// If conf.micromodal is true, close a micromodal modal else close a bootstrap modal
+// `conf` is an object with the following optional properties:
+// * micromodal: true if the modal to close is expected to be micromodal.
+// * on_hidden: Callback to run when the modal finishes hiding.
 export function close_modal(selector, conf) {
     if (selector === undefined) {
         blueslip.error("Undefined selector was passed into close_modal");
@@ -279,6 +283,20 @@ export function close_modal(selector, conf) {
     blueslip.debug("close modal: " + selector);
 
     if (conf && conf.micromodal) {
+        const id_selector = `#${selector}`;
+        const micromodal = $(id_selector);
+
+        // On-hidden hooks should typically be registered in
+        // overlays.open_modal.  However, we offer this alternative
+        // mechanism as a convenience for hooks only known when
+        // closing the modal.
+        micromodal.find(".modal__container").on("animationend", (event) => {
+            const animation_name = event.originalEvent.animationName;
+            if (animation_name === "mmfadeOut" && conf.on_hidden) {
+                conf.on_hidden();
+            }
+        });
+
         Micromodal.close(selector);
         return;
     }
@@ -334,6 +352,11 @@ export function initialize() {
             $target = $target.closest("[data-overlay]");
         } else if (!$target.is("div.overlay")) {
             // not a valid click target then.
+            return;
+        }
+
+        if ($target.data("noclose")) {
+            // This overlay has been marked explicitly to not be closed.
             return;
         }
 

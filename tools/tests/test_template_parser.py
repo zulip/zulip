@@ -191,7 +191,7 @@ class ParserTest(unittest.TestCase):
 
         # This is allowed, although strange.
         my_html = """
-            <a hef="/some/url">
+            <a href="/some/url">
             Click here
             for more info.
             </a>"""

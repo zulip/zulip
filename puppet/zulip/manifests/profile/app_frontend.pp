@@ -10,9 +10,9 @@ class zulip::profile::app_frontend {
   } else {
     $nginx_listen_port = zulipconf('application_server', 'nginx_listen_port', 443)
   }
-  $ssl_dir = $::osfamily ? {
-    'debian' => '/etc/ssl',
-    'redhat' => '/etc/pki/tls',
+  $ssl_dir = $::os['family'] ? {
+    'Debian' => '/etc/ssl',
+    'RedHat' => '/etc/pki/tls',
   }
   file { '/etc/nginx/sites-available/zulip-enterprise':
     ensure  => file,

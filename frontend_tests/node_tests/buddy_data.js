@@ -111,44 +111,6 @@ function test(label, f) {
     });
 }
 
-test("huddle_fraction_present", () => {
-    people.add_active_user(alice);
-    people.add_active_user(fred);
-    people.add_active_user(jill);
-    people.add_active_user(mark);
-
-    let huddle = "alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com";
-    huddle = people.emails_strings_to_user_ids_string(huddle);
-
-    let presence_info = new Map();
-    presence_info.set(alice.user_id, {status: "active"}); // counts as present
-    presence_info.set(fred.user_id, {status: "idle"}); // does not count as present
-    // jill not in list
-    presence_info.set(mark.user_id, {status: "offline"}); // does not count
-    presence.__Rewire__("presence_info", presence_info);
-
-    assert.equal(buddy_data.huddle_fraction_present(huddle), 0.5);
-
-    presence_info = new Map();
-    for (const user of [alice, fred, jill, mark]) {
-        presence_info.set(user.user_id, {status: "active"}); // counts as present
-    }
-    presence.__Rewire__("presence_info", presence_info);
-
-    assert.equal(buddy_data.huddle_fraction_present(huddle), 1);
-
-    huddle = "alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com";
-    huddle = people.emails_strings_to_user_ids_string(huddle);
-    presence_info = new Map();
-    presence_info.set(alice.user_id, {status: "idle"});
-    presence_info.set(fred.user_id, {status: "idle"}); // does not count as present
-    // jill not in list
-    presence_info.set(mark.user_id, {status: "offline"}); // does not count
-    presence.__Rewire__("presence_info", presence_info);
-
-    assert.equal(buddy_data.huddle_fraction_present(huddle), undefined);
-});
-
 function set_presence(user_id, status) {
     presence.presence_info.set(user_id, {
         status,
@@ -180,7 +142,7 @@ test("user_circle, level, status_description", () => {
     assert.equal(buddy_data.get_user_circle_class(me.user_id), "user_circle_green");
 
     set_presence(fred.user_id, "idle");
-    assert.equal(buddy_data.get_user_circle_class(fred.user_id), "user_circle_orange");
+    assert.equal(buddy_data.get_user_circle_class(fred.user_id), "user_circle_idle");
     assert.equal(buddy_data.level(fred.user_id), 2);
     assert.equal(buddy_data.status_description(fred.user_id), "translated: Idle");
 
@@ -280,7 +242,7 @@ test("compose fade interactions (PMs)", () => {
         return buddy_data.get_item(fred.user_id).faded;
     }
 
-    // Dont fade if we're not in a narrow.
+    // Don't fade if we're not in a narrow.
     assert.equal(faded(), false);
 
     // Fade fred if we are narrowed to a PM narrow that does

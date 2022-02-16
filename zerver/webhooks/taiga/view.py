@@ -35,7 +35,7 @@ def api_taiga_webhook(
             topic = message["data"]["milestone"]["name"]
     check_send_webhook_message(request, user_profile, topic, content)
 
-    return json_success()
+    return json_success(request)
 
 
 templates = {

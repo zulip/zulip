@@ -50,4 +50,4 @@ def api_beeminder_webhook(
         expression=expression,
     )
     check_send_webhook_message(request, user_profile, topic, body)
-    return json_success()
+    return json_success(request)

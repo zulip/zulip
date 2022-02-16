@@ -1410,6 +1410,7 @@ class Timestamp(markdown.inlinepatterns.Pattern):
 # \U0001f300-\U0001f5ff - Miscellaneous Symbols and Pictographs
 # \U0001f600-\U0001f64f - Emoticons (Emoji)
 # \U0001f680-\U0001f6ff - Transport and Map Symbols
+# \U0001f7e0-\U0001f7eb - Coloured Geometric Shapes (NOTE: Not Unicode standard category name)
 # \U0001f900-\U0001f9ff - Supplemental Symbols and Pictographs
 # \u2000-\u206f         - General Punctuation
 # \u2300-\u23ff         - Miscellaneous Technical
@@ -1429,6 +1430,7 @@ UNICODE_EMOJI_RE = (
     "(?P<syntax>["
     "\U0001F100-\U0001F64F"
     "\U0001F680-\U0001F6FF"
+    "\U0001F7E0-\U0001F7EB"
     "\U0001F900-\U0001F9FF"
     "\u2000-\u206F"
     "\u2300-\u27BF"
@@ -1474,12 +1476,8 @@ def make_realm_emoji(src: str, display_string: str) -> Element:
 
 
 def unicode_emoji_to_codepoint(unicode_emoji: str) -> str:
-    codepoint = hex(ord(unicode_emoji))[2:]
-    # Unicode codepoints are minimum of length 4, padded
-    # with zeroes if the length is less than zero.
-    while len(codepoint) < 4:
-        codepoint = "0" + codepoint
-    return codepoint
+    # Unicode codepoints are minimum of length 4, padded with zeroes
+    return f"{ord(unicode_emoji):04x}"
 
 
 class EmoticonTranslation(markdown.inlinepatterns.Pattern):

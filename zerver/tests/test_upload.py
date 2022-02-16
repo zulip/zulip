@@ -207,7 +207,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(base, uri[: len(base)])
 
         # In the future, local file requests will follow the same style as S3
-        # requests; they will be first authenthicated and redirected
+        # requests; they will be first authenticated and redirected
         self.assert_streaming_content(self.client_get(uri), b"zulip!")
 
         # check if DB has attachment marked as unclaimed
@@ -319,7 +319,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assert_in_response("File not found.", response)
 
     def test_delete_old_unclaimed_attachments(self) -> None:
-        # Upload some files and make them older than a weeek
+        # Upload some files and make them older than a week
         self.login("hamlet")
         d1 = StringIO("zulip!")
         d1.name = "dummy_1.txt"
@@ -1531,7 +1531,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
             result = self.client_post(
                 "/json/realm/logo", {"file": fp, "night": orjson.dumps(self.night).decode()}
             )
-        self.assert_json_error(result, "Available on Zulip Standard. Upgrade to access.")
+        self.assert_json_error(result, "Available on Zulip Cloud Standard. Upgrade to access.")
 
     def test_get_default_logo(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -1900,11 +1900,11 @@ class S3Test(ZulipTestCase):
     @use_s3_backend
     def test_message_image_delete_when_file_doesnt_exist(self) -> None:
         with self.assertLogs(level="WARNING") as warn_log:
-            self.assertEqual(False, delete_message_image("non-existant-file"))
+            self.assertEqual(False, delete_message_image("non-existent-file"))
         self.assertEqual(
             warn_log.output,
             [
-                "WARNING:root:non-existant-file does not exist. Its entry in the database will be removed."
+                "WARNING:root:non-existent-file does not exist. Its entry in the database will be removed."
             ],
         )
 

@@ -271,4 +271,4 @@ def api_sentry_webhook(
         subject, body = handle_deprecated_payload(payload)
 
     check_send_webhook_message(request, user_profile, subject, body)
-    return json_success()
+    return json_success(request)

@@ -751,6 +751,18 @@ class RealmImportExportTest(ExportFile):
         realm_user_default.twenty_four_hour_time = True
         realm_user_default.save()
 
+        # We want to have an extra, malformed RealmEmoji with no .author
+        # to test that upon import that gets fixed.
+        with get_test_image_file("img.png") as img_file:
+            new_realm_emoji = check_add_realm_emoji(
+                realm=hamlet.realm, name="hawaii2", author=hamlet, image_file=img_file
+            )
+            assert new_realm_emoji is not None
+        original_realm_emoji_count = RealmEmoji.objects.count()
+        self.assertGreaterEqual(original_realm_emoji_count, 2)
+        new_realm_emoji.author = None
+        new_realm_emoji.save()
+
         getters = self.get_realm_getters()
 
         snapshots: Dict[str, object] = {}
@@ -863,6 +875,11 @@ class RealmImportExportTest(ExportFile):
         # Verify that we've actually tested something meaningful instead of a blind import
         # with is_user_active=True used for everything.
         self.assertTrue(Subscription.objects.filter(is_user_active=False).exists())
+
+        all_imported_realm_emoji = RealmEmoji.objects.filter(realm=imported_realm)
+        self.assertEqual(all_imported_realm_emoji.count(), original_realm_emoji_count)
+        for imported_realm_emoji in all_imported_realm_emoji:
+            self.assertNotEqual(imported_realm_emoji.author, None)
 
     def get_realm_getters(self) -> List[Callable[[Realm], object]]:
         names = set()

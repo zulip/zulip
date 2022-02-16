@@ -154,7 +154,7 @@ export function initialize() {
     $("body").on("blur", ".message_control_button", (e) => {
         // Remove tooltip when user is trying to tab through all the icons.
         // If user tabs slowly, tooltips are displayed otherwise they are
-        // distroyed before they can be displayed.
+        // destroyed before they can be displayed.
         e.currentTarget._tippy.destroy();
     });
 
@@ -190,7 +190,11 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: [".rendered_markdown time", ".rendered_markdown .copy_codeblock"],
+        target: [
+            ".rendered_markdown time",
+            ".rendered_markdown .copy_codeblock",
+            "#compose_top_right [data-tippy-content]",
+        ],
         allowHTML: true,
         appendTo: () => document.body,
         onHidden(instance) {
@@ -208,5 +212,6 @@ export function initialize() {
             }
             return true;
         },
+        appendTo: () => document.body,
     });
 }

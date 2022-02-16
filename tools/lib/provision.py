@@ -270,6 +270,7 @@ def install_apt_deps(deps_to_install: List[str]) -> None:
             "apt-get",
             "-y",
             "install",
+            "--allow-downgrades",
             "--no-install-recommends",
             *deps_to_install,
         ]

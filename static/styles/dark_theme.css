@@ -83,7 +83,7 @@ body.dark-theme {
     table.table-striped thead.table-sticky-headers th {
         background-color: hsl(0, 0%, 0%);
 
-        &:hover {
+        &:hover:not(.actions) {
             background-color: hsl(211, 29%, 14%);
         }
     }
@@ -98,14 +98,6 @@ body.dark-theme {
 
             &.compose_control_button:hover {
                 color: hsl(200, 79%, 66%);
-            }
-
-            &.message-control-link {
-                color: hsl(200, 100%, 40%);
-
-                &:hover {
-                    color: hsl(200, 79%, 66%);
-                }
             }
         }
 
@@ -1150,14 +1142,14 @@ body.dark-theme {
     }
 
     .color_animated_button {
-        background-color: hsl(209, 32%, 5%);
+        background-color: hsl(211, 29%, 14%);
 
         * {
             color: hsl(0, 0%, 100%);
         }
 
         &:hover {
-            background-color: hsl(228, 96%, 71%);
+            background-color: hsl(240, 96%, 68%);
         }
     }
 

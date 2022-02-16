@@ -70,10 +70,10 @@ def api_solano_webhook(
     )
 
     check_send_webhook_message(request, user_profile, topic, body, event)
-    return json_success()
+    return json_success(request)
 
 
 def handle_test_event(request: HttpRequest, user_profile: UserProfile, topic: str) -> HttpResponse:
     body = "Solano webhook set up correctly."
     check_send_webhook_message(request, user_profile, topic, body)
-    return json_success()
+    return json_success(request)

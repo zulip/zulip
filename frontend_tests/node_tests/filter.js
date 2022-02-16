@@ -87,6 +87,7 @@ test("basics", () => {
 
     assert.ok(!filter.is_search());
     assert.ok(!filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
     assert.ok(!filter.contains_only_private_messages());
     assert.ok(!filter.allow_use_first_unread_when_narrowing());
     assert.ok(filter.includes_full_stream_history());
@@ -102,9 +103,27 @@ test("basics", () => {
 
     assert.ok(filter.is_search());
     assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.supports_collapsing_recipients());
     assert.ok(!filter.contains_only_private_messages());
     assert.ok(!filter.allow_use_first_unread_when_narrowing());
     assert.ok(!filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(filter.can_bucket_by("stream"));
+    assert.ok(filter.can_bucket_by("stream", "topic"));
+
+    operators = [
+        {operator: "stream", operand: "foo"},
+        {operator: "topic", operand: "bar"},
+        {operator: "near", operand: 17},
+    ];
+    filter = new Filter(operators);
+
+    assert.ok(!filter.is_search());
+    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(!filter.allow_use_first_unread_when_narrowing());
+    assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(filter.can_bucket_by("stream"));
     assert.ok(filter.can_bucket_by("stream", "topic"));
@@ -117,6 +136,7 @@ test("basics", () => {
     assert.ok(!filter.contains_only_private_messages());
     assert.ok(!filter.has_operator("stream"));
     assert.ok(!filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
     assert.ok(!filter.is_personal_filter());
 
     // Negated searches are just like positive searches for our purposes, since
@@ -128,6 +148,7 @@ test("basics", () => {
     assert.ok(filter.has_operator("search"));
     assert.ok(!filter.can_apply_locally());
     assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.supports_collapsing_recipients());
     assert.ok(!filter.is_personal_filter());
 
     // Similar logic applies to negated "has" searches.
@@ -138,6 +159,7 @@ test("basics", () => {
     assert.ok(!filter.can_apply_locally(true));
     assert.ok(!filter.includes_full_stream_history());
     assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.supports_collapsing_recipients());
     assert.ok(!filter.is_personal_filter());
 
     operators = [{operator: "streams", operand: "public", negated: true}];
@@ -145,6 +167,7 @@ test("basics", () => {
     assert.ok(!filter.contains_only_private_messages());
     assert.ok(!filter.has_operator("streams"));
     assert.ok(!filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
     assert.ok(filter.has_negated_operand("streams", "public"));
     assert.ok(!filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
@@ -154,6 +177,7 @@ test("basics", () => {
     assert.ok(!filter.contains_only_private_messages());
     assert.ok(filter.has_operator("streams"));
     assert.ok(!filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
     assert.ok(!filter.has_negated_operand("streams", "public"));
     assert.ok(!filter.can_apply_locally());
     assert.ok(filter.includes_full_stream_history());
@@ -163,6 +187,7 @@ test("basics", () => {
     filter = new Filter(operators);
     assert.ok(filter.contains_only_private_messages());
     assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
     assert.ok(!filter.has_operator("search"));
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
@@ -171,6 +196,7 @@ test("basics", () => {
     filter = new Filter(operators);
     assert.ok(!filter.contains_only_private_messages());
     assert.ok(filter.can_mark_messages_read());
+    assert.ok(!filter.supports_collapsing_recipients());
     assert.ok(!filter.has_operator("search"));
     assert.ok(filter.can_apply_locally());
     assert.ok(filter.is_personal_filter());
@@ -179,6 +205,7 @@ test("basics", () => {
     filter = new Filter(operators);
     assert.ok(!filter.contains_only_private_messages());
     assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.supports_collapsing_recipients());
     assert.ok(!filter.has_operator("search"));
     assert.ok(filter.can_apply_locally());
     assert.ok(filter.is_personal_filter());
@@ -187,6 +214,8 @@ test("basics", () => {
     filter = new Filter(operators);
     assert.ok(filter.is_non_huddle_pm());
     assert.ok(filter.contains_only_private_messages());
+    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
     assert.ok(!filter.has_operator("search"));
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
@@ -195,20 +224,49 @@ test("basics", () => {
     filter = new Filter(operators);
     assert.ok(!filter.is_non_huddle_pm());
     assert.ok(filter.contains_only_private_messages());
+    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
 
     operators = [{operator: "group-pm-with", operand: "joe@example.com"}];
     filter = new Filter(operators);
     assert.ok(!filter.is_non_huddle_pm());
     assert.ok(filter.contains_only_private_messages());
     assert.ok(!filter.has_operator("search"));
+    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
     assert.ok(filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
 
     operators = [{operator: "is", operand: "resolved"}];
     filter = new Filter(operators);
     assert.ok(!filter.contains_only_private_messages());
-    assert.ok(filter.can_mark_messages_read());
     assert.ok(!filter.has_operator("search"));
+    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
     assert.ok(filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
+
+    // Highly complex query to exercise
+    // filter.supports_collapsing_recipients loop.
+    operators = [
+        {operator: "is", operand: "resolved", negated: true},
+        {operator: "is", operand: "private", negated: true},
+        {operator: "stream", operand: "stream_name", negated: true},
+        {operator: "streams", operand: "web-public", negated: true},
+        {operator: "streams", operand: "public"},
+        {operator: "topic", operand: "patience", negated: true},
+        {operator: "in", operand: "all"},
+    ];
+    filter = new Filter(operators);
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(!filter.has_operator("search"));
+    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
+    // This next check verifies what is probably a bug; see the
+    // comment in the can_apply_locally implementation.
+    assert.ok(!filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
 });
 

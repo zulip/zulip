@@ -477,7 +477,7 @@ def get_cross_realm_dicts() -> List[Dict[str, Any]]:
         if user.realm.string_id != settings.SYSTEM_BOT_REALM:  # nocoverage
             continue
         user_row = user_profile_to_user_row(user)
-        # Because we want to avoid clients becing exposed to the
+        # Because we want to avoid clients being exposed to the
         # implementation detail that these bots are self-owned, we
         # just set bot_owner_id=None.
         user_row["bot_owner_id"] = None

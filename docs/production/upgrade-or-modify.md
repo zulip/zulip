@@ -147,9 +147,9 @@ suggest using that updated template to update
    `/etc/zulip/settings-new.py`, check the [changelog][changelog] to see
    if they have been removed.
 
-1. Overwriting the configuration with the updated file, and restart
-   the server to pick up the new file; this should be a no-op, but it
-   is much better to discover immediately if it is not:
+1. Overwrite the configuration with the updated file, and restart the
+   server to pick up the updates; this should be a no-op, but it is
+   much better to discover immediately if it is not:
 
    ```bash
    cp -a /etc/zulip/settings-new.py /etc/zulip/settings.py
@@ -298,7 +298,7 @@ instructions for other supported platforms.
    collations. Regenerate the affected indexes by running:
 
    ```bash
-   /srv/zulip-py3-venv/bin/python /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
+   /home/zulip/deployments/current/zulip-py3-venv/bin/python /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
    ```
 
 6. Finally, we need to reinstall the current version of Zulip, which
@@ -461,7 +461,7 @@ instructions for other supported platforms.
    collations. Regenerate the affected indexes by running:
 
    ```bash
-   /srv/zulip-py3-venv/bin/python /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
+   /home/zulip/deployments/current/zulip-py3-venv/bin/python /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
    ```
 
 7. As root, finish by verifying the contents of the full-text indexes:
@@ -534,7 +534,7 @@ instructions for other supported platforms.
    collations. Regenerate the affected indexes by running:
 
    ```bash
-   /srv/zulip-py3-venv/bin/python /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
+   /home/zulip/deployments/current/zulip-py3-venv/bin/python /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
    ```
 
 8. As root, finish by verifying the contents of the full-text indexes:

@@ -21,7 +21,7 @@ def api_dropbox_webhook(
         check_send_webhook_message(
             request, user_profile, topic, "File has been updated on Dropbox!"
         )
-        return json_success()
+        return json_success(request)
     else:
         if challenge is None:
             raise RequestVariableMissingError("challenge")

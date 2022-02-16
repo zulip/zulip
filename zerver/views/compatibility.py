@@ -27,4 +27,4 @@ def check_global_compatibility(request: HttpRequest) -> HttpResponse:
         user_os = find_mobile_os(request.META["HTTP_USER_AGENT"])
         if user_os == "android" and version_lt(user_agent["version"], android_min_app_version):
             raise JsonableError(legacy_compatibility_error_message)
-    return json_success()
+    return json_success(request)

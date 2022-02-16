@@ -1,8 +1,10 @@
+$active_color: hsl(106, 74%, 44%);
+$idle_color: hsl(29, 84%, 51%);
+
 .user_circle_green,
-.user_circle_orange,
+.user_circle_idle,
 .user_circle_empty,
-.user_circle_empty_line,
-.user_circle_fraction {
+.user_circle_empty_line {
     border-radius: 50%;
     border: 1px solid;
     float: left;
@@ -11,20 +13,16 @@
 }
 
 .user_circle_green {
-    background-color: hsl(106, 74%, 44%);
+    background-color: $active_color;
+    border-color: $active_color;
 }
 
-.user_circle_green,
-.user_circle_fraction {
-    border-color: hsl(106, 74%, 44%);
-}
-
-.user_circle_orange {
-    border-color: hsl(29, 84%, 51%);
+.user_circle_idle {
+    border-color: $idle_color;
     background: linear-gradient(
         to bottom,
         hsla(0, 0%, 100%, 0) 50%,
-        hsla(29, 84%, 51%, 1) 50%
+        $idle_color 50%
     );
 }
 

@@ -325,12 +325,6 @@ python_rules = RuleList(
             "good_lines": ["id = alice.user_id"],
             "bad_lines": ["id = alice.userid"],
         },
-        {
-            "pattern": r"json_success\({}\)",
-            "description": "Use json_success() to return nothing",
-            "good_lines": ["return json_success()"],
-            "bad_lines": ["return json_success({})"],
-        },
         # To avoid JsonableError(_variable) and JsonableError(_(variable))
         {
             "pattern": r"\WJsonableError\(_\(?\w.+\)",
@@ -588,8 +582,8 @@ html_rules: List["Rule"] = [
     {
         "pattern": " '}}",
         "description": "Likely misplaced quoting in translation tags",
-        "good_lines": ["{{t 'translateable string' }}"],
-        "bad_lines": ["{{t 'translateable string '}}"],
+        "good_lines": ["{{t 'translatable string' }}"],
+        "bad_lines": ["{{t 'translatable string '}}"],
     },
     {
         "pattern": "placeholder='[^{]",
@@ -772,6 +766,11 @@ handlebars_rules = RuleList(
             "pattern": r'"{{t "',
             "description": "Invalid quoting for HTML element with translated string.",
         },
+        {
+            "pattern": r'href="#"',
+            "description": 'Avoid href="#" for elements with a JavaScript click handler.',
+            "exclude": {"static/templates/navbar.hbs"},
+        },
     ],
 )
 
@@ -790,7 +789,7 @@ jinja2_rules = RuleList(
         {
             "pattern": r'{% set entrypoint = "dev-',
             "exclude": {"templates/zerver/development/"},
-            "description": "Development entrypoints (dev-) must not be imported in production.",
+            "description": "Development entry points (dev-) must not be imported in production.",
         },
     ],
 )

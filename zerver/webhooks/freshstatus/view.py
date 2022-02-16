@@ -99,7 +99,7 @@ def api_freshstatus_webhook(
     check_send_webhook_message(
         request, user_profile, subject, body, payload["event_data"]["event_type"]
     )
-    return json_success()
+    return json_success(request)
 
 
 def get_services_content(services_data: List[Dict[str, Any]]) -> str:

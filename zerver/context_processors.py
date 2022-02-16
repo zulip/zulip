@@ -197,7 +197,7 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
     else:
         realm_description = get_realm_rendered_description(realm)
         realm_invite_required = realm.invite_required
-        # We offer web public access only if the realm has actual web
+        # We offer web-public access only if the realm has actual web
         # public streams configured, in addition to having it enabled.
         realm_web_public_access_enabled = realm.allow_web_public_streams_access()
 

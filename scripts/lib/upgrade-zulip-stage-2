@@ -82,6 +82,11 @@ parser.add_argument("deploy_path", metavar="deploy_path", help="Path to deployme
 parser.add_argument("--skip-puppet", action="store_true", help="Skip doing puppet/apt upgrades.")
 parser.add_argument("--skip-migrations", action="store_true", help="Skip doing migrations.")
 parser.add_argument(
+    "--skip-downgrade-check",
+    action="store_true",
+    help="Skip the safety check to prevent database downgrades.",
+)
+parser.add_argument(
     "--from-git", action="store_true", help="Upgrading from git, so run update-prod-static."
 )
 parser.add_argument(
@@ -190,7 +195,7 @@ if glob.glob("/usr/share/postgresql/*/extension/tsearch_extras.control"):
 if not args.skip_puppet:
     logging.info("Upgrading system packages...")
     subprocess.check_call(["apt-get", "update"])
-    subprocess.check_call(["apt-get", "-y", "upgrade"])
+    subprocess.check_call(["apt-get", "-y", "--allow-downgrades", "upgrade"])
 
 # To bootstrap zulip-puppet-apply, we need to install the system yaml
 # package; new installs get this, but old installs may not have it.
@@ -203,11 +208,19 @@ if not os.path.exists(os.path.join(deploy_path, "zproject/prod_settings.py")):
     # zulip<1.4.0, we need to do it.  See discussion in commit 586b23637.
     os.symlink("/etc/zulip/settings.py", os.path.join(deploy_path, "zproject/prod_settings.py"))
 
-# Now we should have an environment setup where we can run our tools;
+# Now we should have an environment set up where we can run our tools;
 # first, creating the production venv.
 subprocess.check_call(
     [os.path.join(deploy_path, "scripts", "lib", "create-production-venv"), deploy_path]
 )
+
+# Check to make sure that this upgrade is not actually a database
+# downgrade.
+if not args.skip_downgrade_check:
+    subprocess.check_call(
+        [os.path.join(deploy_path, "scripts", "lib", "check-database-compatibility.py")],
+        preexec_fn=su_to_zulip,
+    )
 
 # Make sure the right version of node is installed
 subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "install-node")])
@@ -359,7 +372,7 @@ if classes != new_classes:
 if not args.skip_puppet:
     logging.info("Applying Puppet changes...")
     subprocess.check_call(["./scripts/zulip-puppet-apply", "--force"])
-    subprocess.check_call(["apt-get", "-y", "upgrade"])
+    subprocess.check_call(["apt-get", "-y", "--allow-downgrades", "upgrade"])
 
 if migrations_needed:
     logging.info("Applying database migrations...")

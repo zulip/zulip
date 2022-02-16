@@ -302,7 +302,6 @@ run_test("local_echo", () => {
 run_test("bookend", ({override}) => {
     const list = new MessageList({});
 
-    let expected = "translated: You subscribed to stream IceCream";
     list.view.clear_trailing_bookend = noop;
     list.narrowed = true;
 
@@ -313,21 +312,26 @@ run_test("bookend", ({override}) => {
 
     override(stream_data, "is_subscribed_by_name", () => is_subscribed);
     override(stream_data, "get_sub", () => ({invite_only}));
+    override(stream_data, "can_toggle_subscription", () => true);
 
     {
         const stub = make_stub();
         list.view.render_trailing_bookend = stub.f;
         list.update_trailing_bookend();
         assert.equal(stub.num_calls, 1);
-        const bookend = stub.get_args("content", "subscribed", "show_button");
-        assert.equal(bookend.content, expected);
+        const bookend = stub.get_args(
+            "stream_name",
+            "subscribed",
+            "deactivated",
+            "just_unsubscribed",
+        );
+        assert.equal(bookend.stream_name, "IceCream");
         assert.equal(bookend.subscribed, true);
-        assert.equal(bookend.show_button, true);
+        assert.equal(bookend.deactivated, false);
+        assert.equal(bookend.just_unsubscribed, false);
     }
 
-    expected = "translated: You unsubscribed from stream IceCream";
     list.last_message_historical = false;
-
     is_subscribed = false;
 
     {
@@ -335,15 +339,19 @@ run_test("bookend", ({override}) => {
         list.view.render_trailing_bookend = stub.f;
         list.update_trailing_bookend();
         assert.equal(stub.num_calls, 1);
-        const bookend = stub.get_args("content", "subscribed", "show_button");
-        assert.equal(bookend.content, expected);
+        const bookend = stub.get_args(
+            "stream_name",
+            "subscribed",
+            "deactivated",
+            "just_unsubscribed",
+        );
+        assert.equal(bookend.stream_name, "IceCream");
         assert.equal(bookend.subscribed, false);
-        assert.equal(bookend.show_button, true);
+        assert.equal(bookend.deactivated, false);
+        assert.equal(bookend.just_unsubscribed, true);
     }
 
     // Test when the stream is privates (invite only)
-    expected = "translated: You unsubscribed from stream IceCream";
-
     invite_only = true;
 
     {
@@ -351,13 +359,18 @@ run_test("bookend", ({override}) => {
         list.view.render_trailing_bookend = stub.f;
         list.update_trailing_bookend();
         assert.equal(stub.num_calls, 1);
-        const bookend = stub.get_args("content", "subscribed", "show_button");
-        assert.equal(bookend.content, expected);
+        const bookend = stub.get_args(
+            "stream_name",
+            "subscribed",
+            "deactivated",
+            "just_unsubscribed",
+        );
+        assert.equal(bookend.stream_name, "IceCream");
         assert.equal(bookend.subscribed, false);
-        assert.equal(bookend.show_button, false);
+        assert.equal(bookend.deactivated, false);
+        assert.equal(bookend.just_unsubscribed, true);
     }
 
-    expected = "translated: You are not subscribed to stream IceCream";
     list.last_message_historical = true;
 
     {
@@ -365,10 +378,16 @@ run_test("bookend", ({override}) => {
         list.view.render_trailing_bookend = stub.f;
         list.update_trailing_bookend();
         assert.equal(stub.num_calls, 1);
-        const bookend = stub.get_args("content", "subscribed", "show_button");
-        assert.equal(bookend.content, expected);
+        const bookend = stub.get_args(
+            "stream_name",
+            "subscribed",
+            "deactivated",
+            "just_unsubscribed",
+        );
+        assert.equal(bookend.stream_name, "IceCream");
         assert.equal(bookend.subscribed, false);
-        assert.equal(bookend.show_button, true);
+        assert.equal(bookend.deactivated, false);
+        assert.equal(bookend.just_unsubscribed, false);
     }
 });
 

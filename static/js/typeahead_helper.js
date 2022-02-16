@@ -12,6 +12,7 @@ import * as recent_senders from "./recent_senders";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as user_groups from "./user_groups";
+import * as user_status from "./user_status";
 import * as util from "./util";
 
 // Returns an array of private message recipients, removing empty elements.
@@ -68,6 +69,7 @@ export function make_query_highlighter(query) {
 
 export function render_typeahead_item(args) {
     args.has_image = args.img_src !== undefined;
+    args.has_status = args.status_emoji_info !== undefined;
     args.has_secondary = args.secondary !== undefined;
     return render_typeahead_list_item(args);
 }
@@ -83,12 +85,16 @@ export function render_person(person) {
 
     const avatar_url = people.small_avatar_url_for_person(person);
 
+    const status_emoji_info = user_status.get_status_emoji(person.user_id);
+
     const typeahead_arguments = {
         primary: person.full_name,
         img_src: avatar_url,
         user_circle_class,
         is_person: true,
+        status_emoji_info,
     };
+
     typeahead_arguments.secondary = settings_data.email_for_user_settings(person);
     return render_typeahead_item(typeahead_arguments);
 }
@@ -317,7 +323,7 @@ export function sort_recipients({
         The following optimization is important for large realms.
         If we know we're only showing 5 suggestions, and we
         get 5 matches from `best_users`, then we want to avoid
-        calling the expensives sorts for `ok_users` and `worst_users`,
+        calling the expensive sorts for `ok_users` and `worst_users`,
         since they just get dropped.
     */
 

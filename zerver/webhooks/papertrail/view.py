@@ -66,4 +66,4 @@ def api_papertrail_webhook(
     topic = "logs"
 
     check_send_webhook_message(request, user_profile, topic, post)
-    return json_success()
+    return json_success(request)

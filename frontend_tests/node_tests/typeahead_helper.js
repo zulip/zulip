@@ -524,7 +524,7 @@ test("sort_recipients subscribers", () => {
 
 test("sort_recipients pm partners", () => {
     // b_user_3 is a pm partner and b_user_2 is not and
-    // both are not subscribered to the stream Linux.
+    // both are not subscribed to the stream Linux.
     const small_matches = [b_user_3, b_user_2];
     const recipients = th.sort_recipients({
         users: small_matches,
@@ -697,6 +697,7 @@ test("render_emoji", ({mock_template}) => {
         is_emoji: true,
         has_image: false,
         has_secondary: false,
+        has_status: false,
     };
     let rendered = false;
     let test_emoji = {
@@ -725,6 +726,7 @@ test("render_emoji", ({mock_template}) => {
         is_emoji: true,
         has_image: true,
         has_secondary: false,
+        has_status: false,
     };
     test_emoji = {
         emoji_name: "realm_emoji",

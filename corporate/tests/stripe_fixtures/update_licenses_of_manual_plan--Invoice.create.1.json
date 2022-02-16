@@ -44,7 +44,7 @@
       {
         "amount": 800000,
         "currency": "usd",
-        "description": "Zulip Standard",
+        "description": "Zulip Cloud Standard",
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
@@ -104,7 +104,7 @@
   "pre_payment_credit_notes_amount": 0,
   "receipt_number": null,
   "starting_balance": 0,
-  "statement_descriptor": "Zulip Standard",
+  "statement_descriptor": "Zulip Cloud Standard",
   "status": "draft",
   "status_transitions": {
     "finalized_at": null,

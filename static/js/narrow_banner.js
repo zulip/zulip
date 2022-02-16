@@ -7,6 +7,19 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
 
+const SPECTATOR_STREAM_NARROW_BANNER = {
+    title: "",
+    html: $t_html(
+        {
+            defaultMessage: "This stream does not exist or is not <z-link>web-public</z-link>.",
+        },
+        {
+            "z-link": (content_html) =>
+                `<a href="https://zulip.com/help/web-public-streams">${content_html}</a>`,
+        },
+    ),
+};
+
 function retrieve_search_query_data() {
     // when search bar contains multiple filters, only retrieve search queries
     const current_filter = narrow_state.filter();
@@ -118,6 +131,10 @@ function pick_empty_narrow_banner() {
             };
         }
 
+        if (page_params.is_spectator) {
+            return SPECTATOR_STREAM_NARROW_BANNER;
+        }
+
         // For other multi-operator narrows, we just use the default banner
         return default_banner;
     }
@@ -185,6 +202,10 @@ function pick_empty_narrow_banner() {
             if (!stream_data.is_subscribed_by_name(first_operand)) {
                 // You are narrowed to a stream which does not exist or is a private stream
                 // in which you were never subscribed.
+
+                if (page_params.is_spectator) {
+                    return SPECTATOR_STREAM_NARROW_BANNER;
+                }
 
                 function can_toggle_narrowed_stream() {
                     const stream_name = narrow_state.stream();

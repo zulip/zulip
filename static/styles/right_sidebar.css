@@ -113,14 +113,7 @@
     width: calc(100% - 24px);
 
     .status_emoji {
-        height: 16px;
-        width: 16px;
-        /* We are setting minimum width here because when the user's name is very long,
-        emoji's width decreases and causes it to break. */
-        min-width: 16px;
-        margin-left: 4px;
-        margin-right: 4px;
-        top: 8px;
+        top: 9px;
     }
 }
 
@@ -208,6 +201,7 @@
     position: relative;
     cursor: pointer;
     font-size: 20px;
+    margin-right: 15px;
 }
 
 #sidebar-keyboard-shortcuts {
@@ -245,5 +239,23 @@
         height: 30px;
         padding-top: 0;
         padding-bottom: 0;
+    }
+}
+
+.right-sidebar-shortcuts .realm-description {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 20px;
+    width: 230px;
+
+    .color_animated_button {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    ul,
+    ol {
+        margin-left: 0;
     }
 }

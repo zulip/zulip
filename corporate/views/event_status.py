@@ -35,7 +35,7 @@ def event_status(
 
         if session.type == Session.CARD_UPDATE_FROM_BILLING_PAGE and not user.has_billing_access:
             raise JsonableError(_("Must be a billing administrator or an organization owner"))
-        return json_success(data={"session": session.to_dict()})
+        return json_success(request, data={"session": session.to_dict()})
 
     if stripe_payment_intent_id is not None:
         payment_intent = PaymentIntent.objects.filter(
@@ -45,7 +45,7 @@ def event_status(
 
         if payment_intent is None:
             raise JsonableError(_("Payment intent not found"))
-        return json_success(data={"payment_intent": payment_intent.to_dict()})
+        return json_success(request, data={"payment_intent": payment_intent.to_dict()})
     raise JsonableError(_("Pass stripe_session_id or stripe_payment_intent_id"))
 
 

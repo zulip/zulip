@@ -1,5 +1,5 @@
-// Module for displaying the modal asking spectators to login when
-// attempting to do things that are not possible as a specatator (like
+// Module for displaying the modal asking spectators to log in when
+// attempting to do things that are not possible as a spectator (like
 // add an emoji reaction, star a message, etc.).  While in many cases,
 // we will prefer to hide menu options that don't make sense for
 // spectators, this modal is useful for everything that doesn't make

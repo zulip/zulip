@@ -1,3 +1,5 @@
+// todo: Refactor pills subsystem to use modern javascript classes?
+
 import $ from "jquery";
 
 import render_input_pill from "../templates/input_pill.hbs";
@@ -31,6 +33,7 @@ export function create(opts) {
     // all unique instance information is stored in here.
     const store = {
         pills: [],
+        pill_config: opts.pill_config,
         $parent: opts.container,
         $input: opts.container.find(".input").expectOne(),
         create_item_from_text: opts.create_item_from_text,
@@ -110,6 +113,14 @@ export function create(opts) {
                 opts.img_src = item.img_src;
             }
 
+            if (store.pill_config?.show_user_status_emoji === true) {
+                const has_status = item.status_emoji_info !== undefined;
+                if (has_status) {
+                    opts.status_emoji_info = item.status_emoji_info;
+                }
+                opts.has_status = has_status;
+            }
+
             if (typeof store.onPillCreate === "function") {
                 store.onPillCreate();
             }
@@ -141,7 +152,7 @@ export function create(opts) {
             return true;
         },
 
-        // this searches given a particlar pill ID for it, removes the node
+        // this searches given a particular pill ID for it, removes the node
         // from the DOM, removes it from the array and returns it.
         // this would generally be used for DOM-provoked actions, such as a user
         // clicking on a pill to remove it.
@@ -200,7 +211,7 @@ export function create(opts) {
             // of pills for the user to fix.
             const drafts = pills.filter(
                 (pill) =>
-                    // if this returns `false`, it erroed and we should push it to
+                    // if this returns `false`, it errored and we should push it to
                     // the draft pills.
                     funcs.appendPill(pill) === false,
             );

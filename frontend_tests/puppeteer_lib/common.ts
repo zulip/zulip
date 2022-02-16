@@ -409,7 +409,7 @@ class CommonUtils {
     }
 
     /**
-     * This method returns a array, which is formmated as:
+     * This method returns a array, which is formatted as:
      *  [
      *    ['stream > topic', ['message 1', 'message 2']],
      *    ['You and Cordelia, Lear's daughter', ['message 1', 'message 2']]
@@ -491,6 +491,11 @@ class CommonUtils {
             `//*[@class="typeahead dropdown-menu" and contains(@style, "display: block")]//li[contains(normalize-space(), "${item}")]//a`,
             {visible: true},
         );
+        const entry_x = (await entry?.boundingBox())?.x;
+        const entry_y = (await entry?.boundingBox())?.y;
+        if (entry_x && entry_y) {
+            await page.mouse.move(entry_x, entry_y);
+        }
         await page.evaluate((entry) => {
             entry.click();
         }, entry);

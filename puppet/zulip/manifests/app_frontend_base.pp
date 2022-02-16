@@ -6,7 +6,7 @@ class zulip::app_frontend_base {
   include zulip::supervisor
   include zulip::tornado_sharding
 
-  if $::osfamily == 'debian' {
+  if $::os['family'] == 'Debian' {
     # Upgrade and other tooling wants to be able to get a database
     # shell.  This is not necessary on CentOS because the PostgreSQL
     # package already includes the client.  This may get us a more

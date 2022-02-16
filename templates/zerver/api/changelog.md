@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 5.0
 
+
+**Feature level 115**
+
+* Mobile push notifications about stream messages now include the
+  `stream_id` field.
+
 **Feature level 114**
 
 * [`GET /events`](/api/get-events): Added `rendering_only` field to
@@ -94,12 +100,12 @@ format used by the Zulip server that they are interacting with.
 
 * [`PATCH /realm`]: Added `string_id` parameter for changing an
   organization's subdomain. Currently, this is only allowed for
-  changing changing a demo organization to a normal one.
+  changing a demo organization to a normal one.
 
 **Feature level 103**
 
 * [`POST /register`](/api/register-queue): Added `create_web_public_stream_policy`
-  policy for which users can create web public streams.
+  policy for which users can create web-public streams.
 * [`PATCH /realm`]: Added support for updating `create_web_public_stream_policy`.
 * [`POST /register`](/api/register-queue): Added `can_create_web_public_streams` boolean
   field to the response.

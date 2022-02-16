@@ -392,7 +392,7 @@ class SlackImporter(ZulipTestCase):
                 "is_bot": False,
                 "is_mirror_dummy": False,
                 "profile": {
-                    "email": "geroge@yahoo.com",
+                    "email": "george@yahoo.com",
                     "avatar_hash": "hash",
                     "image_32": "https://secure.gravatar.com/avatar/random5.png",
                 },

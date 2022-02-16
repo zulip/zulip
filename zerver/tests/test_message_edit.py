@@ -9,6 +9,7 @@ from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import (
+    do_add_reaction,
     do_change_realm_plan_type,
     do_change_stream_post_policy,
     do_change_user_role,
@@ -116,9 +117,7 @@ class EditMessagePayloadTest(EditMessageTestCase):
         )
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
-            {
-                "message_id": msg_id,
-            },
+            {},
         )
         self.assert_json_error(result, "Nothing to change")
 
@@ -133,7 +132,6 @@ class EditMessagePayloadTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "stream_id": verona.id,
             },
         )
@@ -149,7 +147,6 @@ class EditMessagePayloadTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "topic": "Should not exist",
             },
         )
@@ -188,7 +185,6 @@ class EditMessagePayloadTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "topic": " ",
             },
         )
@@ -202,7 +198,6 @@ class EditMessagePayloadTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "topic": "editing\nfun",
             },
         )
@@ -216,7 +211,6 @@ class EditMessagePayloadTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
                 "content": "Not allowed",
@@ -242,7 +236,6 @@ class EditMessagePayloadTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "content": "/poll Games?\nYES\nNO\nMaybe",
             },
         )
@@ -296,7 +289,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "content": "after edit",
             },
         )
@@ -306,7 +298,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "topic": "edited",
             },
         )
@@ -458,7 +449,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "content": "content after edit",
             },
         )
@@ -472,7 +462,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "content": " ",
             },
         )
@@ -497,7 +486,6 @@ class EditMessageTest(EditMessageTestCase):
         result_1 = self.client_patch(
             f"/json/messages/{msg_id_1}",
             {
-                "message_id": msg_id_1,
                 "content": new_content_1,
             },
         )
@@ -530,7 +518,6 @@ class EditMessageTest(EditMessageTestCase):
         result_1 = self.client_patch(
             f"/json/messages/{msg_id_1}",
             {
-                "message_id": msg_id_1,
                 "content": new_content_1,
             },
         )
@@ -572,7 +559,6 @@ class EditMessageTest(EditMessageTestCase):
         result_2 = self.client_patch(
             f"/json/messages/{msg_id_2}",
             {
-                "message_id": msg_id_2,
                 "content": new_content_2,
             },
         )
@@ -624,7 +610,6 @@ class EditMessageTest(EditMessageTestCase):
             self.client_patch(
                 "/json/messages/" + str(msg_id),
                 {
-                    "message_id": msg_id,
                     "content": "We will edit this to also render as empty.",
                 },
             )
@@ -653,7 +638,6 @@ class EditMessageTest(EditMessageTestCase):
         result_1 = self.client_patch(
             f"/json/messages/{msg_id_1}",
             {
-                "message_id": msg_id_1,
                 "content": new_content_1,
             },
         )
@@ -731,7 +715,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "content": "content 2",
             },
         )
@@ -753,7 +736,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "topic": "topic 2",
             },
         )
@@ -766,7 +748,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "content": "content 3",
                 "topic": "topic 3",
             },
@@ -791,7 +772,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "content": "content 4",
             },
         )
@@ -804,7 +784,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "topic": "topic 4",
             },
         )
@@ -1167,7 +1146,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{message_id}",
             {
-                "message_id": message_id,
                 "content": "Hello @**everyone**",
             },
         )
@@ -1209,7 +1187,6 @@ class EditMessageTest(EditMessageTestCase):
             result = self.client_patch(
                 "/json/messages/" + str(message_id),
                 {
-                    "message_id": message_id,
                     "content": "Hello @**everyone**",
                 },
             )
@@ -1221,7 +1198,6 @@ class EditMessageTest(EditMessageTestCase):
             result = self.client_patch(
                 "/json/messages/" + str(message_id),
                 {
-                    "message_id": message_id,
                     "content": "Hello @**everyone**",
                 },
             )
@@ -1233,7 +1209,6 @@ class EditMessageTest(EditMessageTestCase):
             result = self.client_patch(
                 "/json/messages/" + str(message_id),
                 {
-                    "message_id": message_id,
                     "content": "Hello @**everyone**",
                 },
             )
@@ -1268,7 +1243,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{id1}",
             {
-                "message_id": id1,
                 "topic": new_topic,
                 "propagate_mode": "change_later",
             },
@@ -1281,7 +1255,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{id1}",
             {
-                "message_id": id1,
                 "topic": new_topic,
                 "propagate_mode": "change_later",
             },
@@ -1300,7 +1273,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(id1),
             {
-                "message_id": id1,
                 "topic": new_topic,
                 "propagate_mode": "change_later",
                 "content": "edited message",
@@ -1339,7 +1311,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{id1}",
             {
-                "message_id": id1,
                 "topic": "edited",
                 "propagate_mode": "change_later",
             },
@@ -1364,7 +1335,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{id2}",
             {
-                "message_id": id2,
                 "topic": "edited",
                 "propagate_mode": "change_all",
             },
@@ -1388,7 +1358,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{id2}",
             {
-                "message_id": id2,
                 "topic": "edited",
                 "propagate_mode": "change_all",
             },
@@ -1414,7 +1383,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
             },
@@ -1427,14 +1395,14 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_length(messages, 1)
         self.assertEqual(
             messages[0].content,
-            f"This topic was moved by @_**Iago|{user_profile.id}** to #**new stream>test**",
+            f"This topic was moved to #**new stream>test** by @_**Iago|{user_profile.id}**.",
         )
 
         messages = get_topic_messages(user_profile, new_stream, "test")
         self.assert_length(messages, 4)
         self.assertEqual(
             messages[3].content,
-            f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**",
+            f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
         )
 
     def test_move_message_realm_admin_cant_move_to_another_realm(self) -> None:
@@ -1450,7 +1418,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
             },
@@ -1471,7 +1438,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
             },
@@ -1496,7 +1462,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "stream_id": verona.id,
                 "propagate_mode": "change_all",
             },
@@ -1540,7 +1505,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(new_msg_id),
             {
-                "message_id": new_msg_id,
                 "stream_id": verona.id,
                 "propagate_mode": "change_all",
             },
@@ -1567,7 +1531,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id_later}",
             {
-                "message_id": msg_id_later,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_later",
             },
@@ -1579,7 +1542,7 @@ class EditMessageTest(EditMessageTestCase):
         self.assertEqual(messages[0].id, msg_id)
         self.assertEqual(
             messages[1].content,
-            f"This topic was moved by @_**Iago|{user_profile.id}** to #**new stream>test**",
+            f"2 messages were moved from this topic to #**new stream>test** by @_**Iago|{user_profile.id}**.",
         )
 
         messages = get_topic_messages(user_profile, new_stream, "test")
@@ -1587,7 +1550,95 @@ class EditMessageTest(EditMessageTestCase):
         self.assertEqual(messages[0].id, msg_id_later)
         self.assertEqual(
             messages[2].content,
-            f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**",
+            f"2 messages were moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+    def test_move_message_to_stream_change_later_all_moved(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test"
+        )
+
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_later",
+            },
+        )
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assert_length(messages, 1)
+        self.assertEqual(
+            messages[0].content,
+            f"This topic was moved to #**new stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assert_length(messages, 4)
+        self.assertEqual(messages[0].id, msg_id)
+        self.assertEqual(
+            messages[3].content,
+            f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+    def test_move_message_to_stream_change_one(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test"
+        )
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id_later),
+            {
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_one",
+            },
+        )
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assert_length(messages, 3)
+        self.assertEqual(messages[0].id, msg_id)
+        self.assertEqual(
+            messages[2].content,
+            f"A message was moved from this topic to #**new stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assert_length(messages, 2)
+        self.assertEqual(messages[0].id, msg_id_later)
+        self.assertEqual(
+            messages[1].content,
+            f"A message was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+    def test_move_message_to_stream_change_all(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test"
+        )
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id_later),
+            {
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assert_length(messages, 1)
+        self.assertEqual(
+            messages[0].content,
+            f"This topic was moved to #**new stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assert_length(messages, 4)
+        self.assertEqual(messages[0].id, msg_id)
+        self.assertEqual(
+            messages[3].content,
+            f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
         )
 
     def test_move_message_between_streams_policy_setting(self) -> None:
@@ -1601,7 +1652,6 @@ class EditMessageTest(EditMessageTestCase):
             result = self.client_patch(
                 "/json/messages/" + str(msg_id),
                 {
-                    "message_id": msg_id,
                     "stream_id": new_stream.id,
                     "propagate_mode": "change_all",
                 },
@@ -1691,7 +1741,6 @@ class EditMessageTest(EditMessageTestCase):
             result = self.client_patch(
                 "/json/messages/" + str(msg_id),
                 {
-                    "message_id": msg_id,
                     "stream_id": new_stream.id,
                     "propagate_mode": "change_all",
                 },
@@ -1787,7 +1836,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
                 "topic": "new topic",
@@ -1798,7 +1846,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
             },
@@ -1818,7 +1865,6 @@ class EditMessageTest(EditMessageTestCase):
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {
-                    "message_id": msg_id,
                     "stream_id": new_stream.id,
                     "propagate_mode": "change_all",
                     "topic": "new topic",
@@ -1831,14 +1877,14 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_length(messages, 1)
         self.assertEqual(
             messages[0].content,
-            f"This topic was moved by @_**Iago|{user_profile.id}** to #**new stream>new topic**",
+            f"This topic was moved to #**new stream>new topic** by @_**Iago|{user_profile.id}**.",
         )
 
         messages = get_topic_messages(user_profile, new_stream, "new topic")
         self.assert_length(messages, 4)
         self.assertEqual(
             messages[3].content,
-            f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**",
+            f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
         )
         self.assert_json_success(result)
 
@@ -1884,7 +1930,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
                 "topic": "new topic",
@@ -1964,7 +2009,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
                 "send_notification_to_old_thread": "false",
@@ -1988,7 +2032,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
                 "send_notification_to_old_thread": "false",
@@ -2005,7 +2048,7 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_length(messages, 4)
         self.assertEqual(
             messages[3].content,
-            f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**",
+            f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
         )
 
     def test_notify_old_thread_move_message_to_stream(self) -> None:
@@ -2016,7 +2059,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
                 "send_notification_to_old_thread": "true",
@@ -2030,7 +2072,7 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_length(messages, 1)
         self.assertEqual(
             messages[0].content,
-            f"This topic was moved by @_**Iago|{user_profile.id}** to #**new stream>test**",
+            f"This topic was moved to #**new stream>test** by @_**Iago|{user_profile.id}**.",
         )
 
         messages = get_topic_messages(user_profile, new_stream, "test")
@@ -2084,7 +2126,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "message_id": msg_id,
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
             },
@@ -2095,7 +2136,7 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_length(messages, 1)
         self.assertEqual(
             messages[0].content,
-            f"This topic was moved by @_**Iago|{admin_user.id}** to #**new stream>test**",
+            f"This topic was moved to #**new stream>test** by @_**Iago|{admin_user.id}**.",
         )
 
         messages = get_topic_messages(admin_user, new_stream, "test")
@@ -2165,6 +2206,8 @@ class EditMessageTest(EditMessageTestCase):
         self.login("iago")
         admin_user = self.example_user("iago")
         hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        aaron = self.example_user("aaron")
 
         # Set the user's translation language to German to test that
         # it is overridden by the realm's default language.
@@ -2173,17 +2216,21 @@ class EditMessageTest(EditMessageTestCase):
         stream = self.make_stream("new")
         self.subscribe(admin_user, stream.name)
         self.subscribe(hamlet, stream.name)
+        self.subscribe(cordelia, stream.name)
+        self.subscribe(aaron, stream.name)
 
         original_topic = "topic 1"
         id1 = self.send_stream_message(hamlet, "new", topic_name=original_topic)
         id2 = self.send_stream_message(admin_user, "new", topic_name=original_topic)
+
+        msg1 = Message.objects.get(id=id1)
+        do_add_reaction(aaron, msg1, "tada", "1f389", "unicode_emoji")
 
         # Check that we don't incorrectly send "unresolve topic"
         # notifications when asking the preserve the current topic.
         result = self.client_patch(
             "/json/messages/" + str(id1),
             {
-                "message_id": id1,
                 "topic": original_topic,
                 "propagate_mode": "change_all",
             },
@@ -2194,7 +2241,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(id1),
             {
-                "message_id": id1,
                 "topic": resolved_topic,
                 "propagate_mode": "change_all",
             },
@@ -2216,12 +2262,28 @@ class EditMessageTest(EditMessageTestCase):
             f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
         )
 
+        # Check topic resolved notification message is only unread for participants.
+        assert (
+            UserMessage.objects.filter(
+                user_profile__in=[admin_user, hamlet, aaron], message__id=messages[2].id
+            )
+            .extra(where=[UserMessage.where_unread()])
+            .count()
+            == 3
+        )
+
+        assert (
+            UserMessage.objects.filter(user_profile=cordelia, message__id=messages[2].id)
+            .extra(where=[UserMessage.where_unread()])
+            .count()
+            == 0
+        )
+
         # Now move to a weird state and confirm no new messages
         weird_topic = "✔ ✔✔" + original_topic
         result = self.client_patch(
             "/json/messages/" + str(id1),
             {
-                "message_id": id1,
                 "topic": weird_topic,
                 "propagate_mode": "change_all",
             },
@@ -2246,7 +2308,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_patch(
             "/json/messages/" + str(id1),
             {
-                "message_id": id1,
                 "topic": unresolved_topic,
                 "propagate_mode": "change_all",
             },
@@ -2265,6 +2326,23 @@ class EditMessageTest(EditMessageTestCase):
         self.assertEqual(
             messages[3].content,
             f"@_**Iago|{admin_user.id}** has marked this topic as unresolved.",
+        )
+
+        # Check topic unresolved notification message is only unread for participants.
+        assert (
+            UserMessage.objects.filter(
+                user_profile__in=[admin_user, hamlet, aaron], message__id=messages[3].id
+            )
+            .extra(where=[UserMessage.where_unread()])
+            .count()
+            == 3
+        )
+
+        assert (
+            UserMessage.objects.filter(user_profile=cordelia, message__id=messages[3].id)
+            .extra(where=[UserMessage.where_unread()])
+            .count()
+            == 0
         )
 
 

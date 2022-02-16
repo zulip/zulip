@@ -138,7 +138,7 @@ export function open_edit_panel_for_row(stream_row) {
     const sub = get_sub_for_target(stream_row);
 
     $(".stream-row.active").removeClass("active");
-    stream_settings_ui.show_subs_pane.settings(sub.name, sub.invite_only, sub.is_web_public);
+    stream_settings_ui.show_subs_pane.settings(sub);
     $(stream_row).addClass("active");
     setup_subscriptions_stream_hash(sub);
     setup_stream_settings(stream_row);
@@ -155,6 +155,11 @@ export function update_stream_name(sub, new_name) {
     const edit_container = stream_settings_containers.get_edit_container(sub);
     edit_container.find(".email-address").text(sub.email_address);
     edit_container.find(".sub-stream-name").text(new_name);
+
+    const active_data = stream_settings_ui.get_active_data();
+    if (active_data.id === sub.stream_id) {
+        stream_settings_ui.set_right_panel_title(sub);
+    }
 }
 
 export function update_stream_description(sub) {

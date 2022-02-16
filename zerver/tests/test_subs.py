@@ -64,6 +64,7 @@ from zerver.lib.streams import (
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
+    HostRequestMock,
     cache_tries_captured,
     get_subscription,
     most_recent_message,
@@ -292,7 +293,7 @@ class TestCreateStreams(ZulipTestCase):
                 "name": "publicstream",
                 "description": "Public stream with public history",
             },
-            {"name": "webpublicstream", "description": "Web public stream", "is_web_public": True},
+            {"name": "webpublicstream", "description": "Web-public stream", "is_web_public": True},
             {
                 "name": "privatestream",
                 "description": "Private stream with non-public history",
@@ -724,7 +725,7 @@ class StreamAdminTest(ZulipTestCase):
         with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
             self.assertFalse(user_profile.can_create_web_public_streams())
             self.assertFalse(owner.can_create_web_public_streams())
-            with self.assertRaisesRegex(JsonableError, "Web public streams are not enabled."):
+            with self.assertRaisesRegex(JsonableError, "Web-public streams are not enabled."):
                 list_to_streams(
                     streams_raw,
                     owner,
@@ -907,7 +908,7 @@ class StreamAdminTest(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
         with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
             result = self.client_patch(f"/json/streams/{stream_id}", params)
-        self.assert_json_error(result, "Web public streams are not enabled.")
+        self.assert_json_error(result, "Web-public streams are not enabled.")
 
         bad_params = {
             "stream_name": orjson.dumps("test_stream").decode(),
@@ -942,7 +943,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_length(messages, 1)
         expected_notification = (
             f"@_**King Hamlet|{user_profile.id}** changed the [access permissions](/help/stream-permissions) "
-            "for this stream from **Public** to **Web public**."
+            "for this stream from **Public** to **Web-public**."
         )
         self.assertEqual(messages[0].content, expected_notification)
 
@@ -1136,7 +1137,8 @@ class StreamAdminTest(ZulipTestCase):
         self.assertFalse(new_stream_usermessage.flags.read)
         self.assertFalse(denmark_usermessage.flags.read)
 
-        do_deactivate_stream(stream, acting_user=None)
+        with self.captureOnCommitCallbacks(execute=True):
+            do_deactivate_stream(stream, acting_user=None)
         new_stream_usermessage.refresh_from_db()
         denmark_usermessage.refresh_from_db()
         self.assertTrue(new_stream_usermessage.flags.read)
@@ -1850,7 +1852,7 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_patch(
             f"/json/streams/{stream.id}", {"message_retention_days": orjson.dumps(2).decode()}
         )
-        self.assert_json_error(result, "Available on Zulip Standard. Upgrade to access.")
+        self.assert_json_error(result, "Available on Zulip Cloud Standard. Upgrade to access.")
 
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=None)
         events: List[Mapping[str, Any]] = []
@@ -2020,7 +2022,7 @@ class StreamAdminTest(ZulipTestCase):
 
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=admin)
         with self.assertRaisesRegex(
-            JsonableError, "Available on Zulip Standard. Upgrade to access."
+            JsonableError, "Available on Zulip Cloud Standard. Upgrade to access."
         ):
             list_to_streams(streams_raw, owner, autocreate=True)
 
@@ -2473,14 +2475,14 @@ class DefaultStreamTest(ZulipTestCase):
         new_stream_names = self.get_default_stream_names(realm)
         added_stream_names = new_stream_names - orig_stream_names
         self.assertEqual(added_stream_names, {"Added stream"})
-        # idempotentcy--2nd call to add_default_stream should be a noop
+        # idempotency--2nd call to add_default_stream should be a noop
         do_add_default_stream(stream)
         self.assertEqual(self.get_default_stream_names(realm), new_stream_names)
 
         # start removing
         do_remove_default_stream(stream)
         self.assertEqual(self.get_default_stream_names(realm), orig_stream_names)
-        # idempotentcy--2nd call to remove_default_stream should be a noop
+        # idempotency--2nd call to remove_default_stream should be a noop
         do_remove_default_stream(stream)
         self.assertEqual(self.get_default_stream_names(realm), orig_stream_names)
 
@@ -2534,7 +2536,7 @@ class DefaultStreamTest(ZulipTestCase):
         self.login_user(user_profile)
         self.assertEqual(user_profile.role, UserProfile.ROLE_GUEST)
 
-        # Get all the streams that Polonius has access to (subscribed + web public streams)
+        # Get all the streams that Polonius has access to (subscribed + web-public streams)
         result = self.client_get("/json/streams", {"include_web_public": "true"})
         streams = result.json()["streams"]
         sub_info = gather_subscriptions_helper(user_profile)
@@ -3497,9 +3499,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
             "delete": orjson.dumps([stream_name]).decode(),
         }
         result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(
-            result, f"Stream name '{stream_name}' contains NULL (0x00) characters."
-        )
+        self.assert_json_error(result, "Invalid character in stream name, at position 4!")
 
     def test_compose_views_rollback(self) -> None:
         """
@@ -3513,11 +3513,12 @@ class SubscriptionRestApiTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         user_profile.full_name = "Hamlet"
         user_profile.save()
+        request = HostRequestMock(user_profile=user_profile)
 
         def thunk1() -> HttpResponse:
             user_profile.full_name = "Should not be committed"
             user_profile.save()
-            return json_success()
+            return json_success(request)
 
         def thunk2() -> HttpResponse:
             raise JsonableError("random failure")
@@ -3556,6 +3557,58 @@ class SubscriptionAPITest(ZulipTestCase):
             if random_stream not in all_stream_names:
                 random_streams.append(random_stream)
         return random_streams
+
+    def test_invalid_stream_name(self) -> None:
+        """
+        Creating a stream with invalid 'Cc' and 'Cn' category of unicode characters in stream name
+        """
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        # For Cc category
+        post_data_cc = {
+            "subscriptions": orjson.dumps(
+                [{"name": "new\n\rstream", "description": "this is description"}]
+            ).decode(),
+            "invite_only": orjson.dumps(False).decode(),
+        }
+        result = self.api_post(
+            user, "/api/v1/users/me/subscriptions", post_data_cc, subdomain="zulip"
+        )
+        self.assert_json_error(result, "Invalid character in stream name, at position 4!")
+
+        # For Cn category
+        post_data_cn = {
+            "subscriptions": orjson.dumps(
+                [{"name": "new\uFFFEstream", "description": "this is description"}]
+            ).decode(),
+            "invite_only": orjson.dumps(False).decode(),
+        }
+        result = self.api_post(
+            user, "/api/v1/users/me/subscriptions", post_data_cn, subdomain="zulip"
+        )
+        self.assert_json_error(result, "Invalid character in stream name, at position 4!")
+
+    def test_invalid_stream_rename(self) -> None:
+        """
+        Renaming a stream with invalid characters.
+        """
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        stream = self.subscribe(user_profile, "stream_name1")
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        # Check for empty name
+        result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": ""})
+        self.assert_json_error(result, "Stream name can't be empty!")
+        # Check for long name
+        result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "a" * 61})
+        self.assert_json_error(result, "Stream name too long (limit: 60 characters).")
+        # Check for Cc characters
+        result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "test\n\rname"})
+        self.assert_json_error(result, "Invalid character in stream name, at position 5!")
+        # Check for Cn characters
+        result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "test\uFFFEame"})
+        self.assert_json_error(result, "Invalid character in stream name, at position 5!")
 
     def test_successful_subscriptions_list(self) -> None:
         """
@@ -3840,9 +3893,7 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         stream_name = "abc\000"
         result = self.common_subscribe_to_streams(self.test_user, [stream_name], allow_fail=True)
-        self.assert_json_error(
-            result, f"Stream name '{stream_name}' contains NULL (0x00) characters."
-        )
+        self.assert_json_error(result, "Invalid character in stream name, at position 4!")
 
     def _test_user_settings_for_creating_streams(
         self,
@@ -4349,7 +4400,7 @@ class SubscriptionAPITest(ZulipTestCase):
         public_stream = self.make_stream("public_stream", invite_only=False)
         private_stream = self.make_stream("private_stream2", invite_only=True)
         # This test should be added as soon as the subscription endpoint allows
-        # guest users to subscribe to web public streams. Although they are already
+        # guest users to subscribe to web-public streams. Although they are already
         # authorized, the decorator in "add_subscriptions_backend" still needs to be
         # deleted.
         #
@@ -5759,7 +5810,7 @@ class GetSubscribersTest(ZulipTestCase):
         never_subscribed = gather_subscriptions_helper(guest_user, True).never_subscribed
 
         # A guest user can only see never subscribed streams that are web-public.
-        # For Polonius, the only web public stream that he is not subscribed at
+        # For Polonius, the only web-public stream that he is not subscribed at
         # this point is Rome.
         self.assert_length(never_subscribed, 1)
 
@@ -5893,7 +5944,7 @@ class AccessStreamTest(ZulipTestCase):
 
         stream_name = "web_public_stream"
         stream = self.make_stream(stream_name, guest_user_profile.realm, is_web_public=True)
-        # Guest users have access to web public streams even if they aren't subscribed.
+        # Guest users have access to web-public streams even if they aren't subscribed.
         (stream_ret, sub_ret) = access_stream_by_id(guest_user_profile, stream.id)
         self.assertTrue(can_access_stream_history(guest_user_profile, stream))
         assert sub_ret is None

@@ -2,6 +2,7 @@ import * as blueslip from "./blueslip";
 import * as input_pill from "./input_pill";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as user_status from "./user_status";
 
 // This will be used for pills for things like composing PMs
 // or adding users to a stream/group.
@@ -40,6 +41,8 @@ export function create_item_from_email(email, current_items) {
 
     const avatar_url = people.small_avatar_url_for_person(user);
 
+    const status_emoji_info = user_status.get_status_emoji(user.user_id);
+
     // We must supply display_value for the widget to work.  Everything
     // else is for our own use in callbacks.
     const item = {
@@ -49,6 +52,7 @@ export function create_item_from_email(email, current_items) {
         email: user.email,
         img_src: avatar_url,
         deactivated: false,
+        status_emoji_info,
     };
 
     // We pass deactivated true for a deactivated user
@@ -68,14 +72,18 @@ export function append_person(opts) {
     const person = opts.person;
     const pill_widget = opts.pill_widget;
     const avatar_url = people.small_avatar_url_for_person(person);
+    const status_emoji_info = user_status.get_status_emoji(opts.person.user_id);
 
-    pill_widget.appendValidatedData({
+    const pill_data = {
         type: "user",
         display_value: person.full_name,
         user_id: person.user_id,
         email: person.email,
         img_src: avatar_url,
-    });
+        status_emoji_info,
+    };
+
+    pill_widget.appendValidatedData(pill_data);
     pill_widget.clear_text();
 }
 
@@ -122,9 +130,10 @@ export function append_user(user, pills) {
     }
 }
 
-export function create_pills(pill_container) {
+export function create_pills(pill_container, pill_config) {
     const pills = input_pill.create({
         container: pill_container,
+        pill_config,
         create_item_from_text: create_item_from_email,
         get_text_from_item: get_email_from_item,
     });

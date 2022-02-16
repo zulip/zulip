@@ -22,7 +22,7 @@ TENSE_DATA = [
     (["disables", "disabling", "disabled"], "disable"),
     (["displays", "displaying", "displayed"], "display"),
     (["documents", "documenting", "documented"], "document"),
-    (["drys", "drying", "dryed"], "dry"),
+    (["drys", "drying", "dried"], "dry"),
     (["ends", "ending", "ended"], "end"),
     (["enforces", "enforcing", "enforced"], "enforce"),
     (["enqueues", "enqueuing", "enqueued"], "enqueue"),

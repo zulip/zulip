@@ -432,8 +432,8 @@ django-phonenumber-field==6.0.0 \
     --hash=sha256:9695d3beda772c503ad4e04a4f7012a8227e9e3e4fd0ea4ffb07c43245bf4a8d \
     --hash=sha256:bbb9cb2e6fc53c476de40428e1354c313a040e8b2fb69ea8ead4ba41a60f926a
     # via django-two-factor-auth
-django-scim2==0.17.0 \
-    --hash=sha256:dc3cb3c0d5b6ebf4ae8a28dd1dac1e0658fb543c8c178e72e3c19975816da092
+django-scim2==0.17.1 \
+    --hash=sha256:346e9b3e9bff6aab59e533c735b9892bcc52d06ed042772b4d48fcb494c2e22a
     # via -r requirements/common.in
 django-sendfile2==0.6.1 \
     --hash=sha256:312b4501960e6b3a3390c48a6bdcfdae2c0516efacf24bdd0c97c6f2f2d2fc30 \

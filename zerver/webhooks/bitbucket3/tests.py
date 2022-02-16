@@ -149,7 +149,7 @@ class Bitbucket3HookTests(WebhookTestCase):
             "pull_request_opened_with_two_reviewers", expected_topic, expected_message
         )
 
-    def test_pr_opened_with_mulitple_reviewers(self) -> None:
+    def test_pr_opened_with_multiple_reviewers(self) -> None:
         expected_topic = "sandbox / PR #6 sample_file: Add sample_file.txt."
         expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) opened [PR #6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/6) from `master` to `master` (assigned to [sougo](http://139.59.64.214:7990/users/sougo), [zura](http://139.59.64.214:7990/users/zura) and [shimura](http://139.59.64.214:7990/users/shimura) for review):\n\n~~~ quote\nAdd a simple text file for further testing purposes.\n~~~"""
         self.check_webhook(
