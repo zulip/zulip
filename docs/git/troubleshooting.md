@@ -275,8 +275,8 @@ keep,** you'll need to use `git log FETCH_HEAD` to identify that hashes of the
 commits you want to keep and then `git cherry-pick <commit>` those commits into
 whichever branch you need to update.
 
-[clone-to-your-machine]: cloning.html#step-1b-clone-to-your-machine
-[connect-upstream]: cloning.html#step-1c-connect-your-fork-to-zulip-upstream
+[clone-to-your-machine]: cloning.md#step-1b-clone-to-your-machine
+[connect-upstream]: cloning.md#step-1c-connect-your-fork-to-zulip-upstream
 [gitbook-advanced-merging]: https://git-scm.com/book/en/v2/Git-Tools-Advanced-Merging#_advanced_merging
 [gitbook-basic-merge-conflicts]: https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging#Basic-Merge-Conflicts
 [gitbook-git-cherry-pick]: https://git-scm.com/docs/git-cherry-pick

@@ -237,8 +237,8 @@ We also strongly recommend reviewers to go through the following resources.
 - [Zulip code of conduct](../code-of-conduct.md)
 
 [code-style]: code-style.md
-[commit-messages]: version-control.html#commit-messages
+[commit-messages]: version-control.md#commit-messages
 [test-writing]: ../testing/testing.md
 [mypy]: ../testing/mypy.md
-[git tool]: ../git/zulip-tools.html#fetch-a-pull-request-and-rebase
+[git tool]: ../git/zulip-tools.md#fetch-a-pull-request-and-rebase
 [translation]: ../translating/translating.md

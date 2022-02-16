@@ -134,7 +134,7 @@ recommend running locally when making significant edits:
 
 - `tools/lint` catches a number of common mistakes, and we highly
   recommend
-  [using our linter pre-commit hook](../git/zulip-tools.html#set-up-git-repo-script).
+  [using our linter pre-commit hook](../git/zulip-tools.md#set-up-git-repo-script).
   See the [main linter doc](../testing/linters.md) for more details.
 
 - The ReadTheDocs docs are built and the links tested by

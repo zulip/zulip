@@ -247,7 +247,7 @@ above.
      defined OpenAPI schema. Use `test-backend --rerun` for a fast
      edit/refresh cycle when debugging.
 
-   [rest-api-tutorial]: ../tutorials/writing-views.html#writing-api-rest-endpoints
+   [rest-api-tutorial]: ../tutorials/writing-views.md#writing-api-rest-endpoints
 
 1. Add a function for the endpoint you'd like to document to
    `zerver/openapi/python_examples.py`, decorated with

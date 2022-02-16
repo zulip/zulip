@@ -17,7 +17,7 @@ To run a Zulip server, you will need:
 
 For details on each of these requirements, see below.
 
-[upgrade-from-git]: upgrade-or-modify.html#upgrading-from-a-git-repository
+[upgrade-from-git]: upgrade-or-modify.md#upgrading-from-a-git-repository
 
 ## Server
 
@@ -53,7 +53,7 @@ sudo apt update
 ```
 
 [docker-zulip-homepage]: https://github.com/zulip/docker-zulip#readme
-[upgrade-os]: upgrade-or-modify.html#upgrading-the-operating-system
+[upgrade-os]: upgrade-or-modify.md#upgrading-the-operating-system
 [ubuntu-repositories]: https://help.ubuntu.com/community/Repositories/Ubuntu
 [enable-universe]: https://help.ubuntu.com/community/Repositories/CommandLine#Adding_the_Universe_and_Multiverse_Repositories
 
@@ -78,7 +78,7 @@ on hardware requirements for larger organizations.
 #### Network and security specifications
 
 - Incoming HTTPS access (usually port 443, though this is
-  [configurable](deployment.html#using-an-alternate-port))
+  [configurable](deployment.md#using-an-alternate-port))
   from the networks where your users are (usually, the public
   Internet).
 - Incoming port 80 access (optional). Zulip only serves content over
@@ -112,8 +112,8 @@ on hardware requirements for larger organizations.
   Zulip supports using that instead.
 
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
-[smokescreen-proxy]: deployment.html#customizing-the-outgoing-http-proxy
-[reverse-proxy]: deployment.html#putting-the-zulip-application-behind-a-reverse-proxy
+[smokescreen-proxy]: deployment.md#customizing-the-outgoing-http-proxy
+[reverse-proxy]: deployment.md#putting-the-zulip-application-behind-a-reverse-proxy
 [email-mirror-code]: https://github.com/zulip/zulip/blob/main/zerver/management/commands/email_mirror.py
 
 ## Credentials needed
@@ -133,8 +133,8 @@ installer.
 If you'd rather acquire an SSL certificate another way, see our [SSL
 certificate documentation](ssl-certificates.md).
 
-[doc-certbot]: ssl-certificates.html#certbot-recommended
-[doc-self-signed]: ssl-certificates.html#self-signed-certificate
+[doc-certbot]: ssl-certificates.md#certbot-recommended
+[doc-self-signed]: ssl-certificates.md#self-signed-certificate
 
 #### Outgoing email
 
@@ -143,7 +143,7 @@ certificate documentation](ssl-certificates.md).
   during the signup process, message notification emails, password
   reset, etc.). If you don't have an existing outgoing SMTP solution,
   read about
-  [free outgoing SMTP options and options for prototyping](email.html#free-outgoing-email-services).
+  [free outgoing SMTP options and options for prototyping](email.md#free-outgoing-email-services).
 
 Once you have met these requirements, see [full instructions for installing
 Zulip in production](install.md).
@@ -241,6 +241,6 @@ For readers interested in technical details around what features
 impact Zulip's scalability, this [performance and scalability design
 document](../subsystems/performance.md) may also be of interest.
 
-[s3-uploads]: upload-backends.html#s3-backend-configuration
-[streaming-replication]: deployment.html#postgresql-warm-standby
+[s3-uploads]: upload-backends.md#s3-backend-configuration
+[streaming-replication]: deployment.md#postgresql-warm-standby
 [contact-support]: https://zulip.com/help/contact-support

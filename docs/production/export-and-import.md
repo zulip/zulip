@@ -48,9 +48,9 @@ service (or back):
   decommissioning a Zulip organization.
 
 - It's possible to set up [PostgreSQL streaming
-  replication](deployment.html#postgresql-warm-standby)
+  replication](deployment.md#postgresql-warm-standby)
   and the [S3 file upload
-  backend](upload-backends.html#s3-backend-configuration)
+  backend](upload-backends.md#s3-backend-configuration)
   as part of a high availability environment.
 
 ## Backups
@@ -365,7 +365,7 @@ cd /home/zulip/deployments/current
 This could take several minutes to run depending on how much data you're
 importing.
 
-[upgrade-zulip-from-git]: upgrade-or-modify.html#upgrading-from-a-git-repository
+[upgrade-zulip-from-git]: upgrade-or-modify.md#upgrading-from-a-git-repository
 
 #### Import options
 
@@ -411,7 +411,7 @@ delete the test import data from your Zulip server before doing a
 final import. You can **permanently delete** all data from a Zulip
 organization using the following procedure:
 
-- Start a [Zulip management shell](management-commands.html#manage-py-shell)
+- Start a [Zulip management shell](management-commands.md#managepy-shell)
 - In the management shell, run the following commands, replacing `""`
   with the subdomain if [you are hosting the organization on a
   subdomain](multiple-organizations.md):

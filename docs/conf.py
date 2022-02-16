@@ -36,6 +36,7 @@ myst_enable_extensions = [
     "colon_fence",
     "substitution",
 ]
+myst_heading_anchors = 6
 myst_substitutions = {
     "LATEST_RELEASE_VERSION": LATEST_RELEASE_VERSION,
 }

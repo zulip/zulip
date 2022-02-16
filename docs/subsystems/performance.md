@@ -20,7 +20,7 @@ First, a few notes on philosophy.
   design/implementation work to make requests fast over the operational
   work of running 2-5x as much hardware to handle the same load.
 
-See also [scalability for production users](../production/requirements.html#scalability).
+See also [scalability for production users](../production/requirements.md#scalability).
 
 ## Load profiles
 
@@ -38,7 +38,7 @@ of load profiles:
   example for this, with more than 15K total user accounts, of which
   only several hundred have logged in during the last few weeks.
   Zulip has many important optimizations, including [soft
-  deactivation](sending-messages.html#soft-deactivation)
+  deactivation](sending-messages.md#soft-deactivation)
   to ensure idle users have minimal impact on both server-side
   scalability and request latency.
 - Fulltime teams, like your typical corporate Zulip installation,
@@ -249,7 +249,7 @@ it does a large number of these requests:
   zulip.com, this can result in a thundering herd effect for both `/`
   and `GET /messages`. A great deal of care has been taking in
   designing this [auto-reload
-  system](hashchange-system.html#server-initiated-reloads)
+  system](hashchange-system.md#server-initiated-reloads)
   to spread most of that herd over several minutes.
 
 Typical requests consume 20-100ms to process, much of which is waiting

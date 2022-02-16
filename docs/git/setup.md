@@ -49,7 +49,7 @@ text-mode interface to Git.
 
 And, if none of the above are to your liking, try [one of these][gitbook-guis].
 
-[git-bash-admin]: ../development/setup-vagrant.html#running-git-bash-as-an-administrator
+[git-bash-admin]: ../development/setup-vagrant.md#running-git-bash-as-an-administrator
 [gitbook-aliases]: https://git-scm.com/book/en/v2/Git-Basics-Git-Aliases
 [gitbook-config]: https://git-scm.com/book/en/v2/Customizing-Git-Git-Configuration
 [gitbook-guis]: https://git-scm.com/downloads/guis
