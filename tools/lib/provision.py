@@ -398,6 +398,24 @@ def main(options: argparse.Namespace) -> "NoReturn":
     else:
         print("No changes to apt dependencies, so skipping apt operations.")
 
+    # Binary-patch ARM64 assembly bug in OpenSSL 1.1.1b through 1.1.1h.
+    # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=989604
+    # https://bugs.launchpad.net/ubuntu/+source/openssl/+bug/1951279
+    try:
+        with open("/usr/lib/aarch64-linux-gnu/libcrypto.so.1.1", "rb") as fb:
+            if b"\xbf#\x03\xd5\xfd\x07E\xf8" in fb.read():
+                run_as_root(
+                    [
+                        "sed",
+                        "-i",
+                        r"s/\(\xbf#\x03\xd5\)\(\xfd\x07E\xf8\)/\2\1/",
+                        "/usr/lib/aarch64-linux-gnu/libcrypto.so.1.1",
+                    ],
+                    env={**os.environ, "LC_ALL": "C"},
+                )
+    except FileNotFoundError:
+        pass
+
     # Here we install node.
     proxy_env = [
         "env",
