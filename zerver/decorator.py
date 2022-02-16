@@ -542,15 +542,7 @@ def web_public_view(
     """
     This wrapper adds client info for unauthenticated users but
     forces authenticated users to go through 2fa.
-
-    NOTE: This function == zulip_login_required in a production environment as
-          web_public_view path has only been enabled for development purposes
-          currently.
     """
-    if not settings.DEVELOPMENT:
-        # Coverage disabled because DEVELOPMENT is always true in development.
-        return zulip_login_required(view_func, redirect_field_name, login_url)  # nocoverage
-
     actual_decorator = lambda view_func: zulip_otp_required(
         redirect_field_name=redirect_field_name, login_url=login_url
     )(add_logging_data(view_func))
