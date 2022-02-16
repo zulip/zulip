@@ -228,6 +228,7 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
 
 async function test_your_bots_section(page: Page): Promise<void> {
     await page.click('[data-section="your-bots"]');
+    await page.click(".add-a-new-bot-tab");
     await test_webhook_bot_creation(page);
     await test_normal_bot_creation(page);
     await test_botserverrc(page);
