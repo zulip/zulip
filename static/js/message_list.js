@@ -383,6 +383,10 @@ export class MessageList {
         return this.data.first_unread_message_id();
     }
 
+    has_unread_messages() {
+        return this.data.has_unread_messages();
+    }
+
     message_range(start, end) {
         return this.data.message_range(start, end);
     }

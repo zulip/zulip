@@ -225,6 +225,10 @@ export class MessageListData {
         return this.last().id;
     }
 
+    has_unread_messages() {
+        return this._items.some((message) => unread.message_unread(message));
+    }
+
     add_messages(messages) {
         let top_messages = [];
         let bottom_messages = [];
