@@ -563,6 +563,53 @@ function set_focus_to_element_in_center() {
     }
 }
 
+function handle_page_up_down_keys(key) {
+    // To handle page up/down keys.
+    const table_wrapper_element = document.querySelector("#recent_topics_table .table_fix_head");
+    const $topic_rows = $("#recent_topics_table table tbody tr");
+    const last_topic_row = $topic_rows.length - 1;
+    const table_margin = 100;
+
+    if (key === "page_down") {
+        let $topic_row = $topic_rows.eq(last_topic_row);
+        const topic_offset = topic_offset_to_visible_area($topic_row);
+
+        if (topic_offset === "below") {
+            // Get the element at bottom of visible table
+            const position = table_wrapper_element.getBoundingClientRect();
+            const topic_center_x = (position.left + position.right) / 2;
+            const topic_bottom_y = position.bottom - table_margin; // Extra margin at the bottom of the table
+
+            $topic_row = $(document.elementFromPoint(topic_center_x, topic_bottom_y)).closest("tr");
+            // Add 2 to focus on the topic just below last visible topic.
+            row_focus = $topic_rows.index($topic_row) + 2;
+            set_table_focus(row_focus, col_focus, true);
+        } else if (topic_offset === "visible") {
+            set_table_focus(last_topic_row, col_focus, true);
+        }
+    } else if (key === "page_up") {
+        let $topic_row = $topic_rows.eq(0);
+        const topic_offset = topic_offset_to_visible_area($topic_row);
+
+        if (topic_offset === "above") {
+            // Get the element at the top of visible table
+            const position = table_wrapper_element.getBoundingClientRect();
+            const topic_center_x = (position.left + position.right) / 2;
+            const topic_top_y = position.top + table_margin; // Extra margin at top of the table.
+
+            $topic_row = $(document.elementFromPoint(topic_center_x, topic_top_y)).closest("tr");
+            // Subtract 2 to focus on the topic just above the first visible topic.
+            row_focus = $topic_rows.index($topic_row) - 2;
+            if (row_focus < 0) {
+                row_focus = 0;
+            }
+            set_table_focus(row_focus, col_focus, true);
+        } else if (topic_offset === "visible") {
+            set_table_focus(0, col_focus, true);
+        }
+    }
+}
+
 function is_scroll_position_for_render(scroll_container) {
     const table_bottom_margin = 100; // Extra margin at the bottom of table.
     const table_row_height = 50;
@@ -822,7 +869,23 @@ export function change_focused_element($elt, input_key) {
         // For arrowing around the table of topics, we implement left/right
         // wraparound.  Going off the top or the bottom takes one
         // to the navigation at the top (see set_table_focus).
+
+        const $topic_rows = $("#recent_topics_table table tbody tr");
         switch (input_key) {
+            case "home":
+                row_focus = 0;
+                set_table_focus(row_focus, col_focus);
+                return true;
+            case "end":
+                row_focus = $topic_rows.length - 1;
+                set_table_focus(row_focus, col_focus);
+                return true;
+            case "page_up":
+                handle_page_up_down_keys("page_up");
+                return true;
+            case "page_down":
+                handle_page_up_down_keys("page_down");
+                return true;
             case "escape":
                 return false;
             case "open_recent_topics":
