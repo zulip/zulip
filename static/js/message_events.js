@@ -245,7 +245,6 @@ export function update_messages(events) {
                     msg.edit_history = [edit_history_entry].concat(msg.edit_history);
                 }
                 msg.last_edit_timestamp = event.edit_timestamp;
-                delete msg.last_edit_timestr;
 
                 // Remove the recent topics entry for the old topics;
                 // must be called before we call set_message_topic.
@@ -415,8 +414,13 @@ export function update_messages(events) {
             msg.raw_content = event.content;
         }
 
-        msg.last_edit_timestamp = event.edit_timestamp;
-        delete msg.last_edit_timestr;
+        // Mark the message as edited for the UI. The rendering_only
+        // flag is used to indicated update_message events that are
+        // triggered by server latency optimizations, not user
+        // interactions; these should not generate edit history updates.
+        if (!event.rendering_only) {
+            msg.last_edit_timestamp = event.edit_timestamp;
+        }
 
         notifications.received_messages([msg]);
         alert_words.process_message(msg);
