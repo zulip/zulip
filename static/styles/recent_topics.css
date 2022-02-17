@@ -183,6 +183,7 @@
             padding: 0 1.5px;
             position: relative;
             min-width: 24px;
+            cursor: pointer;
 
             .fa-user {
                 opacity: 0.7;

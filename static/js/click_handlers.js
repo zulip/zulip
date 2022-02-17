@@ -29,6 +29,7 @@ import * as narrow from "./narrow";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
+import * as people from "./people";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics_ui from "./recent_topics_ui";
@@ -375,6 +376,13 @@ export function initialize() {
     });
 
     // RECENT TOPICS
+
+    $("#recent_topics_table").on("click", ".participant_profile", function (e) {
+        const participant_user_id = Number.parseInt($(this).attr("data-user-id"), 10);
+        e.stopPropagation();
+        const user = people.get_by_user_id(participant_user_id);
+        popovers.show_user_info_popover(this, user);
+    });
 
     $("body").on("keydown", ".on_hover_topic_mute", ui_util.convert_enter_to_click);
 
