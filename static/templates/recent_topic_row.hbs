@@ -38,11 +38,11 @@
             {{/if}}
             {{#each senders}}
                 {{#if this.is_muted}}
-                <li class="recent_topics_participant_item tippy-zulip-tooltip" data-tippy-content="{{t 'Muted user'}}">
+                <li class="recent_topics_participant_item participant_profile tippy-zulip-tooltip" data-tippy-content="{{t 'Muted user'}}" data-user-id="{{this.user_id}}">
                     <span><i class="fa fa-user recent_topics_participant_overflow"></i></span>
                 </li>
                 {{else}}
-                <li class="recent_topics_participant_item tippy-zulip-tooltip" data-tippy-content="{{this.full_name}}">
+                <li class="recent_topics_participant_item participant_profile tippy-zulip-tooltip" data-tippy-content="{{this.full_name}}" data-user-id="{{this.user_id}}">
                     <img src="{{this.avatar_url_small}}" class="recent_topics_participant_avatar" />
                 </li>
                 {{/if}}
