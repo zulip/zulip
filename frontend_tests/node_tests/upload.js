@@ -156,6 +156,7 @@ test("get_item", () => {
 });
 
 test("hide_upload_status", () => {
+    $("#compose-send-button").css = () => {};
     $("#compose-send-button").prop("disabled", true);
     $("#compose-send-status").addClass("alert-info").show();
 
@@ -243,6 +244,7 @@ test("upload_files", ({override, override_rewire}) => {
     $("#compose .undo_markdown_preview").on("click", () => {
         markdown_preview_hide_button_clicked = true;
     });
+    $("#compose-send-button").css = () => {};
     $("#compose-send-button").prop("disabled", false);
     $("#compose-send-status").removeClass("alert-info").hide();
     $("#compose .undo_markdown_preview").show();

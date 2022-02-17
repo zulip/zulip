@@ -89,6 +89,7 @@ export function get_item(key, config) {
 }
 
 export function hide_upload_status(config) {
+    get_item("send_button", config).css({opacity: 1, cursor: "default"});
     get_item("send_button", config).prop("disabled", false);
     get_item("send_status", config).removeClass("alert-info").hide();
 }
@@ -127,6 +128,8 @@ export function upload_files(uppy, config, files) {
         get_item("markdown_preview_hide_button", config).trigger("click");
     }
 
+    // Send button look disabled.
+    get_item("send_button", config).css({opacity: 0.6, cursor: "not-allowed"});
     get_item("send_button", config).prop("disabled", true);
     get_item("send_status", config).addClass("alert-info").removeClass("alert-error").show();
     get_item("send_status_message", config).html($("<p>").text($t({defaultMessage: "Uploading…"})));

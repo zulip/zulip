@@ -574,9 +574,12 @@ export function check_overflow_text() {
         }
     } else {
         $indicator.text("");
+
+        if ($("#compose-textarea").hasClass("over_limit")) {
+            $("#compose-send-button").prop("disabled", false);
+        }
         $("#compose-textarea").removeClass("over_limit");
 
-        $("#compose-send-button").prop("disabled", false);
         if ($("#compose-send-status").hasClass("alert-error")) {
             $("#compose-send-status").stop(true).fadeOut();
         }
