@@ -27,8 +27,7 @@ from django.utils.translation import gettext as _
 from markupsafe import Markup as mark_safe
 from mypy_boto3_s3.client import S3Client
 from mypy_boto3_s3.service_resource import Bucket, Object
-from PIL import Image, ImageOps
-from PIL.GifImagePlugin import GifImageFile
+from PIL import GifImagePlugin, Image, ImageOps, PngImagePlugin
 from PIL.Image import DecompressionBombError
 
 from zerver.lib.avatar_hash import user_avatar_path
@@ -145,7 +144,8 @@ def resize_logo(image_data: bytes) -> bytes:
     return out.getvalue()
 
 
-def resize_gif(im: GifImageFile, size: int = DEFAULT_EMOJI_SIZE) -> bytes:
+def resize_animated(im: Image.Image, size: int = DEFAULT_EMOJI_SIZE) -> bytes:
+    assert im.n_frames > 1
     frames = []
     duration_info = []
     disposals = []
@@ -157,21 +157,29 @@ def resize_gif(im: GifImageFile, size: int = DEFAULT_EMOJI_SIZE) -> bytes:
         new_frame.paste(im, (0, 0), im.convert("RGBA"))
         new_frame = ImageOps.pad(new_frame, (size, size), Image.ANTIALIAS)
         frames.append(new_frame)
+        if im.info.get("duration") is None:  # nocoverage
+            raise BadImageError(_("Corrupt animated image."))
         duration_info.append(im.info["duration"])
-        disposals.append(
-            im.disposal_method  # type: ignore[attr-defined]  # private member missing from stubs
-        )
+        if isinstance(im, GifImagePlugin.GifImageFile):
+            disposals.append(
+                im.disposal_method  # type: ignore[attr-defined]  # private member missing from stubs
+            )
+        elif isinstance(im, PngImagePlugin.PngImageFile):
+            disposals.append(im.info.get("disposal", PngImagePlugin.APNG_DISPOSE_OP_NONE))
+        else:  # nocoverage
+            raise BadImageError(_("Unknown animated image format."))
     out = io.BytesIO()
     frames[0].save(
         out,
         save_all=True,
         optimize=False,
-        format="GIF",
+        format=im.format,
         append_images=frames[1:],
         duration=duration_info,
-        disposal=disposals if len(frames) > 1 else disposals[0],
+        disposal=disposals,
         loop=loop,
     )
+
     return out.getvalue()
 
 
@@ -186,12 +194,11 @@ def resize_emoji(
     try:
         im = Image.open(io.BytesIO(image_data))
         image_format = im.format
-        if image_format == "GIF":
-            assert isinstance(im, GifImageFile)
-            # There are a number of bugs in Pillow.GifImagePlugin which cause
-            # results in resized gifs being broken. To work around this we
-            # only resize under certain conditions to minimize the chance of
-            # creating ugly gifs.
+        if getattr(im, "n_frames", 1) > 1:
+            # There are a number of bugs in Pillow which cause results
+            # in resized images being broken. To work around this we
+            # only resize under certain conditions to minimize the
+            # chance of creating ugly images.
             should_resize = (
                 im.size[0] != im.size[1]  # not square
                 or im.size[0] > MAX_EMOJI_GIF_SIZE  # dimensions too large
@@ -209,12 +216,9 @@ def resize_emoji(
             still_image_data = out.getvalue()
 
             if should_resize:
-                image_data = resize_gif(im, size)
+                image_data = resize_animated(im, size)
 
-            if im.n_frames > 1:
-                return image_data, True, still_image_data
-            else:
-                return image_data, False, None
+            return image_data, True, still_image_data
         else:
             # Note that this is essentially duplicated in the
             # still_image code path, above.
