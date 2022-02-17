@@ -299,7 +299,7 @@ alternatives first:
 ### Avoid `cast()`
 
 The [`cast`
-function](https://mypy.readthedocs.io/en/stable/casts.html) lets you
+function](https://mypy.readthedocs.io/en/stable/type_narrowing.html#casts) lets you
 provide an annotation that Mypy will not verify. Obviously, this is
 completely unsafe in general.
 
