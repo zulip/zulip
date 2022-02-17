@@ -1,0 +1,10 @@
+{{#if emoji_alt_code}}
+<div class="emoji_alt_code">&nbsp:{{emoji_name}}:</div>
+{{else if still_url}}
+<img src="{{still_url}}" class="emoji status_emoji" data-animated-url="{{url}}" data-still-url="{{still_url}}" />
+{{else if url}}
+{{!-- note that we have no still_url --}}
+<img src="{{url}}" class="emoji status_emoji" data-animated-url="{{url}}" />
+{{else if emoji_code}}
+<div class="emoji status_emoji emoji-{{emoji_code}}"></div>
+{{/if}}

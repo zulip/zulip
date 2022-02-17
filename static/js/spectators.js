@@ -1,5 +1,5 @@
-// Module for displaying the modal asking spectators to login when
-// attempting to do things that are not possible as a specatator (like
+// Module for displaying the modal asking spectators to log in when
+// attempting to do things that are not possible as a spectator (like
 // add an emoji reaction, star a message, etc.).  While in many cases,
 // we will prefer to hide menu options that don't make sense for
 // spectators, this modal is useful for everything that doesn't make
@@ -9,7 +9,9 @@ import $ from "jquery";
 
 import render_login_to_access_modal from "../templates/login_to_access.hbs";
 
+import * as browser_history from "./browser_history";
 import * as hash_util from "./hash_util";
+import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 
 export function login_to_access() {
@@ -22,11 +24,18 @@ export function login_to_access() {
         login_link = "/login/?" + hash_util.current_hash_as_next();
     }
 
-    $("#login-to-access-modal-holder").html(
+    $("body").append(
         render_login_to_access_modal({
             signup_link: "/register",
             login_link,
         }),
     );
-    $("#login_to_access_modal").modal("show");
+
+    overlays.open_modal("login_to_access_modal", {
+        autoremove: true,
+        micromodal: true,
+        on_hide: () => {
+            browser_history.return_to_web_public_hash();
+        },
+    });
 }

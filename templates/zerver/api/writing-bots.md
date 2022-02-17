@@ -109,22 +109,22 @@ above as an orientation.
 ## Testing a bot's output
 
 If you just want to see how a bot reacts to a message, but don't want to set it up on a server,
-we have a little tool to help you out: `zulip-terminal`
+we have a little tool to help you out: `zulip-bot-shell`
 
 * [Install all requirements](#installing-a-development-version-of-the-zulip-bots-package).
 
-* Run `zulip-terminal` to test one of the bots in
+* Run `zulip-bot-shell` to test one of the bots in
   [`zulip_bots/bots`](https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots).
 
 Example invocations are below:
 
 ```
-> zulip-terminal converter
+> zulip-bot-shell converter
 
 Enter your message: "12 meter yard"
 Response: 12.0 meter = 13.12336 yard
 
-> zulip-terminal -b ~/followup.conf followup
+> zulip-bot-shell -b ~/followup.conf followup
 
 Enter your message: "Task completed"
 Response: stream: followup topic: foo_sender@zulip.com

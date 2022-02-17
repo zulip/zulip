@@ -237,9 +237,12 @@ export function try_deliver_locally(message_request) {
         return undefined;
     }
 
-    // Only saving in draft for locally echoed message
-    // This draft will be cleared after successfull message
-    const draft_id = drafts.update_draft();
+    // Save a locally echoed message in drafts, so it cannot be
+    // lost. It will be cleared if the message is sent successfully.
+    // We ask the drafts system to not notify the user, since they'd
+    // be quite distracting in the very common case that the message
+    // sends normally.
+    const draft_id = drafts.update_draft({no_notify: true});
     message_request.draft_id = draft_id;
 
     // Now that we've committed to delivering the message locally, we
@@ -260,7 +263,7 @@ export function try_deliver_locally(message_request) {
 
 export function edit_locally(message, request) {
     // Responsible for doing the rendering work of locally editing the
-    // content ofa message.  This is used in several code paths:
+    // content of a message.  This is used in several code paths:
     // * Editing a message where a message was locally echoed but
     //   it got an error back from the server
     // * Locally echoing any content-only edits to fully sent messages

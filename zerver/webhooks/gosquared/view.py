@@ -61,4 +61,4 @@ def api_gosquared_webhook(
     else:
         raise UnsupportedWebhookEventType("unknown_event")
 
-    return json_success()
+    return json_success(request)

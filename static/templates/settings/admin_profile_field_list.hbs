@@ -42,7 +42,7 @@
                     <hr />
                     <div class="edit_profile_field_choices_container">
                         {{#each choices}}
-                        {{> profile_field_choice }}
+                            {{> profile_field_choice }}
                         {{/each}}
                     </div>
                 </div>
@@ -53,7 +53,7 @@
                 <label for="external_acc_field_type">{{t "External account type" }}</label>
                 <select name="external_acc_field_type">
                     {{#each ../realm_default_external_accounts}}
-                    <option value='{{@key}}'>{{this.text}}</option>
+                        <option value='{{@key}}'>{{this.text}}</option>
                     {{/each}}
                     <option value="custom">{{t 'Custom' }}</option>
                 </select>

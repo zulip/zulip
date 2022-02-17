@@ -9,7 +9,6 @@ const $ = require("../zjsunit/zjquery");
 const noop = () => {};
 
 set_global("document", {
-    location: {}, // we need this to load compose.js
     to_$: () => $("document-stub"),
 });
 
@@ -46,7 +45,7 @@ mock_esm("../../static/js/message_lists", {
     },
 });
 mock_esm("../../static/js/resize", {
-    reset_compose_textarea_max_height: noop,
+    reset_compose_message_max_height: noop,
 });
 
 const people = zrequire("people");
@@ -73,8 +72,8 @@ function assert_hidden(sel) {
     assert.ok(!$(sel).visible());
 }
 
-function override_private_message_recipient({override}) {
-    override(
+function override_private_message_recipient({override_rewire}) {
+    override_rewire(
         compose_state,
         "private_message_recipient",
         (function () {
@@ -93,14 +92,14 @@ function override_private_message_recipient({override}) {
 }
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, override_rewire}) => {
         // We don't test the css calls; we just skip over them.
         $("#compose").css = () => {};
         $(".new_message_textarea").css = () => {};
 
         people.init();
         compose_state.set_message_type(false);
-        f({override});
+        f({override, override_rewire});
     });
 }
 
@@ -110,14 +109,14 @@ test("initial_state", () => {
     assert.equal(compose_state.has_message_content(), false);
 });
 
-test("start", ({override}) => {
-    override_private_message_recipient({override});
-    override(compose_actions, "autosize_message_content", () => {});
-    override(compose_actions, "expand_compose_box", () => {});
-    override(compose_actions, "set_focus", () => {});
-    override(compose_actions, "complete_starting_tasks", () => {});
-    override(compose_actions, "blur_compose_inputs", () => {});
-    override(compose_actions, "clear_textarea", () => {});
+test("start", ({override, override_rewire}) => {
+    override_private_message_recipient({override_rewire});
+    override_rewire(compose_actions, "autosize_message_content", () => {});
+    override_rewire(compose_actions, "expand_compose_box", () => {});
+    override_rewire(compose_actions, "set_focus", () => {});
+    override_rewire(compose_actions, "complete_starting_tasks", () => {});
+    override_rewire(compose_actions, "blur_compose_inputs", () => {});
+    override_rewire(compose_actions, "clear_textarea", () => {});
 
     let compose_defaults;
     override(narrow_state, "set_compose_defaults", () => compose_defaults);
@@ -218,7 +217,7 @@ test("start", ({override}) => {
     };
 
     let abort_xhr_called = false;
-    override(compose, "abort_xhr", () => {
+    override_rewire(compose, "abort_xhr", () => {
         abort_xhr_called = true;
     });
 
@@ -233,11 +232,11 @@ test("start", ({override}) => {
     assert.ok(!compose_state.composing());
 });
 
-test("respond_to_message", ({override}) => {
-    override(compose_actions, "set_focus", () => {});
-    override(compose_actions, "complete_starting_tasks", () => {});
-    override(compose_actions, "clear_textarea", () => {});
-    override_private_message_recipient({override});
+test("respond_to_message", ({override, override_rewire}) => {
+    override_rewire(compose_actions, "set_focus", () => {});
+    override_rewire(compose_actions, "complete_starting_tasks", () => {});
+    override_rewire(compose_actions, "clear_textarea", () => {});
+    override_private_message_recipient({override_rewire});
 
     // Test PM
     const person = {
@@ -273,12 +272,12 @@ test("respond_to_message", ({override}) => {
     assert.equal($("#stream_message_recipient_stream").val(), "devel");
 });
 
-test("reply_with_mention", ({override}) => {
+test("reply_with_mention", ({override, override_rewire}) => {
     compose_state.set_message_type("stream");
-    override(compose_actions, "set_focus", () => {});
-    override(compose_actions, "complete_starting_tasks", () => {});
-    override(compose_actions, "clear_textarea", () => {});
-    override_private_message_recipient({override});
+    override_rewire(compose_actions, "set_focus", () => {});
+    override_rewire(compose_actions, "complete_starting_tasks", () => {});
+    override_rewire(compose_actions, "clear_textarea", () => {});
+    override_private_message_recipient({override_rewire});
 
     const msg = {
         type: "stream",
@@ -290,7 +289,7 @@ test("reply_with_mention", ({override}) => {
     override(message_lists.current, "selected_message", () => msg);
 
     let syntax_to_insert;
-    override(compose_ui, "insert_syntax_and_focus", (syntax) => {
+    override_rewire(compose_ui, "insert_syntax_and_focus", (syntax) => {
         syntax_to_insert = syntax;
     });
 
@@ -319,7 +318,7 @@ test("reply_with_mention", ({override}) => {
     assert.equal(syntax_to_insert, "@**Bob Roberts|40**");
 });
 
-test("quote_and_reply", ({override}) => {
+test("quote_and_reply", ({override, override_rewire}) => {
     compose_state.set_message_type("stream");
     const steve = {
         user_id: 90,
@@ -328,18 +327,18 @@ test("quote_and_reply", ({override}) => {
     };
     people.add_active_user(steve);
 
-    override(compose_actions, "set_focus", () => {});
-    override(compose_actions, "complete_starting_tasks", () => {});
-    override(compose_actions, "clear_textarea", () => {});
-    override_private_message_recipient({override});
+    override_rewire(compose_actions, "set_focus", () => {});
+    override_rewire(compose_actions, "complete_starting_tasks", () => {});
+    override_rewire(compose_actions, "clear_textarea", () => {});
+    override_private_message_recipient({override_rewire});
 
     let selected_message;
     override(message_lists.current, "selected_message", () => selected_message);
 
     let expected_replacement;
     let replaced;
-    override(compose_ui, "replace_syntax", (syntax, replacement) => {
-        assert.equal(syntax, "[Quoting…]");
+    override_rewire(compose_ui, "replace_syntax", (syntax, replacement) => {
+        assert.equal(syntax, "translated: [Quoting…]");
         assert.equal(replacement, expected_replacement);
         replaced = true;
     });
@@ -361,8 +360,8 @@ test("quote_and_reply", ({override}) => {
 
     override(message_lists.current, "selected_id", () => 100);
 
-    override(compose_ui, "insert_syntax_and_focus", (syntax) => {
-        assert.equal(syntax, "[Quoting…]\n");
+    override_rewire(compose_ui, "insert_syntax_and_focus", (syntax) => {
+        assert.equal(syntax, "translated: [Quoting…]\n");
     });
 
     const opts = {
@@ -434,18 +433,13 @@ test("get_focus_area", () => {
     );
 });
 
-test("focus_in_empty_compose", ({override}) => {
-    $("#compose-textarea").is = (attr) => {
-        assert.equal(attr, ":focus");
-        return $("#compose-textarea").is_focused;
-    };
-
-    override(compose_state, "composing", () => true);
+test("focus_in_empty_compose", ({override_rewire}) => {
+    document.activeElement = {id: "compose-textarea"};
+    override_rewire(compose_state, "composing", () => true);
     $("#compose-textarea").val("");
-    $("#compose-textarea").trigger("focus");
     assert.ok(compose_state.focus_in_empty_compose());
 
-    override(compose_state, "composing", () => false);
+    override_rewire(compose_state, "composing", () => false);
     assert.ok(!compose_state.focus_in_empty_compose());
 
     $("#compose-textarea").val("foo");
@@ -455,7 +449,7 @@ test("focus_in_empty_compose", ({override}) => {
     assert.ok(!compose_state.focus_in_empty_compose());
 });
 
-test("on_narrow", ({override}) => {
+test("on_narrow", ({override, override_rewire}) => {
     let narrowed_by_topic_reply;
     override(narrow_state, "narrowed_by_topic_reply", () => narrowed_by_topic_reply);
 
@@ -463,10 +457,10 @@ test("on_narrow", ({override}) => {
     override(narrow_state, "narrowed_by_pm_reply", () => narrowed_by_pm_reply);
 
     let has_message_content;
-    override(compose_state, "has_message_content", () => has_message_content);
+    override_rewire(compose_state, "has_message_content", () => has_message_content);
 
     let cancel_called = false;
-    override(compose_actions, "cancel", () => {
+    override_rewire(compose_actions, "cancel", () => {
         cancel_called = true;
     });
     compose_actions.on_narrow({
@@ -475,7 +469,7 @@ test("on_narrow", ({override}) => {
     assert.ok(cancel_called);
 
     let on_topic_narrow_called = false;
-    override(compose_actions, "on_topic_narrow", () => {
+    override_rewire(compose_actions, "on_topic_narrow", () => {
         on_topic_narrow_called = true;
     });
     narrowed_by_topic_reply = true;
@@ -497,7 +491,7 @@ test("on_narrow", ({override}) => {
 
     has_message_content = false;
     let start_called = false;
-    override(compose_actions, "start", () => {
+    override_rewire(compose_actions, "start", () => {
         start_called = true;
     });
     narrowed_by_pm_reply = true;

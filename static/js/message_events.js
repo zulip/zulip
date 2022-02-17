@@ -5,6 +5,7 @@ import {all_messages_data} from "./all_messages_data";
 import * as channel from "./channel";
 import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
+import * as compose_validate from "./compose_validate";
 import * as condense from "./condense";
 import * as huddle_data from "./huddle_data";
 import * as message_edit from "./message_edit";
@@ -54,7 +55,7 @@ function maybe_add_narrowed_messages(messages, msg_list) {
             const elsewhere_messages = [];
 
             for (const elem of messages) {
-                if (Object.prototype.hasOwnProperty.call(data.messages, elem.id)) {
+                if (Object.hasOwn(data.messages, elem.id)) {
                     util.set_match_data(elem, data.messages[elem.id]);
                     new_messages.push(elem);
                 } else {
@@ -218,10 +219,30 @@ export function update_messages(events) {
             ) {
                 changed_compose = true;
                 compose_state.topic(new_topic);
+                compose_validate.warn_if_topic_resolved();
                 compose_fade.set_focused_recipient("stream");
             }
 
             for (const msg of event_messages) {
+                if (page_params.realm_allow_edit_history) {
+                    /* Simulate the format of server-generated edit
+                     * history events. This logic ensures that all
+                     * messages that were moved are displayed as such
+                     * without a browser reload. */
+                    const edit_history_entry = {
+                        edited_by: event.edited_by,
+                        prev_topic: orig_topic,
+                        prev_stream: event.stream_id,
+                        timestamp: event.edit_timestamp,
+                    };
+                    if (msg.edit_history === undefined) {
+                        msg.edit_history = [];
+                    }
+                    msg.edit_history = [edit_history_entry].concat(msg.edit_history);
+                }
+                msg.last_edit_timestamp = event.edit_timestamp;
+                delete msg.last_edit_timestr;
+
                 // Remove the recent topics entry for the old topics;
                 // must be called before we call set_message_topic.
                 //
@@ -348,9 +369,9 @@ export function update_messages(events) {
 
         if (event.orig_content !== undefined) {
             if (page_params.realm_allow_edit_history) {
-                // Most correctly, we should do this for topic edits as
-                // well; but we don't use the data except for content
-                // edits anyway.
+                // Note that we do this for topic edits separately, above.
+                // If an event changed both content and topic, we'll generate
+                // two client-side events, which is probably good for display.
                 const edit_history_entry = {
                     edited_by: event.edited_by,
                     prev_content: event.orig_content,
@@ -404,7 +425,7 @@ export function update_messages(events) {
 
         // Rerender "Message edit history" if it was open to the edited message.
         if (
-            $("#message-edit-history").hasClass("in") &&
+            $("#message-edit-history").parents(".micromodal").hasClass("modal--open") &&
             msg.id === Number.parseInt($("#message-history").attr("data-message-id"), 10)
         ) {
             message_edit_history.fetch_and_render_message_history(msg);

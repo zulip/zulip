@@ -293,11 +293,21 @@ export class Filter {
     // Parse a string into a list of operators (see below).
     static parse(str) {
         const operators = [];
-        const search_term = [];
+        let search_term = [];
         let negated;
         let operator;
         let operand;
         let term;
+
+        function maybe_add_search_terms() {
+            if (search_term.length > 0) {
+                operator = "search";
+                const _operand = search_term.join(" ");
+                term = {operator, operand: _operand, negated: false};
+                operators.push(term);
+                search_term = [];
+            }
+        }
 
         // Match all operands that either have no spaces, or are surrounded by
         // quotes, preceded by an optional operator that may have a space after it.
@@ -331,18 +341,17 @@ export class Filter {
                     search_term.push(token);
                     continue;
                 }
+                // If any search query was present and it is followed by some other filters
+                // then we must add that search filter in its current position in the
+                // operators list. This is done so that the last active filter is correctly
+                // detected by the `get_search_result` function (in search_suggestions.js).
+                maybe_add_search_terms();
                 term = {negated, operator, operand};
                 operators.push(term);
             }
         }
 
-        // NB: Callers of 'parse' can assume that the 'search' operator is last.
-        if (search_term.length > 0) {
-            operator = "search";
-            operand = search_term.join(" ");
-            term = {operator, operand, negated: false};
-            operators.push(term);
-        }
+        maybe_add_search_terms();
         return operators;
     }
 
@@ -430,7 +439,49 @@ export class Filter {
         return this.has_operator("pm-with") && this.operands("pm-with")[0].split(",").length === 1;
     }
 
+    supports_collapsing_recipients() {
+        // Determines whether a view is guaranteed, by construction,
+        // to contain consecutive messages in a given topic, and thus
+        // it is appropriate to collapse recipient/sender headings.
+        const term_types = this.sorted_term_types();
+
+        // All search/narrow term types, including negations, with the
+        // property that if a message is in the view, then any other
+        // message sharing its recipient (stream/topic or private
+        // message recipient) must also be present in the view.
+        const valid_term_types = new Set([
+            "stream",
+            "not-stream",
+            "topic",
+            "not-topic",
+            "pm-with",
+            "group-pm-with",
+            "not-group-pm-with",
+            "is-private",
+            "not-is-private",
+            "is-resolved",
+            "not-is-resolved",
+            "in-home",
+            "in-all",
+            "streams-public",
+            "not-streams-public",
+            "streams-web-public",
+            "not-streams-web-public",
+            "near",
+        ]);
+
+        for (const term of term_types) {
+            if (!valid_term_types.has(term)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     calc_can_mark_messages_read() {
+        // Arguably this should match supports_collapsing_recipients.
+        // We may want to standardize on that in the future.  (At
+        // present, this function does not allow combining valid filters).
         const term_types = this.sorted_term_types();
 
         if (_.isEqual(term_types, ["stream", "topic"])) {
@@ -708,6 +759,8 @@ export class Filter {
             return false;
         }
 
+        // TODO: It's not clear why `streams:` filters would not be
+        // applicable locally.
         if (this.has_operator("streams") || this.has_negated_operand("streams", "public")) {
             return false;
         }

@@ -2,7 +2,7 @@ from typing import Any, Dict, List
 
 import dateutil.parser
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
 from zerver.lib.actions import send_rate_limited_pm_notification_to_bot_owner
@@ -99,7 +99,7 @@ def api_freshstatus_webhook(
     check_send_webhook_message(
         request, user_profile, subject, body, payload["event_data"]["event_type"]
     )
-    return json_success()
+    return json_success(request)
 
 
 def get_services_content(services_data: List[Dict[str, Any]]) -> str:

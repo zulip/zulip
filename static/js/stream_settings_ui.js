@@ -5,6 +5,7 @@ import tippy from "tippy.js";
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
 import render_browse_streams_list_item from "../templates/stream_settings/browse_streams_list_item.hbs";
+import render_selected_stream_title from "../templates/stream_settings/selected_stream_title.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
 import render_stream_settings_overlay from "../templates/stream_settings/stream_settings_overlay.hbs";
 
@@ -31,11 +32,22 @@ import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
 import * as stream_muting from "./stream_muting";
 import * as stream_settings_data from "./stream_settings_data";
+import * as stream_subscribers_ui from "./stream_subscribers_ui";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
+
+export function set_right_panel_title(sub) {
+    let title_icon_color = "#333333";
+    if (settings_data.using_dark_theme()) {
+        title_icon_color = "#dddeee";
+    }
+    $("#subscription_overlay .stream-info-title").html(
+        render_selected_stream_title({sub, title_icon_color}),
+    );
+}
 
 export const show_subs_pane = {
     nothing_selected() {
@@ -43,10 +55,10 @@ export const show_subs_pane = {
         $(".nothing-selected").show();
         $("#subscription_overlay .stream-info-title").text($t({defaultMessage: "Stream settings"}));
     },
-    settings(stream_name) {
+    settings(sub) {
         $(".settings, #stream-creation").hide();
         $(".settings").show();
-        $("#subscription_overlay .stream-info-title").text("#" + stream_name);
+        set_right_panel_title(sub);
     },
     create_stream() {
         $(".nothing-selected, .settings, #stream-creation").hide();
@@ -206,6 +218,11 @@ export function update_stream_privacy(slim_sub, values) {
     stream_ui_updates.update_add_subscriptions_elements(sub);
     stream_list.redraw_stream_privacy(sub);
 
+    const active_data = get_active_data();
+    if (active_data.id === sub.stream_id) {
+        set_right_panel_title(sub);
+    }
+
     // Update navbar if needed
     message_view_header.maybe_rerender_title_area_for_stream(sub);
 }
@@ -227,7 +244,7 @@ export function set_color(stream_id, color) {
 
 export function update_subscribers_ui(sub) {
     update_left_panel_row(sub);
-    stream_ui_updates.update_subscribers_list(sub);
+    stream_subscribers_ui.update_subscribers_list(sub);
     message_view_header.maybe_rerender_title_area_for_stream(sub);
 }
 
@@ -236,7 +253,7 @@ export function add_sub_to_table(sub) {
         // If a stream is already listed/added in subscription modal,
         // display stream in `Subscribed` tab and return.
         // This can happen in some corner cases (which might
-        // be backend bugs) where a realm adminsitrator is subscribed
+        // be backend bugs) where a realm administrator is subscribed
         // to a private stream, in which case they might get two
         // stream-create events.
         stream_ui_updates.update_stream_row_in_settings_tab(sub);
@@ -255,7 +272,7 @@ export function add_sub_to_table(sub) {
     }
 
     const settings_html = render_stream_settings(sub);
-    ui.get_content_element($(".subscriptions .settings")).append($(settings_html));
+    ui.get_content_element($("#manage_streams_container .settings")).append($(settings_html));
 
     if (stream_create.get_name() === sub.name) {
         // This `stream_create.get_name()` check tells us whether the
@@ -274,8 +291,7 @@ export function remove_stream(stream_id) {
     // stream, but we let jQuery silently handle that.
     const row = row_for_stream_id(stream_id);
     row.remove();
-    const sub = sub_store.get(stream_id);
-    if (stream_edit.is_sub_settings_active(sub)) {
+    if (hash_util.is_editing_stream(stream_id)) {
         stream_edit.open_edit_panel_empty();
     }
 }
@@ -299,7 +315,7 @@ export function update_settings_for_subscribed(slim_sub) {
         add_sub_to_table(sub);
     }
 
-    stream_ui_updates.update_subscribers_list(sub);
+    stream_subscribers_ui.update_subscribers_list(sub);
 
     // Display the swatch and subscription stream_settings
     stream_ui_updates.update_regular_sub_settings(sub);
@@ -317,7 +333,7 @@ export function show_active_stream_in_left_panel() {
 export function update_settings_for_unsubscribed(slim_sub) {
     const sub = stream_settings_data.get_sub_for_settings(slim_sub);
     update_left_panel_row(sub);
-    stream_ui_updates.update_subscribers_list(sub);
+    stream_subscribers_ui.update_subscribers_list(sub);
     stream_ui_updates.update_toggler_for_sub(sub);
     stream_ui_updates.update_settings_button_for_sub(sub);
     stream_ui_updates.update_regular_sub_settings(sub);
@@ -408,7 +424,7 @@ export function render_left_panel_superset() {
         return render_browse_streams_list(template_data);
     });
 
-    ui.get_content_element($("#subscriptions_table .streams-list")).html(html);
+    ui.get_content_element($("#manage_streams_container .streams-list")).html(html);
 }
 
 // LeftPanelParams { input: String, subscribed_only: Boolean, sort_order: String }
@@ -425,7 +441,7 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
 
     const stream_ids = [];
 
-    for (const row of $("#subscriptions_table .stream-row")) {
+    for (const row of $("#manage_streams_container .stream-row")) {
         const stream_id = stream_id_for_row(row);
         stream_ids.push(stream_id);
     }
@@ -440,7 +456,7 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
         hidden_ids.add(stream_id);
     }
 
-    for (const row of $("#subscriptions_table .stream-row")) {
+    for (const row of $("#manage_streams_container .stream-row")) {
         const stream_id = stream_id_for_row(row);
 
         // Below code goes away if we don't do sort-DOM-in-place.
@@ -458,7 +474,7 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
     const all_stream_ids = [...buckets.name, ...buckets.desc, ...buckets.other];
 
     for (const stream_id of all_stream_ids) {
-        ui.get_content_element($("#subscriptions_table .streams-list")).append(
+        ui.get_content_element($("#manage_streams_container .streams-list")).append(
             widgets.get(stream_id),
         );
     }
@@ -565,7 +581,7 @@ export function setup_page(callback) {
                 switch_stream_sort(key);
             },
         });
-        $("#subscriptions_table .search-container").prepend(sort_toggler.get());
+        $("#manage_streams_container .search-container").prepend(sort_toggler.get());
 
         // place subs tooltips at bottom
         tippy(".tippy-bottom", {
@@ -588,7 +604,7 @@ export function setup_page(callback) {
 
         if (should_list_all_streams()) {
             const toggler_elem = toggler.get();
-            $("#subscriptions_table .search-container").prepend(toggler_elem);
+            $("#manage_streams_container .search-container").prepend(toggler_elem);
         }
         if (page_params.is_guest) {
             toggler.disable_tab("all-streams");
@@ -599,7 +615,7 @@ export function setup_page(callback) {
     }
 
     function populate_and_fill() {
-        $("#subscriptions_table").empty();
+        $("#manage_streams_container").empty();
 
         // TODO: Ideally we'd indicate in some way what stream types
         // the user can create, by showing other options as disabled.
@@ -607,7 +623,8 @@ export function setup_page(callback) {
         const template_data = {
             can_create_streams:
                 settings_data.user_can_create_private_streams() ||
-                settings_data.user_can_create_public_streams(),
+                settings_data.user_can_create_public_streams() ||
+                settings_data.user_can_create_web_public_streams(),
             hide_all_streams: !should_list_all_streams(),
             max_name_length: page_params.max_stream_name_length,
             max_description_length: page_params.max_stream_description_length,
@@ -625,7 +642,7 @@ export function setup_page(callback) {
         };
 
         const rendered = render_stream_settings_overlay(template_data);
-        $("#subscriptions_table").append(rendered);
+        $("#manage_streams_container").append(rendered);
 
         render_left_panel_superset();
         initialize_components();
@@ -651,6 +668,7 @@ export function setup_page(callback) {
             if (
                 settings_data.user_can_create_private_streams() ||
                 settings_data.user_can_create_public_streams() ||
+                settings_data.user_can_create_web_public_streams() ||
                 page_params.realm_is_zephyr_mirror_realm
             ) {
                 open_create_stream();
@@ -727,7 +745,7 @@ export function change_state(section) {
         // Guest users can not access unsubscribed streams
         // So redirect guest users to 'subscribed' tab
         // for any unsubscribed stream settings hash
-        if (page_params.is_guest && !stream_data.id_is_subscribed(stream_id)) {
+        if (page_params.is_guest && !stream_data.is_subscribed(stream_id)) {
             toggler.goto("subscribed");
         } else {
             show_right_section();
@@ -799,7 +817,7 @@ export function keyboard_sub() {
     const active_data = get_active_data();
     const row_data = get_row_data(active_data.row);
     if (row_data) {
-        sub_or_unsub(row_data.object, false);
+        sub_or_unsub(row_data.object);
     }
 }
 
@@ -949,19 +967,14 @@ export function open_create_stream() {
     browser_history.update("#streams/new");
 }
 
-export function unsubscribe_from_private_stream(sub, from_stream_popover) {
-    let modal_parent = $("#subscriptions_table");
+export function unsubscribe_from_private_stream(sub) {
     const html_body = render_unsubscribe_private_stream_modal();
-
-    if (from_stream_popover) {
-        modal_parent = $(".left-sidebar-modal-holder");
-    }
 
     function unsubscribe_from_stream() {
         let stream_row;
         if (overlays.streams_open()) {
             stream_row = $(
-                "#subscriptions_table div.stream-row[data-stream-id='" + sub.stream_id + "']",
+                "#manage_streams_container div.stream-row[data-stream-id='" + sub.stream_id + "']",
             );
         }
 
@@ -969,22 +982,20 @@ export function unsubscribe_from_private_stream(sub, from_stream_popover) {
     }
 
     confirm_dialog.launch({
-        parent: modal_parent,
         html_heading: $t_html(
             {defaultMessage: "Unsubscribe from {stream_name}"},
             {stream_name: sub.name},
         ),
         html_body,
         on_click: unsubscribe_from_stream,
-        fade: true,
     });
 }
 
-export function sub_or_unsub(sub, from_stream_popover, stream_row) {
+export function sub_or_unsub(sub, stream_row) {
     if (sub.subscribed) {
         // TODO: This next line should allow guests to access web-public streams.
         if (sub.invite_only || page_params.is_guest) {
-            unsubscribe_from_private_stream(sub, from_stream_popover);
+            unsubscribe_from_private_stream(sub);
             return;
         }
         ajaxUnsubscribe(sub, stream_row);
@@ -993,13 +1004,105 @@ export function sub_or_unsub(sub, from_stream_popover, stream_row) {
     }
 }
 
+export function update_web_public_stream_privacy_option_state(container) {
+    const web_public_stream_elem = container.find(
+        `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.web_public.code)}']`,
+    );
+    if (
+        !page_params.server_web_public_streams_enabled ||
+        !page_params.realm_enable_spectator_access
+    ) {
+        const for_change_privacy_modal = container.attr("id") === "stream_privacy_modal";
+        if (for_change_privacy_modal && web_public_stream_elem.is(":checked")) {
+            // We do not hide web-public option in the "Change privacy" modal if
+            // stream is web-public already. The option is disabled in this case.
+            web_public_stream_elem.prop("disabled", true);
+            return;
+        }
+        web_public_stream_elem.closest(".radio-input-parent").hide();
+        container
+            .find(".stream-privacy-values .radio-input-parent:visible:last")
+            .css("border-bottom", "none");
+    } else {
+        if (!web_public_stream_elem.is(":visible")) {
+            container
+                .find(".stream-privacy-values .radio-input-parent:visible:last")
+                .css("border-bottom", "");
+            web_public_stream_elem.closest(".radio-input-parent").show();
+        }
+        web_public_stream_elem.prop(
+            "disabled",
+            !settings_data.user_can_create_web_public_streams(),
+        );
+    }
+}
+
+export function update_public_stream_privacy_option_state(container) {
+    const public_stream_elem = container.find(
+        `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.public.code)}']`,
+    );
+    public_stream_elem.prop("disabled", !settings_data.user_can_create_public_streams());
+}
+
+export function update_private_stream_privacy_option_state(container) {
+    // Disable both "Private, shared history" and "Private, protected history" options.
+    const private_stream_elem = container.find(
+        `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.private.code)}']`,
+    );
+    const private_with_public_history_elem = container.find(
+        `input[value='${CSS.escape(
+            stream_data.stream_privacy_policy_values.private_with_public_history.code,
+        )}']`,
+    );
+
+    private_stream_elem.prop("disabled", !settings_data.user_can_create_private_streams());
+    private_with_public_history_elem.prop(
+        "disabled",
+        !settings_data.user_can_create_private_streams(),
+    );
+}
+
+export function hide_or_disable_stream_privacy_options_if_required(container) {
+    update_web_public_stream_privacy_option_state(container);
+
+    update_public_stream_privacy_option_state(container);
+
+    update_private_stream_privacy_option_state(container);
+}
+
+export function update_stream_privacy_choices(policy) {
+    if (!overlays.streams_open()) {
+        return;
+    }
+    const change_privacy_modal_opened = $("#stream_privacy_modal").is(":visible");
+    const stream_creation_form_opened = $("#stream-creation").is(":visible");
+
+    if (!change_privacy_modal_opened && !stream_creation_form_opened) {
+        return;
+    }
+    let container = $("#stream-creation");
+    if (change_privacy_modal_opened) {
+        container = $("#stream_privacy_modal");
+    }
+
+    if (policy === "create_private_stream_policy") {
+        update_private_stream_privacy_option_state(container);
+    }
+    if (policy === "create_public_stream_policy") {
+        update_public_stream_privacy_option_state(container);
+    }
+    if (policy === "create_web_public_stream_policy") {
+        update_web_public_stream_privacy_option_state(container);
+    }
+}
+
 export function initialize() {
-    $("#subscriptions_table").on("click", ".create_stream_button", (e) => {
+    $("#manage_streams_container").on("click", ".create_stream_button", (e) => {
         e.preventDefault();
         open_create_stream();
     });
 
-    $(".subscriptions").on("click", "#stream_creation_form [data-dismiss]", (e) => {
+    $("#manage_streams_container").on("click", "#stream_creation_form [data-dismiss]", (e) => {
         e.preventDefault();
         // we want to make sure that the click is not just a simulated
         // click; this fixes an issue where hitting "Enter" would
@@ -1009,13 +1112,17 @@ export function initialize() {
         }
     });
 
-    $("#subscriptions_table").on("click", ".email-address", function () {
+    $("#manage_streams_container").on("click", ".email-address", function () {
         selectText(this);
     });
 
-    $("#subscriptions_table").on("click", ".stream-row, .create_stream_button", show_right_section);
+    $("#manage_streams_container").on(
+        "click",
+        ".stream-row, .create_stream_button",
+        show_right_section,
+    );
 
-    $("#subscriptions_table").on("click", ".fa-chevron-left", () => {
+    $("#manage_streams_container").on("click", ".fa-chevron-left", () => {
         $(".right").removeClass("show");
         $(".subscriptions-header").removeClass("slide-left");
     });
@@ -1023,7 +1130,7 @@ export function initialize() {
     {
         const sel = ".search-container, .streams-list, .subscriptions-header";
 
-        $("#subscriptions_table").on("click", sel, (e) => {
+        $("#manage_streams_container").on("click", sel, (e) => {
             if ($(e.target).is(sel)) {
                 stream_edit.open_edit_panel_empty();
             }

@@ -3,8 +3,8 @@ class zulip::postgresql_base {
   include zulip::postgresql_common
   include zulip::process_fts_updates
 
-  case $::osfamily {
-    'debian': {
+  case $::os['family'] {
+    'Debian': {
       $postgresql = "postgresql-${zulip::postgresql_common::version}"
       $postgresql_sharedir = "/usr/share/postgresql/${zulip::postgresql_common::version}"
       $postgresql_confdirs = [
@@ -20,7 +20,7 @@ class zulip::postgresql_base {
       $postgresql_dict_dict = '/var/cache/postgresql/dicts/en_us.dict'
       $postgresql_dict_affix = '/var/cache/postgresql/dicts/en_us.affix'
     }
-    'redhat': {
+    'RedHat': {
       $postgresql = "postgresql${zulip::postgresql_common::version}"
       $postgresql_sharedir = "/usr/pgsql-${zulip::postgresql_common::version}/share"
       $postgresql_confdirs = [
@@ -72,8 +72,8 @@ class zulip::postgresql_base {
     source  => 'puppet:///modules/zulip/nagios_plugins/zulip_postgresql',
   }
 
-  $pgroonga = zulipconf('machine', 'pgroonga', '')
-  if $pgroonga == 'enabled' {
+  $pgroonga = zulipconf('machine', 'pgroonga', false)
+  if $pgroonga {
     # Needed for optional our full text search system
 
     # Removed 2020-12 in version 4.0; these lines can be removed when
@@ -88,19 +88,21 @@ class zulip::postgresql_base {
                   Exec[$setup_system_deps]],
     }
 
+    $dbname = zulipconf('postgresql', 'database_name', 'zulip')
+    $dbuser = zulipconf('postgresql', 'database_user', 'zulip')
     file { $pgroonga_setup_sql_path:
       ensure  => file,
       require => Package["${postgresql}-pgdg-pgroonga"],
       owner   => 'postgres',
       group   => 'postgres',
       mode    => '0640',
-      source  => 'puppet:///modules/zulip/postgresql/pgroonga_setup.sql',
+      content => template('zulip/postgresql/pgroonga_setup.sql.template.erb'),
     }
 
     exec{'create_pgroonga_extension':
       require => File[$pgroonga_setup_sql_path],
       # lint:ignore:140chars
-      command => "bash -c 'cat ${pgroonga_setup_sql_path} | su postgres -c \"psql -v ON_ERROR_STOP=1 zulip\" && touch ${pgroonga_setup_sql_path}.applied'",
+      command => "bash -c 'cat ${pgroonga_setup_sql_path} | su postgres -c \"psql -v ON_ERROR_STOP=1 ${dbname}\" && touch ${pgroonga_setup_sql_path}.applied'",
       # lint:endignore
       creates => "${pgroonga_setup_sql_path}.applied",
     }

@@ -18,13 +18,11 @@ async function delete_message_test(page: Page): Promise<void> {
     const messages_quantitiy = await page.evaluate(() => $("#zhome .message_row").length);
     const last_message_id = await click_delete_and_return_last_msg_id(page);
 
-    await page.waitForSelector("#dialog_widget_modal", {visible: true});
-    await page.click(".dialog_submit_button");
-
-    const confirm_span = ".dialog_submit_button span";
-    await page.waitForSelector(confirm_span, {hidden: true});
-
-    await page.waitForSelector("#dialog_widget_modal", {hidden: true});
+    await common.wait_for_micromodal_to_open(page);
+    await page.evaluate(() => {
+        (document.querySelector(".dialog_submit_button") as HTMLButtonElement)?.click();
+    });
+    await common.wait_for_micromodal_to_close(page);
 
     await page.waitForFunction(
         (expected_length: number) => $("#zhome .message_row").length === expected_length,

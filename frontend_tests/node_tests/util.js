@@ -280,8 +280,6 @@ run_test("move_array_elements_to_front", () => {
 });
 
 run_test("clean_user_content_links", () => {
-    window.location.href = "http://zulip.zulipdev.com/";
-    window.location.origin = "http://zulip.zulipdev.com";
     assert.equal(
         util.clean_user_content_links(
             '<a href="http://example.com">good</a> ' +

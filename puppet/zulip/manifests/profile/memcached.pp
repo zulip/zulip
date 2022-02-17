@@ -3,12 +3,12 @@ class zulip::profile::memcached {
   include zulip::sasl_modules
   include zulip::systemd_daemon_reload
 
-  case $::osfamily {
-    'debian': {
+  case $::os['family'] {
+    'Debian': {
       $memcached_packages = [ 'memcached', 'sasl2-bin' ]
       $memcached_user = 'memcache'
     }
-    'redhat': {
+    'RedHat': {
       $memcached_packages = [ 'memcached', 'cyrus-sasl' ]
       $memcached_user = 'memcached'
     }
@@ -99,9 +99,16 @@ Environment=SASL_CONF_PATH=/etc/sasl2
     mode    => '0644',
     content => template('zulip/memcached.conf.template.erb'),
   }
+  file { '/run/memcached':
+    ensure  => 'directory',
+    owner   => 'memcache',
+    group   => 'memcache',
+    mode    => '0755',
+    require => Package[$memcached_packages],
+  }
   service { 'memcached':
     ensure    => running,
     subscribe => File['/etc/memcached.conf'],
-    require   => Class['zulip::systemd_daemon_reload'];
+    require   => [File['/run/memcached'], Class['zulip::systemd_daemon_reload']],
   }
 }

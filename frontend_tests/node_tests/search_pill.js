@@ -70,10 +70,10 @@ run_test("get_items", () => {
     );
 });
 
-run_test("create_pills", ({override}) => {
+run_test("create_pills", ({override_rewire}) => {
     let input_pill_create_called = false;
 
-    override(input_pill, "create", () => {
+    override_rewire(input_pill, "create", () => {
         input_pill_create_called = true;
         return {dummy: "dummy"};
     });

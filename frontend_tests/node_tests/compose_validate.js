@@ -3,13 +3,11 @@
 const {strict: assert} = require("assert");
 
 const {$t_html} = require("../zjsunit/i18n");
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
-
-set_global("document", {location: {}});
 
 const channel = mock_esm("../../static/js/channel");
 const compose_actions = mock_esm("../../static/js/compose_actions");
@@ -18,6 +16,7 @@ const ui_util = mock_esm("../../static/js/ui_util");
 
 const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_validate = zrequire("compose_validate");
+const message_edit = zrequire("message_edit");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
@@ -61,9 +60,9 @@ people.add_cross_realm_user(welcome_bot);
 
 function test_ui(label, f) {
     // The sloppy_$ flag lets us re-use setup from prior tests.
-    run_test(label, ({override, mock_template}) => {
+    run_test(label, ({override, override_rewire, mock_template}) => {
         $("#compose-textarea").val("some message");
-        f({override, mock_template});
+        f({override, override_rewire, mock_template});
     });
 }
 
@@ -130,7 +129,7 @@ test_ui("validate", ({override, mock_template}) => {
 
         $("#compose-send-button").prop("disabled", false);
         $("#compose-send-button").trigger("focus");
-        $("#sending-indicator").hide();
+        $("#compose-send-button .loader").hide();
 
         const pm_pill_container = $.create("fake-pm-pill-container");
         $("#private_message_recipient")[0] = {};
@@ -153,7 +152,7 @@ test_ui("validate", ({override, mock_template}) => {
 
     initialize_pm_pill();
     assert.ok(!compose_validate.validate());
-    assert.ok(!$("#sending-indicator").visible());
+    assert.ok(!$("#compose-send-button .loader").visible());
     assert.equal($("#compose-send-button").prop("disabled"), false);
     assert.equal(
         $("#compose-error-msg").html(),
@@ -246,11 +245,11 @@ test_ui("validate", ({override, mock_template}) => {
     assert.ok(!compose_validate.validate());
     assert.equal(
         $("#compose-error-msg").html(),
-        $t_html({defaultMessage: "Please specify a topic"}),
+        $t_html({defaultMessage: "Topics are required in this organization"}),
     );
 });
 
-test_ui("get_invalid_recipient_emails", ({override}) => {
+test_ui("get_invalid_recipient_emails", ({override_rewire}) => {
     const welcome_bot = {
         email: "welcome-bot@example.com",
         user_id: 124,
@@ -266,7 +265,7 @@ test_ui("get_invalid_recipient_emails", ({override}) => {
 
     people.initialize(page_params.user_id, params);
 
-    override(compose_state, "private_message_recipient", () => "welcome-bot@example.com");
+    override_rewire(compose_state, "private_message_recipient", () => "welcome-bot@example.com");
     assert.deepEqual(compose_validate.get_invalid_recipient_emails(), []);
 });
 
@@ -322,7 +321,7 @@ test_ui("test_wildcard_mention_allowed", () => {
     assert.ok(!compose_validate.wildcard_mention_allowed());
 });
 
-test_ui("validate_stream_message", ({override, mock_template}) => {
+test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
     // This test is in kind of continuation to test_validate but since it is
     // primarily used to get coverage over functions called from validate()
     // we are separating it up in different test. Though their relative position
@@ -353,7 +352,7 @@ test_ui("validate_stream_message", ({override, mock_template}) => {
         compose_content = data;
     };
 
-    override(compose_validate, "wildcard_mention_allowed", () => true);
+    override_rewire(compose_validate, "wildcard_mention_allowed", () => true);
     compose_state.message_content("Hey @**all**");
     assert.ok(!compose_validate.validate());
     assert.equal($("#compose-send-button").prop("disabled"), false);
@@ -361,7 +360,7 @@ test_ui("validate_stream_message", ({override, mock_template}) => {
     assert.equal(compose_content, "compose_all_everyone_stub");
     assert.ok($("#compose-all-everyone").visible());
 
-    override(compose_validate, "wildcard_mention_allowed", () => false);
+    override_rewire(compose_validate, "wildcard_mention_allowed", () => false);
     assert.ok(!compose_validate.validate());
     assert.equal(
         $("#compose-error-msg").html(),
@@ -632,7 +631,7 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
     }
 });
 
-test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
+test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, mock_template}) => {
     override(settings_data, "user_can_subscribe_other_users", () => true);
 
     let mentioned = {
@@ -678,7 +677,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
     const checks = [
         (function () {
             let called;
-            override(compose_validate, "needs_subscribe_warning", (user_id, stream_id) => {
+            override_rewire(compose_validate, "needs_subscribe_warning", (user_id, stream_id) => {
                 called = true;
                 assert.equal(user_id, 34);
                 assert.equal(stream_id, 111);
@@ -754,4 +753,54 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
     compose_validate.warn_if_mentioning_unsubscribed_user(mentioned);
     assert.equal($("#compose_invite_users").visible(), true);
     assert.ok(looked_for_existing);
+});
+
+test_ui("test clear_topic_resolved_warning", () => {
+    $("#compose_resolved_topic").show();
+    $("#compose-send-status").show();
+
+    compose_validate.clear_topic_resolved_warning();
+
+    assert.ok(!$("#compose_resolved_topic").visible());
+    assert.ok(!$("#compose-send-status").visible());
+});
+
+test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
+    override(settings_data, "user_can_move_messages_between_streams", () => true);
+
+    mock_template("compose_resolved_topic.hbs", false, (context) => {
+        assert.ok(context.can_move_topic);
+        assert.ok(context.topic_name.startsWith(message_edit.RESOLVED_TOPIC_PREFIX));
+        return "fake-compose_resolved_topic";
+    });
+
+    const sub = {
+        stream_id: 111,
+        name: "random",
+    };
+    stream_data.add_sub(sub);
+
+    // The error message area where it is shown
+    const error_area = $("#compose_resolved_topic");
+    error_area.html("");
+
+    compose_state.set_message_type("stream");
+    compose_state.stream_name("Do not exist");
+    compose_state.topic(message_edit.RESOLVED_TOPIC_PREFIX + "hello");
+
+    // Do not show a warning if stream name does not exist
+    compose_validate.warn_if_topic_resolved();
+    assert.ok(!error_area.visible());
+
+    compose_state.stream_name("random");
+
+    // Show the warning now as stream also exists
+    compose_validate.warn_if_topic_resolved();
+    assert.ok(error_area.visible());
+
+    compose_state.topic("hello");
+
+    // The warning will be cleared now
+    compose_validate.warn_if_topic_resolved();
+    assert.ok(!error_area.visible());
 });

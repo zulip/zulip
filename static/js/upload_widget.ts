@@ -60,7 +60,7 @@ export function build_widget(
         if (files === null || files === undefined || files.length === 0) {
             return false;
         }
-        get_file_input().get(0).files = files;
+        get_file_input()[0].files = files;
         e.preventDefault();
         return false;
     });
@@ -152,7 +152,7 @@ export function build_direct_upload_widget(
         if (files === null || files === undefined || files.length === 0) {
             return false;
         }
-        get_file_input().get(0).files = files;
+        get_file_input()[0].files = files;
         e.preventDefault();
         return false;
     });

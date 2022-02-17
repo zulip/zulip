@@ -62,7 +62,7 @@ export function render_notifications_for_narrow() {
         $("#typing_notifications").html(
             render_typing_notifications({
                 users: users_typing,
-                several_users: num_of_users_typing >= MAX_USERS_TO_DISPLAY_NAME,
+                several_users: num_of_users_typing > MAX_USERS_TO_DISPLAY_NAME,
             }),
         );
         $("#typing_notifications").show();

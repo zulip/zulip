@@ -158,7 +158,7 @@ class BlueslipError extends Error {
 
 export function exception_msg(
     ex: Error & {
-        // Unsupported properties avaliable on some browsers
+        // Unsupported properties available on some browsers
         fileName?: string;
         lineNumber?: number;
     },

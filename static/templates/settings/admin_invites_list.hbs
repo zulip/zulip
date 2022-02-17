@@ -14,12 +14,15 @@
     {{#if is_admin}}
     <td>
         <span class="referred_by">
-            <a data-user-id="{{invited_by_user_id}}" href="#" class="view_user_profile">{{referrer_name}}</a>
+            <a data-user-id="{{invited_by_user_id}}" class="view_user_profile" tabindex="0">{{referrer_name}}</a>
         </span>
     </td>
     {{/if}}
     <td>
         <span class="invited_at">{{invited_absolute_time}}</span>
+    </td>
+    <td>
+        <span class="expires_at">{{expiry_date_absolute_time}}</span>
     </td>
     <td>
         <span>{{invited_as_text}}</span>

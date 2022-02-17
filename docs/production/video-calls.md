@@ -20,7 +20,7 @@ installation, you'll need to register a custom Zoom app as follows:
    - Disable the option to publish the app on the Marketplace.
    - Click **Create**.
 
-1. Inside of the Zoom app management page:
+1. Inside the Zoom app management page:
 
    - On the **App Credentials** tab, set both the **Redirect URL for
      OAuth** and the **Whitelist URL** to
@@ -53,7 +53,7 @@ BigBlueButton server and configure it:
 
 1. Get the Shared Secret using the `bbb-conf --secret` command on your
    BigBlueButton Server. See also [the BigBlueButton
-   documentation](https://docs.bigbluebutton.org/2.2/customize.html#extract-the-shared-secret).
+   documentation](https://docs.bigbluebutton.org/admin/customize.html#extract-the-shared-secret).
 
 2. Get the URL to your BigBlueButton API. The URL has the form of
    `https://bigbluebutton.example.com/bigbluebutton/` and can also be

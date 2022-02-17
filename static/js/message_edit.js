@@ -24,13 +24,13 @@ import * as markdown from "./markdown";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
-import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 
@@ -216,18 +216,6 @@ export function show_topic_edit_spinner(row) {
     $(".topic_edit_save").hide();
     $(".topic_edit_cancel").hide();
     $(".topic_edit_spinner").show();
-}
-
-export function hide_topic_move_spinner() {
-    const spinner = $("#move_topic_modal .topic_move_spinner");
-    loading.destroy_indicator(spinner);
-    $("#move_topic_modal .modal-footer").show();
-}
-
-export function show_topic_move_spinner() {
-    const spinner = $("#move_topic_modal .topic_move_spinner");
-    loading.make_indicator(spinner);
-    $("#move_topic_modal .modal-footer").hide();
 }
 
 export function end_if_focused_on_inline_topic_edit() {
@@ -417,7 +405,6 @@ function edit_message(row, raw_content) {
             notify_new_thread: notify_new_thread_default,
             notify_old_thread: notify_old_thread_default,
             giphy_enabled: giphy.is_giphy_enabled(),
-            hide_drafts_link: true,
         }),
     );
 
@@ -585,6 +572,17 @@ function edit_message(row, raw_content) {
         const is_stream_edited = is_stream_editable ? new_stream_id !== original_stream_id : false;
         message_edit_topic_propagate.toggle(is_topic_edited || is_stream_edited);
         message_edit_breadcrumb_messages.toggle(is_stream_edited);
+
+        if (is_stream_edited) {
+            /* Reinitialize the typeahead component with content for the new stream. */
+            const new_stream_name = sub_store.get(new_stream_id).name;
+            message_edit_topic.data("typeahead").unlisten();
+            composebox_typeahead.initialize_topic_edit_typeahead(
+                message_edit_topic,
+                new_stream_name,
+                true,
+            );
+        }
     }
 
     if (!message.locally_echoed) {
@@ -996,7 +994,6 @@ export function edit_last_sent_message() {
 
 export function delete_message(msg_id) {
     const html_body = render_delete_message_modal();
-    const modal_parent = $("#main_div");
 
     function do_delete_message() {
         currently_deleting_messages.push(msg_id);
@@ -1007,7 +1004,7 @@ export function delete_message(msg_id) {
                     (id) => id !== msg_id,
                 );
                 dialog_widget.hide_dialog_spinner();
-                overlays.close_modal("#dialog_widget_modal");
+                dialog_widget.close_modal();
             },
             error(xhr) {
                 currently_deleting_messages = currently_deleting_messages.filter(
@@ -1025,7 +1022,6 @@ export function delete_message(msg_id) {
     }
 
     confirm_dialog.launch({
-        parent: modal_parent,
         html_heading: $t_html({defaultMessage: "Delete message"}),
         html_body,
         help_link: "/help/edit-or-delete-a-message#delete-a-message",
@@ -1063,15 +1059,14 @@ export function move_topic_containing_message_to_stream(
         currently_topic_editing_messages = currently_topic_editing_messages.filter(
             (id) => id !== message_id,
         );
-        hide_topic_move_spinner();
-        overlays.close_modal("#move_topic_modal");
+        dialog_widget.hide_dialog_spinner();
+        dialog_widget.close_modal();
     }
     if (currently_topic_editing_messages.includes(message_id)) {
-        hide_topic_move_spinner();
-        $("#topic_stream_edit_form_error .error-msg").text(
-            $t({defaultMessage: "A Topic Move already in progress."}),
+        ui_report.client_error(
+            $t_html({defaultMessage: "A Topic Move already in progress."}),
+            $("#move_topic_modal #dialog_error"),
         );
-        $("#topic_stream_edit_form_error").show();
         return;
     }
     currently_topic_editing_messages.push(message_id);
@@ -1102,5 +1097,42 @@ export function move_topic_containing_message_to_stream(
                 4000,
             );
         },
+    });
+}
+
+export function with_first_message_id(stream_id, topic_name, success_cb, error_cb) {
+    // The API endpoint for editing messages to change their
+    // content, topic, or stream requires a message ID.
+    //
+    // Because we don't have full data in the browser client, it's
+    // possible that we might display a topic in the left sidebar
+    // (and thus expose the UI for moving its topic to another
+    // stream) without having a message ID that is definitely
+    // within the topic.  (The comments in stream_topic_history.js
+    // discuss the tricky issues around message deletion that are
+    // involved here).
+    //
+    // To ensure this option works reliably at a small latency
+    // cost for a rare operation, we just ask the server for the
+    // latest message ID in the topic.
+    const data = {
+        anchor: "newest",
+        num_before: 1,
+        num_after: 0,
+        narrow: JSON.stringify([
+            {operator: "stream", operand: stream_id},
+            {operator: "topic", operand: topic_name},
+        ]),
+    };
+
+    channel.get({
+        url: "/json/messages",
+        data,
+        idempotent: true,
+        success(data) {
+            const message_id = data.messages[0].id;
+            success_cb(message_id);
+        },
+        error_cb,
     });
 }

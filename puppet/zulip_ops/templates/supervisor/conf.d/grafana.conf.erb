@@ -1,0 +1,7 @@
+[program:grafana]
+command=<%= @bin %> -config /etc/grafana/grafana.ini
+directory=<%= @dir %>
+priority=15
+autostart=true
+autorestart=true
+user=grafana

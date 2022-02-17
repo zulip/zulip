@@ -77,11 +77,12 @@ export function set_status_emoji(opts) {
     }
 
     user_status_emoji_info.set(opts.user_id, {
-        emoji_name: opts.emoji_name,
-        emoji_code: opts.emoji_code,
-        reaction_type: opts.reaction_type,
         emoji_alt_code: user_settings.emojiset === "text",
-        ...emoji.get_emoji_details_by_name(opts.emoji_name),
+        ...emoji.get_emoji_details_for_rendering({
+            emoji_name: opts.emoji_name,
+            emoji_code: opts.emoji_code,
+            reaction_type: opts.reaction_type,
+        }),
     });
 }
 
@@ -104,10 +105,7 @@ export function initialize(params) {
 
         if (dct.emoji_name) {
             user_status_emoji_info.set(user_id, {
-                emoji_name: dct.emoji_name,
-                emoji_code: dct.emoji_code,
-                reaction_type: dct.reaction_type,
-                ...emoji.get_emoji_details_by_name(dct.emoji_name),
+                ...emoji.get_emoji_details_for_rendering(dct),
             });
         }
     }

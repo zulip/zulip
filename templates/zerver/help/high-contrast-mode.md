@@ -12,4 +12,3 @@ W3C's Web Content Accessibility Guidelines.
 ## Related articles
 
 * [Accessibility in Zulip](https://zulip.readthedocs.io/en/latest/contributing/accessibility.html)
-* [View emoji as text](/help/view-emoji-as-text)

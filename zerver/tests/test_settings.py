@@ -350,7 +350,7 @@ class ChangeSettingsTest(ZulipTestCase):
             default_language="de",
             default_view="all_messages",
             emojiset="google",
-            timezone="US/Mountain",
+            timezone="America/Denver",
             demote_inactive_streams=2,
             color_scheme=2,
             email_notifications_batching_period_seconds=100,
@@ -456,7 +456,7 @@ class ChangeSettingsTest(ZulipTestCase):
     def test_changing_setting_using_display_setting_endpoint(self) -> None:
         """
         This test is just for adding coverage for `/settings/display` endpoint which is
-        now depreceated.
+        now deprecated.
         """
         self.login("hamlet")
 
@@ -470,7 +470,7 @@ class ChangeSettingsTest(ZulipTestCase):
     def test_changing_setting_using_notification_setting_endpoint(self) -> None:
         """
         This test is just for adding coverage for `/settings/notifications` endpoint which is
-        now depreceated.
+        now deprecated.
         """
         self.login("hamlet")
 

@@ -56,7 +56,7 @@ async function test_add_invalid_linkifier_pattern(page: Page): Promise<void> {
 
 async function test_edit_linkifier(page: Page): Promise<void> {
     await page.click(".linkifier_row .edit");
-    await page.waitForFunction(() => document.activeElement?.id === "dialog_widget_modal");
+    await common.wait_for_micromodal_to_open(page);
     await common.fill_form(page, "form.linkifier-edit-form", {
         pattern: "(?P<num>[0-9a-f]{40})",
         url_format_string: "https://trac.example.com/commit/%(num)s",
@@ -64,7 +64,7 @@ async function test_edit_linkifier(page: Page): Promise<void> {
     await page.click(".dialog_submit_button");
 
     await page.waitForSelector("#dialog_widget_modal", {hidden: true});
-    await common.wait_for_modal_to_close(page);
+    await common.wait_for_micromodal_to_close(page);
 
     await page.waitForSelector(".linkifier_row", {visible: true});
     await page.waitForFunction(
@@ -81,7 +81,7 @@ async function test_edit_linkifier(page: Page): Promise<void> {
 
 async function test_edit_invalid_linkifier(page: Page): Promise<void> {
     await page.click(".linkifier_row .edit");
-    await page.waitForFunction(() => document.activeElement?.id === "dialog_widget_modal");
+    await common.wait_for_micromodal_to_open(page);
     await common.fill_form(page, "form.linkifier-edit-form", {
         pattern: "#(?P<id>d????)",
         url_format_string: "????",
@@ -105,12 +105,9 @@ async function test_edit_invalid_linkifier(page: Page): Promise<void> {
         page,
         edit_linkifier_format_status_selector,
     );
-    assert.strictEqual(
-        edit_linkifier_format_status,
-        "Failed: Enter a valid URL.,Invalid URL format string.",
-    );
+    assert.strictEqual(edit_linkifier_format_status, "Failed: Enter a valid URL.");
 
-    await page.click(".close-modal-btn");
+    await page.click(".dialog_cancel_button");
     await page.waitForSelector("#dialog_widget_modal", {hidden: true});
 
     await page.waitForSelector(".linkifier_row", {visible: true});

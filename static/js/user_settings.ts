@@ -21,6 +21,7 @@ export type UserSettingsType = {
     enable_stream_email_notifications: boolean;
     enable_stream_push_notifications: boolean;
     enter_sends: boolean;
+    escape_navigates_to_default_view: boolean;
     fluid_layout_width: boolean;
     high_contrast_mode: boolean;
     left_side_userlist: boolean;
@@ -33,6 +34,9 @@ export type UserSettingsType = {
     translate_emoticons: boolean;
     twenty_four_hour_time: boolean;
     wildcard_mentions_notify: boolean;
+    send_stream_typing_notifications: boolean;
+    send_private_typing_notifications: boolean;
+    send_read_receipts: boolean;
 };
 
 export let user_settings = {} as UserSettingsType;

@@ -114,4 +114,4 @@ def api_opbeat_webhook(
     message = format_object(payload, "base", "")
 
     check_send_webhook_message(request, user_profile, message_subject, message)
-    return json_success()
+    return json_success(request)

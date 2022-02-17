@@ -1,3 +1,4 @@
+{{#unless show_only_indicator}}
 <div class="save-button-controls hide">
     <div class="inline-block organization-submission subsection-changes-save">
         <button class="save-discard-widget-button button primary save-button" id="org-submit-{{section_name}}" data-status="save">
@@ -18,3 +19,6 @@
     </div>
     <div class="inline-block subsection-failed-status"><p class="hide"></p></div>
 </div>
+{{else}}
+<div class="alert-notification {{section_name}}-status"></div>
+{{/unless}}

@@ -41,7 +41,7 @@ parser.add_argument("refname", help="Git reference, e.g. a branch, tag, or commi
 parser.add_argument(
     "--remote-url", help="Override the Git remote URL configured in /etc/zulip/zulip.conf."
 )
-args = parser.parse_args()
+args, extra_options = parser.parse_known_args()
 
 refname = args.refname
 # Command line remote URL will be given preference above the one
@@ -77,7 +77,11 @@ try:
     remotes = subprocess.check_output(["git", "remote"], preexec_fn=su_to_zulip).split(b"\n")
     if b"upstream" not in remotes:
         subprocess.check_call(
-            ["git", "remote", "add", "upstream", remote_url], preexec_fn=su_to_zulip
+            ["git", "remote", "add", "upstream", upstream_url], preexec_fn=su_to_zulip
+        )
+    else:
+        subprocess.check_call(
+            ["git", "remote", "set-url", "upstream", upstream_url], preexec_fn=su_to_zulip
         )
 
     logging.info("Fetching the latest commits")
@@ -86,6 +90,12 @@ try:
     )
 
     # Generate the deployment directory via git worktree from our local repository.
+    commit_hash = subprocess.check_output(
+        ["git", "rev-parse", refname],
+        preexec_fn=su_to_zulip,
+        text=True,
+    ).strip()
+    logging.info("Upgrading to %s, in %s", commit_hash, deploy_path)
     subprocess.check_call(
         ["git", "worktree", "add", "--detach", deploy_path, refname],
         stdout=subprocess.DEVNULL,
@@ -108,6 +118,7 @@ try:
                 deploy_path,
                 "--from-git",
                 *deploy_options,
+                *extra_options,
             ]
         )
     except subprocess.CalledProcessError:

@@ -10,11 +10,13 @@ from django.core.exceptions import ValidationError
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
+from confirmation.models import Confirmation
 from zerver.lib.actions import (
     change_user_is_active,
     create_users,
     do_change_can_create_users,
     do_change_user_role,
+    do_create_multiuse_invite_link,
     do_create_user,
     do_deactivate_user,
     do_delete_user,
@@ -62,6 +64,7 @@ from zerver.models import (
     UserHotspot,
     UserProfile,
     check_valid_user_ids,
+    filter_to_valid_prereg_users,
     get_client,
     get_fake_email_domain,
     get_realm,
@@ -326,12 +329,13 @@ class PermissionTest(ZulipTestCase):
         #############################################################
         # Now, switch email address visibility, check client_gravatar
         # is automatically disabled for the user.
-        do_set_realm_property(
-            user.realm,
-            "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
-            acting_user=None,
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            do_set_realm_property(
+                user.realm,
+                "email_address_visibility",
+                Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+                acting_user=None,
+            )
         result = self.client_get("/json/users", {"client_gravatar": "true"})
         self.assert_json_success(result)
         members = result.json()["members"]
@@ -358,13 +362,14 @@ class PermissionTest(ZulipTestCase):
         # required in apps like the mobile apps.
         # delivery_email is sent for admins.
         admin.refresh_from_db()
+        user.refresh_from_db()
         self.login_user(admin)
         result = self.client_get("/json/users", {"client_gravatar": "true"})
         self.assert_json_success(result)
         members = result.json()["members"]
         hamlet = find_dict(members, "user_id", user.id)
         self.assertEqual(hamlet["email"], f"user{user.id}@zulip.testserver")
-        self.assertEqual(hamlet["avatar_url"], get_gravatar_url(user.email, 1))
+        self.assertEqual(hamlet["avatar_url"], get_gravatar_url(user.delivery_email, 1))
         self.assertEqual(hamlet["delivery_email"], self.example_email("hamlet"))
 
     def test_user_cannot_promote_to_admin(self) -> None:
@@ -377,7 +382,7 @@ class PermissionTest(ZulipTestCase):
         new_name = "new name"
         self.login("iago")
         hamlet = self.example_user("hamlet")
-        req = dict(full_name=orjson.dumps(new_name).decode())
+        req = dict(full_name=new_name)
         result = self.client_patch(f"/json/users/{hamlet.id}", req)
         self.assert_json_success(result)
         hamlet = self.example_user("hamlet")
@@ -385,21 +390,21 @@ class PermissionTest(ZulipTestCase):
 
     def test_non_admin_cannot_change_full_name(self) -> None:
         self.login("hamlet")
-        req = dict(full_name=orjson.dumps("new name").decode())
+        req = dict(full_name="new name")
         result = self.client_patch("/json/users/{}".format(self.example_user("othello").id), req)
         self.assert_json_error(result, "Insufficient permission")
 
     def test_admin_cannot_set_long_full_name(self) -> None:
         new_name = "a" * (UserProfile.MAX_NAME_LENGTH + 1)
         self.login("iago")
-        req = dict(full_name=orjson.dumps(new_name).decode())
+        req = dict(full_name=new_name)
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, "Name too long!")
 
     def test_admin_cannot_set_short_full_name(self) -> None:
         new_name = "a"
         self.login("iago")
-        req = dict(full_name=orjson.dumps(new_name).decode())
+        req = dict(full_name=new_name)
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, "Name too short!")
 
@@ -407,7 +412,7 @@ class PermissionTest(ZulipTestCase):
         # Name of format "Alice|999" breaks in Markdown
         new_name = "iago|72"
         self.login("iago")
-        req = dict(full_name=orjson.dumps(new_name).decode())
+        req = dict(full_name=new_name)
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, "Invalid format!")
 
@@ -415,21 +420,21 @@ class PermissionTest(ZulipTestCase):
         # Adding characters after r'|d+' doesn't break Markdown
         new_name = "Hello- 12iago|72k"
         self.login("iago")
-        req = dict(full_name=orjson.dumps(new_name).decode())
+        req = dict(full_name=new_name)
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_success(result)
 
     def test_not_allowed_format_complex(self) -> None:
         new_name = "Hello- 12iago|72"
         self.login("iago")
-        req = dict(full_name=orjson.dumps(new_name).decode())
+        req = dict(full_name=new_name)
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, "Invalid format!")
 
     def test_admin_cannot_set_full_name_with_invalid_characters(self) -> None:
         new_name = "Opheli*"
         self.login("iago")
-        req = dict(full_name=orjson.dumps(new_name).decode())
+        req = dict(full_name=new_name)
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, "Invalid characters in name!")
 
@@ -1177,7 +1182,7 @@ class UserProfileTest(ZulipTestCase):
 
         UserHotspot.objects.filter(user=cordelia).delete()
         UserHotspot.objects.filter(user=iago).delete()
-        hotspots_completed = {"intro_reply", "intro_streams", "intro_topics"}
+        hotspots_completed = {"intro_streams", "intro_topics"}
         for hotspot in hotspots_completed:
             UserHotspot.objects.create(user=cordelia, hotspot=hotspot)
 
@@ -1320,6 +1325,26 @@ class UserProfileTest(ZulipTestCase):
         )
         self.assertTrue(result["is_subscribed"])
 
+        self.login("iago")
+        stream = self.make_stream("private_stream", invite_only=True)
+        # Unsubscribed admin can check subscription status in a private stream.
+        result = orjson.loads(
+            self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
+        )
+        self.assertFalse(result["is_subscribed"])
+
+        # Unsubscribed non-admins cannot check subscription status in a private stream.
+        self.login("shiva")
+        result = self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}")
+        self.assert_json_error(result, "Invalid stream id")
+
+        # Subscribed non-admins can check subscription status in a private stream
+        self.subscribe(self.example_user("shiva"), stream.name)
+        result = orjson.loads(
+            self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
+        )
+        self.assertFalse(result["is_subscribed"])
+
 
 class ActivateTest(ZulipTestCase):
     def test_basics(self) -> None:
@@ -1411,6 +1436,83 @@ class ActivateTest(ZulipTestCase):
             "/json/users/{}/reactivate".format(self.example_user("hamlet").id)
         )
         self.assert_json_error(result, "Insufficient permission")
+
+    def test_revoke_invites(self) -> None:
+        """
+        Verify that any invitations generated by the user get revoked
+        when the user is deactivated
+        """
+        iago = self.example_user("iago")
+        desdemona = self.example_user("desdemona")
+
+        invite_expires_in_days = 2
+        do_invite_users(
+            iago,
+            ["new1@zulip.com", "new2@zulip.com"],
+            [],
+            invite_expires_in_days=invite_expires_in_days,
+            invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+        )
+        do_invite_users(
+            desdemona,
+            ["new3@zulip.com", "new4@zulip.com"],
+            [],
+            invite_expires_in_days=invite_expires_in_days,
+            invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+        )
+
+        iago_multiuse_key = do_create_multiuse_invite_link(
+            iago, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_days
+        ).split("/")[-2]
+        desdemona_multiuse_key = do_create_multiuse_invite_link(
+            desdemona, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_days
+        ).split("/")[-2]
+
+        self.assertEqual(
+            filter_to_valid_prereg_users(
+                PreregistrationUser.objects.filter(referred_by=iago)
+            ).count(),
+            2,
+        )
+        self.assertEqual(
+            filter_to_valid_prereg_users(
+                PreregistrationUser.objects.filter(referred_by=desdemona)
+            ).count(),
+            2,
+        )
+        self.assertTrue(
+            Confirmation.objects.get(confirmation_key=iago_multiuse_key).expiry_date
+            > timezone_now()
+        )
+        self.assertTrue(
+            Confirmation.objects.get(confirmation_key=desdemona_multiuse_key).expiry_date
+            > timezone_now()
+        )
+
+        do_deactivate_user(iago, acting_user=None)
+
+        # Now we verify that invitations generated by iago were revoked, while desdemona's
+        # remain valid.
+        self.assertEqual(
+            filter_to_valid_prereg_users(
+                PreregistrationUser.objects.filter(referred_by=iago)
+            ).count(),
+            0,
+        )
+        self.assertEqual(
+            filter_to_valid_prereg_users(
+                PreregistrationUser.objects.filter(referred_by=desdemona)
+            ).count(),
+            2,
+        )
+        self.assertTrue(
+            Confirmation.objects.get(confirmation_key=iago_multiuse_key).expiry_date
+            <= timezone_now()
+        )
+        self.assertTrue(
+            Confirmation.objects.get(confirmation_key=desdemona_multiuse_key).expiry_date
+            > timezone_now()
+        )
 
     def test_clear_scheduled_jobs(self) -> None:
         user = self.example_user("hamlet")
@@ -1565,6 +1667,7 @@ class RecipientInfoTest(ZulipTestCase):
             long_term_idle_user_ids=set(),
             default_bot_user_ids=set(),
             service_bot_tuples=[],
+            all_bot_user_ids=set(),
         )
 
         self.assertEqual(info, expected_info)
@@ -1746,6 +1849,7 @@ class RecipientInfoTest(ZulipTestCase):
             possibly_mentioned_user_ids={service_bot.id, normal_bot.id},
         )
         self.assertEqual(info["default_bot_user_ids"], {normal_bot.id})
+        self.assertEqual(info["all_bot_user_ids"], {normal_bot.id, service_bot.id})
 
     def test_get_recipient_info_invalid_recipient_type(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -2016,6 +2120,7 @@ class DeleteUserTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         hamlet_personal_recipient = hamlet.recipient
         hamlet_user_id = hamlet.id
+        hamlet_date_joined = hamlet.date_joined
 
         self.send_personal_message(cordelia, hamlet)
         self.send_personal_message(hamlet, cordelia)
@@ -2045,9 +2150,11 @@ class DeleteUserTest(ZulipTestCase):
         replacement_dummy_user = UserProfile.objects.get(id=hamlet_user_id, realm=realm)
 
         self.assertEqual(
-            replacement_dummy_user.delivery_email, f"deleteduser{hamlet_user_id}@{realm.uri}"
+            replacement_dummy_user.delivery_email, f"deleteduser{hamlet_user_id}@zulip.testserver"
         )
         self.assertEqual(replacement_dummy_user.is_mirror_dummy, True)
+        self.assertEqual(replacement_dummy_user.is_active, False)
+        self.assertEqual(replacement_dummy_user.date_joined, hamlet_date_joined)
 
         self.assertEqual(Message.objects.filter(id__in=personal_message_ids_to_hamlet).count(), 0)
         # Huddle messages from hamlet should have been deleted, but messages of other participants should

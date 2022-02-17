@@ -100,10 +100,10 @@ def check_send_webhook_message(
         # shell-style wildcards.
         if (
             only_events is not None
-            and all([not fnmatch.fnmatch(complete_event_type, pattern) for pattern in only_events])
+            and all(not fnmatch.fnmatch(complete_event_type, pattern) for pattern in only_events)
         ) or (
             exclude_events is not None
-            and any([fnmatch.fnmatch(complete_event_type, pattern) for pattern in exclude_events])
+            and any(fnmatch.fnmatch(complete_event_type, pattern) for pattern in exclude_events)
         ):
             return
 
@@ -141,7 +141,7 @@ def check_send_webhook_message(
 def standardize_headers(input_headers: Union[None, Dict[str, Any]]) -> Dict[str, str]:
     """This method can be used to standardize a dictionary of headers with
     the standard format that Django expects. For reference, refer to:
-    https://docs.djangoproject.com/en/2.2/ref/request-response/#django.http.HttpRequest.headers
+    https://docs.djangoproject.com/en/3.2/ref/request-response/#django.http.HttpRequest.headers
 
     NOTE: Historically, Django's headers were not case-insensitive. We're still
     capitalizing our headers to make it easier to compare/search later if required.

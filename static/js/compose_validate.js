@@ -5,12 +5,15 @@ import render_compose_announce from "../templates/compose_announce.hbs";
 import render_compose_invite_users from "../templates/compose_invite_users.hbs";
 import render_compose_not_subscribed from "../templates/compose_not_subscribed.hbs";
 import render_compose_private_stream_alert from "../templates/compose_private_stream_alert.hbs";
+import render_compose_resolved_topic from "../templates/compose_resolved_topic.hbs";
 
 import * as channel from "./channel";
 import * as compose_error from "./compose_error";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
+import * as compose_ui from "./compose_ui";
 import {$t_html} from "./i18n";
+import * as message_edit from "./message_edit";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
@@ -160,6 +163,40 @@ export function warn_if_mentioning_unsubscribed_user(mentioned) {
         }
 
         error_area.show();
+    }
+}
+
+export function clear_topic_resolved_warning() {
+    $("#compose_resolved_topic").hide();
+    $("#compose_resolved_topic").empty();
+    $("#compose-send-status").hide();
+}
+
+export function warn_if_topic_resolved() {
+    const stream_name = compose_state.stream_name();
+    const topic_name = compose_state.topic();
+
+    const sub = stream_data.get_sub(stream_name);
+
+    if (sub && topic_name.startsWith(message_edit.RESOLVED_TOPIC_PREFIX)) {
+        const error_area = $("#compose_resolved_topic");
+
+        if (error_area.html()) {
+            clear_topic_resolved_warning(); // This warning already exists
+        }
+
+        const context = {
+            stream_id: sub.stream_id,
+            topic_name,
+            can_move_topic: settings_data.user_can_move_messages_between_streams(),
+        };
+
+        const new_row = render_compose_resolved_topic(context);
+        error_area.append(new_row);
+
+        error_area.show();
+    } else {
+        clear_topic_resolved_warning();
     }
 }
 
@@ -337,7 +374,7 @@ function validate_stream_message_mentions(stream_id) {
             show_all_everyone_warnings(stream_id);
 
             $("#compose-send-button").prop("disabled", false);
-            $("#sending-indicator").hide();
+            compose_ui.hide_compose_spinner();
             return false;
         }
     } else {
@@ -359,7 +396,7 @@ function validate_stream_message_announce(sub) {
             show_announce_warnings(sub.stream_id);
 
             $("#compose-send-button").prop("disabled", false);
-            $("#sending-indicator").hide();
+            compose_ui.hide_compose_spinner();
             return false;
         }
     } else {
@@ -467,7 +504,7 @@ export function validation_error(error_type, stream_name) {
 }
 
 export function validate_stream_message_address_info(stream_name) {
-    if (stream_data.is_subscribed(stream_name)) {
+    if (stream_data.is_subscribed_by_name(stream_name)) {
         return true;
     }
     const autosubscribe = page_params.narrow_stream !== undefined;
@@ -489,7 +526,7 @@ function validate_stream_message() {
         const topic = compose_state.topic();
         if (topic === "") {
             compose_error.show(
-                $t_html({defaultMessage: "Please specify a topic"}),
+                $t_html({defaultMessage: "Topics are required in this organization"}),
                 $("#stream_message_recipient_topic"),
             );
             return false;

@@ -12,18 +12,18 @@ const starred_messages = zrequire("starred_messages");
 const stream_popover = zrequire("stream_popover");
 const top_left_corner = zrequire("top_left_corner");
 
-run_test("add starred", ({override}) => {
+run_test("add starred", ({override_rewire}) => {
     starred_messages.starred_ids.clear();
     assert.deepEqual(starred_messages.get_starred_msg_ids(), []);
     assert.equal(starred_messages.get_count(), 0);
 
-    override(starred_messages, "rerender_ui", () => {});
+    override_rewire(starred_messages, "rerender_ui", () => {});
     starred_messages.add([1, 2]);
     assert.deepEqual(starred_messages.get_starred_msg_ids(), [1, 2]);
     assert.equal(starred_messages.get_count(), 2);
 });
 
-run_test("remove starred", ({override}) => {
+run_test("remove starred", ({override_rewire}) => {
     starred_messages.starred_ids.clear();
     assert.deepEqual(starred_messages.get_starred_msg_ids(), []);
 
@@ -32,7 +32,7 @@ run_test("remove starred", ({override}) => {
     }
     assert.deepEqual(starred_messages.get_starred_msg_ids(), [1, 2, 3]);
 
-    override(starred_messages, "rerender_ui", () => {});
+    override_rewire(starred_messages, "rerender_ui", () => {});
     starred_messages.remove([2, 3]);
     assert.deepEqual(starred_messages.get_starred_msg_ids(), [1]);
     assert.equal(starred_messages.get_count(), 1);
@@ -77,14 +77,14 @@ run_test("get starred ids in topic", () => {
     assert.deepEqual(starred_messages.get_count_in_topic(20, "topic"), 1);
 });
 
-run_test("initialize", ({override}) => {
+run_test("initialize", ({override_rewire}) => {
     starred_messages.starred_ids.clear();
     for (const id of [1, 2, 3]) {
         starred_messages.starred_ids.add(id);
     }
 
     page_params.starred_messages = [4, 5, 6];
-    override(starred_messages, "rerender_ui", () => {});
+    override_rewire(starred_messages, "rerender_ui", () => {});
     starred_messages.initialize();
     assert.deepEqual(starred_messages.get_starred_msg_ids(), [4, 5, 6]);
 });
@@ -96,10 +96,10 @@ run_test("rerender_ui", () => {
     }
 
     user_settings.starred_message_counts = true;
-    with_overrides((override) => {
+    with_overrides(({override_rewire}) => {
         const stub = make_stub();
-        override(stream_popover, "hide_topic_popover", () => {});
-        override(top_left_corner, "update_starred_count", stub.f);
+        override_rewire(stream_popover, "hide_topic_popover", () => {});
+        override_rewire(top_left_corner, "update_starred_count", stub.f);
         starred_messages.rerender_ui();
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("count");
@@ -107,10 +107,10 @@ run_test("rerender_ui", () => {
     });
 
     user_settings.starred_message_counts = false;
-    with_overrides((override) => {
+    with_overrides(({override_rewire}) => {
         const stub = make_stub();
-        override(stream_popover, "hide_topic_popover", () => {});
-        override(top_left_corner, "update_starred_count", stub.f);
+        override_rewire(stream_popover, "hide_topic_popover", () => {});
+        override_rewire(top_left_corner, "update_starred_count", stub.f);
         starred_messages.rerender_ui();
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("count");

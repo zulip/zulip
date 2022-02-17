@@ -35,7 +35,7 @@ def add_apns_device_token(
 ) -> HttpResponse:
     validate_token(token, PushDeviceToken.APNS)
     add_push_device_token(user_profile, token, PushDeviceToken.APNS, ios_app_id=appid)
-    return json_success()
+    return json_success(request)
 
 
 @human_users_only
@@ -45,7 +45,7 @@ def add_android_reg_id(
 ) -> HttpResponse:
     validate_token(token, PushDeviceToken.GCM)
     add_push_device_token(user_profile, token, PushDeviceToken.GCM)
-    return json_success()
+    return json_success(request)
 
 
 @human_users_only
@@ -55,7 +55,7 @@ def remove_apns_device_token(
 ) -> HttpResponse:
     validate_token(token, PushDeviceToken.APNS)
     remove_push_device_token(user_profile, token, PushDeviceToken.APNS)
-    return json_success()
+    return json_success(request)
 
 
 @human_users_only
@@ -65,4 +65,4 @@ def remove_android_reg_id(
 ) -> HttpResponse:
     validate_token(token, PushDeviceToken.GCM)
     remove_push_device_token(user_profile, token, PushDeviceToken.GCM)
-    return json_success()
+    return json_success(request)

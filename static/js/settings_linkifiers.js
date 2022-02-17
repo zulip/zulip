@@ -7,7 +7,6 @@ import * as channel from "./channel";
 import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
-import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as settings_ui from "./settings_ui";
 import * as ui from "./ui";
@@ -52,7 +51,6 @@ function open_linkifier_edit_form(linkifier_id) {
         pattern: linkifier.pattern,
         url_format_string: linkifier.url_format,
     });
-    const modal_parent = $("#linkifier-edit-form-modal-container");
 
     function submit_linkifier_form() {
         const change_linkifier_button = $(".dialog_submit_button");
@@ -69,7 +67,7 @@ function open_linkifier_edit_form(linkifier_id) {
         const opts = {
             success_continuation() {
                 change_linkifier_button.prop("disabled", false);
-                overlays.close_modal("#dialog_widget_modal");
+                dialog_widget.close_modal();
             },
             error_continuation(xhr) {
                 change_linkifier_button.prop("disabled", false);
@@ -100,10 +98,8 @@ function open_linkifier_edit_form(linkifier_id) {
 
     dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Edit linkfiers"}),
-        parent: modal_parent,
         html_body,
         on_click: submit_linkifier_form,
-        fade: true,
     });
 }
 

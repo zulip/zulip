@@ -30,11 +30,11 @@ class ZcommandTest(ZulipTestCase):
         payload = dict(command="/night")
         result = self.client_post("/json/zcommand", payload)
         self.assert_json_success(result)
-        self.assertIn("Changed to night", result.json()["msg"])
+        self.assertIn("Changed to dark theme", result.json()["msg"])
 
         result = self.client_post("/json/zcommand", payload)
         self.assert_json_success(result)
-        self.assertIn("still in night mode", result.json()["msg"])
+        self.assertIn("still in dark theme", result.json()["msg"])
 
     def test_day_zcommand(self) -> None:
         self.login("hamlet")
@@ -45,11 +45,11 @@ class ZcommandTest(ZulipTestCase):
         payload = dict(command="/day")
         result = self.client_post("/json/zcommand", payload)
         self.assert_json_success(result)
-        self.assertIn("Changed to day", result.json()["msg"])
+        self.assertIn("Changed to light theme", result.json()["msg"])
 
         result = self.client_post("/json/zcommand", payload)
         self.assert_json_success(result)
-        self.assertIn("still in day mode", result.json()["msg"])
+        self.assertIn("still in light theme", result.json()["msg"])
 
     def test_fluid_zcommand(self) -> None:
         self.login("hamlet")

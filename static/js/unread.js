@@ -244,7 +244,7 @@ class UnreadTopicCounter {
             // completely throw away the data.  But we do ignore it here,
             // so that callers have a view of the **current** world.
             const sub = sub_store.get(stream_id);
-            if (!sub || !stream_data.is_subscribed(sub.name)) {
+            if (!sub || !stream_data.is_subscribed(stream_id)) {
                 continue;
             }
 

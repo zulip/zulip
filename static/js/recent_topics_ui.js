@@ -20,7 +20,7 @@ import * as navigate from "./navigate";
 import * as people from "./people";
 import * as recent_senders from "./recent_senders";
 import {get, process_message, topics} from "./recent_topics_data";
-import {get_topic_key, is_in_focus, is_visible} from "./recent_topics_util";
+import {get_topic_key, is_in_focus, is_visible, set_visible} from "./recent_topics_util";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as sub_store from "./sub_store";
@@ -47,6 +47,10 @@ const MAX_EXTRA_SENDERS = 10;
 // `row_focus` and `col_focus`.
 export let current_focus_elem = "table";
 
+// If user clicks a topic in recent topics, then
+// we store that topic here so that we can restore focus
+// to that topic when user revisits.
+let last_visited_topic = "";
 let row_focus = 0;
 // Start focus on the topic column, so Down+Enter works to visit a topic.
 let col_focus = 1;
@@ -104,7 +108,7 @@ function is_table_focused() {
     return current_focus_elem === "table";
 }
 
-function set_table_focus(row, col) {
+function set_table_focus(row, col, using_keyboard) {
     const topic_rows = $("#recent_topics_table table tbody tr");
     if (topic_rows.length === 0 || row < 0 || row >= topic_rows.length) {
         row_focus = 0;
@@ -114,39 +118,32 @@ function set_table_focus(row, col) {
     }
 
     const topic_row = topic_rows.eq(row);
-    topic_row.find(".recent_topics_focusable").eq(col).children().trigger("focus");
-
-    // Bring the focused element in view in the smoothest
-    // possible way. Using `block: center` is not a
-    // smooth scrolling experience.
-    // Using {block: "nearest"}, the element:
-    // * is aligned at the top of its ancestor if you're currently below it.
-    // * is aligned at the bottom of its ancestor if you're currently above it.
-    // * stays put, if it's already in view
-    // NOTE: Although, according to
-    // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView#browser_compatibility
-    // `scrollIntoView` is not fully supported on Safari,
-    // it works as intended on Safari v14.0.3 on macOS Big Sur.
-    topic_row.get()[0].scrollIntoView({
-        block: "nearest",
-    });
-
+    // We need to allow table to render first before setting focus.
+    setTimeout(
+        () => topic_row.find(".recent_topics_focusable").eq(col).children().trigger("focus"),
+        0,
+    );
     current_focus_elem = "table";
+
+    if (using_keyboard) {
+        const scroll_element = document.querySelector(
+            "#recent_topics_table .table_fix_head .simplebar-content-wrapper",
+        );
+        const half_height_of_visible_area = scroll_element.offsetHeight / 2;
+        const topic_offset = topic_offset_to_visible_area(topic_row);
+
+        if (topic_offset === "above") {
+            scroll_element.scrollBy({top: -1 * half_height_of_visible_area});
+        } else if (topic_offset === "below") {
+            scroll_element.scrollBy({top: half_height_of_visible_area});
+        }
+    }
 
     const message = {
         stream: topic_row.find(".recent_topic_stream a").text(),
         topic: topic_row.find(".recent_topic_name a").text(),
     };
     compose_closed_ui.update_reply_recipient_label(message);
-
-    // focused topic can be under table `thead`
-    // or under compose, so, to avoid that
-    // from happening, we bring the element to center.
-    if (!is_topic_visible_to_user(topic_row)) {
-        topic_row.get()[0].scrollIntoView({
-            block: "center",
-        });
-    }
     return true;
 }
 
@@ -183,6 +180,18 @@ export function revive_current_focus() {
     }
 
     if (is_table_focused()) {
+        if (last_visited_topic) {
+            const topic_last_msg_id = topics.get(last_visited_topic).last_msg_id;
+            const current_list = topics_widget.get_current_list();
+            const last_visited_topic_index = current_list.findIndex(
+                (topic) => topic.last_msg_id === topic_last_msg_id,
+            );
+            if (last_visited_topic_index >= 0) {
+                row_focus = last_visited_topic_index;
+            }
+            last_visited_topic = "";
+        }
+
         set_table_focus(row_focus, col_focus);
         return true;
     }
@@ -483,7 +492,7 @@ function topic_sort(a, b) {
     return -1;
 }
 
-function is_topic_visible_to_user(topic_row) {
+function topic_offset_to_visible_area(topic_row) {
     const scroll_container = $("#recent_topics_table .table_fix_head");
     const thead_height = 30;
     const under_closed_compose_region_height = 50;
@@ -495,23 +504,32 @@ function is_topic_visible_to_user(topic_row) {
     const topic_row_top = $(topic_row).offset().top;
     const topic_row_bottom = topic_row_top + $(topic_row).height();
 
-    // check if topic_row is inside the visible part of scroll container.
-    return topic_row_bottom <= scroll_container_bottom && topic_row_top >= scroll_container_top;
+    // Topic is above the visible scroll region.
+    if (topic_row_top < scroll_container_top) {
+        return "above";
+        // Topic is below the visible scroll region.
+    } else if (topic_row_bottom > scroll_container_bottom) {
+        return "below";
+    }
+
+    // Topic is visible
+    return "visible";
 }
 
 function set_focus_to_element_in_center() {
+    const table_wrapper_element = document.querySelector("#recent_topics_table .table_fix_head");
     const topic_rows = $("#recent_topics_table table tbody tr");
+
     if (row_focus > topic_rows.length) {
         // User used a filter which reduced
         // the number of visible rows.
         return;
     }
     let topic_row = topic_rows.eq(row_focus);
-    if (!is_topic_visible_to_user(topic_row)) {
+    const topic_offset = topic_offset_to_visible_area(topic_row);
+    if (topic_offset !== "visible") {
         // Get the element at the center of the table.
-        const position = document
-            .querySelector("#recent_topics_table .table_fix_head")
-            .getBoundingClientRect();
+        const position = table_wrapper_element.getBoundingClientRect();
         const topic_center_x = (position.left + position.right) / 2;
         const topic_center_y = (position.top + position.bottom) / 2;
 
@@ -600,6 +618,7 @@ export function show() {
     // a messages narrow. We hide it and show recent topics.
     $("#message_feed_container").hide();
     $("#recent_topics_view").show();
+    set_visible(true);
     $("#message_view_header_underpadding").hide();
     $(".header").css("padding-bottom", "0px");
 
@@ -620,15 +639,20 @@ function filter_buttons() {
 }
 
 export function hide() {
-    $("#message_feed_container").show();
-    $("#recent_topics_view").hide();
     // On firefox (and flaky on other browsers), focus
-    // remains on search box even after it is hidden. We
+    // remains on the focused element even after it is hidden. We
     // forcefully blur it so that focus returns to the visible
     // focused element.
-    $("#recent_topics_search").trigger("blur");
+    const focused_element = $(document.activeElement);
+    if ($("#recent_topics_view").has(focused_element)) {
+        focused_element.trigger("blur");
+    }
 
     $("#message_view_header_underpadding").show();
+    $("#message_feed_container").show();
+    $("#recent_topics_view").hide();
+    set_visible(false);
+
     $(".header").css("padding-bottom", "10px");
 
     // This solves a bug with message_view_header
@@ -651,10 +675,14 @@ function is_focus_at_last_table_row() {
     return row_focus === topic_rows.length - 1;
 }
 
-export function focus_clicked_element($elt, col) {
+export function focus_clicked_element(topic_row_index, col, topic_key) {
     current_focus_elem = "table";
     col_focus = col;
-    row_focus = $elt.closest("tr").index();
+    row_focus = topic_row_index;
+
+    if (col === COLUMNS.topic) {
+        last_visited_topic = topic_key;
+    }
     // Set compose_closed_ui reply button text.  The rest of the table
     // focus logic should be a noop.
     set_table_focus(row_focus, col_focus);
@@ -815,7 +843,7 @@ export function change_focused_element($elt, input_key) {
             case "up_arrow":
                 row_focus -= 1;
         }
-        set_table_focus(row_focus, col_focus);
+        set_table_focus(row_focus, col_focus, true);
         return true;
     }
     if (current_focus_elem && input_key !== "escape") {

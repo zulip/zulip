@@ -93,7 +93,7 @@ extreme cases, but often it can be a simple matter of writing your code
 in a slightly different style to appease the linter. If you have
 problems getting something to lint, you can submit an unfinished PR
 and ask the reviewer to help you work through the lint problem, or you
-can find other people in the [Zulip Community](https://zulip.com/developer-community/)
+can find other people in the [Zulip Community](https://zulip.com/development-community/)
 to help you.
 
 Also, bear in mind that 100% of the lint code is open source, so if you
@@ -212,7 +212,7 @@ option of Puppet.
 
 Zulip uses two HTML templating systems:
 
-- [Django templates](https://docs.djangoproject.com/en/1.10/topics/templates/)
+- [Django templates](https://docs.djangoproject.com/en/3.2/topics/templates/)
 - [handlebars](https://handlebarsjs.com/)
 
 Zulip has an internal tool that validates both types of templates for

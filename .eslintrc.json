@@ -38,6 +38,7 @@
         "import/extensions": "error",
         "import/first": "error",
         "import/newline-after-import": "error",
+        "import/no-self-import": "error",
         "import/no-useless-path-segments": "error",
         "import/order": [
             "error",
@@ -103,6 +104,7 @@
         "unicorn/consistent-function-scoping": "off",
         "unicorn/explicit-length-check": "off",
         "unicorn/filename-case": "off",
+        "unicorn/no-await-expression-member": "off",
         "unicorn/no-nested-ternary": "off",
         "unicorn/no-null": "off",
         "unicorn/no-process-exit": "off",
@@ -140,6 +142,13 @@
             "parserOptions": {
                 "project": "tsconfig.json"
             },
+            "settings": {
+                "import/resolver": {
+                    "node": {
+                        "extensions": [".ts", ".d.ts", ".js"] // https://github.com/import-js/eslint-plugin-import/issues/2267
+                    }
+                }
+            },
             "globals": {
                 "JQuery": false
             },
@@ -165,6 +174,7 @@
                 "@typescript-eslint/no-parameter-properties": "error",
                 "@typescript-eslint/no-unnecessary-qualifier": "error",
                 "@typescript-eslint/no-unused-vars": ["error", {"varsIgnorePattern": "^_"}],
+                "@typescript-eslint/no-unsafe-argument": "off",
                 "@typescript-eslint/no-unsafe-assignment": "off",
                 "@typescript-eslint/no-unsafe-call": "off",
                 "@typescript-eslint/no-unsafe-member-access": "off",

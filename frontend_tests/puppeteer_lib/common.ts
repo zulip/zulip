@@ -265,11 +265,18 @@ class CommonUtils {
     }
 
     async ensure_enter_does_not_send(page: Page): Promise<void> {
-        await page.$eval("#enter_sends", (el) => {
-            if ((el as HTMLInputElement).checked) {
-                (el as HTMLInputElement).click();
+        let enter_sends = false;
+        await page.$eval(".enter_sends_false", (el) => {
+            if ((el as HTMLElement).style.display !== "none") {
+                enter_sends = true;
             }
         });
+
+        if (enter_sends) {
+            const enter_sends_false_selector = ".enter_sends_choice input[value='false']";
+            await page.waitForSelector(enter_sends_false_selector);
+            await page.click(enter_sends_false_selector);
+        }
     }
 
     async assert_compose_box_content(page: Page, expected_value: string): Promise<void> {
@@ -402,7 +409,7 @@ class CommonUtils {
     }
 
     /**
-     * This method returns a array, which is formmated as:
+     * This method returns a array, which is formatted as:
      *  [
      *    ['stream > topic', ['message 1', 'message 2']],
      *    ['You and Cordelia, Lear's daughter', ['message 1', 'message 2']]
@@ -484,6 +491,11 @@ class CommonUtils {
             `//*[@class="typeahead dropdown-menu" and contains(@style, "display: block")]//li[contains(normalize-space(), "${item}")]//a`,
             {visible: true},
         );
+        const entry_x = (await entry?.boundingBox())?.x;
+        const entry_y = (await entry?.boundingBox())?.y;
+        if (entry_x && entry_y) {
+            await page.mouse.move(entry_x, entry_y);
+        }
         await page.evaluate((entry) => {
             entry.click();
         }, entry);
@@ -494,6 +506,16 @@ class CommonUtils {
         await page.waitForFunction(
             () => document.querySelector(".overlay.show")?.getAttribute("style") === null,
         );
+    }
+
+    async wait_for_micromodal_to_open(page: Page): Promise<void> {
+        // We manually add the `modal--open` class to the modal after the modal animation completes.
+        await page.waitForFunction(() => document.querySelector(".modal--open") !== null);
+    }
+
+    async wait_for_micromodal_to_close(page: Page): Promise<void> {
+        // This function will ensure that the mouse events are enabled for the background for further tests.
+        await page.waitForFunction(() => document.querySelector(".modal--open") === null);
     }
 
     async run_test_async(test_function: (page: Page) => Promise<void>): Promise<void> {

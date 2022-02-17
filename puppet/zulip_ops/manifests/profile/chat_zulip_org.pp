@@ -5,6 +5,7 @@ class zulip_ops::profile::chat_zulip_org {
   include zulip::postgresql_backups
 
   include zulip_ops::profile::base
+  include zulip_ops::prometheus::uwsgi
   zulip_ops::firewall_allow { 'http': }
   zulip_ops::firewall_allow { 'https': }
   zulip_ops::firewall_allow { 'smtp': }

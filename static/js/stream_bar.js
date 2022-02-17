@@ -3,15 +3,22 @@ import $ from "jquery";
 import * as color_class from "./color_class";
 import * as stream_data from "./stream_data";
 
-function update_lock_icon_for_stream(stream_name) {
-    const icon = $("#compose-lock-icon");
+function update_compose_stream_icon(stream_name) {
     const streamfield = $("#stream_message_recipient_stream");
-    if (stream_data.get_invite_only(stream_name)) {
-        icon.show();
+    const globe_icon = $("#compose-globe-icon");
+    const lock_icon = $("#compose-lock-icon");
+
+    // Reset state
+    globe_icon.hide();
+    lock_icon.hide();
+    streamfield.removeClass("lock-padding");
+
+    if (stream_data.is_invite_only_by_stream_name(stream_name)) {
+        lock_icon.show();
         streamfield.addClass("lock-padding");
-    } else {
-        icon.hide();
-        streamfield.removeClass("lock-padding");
+    } else if (stream_data.is_web_public_by_stream_name(stream_name)) {
+        globe_icon.show();
+        streamfield.addClass("lock-padding");
     }
 }
 
@@ -25,7 +32,7 @@ export function decorate(stream_name, element, is_compose) {
     }
     const color = stream_data.get_color(stream_name);
     if (is_compose) {
-        update_lock_icon_for_stream(stream_name);
+        update_compose_stream_icon(stream_name);
     }
     element
         .css("background-color", color)

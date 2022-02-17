@@ -6,7 +6,7 @@ const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespa
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
-const {page_params} = require("../zjsunit/zpage_params");
+const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 const window_stub = $.create("window-stub");
 set_global("to_$", () => window_stub);
@@ -98,6 +98,7 @@ let presence_info;
 
 function test(label, f) {
     run_test(label, (helpers) => {
+        user_settings.presence_enabled = true;
         // Simulate a small window by having the
         // fill_screen_with_content render the entire
         // list in one pass.  We will do more refined
@@ -143,6 +144,11 @@ test("get_status", () => {
     assert.equal(presence.get_status(alice.user_id), "active");
     assert.equal(presence.get_status(mark.user_id), "idle");
     assert.equal(presence.get_status(fred.user_id), "active");
+
+    user_settings.presence_enabled = false;
+    assert.equal(presence.get_status(page_params.user_id), "offline");
+    user_settings.presence_enabled = true;
+    assert.equal(presence.get_status(page_params.user_id), "active");
 
     presence_info.delete(zoe.user_id);
     assert.equal(presence.get_status(zoe.user_id), "offline");
@@ -266,7 +272,7 @@ test("PM_update_dom_counts", () => {
     assert.equal(count.text(), "");
 });
 
-test("handlers", ({override, mock_template}) => {
+test("handlers", ({override, override_rewire, mock_template}) => {
     let filter_key_handlers;
 
     mock_template("user_presence_rows.hbs", false, () => {});
@@ -289,7 +295,7 @@ test("handlers", ({override, mock_template}) => {
 
     let narrowed;
 
-    override(narrow, "by", (method, email) => {
+    override_rewire(narrow, "by", (method, email) => {
         assert.equal(email, "alice@zulip.com");
         narrowed = true;
     });
@@ -558,7 +564,7 @@ test("redraw_muted_user", () => {
     assert.equal(appended_html, undefined);
 });
 
-test("update_presence_info", ({override}) => {
+test("update_presence_info", ({override, override_rewire}) => {
     override(pm_list, "update_private_messages", () => {});
 
     page_params.realm_presence_disabled = false;
@@ -571,7 +577,7 @@ test("update_presence_info", ({override}) => {
         },
     };
 
-    override(buddy_data, "matches_filter", () => true);
+    override_rewire(buddy_data, "matches_filter", () => true);
 
     const alice_li = $.create("alice stub");
     buddy_list_add(alice.user_id, alice_li);
@@ -671,8 +677,8 @@ test("away_status", ({override}) => {
     assert.ok(!user_status.is_away(alice.user_id));
 });
 
-test("electron_bridge", ({override}) => {
-    override(activity, "send_presence_to_server", () => {});
+test("electron_bridge", ({override_rewire}) => {
+    override_rewire(activity, "send_presence_to_server", () => {});
 
     function with_bridge_idle(bridge_idle, f) {
         with_field(

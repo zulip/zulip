@@ -25,7 +25,7 @@ async function open_set_user_status_modal(page: Page): Promise<void> {
     );
 
     // Wait for the modal to completely open.
-    await page.waitForFunction(() => document.activeElement?.classList.contains("user_status"));
+    await common.wait_for_micromodal_to_open(page);
 }
 
 async function test_user_status(page: Page): Promise<void> {
@@ -45,7 +45,7 @@ async function test_user_status(page: Page): Promise<void> {
     );
     await page.waitForSelector(".status_emoji_wrapper .smiley_icon", {visible: true});
 
-    // Manualy adding everthing.
+    // Manually adding everything.
     await page.type(".user_status", "Busy");
     const tada_emoji_selector = ".emoji-1f389";
     await page.click(".status_emoji_wrapper .smiley_icon");
@@ -55,11 +55,11 @@ async function test_user_status(page: Page): Promise<void> {
     await page.waitForSelector(".emoji-info-popover", {hidden: true});
     await page.waitForSelector(`.selected_emoji${tada_emoji_selector}`);
 
-    await page.click(".set_user_status");
+    await page.click("#set_user_status_modal .dialog_submit_button");
     // It should close the modal after saving.
     await page.waitForSelector("#set_user_status_modal", {hidden: true});
 
-    // Check if the emoji is added in user presense list.
+    // Check if the emoji is added in user presence list.
     await page.waitForSelector(`.user-presence-link .status_emoji${tada_emoji_selector}`);
 }
 

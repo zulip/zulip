@@ -34,14 +34,16 @@ from zerver.lib.email_validation import (
     validate_email_is_valid,
     validate_email_not_already_in_realm,
 )
-from zerver.lib.exceptions import JsonableError, RateLimited
+from zerver.lib.exceptions import JsonableError, RateLimited, UserDeactivatedError
 from zerver.lib.i18n import get_available_language_codes
+from zerver.lib.rate_limiter import RateLimitedUser
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_int, check_int_in, check_string_in
 from zerver.models import UserProfile, avatar_changes_disabled, name_changes_disabled
+from zerver.views.auth import redirect_to_deactivation_notice
 from zproject.backends import check_password_strength, email_belongs_to_ldap
 
 AVATAR_CHANGES_DISABLED_ERROR = gettext_lazy("Avatar changes are disabled in this organization.")
@@ -49,13 +51,20 @@ AVATAR_CHANGES_DISABLED_ERROR = gettext_lazy("Avatar changes are disabled in thi
 
 def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     try:
-        email_change_object = get_object_from_key(confirmation_key, Confirmation.EMAIL_CHANGE)
+        email_change_object = get_object_from_key(confirmation_key, [Confirmation.EMAIL_CHANGE])
     except ConfirmationKeyException as exception:
         return render_confirmation_key_error(request, exception)
 
     new_email = email_change_object.new_email
     old_email = email_change_object.old_email
     user_profile = email_change_object.user_profile
+
+    if user_profile.realm.deactivated:
+        return redirect_to_deactivation_notice()
+
+    if not user_profile.is_active:
+        # TODO: Make this into a user-facing error, not JSON
+        raise UserDeactivatedError()
 
     if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
         raise JsonableError(_("Email address changes are disabled in this organization."))
@@ -141,6 +150,7 @@ def json_change_settings(
     default_view: Optional[str] = REQ(
         str_validator=check_string_in(default_view_options), default=None
     ),
+    escape_navigates_to_default_view: Optional[bool] = REQ(json_validator=check_bool, default=None),
     left_side_userlist: Optional[bool] = REQ(json_validator=check_bool, default=None),
     emojiset: Optional[str] = REQ(str_validator=check_string_in(emojiset_choices), default=None),
     demote_inactive_streams: Optional[int] = REQ(
@@ -189,6 +199,11 @@ def json_change_settings(
     realm_name_in_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
     presence_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     enter_sends: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    send_private_typing_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    send_stream_typing_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    send_read_receipts: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     if (
         default_language is not None
@@ -226,8 +241,8 @@ def json_change_settings(
             raise JsonableError(_("New password is too weak!"))
 
         do_change_password(user_profile, new_password)
-        # In Django 1.10, password changes invalidates sessions, see
-        # https://docs.djangoproject.com/en/1.10/topics/auth/default/#session-invalidation-on-password-change
+        # Password changes invalidates sessions, see
+        # https://docs.djangoproject.com/en/3.2/topics/auth/default/#session-invalidation-on-password-change
         # for details. To avoid this logging the user out of their own
         # session (which would provide a confusing UX at best), we
         # update the session hash here.
@@ -263,6 +278,12 @@ def json_change_settings(
         except ValidationError as e:
             raise JsonableError(e.message)
 
+        ratelimited, time_until_free = RateLimitedUser(
+            user_profile, domain="email_change_by_user"
+        ).rate_limit()
+        if ratelimited:
+            raise RateLimited(time_until_free)
+
         do_start_email_change_process(user_profile, new_email)
 
     if user_profile.full_name != full_name and full_name.strip() != "":
@@ -294,7 +315,7 @@ def json_change_settings(
     if len(request_notes.ignored_parameters) > 0:
         result["ignored_parameters_unsupported"] = list(request_notes.ignored_parameters)
 
-    return json_success(result)
+    return json_success(request, data=result)
 
 
 def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
@@ -318,7 +339,7 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
     json_result = dict(
         avatar_url=user_avatar_url,
     )
-    return json_success(json_result)
+    return json_success(request, data=json_result)
 
 
 def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
@@ -333,7 +354,7 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
     json_result = dict(
         avatar_url=gravatar_url,
     )
-    return json_success(json_result)
+    return json_success(request, data=json_result)
 
 
 # We don't use @human_users_only here, because there are use cases for
@@ -344,4 +365,4 @@ def regenerate_api_key(request: HttpRequest, user_profile: UserProfile) -> HttpR
     json_result = dict(
         api_key=new_api_key,
     )
-    return json_success(json_result)
+    return json_success(request, data=json_result)

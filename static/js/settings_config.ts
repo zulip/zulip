@@ -48,15 +48,15 @@ export const default_view_values = {
 export const color_scheme_values = {
     automatic: {
         code: 1,
-        description: $t({defaultMessage: "Automatic"}),
+        description: $t({defaultMessage: "Sync with computer"}),
     },
     night: {
         code: 2,
-        description: $t({defaultMessage: "Night mode"}),
+        description: $t({defaultMessage: "Dark theme"}),
     },
     day: {
         code: 3,
-        description: $t({defaultMessage: "Day mode"}),
+        description: $t({defaultMessage: "Light theme"}),
     },
 };
 
@@ -87,8 +87,8 @@ export const get_all_display_settings = (): DisplaySettings => ({
             "dense_mode",
             "high_contrast_mode",
             "left_side_userlist",
-            "starred_message_counts",
             "fluid_layout_width",
+            "starred_message_counts",
         ],
     },
     render_only: {
@@ -227,6 +227,29 @@ export const wildcard_mention_policy_values = {
     },
 };
 
+export const create_web_public_stream_policy_values = {
+    by_moderators_only: {
+        order: 1,
+        code: 4,
+        description: $t({defaultMessage: "Admins and moderators"}),
+    },
+    by_admins_only: {
+        order: 2,
+        code: 2,
+        description: $t({defaultMessage: "Admins only"}),
+    },
+    by_owners_only: {
+        order: 3,
+        code: 7,
+        description: $t({defaultMessage: "Owners only"}),
+    },
+    nobody: {
+        order: 4,
+        code: 6,
+        description: $t({defaultMessage: "Nobody"}),
+    },
+};
+
 export const common_message_policy_values = {
     by_everyone: {
         order: 1,
@@ -322,7 +345,7 @@ const time_limit_dropdown_values = new Map([
     [
         "custom_limit",
         {
-            text: $t({defaultMessage: "Up to N minutes after posting"}),
+            text: $t({defaultMessage: "Custom"}),
         },
     ],
 ]);
@@ -388,7 +411,7 @@ export const msg_delete_limit_dropdown_values = new Map([
     [
         "custom_limit",
         {
-            text: $t({defaultMessage: "Up to N minutes after posting"}),
+            text: $t({defaultMessage: "Custom"}),
         },
     ],
 ]);
@@ -417,6 +440,41 @@ export const user_role_values = {
     },
 };
 
+export const expires_in_values = {
+    // Backend support for this configuration is not available yet.
+    // hour: {
+    //     value: 1,
+    //     description: $t({defaultMessage: "1 hour"}),
+    //     default: false,
+    // },
+    day: {
+        value: 1,
+        description: $t({defaultMessage: "1 day"}),
+        default: false,
+    },
+    threeDays: {
+        value: 3,
+        description: $t({defaultMessage: "3 days"}),
+        default: false,
+    },
+    tenDays: {
+        value: 10,
+        description: $t({defaultMessage: "10 days"}),
+        default: true,
+    },
+    thirtyDays: {
+        value: 30,
+        description: $t({defaultMessage: "30 days"}),
+        default: false,
+    },
+    // Backend support for this configuration is not available yet.
+    // never: {
+    //     value: "never",
+    //     description: $t({defaultMessage: "Never expires"}),
+    //     default: false,
+    // }
+};
+
 const user_role_array = Object.values(user_role_values);
 export const user_role_map = new Map(user_role_array.map((role) => [role.code, role.description]));
 
@@ -434,6 +492,7 @@ export const display_settings_labels = {
             defaultMessage: "Convert emoticons before sending (<code>:)</code> becomes 😃)",
         }),
     ),
+    escape_navigates_to_default_view: $t({defaultMessage: "Escape key navigates to default view"}),
 };
 
 export const notification_settings_labels = {
@@ -561,6 +620,10 @@ export const email_notifications_batching_period_values = [
     {
         value: 60 * 60 * 24 * 7,
         description: $t({defaultMessage: "1 week"}),
+    },
+    {
+        value: "custom_period",
+        description: $t({defaultMessage: "Custom"}),
     },
 ];
 

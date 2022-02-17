@@ -1,10 +1,12 @@
 from typing import Any, Dict, List, Optional, Union
 
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
 
+from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import require_member_or_admin, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
 from zerver.lib.actions import (
@@ -32,6 +34,7 @@ from zerver.lib.email_validation import email_allowed_for_realm
 from zerver.lib.exceptions import (
     CannotDeactivateLastUserError,
     JsonableError,
+    MissingAuthenticationError,
     OrganizationOwnerRequired,
 )
 from zerver.lib.integrations import EMBEDDED_BOTS
@@ -40,7 +43,7 @@ from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, subscribed_to_stream
 from zerver.lib.types import ProfileDataElementValue, Validator
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.url_encoding import add_query_arg_to_redirect_url
+from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import (
     access_bot_by_id,
     access_user_by_id,
@@ -111,7 +114,7 @@ def deactivate_user_own_backend(request: HttpRequest, user_profile: UserProfile)
         raise CannotDeactivateLastUserError(is_last_owner=True)
 
     do_deactivate_user(user_profile, acting_user=user_profile)
-    return json_success()
+    return json_success(request)
 
 
 def deactivate_bot_backend(
@@ -125,7 +128,7 @@ def _deactivate_user_profile_backend(
     request: HttpRequest, user_profile: UserProfile, target: UserProfile
 ) -> HttpResponse:
     do_deactivate_user(target, acting_user=user_profile)
-    return json_success()
+    return json_success(request)
 
 
 def reactivate_user_backend(
@@ -138,7 +141,7 @@ def reactivate_user_backend(
         assert target.bot_type is not None
         check_bot_creation_policy(user_profile, target.bot_type)
     do_reactivate_user(target, acting_user=user_profile)
-    return json_success()
+    return json_success(request)
 
 
 check_profile_data: Validator[
@@ -163,7 +166,7 @@ def update_user_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     user_id: int,
-    full_name: Optional[str] = REQ(default=None, json_validator=check_string),
+    full_name: Optional[str] = REQ(default=None),
     role: Optional[int] = REQ(
         default=None,
         json_validator=check_int_in(
@@ -215,11 +218,14 @@ def update_user_backend(
         validate_user_custom_profile_data(target.realm.id, clean_profile_data)
         do_update_user_custom_profile_data_if_changed(target, clean_profile_data)
 
-    return json_success()
+    return json_success(request)
 
 
 def avatar(
-    request: HttpRequest, user_profile: UserProfile, email_or_id: str, medium: bool = False
+    request: HttpRequest,
+    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    email_or_id: str,
+    medium: bool = False,
 ) -> HttpResponse:
     """Accepts an email address or user ID and returns the avatar"""
     is_email = False
@@ -228,8 +234,23 @@ def avatar(
     except ValueError:
         is_email = True
 
+    if not maybe_user_profile.is_authenticated:
+        # Allow anonymous access to avatars only if spectators are
+        # enabled in the organization.
+        realm = get_valid_realm_from_request(request)
+        if not realm.allow_web_public_streams_access():
+            raise MissingAuthenticationError()
+
+        # We only allow the ID format for accessing a user's avatar
+        # for spectators. This is mainly for defense in depth, since
+        # email_address_visibility should mean spectators only
+        # interact with fake email addresses anyway.
+        if is_email:
+            raise MissingAuthenticationError()
+    else:
+        realm = maybe_user_profile.realm
+
     try:
-        realm = user_profile.realm
         if is_email:
             avatar_user_profile = get_user_including_cross_realm(email_or_id, realm)
         else:
@@ -249,7 +270,7 @@ def avatar(
     # add query parameters to our url, get_avatar_url does '?x=x'
     # hacks to prevent us from having to jump through decode/encode hoops.
     assert url is not None
-    url = add_query_arg_to_redirect_url(url, request.META["QUERY_STRING"])
+    url = append_url_query_string(url, request.META["QUERY_STRING"])
     return redirect(url)
 
 
@@ -345,7 +366,7 @@ def patch_bot_backend(
     if bot.bot_owner is not None:
         json_result["bot_owner"] = bot.bot_owner.email
 
-    return json_success(json_result)
+    return json_success(request, data=json_result)
 
 
 @require_member_or_admin
@@ -359,7 +380,7 @@ def regenerate_bot_api_key(
     json_result = dict(
         api_key=new_api_key,
     )
-    return json_success(json_result)
+    return json_success(request, data=json_result)
 
 
 @require_member_or_admin
@@ -490,7 +511,7 @@ def add_bot_backend(
         default_events_register_stream=get_stream_name(bot_profile.default_events_register_stream),
         default_all_public_streams=bot_profile.default_all_public_streams,
     )
-    return json_success(json_result)
+    return json_success(request, data=json_result)
 
 
 @require_member_or_admin
@@ -520,7 +541,7 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
             default_all_public_streams=bot_profile.default_all_public_streams,
         )
 
-    return json_success({"bots": list(map(bot_info, bot_profiles))})
+    return json_success(request, data={"bots": list(map(bot_info, bot_profiles))})
 
 
 @has_request_variables
@@ -562,7 +583,7 @@ def get_members_backend(
     else:
         data = {"members": [members[k] for k in members]}
 
-    return json_success(data)
+    return json_success(request, data)
 
 
 @require_realm_admin
@@ -609,7 +630,7 @@ def create_user_backend(
         raise JsonableError(PASSWORD_TOO_WEAK_ERROR)
 
     target_user = do_create_user(email, password, realm, full_name, acting_user=user_profile)
-    return json_success({"user_id": target_user.id})
+    return json_success(request, data={"user_id": target_user.id})
 
 
 def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
@@ -628,7 +649,7 @@ def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     if messages:
         result["max_message_id"] = messages[0].id
 
-    return json_success(result)
+    return json_success(request, data=result)
 
 
 @has_request_variables
@@ -639,11 +660,11 @@ def get_subscription_backend(
     stream_id: int = REQ(json_validator=check_int, path_only=True),
 ) -> HttpResponse:
     target_user = access_user_by_id(user_profile, user_id, for_admin=False)
-    (stream, sub) = access_stream_by_id(user_profile, stream_id)
+    (stream, sub) = access_stream_by_id(user_profile, stream_id, allow_realm_admin=True)
 
     subscription_status = {"is_subscribed": subscribed_to_stream(target_user, stream_id)}
 
-    return json_success(subscription_status)
+    return json_success(request, data=subscription_status)
 
 
 @has_request_variables

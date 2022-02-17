@@ -441,6 +441,7 @@ def main() -> None:
         if options.verbose_coverage:
             print("Printing coverage data")
             cov.report(show_missing=False)
+        cov.xml_report(outfile="var/coverage.xml")
         cov.html_report(directory="var/coverage")
         print("HTML report saved; visit at http://127.0.0.1:9991/coverage/index.html")
     if full_suite and not failures and options.coverage:

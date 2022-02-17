@@ -30,9 +30,11 @@
                     {{/tr}}
                 </div>
 
-                {{> stream_types
-                  stream_post_policy=stream_post_policy_values.everyone.code
-                  is_stream_edit=false }}
+                <div class="stream-types">
+                    {{> stream_types
+                      stream_post_policy=stream_post_policy_values.everyone.code
+                      is_stream_edit=false }}
+                </div>
 
                 <div id="announce-new-stream">
                     <label class="checkbox">
@@ -53,7 +55,7 @@
         </div>
         <div class="modal-footer">
             <button class="button small white rounded" data-dismiss="modal">{{t "Cancel" }}</button>
-            <button class="button small sea-green rounded" type="submit">{{t "Create" }}</button>
+            <button class="finalize_create_stream button small sea-green rounded" type="submit">{{t "Create" }}</button>
         </div>
     </form>
 </div>

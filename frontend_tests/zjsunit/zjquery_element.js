@@ -183,7 +183,7 @@ function FakeElement(selector, opts) {
         },
         remove() {
             throw new Error(`
-                We don't support remove in zjuery.
+                We don't support remove in zjquery.
 
                 You can do $(...).remove = ... if necessary.
 
@@ -202,6 +202,11 @@ function FakeElement(selector, opts) {
             return self;
         },
         set_find_results(find_selector, jquery_object) {
+            if (jquery_object === undefined) {
+                throw new Error(
+                    "Please make the 'find result' be something like $.create('unused')",
+                );
+            }
             find_results.set(find_selector, jquery_object);
         },
         set_height(fake_height) {

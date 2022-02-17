@@ -41,7 +41,7 @@ def get_user_activity_records_for_realm(realm: str, is_bot: bool) -> QuerySet:
 
 def realm_user_summary_table(
     all_records: List[QuerySet], admin_emails: Set[str]
-) -> Tuple[Dict[str, Dict[str, Any]], str]:
+) -> Tuple[Dict[str, Any], str]:
     user_records = {}
 
     def by_email(record: QuerySet) -> str:
@@ -68,7 +68,7 @@ def realm_user_summary_table(
 
     rows = []
     for email, user_summary in user_records.items():
-        email_link = user_activity_link(email)
+        email_link = user_activity_link(email, user_summary["user_profile_id"])
         sent_count = get_count(user_summary, "send")
         cells = [user_summary["name"], email_link, sent_count]
         row_class = ""
@@ -107,10 +107,11 @@ def realm_user_summary_table(
     return user_records, content
 
 
-def realm_client_table(user_summaries: Dict[str, Dict[str, Dict[str, Any]]]) -> str:
+def realm_client_table(user_summaries: Dict[str, Dict[str, Any]]) -> str:
     exclude_keys = [
         "internal",
         "name",
+        "user_profile_id",
         "use",
         "send",
         "pointer",
@@ -120,7 +121,7 @@ def realm_client_table(user_summaries: Dict[str, Dict[str, Dict[str, Any]]]) -> 
 
     rows = []
     for email, user_summary in user_summaries.items():
-        email_link = user_activity_link(email)
+        email_link = user_activity_link(email, user_summary["user_profile_id"])
         name = user_summary["name"]
         for k, v in user_summary.items():
             if k in exclude_keys:

@@ -44,7 +44,7 @@ def api_bitbucket_webhook(
     else:
         branch = payload["commits"][-1]["branch"]
         if branches is not None and branches.find(branch) == -1:
-            return json_success()
+            return json_success(request)
 
         committer = payload.get("user")
         content = get_push_commits_event_message(
@@ -53,4 +53,4 @@ def api_bitbucket_webhook(
         subject = TOPIC_WITH_BRANCH_TEMPLATE.format(repo=repository["name"], branch=branch)
 
     check_send_webhook_message(request, user_profile, subject, content, unquote_url_parameters=True)
-    return json_success()
+    return json_success(request)

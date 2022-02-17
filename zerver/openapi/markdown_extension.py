@@ -31,7 +31,7 @@ from zerver.openapi.openapi import (
     openapi_spec,
 )
 
-API_ENDPOINT_NAME = r"/[a-z_/-{}]+:[a-z]+"
+API_ENDPOINT_NAME = r"/[a-z_\-/-{}]+:[a-z]+"
 API_LANGUAGE = r"\w+"
 API_KEY_TYPE = r"fixture|example"
 MACRO_REGEXP = re.compile(
@@ -479,7 +479,7 @@ class BasePreprocessor(Preprocessor):
         return text
 
     def render(self, function: str) -> List[str]:
-        raise NotImplementedError("Must be overriden by a child class")
+        raise NotImplementedError("Must be overridden by a child class")
 
 
 class APICodeExamplesPreprocessor(BasePreprocessor):

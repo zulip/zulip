@@ -2,9 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, with_overrides, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
+const {user_settings} = require("../zjsunit/zpage_params");
 
 const reload_state = mock_esm("../../static/js/reload_state", {
     is_in_progress: () => false,
@@ -77,6 +78,7 @@ people.initialize_current_user(me.user_id);
 
 function test(label, f) {
     run_test(label, ({override}) => {
+        user_settings.presence_enabled = true;
         presence.clear_internal_data();
         f({override});
     });
@@ -98,14 +100,10 @@ test("unknown user", ({override}) => {
     // If the server is suspected to be offline or reloading,
     // then we suppress errors.  The use case here is that we
     // haven't gotten info for a brand new user yet.
-    with_field(
-        watchdog,
-        "suspects_user_is_offline",
-        () => true,
-        () => {
-            presence.set_info(presences, now);
-        },
-    );
+    with_overrides(({override_rewire}) => {
+        override_rewire(watchdog, "suspects_user_is_offline", () => true);
+        presence.set_info(presences, now);
+    });
 
     override(reload_state, "is_in_progress", () => true);
     presence.set_info(presences, now);

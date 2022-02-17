@@ -35,11 +35,13 @@ import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as search from "./search";
 import * as settings_data from "./settings_data";
+import * as spectators from "./spectators";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as topic_zoom from "./topic_zoom";
 import * as ui from "./ui";
+import {user_settings} from "./user_settings";
 
 function do_narrow_action(action) {
     action(message_lists.current.selected_id(), {trigger: "hotkey"});
@@ -329,8 +331,14 @@ export function process_escape_key(e) {
         return true;
     }
 
-    hashchange.set_hash_to_default_view();
-    return true;
+    /* The Ctrl+[ hotkey navigates to the default view
+     * unconditionally; Esc's behavior depends on a setting. */
+    if (user_settings.escape_navigates_to_default_view || e.which === 219) {
+        hashchange.set_hash_to_default_view();
+        return true;
+    }
+
+    return false;
 }
 
 function handle_popover_events(event_name) {
@@ -739,7 +747,8 @@ export function process_hotkey(e, hotkey) {
             event_name === "n_key" &&
             overlays.streams_open() &&
             (settings_data.user_can_create_private_streams() ||
-                settings_data.user_can_create_public_streams())
+                settings_data.user_can_create_public_streams() ||
+                settings_data.user_can_create_web_public_streams())
         ) {
             stream_settings_ui.open_create_stream();
             return true;
@@ -854,6 +863,17 @@ export function process_hotkey(e, hotkey) {
         case "copy_with_c":
             copy_and_paste.copy_handler();
             return true;
+    }
+
+    if (
+        // Allow UI only features for spectators which they can perform.
+        page_params.is_spectator &&
+        !["narrow_by_topic", "narrow_by_recipient", "show_lightbox", "show_sender_info"].includes(
+            event_name,
+        )
+    ) {
+        spectators.login_to_access();
+        return true;
     }
 
     const msg = message_lists.current.selected_message();

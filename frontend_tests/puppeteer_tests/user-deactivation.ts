@@ -23,11 +23,11 @@ async function test_deactivate_user(page: Page): Promise<void> {
     await page.waitForSelector(cordelia_user_row, {visible: true});
     await page.waitForSelector(cordelia_user_row + " .fa-user-times");
     await page.click(cordelia_user_row + " .deactivate");
-    await page.waitForSelector("#dialog_widget_modal", {visible: true});
+    await common.wait_for_micromodal_to_open(page);
 
     assert.strictEqual(
         await common.get_text_from_selector(page, ".dialog_heading"),
-        "Deactivate " + (await common.get_internal_email_from_name(page, "cordelia")),
+        "Deactivate " + common.fullname.cordelia,
         "Deactivate modal has wrong user.",
     );
     assert.strictEqual(
@@ -36,7 +36,7 @@ async function test_deactivate_user(page: Page): Promise<void> {
         "Deactivate button has incorrect text.",
     );
     await page.click("#dialog_widget_modal .dialog_submit_button");
-    await page.waitForSelector("#user-field-status", {hidden: true});
+    await common.wait_for_micromodal_to_close(page);
 }
 
 async function test_reactivate_user(page: Page): Promise<void> {

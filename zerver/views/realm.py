@@ -10,6 +10,7 @@ from confirmation.models import Confirmation, ConfirmationKeyException, get_obje
 from zerver.decorator import require_realm_admin, require_realm_owner
 from zerver.forms import check_subdomain_available as check_subdomain
 from zerver.lib.actions import (
+    do_change_realm_subdomain,
     do_deactivate_realm,
     do_reactivate_realm,
     do_set_realm_authentication_methods,
@@ -133,6 +134,11 @@ def update_realm(
     digest_weekday: Optional[int] = REQ(
         json_validator=check_int_in(Realm.DIGEST_WEEKDAY_VALUES), default=None
     ),
+    string_id: Optional[str] = REQ(
+        str_validator=check_capped_string(Realm.MAX_REALM_SUBDOMAIN_LENGTH),
+        default=None,
+    ),
+    enable_spectator_access: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     realm = user_profile.realm
 
@@ -273,7 +279,22 @@ def update_realm(
         else:
             data["default_code_block_language"] = default_code_block_language
 
-    return json_success(data)
+    if string_id is not None:
+        if not user_profile.is_realm_owner:
+            raise OrganizationOwnerRequired()
+
+        if realm.demo_organization_scheduled_deletion_date is None:
+            raise JsonableError(_("Must be a demo organization."))
+
+        try:
+            check_subdomain(string_id)
+        except ValidationError as err:
+            raise JsonableError(str(err.message))
+
+        do_change_realm_subdomain(realm, string_id, acting_user=user_profile)
+        data["realm_uri"] = realm.uri
+
+    return json_success(request, data)
 
 
 @require_realm_owner
@@ -281,21 +302,21 @@ def update_realm(
 def deactivate_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
     realm = user.realm
     do_deactivate_realm(realm, acting_user=user)
-    return json_success()
+    return json_success(request)
 
 
 @require_safe
 def check_subdomain_available(request: HttpRequest, subdomain: str) -> HttpResponse:
     try:
         check_subdomain(subdomain)
-        return json_success({"msg": "available"})
+        return json_success(request, data={"msg": "available"})
     except ValidationError as e:
-        return json_success({"msg": e.message})
+        return json_success(request, data={"msg": e.message})
 
 
 def realm_reactivation(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     try:
-        realm = get_object_from_key(confirmation_key, Confirmation.REALM_REACTIVATION)
+        realm = get_object_from_key(confirmation_key, [Confirmation.REALM_REACTIVATION])
     except ConfirmationKeyException:
         return render(request, "zerver/realm_reactivation_link_error.html")
     do_reactivate_realm(realm)
@@ -323,6 +344,7 @@ def update_realm_user_settings_defaults(
     default_view: Optional[str] = REQ(
         str_validator=check_string_in(default_view_options), default=None
     ),
+    escape_navigates_to_default_view: Optional[bool] = REQ(json_validator=check_bool, default=None),
     left_side_userlist: Optional[bool] = REQ(json_validator=check_bool, default=None),
     emojiset: Optional[str] = REQ(str_validator=check_string_in(emojiset_choices), default=None),
     demote_inactive_streams: Optional[int] = REQ(
@@ -375,6 +397,11 @@ def update_realm_user_settings_defaults(
         json_validator=check_int, default=None
     ),
     twenty_four_hour_time: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    send_stream_typing_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    send_private_typing_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    send_read_receipts: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     if notification_sound is not None or email_notifications_batching_period_seconds is not None:
         check_settings_values(notification_sound, email_notifications_batching_period_seconds)
@@ -399,4 +426,4 @@ def update_realm_user_settings_defaults(
     if len(request_notes.ignored_parameters) > 0:
         result["ignored_parameters_unsupported"] = list(request_notes.ignored_parameters)
 
-    return json_success(result)
+    return json_success(request, data=result)

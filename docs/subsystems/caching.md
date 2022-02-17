@@ -44,7 +44,7 @@ doesn't need to worry about whether the data returned is up-to-date:
 it is. In the following sections, we'll talk about how we make this
 work.
 
-As a sidenote, the policy of using these accessor functions wherever
+As a side note, the policy of using these accessor functions wherever
 possible is a good idea, regardless of caching, because the functions
 also generally take care of details you might not think about
 (e.g. case-insensitive matching of stream names or email addresses).
@@ -262,4 +262,4 @@ cached by clients is changed. Clients are responsible for handling
 the events, updating their state, and rerendering any UI components
 that might display the modified state.
 
-[post-save-signals]: https://docs.djangoproject.com/en/2.0/ref/signals/#post-save
+[post-save-signals]: https://docs.djangoproject.com/en/3.2/ref/signals/#post-save

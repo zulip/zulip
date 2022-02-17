@@ -39,8 +39,8 @@ run_test("render_alert_words_ui", ({mock_template}) => {
     assert.ok(new_alert_word.is_focused());
 });
 
-run_test("add_alert_word", ({override}) => {
-    override(alert_words_ui, "render_alert_words_ui", () => {}); // we've already tested this above
+run_test("add_alert_word", ({override_rewire}) => {
+    override_rewire(alert_words_ui, "render_alert_words_ui", () => {}); // we've already tested this above
 
     alert_words_ui.set_up_alert_words();
 
@@ -94,8 +94,8 @@ run_test("add_alert_word", ({override}) => {
     assert.ok(alert_word_status.visible());
 });
 
-run_test("add_alert_word_keypress", ({override}) => {
-    override(alert_words_ui, "render_alert_words_ui", () => {});
+run_test("add_alert_word_keypress", ({override_rewire}) => {
+    override_rewire(alert_words_ui, "render_alert_words_ui", () => {});
     alert_words_ui.set_up_alert_words();
 
     const create_form = $("#create_alert_word_form");
@@ -120,8 +120,8 @@ run_test("add_alert_word_keypress", ({override}) => {
     assert.ok(called);
 });
 
-run_test("remove_alert_word", ({override}) => {
-    override(alert_words_ui, "render_alert_words_ui", () => {});
+run_test("remove_alert_word", ({override_rewire}) => {
+    override_rewire(alert_words_ui, "render_alert_words_ui", () => {});
     alert_words_ui.set_up_alert_words();
 
     const word_list = $("#alert_words_list");
@@ -167,8 +167,8 @@ run_test("remove_alert_word", ({override}) => {
     assert.ok(alert_word_status.visible());
 });
 
-run_test("close_status_message", ({override}) => {
-    override(alert_words_ui, "render_alert_words_ui", () => {});
+run_test("close_status_message", ({override_rewire}) => {
+    override_rewire(alert_words_ui, "render_alert_words_ui", () => {});
     alert_words_ui.set_up_alert_words();
 
     const alert_word_settings = $("#alert-word-settings");

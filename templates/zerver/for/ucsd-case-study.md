@@ -6,7 +6,7 @@ top universities worldwide. The UCSD math department offers
 prestigious graduate and undergraduate programs, with course topics
 ranging from foundational material to cutting-edge research.
 
-In response to the covid pandemic, UCSD instruction moved online early
+In response to the COVID-19 pandemic, UCSD instruction moved online early
 in 2020. As instructors scrambled to figure out online education,
 Kiran Kedlaya, Professor of Mathematics at UCSD, gave himself a bigger
 challenge: “Seeing the unique opportunity, I decided to open my
@@ -67,8 +67,8 @@ the benefits of just a few of Zulip’s features:
   are a great way to answer questions about homework without depriving
   students of a chance to keep thinking about the problem on their
   own.”
-- **Scheduling**: “With [**local
-  times**](/help/format-your-message-using-markdown#mention-a-time),
+- **Scheduling**: “With [**global
+  times**](/help/format-your-message-using-markdown#global-times),
   I could announce office hours or outside lectures without having to
   worry about confusion for students in different time zones.”
 

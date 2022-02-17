@@ -10,7 +10,7 @@ our guide to [Getting started with Zulip][getting-started].
 [getting-started]: /help/getting-started-with-zulip
 
 If you encounter any problems as you're getting started, please drop
-by our [friendly developer community](/developer-community/) and let
+by our [friendly development community](/development-community/) and let
 us know!
 
 ## Trying out Zulip
@@ -99,6 +99,21 @@ stream](/help/create-a-stream#stream-options).
 
 {!how-to-invite-users-to-join.md!}
 
+To get everyone off to a good start, you may wish to share the guide
+to [Getting started with Zulip](/help/getting-started-with-zulip).
+
+!!! tip ""
+    You can link to your Zulip organization with a [nice badge](/help/linking-to-zulip).
+
+## Create user groups
+
+User groups allow you to [mention](/help/mention-a-user-or-group) multiple
+users at once, [notifying](/help/pm-mention-alert-notifications) them about a message. For example, you may choose to create user groups for teams in your organization.
+
+### How to create a user group
+
+{!how-to-create-a-user-group.md!}
+
 ## Set up integrations
 
 {!set-up-integrations.md!}
@@ -108,4 +123,4 @@ stream](/help/create-a-stream#stream-options).
 * [Getting started with Zulip](/help/getting-started-with-zulip)
 * [Streams and topics](/help/streams-and-topics)
 * [Moderating open organizations](/help/moderating-open-organizations)
-* [Using Zulip for a class](/help/using-zulip-for-a-class)
+* [Setting up Zulip for a class](/help/setting-up-zulip-for-a-class)

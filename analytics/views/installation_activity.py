@@ -10,7 +10,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.template import loader
 from django.utils.timezone import now as timezone_now
-from jinja2.utils import Markup as mark_safe
+from markupsafe import Markup as mark_safe
 from psycopg2.sql import SQL, Composable, Literal
 
 from analytics.lib.counts import COUNT_STATS
@@ -223,11 +223,14 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
             if string_id in estimated_arrs:
                 row["arr"] = estimated_arrs[string_id]
 
-            if row["plan_type"] == Realm.STANDARD:
+            if row["plan_type"] in [Realm.PLAN_TYPE_STANDARD, Realm.PLAN_TYPE_PLUS]:
                 row["effective_rate"] = 100 - int(realms_to_default_discount.get(string_id, 0))
-            elif row["plan_type"] == Realm.STANDARD_FREE:
+            elif row["plan_type"] == Realm.PLAN_TYPE_STANDARD_FREE:
                 row["effective_rate"] = 0
-            elif row["plan_type"] == Realm.LIMITED and string_id in realms_to_default_discount:
+            elif (
+                row["plan_type"] == Realm.PLAN_TYPE_LIMITED
+                and string_id in realms_to_default_discount
+            ):
                 row["effective_rate"] = 100 - int(realms_to_default_discount[string_id])
             else:
                 row["effective_rate"] = ""

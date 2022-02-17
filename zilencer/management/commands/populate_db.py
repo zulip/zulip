@@ -288,7 +288,7 @@ class Command(BaseCommand):
                 # due to these numbers happening to coincide in such a way that it makes tests
                 # accidentally pass. By bumping the Recipient.id sequence by a large enough number,
                 # we can have those ids in a completely different range of values than object ids,
-                # eliminatng the possibility of such coincidences.
+                # eliminating the possibility of such coincidences.
                 cursor.execute("SELECT setval('zerver_recipient_id_seq', 100)")
 
         # If max_topics is not set, we set it proportional to the
@@ -312,8 +312,9 @@ class Command(BaseCommand):
                 description="The Zulip development environment default organization."
                 "  It's great for testing!",
                 invite_required=False,
-                plan_type=Realm.SELF_HOSTED,
+                plan_type=Realm.PLAN_TYPE_SELF_HOSTED,
                 org_type=Realm.ORG_TYPES["business"]["id"],
+                enable_spectator_access=True,
             )
             RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
             assert zulip_realm.notifications_stream is not None
@@ -327,7 +328,7 @@ class Command(BaseCommand):
                     name="MIT",
                     emails_restricted_to_domains=True,
                     invite_required=False,
-                    plan_type=Realm.SELF_HOSTED,
+                    plan_type=Realm.PLAN_TYPE_SELF_HOSTED,
                     org_type=Realm.ORG_TYPES["business"]["id"],
                 )
                 RealmDomain.objects.create(realm=mit_realm, domain="mit.edu")
@@ -337,7 +338,7 @@ class Command(BaseCommand):
                     name="Lear & Co.",
                     emails_restricted_to_domains=False,
                     invite_required=False,
-                    plan_type=Realm.SELF_HOSTED,
+                    plan_type=Realm.PLAN_TYPE_SELF_HOSTED,
                     org_type=Realm.ORG_TYPES["business"]["id"],
                 )
 
@@ -365,7 +366,7 @@ class Command(BaseCommand):
             # For testing really large batches:
             # Create extra users with semi realistic names to make search
             # functions somewhat realistic.  We'll still create 1000 users
-            # like Extra222 User for some predicability.
+            # like Extra222 User for some predictability.
             num_names = options["extra_users"]
             num_boring_names = 300
 
@@ -464,7 +465,7 @@ class Command(BaseCommand):
                 email = fname.lower() + "@zulip.com"
                 names.append((full_name, email))
 
-            create_users(zulip_realm, names, tos_version=settings.TOS_VERSION)
+            create_users(zulip_realm, names, tos_version=settings.TERMS_OF_SERVICE_VERSION)
 
             iago = get_user_by_delivery_email("iago@zulip.com", zulip_realm)
             do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
@@ -494,9 +495,8 @@ class Command(BaseCommand):
             shiva = get_user_by_delivery_email("shiva@zulip.com", zulip_realm)
             do_change_user_role(shiva, UserProfile.ROLE_MODERATOR, acting_user=None)
 
-            guest_user = get_user_by_delivery_email("polonius@zulip.com", zulip_realm)
-            guest_user.role = UserProfile.ROLE_GUEST
-            guest_user.save(update_fields=["role"])
+            polonius = get_user_by_delivery_email("polonius@zulip.com", zulip_realm)
+            do_change_user_role(polonius, UserProfile.ROLE_GUEST, acting_user=None)
 
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
@@ -787,13 +787,17 @@ class Command(BaseCommand):
                     ("Athena Consulting Exchange User (MIT)", "starnine@mit.edu"),
                     ("Esp Classroom (MIT)", "espuser@mit.edu"),
                 ]
-                create_users(mit_realm, testsuite_mit_users, tos_version=settings.TOS_VERSION)
+                create_users(
+                    mit_realm, testsuite_mit_users, tos_version=settings.TERMS_OF_SERVICE_VERSION
+                )
 
                 testsuite_lear_users = [
                     ("King Lear", "king@lear.org"),
                     ("Cordelia, Lear's daughter", "cordelia@zulip.com"),
                 ]
-                create_users(lear_realm, testsuite_lear_users, tos_version=settings.TOS_VERSION)
+                create_users(
+                    lear_realm, testsuite_lear_users, tos_version=settings.TERMS_OF_SERVICE_VERSION
+                )
 
             if not options["test_suite"]:
                 # To keep the messages.json fixtures file for the test

@@ -1,11 +1,9 @@
-import $ from "jquery";
-
 import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_user.hbs";
 
 import * as activity from "./activity";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
-import {$t} from "./i18n";
+import {$t_html} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as muted_users from "./muted_users";
 import * as overlays from "./overlays";
@@ -27,14 +25,12 @@ export function confirm_mute_user(user_id) {
         mute_user(user_id);
     }
 
-    const modal_parent = $(".mute-user-modal-holder");
     const html_body = render_confirm_mute_user({
         user_name: people.get_full_name(user_id),
     });
 
     confirm_dialog.launch({
-        parent: modal_parent,
-        html_heading: $t({defaultMessage: "Mute user"}),
+        html_heading: $t_html({defaultMessage: "Mute user"}),
         help_link: "/help/mute-a-user",
         html_body,
         on_click,

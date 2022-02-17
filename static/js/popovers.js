@@ -1,5 +1,5 @@
 import ClipboardJS from "clipboard";
-import {add, formatISO, set} from "date-fns";
+import {add, formatISO, parseISO, set} from "date-fns";
 import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
 import tippy, {hideAll} from "tippy.js";
@@ -43,6 +43,7 @@ import * as reminder from "./reminder";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
+import * as settings_users from "./settings_users";
 import * as stream_popover from "./stream_popover";
 import * as user_groups from "./user_groups";
 import * as user_status from "./user_status";
@@ -157,8 +158,7 @@ function init_email_tooltip(user) {
 }
 
 function load_medium_avatar(user, elt) {
-    const avatar_path = "avatar/" + user.user_id + "/medium?v=" + user.avatar_version;
-    const user_avatar_url = new URL(avatar_path, window.location.href);
+    const user_avatar_url = people.medium_avatar_url_for_person(user);
     const sender_avatar_medium = new Image();
 
     sender_avatar_medium.src = user_avatar_url;
@@ -208,6 +208,13 @@ function render_user_info_popover(
     const status_text = user_status.get_status_text(user.user_id);
     const status_emoji_info = user_status.get_status_emoji(user.user_id);
 
+    const spectator_view = page_params.is_spectator;
+    let date_joined;
+    if (spectator_view) {
+        const dateFormat = new Intl.DateTimeFormat("default", {dateStyle: "long"});
+        date_joined = dateFormat.format(parseISO(user.date_joined));
+    }
+
     const args = {
         can_revoke_away,
         can_set_away,
@@ -234,6 +241,9 @@ function render_user_info_popover(
         status_text,
         status_emoji_info,
         user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
+        date_joined,
+        spectator_view,
+        show_manage_user_option: page_params.is_admin && !is_me,
     };
 
     if (user.is_bot) {
@@ -256,7 +266,8 @@ function render_user_info_popover(
         placement: popover_placement,
         template: render_no_arrow_popover({class: template_class}),
         title: render_user_info_popover_title({
-            user_avatar: "avatar/" + user.email,
+            // See the load_medium_avatar comment for important background.
+            user_avatar: people.small_avatar_url_for_person(user),
             user_is_guest: user.is_guest,
         }),
         html: true,
@@ -269,6 +280,13 @@ function render_user_info_popover(
     init_email_clipboard();
     init_email_tooltip(user);
 
+    // Note: We pass the normal-size avatar in initial rendering, and
+    // then query the server to replace it with the medium-size
+    // avatar.  The purpose of this double-fetch approach is to take
+    // advantage of the fact that the browser should already have the
+    // low-resolution image cached and thus display a low-resolution
+    // avatar rather than a blank area during the network delay for
+    // fetching the medium-size one.
     load_medium_avatar(user, $(".popover-avatar"));
 }
 
@@ -462,6 +480,7 @@ export function toggle_actions_popover(element, id) {
             message.edit_history.some(
                 (entry) =>
                     entry.prev_content !== undefined ||
+                    entry.prev_stream !== undefined ||
                     util.get_edit_event_prev_topic(entry) !== undefined,
             ) &&
             page_params.realm_allow_edit_history &&
@@ -696,7 +715,7 @@ export function user_sidebar_popped() {
 export function hide_user_sidebar_popover() {
     if (user_sidebar_popped()) {
         // this hide_* method looks different from all the others since
-        // the presence list may be redrawn. Due to funkiness with jquery's .data()
+        // the presence list may be redrawn. Due to funkiness with jQuery's .data()
         // this would confuse $.popover("destroy"), which looks at the .data() attached
         // to a certain element. We thus save off the .data("popover") in the
         // show_user_sidebar_popover and inject it here before calling destroy.
@@ -745,7 +764,7 @@ export function show_sender_info() {
     const message = message_lists.current.get(rows.id($message));
     const user = people.get_by_user_id(message.sender_id);
     show_user_info_popover_for_message($sender[0], user, message);
-    if (current_message_info_popover_elem) {
+    if (current_message_info_popover_elem && !page_params.is_spectator) {
         focus_user_info_popover_item();
     }
 }
@@ -1113,8 +1132,10 @@ export function register_click_handlers() {
     });
 
     $("body").on("click", ".flatpickr-confirm", (e) => {
-        const datestr = $(".remind.custom")[0].value;
-        reminder_click_handler(datestr, e);
+        if ($(".remind.custom")[0]) {
+            const datestr = $(".remind.custom")[0].value;
+            reminder_click_handler(datestr, e);
+        }
     });
 
     $("body").on("click", ".respond_personal_button, .compose_private_message", (e) => {
@@ -1215,7 +1236,7 @@ export function register_click_handlers() {
     clipboard_enable(".copy_link").on("success", (e) => {
         hide_actions_popover();
         // e.trigger returns the DOM element triggering the copy action
-        const message_id = e.trigger.getAttribute("data-message-id");
+        const message_id = e.trigger.dataset.messageId;
         const row = $(`[zid='${CSS.escape(message_id)}']`);
         row.find(".alert-msg")
             .text($t({defaultMessage: "Copied!"}))
@@ -1224,7 +1245,7 @@ export function register_click_handlers() {
             .fadeOut(300);
 
         setTimeout(() => {
-            // The Cliboard library works by focusing to a hidden textarea.
+            // The Clipboard library works by focusing to a hidden textarea.
             // We unfocus this so keyboard shortcuts, etc., will work again.
             $(":focus").trigger("blur");
         }, 0);
@@ -1260,14 +1281,19 @@ export function register_click_handlers() {
             last_scroll = date;
         });
     }
+
+    $("body").on("click", ".sidebar-popover-manage-user", (e) => {
+        hide_all();
+        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        settings_users.show_edit_user_info_modal(user_id, true);
+    });
 }
 
 export function any_active() {
     // True if any popover (that this module manages) is currently shown.
     // Expanded sidebars on mobile view count as popovers as well.
     return (
-        popover_menus.is_left_sidebar_stream_setting_popover_displayed() ||
-        popover_menus.is_compose_mobile_button_popover_displayed() ||
+        popover_menus.any_active() ||
         actions_popped() ||
         user_sidebar_popped() ||
         stream_popover.stream_popped() ||
@@ -1297,6 +1323,7 @@ export function hide_all_except_sidebars(opts) {
     stream_popover.hide_topic_popover();
     stream_popover.hide_all_messages_popover();
     stream_popover.hide_starred_messages_popover();
+    stream_popover.hide_drafts_popover();
     hide_user_sidebar_popover();
     hide_user_info_popover();
     hide_playground_links_popover();

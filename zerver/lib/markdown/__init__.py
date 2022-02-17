@@ -24,7 +24,7 @@ from typing import (
     TypeVar,
     Union,
 )
-from urllib.parse import urlencode, urlsplit
+from urllib.parse import urlencode, urljoin, urlsplit
 from xml.etree import ElementTree as etree
 from xml.etree.ElementTree import Element, SubElement
 
@@ -43,6 +43,7 @@ import requests
 from django.conf import settings
 from markdown.blockparser import BlockParser
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
+from soupsieve import escape as css_escape
 from tlds import tld_set
 from typing_extensions import TypedDict
 
@@ -53,7 +54,7 @@ from zerver.lib.emoji import EMOTICON_RE, codepoint_to_name, name_to_codepoint, 
 from zerver.lib.exceptions import MarkdownRenderingException
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
-from zerver.lib.mention import MentionData, get_stream_name_info
+from zerver.lib.mention import FullNameInfo, MentionBackend, MentionData
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
@@ -63,7 +64,7 @@ from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.lib.url_preview import preview as link_preview
-from zerver.models import Message, Realm, linkifiers_for_realm
+from zerver.models import EmojiInfo, Message, Realm, linkifiers_for_realm
 
 ReturnT = TypeVar("ReturnT")
 
@@ -133,7 +134,16 @@ class MessageRenderingResult:
     potential_attachment_path_ids: List[str]
 
 
-DbData = Dict[str, Any]
+@dataclass
+class DbData:
+    mention_data: MentionData
+    realm_uri: str
+    realm_alert_words_automaton: Optional[ahocorasick.Automaton]
+    active_realm_emoji: Dict[str, EmojiInfo]
+    sent_by_bot: bool
+    stream_names: Dict[str, int]
+    translate_emoticons: bool
+
 
 # Format version of the Markdown rendering; stored along with rendered
 # messages so that we can efficiently determine what needs to be re-rendered
@@ -148,7 +158,7 @@ EMOJI_REGEX = r"(?P<syntax>:[\w\-\+]+:)"
 def verbose_compile(pattern: str) -> Pattern[str]:
     return re.compile(
         f"^(.*?){pattern}(.*?)$",
-        re.DOTALL | re.UNICODE | re.VERBOSE,
+        re.DOTALL | re.VERBOSE,
     )
 
 
@@ -169,7 +179,7 @@ def get_compiled_stream_link_regex() -> Pattern[str]:
     # are not required.
     return re.compile(
         STREAM_LINK_REGEX,
-        re.DOTALL | re.UNICODE | re.VERBOSE,
+        re.DOTALL | re.VERBOSE,
     )
 
 
@@ -192,7 +202,7 @@ def get_compiled_stream_topic_link_regex() -> Pattern[str]:
     # are not required.
     return re.compile(
         STREAM_TOPIC_LINK_REGEX,
-        re.DOTALL | re.UNICODE | re.VERBOSE,
+        re.DOTALL | re.VERBOSE,
     )
 
 
@@ -276,7 +286,7 @@ def rewrite_local_links_to_relative(db_data: Optional[DbData], link: str) -> str
     """
 
     if db_data:
-        realm_uri_prefix = db_data["realm_uri"] + "/"
+        realm_uri_prefix = db_data.realm_uri + "/"
         if (
             link.startswith(realm_uri_prefix)
             and urllib.parse.urljoin(realm_uri_prefix, link[len(realm_uri_prefix) :]) == link
@@ -504,7 +514,7 @@ class OpenGraphSession(OutgoingSession):
 
 
 def fetch_open_graph_image(url: str) -> Optional[Dict[str, Any]]:
-    og = {"image": None, "title": None, "desc": None}
+    og: Dict[str, Optional[str]] = {"image": None, "title": None, "desc": None}
 
     try:
         with OpenGraphSession().get(
@@ -532,7 +542,9 @@ def fetch_open_graph_image(url: str) -> Optional[Dict[str, Any]]:
                     break
                 elif element.tag in ("meta", "{http://www.w3.org/1999/xhtml}meta"):
                     if element.get("property") == "og:image":
-                        og["image"] = element.get("content")
+                        content = element.get("content")
+                        if content is not None:
+                            og["image"] = urljoin(res.url, content)
                     elif element.get("property") == "og:title":
                         og["title"] = element.get("content")
                     elif element.get("property") == "og:description":
@@ -611,7 +623,7 @@ IMAGE_EXTENSIONS = [".bmp", ".gif", ".jpe", ".jpeg", ".jpg", ".png", ".webp"]
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     TWITTER_MAX_IMAGE_HEIGHT = 400
     TWITTER_MAX_TO_PREVIEW = 3
-    INLINE_PREVIEW_LIMIT_PER_MESSAGE = 5
+    INLINE_PREVIEW_LIMIT_PER_MESSAGE = 10
 
     def add_a(
         self,
@@ -710,14 +722,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         container = SubElement(root, "div")
         container.set("class", "message_embed")
 
-        parsed_img_link = urllib.parse.urlparse(img_link)
-        # Append domain where relative img_link url is given
-        if not parsed_img_link.netloc:
-            parsed_url = urllib.parse.urlparse(link)
-            domain = "{url.scheme}://{url.netloc}/".format(url=parsed_url)
-            img_link = urllib.parse.urljoin(domain, img_link)
+        img_link = get_camo_url(img_link)
         img = SubElement(container, "a")
-        img.set("style", "background-image: url(" + img_link + ")")
+        img.set("style", "background-image: url(" + css_escape(img_link) + ")")
         img.set("href", link)
         img.set("class", "message_embed_image")
 
@@ -988,7 +995,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             else:
                 current_node.tail = text
 
-        db_data = self.md.zulip_db_data
+        db_data: Optional[DbData] = self.md.zulip_db_data
         current_index = 0
         for item in to_process:
             # The text we want to link starts in already linked text skip it
@@ -1323,8 +1330,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 # is enabled, but URL previews are a beta feature and YouTube
                 # previews are pretty stable.
 
-            db_data = self.md.zulip_db_data
-            if db_data and db_data["sent_by_bot"]:
+            db_data: Optional[DbData] = self.md.zulip_db_data
+            if db_data and db_data.sent_by_bot:
                 continue
 
             if not self.md.url_embed_preview_enabled:
@@ -1403,6 +1410,7 @@ class Timestamp(markdown.inlinepatterns.Pattern):
 # \U0001f300-\U0001f5ff - Miscellaneous Symbols and Pictographs
 # \U0001f600-\U0001f64f - Emoticons (Emoji)
 # \U0001f680-\U0001f6ff - Transport and Map Symbols
+# \U0001f7e0-\U0001f7eb - Coloured Geometric Shapes (NOTE: Not Unicode standard category name)
 # \U0001f900-\U0001f9ff - Supplemental Symbols and Pictographs
 # \u2000-\u206f         - General Punctuation
 # \u2300-\u23ff         - Miscellaneous Technical
@@ -1422,6 +1430,7 @@ UNICODE_EMOJI_RE = (
     "(?P<syntax>["
     "\U0001F100-\U0001F64F"
     "\U0001F680-\U0001F6FF"
+    "\U0001F7E0-\U0001F7EB"
     "\U0001F900-\U0001F9FF"
     "\u2000-\u206F"
     "\u2300-\u27BF"
@@ -1467,20 +1476,16 @@ def make_realm_emoji(src: str, display_string: str) -> Element:
 
 
 def unicode_emoji_to_codepoint(unicode_emoji: str) -> str:
-    codepoint = hex(ord(unicode_emoji))[2:]
-    # Unicode codepoints are minimum of length 4, padded
-    # with zeroes if the length is less than zero.
-    while len(codepoint) < 4:
-        codepoint = "0" + codepoint
-    return codepoint
+    # Unicode codepoints are minimum of length 4, padded with zeroes
+    return f"{ord(unicode_emoji):04x}"
 
 
 class EmoticonTranslation(markdown.inlinepatterns.Pattern):
     """Translates emoticons like `:)` into emoji like `:smile:`."""
 
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
-        db_data = self.md.zulip_db_data
-        if db_data is None or not db_data["translate_emoticons"]:
+        db_data: Optional[DbData] = self.md.zulip_db_data
+        if db_data is None or not db_data.translate_emoticons:
             return None
 
         emoticon = match.group("emoticon")
@@ -1505,10 +1510,10 @@ class Emoji(markdown.inlinepatterns.Pattern):
         orig_syntax = match.group("syntax")
         name = orig_syntax[1:-1]
 
-        active_realm_emoji: Dict[str, Dict[str, str]] = {}
-        db_data = self.md.zulip_db_data
+        active_realm_emoji: Dict[str, EmojiInfo] = {}
+        db_data: Optional[DbData] = self.md.zulip_db_data
         if db_data is not None:
-            active_realm_emoji = db_data["active_realm_emoji"]
+            active_realm_emoji = db_data.active_realm_emoji
 
         if name in active_realm_emoji:
             return make_realm_emoji(active_realm_emoji[name]["source_url"], orig_syntax)
@@ -1618,7 +1623,7 @@ class CompiledPattern(markdown.inlinepatterns.Pattern):
 class AutoLink(CompiledPattern):
     def handleMatch(self, match: Match[str]) -> ElementStringNone:
         url = match.group("url")
-        db_data = self.md.zulip_db_data
+        db_data: Optional[DbData] = self.md.zulip_db_data
         return url_to_a(db_data, url)
 
 
@@ -1799,13 +1804,28 @@ class LinkifierPattern(CompiledInlineProcessor):
         options.log_errors = False
 
         compiled_re2 = re2.compile(prepare_linkifier_pattern(source_pattern), options=options)
-        self.format_string = format_string
+
+        # Find percent-encoded bytes and escape them from the python
+        # interpolation.  That is:
+        #     %(foo)s -> %(foo)s
+        #     %%      -> %%
+        #     %ab     -> %%ab
+        #     %%ab    -> %%ab
+        #     %%%ab   -> %%%%ab
+        #
+        # We do this here, rather than before storing, to make edits
+        # to the underlying linkifier more straightforward, and
+        # because JS does not have a real formatter.
+        self.format_string = re.sub(
+            r"(?<!%)(%%)*%([a-fA-F0-9][a-fA-F0-9])", r"\1%%\2", format_string
+        )
+
         super().__init__(compiled_re2, md)
 
     def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
         self, m: Match[str], data: str
     ) -> Union[Tuple[Element, int, int], Tuple[None, None, None]]:
-        db_data = self.md.zulip_db_data
+        db_data: Optional[DbData] = self.md.zulip_db_data
         url = url_to_a(
             db_data,
             self.format_string % m.groupdict(),
@@ -1827,7 +1847,7 @@ class UserMentionPattern(CompiledInlineProcessor):
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
         name = m.group("match")
         silent = m.group("silent") == "_"
-        db_data = self.md.zulip_db_data
+        db_data: Optional[DbData] = self.md.zulip_db_data
         if db_data is not None:
             wildcard = mention.user_mention_matches_wildcard(name)
 
@@ -1836,28 +1856,30 @@ class UserMentionPattern(CompiledInlineProcessor):
             if id_syntax_match:
                 full_name = id_syntax_match.group("full_name")
                 id = int(id_syntax_match.group("user_id"))
-                user = db_data["mention_data"].get_user_by_id(id)
+                user = db_data.mention_data.get_user_by_id(id)
 
                 # For @**name|id**, we need to specifically check that
                 # name matches the full_name of user in mention_data.
                 # This enforces our decision that
                 # @**user_1_name|id_for_user_2** should be invalid syntax.
                 if full_name:
-                    if user and user["full_name"] != full_name:
+                    if user and user.full_name != full_name:
                         return None, None, None
             else:
                 # For @**name** syntax.
-                user = db_data["mention_data"].get_user_by_name(name)
+                user = db_data.mention_data.get_user_by_name(name)
 
             if wildcard:
                 if not silent:
                     self.md.zulip_rendering_result.mentions_wildcard = True
                 user_id = "*"
-            elif user:
+            elif user is not None:
+                assert isinstance(user, FullNameInfo)
+
                 if not silent:
-                    self.md.zulip_rendering_result.mentions_user_ids.add(user["id"])
-                name = user["full_name"]
-                user_id = str(user["id"])
+                    self.md.zulip_rendering_result.mentions_user_ids.add(user.id)
+                name = user.full_name
+                user_id = str(user.id)
             else:
                 # Don't highlight @mentions that don't refer to a valid user
                 return None, None, None
@@ -1881,10 +1903,10 @@ class UserGroupMentionPattern(CompiledInlineProcessor):
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
         name = m.group("match")
         silent = m.group("silent") == "_"
-        db_data = self.md.zulip_db_data
+        db_data: Optional[DbData] = self.md.zulip_db_data
 
         if db_data is not None:
-            user_group = db_data["mention_data"].get_user_group(name)
+            user_group = db_data.mention_data.get_user_group(name)
             if user_group:
                 if not silent:
                     self.md.zulip_rendering_result.mentions_user_group_ids.add(user_group.id)
@@ -1909,30 +1931,30 @@ class UserGroupMentionPattern(CompiledInlineProcessor):
 
 
 class StreamPattern(CompiledInlineProcessor):
-    def find_stream_by_name(self, name: str) -> Optional[Dict[str, Any]]:
-        db_data = self.md.zulip_db_data
+    def find_stream_id(self, name: str) -> Optional[int]:
+        db_data: Optional[DbData] = self.md.zulip_db_data
         if db_data is None:
             return None
-        stream = db_data["stream_names"].get(name)
-        return stream
+        stream_id = db_data.stream_names.get(name)
+        return stream_id
 
     def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
         self, m: Match[str], data: str
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
         name = m.group("stream_name")
 
-        stream = self.find_stream_by_name(name)
-        if stream is None:
+        stream_id = self.find_stream_id(name)
+        if stream_id is None:
             return None, None, None
         el = Element("a")
         el.set("class", "stream")
-        el.set("data-stream-id", str(stream["id"]))
+        el.set("data-stream-id", str(stream_id))
         # TODO: We should quite possibly not be specifying the
         # href here and instead having the browser auto-add the
         # href when it processes a message with one of these, to
         # provide more clarity to API clients.
         # Also do the same for StreamTopicPattern.
-        stream_url = encode_stream(stream["id"], name)
+        stream_url = encode_stream(stream_id, name)
         el.set("href", f"/#narrow/stream/{stream_url}")
         text = f"#{name}"
         el.text = markdown.util.AtomicString(text)
@@ -1940,12 +1962,12 @@ class StreamPattern(CompiledInlineProcessor):
 
 
 class StreamTopicPattern(CompiledInlineProcessor):
-    def find_stream_by_name(self, name: str) -> Optional[Dict[str, Any]]:
-        db_data = self.md.zulip_db_data
+    def find_stream_id(self, name: str) -> Optional[int]:
+        db_data: Optional[DbData] = self.md.zulip_db_data
         if db_data is None:
             return None
-        stream = db_data["stream_names"].get(name)
-        return stream
+        stream_id = db_data.stream_names.get(name)
+        return stream_id
 
     def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
         self, m: Match[str], data: str
@@ -1953,13 +1975,13 @@ class StreamTopicPattern(CompiledInlineProcessor):
         stream_name = m.group("stream_name")
         topic_name = m.group("topic_name")
 
-        stream = self.find_stream_by_name(stream_name)
-        if stream is None or topic_name is None:
+        stream_id = self.find_stream_id(stream_name)
+        if stream_id is None or topic_name is None:
             return None, None, None
         el = Element("a")
         el.set("class", "stream-topic")
-        el.set("data-stream-id", str(stream["id"]))
-        stream_url = encode_stream(stream["id"], stream_name)
+        el.set("data-stream-id", str(stream_id))
+        stream_url = encode_stream(stream_id, stream_name)
         topic_url = hash_util_encode(topic_name)
         link = f"/#narrow/stream/{stream_url}/topic/{topic_url}"
         el.set("href", link)
@@ -2006,7 +2028,7 @@ class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
         return False
 
     def run(self, lines: List[str]) -> List[str]:
-        db_data = self.md.zulip_db_data
+        db_data: Optional[DbData] = self.md.zulip_db_data
         if db_data is not None:
             # We check for alert words here, the set of which are
             # dependent on which users may see this message.
@@ -2015,7 +2037,7 @@ class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
             # don't do any special rendering; we just append the alert words
             # we find to the set self.md.zulip_rendering_result.user_ids_with_alert_words.
 
-            realm_alert_words_automaton = db_data["realm_alert_words_automaton"]
+            realm_alert_words_automaton = db_data.realm_alert_words_automaton
 
             if realm_alert_words_automaton is not None:
                 content = "\n".join(lines).lower()
@@ -2040,7 +2062,7 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
             return None  # no-op; the link is not processed.
 
         # Rewrite local links to be relative
-        db_data = self.md.zulip_db_data
+        db_data: Optional[DbData] = self.md.zulip_db_data
         href = rewrite_local_links_to_relative(db_data, href)
 
         # Make changes to <a> tag attributes
@@ -2404,7 +2426,7 @@ def maybe_update_markdown_engines(linkifiers_key: int, email_gateway: bool) -> N
 #
 # We also use repr() to improve reproducibility, and to escape terminal control
 # codes, which can do surprisingly nasty things.
-_privacy_re = re.compile("\\w", flags=re.UNICODE)
+_privacy_re = re.compile("\\w")
 
 
 def privacy_clean_markdown(content: str) -> str:
@@ -2484,25 +2506,26 @@ def do_convert(
         # are uncommon enough that it's a useful optimization.
 
         if mention_data is None:
-            mention_data = MentionData(message_realm.id, content)
+            mention_backend = MentionBackend(message_realm.id)
+            mention_data = MentionData(mention_backend, content)
 
         stream_names = possible_linked_stream_names(content)
-        stream_name_info = get_stream_name_info(message_realm, stream_names)
+        stream_name_info = mention_data.get_stream_name_map(stream_names)
 
         if content_has_emoji_syntax(content):
             active_realm_emoji = message_realm.get_active_emoji()
         else:
             active_realm_emoji = {}
 
-        _md_engine.zulip_db_data = {
-            "realm_alert_words_automaton": realm_alert_words_automaton,
-            "mention_data": mention_data,
-            "active_realm_emoji": active_realm_emoji,
-            "realm_uri": message_realm.uri,
-            "sent_by_bot": sent_by_bot,
-            "stream_names": stream_name_info,
-            "translate_emoticons": translate_emoticons,
-        }
+        _md_engine.zulip_db_data = DbData(
+            realm_alert_words_automaton=realm_alert_words_automaton,
+            mention_data=mention_data,
+            active_realm_emoji=active_realm_emoji,
+            realm_uri=message_realm.uri,
+            sent_by_bot=sent_by_bot,
+            stream_names=stream_name_info,
+            translate_emoticons=translate_emoticons,
+        )
 
     try:
         # Spend at most 5 seconds rendering; this protects the backend

@@ -37,6 +37,7 @@ cp -a \
     tools/ci/production-install \
     tools/ci/production-verify \
     tools/ci/production-upgrade \
+    tools/ci/production-pgroonga \
     tools/ci/production-upgrade-pg \
     tools/ci/send-failure-message \
     package.json yarn.lock \

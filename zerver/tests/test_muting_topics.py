@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict
+from typing import Any, Dict, List
 from unittest import mock
 
 from django.utils.timezone import now as timezone_now
@@ -90,7 +90,7 @@ class MutedTopicsTests(ZulipTestCase):
 
         url = "/api/v1/users/me/subscriptions/muted_topics"
 
-        payloads = [
+        payloads: List[Dict[str, object]] = [
             {"stream": stream.name, "topic": "Verona3", "op": "add"},
             {"stream_id": stream.id, "topic": "Verona3", "op": "add"},
         ]
@@ -105,7 +105,6 @@ class MutedTopicsTests(ZulipTestCase):
                 self.assert_json_success(result)
 
             self.assertIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
-            self.assertTrue(topic_is_muted(user, stream.id, "Verona3"))
             self.assertTrue(topic_is_muted(user, stream.id, "verona3"))
 
             remove_topic_mute(
@@ -113,6 +112,23 @@ class MutedTopicsTests(ZulipTestCase):
                 stream_id=stream.id,
                 topic_name="Verona3",
             )
+
+        # Verify the error handling for the database level
+        # IntegrityError we'll get with a race between two processes
+        # trying to mute the topic.  To do this, we patch the
+        # topic_is_muted function to always return False when trying
+        # to mute a topic that is already muted.
+        add_topic_mute(
+            user_profile=user,
+            stream_id=stream.id,
+            recipient_id=stream.recipient.id,
+            topic_name="Verona3",
+            date_muted=datetime(2020, 1, 1, tzinfo=timezone.utc),
+        )
+
+        with mock.patch("zerver.views.muting.topic_is_muted", return_value=False):
+            result = self.api_patch(user, url, data)
+            self.assert_json_error(result, "Topic already muted")
 
     def test_remove_muted_topic(self) -> None:
         user = self.example_user("hamlet")
@@ -123,7 +139,7 @@ class MutedTopicsTests(ZulipTestCase):
         recipient = stream.recipient
 
         url = "/api/v1/users/me/subscriptions/muted_topics"
-        payloads = [
+        payloads: List[Dict[str, object]] = [
             {"stream": stream.name, "topic": "vERONA3", "op": "remove"},
             {"stream_id": stream.id, "topic": "vEroNA3", "op": "remove"},
         ]

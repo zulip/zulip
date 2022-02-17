@@ -15,14 +15,14 @@
             <div class="right_part">
                 {{#if unread_count}}<span class="unread_count">{{unread_count}}</span>{{/if}}
                 <div class="recent_topic_actions">
-                    <div class="recent_topics_focusable">
+                    <div class="recent_topics_focusable hidden-for-spectators">
                         {{#if topic_muted}}
                         <i class="fa fa-bell-slash on_hover_topic_unmute recipient_bar_icon tippy-zulip-tooltip" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Unmute topic' }}" role="button" tabindex="0" aria-label="{{t 'Unmute topic' }}"></i>
                         {{else}}
                         <i class="fa fa-bell-slash on_hover_topic_mute recipient_bar_icon tippy-zulip-tooltip" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mute topic' }}" role="button" tabindex="0" aria-label="{{t 'Mute topic' }}"></i>
                         {{/if}}
                     </div>
-                    <div class="recent_topics_focusable">
+                    <div class="recent_topics_focusable hidden-for-spectators">
                         <i class="fa fa-check-circle on_hover_topic_read recipient_bar_icon tippy-zulip-tooltip" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}"></i>
                     </div>
                 </div>

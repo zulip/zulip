@@ -48,7 +48,7 @@ to understand when implementing an internationalized application:
   translate the content.
 - **Word order** varies between languages (e.g. some languages put
   subjects before verbs, others the other way around). This means
-  that **concatenating translateable strings** produces broken results
+  that **concatenating translatable strings** produces broken results
   (more details with examples are below).
 - The **width of the string needed to express something** varies
   dramatically between languages; this means you can't just hardcode a
@@ -146,7 +146,7 @@ can use the `_()` function in the templates like this:
 If a piece of text contains both a literal string component and variables,
 you can use a block translation, which makes use of placeholders to
 help translators to translate an entire sentence. To translate a
-block, Jinja2 uses the [trans][] tag. So rather than writing
+block, Jinja2 uses the [trans][trans] tag. So rather than writing
 something ugly and confusing for translators like this:
 
 ```jinja
@@ -202,7 +202,7 @@ class Realm(models.Model):
     STREAM_EVENTS_NOTIFICATION_TOPIC = gettext_lazy('stream events')
 ```
 
-To ensure we always internationalize our JSON errors messages, the
+To ensure we always internationalize our JSON error messages, the
 Zulip linter (`tools/lint`) attempts to verify correct usage.
 
 ## Frontend translations
@@ -333,7 +333,7 @@ organizations from the command line.
 
 [jinja2]: http://jinja.pocoo.org/
 [handlebars]: https://handlebarsjs.com/
-[trans]: http://jinja.pocoo.org/docs/dev/templates/#i18n
+[trans]: https://jinja.palletsprojects.com/en/3.0.x/extensions/#i18n-extension
 [formatjs]: https://formatjs.io/
 [icu messageformat]: https://formatjs.io/docs/intl-messageformat
 [helpers]: https://handlebarsjs.com/guide/block-helpers.html

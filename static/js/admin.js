@@ -28,6 +28,9 @@ const admin_settings_label = {
     realm_message_content_allowed_in_email_notifications: $t({
         defaultMessage: "Allow message content in message notification emails",
     }),
+    realm_enable_spectator_access: $t({
+        defaultMessage: "Allow creating web-public streams (visible to anyone on the Internet)",
+    }),
     realm_digest_emails_enabled: $t({
         defaultMessage: "Send weekly digest emails to inactive users",
     }),
@@ -119,10 +122,10 @@ export function build_page() {
         realm_send_welcome_emails: page_params.realm_send_welcome_emails,
         realm_message_content_allowed_in_email_notifications:
             page_params.realm_message_content_allowed_in_email_notifications,
+        realm_enable_spectator_access: page_params.realm_enable_spectator_access,
         settings_send_digest_emails: page_params.settings_send_digest_emails,
         realm_digest_emails_enabled: page_params.realm_digest_emails_enabled,
         realm_digest_weekday: page_params.realm_digest_weekday,
-        show_email: settings_data.show_email(),
         development: page_params.development_environment,
         zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
         upgrade_text_for_wide_organization_logo:
@@ -154,11 +157,14 @@ export function build_page() {
         email_notifications_batching_period_values:
             settings_config.email_notifications_batching_period_values,
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
+        create_web_public_stream_policy_values:
+            settings_config.create_web_public_stream_policy_values,
+        disable_enable_spectator_access_setting: !page_params.server_web_public_streams_enabled,
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
-        // If no night mode logo is specified but a day mode one is,
-        // use the day mode one.  See also similar code in realm_logo.js.
+        // If no dark theme logo is specified but a light theme one is,
+        // use the light theme one.  See also similar code in realm_logo.js.
         options.realm_night_logo_url = options.realm_logo_url;
     }
 

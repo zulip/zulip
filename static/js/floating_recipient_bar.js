@@ -85,7 +85,7 @@ export function first_visible_message(bar) {
     }
 
     // If none of the messages are visible, just take the last message.
-    return $(messages[messages.length - 1]);
+    return messages.last();
 }
 
 export function get_date(elem) {

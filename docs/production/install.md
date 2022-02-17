@@ -63,9 +63,11 @@ If the script gives an error, consult [Troubleshooting](#troubleshooting) below.
   suitable for production use, but may be convenient for testing.
 
 - `--certbot`: With this option, the Zulip installer automatically
-  obtains an SSL certificate for the server [using Certbot][doc-certbot].
-  If you'd prefer to acquire an SSL certificate yourself in any other
-  way, it's easy to [provide it to Zulip][doc-ssl-manual].
+  obtains an SSL certificate for the server [using
+  Certbot][doc-certbot], and configures a cron job to renew the
+  certificate automatically. If you'd prefer to acquire an SSL
+  certificate yourself in any other way, it's easy to [provide it to
+  Zulip][doc-ssl-manual].
 
 You can see the more advanced installer options in our [deployment options][doc-deployment-options]
 documentation.
@@ -109,12 +111,10 @@ together with using it with you.
 Learning more:
 
 - Subscribe to the [Zulip announcements email
-  list](https://groups.google.com/forum/#!forum/zulip-announce) for
+  list](https://groups.google.com/g/zulip-announce) for
   server administrators. This extremely low-traffic list is for
   important announcements, including [new
-  releases](../overview/release-lifecycle.md) and security issues. You
-  can also use the [RSS
-  feed](https://groups.google.com/forum/#!aboutgroup/zulip-announce).
+  releases](../overview/release-lifecycle.md) and security issues.
 - Follow [Zulip on Twitter](https://twitter.com/zulip).
 - Learn how to [configure your Zulip server settings](settings.md).
 - Learn about [Backups, export and import](../production/export-and-import.md)
@@ -178,6 +178,6 @@ out! Please provide details like the full traceback from the bottom
 of `/var/log/zulip/errors.log` in your report (ideally in a [code
 block][code-block]).
 
-[chat-zulip-org]: https://zulip.com/developer-community/
+[chat-zulip-org]: https://zulip.com/development-community/
 [production-help]: https://chat.zulip.org/#narrow/stream/31-production-help
 [code-block]: https://zulip.com/help/code-blocks

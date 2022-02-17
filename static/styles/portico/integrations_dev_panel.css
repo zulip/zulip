@@ -7,12 +7,9 @@
 #dev-panel {
     margin-left: 3%;
     margin-right: 3%;
-    padding-bottom: 15px;
-    padding-top: 20px;
-    padding-left: 10px;
-    padding-right: 10px;
-    background-color: hsl(0deg 0% 100% / 48%);
-    box-shadow: 0 0 40px hsl(0deg 0% 0% / 6%);
+    padding: 20px 10px 15px;
+    background-color: hsla(0, 0%, 100%, 0.48);
+    box-shadow: 0 0 40px hsla(0, 0%, 0%, 0.06);
 }
 
 #fixture_body {
@@ -83,8 +80,7 @@
 
 .row3 {
     display: flex;
-    flex-wrap: wrap;
-    flex-direction: column;
+    flex-flow: column wrap;
     justify-content: flex-start;
     margin-left: 2%;
     margin-right: 2%;

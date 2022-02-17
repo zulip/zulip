@@ -43,7 +43,6 @@ function get_new_heights() {
     const viewport_height = message_viewport.height();
     const top_navbar_height = $("#top_navbar").safeOuterHeight(true);
     const right_sidebar_shorcuts_height = $(".right-sidebar-shortcuts").safeOuterHeight(true) || 0;
-    const add_streams_link_height = $("#add-stream-link").safeOuterHeight(true) || 0;
 
     res.bottom_whitespace_height = viewport_height * 0.4;
 
@@ -55,8 +54,7 @@ function get_new_heights() {
         Number.parseInt($(".narrows_panel").css("marginTop"), 10) -
         Number.parseInt($(".narrows_panel").css("marginBottom"), 10) -
         $("#global_filters").safeOuterHeight(true) -
-        $("#streams_header").safeOuterHeight(true) -
-        add_streams_link_height;
+        $("#streams_header").safeOuterHeight(true);
 
     // Don't let us crush the stream sidebar completely out of view
     res.stream_filters_max_height = Math.max(80, res.stream_filters_max_height);
@@ -159,12 +157,12 @@ export function watch_manual_resize(element) {
     return [box_handler, body_handler];
 }
 
-export function reset_compose_textarea_max_height(bottom_whitespace_height) {
+export function reset_compose_message_max_height(bottom_whitespace_height) {
     // If the compose-box is open, we set the `max-height` property of
-    // `compose-textarea` so that the compose-box's maximum extent
-    // does not overlap the last message in the current stream.is the
-    // right size to leave a tiny bit of space after the last message
-    // of the current stream.
+    // `compose-textarea` and `preview-textarea`, so that the
+    // compose-box's maximum extent does not overlap the last message
+    // in the current stream.  We also leave a tiny bit of space after
+    // the last message of the current stream.
 
     // Compute bottom_whitespace_height if not provided by caller.
     if (bottom_whitespace_height === undefined) {
@@ -172,11 +170,16 @@ export function reset_compose_textarea_max_height(bottom_whitespace_height) {
         bottom_whitespace_height = h.bottom_whitespace_height;
     }
 
+    // Take properties of the whichever message area is visible.
+    const visible_textarea = $("#compose-textarea:visible, #preview_message_area:visible");
     const compose_height = Number.parseInt($("#compose").outerHeight(), 10);
-    const compose_textarea_height = Number.parseInt($("#compose-textarea").outerHeight(), 10);
+    const compose_textarea_height = Number.parseInt(visible_textarea.outerHeight(), 10);
     const compose_non_textarea_height = compose_height - compose_textarea_height;
 
-    $("#compose-textarea").css(
+    // The `preview_message_area` can have a slightly different height
+    // than `compose-textarea` based on operating system. We just
+    // ensure that the last message is not overlapped by compose box.
+    visible_textarea.css(
         "max-height",
         // The 10 here leaves space for the selected message border.
         bottom_whitespace_height - compose_non_textarea_height - 10,
@@ -189,11 +192,11 @@ export function resize_bottom_whitespace(h) {
     // The height of the compose box is tied to that of
     // bottom_whitespace, so update it if necessary.
     //
-    // reset_compose_textarea_max_height cannot compute the right
+    // reset_compose_message_max_height cannot compute the right
     // height correctly while compose is hidden. This is OK, because
     // we also resize compose every time it is opened.
     if ($(".message_comp").is(":visible")) {
-        reset_compose_textarea_max_height(h.bottom_whitespace_height);
+        reset_compose_message_max_height(h.bottom_whitespace_height);
     }
 }
 
@@ -253,17 +256,17 @@ let _old_width = $(window).width();
 export function handler() {
     const new_width = $(window).width();
 
-    if (new_width !== _old_width) {
-        _old_width = new_width;
-        condense.clear_message_content_height_cache();
-    }
-
-    // On mobile web, we want to avoid hiding a popover here,
+    // On mobile web, we want to avoid hiding a popover here on height change,
     // especially if this resize was triggered by a virtual keyboard
     // popping up when the user opened that very popover.
     const mobile = util.is_mobile();
-    if (!mobile) {
+    if (!mobile || new_width !== _old_width) {
         popovers.hide_all();
+    }
+
+    if (new_width !== _old_width) {
+        _old_width = new_width;
+        condense.clear_message_content_height_cache();
     }
     resize_page_components();
 

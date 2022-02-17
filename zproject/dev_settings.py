@@ -77,6 +77,11 @@ OPEN_REALM_CREATION = True
 WEB_PUBLIC_STREAMS_ENABLED = True
 INVITES_MIN_USER_AGE_DAYS = 0
 
+# For development convenience, configure the ToS/Privacy Policies
+POLICIES_DIRECTORY = "corporate/policies"
+TERMS_OF_SERVICE_VERSION = "1.0"
+TERMS_OF_SERVICE_MESSAGE: Optional[str] = "Description of changes to the ToS!"
+
 EMBEDDED_BOTS_ENABLED = True
 
 SYSTEM_ONLY_REALMS: Set[str] = set()
@@ -163,9 +168,6 @@ SEARCH_PILLS_ENABLED = bool(os.getenv("SEARCH_PILLS_ENABLED", False))
 BILLING_ENABLED = True
 LANDING_PAGE_NAVBAR_MESSAGE: Optional[str] = None
 
-# Test custom TOS template rendering
-TERMS_OF_SERVICE = "corporate/terms.md"
-
 # Our run-dev.py proxy uses X-Forwarded-Port to communicate to Django
 # that the request is actually on port 9991, not port 9992 (the Django
 # server's own port); this setting tells Django to read that HTTP
@@ -179,3 +181,11 @@ SOCIAL_AUTH_SAML_SP_ENTITY_ID = "http://localhost:9991"
 SOCIAL_AUTH_SUBDOMAIN = "auth"
 
 MEMCACHED_USERNAME: Optional[str] = None
+
+SCIM_CONFIG = {
+    "zulip": {
+        "bearer_token": "token1234",
+        "scim_client_name": "test-scim-client",
+        "name_formatted_included": True,
+    }
+}

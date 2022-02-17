@@ -74,6 +74,7 @@ class Command(ZulipBaseCommand):
         if len(subs_to_deactivate) > 0:
             print(f"Deactivating {len(subs_to_deactivate)} subscriptions")
             bulk_remove_subscriptions(
+                realm,
                 [sub.user_profile for sub in subs_to_deactivate],
                 [stream_to_destroy],
                 acting_user=None,

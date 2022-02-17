@@ -1,6 +1,7 @@
 import datetime
 import logging
 from typing import Any, Dict, List, Optional, Union
+from uuid import UUID
 
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
@@ -12,6 +13,7 @@ from django.utils.translation import gettext as err_
 from django.views.decorators.csrf import csrf_exempt
 
 from analytics.lib.counts import COUNT_STATS
+from corporate.lib.stripe import do_deactivate_remote_server
 from zerver.decorator import InvalidZulipServerKeyError, require_post
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
@@ -39,13 +41,29 @@ from zilencer.models import (
     RemoteRealmAuditLog,
     RemoteRealmCount,
     RemoteZulipServer,
+    RemoteZulipServerAuditLog,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def validate_entity(entity: Union[UserProfile, RemoteZulipServer]) -> RemoteZulipServer:
     if not isinstance(entity, RemoteZulipServer):
         raise JsonableError(err_("Must validate with valid Zulip server API key"))
     return entity
+
+
+def validate_uuid(uuid: str) -> None:
+    try:
+        uuid_object = UUID(uuid, version=4)
+        # The UUID initialization under some circumstances will modify the uuid
+        # string to create a valid UUIDv4, instead of raising a ValueError.
+        # The submitted uuid needing to be modified means it's invalid, so
+        # we need to check for that condition.
+        if str(uuid_object) != uuid:
+            raise ValidationError(err_("Invalid UUID"))
+    except ValueError:
+        raise ValidationError(err_("Invalid UUID"))
 
 
 def validate_bouncer_token_request(
@@ -56,6 +74,17 @@ def validate_bouncer_token_request(
     server = validate_entity(entity)
     validate_token(token, kind)
     return server
+
+
+@csrf_exempt
+@require_post
+@has_request_variables
+def deactivate_remote_server(
+    request: HttpRequest,
+    remote_server: RemoteZulipServer,
+) -> HttpResponse:
+    do_deactivate_remote_server(remote_server)
+    return json_success(request)
 
 
 @csrf_exempt
@@ -87,22 +116,37 @@ def register_remote_server(
     except ValidationError as e:
         raise JsonableError(e.message)
 
-    remote_server, created = RemoteZulipServer.objects.get_or_create(
-        uuid=zulip_org_id,
-        defaults={"hostname": hostname, "contact_email": contact_email, "api_key": zulip_org_key},
-    )
+    try:
+        validate_uuid(zulip_org_id)
+    except ValidationError as e:
+        raise JsonableError(e.message)
 
-    if not created:
-        if remote_server.api_key != zulip_org_key:
-            raise InvalidZulipServerKeyError(zulip_org_id)
+    with transaction.atomic():
+        remote_server, created = RemoteZulipServer.objects.get_or_create(
+            uuid=zulip_org_id,
+            defaults={
+                "hostname": hostname,
+                "contact_email": contact_email,
+                "api_key": zulip_org_key,
+            },
+        )
+        if created:
+            RemoteZulipServerAuditLog.objects.create(
+                event_type=RemoteZulipServerAuditLog.REMOTE_SERVER_CREATED,
+                server=remote_server,
+                event_time=remote_server.last_updated,
+            )
         else:
-            remote_server.hostname = hostname
-            remote_server.contact_email = contact_email
-            if new_org_key is not None:
-                remote_server.api_key = new_org_key
-            remote_server.save()
+            if remote_server.api_key != zulip_org_key:
+                raise InvalidZulipServerKeyError(zulip_org_id)
+            else:
+                remote_server.hostname = hostname
+                remote_server.contact_email = contact_email
+                if new_org_key is not None:
+                    remote_server.api_key = new_org_key
+                remote_server.save()
 
-    return json_success({"created": created})
+    return json_success(request, data={"created": created})
 
 
 @has_request_variables
@@ -130,7 +174,7 @@ def register_remote_push_device(
     except IntegrityError:
         pass
 
-    return json_success()
+    return json_success(request)
 
 
 @has_request_variables
@@ -149,7 +193,7 @@ def unregister_remote_push_device(
     if deleted[0] == 0:
         raise JsonableError(err_("Token does not exist"))
 
-    return json_success()
+    return json_success(request)
 
 
 @has_request_variables
@@ -160,7 +204,7 @@ def unregister_all_remote_push_devices(
 ) -> HttpResponse:
     server = validate_entity(entity)
     RemotePushDeviceToken.objects.filter(user_id=user_id, server=server).delete()
-    return json_success()
+    return json_success(request)
 
 
 @has_request_variables
@@ -192,12 +236,44 @@ def remote_server_notify_push(
         )
     )
 
-    send_android_push_notification(android_devices, gcm_payload, gcm_options, remote=True)
+    logger.info(
+        "Sending mobile push notifications for remote user %s:%s: %s via FCM devices, %s via APNs devices",
+        server.uuid,
+        user_id,
+        len(android_devices),
+        len(apple_devices),
+    )
 
-    send_apple_push_notification(user_id, apple_devices, apns_payload, remote=True)
+    # Truncate incoming pushes to 200, due to APNs maximum message
+    # sizes; see handle_remove_push_notification for the version of
+    # this for notifications generated natively on the server.  We
+    # apply this to remote-server pushes in case they predate that
+    # commit.
+    def truncate_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
+        MAX_MESSAGE_IDS = 200
+        if payload and payload.get("event") == "remove" and payload.get("zulip_message_ids"):
+            ids = [int(id) for id in payload["zulip_message_ids"].split(",")]
+            truncated_ids = list(sorted(ids))[-MAX_MESSAGE_IDS:]
+            payload["zulip_message_ids"] = ",".join(str(id) for id in truncated_ids)
+        return payload
+
+    gcm_payload = truncate_payload(gcm_payload)
+    send_android_push_notification(
+        user_id, android_devices, gcm_payload, gcm_options, remote=server
+    )
+
+    if isinstance(apns_payload.get("custom"), dict) and isinstance(
+        apns_payload["custom"].get("zulip"), dict
+    ):
+        apns_payload["custom"]["zulip"] = truncate_payload(apns_payload["custom"]["zulip"])
+    send_apple_push_notification(user_id, apple_devices, apns_payload, remote=server)
 
     return json_success(
-        {"total_android_devices": len(android_devices), "total_apple_devices": len(apple_devices)}
+        request,
+        data={
+            "total_android_devices": len(android_devices),
+            "total_apple_devices": len(apple_devices),
+        },
     )
 
 
@@ -331,7 +407,7 @@ def remote_server_post_analytics(
         ]
         batch_create_table_data(server, RemoteRealmAuditLog, row_objects)
 
-    return json_success()
+    return json_success(request)
 
 
 def get_last_id_from_server(server: RemoteZulipServer, model: Any) -> int:
@@ -352,4 +428,4 @@ def remote_server_check_analytics(
         "last_installation_count_id": get_last_id_from_server(server, RemoteInstallationCount),
         "last_realmauditlog_id": get_last_id_from_server(server, RemoteRealmAuditLog),
     }
-    return json_success(result)
+    return json_success(request, data=result)

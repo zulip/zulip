@@ -38,7 +38,7 @@ def list_realm_custom_profile_fields(
     request: HttpRequest, user_profile: UserProfile
 ) -> HttpResponse:
     fields = custom_profile_fields_for_realm(user_profile.realm_id)
-    return json_success({"custom_fields": [f.as_dict() for f in fields]})
+    return json_success(request, data={"custom_fields": [f.as_dict() for f in fields]})
 
 
 hint_validator = check_capped_string(CustomProfileField.HINT_MAX_LENGTH)
@@ -113,7 +113,7 @@ def create_realm_custom_profile_field(
                 realm=user_profile.realm,
                 field_subtype=field_subtype,
             )
-            return json_success({"id": field.id})
+            return json_success(request, data={"id": field.id})
         else:
             field = try_add_realm_custom_profile_field(
                 realm=user_profile.realm,
@@ -122,7 +122,7 @@ def create_realm_custom_profile_field(
                 field_type=field_type,
                 hint=hint,
             )
-            return json_success({"id": field.id})
+            return json_success(request, data={"id": field.id})
     except IntegrityError:
         raise JsonableError(_("A field with that label already exists."))
 
@@ -137,7 +137,7 @@ def delete_realm_custom_profile_field(
         raise JsonableError(_("Field id {id} not found.").format(id=field_id))
 
     do_remove_realm_custom_profile_field(realm=user_profile.realm, field=field)
-    return json_success()
+    return json_success(request)
 
 
 @require_realm_admin
@@ -165,7 +165,7 @@ def update_realm_custom_profile_field(
         try_update_realm_custom_profile_field(realm, field, name, hint=hint, field_data=field_data)
     except IntegrityError:
         raise JsonableError(_("A field with that label already exists."))
-    return json_success()
+    return json_success(request)
 
 
 @require_realm_admin
@@ -176,7 +176,7 @@ def reorder_realm_custom_profile_fields(
     order: List[int] = REQ(json_validator=check_list(check_int)),
 ) -> HttpResponse:
     try_reorder_realm_custom_profile_fields(user_profile.realm, order)
-    return json_success()
+    return json_success(request)
 
 
 @human_users_only
@@ -188,7 +188,7 @@ def remove_user_custom_profile_data(
 ) -> HttpResponse:
     for field_id in data:
         check_remove_custom_profile_field_value(user_profile, field_id)
-    return json_success()
+    return json_success(request)
 
 
 @human_users_only
@@ -211,4 +211,4 @@ def update_user_custom_profile_data(
     validate_user_custom_profile_data(user_profile.realm.id, data)
     do_update_user_custom_profile_data_if_changed(user_profile, data)
     # We need to call this explicitly otherwise constraints are not check
-    return json_success()
+    return json_success(request)

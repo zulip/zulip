@@ -240,6 +240,28 @@ export function load_messages(opts) {
     data.client_gravatar = true;
     data = handle_operators_supporting_id_based_api(data);
 
+    if (page_params.is_spectator) {
+        // This is a bit of a hack; ideally we'd unify this logic in
+        // some way with the above logic, and not need to do JSON
+        // parsing/stringifying here.
+        const web_public_narrow = {negated: false, operator: "streams", operand: "web-public"};
+
+        if (!data.narrow) {
+            /* For the "All messages" feed, this will be the only operator. */
+            data.narrow = JSON.stringify([web_public_narrow]);
+        } else {
+            // Otherwise, we append the operator.  This logic is not
+            // ideal in that in theory an existing `streams:` operator
+            // could be present, but not in a useful way.  We don't
+            // attempt to validate the narrow is compatible with
+            // spectators here; the server will return an error if
+            // appropriate.
+            data.narrow = JSON.parse(data.narrow);
+            data.narrow.push(web_public_narrow);
+            data.narrow = JSON.stringify(data.narrow);
+        }
+    }
+
     channel.get({
         url: "/json/messages",
         data,
@@ -418,7 +440,7 @@ export function initialize(home_view_loaded) {
         // If we fall through here, we need to keep fetching more data, and
         // we'll call back to the function we're in.
         const messages = data.messages;
-        const latest_id = messages[messages.length - 1].id;
+        const latest_id = messages.at(-1).id;
 
         load_messages({
             anchor: latest_id,
@@ -469,7 +491,7 @@ export function initialize(home_view_loaded) {
     // (Users will see a weird artifact where Recent topics has a gap
     // between E.g. 6 days ago and 37 days ago while the catchup
     // process runs, so this strategy still results in problematic
-    // visual artifacts shortly after page load; just more forgiveable
+    // visual artifacts shortly after page load; just more forgivable
     // ones).
     //
     // This MessageList is defined similarly to home_message_list,

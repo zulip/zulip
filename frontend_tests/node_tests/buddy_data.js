@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, with_field_rewire, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const {page_params, user_settings} = require("../zjsunit/zpage_params");
@@ -96,7 +96,8 @@ function add_canned_users() {
 }
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, override_rewire}) => {
+        user_settings.presence_enabled = true;
         compose_fade_helper.clear_focused_recipient();
         stream_data.clear_subscriptions();
         peer_data.clear_for_testing();
@@ -106,47 +107,9 @@ function test(label, f) {
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
         muted_users.set_muted_users([]);
-        f({override});
+        f({override, override_rewire});
     });
 }
-
-test("huddle_fraction_present", () => {
-    people.add_active_user(alice);
-    people.add_active_user(fred);
-    people.add_active_user(jill);
-    people.add_active_user(mark);
-
-    let huddle = "alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com";
-    huddle = people.emails_strings_to_user_ids_string(huddle);
-
-    let presence_info = new Map();
-    presence_info.set(alice.user_id, {status: "active"}); // counts as present
-    presence_info.set(fred.user_id, {status: "idle"}); // does not count as present
-    // jill not in list
-    presence_info.set(mark.user_id, {status: "offline"}); // does not count
-    presence.__Rewire__("presence_info", presence_info);
-
-    assert.equal(buddy_data.huddle_fraction_present(huddle), 0.5);
-
-    presence_info = new Map();
-    for (const user of [alice, fred, jill, mark]) {
-        presence_info.set(user.user_id, {status: "active"}); // counts as present
-    }
-    presence.__Rewire__("presence_info", presence_info);
-
-    assert.equal(buddy_data.huddle_fraction_present(huddle), 1);
-
-    huddle = "alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com";
-    huddle = people.emails_strings_to_user_ids_string(huddle);
-    presence_info = new Map();
-    presence_info.set(alice.user_id, {status: "idle"});
-    presence_info.set(fred.user_id, {status: "idle"}); // does not count as present
-    // jill not in list
-    presence_info.set(mark.user_id, {status: "offline"}); // does not count
-    presence.__Rewire__("presence_info", presence_info);
-
-    assert.equal(buddy_data.huddle_fraction_present(huddle), undefined);
-});
 
 function set_presence(user_id, status) {
     presence.presence_info.set(user_id, {
@@ -179,7 +142,7 @@ test("user_circle, level, status_description", () => {
     assert.equal(buddy_data.get_user_circle_class(me.user_id), "user_circle_green");
 
     set_presence(fred.user_id, "idle");
-    assert.equal(buddy_data.get_user_circle_class(fred.user_id), "user_circle_orange");
+    assert.equal(buddy_data.get_user_circle_class(fred.user_id), "user_circle_idle");
     assert.equal(buddy_data.level(fred.user_id), 2);
     assert.equal(buddy_data.status_description(fred.user_id), "translated: Idle");
 
@@ -279,7 +242,7 @@ test("compose fade interactions (PMs)", () => {
         return buddy_data.get_item(fred.user_id).faded;
     }
 
-    // Dont fade if we're not in a narrow.
+    // Don't fade if we're not in a narrow.
     assert.equal(faded(), false);
 
     // Fade fred if we are narrowed to a PM narrow that does
@@ -455,15 +418,15 @@ test("bulk_data_hacks", () => {
 
     // Make our shrink limit higher, and go back to an empty search.
     // We won't get all 1000 users, just the present ones.
-    with_field(buddy_data, "max_size_before_shrinking", 50000, () => {
+    with_field_rewire(buddy_data, "max_size_before_shrinking", 50000, () => {
         user_ids = buddy_data.get_filtered_and_sorted_user_ids("");
     });
     assert.equal(user_ids.length, 700);
 });
 
-test("always show me", ({override}) => {
+test("always show me", ({override_rewire}) => {
     const present_user_ids = [];
-    override(presence, "get_user_ids", () => present_user_ids);
+    override_rewire(presence, "get_user_ids", () => present_user_ids);
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id]);
 
     // Make sure we didn't mutate the list passed to us.
@@ -511,7 +474,7 @@ test("level", () => {
     assert.equal(buddy_data.level(selma.user_id), 3);
 });
 
-test("user_last_seen_time_status", ({override}) => {
+test("user_last_seen_time_status", ({override, override_rewire}) => {
     set_presence(selma.user_id, "active");
     set_presence(me.user_id, "active");
 
@@ -528,7 +491,7 @@ test("user_last_seen_time_status", ({override}) => {
         "translated: Last active: translated: More than 2 weeks ago",
     );
 
-    override(presence, "last_active_date", (user_id) => {
+    override_rewire(presence, "last_active_date", (user_id) => {
         assert.equal(user_id, old_user.user_id);
         return new Date(1526137743000);
     });
@@ -547,7 +510,7 @@ test("user_last_seen_time_status", ({override}) => {
     assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Idle");
 });
 
-test("get_items_for_users", ({override}) => {
+test("get_items_for_users", ({override_rewire}) => {
     people.add_active_user(alice);
     people.add_active_user(fred);
     user_status.set_away(alice.user_id);
@@ -557,7 +520,7 @@ test("get_items_for_users", ({override}) => {
         emoji_code: "1f697",
         reaction_type: "unicode_emoji",
     };
-    override(user_status, "get_status_emoji", () => status_emoji_info);
+    override_rewire(user_status, "get_status_emoji", () => status_emoji_info);
 
     const user_ids = [me.user_id, alice.user_id, fred.user_id];
     assert.deepEqual(buddy_data.get_items_for_users(user_ids), [
@@ -600,8 +563,8 @@ test("get_items_for_users", ({override}) => {
     ]);
 });
 
-test("error handling", ({override}) => {
-    override(presence, "get_user_ids", () => [42]);
+test("error handling", ({override_rewire}) => {
+    override_rewire(presence, "get_user_ids", () => [42]);
     blueslip.expect("error", "Unknown user_id in get_by_user_id: 42");
     blueslip.expect("warn", "Got user_id in presence but not people: 42");
     buddy_data.get_filtered_and_sorted_user_ids();

@@ -9,7 +9,7 @@ from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.models import UserProfile
 
-ZULIP_MESSAGE_TEMPLATE = "**{message_sender}**: `{text}`"
+ZULIP_MESSAGE_TEMPLATE = "**{message_sender}**: {text}"
 VALID_OPTIONS = {"SHOULD_NOT_BE_MAPPED": "0", "SHOULD_BE_MAPPED": "1"}
 
 
@@ -38,4 +38,4 @@ def api_slack_webhook(
     client = RequestNotes.get_notes(request).client
     assert client is not None
     check_send_stream_message(user_profile, client, stream, subject, content)
-    return json_success()
+    return json_success(request)

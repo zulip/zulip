@@ -6,23 +6,6 @@ import * as helpers from "./helpers";
 
 export const initialize = () => {
     helpers.set_tab("upgrade");
-
-    const add_card_handler = StripeCheckout.configure({
-        key: $("#autopay-form").data("key"),
-        image: "/static/images/logo/zulip-icon-128x128.png",
-        locale: "auto",
-        token(stripe_token) {
-            helpers.create_ajax_request(
-                "/json/billing/upgrade",
-                "autopay",
-                stripe_token,
-                [],
-                "POST",
-                () => window.location.replace("/billing"),
-            );
-        },
-    });
-
     $("#add-card-button").on("click", (e) => {
         const license_management = $("input[type=radio][name=license_management]:checked").val();
         if (
@@ -30,17 +13,17 @@ export const initialize = () => {
         ) {
             return;
         }
-        add_card_handler.open({
-            name: "Zulip",
-            zipCode: true,
-            billingAddress: true,
-            panelLabel: "Make payment",
-            email: $("#autopay-form").data("email"),
-            label: "Add card",
-            allowRememberMe: false,
-            description: "Zulip Cloud Standard",
-        });
         e.preventDefault();
+        const success_callback = (response) => {
+            window.location.replace(response.stripe_session_url);
+        };
+        helpers.create_ajax_request(
+            "/json/billing/upgrade",
+            "autopay",
+            [],
+            "POST",
+            success_callback,
+        );
     });
 
     $("#invoice-button").on("click", (e) => {
@@ -48,7 +31,7 @@ export const initialize = () => {
             return;
         }
         e.preventDefault();
-        helpers.create_ajax_request("/json/billing/upgrade", "invoice", undefined, [], "POST", () =>
+        helpers.create_ajax_request("/json/billing/upgrade", "invoice", [], "POST", () =>
             window.location.replace("/billing"),
         );
     });
@@ -58,13 +41,8 @@ export const initialize = () => {
             return;
         }
         e.preventDefault();
-        helpers.create_ajax_request(
-            "/json/billing/sponsorship",
-            "sponsorship",
-            undefined,
-            [],
-            "POST",
-            () => window.location.replace("/"),
+        helpers.create_ajax_request("/json/billing/sponsorship", "sponsorship", [], "POST", () =>
+            window.location.replace("/"),
         );
     });
 

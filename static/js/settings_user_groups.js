@@ -62,8 +62,13 @@ export function populate_user_groups() {
                 },
             }),
         );
+
+        const pill_config = {
+            show_user_status_emoji: false,
+        };
+
         const pill_container = $(`.pill-container[data-group-pills="${CSS.escape(data.id)}"]`);
-        const pills = user_pill.create_pills(pill_container);
+        const pills = user_pill.create_pills(pill_container, pill_config);
 
         function get_pill_user_ids() {
             return user_pill.get_user_ids(pills);
@@ -222,13 +227,11 @@ export function populate_user_groups() {
                 return true;
             }
 
-            const blur_exceptions = _.without(
-                [".pill-container", ".name", ".description", ".input", ".delete"],
-                except_class,
-            );
             if ($(event.relatedTarget).closest(`#user-groups #${CSS.escape(data.id)}`).length) {
-                return blur_exceptions.some(
-                    (class_name) => $(event.relatedTarget).closest(class_name).length,
+                return [".pill-container", ".name", ".description", ".input", ".delete"].some(
+                    (class_name) =>
+                        class_name !== except_class &&
+                        $(event.relatedTarget).closest(class_name).length,
                 );
             }
             return false;
@@ -353,19 +356,14 @@ export function set_up() {
             });
         }
 
-        // This is mostly important for styling concerns.
-        const modal_parent = $("#settings_content");
-
         const html_body = render_confirm_delete_user({
             group_name: user_group.name,
         });
 
         confirm_dialog.launch({
-            parent: modal_parent,
             html_heading: $t_html({defaultMessage: "Delete user group"}),
             html_body,
             on_click: delete_user_group,
-            fade: true,
         });
     });
 

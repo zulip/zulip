@@ -421,7 +421,7 @@ def api_gitlab_webhook(
 
         topic = get_subject_based_on_event(event, payload, use_merge_request_title)
         check_send_webhook_message(request, user_profile, topic, body, event)
-    return json_success()
+    return json_success(request)
 
 
 def get_body_based_on_event(event: str) -> Any:

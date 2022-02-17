@@ -5,7 +5,7 @@ import orjson
 from django.db import connection
 from django.http import HttpResponse
 
-from zerver.lib.actions import do_change_stream_invite_only
+from zerver.lib.actions import do_change_stream_permission
 from zerver.lib.fix_unreads import fix, fix_unsubscribed
 from zerver.lib.message import (
     MessageDict,
@@ -344,12 +344,12 @@ class UnreadCountTests(ZulipTestCase):
 class FixUnreadTests(ZulipTestCase):
     def test_fix_unreads(self) -> None:
         user = self.example_user("hamlet")
+        othello = self.example_user("othello")
         realm = get_realm("zulip")
 
         def send_message(stream_name: str, topic_name: str) -> int:
-            msg_id = self.send_stream_message(
-                self.example_user("othello"), stream_name, topic_name=topic_name
-            )
+            self.subscribe(othello, stream_name)
+            msg_id = self.send_stream_message(othello, stream_name, topic_name=topic_name)
             um = UserMessage.objects.get(user_profile=user, message_id=msg_id)
             return um.id
 
@@ -484,8 +484,11 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
         mock_push_notifications.return_value = True
         self.login("hamlet")
         user_profile = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
         stream = self.subscribe(user_profile, "test_stream")
+        self.subscribe(cordelia, "test_stream")
         second_stream = self.subscribe(user_profile, "second_stream")
+        self.subscribe(cordelia, "second_stream")
 
         property_name = "push_notifications"
         result = self.api_post(
@@ -509,14 +512,12 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(self.get_mobile_push_notification_ids(user_profile), [])
 
-        message_id = self.send_stream_message(
-            self.example_user("cordelia"), "test_stream", "hello", "test_topic"
-        )
+        message_id = self.send_stream_message(cordelia, "test_stream", "hello", "test_topic")
         second_message_id = self.send_stream_message(
-            self.example_user("cordelia"), "test_stream", "hello", "other_topic"
+            cordelia, "test_stream", "hello", "other_topic"
         )
         third_message_id = self.send_stream_message(
-            self.example_user("cordelia"), "second_stream", "hello", "test_topic"
+            cordelia, "second_stream", "hello", "test_topic"
         )
 
         self.assertEqual(
@@ -826,10 +827,13 @@ class GetUnreadMsgsTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         othello = self.example_user("othello")
 
+        self.subscribe(sender, "Denmark")
+
         pm1_message_id = self.send_personal_message(sender, user_profile, "hello1")
         pm2_message_id = self.send_personal_message(sender, user_profile, "hello2")
 
         muted_stream = self.subscribe(user_profile, "Muted stream")
+        self.subscribe(sender, muted_stream.name)
         self.mute_stream(user_profile, muted_stream)
         self.mute_topic(user_profile, "Denmark", "muted-topic")
 
@@ -862,7 +866,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
 
         # The count here reflects the count of unread messages that we will
         # report to users in the bankruptcy dialog, and for now it excludes unread messages
-        # from muted treams, but it doesn't exclude unread messages from muted topics yet.
+        # from muted streams, but it doesn't exclude unread messages from muted topics yet.
         self.assertEqual(result["count"], 4)
         self.assertFalse(result["old_unreads_missing"])
 
@@ -1260,12 +1264,16 @@ class MessageAccessTests(ZulipTestCase):
 
         # Guest user can access messages of subscribed private streams if
         # history is public to subscribers
-        do_change_stream_invite_only(stream, True, history_public_to_subscribers=True)
+        do_change_stream_permission(
+            stream, invite_only=True, history_public_to_subscribers=True, acting_user=guest_user
+        )
         result = self.change_star(message_id)
         self.assert_json_success(result)
 
         # With history not public to subscribers, they can still see new messages
-        do_change_stream_invite_only(stream, True, history_public_to_subscribers=False)
+        do_change_stream_permission(
+            stream, invite_only=True, history_public_to_subscribers=False, acting_user=guest_user
+        )
         self.login_user(normal_user)
         message_id = [
             self.send_stream_message(normal_user, stream_name, "test 2"),
@@ -1308,7 +1316,12 @@ class MessageAccessTests(ZulipTestCase):
         self.assert_length(filtered_messages, 1)
         self.assertEqual(filtered_messages[0].id, message_two_id)
 
-        do_change_stream_invite_only(stream, True, history_public_to_subscribers=True)
+        do_change_stream_permission(
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=True,
+            acting_user=self.example_user("cordelia"),
+        )
 
         with queries_captured() as queries:
             filtered_messages = bulk_access_messages(later_subscribed_user, messages, stream=stream)

@@ -24,7 +24,6 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message, bulk_access_messages_expect_usermessage, huddle_users
 from zerver.lib.remote_server import send_json_to_push_bouncer, send_to_push_bouncer
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.user_groups import access_user_group_by_id
 from zerver.models import (
     AbstractPushDeviceToken,
     ArchivedMessage,
@@ -32,6 +31,7 @@ from zerver.models import (
     NotificationTriggers,
     PushDeviceToken,
     Recipient,
+    UserGroup,
     UserMessage,
     UserProfile,
     get_display_recipient,
@@ -44,7 +44,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 if settings.ZILENCER_ENABLED:
-    from zilencer.models import RemotePushDeviceToken
+    from zilencer.models import RemotePushDeviceToken, RemoteZulipServer
 
 DeviceToken = Union[PushDeviceToken, "RemotePushDeviceToken"]
 
@@ -78,25 +78,28 @@ def get_apns_context() -> Optional[APNsContext]:
     # which fills the logs; see https://github.com/Fatal1ty/aioapns/issues/15
     logging.getLogger("aioapns").setLevel(logging.CRITICAL)
 
-    if settings.APNS_CERT_FILE is None:
+    if settings.APNS_CERT_FILE is None:  # nocoverage
         return None
 
     # NB if called concurrently, this will make excess connections.
     # That's a little sloppy, but harmless unless a server gets
     # hammered with a ton of these all at once after startup.
     loop = asyncio.new_event_loop()
-    apns = aioapns.APNs(
-        client_cert=settings.APNS_CERT_FILE,
-        topic=settings.APNS_TOPIC,
-        max_connection_attempts=APNS_MAX_RETRIES,
-        loop=loop,
-        use_sandbox=settings.APNS_SANDBOX,
-    )
+
+    async def make_apns() -> aioapns.APNs:
+        return aioapns.APNs(
+            client_cert=settings.APNS_CERT_FILE,
+            topic=settings.APNS_TOPIC,
+            max_connection_attempts=APNS_MAX_RETRIES,
+            use_sandbox=settings.APNS_SANDBOX,
+        )
+
+    apns = loop.run_until_complete(make_apns())
     return APNsContext(apns=apns, loop=loop)
 
 
 def apns_enabled() -> bool:
-    return get_apns_context() is not None
+    return settings.APNS_CERT_FILE is not None
 
 
 def modernize_apns_payload(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -130,7 +133,10 @@ APNS_MAX_RETRIES = 3
 
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(
-    user_id: int, devices: Sequence[DeviceToken], payload_data: Dict[str, Any], remote: bool = False
+    user_id: int,
+    devices: Sequence[DeviceToken],
+    payload_data: Dict[str, Any],
+    remote: Optional["RemoteZulipServer"] = None,
 ) -> None:
     if not devices:
         return
@@ -155,7 +161,17 @@ def send_apple_push_notification(
     else:
         DeviceTokenClass = PushDeviceToken
 
-    logger.info("APNs: Sending notification for user %d to %d devices", user_id, len(devices))
+    if remote:
+        logger.info(
+            "APNs: Sending notification for remote user %s:%d to %d devices",
+            remote.uuid,
+            user_id,
+            len(devices),
+        )
+    else:
+        logger.info(
+            "APNs: Sending notification for local user %d to %d devices", user_id, len(devices)
+        )
     payload_data = modernize_apns_payload(payload_data).copy()
     message = {**payload_data.pop("custom", {}), "aps": payload_data}
     for device in devices:
@@ -228,11 +244,12 @@ def gcm_enabled() -> bool:  # nocoverage
     return gcm_client is not None
 
 
+# This is purely used in testing
 def send_android_push_notification_to_user(
     user_profile: UserProfile, data: Dict[str, Any], options: Dict[str, Any]
 ) -> None:
     devices = list(PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM))
-    send_android_push_notification(devices, data, options)
+    send_android_push_notification(user_profile.id, devices, data, options)
 
 
 def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
@@ -282,10 +299,11 @@ def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
 
 @statsd_increment("android_push_notification")
 def send_android_push_notification(
+    user_id: int,
     devices: Sequence[DeviceToken],
     data: Dict[str, Any],
     options: Dict[str, Any],
-    remote: bool = False,
+    remote: Optional["RemoteZulipServer"] = None,
 ) -> None:
     """
     Send a GCM message to the given devices.
@@ -307,6 +325,17 @@ def send_android_push_notification(
         )
         return
 
+    if remote:
+        logger.info(
+            "GCM: Sending notification for remote user %s:%d to %d devices",
+            remote.uuid,
+            user_id,
+            len(devices),
+        )
+    else:
+        logger.info(
+            "GCM: Sending notification for local user %d to %d devices", user_id, len(devices)
+        )
     reg_ids = [device.token for device in devices]
     priority = parse_gcm_options(options, data)
     try:
@@ -688,6 +717,7 @@ def get_message_payload(
     if message.recipient.type == Recipient.STREAM:
         data["recipient_type"] = "stream"
         data["stream"] = get_display_recipient(message.recipient)
+        data["stream_id"] = message.recipient.type_id
         data["topic"] = message.topic_name()
     elif message.recipient.type == Recipient.HUDDLE:
         data["recipient_type"] = "private"
@@ -863,8 +893,28 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
     """
     user_profile = get_user_profile_by_id(user_profile_id)
     message_ids = bulk_access_messages_expect_usermessage(user_profile_id, message_ids)
-    gcm_payload, gcm_options = get_remove_payload_gcm(user_profile, message_ids)
-    apns_payload = get_remove_payload_apns(user_profile, message_ids)
+
+    # APNs has a 4KB limit on the maximum size of messages, which
+    # translated to several hundred message IDs in one of these
+    # notifications. In rare cases, it's possible for someone to mark
+    # thousands of push notification eligible messages as read at
+    # once. We could handle this situation with a loop, but we choose
+    # to truncate instead to avoid extra network traffic, because it's
+    # very likely the user has manually cleared the notifications in
+    # their mobile device's UI anyway.
+    #
+    # When truncating, we keep only the newest N messages in this
+    # remove event. This is optimal because older messages are the
+    # ones most likely to have already been manually cleared at some
+    # point in the past.
+    #
+    # We choose 200 here because a 10-digit message ID plus a comma and
+    # space consume 12 bytes, and 12 x 200 = 2400 bytes is still well
+    # below the 4KB limit (leaving plenty of space for metadata).
+    MAX_APNS_MESSAGE_IDS = 200
+    truncated_message_ids = list(sorted(message_ids))[-MAX_APNS_MESSAGE_IDS:]
+    gcm_payload, gcm_options = get_remove_payload_gcm(user_profile, truncated_message_ids)
+    apns_payload = get_remove_payload_apns(user_profile, truncated_message_ids)
 
     if uses_notification_bouncer():
         send_notifications_to_bouncer(user_profile_id, apns_payload, gcm_payload, gcm_options)
@@ -876,10 +926,16 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
             PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS)
         )
         if android_devices:
-            send_android_push_notification(android_devices, gcm_payload, gcm_options)
+            send_android_push_notification(
+                user_profile_id, android_devices, gcm_payload, gcm_options
+            )
         if apple_devices:
             send_apple_push_notification(user_profile_id, apple_devices, apns_payload)
 
+    # We intentionally use the non-truncated message_ids here.  We are
+    # assuming in this very rare case that the user has manually
+    # dismissed these notifications on the device side, and the server
+    # should no longer track them as outstanding notifications.
     UserMessage.objects.filter(
         user_profile_id=user_profile_id,
         message_id__in=message_ids,
@@ -896,9 +952,16 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         return
     user_profile = get_user_profile_by_id(user_profile_id)
 
-    if user_profile.is_bot:
-        # BUG: Investigate why it's possible to get here.
-        return  # nocoverage
+    if user_profile.is_bot:  # nocoverage
+        # We don't expect to reach here for bot users. However, this code exists
+        # to find and throw away any pre-existing events in the queue while
+        # upgrading from versions before our notifiability logic was implemented.
+        # TODO/compatibility: This block can be removed when one can no longer
+        # upgrade from versions <= 4.0 to versions >= 5.0
+        logger.warning(
+            "Send-push-notification event found for bot user %s. Skipping.", user_profile_id
+        )
+        return
 
     if not (
         user_profile.enable_offline_push_notifications
@@ -949,9 +1012,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     mentioned_user_group_id = missed_message.get("mentioned_user_group_id")
 
     if mentioned_user_group_id is not None:
-        user_group = access_user_group_by_id(
-            mentioned_user_group_id, user_profile, for_mention=True
-        )
+        user_group = UserGroup.objects.get(id=mentioned_user_group_id, realm=user_profile.realm)
         mentioned_user_group_name = user_group.name
 
     apns_payload = get_message_payload_apns(
@@ -983,10 +1044,10 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     )
 
     logger.info(
-        "Sending mobile push notifications for user %s: %s via FCM devices, %s via APNs devices",
+        "Sending mobile push notifications for local user %s: %s via FCM devices, %s via APNs devices",
         user_profile_id,
         len(android_devices),
         len(apple_devices),
     )
     send_apple_push_notification(user_profile.id, apple_devices, apns_payload)
-    send_android_push_notification(android_devices, gcm_payload, gcm_options)
+    send_android_push_notification(user_profile.id, android_devices, gcm_payload, gcm_options)

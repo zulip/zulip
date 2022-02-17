@@ -1,13 +1,24 @@
 # shellcheck shell=bash
 
-AWS_CLI_VERSION="2.0.30"
-AWS_CLI_SHA="7ee475f22c1b35cc9e53affbf96a9ffce91706e154a9441d0d39cbf8366b718e"
+set -eu
+
+ARCH=$(uname -m)
+
+AWS_CLI_VERSION="2.4.7"
+if [ "$ARCH" == "x86_64" ]; then
+    AWS_CLI_SHA="925810ba09815ef53997b901c76bd448c3caa593b5da1ccad79d17946ec94ab4"
+elif [ "$ARCH" == "aarch64" ]; then
+    AWS_CLI_SHA="fa01abcef75f910661d19fdf78615f9be66f9e8f1c9bd7980324bb10291a887e"
+else
+    echo "Unsupported architecture: $ARCH"
+    exit 1
+fi
 
 if [ ! -d "/srv/zulip-aws-tools/v2/$AWS_CLI_VERSION" ]; then
     mkdir -p /srv/zulip-aws-tools
-    cd /srv/zulip-aws-tools || exit 1
+    cd /srv/zulip-aws-tools
     rm -rf awscli.zip awscli.zip.sha256 aws/
-    curl -fL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-$AWS_CLI_VERSION.zip" -o awscli.zip
+    curl -fL "https://awscli.amazonaws.com/awscli-exe-linux-$ARCH-$AWS_CLI_VERSION.zip" -o awscli.zip
     echo "$AWS_CLI_SHA  awscli.zip" >awscli.zip.sha256
     sha256sum -c awscli.zip.sha256
     unzip -q awscli.zip

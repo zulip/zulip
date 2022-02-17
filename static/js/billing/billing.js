@@ -6,7 +6,6 @@ export function create_update_license_request() {
     helpers.create_ajax_request(
         "/json/billing/plan",
         "licensechange",
-        undefined,
         ["licenses_at_next_renewal"],
         "PATCH",
         () => window.location.replace("/billing"),
@@ -16,34 +15,17 @@ export function create_update_license_request() {
 export function initialize() {
     helpers.set_tab("billing");
 
-    const stripe_key = $("#payment-method").data("key");
-    const card_change_handler = StripeCheckout.configure({
-        key: stripe_key,
-        image: "/static/images/logo/zulip-icon-128x128.png",
-        locale: "auto",
-        token(stripe_token) {
-            helpers.create_ajax_request(
-                "/json/billing/sources/change",
-                "cardchange",
-                stripe_token,
-                [],
-                "POST",
-                () => window.location.replace("/billing"),
-            );
-        },
-    });
-
     $("#update-card-button").on("click", (e) => {
-        const email = $("#payment-method").data("email");
-        card_change_handler.open({
-            name: "Zulip",
-            zipCode: true,
-            billingAddress: true,
-            panelLabel: "Update card",
-            email,
-            label: "Update card",
-            allowRememberMe: false,
-        });
+        const success_callback = (response) => {
+            window.location.replace(response.stripe_session_url);
+        };
+        helpers.create_ajax_request(
+            "/json/billing/session/start_card_update_session",
+            "cardchange",
+            [],
+            "POST",
+            success_callback,
+        );
         e.preventDefault();
     });
 
@@ -72,7 +54,6 @@ export function initialize() {
         helpers.create_ajax_request(
             "/json/billing/plan",
             "licensechange",
-            undefined,
             ["licenses"],
             "PATCH",
             () => window.location.replace("/billing"),
@@ -80,13 +61,8 @@ export function initialize() {
     });
 
     $("#change-plan-status").on("click", (e) => {
-        helpers.create_ajax_request(
-            "/json/billing/plan",
-            "planchange",
-            undefined,
-            [],
-            "PATCH",
-            () => window.location.replace("/billing"),
+        helpers.create_ajax_request("/json/billing/plan", "planchange", [], "PATCH", () =>
+            window.location.replace("/billing"),
         );
         e.preventDefault();
     });

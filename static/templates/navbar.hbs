@@ -8,7 +8,7 @@
         <div class="column-middle" id="navbar-middle">
             <div class="column-middle-inner">
                 <div id="streamlist-toggle" {{#if embedded}}class="hide-streamlist-toggle-visibility"{{/if}} title="{{t 'Stream list' }} (q)">
-                    <a href="#" id="streamlist-toggle-button" role="button"><i class="fa fa-reorder" aria-hidden="true"></i>
+                    <a id="streamlist-toggle-button" role="button" tabindex="0"><i class="fa fa-reorder" aria-hidden="true"></i>
                         <span id="streamlist-toggle-unreadcount">0</span>
                     </a>
                 </div>
@@ -21,8 +21,11 @@
                             <div id="search_arrows" class="pill-container input-append">
                                 <span class="search_icon search_open" ><i class="fa fa-search" aria-hidden="true"></i></span>
                                 <div contenteditable="true" class="input search-query input-block-level" id="search_query" type="text" placeholder="{{t 'Search' }}"
-                                  autocomplete="off" aria-label="{{t 'Search' }}" title="{{t 'Search' }} (/)"> </div>
-                                <button class="btn search_button" type="button" id="search_exit" aria-label="{{t 'Exit search' }}"><i class="fa fa-remove" aria-hidden="true"></i></button>
+                                  autocomplete="off" aria-label="{{t 'Search' }}" title="{{t 'Search' }} (/)">
+                                </div>
+                                <button class="btn search_button" type="button" id="search_exit" aria-label="{{t 'Exit search' }}">
+                                    <i class="fa fa-remove" aria-hidden="true"></i>
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -43,7 +46,7 @@
         </div>
         <div class="column-right">
             <div id="userlist-toggle" title="{{t 'User list' }} (w)">
-                <a href="#" id="userlist-toggle-button" role="button"><i class="fa fa-group" aria-hidden="true"></i>
+                <a id="userlist-toggle-button" role="button" tabindex="0"><i class="fa fa-group" aria-hidden="true"></i>
                     <span id="userlist-toggle-unreadcount">0</span>
                 </a>
             </div>

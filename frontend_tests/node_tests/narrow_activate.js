@@ -101,7 +101,7 @@ function test_helper() {
             events.push(event);
         },
         assert_events: (expected_events) => {
-            assert.deepEqual(expected_events, events);
+            assert.deepEqual(events, expected_events);
         },
     };
 }
@@ -192,10 +192,10 @@ run_test("basics", () => {
     assert.equal(narrow_state.narrowed_to_pms(), false);
 
     helper.assert_events([
-        [notifications, "clear_compose_notifications"],
-        [notifications, "redraw_title"],
         [message_scroll, "hide_top_of_narrow_notices"],
         [message_scroll, "hide_indicators"],
+        [notifications, "clear_compose_notifications"],
+        [notifications, "redraw_title"],
         [ui_util, "change_tab_to"],
         [unread_ops, "process_visible"],
         [hashchange, "save_narrow"],

@@ -2,7 +2,10 @@
     <td class="subscriber-name">{{name}}</td>
     {{#if show_email}}
     <td class="subscriber-email">{{email}}</td>
+    {{else}}
+    <td class="hidden-subscriber-email">{{t "(hidden)"}}</td>
     {{/if}}
+    <td class="subscriber-user-id">{{user_id}}</td>
     {{#if displaying_for_admin}}
     <td class="unsubscribe">
         <div class="subscriber_list_remove">

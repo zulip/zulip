@@ -10,10 +10,10 @@ import * as avatar from "./avatar";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
 import {csrf_token} from "./csrf";
+import * as dialog_widget from "./dialog_widget";
 import {DropdownListWidget} from "./dropdown_list_widget";
-import {$t} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
-import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 
@@ -412,7 +412,6 @@ export function set_up() {
     $("#active_bots_list").on("click", "button.open_edit_bot_form", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        overlays.open_modal("#edit_bot_modal");
         const li = $(e.currentTarget).closest("li");
         const bot_id = Number.parseInt(li.find(".bot_info").attr("data-user-id"), 10);
         const bot = bot_data.get(bot_id);
@@ -422,112 +421,118 @@ export function set_up() {
             value: user_id.toString(),
         }));
 
-        $("#edit_bot_modal").empty();
-        $("#edit_bot_modal").append(
-            render_edit_bot({
-                bot,
-                users_list,
-            }),
-        );
-        const avatar_widget = avatar.build_bot_edit_widget($("#settings_page"));
-        const form = $("#settings_page .edit_bot_form");
-        const image = li.find(".image");
-        const errors = form.find(".bot_edit_errors");
-
-        const opts = {
-            widget_name: "bot_owner",
-            data: users_list,
-            default_text: $t({defaultMessage: "No owner"}),
-            value: bot.owner_id,
-        };
-        const owner_widget = new DropdownListWidget(opts);
-
-        const service = bot_data.get_services(bot_id)[0];
-        if (bot.bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {
-            $("#service_data").append(
-                render_settings_edit_outgoing_webhook_service({
-                    service,
-                }),
-            );
-            $("#edit_service_interface").val(service.interface);
-        }
-        if (bot.bot_type.toString() === EMBEDDED_BOT_TYPE) {
-            $("#service_data").append(
-                render_settings_edit_embedded_bot_service({
-                    service,
-                }),
-            );
-        }
-
-        avatar_widget.clear();
-
-        form.validate({
-            errorClass: "text-error",
-            success() {
-                errors.hide();
-            },
-            submitHandler() {
-                const bot_id = Number.parseInt(form.attr("data-user-id"), 10);
-                const type = form.attr("data-type");
-
-                const full_name = form.find(".edit_bot_name").val();
-                const bot_owner_id = owner_widget.value();
-                const file_input = $(".edit_bot_form").find(".edit_bot_avatar_file_input");
-                const spinner = form.find(".edit_bot_spinner");
-                const edit_button = form.find(".edit_bot_button");
-
-                const formData = new FormData();
-                formData.append("csrfmiddlewaretoken", csrf_token);
-                formData.append("full_name", full_name);
-                formData.append("bot_owner_id", bot_owner_id);
-
-                if (type === OUTGOING_WEBHOOK_BOT_TYPE) {
-                    const service_payload_url = $("#edit_service_base_url").val();
-                    const service_interface = $("#edit_service_interface :selected").val();
-                    formData.append("service_payload_url", JSON.stringify(service_payload_url));
-                    formData.append("service_interface", service_interface);
-                } else if (type === EMBEDDED_BOT_TYPE) {
-                    const config_data = {};
-                    $("#config_edit_inputbox input").each(function () {
-                        config_data[$(this).attr("name")] = $(this).val();
-                    });
-                    formData.append("config_data", JSON.stringify(config_data));
-                }
-                for (const [i, file] of Array.prototype.entries.call(file_input[0].files)) {
-                    formData.append("file-" + i, file);
-                }
-                loading.make_indicator(spinner, {text: "Editing bot"});
-                edit_button.hide();
-                channel.patch({
-                    url: "/json/bots/" + encodeURIComponent(bot_id),
-                    data: formData,
-                    cache: false,
-                    processData: false,
-                    contentType: false,
-                    success(data) {
-                        loading.destroy_indicator(spinner);
-                        errors.hide();
-                        edit_button.show();
-                        avatar_widget.clear();
-                        if (data.avatar_url) {
-                            // Note that the avatar_url won't actually change on the backend
-                            // when the user had a previous uploaded avatar.  Only the content
-                            // changes, so we version it to get an uncached copy.
-                            image_version += 1;
-                            image
-                                .find("img")
-                                .attr("src", data.avatar_url + "&v=" + image_version.toString());
-                        }
-                        overlays.close_modal("#edit_bot_modal");
-                    },
-                    error(xhr) {
-                        loading.destroy_indicator(spinner);
-                        edit_button.show();
-                        errors.text(JSON.parse(xhr.responseText).msg).show();
-                    },
-                });
-            },
+        const rendered_edit_bot = render_edit_bot({
+            bot,
+            users_list,
         });
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Edit bot"}),
+            html_body: rendered_edit_bot,
+            id: "edit_bot_modal",
+            on_click: () => {
+                $(".edit_bot_form").trigger("submit");
+            },
+            post_render: edit_bot_post_render,
+            form_id: "edit_bot_form",
+            loading_spinner: true,
+        });
+
+        function edit_bot_post_render() {
+            const avatar_widget = avatar.build_bot_edit_widget($(".edit_bot_form"));
+            const form = $(".edit_bot_form");
+            const image = li.find(".image");
+            const errors = form.find(".bot_edit_errors");
+
+            const opts = {
+                widget_name: "bot_owner",
+                data: users_list,
+                default_text: $t({defaultMessage: "No owner"}),
+                value: bot.owner_id,
+            };
+            const owner_widget = new DropdownListWidget(opts);
+
+            const service = bot_data.get_services(bot_id)[0];
+            if (bot.bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {
+                $("#service_data").append(
+                    render_settings_edit_outgoing_webhook_service({
+                        service,
+                    }),
+                );
+                $("#edit_service_interface").val(service.interface);
+            }
+            if (bot.bot_type.toString() === EMBEDDED_BOT_TYPE) {
+                $("#service_data").append(
+                    render_settings_edit_embedded_bot_service({
+                        service,
+                    }),
+                );
+            }
+
+            avatar_widget.clear();
+
+            form.validate({
+                errorClass: "text-error",
+                success() {
+                    errors.hide();
+                },
+                submitHandler() {
+                    const bot_id = Number.parseInt(form.attr("data-user-id"), 10);
+                    const type = form.attr("data-type");
+
+                    const full_name = form.find(".edit_bot_name").val();
+                    const bot_owner_id = owner_widget.value();
+                    const file_input = $(".edit_bot_form").find(".edit_bot_avatar_file_input");
+
+                    const formData = new FormData();
+                    formData.append("csrfmiddlewaretoken", csrf_token);
+                    formData.append("full_name", full_name);
+                    formData.append("bot_owner_id", bot_owner_id);
+
+                    if (type === OUTGOING_WEBHOOK_BOT_TYPE) {
+                        const service_payload_url = $("#edit_service_base_url").val();
+                        const service_interface = $("#edit_service_interface :selected").val();
+                        formData.append("service_payload_url", JSON.stringify(service_payload_url));
+                        formData.append("service_interface", service_interface);
+                    } else if (type === EMBEDDED_BOT_TYPE) {
+                        const config_data = {};
+                        $("#config_edit_inputbox input").each(function () {
+                            config_data[$(this).attr("name")] = $(this).val();
+                        });
+                        formData.append("config_data", JSON.stringify(config_data));
+                    }
+                    for (const [i, file] of Array.prototype.entries.call(file_input[0].files)) {
+                        formData.append("file-" + i, file);
+                    }
+                    channel.patch({
+                        url: "/json/bots/" + encodeURIComponent(bot_id),
+                        data: formData,
+                        cache: false,
+                        processData: false,
+                        contentType: false,
+                        success(data) {
+                            avatar_widget.clear();
+                            if (data.avatar_url) {
+                                // Note that the avatar_url won't actually change on the backend
+                                // when the user had a previous uploaded avatar.  Only the content
+                                // changes, so we version it to get an uncached copy.
+                                image_version += 1;
+                                image
+                                    .find("img")
+                                    .attr(
+                                        "src",
+                                        data.avatar_url + "&v=" + image_version.toString(),
+                                    );
+                            }
+                            dialog_widget.close_modal();
+                        },
+                        error(xhr) {
+                            dialog_widget.hide_dialog_spinner();
+                            errors.text(JSON.parse(xhr.responseText).msg).show();
+                        },
+                    });
+                },
+            });
+        }
     });
 
     $("#active_bots_list").on("click", "a.download_bot_zuliprc", function () {

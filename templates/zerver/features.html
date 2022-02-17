@@ -7,9 +7,9 @@
 {% block portico_content %}
 
 {% include 'zerver/landing_nav.html' %}
-{% include 'zerver/gradients.html' %}
 
 <div class="portico-landing features-app">
+    {% include 'zerver/gradients.html' %}
     <section class="hero">
         <div class="copy">
             <h1>Powerful group chat.</h1>
@@ -105,7 +105,7 @@
                 text editor.  Anything you can do with a mouse, you
                 can do even faster from the keyboard.
                 <a class="cta" href="/help/keyboard-shortcuts" target="_blank" rel="noopener noreferrer">
-                Learn more about keyboard shortcuts.</a>
+                    Learn more about keyboard shortcuts.</a>
             </p>
         </div>
         <img class="image" src="/static/images/landing-page/love-keyboard-shortcuts.svg" alt="" />

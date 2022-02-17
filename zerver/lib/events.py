@@ -45,6 +45,7 @@ from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.topic_mutes import get_topic_mutes
 from zerver.lib.user_groups import user_groups_in_realm_serialized
@@ -143,7 +144,9 @@ def fetch_initial_state_data(
     if want("alert_words"):
         state["alert_words"] = [] if user_profile is None else user_alert_words(user_profile)
 
-    if want("custom_profile_fields"):
+    # Spectators can't access full user profiles or personal settings,
+    # so there's no need to send custom profile field data.
+    if want("custom_profile_fields") and user_profile is not None:
         fields = custom_profile_fields_for_realm(realm.id)
         state["custom_profile_fields"] = [f.as_dict() for f in fields]
         state["custom_profile_field_types"] = {
@@ -175,15 +178,18 @@ def fetch_initial_state_data(
             state["max_message_id"] = -1
 
     if want("drafts"):
-        # Note: if a user ever disables synching drafts then all of
-        # their old drafts stored on the server will be deleted and
-        # simply retained in local storage. In which case user_drafts
-        # would just be an empty queryset.
-        user_draft_objects = Draft.objects.filter(user_profile=user_profile).order_by(
-            "-last_edit_time"
-        )[: settings.MAX_DRAFTS_IN_REGISTER_RESPONSE]
-        user_draft_dicts = [draft.to_dict() for draft in user_draft_objects]
-        state["drafts"] = user_draft_dicts
+        if user_profile is None:
+            state["drafts"] = []
+        else:
+            # Note: if a user ever disables syncing drafts then all of
+            # their old drafts stored on the server will be deleted and
+            # simply retained in local storage. In which case user_drafts
+            # would just be an empty queryset.
+            user_draft_objects = Draft.objects.filter(user_profile=user_profile).order_by(
+                "-last_edit_time"
+            )[: settings.MAX_DRAFTS_IN_REGISTER_RESPONSE]
+            user_draft_dicts = [draft.to_dict() for draft in user_draft_objects]
+            state["drafts"] = user_draft_dicts
 
     if want("muted_topics"):
         state["muted_topics"] = [] if user_profile is None else get_topic_mutes(user_profile)
@@ -282,7 +288,7 @@ def fetch_initial_state_data(
         state["realm_is_zephyr_mirror_realm"] = realm.is_zephyr_mirror_realm
         state["development_environment"] = settings.DEVELOPMENT
         state["realm_plan_type"] = realm.plan_type
-        state["zulip_plan_is_not_limited"] = realm.plan_type != Realm.LIMITED
+        state["zulip_plan_is_not_limited"] = realm.plan_type != Realm.PLAN_TYPE_LIMITED
         state["upgrade_text_for_wide_organization_logo"] = str(Realm.UPGRADE_TEXT_STANDARD)
 
         state["password_min_length"] = settings.PASSWORD_MIN_LENGTH
@@ -291,6 +297,7 @@ def fetch_initial_state_data(
         state["server_inline_url_embed_preview"] = settings.INLINE_URL_EMBED_PREVIEW
         state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
         state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
+        state["server_web_public_streams_enabled"] = settings.WEB_PUBLIC_STREAMS_ENABLED
         state["giphy_rating_options"] = realm.GIPHY_RATING_OPTIONS
 
         state["server_needs_upgrade"] = is_outdated_server(user_profile)
@@ -392,6 +399,8 @@ def fetch_initial_state_data(
             user_profile,
             client_gravatar=client_gravatar,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
+            # Don't send custom profile field values to spectators.
+            include_custom_profile_fields=user_profile is not None,
         )
         state["cross_realm_bots"] = list(get_cross_realm_dicts())
 
@@ -549,7 +558,7 @@ def fetch_initial_state_data(
         for prop in UserProfile.display_settings_legacy:
             state[prop] = getattr(settings_user, prop)
         state["emojiset_choices"] = UserProfile.emojiset_choices()
-        state["timezone"] = settings_user.timezone
+        state["timezone"] = canonicalize_timezone(settings_user.timezone)
 
     if want("update_global_notifications") and not user_settings_object:
         for notification in UserProfile.notification_settings_legacy:
@@ -563,7 +572,7 @@ def fetch_initial_state_data(
             state["user_settings"][prop] = getattr(settings_user, prop)
 
         state["user_settings"]["emojiset_choices"] = UserProfile.emojiset_choices()
-        state["user_settings"]["timezone"] = settings_user.timezone
+        state["user_settings"]["timezone"] = canonicalize_timezone(settings_user.timezone)
         state["user_settings"][
             "available_notification_sounds"
         ] = get_available_notification_sounds()
@@ -738,6 +747,11 @@ def apply_event(
             state["raw_users"][person_user_id] = person
         elif event["op"] == "remove":
             state["raw_users"][person_user_id]["is_active"] = False
+            if include_subscribers:
+                for sub in state["subscriptions"]:
+                    sub["subscribers"] = [
+                        user_id for user_id in sub["subscribers"] if user_id != person_user_id
+                    ]
         elif event["op"] == "update":
             is_me = person_user_id == user_profile.id
 
@@ -944,7 +958,7 @@ def apply_event(
 
             if event["property"] == "plan_type":
                 # Then there are some extra fields that also need to be set.
-                state["zulip_plan_is_not_limited"] = event["value"] != Realm.LIMITED
+                state["zulip_plan_is_not_limited"] = event["value"] != Realm.PLAN_TYPE_LIMITED
                 state["realm_upload_quota_mib"] = event["extra_data"]["upload_quota"]
 
             policy_permission_dict = {
@@ -1197,7 +1211,11 @@ def apply_event(
         # this setting is not a part of UserBaseSettings class.
         if event["property"] != "timezone":
             assert event["property"] in UserProfile.property_types
-        state[event["property"]] = event["value"]
+        if event["property"] in {
+            **UserProfile.display_settings_legacy,
+            **UserProfile.notification_settings_legacy,
+        }:
+            state[event["property"]] = event["value"]
         state["user_settings"][event["property"]] = event["value"]
     elif event["type"] == "invites_changed":
         pass

@@ -712,9 +712,7 @@ realm_emoji_type = DictType(
         ("source_url", str),
         ("deactivated", bool),
         ("author_id", int),
-    ],
-    optional_keys=[
-        ("still_url", str),
+        ("still_url", OptionalType(str)),
     ],
 )
 
@@ -1518,27 +1516,44 @@ def check_update_global_notifications(
     assert isinstance(setting, setting_type)
 
 
+# user_id field is null for embedded variant of update_message
 update_message_required_fields = [
     ("type", Equals("update_message")),
-    ("user_id", int),
+    ("user_id", OptionalType(int)),
     ("edit_timestamp", int),
     ("message_id", int),
+    ("flags", ListType(str)),
+    ("message_ids", ListType(int)),
+    ("rendering_only", bool),
+]
+
+update_message_stream_fields: List[Tuple[str, object]] = [
+    ("stream_id", int),
+    ("stream_name", str),
 ]
 
 update_message_content_fields: List[Tuple[str, object]] = [
-    ("content", str),
     ("is_me_message", bool),
     ("orig_content", str),
     ("orig_rendered_content", str),
     ("prev_rendered_content_version", int),
+]
+
+update_message_content_or_embedded_data_fields: List[Tuple[str, object]] = [
+    ("content", str),
     ("rendered_content", str),
 ]
 
 update_message_topic_fields = [
-    ("flags", ListType(str)),
-    ("message_ids", ListType(int)),
+    (TOPIC_LINKS, ListType(_check_topic_links)),
+    (TOPIC_NAME, str),
+]
+
+update_message_change_stream_fields: List[Tuple[str, object]] = [
     ("new_stream_id", int),
-    (ORIG_TOPIC, str),
+]
+
+update_message_change_stream_or_topic_fields: List[Tuple[str, object]] = [
     (
         "propagate_mode",
         EnumType(
@@ -1550,17 +1565,19 @@ update_message_topic_fields = [
             ]
         ),
     ),
-    ("stream_id", int),
-    ("stream_name", str),
-    (TOPIC_LINKS, ListType(_check_topic_links)),
-    (TOPIC_NAME, str),
+    (ORIG_TOPIC, str),
 ]
 
-update_message_optional_fields = update_message_content_fields + update_message_topic_fields
+update_message_optional_fields = (
+    update_message_stream_fields
+    + update_message_content_fields
+    + update_message_content_or_embedded_data_fields
+    + update_message_topic_fields
+    + update_message_change_stream_fields
+    + update_message_change_stream_or_topic_fields
+)
 
-# The schema here does not include the "embedded"
-# variant of update_message; it is for message
-# and topic editing.
+# The schema here includes the embedded variant of update_message
 update_message_event = event_dict_type(
     required_keys=update_message_required_fields,
     optional_keys=update_message_optional_fields,
@@ -1571,9 +1588,11 @@ _check_update_message = make_checker(update_message_event)
 def check_update_message(
     var_name: str,
     event: Dict[str, object],
+    is_stream_message: bool,
     has_content: bool,
     has_topic: bool,
     has_new_stream_id: bool,
+    is_embedded_update_only: bool,
 ) -> None:
     # Always check the basic schema first.
     _check_update_message(var_name, event)
@@ -1582,29 +1601,30 @@ def check_update_message(
     expected_keys = {"id"}
     expected_keys.update(tup[0] for tup in update_message_required_fields)
 
+    if is_stream_message:
+        expected_keys.update(tup[0] for tup in update_message_stream_fields)
+
     if has_content:
         expected_keys.update(tup[0] for tup in update_message_content_fields)
+        expected_keys.update(tup[0] for tup in update_message_content_or_embedded_data_fields)
 
     if has_topic:
         expected_keys.update(tup[0] for tup in update_message_topic_fields)
+        expected_keys.update(tup[0] for tup in update_message_change_stream_or_topic_fields)
 
-    if not has_new_stream_id:
-        expected_keys.discard("new_stream_id")
+    if has_new_stream_id:
+        expected_keys.update(tup[0] for tup in update_message_change_stream_fields)
+        expected_keys.update(tup[0] for tup in update_message_change_stream_or_topic_fields)
 
+    if is_embedded_update_only:
+        expected_keys.update(tup[0] for tup in update_message_content_or_embedded_data_fields)
+        assert event["user_id"] is None
+    else:
+        assert isinstance(event["user_id"], int)
+
+    assert event["rendering_only"] == is_embedded_update_only
     assert expected_keys == actual_keys
 
-
-update_message_embedded_event = event_dict_type(
-    required_keys=[
-        ("type", Equals("update_message")),
-        ("flags", ListType(str)),
-        ("content", str),
-        ("message_id", int),
-        ("message_ids", ListType(int)),
-        ("rendered_content", str),
-    ]
-)
-check_update_message_embedded = make_checker(update_message_embedded_event)
 
 update_message_flags_add_event = event_dict_type(
     required_keys=[

@@ -9,15 +9,43 @@
     justify-content: center;
 }
 
-/* Inserting this collapsed row between two flex items will make
- * the flex item that comes after it break to a new row */
-.break-row {
-    flex-basis: 100%;
-    height: 0;
-}
-
 .hide {
     display: none;
+}
+
+kbd {
+    display: inline-block;
+    border: 1px solid hsl(0, 0%, 80%);
+    border-radius: 4px;
+    font-weight: 600;
+    white-space: nowrap;
+    background-color: hsl(0, 0%, 98%);
+    color: hsl(0, 0%, 20%);
+    margin: 0.25em 0.1em;
+    padding: 0.1em 0.4em;
+    text-shadow: 0 1px 0 hsl(0, 0%, 100%);
+    /* Prevent selection */
+    user-select: none;
+}
+
+@media (width < $sm_min) {
+    .hide-sm {
+        display: none !important;
+    }
+
+    .show-sm {
+        display: block !important;
+    }
+}
+
+@media (width < $lg_min) {
+    .hide-lg {
+        display: none !important;
+    }
+
+    .show-lg {
+        display: block !important;
+    }
 }
 
 .light {
@@ -46,6 +74,18 @@
 
 .invisible {
     visibility: hidden;
+}
+
+.order-1 {
+    order: 1;
+}
+
+.order-2 {
+    order: 2;
+}
+
+.order-3 {
+    order: 3;
 }
 
 /*
@@ -413,6 +453,7 @@ div.overlay {
         width: calc(100% - 34px);
         margin-left: 10px;
     }
+
     .input-append .topic-list-filter {
         /* Input width = 100% - 11px margin x2 - 6px padding x2 - 1px border x2. */
         width: calc(100% - 36px);
@@ -538,7 +579,7 @@ div.overlay {
     }
 
     &.stream_create_info {
-        margin: 10px 10px 0 10px;
+        margin: 10px 10px 0;
     }
 
     .bankruptcy_unread_count {
@@ -548,7 +589,7 @@ div.overlay {
 
 .white_zulip_icon_without_text {
     display: inline-block;
-    background-image: url(../../static/images/logo/white-zulip-logo-without-text.svg);
+    background-image: url("../../static/images/logo/white-zulip-logo-without-text.svg");
     background-size: cover;
 }
 
@@ -597,6 +638,8 @@ div.overlay {
     display: flex;
     justify-content: center;
     background-color: hsl(0, 0%, 90%);
+    color: hsl(0, 0%, 0%);
+    border-radius: 4px;
 
     span {
         color: hsl(0, 0%, 0%);
@@ -604,7 +647,7 @@ div.overlay {
 
     &:hover {
         cursor: pointer;
-        background-color: hsl(228, 96%, 71%);
+        background-color: hsl(240, 96%, 68%);
         color: hsl(0, 0%, 100%);
 
         span {

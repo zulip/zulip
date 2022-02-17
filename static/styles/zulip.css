@@ -85,6 +85,42 @@ pre {
      */
     font-family: "Source Sans 3", sans-serif !important;
 
+    .tippy-box {
+        background-color: hsl(0, 0%, 12%);
+
+        &[data-placement^="top"] {
+            > .tippy-arrow {
+                &::before {
+                    border-top-color: hsl(0, 0%, 12%);
+                }
+            }
+        }
+
+        &[data-placement^="bottom"] {
+            > .tippy-arrow {
+                &::before {
+                    border-bottom-color: hsl(0, 0%, 12%);
+                }
+            }
+        }
+
+        &[data-placement^="left"] {
+            > .tippy-arrow {
+                &::before {
+                    border-left-color: hsl(0, 0%, 12%);
+                }
+            }
+        }
+
+        &[data-placement^="right"] {
+            > .tippy-arrow {
+                &::before {
+                    border-right-color: hsl(0, 0%, 12%);
+                }
+            }
+        }
+    }
+
     .tippy-content {
         font-size: 13px;
     }
@@ -118,7 +154,7 @@ pre {
 }
 
 p.n-margin {
-    margin: 10px 0 0 0;
+    margin: 10px 0 0;
 }
 
 .small-line-height {
@@ -164,9 +200,11 @@ p.n-margin {
     font-size: 16px;
     margin: 0 auto 12px;
     padding: 5px;
+
     i {
         margin: 0 3px 0 1px;
     }
+
     p {
         margin: 0;
         padding: 4px;
@@ -337,16 +375,9 @@ p.n-margin {
 .app-main,
 .header-main {
     width: 100%;
-    /* TODO: This 1400px is wrong, but it's hard to do better.  On
-       browsers with a nonzero default scrollbar width (i.e. not
-       macOS), we actually want a max-width of 1400px+the width of the
-       scrollbar, which is done as an override in
-       static/js/scroll_bar.js.
-
-       And with the fluid_layout_width setting, we don't want a
-       max-width at all.  The consequence is that if you reload a
-       Zulip window, there's a brief flash where the content is
-       misplaced before the JS code can fix it. */
+    /* `max-width` is changed based on `fluid_layout_width` setting in
+       `scroll_bar.js`. User may or may not see a flash of mispositioned content
+       based on how quickly the JS code is executed. */
     max-width: 1400px;
     min-width: 950px;
     margin: 0 auto;
@@ -472,10 +503,10 @@ li,
     outline-color: hsl(0, 0%, 73%);
     height: 18px;
     width: 10px;
-    padding: 6px 6px;
+    padding: 6px;
     display: block;
     /* The below two avoids the padded element from displaying
-    it's own border and background color */
+    its own border and background color */
     border: none;
     background-clip: content-box;
     /* The z-index here ensures that the copy-message
@@ -499,7 +530,7 @@ li,
     position: relative;
     margin-right: -32px;
     margin-top: -1px;
-    padding: 8px 3px 0 13px;
+    padding: 6px 3px 6px 13px;
 
     /* This property nullifies the box-shadow rendered by .btn class */
     &:active {
@@ -584,7 +615,7 @@ strong {
     To resolve this, we just hide the tooltip for touch-events on
     touch-enabled devices resolving the above problem.  This means
     that tooltips will never appear on touchscreen devices, but that's
-    probably a reasoanble tradeoff here.
+    probably a reasonable tradeoff here.
 
     Source: https://drafts.csswg.org/mediaqueries-4/#mf-interaction
     */
@@ -596,6 +627,7 @@ strong {
 
 .buddy_list_tooltip_content {
     text-align: left;
+    word-wrap: break-word;
 }
 
 #message_edit_tooltip {
@@ -659,7 +691,7 @@ strong {
                 filter: progid:dximagetransform.microsoft.gradient(startcolorstr='hsla(328, 100%, 50%, 0.8)', endcolorstr='hsla(332, 100%, 50%, 0.7)', gradienttype=0);
             }
             /* styles defined for user_circle here only deal with positioning of user_presence_circle
-            in typeahead list in order to ensure they are renderred correctly in in all screen sizes.
+            in typeahead list in order to ensure they are rendered correctly in in all screen sizes.
             Most of the style rules related to color, gradient etc. which are generally common throughout
             the app are defined in user_circles.css and are not overridden here. */
             .user_circle {
@@ -726,6 +758,7 @@ li.actual-dropdown-menu i {
         filter: invert(20%) sepia(11%) saturate(0%) hue-rotate(272deg)
             brightness(20%) contrast(95%);
     }
+
     .about_zulip_text {
         position: relative;
         top: 1.4px;
@@ -771,7 +804,8 @@ td.pointer {
         display: inline-block;
         vertical-align: top;
         line-height: 14px;
-        margin-left: 0;
+        /* A bit of margin here helps these not look associated with the name. */
+        margin-left: 4px;
         position: static;
         padding: 0;
         width: auto;
@@ -941,6 +975,10 @@ td.pointer {
             color: hsl(0, 100%, 50%);
             font-weight: bold;
         }
+
+        .message_control_button {
+            visibility: inherit;
+        }
     }
 
     .star_container {
@@ -1032,20 +1070,18 @@ td.pointer {
 
 .stream_label {
     display: inline-block;
-    padding: 4px 6px 3px 6px;
+    padding: 4px 6px 3px;
     font-weight: normal;
     height: 17px;
     line-height: 17px;
-    border-top-color: hsla(0, 0%, 0%, 0);
-    border-right-color: hsla(0, 0%, 0%, 0);
-    border-bottom-color: hsla(0, 0%, 0%, 0);
+    border-color: hsla(0, 0%, 0%, 0) hsla(0, 0%, 0%, 0) hsla(0, 0%, 0%, 0)
+        hsl(0, 0%, 88%);
     background-color: hsl(0, 0%, 88%);
-    border-left-color: hsl(0, 0%, 88%);
     border-width: 0;
     position: relative;
     text-decoration: none;
 
-    .invite-stream-icon {
+    .recipient-row-stream-icon {
         font-size: 12px;
         line-height: 17px;
     }
@@ -1183,14 +1219,14 @@ td.pointer {
     .message_label_clickable {
         background-color: hsl(0, 0%, 27%);
         display: inline-block;
-        padding: 3px 6px 2px 6px;
+        padding: 3px 6px 2px;
         font-weight: normal;
         height: 17px;
         line-height: 17px;
         border-left-color: hsl(0, 0%, 27%);
     }
 
-    /* Base color backgrounds for messageboxes,
+    /* Base color backgrounds for message boxes,
        private messages, mentions, and unread messages */
 
     .message-header-contents {
@@ -1338,6 +1374,7 @@ td.pointer {
 .on_hover_topic_resolve,
 .on_hover_topic_mute {
     opacity: 0.2;
+
     &:hover {
         cursor: pointer;
         opacity: 0.7;
@@ -1398,6 +1435,7 @@ a.dark_background:hover,
     display: inline-block;
     position: relative;
     color: hsl(0, 0%, 73%);
+    bottom: 4px;
 }
 
 div.message_table {
@@ -1480,7 +1518,7 @@ div.focused_table {
 
 .message-edit-feature-group {
     display: inline-flex;
-    margin: -10px auto -5px 10px;
+    margin: 0 auto -5px 10px;
     align-items: baseline;
 }
 
@@ -1498,6 +1536,7 @@ div.focused_table {
     .btn-wrapper {
         cursor: not-allowed;
     }
+
     .disable-btn {
         pointer-events: none;
     }
@@ -1506,6 +1545,7 @@ div.focused_table {
 .topic_edit {
     display: none;
     line-height: 22px;
+
     .alert {
         display: inline-block;
         margin: 0;
@@ -1529,27 +1569,13 @@ div.focused_table {
 
 #message_edit_topic {
     margin: 0 5px 5px 0;
+    width: auto;
 }
 
 .message_edit_header {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-start;
-}
-
-/* Note the .select_stream_setting CSS class is both used explicitly
-   and generated by the dropdown_list_widget module. */
-.select_stream_setting {
-    .button {
-        text-align: left;
-
-        .fa-pencil {
-            float: right;
-            position: relative;
-            top: 2px;
-            padding-left: 5px;
-        }
-    }
 }
 
 .select_edit_stream {
@@ -1567,8 +1593,7 @@ div.focused_table {
 }
 
 .message_edit_topic_propagate {
-    display: inline-block;
-    width: 300px;
+    width: auto;
     margin-bottom: 5px !important;
     max-width: 100%;
 }
@@ -1581,11 +1606,16 @@ div.focused_table {
     white-space: nowrap;
 
     label.checkbox {
-        margin-right: 0 !important;
+        /* Place the checkboxes on their own lines. */
+        display: block;
 
         input {
             margin: 0;
             vertical-align: baseline;
+        }
+
+        & + label.checkbox {
+            margin-top: 10px;
         }
     }
 
@@ -1593,10 +1623,6 @@ div.focused_table {
         display: inline-block;
         margin-right: 10px;
     }
-}
-
-.topic_move_breadcrumb_messages {
-    margin-top: 10px !important;
 }
 
 .message_length_controller {
@@ -1674,6 +1700,7 @@ div.focused_table {
     color: inherit;
     opacity: 0.5;
     text-decoration: none;
+
     &:hover {
         opacity: 1;
     }
@@ -1689,13 +1716,15 @@ div.focused_table {
     display: flex;
     align-content: flex-start;
     flex-wrap: nowrap;
-    margin: 0 0 0 0;
+    margin: 0;
     border: none;
     white-space: nowrap;
     cursor: default;
+
     .hidden {
         display: none;
     }
+
     .sub_count,
     .stream,
     & > span {
@@ -1714,15 +1743,19 @@ div.focused_table {
         @media (width < $sm_min) {
             padding: 7px 3.5px; /* based on having ~41.66% decrease */
         }
+
         i {
             margin-right: 3px;
         }
+
         .fa {
             margin: 0 3px 0 5px;
+
             .fa-envelope {
                 font-size: 14px;
-                margin: 0 5px 0 5px;
+                margin: 0 5px;
             }
+
             .fa-hashtag {
                 font-size: 1.2rem;
                 /* font-weight: 800; */
@@ -1754,6 +1787,7 @@ div.focused_table {
         padding-right: 10px;
         margin-right: 1px;
         overflow: visible;
+
         .fa.fa-user-o {
             margin-left: 0;
         }
@@ -1830,8 +1864,9 @@ div.focused_table {
 
         /* Provide the visual cue that clicking this will work as expected. */
         cursor: pointer;
-        &:hover + .search_closed {
-            color: hsl(0, 0%, 0%);
+
+        &:hover ~ .search_closed {
+            opacity: 1;
         }
     }
 }
@@ -1850,6 +1885,7 @@ div.focused_table {
         margin-top: 0;
         width: calc(100% - 2px);
         position: absolute;
+
         .search_button {
             display: inline;
             margin-right: 15px;
@@ -1905,7 +1941,8 @@ div.focused_table {
         height: 30px;
         text-align: center;
         padding: 4px;
-        color: hsl(0, 0%, 80%);
+        color: inherit;
+        opacity: 0.5;
         font-size: 18px;
         box-shadow: none;
         text-shadow: none;
@@ -1913,7 +1950,7 @@ div.focused_table {
     }
 
     .search_button:hover {
-        color: hsl(0, 0%, 0%);
+        opacity: 1;
     }
 
     .search_button:disabled {
@@ -1923,18 +1960,11 @@ div.focused_table {
     .search_icon {
         position: absolute;
         height: 100%;
-        color: hsl(0, 0%, 80%);
         text-decoration: none;
         padding: 0 10px;
         font-size: 20px;
         z-index: 5;
         left: 0;
-    }
-
-    .search_icon_hover_highlight,
-    .search_icon:hover {
-        color: hsl(0, 0%, 0%);
-        text-decoration: none;
     }
 
     #search_arrows {
@@ -1953,7 +1983,7 @@ div.focused_table {
 
     @media (width >= $sm_min) {
         .pill {
-            padding: 2px 0 2px 0 !important;
+            padding: 2px 0 !important;
             font-size: 14px;
         }
     }
@@ -1972,12 +2002,15 @@ div.focused_table {
     #search_arrows {
         padding-left: 0;
     }
+
     #search_query {
         padding-left: 35px;
     }
+
     .search_button {
         right: 0;
     }
+
     .navbar-search.expanded {
         .search_button {
             margin-right: 14px;
@@ -2076,7 +2109,7 @@ div.focused_table {
     border: 1px solid hsl(0, 0%, 93%);
     box-shadow: 0 0 1px hsla(0, 0%, 0%, 0.2);
     border-radius: 12px;
-    padding: 1px 1px 1px 1px;
+    padding: 1px;
     font-size: 9px;
     z-index: 15;
     font-weight: normal;
@@ -2411,6 +2444,15 @@ div.topic_edit_spinner .loading_indicator_spinner {
     text-align: left;
 }
 
+#multiuse_invite_link {
+    width: 350px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+}
+
 #invite-stream-checkboxes {
     padding-bottom: 26px;
 }
@@ -2432,7 +2474,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 .empty_feed_notice {
     padding: 3em 1em;
-    display: none;
     text-align: center;
 }
 
@@ -2448,6 +2489,21 @@ div.topic_edit_spinner .loading_indicator_spinner {
     margin-top: -7px;
     vertical-align: middle;
     top: 3px;
+}
+
+.status_emoji {
+    height: 16px;
+    width: 16px;
+    /* We are setting minimum width here because when the user's name is very long,
+    emoji's width decreases and causes it to break. */
+    min-width: 16px;
+    /* In most contexts, status emoji appear immediately after a name
+      field with no margin. Position the status emoji with 2px of left
+      margin to space it from the name, and set no right margin so
+      that any components to the right appear equally distant as they
+      would be from a name. */
+    margin-left: 2px;
+    margin-right: 0;
 }
 
 /* FIXME: Combine this rule with the one in portico.css somehow? */
@@ -2486,7 +2542,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
         width: 33%;
         border-top: 1px solid hsl(0, 0%, 88%);
         border-bottom: 1px solid hsl(0, 0%, 100%);
-        margin: 0 5px 0 5px;
+        margin: 0 5px;
     }
 }
 
@@ -2497,6 +2553,10 @@ div.topic_edit_spinner .loading_indicator_spinner {
     overflow: hidden;
     text-transform: uppercase;
     font-size: 0.8em;
+}
+
+.sub-unsub-message .stream-status,
+.date_row span {
     opacity: 0.5;
 }
 
@@ -2546,15 +2606,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     .edit-controls {
         margin-left: 0;
         margin-top: 0;
-
-        .message-control-link {
-            position: relative;
-            top: -1px;
-        }
-
-        .compose_gif_icon {
-            top: 6px;
-        }
     }
 
     /* Override the default border-radius to properly align
@@ -2563,8 +2614,9 @@ div.topic_edit_spinner .loading_indicator_spinner {
         border-radius: 1px 4px 4px 1px !important;
     }
 
+    .dropdown-list-widget,
     .stream_header_colorblock {
-        margin-bottom: 20px;
+        margin-bottom: 10px;
     }
 
     textarea {
@@ -2587,7 +2639,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 #topic_edit_form {
     display: inline-block;
-    margin: 0 0 0 0;
+    margin: 0;
     height: 22px;
     padding-left: 20px;
     padding-right: 3px;
@@ -2666,9 +2718,41 @@ select.inline_select_topic_edit {
     margin: 0;
 }
 
-/* Hide the up and down arrows in the Flatpickr datepicker year */
-.flatpickr-months .numInputWrapper span {
-    display: none;
+.flatpickr-calendar {
+    /* Hide the up and down arrows in the Flatpickr datepicker year */
+    .flatpickr-months .numInputWrapper span {
+        display: none;
+    }
+
+    .flatpickr-time-separator {
+        position: relative;
+        left: 5px;
+    }
+
+    .flatpickr-time input {
+        margin: 0 5px;
+    }
+
+    .flatpickr-confirm {
+        color: hsl(0, 0%, 100%);
+        background-color: hsl(213, 90%, 65%);
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    @media (width < $md_min) {
+        /* Center align flatpickr on mobile
+         * devices so that it doesn't go out of
+         * the viewport. */
+        left: 0 !important;
+        right: 0 !important;
+        margin: auto;
+
+        &::after,
+        &::before {
+            border-top-width: 0 !important;
+        }
+    }
 }
 
 #about-zulip {
@@ -2728,11 +2812,7 @@ select.inline_select_topic_edit {
                    hide little artifacts from showing up in
                    the gutter below the navbar. */
                 margin-top: $header_height;
-                padding-top: $header_padding_bottom;
-
-                padding-bottom: 0;
-                padding-left: 15px;
-                padding-right: 15px;
+                padding: $header_padding_bottom 15px 0 15px;
                 height: 100%;
                 right: 0;
             }
@@ -2775,6 +2855,7 @@ select.inline_select_topic_edit {
         .search_closed .fa-search {
             right: 72px;
         }
+
         .top-navbar-border,
         #searchbox_legacy .navbar-search.expanded,
         #searchbox .navbar-search.expanded {
@@ -2856,8 +2937,7 @@ select.inline_select_topic_edit {
         width: calc(100% - 108px);
     }
     /* todo: Figure out why this has to be different
-       from above at this width and resolve it
-       #searchbox_legacy .navbar-search.expanded, */
+       from above at this width and resolve it */
     #searchbox_legacy .navbar-search.expanded,
     #searchbox .navbar-search.expanded {
         width: calc(100% - 123px);
@@ -2868,12 +2948,10 @@ select.inline_select_topic_edit {
     }
 
     #top_navbar:not(.rightside-userlist) {
-        /* .search_closed .fa-search {
-               right: 115px;
-           } */
         .top-navbar-border {
             width: calc(100% - 75px);
         }
+
         #searchbox_legacy .navbar-search.expanded,
         #searchbox .navbar-search.expanded {
             width: calc(100% - 90px);
@@ -3008,24 +3086,7 @@ select.inline_select_topic_edit {
 }
 
 #login_to_access_modal {
-    .spectator_go_back .fa {
-        position: fixed;
-        top: 11px;
-        left: 30px;
-    }
-
-    .login_to_access_label {
-        font-size: 1.1rem;
-        font-weight: bold;
-    }
-
-    .login_to_access_footer {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-around;
-
-        .color_animated_button {
-            width: 48%;
-        }
+    .modal__content p {
+        margin: 0;
     }
 }

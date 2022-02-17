@@ -134,6 +134,13 @@ def process_users(
             bot_user["bot_owner"] = realm_owners[0]
 
 
+def get_stream_name(rc_channel: Dict[str, Any]) -> str:
+    if rc_channel.get("teamMain"):
+        return f'[TEAM] {rc_channel["name"]}'
+    else:
+        return rc_channel["name"]
+
+
 def convert_channel_data(
     room_id_to_room_map: Dict[str, Dict[str, Any]],
     team_id_to_team_map: Dict[str, Dict[str, Any]],
@@ -149,19 +156,13 @@ def convert_channel_data(
         stream_id = stream_id_mapper.get(rc_room_id)
         invite_only = channel_dict["t"] == "p"
 
-        stream_name = channel_dict["name"]
+        stream_name = get_stream_name(channel_dict)
+
         stream_desc = channel_dict.get("description", "")
-        if channel_dict.get("teamId"):
-            if channel_dict.get("teamMain") is True:
-                # In case you change this, please also change the stream name
-                # used while adding the Rocket.Chat channel mention data to
-                # message_dict in `message_to_dict` inner-function of
-                # `process_messages` function below.
-                stream_name = "[TEAM] " + stream_name
-            else:
-                stream_desc = "[Team {} channel]. {}".format(
-                    team_id_to_team_map[channel_dict["teamId"]]["name"], stream_desc
-                )
+        if channel_dict.get("teamId") and not channel_dict.get("teamMain"):
+            stream_desc = "[Team {} channel]. {}".format(
+                team_id_to_team_map[channel_dict["teamId"]]["name"], stream_desc
+            )
 
         # If the channel is read-only, then only admins and moderators
         # should be allowed to post in the converted Zulip stream.
@@ -388,7 +389,7 @@ def process_message_attachment(
         upload_file.write(b"".join(upload_file_data["chunk"]))
 
     attachment_content = (
-        f'{upload_file_data["description"]}\n\n[{file_name}](/user_uploads/{s3_path})'
+        f'{upload_file_data.get("description", "")}\n\n[{file_name}](/user_uploads/{s3_path})'
     )
 
     fileinfo = {
@@ -457,13 +458,15 @@ def process_raw_message_batch(
 
         return content
 
-    mention_map: Dict[int, Set[int]] = {}
+    user_mention_map: Dict[int, Set[int]] = {}
+    wildcard_mention_map: Dict[int, bool] = {}
     zerver_message: List[ZerverFieldsT] = []
 
     for raw_message in raw_messages:
         message_id = NEXT_ID("message")
         mention_user_ids = raw_message["mention_user_ids"]
-        mention_map[message_id] = mention_user_ids
+        user_mention_map[message_id] = mention_user_ids
+        wildcard_mention_map[message_id] = raw_message["wildcard_mention"]
 
         content = fix_mentions(
             content=raw_message["content"],
@@ -529,7 +532,8 @@ def process_raw_message_batch(
         zerver_message=zerver_message,
         subscriber_map=subscriber_map,
         is_pm_data=is_pm_data,
-        mention_map=mention_map,
+        mention_map=user_mention_map,
+        wildcard_mention_map=wildcard_mention_map,
     )
 
     message_json = dict(
@@ -540,6 +544,30 @@ def process_raw_message_batch(
     dump_file_id = NEXT_ID("dump_file_id" + str(realm_id))
     message_file = f"/messages-{dump_file_id:06}.json"
     create_converted_data_files(message_json, output_dir, message_file)
+
+
+def get_topic_name(
+    message: Dict[str, Any],
+    dsc_id_to_dsc_map: Dict[str, Dict[str, Any]],
+    thread_id_mapper: IdMapper,
+    is_pm_data: bool = False,
+) -> str:
+    if is_pm_data:
+        return ""
+    elif message["rid"] in dsc_id_to_dsc_map:
+        dsc_channel_name = dsc_id_to_dsc_map[message["rid"]]["fname"]
+        return f"{dsc_channel_name} (Imported from Rocket.Chat)"
+    elif message.get("replies"):
+        # Message is the start of a thread
+        thread_id = thread_id_mapper.get(message["_id"])
+        return f"Thread {thread_id} (Imported from Rocket.Chat)"
+    elif message.get("tmid"):
+        # Message is a part of a thread
+        thread_id = thread_id_mapper.get(message["tmid"])
+        return f"Thread {thread_id} (Imported from Rocket.Chat)"
+    else:
+        # Normal channel message
+        return "Imported from Rocket.Chat"
 
 
 def process_messages(
@@ -555,6 +583,7 @@ def process_messages(
     stream_id_to_recipient_id: Dict[int, int],
     huddle_id_mapper: IdMapper,
     huddle_id_to_recipient_id: Dict[int, int],
+    thread_id_mapper: IdMapper,
     room_id_to_room_map: Dict[str, Dict[str, Any]],
     dsc_id_to_dsc_map: Dict[str, Dict[str, Any]],
     direct_id_to_direct_map: Dict[str, Dict[str, Any]],
@@ -599,7 +628,7 @@ def process_messages(
             has_link=True if message.get("urls") else False,
         )
 
-        # Add recipient_id and topic to message_dict
+        # Add recipient_id to message_dict
         if is_pm_data:
             # Message is in a PM or a huddle.
             rc_channel_id = message["rid"]
@@ -614,33 +643,33 @@ def process_messages(
                 else:
                     zulip_member_id = user_id_mapper.get(rc_member_ids[0])
                     message_dict["recipient_id"] = user_id_to_recipient_id[zulip_member_id]
-            # PMs and huddles don't have topics, but topic_name field is required in `build_message`.
-            message_dict["topic_name"] = ""
         elif message["rid"] in dsc_id_to_dsc_map:
             # Message is in a discussion
             dsc_channel = dsc_id_to_dsc_map[message["rid"]]
             parent_channel_id = dsc_channel["prid"]
             stream_id = stream_id_mapper.get(parent_channel_id)
             message_dict["recipient_id"] = stream_id_to_recipient_id[stream_id]
-
-            # In case you change this, please also change the topic name used
-            # in discussion mention to topic mention conversion below, while
-            # adding the Rocket.Chat channel mention data to message_dict.
-            message_dict["topic_name"] = f'{dsc_channel["fname"]} (Imported from Rocket.Chat)'
         else:
             stream_id = stream_id_mapper.get(message["rid"])
             message_dict["recipient_id"] = stream_id_to_recipient_id[stream_id]
-            message_dict["topic_name"] = "Imported from Rocket.Chat"
+
+        # Add topic name to message_dict
+        message_dict["topic_name"] = get_topic_name(
+            message, dsc_id_to_dsc_map, thread_id_mapper, is_pm_data
+        )
 
         # Add user mentions to message_dict
         mention_user_ids = set()
+        wildcard_mention = False
         for mention in message.get("mentions", []):
             mention_id = mention["_id"]
             if mention_id in ["all", "here"]:
+                wildcard_mention = True
                 continue
             user_id = user_id_mapper.get(mention_id)
             mention_user_ids.add(user_id)
         message_dict["mention_user_ids"] = mention_user_ids
+        message_dict["wildcard_mention"] = wildcard_mention
 
         # Add channel mentions to message_dict
         rc_channel_mention_data: List[Dict[str, str]] = []
@@ -651,26 +680,37 @@ def process_messages(
 
             if mention_rc_channel_id in room_id_to_room_map:
                 # Channel is converted to a stream.
-                converted_stream_name = mention_rc_channel_name
-
                 rc_channel = room_id_to_room_map[mention_rc_channel_id]
-                if rc_channel.get("teamMain") is True:
-                    # Channel is a team's main channel
-                    converted_stream_name = "[TEAM] " + converted_stream_name
+                converted_stream_name = get_stream_name(rc_channel)
 
                 zulip_mention = f"#**{converted_stream_name}**"
             elif mention_rc_channel_id in dsc_id_to_dsc_map:
                 # Channel is a discussion and is converted to a topic.
                 dsc_channel = dsc_id_to_dsc_map[mention_rc_channel_id]
                 parent_channel_id = dsc_channel["prid"]
+                if (
+                    parent_channel_id in direct_id_to_direct_map
+                    or parent_channel_id in huddle_id_to_huddle_map
+                ):
+                    # Discussion belongs to a direct channel and thus, should not be
+                    # linked.
+
+                    # This logging statement serves the side benefit of avoiding the
+                    # CPython optimization for `continue` so that the coverage reports
+                    # aren't misleading.
+                    logging.info(
+                        "skipping direct messages discussion mention: %s", dsc_channel["fname"]
+                    )
+                    continue
+
+                converted_topic_name = get_topic_name(
+                    message={"rid": mention_rc_channel_id},
+                    dsc_id_to_dsc_map=dsc_id_to_dsc_map,
+                    thread_id_mapper=thread_id_mapper,
+                )
+
                 parent_rc_channel = room_id_to_room_map[parent_channel_id]
-
-                converted_topic_name = f'{dsc_channel["fname"]} (Imported from Rocket.Chat)'
-                parent_stream_name = parent_rc_channel["name"]
-
-                if parent_rc_channel.get("teamMain") is True:
-                    # Parent channel is a team's main channel
-                    parent_stream_name = "[TEAM] " + parent_stream_name
+                parent_stream_name = get_stream_name(parent_rc_channel)
 
                 zulip_mention = f"#**{parent_stream_name}>{converted_topic_name}**"
 
@@ -730,12 +770,15 @@ def map_upload_id_to_upload_data(
     return upload_id_to_upload_data_map
 
 
-def separate_channel_and_private_messages(
+def separate_channel_private_and_livechat_messages(
     messages: List[Dict[str, Any]],
+    dsc_id_to_dsc_map: Dict[str, Dict[str, Any]],
     direct_id_to_direct_map: Dict[str, Dict[str, Any]],
     huddle_id_to_huddle_map: Dict[str, Dict[str, Any]],
+    livechat_id_to_livechat_map: Dict[str, Dict[str, Any]],
     channel_messages: List[Dict[str, Any]],
     private_messages: List[Dict[str, Any]],
+    livechat_messages: List[Dict[str, Any]],
 ) -> None:
     private_channels_list = list(direct_id_to_direct_map.keys()) + list(
         huddle_id_to_huddle_map.keys()
@@ -745,8 +788,17 @@ def separate_channel_and_private_messages(
             # Message does not belong to any channel (might be
             # related to livechat), so ignore all such messages.
             continue
+        if message["rid"] in dsc_id_to_dsc_map:
+            parent_channel_id = dsc_id_to_dsc_map[message["rid"]]["prid"]
+            if parent_channel_id in private_channels_list:
+                # Messages in discussions originating from direct channels
+                # are treated as if they were posted in the parent direct
+                # channel only.
+                message["rid"] = parent_channel_id
         if message["rid"] in private_channels_list:
             private_messages.append(message)
+        elif message["rid"] in livechat_id_to_livechat_map:
+            livechat_messages.append(message)
         else:
             channel_messages.append(message)
 
@@ -774,6 +826,7 @@ def categorize_channels_and_map_with_id(
     dsc_id_to_dsc_map: Dict[str, Dict[str, Any]],
     direct_id_to_direct_map: Dict[str, Dict[str, Any]],
     huddle_id_to_huddle_map: Dict[str, Dict[str, Any]],
+    livechat_id_to_livechat_map: Dict[str, Dict[str, Any]],
 ) -> None:
     for channel in channel_data:
         if channel.get("prid"):
@@ -783,9 +836,11 @@ def categorize_channels_and_map_with_id(
                 huddle_id_to_huddle_map[channel["_id"]] = channel
             else:
                 direct_id_to_direct_map[channel["_id"]] = channel
+        elif channel["t"] == "l":
+            livechat_id_to_livechat_map[channel["_id"]] = channel
         else:
             room_id_to_room_map[channel["_id"]] = channel
-            if channel.get("teamMain") is True:
+            if channel.get("teamMain"):
                 team_id_to_team_map[channel["teamId"]] = channel
 
 
@@ -892,6 +947,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     user_id_mapper = IdMapper()
     stream_id_mapper = IdMapper()
     huddle_id_mapper = IdMapper()
+    thread_id_mapper = IdMapper()
 
     process_users(
         user_id_to_user_map=user_id_to_user_map,
@@ -906,6 +962,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     dsc_id_to_dsc_map: Dict[str, Dict[str, Any]] = {}
     direct_id_to_direct_map: Dict[str, Dict[str, Any]] = {}
     huddle_id_to_huddle_map: Dict[str, Dict[str, Any]] = {}
+    livechat_id_to_livechat_map: Dict[str, Dict[str, Any]] = {}
 
     categorize_channels_and_map_with_id(
         channel_data=rocketchat_data["room"],
@@ -914,6 +971,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         dsc_id_to_dsc_map=dsc_id_to_dsc_map,
         direct_id_to_direct_map=direct_id_to_direct_map,
         huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+        livechat_id_to_livechat_map=livechat_id_to_livechat_map,
     )
 
     zerver_stream = convert_channel_data(
@@ -994,13 +1052,17 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
 
     channel_messages: List[Dict[str, Any]] = []
     private_messages: List[Dict[str, Any]] = []
+    livechat_messages: List[Dict[str, Any]] = []
 
-    separate_channel_and_private_messages(
+    separate_channel_private_and_livechat_messages(
         messages=rocketchat_data["message"],
+        dsc_id_to_dsc_map=dsc_id_to_dsc_map,
         direct_id_to_direct_map=direct_id_to_direct_map,
         huddle_id_to_huddle_map=huddle_id_to_huddle_map,
+        livechat_id_to_livechat_map=livechat_id_to_livechat_map,
         channel_messages=channel_messages,
         private_messages=private_messages,
+        livechat_messages=livechat_messages,
     )
 
     total_reactions: List[ZerverFieldsT] = []
@@ -1023,6 +1085,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         stream_id_to_recipient_id=stream_id_to_recipient_id,
         huddle_id_mapper=huddle_id_mapper,
         huddle_id_to_recipient_id=huddle_id_to_recipient_id,
+        thread_id_mapper=thread_id_mapper,
         room_id_to_room_map=room_id_to_room_map,
         dsc_id_to_dsc_map=dsc_id_to_dsc_map,
         direct_id_to_direct_map=direct_id_to_direct_map,
@@ -1048,6 +1111,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         stream_id_to_recipient_id=stream_id_to_recipient_id,
         huddle_id_mapper=huddle_id_mapper,
         huddle_id_to_recipient_id=huddle_id_to_recipient_id,
+        thread_id_mapper=thread_id_mapper,
         room_id_to_room_map=room_id_to_room_map,
         dsc_id_to_dsc_map=dsc_id_to_dsc_map,
         direct_id_to_direct_map=direct_id_to_direct_map,

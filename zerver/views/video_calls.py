@@ -29,7 +29,7 @@ from zerver.lib.pysa import mark_sanitized
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain
-from zerver.lib.url_encoding import add_query_arg_to_redirect_url, add_query_to_redirect_url
+from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.validator import check_dict, check_string
 from zerver.models import UserProfile, get_realm
 
@@ -52,9 +52,6 @@ def get_zoom_session(user: UserProfile) -> OAuth2Session:
 
     client_id = settings.VIDEO_ZOOM_CLIENT_ID
     client_secret = settings.VIDEO_ZOOM_CLIENT_SECRET
-    if user.realm.string_id in settings.VIDEO_ZOOM_TESTING_REALMS:  # nocoverage
-        client_id = settings.VIDEO_ZOOM_TESTING_CLIENT_ID
-        client_secret = settings.VIDEO_ZOOM_TESTING_CLIENT_SECRET
 
     return OAuth2Session(
         client_id,
@@ -129,8 +126,6 @@ def complete_zoom_user_in_realm(
         raise JsonableError(_("Invalid Zoom session identifier"))
 
     client_secret = settings.VIDEO_ZOOM_CLIENT_SECRET
-    if request.user.realm.string_id in settings.VIDEO_ZOOM_TESTING_REALMS:  # nocoverage
-        client_secret = settings.VIDEO_ZOOM_TESTING_CLIENT_SECRET
 
     oauth = get_zoom_session(request.user)
     try:
@@ -163,14 +158,14 @@ def make_zoom_video_call(request: HttpRequest, user: UserProfile) -> HttpRespons
     elif not res.ok:
         raise JsonableError(_("Failed to create Zoom call"))
 
-    return json_success({"url": res.json()["join_url"]})
+    return json_success(request, data={"url": res.json()["join_url"]})
 
 
 @csrf_exempt
 @require_POST
 @has_request_variables
 def deauthorize_zoom_user(request: HttpRequest) -> HttpResponse:
-    return json_success()
+    return json_success(request)
 
 
 def get_bigbluebutton_url(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
@@ -178,7 +173,7 @@ def get_bigbluebutton_url(request: HttpRequest, user_profile: UserProfile) -> Ht
     # https://docs.bigbluebutton.org/dev/api.html#usage for reference for checksum
     id = "zulip-" + str(random.randint(100000000000, 999999999999))
     password = b32encode(secrets.token_bytes(7))[:10].decode()
-    checksum = hashlib.sha1(
+    checksum = hashlib.sha256(
         (
             "create"
             + "meetingID="
@@ -191,7 +186,7 @@ def get_bigbluebutton_url(request: HttpRequest, user_profile: UserProfile) -> Ht
             + settings.BIG_BLUE_BUTTON_SECRET
         ).encode()
     ).hexdigest()
-    url = add_query_to_redirect_url(
+    url = append_url_query_string(
         "/calls/bigbluebutton/join",
         urlencode(
             {
@@ -201,7 +196,7 @@ def get_bigbluebutton_url(request: HttpRequest, user_profile: UserProfile) -> Ht
             }
         ),
     )
-    return json_success({"url": url})
+    return json_success(request, data={"url": url})
 
 
 # We use zulip_login_required here mainly to get access to the user's
@@ -225,7 +220,7 @@ def join_bigbluebutton(
     else:
         try:
             response = VideoCallSession().get(
-                add_query_to_redirect_url(
+                append_url_query_string(
                     settings.BIG_BLUE_BUTTON_URL + "api/create",
                     urlencode(
                         {
@@ -257,10 +252,10 @@ def join_bigbluebutton(
             quote_via=quote,
         )
 
-        checksum = hashlib.sha1(
+        checksum = hashlib.sha256(
             ("join" + join_params + settings.BIG_BLUE_BUTTON_SECRET).encode()
         ).hexdigest()
-        redirect_url_base = add_query_to_redirect_url(
+        redirect_url_base = append_url_query_string(
             settings.BIG_BLUE_BUTTON_URL + "api/join", join_params
         )
-        return redirect(add_query_arg_to_redirect_url(redirect_url_base, "checksum=" + checksum))
+        return redirect(append_url_query_string(redirect_url_base, "checksum=" + checksum))

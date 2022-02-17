@@ -76,4 +76,4 @@ def api_newrelic_webhook(
     topic = TOPIC_TEMPLATE.format(**topic_info)
 
     check_send_webhook_message(request, user_profile, topic, content, info["status"])
-    return json_success()
+    return json_success(request)

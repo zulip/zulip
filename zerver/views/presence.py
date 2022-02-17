@@ -60,7 +60,7 @@ def get_presence_backend(
     for val in result["presence"].values():
         val.pop("client", None)
         val.pop("pushable", None)
-    return json_success(result)
+    return json_success(request, data=result)
 
 
 @human_users_only
@@ -126,7 +126,7 @@ def update_user_status_backend(
         reaction_type=emoji_type,
     )
 
-    return json_success()
+    return json_success(request)
 
 
 @human_users_only
@@ -167,11 +167,11 @@ def update_active_status_backend(
         except UserActivity.DoesNotExist:
             ret["zephyr_mirror_active"] = False
 
-    return json_success(ret)
+    return json_success(request, data=ret)
 
 
 def get_statuses_for_realm(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     # This isn't used by the web app; it's available for API use by
     # bots and other clients.  We may want to add slim_presence
     # support for it (or just migrate its API wholesale) later.
-    return json_success(get_presence_response(user_profile, slim_presence=False))
+    return json_success(request, data=get_presence_response(user_profile, slim_presence=False))

@@ -14,57 +14,51 @@ const noop = () => {};
 const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
-
-const StripeCheckout = set_global("StripeCheckout", {
-    configure: noop,
-});
+const location = set_global("location", {});
 
 const helpers = zrequire("../js/billing/helpers");
 zrequire("../js/billing/upgrade");
 
-run_test("initialize", ({override}) => {
+run_test("initialize", ({override_rewire}) => {
     page_params.annual_price = 8000;
     page_params.monthly_price = 800;
     page_params.seat_count = 8;
     page_params.percent_off = 20;
 
-    let token_func;
-    override(helpers, "set_tab", (page_name) => {
+    override_rewire(helpers, "set_tab", (page_name) => {
         assert.equal(page_name, "upgrade");
     });
 
     let create_ajax_request_form_call_count = 0;
     helpers.__Rewire__(
         "create_ajax_request",
-        (url, form_name, stripe_token, ignored_inputs, type, success_callback) => {
+        (url, form_name, ignored_inputs, type, success_callback) => {
             create_ajax_request_form_call_count += 1;
             switch (form_name) {
                 case "autopay":
                     assert.equal(url, "/json/billing/upgrade");
-                    assert.equal(stripe_token, "stripe_add_card_token");
                     assert.deepEqual(ignored_inputs, []);
                     assert.equal(type, "POST");
-                    window.location.replace = (new_location) => {
-                        assert.equal(new_location, "/billing");
+                    location.replace = (new_location) => {
+                        assert.equal(new_location, "https://stripe_session_url");
                     };
-                    success_callback();
+                    // mock redirectToCheckout and verify its called
+                    success_callback({stripe_session_url: "https://stripe_session_url"});
                     break;
                 case "invoice":
                     assert.equal(url, "/json/billing/upgrade");
-                    assert.equal(stripe_token, undefined);
                     assert.deepEqual(ignored_inputs, []);
                     assert.equal(type, "POST");
-                    window.location.replace = (new_location) => {
+                    location.replace = (new_location) => {
                         assert.equal(new_location, "/billing");
                     };
                     success_callback();
                     break;
                 case "sponsorship":
                     assert.equal(url, "/json/billing/sponsorship");
-                    assert.equal(stripe_token, undefined);
                     assert.deepEqual(ignored_inputs, []);
                     assert.equal(type, "POST");
-                    window.location.replace = (new_location) => {
+                    location.replace = (new_location) => {
                         assert.equal(new_location, "/");
                     };
                     success_callback();
@@ -75,34 +69,11 @@ run_test("initialize", ({override}) => {
         },
     );
 
-    const open_func = (config_opts) => {
-        assert.equal(config_opts.name, "Zulip");
-        assert.equal(config_opts.zipCode, true);
-        assert.equal(config_opts.billingAddress, true);
-        assert.equal(config_opts.panelLabel, "Make payment");
-        assert.equal(config_opts.label, "Add card");
-        assert.equal(config_opts.allowRememberMe, false);
-        assert.equal(config_opts.email, "{{ email }}");
-        assert.equal(config_opts.description, "Zulip Cloud Standard");
-        token_func("stripe_add_card_token");
-    };
-
-    StripeCheckout.configure = (config_opts) => {
-        assert.equal(config_opts.image, "/static/images/logo/zulip-icon-128x128.png");
-        assert.equal(config_opts.locale, "auto");
-        assert.equal(config_opts.key, "{{ publishable_key }}");
-        token_func = config_opts.token;
-
-        return {
-            open: open_func,
-        };
-    };
-
-    override(helpers, "show_license_section", (section) => {
+    override_rewire(helpers, "show_license_section", (section) => {
         assert.equal(section, "automatic");
     });
 
-    override(helpers, "update_charged_amount", (prices, schedule) => {
+    override_rewire(helpers, "update_charged_amount", (prices, schedule) => {
         assert.equal(prices.annual, 6400);
         assert.equal(prices.monthly, 640);
         assert.equal(schedule, "monthly");
@@ -117,7 +88,8 @@ run_test("initialize", ({override}) => {
     $("#autopay-form").data = (key) =>
         document.querySelector("#autopay-form").getAttribute("data-" + key);
 
-    $.get_initialize_function()();
+    const initialize_function = $.get_initialize_function();
+    initialize_function();
 
     const e = {
         preventDefault: noop,
@@ -127,7 +99,7 @@ run_test("initialize", ({override}) => {
     const invoice_click_handler = $("#invoice-button").get_on_handler("click");
     const request_sponsorship_click_handler = $("#sponsorship-button").get_on_handler("click");
 
-    override(helpers, "is_valid_input", () => true);
+    override_rewire(helpers, "is_valid_input", () => true);
     add_card_click_handler(e);
     assert.equal(create_ajax_request_form_call_count, 1);
     invoice_click_handler(e);
@@ -135,13 +107,13 @@ run_test("initialize", ({override}) => {
     request_sponsorship_click_handler(e);
     assert.equal(create_ajax_request_form_call_count, 3);
 
-    override(helpers, "is_valid_input", () => false);
+    override_rewire(helpers, "is_valid_input", () => false);
     add_card_click_handler(e);
     invoice_click_handler(e);
     request_sponsorship_click_handler(e);
     assert.equal(create_ajax_request_form_call_count, 3);
 
-    override(helpers, "show_license_section", (section) => {
+    override_rewire(helpers, "show_license_section", (section) => {
         assert.equal(section, "manual");
     });
     const license_change_handler = $("input[type=radio][name=license_management]").get_on_handler(
@@ -149,7 +121,7 @@ run_test("initialize", ({override}) => {
     );
     license_change_handler.call({value: "manual"});
 
-    override(helpers, "update_charged_amount", (prices, schedule) => {
+    override_rewire(helpers, "update_charged_amount", (prices, schedule) => {
         assert.equal(prices.annual, 6400);
         assert.equal(prices.monthly, 640);
         assert.equal(schedule, "monthly");
@@ -196,8 +168,6 @@ run_test("initialize", ({override}) => {
 });
 
 run_test("autopay_form_fields", () => {
-    assert.equal(document.querySelector("#autopay-form").dataset.key, "{{ publishable_key }}");
-    assert.equal(document.querySelector("#autopay-form").dataset.email, "{{ email }}");
     assert.equal(
         document.querySelector("#autopay-form [name=seat_count]").value,
         "{{ seat_count }}",

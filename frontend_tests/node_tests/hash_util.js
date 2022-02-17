@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const ui_report = mock_esm("../../static/js/ui_report", {
@@ -12,17 +12,10 @@ const ui_report = mock_esm("../../static/js/ui_report", {
         ui_report.displayed_error = true;
     },
 });
-const location = set_global("location", {
-    protocol: "https:",
-    host: "example.com",
-    pathname: "/",
-});
 
 const hash_util = zrequire("hash_util");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
-const {Filter} = zrequire("../js/filter");
-const narrow_state = zrequire("narrow_state");
 
 const hamlet = {
     user_id: 15,
@@ -86,7 +79,7 @@ run_test("test_get_hash_category", () => {
     assert.deepEqual(hash_util.get_hash_category("#drafts"), "drafts");
     assert.deepEqual(hash_util.get_hash_category("invites"), "invites");
 
-    location.hash = "#settings/profile";
+    window.location.hash = "#settings/profile";
     assert.deepEqual(hash_util.get_current_hash_category(), "settings");
 });
 
@@ -99,38 +92,45 @@ run_test("test_get_hash_section", () => {
     assert.equal(hash_util.get_hash_section("#drafts"), "");
     assert.equal(hash_util.get_hash_section(""), "");
 
-    location.hash = "#settings/profile";
+    window.location.hash = "#settings/profile";
     assert.deepEqual(hash_util.get_current_hash_section(), "profile");
 });
 
 run_test("build_reload_url", () => {
-    location.hash = "#settings/profile";
+    window.location.hash = "#settings/profile";
     assert.equal(hash_util.build_reload_url(), "+oldhash=settings%2Fprofile");
 
-    location.hash = "#test";
+    window.location.hash = "#test";
     assert.equal(hash_util.build_reload_url(), "+oldhash=test");
 
-    location.hash = "#";
+    window.location.hash = "#";
     assert.equal(hash_util.build_reload_url(), "+oldhash=");
 
-    location.hash = "";
+    window.location.hash = "";
     assert.equal(hash_util.build_reload_url(), "+oldhash=");
 });
 
-run_test("test_active_stream", () => {
-    location.hash = "#streams/1/announce";
-    assert.equal(hash_util.active_stream().id, 1);
-    assert.equal(hash_util.active_stream().name, "announce");
+run_test("test is_editing_stream", () => {
+    window.location.hash = "#streams/1/announce";
+    assert.equal(hash_util.is_editing_stream(1), true);
+    assert.equal(hash_util.is_editing_stream(2), false);
 
-    location.hash = "#test/narrow";
-    assert.equal(hash_util.active_stream(), undefined);
+    // url is missing name at end
+    window.location.hash = "#streams/1";
+    assert.equal(hash_util.is_editing_stream(1), false);
+
+    window.location.hash = "#streams/bogus/bogus";
+    assert.equal(hash_util.is_editing_stream(1), false);
+
+    window.location.hash = "#test/narrow";
+    assert.equal(hash_util.is_editing_stream(1), false);
 });
 
 run_test("test_is_create_new_stream_narrow", () => {
-    location.hash = "#streams/new";
+    window.location.hash = "#streams/new";
     assert.equal(hash_util.is_create_new_stream_narrow(), true);
 
-    location.hash = "#some/random/hash";
+    window.location.hash = "#some/random/hash";
     assert.equal(hash_util.is_create_new_stream_narrow(), false);
 });
 
@@ -170,7 +170,7 @@ run_test("test_by_conversation_and_time_uri", () => {
 
     assert.equal(
         hash_util.by_conversation_and_time_uri(message),
-        "https://example.com/#narrow/stream/99-frontend/topic/testing/near/42",
+        "http://zulip.zulipdev.com/#narrow/stream/99-frontend/topic/testing/near/42",
     );
 
     message = {
@@ -185,33 +185,34 @@ run_test("test_by_conversation_and_time_uri", () => {
 
     assert.equal(
         hash_util.by_conversation_and_time_uri(message),
-        "https://example.com/#narrow/pm-with/15-pm/near/43",
+        "http://zulip.zulipdev.com/#narrow/pm-with/15-pm/near/43",
     );
 });
 
 run_test("test_search_public_streams_notice_url", () => {
-    function set_uri(uri) {
-        const operators = hash_util.parse_narrow(uri.split("/"));
-        narrow_state.set_current_filter(new Filter(operators));
+    function get_operators(uri) {
+        return hash_util.parse_narrow(uri.split("/"));
     }
 
-    set_uri("#narrow/search/abc");
-    assert.equal(hash_util.search_public_streams_notice_url(), "#narrow/streams/public/search/abc");
-
-    set_uri("#narrow/has/link/has/image/has/attachment");
     assert.equal(
-        hash_util.search_public_streams_notice_url(),
+        hash_util.search_public_streams_notice_url(get_operators("#narrow/search/abc")),
+        "#narrow/streams/public/search/abc",
+    );
+
+    assert.equal(
+        hash_util.search_public_streams_notice_url(
+            get_operators("#narrow/has/link/has/image/has/attachment"),
+        ),
         "#narrow/streams/public/has/link/has/image/has/attachment",
     );
 
-    set_uri("#narrow/sender/15");
     assert.equal(
-        hash_util.search_public_streams_notice_url(),
+        hash_util.search_public_streams_notice_url(get_operators("#narrow/sender/15")),
         "#narrow/streams/public/sender/15-hamlet",
     );
 });
 
 run_test("test_current_hash_as_next", () => {
     window.location.hash = "#foo";
-    assert.equal(hash_util.current_hash_as_next(), "next=/#foo");
+    assert.equal(hash_util.current_hash_as_next(), "next=/%23foo");
 });

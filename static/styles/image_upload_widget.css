@@ -24,9 +24,12 @@
     }
 
     .image-delete-button {
+        background: none;
+        border: none;
         cursor: pointer;
         color: hsl(0, 0%, 75%);
         opacity: 0;
+        padding: 3px 0;
         position: absolute;
         font-size: 2rem;
         top: 10px;
@@ -35,7 +38,9 @@
         line-height: 20px;
     }
 
+    .image-delete-button:focus,
     .image-delete-button:hover {
+        opacity: 1;
         color: hsl(0, 0%, 100%);
     }
 
@@ -87,10 +92,6 @@
     }
 
     &:hover {
-        .image-delete-button {
-            opacity: 1;
-        }
-
         .image-upload-text {
             visibility: visible;
         }
@@ -154,6 +155,7 @@
 #user-avatar-source {
     font-size: 1em;
     z-index: 99;
+
     a {
         position: relative;
         top: 10px;

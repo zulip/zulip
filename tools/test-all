@@ -46,7 +46,6 @@ echo
 
 # prep
 run ./tools/check-provision $FORCEARG
-run ./tools/clean-repo
 
 # ci/backend
 run ./tools/lint --groups=backend $FORCEARG

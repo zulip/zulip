@@ -12,6 +12,7 @@ import urllib
 from datetime import timedelta
 from mimetypes import guess_extension, guess_type
 from typing import IO, Any, Callable, Optional, Tuple
+from urllib.parse import urljoin
 
 import boto3
 import botocore
@@ -23,7 +24,7 @@ from django.core.signing import BadSignature, TimestampSigner
 from django.http import HttpRequest
 from django.urls import reverse
 from django.utils.translation import gettext as _
-from jinja2.utils import Markup as mark_safe
+from markupsafe import Markup as mark_safe
 from mypy_boto3_s3.client import S3Client
 from mypy_boto3_s3.service_resource import Bucket, Object
 from PIL import Image, ImageOps
@@ -32,8 +33,16 @@ from PIL.Image import DecompressionBombError
 
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Attachment, Message, Realm, RealmEmoji, UserProfile
+from zerver.models import (
+    Attachment,
+    Message,
+    Realm,
+    RealmEmoji,
+    UserProfile,
+    is_cross_realm_bot_email,
+)
 
 DEFAULT_AVATAR_SIZE = 100
 MEDIUM_AVATAR_SIZE = 500
@@ -94,8 +103,8 @@ def sanitize_name(value: str) -> str:
     * not stripping trailing dashes and underscores.
     """
     value = unicodedata.normalize("NFKC", value)
-    value = re.sub(r"[^\w\s.-]", "", value, flags=re.U).strip()
-    value = re.sub(r"[-\s]+", "-", value, flags=re.U)
+    value = re.sub(r"[^\w\s.-]", "", value).strip()
+    value = re.sub(r"[-\s]+", "-", value)
     assert value not in {"", ".", ".."}
     return mark_safe(value)
 
@@ -496,7 +505,9 @@ class S3UploadBackend(ZulipUploadBackend):
             file_data,
         )
 
-        create_attachment(uploaded_file_name, s3_file_name, user_profile, uploaded_file_size)
+        create_attachment(
+            uploaded_file_name, s3_file_name, user_profile, target_realm, uploaded_file_size
+        )
         return url
 
     def delete_message_image(self, path_id: str) -> bool:
@@ -575,10 +586,7 @@ class S3UploadBackend(ZulipUploadBackend):
 
     def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
         medium_suffix = "-medium.png" if medium else ""
-        public_url = self.get_public_upload_url(f"{hash_key}{medium_suffix}")
-
-        # ?x=x allows templates to append additional parameters with &s
-        return public_url + "?x=x"
+        return self.get_public_upload_url(f"{hash_key}{medium_suffix}")
 
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
         # export_path has a leading /
@@ -678,7 +686,7 @@ class S3UploadBackend(ZulipUploadBackend):
     def upload_emoji_image(
         self, emoji_file: IO[bytes], emoji_file_name: str, user_profile: UserProfile
     ) -> bool:
-        content_type = guess_type(emoji_file.name)[0]
+        content_type = guess_type(emoji_file_name)[0]
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=user_profile.realm_id,
             emoji_file_name=emoji_file_name,
@@ -718,8 +726,6 @@ class S3UploadBackend(ZulipUploadBackend):
 
     def get_emoji_url(self, emoji_file_name: str, realm_id: int, still: bool = False) -> str:
         if still:
-            # We currently only support animated GIFs.
-            assert emoji_file_name.endswith(".gif")
             emoji_path = RealmEmoji.STILL_PATH_ID_TEMPLATE.format(
                 realm_id=realm_id,
                 emoji_filename_without_extension=os.path.splitext(emoji_file_name)[0],
@@ -840,10 +846,13 @@ class LocalUploadBackend(ZulipUploadBackend):
         user_profile: UserProfile,
         target_realm: Optional[Realm] = None,
     ) -> str:
-        path = self.generate_message_upload_path(str(user_profile.realm_id), uploaded_file_name)
+        if target_realm is None:
+            target_realm = user_profile.realm
+
+        path = self.generate_message_upload_path(str(target_realm.id), uploaded_file_name)
 
         write_local_file("files", path, file_data)
-        create_attachment(uploaded_file_name, path, user_profile, uploaded_file_size)
+        create_attachment(uploaded_file_name, path, user_profile, target_realm, uploaded_file_size)
         return "/user_uploads/" + path
 
     def delete_message_image(self, path_id: str) -> bool:
@@ -878,9 +887,8 @@ class LocalUploadBackend(ZulipUploadBackend):
         delete_local_file("avatars", path_id + "-medium.png")
 
     def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
-        # ?x=x allows templates to append additional parameters with &s
         medium_suffix = "-medium" if medium else ""
-        return f"/user_avatars/{hash_key}{medium_suffix}.png?x=x"
+        return f"/user_avatars/{hash_key}{medium_suffix}.png"
 
     def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
         source_file_path = user_avatar_path(source_profile)
@@ -901,7 +909,6 @@ class LocalUploadBackend(ZulipUploadBackend):
         write_local_file(upload_path, "icon.png", resized_data)
 
     def get_realm_icon_url(self, realm_id: int, version: int) -> str:
-        # ?x=x allows templates to append additional parameters with &s
         return f"/user_avatars/{realm_id}/realm/icon.png?version={version}"
 
     def upload_realm_logo_image(
@@ -921,7 +928,6 @@ class LocalUploadBackend(ZulipUploadBackend):
         write_local_file(upload_path, resized_file, resized_data)
 
     def get_realm_logo_url(self, realm_id: int, version: int, night: bool) -> str:
-        # ?x=x allows templates to append additional parameters with &s
         if night:
             file_name = "night_logo.png"
         else:
@@ -974,8 +980,6 @@ class LocalUploadBackend(ZulipUploadBackend):
 
     def get_emoji_url(self, emoji_file_name: str, realm_id: int, still: bool = False) -> str:
         if still:
-            # We currently only support animated GIFs.
-            assert emoji_file_name.endswith(".gif")
             return os.path.join(
                 "/user_avatars",
                 RealmEmoji.STILL_PATH_ID_TEMPLATE.format(
@@ -1104,13 +1108,16 @@ def claim_attachment(
 
 
 def create_attachment(
-    file_name: str, path_id: str, user_profile: UserProfile, file_size: int
+    file_name: str, path_id: str, user_profile: UserProfile, realm: Realm, file_size: int
 ) -> bool:
+    assert (user_profile.realm_id == realm.id) or is_cross_realm_bot_email(
+        user_profile.delivery_email
+    )
     attachment = Attachment.objects.create(
         file_name=file_name,
         path_id=path_id,
         owner=user_profile,
-        realm=user_profile.realm,
+        realm=realm,
         size=file_size,
     )
     from zerver.lib.actions import notify_attachment_update
@@ -1138,3 +1145,52 @@ def upload_export_tarball(
 
 def delete_export_tarball(export_path: str) -> Optional[str]:
     return upload_backend.delete_export_tarball(export_path)
+
+
+def get_emoji_file_content(
+    session: OutgoingSession, emoji_url: str, emoji_id: int, logger: logging.Logger
+) -> bytes:  # nocoverage
+    original_emoji_url = emoji_url + ".original"
+
+    logger.info("Downloading %s", original_emoji_url)
+    response = session.get(original_emoji_url)
+    if response.status_code == 200:
+        assert type(response.content) == bytes
+        return response.content
+
+    logger.info("Error fetching emoji from URL %s", original_emoji_url)
+    logger.info("Trying %s instead", emoji_url)
+    response = session.get(emoji_url)
+    if response.status_code == 200:
+        assert type(response.content) == bytes
+        return response.content
+    logger.info("Error fetching emoji from URL %s", emoji_url)
+    logger.error("Could not fetch emoji %s", emoji_id)
+    raise AssertionError(f"Could not fetch emoji {emoji_id}")
+
+
+def handle_reupload_emojis_event(realm: Realm, logger: logging.Logger) -> None:  # nocoverage
+    from zerver.lib.emoji import get_emoji_url
+
+    session = OutgoingSession(role="reupload_emoji", timeout=3, max_retries=3)
+
+    query = RealmEmoji.objects.filter(realm=realm).order_by("id")
+
+    for realm_emoji in query:
+        logger.info("Processing emoji %s", realm_emoji.id)
+        emoji_filename = realm_emoji.file_name
+        emoji_url = get_emoji_url(emoji_filename, realm_emoji.realm_id)
+        if emoji_url.startswith("/"):
+            emoji_url = urljoin(realm_emoji.realm.uri, emoji_url)
+
+        emoji_file_content = get_emoji_file_content(session, emoji_url, realm_emoji.id, logger)
+
+        emoji_bytes_io = io.BytesIO(emoji_file_content)
+
+        user_profile = realm_emoji.author
+        # When this runs, emojis have already been migrated to always have .author set.
+        assert user_profile is not None
+
+        logger.info("Reuploading emoji %s", realm_emoji.id)
+        realm_emoji.is_animated = upload_emoji_image(emoji_bytes_io, emoji_filename, user_profile)
+        realm_emoji.save(update_fields=["is_animated"])

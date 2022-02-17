@@ -15,8 +15,6 @@ from sqlalchemy.sql import (
     ClauseElement,
     ColumnElement,
     Select,
-    Selectable,
-    alias,
     and_,
     column,
     func,
@@ -29,6 +27,7 @@ from sqlalchemy.sql import (
     table,
     union_all,
 )
+from sqlalchemy.sql.selectable import SelectBase
 from sqlalchemy.types import ARRAY, Boolean, Integer, Text
 
 from zerver.context_processors import get_valid_realm_from_request
@@ -119,7 +118,7 @@ def ts_locs_array(
     match_pos = func.sum(part_len, type_=Integer).over(rows=(None, -1)) + len(TS_STOP)
     match_len = func.strpos(part, TS_STOP, type_=Integer) - 1
     return func.array(
-        select([postgresql.array([match_pos, match_len])]).offset(1).scalar_subquery(),
+        select(postgresql.array([match_pos, match_len])).offset(1).scalar_subquery(),
         type_=ARRAY(Integer),
     )
 
@@ -508,15 +507,13 @@ class NarrowBuilder:
         query_extract_keywords = func.pgroonga_query_extract_keywords
         operand_escaped = func.escape_html(operand, type_=Text)
         keywords = query_extract_keywords(operand_escaped)
-        query = query.column(
+        query = query.add_columns(
             match_positions_character(column("rendered_content", Text), keywords).label(
                 "content_matches"
-            )
-        )
-        query = query.column(
+            ),
             match_positions_character(
                 func.escape_html(topic_column_sa(), type_=Text), keywords
-            ).label("topic_matches")
+            ).label("topic_matches"),
         )
         condition = column("search_pgroonga", Text).op("&@~")(operand_escaped)
         return query.where(maybe_negate(condition))
@@ -525,18 +522,16 @@ class NarrowBuilder:
         self, query: Select, operand: str, maybe_negate: ConditionTransform
     ) -> Select:
         tsquery = func.plainto_tsquery(literal("zulip.english_us_search"), literal(operand))
-        query = query.column(
+        query = query.add_columns(
             ts_locs_array(
                 literal("zulip.english_us_search", Text), column("rendered_content", Text), tsquery
-            ).label("content_matches")
-        )
-        # We HTML-escape the topic in PostgreSQL to avoid doing a server round-trip
-        query = query.column(
+            ).label("content_matches"),
+            # We HTML-escape the topic in PostgreSQL to avoid doing a server round-trip
             ts_locs_array(
                 literal("zulip.english_us_search", Text),
                 func.escape_html(topic_column_sa(), type_=Text),
                 tsquery,
-            ).label("topic_matches")
+            ).label("topic_matches"),
         )
 
         # Do quoted string matching.  We really want phrase
@@ -779,29 +774,33 @@ def get_base_query_for_search(
     # Handle the simple case where user_message isn't involved first.
     if not need_user_message:
         assert need_message
-        query = select([column("id", Integer).label("message_id")], None, table("zerver_message"))
+        query = select(column("id", Integer).label("message_id")).select_from(
+            table("zerver_message")
+        )
         inner_msg_id_col = literal_column("zerver_message.id", Integer)
         return (query, inner_msg_id_col)
 
     assert user_profile is not None
     if need_message:
-        query = select(
-            [column("message_id", Integer), column("flags", Integer)],
-            column("user_profile_id", Integer) == literal(user_profile.id),
-            join(
-                table("zerver_usermessage"),
-                table("zerver_message"),
-                literal_column("zerver_usermessage.message_id", Integer)
-                == literal_column("zerver_message.id", Integer),
-            ),
+        query = (
+            select(column("message_id", Integer), column("flags", Integer))
+            .where(column("user_profile_id", Integer) == literal(user_profile.id))
+            .select_from(
+                join(
+                    table("zerver_usermessage"),
+                    table("zerver_message"),
+                    literal_column("zerver_usermessage.message_id", Integer)
+                    == literal_column("zerver_message.id", Integer),
+                )
+            )
         )
         inner_msg_id_col = column("message_id", Integer)
         return (query, inner_msg_id_col)
 
-    query = select(
-        [column("message_id", Integer), column("flags", Integer)],
-        column("user_profile_id", Integer) == literal(user_profile.id),
-        table("zerver_usermessage"),
+    query = (
+        select(column("message_id", Integer), column("flags", Integer))
+        .where(column("user_profile_id", Integer) == literal(user_profile.id))
+        .select_from(table("zerver_usermessage"))
     )
     inner_msg_id_col = column("message_id", Integer)
     return (query, inner_msg_id_col)
@@ -835,7 +834,7 @@ def add_narrow_conditions(
 
     if search_operands:
         is_search = True
-        query = query.column(topic_column_sa()).column(column("rendered_content", Text))
+        query = query.add_columns(topic_column_sa(), column("rendered_content", Text))
         search_term = dict(
             operator="search",
             operand=" ".join(search_operands),
@@ -958,6 +957,7 @@ def get_messages_backend(
             )
         )
 
+    realm = get_valid_realm_from_request(request)
     if not maybe_user_profile.is_authenticated:
         # If user is not authenticated, clients must include
         # `streams:web-public` in their narrow query to indicate this
@@ -969,13 +969,14 @@ def get_messages_backend(
         # GetOldMessagesTest.test_unauthenticated_* tests ensure
         # that we are not leaking any secure data (private messages and
         # non web-public-stream messages) via this path.
+        if not realm.allow_web_public_streams_access():
+            raise MissingAuthenticationError()
         if not is_web_public_narrow(narrow):
             raise MissingAuthenticationError()
         assert narrow is not None
         if not is_spectator_compatible(narrow):
             raise MissingAuthenticationError()
 
-        realm = get_valid_realm_from_request(request)
         # We use None to indicate unauthenticated requests as it's more
         # readable than using AnonymousUser, and the lack of Django
         # stubs means that mypy can't check AnonymousUser well.
@@ -985,7 +986,6 @@ def get_messages_backend(
         assert isinstance(maybe_user_profile, UserProfile)
         user_profile = maybe_user_profile
         assert user_profile is not None
-        realm = user_profile.realm
         is_web_public_query = False
 
     assert realm is not None
@@ -1020,7 +1020,7 @@ def get_messages_backend(
         need_message = True
         need_user_message = True
 
-    query: Selectable
+    query: SelectBase
     query, inner_msg_id_col = get_base_query_for_search(
         user_profile=user_profile,
         need_message=need_message,
@@ -1048,42 +1048,45 @@ def get_messages_backend(
         assert log_data is not None
         log_data["extra"] = "[{}]".format(",".join(verbose_operators))
 
-    sa_conn = get_sqlalchemy_connection()
+    with get_sqlalchemy_connection() as sa_conn:
+        if anchor is None:
+            # `anchor=None` corresponds to the anchor="first_unread" parameter.
+            anchor = find_first_unread_anchor(
+                sa_conn,
+                user_profile,
+                narrow,
+            )
 
-    if anchor is None:
-        # `anchor=None` corresponds to the anchor="first_unread" parameter.
-        anchor = find_first_unread_anchor(
-            sa_conn,
-            user_profile,
-            narrow,
+        anchored_to_left = anchor == 0
+
+        # Set value that will be used to short circuit the after_query
+        # altogether and avoid needless conditions in the before_query.
+        anchored_to_right = anchor >= LARGER_THAN_MAX_MESSAGE_ID
+        if anchored_to_right:
+            num_after = 0
+
+        first_visible_message_id = get_first_visible_message_id(realm)
+
+        query = limit_query_to_range(
+            query=query,
+            num_before=num_before,
+            num_after=num_after,
+            anchor=anchor,
+            anchored_to_left=anchored_to_left,
+            anchored_to_right=anchored_to_right,
+            id_col=inner_msg_id_col,
+            first_visible_message_id=first_visible_message_id,
         )
 
-    anchored_to_left = anchor == 0
-
-    # Set value that will be used to short circuit the after_query
-    # altogether and avoid needless conditions in the before_query.
-    anchored_to_right = anchor >= LARGER_THAN_MAX_MESSAGE_ID
-    if anchored_to_right:
-        num_after = 0
-
-    first_visible_message_id = get_first_visible_message_id(realm)
-
-    query = limit_query_to_range(
-        query=query,
-        num_before=num_before,
-        num_after=num_after,
-        anchor=anchor,
-        anchored_to_left=anchored_to_left,
-        anchored_to_right=anchored_to_right,
-        id_col=inner_msg_id_col,
-        first_visible_message_id=first_visible_message_id,
-    )
-
-    main_query = alias(query)
-    query = select(main_query.c, None, main_query).order_by(column("message_id", Integer).asc())
-    # This is a hack to tag the query we use for testing
-    query = query.prefix_with("/* get_messages */")
-    rows = list(sa_conn.execute(query).fetchall())
+        main_query = query.subquery()
+        query = (
+            select(*main_query.c)
+            .select_from(main_query)
+            .order_by(column("message_id", Integer).asc())
+        )
+        # This is a hack to tag the query we use for testing
+        query = query.prefix_with("/* get_messages */")
+        rows = list(sa_conn.execute(query).fetchall())
 
     query_info = post_process_limited_query(
         rows=rows,
@@ -1167,7 +1170,7 @@ def get_messages_backend(
         history_limited=query_info["history_limited"],
         anchor=anchor,
     )
-    return json_success(ret)
+    return json_success(request, data=ret)
 
 
 def limit_query_to_range(
@@ -1179,7 +1182,7 @@ def limit_query_to_range(
     anchored_to_right: bool,
     id_col: "ColumnElement[Integer]",
     first_visible_message_id: int,
-) -> Selectable:
+) -> SelectBase:
     """
     This code is actually generic enough that we could move it to a
     library, but our only caller for now is message search.
@@ -1332,18 +1335,22 @@ def messages_in_narrow_backend(
     msg_ids = [message_id for message_id in msg_ids if message_id >= first_visible_message_id]
     # This query is limited to messages the user has access to because they
     # actually received them, as reflected in `zerver_usermessage`.
-    query = select(
-        [column("message_id", Integer), topic_column_sa(), column("rendered_content", Text)],
-        and_(
-            column("user_profile_id", Integer) == literal(user_profile.id),
-            column("message_id", Integer).in_(msg_ids),
-        ),
-        join(
-            table("zerver_usermessage"),
-            table("zerver_message"),
-            literal_column("zerver_usermessage.message_id", Integer)
-            == literal_column("zerver_message.id", Integer),
-        ),
+    query = (
+        select(column("message_id", Integer), topic_column_sa(), column("rendered_content", Text))
+        .where(
+            and_(
+                column("user_profile_id", Integer) == literal(user_profile.id),
+                column("message_id", Integer).in_(msg_ids),
+            )
+        )
+        .select_from(
+            join(
+                table("zerver_usermessage"),
+                table("zerver_message"),
+                literal_column("zerver_usermessage.message_id", Integer)
+                == literal_column("zerver_message.id", Integer),
+            )
+        )
     )
 
     builder = NarrowBuilder(user_profile, column("message_id", Integer), user_profile.realm)
@@ -1351,24 +1358,22 @@ def messages_in_narrow_backend(
         for term in narrow:
             query = builder.add_term(query, term)
 
-    sa_conn = get_sqlalchemy_connection()
-    query_result = list(sa_conn.execute(query).fetchall())
-
     search_fields = {}
-    for row in query_result:
-        message_id = row["message_id"]
-        topic_name = row[DB_TOPIC_NAME]
-        rendered_content = row["rendered_content"]
-        if "content_matches" in row:
-            content_matches = row["content_matches"]
-            topic_matches = row["topic_matches"]
-        else:
-            content_matches = topic_matches = []
-        search_fields[str(message_id)] = get_search_fields(
-            rendered_content,
-            topic_name,
-            content_matches,
-            topic_matches,
-        )
+    with get_sqlalchemy_connection() as sa_conn:
+        for row in sa_conn.execute(query).fetchall():
+            message_id = row._mapping["message_id"]
+            topic_name = row._mapping[DB_TOPIC_NAME]
+            rendered_content = row._mapping["rendered_content"]
+            if "content_matches" in row._mapping:
+                content_matches = row._mapping["content_matches"]
+                topic_matches = row._mapping["topic_matches"]
+            else:
+                content_matches = topic_matches = []
+            search_fields[str(message_id)] = get_search_fields(
+                rendered_content,
+                topic_name,
+                content_matches,
+                topic_matches,
+            )
 
-    return json_success({"messages": search_fields})
+    return json_success(request, data={"messages": search_fields})

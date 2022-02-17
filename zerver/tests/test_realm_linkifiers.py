@@ -1,7 +1,9 @@
 import re
 
+from django.core.exceptions import ValidationError
+
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import RealmFilter
+from zerver.models import RealmFilter, filter_format_validator
 
 
 class RealmFilterTest(ZulipTestCase):
@@ -43,7 +45,9 @@ class RealmFilterTest(ZulipTestCase):
         data["pattern"] = r"ZUL-(?P<id>\d+)"
         data["url_format_string"] = "https://realm.com/my_realm_filter/"
         result = self.client_post("/json/realm/filters", info=data)
-        self.assert_json_error(result, "Invalid URL format string.")
+        self.assert_json_error(
+            result, "Group 'id' in linkifier pattern is not present in URL format string."
+        )
 
         data["url_format_string"] = "https://realm.com/my_realm_filter/#hashtag/%(id)s"
         result = self.client_post("/json/realm/filters", info=data)
@@ -117,13 +121,15 @@ class RealmFilterTest(ZulipTestCase):
             result, "Group 'id' in linkifier pattern is not present in URL format string."
         )
 
-        # BUG: In theory, this should be valid, since %% should be a
-        # valid escaping method. It's unlikely someone actually wants
-        # to do this, though.
-        data["pattern"] = r"ZUL-(?P<id>\d+)"
+        data["pattern"] = r"ZUL-ESCAPE-(?P<id>\d+)"
         data["url_format_string"] = r"https://realm.com/my_realm_filter/%%(ignored)s/%(id)s"
         result = self.client_post("/json/realm/filters", info=data)
-        self.assert_json_error(result, "Invalid URL format string.")
+        self.assert_json_success(result)
+
+        data["pattern"] = r"ZUL-URI-(?P<id>\d+)"
+        data["url_format_string"] = "https://example.com/%ba/%(id)s"
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
 
         data["pattern"] = r"(?P<org>[a-zA-Z0-9_-]+)/(?P<repo>[a-zA-Z0-9_-]+)#(?P<id>[0-9]+)"
         data["url_format_string"] = "https://github.com/%(org)s/%(repo)s/issue/%(id)s"
@@ -200,3 +206,46 @@ class RealmFilterTest(ZulipTestCase):
         data["url_format_string"] = "https://realm.com/my_realm_filter/%(id)s"
         result = self.client_patch(f"/json/realm/filters/{linkifier_id + 1}", info=data)
         self.assert_json_error(result, "Linkifier not found.")
+
+    def test_valid_urls(self) -> None:
+        valid_urls = [
+            "http://example.com/",
+            "https://example.com/",
+            "https://user:password@example.com/",
+            "https://example.com/@user/thing",
+            "https://example.com/!path",
+            "https://example.com/foo.bar",
+            "https://example.com/foo[bar]",
+            "https://example.com/%(foo)s",
+            "https://example.com/%(foo)s%(bars)s",
+            "https://example.com/%(foo)s/and/%(bar)s",
+            "https://example.com/?foo=%(foo)s",
+            "https://example.com/%ab",
+            "https://example.com/%ba",
+            "https://example.com/%21",
+            "https://example.com/words%20with%20spaces",
+            "https://example.com/back%20to%20%(back)s",
+            "https://example.com/encoded%2fwith%2fletters",
+            "https://example.com/encoded%2Fwith%2Fupper%2Fcase%2Fletters",
+            "https://example.com/%%",
+            "https://example.com/%%(",
+            "https://example.com/%%()",
+            "https://example.com/%%(foo",
+            "https://example.com/%%(foo)",
+            "https://example.com/%%(foo)s",
+        ]
+        for url in valid_urls:
+            filter_format_validator(url)
+
+        invalid_urls = [
+            "file:///etc/passwd",
+            "data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==",
+            "https://example.com/%(foo)",
+            "https://example.com/%()s",
+            "https://example.com/%4!",
+            "https://example.com/%(foo",
+            "https://example.com/%2(foo)s",
+        ]
+        for url in invalid_urls:
+            with self.assertRaises(ValidationError):
+                filter_format_validator(url)

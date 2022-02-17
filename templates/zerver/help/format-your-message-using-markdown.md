@@ -17,8 +17,9 @@ to allow you to easily format your messages.
 * [Emoji and emoticons](#emoji-and-emoticons)
 * [Mentions](#mentions)
 * [Status messages](#status-messages)
-* [Mention a time](#mention-a-time)
+* [Global times](#global-times)
 * [Tables](#tables)
+* [To-do lists](#to-do-lists)
 * [Paragraphs and lines](#paragraphs-and-lines)
 
 ## Emphasis
@@ -205,7 +206,7 @@ the variant that only contains the user ID).
 
 ![Markdown status](/static/images/help/markdown-status.png)
 
-## Mention a time
+## Global times
 
 When collaborating with people in another timezone, you often need to
 express a specific time clearly. Rather than typing out your timezone
@@ -244,6 +245,19 @@ The header separators (`---`) must be at least three dashes long.
 ```
 
 ![Markdown table](/static/images/help/markdown-table.png)
+
+## To-do lists
+
+Sending a message with the text `/todo` creates a simple collaborative
+to-do list. Any user who can access the message can add tasks by
+entering the task's title and description and clicking "Add task". Once
+created, task titles and descriptions cannot be edited.
+
+Tasks can be marked (and unmarked) as completed by clicking the
+checkboxes on the left.
+
+![Markdown todo-lists](/static/images/help/markdown-todo.png)
+
 
 ## Paragraphs and lines
 

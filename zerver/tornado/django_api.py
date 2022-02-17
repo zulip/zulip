@@ -7,7 +7,7 @@ import requests
 from django.conf import settings
 from requests.adapters import ConnectionError, HTTPAdapter
 from requests.models import PreparedRequest, Response
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util import Retry
 
 from zerver.lib.queue import queue_json_publish
 from zerver.models import Client, Realm, UserProfile
@@ -18,8 +18,8 @@ class TornadoAdapter(HTTPAdapter):
     def __init__(self) -> None:
         # All of the POST requests we make to Tornado are safe to
         # retry; allow retries of them, which is not the default.
-        retry_methods = Retry.DEFAULT_METHOD_WHITELIST | {"POST"}
-        retry = Retry(total=3, backoff_factor=1, method_whitelist=retry_methods)
+        retry_methods = Retry.DEFAULT_ALLOWED_METHODS | {"POST"}
+        retry = Retry(total=3, backoff_factor=1, allowed_methods=retry_methods)
         super().__init__(max_retries=retry)
 
     def send(

@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-set -e
+set -eu
+set -o pipefail
 
-SERVER=$1
-ROLES=$2
-BRANCH=$3
+SERVER=${1:-}
+ROLES=${2:-}
+BRANCH=${3:-}
 if [ -z "$SERVER" ] || [ -z "$ROLES" ]; then
     echo "USAGE: $0 server roles [branch]"
     echo
@@ -54,8 +55,10 @@ AWS_ZONE_ID=$(lookup zone_id)
 SECURITY_GROUPS=$(lookup security_groups)
 AMI_ID=$(lookup image_id)
 INSTANCE_TYPE=$(lookup instance_type)
+IAM_PROFILE=$(lookup iam_profile)
 SSH_SECRET_ID=$(lookup ssh_secret_id)
-AUTO_SCALING_GROUP=$(lookup auto_scaling_group || true)
+AZ=$(lookup availability_zone)
+DISK_SIZE=$(lookup disk_size)
 
 # Verify it doesn't exist already
 ZONE_NAME=$($AWS route53 get-hosted-zone --id "$AWS_ZONE_ID" | jq -r '.HostedZone.Name')
@@ -69,31 +72,17 @@ if [ "$EXISTING_RECORDS" != "0" ]; then
     exit 1
 fi
 
-# Find the ASG, if there is one
-EXTRA_ARGS=()
-if [ -n "$AUTO_SCALING_GROUP" ]; then
-    ASG_DESC=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names "$AUTO_SCALING_GROUP" | jq '.AutoScalingGroups[0]')
-    LAUNCH_TEMPLATE=$(echo "$ASG_DESC" | jq '.LaunchTemplate | {Version, LaunchTemplateId}')
-    # We have to move things _into_ the ASG after we create them, but
-    # can only do so if they're in one of the AZ's that the ASG is
-    # for.  Choose the AZ that is least-full.
-    POSSIBLE_AZS=$(echo "$ASG_DESC" | jq -r ".AvailabilityZones[]")
-    CURRENT_AZS=$(echo "$ASG_DESC" | jq -r '.Instances[] | .AvailabilityZone')
-    CHOSEN_AZ=$(echo -e "$POSSIBLE_AZS\n$CURRENT_AZS" | sort | uniq -c | sort -n | head -n1 | awk '{print $2}')
-
-    EXTRA_ARGS+=(
-        --launch-template "$LAUNCH_TEMPLATE"
-        --placement "AvailabilityZone=$CHOSEN_AZ"
-    )
-else
-    EXTRA_ARGS+=(
-        --iam-instance-profile "Name=\"EC2ProdInstance\""
-        --image-id "$AMI_ID"
-        --instance-type "$INSTANCE_TYPE"
-        --security-group-ids "$SECURITY_GROUPS"
-        --monitoring Enabled=true
-    )
-fi
+# https://docs.aws.amazon.com/cli/latest/reference/ec2/run-instances.html
+# shellcheck disable=SC2206  # We intentionally split $SECURITY_GROUPS
+EXTRA_ARGS+=(
+    --iam-instance-profile "Name=\"$IAM_PROFILE\""
+    --image-id "$AMI_ID"
+    --instance-type "$INSTANCE_TYPE"
+    --security-group-ids $SECURITY_GROUPS
+    --monitoring Enabled=true
+    --placement "AvailabilityZone=$AZ"
+    --block-device-mappings "DeviceName=/dev/sda1,Ebs={VolumeSize=$DISK_SIZE,VolumeType=gp3,Throughput=125,Iops=3000,Encrypted=true}"
+)
 
 # Build up the provisioning script
 BOOTDATA=$(mktemp)
@@ -144,13 +133,6 @@ cat >"$ROUTE53_CHANGES" <<EOF
 EOF
 $AWS route53 change-resource-record-sets --hosted-zone-id "$AWS_ZONE_ID" --change-batch "file://$ROUTE53_CHANGES"
 rm "$ROUTE53_CHANGES"
-
-# Attach to the ASG
-if [ -n "$AUTO_SCALING_GROUP" ]; then
-    # We need to wait for it to be "running" first
-    aws ec2 wait instance-running --instance-ids "$INSTANCEID"
-    aws autoscaling attach-instances --instance-ids "$INSTANCEID" --auto-scaling-group-name "$AUTO_SCALING_GROUP"
-fi
 
 set +x
 echo

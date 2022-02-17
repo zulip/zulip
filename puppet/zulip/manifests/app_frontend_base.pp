@@ -6,7 +6,7 @@ class zulip::app_frontend_base {
   include zulip::supervisor
   include zulip::tornado_sharding
 
-  if $::osfamily == 'debian' {
+  if $::os['family'] == 'Debian' {
     # Upgrade and other tooling wants to be able to get a database
     # shell.  This is not necessary on CentOS because the PostgreSQL
     # package already includes the client.  This may get us a more
@@ -73,7 +73,7 @@ class zulip::app_frontend_base {
   # multiprocess.  Multiprocess scales much better, but requires more
   # RAM; we just auto-detect based on available system RAM.
   $queues_multiprocess_default = $zulip::common::total_memory_mb > 3500
-  $queues_multiprocess = Boolean(zulipconf('application_server', 'queue_workers_multiprocess', $queues_multiprocess_default))
+  $queues_multiprocess = zulipconf('application_server', 'queue_workers_multiprocess', $queues_multiprocess_default)
   $queues = [
     'deferred_work',
     'digest_emails',
@@ -96,8 +96,14 @@ class zulip::app_frontend_base {
     $uwsgi_default_processes = 4
   }
   $tornado_ports = $zulip::tornado_sharding::tornado_ports
-  $proxy_host = zulipconf('http_proxy', 'host', '')
-  $proxy_port = zulipconf('http_proxy', 'port', '')
+
+  $proxy_host = zulipconf('http_proxy', 'host', 'localhost')
+  $proxy_port = zulipconf('http_proxy', 'port', '4750')
+
+  if ($proxy_host in ['localhost', '127.0.0.1', '::1']) and ($proxy_port == '4750') {
+    include zulip::smokescreen
+  }
+
   if $proxy_host != '' and $proxy_port != '' {
     $proxy = "http://${proxy_host}:${proxy_port}"
   } else {
@@ -113,6 +119,12 @@ class zulip::app_frontend_base {
     notify  => Service[$zulip::common::supervisor_service],
   }
 
+  $uwsgi_rolling_restart = zulipconf('application_server', 'rolling_restart', '')
+  if $uwsgi_rolling_restart == '' {
+    file { '/home/zulip/deployments/uwsgi-control':
+      ensure => absent,
+    }
+  }
   $uwsgi_listen_backlog_limit = zulipconf('application_server', 'uwsgi_listen_backlog_limit', 128)
   $uwsgi_buffer_size = zulipconf('application_server', 'uwsgi_buffer_size', 8192)
   $uwsgi_processes = zulipconf('application_server', 'uwsgi_processes', $uwsgi_default_processes)
@@ -198,5 +210,14 @@ class zulip::app_frontend_base {
     group   => 'root',
     mode    => '0755',
     source  => 'puppet:///modules/zulip/nagios_plugins/zulip_app_frontend',
+  }
+
+  # This cron job does nothing unless RATE_LIMIT_TOR_TOGETHER is enabled.
+  file { '/etc/cron.d/fetch-tor-exit-nodes':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'puppet:///modules/zulip/cron.d/fetch-tor-exit-nodes',
   }
 }

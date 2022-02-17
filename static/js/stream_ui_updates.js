@@ -2,12 +2,12 @@ import $ from "jquery";
 
 import render_stream_permission_description from "../templates/stream_settings/stream_permission_description.hbs";
 
+import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
-import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
-import * as peer_data from "./peer_data";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
+import * as stream_settings_containers from "./stream_settings_containers";
 import * as stream_settings_ui from "./stream_settings_ui";
 
 export function initialize_disable_btn_hint_popover(
@@ -40,7 +40,9 @@ export function initialize_disable_btn_hint_popover(
 }
 
 export function initialize_cant_subscribe_popover(sub) {
-    const button_wrapper = stream_edit.settings_for_sub(sub).find(".sub_unsub_button_wrapper");
+    const button_wrapper = stream_settings_containers
+        .get_edit_container(sub)
+        .find(".sub_unsub_button_wrapper");
     const settings_button = stream_settings_ui.settings_button_for_sub(sub);
     initialize_disable_btn_hint_popover(
         button_wrapper,
@@ -51,7 +53,7 @@ export function initialize_cant_subscribe_popover(sub) {
 }
 
 export function update_toggler_for_sub(sub) {
-    if (!stream_edit.is_sub_settings_active(sub)) {
+    if (!hash_util.is_editing_stream(sub.stream_id)) {
         return;
     }
     if (sub.subscribed) {
@@ -91,7 +93,7 @@ export function update_settings_button_for_sub(sub) {
 
 export function update_regular_sub_settings(sub) {
     // These are in the right panel.
-    if (!stream_edit.is_sub_settings_active(sub)) {
+    if (!hash_util.is_editing_stream(sub.stream_id)) {
         return;
     }
     const $settings = $(`.subscription_settings[data-stream-id='${CSS.escape(sub.stream_id)}']`);
@@ -122,7 +124,7 @@ export function update_change_stream_privacy_settings(sub) {
 
 export function update_notification_setting_checkbox(notification_name) {
     // This is in the right panel (Personal settings).
-    const stream_row = $("#subscriptions_table .stream-row.active");
+    const stream_row = $("#manage_streams_container .stream-row.active");
     if (!stream_row.length) {
         return;
     }
@@ -152,66 +154,36 @@ export function update_stream_row_in_settings_tab(sub) {
 
 export function update_stream_subscription_type_text(sub) {
     // This is in the right panel.
-    const stream_settings = stream_edit.settings_for_sub(sub);
+    const stream_settings = stream_settings_containers.get_edit_container(sub);
     const template_data = {
         ...sub,
         stream_post_policy_values: stream_data.stream_post_policy_values,
         message_retention_text: stream_edit.get_retention_policy_text_for_subscription_type(sub),
     };
     const html = render_stream_permission_description(template_data);
-    if (stream_edit.is_sub_settings_active(sub)) {
+    if (hash_util.is_editing_stream(sub.stream_id)) {
         stream_settings.find(".subscription-type-text").expectOne().html(html);
     }
 }
 
-export function update_subscribers_list(sub) {
-    // This is for the "Stream membership" section of the right panel.
-    // Render subscriptions only if stream settings is open
-    if (!stream_edit.is_sub_settings_active(sub)) {
-        return;
-    }
-
-    if (!stream_data.can_view_subscribers(sub)) {
-        $(".subscriber_list_settings_container").hide();
-    } else {
-        const subscribers = peer_data.get_subscribers(sub.stream_id);
-        const users = stream_edit.get_users_from_subscribers(subscribers);
-
-        /*
-            We try to find a subscribers list that is already in the
-            cache that list_widget.js maintains.  The list we are
-            looking for would have been created in the function
-            stream_edit.show_subscription_settings, using the same
-            naming scheme as below for the `name` parameter.
-        */
-        const subscribers_list = ListWidget.get("stream_subscribers/" + sub.stream_id);
-
-        // Changing the data clears the rendered list and the list needs to be re-rendered.
-        // Perform re-rendering only when the stream settings form of the corresponding
-        // stream is open.
-        if (subscribers_list) {
-            stream_edit.sort_but_pin_current_user_on_top(users);
-            subscribers_list.replace_list_data(users);
-        }
-        $(".subscriber_list_settings_container").show();
-    }
-}
-
 export function update_add_subscriptions_elements(sub) {
-    if (!stream_edit.is_sub_settings_active(sub)) {
+    if (!hash_util.is_editing_stream(sub.stream_id)) {
         return;
     }
+
+    // We are only concerned with the Subscribers tab for editing streams.
+    const add_subscribers_container = $(".edit_subscribers_for_stream .add_subscribers_container");
 
     if (page_params.is_guest || page_params.realm_is_zephyr_mirror_realm) {
         // For guest users, we just hide the add_subscribers feature.
-        $(".add_subscribers_container").hide();
+        add_subscribers_container.hide();
         return;
     }
 
     // Otherwise, we adjust whether the widgets are disabled based on
     // whether this user is authorized to add subscribers.
-    const input_element = $(".add_subscribers_container").find(".input").expectOne();
-    const button_element = $(".add_subscribers_container")
+    const input_element = add_subscribers_container.find(".input").expectOne();
+    const button_element = add_subscribers_container
         .find('button[name="add_subscriber"]')
         .expectOne();
     const allow_user_to_add_subs = sub.can_add_subscribers;
@@ -220,13 +192,13 @@ export function update_add_subscriptions_elements(sub) {
         input_element.prop("disabled", false);
         button_element.prop("disabled", false);
         button_element.css("pointer-events", "");
-        $(".add_subscribers_container input").popover("destroy");
+        input_element.popover("destroy");
     } else {
         input_element.prop("disabled", true);
         button_element.prop("disabled", true);
 
         initialize_disable_btn_hint_popover(
-            $(".add_subscribers_container"),
+            add_subscribers_container,
             input_element,
             button_element,
             $t({defaultMessage: "Only stream members can add users to a private stream"}),

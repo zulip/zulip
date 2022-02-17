@@ -25,6 +25,7 @@ const bogus_item = {
     email: "bogus@example.com",
     type: "user",
     display_value: "bogus@example.com",
+    // status_emoji_info: undefined,
 };
 
 const isaac_item = {
@@ -33,7 +34,8 @@ const isaac_item = {
     type: "user",
     user_id: isaac.user_id,
     deactivated: false,
-    img_src: `/avatar/${isaac.user_id}&s=50`,
+    img_src: `http://zulip.zulipdev.com/avatar/${isaac.user_id}?s=50`,
+    status_emoji_info: undefined,
 };
 
 let pill_widget = {};

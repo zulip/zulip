@@ -1,5 +1,5 @@
 {% trans -%}
-Hi {{ user_name }},
+Hi,
 {%- endtrans %}
 
 

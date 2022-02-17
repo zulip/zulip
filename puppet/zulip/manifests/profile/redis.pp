@@ -1,11 +1,11 @@
 class zulip::profile::redis {
   include zulip::profile::base
-  case $::osfamily {
-    'debian': {
+  case $::os['family'] {
+    'Debian': {
       $redis = 'redis-server'
       $redis_dir = '/etc/redis'
     }
-    'redhat': {
+    'RedHat': {
       $redis = 'redis'
       $redis_dir = '/etc'
     }
@@ -60,9 +60,19 @@ class zulip::profile::redis {
     content => template('zulip/zulip-redis.template.erb'),
   }
 
+  file { '/run/redis':
+    ensure  => 'directory',
+    owner   => 'redis',
+    group   => 'redis',
+    mode    => '0755',
+    require => Package[$redis],
+  }
   service { $redis:
     ensure    => running,
-    subscribe => [File[$zulip_redisconf],
-                  Exec['redis']],
+    require   => File['/run/redis'],
+    subscribe => [
+      File[$zulip_redisconf],
+      Exec['redis'],
+    ],
   }
 }

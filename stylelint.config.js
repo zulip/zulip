@@ -4,7 +4,7 @@ module.exports = {
     extends: ["stylelint-config-standard", "stylelint-config-prettier"],
     rules: {
         // Add some exceptions for recommended rules
-        "at-rule-no-unknown": [true, {ignoreAtRules: ["extend"]}],
+        "at-rule-no-unknown": [true, {ignoreAtRules: ["extend", "define-mixin", "mixin"]}],
         "font-family-no-missing-generic-family-keyword": [
             true,
             {ignoreFontFamilies: ["FontAwesome"]},
@@ -16,9 +16,14 @@ module.exports = {
         // Disable standard rules we don't comply with yet
         "comment-empty-line-before": null,
         "declaration-empty-line-before": null,
+        "keyframes-name-pattern": null,
+        "selector-class-pattern": null,
+        "selector-id-pattern": null,
 
-        // Additional stylistic rules
-        "font-family-name-quotes": "always-where-recommended",
+        // Compatibility with older browsers
+        "alpha-value-notation": "number",
+        "color-function-notation": "legacy",
+        "hue-degree-notation": "number",
 
         // Limit language features
         "color-no-hex": true,
@@ -40,12 +45,5 @@ module.exports = {
         "function-url-scheme-allowed-list": [
             "data", // Allow data URIs
         ],
-
-        // We use autoprefixer to generate vendor prefixes
-        "at-rule-no-vendor-prefix": true,
-        "media-feature-name-no-vendor-prefix": true,
-        "property-no-vendor-prefix": true,
-        "selector-no-vendor-prefix": true,
-        "value-no-vendor-prefix": true,
     },
 };

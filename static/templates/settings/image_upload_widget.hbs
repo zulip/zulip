@@ -1,9 +1,9 @@
 <div id ="{{widget}}-upload-widget" class="inline-block image_upload_widget">
     <div class="image_upload_button {{#unless is_editable_by_current_user}}hide{{/unless}}">
         <div class="image-upload-background"></div>
-        <span class="image-delete-button" aria-label="{{ delete_text }}" role="button" tabindex="0">
+        <button class="image-delete-button" aria-label="{{ delete_text }}" role="button" tabindex="0">
             &times;
-        </span>
+        </button>
         <span class="image-delete-text" aria-label="{{ delete_text }}" tabindex="0">
             {{ delete_text }}
         </span>

@@ -7,7 +7,7 @@ from zerver.models import Realm
 
 
 def get_realm_logo_source(realm: Realm, night: bool) -> str:
-    if realm.plan_type == Realm.LIMITED:
+    if realm.plan_type == Realm.PLAN_TYPE_LIMITED:
         return Realm.LOGO_DEFAULT
     if night:
         return realm.night_logo_source

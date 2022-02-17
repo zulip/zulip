@@ -73,7 +73,7 @@ function update_last_full_update(end_times) {
         return;
     }
 
-    last_full_update = Math.min(last_full_update, end_times[end_times.length - 1]);
+    last_full_update = Math.min(last_full_update, end_times.at(-1));
     const update_time = new Date(last_full_update * 1000);
     const locale_date = update_time.toLocaleDateString("en-US", {
         year: "numeric",
@@ -253,7 +253,7 @@ function populate_messages_sent_over_time(data) {
             dates,
             values,
             last_value_is_partial: !is_boundary(
-                new Date(start_dates[start_dates.length - 1].getTime() + 60 * 60 * 1000),
+                new Date(start_dates.at(-1).getTime() + 60 * 60 * 1000),
             ),
         };
     }
@@ -386,7 +386,7 @@ function compute_summary_chart_data(time_series_data, num_steps, labels_) {
         }
         let sum = 0;
         for (let i = 1; i <= num_steps; i += 1) {
-            sum += array[array.length - i];
+            sum += array.at(-i);
         }
         data.set(key, sum);
     }
@@ -593,7 +593,7 @@ function populate_messages_sent_by_message_type(data) {
         for (let i = 0; i < plot_data.labels.length; i += 1) {
             labels.push(plot_data.labels[i] + " (" + plot_data.percentages[i] + ")");
         }
-        const total_string = plot_data.total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        const total_string = plot_data.total.toLocaleString();
         return {
             trace: {
                 values: plot_data.values,
@@ -939,7 +939,7 @@ function populate_messages_read_over_time(data) {
             dates,
             values,
             last_value_is_partial: !is_boundary(
-                new Date(start_dates[start_dates.length - 1].getTime() + 60 * 60 * 1000),
+                new Date(start_dates.at(-1).getTime() + 60 * 60 * 1000),
             ),
         };
     }

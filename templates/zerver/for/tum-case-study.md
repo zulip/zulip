@@ -15,7 +15,7 @@ communication with students, and among the 30-50 person course staff.
 
 [Tobias Lasser](https://ciip.in.tum.de/people/lasser.html), lecturer
 at the TUM Department of Informatics, set out to teach an introductory
-algorithms class with 1400 students in April 2020, as the Covid-19
+algorithms class with 1400 students in April 2020, as the COVID-19
 pandemic was sweeping across Europe. With instruction moving online,
 he knew that finding an effective communication platform was more
 important than ever.
@@ -63,7 +63,7 @@ self-hosted to comply with European laws about protecting student
 data,” Robert says. “Zulip has been extremely stable and requires no
 maintenance beyond installing updates.”
 
-When questions arise, Robert stops by the Zulip developer community to ask for
+When questions arise, Robert stops by the Zulip development community to ask for
 advice. “Right before exams, we had over 1000 students online at once, and I
 was worried that the CPU usage was high. The community investigated my
 problem immediately, and a couple of days later they [shared a patch]
@@ -84,6 +84,6 @@ and [research](/for/research)!
 
 
 [tum-ranking]: https://www.in.tum.de/en/the-department/profile-of-the-department/facts-figures/facts-and-figures-2020/
-[chat-zulip-org]: /developer-community/
+[chat-zulip-org]: /development-community/
 [czo-patch-thread]: https://chat.zulip.org/#narrow/stream/3-backend/topic/Tornado.20performance/near/1111686
 [zulip-4-blog]: https://blog.zulip.com/2021/05/13/zulip-4-0-released/

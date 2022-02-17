@@ -29,6 +29,7 @@
     "object": "price",
     "product": "prod_NORMALIZED0004",
     "recurring": null,
+    "tax_behavior": "unspecified",
     "tiers_mode": null,
     "transform_quantity": null,
     "type": "one_time",

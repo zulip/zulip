@@ -35,7 +35,7 @@ or JSON (data for Zulip clients on all platforms, custom bots, and
 integrations).
 
 The format of the URL patterns in Django is [documented
-here](https://docs.djangoproject.com/en/1.8/topics/http/urls/), and
+here](https://docs.djangoproject.com/en/3.2/topics/http/urls/), and
 the Zulip specific details for these are discussed in detail in the
 [life of a request doc](life-of-a-request.html#options).
 
@@ -93,7 +93,7 @@ specific to Zulip.
 def home(request: HttpRequest) -> HttpResponse:
 ```
 
-[login-required-link]: https://docs.djangoproject.com/en/1.8/topics/auth/default/#django.contrib.auth.decorators.login_required
+[login-required-link]: https://docs.djangoproject.com/en/3.2/topics/auth/default/#django.contrib.auth.decorators.login_required
 
 ### Writing a template
 
@@ -102,7 +102,7 @@ Templates for the main website are found in
 
 ## Writing API REST endpoints
 
-These are code-parseable views that take x-www-form-urlencoded or JSON
+These are code-parsable views that take x-www-form-urlencoded or JSON
 request bodies, and return JSON-string responses. Almost all Zulip
 view code is in the implementations of API REST endpoints.
 
@@ -135,7 +135,7 @@ one of several bad outcomes:
 - Every view function comes with another function that does the
   validation that has the problems from the last bullet point.
 
-In Zulip, we solve this problem with a the special decorator called
+In Zulip, we solve this problem with a special decorator called
 `has_request_variables` which allows a developer to declare the
 arguments a view function takes and validate their types all within
 the `def` line of the function. We like this framework because we
@@ -275,7 +275,7 @@ def update_realm(
 
 `realm.save()` actually saves the changes to the realm to the
 database, and `send_event` sends the event to active clients belonging
-to the provided list of users (in this case, all altive users in the
+to the provided list of users (in this case, all active users in the
 Zulip realm).
 
 ### Calling from the web application

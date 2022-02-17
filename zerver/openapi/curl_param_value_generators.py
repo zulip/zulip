@@ -20,6 +20,7 @@ from zerver.lib.actions import (
 from zerver.lib.events import do_events_register
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.upload import upload_message_file
 from zerver.lib.users import get_api_key
 from zerver.models import Client, Message, UserGroup, UserPresence, get_realm, get_user
 
@@ -114,8 +115,10 @@ def fetch_api_key() -> Dict[str, object]:
     ]
 )
 def iago_message_id() -> Dict[str, object]:
+    iago = helpers.example_user("iago")
+    helpers.subscribe(iago, "Denmark")
     return {
-        "message_id": helpers.send_stream_message(helpers.example_user("iago"), "Denmark"),
+        "message_id": helpers.send_stream_message(iago, "Denmark"),
     }
 
 
@@ -123,8 +126,9 @@ def iago_message_id() -> Dict[str, object]:
 def add_emoji_to_message() -> Dict[str, object]:
     user_profile = helpers.example_user("iago")
 
-    # from OpenAPI format data in zulip.yaml
-    message_id = 43
+    # The message ID here is hardcoded based on the corresponding value
+    # for the example message IDs we use in zulip.yaml.
+    message_id = 46
     emoji_name = "octopus"
     emoji_code = "1f419"
     reaction_type = "unicode_emoji"
@@ -333,3 +337,12 @@ def deactivate_own_user() -> Dict[str, object]:
     # change authentication line to allow test_client to delete itself.
     AUTHENTICATION_LINE[0] = f"{deactivate_test_user.email}:{test_user_api_key}"
     return {}
+
+
+@openapi_param_value_generator(["/attachments/{attachment_id}:delete"])
+def remove_attachment() -> Dict[str, object]:
+    user_profile = helpers.example_user("iago")
+    url = upload_message_file("dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile)
+    attachment_id = url.replace("/user_uploads/", "").split("/")[0]
+
+    return {"attachment_id": attachment_id}

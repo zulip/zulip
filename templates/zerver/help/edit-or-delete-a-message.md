@@ -28,7 +28,7 @@ content.
 !!! warn ""
 
     **Note:** After you have edited a message, the message is publicly marked as
-    `(EDITED)`. You can [view](/help/view-a-messages-edit-history) a message's
+    `EDITED`. You can [view](/help/view-a-messages-edit-history) a message's
     edit history, assuming that feature has not been
     [disabled by an organization administrator](/help/disable-message-edit-history).
 
@@ -87,7 +87,7 @@ permissions to delete that message.
   you also delete the message.
 * For protection against accidental or immediately regretted
   deletions, messages deleted directly or via a [message retention
-  policy](/help/message-retention-policy) are archived for 7 days in a
+  policy](/help/message-retention-policy) are archived for 30 days in a
   format that can be restored by a server administrator.  After that
   time, they are permanently and irrecoverably deleted from the Zulip
   server.  Server administrators can adjust the archival time using

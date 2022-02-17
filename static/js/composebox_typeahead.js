@@ -1,5 +1,3 @@
-import {formatISO} from "date-fns";
-import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
 import _ from "lodash";
 
@@ -7,12 +5,12 @@ import pygments_data from "../generated/pygments_data.json";
 import * as emoji from "../shared/js/emoji";
 import * as typeahead from "../shared/js/typeahead";
 
-import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
+import * as flatpickr from "./flatpickr";
 import {$t} from "./i18n";
 import * as message_store from "./message_store";
 import * as muted_users from "./muted_users";
@@ -36,7 +34,7 @@ import {user_settings} from "./user_settings";
 // And your input to them is rendered as though it were HTML by
 // the default highlighter.
 //
-// So if you are not using trusted input, you MUST use the a
+// So if you are not using trusted input, you MUST use a
 // highlighter that escapes (i.e. one that calls
 // typeahead_helper.highlight_with_escaping).
 
@@ -74,8 +72,7 @@ export function topics_seen_for(stream_name) {
 
     // Fetch topic history from the server, in case we will need it soon.
     stream_topic_history_util.get_server_history(stream_id, () => {});
-    const topic_names = stream_topic_history.get_recent_topic_names(stream_id);
-    return topic_names;
+    return stream_topic_history.get_recent_topic_names(stream_id);
 }
 
 function get_language_matcher(query) {
@@ -118,7 +115,7 @@ function get_slash_matcher(query) {
     query = typeahead.clean_query_lowercase(query);
 
     return function (item) {
-        return typeahead.query_matches_source_attrs(query, item, ["name"], " ");
+        return typeahead.query_matches_source_attrs(query, item, ["name", "aliases"], " ");
     };
 }
 
@@ -145,7 +142,7 @@ export function should_enter_send(e) {
         this_enter_sends = !has_modifier_key;
     } else {
         // If enter_sends is not enabled, just hitting
-        // Snter should add a newline, but with a
+        // Enter should add a newline, but with a
         // non-Shift modifier key held down, we should
         // send.  With Shift, we shouldn't, because
         // Shift+Enter to get a newline is a common
@@ -170,23 +167,24 @@ export function handle_enter(textarea, e) {
     //
     // We do this using caret and range from jquery-caret.
     const has_non_shift_modifier_key = e.ctrlKey || e.metaKey || e.altKey;
-    if (has_non_shift_modifier_key) {
-        // To properly emulate browser "Enter", if the
-        // user had selected something in the textarea,
-        // we need those characters to be cleared.
-        const range = textarea.range();
-        if (range.length > 0) {
-            textarea.range(range.start, range.end).range("");
-        }
-
-        // Now add the newline, remembering to resize the
-        // textarea if needed.
-        textarea.caret("\n");
-        compose_ui.autosize_textarea(textarea);
-        e.preventDefault();
+    if (!has_non_shift_modifier_key) {
+        // Use the native browser behavior.
         return;
     }
-    // Fall through to native browser behavior, otherwise.
+
+    // To properly emulate browser "Enter", if the
+    // user had selected something in the textarea,
+    // we need those characters to be cleared.
+    const range = textarea.range();
+    if (range.length > 0) {
+        textarea.range(range.start, range.end).range("");
+    }
+
+    // Now add the newline, remembering to resize the
+    // textarea if needed.
+    textarea.caret("\n");
+    compose_ui.autosize_textarea(textarea);
+    e.preventDefault();
 }
 
 // nextFocus is set on a keydown event to indicate where we should focus on keyup.
@@ -226,6 +224,7 @@ function handle_keydown(e) {
                     // typing a next message!
                     $("#compose-send-button").trigger("focus");
                     e.preventDefault();
+                    e.stopPropagation();
                 }
             } else {
                 // Enter
@@ -393,40 +392,40 @@ function should_show_custom_query(query, items) {
 
 export const slash_commands = [
     {
-        text: $t({defaultMessage: "/dark (Toggle night mode)"}),
+        text: $t({defaultMessage: "/dark (Switch to the dark theme)"}),
         name: "dark",
-    },
-    {
-        text: $t({defaultMessage: "/day (Toggle day mode)"}),
-        name: "day",
+        aliases: "night",
     },
     {
         text: $t({defaultMessage: "/fixed-width (Toggle fixed width mode)"}),
         name: "fixed-width",
+        aliases: "",
     },
     {
         text: $t({defaultMessage: "/fluid-width (Toggle fluid width mode)"}),
         name: "fluid-width",
+        aliases: "",
     },
     {
-        text: $t({defaultMessage: "/light (Toggle day mode)"}),
+        text: $t({defaultMessage: "/light (Switch to light theme)"}),
         name: "light",
+        aliases: "day",
     },
     {
         text: $t({defaultMessage: "/me is excited (Display action text)"}),
         name: "me",
-    },
-    {
-        text: $t({defaultMessage: "/night (Toggle night mode)"}),
-        name: "night",
+        aliases: "",
     },
     {
         text: $t({defaultMessage: "/poll Where should we go to lunch today? (Create a poll)"}),
         name: "poll",
+        aliases: "",
+        placeholder: "Question",
     },
     {
         text: $t({defaultMessage: "/todo (Create a todo list)"}),
         name: "todo",
+        aliases: "",
     },
 ];
 
@@ -767,39 +766,14 @@ export function content_highlighter(item) {
     }
 }
 
-const show_flatpickr = (element, callback, default_timestamp) => {
-    const flatpickr_input = $("<input id='#timestamp_flatpickr'>");
-
-    const instance = flatpickr_input.flatpickr({
-        mode: "single",
-        enableTime: true,
-        clickOpens: false,
-        defaultDate: default_timestamp,
-        plugins: [new ConfirmDatePlugin({})],
-        positionElement: element,
-        dateFormat: "Z",
-        formatDate: (date) => formatISO(date),
-    });
-    const container = $($(instance.innerContainer).parent());
-    container.on("click", ".flatpickr-calendar", (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
-    container.on("click", ".flatpickr-confirm", () => {
-        callback(flatpickr_input.val());
-        instance.close();
-        instance.destroy();
-    });
-    instance.open();
-    container.find(".flatpickr-monthDropdown-months").trigger("focus");
-};
-
 export function content_typeahead_selected(item, event) {
     const pieces = split_at_cursor(this.query, this.$element);
     let beginning = pieces[0];
     let rest = pieces[1];
     const textbox = this.$element;
+    // this highlight object will hold the start and end indices
+    // for highlighting any placeholder text
+    const highlight = {};
 
     switch (this.completing) {
         case "emoji":
@@ -852,6 +826,11 @@ export function content_typeahead_selected(item, event) {
         }
         case "slash":
             beginning = beginning.slice(0, -this.token.length - 1) + "/" + item.name + " ";
+            if (item.placeholder) {
+                beginning = beginning + item.placeholder;
+                highlight.start = item.name.length + 2;
+                highlight.end = highlight.start + item.placeholder.length;
+            }
             break;
         case "stream":
             beginning = beginning.slice(0, -this.token.length - 1);
@@ -923,15 +902,23 @@ export function content_typeahead_selected(item, event) {
                 textbox.caret(beginning.length, beginning.length);
                 compose_ui.autosize_textarea(textbox);
             };
-            show_flatpickr(this.$element[0], on_timestamp_selection, timestamp);
+            flatpickr.show_flatpickr(this.$element[0], on_timestamp_selection, timestamp);
             return beginning + rest;
         }
     }
 
-    // Keep the cursor after the newly inserted text, as Bootstrap will call textbox.change() to
+    // Keep the cursor after the newly inserted text / selecting the
+    // placeholder text, as Bootstrap will call textbox.change() to
     // overwrite the text in the textbox.
     setTimeout(() => {
-        textbox.caret(beginning.length, beginning.length);
+        if (item.placeholder) {
+            // This placeholder block is exclusively for slash
+            // commands, which always appear at the start of the message.
+            textbox.get(0).setSelectionRange(highlight.start, highlight.end);
+            textbox.trigger("focus");
+        } else {
+            textbox.caret(beginning.length, beginning.length);
+        }
         // Also, trigger autosize to check if compose box needs to be resized.
         compose_ui.autosize_textarea(textbox);
     }, 0);
@@ -1091,25 +1078,6 @@ export function initialize() {
     // These handlers are at the "form" level so that they are called after typeahead
     $("form#send_message_form").on("keydown", handle_keydown);
     $("form#send_message_form").on("keyup", handle_keyup);
-
-    $("#enter_sends").on("click", () => {
-        user_settings.enter_sends = $("#enter_sends").is(":checked");
-        compose.toggle_enter_sends_ui();
-
-        // Refocus in the content box so you can continue typing or
-        // press Enter to send.
-        $("#compose-textarea").trigger("focus");
-
-        return channel.patch({
-            url: "/json/settings",
-            idempotent: true,
-            data: {enter_sends: user_settings.enter_sends},
-        });
-    });
-    $("#enter_sends").prop("checked", user_settings.enter_sends);
-    if (user_settings.enter_sends) {
-        $("#compose-send-button").hide();
-    }
 
     // limit number of items so the list doesn't fall off the screen
     $("#stream_message_recipient_stream").typeahead({

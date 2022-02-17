@@ -1,6 +1,5 @@
 import md5 from "blueimp-md5";
 import {format, utcToZonedTime} from "date-fns-tz";
-import _ from "lodash";
 
 import * as typeahead from "../shared/js/typeahead";
 
@@ -53,6 +52,10 @@ init();
 
 function split_to_ints(lst) {
     return lst.split(",").map((s) => Number.parseInt(s, 10));
+}
+
+export function get_users_from_ids(user_ids) {
+    return user_ids.map((user_id) => get_by_user_id(user_id));
 }
 
 export function get_by_user_id(user_id, ignore_missing) {
@@ -544,7 +547,8 @@ export function pm_with_operand_ids(operand) {
 
     // If your email is included in a PM group with other people, just ignore it
     if (persons.length > 1) {
-        persons = _.without(persons, people_by_user_id_dict.get(my_user_id));
+        const my_user = people_by_user_id_dict.get(my_user_id);
+        persons = persons.filter((person) => person !== my_user);
     }
 
     if (!persons.every(Boolean)) {
@@ -619,8 +623,9 @@ export function exclude_me_from_string(user_ids_string) {
 }
 
 export function format_small_avatar_url(raw_url) {
-    const url = raw_url + "&s=50";
-    return url;
+    const url = new URL(raw_url, location);
+    url.search += (url.search ? "&" : "") + "s=50";
+    return url.href;
 }
 
 export function sender_is_bot(message) {
@@ -656,6 +661,26 @@ export function small_avatar_url_for_person(person) {
     }
 
     return format_small_avatar_url("/avatar/" + person.user_id);
+}
+
+function medium_gravatar_url_for_email(email) {
+    const hash = md5(email.toLowerCase());
+    const avatar_url = "https://secure.gravatar.com/avatar/" + hash + "?d=identicon";
+    const url = new URL(avatar_url, location);
+    url.search += (url.search ? "&" : "") + "s=500";
+    return url.href;
+}
+
+export function medium_avatar_url_for_person(person) {
+    /* Unlike the small avatar URL case, we don't generally have a
+     * medium avatar URL included in person objects. So only have the
+     * gravatar and server endpoints here. */
+
+    if (person.avatar_url === null) {
+        return medium_gravatar_url_for_email(person.email);
+    }
+
+    return "/avatar/" + person.user_id + "/medium";
 }
 
 export function sender_info_for_recent_topics_row(sender_ids) {
@@ -1068,7 +1093,8 @@ export function get_people_for_stream_create() {
     for (const person of active_user_dict.values()) {
         if (!is_my_user_id(person.user_id)) {
             people_minus_you.push({
-                email: person.email,
+                email: get_visible_email(person),
+                show_email: settings_data.show_email(),
                 user_id: person.user_id,
                 full_name: person.full_name,
                 checked: false,
@@ -1363,6 +1389,21 @@ export function is_my_user_id(user_id) {
     }
 
     return user_id === my_user_id;
+}
+
+function compare_by_name(a, b) {
+    return util.strcmp(a.full_name, b.full_name);
+}
+
+export function sort_but_pin_current_user_on_top(users) {
+    const my_user = people_by_user_id_dict.get(my_user_id);
+    if (users.includes(my_user)) {
+        users.splice(users.indexOf(my_user), 1);
+        users.sort(compare_by_name);
+        users.unshift(my_user);
+    } else {
+        users.sort(compare_by_name);
+    }
 }
 
 export function initialize(my_user_id, params) {

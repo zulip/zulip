@@ -1,0 +1,36 @@
+<div class="history-limited-box">
+    <p>
+        <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+        {{#tr}}
+        Some older messages are unavailable.
+        <z-link>Upgrade your organization</z-link>
+        to access your full message history.
+        {{#*inline "z-link"}}<a href="/plans/" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+    </p>
+</div>
+<div class="all-messages-search-caution" hidden>
+    <p>
+        <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+        {{#tr}}
+        End of results from your
+        <z-link>history</z-link>.
+        {{#*inline "z-link"}}<a href="/help/search-for-messages#searching-shared-history"
+          target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+        &nbsp;
+        <span class="only-visible-for-spectators">
+            {{#tr}}
+            <z-link>Log in</z-link> to search your personal history.
+            {{#*inline "z-link"}}<a href="/login/">{{> @partial-block}}</a>{{/inline}}
+            {{/tr}}
+        </span>
+        <span class="hidden-for-spectators">
+            {{#tr}}
+            Consider <z-link>searching all public streams</z-link>.
+            {{#*inline "z-link"}}<a class="search-shared-history" href="">{{> @partial-block}}</a>{{/inline}}
+            {{/tr}}
+        </span>
+    </p>
+</div>
+<div class="empty_feed_notice_main"></div>

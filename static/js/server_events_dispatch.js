@@ -13,6 +13,7 @@ import * as compose_actions from "./compose_actions";
 import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as composebox_typeahead from "./composebox_typeahead";
+import * as dark_theme from "./dark_theme";
 import * as emoji_picker from "./emoji_picker";
 import * as giphy from "./giphy";
 import * as hotspots from "./hotspots";
@@ -22,16 +23,17 @@ import * as message_events from "./message_events";
 import * as message_flags from "./message_flags";
 import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
+import * as message_live_update from "./message_live_update";
 import * as muted_topics_ui from "./muted_topics_ui";
 import * as muted_users_ui from "./muted_users_ui";
 import * as narrow_state from "./narrow_state";
 import * as navbar_alerts from "./navbar_alerts";
-import * as night_mode from "./night_mode";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
+import * as pm_list from "./pm_list";
 import * as reactions from "./reactions";
 import * as realm_icon from "./realm_icon";
 import * as realm_logo from "./realm_logo";
@@ -190,6 +192,7 @@ export function dispatch_normal_event(event) {
                 bot_creation_policy: settings_bots.update_bot_permissions_ui,
                 create_public_stream_policy: noop,
                 create_private_stream_policy: noop,
+                create_web_public_stream_policy: noop,
                 invite_to_stream_policy: noop,
                 default_code_block_language: noop,
                 default_language: noop,
@@ -214,6 +217,7 @@ export function dispatch_normal_event(event) {
                 private_message_policy: noop,
                 send_welcome_emails: noop,
                 message_content_allowed_in_email_notifications: noop,
+                enable_spectator_access: noop,
                 signup_notifications_stream_id: noop,
                 emails_restricted_to_domains: noop,
                 video_chat_provider: compose.update_video_chat_button_display,
@@ -223,13 +227,28 @@ export function dispatch_normal_event(event) {
             };
             switch (event.op) {
                 case "update":
-                    if (Object.prototype.hasOwnProperty.call(realm_settings, event.property)) {
+                    if (Object.hasOwn(realm_settings, event.property)) {
                         page_params["realm_" + event.property] = event.value;
                         realm_settings[event.property]();
                         settings_org.sync_realm_settings(event.property);
 
                         if (event.property === "name" && window.electron_bridge !== undefined) {
                             window.electron_bridge.send_event("realm_name", event.value);
+                        }
+
+                        const stream_creation_settings = [
+                            "create_private_stream_policy",
+                            "create_public_stream_policy",
+                            "create_web_public_stream_policy",
+                        ];
+                        if (stream_creation_settings.includes(event.property)) {
+                            stream_settings_ui.update_stream_privacy_choices(event.property);
+                        }
+
+                        if (event.property === "enable_spectator_access") {
+                            stream_settings_ui.update_stream_privacy_choices(
+                                "create_web_public_stream_policy",
+                            );
                         }
                     }
                     break;
@@ -241,7 +260,7 @@ export function dispatch_normal_event(event) {
                                 if (key === "allow_message_editing") {
                                     message_edit.update_message_topic_editing_pencil();
                                 }
-                                if (Object.prototype.hasOwnProperty.call(realm_settings, key)) {
+                                if (Object.hasOwn(realm_settings, key)) {
                                     settings_org.sync_realm_settings(key);
                                 }
                             }
@@ -385,41 +404,9 @@ export function dispatch_normal_event(event) {
 
         case "realm_user_settings_defaults": {
             realm_user_settings_defaults[event.property] = event.value;
+            settings_realm_user_settings_defaults.update_page(event.property);
 
-            const display_settings_list = [
-                "color_scheme",
-                "default_view",
-                "demote_inactive_streams",
-                "dense_mode",
-                "emojiset",
-                "fluid_layout_width",
-                "high_contrast_mode",
-                "left_side_userlist",
-                "translate_emoticons",
-                "starred_message_counts",
-                "twenty_four_hour_time",
-            ];
-
-            const container_elem = $("#realm-user-default-settings");
-            if (display_settings_list.includes(event.property)) {
-                settings_display.update_page(
-                    settings_realm_user_settings_defaults.realm_default_settings_panel,
-                );
-            } else if (settings_config.all_notification_settings.includes(event.property)) {
-                settings_notifications.update_page(
-                    settings_realm_user_settings_defaults.realm_default_settings_panel,
-                );
-            } else {
-                container_elem
-                    .find(`.${CSS.escape(event.property)}`)
-                    .prop("checked", realm_user_settings_defaults[event.property]);
-            }
-
-            if (event.property === "emojiset") {
-                settings_display.report_emojiset_change(
-                    settings_realm_user_settings_defaults.realm_default_settings_panel,
-                );
-            } else if (event.property === "notification_sound") {
+            if (event.property === "notification_sound") {
                 notifications.update_notification_sound_source(
                     $("#realm-default-notification-sound-audio"),
                     realm_user_settings_defaults,
@@ -608,6 +595,7 @@ export function dispatch_normal_event(event) {
                 "demote_inactive_streams",
                 "dense_mode",
                 "emojiset",
+                "escape_navigates_to_default_view",
                 "fluid_layout_width",
                 "high_contrast_mode",
                 "left_side_userlist",
@@ -615,6 +603,9 @@ export function dispatch_normal_event(event) {
                 "twenty_four_hour_time",
                 "translate_emoticons",
                 "starred_message_counts",
+                "send_stream_typing_notifications",
+                "send_private_typing_notifications",
+                "send_read_receipts",
             ];
 
             if (user_display_settings.includes(event.property)) {
@@ -651,13 +642,13 @@ export function dispatch_normal_event(event) {
                 $("body").fadeOut(300);
                 setTimeout(() => {
                     if (event.value === settings_config.color_scheme_values.night.code) {
-                        night_mode.enable();
+                        dark_theme.enable();
                         realm_logo.render();
                     } else if (event.value === settings_config.color_scheme_values.day.code) {
-                        night_mode.disable();
+                        dark_theme.disable();
                         realm_logo.render();
                     } else {
-                        night_mode.default_preference_checker();
+                        dark_theme.default_preference_checker();
                         realm_logo.render();
                     }
                     $("body").fadeIn(300);
@@ -691,18 +682,22 @@ export function dispatch_normal_event(event) {
                 // Rerender buddy list status emoji
                 activity.build_user_sidebar();
             }
+            if (event.property === "escape_navigates_to_default_view") {
+                $("#go-to-default-view-hotkey-help").toggleClass("notdisplayed", !event.value);
+            }
             if (event.property === "enter_sends") {
                 user_settings.enter_sends = event.value;
-                $("#enter_sends").prop("checked", user_settings.enter_sends);
-                compose.toggle_enter_sends_ui();
+                $(`.enter_sends_${!user_settings.enter_sends}`).hide();
+                $(`.enter_sends_${user_settings.enter_sends}`).show();
                 break;
             }
             if (event.property === "presence_enabled") {
                 user_settings.presence_enabled = event.value;
                 $("#user_presence_enabled").prop("checked", user_settings.presence_enabled);
+                activity.redraw_user(page_params.user_id);
                 break;
             }
-            settings_display.update_page(settings_display.user_settings_panel);
+            settings_display.update_page(event.property);
             break;
         }
 
@@ -776,6 +771,11 @@ export function dispatch_normal_event(event) {
             if (event.emoji_name !== undefined) {
                 user_status.set_status_emoji(event);
                 activity.redraw_user(event.user_id);
+                pm_list.update_private_messages();
+                message_live_update.update_user_status_emoji(
+                    event.user_id,
+                    user_status.get_status_emoji(event.user_id),
+                );
             }
             break;
         case "realm_export":

@@ -1,6 +1,6 @@
 {
   "account_country": "US",
-  "account_name": null,
+  "account_name": "NORMALIZED-1",
   "account_tax_ids": null,
   "amount_due": 200000,
   "amount_paid": 0,
@@ -36,9 +36,9 @@
   "due_date": null,
   "ending_balance": 0,
   "footer": null,
-  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/invst_NORMALIZED0000000000000003RcbKD",
+  "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED01cDVIU2FXWHl2RnBLLF9LaG9DYW9RMGlQSjFwUFdUNFV1YndYSnBzaExHSG440100AGCrSmf4",
   "id": "in_NORMALIZED00000000000003",
-  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/invst_NORMALIZED0000000000000003RcbKD/pdf",
+  "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED01cDVIU2FXWHl2RnBLLF9LaG9DYW9RMGlQSjFwUFdUNFV1YndYSnBzaExHSG440100AGCrSmf4/pdf",
   "last_finalization_error": null,
   "lines": {
     "data": [
@@ -72,6 +72,7 @@
           "object": "price",
           "product": "prod_NORMALIZED0004",
           "recurring": null,
+          "tax_behavior": "unspecified",
           "tiers_mode": null,
           "transform_quantity": null,
           "type": "one_time",
@@ -88,7 +89,7 @@
       {
         "amount": 160000,
         "currency": "usd",
-        "description": "Zulip Standard - renewal",
+        "description": "Zulip Cloud Standard - renewal",
         "discount_amounts": [],
         "discountable": false,
         "discounts": [],
@@ -115,6 +116,7 @@
           "object": "price",
           "product": "prod_NORMALIZED0005",
           "recurring": null,
+          "tax_behavior": "unspecified",
           "tiers_mode": null,
           "transform_quantity": null,
           "type": "one_time",
@@ -137,11 +139,11 @@
   "livemode": false,
   "metadata": {},
   "next_payment_attempt": 1000000000,
-  "number": "NORMALI-0003",
+  "number": "NORMALI-0004",
   "object": "invoice",
   "on_behalf_of": null,
   "paid": false,
-  "payment_intent": "pi_NORMALIZED00000000000002",
+  "payment_intent": "pi_NORMALIZED00000000000003",
   "payment_settings": {
     "payment_method_options": null,
     "payment_method_types": null
@@ -153,7 +155,7 @@
   "quote": null,
   "receipt_number": null,
   "starting_balance": 0,
-  "statement_descriptor": "Zulip Standard",
+  "statement_descriptor": "Zulip Cloud Standard",
   "status": "open",
   "status_transitions": {
     "finalized_at": 1000000000,

@@ -135,7 +135,7 @@ html {
             border: 2px inset hsl(213, 23%, 25%);
             background-color: hsl(0, 0%, 100%);
             color: hsl(213, 23%, 25%);
-            padding: 13px 20px 11px 20px;
+            padding: 13px 20px 11px;
 
             &:hover {
                 background-color: hsl(213, 65%, 97%);
@@ -284,9 +284,33 @@ html {
     }
 }
 
-.account-accept-terms-page .terms-of-service .input-group {
-    width: 450px;
-    margin: 0 auto 10px;
+.account-accept-terms-page {
+    #registration,
+    #accept_tos_button {
+        margin: 0;
+    }
+
+    .fakecontrol {
+        font-weight: normal;
+    }
+
+    .description {
+        margin-bottom: 20px;
+        font-size: 16px;
+        font-weight: 400;
+    }
+
+    .center-block {
+        max-width: 800px;
+
+        .control-group {
+            margin-bottom: 5px;
+        }
+    }
+
+    #accept_tos_button {
+        margin-top: 20px;
+    }
 }
 
 .register-account {
@@ -337,7 +361,7 @@ html {
     button {
         display: inline-block;
         vertical-align: top;
-        padding: 13px 22px 13px 22px;
+        padding: 13px 22px;
 
         font-family: "Source Sans 3", sans-serif;
 
@@ -376,6 +400,7 @@ html {
     .alert-info {
         font-weight: 400;
     }
+
     .alert {
         &:not(.alert-info) {
             padding: 0;
@@ -463,7 +488,7 @@ html {
             input[type="text"]:invalid + label,
             input[type="email"]:invalid + label,
             input[type="password"]:invalid + label {
-                transform: translateY(35px) translateX(14px);
+                transform: translateY(39px) translateX(14px);
                 font-size: 1.2rem;
                 font-weight: 400;
                 color: hsl(0, 0%, 67%);
@@ -691,6 +716,10 @@ html {
     button {
         /* Avoid excessive space at top of login form */
         margin-top: 0;
+
+        .spectator_beta_text {
+            color: hsl(0, 0%, 90%);
+        }
     }
 }
 
@@ -998,6 +1027,7 @@ button#register_auth_button_gitlab {
     font-size: 1.2rem;
     height: 45px;
     width: 325px;
+
     &:focus {
         outline: none;
     }
@@ -1043,7 +1073,7 @@ button#register_auth_button_gitlab {
 
     .white-box {
         min-width: 450px;
-        padding: 30px 0 50px 0;
+        padding: 30px 0 50px;
     }
 
     form {

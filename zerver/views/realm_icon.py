@@ -9,7 +9,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.response import json_success
 from zerver.lib.upload import upload_icon_image
-from zerver.lib.url_encoding import add_query_arg_to_redirect_url
+from zerver.lib.url_encoding import append_url_query_string
 from zerver.models import UserProfile
 
 
@@ -35,7 +35,7 @@ def upload_icon(request: HttpRequest, user_profile: UserProfile) -> HttpResponse
     json_result = dict(
         icon_url=icon_url,
     )
-    return json_success(json_result)
+    return json_success(request, data=json_result)
 
 
 @require_realm_admin
@@ -50,7 +50,7 @@ def delete_icon_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     json_result = dict(
         icon_url=gravatar_url,
     )
-    return json_success(json_result)
+    return json_success(request, data=json_result)
 
 
 def get_icon_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
@@ -60,5 +60,5 @@ def get_icon_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
     # our templates depend on being able to use the ampersand to
     # add query parameters to our url, get_icon_url does '?version=version_number'
     # hacks to prevent us from having to jump through decode/encode hoops.
-    url = add_query_arg_to_redirect_url(url, request.META["QUERY_STRING"])
+    url = append_url_query_string(url, request.META["QUERY_STRING"])
     return redirect(url)

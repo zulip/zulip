@@ -61,7 +61,7 @@
                     <label for="realm_default_language" class="dropdown-title">{{t "Default language" }}</label>
                     <select name="realm_default_language" class ="setting-widget prop-element" id="id_realm_default_language" data-setting-widget-type="string">
                         {{#each language_list}}
-                        <option value='{{this.code}}'>{{this.name}}</option>
+                            <option value='{{this.code}}'>{{this.name}}</option>
                         {{/each}}
                     </select>
                 </div>
@@ -118,7 +118,7 @@
                     </label>
                     <select name="realm_video_chat_provider" class ="setting-widget prop-element" id="id_realm_video_chat_provider" data-setting-widget-type="number">
                         {{#each realm_available_video_chat_providers}}
-                        <option value='{{this.id}}'>{{this.name}}</option>
+                            <option value='{{this.id}}'>{{this.name}}</option>
                         {{/each}}
                     </select>
                 </div>
@@ -129,7 +129,7 @@
                     </label>
                     <select name="realm_giphy_rating" class ="setting-widget prop-element" id="id_realm_giphy_rating" data-setting-widget-type="number" {{#if giphy_api_key_empty}}disabled{{/if}}>
                         {{#each giphy_rating_options}}
-                        <option value='{{this.id}}'>{{this.name}}</option>
+                            <option value='{{this.id}}'>{{this.name}}</option>
                         {{/each}}
                     </select>
                 </div>

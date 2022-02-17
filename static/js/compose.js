@@ -1,7 +1,6 @@
+import autosize from "autosize";
 import $ from "jquery";
 import _ from "lodash";
-
-import render_compose from "../templates/compose.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
@@ -12,10 +11,11 @@ import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
 import * as echo from "./echo";
-import * as giphy from "./giphy";
+import * as flatpickr from "./flatpickr";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
+import * as message_edit from "./message_edit";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -26,8 +26,8 @@ import * as rows from "./rows";
 import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
 import * as stream_data from "./stream_data";
-import * as stream_edit from "./stream_edit";
 import * as stream_settings_ui from "./stream_settings_ui";
+import * as stream_subscribers_ui from "./stream_subscribers_ui";
 import * as sub_store from "./sub_store";
 import * as transmit from "./transmit";
 import * as ui_report from "./ui_report";
@@ -86,6 +86,7 @@ export function clear_preview_area() {
     $("#compose .preview_message_area").hide();
     $("#compose .preview_content").empty();
     $("#compose .markdown_preview").show();
+    autosize.update($("#compose-textarea"));
 }
 
 export function update_fade() {
@@ -94,6 +95,7 @@ export function update_fade() {
     }
 
     const msg_type = compose_state.get_message_type();
+    compose_validate.warn_if_topic_resolved();
     compose_fade.set_focused_recipient(msg_type);
     compose_fade.update_all();
 }
@@ -116,15 +118,6 @@ export function abort_video_callbacks(edit_message_id = "") {
 
 export function empty_topic_placeholder() {
     return $t({defaultMessage: "(no topic)"});
-}
-
-export function toggle_enter_sends_ui() {
-    const send_button = $("#compose-send-button");
-    if (user_settings.enter_sends) {
-        send_button.fadeOut();
-    } else {
-        send_button.fadeIn();
-    }
 }
 
 export function create_message_object() {
@@ -195,8 +188,7 @@ export function clear_compose_box() {
     $("#compose-textarea").removeData("draft-id");
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-send-status").hide(0);
-    $("#compose-send-button").prop("disabled", false);
-    $("#sending-indicator").hide();
+    compose_ui.hide_compose_spinner();
 }
 
 export function send_message_success(local_id, message_id, locally_echoed) {
@@ -277,11 +269,6 @@ export function enter_with_preview_open() {
     }
 }
 
-function show_sending_indicator(whats_happening) {
-    $("#sending-indicator").text(whats_happening);
-    $("#sending-indicator").show();
-}
-
 export function finish() {
     clear_preview_area();
     clear_invites();
@@ -299,15 +286,11 @@ export function finish() {
         return undefined;
     }
 
-    $("#compose-send-button").prop("disabled", true).trigger("blur");
-    if (reminder.is_deferred_delivery(message_content)) {
-        show_sending_indicator($t({defaultMessage: "Scheduling..."}));
-    } else {
-        show_sending_indicator($t({defaultMessage: "Sending..."}));
-    }
+    compose_ui.show_compose_spinner();
+
     if (!compose_validate.validate()) {
-        // If the message failed validation, hide the sending indicator.
-        $("#sending-indicator").hide();
+        // If the message failed validation, hide compose spinner.
+        compose_ui.hide_compose_spinner();
         return false;
     }
 
@@ -404,19 +387,7 @@ export function render_and_show_preview(preview_spinner, preview_content_box, co
     }
 }
 
-export function render_compose_box() {
-    $("#compose-container").append(
-        render_compose({
-            embedded: $("#compose").attr("data-embedded") === "",
-            file_upload_enabled: page_params.max_file_upload_size_mib > 0,
-            giphy_enabled: giphy.is_giphy_enabled(),
-        }),
-    );
-}
-
 export function initialize() {
-    render_compose_box();
-
     $("#below-compose-content .video_link").toggle(compute_show_video_chat_button());
     $(
         "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient",
@@ -480,6 +451,25 @@ export function initialize() {
         $("#compose-send-status").hide();
     });
 
+    $("#compose_resolved_topic").on("click", ".compose_unresolve_topic", (event) => {
+        event.preventDefault();
+
+        const target = $(event.target).parents(".compose_resolved_topic");
+        const stream_id = Number.parseInt(target.attr("data-stream-id"), 10);
+        const topic_name = target.attr("data-topic-name");
+
+        message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
+            message_edit.toggle_resolve_topic(message_id, topic_name);
+            compose_validate.clear_topic_resolved_warning();
+        });
+    });
+
+    $("#compose_resolved_topic").on("click", ".compose_resolved_topic_close", (event) => {
+        event.preventDefault();
+
+        compose_validate.clear_topic_resolved_warning();
+    });
+
     $("#compose_invite_users").on("click", ".compose_invite_link", (event) => {
         event.preventDefault();
 
@@ -510,7 +500,7 @@ export function initialize() {
 
         const sub = sub_store.get(stream_id);
 
-        stream_edit.invite_user_to_stream([user_id], sub, success, xhr_failure);
+        stream_subscribers_ui.invite_user_to_stream([user_id], sub, success, xhr_failure);
     });
 
     $("#compose_invite_users").on("click", ".compose_invite_close", (event) => {
@@ -544,11 +534,14 @@ export function initialize() {
 
     $("#compose").on("click", ".compose_upload_file", (e) => {
         e.preventDefault();
+        e.stopPropagation();
+
         $("#compose .file_input").trigger("click");
     });
 
     $("body").on("click", ".video_link", (e) => {
         e.preventDefault();
+        e.stopPropagation();
 
         let target_textarea;
         let edit_message_id;
@@ -627,8 +620,44 @@ export function initialize() {
         }
     });
 
+    $("body").on("click", ".time_pick", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        $(e.target).toggleClass("has_popover");
+
+        let target_textarea;
+        let edit_message_id;
+        const compose_click_target = compose_ui.get_compose_click_target(e);
+        if ($(compose_click_target).parents(".message_edit_form").length === 1) {
+            edit_message_id = rows.id($(compose_click_target).parents(".message_row"));
+            target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
+        } else {
+            target_textarea = $(compose_click_target).closest("form").find("textarea");
+        }
+
+        if ($(e.target).hasClass("has_popover")) {
+            const on_timestamp_selection = (val) => {
+                const timestr = `<time:${val}> `;
+                compose_ui.insert_syntax_and_focus(timestr, target_textarea);
+            };
+
+            flatpickr.show_flatpickr(
+                $(compose_click_target)[0],
+                on_timestamp_selection,
+                new Date(),
+                {
+                    // place the time picker above the icon and center it horizontally
+                    position: "above center",
+                },
+            );
+        }
+    });
+
     $("#compose").on("click", ".markdown_preview", (e) => {
         e.preventDefault();
+        e.stopPropagation();
+
         const content = $("#compose-textarea").val();
         $("#compose-textarea").hide();
         $("#compose .markdown_preview").hide();
@@ -640,20 +669,27 @@ export function initialize() {
             $("#compose .preview_content"),
             content,
         );
+        resize.reset_compose_message_max_height();
     });
 
     $("#compose").on("click", ".undo_markdown_preview", (e) => {
         e.preventDefault();
+        e.stopPropagation();
+
         clear_preview_area();
     });
 
     $("#compose").on("click", ".expand_composebox_button", (e) => {
         e.preventDefault();
+        e.stopPropagation();
+
         compose_ui.make_compose_box_full_size();
     });
 
     $("#compose").on("click", ".collapse_composebox_button", (e) => {
         e.preventDefault();
+        e.stopPropagation();
+
         compose_ui.make_compose_box_original_size();
     });
 
@@ -667,6 +703,16 @@ export function initialize() {
 
     $("#stream_message_recipient_topic").on("focus", () => {
         compose_actions.update_placeholder_text();
+    });
+
+    $("body").on("click", ".formatting_button", (e) => {
+        const $compose_click_target = $(compose_ui.get_compose_click_target(e));
+        const textarea = $compose_click_target.closest("form").find("textarea");
+        const format_type = $(e.target).attr("data-format-type");
+        compose_ui.format_text(textarea, format_type);
+        textarea.trigger("focus");
+        e.preventDefault();
+        e.stopPropagation();
     });
 
     if (page_params.narrow !== undefined) {

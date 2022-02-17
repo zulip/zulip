@@ -16,9 +16,17 @@ const emoji_params = {
     realm_emoji: {
         991: {
             id: "991",
-            name: "realm_emoji",
+            name: "example_realm_emoji",
             source_url: "/url/for/991",
+            still_url: "/url/still/991",
             deactivated: false,
+        },
+        992: {
+            id: "992",
+            name: "deactivated_realm_emoji",
+            source_url: "/url/for/992",
+            still_url: "/url/still/992",
+            deactivated: true,
         },
     },
     emoji_codes,
@@ -33,6 +41,11 @@ function initialize() {
             2: {away: true},
             3: {away: true},
             4: {emoji_name: "smiley", emoji_code: "1f603", reaction_type: "unicode_emoji"},
+            5: {
+                emoji_name: "deactivated_realm_emoji",
+                emoji_code: "992",
+                reaction_type: "realm_emoji",
+            },
         },
     };
     user_status.initialize(params);
@@ -40,6 +53,31 @@ function initialize() {
 
 run_test("basics", () => {
     initialize();
+
+    assert.deepEqual(user_status.get_status_emoji(5), {
+        emoji_code: "992",
+        emoji_name: "deactivated_realm_emoji",
+        reaction_type: "realm_emoji",
+        url: "/url/for/992",
+        still_url: "/url/still/992",
+    });
+
+    user_status.set_status_emoji({
+        user_id: 5,
+        emoji_code: "991",
+        emoji_name: "example_realm_emoji",
+        reaction_type: "realm_emoji",
+    });
+
+    assert.deepEqual(user_status.get_status_emoji(5), {
+        emoji_alt_code: false,
+        emoji_code: "991",
+        emoji_name: "example_realm_emoji",
+        reaction_type: "realm_emoji",
+        still_url: "/url/still/991",
+        url: "/url/for/991",
+    });
+
     assert.ok(user_status.is_away(2));
     assert.ok(!user_status.is_away(99));
 
@@ -73,7 +111,6 @@ run_test("basics", () => {
         emoji_name: "smiley",
         emoji_code: "1f603",
         reaction_type: "unicode_emoji",
-        // Extra parameters that were added by `emoji.get_emoji_details_by_name`
         emoji_alt_code: false,
     });
 
@@ -135,4 +172,31 @@ run_test("defensive checks", () => {
     blueslip.expect("error", "need ints for user_id", 2);
     user_status.set_away("string");
     user_status.revoke_away("string");
+
+    assert.throws(
+        () =>
+            user_status.set_status_emoji({
+                user_id: 5,
+                emoji_name: "emoji",
+                // no status code or reaction type.
+            }),
+        {
+            name: "Error",
+            message: "Invalid params.",
+        },
+    );
+
+    assert.throws(
+        () =>
+            user_status.set_status_emoji({
+                user_id: 5,
+                reaction_type: "realm_emoji",
+                emoji_name: "does_not_exist",
+                emoji_code: "fake_code",
+            }),
+        {
+            name: "Error",
+            message: "Cannot find realm emoji for code 'fake_code'.",
+        },
+    );
 });

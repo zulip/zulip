@@ -5,6 +5,7 @@
 class zulip::profile::docker {
   include zulip::profile::base
   include zulip::profile::app_frontend
+  include zulip::localhost_camo
   include zulip::supervisor
   include zulip::process_fts_updates
 

@@ -2,7 +2,7 @@
   "data": [
     {
       "account_country": "US",
-      "account_name": null,
+      "account_name": "NORMALIZED-1",
       "account_tax_ids": null,
       "amount_due": 1600000,
       "amount_paid": 0,
@@ -38,16 +38,16 @@
       "due_date": 1000000000,
       "ending_balance": 0,
       "footer": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/invst_NORMALIZED0000000000000002SO455",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED02cDVIU2FXWHl2RnBLLF9LaG9ETEVwTzdzMm5vWlNOckJLVHNmOWpoeThQR3lR0100tRwZcrfG",
       "id": "in_NORMALIZED00000000000002",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/invst_NORMALIZED0000000000000002SO455/pdf",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED02cDVIU2FXWHl2RnBLLF9LaG9ETEVwTzdzMm5vWlNOckJLVHNmOWpoeThQR3lR0100tRwZcrfG/pdf",
       "last_finalization_error": null,
       "lines": {
         "data": [
           {
             "amount": 1200000,
             "currency": "usd",
-            "description": "Zulip Standard - renewal",
+            "description": "Zulip Cloud Standard - renewal",
             "discount_amounts": [],
             "discountable": false,
             "discounts": [],
@@ -74,6 +74,7 @@
               "object": "price",
               "product": "prod_NORMALIZED0002",
               "recurring": null,
+              "tax_behavior": "unspecified",
               "tiers_mode": null,
               "transform_quantity": null,
               "type": "one_time",
@@ -117,6 +118,7 @@
               "object": "price",
               "product": "prod_NORMALIZED0003",
               "recurring": null,
+              "tax_behavior": "unspecified",
               "tiers_mode": null,
               "transform_quantity": null,
               "type": "one_time",
@@ -155,7 +157,7 @@
       "quote": null,
       "receipt_number": null,
       "starting_balance": 0,
-      "statement_descriptor": "Zulip Standard",
+      "statement_descriptor": "Zulip Cloud Standard",
       "status": "open",
       "status_transitions": {
         "finalized_at": 1000000000,
@@ -174,7 +176,7 @@
     },
     {
       "account_country": "US",
-      "account_name": null,
+      "account_name": "NORMALIZED-1",
       "account_tax_ids": null,
       "amount_due": 800000,
       "amount_paid": 0,
@@ -210,16 +212,16 @@
       "due_date": 1000000000,
       "ending_balance": 0,
       "footer": null,
-      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/invst_NORMALIZED000000000000000144WpC",
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_NORMALIZED000001/test_NORMALIZED02cDVIU2FXWHl2RnBLLF9LaG9DZnJiRFF4c0JyUGtVVzNWVkxIelYzWHZnMjlK01008OAvDtNJ",
       "id": "in_NORMALIZED00000000000001",
-      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/invst_NORMALIZED000000000000000144WpC/pdf",
+      "invoice_pdf": "https://pay.stripe.com/invoice/acct_NORMALIZED000001/test_NORMALIZED02cDVIU2FXWHl2RnBLLF9LaG9DZnJiRFF4c0JyUGtVVzNWVkxIelYzWHZnMjlK01008OAvDtNJ/pdf",
       "last_finalization_error": null,
       "lines": {
         "data": [
           {
             "amount": 800000,
             "currency": "usd",
-            "description": "Zulip Standard",
+            "description": "Zulip Cloud Standard",
             "discount_amounts": [],
             "discountable": false,
             "discounts": [],
@@ -246,6 +248,7 @@
               "object": "price",
               "product": "prod_NORMALIZED0001",
               "recurring": null,
+              "tax_behavior": "unspecified",
               "tiers_mode": null,
               "transform_quantity": null,
               "type": "one_time",
@@ -284,7 +287,7 @@
       "quote": null,
       "receipt_number": null,
       "starting_balance": 0,
-      "statement_descriptor": "Zulip Standard",
+      "statement_descriptor": "Zulip Cloud Standard",
       "status": "open",
       "status_transitions": {
         "finalized_at": 1000000000,

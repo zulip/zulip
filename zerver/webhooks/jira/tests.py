@@ -234,3 +234,17 @@ Adding a comment. Oh, what a comment it is!
         expected_topic = "SP-1: Add support for newer format Jira issue comment events"
         expected_message = """Hemanth V. Alluri deleted their comment on issue: *"Add support for newer format Jira issue comment events"*\n``` quote\n~~This is a very important issue! I’m on it!~~\n```"""
         self.check_webhook("comment_deleted", expected_topic, expected_message)
+
+    def test_anomalous_webhook_payload_error(self) -> None:
+        with self.assertRaises(AssertionError) as e:
+            self.check_webhook(
+                fixture_name="example_anomalous_payload",
+                expected_topic="",
+                expected_message="",
+                expect_noop=True,
+            )
+
+        self.assertIn(
+            "Unable to parse request: Did Jira generate this event?",
+            e.exception.args[0],
+        )

@@ -5,6 +5,7 @@ import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
 import render_widgets_poll_widget_results from "../templates/widgets/poll_widget_results.hbs";
 
 import * as blueslip from "./blueslip";
+import {$t} from "./i18n";
 import * as people from "./people";
 
 export function activate({
@@ -154,11 +155,13 @@ export function activate({
 
         elem.find("button.poll-option").on("click", (e) => {
             e.stopPropagation();
+            check_option_button();
             submit_option();
         });
 
-        elem.find("input.poll-option").on("keydown", (e) => {
+        elem.find("input.poll-option").on("keyup", (e) => {
             e.stopPropagation();
+            check_option_button();
 
             if (e.key === "Enter") {
                 submit_option();
@@ -170,6 +173,23 @@ export function activate({
                 return;
             }
         });
+    }
+
+    function check_option_button() {
+        const poll_option_input = elem.find("input.poll-option");
+        const option = poll_option_input.val().trim();
+        const options = poll_data.get_widget_data().options;
+
+        if (poll_data.is_option_present(options, option)) {
+            elem.find("button.poll-option").attr("disabled", true);
+            elem.find("button.poll-option").attr(
+                "title",
+                $t({defaultMessage: "Option already present."}),
+            );
+        } else {
+            elem.find("button.poll-option").attr("disabled", false);
+            elem.find("button.poll-option").removeAttr("title");
+        }
     }
 
     function render_results() {

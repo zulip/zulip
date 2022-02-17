@@ -36,4 +36,4 @@
 {{ _("Cheers,") }}
 {{ _("Team Zulip") }}
 
-{% trans %}PS: Check us out on Twitter (@zulip), star us on GitHub (https://github.com/zulip/zulip), or chat with us live on the Zulip community server (https://zulip.com/developer-community/)!{% endtrans %}
+{% trans %}PS: Check us out on Twitter (@zulip), star us on GitHub (https://github.com/zulip/zulip), or chat with us live on the Zulip community server (https://zulip.com/development-community/)!{% endtrans %}

@@ -4,7 +4,9 @@ import {set, wrapSelection} from "text-field-edit";
 
 import * as common from "./common";
 import {$t} from "./i18n";
+import * as loading from "./loading";
 import * as people from "./people";
+import * as popover_menus from "./popover_menus";
 import * as rtl from "./rtl";
 import * as user_status from "./user_status";
 
@@ -160,7 +162,7 @@ export function make_compose_box_full_size() {
     set_full_size(true);
 
     // The autosize should be destroyed for the full size compose
-    // box else it will interfare and shrink its size accordingly.
+    // box else it will interfere and shrink its size accordingly.
     autosize.destroy($("#compose-textarea"));
 
     $("#compose").addClass("compose-fullscreen");
@@ -193,7 +195,7 @@ export function make_compose_box_original_size() {
 export function handle_keydown(event, textarea) {
     // The event.key property will have uppercase letter if
     // the "Shift + <key>" combo was used or the Caps Lock
-    // key was on. We turn to key to lowercase so the keybindings
+    // key was on. We turn to key to lowercase so the key bindings
     // work regardless of whether Caps Lock was on or not.
     const key = event.key.toLowerCase();
     let type;
@@ -385,4 +387,28 @@ export function format_text(textarea, type) {
             break;
         }
     }
+}
+
+export function hide_compose_spinner() {
+    $("#compose-send-button .loader").hide();
+    $("#compose-send-button span").show();
+    $("#compose-send-button").removeClass("disable-btn");
+}
+
+export function show_compose_spinner() {
+    // Always use white spinner.
+    loading.show_button_spinner($("#compose-send-button .loader"), true);
+    $("#compose-send-button span").hide();
+    $("#compose-send-button").addClass("disable-btn");
+}
+
+export function get_compose_click_target(e) {
+    const compose_control_buttons_popover = popover_menus.get_compose_control_buttons_popover();
+    if (
+        compose_control_buttons_popover &&
+        $(compose_control_buttons_popover.popper).has(e.target).length
+    ) {
+        return compose_control_buttons_popover.reference;
+    }
+    return e.target;
 }

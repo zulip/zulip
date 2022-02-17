@@ -59,6 +59,7 @@ class LinkifierDict(TypedDict):
 class SAMLIdPConfigDict(TypedDict, total=False):
     entity_id: str
     url: str
+    slo_url: str
     attr_user_permanent_id: str
     attr_first_name: str
     attr_last_name: str
@@ -71,9 +72,3 @@ class SAMLIdPConfigDict(TypedDict, total=False):
     extra_attrs: List[str]
     x509cert: str
     x509cert_path: str
-
-
-class FullNameInfo(TypedDict):
-    id: int
-    email: str
-    full_name: str

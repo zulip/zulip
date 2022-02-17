@@ -25,7 +25,7 @@
         + .reaction_button {
             visibility: hidden;
             pointer-events: none;
-            margin: 2px 0.1em 3px 0.1em;
+            margin: 2px 0.1em 3px;
             padding: 3px;
             height: 14px;
             border-radius: 4px;
@@ -50,7 +50,7 @@
     .message_reaction_count {
         position: relative;
         top: 4px;
-        font-size: 0.8em;
+        font-size: 90%;
         display: inline-block;
         vertical-align: top;
         color: hsl(200, 100%, 40%);

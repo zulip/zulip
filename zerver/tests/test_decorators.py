@@ -1,6 +1,7 @@
 import base64
 import os
 import re
+import uuid
 from collections import defaultdict
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 from unittest import mock, skipUnless
@@ -394,11 +395,11 @@ class SkipRateLimitingTest(ZulipTestCase):
     def test_authenticated_rest_api_view(self) -> None:
         @authenticated_rest_api_view(skip_rate_limiting=False)
         def my_rate_limited_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-            return json_success()  # nocoverage # mock prevents this from being called
+            return json_success(request)  # nocoverage # mock prevents this from being called
 
         @authenticated_rest_api_view(skip_rate_limiting=True)
         def my_unlimited_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-            return json_success()
+            return json_success(request)
 
         request = HostRequestMock(host="zulip.testserver")
         request.META["HTTP_AUTHORIZATION"] = self.encode_email(self.example_email("hamlet"))
@@ -417,11 +418,11 @@ class SkipRateLimitingTest(ZulipTestCase):
     def test_authenticated_uploads_api_view(self) -> None:
         @authenticated_uploads_api_view(skip_rate_limiting=False)
         def my_rate_limited_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-            return json_success()  # nocoverage # mock prevents this from being called
+            return json_success(request)  # nocoverage # mock prevents this from being called
 
         @authenticated_uploads_api_view(skip_rate_limiting=True)
         def my_unlimited_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-            return json_success()
+            return json_success(request)
 
         request = HostRequestMock(host="zulip.testserver")
         request.method = "POST"
@@ -439,7 +440,7 @@ class SkipRateLimitingTest(ZulipTestCase):
 
     def test_authenticated_json_view(self) -> None:
         def my_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-            return json_success()
+            return json_success(request)
 
         my_rate_limited_view = authenticated_json_view(my_view, skip_rate_limiting=False)
         my_unlimited_view = authenticated_json_view(my_view, skip_rate_limiting=True)
@@ -644,7 +645,7 @@ class RateLimitTestCase(ZulipTestCase):
 
     @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
     def test_rate_limiting_happens_if_remote_server(self) -> None:
-        server_uuid = "1234-abcd"
+        server_uuid = str(uuid.uuid4())
         server = RemoteZulipServer(
             uuid=server_uuid,
             api_key="magic_secret_api_key",
@@ -1142,7 +1143,7 @@ class FetchAPIKeyTest(ZulipTestCase):
     def test_fetch_api_key_wrong_password(self) -> None:
         self.login("cordelia")
         result = self.client_post("/json/fetch_api_key", dict(password="wrong_password"))
-        self.assert_json_error_contains(result, "password is incorrect")
+        self.assert_json_error_contains(result, "Password is incorrect")
 
 
 class InactiveUserTest(ZulipTestCase):
@@ -2079,27 +2080,31 @@ class TestRequestNotes(ZulipTestCase):
             return inner
 
         zulip_realm = get_realm("zulip")
-        with mock.patch("zerver.views.home.home_real", new=mock_home(zulip_realm)):
+
+        # We don't need to test if user is logged in here, so we patch zulip_login_required.
+        with mock.patch("zerver.views.home.zulip_login_required", lambda f: mock_home(zulip_realm)):
             result = self.client_get("/", subdomain="zulip")
             self.assertEqual(result.status_code, 200)
 
         # When a request is made to the root subdomain and there is no realm on it,
         # no realm can be set on the request notes.
-        with mock.patch("zerver.views.home.home_real", new=mock_home(None)):
+        with mock.patch("zerver.views.home.zulip_login_required", lambda f: mock_home(None)):
             result = self.client_get("/", subdomain="")
             self.assertEqual(result.status_code, 200)
 
         root_subdomain_realm = do_create_realm("", "Root Domain")
         # Now test that that realm does get set, if it exists, for requests
         # to the root subdomain.
-        with mock.patch("zerver.views.home.home_real", new=mock_home(root_subdomain_realm)):
+        with mock.patch(
+            "zerver.views.home.zulip_login_required", lambda f: mock_home(root_subdomain_realm)
+        ):
             result = self.client_get("/", subdomain="")
             self.assertEqual(result.status_code, 200)
 
         # Only the root subdomain allows requests to it without having a realm.
         # Requests to non-root subdomains get stopped by the middleware and
         # an error page is returned before the request hits the view.
-        with mock.patch("zerver.views.home.home_real") as mock_home_real:
+        with mock.patch("zerver.views.home.zulip_login_required") as mock_home_real:
             result = self.client_get("/", subdomain="invalid")
             self.assertEqual(result.status_code, 404)
             self.assert_in_response(

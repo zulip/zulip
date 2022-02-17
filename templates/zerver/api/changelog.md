@@ -1,20 +1,111 @@
 # API changelog
 
-This page documents changes to the Zulip Server API over time. See also
-the [Zulip server changelog][server-changelog].
+This page documents changes to the Zulip Server API over time. See
+also the [Zulip release lifecycle][release-lifecycle] for background
+on why this API changelog is important, and the [Zulip server
+changelog][server-changelog].
 
-The recommended way for a client like the Zulip mobile or desktop apps
-that needs to support interaction with a wide range of different Zulip
-server versions is to check the `zulip_feature_level` parameter in the
-`/register` and `/server_settings` responses to determine which of the
-below features are supported.
+The API feature levels system used in this changelog is designed to
+make it possible to write API clients, such as the Zulip mobile and
+terminal apps, that work with a wide range of Zulip server
+versions. Every change to the Zulip API is recorded both here and in
+**Changes** entries in the API documentation for the modified
+endpoint(s).
+
+When using an API endpoint whose behavior has changed, Zulip API
+clients should check the `zulip_feature_level` field, present in the
+[`GET /server_settings`](/api/get-server-settings) and [`POST
+/register`](/api/register-queue) responses, to determine the API
+format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 5.0
+
+
+**Feature level 115**
+
+* Mobile push notifications about stream messages now include the
+  `stream_id` field.
+
+**Feature level 114**
+
+* [`GET /events`](/api/get-events): Added `rendering_only` field to
+  `update_message` event type to indicate if the message change only
+  updated the rendering of the message or if it was the result of a
+  user interaction.
+
+* [`GET /events`](/api/get-events): Updated `update_message` event type
+  to always include `edit_timestamp` and `user_id` fields. If the event
+  only updates the rendering of the message, then the `user_id` field
+  will be present, but with a value of null as the update was not the
+  result of a user interaction.
+
+**Feature level 113**
+
+* `GET /realm/emoji`, `POST /realm/emoji/{emoji_name}`, [`GET
+  /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  The `still_url` field for custom emoji objects is now always
+  present, with a value of null for non-animated emoji. Previously, it
+  only was present for animated emoji.
+
+**Feature level 112**
+
+* [`GET /events`](/api/get-events): Updated `update_message` event type
+  to include `stream_id` field for all edits to stream messages.
+
+**Feature level 111**
+
+* [`POST /subscriptions/properties`](/api/update-subscription-settings):
+  Removed `subscription_data` from response object, replacing it with
+  `ignored_parameters_unsupported`.
+
+**Feature level 110**
+
+* [`POST /register`](/api/register-queue): Added
+  `server_web_public_streams_enabled` to the response.
+
+**Feature level 109**
+
+* [`POST /register`](/api/register-queue), [`GET
+  /events`](/api/get-events), `PATCH /realm`: Added new
+  `enable_spectator_access` realm setting.
+
+**Feature level 108**
+
+* In the mobile application authentication flow, the authenticated
+  user's `user_id` is now included in the parameters encoded in the
+  final `zulip://` redirect URL.
+
+**Feature level 107**
+
+* [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
+  [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added user setting `escape_navigates_to_default_view` to allow users to
+  [disable the keyboard shortcut](/help/configure-default-view) for the `Esc` key that
+  navigates the app to the default view.
+
+**Feature level 106**
+
+* [`PATCH /user/{user_id}`](/api/update-user): Removed unnecessary JSON-encoding of string
+  parameter `full_name`.
+
+**Feature level 105**
+
+* [`POST /register`](/api/register-queue), [`PATCH
+  /settings`](/api/update-settings), [`PATCH
+  /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added three new privacy settings: `send_private_typing_notifications`,
+  `send_stream_typing_notifications`, and `send_read_receipts`.
+
+**Feature level 104**
+
+* [`PATCH /realm`]: Added `string_id` parameter for changing an
+  organization's subdomain. Currently, this is only allowed for
+  changing a demo organization to a normal one.
 
 **Feature level 103**
 
 * [`POST /register`](/api/register-queue): Added `create_web_public_stream_policy`
-  policy for which users can create web public streams.
+  policy for which users can create web-public streams.
 * [`PATCH /realm`]: Added support for updating `create_web_public_stream_policy`.
 * [`POST /register`](/api/register-queue): Added `can_create_web_public_streams` boolean
   field to the response.
@@ -41,7 +132,8 @@ below features are supported.
 
 * [`POST /register`](/api/register-queue), [`GET
   /events`](/api/get-events): `message_content_delete_limit_seconds`
-  now represents no limit using `null`, instead of the integer 0.
+  now represents no limit using `null`, instead of the integer 0, and 0 is
+  no longer a possible value with any meaning.
 * `PATCH /realm`: One now sets `message_content_delete_limit_seconds`
   to no limit by passing the string `unlimited`, rather than the
   integer 0.
@@ -484,7 +576,7 @@ field with an integer field `invite_to_realm_policy`.
 **Feature level 42**
 
 * `PATCH /settings/display`: Added a new `default_view` setting allowing
-  the user to [set the default view](/help/change-default-view).
+  the user to [set the default view](/help/configure-default-view).
 
 **Feature level 41**
 
@@ -517,7 +609,7 @@ field with an integer field `invite_to_realm_policy`.
 * [`POST /users`](/api/create-user): Restricted access to organization
   administrators with the `can_create_users` permission.
 * [Error handling](/api/rest-error-handling): The `code` property will
-  not be present in errors due to rate limits.
+  now be present in errors due to rate limits.
 
 **Feature level 35**
 
@@ -883,3 +975,4 @@ No changes; feature level used for Zulip 3.0 release.
   being changed and should not be used by clients.
 
 [server-changelog]: https://zulip.readthedocs.io/en/latest/overview/changelog.html
+[release-lifecycle]: https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html

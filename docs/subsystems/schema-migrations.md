@@ -1,7 +1,7 @@
 # Schema migrations
 
 Zulip uses the [standard Django system for doing schema
-migrations](https://docs.djangoproject.com/en/1.10/topics/migrations/).
+migrations](https://docs.djangoproject.com/en/3.2/topics/migrations/).
 There is some example usage in the [new feature
 tutorial](../tutorials/new-feature-tutorial.md).
 
@@ -129,7 +129,7 @@ migrations.
     the migration can even continue where it left off, without needing
     to redo work.
   - **Multi-step migrations**. For really big migrations, one wants
-    to split the transition into into several commits that are each
+    to split the transition into several commits that are each
     individually correct, and can each be deployed independently:
 
     1. First, do a migration to add the new column to the Message table
@@ -164,7 +164,7 @@ an incorrect migration messes up a database in a way that's impossible
 to undo without going to backups.
 
 [django-migration-test-blog-post]: https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
-[migrations-non-atomic]: https://docs.djangoproject.com/en/1.10/howto/writing-migrations/#non-atomic-migrations
+[migrations-non-atomic]: https://docs.djangoproject.com/en/3.2/howto/writing-migrations/#non-atomic-migrations
 
 ## Schema and initial data changes
 

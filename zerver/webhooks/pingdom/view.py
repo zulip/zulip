@@ -1,4 +1,4 @@
-# Webhooks pfor external integrations.
+# Webhooks for external integrations.
 from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
@@ -55,7 +55,7 @@ def api_pingdom_webhook(
         raise UnsupportedWebhookEventType(check_type)
 
     check_send_webhook_message(request, user_profile, subject, body, check_type)
-    return json_success()
+    return json_success(request)
 
 
 def get_subject_for_http_request(payload: Dict[str, Any]) -> str:

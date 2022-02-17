@@ -13,7 +13,7 @@ import re
 import subprocess
 import sys
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from typing import NoReturn
@@ -30,8 +30,10 @@ from scripts.lib.zulip_tools import (
     assert_running_as_root,
     get_config,
     get_config_file,
+    listening_publicly,
     parse_os_release,
     run_psql_as_postgres,
+    start_arg_parser,
     su_to_zulip,
 )
 
@@ -60,6 +62,7 @@ def error_desupported_os(vendor: str, os_version: str) -> "NoReturn":
 UNSUPPORTED_DISTROS = [
     ("ubuntu", "14.04"),
     ("ubuntu", "16.04"),
+    ("ubuntu", "18.04"),
     ("debian", "9"),
 ]
 distro_info = parse_os_release()
@@ -72,10 +75,17 @@ if (vendor, os_version) in UNSUPPORTED_DISTROS:
 # make sure we have appropriate file permissions
 os.umask(0o22)
 
-parser = argparse.ArgumentParser()
+restart_parser = start_arg_parser(action="restart", add_help=False)
+
+parser = argparse.ArgumentParser(parents=[restart_parser])
 parser.add_argument("deploy_path", metavar="deploy_path", help="Path to deployment directory")
 parser.add_argument("--skip-puppet", action="store_true", help="Skip doing puppet/apt upgrades.")
 parser.add_argument("--skip-migrations", action="store_true", help="Skip doing migrations.")
+parser.add_argument(
+    "--skip-downgrade-check",
+    action="store_true",
+    help="Skip the safety check to prevent database downgrades.",
+)
 parser.add_argument(
     "--from-git", action="store_true", help="Upgrading from git, so run update-prod-static."
 )
@@ -92,6 +102,15 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
+if not args.skip_puppet and args.less_graceful:
+    logging.warning("Ignored --less-graceful; all upgrades without --skip-puppet are ungraceful.")
+
+if not args.skip_puppet and args.skip_tornado:
+    logging.error(
+        "Cannot skip tornado restart unless we are skipping puppet!  Omit --skip-tornado, or add --skip-puppet."
+    )
+    sys.exit(1)
+
 deploy_path = args.deploy_path
 os.chdir(deploy_path)
 
@@ -100,12 +119,44 @@ config_file = get_config_file()
 IS_SERVER_UP = True
 
 
+# Check if rabbitmq port 25672 is listening on anything except 127.0.0.1
+rabbitmq_dist_listen = listening_publicly(25672)
+# Check the erlang magic cookie size
+cookie_size: Optional[int] = None
+if os.path.exists("/var/lib/rabbitmq/.erlang.cookie"):
+    with open("/var/lib/rabbitmq/.erlang.cookie", "r") as cookie_fh:
+        cookie_size = len(cookie_fh.readline())
+else:
+    logging.info("No RabbitMQ erlang cookie found, not auditing RabbitMQ security.")
+if args.skip_puppet and rabbitmq_dist_listen:
+    logging.error(
+        "RabbitMQ is publicly-accessible on %s; this is a security vulnerability!",
+        ", ".join(rabbitmq_dist_listen),
+    )
+    issue = "issue"
+    if cookie_size is not None and cookie_size == 20:
+        # See the below comment -- this is used as a lightweight
+        # signal for a cookie made with Erlang's bad randomizer.
+        logging.error(
+            "RabbitMQ erlang cookie is insecure; this is a critical security vulnerability!"
+        )
+        issue = "issues"
+    logging.error(
+        "To fix the above security %s, re-run the upgrade without --skip-puppet "
+        "(which may be set in /etc/zulip/zulip.conf), in order to restart the "
+        "necessary services.  Running zulip-puppet-apply by itself is not sufficient.",
+        issue,
+    )
+    sys.exit(1)
+
+
 def shutdown_server() -> None:
     global IS_SERVER_UP
 
-    logging.info("Stopping Zulip...")
-    subprocess.check_call(["./scripts/stop-server"], preexec_fn=su_to_zulip)
-    IS_SERVER_UP = False
+    if IS_SERVER_UP:
+        logging.info("Stopping Zulip...")
+        subprocess.check_call(["./scripts/stop-server"], preexec_fn=su_to_zulip)
+        IS_SERVER_UP = False
 
 
 # postgresql.version is required for database servers, but wasn't
@@ -115,7 +166,6 @@ if os.path.exists("/etc/init.d/postgresql"):
     if not postgresql_version:
         default_postgresql_version = {
             ("debian", "10"): "11",
-            ("ubuntu", "18.04"): "10",
             ("ubuntu", "20.04"): "12",
             ("centos", "7"): "11",
         }
@@ -145,7 +195,7 @@ if glob.glob("/usr/share/postgresql/*/extension/tsearch_extras.control"):
 if not args.skip_puppet:
     logging.info("Upgrading system packages...")
     subprocess.check_call(["apt-get", "update"])
-    subprocess.check_call(["apt-get", "-y", "upgrade"])
+    subprocess.check_call(["apt-get", "-y", "--allow-downgrades", "upgrade"])
 
 # To bootstrap zulip-puppet-apply, we need to install the system yaml
 # package; new installs get this, but old installs may not have it.
@@ -158,11 +208,19 @@ if not os.path.exists(os.path.join(deploy_path, "zproject/prod_settings.py")):
     # zulip<1.4.0, we need to do it.  See discussion in commit 586b23637.
     os.symlink("/etc/zulip/settings.py", os.path.join(deploy_path, "zproject/prod_settings.py"))
 
-# Now we should have an environment setup where we can run our tools;
+# Now we should have an environment set up where we can run our tools;
 # first, creating the production venv.
 subprocess.check_call(
     [os.path.join(deploy_path, "scripts", "lib", "create-production-venv"), deploy_path]
 )
+
+# Check to make sure that this upgrade is not actually a database
+# downgrade.
+if not args.skip_downgrade_check:
+    subprocess.check_call(
+        [os.path.join(deploy_path, "scripts", "lib", "check-database-compatibility.py")],
+        preexec_fn=su_to_zulip,
+    )
 
 # Make sure the right version of node is installed
 subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "install-node")])
@@ -206,8 +264,8 @@ elif args.from_git:
     # Ideally, we'd have 2 thresholds here, depending on whether the
     # system is running queue workers multithreaded or multiprocess.
     # See puppet/zulip/manifests/app_frontend_base.pp for background.
-    if mem_gib < 3.8:
-        logging.info("Shutting down server to build static assets on a low-RAM system.")
+    if mem_gib < 4.2:
+        logging.info("Shutting down server to ensure sufficient free RAM for webpack.")
         shutdown_server()
 
     # Note: The fact that this is before we apply Puppet changes means
@@ -215,7 +273,15 @@ elif args.from_git:
     # update-prod-static with the Git upgrade process.  But it'll fail
     # safely; this seems like a worthwhile tradeoff to minimize downtime.
     logging.info("Building static assets...")
-    subprocess.check_call(["./tools/update-prod-static"], preexec_fn=su_to_zulip)
+    try:
+        subprocess.check_call(["./tools/update-prod-static"], preexec_fn=su_to_zulip)
+    except subprocess.CalledProcessError:
+        logging.error("Failed to build static assets.")
+        if IS_SERVER_UP:
+            logging.error("Usually the cause is insufficient free RAM to run webpack.")
+            logging.error("Try stopping the Zulip server (scripts/stop-server) and trying again.")
+        sys.exit(1)
+
     logging.info("Caching Zulip Git version...")
     subprocess.check_call(["./tools/cache-zulip-git-version"], preexec_fn=su_to_zulip)
 else:
@@ -243,7 +309,7 @@ migrations_needed = False
 if not args.skip_migrations:
     logging.info("Checking for needed migrations")
     migrations_output = subprocess.check_output(
-        ["./manage.py", "showmigrations"], preexec_fn=su_to_zulip, universal_newlines=True
+        ["./manage.py", "showmigrations"], preexec_fn=su_to_zulip, text=True
     )
     need_create_large_indexes = False
     for ln in migrations_output.split("\n"):
@@ -261,6 +327,21 @@ if (not args.skip_puppet or migrations_needed) and IS_SERVER_UP:
     # Puppet changes, to minimize risk of issues due to inconsistent
     # state.
     shutdown_server()
+
+if rabbitmq_dist_listen:
+    shutdown_server()
+    logging.info("Shutting down rabbitmq to adjust its ports...")
+    subprocess.check_call(["/usr/sbin/service", "rabbitmq-server", "stop"])
+
+if cookie_size is not None and cookie_size == 20:
+    # Checking for a 20-character cookie is used as a signal that it
+    # was generated by Erlang's insecure randomizer, which only
+    # provides between 20 and 36 bits of entropy; were it 20
+    # characters long by a good randomizer, it would be 96 bits and
+    # more than sufficient.  We generate, using good randomness, a
+    # 255-character cookie, the max allowed length.
+    logging.info("Generating a secure erlang cookie...")
+    subprocess.check_call(["./scripts/setup/generate-rabbitmq-cookie"])
 
 # Adjust Puppet class names for the manifest renames in the 4.0 release
 class_renames = {
@@ -291,7 +372,7 @@ if classes != new_classes:
 if not args.skip_puppet:
     logging.info("Applying Puppet changes...")
     subprocess.check_call(["./scripts/zulip-puppet-apply", "--force"])
-    subprocess.check_call(["apt-get", "-y", "upgrade"])
+    subprocess.check_call(["apt-get", "-y", "--allow-downgrades", "upgrade"])
 
 if migrations_needed:
     logging.info("Applying database migrations...")
@@ -304,9 +385,14 @@ if IS_SERVER_UP or not args.skip_puppet:
     # Even if the server wasn't up previously, puppet might have
     # started it if there were supervisord configuration changes, so
     # we need to use restart-server if puppet ran.
-    subprocess.check_output(["./scripts/restart-server", "--fill-cache"], preexec_fn=su_to_zulip)
+    restart_args = ["--fill-cache"]
+    if args.skip_tornado:
+        restart_args.append("--skip-tornado")
+    if args.less_graceful:
+        restart_args.append("--less-graceful")
+    subprocess.check_call(["./scripts/restart-server", *restart_args], preexec_fn=su_to_zulip)
 else:
-    subprocess.check_output(["./scripts/start-server", "--fill-cache"], preexec_fn=su_to_zulip)
+    subprocess.check_call(["./scripts/start-server", "--fill-cache"], preexec_fn=su_to_zulip)
 
 logging.info("Upgrade complete!")
 

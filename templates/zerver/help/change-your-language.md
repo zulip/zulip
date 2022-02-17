@@ -15,7 +15,7 @@ If your entire organization speaks a language other than English, an administrat
 
 {settings_tab|display-settings}
 
-2. Under **Language settings**, click the button next to **Default language**.
+2. Under **Language and time**, click the button next to **Language**.
 
 3. Click on a language.
 

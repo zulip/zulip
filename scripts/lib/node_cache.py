@@ -42,9 +42,7 @@ def generate_sha1sum_node_modules(
             data[YARN_LOCK_FILE_PATH] = f.read().strip()
     with open(YARN_PACKAGE_JSON) as f:
         data["yarn-package-version"] = json.load(f)["version"]
-    data["node-version"] = subprocess.check_output(
-        ["node", "--version"], universal_newlines=True
-    ).strip()
+    data["node-version"] = subprocess.check_output(["node", "--version"], text=True).strip()
     data["yarn-args"] = get_yarn_args(production=production)
 
     sha1sum = hashlib.sha1()

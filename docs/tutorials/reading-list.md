@@ -77,7 +77,7 @@ _Tutorial_ - [clean-code-javascript Software engineering principles](https://git
 
 _Course_ - [React native and redux course](https://www.udemy.com/course/the-complete-react-native-and-redux-course/) (_Not free!_)
 
-_Slides_ - [TypeScript vs. CoffeeScript vs. ES6](https://www.slideshare.net/NeilGreen1/type-script-vs-coffeescript-vs-es6)
+_Video_ - [TypeScript vs. CoffeeScript vs. ES6](https://www.youtube.com/watch?v=Ae4h9GC9cCg)
 
 ## TypeScript
 

@@ -17,6 +17,7 @@ look at the newest features, consider the [beta releases](#install-a-beta-releas
 <!-- TODO why zip? -->
 
 1. Download [Zulip for macOS](https://zulip.com/apps/mac).
+
 1. Open the file, and drag the app into the `Applications` folder.
 
 The app will update automatically to future versions.
@@ -24,6 +25,7 @@ The app will update automatically to future versions.
 #### Homebrew
 
 1. Run `brew cask install zulip` in Terminal.
+
 1. Run Zulip from `Applications`. <!-- TODO fact check -->
 
 The app will update automatically to future versions. `brew upgrade` will
@@ -34,6 +36,7 @@ also work, if you prefer.
 #### Web installer (recommended)
 
 1. Download and run [Zulip for Windows](https://zulip.com/apps/windows).
+
 1. Run Zulip from the Start menu.
 
 The app will update automatically to future versions.
@@ -42,8 +45,10 @@ The app will update automatically to future versions.
 
 1. Download [zulip-x.x.x-x64.nsis.7z][latest] for 64-bit desktops
    (common), or [zulip-x.x.x-ia32.nsis.7z][latest] for 32-bit (rare).
+
 2. Copy the installer file to the machine you want to install the app
    on, and run it there.
+
 3. Run Zulip from the Start menu.
 
 The app will NOT update automatically. You can repeat these steps to upgrade
@@ -74,9 +79,11 @@ regular software update on your system, e.g. with
 #### AppImage (recommended for all other distros)
 
 1. Download [Zulip for Linux](https://zulip.com/apps/linux).
+
 2. Make the file executable, with
    `chmod a+x Zulip-x.x.x-x86_64.AppImage` from a terminal (replace
    `x.x.x` with the actual name of the downloaded file).
+
 3. Run the file from your app launcher, or from a terminal.
 
 No installer is necessary; this file is the Zulip app. The app will update

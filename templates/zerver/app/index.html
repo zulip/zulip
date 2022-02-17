@@ -41,7 +41,10 @@
     top: unset;
     bottom: 20px;
     }
-    body.night-mode #app-loading {
+    body.color-scheme-automatic #app-loading{
+    color: hsl(0, 0%, 20%);
+    }
+    body.dark-theme #app-loading {
     background-color: hsl(212, 28%, 18%);
     color: hsl(236, 33%, 90%);
     }
@@ -72,10 +75,7 @@
     </div>
 </div>
 
-<div class="subscriptions">
-    <div id="subscriptions_table">
-    </div>
-</div>
+<div id="manage_streams_container"></div>
 <div id="drafts_table"></div>
 <div id="settings_overlay_container" class="overlay" data-overlay="settings" aria-hidden="true">
 </div>
@@ -95,8 +95,10 @@
     <div class="alert-box">
         <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
             <div class="exit"></div>
-            {% trans %}<strong class="message">Unable to connect to
-            Zulip.</strong>  Updates may be delayed.{% endtrans %} {{ _('Retrying soon...') }} <a class="restart_get_events_button">{{ _('Try now.') }}</a>
+            <strong class="message">{{ _('Unable to connect to Zulip.') }}</strong>
+            {{ _('Updates may be delayed.') }}
+            {{ _('Retrying soon…') }}
+            <a class="restart_get_events_button">{{ _('Try now.') }}</a>
         </div>
         <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
             <div class="exit"></div>
@@ -107,13 +109,14 @@
             <span id="normal-zephyr-mirror-error-text">
                 We recommend that
                 you <a class="webathena_login">give Zulip the ability to mirror the messages for you via
-                WebAthena</a>.  If you'd prefer, you can instead
+                Webathena</a>.  If you'd prefer, you can instead
                 <a href="/zephyr-mirror" target="_blank" rel="noopener noreferrer">run the
                 Zephyr mirror script yourself</a> in a screen
                 session.
             </span>
-            <span id="desktop-zephyr-mirror-error-text" class="notdisplayed">To fix
-              this, you'll need to use the web interface.</span>
+            <span id="desktop-zephyr-mirror-error-text" class="notdisplayed">
+                To fix this, you'll need to use the web interface.
+            </span>
         </div>
         <div class="alert alert_sidebar alert-error home-error-bar" id="home-error"></div>
         <div class="alert alert_sidebar alert-error home-error-bar" id="reloading-application"></div>
@@ -160,7 +163,7 @@
                         </div>
                         <div id="loading_older_messages_indicator"></div>
                         <div id="page_loading_indicator"></div>
-                        {% include "zerver/app/message_feed_errors.html" %}
+                        <div id="message_feed_errors_container"></div>
                         <div class="message_table focused_table" id="zhome" role="list" aria-live="polite" aria-label="{{ _('Messages') }}">
                         </div>
                         <div class="message_table" id="zfilt" role="list" aria-live="polite" aria-label="{{ _('Messages') }}">
@@ -189,7 +192,7 @@
     <div class="informational-overlays overlay new-style" data-overlay="informationalOverlays" aria-hidden="true">
         <div class="overlay-content modal-bg">
             <div class="overlay-tabs">
-                <button class="button no-style exit">&times;</button>
+                <span class="exit">&times;</span>
             </div>
             <div class="overlay-body">
             </div>

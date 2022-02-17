@@ -44,7 +44,7 @@ EXTERNAL_HOST = "zulip.example.com"
 ## representing the host/domain names that your users can enter in
 ## their browsers to access Zulip.  This is a security measure; for
 ## details, see the Django documentation:
-## https://docs.djangoproject.com/en/2.2/ref/settings/#allowed-hosts
+## https://docs.djangoproject.com/en/3.2/ref/settings/#allowed-hosts
 ##
 ## Zulip automatically adds to this list 'localhost', '127.0.0.1', and
 ## patterns representing EXTERNAL_HOST and subdomains of it.  If you are
@@ -195,8 +195,8 @@ AUTH_LDAP_USER_SEARCH = LDAPSearch(
     "ou=users,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(uid=%(user)s)"
 )
 
-## Configuration to lookup a user's LDAP data given their email address
-## (For Zulip reverse mapping).  If users log in as e.g. "sam" when
+## Configuration to look up a user's LDAP data given their email address
+## (for Zulip reverse mapping).  If users log in as e.g. "sam" when
 ## their email address is "sam@example.com", set LDAP_APPEND_DOMAIN to
 ## "example.com".  Otherwise, leave LDAP_APPEND_DOMAIN=None and set
 ## AUTH_LDAP_REVERSE_EMAIL_SEARCH and AUTH_LDAP_USERNAME_ATTR below.
@@ -403,7 +403,7 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, Any] = {
         "url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",
         ##
         ## The part below corresponds to what's likely referred to as something like
-        ## "Attribute Statements" (with Okta as your IdP) or "Attribute Mapping" (with G Suite).
+        ## "Attribute Statements" (with Okta as your IdP) or "Attribute Mapping" (with Google Workspace).
         ## The names on the right side need to correspond to the names under which
         ## the IdP will send the user attributes. With these defaults, it's expected
         ## that the user's email will be sent with the "email" attribute name,
@@ -756,9 +756,15 @@ CAMO_URI = "/external_content/"
 ## Controls whether Zulip will rate-limit user requests.
 # RATE_LIMITING = True
 
-## If you want to set a Terms of Service for your server, set the path
-## to your Markdown file, and uncomment the following line.
-# TERMS_OF_SERVICE = '/etc/zulip/terms.md'
+## Fetch TOR exit node list every hour, and group all TOR exit nodes
+## together into one bucket when applying rate-limiting.
+# RATE_LIMIT_TOR_TOGETHER = False
 
-## Similarly if you want to set a Privacy Policy.
-# PRIVACY_POLICY = '/etc/zulip/privacy.md'
+## Configuration for Terms of Service and Privacy Policy for the
+## server.  If unset, Zulip will never prompt users to accept Terms of
+## Service.  Users will be prompted to accept the terms during account
+## registration, and during login if this value has changed.
+# TERMS_OF_SERVICE_VERSION = "1.0"
+
+## Directory containing Markdown files for the server's policies.
+# POLICIES_DIRECTORY = "/etc/zulip/policies/"

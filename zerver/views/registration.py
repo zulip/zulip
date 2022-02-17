@@ -51,7 +51,7 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import EmailNotDeliveredException, FromAddress, send_email
 from zerver.lib.sessions import get_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
-from zerver.lib.url_encoding import add_query_to_redirect_url
+from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import get_accounts_for_email
 from zerver.lib.validator import to_converted_or_fallback, to_non_negative_int, to_timezone_or_empty
 from zerver.lib.zephyr import compute_mit_user_fullname
@@ -60,6 +60,7 @@ from zerver.models import (
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
     MultiuseInvite,
+    PreregistrationUser,
     Realm,
     Stream,
     UserProfile,
@@ -94,37 +95,53 @@ if settings.BILLING_ENABLED:
 
 
 @has_request_variables
-def check_prereg_key_and_redirect(
+def get_prereg_key_and_redirect(
     request: HttpRequest, confirmation_key: str, full_name: Optional[str] = REQ(default=None)
 ) -> HttpResponse:
-    confirmation = Confirmation.objects.filter(confirmation_key=confirmation_key).first()
-    if confirmation is None or confirmation.type not in [
-        Confirmation.USER_REGISTRATION,
-        Confirmation.INVITATION,
-        Confirmation.REALM_CREATION,
-    ]:
-        return render_confirmation_key_error(
-            request, ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST)
-        )
+    """
+    The purpose of this little endpoint is primarily to take a GET
+    request to a long URL containing a confirmation key, and render
+    a page that will via JavaScript immediately do a POST request to
+    /accounts/register, so that the user can create their account on
+    a page with a cleaner URL (and with the browser security and UX
+    benefits of an HTTP POST having generated the page).
 
-    prereg_user = confirmation.content_object
-    assert prereg_user is not None
-    if prereg_user.status == confirmation_settings.STATUS_REVOKED:
-        return render(request, "zerver/confirmation_link_expired_error.html")
-
+    The only thing it does before rendering that page is to check
+    the validity of the confirmation link. This is redundant with a
+    similar check in accounts_register, but it provides a slightly nicer
+    user-facing error handling experience if the URL you visited is
+    displayed in the browser. (E.g. you can debug that you
+    accidentally adding an extra character after pasting).
+    """
     try:
-        get_object_from_key(confirmation_key, confirmation.type, activate_object=False)
-    except ConfirmationKeyException as exception:
-        return render_confirmation_key_error(request, exception)
+        check_prereg_key(request, confirmation_key)
+    except ConfirmationKeyException as e:
+        return render_confirmation_key_error(request, e)
 
-    # confirm_preregistrationuser.html just extracts the confirmation_key
-    # (and GET parameters) and redirects to /accounts/register, so that the
-    # user can enter their information on a cleaner URL.
     return render(
         request,
         "confirmation/confirm_preregistrationuser.html",
         context={"key": confirmation_key, "full_name": full_name},
     )
+
+
+def check_prereg_key(request: HttpRequest, confirmation_key: str) -> PreregistrationUser:
+    """
+    Checks if the Confirmation key is valid, returning the PreregistrationUser object in case of success
+    and raising an appropriate ConfirmationKeyException otherwise.
+    """
+    confirmation_types = [
+        Confirmation.USER_REGISTRATION,
+        Confirmation.INVITATION,
+        Confirmation.REALM_CREATION,
+    ]
+
+    prereg_user = get_object_from_key(confirmation_key, confirmation_types, activate_object=False)
+
+    if prereg_user.status == confirmation_settings.STATUS_REVOKED:
+        raise ConfirmationKeyException(ConfirmationKeyException.EXPIRED)
+
+    return prereg_user
 
 
 @require_post
@@ -140,14 +157,10 @@ def accounts_register(
     ),
 ) -> HttpResponse:
     try:
-        confirmation = Confirmation.objects.get(confirmation_key=key)
-    except Confirmation.DoesNotExist:
-        return render(request, "zerver/confirmation_link_expired_error.html", status=404)
+        prereg_user = check_prereg_key(request, key)
+    except ConfirmationKeyException as e:
+        return render_confirmation_key_error(request, e)
 
-    prereg_user = confirmation.content_object
-    assert prereg_user is not None
-    if prereg_user.status == confirmation_settings.STATUS_REVOKED:
-        return render(request, "zerver/confirmation_link_expired_error.html", status=404)
     email = prereg_user.email
     realm_creation = prereg_user.realm_creation
     password_required = prereg_user.password_required
@@ -165,6 +178,7 @@ def accounts_register(
         # For creating a new realm, there is no existing realm or domain
         realm = None
     else:
+        assert prereg_user.realm is not None
         if get_subdomain(request) != prereg_user.realm.string_id:
             return render_confirmation_key_error(
                 request, ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST)
@@ -368,7 +382,7 @@ def accounts_register(
             # But if the realm is using LDAPAuthBackend, we need to verify
             # their LDAP password (which will, as a side effect, create
             # the user account) here using authenticate.
-            # pregeg_user.realm_creation carries the information about whether
+            # prereg_user.realm_creation carries the information about whether
             # we're in realm creation mode, and the ldap flow will handle
             # that and create the user with the appropriate parameters.
             user_profile = authenticate(
@@ -405,7 +419,7 @@ def accounts_register(
                     # is hidden for most users.
                     view_url = reverse("login")
                     query = urlencode({"email": email})
-                    redirect_url = add_query_to_redirect_url(view_url, query)
+                    redirect_url = append_url_query_string(view_url, query)
                     return HttpResponseRedirect(redirect_url)
             elif not realm_creation:
                 # Since we'll have created a user, we now just log them in.
@@ -432,7 +446,7 @@ def accounts_register(
                 full_name,
                 prereg_user=prereg_user,
                 role=role,
-                tos_version=settings.TOS_VERSION,
+                tos_version=settings.TERMS_OF_SERVICE_VERSION,
                 timezone=timezone,
                 default_stream_groups=default_stream_groups,
                 source_profile=source_profile,
@@ -442,6 +456,7 @@ def accounts_register(
             )
 
         if realm_creation:
+            assert realm.signup_notifications_stream is not None
             bulk_add_subscriptions(
                 realm, [realm.signup_notifications_stream], [user_profile], acting_user=None
             )
@@ -496,6 +511,7 @@ def accounts_register(
             "MAX_NAME_LENGTH": str(UserProfile.MAX_NAME_LENGTH),
             "MAX_PASSWORD_LENGTH": str(form.MAX_PASSWORD_LENGTH),
             "MAX_REALM_SUBDOMAIN_LENGTH": str(Realm.MAX_REALM_SUBDOMAIN_LENGTH),
+            "corporate_enabled": settings.CORPORATE_ENABLED,
             "sorted_realm_types": sorted(
                 Realm.ORG_TYPES.values(), key=lambda d: d["display_order"]
             ),
@@ -574,7 +590,7 @@ def send_confirm_registration_email(
 
 def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
     login_url = reverse("login")
-    redirect_url = add_query_to_redirect_url(
+    redirect_url = append_url_query_string(
         login_url, urlencode({"email": email, "already_registered": 1})
     )
     return HttpResponseRedirect(redirect_url)
@@ -605,7 +621,7 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
         form = RealmCreationForm(request.POST)
         if form.is_valid():
             try:
-                rate_limit_request_by_ip(request, domain="create_realm_by_ip")
+                rate_limit_request_by_ip(request, domain="sends_email_by_ip")
             except RateLimited as e:
                 assert e.secs_to_freedom is not None
                 return render(
@@ -668,6 +684,17 @@ def accounts_home(
     if request.method == "POST":
         form = HomepageForm(request.POST, realm=realm, from_multiuse_invite=from_multiuse_invite)
         if form.is_valid():
+            try:
+                rate_limit_request_by_ip(request, domain="sends_email_by_ip")
+            except RateLimited as e:
+                assert e.secs_to_freedom is not None
+                return render(
+                    request,
+                    "zerver/rate_limit_exceeded.html",
+                    context={"retry_after": int(e.secs_to_freedom)},
+                    status=429,
+                )
+
             email = form.cleaned_data["email"]
 
             try:
@@ -701,7 +728,7 @@ def accounts_home(
 def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     multiuse_object = None
     try:
-        multiuse_object = get_object_from_key(confirmation_key, Confirmation.MULTIUSE_INVITE)
+        multiuse_object = get_object_from_key(confirmation_key, [Confirmation.MULTIUSE_INVITE])
         # Required for OAuth 2
     except ConfirmationKeyException as exception:
         realm = get_realm_from_request(request)
@@ -725,7 +752,7 @@ def find_account(
             emails = form.cleaned_data["emails"]
             for i in range(len(emails)):
                 try:
-                    rate_limit_request_by_ip(request, domain="find_account_by_ip")
+                    rate_limit_request_by_ip(request, domain="sends_email_by_ip")
                 except RateLimited as e:
                     assert e.secs_to_freedom is not None
                     return render(
@@ -775,7 +802,7 @@ def find_account(
             # feature can be used to ascertain which email addresses
             # are associated with Zulip.
             data = urllib.parse.urlencode({"emails": ",".join(emails)})
-            return redirect(add_query_to_redirect_url(url, data))
+            return redirect(append_url_query_string(url, data))
     else:
         form = FindMyTeamForm()
         # The below validation is perhaps unnecessary, in that we

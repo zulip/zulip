@@ -28,7 +28,8 @@ Look at the surrounding code, or a similar part of the project, and try
 to do the same thing. If you think the other code has actively bad
 style, fix it (in a separate commit).
 
-When in doubt, ask in [chat.zulip.org](https://chat.zulip.org).
+When in doubt, ask in
+[#development help](https://chat.zulip.org/#narrow/stream/49-development-help).
 
 ## Lint tools
 
@@ -331,7 +332,7 @@ type changes in the future.
   isort in check mode, or in write mode with
   `tools/lint --only=black,isort --fix`. You may find it helpful to
   [integrate
-  Black](https://black.readthedocs.io/en/stable/editor_integration.html)
+  Black](https://black.readthedocs.io/en/stable/integrations/editors.html)
   and
   [isort](https://pycqa.github.io/isort/#installing-isorts-for-your-preferred-text-editor)
   with your editor.

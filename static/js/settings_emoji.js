@@ -250,17 +250,14 @@ export function set_up() {
             }
 
             if (is_default_emoji(emoji.name)) {
-                const modal_parent = $("#settings_content");
                 const html_body = emoji_settings_warning_modal({
                     emoji_name: emoji.name,
                 });
 
                 confirm_dialog.launch({
-                    parent: modal_parent,
                     html_heading: $t_html({defaultMessage: "Override built-in emoji?"}),
                     html_body,
                     on_click: submit_custom_emoji_request,
-                    fade: true,
                 });
             } else {
                 submit_custom_emoji_request();

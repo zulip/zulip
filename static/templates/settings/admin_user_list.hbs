@@ -7,7 +7,14 @@
     <td>
         <span class="email">{{display_email}}</span>
     </td>
+    {{else}}
+    <td>
+        <span class="hidden-email">{{t "(hidden)"}}</span>
+    </td>
     {{/if}}
+    <td>
+        <span class="user_id">{{user_id}}</span>
+    </td>
     {{#unless is_bot}}
     <td>
         <span class="user_role">{{user_role_text}}</span>
@@ -19,7 +26,7 @@
             {{#if no_owner }}
             {{bot_owner_full_name}}
             {{else}}
-            <a data-user-id="{{bot_owner_id}}" href="#" class="view_user_profile">{{bot_owner_full_name}}</a>
+            <a data-user-id="{{bot_owner_id}}" class="view_user_profile" tabindex="0">{{bot_owner_full_name}}</a>
             {{/if}}
         </span>
     </td>

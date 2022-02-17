@@ -15,16 +15,16 @@ const people = zrequire("people");
 const pm_list = zrequire("pm_list");
 const top_left_corner = zrequire("top_left_corner");
 
-run_test("narrowing", ({override}) => {
+run_test("narrowing", ({override_rewire}) => {
     // activating narrow
 
     let pm_expanded;
     let pm_closed;
 
-    override(pm_list, "close", () => {
+    override_rewire(pm_list, "close", () => {
         pm_closed = true;
     });
-    override(pm_list, "expand", () => {
+    override_rewire(pm_list, "expand", () => {
         pm_expanded = true;
     });
 

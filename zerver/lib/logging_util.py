@@ -117,8 +117,6 @@ class ReturnEnabled(logging.Filter):
 
 class RequireReallyDeployed(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
-        from django.conf import settings
-
         return settings.PRODUCTION
 
 

@@ -1,5 +1,6 @@
 import re
 from typing import Any, Callable, Dict, Match, Optional
+from urllib.parse import urljoin
 
 import magic
 import requests
@@ -14,7 +15,7 @@ from zerver.lib.url_preview.oembed import get_oembed_data
 from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
 
 # FIXME: Should we use a database cache or a memcached in production? What if
-# opengraph data is changed for a site?
+# OpenGraph data is changed for a site?
 # Use an in-memory cache for development, to make it easy to develop this code
 CACHE_NAME = "database" if not settings.DEVELOPMENT else "in-memory"
 # Based on django.core.validators.URLValidator, with ftp support removed.
@@ -94,7 +95,7 @@ def get_link_embed_data(
         return None
 
     # We are using two different mechanisms to get the embed data
-    # 1. Use OEmbed data, if found, for photo and video "type" sites
+    # 1. Use oEmbed data, if found, for photo and video "type" sites
     # 2. Otherwise, use a combination of Open Graph tags and Meta tags
     data = get_oembed_data(url, maxwidth=maxwidth, maxheight=maxheight) or {}
     if data.get("oembed"):
@@ -116,6 +117,8 @@ def get_link_embed_data(
         for key in ["title", "description", "image"]:
             if not data.get(key) and generic_data.get(key):
                 data[key] = generic_data[key]
+    if "image" in data:
+        data["image"] = urljoin(response.url, data["image"])
     return data
 
 

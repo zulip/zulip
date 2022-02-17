@@ -17,8 +17,8 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.user_groups import (
     access_user_group_by_id,
-    get_memberships_of_users,
-    get_user_group_members,
+    get_direct_memberships_of_users,
+    get_user_group_direct_members,
     user_groups_in_realm_serialized,
 )
 from zerver.lib.users import user_ids_to_users
@@ -38,14 +38,14 @@ def add_user_group(
 ) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm)
     check_add_user_group(user_profile.realm, name, user_profiles, description)
-    return json_success()
+    return json_success(request)
 
 
 @require_member_or_admin
 @has_request_variables
 def get_user_group(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     user_groups = user_groups_in_realm_serialized(user_profile.realm)
-    return json_success({"user_groups": user_groups})
+    return json_success(request, data={"user_groups": user_groups})
 
 
 @require_user_group_edit_permission
@@ -68,7 +68,7 @@ def edit_user_group(
     if description != user_group.description:
         do_update_user_group_description(user_group, description)
 
-    return json_success()
+    return json_success(request)
 
 
 @require_user_group_edit_permission
@@ -80,7 +80,7 @@ def delete_user_group(
 ) -> HttpResponse:
 
     check_delete_user_group(user_group_id, user_profile)
-    return json_success()
+    return json_success(request)
 
 
 @require_user_group_edit_permission
@@ -103,18 +103,20 @@ def update_user_group_backend(
             request, user_profile, user_group_id=user_group_id, members=delete
         ),
     ]
-    return compose_views(thunks)
+    data = compose_views(thunks)
+
+    return json_success(request, data)
 
 
 def add_members_to_group_backend(
     request: HttpRequest, user_profile: UserProfile, user_group_id: int, members: Sequence[int]
 ) -> HttpResponse:
     if not members:
-        return json_success()
+        return json_success(request)
 
     user_group = access_user_group_by_id(user_group_id, user_profile)
     user_profiles = user_ids_to_users(members, user_profile.realm)
-    existing_member_ids = set(get_memberships_of_users(user_group, user_profiles))
+    existing_member_ids = set(get_direct_memberships_of_users(user_group, user_profiles))
 
     for user_profile in user_profiles:
         if user_profile.id in existing_member_ids:
@@ -125,21 +127,21 @@ def add_members_to_group_backend(
             )
 
     bulk_add_members_to_user_group(user_group, user_profiles)
-    return json_success()
+    return json_success(request)
 
 
 def remove_members_from_group_backend(
     request: HttpRequest, user_profile: UserProfile, user_group_id: int, members: Sequence[int]
 ) -> HttpResponse:
     if not members:
-        return json_success()
+        return json_success(request)
 
     user_profiles = user_ids_to_users(members, user_profile.realm)
     user_group = access_user_group_by_id(user_group_id, user_profile)
-    group_member_ids = get_user_group_members(user_group)
+    group_member_ids = get_user_group_direct_members(user_group)
     for member in members:
         if member not in group_member_ids:
             raise JsonableError(_("There is no member '{}' in this user group").format(member))
 
     remove_members_from_user_group(user_group, user_profiles)
-    return json_success()
+    return json_success(request)

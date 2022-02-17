@@ -40,7 +40,7 @@ function contains_sub(subs, sub) {
 }
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, override_rewire}) => {
         page_params.is_admin = false;
         page_params.realm_users = [];
         page_params.is_guest = false;
@@ -48,7 +48,7 @@ function test(label, f) {
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
         stream_data.clear_subscriptions();
-        f({override});
+        f({override, override_rewire});
     });
 }
 
@@ -107,10 +107,10 @@ test("basics", () => {
     assert.deepEqual(stream_data.get_colors(), ["red", "yellow"]);
     assert.deepEqual(stream_data.subscribed_stream_ids(), [social.stream_id, test.stream_id]);
 
-    assert.ok(stream_data.is_subscribed("social"));
-    assert.ok(stream_data.is_subscribed("Social"));
-    assert.ok(!stream_data.is_subscribed("Denmark"));
-    assert.ok(!stream_data.is_subscribed("Rome"));
+    assert.ok(stream_data.is_subscribed_by_name("social"));
+    assert.ok(stream_data.is_subscribed_by_name("Social"));
+    assert.ok(!stream_data.is_subscribed_by_name("Denmark"));
+    assert.ok(!stream_data.is_subscribed_by_name("Rome"));
 
     assert.equal(stream_data.get_stream_privacy_policy(test.stream_id), "public");
     assert.equal(stream_data.get_stream_privacy_policy(social.stream_id), "invite-only");
@@ -119,9 +119,12 @@ test("basics", () => {
         "invite-only-public-history",
     );
     assert.equal(stream_data.get_stream_privacy_policy(web_public_stream.stream_id), "web-public");
+    assert.ok(stream_data.is_web_public_by_stream_name(web_public_stream.name));
+    assert.ok(!stream_data.is_web_public_by_stream_name(social.name));
+    assert.ok(!stream_data.is_web_public_by_stream_name("unknown"));
 
-    assert.ok(stream_data.get_invite_only("social"));
-    assert.ok(!stream_data.get_invite_only("unknown"));
+    assert.ok(stream_data.is_invite_only_by_stream_name("social"));
+    assert.ok(!stream_data.is_invite_only_by_stream_name("unknown"));
 
     assert.equal(stream_data.get_color("social"), "red");
     assert.equal(stream_data.get_color("unknown"), "#c2c2c2");
@@ -191,7 +194,7 @@ test("get_subscribed_streams_for_user", () => {
     // test_user is subscribed to all three streams, but current user (me)
     // gets only two because of subscriber visibility policy of stream:
     // #denmark: current user is subscribed to it so he can see its subscribers.
-    // #social: current user is can get this as neither this is invite onyl nor current
+    // #social: current user is can get this as neither this is invite only nor current
     //          user is a guest.
     // #test: current user is no longer subscribed to a private stream, so
     //        he can not see whether test_user is subscribed to it.
@@ -491,12 +494,12 @@ test("delete_sub", () => {
 
     stream_data.add_sub(canada);
 
-    assert.ok(stream_data.is_subscribed("Canada"));
+    assert.ok(stream_data.is_subscribed_by_name("Canada"));
     assert.equal(stream_data.get_sub("Canada").stream_id, canada.stream_id);
     assert.equal(sub_store.get(canada.stream_id).name, "Canada");
 
     stream_data.delete_sub(canada.stream_id);
-    assert.ok(!stream_data.is_subscribed("Canada"));
+    assert.ok(!stream_data.is_subscribed_by_name("Canada"));
     assert.ok(!stream_data.get_sub("Canada"));
     assert.ok(!sub_store.get(canada.stream_id));
 
@@ -715,7 +718,7 @@ test("canonicalized_name", () => {
     assert.deepStrictEqual(stream_data.canonicalized_name("Stream_Bar"), "stream_bar");
 });
 
-test("create_sub", ({override}) => {
+test("create_sub", ({override_rewire}) => {
     const india = {
         stream_id: 102,
         name: "India",
@@ -734,7 +737,7 @@ test("create_sub", ({override}) => {
         color: "#76ce90",
     };
 
-    override(color_data, "pick_color", () => "#bd86e5");
+    override_rewire(color_data, "pick_color", () => "#bd86e5");
 
     const india_sub = stream_data.create_sub_from_server_data(india);
     assert.ok(india_sub);

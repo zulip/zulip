@@ -11,7 +11,7 @@ from zerver.models import UserProfile
 
 
 def list_alert_words(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    return json_success({"alert_words": user_alert_words(user_profile)})
+    return json_success(request, data={"alert_words": user_alert_words(user_profile)})
 
 
 def clean_alert_words(alert_words: List[str]) -> List[str]:
@@ -26,7 +26,7 @@ def add_alert_words(
     alert_words: List[str] = REQ(json_validator=check_list(check_capped_string(100))),
 ) -> HttpResponse:
     do_add_alert_words(user_profile, clean_alert_words(alert_words))
-    return json_success({"alert_words": user_alert_words(user_profile)})
+    return json_success(request, data={"alert_words": user_alert_words(user_profile)})
 
 
 @has_request_variables
@@ -36,4 +36,4 @@ def remove_alert_words(
     alert_words: List[str] = REQ(json_validator=check_list(check_string)),
 ) -> HttpResponse:
     do_remove_alert_words(user_profile, alert_words)
-    return json_success({"alert_words": user_alert_words(user_profile)})
+    return json_success(request, data={"alert_words": user_alert_words(user_profile)})

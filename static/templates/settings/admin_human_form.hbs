@@ -9,6 +9,10 @@
             <label for="email">{{t "Email" }}</label>
             <input type="text" autocomplete="off" name="email" value="{{ email }}" readonly/>
         </div>
+        <div class="input-group user_id_container">
+            <label for="user_id">{{t "User ID" }}</label>
+            <input type="text" autocomplete="off" name="user_id" value="{{ user_id }}" readonly/>
+        </div>
         <div class="input-group">
             <label class="input-label" for="user-role-select">{{t 'User role' }}
                 {{> ../help_link_widget link="/help/roles-and-permissions" }}

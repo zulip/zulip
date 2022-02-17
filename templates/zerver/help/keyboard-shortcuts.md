@@ -41,9 +41,11 @@ below, and add more to your repertoire as needed.
 
 * **Toggle keyboard shortcuts view**: `?`
 
-* **Go to default view**: Press `Esc` or `Ctrl + [` until you are in
-  the [default view](/help/change-default-view).
+* **Go to default view**: Press `Ctrl + [` (or `Esc`,
+  [if enabled][disable-escape])
+  until you are in the [default view](/help/configure-default-view).
 
+[disable-escape]: /help/configure-default-view#set-whether-esc-navigates-to-the-default-view
 ## Navigation
 
 * **Search messages**: `/` or `Ctrl+k`

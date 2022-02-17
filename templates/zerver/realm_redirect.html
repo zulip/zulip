@@ -13,7 +13,7 @@
                 <form class="form-inline" name="realm_redirect_form"
                   action="/accounts/go/{% if request.GET %}?{{ request.GET.urlencode() }}{% endif %}" method="post">
                     {{ csrf_input }}
-                    <div class="input-box moving-label horizontal">
+                    <div class="input-box horizontal">
                         <div class="inline-block relative">
                             <p id="realm_redirect_description">{{ _("Enter your organization's Zulip URL:") }}</p>
                             <input

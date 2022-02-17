@@ -123,7 +123,7 @@ class TestBasics(ZulipTestCase):
         result = self.client_post("/json/submessage", payload)
         self.assert_json_error(result, "You cannot attach a submessage to this message.")
 
-        # Since Hamlet is actually subcribed to the stream, he is welcome
+        # Since Hamlet is actually subscribed to the stream, he is welcome
         # to send submessages to Cordelia once she initiates the "subconversation".
         do_add_submessage(
             realm=cordelia.realm,
@@ -193,7 +193,7 @@ class TestBasics(ZulipTestCase):
         into a problem.
         """
         hamlet = self.example_user("hamlet")
-        message_id = self.send_stream_message(hamlet, "Scotland")
+        message_id = self.send_stream_message(hamlet, "Denmark")
 
         with self.tornado_redirected_to_list([], expected_num_events=1):
             with mock.patch("zerver.lib.actions.send_event") as m:

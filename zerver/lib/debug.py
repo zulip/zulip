@@ -20,12 +20,13 @@ logger = logging.getLogger("zulip.debug")
 # (that link also points to code for an interactive remote debugger
 # setup, which we might want if we move Tornado to run in a daemon
 # rather than via screen).
-def interactive_debug(sig: int, frame: FrameType) -> None:
+def interactive_debug(sig: int, frame: Optional[FrameType]) -> None:
     """Interrupt running process, and provide a python prompt for
     interactive debugging."""
     d = {"_frame": frame}  # Allow access to frame object.
-    d.update(frame.f_globals)  # Unless shadowed by global
-    d.update(frame.f_locals)
+    if frame is not None:
+        d.update(frame.f_globals)  # Unless shadowed by global
+        d.update(frame.f_locals)
 
     message = "Signal received : entering python shell.\nTraceback:\n"
     message += "".join(traceback.format_stack(frame))

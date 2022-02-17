@@ -107,9 +107,9 @@ the user will get to choose which playground to open the code in.
 
 * The **Language** field is the human-readable Pygments language name for that
 programming language. The language tag for a code block is internally mapped
-to these human-readable Pygments names. E.g: `py3` and `py` are mapped to
+to these human-readable Pygments names; e.g., `py3` and `py` are mapped to
 `Python`. One can use the typeahead (which appears when you type something
-or just click on the language field) to lookup the Pygments name.
+or just click on the language field) to look up the Pygments name.
 
 * The links for opening code playgrounds are always constructed by concatenating
 the provided URL prefix with the URL-encoded contents of the code block.

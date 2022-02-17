@@ -10,7 +10,7 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 
-@webhook_view("Canarytoken")
+@webhook_view("Canarytokens")
 @has_request_variables
 def api_canarytoken_webhook(
     request: HttpRequest,
@@ -37,4 +37,4 @@ def api_canarytoken_webhook(
         topic = user_specified_topic
 
     check_send_webhook_message(request, user_profile, topic, body)
-    return json_success()
+    return json_success(request)

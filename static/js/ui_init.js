@@ -5,8 +5,10 @@ import generated_emoji_codes from "../generated/emoji/emoji_codes.json";
 import generated_pygments_data from "../generated/pygments_data.json";
 import * as emoji from "../shared/js/emoji";
 import * as fenced_code from "../shared/js/fenced_code";
+import render_compose from "../templates/compose.hbs";
 import render_edit_content_button from "../templates/edit_content_button.hbs";
 import render_left_sidebar from "../templates/left_sidebar.hbs";
+import render_message_feed_errors from "../templates/message_feed_errors.hbs";
 import render_navbar from "../templates/navbar.hbs";
 import render_right_sidebar from "../templates/right_sidebar.hbs";
 
@@ -16,6 +18,7 @@ import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as click_handlers from "./click_handlers";
+import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
@@ -81,6 +84,7 @@ import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
 import * as stream_settings_ui from "./stream_settings_ui";
+import * as stream_subscribers_ui from "./stream_subscribers_ui";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
 import * as topic_list from "./topic_list";
@@ -150,6 +154,7 @@ function initialize_left_sidebar() {
 function initialize_right_sidebar() {
     const rendered_sidebar = render_right_sidebar({
         can_invite_others_to_realm: settings_data.user_can_invite_others_to_realm(),
+        realm_description: page_params.realm_description,
     });
 
     $("#right-sidebar-container").html(rendered_sidebar);
@@ -182,6 +187,22 @@ function initialize_navbar() {
     });
 
     $("#navbar-container").html(rendered_navbar);
+}
+
+function initialize_compose_box() {
+    $("#compose-container").append(
+        render_compose({
+            embedded: $("#compose").attr("data-embedded") === "",
+            file_upload_enabled: page_params.max_file_upload_size_mib > 0,
+            giphy_enabled: giphy.is_giphy_enabled(),
+        }),
+    );
+    $(`.enter_sends_${user_settings.enter_sends}`).show();
+    common.adjust_mac_shortcuts(".enter_sends kbd");
+}
+
+function initialize_message_feed_errors() {
+    $("#message_feed_errors_container").html(render_message_feed_errors());
 }
 
 export function initialize_kitchen_sink_stuff() {
@@ -315,15 +336,15 @@ export function initialize_kitchen_sink_stuff() {
         $(this).removeClass("fa fa-play");
     });
 
-    $("#subscriptions_table").on("mouseover", ".subscription_header", function () {
+    $("#manage_streams_container").on("mouseover", ".subscription_header", function () {
         $(this).addClass("active");
     });
 
-    $("#subscriptions_table").on("mouseout", ".subscription_header", function () {
+    $("#manage_streams_container").on("mouseout", ".subscription_header", function () {
         $(this).removeClass("active");
     });
 
-    $("#stream_message_recipient_stream").on("blur", function () {
+    $("#stream_message_recipient_stream").on("change", function () {
         stream_bar.decorate(this.value, $("#stream-message .message_header_stream"), true);
     });
 
@@ -439,7 +460,7 @@ export function initialize_everything() {
             - I changed my 24-hour time preference.
             - The realm admin changed who can edit topics.
             - The team's realm icon has changed.
-            - I switched from day mode to night mode.
+            - I switched from light theme to dark theme.
 
         Especially for things that are settings-related,
         we rarely abstract away the data from `page_params`.
@@ -553,9 +574,10 @@ export function initialize_everything() {
     // modules were migrated from Django templates to handlebars).
     initialize_left_sidebar();
     initialize_right_sidebar();
+    initialize_compose_box();
     settings.initialize();
-    compose.initialize();
     initialize_navbar();
+    initialize_message_feed_errors();
     realm_logo.render();
 
     message_lists.initialize();
@@ -568,6 +590,7 @@ export function initialize_everything() {
     initialize_kitchen_sink_stuff();
     echo.initialize();
     stream_edit.initialize();
+    stream_subscribers_ui.initialize();
     stream_data.initialize(stream_data_params);
     pm_conversations.recent.initialize(pm_conversations_params);
     muted_topics.initialize();
@@ -596,6 +619,7 @@ export function initialize_everything() {
     markdown.initialize(markdown_config.get_helpers());
     linkifiers.initialize(page_params.realm_linkifiers);
     realm_playground.initialize(page_params.realm_playgrounds, generated_pygments_data);
+    compose.initialize();
     composebox_typeahead.initialize(); // Must happen after compose.initialize()
     search.initialize();
     tutorial.initialize();

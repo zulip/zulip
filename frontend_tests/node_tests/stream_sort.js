@@ -45,9 +45,9 @@ function sort_groups(query) {
 }
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, override_rewire}) => {
         stream_data.clear_subscriptions();
-        f({override});
+        f({override, override_rewire});
     });
 }
 
@@ -62,14 +62,14 @@ test("no_subscribed_streams", () => {
     assert.equal(stream_sort.first_stream_id(), undefined);
 });
 
-test("basics", ({override}) => {
+test("basics", ({override_rewire}) => {
     stream_data.add_sub(scalene);
     stream_data.add_sub(fast_tortoise);
     stream_data.add_sub(pneumonia);
     stream_data.add_sub(clarinet);
     stream_data.add_sub(weaving);
 
-    override(stream_data, "is_active", (sub) => sub.name !== "pneumonia");
+    override_rewire(stream_data, "is_active", (sub) => sub.name !== "pneumonia");
 
     // Test sorting into categories/alphabetized
     let sorted = sort_groups("");

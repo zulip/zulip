@@ -132,7 +132,7 @@ There are dozens of useful management commands under
   For most purposes, deactivating users is preferred, since that does not
   alter message history for other users.
   See the `./manage.py delete_user --help` documentation for details.
-- `./manage.py clear_auth_rate_limit_history`: If a user failed authenticaton
+- `./manage.py clear_auth_rate_limit_history`: If a user failed authentication
   attempts too many times and further attempts are disallowed by the rate limiter,
   this can be used to reset the limit.
 
@@ -182,4 +182,4 @@ upgrade.
 [zulip-api]: https://zulip.com/api/rest
 [webhook-integrations]: https://zulip.com/api/incoming-webhooks-overview
 [management-commands-dev]: ../subsystems/management-commands.md
-[django-management]: https://docs.djangoproject.com/en/2.2/ref/django-admin/#django-admin-and-manage-py
+[django-management]: https://docs.djangoproject.com/en/3.2/ref/django-admin/#django-admin-and-manage-py

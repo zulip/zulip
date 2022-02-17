@@ -12,14 +12,17 @@ export const page_params: {
     is_admin: boolean;
     is_guest: boolean;
     is_moderator: boolean;
+    is_owner: boolean;
     is_spectator: boolean;
     realm_add_custom_emoji_policy: number;
     realm_avatar_changes_disabled: boolean;
     realm_create_private_stream_policy: number;
     realm_create_public_stream_policy: number;
+    realm_create_web_public_stream_policy: number;
     realm_delete_own_message_policy: number;
     realm_edit_topic_policy: number;
     realm_email_address_visibility: number;
+    realm_enable_spectator_access: boolean;
     realm_invite_to_realm_policy: number;
     realm_invite_to_stream_policy: number;
     realm_move_messages_between_streams_policy: number;
@@ -30,6 +33,7 @@ export const page_params: {
     request_language: string;
     server_avatar_changes_disabled: boolean;
     server_name_changes_disabled: boolean;
+    server_web_public_streams_enabled: boolean;
     translation_data: Record<string, string>;
     zulip_plan_is_not_limited: boolean;
 } = $("#page-params").remove().data("params");

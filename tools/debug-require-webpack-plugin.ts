@@ -74,6 +74,10 @@ export default class DebugRequirePlugin implements WebpackPluginInstance {
             compilation.mainTemplate.hooks.bootstrap.tap(
                 "DebugRequirePlugin",
                 (source: string, chunk: Chunk) => {
+                    if (compilation.chunkGraph === undefined) {
+                        return source;
+                    }
+
                     const ids: [string, string | number][] = [];
                     let hasDebugRequire = false;
                     compilation.chunkGraph.hasModuleInGraph(

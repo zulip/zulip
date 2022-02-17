@@ -1,12 +1,15 @@
 .codehilite pre {
     background-color: hsl(0, 0%, 100%);
 }
+
 .codehilite .hll {
     background-color: hsl(60, 100%, 90%);
 }
+
 .codehilite {
     background-color: hsl(0, 0%, 98%);
 }
+
 .codehilite .c {
     color: hsl(180, 33%, 37%);
     font-style: italic;

@@ -1,7 +1,7 @@
 from typing import Any, Dict, Optional, Union
 
 import requests
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util import Retry
 
 
 class OutgoingSession(requests.Session):

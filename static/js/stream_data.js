@@ -103,6 +103,14 @@ const stream_ids_by_name = new FoldDict();
 const default_stream_ids = new Set();
 
 export const stream_privacy_policy_values = {
+    web_public: {
+        code: "web-public",
+        name: $t({defaultMessage: "Web-public"}),
+        description: $t({
+            defaultMessage:
+                "Organization members can join (guests must be invited by a subscriber); anyone on the Internet can view complete message history without creating an account",
+        }),
+    },
     public: {
         code: "public",
         name: $t({defaultMessage: "Public"}),
@@ -129,18 +137,9 @@ export const stream_privacy_policy_values = {
     },
 };
 
-if (page_params.development_environment) {
-    stream_privacy_policy_values.web_public = {
-        code: "web-public",
-        name: $t({defaultMessage: "Web public"}),
-        description: $t({
-            defaultMessage:
-                "Organization members can join (guests must be invited by a subscriber); anyone on the Internet can view complete message history without creating an account",
-        }),
-    };
-}
-
 export const stream_post_policy_values = {
+    // These strings should match the strings in the
+    // Stream.POST_POLICIES object in zerver/models.py.
     everyone: {
         code: 1,
         description: $t({defaultMessage: "All stream members can post"}),
@@ -519,10 +518,19 @@ export function is_notifications_stream_muted() {
 }
 
 export function can_toggle_subscription(sub) {
-    // If stream is public then any user can subscribe. If stream is private then only
-    // subscribed users can unsubscribe.
-    // Guest users can't subscribe themselves to any stream.
-    return sub.subscribed || (!page_params.is_guest && !sub.invite_only);
+    // You can always remove your subscription if you're subscribed.
+    //
+    // One can only join a stream if it is public (!invite_only) and
+    // your role is Member or above (!is_guest).
+    // Spectators cannot subscribe to any streams.
+    //
+    // Note that the correctness of this logic relies on the fact that
+    // one cannot be subscribed to a deactivated stream, and
+    // deactivated streams are automatically made private during the
+    // archive stream process.
+    return (
+        (sub.subscribed || (!page_params.is_guest && !sub.invite_only)) && !page_params.is_spectator
+    );
 }
 
 export function can_preview(sub) {
@@ -543,12 +551,12 @@ export function can_subscribe_others(sub) {
     return !page_params.is_guest && (!sub.invite_only || sub.subscribed);
 }
 
-export function is_subscribed(stream_name) {
+export function is_subscribed_by_name(stream_name) {
     const sub = get_sub(stream_name);
     return sub !== undefined && sub.subscribed;
 }
 
-export function id_is_subscribed(stream_id) {
+export function is_subscribed(stream_id) {
     const sub = sub_store.get(stream_id);
     return sub !== undefined && sub.subscribed;
 }
@@ -573,12 +581,20 @@ export function is_web_public(stream_id) {
     return sub !== undefined && sub.is_web_public;
 }
 
-export function get_invite_only(stream_name) {
+export function is_invite_only_by_stream_name(stream_name) {
     const sub = get_sub(stream_name);
     if (sub === undefined) {
         return false;
     }
     return sub.invite_only;
+}
+
+export function is_web_public_by_stream_name(stream_name) {
+    const sub = get_sub(stream_name);
+    if (sub === undefined) {
+        return false;
+    }
+    return sub.is_web_public;
 }
 
 export function set_realm_default_streams(realm_default_streams) {
@@ -693,11 +709,11 @@ export function create_sub_from_server_data(attrs) {
         newly_subscribed: false,
         is_muted: false,
         invite_only: false,
-        desktop_notifications: user_settings.enable_stream_desktop_notifications,
-        audible_notifications: user_settings.enable_stream_audible_notifications,
-        push_notifications: user_settings.enable_stream_push_notifications,
-        email_notifications: user_settings.enable_stream_email_notifications,
-        wildcard_mentions_notify: user_settings.wildcard_mentions_notify,
+        desktop_notifications: null,
+        audible_notifications: null,
+        push_notifications: null,
+        email_notifications: null,
+        wildcard_mentions_notify: null,
         description: "",
         rendered_description: "",
         first_message_id: attrs.first_message_id,

@@ -77,7 +77,7 @@ export function get_item(key, config) {
             case "source":
                 return "message-edit-file-input";
             case "drag_drop_container":
-                return $(".message_edit_form");
+                return $(`#zfilt${CSS.escape(config.row)} .message_edit_form`);
             case "markdown_preview_hide_button":
                 return $(`#edit_form_${CSS.escape(config.row)} .undo_markdown_preview`);
             default:
@@ -242,7 +242,7 @@ export function setup_upload(config) {
             return;
         }
         const split_uri = uri.split("/");
-        const filename = split_uri[split_uri.length - 1];
+        const filename = split_uri.at(-1);
         if (config.mode === "compose" && !compose_state.composing()) {
             compose_actions.start("stream");
         }

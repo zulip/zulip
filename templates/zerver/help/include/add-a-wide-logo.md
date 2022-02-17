@@ -12,4 +12,4 @@ transparent background, and trim any bordering whitespace. To upload a logo:
 
 {end_tabs}
 
-Make sure to test the logo in both light mode and [dark mode](/help/night-mode).
+Make sure to test the logo in both light theme and [dark theme](/help/dark-theme).

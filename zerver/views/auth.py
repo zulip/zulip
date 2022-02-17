@@ -24,7 +24,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_safe
-from jinja2.utils import Markup as mark_safe
+from markupsafe import Markup as mark_safe
 from social_django.utils import load_backend, load_strategy
 from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView
@@ -34,6 +34,7 @@ from confirmation.models import (
     ConfirmationKeyException,
     create_confirmation_link,
     get_object_from_key,
+    render_confirmation_key_error,
 )
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.context_processors import get_realm_from_request, login_context, zulip_default_context
@@ -51,6 +52,7 @@ from zerver.lib.exceptions import (
     JsonableError,
     PasswordAuthDisabledError,
     PasswordResetRequiredError,
+    RateLimited,
     RealmDeactivatedError,
     UserDeactivatedError,
 )
@@ -63,7 +65,7 @@ from zerver.lib.response import json_success
 from zerver.lib.sessions import set_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.types import ViewFuncT
-from zerver.lib.url_encoding import add_query_to_redirect_url
+from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.users import get_api_key
 from zerver.lib.utils import has_api_key_format
@@ -185,9 +187,9 @@ def maybe_send_to_registration(
     if multiuse_object_key:
         from_multiuse_invite = True
         try:
-            multiuse_obj = get_object_from_key(multiuse_object_key, Confirmation.MULTIUSE_INVITE)
-        except ConfirmationKeyException:
-            return render(request, "zerver/confirmation_link_expired_error.html", status=404)
+            multiuse_obj = get_object_from_key(multiuse_object_key, [Confirmation.MULTIUSE_INVITE])
+        except ConfirmationKeyException as exception:
+            return render_confirmation_key_error(request, exception)
 
         assert multiuse_obj is not None
         realm = multiuse_obj.realm
@@ -381,13 +383,12 @@ def create_response_for_otp_flow(
     params = {
         encrypted_key_field_name: otp_encrypt_api_key(key, otp),
         "email": user_profile.delivery_email,
+        "user_id": user_profile.id,
         "realm": realm_uri,
     }
     # We can't use HttpResponseRedirect, since it only allows HTTP(S) URLs
     response = HttpResponse(status=302)
-    response["Location"] = add_query_to_redirect_url(
-        "zulip://login", urllib.parse.urlencode(params)
-    )
+    response["Location"] = append_url_query_string("zulip://login", urllib.parse.urlencode(params))
 
     return response
 
@@ -530,7 +531,7 @@ def oauth_redirect_to_root(
 
     params = {**params, **extra_url_params}
 
-    return redirect(add_query_to_redirect_url(main_site_uri, urllib.parse.urlencode(params)))
+    return redirect(append_url_query_string(main_site_uri, urllib.parse.urlencode(params)))
 
 
 def handle_desktop_flow(func: ViewFuncT) -> ViewFuncT:
@@ -554,7 +555,7 @@ def start_remote_user_sso(request: HttpRequest) -> HttpResponse:
     to do authentication, so we need this additional endpoint.
     """
     query = request.META["QUERY_STRING"]
-    return redirect(add_query_to_redirect_url(reverse(remote_user_sso), query))
+    return redirect(append_url_query_string(reverse(remote_user_sso), query))
 
 
 @handle_desktop_flow
@@ -759,7 +760,7 @@ def login_page(
     if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
         redirect_url = reverse("realm_redirect")
         if request.GET:
-            redirect_url = add_query_to_redirect_url(redirect_url, request.GET.urlencode())
+            redirect_url = append_url_query_string(redirect_url, request.GET.urlencode())
         return HttpResponseRedirect(redirect_url)
 
     realm = get_realm_from_request(request)
@@ -897,7 +898,7 @@ def api_fetch_api_key(
     RequestNotes.get_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
 
     api_key = get_api_key(user_profile)
-    return json_success({"api_key": api_key, "email": user_profile.delivery_email})
+    return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})
 
 
 def get_auth_backends_data(request: HttpRequest) -> Dict[str, Any]:
@@ -962,7 +963,7 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
     ]:
         if context[settings_item] is not None:
             result[settings_item] = context[settings_item]
-    return json_success(result)
+    return json_success(request, data=result)
 
 
 @has_request_variables
@@ -976,35 +977,42 @@ def json_fetch_api_key(
         if not authenticate(
             request=request, username=user_profile.delivery_email, password=password, realm=realm
         ):
-            raise JsonableError(_("Your username or password is incorrect."))
+            raise JsonableError(_("Password is incorrect."))
 
     api_key = get_api_key(user_profile)
-    return json_success({"api_key": api_key, "email": user_profile.delivery_email})
+    return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})
 
 
-@require_post
-def logout_then_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
-    return django_logout_then_login(request, kwargs)
+logout_then_login = require_post(django_logout_then_login)
 
 
 def password_reset(request: HttpRequest) -> HttpResponse:
     if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
-        redirect_url = add_query_to_redirect_url(
+        redirect_url = append_url_query_string(
             reverse("realm_redirect"), urlencode({"next": reverse("password_reset")})
         )
         return HttpResponseRedirect(redirect_url)
 
-    response = DjangoPasswordResetView.as_view(
-        template_name="zerver/reset.html",
-        form_class=ZulipPasswordResetForm,
-        success_url="/accounts/password/reset/done/",
-    )(request)
+    try:
+        response = DjangoPasswordResetView.as_view(
+            template_name="zerver/reset.html",
+            form_class=ZulipPasswordResetForm,
+            success_url="/accounts/password/reset/done/",
+        )(request)
+    except RateLimited as e:
+        assert e.secs_to_freedom is not None
+        return render(
+            request,
+            "zerver/rate_limit_exceeded.html",
+            context={"retry_after": int(e.secs_to_freedom)},
+            status=429,
+        )
     assert isinstance(response, HttpResponse)
     return response
 
 
 @csrf_exempt
-def saml_sp_metadata(request: HttpRequest, **kwargs: Any) -> HttpResponse:  # nocoverage
+def saml_sp_metadata(request: HttpRequest) -> HttpResponse:  # nocoverage
     """
     This is the view function for generating our SP metadata
     for SAML authentication. It's meant for helping check the correctness

@@ -325,12 +325,6 @@ python_rules = RuleList(
             "good_lines": ["id = alice.user_id"],
             "bad_lines": ["id = alice.userid"],
         },
-        {
-            "pattern": r"json_success\({}\)",
-            "description": "Use json_success() to return nothing",
-            "good_lines": ["return json_success()"],
-            "bad_lines": ["return json_success({})"],
-        },
         # To avoid JsonableError(_variable) and JsonableError(_(variable))
         {
             "pattern": r"\WJsonableError\(_\(?\w.+\)",
@@ -456,9 +450,10 @@ python_rules = RuleList(
             ],
         },
         {
-            "pattern": "exit[(]1[)]",
+            "pattern": r"exit[(][1-9]\d*[)]",
             "include_only": {"/management/commands/"},
             "description": "Raise CommandError to exit with failure in management commands",
+            "exclude": {"zerver/management/commands/process_queue.py"},
         },
         {
             "pattern": ".is_realm_admin =",
@@ -479,6 +474,10 @@ python_rules = RuleList(
         {
             "pattern": "\\.(called(_once|_with|_once_with)?|not_called|has_calls|not_called)[(]",
             "description": 'A mock function is missing a leading "assert_"',
+        },
+        {
+            "pattern": "@transaction.atomic\\(\\)",
+            "description": "Use @transaction.atomic as function decorator for consistency.",
         },
         *whitespace_rules,
     ],
@@ -518,7 +517,7 @@ css_rules = RuleList(
 prose_style_rules: List["Rule"] = [
     {
         "pattern": r'^[^{].*?[^\/\#\-"]([jJ]avascript)',  # exclude usage in hrefs/divs/custom-markdown
-        "exclude": {"docs/documentation/api.md"},
+        "exclude": {"docs/documentation/api.md", "templates/corporate/policies/privacy.md"},
         "description": "javascript should be spelled JavaScript",
     },
     {
@@ -546,7 +545,7 @@ html_rules: List["Rule"] = [
         "exclude": {
             "templates/zerver/email.html",
             "zerver/tests/fixtures/email",
-            "templates/zerver/for-companies.html",
+            "templates/zerver/for-business.html",
             "templates/corporate/support_request.html",
             "templates/corporate/support_request_thanks.html",
             "templates/zerver/emails/support_request.html",
@@ -583,8 +582,8 @@ html_rules: List["Rule"] = [
     {
         "pattern": " '}}",
         "description": "Likely misplaced quoting in translation tags",
-        "good_lines": ["{{t 'translateable string' }}"],
-        "bad_lines": ["{{t 'translateable string '}}"],
+        "good_lines": ["{{t 'translatable string' }}"],
+        "bad_lines": ["{{t 'translatable string '}}"],
     },
     {
         "pattern": "placeholder='[^{]",
@@ -617,6 +616,7 @@ html_rules: List["Rule"] = [
             "templates/corporate/billing.html",
             "templates/zerver/hello.html",
             "templates/corporate/upgrade.html",
+            "templates/corporate/event_status.html",
         },
         "bad_lines": [
             '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>'
@@ -695,7 +695,7 @@ html_rules: List["Rule"] = [
             "templates/zerver/accounts_home.html",
             "templates/zerver/login.html",
             # Needs the width cleaned up; display: none is fine
-            "static/templates/settings/account_settings.hbs",
+            "static/templates/dialog_change_password.hbs",
             # background image property is dynamically generated
             "static/templates/user_profile_modal.hbs",
             "static/templates/pm_list_item.hbs",
@@ -766,6 +766,11 @@ handlebars_rules = RuleList(
             "pattern": r'"{{t "',
             "description": "Invalid quoting for HTML element with translated string.",
         },
+        {
+            "pattern": r'href="#"',
+            "description": 'Avoid href="#" for elements with a JavaScript click handler.',
+            "exclude": {"static/templates/navbar.hbs"},
+        },
     ],
 )
 
@@ -784,7 +789,7 @@ jinja2_rules = RuleList(
         {
             "pattern": r'{% set entrypoint = "dev-',
             "exclude": {"templates/zerver/development/"},
-            "description": "Development entrypoints (dev-) must not be imported in production.",
+            "description": "Development entry points (dev-) must not be imported in production.",
         },
     ],
 )
@@ -868,6 +873,7 @@ markdown_rules = RuleList(
         },
         {
             "pattern": r"\][(][^#h]",
+            "exclude_pattern": "mailto:",
             "include_only": {"README.md", "CONTRIBUTING.md"},
             "description": "Use absolute links from docs served by GitHub",
         },

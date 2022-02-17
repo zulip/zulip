@@ -376,7 +376,7 @@ class TestQueryCounts(ZulipTestCase):
             )
 
         # The assert_length helper is another useful extra from ZulipTestCase.
-        self.assert_length(queries, 16)
+        self.assert_length(queries, 15)
 
 
 class TestDevelopmentEmailsLog(ZulipTestCase):
@@ -497,7 +497,7 @@ class TestMocking(ZulipTestCase):
         # mock.patch() here makes any calls to `timezone_now` in `zerver.lib.actions`
         # to return the value passed to `return_value` in the its context.
         # You can also use mock.patch() as a decorator depending on the
-        # requirements. Read more at the documentaion link provided above.
+        # requirements. Read more at the documentation link provided above.
 
         time_beyond_edit_limit = message_sent_time + datetime.timedelta(
             seconds=MESSAGE_CONTENT_EDIT_LIMIT + 100

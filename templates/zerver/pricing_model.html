@@ -26,14 +26,14 @@
                     </div>
                     <div class="bottom">
                         <div class="text-content">
-                            {% if not realm or realm.plan_type == realm.SELF_HOSTED %}
+                            {% if not realm or realm.plan_type == realm.PLAN_TYPE_SELF_HOSTED %}
                             <div class="pricing-details">
                                 Free cloud service
                             </div>
                             <a href="/new/" class="button green">
                                 Create organization
                             </a>
-                            {% elif realm.plan_type == realm.LIMITED or sponsorship_pending %}
+                            {% elif realm.plan_type == realm.PLAN_TYPE_LIMITED or sponsorship_pending %}
                             <div class="pricing-details"></div>
                             <a href='/upgrade' class="button black-current-value" type="button">
                                 Current plan
@@ -79,7 +79,7 @@
                                 Upgrade to Standard
                                 {% endif %}
                             </a>
-                            {% elif realm.plan_type in [realm.STANDARD, realm.STANDARD_FREE] %}
+                            {% elif realm.plan_type in [realm.PLAN_TYPE_STANDARD, realm.PLAN_TYPE_STANDARD_FREE] %}
                             <a href='/billing' class="button black-current-value" type="button">
                                 {% if realm_on_free_trial %}
                                 Current plan (free trial)
@@ -107,12 +107,12 @@
 
             <div class="block">
                 <div class="plan-title responsive-title">
-                    Self host Zulip
+                    Self-host Zulip
                 </div>
 
                 <div class="price-box" tabindex="-1">
                     <div class="text-content">
-                        <h2>Self service</h2>
+                        <h2>Self-service</h2>
                         <div class="description">
                             Retain full control over your data.
                         </div>
@@ -124,7 +124,7 @@
                             <li><a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#synchronizing-data">LDAP/Active Directory sync</a></li>
                             <li>Advanced <a href="/help/roles-and-permissions">roles</a> and <a href="/help/stream-permissions">permissions</a></li>
                             <li>Easy <a href="https://zulip.readthedocs.io/en/stable/production/install.html">installation</a>
-                            and <a href="https://zulip.readthedocs.io/en/stable/production/upgrade-or-modify.html">maintenance</a></li>
+                                and <a href="https://zulip.readthedocs.io/en/stable/production/upgrade-or-modify.html">maintenance</a></li>
                         </ul>
                     </div>
                     <div class="bottom">
@@ -148,7 +148,7 @@
                         </div>
                         <hr />
                         <ul class="feature-list">
-                            <li>All self service features included</li>
+                            <li>All self-service features included</li>
                             <li>Professional support with SLAs</li>
                             <li>High availability</li>
                             <li>Incident collaboration</li>

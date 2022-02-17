@@ -137,4 +137,4 @@ def api_thinkst_webhook(
         topic = f"{kind} alert - {name}"
 
     check_send_webhook_message(request, user_profile, topic, response)
-    return json_success()
+    return json_success(request)

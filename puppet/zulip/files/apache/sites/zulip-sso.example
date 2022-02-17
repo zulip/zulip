@@ -38,6 +38,7 @@ Listen 127.0.0.1:8888
 	WSGIScriptAlias / /home/zulip/deployments/current/zproject/wsgi.py
 	WSGIDaemonProcess zulip threads=5 user=zulip python-path=/home/zulip/deployments/current/
 	WSGIProcessGroup zulip
+	WSGIApplicationGroup %{GLOBAL}
 
 	ErrorLog ${APACHE_LOG_DIR}/zulip_auth_error.log
 

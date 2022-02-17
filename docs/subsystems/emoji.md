@@ -164,7 +164,7 @@ for that:
 
 - If there are natural things someone might type, like `:happy:`, we try to
   find an emoji to match. This extends to things that someone might not
-  think to type, but as soon as someone in the organization discovers it it
+  think to type, but as soon as someone in the organization discovers it
   could get wide use, like `:working_on_it:`. Good future work would be to
   collect (by survey or tooling) things people type into the emoji picker
   typeahead on chat.zulip.org, and find ways to add those names as

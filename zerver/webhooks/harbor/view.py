@@ -106,7 +106,7 @@ def api_harbor_webhook(
     topic = payload["event_data"]["repository"]["repo_full_name"]
 
     if event in IGNORED_EVENTS:
-        return json_success()
+        return json_success(request)
 
     content_func = EVENT_FUNCTION_MAPPER.get(event)
 
@@ -118,4 +118,4 @@ def api_harbor_webhook(
     check_send_webhook_message(
         request, user_profile, topic, content, event, unquote_url_parameters=True
     )
-    return json_success()
+    return json_success(request)

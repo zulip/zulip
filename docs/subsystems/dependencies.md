@@ -44,7 +44,7 @@ which is used to help ensure developers don't spend time debugging
 test/linter/etc. failures that actually were caused by the developer
 rebasing and forgetting to provision". `PROVISION_VERSION` has a
 format of `x.y`; when `x` doesn't match the value from the last time
-the user provisioned, or `y` is higher than than the value from last
+the user provisioned, or `y` is higher than the value from last
 time, most Zulip tools will crash early and ask the user to provision.
 This has empirically made a huge impact on how often developers spend
 time debugging a "weird failure" after rebasing that had an easy
@@ -90,7 +90,7 @@ the backend, but does in JavaScript.
 
 ## System packages
 
-For the third-party services like PostgreSQL, Redis, Nginx, and RabbitMQ
+For the third-party services like PostgreSQL, Redis, nginx, and RabbitMQ
 that are documented in the
 [architecture overview](../overview/architecture-overview.md), we rely on the
 versions of those packages provided alongside the Linux distribution
@@ -120,8 +120,8 @@ extension, used by our [full-text search](full-text-search.md).
 ## Python packages
 
 Zulip uses the version of Python itself provided by the host OS for
-the Zulip server. We currently support Python 3.6 and newer, with
-Ubuntu Bionic being the platform requiring 3.6 support. The comments
+the Zulip server. We currently support Python 3.7 and newer, with
+Debian 10 being the platform requiring 3.7 support. The comments
 in `.github/workflows/zulip-ci.yml` document the Python versions used
 by each supported platform.
 

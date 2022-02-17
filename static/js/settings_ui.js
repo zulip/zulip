@@ -67,7 +67,7 @@ export function do_settings_change(
 }
 
 // This function is used to disable sub-setting when main setting is checked or unchecked
-// or two settings are inter-dependent on their values values.
+// or two settings are inter-dependent on their values.
 // * is_checked is boolean, shows if the main setting is checked or not.
 // * sub_setting_id is sub setting or setting which depend on main setting,
 //   string id of setting.

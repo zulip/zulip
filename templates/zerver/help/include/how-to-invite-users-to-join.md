@@ -2,9 +2,10 @@
 {tab|require-invitations}
 
 1. Configure [allowed authentication
-   methods](/help/configure-authentication-methods). By default, Zulip
-   allows logging in via email/password as well as various social
-   authentication providers like Google, GitHub, GitLab, and Apple.
+   methods](/help/configure-authentication-methods). By default, Zulip allows
+   logging in via email/password as well as various social authentication
+   providers like Google, GitHub, GitLab, and Apple. Users can [log in with any
+   allowed authentication method][logging-in], regardless of how they signed up.
 
 2. [Invite users](/help/invite-new-users) by [sending out an email or
    sharing a reusable invite
@@ -21,7 +22,5 @@
 
 {end_tabs}
 
-!!! tip ""
-    You can link to your Zulip organization with a [nice badge](/help/linking-to-zulip).
-
 [allow-anyone-to-join]: /help/allow-anyone-to-join-without-an-invitation
+[logging-in]: /help/logging-in

@@ -51,7 +51,7 @@ const sub_store = zrequire("sub_store");
 const dropdown_list_widget = zrequire("dropdown_list_widget");
 
 function test(label, f) {
-    run_test(label, ({override, mock_template}) => {
+    run_test(label, ({override, override_rewire, mock_template}) => {
         $("#realm-icon-upload-widget .upload-spinner-background").css = () => {};
         page_params.is_admin = false;
         page_params.realm_domains = [
@@ -60,7 +60,7 @@ function test(label, f) {
         ];
         page_params.realm_authentication_methods = {};
         settings_org.reset();
-        f({override, mock_template});
+        f({override, override_rewire, mock_template});
     });
 }
 
@@ -642,7 +642,7 @@ function test_discard_changes_button(discard_changes) {
     settings_org.__Rewire__("change_save_button_state", stubbed_function);
 }
 
-test("set_up", ({override, mock_template}) => {
+test("set_up", ({override, override_rewire, mock_template}) => {
     mock_template("settings/admin_realm_domains_list.hbs", false, () => "stub-domains-list");
 
     const verify_realm_domains = simulate_realm_domains_table();
@@ -666,7 +666,7 @@ test("set_up", ({override, mock_template}) => {
         upload_realm_logo_or_icon = f;
     };
 
-    override(dropdown_list_widget, "DropdownListWidget", () => ({
+    override_rewire(dropdown_list_widget, "DropdownListWidget", () => ({
         render: noop,
         update: noop,
     }));
@@ -685,10 +685,13 @@ test("set_up", ({override, mock_template}) => {
     $("#allowed_domains_label").set_parent($.create("<stub-allowed-domain-label-parent>"));
     const waiting_period_parent_elem = $.create("waiting-period-parent-stub");
     $("#id_realm_waiting_period_threshold").set_parent(waiting_period_parent_elem);
+    $("#id_realm_create_web_public_stream_policy").set_parent(
+        $.create("<stub-create-web-public-stream-policy-parent>"),
+    );
 
     // TEST set_up() here, but this mostly just allows us to
     // get access to the click handlers.
-    override(settings_org, "maybe_disable_widgets", noop);
+    override_rewire(settings_org, "maybe_disable_widgets", noop);
     settings_org.set_up();
 
     verify_realm_domains();
@@ -696,7 +699,7 @@ test("set_up", ({override, mock_template}) => {
     test_realms_domain_modal(override, () => $("#submit-add-realm-domain").trigger("click"));
     test_submit_settings_form(
         override,
-        $(".organization").get_on_handler(
+        $(".admin-realm-form").get_on_handler(
             "click",
             ".subsection-header .subsection-changes-save button",
         ),
@@ -710,7 +713,7 @@ test("set_up", ({override, mock_template}) => {
     test_sync_realm_settings();
     test_parse_time_limit();
     test_discard_changes_button(
-        $(".organization").get_on_handler(
+        $(".admin-realm-form").get_on_handler(
             "click",
             ".subsection-header .subsection-changes-discard button",
         ),
@@ -823,7 +826,7 @@ test("test get_sorted_options_list", () => {
     assert.deepEqual(settings_org.get_sorted_options_list(option_values_2), expected_option_values);
 });
 
-test("misc", ({override}) => {
+test("misc", ({override_rewire}) => {
     page_params.is_admin = false;
 
     const stub_notification_disable_parent = $.create("<stub notification_disable parent");
@@ -890,7 +893,7 @@ test("misc", ({override}) => {
     settings_account.update_email_change_display();
     assert.ok(!$("#change_email").prop("disabled"));
 
-    override(stream_settings_data, "get_streams_for_settings_page", () => [
+    override_rewire(stream_settings_data, "get_streams_for_settings_page", () => [
         {name: "some_stream", stream_id: 75},
         {name: "some_stream", stream_id: 42},
     ]);

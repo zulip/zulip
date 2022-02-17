@@ -83,13 +83,9 @@ if vendor == "debian" and os_version == "10":  # buster
     POSTGRESQL_VERSION = "11"
 elif vendor == "debian" and os_version == "11":  # bullseye
     POSTGRESQL_VERSION = "13"
-elif vendor == "ubuntu" and os_version in ["18.04", "18.10"]:  # bionic, cosmic
-    POSTGRESQL_VERSION = "10"
-elif vendor == "ubuntu" and os_version in ["19.04", "19.10"]:  # disco, eoan
-    POSTGRESQL_VERSION = "11"
 elif vendor == "ubuntu" and os_version == "20.04":  # focal
     POSTGRESQL_VERSION = "12"
-elif vendor == "ubuntu" and os_version == "20.10":  # groovy
+elif vendor == "ubuntu" and os_version == "21.10":  # impish
     POSTGRESQL_VERSION = "13"
 elif vendor == "neon" and os_version == "20.04":  # KDE Neon
     POSTGRESQL_VERSION = "12"
@@ -130,7 +126,6 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     *COMMON_DEPENDENCIES,
     "redis-server",
     "hunspell-en-us",
-    "gitlint",
     "puppet-lint",
     "default-jre-headless",  # Required by vnu-jar
     # Puppeteer dependencies from here
@@ -202,7 +197,7 @@ elif "debian" in os_families():
     SYSTEM_DEPENDENCIES = [
         *DEBIAN_DEPENDECIES,
         f"postgresql-{POSTGRESQL_VERSION}",
-        f"postgresql-{POSTGRESQL_VERSION}-pgdg-pgroonga",
+        f"postgresql-{POSTGRESQL_VERSION}-pgroonga",
         *VENV_DEPENDENCIES,
     ]
 elif "rhel" in os_families():
@@ -275,6 +270,7 @@ def install_apt_deps(deps_to_install: List[str]) -> None:
             "apt-get",
             "-y",
             "install",
+            "--allow-downgrades",
             "--no-install-recommends",
             *deps_to_install,
         ]

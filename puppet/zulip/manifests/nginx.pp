@@ -6,7 +6,7 @@ class zulip::nginx {
   ]
   package { $web_packages: ensure => 'installed' }
 
-  if $::osfamily == 'redhat' {
+  if $::os['family'] == 'RedHat' {
     file { '/etc/nginx/sites-available':
       ensure => 'directory',
       owner  => 'root',
@@ -39,8 +39,12 @@ class zulip::nginx {
   # For installations using S3 to serve uploaded files, we want Django
   # to handle the /serve_uploads and /user_avatars routes, so that it
   # can serve a redirect (after doing authentication, for uploads).
-  $no_serve_uploads = zulipconf('application_server', 'no_serve_uploads', '')
-  if $no_serve_uploads == '' {
+  $no_serve_uploads = zulipconf('application_server', 'no_serve_uploads', false)
+  if $no_serve_uploads {
+    file { '/etc/nginx/zulip-include/app.d/uploads-internal.conf':
+      ensure  => absent,
+    }
+  } else {
     file { '/etc/nginx/zulip-include/app.d/uploads-internal.conf':
       ensure  => file,
       require => Package[$zulip::common::nginx],
@@ -49,10 +53,6 @@ class zulip::nginx {
       mode    => '0644',
       notify  => Service['nginx'],
       source  => 'puppet:///modules/zulip/nginx/zulip-include-maybe/uploads-internal.conf',
-    }
-  } else {
-    file { '/etc/nginx/zulip-include/app.d/uploads-internal.conf':
-      ensure  => absent,
     }
   }
 
@@ -80,7 +80,7 @@ class zulip::nginx {
     source  => 'puppet:///modules/zulip/nginx/dhparam.pem',
   }
 
-  if $::osfamily == 'debian' {
+  if $::os['family'] == 'Debian' {
       $ca_crt = '/etc/ssl/certs/ca-certificates.crt'
   } else {
       $ca_crt = '/etc/pki/tls/certs/ca-bundle.crt'
@@ -124,14 +124,9 @@ class zulip::nginx {
     mode    => '0644',
     source  => 'puppet:///modules/zulip/logrotate/nginx',
   }
-
-  $certbot_auto_renew = zulipconf('certbot', 'auto_renew', '')
-  if $certbot_auto_renew == 'yes' {
-    package { 'certbot':
-      ensure => 'installed',
-    }
+  package { 'certbot':
+    ensure => 'installed',
   }
-
   file { ['/var/lib/zulip', '/var/lib/zulip/certbot-webroot']:
     ensure => 'directory',
     owner  => 'zulip',

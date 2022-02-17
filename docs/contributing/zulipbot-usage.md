@@ -6,7 +6,7 @@ repositories in order to create a better workflow for Zulip contributors.
 
 Its purpose is to work around various limitations in GitHub's
 permissions and notifications systems to make it possible to have a
-much more democractic workflow for our contributors. It allows anyone
+much more democratic workflow for our contributors. It allows anyone
 to self-assign or label an issue, not just the core contributors
 trusted with full write access to the repository (which is the only
 model GitHub supports).
@@ -66,7 +66,7 @@ model GitHub supports).
   message-editing** and **area: message view** labels are both related
   to the
   [Server message view](https://github.com/orgs/zulip/teams/server-message-view)
-  team. Feel free to join as many area label teams as as you'd like!
+  team. Feel free to join as many area label teams as you'd like!
 
   After your request to join an area label team is approved, you'll receive
   notifications for any issues labeled with the team's corresponding area

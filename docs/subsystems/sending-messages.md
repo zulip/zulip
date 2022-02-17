@@ -275,7 +275,7 @@ and SSDs, writing thousands of rows to a database starts to take a few
 seconds.
 
 This isn’t a problem for most Zulip servers, but is a major problem
-for communities like chat.zulip.org, where might be 10,000s of
+for communities like chat.zulip.org, where there might be 10,000s of
 inactive users who only stopped by briefly to check out the product or
 ask a single question, but are subscribed to whatever the default
 streams in the organization are.

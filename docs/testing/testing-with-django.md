@@ -4,7 +4,7 @@
 
 Zulip uses the Django framework for its Python backend. We
 use the testing framework from
-[django.test](https://docs.djangoproject.com/en/1.10/topics/testing/)
+[django.test](https://docs.djangoproject.com/en/3.2/topics/testing/)
 to test our code. We have over a thousand automated tests that verify that
 our backend works as expected.
 
@@ -338,7 +338,7 @@ authentication, that made outgoing HTTP requests to external
 servers. We test those features using the excellent
 [responses](https://pypi.org/project/responses/) library, which has a
 nice interface for mocking `requests` calls to return whatever HTTP
-response from the exteranl server we need for the test. you can find
+response from the external server we need for the test. you can find
 examples with `git grep responses.add`. Zulip's own `HostRequestMock`
 class should be used only for low-level tests for code that expects to
 receive Django HttpRequest object.

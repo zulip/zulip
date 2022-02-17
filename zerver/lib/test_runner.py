@@ -430,8 +430,8 @@ class Runner(DiscoverRunner):
         # We have to do the next line to avoid flaky scenarios where we
         # run a single test and getting an SA connection causes data from
         # a Django connection to be rolled back mid-test.
-        get_sqlalchemy_connection()
-        result = self.run_suite(suite)
+        with get_sqlalchemy_connection():
+            result = self.run_suite(suite)
         self.teardown_test_environment()
         failed = self.suite_result(suite, result)
         if not failed:

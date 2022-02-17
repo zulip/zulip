@@ -22,7 +22,7 @@
         <div class="padded-content markdown">
             <div class="team">
                 <p>
-                    Over 700 people have contributed to the Zulip
+                    Over 1000 people have contributed to the Zulip
                     codebase, from high school students to 30 year
                     industry veterans, from people launching new careers
                     to people looking for community. Meet the team
@@ -110,14 +110,30 @@
                     <input id="terminal" type="radio" name="tabs" />
                     <label for="terminal"><i class="fa fa-terminal" aria-hidden="true"></i>&nbsp; Terminal</label>
 
-                    <div id="tab-total" class="contributors"></div>
-                    <div id="tab-server" class="contributors"></div>
-                    <div id="tab-desktop" class="contributors"></div>
-                    <div id="tab-mobile" class="contributors"></div>
-                    <div id="tab-python-zulip-api" class="contributors"></div>
-                    <div id="tab-zulip-js" class="contributors"></div>
-                    <div id="tab-zulipbot" class="contributors"></div>
-                    <div id="tab-terminal" class="contributors"></div>
+                    <div id="tab-total" class="contributors">
+                        <div class="contributors-grid"></div>
+                    </div>
+                    <div id="tab-server" class="contributors">
+                        <div class="contributors-grid"></div>
+                    </div>
+                    <div id="tab-desktop" class="contributors">
+                        <div class="contributors-grid"></div>
+                    </div>
+                    <div id="tab-mobile" class="contributors">
+                        <div class="contributors-grid"></div>
+                    </div>
+                    <div id="tab-python-zulip-api" class="contributors">
+                        <div class="contributors-grid"></div>
+                    </div>
+                    <div id="tab-zulip-js" class="contributors">
+                        <div class="contributors-grid"></div>
+                    </div>
+                    <div id="tab-zulipbot" class="contributors">
+                        <div class="contributors-grid"></div>
+                    </div>
+                    <div id="tab-terminal" class="contributors">
+                        <div class="contributors-grid"></div>
+                    </div>
                 </div>
 
                 <!-- Compiled using lodash -->
@@ -138,6 +154,22 @@
                 <script type="text/template" id="loading-template">
                     <p class="tab-loading">
                         Loading…
+                    </p>
+                </script>
+
+                <script type="text/template" id="total-count-template">
+                    <p class="contributor-count">
+                        <%= contributor_count %> total contributors (<%= hundred_plus_contributor_count %> with 100+ commits)
+                    </p>
+                </script>
+
+                <script type="text/template" id="count-template">
+                    <p class="contributor-count">
+                        <%= contributor_count %> contributors to
+                        <a href="<%= repo_url %>" target="_blank" rel="noopener noreferrer">
+                            zulip/<%= repo_name %>
+                        </a>
+                        (<%= hundred_plus_contributor_count %> with 100+ commits)
                     </p>
                 </script>
 

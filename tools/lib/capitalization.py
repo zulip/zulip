@@ -20,7 +20,6 @@ IGNORED_PHRASES = [
     r"Dropbox",
     r"GCM",
     r"GitHub",
-    r"G Suite",
     r"Google",
     r"Gravatar",
     r"Hamlet",
@@ -50,6 +49,7 @@ IGNORED_PHRASES = [
     r"URL",
     r"Ubuntu",
     r"Updown",
+    r"UUID",
     r"V5",
     r"Webathena",
     r"Windows",
@@ -60,7 +60,7 @@ IGNORED_PHRASES = [
     r"Zulip",
     r"Zulip Account Security",
     r"Zulip Security",
-    r"Zulip Standard",
+    r"Zulip Cloud Standard",
     r"Zulip Team",
     r"iPhone",
     r"iOS",
@@ -72,9 +72,11 @@ IGNORED_PHRASES = [
     r".zuliprc",
     r"__\w+\.\w+__",
     # Things using "I"
+    r"I understand",
     r"I say",
     r"I want",
     r"I'm",
+    r"I've",
     # Specific short words
     r"beta",
     r"and",
@@ -104,6 +106,7 @@ IGNORED_PHRASES = [
         '<a href="/api" target="_blank">API</a> documentation?'
     ),
     r'Most stream administration is done on the <a href="/#streams">Streams page</a>.',
+    r"Add global time<br />Everyone sees global times in their own time zone.",
     r"one or more people...",
     r"confirmation email",
     r"invites remaining",
@@ -163,6 +166,11 @@ IGNORED_PHRASES = [
     # Used in our case studies
     r"Technical University of Munich",
     r"University of California San Diego",
+    # Used in stream creation form
+    r"email hidden",
+    # Use in compose box.
+    r"to send",
+    r"to add a new line",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

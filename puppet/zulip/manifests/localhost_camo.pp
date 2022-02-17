@@ -1,5 +1,7 @@
 class zulip::localhost_camo {
-  include zulip::camo
+  class { 'zulip::camo':
+    listen_address => '127.0.0.1',
+  }
 
   # Install nginx configuration to run camo locally
   file { '/etc/nginx/zulip-include/app.d/camo.conf':

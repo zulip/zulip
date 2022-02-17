@@ -10,11 +10,13 @@ import os
 import re
 from typing import Any, Dict, List, Mapping, Optional, Set, Tuple, Union
 
+import orjson
 from jsonschema.exceptions import ValidationError as JsonSchemaValidationError
 from openapi_core import create_spec
-from openapi_core.testing import MockRequest
+from openapi_core.testing import MockRequest, MockResponse
+from openapi_core.unmarshalling.schemas.exceptions import InvalidSchemaValue
 from openapi_core.validation.request.validators import RequestValidator
-from openapi_schema_validator import OAS30Validator
+from openapi_core.validation.response.validators import ResponseValidator
 
 OPENAPI_SPEC_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../openapi/zulip.yaml")
@@ -78,6 +80,7 @@ class OpenAPISpec:
         self._openapi: Dict[str, Any] = {}
         self._endpoints_dict: Dict[str, str] = {}
         self._request_validator: Optional[RequestValidator] = None
+        self._response_validator: Optional[ResponseValidator] = None
 
     def check_reload(self) -> None:
         # Because importing yaml takes significant time, and we only
@@ -104,6 +107,7 @@ class OpenAPISpec:
 
         spec = create_spec(openapi)
         self._request_validator = RequestValidator(spec)
+        self._response_validator = ResponseValidator(spec)
         self._openapi = naively_merge_allOf_dict(JsonRef.replace_refs(openapi))
         self.create_endpoints_dict()
         self.mtime = mtime
@@ -169,6 +173,15 @@ class OpenAPISpec:
         self.check_reload()
         assert self._request_validator is not None
         return self._request_validator
+
+    def response_validator(self) -> RequestValidator:
+        """Reload the OpenAPI file if it has been modified after the last time
+        it was read, and then return the openapi_core validator object. Similar
+        to preceding functions. Used for proper access to OpenAPI objects.
+        """
+        self.check_reload()
+        assert self._response_validator is not None
+        return self._response_validator
 
 
 class SchemaError(Exception):
@@ -361,6 +374,24 @@ def fix_events(content: Dict[str, Any]) -> None:
         event.pop("user", None)
 
 
+def prune_type_schema_by_type(schema: Dict[str, Any], type: str) -> bool:
+    return ("enum" in schema and type not in schema["enum"]) or (
+        "allOf" in schema
+        and any(prune_type_schema_by_type(subschema, type) for subschema in schema["allOf"])
+    )
+
+
+def prune_schema_by_type(schema: Dict[str, Any], type: str) -> bool:
+    return (
+        "properties" in schema
+        and "type" in schema["properties"]
+        and prune_type_schema_by_type(schema["properties"]["type"], type)
+    ) or (
+        "allOf" in schema
+        and any(prune_schema_by_type(subschema, type) for subschema in schema["allOf"])
+    )
+
+
 def validate_against_openapi_schema(
     content: Dict[str, Any],
     path: str,
@@ -402,51 +433,57 @@ def validate_against_openapi_schema(
         # been added as all 400 have the same schema.  When all 400
         # response have been defined this should be removed.
         return True
-    # The actual work of validating that the response matches the
-    # schema is done via the third-party OAS30Validator.
-    schema = get_schema(endpoint, method, status_code)
+
     if endpoint == "/events" and method == "get":
         # This a temporary function for checking only documented events
         # as all events haven't been documented yet.
         # TODO: Remove this after all events have been documented.
         fix_events(content)
 
-    validator = OAS30Validator(schema)
+    mock_request = MockRequest("http://localhost:9991/", method, "/api/v1" + path)
+    mock_response = MockResponse(
+        # TODO: Use original response content instead of re-serializing it.
+        orjson.dumps(content),
+        status_code=status_code,
+    )
+    result = openapi_spec.response_validator().validate(mock_request, mock_response)
     try:
-        validator.validate(content)
-    except JsonSchemaValidationError as error:
-        if not display_brief_error:
-            raise error
+        result.raise_for_errors()
+    except InvalidSchemaValue as isv:
+        message = f"{len(isv.schema_errors)} response validation error(s) at {method} /api/v1{path} ({status_code}):"
+        for error in isv.schema_errors:
+            if display_brief_error:
+                # display_brief_error is designed to avoid printing 1000 lines
+                # of output when the schema to validate is extremely large
+                # (E.g. the several dozen format variants for individual
+                # events returned by GET /events) and instead just display the
+                # specific variant we expect to match the response.
+                brief_error_validator_value = [
+                    validator_value
+                    for validator_value in error.validator_value
+                    if not prune_schema_by_type(validator_value, error.instance["type"])
+                ]
+                brief_error_display_schema = error.schema.copy()
+                if "oneOf" in brief_error_display_schema:
+                    brief_error_display_schema["oneOf"] = [
+                        i_schema
+                        for i_schema in error.schema["oneOf"]
+                        if not prune_schema_by_type(i_schema, error.instance["type"])
+                    ]
 
-        # display_brief_error is designed to avoid printing 1000 lines
-        # of output when the schema to validate is extremely large
-        # (E.g. the several dozen format variants for individual
-        # events returned by GET /events) and instead just display the
-        # specific variant we expect to match the response.
-        brief_error_display_schema = {"nullable": False, "oneOf": list()}
-        brief_error_display_schema_oneOf = []
-        brief_error_validator_value = []
-
-        for validator_value in error.validator_value:
-            if validator_value["example"]["type"] == error.instance["type"]:
-                brief_error_validator_value.append(validator_value)
-
-        for i_schema in error.schema["oneOf"]:
-            if i_schema["example"]["type"] == error.instance["type"]:
-                brief_error_display_schema_oneOf.append(i_schema)
-        brief_error_display_schema["oneOf"] = brief_error_display_schema_oneOf
-
-        # Field list from https://python-jsonschema.readthedocs.io/en/stable/errors/
-        raise JsonSchemaValidationError(
-            message=error.message,
-            validator=error.validator,
-            path=error.path,
-            instance=error.instance,
-            schema_path=error.schema_path,
-            schema=brief_error_display_schema,
-            validator_value=brief_error_validator_value,
-            cause=error.cause,
-        )
+                # Field list from https://python-jsonschema.readthedocs.io/en/stable/errors/
+                error = JsonSchemaValidationError(
+                    message=error.message,
+                    validator=error.validator,
+                    path=error.path,
+                    instance=error.instance,
+                    schema_path=error.schema_path,
+                    schema=brief_error_display_schema,
+                    validator_value=brief_error_validator_value,
+                    cause=error.cause,
+                )
+            message += f"\n\n{type(error).__name__}: {error}"
+        raise SchemaError(message) from None
 
     return True
 
@@ -467,7 +504,7 @@ def validate_schema(schema: Dict[str, Any]) -> None:
     elif schema["type"] == "object":
         if "additionalProperties" not in schema:
             raise SchemaError(
-                "additionalProperties needs to be defined for objects to make"
+                "additionalProperties needs to be defined for objects to make "
                 + "sure they have no additional properties left to be documented."
             )
         for property_schema in schema.get("properties", {}).values():
@@ -503,7 +540,7 @@ def validate_request(
     url: str,
     method: str,
     data: Union[str, bytes, Dict[str, Any]],
-    http_headers: Dict[str, Any],
+    http_headers: Dict[str, str],
     json_url: bool,
     status_code: str,
     intentionally_undocumented: bool = False,
