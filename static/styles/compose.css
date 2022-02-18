@@ -583,11 +583,8 @@ input.recipient_box {
     }
 
     .compose_help_button {
-        font-size: 21px;
-        line-height: 27px;
-        font-weight: 550;
-        padding: 0 5px;
-        margin: 0;
+        font-size: 20px;
+        line-height: 17px;
     }
 }
 
