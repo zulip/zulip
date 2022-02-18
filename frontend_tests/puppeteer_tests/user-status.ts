@@ -31,7 +31,7 @@ async function open_set_user_status_modal(page: Page): Promise<void> {
 async function test_user_status(page: Page): Promise<void> {
     await open_set_user_status_modal(page);
     // Check by clicking on common statues.
-    await page.click(".user-status-value");
+    await page.click(".user-status-value:nth-child(2)");
     await page.waitForFunction(
         () => (document.querySelector(".user_status") as HTMLInputElement).value === "In a meeting",
     );
