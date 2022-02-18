@@ -1,4 +1,5 @@
 from typing import Dict, Optional
+from urllib.parse import urlparse
 
 from bs4.element import Tag
 
@@ -48,5 +49,11 @@ class GenericParser(BaseParser):
             first_image = first_h1.find_next_sibling("img", src=True)
             if isinstance(first_image, Tag) and first_image["src"] != "":
                 assert isinstance(first_image["src"], str)
+                try:
+                    # We use urlparse and not URLValidator because we
+                    # need to support relative URLs.
+                    urlparse(first_image["src"])
+                except ValueError:
+                    return None
                 return first_image["src"]
         return None
