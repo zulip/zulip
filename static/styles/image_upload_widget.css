@@ -21,6 +21,7 @@
         position: absolute;
         display: none;
         cursor: pointer;
+        border-radius: 5px;
     }
 
     .image-delete-button {
