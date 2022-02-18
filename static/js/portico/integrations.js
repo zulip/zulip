@@ -378,4 +378,5 @@ $(() => {
     load_data();
     dispatch("LOAD_PATH");
     $(".integrations .searchbar input[type='text']").trigger("focus");
+    adjust_font_sizing();
 });
