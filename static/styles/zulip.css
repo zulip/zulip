@@ -85,7 +85,8 @@ pre {
      */
     font-family: "Source Sans 3", sans-serif !important;
 
-    .tippy-box {
+    /* Affects all tippy tooltips not using any theme. */
+    .tippy-box:not[data-theme] {
         background-color: hsl(0, 0%, 12%);
 
         &[data-placement^="top"] {
