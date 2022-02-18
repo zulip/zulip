@@ -52,6 +52,7 @@ $topic_resolve_width: 13px;
 li.show-more-topics {
     a {
         font-size: 12px;
+        margin-left: $topic_resolve_width;
     }
 }
 
