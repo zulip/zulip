@@ -359,8 +359,15 @@ export function set_up() {
         }
 
         $("#regenerate_api_key").on("click", (e) => {
+            const email = page_params.delivery_email;
+            const api_key = $("#api_key_value").text();
+            const authorization_header = "Basic " + btoa(`${email}:${api_key}`);
+
             channel.post({
-                url: "/json/users/me/api_key/regenerate",
+                // This endpoint is only accessible with the previous API key,
+                // via our usual HTTP Basic auth mechanism.
+                url: "/api/v1/users/me/api_key/regenerate",
+                headers: {Authorization: authorization_header},
                 success(data) {
                     $("#api_key_value").text(data.api_key);
                 },

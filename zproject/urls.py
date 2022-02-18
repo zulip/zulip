@@ -372,7 +372,6 @@ v1_api_and_json_patterns = [
     rest_path("user_groups/<int:user_group_id>", PATCH=edit_user_group, DELETE=delete_user_group),
     rest_path("user_groups/<int:user_group_id>/members", POST=update_user_group_backend),
     # users/me -> zerver.views.user_settings
-    rest_path("users/me/api_key/regenerate", POST=regenerate_api_key),
     rest_path("users/me/avatar", POST=set_avatar_backend, DELETE=delete_avatar_backend),
     # users/me/hotspots -> zerver.views.hotspots
     rest_path(
@@ -724,6 +723,11 @@ v1_api_mobile_patterns = [
     # This json format view used by the mobile apps accepts a username
     # password/pair and returns an API key.
     path("fetch_api_key", api_fetch_api_key),
+    # The endpoint for regenerating and obtaining a new API key
+    # should only be available by authenticating with the current
+    # API key - as we consider access to the API key sensitive
+    # and just having a logged-in session should be insufficient.
+    rest_path("users/me/api_key/regenerate", POST=regenerate_api_key),
 ]
 
 # View for uploading messages from email mirror
