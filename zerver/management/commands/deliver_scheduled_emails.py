@@ -33,19 +33,22 @@ Usage: ./manage.py deliver_scheduled_emails
 """
 
     def handle(self, *args: Any, **options: Any) -> None:
-        while True:
-            with transaction.atomic():
-                job = (
-                    ScheduledEmail.objects.filter(scheduled_timestamp__lte=timezone_now())
-                    .prefetch_related("users")
-                    .select_for_update(skip_locked=True)
-                    .order_by("scheduled_timestamp")
-                    .first()
-                )
-                if job:
-                    try:
-                        deliver_scheduled_emails(job)
-                    except EmailNotDeliveredException:
-                        logger.warning("%r not delivered", job)
-                else:
-                    time.sleep(10)
+        try:
+            while True:
+                with transaction.atomic():
+                    job = (
+                        ScheduledEmail.objects.filter(scheduled_timestamp__lte=timezone_now())
+                        .prefetch_related("users")
+                        .select_for_update(skip_locked=True)
+                        .order_by("scheduled_timestamp")
+                        .first()
+                    )
+                    if job:
+                        try:
+                            deliver_scheduled_emails(job)
+                        except EmailNotDeliveredException:
+                            logger.warning("%r not delivered", job)
+                    else:
+                        time.sleep(10)
+        except KeyboardInterrupt:
+            pass
