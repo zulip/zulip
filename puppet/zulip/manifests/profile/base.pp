@@ -4,35 +4,19 @@
 # be able to be deployed on their own host.
 class zulip::profile::base {
   include zulip::common
-  case $::osfamily {
-    'debian': {
+  case $::os['family'] {
+    'Debian': {
       include zulip::apt_repository
     }
-    'redhat': {
+    'RedHat': {
       include zulip::yum_repository
     }
     default: {
       fail('osfamily not supported')
     }
   }
-  case $::osfamily {
-    'debian': {
-      $release_name = $::operatingsystemrelease ? {
-        # Debian releases
-        /^7\.[0-9]*$/  => 'wheezy',
-        /^8\.[0-9]*$/  => 'jessie',
-        /^9\.[0-9]*$/  => 'stretch',
-        /^10\.[0-9]*$/ => 'buster',
-        /^11\.[0-9]*$/ => 'bullseye',
-        # Ubuntu releases
-        '12.04' => 'precise',
-        '14.04' => 'trusty',
-        '15.04' => 'vivid',
-        '15.10' => 'wily',
-        '16.04' => 'xenial',
-        '18.04' => 'bionic',
-        '20.04' => 'focal',
-      }
+  case $::os['family'] {
+    'Debian': {
       $base_packages = [
         # Basics
         'python3',
@@ -56,8 +40,7 @@ class zulip::profile::base {
         'cron',
       ]
     }
-    'redhat': {
-      $release_name = "${::operatingsystem}${::operatingsystemmajrelease}"
+    'RedHat': {
       $base_packages = [
         'python3',
         'python3-pyyaml',

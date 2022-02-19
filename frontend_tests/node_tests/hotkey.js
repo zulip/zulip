@@ -121,9 +121,17 @@ emoji.initialize({
 });
 
 function stubbing(module, func_name_to_stub, test_function) {
-    with_overrides((override) => {
+    with_overrides(({override}) => {
         const stub = make_stub();
         override(module, func_name_to_stub, stub.f);
+        test_function(stub);
+    });
+}
+
+function stubbing_rewire(module, func_name_to_stub, test_function) {
+    with_overrides(({override_rewire}) => {
+        const stub = make_stub();
+        override_rewire(module, func_name_to_stub, stub.f);
         test_function(stub);
     });
 }
@@ -236,6 +244,13 @@ function assert_mapping(c, module, func_name, shiftKey) {
     });
 }
 
+function assert_mapping_rewire(c, module, func_name, shiftKey) {
+    stubbing_rewire(module, func_name, (stub) => {
+        assert.ok(process(c, shiftKey));
+        assert.equal(stub.num_calls, 1);
+    });
+}
+
 function assert_unmapped(s) {
     for (const c of s) {
         assert.equal(process(c), false);
@@ -250,14 +265,14 @@ function test_normal_typing() {
     assert_unmapped('~!@#$%^*()_+{}:"<>');
 }
 
-run_test("allow normal typing when processing text", ({override}) => {
+run_test("allow normal typing when processing text", ({override_rewire}) => {
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
     assert_unmapped("bfmoyz");
     assert_unmapped("BEFHILNOQTUWXYZ");
 
     // All letters should return false if we are composing text.
-    override(hotkey, "processing_text", () => true);
+    override_rewire(hotkey, "processing_text", () => true);
 
     for (const settings_open of [() => true, () => false]) {
         for (const is_active of [() => true, () => false]) {
@@ -292,7 +307,7 @@ run_test("streams", ({override}) => {
 run_test("basic mappings", () => {
     assert_mapping("?", browser_history, "go_to_location");
     assert_mapping("/", search, "initiate_search");
-    assert_mapping("w", activity, "initiate_search");
+    assert_mapping_rewire("w", activity, "initiate_search");
     assert_mapping("q", stream_list, "initiate_search");
 
     assert_mapping("A", narrow, "stream_cycle_backward");
@@ -331,13 +346,13 @@ run_test("misc", () => {
     const message_view_only_keys = "@+>RjJkKsSuvi:GM";
 
     // Check that they do nothing without a selected message
-    with_overrides((override) => {
+    with_overrides(({override}) => {
         override(message_lists.current, "empty", () => true);
         assert_unmapped(message_view_only_keys);
     });
 
     // Check that they do nothing while in the settings overlay
-    with_overrides((override) => {
+    with_overrides(({override}) => {
         override(overlays, "settings_open", () => true);
         assert_unmapped("@*+->rRjJkKsSuvi:GM");
     });

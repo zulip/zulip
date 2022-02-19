@@ -463,7 +463,8 @@ $category-text: hsl(219, 23%, 33%);
 
             .integration-lozenge {
                 width: 125px;
-                height: 170px;
+                height: auto;
+                padding: 0 5px 20px;
                 margin: 0 21px 20px;
                 order: 1;
 

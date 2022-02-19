@@ -1,0 +1,8 @@
+[program:prometheus_uwsgi_exporter]
+command=<%= @bin %> --stats.uri=unix:///home/zulip/deployments/uwsgi-stats --web.listen-address=:9238
+priority=10
+autostart=true
+autorestart=true
+user=zulip
+redirect_stderr=true
+stdout_logfile=/var/log/zulip/uwsgi_exporter.log

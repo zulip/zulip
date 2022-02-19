@@ -1,4 +1,4 @@
-Receive Zulip notifications from Uptime Robot!
+Receive Zulip notifications from UptimeRobot!
 
 1. {!create-stream.md!}
 
@@ -14,7 +14,7 @@ Receive Zulip notifications from Uptime Robot!
     notifications sent to. If you do not specify a `stream`, the bot will
     send notifications via PMs to the creator of the bot.
 
-1. On Uptime Robot, go to **My Settings** and select **Add Alert Contact**.
+1. On UptimeRobot, go to **My Settings** and select **Add Alert Contact**.
    Set **Alert Contact Type** to **webhook**.
 
 1. Set **Friendly Name** to a name of your choice, such as `Zulip`. Set **URL to notify** to the

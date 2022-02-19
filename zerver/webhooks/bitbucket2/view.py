@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import log_exception_to_webhook_logger, webhook_view
+from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -87,11 +87,11 @@ def api_bitbucket2_webhook(
     if type == "push":
         # ignore push events with no changes
         if not payload["push"]["changes"]:
-            return json_success()
+            return json_success(request)
         branch = get_branch_name_for_push_event(payload)
         if branch and branches:
             if branches.find(branch) == -1:
-                return json_success()
+                return json_success(request)
 
     subject = get_subject_based_on_type(payload, type)
     body_function = get_body_based_on_type(type)
@@ -113,7 +113,7 @@ def api_bitbucket2_webhook(
                 request, user_profile, s, b, type, unquote_url_parameters=True
             )
 
-    return json_success()
+    return json_success(request)
 
 
 def get_subject_for_branch_specified_events(
@@ -477,11 +477,10 @@ def get_user_info(dct: Dict[str, Any]) -> str:
     if "nickname" in dct:
         return dct["nickname"]
 
-    log_exception_to_webhook_logger(
+    # We call this an unsupported_event, even though we
+    # are technically still sending a message.
+    log_unsupported_webhook_event(
         summary="Could not find display_name/nickname field",
-        # We call this an unsupported_event, even though we
-        # are technically still sending a message.
-        unsupported_event=True,
     )
 
     return "Unknown user"

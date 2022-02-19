@@ -51,7 +51,7 @@
                                 {% if onboarding and free_trial_days %}
                                 <p><b>Not ready to start your trial?</b> <a href="/">Continue with the Zulip Cloud Free plan</a>.</p>
                                 <hr />
-                                <h2>Zulip Standard free trial</h2>
+                                <h2>Zulip Cloud Standard free trial</h2>
                                 {% endif %}
                                 <div class="payment-schedule">
                                     <div id="autopay-error" class="alert alert-danger"></div>
@@ -141,7 +141,7 @@
                                     <input type="number" name="licenses" min="{{ seat_count }}" autocomplete="off" id="manual_license_count" required/><br />
                                 </div>
 
-                                <button id="add-card-button" class="stripe-button-el">
+                                <button id="add-card-button" class="stripe-button-el invoice-button">
                                     <span id="add-card-button-span">Add card</span>
                                 </button>
                             </form>
@@ -167,7 +167,7 @@
                                 {% if onboarding and free_trial_days %}
                                 <p><b>Not ready to start your trial?</b> <a href="/">Continue with the Zulip Cloud Free plan</a>.</p>
                                 <hr />
-                                <h2>Zulip Standard free trial</h2>
+                                <h2>Zulip Cloud Standard free trial</h2>
                                 {% endif %}
                                 <input type="hidden" name="signed_seat_count" value="{{ signed_seat_count }}" />
                                 <input type="hidden" name="salt" value="{{ salt }}" />

@@ -26,7 +26,7 @@ def update_storage(
         set_bot_storage(user_profile, list(storage.items()))
     except StateError as e:  # nocoverage
         raise JsonableError(str(e))
-    return json_success()
+    return json_success(request)
 
 
 @has_request_variables
@@ -41,7 +41,7 @@ def get_storage(
         storage = {key: get_bot_storage(user_profile, key) for key in keys}
     except StateError as e:
         raise JsonableError(str(e))
-    return json_success({"storage": storage})
+    return json_success(request, data={"storage": storage})
 
 
 @has_request_variables
@@ -56,4 +56,4 @@ def remove_storage(
         remove_bot_storage(user_profile, keys)
     except StateError as e:
         raise JsonableError(str(e))
-    return json_success()
+    return json_success(request)

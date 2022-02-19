@@ -2,9 +2,9 @@
 :orphan:
 ```
 
-# Production installation on existing server
+# Production installation on an existing server
 
-Here are some tips for installing the latest release Zulip on a
+Here are some tips for installing the latest release of Zulip on a
 production server running Debian or Ubuntu. The Zulip installation
 scripts assume that it has carte blanche to overwrite your
 configuration files in /etc, so we recommend against installing it on
@@ -21,7 +21,7 @@ Linux sysadmin, you will have a much better experience if you get a
 dedicated VM to install Zulip on instead (or [use
 zulip.com](https://zulip.com)).
 
-### Nginx
+### nginx
 
 Copy your existing nginx configuration to a backup and then merge the
 one created by Zulip into it:
@@ -102,5 +102,5 @@ We don't provide a convenient way to uninstall a Zulip server.
 
 Most of the limitations are things we'd accept a pull request to fix;
 we welcome contributions to shrink this list of gotchas. Chat with us
-in the [chat.zulip.org community](https://zulip.com/developer-community/) if you're
+in the [chat.zulip.org community](https://zulip.com/development-community/) if you're
 interested in helping!

@@ -26,7 +26,7 @@ We love hearing feedback! Please reach out if you have feedback,
 questions, or just want to brainstorm how to make Zulip work for your
 organization.
 
-[development-community]: https://zulip.com/developer-community/
+[development-community]: https://zulip.com/development-community/
 
 ## Billing and commercial questions
 

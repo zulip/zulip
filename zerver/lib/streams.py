@@ -1,5 +1,6 @@
 from typing import Collection, List, Optional, Set, Tuple, Union
 
+from django.db import transaction
 from django.db.models.query import QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -12,6 +13,7 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
+from zerver.lib.string_validation import check_stream_name
 from zerver.models import (
     DefaultStreamGroup,
     Realm,
@@ -53,6 +55,26 @@ class StreamDict(TypedDict, total=False):
     stream_post_policy: int
     history_public_to_subscribers: Optional[bool]
     message_retention_days: Optional[int]
+
+
+def get_stream_permission_policy_name(
+    *,
+    invite_only: Optional[bool] = None,
+    history_public_to_subscribers: Optional[bool] = None,
+    is_web_public: Optional[bool] = None,
+) -> str:
+    policy_name = None
+    for permission, permission_dict in Stream.PERMISSION_POLICIES.items():
+        if (
+            permission_dict["invite_only"] == invite_only
+            and permission_dict["history_public_to_subscribers"] == history_public_to_subscribers
+            and permission_dict["is_web_public"] == is_web_public
+        ):
+            policy_name = permission_dict["policy_name"]
+            break
+
+    assert policy_name is not None
+    return policy_name
 
 
 def get_default_value_for_history_public_to_subscribers(
@@ -102,42 +124,44 @@ def create_stream_if_needed(
         realm, invite_only, history_public_to_subscribers
     )
 
-    (stream, created) = Stream.objects.get_or_create(
-        realm=realm,
-        name__iexact=stream_name,
-        defaults=dict(
-            name=stream_name,
-            description=stream_description,
-            invite_only=invite_only,
-            is_web_public=is_web_public,
-            stream_post_policy=stream_post_policy,
-            history_public_to_subscribers=history_public_to_subscribers,
-            is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
-            message_retention_days=message_retention_days,
-        ),
-    )
+    with transaction.atomic():
+        (stream, created) = Stream.objects.get_or_create(
+            realm=realm,
+            name__iexact=stream_name,
+            defaults=dict(
+                name=stream_name,
+                description=stream_description,
+                invite_only=invite_only,
+                is_web_public=is_web_public,
+                stream_post_policy=stream_post_policy,
+                history_public_to_subscribers=history_public_to_subscribers,
+                is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
+                message_retention_days=message_retention_days,
+            ),
+        )
 
+        if created:
+            recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+
+            stream.recipient = recipient
+            stream.rendered_description = render_stream_description(stream_description)
+            stream.save(update_fields=["recipient", "rendered_description"])
+
+            event_time = timezone_now()
+            RealmAuditLog.objects.create(
+                realm=realm,
+                acting_user=acting_user,
+                modified_stream=stream,
+                event_type=RealmAuditLog.STREAM_CREATED,
+                event_time=event_time,
+            )
     if created:
-        recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
-
-        stream.recipient = recipient
-        stream.rendered_description = render_stream_description(stream_description)
-        stream.save(update_fields=["recipient", "rendered_description"])
-
         if stream.is_public():
             send_stream_creation_event(stream, active_non_guest_user_ids(stream.realm_id))
         else:
             realm_admin_ids = [user.id for user in stream.realm.get_admin_users_and_bots()]
             send_stream_creation_event(stream, realm_admin_ids)
 
-        event_time = timezone_now()
-        RealmAuditLog.objects.create(
-            realm=realm,
-            acting_user=acting_user,
-            modified_stream=stream,
-            event_type=RealmAuditLog.STREAM_CREATED,
-            event_time=event_time,
-        )
     return stream, created
 
 
@@ -170,20 +194,6 @@ def create_streams_if_needed(
             existing_streams.append(stream)
 
     return added_streams, existing_streams
-
-
-def check_stream_name(stream_name: str) -> None:
-    if stream_name.strip() == "":
-        raise JsonableError(_("Invalid stream name '{}'").format(stream_name))
-    if len(stream_name) > Stream.MAX_NAME_LENGTH:
-        raise JsonableError(
-            _("Stream name too long (limit: {} characters).").format(Stream.MAX_NAME_LENGTH)
-        )
-    for i in stream_name:
-        if ord(i) == 0:
-            raise JsonableError(
-                _("Stream name '{}' contains NULL (0x00) characters.").format(stream_name)
-            )
 
 
 def subscribed_to_stream(user_profile: UserProfile, stream_id: int) -> bool:
@@ -590,7 +600,7 @@ def filter_stream_authorization(
         if stream.recipient_id in subscribed_recipient_ids:
             continue
 
-        # Web public streams are accessible even to guests
+        # Web-public streams are accessible even to guests
         if stream.is_web_public:
             continue
 
@@ -688,7 +698,7 @@ def list_to_streams(
 
         if web_public_stream_requested:
             if not user_profile.realm.web_public_streams_enabled():
-                raise JsonableError(_("Web public streams are not enabled."))
+                raise JsonableError(_("Web-public streams are not enabled."))
             if not user_profile.can_create_web_public_streams():
                 # We set create_web_public_stream_policy to allow only organization owners
                 # to create web-public streams, because of their sensitive nature.

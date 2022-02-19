@@ -9,18 +9,7 @@
         </div>
         <div class="subscriber_list_add float-left">
             <form>
-                <div class="add_subscribers_container">
-                    <div class="pill-container person_picker">
-                        <div class="input" contenteditable="true"
-                          data-placeholder="{{t 'Add subscribers. Use @usergroup or #streamname to bulk add subscribers.' }}">
-                        </div>
-                    </div>
-                    <div class="add_subscriber_btn_wrapper inline-block">
-                        <button type="submit" name="add_subscriber" class="button add-subscriber-button small rounded" tabindex="0">
-                            {{t 'Add' }}
-                        </button>
-                    </div>
-                </div>
+                {{> add_subscribers_form}}
             </form>
             <div class="stream_subscription_request_result"></div>
         </div>

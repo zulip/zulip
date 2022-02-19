@@ -147,9 +147,9 @@ suggest using that updated template to update
    `/etc/zulip/settings-new.py`, check the [changelog][changelog] to see
    if they have been removed.
 
-1. Overwriting the configuration with the updated file, and restart
-   the server to pick up the new file; this should be a no-op, but it
-   is much better to discover immediately if it is not:
+1. Overwrite the configuration with the updated file, and restart the
+   server to pick up the updates; this should be a no-op, but it is
+   much better to discover immediately if it is not:
 
    ```bash
    cp -a /etc/zulip/settings-new.py /etc/zulip/settings.py
@@ -188,7 +188,7 @@ If you need help and don't have a support contract, you can visit
 [#production
 help](https://chat.zulip.org/#narrow/stream/31-production-help) in the
 [Zulip development community
-server](https://zulip.com/developer-community/) for best-effort help.
+server](https://zulip.com/development-community/) for best-effort help.
 Please include the relevant error output from the above logs in a
 [Markdown code
 block](https://zulip.com/help/code-blocks)
@@ -257,8 +257,10 @@ instructions for other supported platforms.
 
 ### Upgrading from Ubuntu 18.04 Bionic to 20.04 Focal
 
-1. Upgrade your server to the latest Zulip release (at least 3.0,
-   which adds support for Ubuntu Focal).
+1. Upgrade your server to the latest Zulip `3.x` or `4.x` release (at
+   least 3.0, which adds support for Ubuntu 20.04). You can only
+   upgrade to Zulip 5.0 and newer after completing this process, since
+   newer releases don't support Ubuntu 18.04.
 
 2. As the Zulip user, stop the Zulip server and run the following
    to back up the system:
@@ -280,7 +282,7 @@ instructions for other supported platforms.
 
    When `do-release-upgrade` asks you how to upgrade configuration
    files for services that Zulip manages like Redis, PostgreSQL,
-   Nginx, and memcached, the best choice is `N` to keep the
+   nginx, and memcached, the best choice is `N` to keep the
    currently installed version. But it's not important; the next
    step will re-install Zulip's configuration in any case.
 
@@ -296,7 +298,7 @@ instructions for other supported platforms.
    collations. Regenerate the affected indexes by running:
 
    ```bash
-   /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
+   /home/zulip/deployments/current/zulip-py3-venv/bin/python /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
    ```
 
 6. Finally, we need to reinstall the current version of Zulip, which
@@ -354,14 +356,17 @@ instructions for other supported platforms.
    be able to navigate to its URL and confirm everything is working
    correctly.
 
-6. [Upgrade to the latest Zulip release](#upgrading-to-a-release), now
-   that your server is running a supported operating system.
+6. [Upgrade to the latest `4.x` release](#upgrading-to-a-release).
 
-7. As root, finish by verifying the contents of the full-text indexes:
+7. As root, verify the contents of the full-text indexes:
 
    ```bash
    /home/zulip/deployments/current/manage.py audit_fts_indexes
    ```
+
+8. [Upgrade from Bionic to
+   Focal](#upgrading-from-ubuntu-18-04-bionic-to-20-04-focal), so that
+   you are running a supported operating system.
 
 ### Upgrading from Ubuntu 14.04 Trusty to 16.04 Xenial
 
@@ -424,7 +429,7 @@ instructions for other supported platforms.
 
    When prompted for you how to upgrade configuration
    files for services that Zulip manages like Redis, PostgreSQL,
-   Nginx, and memcached, the best choice is `N` to keep the
+   nginx, and memcached, the best choice is `N` to keep the
    currently installed version. But it's not important; the next
    step will re-install Zulip's configuration in any case.
 
@@ -456,7 +461,7 @@ instructions for other supported platforms.
    collations. Regenerate the affected indexes by running:
 
    ```bash
-   /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
+   /home/zulip/deployments/current/zulip-py3-venv/bin/python /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
    ```
 
 7. As root, finish by verifying the contents of the full-text indexes:
@@ -487,7 +492,7 @@ instructions for other supported platforms.
 
    When prompted for you how to upgrade configuration
    files for services that Zulip manages like Redis, PostgreSQL,
-   Nginx, and memcached, the best choice is `N` to keep the
+   nginx, and memcached, the best choice is `N` to keep the
    currently installed version. But it's not important; the next
    step will re-install Zulip's configuration in any case.
 
@@ -529,7 +534,7 @@ instructions for other supported platforms.
    collations. Regenerate the affected indexes by running:
 
    ```bash
-   /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
+   /home/zulip/deployments/current/zulip-py3-venv/bin/python /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
    ```
 
 8. As root, finish by verifying the contents of the full-text indexes:
@@ -544,7 +549,7 @@ Starting with Zulip 3.0, we use the latest available version of
 PostgreSQL at installation time (currently version 14). Upgrades to
 the version of PostgreSQL are no longer linked to upgrades of the
 distribution; that is, you may opt to upgrade to PostgreSQL 14 while
-running Ubuntu 18.04 Bionic.
+running Ubuntu 20.04.
 
 To upgrade the version of PostgreSQL on the Zulip server:
 
@@ -590,7 +595,7 @@ modified version of Zulip, please be responsible about communicating
 that fact:
 
 - Ideally, you'd reproduce the issue in an unmodified version (e.g. in
-  [the Zulip development community](https://zulip.com/developer-community/) or on
+  [the Zulip development community](https://zulip.com/development-community/) or on
   [zulip.com](https://zulip.com)).
 - Where that is difficult or you think it's very unlikely your changes
   are related to the issue, just mention your changes in the issue report.

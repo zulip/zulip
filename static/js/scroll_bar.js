@@ -1,6 +1,5 @@
 import $ from "jquery";
 
-import {media_breakpoints} from "./css_variables";
 import {user_settings} from "./user_settings";
 
 // A few of our width properties in Zulip depend on the width of the
@@ -22,7 +21,7 @@ function getScrollbarWidth() {
     // force scrollbars
     outer.style.overflow = "scroll";
 
-    // add innerdiv
+    // add inner div
     const inner = document.createElement("div");
     inner.style.width = "100%";
     outer.append(inner);
@@ -40,59 +39,29 @@ let sbWidth;
 export function initialize() {
     // Workaround for browsers with fixed scrollbars
     sbWidth = getScrollbarWidth();
-    // These need to agree with zulip.css
-    const left_sidebar_width = 270;
-    const right_sidebar_width = 250;
-
     if (sbWidth > 0) {
-        $(".header").css("left", "-" + sbWidth + "px");
-        $(".header-main").css("left", sbWidth + "px");
-        $(".header-main .column-middle").css("margin-right", 7 + sbWidth + "px");
-
-        $(".fixed-app").css("left", "-" + sbWidth + "px");
-        $(".fixed-app .column-middle").css("margin-left", 7 + sbWidth + "px");
-
-        $(".column-right").css("right", sbWidth + "px");
-        $(".app-main .right-sidebar").css({
-            "margin-left": sbWidth + "px",
-            width: right_sidebar_width - sbWidth + "px",
-        });
-
-        $("#compose").css("left", "-" + sbWidth + "px");
-        $("#compose-content").css({left: sbWidth + "px", "margin-right": 7 + sbWidth + "px"});
-        $("#keyboard-icon").css({"margin-right": sbWidth + "px"});
-
-        $("head").append(
-            "<style> @media (min-width: " +
-                media_breakpoints.xl_min +
-                ") { #compose-content, .header-main .column-middle { margin-right: " +
-                (right_sidebar_width + sbWidth) +
-                "px !important; } } " +
-                "@media (min-width: " +
-                media_breakpoints.md_min +
-                ") { .fixed-app .column-middle { margin-left: " +
-                (left_sidebar_width + sbWidth) +
-                "px !important; } } " +
-                "</style>",
+        // Reduce width of screen-wide parent containers, whose width doesn't vary with scrollbar width, by scrollbar width.
+        $("#navbar-container .header, .fixed-app .app-main, #compose").css(
+            "width",
+            `calc(100% - ${sbWidth}px)`,
         );
+
+        // Align floating recipient bar with the middle column.
+        $(".fixed-app").css("left", "-" + sbWidth / 2 + "px");
     }
     set_layout_width();
 }
 
 export function set_layout_width() {
-    // This logic unfortunately leads to a flash of mispositioned
-    // content when reloading a Zulip browser window.  More details
-    // are available in the comments on the max-width of 1400px in
-    // the .app-main CSS rules.
     if (user_settings.fluid_layout_width) {
-        $(".header-main").css("max-width", "inherit");
-        $(".app .app-main").css("max-width", "inherit");
-        $(".fixed-app .app-main").css("max-width", "inherit");
-        $("#compose-container").css("max-width", "inherit");
+        $(".header-main, .app .app-main, .fixed-app .app-main, #compose-container").css(
+            "max-width",
+            "inherit",
+        );
     } else {
-        $(".header-main").css("max-width", 1400 + sbWidth + "px");
-        $(".app .app-main").css("max-width", 1400 + "px");
-        $(".fixed-app .app-main").css("max-width", 1400 + sbWidth + "px");
-        $("#compose-container").css("max-width", 1400 + sbWidth + "px");
+        $(".header-main, .app .app-main, .fixed-app .app-main, #compose-container").css(
+            "max-width",
+            "1400px",
+        );
     }
 }

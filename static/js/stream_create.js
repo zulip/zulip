@@ -3,7 +3,7 @@ import $ from "jquery";
 import render_announce_stream_docs from "../templates/announce_stream_docs.hbs";
 import render_subscription_invites_warning_modal from "../templates/confirm_dialog/confirm_subscription_invites_warning.hbs";
 import render_new_stream_user from "../templates/new_stream_user.hbs";
-import render_new_stream_users from "../templates/new_stream_users.hbs";
+import render_new_stream_users from "../templates/stream_settings/new_stream_users.hbs";
 
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
@@ -338,8 +338,8 @@ export function show_new_stream_modal() {
         html_selector: (user) => $(`#${CSS.escape("user_checkbox_" + user.user_id)}`),
     });
 
-    // Select the first enabled choice for stream privacy.
-    $("#make-invite-only input:not([disabled]):first").prop("checked", true);
+    // Select the first visible and enabled choice for stream privacy.
+    $("#make-invite-only input:visible:not([disabled]):first").prop("checked", true);
     // Make the options default to the same each time:
     // "announce stream" on.
     $("#stream_creation_form .stream-message-retention-days-input").hide();
@@ -446,7 +446,7 @@ export function set_up_handlers() {
 
     container.on("change", "#make-invite-only input", update_announce_stream_state);
 
-    container.on("submit", "#stream_creation_form", (e) => {
+    container.on("click", ".finalize_create_stream", (e) => {
         e.preventDefault();
         clear_error_display();
 

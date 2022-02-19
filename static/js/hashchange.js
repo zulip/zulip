@@ -201,6 +201,22 @@ function do_hashchange_overlay(old_hash) {
 
     const coming_from_overlay = hash_util.is_overlay_hash(old_hash || "#");
 
+    if ((base === "settings" || base === "organization") && !section) {
+        let settings_panel_object = settings_panel_menu.normal_settings;
+        if (base === "organization") {
+            settings_panel_object = settings_panel_menu.org_settings;
+        }
+        history.replaceState(
+            null,
+            "",
+            get_full_url(base + "/" + settings_panel_object.current_tab()),
+        );
+    }
+
+    if (base === "streams" && !section) {
+        history.replaceState(null, "", get_full_url("streams/subscribed"));
+    }
+
     // Start by handling the specific case of going
     // from something like streams/all to streams_subscribed.
     //

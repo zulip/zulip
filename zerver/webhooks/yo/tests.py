@@ -11,7 +11,7 @@ class YoHookTests(WebhookTestCase):
 
     def test_yo_message(self) -> None:
         """
-        Yo App sends notification whenever user receives a new Yo from another user.
+        Yo sends notification whenever user receives a new Yo from another user.
         """
         cordelia = self.example_user("cordelia")
         self.url = self.build_webhook_url(

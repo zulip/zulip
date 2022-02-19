@@ -163,7 +163,7 @@ button {
 }
 
 .poll-question-header {
-    display: inline-block;
+    display: inline;
 }
 
 .current-user-vote {

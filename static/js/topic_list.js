@@ -134,6 +134,7 @@ export class TopicListWidget {
         this.parent_elem = parent_elem;
         this.my_stream_id = my_stream_id;
         this.topic_search_text = "";
+        this.topic_search_focused_before_build = true;
     }
 
     build_list(spinner) {
@@ -186,16 +187,20 @@ export class TopicListWidget {
             // Restore topic search text saved in remove()
             // after the element was rerendered.
             input.val(this.topic_search_text);
-            input.trigger("focus");
+            if (this.topic_search_focused_before_build) {
+                // Don't focus topic search if it wasn't focused before.
+                // This avoids unwanted change of focus.
+                input.trigger("focus");
+            }
 
-            // setup display of clear(x) button.
+            // set up display of clear(x) button.
             if (this.topic_search_text.length) {
                 $("#clear_search_topic_button").show();
             } else {
                 $("#clear_search_topic_button").hide();
             }
 
-            // setup event handlers.
+            // set up event handlers.
             const rebuild_list = () => this.build();
             input.on("input", rebuild_list);
         }
@@ -209,6 +214,9 @@ export class TopicListWidget {
         const input = this.parent_elem.find("#filter-topic-input");
         if (input.length) {
             this.update_topic_search_text(input.val());
+            // Only set focus on search input if it was focused before the update.
+            this.topic_search_focused_before_build =
+                document.activeElement.id === "filter-topic-input";
         } else {
             // Clear the topic search input when zooming out.
             this.update_topic_search_text("");

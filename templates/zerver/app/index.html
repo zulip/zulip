@@ -75,10 +75,7 @@
     </div>
 </div>
 
-<div class="subscriptions">
-    <div id="subscriptions_table">
-    </div>
-</div>
+<div id="manage_streams_container"></div>
 <div id="drafts_table"></div>
 <div id="settings_overlay_container" class="overlay" data-overlay="settings" aria-hidden="true">
 </div>
@@ -98,8 +95,10 @@
     <div class="alert-box">
         <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
             <div class="exit"></div>
-            {% trans %}<strong class="message">Unable to connect to Zulip.</strong>
-            Updates may be delayed.{% endtrans %} {{ _('Retrying soon...') }} <a class="restart_get_events_button">{{ _('Try now.') }}</a>
+            <strong class="message">{{ _('Unable to connect to Zulip.') }}</strong>
+            {{ _('Updates may be delayed.') }}
+            {{ _('Retrying soon…') }}
+            <a class="restart_get_events_button">{{ _('Try now.') }}</a>
         </div>
         <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
             <div class="exit"></div>
@@ -110,7 +109,7 @@
             <span id="normal-zephyr-mirror-error-text">
                 We recommend that
                 you <a class="webathena_login">give Zulip the ability to mirror the messages for you via
-                WebAthena</a>.  If you'd prefer, you can instead
+                Webathena</a>.  If you'd prefer, you can instead
                 <a href="/zephyr-mirror" target="_blank" rel="noopener noreferrer">run the
                 Zephyr mirror script yourself</a> in a screen
                 session.
@@ -164,12 +163,14 @@
                         </div>
                         <div id="loading_older_messages_indicator"></div>
                         <div id="page_loading_indicator"></div>
-                        {% include "zerver/app/message_feed_errors.html" %}
+                        <div id="message_feed_errors_container"></div>
                         <div class="message_table focused_table" id="zhome" role="list" aria-live="polite" aria-label="{{ _('Messages') }}">
                         </div>
                         <div class="message_table" id="zfilt" role="list" aria-live="polite" aria-label="{{ _('Messages') }}">
                         </div>
                         <div id="typing_notifications">
+                        </div>
+                        <div id="mark_as_read_turned_off_banner" class="alert home-error-bar">
                         </div>
                         <div id="bottom_whitespace">
                             <div class="bottom-messages-logo">
@@ -193,7 +194,7 @@
     <div class="informational-overlays overlay new-style" data-overlay="informationalOverlays" aria-hidden="true">
         <div class="overlay-content modal-bg">
             <div class="overlay-tabs">
-                <button class="button no-style exit">&times;</button>
+                <span class="exit">&times;</span>
             </div>
             <div class="overlay-body">
             </div>

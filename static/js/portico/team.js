@@ -3,8 +3,6 @@ import _ from "lodash";
 
 import {page_params} from "../page_params";
 
-const contributors_list = page_params.contributors;
-
 const repo_name_to_tab_name = {
     zulip: "server",
     "zulip-desktop": "desktop",
@@ -58,24 +56,42 @@ function get_display_name(contributor) {
     return contributor.name;
 }
 
+function exclude_bot_contributors(contributor) {
+    return contributor.github_username !== "dependabot[bot]";
+}
+
 // TODO (for v2 of /team contributors):
 //   - Make tab header responsive.
 //   - Display full name instead of GitHub username.
 export default function render_tabs() {
     const template = _.template($("#contributors-template").html());
-    const total_tab_html = contributors_list
-        .map((c) => ({
-            name: get_display_name(c),
-            github_username: c.github_username,
-            avatar: c.avatar,
-            profile_url: get_profile_url(c),
-            commits: calculate_total_commits(c),
-        }))
+    const count_template = _.template($("#count-template").html());
+    const total_count_template = _.template($("#total-count-template").html());
+    const contributors_list = page_params.contributors.filter((c) => exclude_bot_contributors(c));
+    const mapped_contributors_list = contributors_list.map((c) => ({
+        name: get_display_name(c),
+        github_username: c.github_username,
+        avatar: c.avatar,
+        profile_url: get_profile_url(c),
+        commits: calculate_total_commits(c),
+    }));
+    const total_tab_html = mapped_contributors_list
         .sort((a, b) => (a.commits < b.commits ? 1 : a.commits > b.commits ? -1 : 0))
         .map((c) => template(c))
         .join("");
 
-    $("#tab-total").html(total_tab_html);
+    const hundred_plus_total_contributors = mapped_contributors_list.filter(
+        (c) => c.commits >= 100,
+    );
+
+    $("#tab-total .contributors-grid").html(total_tab_html);
+    $("#tab-total").prepend(
+        total_count_template({
+            contributor_count: contributors_list.length,
+            tab_name: "total",
+            hundred_plus_contributor_count: hundred_plus_total_contributors.length,
+        }),
+    );
 
     for (const repo_name of Object.keys(repo_name_to_tab_name)) {
         const tab_name = repo_name_to_tab_name[repo_name];
@@ -83,12 +99,12 @@ export default function render_tabs() {
             continue;
         }
         // Set as the loading template for now, and load when clicked.
-        $(`#tab-${CSS.escape(tab_name)}`).html($("#loading-template").html());
+        $(`#tab-${CSS.escape(tab_name)} .contributors-grid`).html($("#loading-template").html());
 
         $(`#${CSS.escape(tab_name)}`).on("click", () => {
             if (!loaded_repos.includes(repo_name)) {
-                const html = contributors_list
-                    .filter((c) => c[repo_name])
+                const filtered_by_repo = contributors_list.filter((c) => c[repo_name]);
+                const html = filtered_by_repo
                     .sort((a, b) =>
                         a[repo_name] < b[repo_name] ? 1 : a[repo_name] > b[repo_name] ? -1 : 0,
                     )
@@ -103,7 +119,20 @@ export default function render_tabs() {
                     )
                     .join("");
 
-                $(`#tab-${CSS.escape(tab_name)}`).html(html);
+                $(`#tab-${CSS.escape(tab_name)} .contributors-grid`).html(html);
+                const contributor_count = filtered_by_repo.length;
+                const hundred_plus_contributor_count = filtered_by_repo.filter(
+                    (c) => c[repo_name] >= 100,
+                ).length;
+                const repo_url = `https://github.com/zulip/${repo_name}`;
+                $(`#tab-${CSS.escape(tab_name)}`).prepend(
+                    count_template({
+                        contributor_count,
+                        repo_name,
+                        repo_url,
+                        hundred_plus_contributor_count,
+                    }),
+                );
 
                 loaded_repos.push(repo_name);
             }

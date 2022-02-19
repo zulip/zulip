@@ -154,11 +154,3 @@ transform how your organization communicates:
 > experienced with Skype and Slack.
 >
 > &mdash;Grahame Grieve, founder, FHIR health care standards body
-
-## Further reading
-
-- [Zulip features](/features)
-- [Plans and pricing](/plans)
-- [Zulip for companies](/for/companies)
-- [Zulip for open source organizations](/for/open-source)
-- [Zulip for communities](/for/communities)

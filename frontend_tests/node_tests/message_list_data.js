@@ -2,7 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {
+    set_global,
+    with_function_call_disallowed_rewire,
+    zrequire,
+} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 
@@ -83,8 +87,28 @@ run_test("basics", () => {
     assert.equal(mld.selected_idx(), 7);
 
     assert.equal(mld.first_unread_message_id(), 10);
+    assert.equal(mld.has_unread_messages(), true);
     mld.get(10).unread = false;
     assert.equal(mld.first_unread_message_id(), 15);
+    assert.equal(mld.has_unread_messages(), true);
+
+    mld.clear();
+    assert_contents(mld, []);
+    const msgs_sent_by_6 = [
+        {id: 2, sender_id: 6, type: "stream", stream_id: 1, topic: "whatever"},
+        {id: 4, sender_id: 6, type: "private", to_user_ids: "6,9,10"},
+        {id: 6, sender_id: 6, type: "private", to_user_ids: "6, 11"},
+    ];
+    const msgs_with_sender_ids = [
+        {id: 1, sender_id: 1, type: "stream", stream_id: 1, topic: "random1"},
+        {id: 3, sender_id: 4, type: "stream", stream_id: 1, topic: "random2"},
+        {id: 5, sender_id: 2, type: "private", to_user_ids: "2,10,11"},
+        {id: 8, sender_id: 11, type: "private", to_user_ids: "10"},
+        {id: 9, sender_id: 11, type: "private", to_user_ids: "9"},
+        ...msgs_sent_by_6,
+    ];
+    mld.add_messages(msgs_with_sender_ids);
+    assert.deepEqual(mld.get_messages_sent_by_user(6), msgs_sent_by_6);
 
     mld.clear();
     assert_contents(mld, []);
@@ -105,6 +129,7 @@ run_test("basics", () => {
     }
 
     assert.equal(mld.first_unread_message_id(), 145);
+    assert.equal(mld.has_unread_messages(), false);
 });
 
 run_test("muting", () => {
@@ -129,33 +154,17 @@ run_test("muting", () => {
 
     // `messages_filtered_for_topic_mutes` should skip filtering
     // messages if `excludes_muted_topics` is false.
-    with_field(
-        muted_topics,
-        "is_topic_muted",
-        () => {
-            throw new Error(
-                "Messages should not be filtered for topic mutes if excludes_muted_topics is false.",
-            );
-        },
-        () => {
-            const res = mld.messages_filtered_for_topic_mutes(msgs);
-            assert.deepEqual(res, msgs);
-        },
-    );
+    with_function_call_disallowed_rewire(muted_topics, "is_topic_muted", () => {
+        const res = mld.messages_filtered_for_topic_mutes(msgs);
+        assert.deepEqual(res, msgs);
+    });
 
     // If we are in a 1:1 PM narrow, `messages_filtered_for_user_mutes` should skip
     // filtering messages.
-    with_field(
-        muted_topics,
-        "is_user_muted",
-        () => {
-            throw new Error("Messages should not be filtered for user mutes in 1:1 PM narrows.");
-        },
-        () => {
-            const res = mld.messages_filtered_for_user_mutes(msgs);
-            assert.deepEqual(res, msgs);
-        },
-    );
+    with_function_call_disallowed_rewire(muted_users, "is_user_muted", () => {
+        const res = mld.messages_filtered_for_user_mutes(msgs);
+        assert.deepEqual(res, msgs);
+    });
 
     // Test actual behaviour of `messages_filtered_for_*` methods.
     mld.excludes_muted_topics = true;

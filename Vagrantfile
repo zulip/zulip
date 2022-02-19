@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
   vm_num_cpus = "2"
   vm_memory = "2048"
 
-  ubuntu_mirror = ""
+  debian_mirror = ""
   vboxadd_version = nil
 
   config.vm.synced_folder ".", "/vagrant", disabled: true
@@ -32,7 +32,7 @@ Vagrant.configure("2") do |config|
       when "HOST_IP_ADDR"; host_ip_addr = value
       when "GUEST_CPUS"; vm_num_cpus = value
       when "GUEST_MEMORY_MB"; vm_memory = value
-      when "UBUNTU_MIRROR"; ubuntu_mirror = value
+      when "DEBIAN_MIRROR"; debian_mirror = value
       when "VBOXADD_VERSION"; vboxadd_version = value
       end
     end
@@ -63,21 +63,21 @@ Vagrant.configure("2") do |config|
   config.vm.provider "docker" do |d, override|
     d.build_dir = File.join(__dir__, "tools", "setup", "dev-vagrant-docker")
     d.build_args = ["--build-arg", "VAGRANT_UID=#{Process.uid}"]
-    if !ubuntu_mirror.empty?
-      d.build_args += ["--build-arg", "UBUNTU_MIRROR=#{ubuntu_mirror}"]
+    if !debian_mirror.empty?
+      d.build_args += ["--build-arg", "DEBIAN_MIRROR=#{debian_mirror}"]
     end
     d.has_ssh = true
     d.create_args = ["--ulimit", "nofile=1024:65536"]
   end
 
   config.vm.provider "virtualbox" do |vb, override|
-    override.vm.box = "hashicorp/bionic64"
+    override.vm.box = "bento/debian-10"
     # It's possible we can get away with just 1.5GB; more testing needed
     vb.memory = vm_memory
     vb.cpus = vm_num_cpus
 
     if !vboxadd_version.nil?
-      override.vbguest.installer = Class.new(VagrantVbguest::Installers::Ubuntu) do
+      override.vbguest.installer = Class.new(VagrantVbguest::Installers::Debian) do
         define_method(:host_version) do |reload = false|
           VagrantVbguest::Version(vboxadd_version)
         end
@@ -88,15 +88,14 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.provider "hyperv" do |h, override|
-    override.vm.box = "bento/ubuntu-18.04"
+    override.vm.box = "bento/debian-10"
     h.memory = vm_memory
     h.maxmemory = vm_memory
     h.cpus = vm_num_cpus
   end
 
   config.vm.provider "parallels" do |prl, override|
-    override.vm.box = "bento/ubuntu-18.04"
-    override.vm.box_version = "202005.21.0"
+    override.vm.box = "bento/debian-10"
     prl.memory = vm_memory
     prl.cpus = vm_num_cpus
   end
@@ -105,5 +104,5 @@ Vagrant.configure("2") do |config|
     # We want provision to be run with the permissions of the vagrant user.
     privileged: false,
     path: "tools/setup/vagrant-provision",
-    env: { "UBUNTU_MIRROR" => ubuntu_mirror }
+    env: { "DEBIAN_MIRROR" => debian_mirror }
 end

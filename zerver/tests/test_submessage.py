@@ -193,7 +193,7 @@ class TestBasics(ZulipTestCase):
         into a problem.
         """
         hamlet = self.example_user("hamlet")
-        message_id = self.send_stream_message(hamlet, "Scotland")
+        message_id = self.send_stream_message(hamlet, "Denmark")
 
         with self.tornado_redirected_to_list([], expected_num_events=1):
             with mock.patch("zerver.lib.actions.send_event") as m:

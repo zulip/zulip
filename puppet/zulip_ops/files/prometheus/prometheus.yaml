@@ -19,6 +19,9 @@ scrape_configs:
       - region: us-east-1
         port: 9100
         refresh_interval: 1m
+        filters:
+          - name: instance-state-name
+            values: ["running"]
     relabel_configs:
       - source_labels: ["__meta_ec2_tag_Name"]
         target_label: "instance"

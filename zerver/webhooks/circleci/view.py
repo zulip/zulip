@@ -35,7 +35,7 @@ def api_circleci_webhook(
         body,
         payload.get("status") if not payload.get("build_num") else payload.get("outcome"),
     )
-    return json_success()
+    return json_success(request)
 
 
 def get_subject(payload: Dict[str, Any]) -> str:

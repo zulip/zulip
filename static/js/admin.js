@@ -126,7 +126,6 @@ export function build_page() {
         settings_send_digest_emails: page_params.settings_send_digest_emails,
         realm_digest_emails_enabled: page_params.realm_digest_emails_enabled,
         realm_digest_weekday: page_params.realm_digest_weekday,
-        show_email: settings_data.show_email(),
         development: page_params.development_environment,
         zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
         upgrade_text_for_wide_organization_logo:

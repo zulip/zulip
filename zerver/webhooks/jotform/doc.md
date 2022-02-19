@@ -1,4 +1,4 @@
-Get Zulip notifications for your JotForm responses!
+Get Zulip notifications for your Jotform responses!
 
 1. {!create-stream.md!}
 

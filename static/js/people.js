@@ -1,6 +1,5 @@
 import md5 from "blueimp-md5";
 import {format, utcToZonedTime} from "date-fns-tz";
-import _ from "lodash";
 
 import * as typeahead from "../shared/js/typeahead";
 
@@ -53,6 +52,10 @@ init();
 
 function split_to_ints(lst) {
     return lst.split(",").map((s) => Number.parseInt(s, 10));
+}
+
+export function get_users_from_ids(user_ids) {
+    return user_ids.map((user_id) => get_by_user_id(user_id));
 }
 
 export function get_by_user_id(user_id, ignore_missing) {
@@ -544,7 +547,8 @@ export function pm_with_operand_ids(operand) {
 
     // If your email is included in a PM group with other people, just ignore it
     if (persons.length > 1) {
-        persons = _.without(persons, people_by_user_id_dict.get(my_user_id));
+        const my_user = people_by_user_id_dict.get(my_user_id);
+        persons = persons.filter((person) => person !== my_user);
     }
 
     if (!persons.every(Boolean)) {
@@ -1385,6 +1389,21 @@ export function is_my_user_id(user_id) {
     }
 
     return user_id === my_user_id;
+}
+
+function compare_by_name(a, b) {
+    return util.strcmp(a.full_name, b.full_name);
+}
+
+export function sort_but_pin_current_user_on_top(users) {
+    const my_user = people_by_user_id_dict.get(my_user_id);
+    if (users.includes(my_user)) {
+        users.splice(users.indexOf(my_user), 1);
+        users.sort(compare_by_name);
+        users.unshift(my_user);
+    } else {
+        users.sort(compare_by_name);
+    }
 }
 
 export function initialize(my_user_id, params) {

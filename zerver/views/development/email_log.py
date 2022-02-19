@@ -25,7 +25,7 @@ ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
 def email_page(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         set_forward_address(request.POST["forward_address"])
-        return json_success()
+        return json_success(request)
     try:
         with open(settings.EMAIL_CONTENT_LOG_PATH, "r+") as f:
             content = f.read()

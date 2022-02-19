@@ -1,7 +1,7 @@
 from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
 from zerver.lib.actions import send_rate_limited_pm_notification_to_bot_owner
@@ -13,10 +13,10 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 MISCONFIGURED_PAYLOAD_ERROR_MESSAGE = """
-Hi there! Your bot {bot_name} just received a Uptime Robot payload that is missing
+Hi there! Your bot {bot_name} just received a UptimeRobot payload that is missing
 some data that Zulip requires. This usually indicates a configuration issue
-in your Uptime Robot webhook settings. Please make sure that you set the required parameters
-when configuring the Uptime Robot webhook. Contact {support_email} if you
+in your UptimeRobot webhook settings. Please make sure that you set the required parameters
+when configuring the UptimeRobot webhook. Contact {support_email} if you
 need further help!
 """
 
@@ -56,7 +56,7 @@ def api_uptimerobot_webhook(
         raise JsonableError(_("Invalid payload"))
 
     check_send_webhook_message(request, user_profile, subject, body, event)
-    return json_success()
+    return json_success(request)
 
 
 def get_subject_for_http_request(payload: Dict[str, Any]) -> str:

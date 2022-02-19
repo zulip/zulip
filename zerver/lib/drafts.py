@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Set, cast
 
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.lib.actions import recipient_for_user_profiles
 from zerver.lib.addressee import get_user_profiles_by_ids

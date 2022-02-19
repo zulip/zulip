@@ -31,7 +31,7 @@ from zerver.openapi.openapi import (
     openapi_spec,
 )
 
-API_ENDPOINT_NAME = r"/[a-z_/-{}]+:[a-z]+"
+API_ENDPOINT_NAME = r"/[a-z_\-/-{}]+:[a-z]+"
 API_LANGUAGE = r"\w+"
 API_KEY_TYPE = r"fixture|example"
 MACRO_REGEXP = re.compile(
@@ -169,7 +169,7 @@ def render_python_code_example(
 def render_javascript_code_example(
     function: str, admin_config: bool = False, **kwargs: Any
 ) -> List[str]:
-    pattern = fr'^add_example\(\s*"[^"]*",\s*{re.escape(json.dumps(function))},\s*\d+,\s*async \(client, console\) => \{{\n(.*?)^(?:\}}| *\}},\n)\);$'
+    pattern = rf'^add_example\(\s*"[^"]*",\s*{re.escape(json.dumps(function))},\s*\d+,\s*async \(client, console\) => \{{\n(.*?)^(?:\}}| *\}},\n)\);$'
     with open("zerver/openapi/javascript_examples.js") as f:
         m = re.search(pattern, f.read(), re.M | re.S)
     if m is None:

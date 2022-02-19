@@ -24,7 +24,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_safe
-from jinja2.utils import Markup as mark_safe
+from markupsafe import Markup as mark_safe
 from social_django.utils import load_backend, load_strategy
 from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView
@@ -898,7 +898,7 @@ def api_fetch_api_key(
     RequestNotes.get_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
 
     api_key = get_api_key(user_profile)
-    return json_success({"api_key": api_key, "email": user_profile.delivery_email})
+    return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})
 
 
 def get_auth_backends_data(request: HttpRequest) -> Dict[str, Any]:
@@ -963,7 +963,7 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
     ]:
         if context[settings_item] is not None:
             result[settings_item] = context[settings_item]
-    return json_success(result)
+    return json_success(request, data=result)
 
 
 @has_request_variables
@@ -977,15 +977,13 @@ def json_fetch_api_key(
         if not authenticate(
             request=request, username=user_profile.delivery_email, password=password, realm=realm
         ):
-            raise JsonableError(_("Your username or password is incorrect."))
+            raise JsonableError(_("Password is incorrect."))
 
     api_key = get_api_key(user_profile)
-    return json_success({"api_key": api_key, "email": user_profile.delivery_email})
+    return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})
 
 
-@require_post
-def logout_then_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
-    return django_logout_then_login(request, kwargs)
+logout_then_login = require_post(django_logout_then_login)
 
 
 def password_reset(request: HttpRequest) -> HttpResponse:
@@ -1014,7 +1012,7 @@ def password_reset(request: HttpRequest) -> HttpResponse:
 
 
 @csrf_exempt
-def saml_sp_metadata(request: HttpRequest, **kwargs: Any) -> HttpResponse:  # nocoverage
+def saml_sp_metadata(request: HttpRequest) -> HttpResponse:  # nocoverage
     """
     This is the view function for generating our SP metadata
     for SAML authentication. It's meant for helping check the correctness

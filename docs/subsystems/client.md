@@ -20,7 +20,7 @@ A `Client` is used to sort messages into client categories such as
 Generally, integrations in Zulip should declare a unique User-Agent,
 so that it's easy to figure out which integration is involved when
 debugging an issue. For incoming webhook integrations, we do that
-convenentialy via the auth decorators (as we will describe shortly);
+conveniently via the auth decorators (as we will describe shortly);
 other integrations generally should set the first User-Agent element
 on their HTTP requests to something of the form
 ZulipIntegrationName/1.2 so that they are categorized properly.

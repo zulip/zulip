@@ -78,7 +78,7 @@ class TestSupportEndpoint(ZulipTestCase):
                     f"<b>First human user</b>: {first_human_user.delivery_email}\n",
                     f'<input type="hidden" name="realm_id" value="{zulip_realm.id}"',
                     "Zulip Dev</h3>",
-                    '<option value="1" selected>Self hosted</option>',
+                    '<option value="1" selected>Self-hosted</option>',
                     '<option value="2" >Limited</option>',
                     'input type="number" name="discount" value="None"',
                     '<option value="active" selected>Active</option>',
@@ -96,14 +96,14 @@ class TestSupportEndpoint(ZulipTestCase):
                 [
                     f'<input type="hidden" name="realm_id" value="{lear_realm.id}"',
                     "Lear &amp; Co.</h3>",
-                    '<option value="1" selected>Self hosted</option>',
+                    '<option value="1" selected>Self-hosted</option>',
                     '<option value="2" >Limited</option>',
                     'input type="number" name="discount" value="None"',
                     '<option value="active" selected>Active</option>',
                     '<option value="deactivated" >Deactivated</option>',
                     'scrub-realm-button">',
                     'data-string-id="lear"',
-                    "<b>Name</b>: Zulip Standard",
+                    "<b>Name</b>: Zulip Cloud Standard",
                     "<b>Status</b>: Active",
                     "<b>Billing schedule</b>: Annual",
                     "<b>Licenses</b>: 2/10 (Manual)",
@@ -334,7 +334,7 @@ class TestSupportEndpoint(ZulipTestCase):
             ["Billing method of zulip updated to pay by invoice"], result
         )
 
-    def test_change_plan_type(self) -> None:
+    def test_change_realm_plan_type(self) -> None:
         cordelia = self.example_user("cordelia")
         self.login_user(cordelia)
 
@@ -347,22 +347,22 @@ class TestSupportEndpoint(ZulipTestCase):
         iago = self.example_user("iago")
         self.login_user(iago)
 
-        with mock.patch("analytics.views.support.do_change_plan_type") as m:
+        with mock.patch("analytics.views.support.do_change_realm_plan_type") as m:
             result = self.client_post(
                 "/activity/support", {"realm_id": f"{iago.realm_id}", "plan_type": "2"}
             )
             m.assert_called_once_with(get_realm("zulip"), 2, acting_user=iago)
             self.assert_in_success_response(
-                ["Plan type of zulip changed from self hosted to limited"], result
+                ["Plan type of zulip changed from self-hosted to limited"], result
             )
 
-        with mock.patch("analytics.views.support.do_change_plan_type") as m:
+        with mock.patch("analytics.views.support.do_change_realm_plan_type") as m:
             result = self.client_post(
                 "/activity/support", {"realm_id": f"{iago.realm_id}", "plan_type": "10"}
             )
             m.assert_called_once_with(get_realm("zulip"), 10, acting_user=iago)
             self.assert_in_success_response(
-                ["Plan type of zulip changed from self hosted to plus"], result
+                ["Plan type of zulip changed from self-hosted to plus"], result
             )
 
     def test_change_org_type(self) -> None:

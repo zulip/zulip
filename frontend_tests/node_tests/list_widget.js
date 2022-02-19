@@ -845,7 +845,7 @@ run_test("Multiselect dropdown retain_selected_items", () => {
     container.html = () => {};
     container.find = (elem) => DropdownItem(elem);
 
-    // We essentially create fake Jquery functions
+    // We essentially create fake jQuery functions
     // whose return value are stored in objects so that
     // they can be later asserted with expected values.
     function DropdownItem(element) {

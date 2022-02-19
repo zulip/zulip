@@ -117,13 +117,11 @@ Zulip configures automatic renewal for you. As a result, a Zulip
 server configured with Certbot does not require any ongoing work to
 maintain a current valid SSL certificate.
 
-Specifically, the `setup-certbot` tool (and by extension, the
-installer option) enables the Certbot `auto_renew` property in
-`/etc/zulip/zulip.conf`. This, in turn, configures a cron job
-(`/etc/cron.d/certbot`) that will renew any Certbot certificates that
-are due for renewal. The renewal process repeats the Certbot
-proof-of-control process, receives the new certificate from Certbot,
-installs the new certificate, and then reloads `nginx`.
+The `certbot` package configures a systemd timer (similar to a cron
+job) that will renew any Certbot certificates that are due for
+renewal. The renewal process repeats the Certbot proof-of-control
+process, receives the new certificate from Certbot, installs the new
+certificate, and then reloads `nginx`.
 
 #### Troubleshooting
 
@@ -131,9 +129,7 @@ If your Certbot certificate expires, it is usually because of firewall
 rules preventing the Certbot renewal process (which is essentially
 identical to the initial certificate request process) from
 working. You can debug interactively by running the command from the
-cron job,
-`/home/zulip/deployments/current/scripts/lib/certbot-maybe-renew`, as
-`root`.
+cron job, `/usr/bin/certbot renew`, as `root`.
 
 ## Self-signed certificate
 

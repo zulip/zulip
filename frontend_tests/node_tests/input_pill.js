@@ -22,25 +22,31 @@ set_global("getSelection", () => ({
 
 const input_pill = zrequire("input_pill");
 
-function pill_html(value, data_id, img_src) {
+function pill_html(value, data_id, img_src, status_emoji_info) {
     const has_image = img_src !== undefined;
+    const has_status = status_emoji_info !== undefined;
 
     const opts = {
         id: data_id,
         display_value: value,
         has_image,
+        has_status,
     };
 
     if (has_image) {
         opts.img_src = img_src;
     }
 
+    if (has_status) {
+        opts.status_emoji_info = status_emoji_info;
+    }
+
     return require("../../static/templates/input_pill.hbs")(opts);
 }
 
-function override_random_id({override}) {
+function override_random_id({override_rewire}) {
     let id_seq = 0;
-    override(input_pill, "random_id", () => {
+    override_rewire(input_pill, "random_id", () => {
         id_seq += 1;
         return "some_id" + id_seq;
     });
@@ -51,13 +57,13 @@ run_test("random_id", () => {
     input_pill.random_id();
 });
 
-run_test("basics", ({override, mock_template}) => {
+run_test("basics", ({override_rewire, mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(data.display_value, "JavaScript");
         return html;
     });
 
-    override_random_id({override});
+    override_random_id({override_rewire});
     const config = {};
 
     blueslip.expect("error", "Pill needs container.");
@@ -76,7 +82,11 @@ run_test("basics", ({override, mock_template}) => {
     input_pill.create(config);
 
     config.get_text_from_item = noop;
+    config.pill_config = {
+        show_user_status_emoji: true,
+    };
     const widget = input_pill.create(config);
+    const status_emoji_info = {emoji_code: 5};
 
     // type for a pill can be any string but it needs to be
     // defined while creating any pill.
@@ -85,10 +95,11 @@ run_test("basics", ({override, mock_template}) => {
         language: "js",
         type: "language",
         img_src: example_img_link,
+        status_emoji_info,
     };
 
     let inserted_before;
-    const expected_html = pill_html("JavaScript", "some_id1", example_img_link);
+    const expected_html = pill_html("JavaScript", "some_id1", example_img_link, status_emoji_info);
 
     pill_input.before = (elem) => {
         inserted_before = true;
@@ -147,13 +158,13 @@ function set_up() {
     };
 }
 
-run_test("copy from pill", ({override, mock_template}) => {
+run_test("copy from pill", ({override_rewire, mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.ok(["BLUE", "RED"].includes(data.display_value));
         return html;
     });
 
-    override_random_id({override});
+    override_random_id({override_rewire});
     const info = set_up();
     const config = info.config;
     const container = info.container;
@@ -393,14 +404,14 @@ run_test("Enter key with text", ({mock_template}) => {
     assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
 });
 
-run_test("insert_remove", ({override, mock_template}) => {
+run_test("insert_remove", ({override_rewire, mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         assert.ok(html.startsWith, "<div class='pill'");
         return html;
     });
 
-    override_random_id({override});
+    override_random_id({override_rewire});
     const info = set_up();
 
     const config = info.config;
@@ -503,14 +514,14 @@ run_test("insert_remove", ({override, mock_template}) => {
     assert.ok(next_pill_focused);
 });
 
-run_test("exit button on pill", ({override, mock_template}) => {
+run_test("exit button on pill", ({override_rewire, mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         assert.ok(html.startsWith, "<div class='pill'");
         return html;
     });
 
-    override_random_id({override});
+    override_random_id({override_rewire});
     const info = set_up();
 
     const config = info.config;

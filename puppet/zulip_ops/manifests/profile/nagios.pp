@@ -3,7 +3,7 @@ class zulip_ops::profile::nagios {
   include zulip_ops::apache
 
   $nagios_packages = [# Packages needed for Nagios
-                      'nagios3',
+                      'nagios4',
                       # For sending outgoing email
                       'msmtp',
                       ]
@@ -32,15 +32,15 @@ class zulip_ops::profile::nagios {
   $hosts_fullstack = split(zulipconf('nagios', 'hosts_fullstack', undef), ',')
   $hosts_smokescreen = split(zulipconf('nagios', 'hosts_smokescreen', undef), ',')
 
-  file { '/etc/nagios3/':
+  file { '/etc/nagios4/':
     recurse => true,
     purge   => false,
-    require => Package[nagios3],
+    require => Package[nagios4],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    source  => 'puppet:///modules/zulip_ops/nagios3/',
-    notify  => Service['nagios3'],
+    source  => 'puppet:///modules/zulip_ops/nagios4/',
+    notify  => Service['nagios4'],
   }
 
   file { '/etc/apache2/sites-available/nagios.conf':
@@ -64,71 +64,71 @@ class zulip_ops::profile::nagios {
     port        => '3000',
   }
 
-  file { '/etc/nagios3/conf.d/contacts.cfg':
-    require => Package[nagios3],
+  file { '/etc/nagios4/conf.d/contacts.cfg':
+    require => Package[nagios4],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    content => template('zulip_ops/nagios3/contacts.cfg.template.erb'),
-    notify  => Service['nagios3'],
+    content => template('zulip_ops/nagios4/contacts.cfg.template.erb'),
+    notify  => Service['nagios4'],
   }
-  file { '/etc/nagios3/conf.d/hosts.cfg':
-    require => Package[nagios3],
+  file { '/etc/nagios4/conf.d/hosts.cfg':
+    require => Package[nagios4],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    content => template('zulip_ops/nagios3/hosts.cfg.template.erb'),
-    notify  => Service['nagios3'],
+    content => template('zulip_ops/nagios4/hosts.cfg.template.erb'),
+    notify  => Service['nagios4'],
   }
-  file { '/etc/nagios3/conf.d/localhost.cfg':
-    require => Package[nagios3],
+  file { '/etc/nagios4/conf.d/localhost.cfg':
+    require => Package[nagios4],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    content => template('zulip_ops/nagios3/localhost.cfg.template.erb'),
-    notify  => Service['nagios3'],
-  }
-
-  file { '/etc/nagios3/cgi.cfg':
-    require => Package[nagios3],
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    content => template('zulip_ops/nagios3/cgi.cfg.template.erb'),
-    notify  => Service['nagios3'],
+    content => template('zulip_ops/nagios4/localhost.cfg.template.erb'),
+    notify  => Service['nagios4'],
   }
 
-  service { 'nagios3':
+  file { '/etc/nagios4/cgi.cfg':
+    require => Package[nagios4],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => template('zulip_ops/nagios4/cgi.cfg.template.erb'),
+    notify  => Service['nagios4'],
+  }
+
+  service { 'nagios4':
     ensure => running,
   }
 
   file { [
-    '/etc/nagios3/conf.d/extinfo_nagios2.cfg',
-    '/etc/nagios3/conf.d/services_nagios2.cfg',
-    '/etc/nagios3/conf.d/contacts_nagios2.cfg',
-    '/etc/nagios3/conf.d/hostgroups_nagios2.cfg',
-    '/etc/nagios3/conf.d/localhost_nagios2.cfg',
+    '/etc/nagios4/conf.d/extinfo_nagios2.cfg',
+    '/etc/nagios4/conf.d/services_nagios2.cfg',
+    '/etc/nagios4/conf.d/contacts_nagios2.cfg',
+    '/etc/nagios4/conf.d/hostgroups_nagios2.cfg',
+    '/etc/nagios4/conf.d/localhost_nagios2.cfg',
   ]:
     ensure     => absent,
   }
 
-  file { '/etc/nagios3/conf.d/zulip_nagios.cfg':
+  file { '/etc/nagios4/conf.d/zulip_nagios.cfg':
     ensure => file,
     mode   => '0644',
     owner  => 'root',
     group  => 'root',
     source => '/usr/local/share/zulip/integrations/nagios/zulip_nagios.cfg',
-    notify => Service['nagios3'],
+    notify => Service['nagios4'],
   }
 
   $hosts = zulipconf_nagios_hosts()
-  file { '/etc/nagios3/conf.d/zulip_autossh.cfg':
+  file { '/etc/nagios4/conf.d/zulip_autossh.cfg':
     ensure  => file,
     mode    => '0644',
     owner   => 'root',
     group   => 'root',
     content => template('zulip_ops/nagios_autossh.template.erb'),
-    notify  => Service['nagios3'],
+    notify  => Service['nagios4'],
   }
 
   file { '/var/lib/nagios/msmtprc':
@@ -140,15 +140,26 @@ class zulip_ops::profile::nagios {
     require => File['/var/lib/nagios'],
   }
 
+  # Disable apparmor for msmtp so it can read the above config file
+  file { '/etc/apparmor.d/disable/usr.bin.msmtp':
+    ensure => link,
+    target => '/etc/apparmor.d/usr.bin.msmtp',
+    notify => Exec['reload apparmor'],
+  }
+  exec {'reload apparmor':
+    command     => '/sbin/apparmor_parser -R /etc/apparmor.d/usr.bin.msmtp',
+    refreshonly => true,
+  }
+
   exec { 'fix_nagios_permissions':
-    command => 'dpkg-statoverride --update --add nagios www-data 2710 /var/lib/nagios3/rw',
-    unless  => 'bash -c "ls -ld /var/lib/nagios3/rw | grep ^drwx--s--- -q"',
-    notify  => Service['nagios3'],
+    command => 'dpkg-statoverride --update --add nagios www-data 2710 /var/lib/nagios4/rw',
+    unless  => 'bash -c "ls -ld /var/lib/nagios4/rw | grep ^drwx--s--- -q"',
+    notify  => Service['nagios4'],
   }
   exec { 'fix_nagios_permissions2':
-    command => 'dpkg-statoverride --update --add nagios nagios 751 /var/lib/nagios3',
-    unless  => 'bash -c "ls -ld /var/lib/nagios3 | grep ^drwxr-x--x -q"',
-    notify  => Service['nagios3'],
+    command => 'dpkg-statoverride --update --add nagios nagios 751 /var/lib/nagios4',
+    unless  => 'bash -c "ls -ld /var/lib/nagios4 | grep ^drwxr-x--x -q"',
+    notify  => Service['nagios4'],
   }
 
   # TODO: Install our API

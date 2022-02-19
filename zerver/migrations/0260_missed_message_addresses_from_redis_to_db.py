@@ -60,7 +60,7 @@ def move_missed_message_addresses_to_database(
                 # Tie to the latest PM from the sender to this user;
                 # we expect at least one existed because it generated
                 # this missed-message email, so we can skip the
-                # normally required additioanl check for messages we
+                # normally required additional check for messages we
                 # ourselves sent to the target user.
                 message = Message.objects.filter(
                     recipient_id=user_profile.recipient_id, sender_id=recipient.type_id

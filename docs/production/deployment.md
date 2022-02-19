@@ -229,6 +229,11 @@ To protect against [SSRF][ssrf], Zulip 4.8 and above default to
 routing all outgoing HTTP and HTTPS traffic through
 [Smokescreen][smokescreen], an HTTP `CONNECT` proxy; this includes
 outgoing webhooks, website previews, and mobile push notifications.
+By default, the Camo image proxy will be automatically configured to
+use a custom outgoing proxy, but does not use Smokescreen by default
+because Camo includes similar logic to deny access to private
+subnets. You can [override][proxy.enable_for_camo] this default
+configuration if desired.
 
 To use a custom outgoing proxy:
 
@@ -264,6 +269,7 @@ In Zulip 4.7 and older, to enable SSRF protection via Smokescreen, you
 will need to explicitly add the `zulip::profile::smokescreen` Puppet
 class, and configure the `[http_proxy]` block as above.
 
+[proxy.enable_for_camo]: #enable-for-camo
 [smokescreen]: https://github.com/stripe/smokescreen
 [smokescreen-acls]: https://github.com/stripe/smokescreen#acls
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
@@ -278,7 +284,7 @@ variable reverse proxy implementations.
 
 If your Zulip server will not be on the public Internet, we recommend,
 installing with the `--self-signed-cert` option (rather than the
-`--certbot` option), since CertBot requires the server to be on the
+`--certbot` option), since Certbot requires the server to be on the
 public Internet.
 
 #### Configuring Zulip to allow HTTP
@@ -538,6 +544,20 @@ the system and deployment; `/etc/zulip/settings.py` is used to
 configure the application itself. The `zulip.conf` sections and
 settings are described below.
 
+When a setting refers to "set to true" or "set to false", the values
+`true` and `false` are canonical, but any of the following values will
+be considered "true", case-insensitively:
+
+- 1
+- y
+- t
+- yes
+- true
+- enable
+- enabled
+
+Any other value (including the empty string) is considered false.
+
 ### `[machine]`
 
 #### `puppet_classes`
@@ -560,8 +580,7 @@ you will need to add **`zulip::apache_sso`** to the list.
 
 #### `pgroonga`
 
-Set to the string `enabled` if enabling the [multi-language PGroonga
-search
+Set to true if enabling the [multi-language PGroonga search
 extension](../subsystems/full-text-search.html#multi-language-full-text-search).
 
 ### `[deployment]`
@@ -591,9 +610,9 @@ repository](../production/upgrade-or-modify.html#upgrading-from-a-git-repository
 
 #### `http_only`
 
-If set to non-empty, [configures Zulip to allow HTTP
-access][using-http]; use if Zulip is deployed behind a reverse proxy
-that is handling SSL/TLS termination.
+If set to true, [configures Zulip to allow HTTP access][using-http];
+use if Zulip is deployed behind a reverse proxy that is handling
+SSL/TLS termination.
 
 #### `nginx_listen_port`
 
@@ -603,7 +622,7 @@ Set to the port number if you [prefer to listen on a port other than
 #### `no_serve_uploads`
 
 To enable the [the S3 uploads backend][s3-uploads], one needs to both
-configure `settings.py` and set this to 'true' to configure
+configure `settings.py` and set this to true to configure
 `nginx`. Remove this field to return to the local uploads backend (any
 non-empty value is currently equivalent to true).
 
@@ -618,10 +637,19 @@ mode). The calculation is based on whether the system has enough
 memory (currently 3.5GiB) to run a single-server Zulip installation in
 the multiprocess mode.
 
-Set to `true` or `false` to override the automatic calculation. This
-override is useful both Docker systems (where the above algorithm
-might see the host's memory, not the container's) and/or when using
-remote servers for postgres, memcached, redis, and RabbitMQ.
+Set explicitly to true or false to override the automatic
+calculation. This override is useful both Docker systems (where the
+above algorithm might see the host's memory, not the container's)
+and/or when using remote servers for postgres, memcached, redis, and
+RabbitMQ.
+
+#### `rolling_restart`
+
+If set to a non-empty value, when using `./scripts/restart-server` to
+restart Zulip, restart the uwsgi processes one-at-a-time, instead of
+all at once. This decreases the number of 502's served to clients, at
+the cost of slightly increased memory usage, and the possibility that
+different requests will be served by different versions of the code.
 
 #### `uwsgi_buffer_size`
 
@@ -635,14 +663,6 @@ Override the default uwsgi backlog of 128 connections.
 
 Override the default `uwsgi` (Django) process count of 6 on hosts with
 more than 3.5GiB of RAM, 4 on hosts with less.
-
-### `[certbot]`
-
-#### `auto_renew`
-
-If set to the string `yes`, [Certbot will attempt to automatically
-renew its certificate](../production/ssl-certificates.html#certbot-recommended). Do
-no set by hand; use `scripts/setup/setup-certbot` to configure this.
 
 ### `[postfix]`
 
@@ -670,10 +690,10 @@ setting](https://www.postgresql.org/docs/current/runtime-config-query.html#GUC-R
 
 #### `replication`
 
-Set to non-empty to enable replication to enable [log shipping
-replication between PostgreSQL servers](#postgresql-warm-standby).
-This should be enabled on the primary, as well as any replicas, and
-further requires configuration of
+Set to true to enable replication to enable [log shipping replication
+between PostgreSQL servers](#postgresql-warm-standby). This should be
+enabled on the primary, as well as any replicas, and further requires
+configuration of
 [wal-g](../production/export-and-import.html#backup-details).
 
 #### `replication_primary`
@@ -708,12 +728,6 @@ connections.
 The version of PostgreSQL that is in use. Do not set by hand; use the
 [PostgreSQL upgrade tool](../production/upgrade-or-modify.html#upgrading-postgresql).
 
-### `[rabbitmq]`
-
-#### `nodename`
-
-The name used to identify the local RabbitMQ server; do not modify.
-
 ### `[memcached]`
 
 #### `memory`
@@ -745,3 +759,10 @@ Defaults to `4750` if unspecified.
 
 The IP address that Smokescreen should bind to and listen on.
 Defaults to `127.0.0.1`.
+
+#### `enable_for_camo`
+
+Because Camo includes logic to deny access to private subnets, routing
+its requests through Smokescreen is generally not necessary. Set to
+true or false to override the default, which uses the proxy only if
+it is not the default of Smokescreen on a local host.

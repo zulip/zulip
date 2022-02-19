@@ -41,6 +41,8 @@ from zerver.lib.markdown import (
 from zerver.lib.markdown.fenced_code import FencedBlockPreprocessor
 from zerver.lib.mdiff import diff_strings
 from zerver.lib.mention import (
+    FullNameInfo,
+    MentionBackend,
     MentionData,
     get_possible_mentions_info,
     possible_mentions,
@@ -231,25 +233,24 @@ class MarkdownMiscTest(ZulipTestCase):
 
         fred4 = make_user("fred4@example.com", "Fred Flintstone")
 
+        mention_backend = MentionBackend(realm.id)
         lst = get_possible_mentions_info(
-            realm.id, {"Fred Flintstone", "Cordelia, LEAR's daughter", "Not A User"}
+            mention_backend, {"Fred Flintstone", "Cordelia, LEAR's daughter", "Not A User"}
         )
-        set_of_names = set(map(lambda x: x["full_name"].lower(), lst))
+        set_of_names = set(map(lambda x: x.full_name.lower(), lst))
         self.assertEqual(set_of_names, {"fred flintstone", "cordelia, lear's daughter"})
 
-        by_id = {row["id"]: row for row in lst}
+        by_id = {row.id: row for row in lst}
         self.assertEqual(
             by_id.get(fred2.id),
-            dict(
-                email=fred2.email,
+            FullNameInfo(
                 full_name="Fred Flintstone",
                 id=fred2.id,
             ),
         )
         self.assertEqual(
             by_id.get(fred4.id),
-            dict(
-                email=fred4.email,
+            FullNameInfo(
                 full_name="Fred Flintstone",
                 id=fred4.id,
             ),
@@ -260,12 +261,12 @@ class MarkdownMiscTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
         content = "@**King Hamlet** @**Cordelia, lear's daughter**"
-        mention_data = MentionData(realm.id, content)
+        mention_backend = MentionBackend(realm.id)
+        mention_data = MentionData(mention_backend, content)
         self.assertEqual(mention_data.get_user_ids(), {hamlet.id, cordelia.id})
         self.assertEqual(
             mention_data.get_user_by_id(hamlet.id),
-            dict(
-                email=hamlet.email,
+            FullNameInfo(
                 full_name=hamlet.full_name,
                 id=hamlet.id,
             ),
@@ -273,11 +274,11 @@ class MarkdownMiscTest(ZulipTestCase):
 
         user = mention_data.get_user_by_name("king hamLET")
         assert user is not None
-        self.assertEqual(user["email"], hamlet.email)
+        self.assertEqual(user.full_name, hamlet.full_name)
 
         self.assertFalse(mention_data.message_has_wildcards())
         content = "@**King Hamlet** @**Cordelia, lear's daughter** @**all**"
-        mention_data = MentionData(realm.id, content)
+        mention_data = MentionData(mention_backend, content)
         self.assertTrue(mention_data.message_has_wildcards())
 
     def test_invalid_katex_path(self) -> None:
@@ -1751,7 +1752,7 @@ class MarkdownTest(ZulipTestCase):
         expected_user_ids: Set[int] = set()
         self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
 
-    def test_alert_words_retuns_user_ids_with_alert_words_with_huge_alert_words(self) -> None:
+    def test_alert_words_returns_user_ids_with_alert_words_with_huge_alert_words(self) -> None:
 
         alert_words_for_users: Dict[str, List[str]] = {
             "hamlet": ["issue124"],
@@ -1777,7 +1778,7 @@ class MarkdownTest(ZulipTestCase):
         The second line, for x in range(10), determines how many values will be printed (when you use
         range(x), the number that you use in place of x will be the amount of values that you'll have
         printed. if you want 20 values, use range(20). use range(5) if you only want 5 values returned,
-        etc.). I was talking abou the issue124 on github. Then the third line: print random.randint(1,101) will automatically select a random integer
+        etc.). I was talking about the issue124 on github. Then the third line: print random.randint(1,101) will automatically select a random integer
         between 1 and 100 for you. The process is fairly simple
         """
         rendering_result = render(msg, content)
@@ -1991,7 +1992,7 @@ class MarkdownTest(ZulipTestCase):
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
         # Even though King Hamlet will be present in mention data as
-        # it was was fetched for first mention but second mention is
+        # it was fetched for first mention but second mention is
         # incorrect(as it uses hamlet's id) so it should not be able
         # to use that data for creating a valid mention.
 

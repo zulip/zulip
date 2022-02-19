@@ -105,15 +105,20 @@ def get_deploy_root() -> str:
     )
 
 
+def parse_version_from(deploy_path: str) -> str:
+    with open(os.path.join(deploy_path, "version.py")) as f:
+        result = re.search('ZULIP_VERSION = "(.*)"', f.read())
+        if result:
+            return result.groups()[0]
+    return "0.0.0"
+
+
 def get_deployment_version(extract_path: str) -> str:
     version = "0.0.0"
     for item in os.listdir(extract_path):
         item_path = os.path.join(extract_path, item)
         if item.startswith("zulip-server") and os.path.isdir(item_path):
-            with open(os.path.join(item_path, "version.py")) as f:
-                result = re.search('ZULIP_VERSION = "(.*)"', f.read())
-                if result:
-                    version = result.groups()[0]
+            version = parse_version_from(item_path)
             break
     return version
 
@@ -330,7 +335,7 @@ def purge_unused_caches(
     caches_to_purge = get_caches_to_be_purged(caches_dir, caches_in_use, args.threshold_days)
     caches_to_keep = all_caches - caches_to_purge
 
-    may_be_perform_purging(
+    maybe_perform_purging(
         caches_to_purge, caches_to_keep, cache_type, args.dry_run, args.verbose, args.no_headings
     )
     if args.verbose:
@@ -376,7 +381,7 @@ def generate_sha1sum_emoji(zulip_path: str) -> str:
     return sha.hexdigest()
 
 
-def may_be_perform_purging(
+def maybe_perform_purging(
     dirs_to_purge: Set[str],
     dirs_to_keep: Set[str],
     dir_type: str,
@@ -562,7 +567,7 @@ def get_config_file() -> configparser.RawConfigParser:
 
 
 def get_deploy_options(config_file: configparser.RawConfigParser) -> List[str]:
-    return get_config(config_file, "deployment", "deploy_options", "").strip().split()
+    return shlex.split(get_config(config_file, "deployment", "deploy_options", "").strip())
 
 
 def run_psql_as_postgres(
@@ -617,25 +622,6 @@ def has_application_server(once: bool = False) -> bool:
     )
 
 
-def list_supervisor_processes(*args: str) -> List[str]:
-    worker_status = subprocess.run(
-        ["supervisorctl", "status", *args],
-        universal_newlines=True,
-        stdout=subprocess.PIPE,
-    )
-    # `supercisorctl status` returns 3 if any are stopped, which is
-    # fine here; and exit code 4 is for no such process, which is
-    # handled below.
-    if worker_status.returncode not in (0, 3, 4):
-        worker_status.check_returncode()
-
-    processes = []
-    for status_line in worker_status.stdout.splitlines():
-        if not re.search(r"ERROR \(no such (process|group)\)", status_line):
-            processes.append(status_line.split()[0])
-    return processes
-
-
 def has_process_fts_updates() -> bool:
     return (
         # Current path
@@ -651,6 +637,41 @@ def deport(netloc: str) -> str:
     r = SplitResult("", netloc, "", "", "")
     assert r.hostname is not None
     return "[" + r.hostname + "]" if ":" in r.hostname else r.hostname
+
+
+def start_arg_parser(action: str, add_help: bool = False) -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(add_help=add_help)
+    parser.add_argument("--fill-cache", action="store_true", help="Fill the memcached caches")
+    if action == "restart":
+        parser.add_argument(
+            "--less-graceful",
+            action="store_true",
+            help="Restart with more concern for expediency than minimizing availability interruption",
+        )
+        parser.add_argument(
+            "--skip-tornado",
+            action="store_true",
+            help="Do not restart Tornado processes",
+        )
+    return parser
+
+
+def listening_publicly(port: int) -> List[str]:
+    filter = f"sport = :{port} and not src 127.0.0.1:{port} and not src [::1]:{port}"
+    # Parse lines that look like this:
+    # tcp    LISTEN     0          128             0.0.0.0:25672        0.0.0.0:*
+    lines = (
+        subprocess.check_output(
+            ["/bin/ss", "-Hnl", filter],
+            universal_newlines=True,
+            # Hosts with IPv6 disabled will get "RTNETLINK answers: Invalid
+            # argument"; eat stderr to hide that
+            stderr=subprocess.DEVNULL,
+        )
+        .strip()
+        .splitlines()
+    )
+    return [line.split()[4] for line in lines]
 
 
 if __name__ == "__main__":

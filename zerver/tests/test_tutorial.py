@@ -159,7 +159,7 @@ class TutorialTests(ZulipTestCase):
             expected_response = (
                 "I’m sorry, I did not understand your message. Please try one of the following commands: "
                 "`apps`, `profile`, `theme`, `streams`, "
-                "`topics`, `message formatting`, `keyboard shortcuts`."
+                "`topics`, `message formatting`, `keyboard shortcuts`, `help`."
             )
             self.assertEqual(most_recent_message(user).content, expected_response)
 

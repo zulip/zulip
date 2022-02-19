@@ -236,7 +236,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         self._turn_on_stream_push_for_cordelia()
 
         # Even though Cordelia configured this stream for pushes,
-        # we short-ciruit the logic, assuming the original message
+        # we short-circuit the logic, assuming the original message
         # also did a push.
         original_content = "no mention"
         updated_content = "nothing special about updated message"
@@ -370,7 +370,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
     def test_updates_with_stream_mention_of_sorta_present_user(self) -> None:
         cordelia = self.example_user("cordelia")
 
-        # We will simulate that the user still has a an active client,
+        # We will simulate that the user still has an active client,
         # but they don't have UserPresence rows, so we will still
         # send offline notifications.
         original_content = "no mention"
@@ -402,7 +402,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
 
-        # We will simulate that the user still has a an active client,
+        # We will simulate that the user still has an active client,
         # but they don't have UserPresence rows, so we will still
         # send offline notifications.
         original_content = "no mention"

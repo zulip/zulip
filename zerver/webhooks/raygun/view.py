@@ -42,7 +42,7 @@ def api_raygun_webhook(
 
     check_send_webhook_message(request, user_profile, topic, message, event)
 
-    return json_success()
+    return json_success(request)
 
 
 def make_user_stats_chunk(error_dict: Dict[str, Any]) -> str:

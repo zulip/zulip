@@ -136,8 +136,8 @@ ol {
 p li,
 ul li,
 ol li {
-    list-style-position: inside;
-    margin-left: 5px;
+    list-style-position: outside;
+    margin-left: 15px;
 }
 
 a {
@@ -390,7 +390,7 @@ a.button:hover {
         line-height: 100%;
     }
 
-    /* iOS converts adreses in emails to links automatically */
+    /* iOS converts addresses in emails to links automatically */
     .apple-link a {
         color: inherit !important;
         font-family: inherit !important;

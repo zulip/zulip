@@ -3,8 +3,8 @@ class zulip::postgresql_base {
   include zulip::postgresql_common
   include zulip::process_fts_updates
 
-  case $::osfamily {
-    'debian': {
+  case $::os['family'] {
+    'Debian': {
       $postgresql = "postgresql-${zulip::postgresql_common::version}"
       $postgresql_sharedir = "/usr/share/postgresql/${zulip::postgresql_common::version}"
       $postgresql_confdirs = [
@@ -20,7 +20,7 @@ class zulip::postgresql_base {
       $postgresql_dict_dict = '/var/cache/postgresql/dicts/en_us.dict'
       $postgresql_dict_affix = '/var/cache/postgresql/dicts/en_us.affix'
     }
-    'redhat': {
+    'RedHat': {
       $postgresql = "postgresql${zulip::postgresql_common::version}"
       $postgresql_sharedir = "/usr/pgsql-${zulip::postgresql_common::version}/share"
       $postgresql_confdirs = [
@@ -72,8 +72,8 @@ class zulip::postgresql_base {
     source  => 'puppet:///modules/zulip/nagios_plugins/zulip_postgresql',
   }
 
-  $pgroonga = zulipconf('machine', 'pgroonga', '')
-  if $pgroonga == 'enabled' {
+  $pgroonga = zulipconf('machine', 'pgroonga', false)
+  if $pgroonga {
     # Needed for optional our full text search system
 
     # Removed 2020-12 in version 4.0; these lines can be removed when

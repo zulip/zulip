@@ -290,7 +290,7 @@ self-explanatory names.
 - **message editing**: If the realm admin allows it, then after a user
   posts a message, the user has a few minutes to click "Edit" and
   change the content of their message. If they do, Zulip adds a
-  marker such as "(EDITED)" at the top of the message, visible to
+  marker such as "EDITED" at the top of the message, visible to
   anyone who can see the message.
 
 - **realm**: What the codebase calls an "organization" in the UI.

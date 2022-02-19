@@ -349,7 +349,7 @@ class DraftEditTests(ZulipTestCase):
         new_draft_dict.pop("id")
         self.assertEqual(new_draft_dict, draft_dict)
 
-    def test_edit_non_existant_draft(self) -> None:
+    def test_edit_non_existent_draft(self) -> None:
         hamlet = self.example_user("hamlet")
 
         initial_count = Draft.objects.count()
@@ -447,7 +447,7 @@ class DraftDeleteTests(ZulipTestCase):
         # Now make sure that the there are no more drafts.
         self.assertEqual(Draft.objects.count() - initial_count, 0)
 
-    def test_delete_non_existant_draft(self) -> None:
+    def test_delete_non_existent_draft(self) -> None:
         hamlet = self.example_user("hamlet")
 
         # Make sure that no draft exists in the first place.

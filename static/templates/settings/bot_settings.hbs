@@ -53,7 +53,7 @@
                         <label for="select_service_name">{{t "Bot"}}</label>
                         <select name="service_name" id="select_service_name">
                             {{#each page_params.realm_embedded_bots}}
-                            <option value="{{this.name}}">{{this.name}}</option>
+                                <option value="{{this.name}}">{{this.name}}</option>
                             {{/each}}
                         </select>
                     </div>
@@ -91,7 +91,7 @@
                     <div id="config_inputbox">
                         {{#each page_params.realm_embedded_bots as |bot index|}}
                             {{#each bot.config as |config_value config_key|}}
-                            {{> ../embedded_bot_config_item botname=bot.name key=config_key value=config_value}}
+                                {{> ../embedded_bot_config_item botname=bot.name key=config_key value=config_value}}
                             {{/each}}
                         {{/each}}
                     </div>

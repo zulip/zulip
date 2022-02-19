@@ -1,6 +1,5 @@
 class zulip_ops::profile::zmirror {
   include zulip_ops::profile::base
-  include zulip_ops::apt_repository_debathena
   include zulip::supervisor
 
   $zmirror_packages = [# Packages needed to run the mirror
@@ -8,19 +7,16 @@ class zulip_ops::profile::zmirror {
     'zephyr-clients',
     'krb5-config',
     'krb5-user',
-    'debathena-kerberos-config',
-    'debathena-zephyr-config',
     # Packages needed to build pyzephyr
     'libzephyr-dev',
     'comerr-dev',
     'python3-dev',
-    'python-dev',
+    'python2.7-dev',
     'cython3',
     'cython',
   ]
   package { $zmirror_packages:
     ensure  => 'installed',
-    require => Exec['setup_apt_repo_debathena'],
   }
 
   file { "${zulip::common::supervisor_conf_dir}/zmirror.conf":
@@ -41,12 +37,20 @@ class zulip_ops::profile::zmirror {
     source => 'puppet:///modules/zulip_ops/cron.d/zephyr-mirror',
   }
 
-  file { '/etc/default/zephyr-clients.debathena':
+  file { '/etc/krb5.conf':
     ensure => file,
     owner  => 'root',
     group  => 'root',
     mode   => '0644',
-    source => 'puppet:///modules/zulip_ops/zephyr-clients.debathena',
+    source => 'puppet:///modules/zulip_ops/krb5.conf',
+  }
+
+  file { '/etc/default/zephyr-clients':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'puppet:///modules/zulip_ops/zephyr-clients',
   }
 
   file { '/usr/lib/nagios/plugins/zulip_zephyr_mirror':

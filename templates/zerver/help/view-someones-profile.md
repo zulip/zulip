@@ -4,7 +4,7 @@ A user's profile includes their name, email, role, the date they joined,
 when they were last active, and any
 [custom profile fields](/help/add-custom-profile-fields) they've filled out.
 
-It also contains additional tabs showing a user's susbcribed streams
+It also contains additional tabs showing a user's subscribed streams
 and user groups. Note that the information in those tabs is limited to
 streams for which [you can see all subscribers](/help/stream-permissions).
 

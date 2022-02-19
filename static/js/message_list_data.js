@@ -39,7 +39,7 @@ export class MessageListData {
     }
 
     last() {
-        return this._items[this._items.length - 1];
+        return this._items.at(-1);
     }
 
     select_idx() {
@@ -225,6 +225,10 @@ export class MessageListData {
         return this.last().id;
     }
 
+    has_unread_messages() {
+        return this._items.some((message) => unread.message_unread(message));
+    }
+
     add_messages(messages) {
         let top_messages = [];
         let bottom_messages = [];
@@ -397,7 +401,7 @@ export class MessageListData {
         } else {
             // Any of the ids that we skipped over (due to them being local-only) might be the
             // closest ID to the desired one, in case there is no exact match.
-            potential_closest_matches.unshift(_.last(potential_closest_matches) - 1);
+            potential_closest_matches.unshift(closest - 1);
             let best_match = items[closest].id;
 
             for (const potential_idx of potential_closest_matches) {
@@ -519,6 +523,14 @@ export class MessageListData {
         }
 
         return false;
+    }
+
+    get_messages_sent_by_user(user_id) {
+        const msgs = _.filter(this._items, {sender_id: user_id});
+        if (msgs.length === 0) {
+            return [];
+        }
+        return msgs;
     }
 
     get_last_message_sent_by_me() {

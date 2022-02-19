@@ -40,6 +40,7 @@ const stream_pill = zrequire("stream_pill");
 const user_groups = zrequire("user_groups");
 const user_group_pill = zrequire("user_group_pill");
 const user_pill = zrequire("user_pill");
+const stream_subscribers_ui = zrequire("stream_subscribers_ui");
 const stream_ui_updates = zrequire("stream_ui_updates");
 const settings_config = zrequire("settings_config");
 
@@ -108,14 +109,15 @@ for (const sub of subs) {
 }
 
 function test_ui(label, f) {
-    run_test(label, ({override, mock_template}) => {
+    run_test(label, ({override, override_rewire, mock_template}) => {
         page_params.user_id = me.user_id;
+        stream_subscribers_ui.initialize();
         stream_edit.initialize();
-        f({override, mock_template});
+        f({override, override_rewire, mock_template});
     });
 }
 
-test_ui("subscriber_pills", ({override, mock_template}) => {
+test_ui("subscriber_pills", ({override_rewire, mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         return html;
@@ -126,10 +128,15 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
         false,
         () => "stream_subscription_request_result",
     );
+    mock_template(
+        "stream_settings/selected_stream_title.hbs",
+        false,
+        () => "selected_stream_title",
+    );
 
-    override(stream_edit, "sort_but_pin_current_user_on_top", noop);
+    override_rewire(people, "sort_but_pin_current_user_on_top", noop);
 
-    const subscriptions_table_selector = "#subscriptions_table";
+    const subscriptions_table_selector = "#manage_streams_container";
     const input_field_stub = $.create(".input");
 
     input_field_stub.before = () => {};
@@ -137,12 +144,24 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
     const sub_settings_selector = `#subscription_overlay .subscription_settings[data-stream-id='${CSS.escape(
         denmark.stream_id,
     )}']`;
-    const $sub_settings_container = $.create(sub_settings_selector);
-    $sub_settings_container.find = noop;
-    $sub_settings_container.find = () => input_field_stub;
 
-    const pill_container_stub = $.create(sub_settings_selector + " .pill-container");
+    const pill_container_stub = $.create("pill-container-stub");
     pill_container_stub.find = () => input_field_stub;
+
+    const $sub_settings_container = $.create(sub_settings_selector);
+    const $edit_subscribers_container = $.create("edit-subscribers-stub");
+    const $unused = $.create("unused");
+
+    $sub_settings_container.set_find_results(".colorpicker", $unused);
+    $sub_settings_container.set_find_results(
+        ".edit_subscribers_for_stream",
+        $edit_subscribers_container,
+    );
+
+    $edit_subscribers_container.set_find_results(".pill-container", pill_container_stub);
+    $edit_subscribers_container.set_find_results(".search", $unused);
+    $edit_subscribers_container.set_find_results(".subscriber_table", $unused);
+    $edit_subscribers_container.set_find_results(".subscriber_list_container", $unused);
 
     const $subscription_settings = $.create(".subscription_settings");
     $subscription_settings.addClass = noop;
@@ -150,7 +169,9 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
     $subscription_settings.attr("data-stream-id", denmark.stream_id);
     $subscription_settings.length = 0;
 
-    const $add_subscribers_form = $.create(".subscriber_list_add form");
+    const $add_subscribers_form = $.create(
+        ".edit_subscribers_for_stream .subscriber_list_add form",
+    );
     $add_subscribers_form.closest = () => $subscription_settings;
 
     let template_rendered = false;
@@ -162,7 +183,7 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
     let expected_user_ids = [];
     let input_typeahead_called = false;
     let add_subscribers_request = false;
-    override(stream_edit, "invite_user_to_stream", (user_ids, sub) => {
+    override_rewire(stream_subscribers_ui, "invite_user_to_stream", (user_ids, sub) => {
         assert.equal(sub.stream_id, denmark.stream_id);
         assert.deepEqual(user_ids.sort(), expected_user_ids.sort());
         add_subscribers_request = true;
@@ -248,7 +269,7 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
 
         (function test_updater() {
             function number_of_pills() {
-                const pills = stream_edit.pill_widget.items();
+                const pills = stream_subscribers_ui.pill_widget.items();
                 return pills.length;
             }
 
@@ -290,8 +311,8 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
     let fake_this = $subscription_settings;
     let event = {target: fake_this};
 
-    override(stream_ui_updates, "update_toggler_for_sub", noop);
-    override(stream_ui_updates, "update_add_subscriptions_elements", noop);
+    override_rewire(stream_ui_updates, "update_toggler_for_sub", noop);
+    override_rewire(stream_ui_updates, "update_add_subscriptions_elements", noop);
 
     const {stream_notification_settings, pm_mention_notification_settings} = settings_config;
     for (const setting of [...stream_notification_settings, ...pm_mention_notification_settings]) {
@@ -304,7 +325,7 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
 
     let add_subscribers_handler = $(subscriptions_table_selector).get_on_handler(
         "submit",
-        ".subscriber_list_add form",
+        ".edit_subscribers_for_stream .subscriber_list_add form",
     );
 
     fake_this = $add_subscribers_form;
@@ -328,14 +349,14 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
 
     add_subscribers_handler = $(subscriptions_table_selector).get_on_handler(
         "keyup",
-        ".subscriber_list_add form",
+        ".edit_subscribers_for_stream .subscriber_list_add form",
     );
     event.key = "Enter";
 
     // Only Denmark stream pill is created and a
     // request is sent to add all it's subscribers.
-    override(user_pill, "get_user_ids", () => []);
-    override(user_group_pill, "get_user_ids", () => []);
+    override_rewire(user_pill, "get_user_ids", () => []);
+    override_rewire(user_group_pill, "get_user_ids", () => []);
     expected_user_ids = potential_denmark_stream_subscribers;
     add_subscribers_handler(event);
 
@@ -347,14 +368,14 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
 
     // No request is sent if we try to subscribe ourselves
     // only and are already subscribed to the stream.
-    override(user_pill, "get_user_ids", () => [me.user_id]);
+    override_rewire(user_pill, "get_user_ids", () => [me.user_id]);
     add_subscribers_handler(event);
     assert.ok(!add_subscribers_request);
 
     // Denmark stream pill and fred and mark user pills are created.
     // But only one request for mark is sent even though a mark user
     // pill is created and mark is also a subscriber of Denmark stream.
-    override(user_pill, "get_user_ids", () => [mark.user_id, fred.user_id]);
+    override_rewire(user_pill, "get_user_ids", () => [mark.user_id, fred.user_id]);
     stream_pill.get_user_ids = () => peer_data.get_subscribers(denmark.stream_id);
     expected_user_ids = potential_denmark_stream_subscribers.concat(fred.user_id);
     add_subscribers_handler(event);
@@ -363,8 +384,8 @@ test_ui("subscriber_pills", ({override, mock_template}) => {
         return user_id === mark.user_id;
     }
     // Deactivated user_id is not included in request.
-    override(user_pill, "get_user_ids", () => [mark.user_id, fred.user_id]);
-    override(people, "is_person_active", is_person_active);
+    override_rewire(user_pill, "get_user_ids", () => [mark.user_id, fred.user_id]);
+    override_rewire(people, "is_person_active", is_person_active);
     expected_user_ids = [mark.user_id];
     add_subscribers_handler(event);
 });

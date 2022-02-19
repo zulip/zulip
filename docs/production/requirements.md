@@ -5,22 +5,25 @@ To run a Zulip server, you will need:
 - A dedicated machine or VM
 - A supported OS:
   - Ubuntu 20.04 Focal
-  - Ubuntu 18.04 Bionic
   - Debian 11 Bullseye
   - Debian 10 Buster
 - At least 2GB RAM, and 10GB disk space
   - If you expect 100+ users: 4GB RAM, and 2 CPUs
+  - If you intend to [upgrade from Git][upgrade-from-git]: 3GB RAM, or
+    2G and at least 1G of swap configured.
 - A hostname in DNS
 - Credentials for sending email
 
 For details on each of these requirements, see below.
+
+[upgrade-from-git]: ../production/upgrade-or-modify.html#upgrading-from-a-git-repository
 
 ## Server
 
 #### General
 
 The installer expects Zulip to be the **only thing** running on the
-system; it will install system packages with `apt` (like Nginx,
+system; it will install system packages with `apt` (like nginx,
 PostgreSQL, and Redis) and configure them for its own use. We strongly
 recommend using either a fresh machine instance in a cloud provider, a
 fresh VM, [our Docker image][docker-zulip-homepage], or a dedicated
@@ -30,7 +33,7 @@ on issues you'll encounter](install-existing-server.md).
 
 #### Operating system
 
-Ubuntu 20.04 Focal, 18.04 Bionic, Debian 11 Bullseye, and Debian 10
+Ubuntu 20.04 Focal, Debian 11 Bullseye, and Debian 10
 Buster are supported for running Zulip in production. You can also
 run Zulip on other platforms that support Docker using
 [docker-zulip][docker-zulip-homepage].
@@ -81,6 +84,11 @@ on hardware requirements for larger organizations.
   HTTPS, and will redirect HTTP requests to HTTPS.
 - Incoming port 25 if you plan to enable Zulip's [incoming email
   integration](../production/email-gateway.md).
+- Incoming port 4369 should be protected by a firewall to prevent
+  exposing `epmd`, an Erlang service which does not support binding
+  only to localhost. Leaving this exposed will allow unauthenticated
+  remote users to determine that the server is running RabbitMQ, and
+  on which port, though no further information is leaked.
 - Outgoing HTTP(S) access (ports 80 and 443) to the public Internet so
   that Zulip can properly manage image and website previews and mobile
   push notifications. Outgoing Internet access is not required if you
@@ -199,7 +207,7 @@ installing Zulip with a dedicated database server.
   accounts) per (1M messages to public streams).
 
 - **Example:** When
-  [the Zulip development community](https://zulip.com/developer-community/) server
+  [the Zulip development community](https://zulip.com/development-community/) server
   had 12K user accounts (~300 daily actives) and 800K messages of
   history (400K to public streams), it was a default configuration
   single-server installation with 16GB of RAM, 4 cores (essentially

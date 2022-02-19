@@ -1557,14 +1557,17 @@ def social_associate_user_helper(
     full_name = kwargs["details"].get("fullname")
     first_name = kwargs["details"].get("first_name")
     last_name = kwargs["details"].get("last_name")
+
     if all(name is None for name in [full_name, first_name, last_name]) and backend.name not in [
         "apple",
         "saml",
+        "oidc",
     ]:
         # (1) Apple authentication provides the user's name only the very first time a user tries to log in.
         # So if the user aborts login or otherwise is doing this the second time,
         # we won't have any name data.
-        # (2) Some IdPs may not send any name value if the user doesn't have them set in the IdP's directory.
+        # (2) Some SAML or OIDC IdPs may not send any name value if the user doesn't
+        # have them set in the IdP's directory.
         #
         # The name will just default to the empty string in the code below.
 
@@ -1855,7 +1858,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
         ]
 
     def get_verified_emails(self, realm: Realm, *args: Any, **kwargs: Any) -> List[str]:
-        # We only let users login using email addresses that are
+        # We only let users log in using email addresses that are
         # verified by GitHub, because the whole point is for the user
         # to demonstrate that they control the target email address.
         verified_emails: List[str] = []
@@ -2434,10 +2437,10 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         callback function without arguments, to delete the session. We're not
         happy with that for two reasons:
         1. These implementations don't look at the NameID in the LogoutRequest, which
-           is not quite correct, as a LogoutRequest to logout user X can be delivered
+           is not quite correct, as a LogoutRequest to log out user X can be delivered
            through any means, and doesn't need a session to be valid.
            E.g. a backchannel logout request sent by the IdP wouldn't have a session cookie.
-           Also, hypothetically, a LogoutRequest to logout user Y shouldn't logout user X, even if the
+           Also, hypothetically, a LogoutRequest to log out user Y shouldn't log out user X, even if the
            request is made with a session cookie belonging to user X.
         2. We want to revoke all sessions for the user, not just the current session
            of the request, so after validating the LogoutRequest, we need to identify
@@ -2449,6 +2452,17 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         """
         idp = self.get_idp(idp_name)
         auth = self._create_saml_auth(idp)
+        # This setting controls whether LogoutRequests delivered to us
+        # need to be signed. The default of False is not acceptable,
+        # because we don't want anyone to be able to submit a request
+        # to get other users logged out.
+        auth.get_settings().get_security_data()["wantMessagesSigned"] = True
+        # Defensive code to confirm the setting change above is successful,
+        # to catch API changes in python3-saml that would make the change not
+        # be applied to the actual settings of `auth` - e.g. due to us only
+        # receiving a copy of the dict.
+        assert auth.get_settings().get_security_data()["wantMessagesSigned"] is True
+
         # This validates the LogoutRequest and prepares the response
         # (the URL to which to redirect the client to convey the response to the IdP)
         # but is a no-op otherwise because keep_local_session=True keeps it from
@@ -2505,7 +2519,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             and then change the RelayState param to the idp_name, because that's what
             SAMLAuth.auth_complete() expects.
 
-        Additionally, this handles incoming LogoutRequests for IdP-initated logout.
+        Additionally, this handles incoming LogoutRequests for IdP-initiated logout.
         """
 
         encoded_saml_request = self.strategy.request_data().get("SAMLRequest")

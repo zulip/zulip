@@ -34,7 +34,7 @@ def api_codeship_webhook(
     body = get_body_for_http_request(payload)
 
     check_send_webhook_message(request, user_profile, subject, body)
-    return json_success()
+    return json_success(request)
 
 
 def get_subject_for_http_request(payload: Dict[str, Any]) -> str:

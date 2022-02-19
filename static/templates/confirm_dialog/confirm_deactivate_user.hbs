@@ -1,7 +1,7 @@
 <p>
     {{#tr}}
-        By deactivating <z-user></z-user>, they will be logged out immediately.
-        {{#*inline "z-user"}}<strong>{{username}}</strong> &lt;{{email}}&gt;{{/inline}}
+        When you deactivate <z-user></z-user>, they will be immediately logged out.
+        {{#*inline "z-user"}}<strong>{{username}}</strong>{{#if email}} &lt;{{email}}&gt;{{/if}}{{/inline}}
     {{/tr}}
 </p>
 <p>{{t "Their password will be cleared from our systems, and any bots they maintain will be disabled." }}</p>

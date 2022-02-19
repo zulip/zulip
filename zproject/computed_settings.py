@@ -627,7 +627,6 @@ base_template_engine_settings: Dict[str, Any] = {
         "environment": "zproject.jinja2.environment",
         "extensions": [
             "jinja2.ext.i18n",
-            "jinja2.ext.autoescape",
         ],
         "context_processors": [
             "zerver.context_processors.zulip_default_context",
@@ -717,6 +716,7 @@ DIGEST_LOG_PATH = zulip_path("/var/log/zulip/digest.log")
 ANALYTICS_LOG_PATH = zulip_path("/var/log/zulip/analytics.log")
 ANALYTICS_LOCK_DIR = zulip_path("/home/zulip/deployments/analytics-lock-dir")
 WEBHOOK_LOG_PATH = zulip_path("/var/log/zulip/webhooks_errors.log")
+WEBHOOK_ANOMALOUS_PAYLOADS_LOG_PATH = zulip_path("/var/log/zulip/webhooks_anomalous_payloads.log")
 WEBHOOK_UNSUPPORTED_EVENTS_LOG_PATH = zulip_path("/var/log/zulip/webhooks_unsupported_events.log")
 SOFT_DEACTIVATION_LOG_PATH = zulip_path("/var/log/zulip/soft_deactivation.log")
 TRACEMALLOC_DUMP_DIR = zulip_path("/var/log/zulip/tracemalloc")
@@ -848,6 +848,12 @@ LOGGING: Dict[str, Any] = {
             "class": "logging.handlers.WatchedFileHandler",
             "formatter": "webhook_request_data",
             "filename": WEBHOOK_UNSUPPORTED_EVENTS_LOG_PATH,
+        },
+        "webhook_anomalous_file": {
+            "level": "DEBUG",
+            "class": "logging.handlers.WatchedFileHandler",
+            "formatter": "webhook_request_data",
+            "filename": WEBHOOK_ANOMALOUS_PAYLOADS_LOG_PATH,
         },
     },
     "loggers": {
@@ -1003,6 +1009,11 @@ LOGGING: Dict[str, Any] = {
             "handlers": ["webhook_unsupported_file"],
             "propagate": False,
         },
+        "zulip.zerver.webhooks.anomalous": {
+            "level": "DEBUG",
+            "handlers": ["webhook_anomalous_file"],
+            "propagate": False,
+        },
     },
 }
 
@@ -1128,13 +1139,6 @@ if "signatureAlgorithm" not in SOCIAL_AUTH_SAML_SECURITY_CONFIG:
     # insecure SHA1.
     default_signature_alg = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"
     SOCIAL_AUTH_SAML_SECURITY_CONFIG["signatureAlgorithm"] = default_signature_alg
-
-if "wantMessagesSigned" not in SOCIAL_AUTH_SAML_SECURITY_CONFIG:
-    # This setting controls whether LogoutRequests delivered to us
-    # need to be signed. The default of False is not acceptable,
-    # because we don't want anyone to be able to submit a request
-    # to get other users logged out.
-    SOCIAL_AUTH_SAML_SECURITY_CONFIG["wantMessagesSigned"] = True
 
 for idp_name, idp_dict in SOCIAL_AUTH_SAML_ENABLED_IDPS.items():
     if DEVELOPMENT:

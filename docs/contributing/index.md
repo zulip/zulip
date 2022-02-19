@@ -12,6 +12,6 @@ zulipbot-usage
 accessibility
 bug-reports
 ../code-of-conduct
-gsoc-ideas
+gsoc
 summer-with-zulip
 ```

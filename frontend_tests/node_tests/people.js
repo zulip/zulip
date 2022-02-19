@@ -62,9 +62,9 @@ function initialize() {
 }
 
 function test_people(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, override_rewire}) => {
         initialize();
-        f({override});
+        f({override, override_rewire});
     });
 }
 
@@ -370,6 +370,31 @@ test_people("basics", () => {
         active_humans.sort((p) => p.user_id),
         [me.user_id, isaac.user_id],
     );
+});
+
+test_people("sort_but_pin_current_user_on_top with me", () => {
+    people.add_active_user(maria);
+    people.add_active_user(steven);
+
+    // We need the actual object from people.js, not the
+    // "me" object we made a copy of.
+    const my_user = people.get_by_user_id(me.user_id);
+    const users = [steven, debbie, maria, my_user];
+
+    people.sort_but_pin_current_user_on_top(users);
+
+    assert.deepEqual(users, [my_user, debbie, maria, steven]);
+});
+
+test_people("sort_but_pin_current_user_on_top without me", () => {
+    people.add_active_user(maria);
+    people.add_active_user(steven);
+
+    const users = [steven, maria];
+
+    people.sort_but_pin_current_user_on_top(users);
+
+    assert.deepEqual(users, [maria, steven]);
 });
 
 test_people("check_active_non_active_users", () => {
@@ -864,7 +889,7 @@ test_people("message_methods", () => {
     assert.equal(people.sender_is_guest(message), false);
 });
 
-test_people("extract_people_from_message", ({override}) => {
+test_people("extract_people_from_message", ({override_rewire}) => {
     let message = {
         type: "stream",
         sender_full_name: maria.full_name,
@@ -874,7 +899,7 @@ test_people("extract_people_from_message", ({override}) => {
     assert.ok(!people.is_known_user_id(maria.user_id));
 
     let reported;
-    override(people, "report_late_add", (user_id, email) => {
+    override_rewire(people, "report_late_add", (user_id, email) => {
         assert.equal(user_id, maria.user_id);
         assert.equal(email, maria.email);
         reported = true;

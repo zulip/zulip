@@ -118,7 +118,7 @@ async function test_webhook_bot_creation(page: Page): Promise<void> {
     assert.match(
         zuliprc_decoded_url,
         outgoing_webhook_zuliprc_regex,
-        "Incorrect outgoing webhook bot zulirc format",
+        "Incorrect outgoing webhook bot zuliprc format",
     );
 }
 
@@ -184,7 +184,11 @@ async function test_edit_bot_form(page: Page): Promise<void> {
     await common.wait_for_micromodal_to_close(page);
 }
 
+// Disabled the below test due to non-deterministic failures.
+// The test often fails to close the modal.
+// TODO: Debug this and re-enable with a fix.
 async function test_invalid_edit_bot_form(page: Page): Promise<void> {
+    return;
     const bot1_email = "1-bot@zulip.testserver";
     const bot1_edit_btn = `.open_edit_bot_form[data-email="${CSS.escape(bot1_email)}"]`;
     await page.click(bot1_edit_btn);
@@ -208,7 +212,13 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
         await common.get_text_from_selector(page, "div.bot_edit_errors"),
         "Name is already in use!",
     );
-    await page.click("#edit_bot_modal .dialog_cancel_button");
+
+    const cancel_button_selector = "#edit_bot_modal .dialog_cancel_button";
+    await page.waitForFunction(
+        (cancel_button_selector: string) =>
+            !document.querySelector(cancel_button_selector)?.hasAttribute("disabled"),
+    );
+    await page.click(cancel_button_selector);
     await page.waitForXPath(
         `//*[@class="btn open_edit_bot_form" and @data-email="${bot1_email}"]/ancestor::*[@class="details"]/*[@class="name" and text()="Bot one"]`,
     );

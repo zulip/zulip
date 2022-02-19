@@ -83,9 +83,7 @@ from zerver.views.portico import (
     hello_view,
     landing_view,
     plans_view,
-    privacy_view,
     team_view,
-    terms_view,
 )
 from zerver.views.presence import (
     get_presence_backend,
@@ -228,7 +226,7 @@ if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
 #   - runtornado.py has its own URL list for Tornado views.  See the
 #     invocation of web.Application in that file.
 #
-#   - The Nginx config knows which URLs to route to Django or Tornado.
+#   - The nginx config knows which URLs to route to Django or Tornado.
 #
 #   - Likewise for the local dev server in tools/run-dev.py.
 
@@ -360,7 +358,7 @@ v1_api_and_json_patterns = [
         "users/me/apns_device_token", POST=add_apns_device_token, DELETE=remove_apns_device_token
     ),
     rest_path("users/me/android_gcm_reg_id", POST=add_android_reg_id, DELETE=remove_android_reg_id),
-    # users/*/presnece => zerver.views.presence.
+    # users/*/presence => zerver.views.presence.
     rest_path("users/me/presence", POST=update_active_status_backend),
     # It's important that this sit after users/me/presence so that
     # Django's URL resolution order doesn't break the
@@ -608,9 +606,16 @@ i18n_urls = [
     path("apps/download/<platform>", app_download_link_redirect),
     path("apps/<platform>", apps_view),
     path(
+        "developer-community/", RedirectView.as_view(url="/development-community/", permanent=True)
+    ),
+    path(
         "development-community/",
         landing_view,
         {"template_name": "zerver/development-community.html"},
+    ),
+    # Renamed to have a cleared URL.
+    path(
+        "developer-community/", RedirectView.as_view(url="/development-community/", permanent=True)
     ),
     path("attribution/", landing_view, {"template_name": "zerver/attribution.html"}),
     path("team/", team_view),
@@ -620,7 +625,9 @@ i18n_urls = [
     path("for/events/", landing_view, {"template_name": "zerver/for-events.html"}),
     path("for/open-source/", landing_view, {"template_name": "zerver/for-open-source.html"}),
     path("for/research/", landing_view, {"template_name": "zerver/for-research.html"}),
-    path("for/companies/", landing_view, {"template_name": "zerver/for-companies.html"}),
+    path("for/business/", landing_view, {"template_name": "zerver/for-business.html"}),
+    path("for/companies/", RedirectView.as_view(url="/for/business/", permanent=True)),
+    path("case-studies/idrift/", landing_view, {"template_name": "zerver/idrift-case-study.html"}),
     path("case-studies/tum/", landing_view, {"template_name": "zerver/tum-case-study.html"}),
     path("case-studies/ucsd/", landing_view, {"template_name": "zerver/ucsd-case-study.html"}),
     path("case-studies/rust/", landing_view, {"template_name": "zerver/rust-case-study.html"}),
@@ -635,13 +642,8 @@ i18n_urls = [
         "for/working-groups-and-communities/",
         RedirectView.as_view(url="/for/communities/", permanent=True),
     ),
+    path("self-hosting/", landing_view, {"template_name": "zerver/self-hosting.html"}),
     path("security/", landing_view, {"template_name": "zerver/security.html"}),
-    # Terms of Service and privacy pages.
-    path("terms/", terms_view),
-    path("privacy/", privacy_view),
-    path(
-        "developer-community/", RedirectView.as_view(url="/development-community/", permanent=True)
-    ),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
@@ -754,45 +756,34 @@ urls += [path("saml/metadata.xml", saml_sp_metadata)]
 
 # SCIM2
 
-from zerver.lib.scim import (
-    ZulipSCIMSearchView,
-    ZulipSCIMUserSearchView,
-    ZulipSCIMUsersView,
-    ZulipSCIMView,
-)
+from django_scim import views as scim_views
 
 urls += [
-    # We have to register all the SCIM URL patterns first, because we override
-    # all the SCIM View classes and we need Django to use them instead of
-    # the django-scim2 Views that the app will register.
-    re_path(r"^scim/v2/$", ZulipSCIMView.as_view(implemented=False)),
-    re_path(r"^scim/v2/.search$", ZulipSCIMSearchView.as_view(implemented=False)),
-    re_path(r"^scim/v2/Users/.search$", ZulipSCIMUserSearchView.as_view()),
-    re_path(r"^scim/v2/Users(?:/(?P<uuid>[^/]+))?$", ZulipSCIMUsersView.as_view()),
     # Everything below here are features that we don't yet support and we want
     # to explicitly mark them to return "Not Implemented" rather than running
     # the django-scim2 code for them.
     re_path(
         r"^scim/v2/Groups/.search$",
-        ZulipSCIMView.as_view(implemented=False),
+        scim_views.SCIMView.as_view(implemented=False),
     ),
     re_path(
         r"^scim/v2/Groups(?:/(?P<uuid>[^/]+))?$",
-        ZulipSCIMView.as_view(implemented=False),
+        scim_views.SCIMView.as_view(implemented=False),
     ),
-    re_path(r"^scim/v2/Me$", ZulipSCIMView.as_view(implemented=False)),
+    re_path(r"^scim/v2/Me$", scim_views.SCIMView.as_view(implemented=False)),
     re_path(
         r"^scim/v2/ServiceProviderConfig$",
-        ZulipSCIMView.as_view(implemented=False),
+        scim_views.SCIMView.as_view(implemented=False),
     ),
     re_path(
         r"^scim/v2/ResourceTypes(?:/(?P<uuid>[^/]+))?$",
-        ZulipSCIMView.as_view(implemented=False),
+        scim_views.SCIMView.as_view(implemented=False),
     ),
-    re_path(r"^scim/v2/Schemas(?:/(?P<uuid>[^/]+))?$", ZulipSCIMView.as_view(implemented=False)),
-    re_path(r"^scim/v2/Bulk$", ZulipSCIMView.as_view(implemented=False)),
-    # At the end we still register the django-scim2 url patterns (even though we override them all above)
-    # so that reverse("scim:viewname") still works like the internal library code expects.
+    re_path(
+        r"^scim/v2/Schemas(?:/(?P<uuid>[^/]+))?$", scim_views.SCIMView.as_view(implemented=False)
+    ),
+    re_path(r"^scim/v2/Bulk$", scim_views.SCIMView.as_view(implemented=False)),
+    # This registers the remaining SCIM endpoints.
     path("scim/v2/", include("django_scim.urls", namespace="scim")),
 ]
 
@@ -802,6 +793,10 @@ help_documentation_view = MarkdownDirectoryView.as_view(
 )
 api_documentation_view = MarkdownDirectoryView.as_view(
     template_name="zerver/documentation_main.html", path_template="/zerver/api/%s.md"
+)
+policy_documentation_view = MarkdownDirectoryView.as_view(
+    template_name="zerver/documentation_main.html",
+    policies_view=True,
 )
 urls += [
     # Redirects due to us having moved the docs:
@@ -881,6 +876,16 @@ urls += [
     path("help/<path:article>", help_documentation_view),
     path("api/", api_documentation_view),
     path("api/<slug:article>", api_documentation_view),
+    path("policies/", policy_documentation_view),
+    path("policies/<slug:article>", policy_documentation_view),
+    path(
+        "privacy/",
+        RedirectView.as_view(url="/policies/privacy"),
+    ),
+    path(
+        "terms/",
+        RedirectView.as_view(url="/policies/terms"),
+    ),
 ]
 
 # Two-factor URLs

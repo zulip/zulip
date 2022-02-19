@@ -27,7 +27,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
         // no secure way to pass that state in a signed fashion to the
         // next instance of the browser client).
         //
-        // So we jure return here and let the reload proceed without
+        // So we just return here and let the reload proceed without
         // having preserved state.  We keep the hash the same so we'll
         // at least save their narrow state.
         blueslip.log("Can't preserve state; no local storage.");

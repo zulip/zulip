@@ -26,7 +26,7 @@ def add_reaction(
 ) -> HttpResponse:
     check_add_reaction(user_profile, message_id, emoji_name, emoji_code, reaction_type)
 
-    return json_success()
+    return json_success(request)
 
 
 # transaction.atomic is required since we use FOR UPDATE queries in access_message
@@ -77,4 +77,4 @@ def remove_reaction(
     # deactivated by an administrator in the meantime).
     do_remove_reaction(user_profile, message, emoji_code, reaction_type)
 
-    return json_success()
+    return json_success(request)

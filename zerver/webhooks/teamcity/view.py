@@ -48,7 +48,7 @@ def get_teamcity_property_value(property_list: List[Dict[str, str]], name: str) 
     return None
 
 
-@webhook_view("Teamcity")
+@webhook_view("TeamCity")
 @has_request_variables
 def api_teamcity_webhook(
     request: HttpRequest,
@@ -65,7 +65,7 @@ def api_teamcity_webhook(
         ).strip()
         send_rate_limited_pm_notification_to_bot_owner(user_profile, user_profile.realm, message)
 
-        return json_success()
+        return json_success(request)
 
     build_name = message["buildFullName"]
     build_url = message["buildStatusUrl"]
@@ -129,19 +129,19 @@ def api_teamcity_webhook(
         if teamcity_user is None:
             # We can't figure out who started this build - there's nothing we can do here.
             logging.info(
-                "Teamcity webhook couldn't find a matching Zulip user for "
-                "Teamcity user '%s' or '%s'",
+                "TeamCity webhook couldn't find a matching Zulip user for "
+                "TeamCity user '%s' or '%s'",
                 teamcity_fullname,
                 teamcity_shortname,
             )
-            return json_success()
+            return json_success(request)
 
         body = f"Your personal build for {body}"
         client = RequestNotes.get_notes(request).client
         assert client is not None
         check_send_private_message(user_profile, client, teamcity_user, body)
 
-        return json_success()
+        return json_success(request)
 
     check_send_webhook_message(request, user_profile, topic, body)
-    return json_success()
+    return json_success(request)

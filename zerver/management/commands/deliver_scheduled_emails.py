@@ -33,24 +33,22 @@ Usage: ./manage.py deliver_scheduled_emails
 """
 
     def handle(self, *args: Any, **options: Any) -> None:
-        while True:
-            found_rows = False
-            with transaction.atomic():
-                email_jobs_to_deliver = (
-                    ScheduledEmail.objects.filter(scheduled_timestamp__lte=timezone_now())
-                    .prefetch_related("users")
-                    .select_for_update()
-                )
-                if email_jobs_to_deliver:
-                    found_rows = True
-                    for job in email_jobs_to_deliver:
+        try:
+            while True:
+                with transaction.atomic():
+                    job = (
+                        ScheduledEmail.objects.filter(scheduled_timestamp__lte=timezone_now())
+                        .prefetch_related("users")
+                        .select_for_update(skip_locked=True)
+                        .order_by("scheduled_timestamp")
+                        .first()
+                    )
+                    if job:
                         try:
                             deliver_scheduled_emails(job)
                         except EmailNotDeliveredException:
                             logger.warning("%r not delivered", job)
-            # Less load on the db during times of activity,
-            # and more responsiveness when the load is low
-            if found_rows:
-                time.sleep(10)
-            else:
-                time.sleep(2)
+                    else:
+                        time.sleep(10)
+        except KeyboardInterrupt:
+            pass

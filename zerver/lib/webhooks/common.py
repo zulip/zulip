@@ -100,10 +100,10 @@ def check_send_webhook_message(
         # shell-style wildcards.
         if (
             only_events is not None
-            and all([not fnmatch.fnmatch(complete_event_type, pattern) for pattern in only_events])
+            and all(not fnmatch.fnmatch(complete_event_type, pattern) for pattern in only_events)
         ) or (
             exclude_events is not None
-            and any([fnmatch.fnmatch(complete_event_type, pattern) for pattern in exclude_events])
+            and any(fnmatch.fnmatch(complete_event_type, pattern) for pattern in exclude_events)
         ):
             return
 

@@ -1,5 +1,3 @@
-import _ from "lodash";
-
 import * as muted_users from "./muted_users";
 import * as util from "./util";
 
@@ -56,7 +54,6 @@ export function get_group_typists(group) {
 export function get_all_typists() {
     let typists = Array.from(typist_dct.values()).flat();
     typists = util.sorted_ids(typists);
-    typists = _.sortedUniq(typists);
     return muted_users.filter_muted_user_ids(typists);
 }
 

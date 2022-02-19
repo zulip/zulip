@@ -78,7 +78,7 @@ def add_subscriptions(client: Client) -> None:
     )
     # {code_example|end}
 
-    validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "200_0")
+    validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "200")
 
     ensure_users([26], ["newbie"])
     # {code_example|start}
@@ -104,7 +104,7 @@ def test_add_subscriptions_already_subscribed(client: Client) -> None:
         principals=["newbie@zulip.com"],
     )
 
-    validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "200_1")
+    validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "200")
 
 
 def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> None:
@@ -128,7 +128,7 @@ def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> 
         authorization_errors_fatal=False,
     )
 
-    validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "400_0")
+    validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "400")
 
     result = nonadmin_client.add_subscriptions(
         streams=[
@@ -137,7 +137,7 @@ def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> 
         authorization_errors_fatal=True,
     )
 
-    validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "400_1")
+    validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "400")
 
 
 @openapi_test_function("/users/{user_id_or_email}/presence:get")
@@ -600,7 +600,7 @@ def get_user_groups(client: Client) -> int:
 def test_user_not_authorized_error(nonadmin_client: Client) -> None:
     result = nonadmin_client.get_streams(include_all_active=True)
 
-    validate_against_openapi_schema(result, "/rest-error-handling", "post", "400_2")
+    validate_against_openapi_schema(result, "/rest-error-handling", "post", "400")
 
 
 @openapi_test_function("/streams/{stream_id}/members:get")
@@ -980,7 +980,7 @@ def test_nonexistent_stream_error(client: Client) -> None:
     }
     result = client.send_message(request)
 
-    validate_against_openapi_schema(result, "/messages", "post", "400_0")
+    validate_against_openapi_schema(result, "/messages", "post", "400")
 
 
 def test_private_message_invalid_recipient(client: Client) -> None:
@@ -991,7 +991,7 @@ def test_private_message_invalid_recipient(client: Client) -> None:
     }
     result = client.send_message(request)
 
-    validate_against_openapi_schema(result, "/messages", "post", "400_1")
+    validate_against_openapi_schema(result, "/messages", "post", "400")
 
 
 @openapi_test_function("/messages/{message_id}:patch")
@@ -1062,7 +1062,7 @@ def test_delete_message_edit_permission_error(client: Client, nonadmin_client: C
 
     result = nonadmin_client.delete_message(result["id"])
 
-    validate_against_openapi_schema(result, "/messages/{message_id}", "delete", "400_1")
+    validate_against_openapi_schema(result, "/messages/{message_id}", "delete", "400")
 
 
 @openapi_test_function("/messages/{message_id}/history:get")
@@ -1407,13 +1407,13 @@ def update_user_group_members(client: Client, user_group_id: int) -> None:
 
 def test_invalid_api_key(client_with_invalid_key: Client) -> None:
     result = client_with_invalid_key.get_subscriptions()
-    validate_against_openapi_schema(result, "/rest-error-handling", "post", "400_0")
+    validate_against_openapi_schema(result, "/rest-error-handling", "post", "400")
 
 
 def test_missing_request_argument(client: Client) -> None:
     result = client.render_message({})
 
-    validate_against_openapi_schema(result, "/rest-error-handling", "post", "400_1")
+    validate_against_openapi_schema(result, "/rest-error-handling", "post", "400")
 
 
 def test_user_account_deactivated(client: Client) -> None:
@@ -1422,7 +1422,7 @@ def test_user_account_deactivated(client: Client) -> None:
     }
     result = client.render_message(request)
 
-    validate_against_openapi_schema(result, "/rest-error-handling", "post", "403_0")
+    validate_against_openapi_schema(result, "/rest-error-handling", "post", "403")
 
 
 def test_realm_deactivated(client: Client) -> None:
@@ -1431,7 +1431,7 @@ def test_realm_deactivated(client: Client) -> None:
     }
     result = client.render_message(request)
 
-    validate_against_openapi_schema(result, "/rest-error-handling", "post", "403_1")
+    validate_against_openapi_schema(result, "/rest-error-handling", "post", "403")
 
 
 def test_invalid_stream_error(client: Client) -> None:

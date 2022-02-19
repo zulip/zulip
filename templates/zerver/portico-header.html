@@ -17,6 +17,9 @@
                 {% if page_is_api_center %}
                 <span class="light"> | <a href="{{ root_domain_uri }}/api/">{{ doc_root_title }}</a></span>
                 {% endif %}
+                {% if page_is_policy_center %}
+                <span class="light"> | <a href="{{ root_domain_uri }}/policies/">{{ doc_root_title }}</a></span>
+                {% endif %}
             </div>
             {% endif %}
         </div>

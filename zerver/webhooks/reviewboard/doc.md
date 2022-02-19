@@ -1,10 +1,10 @@
-Get ReviewBoard notifications in Zulip!
+Get Review Board notifications in Zulip!
 
 1. {!create-stream.md!}
 
 1. {!create-bot-construct-url-indented.md!}
 
-1. On your ReviewBoard **Dashboard**, click your team's name in the top-right
+1. On your Review Board **Dashboard**, click your team's name in the top-right
    corner, and click **Team administration**. Select **WebHooks** on the
    left sidebar, and click **+ Create a WebHook**.
 

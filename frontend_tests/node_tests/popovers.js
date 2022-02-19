@@ -98,16 +98,16 @@ function make_image_stubber() {
 }
 
 function test_ui(label, f) {
-    run_test(label, ({override, mock_template}) => {
+    run_test(label, ({override, override_rewire, mock_template}) => {
         page_params.is_admin = false;
         page_params.realm_email_address_visibility = 3;
         page_params.custom_profile_fields = [];
-        override(popovers, "clipboard_enable", () => ({
+        override_rewire(popovers, "clipboard_enable", () => ({
             on: noop,
         }));
         popovers.clear_for_testing();
         popovers.register_click_handlers();
-        f({override, mock_template});
+        f({override, override_rewire, mock_template});
     });
 }
 
@@ -214,7 +214,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
     // todo: load image
 });
 
-test_ui("actions_popover", ({override, mock_template}) => {
+test_ui("actions_popover", ({override, override_rewire, mock_template}) => {
     override($.fn, "popover", noop);
 
     const target = $.create("click target");
@@ -240,7 +240,7 @@ test_ui("actions_popover", ({override, mock_template}) => {
         };
     };
 
-    override(message_edit, "get_editability", () => 4);
+    override_rewire(message_edit, "get_editability", () => 4);
 
     stream_data.id_to_slug = (stream_id) => {
         assert.equal(stream_id, 123);

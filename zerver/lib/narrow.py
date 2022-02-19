@@ -30,7 +30,7 @@ def check_supported_events_narrow_filter(narrow: Iterable[Sequence[str]]) -> Non
 
 
 def is_spectator_compatible(narrow: Iterable[Dict[str, Any]]) -> bool:
-    # This implementation should agree with the similar function in static/js/hash_utl.js.
+    # This implementation should agree with the similar function in static/js/hash_util.js.
     for element in narrow:
         operator = element["operator"]
         if "operand" not in element:
@@ -45,7 +45,7 @@ def is_web_public_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> bool:
         return False
 
     for term in narrow:
-        # Web public queries are only allowed for limited types of narrows.
+        # Web-public queries are only allowed for limited types of narrows.
         # term == {'operator': 'streams', 'operand': 'web-public', 'negated': False}
         if (
             term["operator"] == "streams"

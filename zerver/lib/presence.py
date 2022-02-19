@@ -104,7 +104,7 @@ def get_legacy_user_info(
 
     result = {}
 
-    # The word "aggegrated" here is possibly misleading.
+    # The word "aggregated" here is possibly misleading.
     # It's really just the most recent client's info.
     result["aggregated"] = dict(
         client=most_recent_info["client"],

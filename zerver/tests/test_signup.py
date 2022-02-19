@@ -41,7 +41,7 @@ from zerver.lib.actions import (
     do_create_user,
     do_deactivate_realm,
     do_deactivate_user,
-    do_get_user_invites,
+    do_get_invites_controlled_by_user,
     do_invite_users,
     do_set_realm_property,
     do_set_realm_user_default_setting,
@@ -360,7 +360,7 @@ class PasswordResetTest(ZulipTestCase):
         self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertRegex(
             self.email_display_from(message),
-            fr"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
+            rf"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
         )
         self.assertIn(f"{subdomain}.testserver", message.extra_headers["List-Id"])
 
@@ -809,7 +809,7 @@ class LoginTest(ZulipTestCase):
             )
             self.assert_logged_in_user_id(None)
 
-    def test_login_nonexist_user(self) -> None:
+    def test_login_nonexistent_user(self) -> None:
         result = self.login_with_return("xxx@zulip.com", "xxx")
         self.assertEqual(result.status_code, 200)
         self.assert_in_response("Please enter a correct email and password", result)
@@ -843,10 +843,23 @@ class LoginTest(ZulipTestCase):
         reset_emails_in_zulip_realm()
 
         realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
         stream_names = [f"stream_{i}" for i in range(40)]
         for stream_name in stream_names:
             stream = self.make_stream(stream_name, realm=realm)
             DefaultStream.objects.create(stream=stream, realm=realm)
+
+        # Make sure there's at least one recent message to be mark
+        # unread.  This prevents a bug where this test would start
+        # failing the test database was generated more than
+        # ONBOARDING_RECENT_TIMEDELTA ago.
+        self.subscribe(hamlet, "stream_0")
+        self.send_stream_message(
+            hamlet,
+            "stream_0",
+            topic_name="test topic",
+            content="test message",
+        )
 
         # Clear all the caches.
         flush_per_request_caches()
@@ -855,7 +868,7 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries, cache_tries_captured() as cache_tries:
             self.register(self.nonreg_email("test"), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assert_length(queries, 89)
+        self.assert_length(queries, 90)
 
         # We can probably avoid a couple cache hits here, but there doesn't
         # seem to be any O(N) behavior.  Some of the cache hits are related
@@ -1023,7 +1036,7 @@ class InviteUserBase(ZulipTestCase):
 
         self.assertEqual(self.email_envelope_from(outbox[0]), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertRegex(
-            self.email_display_from(outbox[0]), fr" <{self.TOKENIZED_NOREPLY_REGEX}>\Z"
+            self.email_display_from(outbox[0]), rf" <{self.TOKENIZED_NOREPLY_REGEX}>\Z"
         )
 
         self.assertEqual(outbox[0].extra_headers["List-Id"], "Zulip Dev <zulip.testserver>")
@@ -1266,6 +1279,31 @@ class InviteUserTest(InviteUserBase):
         self.assertEqual(
             prereg_user.referred_by.email,
             inviter.email,
+        )
+
+    def test_invite_from_now_deactivated_user(self) -> None:
+        """
+        While accepting an invitation from a user,
+        processing for a new user account will only
+        be completed if the inviter is not deactivated
+        after sending the invite.
+        """
+        inviter = self.example_user("hamlet")
+        self.login_user(inviter)
+        invitee = self.nonreg_email("alice")
+
+        result = self.invite(invitee, ["Denmark"])
+        self.assert_json_success(result)
+
+        prereg_user = PreregistrationUser.objects.get(email=invitee)
+        change_user_is_active(inviter, False)
+        do_create_user(
+            invitee,
+            "password",
+            inviter.realm,
+            "full name",
+            prereg_user=prereg_user,
+            acting_user=None,
         )
 
     def test_successful_invite_user_as_owner_from_owner_account(self) -> None:
@@ -2129,7 +2167,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         registration_key = "invalid_confirmation_key"
         url = "/accounts/register/"
         response = self.client_post(
-            url, {"key": registration_key, "from_confirmation": 1, "full_nme": "alice"}
+            url, {"key": registration_key, "from_confirmation": 1, "full_name": "alice"}
         )
         self.assertEqual(response.status_code, 404)
         self.assert_in_response(
@@ -2138,7 +2176,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
         registration_key = confirmation_link.split("/")[-1]
         response = self.client_post(
-            url, {"key": registration_key, "from_confirmation": 1, "full_nme": "alice"}
+            url, {"key": registration_key, "from_confirmation": 1, "full_name": "alice"}
         )
         self.assert_in_success_response(["We just need you to do one last thing."], response)
         response = self.submit_reg_form_for_user(email, password, key=registration_key)
@@ -2208,7 +2246,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
 
 class InvitationsTestCase(InviteUserBase):
-    def test_do_get_user_invites(self) -> None:
+    def test_do_get_invites_controlled_by_user(self) -> None:
         user_profile = self.example_user("iago")
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
@@ -2245,9 +2283,9 @@ class InvitationsTestCase(InviteUserBase):
         do_create_multiuse_invite_link(
             user_profile, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_days
         )
-        self.assert_length(do_get_user_invites(user_profile), 5)
-        self.assert_length(do_get_user_invites(hamlet), 1)
-        self.assert_length(do_get_user_invites(othello), 1)
+        self.assert_length(do_get_invites_controlled_by_user(user_profile), 5)
+        self.assert_length(do_get_invites_controlled_by_user(hamlet), 1)
+        self.assert_length(do_get_invites_controlled_by_user(othello), 1)
 
     def test_successful_get_open_invitations(self) -> None:
         """
@@ -3194,6 +3232,60 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(user.realm, realm)
         self.assertTrue(user.enable_marketing_emails)
 
+    @override_settings(OPEN_REALM_CREATION=True, CORPORATE_ENABLED=False)
+    def test_create_realm_without_prompting_for_marketing_emails(self) -> None:
+        password = "test"
+        string_id = "zuliptest"
+        email = "user1@test.com"
+        realm_name = "Test"
+
+        # Make sure the realm does not exist
+        with self.assertRaises(Realm.DoesNotExist):
+            get_realm(string_id)
+
+        # Create new realm with the email
+        result = self.client_post("/new/", {"email": email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(f"/accounts/new/send_confirm/{email}"))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        # Visit the confirmation link.
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        # Simulate the initial POST that is made by confirm-preregistration.js
+        # by triggering submit on confirm_preregistration.html.
+        payload = {
+            "full_name": "",
+            "key": find_key_by_email(email),
+            "from_confirmation": "1",
+        }
+        result = self.client_post("/accounts/register/", payload)
+        # Assert that the form did not prompt the user for enabling
+        # marketing emails.
+        self.assert_not_in_success_response(['input id="id_enable_marketing_emails"'], result)
+
+        result = self.submit_reg_form_for_user(
+            email,
+            password,
+            realm_subdomain=string_id,
+            realm_name=realm_name,
+        )
+        self.assertEqual(result.status_code, 302)
+
+        result = self.client_get(result.url, subdomain=string_id)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, "http://zuliptest.testserver")
+
+        # Make sure the realm is created
+        realm = get_realm(string_id)
+        self.assertEqual(realm.string_id, string_id)
+        user = get_user(email, realm)
+        self.assertEqual(user.realm, realm)
+        self.assertFalse(user.enable_marketing_emails)
+
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_realm_with_marketing_emails_disabled(self) -> None:
         password = "test"
@@ -3694,7 +3786,7 @@ class UserSignUpTest(InviteUserBase):
         """
         email = self.nonreg_email("newguy")
         password = "newpassword"
-        timezone = "US/Mountain"
+        timezone = "America/Denver"
         realm = get_realm("zulip")
         do_set_realm_property(realm, "default_language", "de", acting_user=None)
 
@@ -5114,7 +5206,7 @@ class UserSignUpTest(InviteUserBase):
             LDAP_APPEND_DOMAIN="zulip.com",
             AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
             AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",),
-            TERMS_OF_SERVICE=False,
+            TERMS_OF_SERVICE_VERSION=1.0,
         ):
             result = self.client_get(confirmation_url)
             self.assertEqual(result.status_code, 200)
@@ -5246,7 +5338,7 @@ class UserSignUpTest(InviteUserBase):
             "AssertionError: Mirror dummy user is already active!" in error_log.output[0]
         )
 
-    @override_settings(TERMS_OF_SERVICE=False)
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_dev_user_registration(self) -> None:
         """Verify that /devtools/register_user creates a new user, logs them
         in, and redirects to the logged-in app."""
@@ -5262,7 +5354,7 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(result["Location"], "http://zulip.testserver/")
         self.assert_logged_in_user_id(user_profile.id)
 
-    @override_settings(TERMS_OF_SERVICE=False)
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_dev_user_registration_create_realm(self) -> None:
         count = UserProfile.objects.count()
         string_id = f"realm-{count}"
@@ -5280,7 +5372,7 @@ class UserSignUpTest(InviteUserBase):
         assert user_profile is not None
         self.assert_logged_in_user_id(user_profile.id)
 
-    @override_settings(TERMS_OF_SERVICE=False)
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_dev_user_registration_create_demo_realm(self) -> None:
         result = self.client_post("/devtools/register_demo_realm/")
         self.assertEqual(result.status_code, 302)

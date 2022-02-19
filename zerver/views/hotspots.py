@@ -18,4 +18,4 @@ def mark_hotspot_as_read(
     if hotspot not in ALL_HOTSPOTS:
         raise JsonableError(_("Unknown hotspot: {}").format(hotspot))
     do_mark_hotspot_as_read(user, hotspot)
-    return json_success()
+    return json_success(request)

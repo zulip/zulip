@@ -1,6 +1,6 @@
 import getpass
 from argparse import ArgumentParser
-from typing import Any
+from typing import Any, List
 
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -19,7 +19,7 @@ class Command(ZulipBaseCommand):
 
     help = "Change a user's password."
     requires_migrations_checks = True
-    requires_system_checks = False
+    requires_system_checks: List[str] = []
 
     def _get_pass(self, prompt: str = "Password: ") -> str:
         p = getpass.getpass(prompt=prompt)

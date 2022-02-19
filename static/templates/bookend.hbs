@@ -1,9 +1,23 @@
 {{! Client-side Mustache template for rendering the trailing bookend.}}
-
-{{#if bookend_content}}
-<div class="{{#if trailing}}trailing_bookend{{/if}} bookend sub-unsub-message">
-    <span>{{bookend_content}}</span>
-    {{#if trailing}}
+<div class="{{#if is_trailing_bookend}}trailing_bookend {{/if}}bookend sub-unsub-message">
+    {{#if is_spectator}}
+        <span class="recent-topics-link">
+            <a href="#recent_topics">{{t "Browse recent topics" }}</a>
+        </span>
+    {{else}}
+        <span class="stream-status">
+            {{#if deactivated}}
+                {{t "This stream has been deactivated" }}
+            {{else if subscribed }}
+                {{#tr}}You subscribed to stream {stream_name}{{/tr}}
+            {{else if just_unsubscribed }}
+                {{#tr}}You unsubscribed from stream {stream_name}{{/tr}}
+            {{else}}
+                {{#tr}}You are not subscribed to stream {stream_name}{{/tr}}
+            {{/if}}
+        </span>
+    {{/if}}
+    {{#if can_toggle_subscription}}
     <div class="sub_button_row new-style">
         <button class="button white rounded stream_sub_unsub_button {{#unless subscribed}}sea-green{{/unless}}" type="button" name="subscription">
             {{#if subscribed}}
@@ -15,4 +29,3 @@
     </div>
     {{/if}}
 </div>
-{{/if}}

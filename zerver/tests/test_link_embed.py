@@ -290,6 +290,25 @@ class GenericParserTestCase(ZulipTestCase):
         self.assertEqual(result.get("description"), "Description text")
         self.assertEqual(result.get("image"), "http://test.com/test.jpg")
 
+    def test_extract_bad_image(self) -> None:
+        html = b"""
+          <html>
+            <body>
+                <h1>Main header</h1>
+                <img data-src="Not an image">
+                <img src="http://[bad url/test.jpg">
+                <div>
+                    <p>Description text</p>
+                </div>
+            </body>
+          </html>
+        """
+        parser = GenericParser(html, "text/html; charset=UTF-8")
+        result = parser.extract_data()
+        self.assertEqual(result.get("title"), "Main header")
+        self.assertEqual(result.get("description"), "Description text")
+        self.assertIsNone(result.get("image"))
+
     def test_extract_description(self) -> None:
         html = b"""
           <html>
@@ -365,9 +384,7 @@ class PreviewTestCase(ZulipTestCase):
     def test_edit_message_history(self) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
-        msg_id = self.send_stream_message(
-            user, "Scotland", topic_name="editing", content="original"
-        )
+        msg_id = self.send_stream_message(user, "Denmark", topic_name="editing", content="original")
 
         url = "http://test.org/"
         self.create_mock_response(url)
@@ -448,7 +465,7 @@ class PreviewTestCase(ZulipTestCase):
         edited_url = "http://edited.org/"
         with mock_queue_publish("zerver.lib.actions.queue_json_publish") as patched:
             msg_id = self.send_stream_message(
-                user, "Scotland", topic_name="foo", content=original_url
+                user, "Denmark", topic_name="foo", content=original_url
             )
             patched.assert_called_once()
             queue = patched.call_args[0][0]
@@ -559,7 +576,7 @@ class PreviewTestCase(ZulipTestCase):
         self.login_user(user)
         url = "http://test.org/"
         with mock_queue_publish("zerver.lib.actions.queue_json_publish") as patched:
-            msg_id = self.send_stream_message(user, "Scotland", topic_name="foo", content=url)
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
             self.assertEqual(queue, "embed_links")
@@ -663,7 +680,7 @@ class PreviewTestCase(ZulipTestCase):
         self.login_user(user)
         url = "http://test.org/audio.mp3"
         with mock_queue_publish("zerver.lib.actions.queue_json_publish") as patched:
-            msg_id = self.send_stream_message(user, "Scotland", topic_name="foo", content=url)
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
             self.assertEqual(queue, "embed_links")
@@ -695,7 +712,7 @@ class PreviewTestCase(ZulipTestCase):
         self.login_user(user)
         url = "http://test.org/foo.html"
         with mock_queue_publish("zerver.lib.actions.queue_json_publish") as patched:
-            msg_id = self.send_stream_message(user, "Scotland", topic_name="foo", content=url)
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
             self.assertEqual(queue, "embed_links")
@@ -725,12 +742,50 @@ class PreviewTestCase(ZulipTestCase):
 
     @responses.activate
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_link_preview_open_graph_image_bad_url(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/foo.html"
+        with mock_queue_publish("zerver.lib.actions.queue_json_publish") as patched:
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
+            patched.assert_called_once()
+            queue = patched.call_args[0][0]
+            self.assertEqual(queue, "embed_links")
+            event = patched.call_args[0][1]
+
+        # HTML with a bad og:image metadata
+        html = "\n".join(
+            line
+            if "og:image" not in line
+            else '<meta property="og:image" content="http://[bad url/" />'
+            for line in self.open_graph_html.splitlines()
+        )
+        self.create_mock_response(url, body=html)
+        with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
+            with self.assertLogs(level="INFO") as info_logs:
+                FetchLinksEmbedData().consume(event)
+                cached_data = link_embed_data_from_cache(url)
+            self.assertTrue(
+                "INFO:root:Time spent on get_link_embed_data for http://test.org/foo.html: "
+                in info_logs.output[0]
+            )
+
+        self.assertIn("title", cached_data)
+        self.assertNotIn("image", cached_data)
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        self.assertEqual(
+            ('<p><a href="http://test.org/foo.html">' "http://test.org/foo.html</a></p>"),
+            msg.rendered_content,
+        )
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_link_preview_open_graph_image_missing_content(self) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
         url = "http://test.org/foo.html"
         with mock_queue_publish("zerver.lib.actions.queue_json_publish") as patched:
-            msg_id = self.send_stream_message(user, "Scotland", topic_name="foo", content=url)
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
             self.assertEqual(queue, "embed_links")
@@ -767,7 +822,7 @@ class PreviewTestCase(ZulipTestCase):
         self.login_user(user)
         url = "http://test.org/"
         with mock_queue_publish("zerver.lib.actions.queue_json_publish") as patched:
-            msg_id = self.send_stream_message(user, "Scotland", topic_name="foo", content=url)
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
             patched.assert_called_once()
             queue = patched.call_args[0][0]
             self.assertEqual(queue, "embed_links")

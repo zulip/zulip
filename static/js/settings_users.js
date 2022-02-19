@@ -205,7 +205,7 @@ function bot_info(bot_user_id) {
     info.is_current_user = false;
     info.can_modify = page_params.is_admin;
 
-    // It's always safe to show the fake email addresses for bot users
+    // It's always safe to show the real email addresses for bot users
     info.display_email = bot_user.email;
 
     return info;
@@ -399,7 +399,7 @@ function get_human_profile_data(fields_user_pills) {
     */
     const new_profile_data = [];
     $("#edit-user-form .custom_user_field_value").each(function () {
-        // Remove duplicate datepicker input element generated flatpicker library
+        // Remove duplicate datepicker input element generated flatpickr library
         if (!$(this).hasClass("form-control")) {
             new_profile_data.push({
                 id: Number.parseInt(
@@ -428,7 +428,7 @@ function confirm_deactivation(row, user_id, status_field) {
     const user = people.get_by_user_id(user_id);
     const opts = {
         username: user.full_name,
-        email: user.email,
+        email: settings_data.email_for_user_settings(user),
     };
     const html_body = render_settings_deactivation_user_modal(opts);
 
@@ -449,7 +449,7 @@ function confirm_deactivation(row, user_id, status_field) {
     }
 
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Deactivate {email}"}, {email: user.email}),
+        html_heading: $t_html({defaultMessage: "Deactivate {name}"}, {name: user.full_name}),
         html_body,
         on_click: handle_confirm,
     });
@@ -672,6 +672,7 @@ function handle_bot_form(tbody, status_field) {
         dialog_widget.launch({
             html_heading: $t_html({defaultMessage: "Change bot info and owner"}),
             html_body,
+            id: "edit_bot_modal",
             on_click: submit_bot_details,
             post_render: get_bot_owner_widget,
         });

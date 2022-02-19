@@ -24,7 +24,6 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message, bulk_access_messages_expect_usermessage, huddle_users
 from zerver.lib.remote_server import send_json_to_push_bouncer, send_to_push_bouncer
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.user_groups import access_user_group_by_id
 from zerver.models import (
     AbstractPushDeviceToken,
     ArchivedMessage,
@@ -32,6 +31,7 @@ from zerver.models import (
     NotificationTriggers,
     PushDeviceToken,
     Recipient,
+    UserGroup,
     UserMessage,
     UserProfile,
     get_display_recipient,
@@ -78,25 +78,28 @@ def get_apns_context() -> Optional[APNsContext]:
     # which fills the logs; see https://github.com/Fatal1ty/aioapns/issues/15
     logging.getLogger("aioapns").setLevel(logging.CRITICAL)
 
-    if settings.APNS_CERT_FILE is None:
+    if settings.APNS_CERT_FILE is None:  # nocoverage
         return None
 
     # NB if called concurrently, this will make excess connections.
     # That's a little sloppy, but harmless unless a server gets
     # hammered with a ton of these all at once after startup.
     loop = asyncio.new_event_loop()
-    apns = aioapns.APNs(
-        client_cert=settings.APNS_CERT_FILE,
-        topic=settings.APNS_TOPIC,
-        max_connection_attempts=APNS_MAX_RETRIES,
-        loop=loop,
-        use_sandbox=settings.APNS_SANDBOX,
-    )
+
+    async def make_apns() -> aioapns.APNs:
+        return aioapns.APNs(
+            client_cert=settings.APNS_CERT_FILE,
+            topic=settings.APNS_TOPIC,
+            max_connection_attempts=APNS_MAX_RETRIES,
+            use_sandbox=settings.APNS_SANDBOX,
+        )
+
+    apns = loop.run_until_complete(make_apns())
     return APNsContext(apns=apns, loop=loop)
 
 
 def apns_enabled() -> bool:
-    return get_apns_context() is not None
+    return settings.APNS_CERT_FILE is not None
 
 
 def modernize_apns_payload(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -714,6 +717,7 @@ def get_message_payload(
     if message.recipient.type == Recipient.STREAM:
         data["recipient_type"] = "stream"
         data["stream"] = get_display_recipient(message.recipient)
+        data["stream_id"] = message.recipient.type_id
         data["topic"] = message.topic_name()
     elif message.recipient.type == Recipient.HUDDLE:
         data["recipient_type"] = "private"
@@ -948,9 +952,16 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         return
     user_profile = get_user_profile_by_id(user_profile_id)
 
-    if user_profile.is_bot:
-        # BUG: Investigate why it's possible to get here.
-        return  # nocoverage
+    if user_profile.is_bot:  # nocoverage
+        # We don't expect to reach here for bot users. However, this code exists
+        # to find and throw away any pre-existing events in the queue while
+        # upgrading from versions before our notifiability logic was implemented.
+        # TODO/compatibility: This block can be removed when one can no longer
+        # upgrade from versions <= 4.0 to versions >= 5.0
+        logger.warning(
+            "Send-push-notification event found for bot user %s. Skipping.", user_profile_id
+        )
+        return
 
     if not (
         user_profile.enable_offline_push_notifications
@@ -1001,9 +1012,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     mentioned_user_group_id = missed_message.get("mentioned_user_group_id")
 
     if mentioned_user_group_id is not None:
-        user_group = access_user_group_by_id(
-            mentioned_user_group_id, user_profile, for_mention=True
-        )
+        user_group = UserGroup.objects.get(id=mentioned_user_group_id, realm=user_profile.realm)
         mentioned_user_group_name = user_group.name
 
     apns_payload = get_message_payload_apns(

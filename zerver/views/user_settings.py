@@ -315,7 +315,7 @@ def json_change_settings(
     if len(request_notes.ignored_parameters) > 0:
         result["ignored_parameters_unsupported"] = list(request_notes.ignored_parameters)
 
-    return json_success(result)
+    return json_success(request, data=result)
 
 
 def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
@@ -339,7 +339,7 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
     json_result = dict(
         avatar_url=user_avatar_url,
     )
-    return json_success(json_result)
+    return json_success(request, data=json_result)
 
 
 def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
@@ -354,7 +354,7 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
     json_result = dict(
         avatar_url=gravatar_url,
     )
-    return json_success(json_result)
+    return json_success(request, data=json_result)
 
 
 # We don't use @human_users_only here, because there are use cases for
@@ -365,4 +365,4 @@ def regenerate_api_key(request: HttpRequest, user_profile: UserProfile) -> HttpR
     json_result = dict(
         api_key=new_api_key,
     )
-    return json_success(json_result)
+    return json_success(request, data=json_result)

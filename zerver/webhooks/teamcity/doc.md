@@ -1,12 +1,12 @@
-Get Zulip notifications for your Teamcity builds!
+Get Zulip notifications for your TeamCity builds!
 
 1. {!create-stream.md!}
 
 1. {!create-bot-construct-url-indented.md!}
 
 1. Install the [tcWebHooks plugin](https://github.com/tcplugins/tcWebHooks/releases)
-   onto your Teamcity server. Follow the plugin instructions in your
-   Teamcity documentation, or refer to [the online Teamcity documentation][1].
+   onto your TeamCity server. Follow the plugin instructions in your
+   TeamCity documentation, or refer to [the online TeamCity documentation][1].
 
 1. Go to your TeamCity **Overview** page. Select the **Project** or **Build**
    you'd like to receive notifications about, and click on the **WebHooks** tab.
@@ -32,7 +32,7 @@ Get Zulip notifications for your Teamcity builds!
 
 **Personal Builds**
 
-When a user runs a personal build, if Zulip can map their Teamcity
+When a user runs a personal build, if Zulip can map their TeamCity
 username to a Zulip user (by comparing it with the Zulip user's email
 address or full name), that Zulip user will receive a private
 message with the result of their personal build.

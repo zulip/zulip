@@ -19,13 +19,13 @@ const location = set_global("location", {});
 const helpers = zrequire("../js/billing/helpers");
 zrequire("../js/billing/upgrade");
 
-run_test("initialize", ({override}) => {
+run_test("initialize", ({override_rewire}) => {
     page_params.annual_price = 8000;
     page_params.monthly_price = 800;
     page_params.seat_count = 8;
     page_params.percent_off = 20;
 
-    override(helpers, "set_tab", (page_name) => {
+    override_rewire(helpers, "set_tab", (page_name) => {
         assert.equal(page_name, "upgrade");
     });
 
@@ -69,11 +69,11 @@ run_test("initialize", ({override}) => {
         },
     );
 
-    override(helpers, "show_license_section", (section) => {
+    override_rewire(helpers, "show_license_section", (section) => {
         assert.equal(section, "automatic");
     });
 
-    override(helpers, "update_charged_amount", (prices, schedule) => {
+    override_rewire(helpers, "update_charged_amount", (prices, schedule) => {
         assert.equal(prices.annual, 6400);
         assert.equal(prices.monthly, 640);
         assert.equal(schedule, "monthly");
@@ -99,7 +99,7 @@ run_test("initialize", ({override}) => {
     const invoice_click_handler = $("#invoice-button").get_on_handler("click");
     const request_sponsorship_click_handler = $("#sponsorship-button").get_on_handler("click");
 
-    override(helpers, "is_valid_input", () => true);
+    override_rewire(helpers, "is_valid_input", () => true);
     add_card_click_handler(e);
     assert.equal(create_ajax_request_form_call_count, 1);
     invoice_click_handler(e);
@@ -107,13 +107,13 @@ run_test("initialize", ({override}) => {
     request_sponsorship_click_handler(e);
     assert.equal(create_ajax_request_form_call_count, 3);
 
-    override(helpers, "is_valid_input", () => false);
+    override_rewire(helpers, "is_valid_input", () => false);
     add_card_click_handler(e);
     invoice_click_handler(e);
     request_sponsorship_click_handler(e);
     assert.equal(create_ajax_request_form_call_count, 3);
 
-    override(helpers, "show_license_section", (section) => {
+    override_rewire(helpers, "show_license_section", (section) => {
         assert.equal(section, "manual");
     });
     const license_change_handler = $("input[type=radio][name=license_management]").get_on_handler(
@@ -121,7 +121,7 @@ run_test("initialize", ({override}) => {
     );
     license_change_handler.call({value: "manual"});
 
-    override(helpers, "update_charged_amount", (prices, schedule) => {
+    override_rewire(helpers, "update_charged_amount", (prices, schedule) => {
         assert.equal(prices.annual, 6400);
         assert.equal(prices.monthly, 640);
         assert.equal(schedule, "monthly");

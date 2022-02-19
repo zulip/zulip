@@ -20,7 +20,6 @@ IGNORED_PHRASES = [
     r"Dropbox",
     r"GCM",
     r"GitHub",
-    r"G Suite",
     r"Google",
     r"Gravatar",
     r"Hamlet",
@@ -50,6 +49,7 @@ IGNORED_PHRASES = [
     r"URL",
     r"Ubuntu",
     r"Updown",
+    r"UUID",
     r"V5",
     r"Webathena",
     r"Windows",
@@ -60,7 +60,7 @@ IGNORED_PHRASES = [
     r"Zulip",
     r"Zulip Account Security",
     r"Zulip Security",
-    r"Zulip Standard",
+    r"Zulip Cloud Standard",
     r"Zulip Team",
     r"iPhone",
     r"iOS",
@@ -185,7 +185,7 @@ COMPILED_IGNORED_PHRASES = [
 ]
 
 SPLIT_BOUNDARY = "?.!"  # Used to split string into sentences.
-SPLIT_BOUNDARY_REGEX = re.compile(fr"[{SPLIT_BOUNDARY}]")
+SPLIT_BOUNDARY_REGEX = re.compile(rf"[{SPLIT_BOUNDARY}]")
 
 # Regexes which check capitalization in sentences.
 DISALLOWED = [

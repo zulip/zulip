@@ -119,10 +119,10 @@ def setup_upgrade_checkout_session_and_payment_intent(
             amount=price_per_license * licenses,
             currency="usd",
             customer=customer.stripe_customer_id,
-            description=f"Upgrade to Zulip Standard, ${price_per_license/100} x {licenses}",
+            description=f"Upgrade to Zulip Cloud Standard, ${price_per_license/100} x {licenses}",
             receipt_email=user.delivery_email,
             confirm=False,
-            statement_descriptor="Zulip Standard",
+            statement_descriptor="Zulip Cloud Standard",
             metadata=metadata,
         )
         payment_intent = PaymentIntent.objects.create(
@@ -192,10 +192,11 @@ def upgrade(
                 onboarding,
             )
             return json_success(
+                request,
                 data={
                     "stripe_session_url": stripe_checkout_session.url,
                     "stripe_session_id": stripe_checkout_session.id,
-                }
+                },
             )
         else:
             process_initial_upgrade(
@@ -206,7 +207,7 @@ def upgrade(
                 False,
                 is_free_trial_offer_enabled(),
             )
-            return json_success(data={})
+            return json_success(request)
 
     except BillingError as e:
         billing_logger.warning(
@@ -267,7 +268,7 @@ def initial_upgrade(
         "salt": salt,
         "min_invoiced_licenses": max(seat_count, MIN_INVOICED_LICENSES),
         "default_invoice_days_until_due": DEFAULT_INVOICE_DAYS_UNTIL_DUE,
-        "plan": "Zulip Standard",
+        "plan": "Zulip Cloud Standard",
         "free_trial_days": settings.FREE_TRIAL_DAYS,
         "onboarding": onboarding,
         "page_params": {
@@ -357,7 +358,7 @@ def sponsorship(
             context=context,
         )
 
-        return json_success()
+        return json_success(request)
     else:
         messages = []
         for error_list in form.errors.get_json_data().values():

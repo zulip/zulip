@@ -439,7 +439,49 @@ export class Filter {
         return this.has_operator("pm-with") && this.operands("pm-with")[0].split(",").length === 1;
     }
 
+    supports_collapsing_recipients() {
+        // Determines whether a view is guaranteed, by construction,
+        // to contain consecutive messages in a given topic, and thus
+        // it is appropriate to collapse recipient/sender headings.
+        const term_types = this.sorted_term_types();
+
+        // All search/narrow term types, including negations, with the
+        // property that if a message is in the view, then any other
+        // message sharing its recipient (stream/topic or private
+        // message recipient) must also be present in the view.
+        const valid_term_types = new Set([
+            "stream",
+            "not-stream",
+            "topic",
+            "not-topic",
+            "pm-with",
+            "group-pm-with",
+            "not-group-pm-with",
+            "is-private",
+            "not-is-private",
+            "is-resolved",
+            "not-is-resolved",
+            "in-home",
+            "in-all",
+            "streams-public",
+            "not-streams-public",
+            "streams-web-public",
+            "not-streams-web-public",
+            "near",
+        ]);
+
+        for (const term of term_types) {
+            if (!valid_term_types.has(term)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     calc_can_mark_messages_read() {
+        // Arguably this should match supports_collapsing_recipients.
+        // We may want to standardize on that in the future.  (At
+        // present, this function does not allow combining valid filters).
         const term_types = this.sorted_term_types();
 
         if (_.isEqual(term_types, ["stream", "topic"])) {
@@ -717,6 +759,8 @@ export class Filter {
             return false;
         }
 
+        // TODO: It's not clear why `streams:` filters would not be
+        // applicable locally.
         if (this.has_operator("streams") || this.has_negated_operand("streams", "public")) {
             return false;
         }

@@ -1,12 +1,12 @@
-# Dockerfile for a generic Ubuntu image with just the basics we need
-# to make it suitable for CI.  In particular:
+# Dockerfile for a generic Debian/Ubuntu image with just the basics we
+# need to make it suitable for CI.  In particular:
 #  * a non-root user to run as (a pain to try to do in setup,
 #    because by then we've already cloned the repo);
 #  * Git and other basic utilities.
 
-# To rebuild from this file for a given release, say Ubuntu 18.04 bionic:
-#   docker build . --build-arg=BASE_IMAGE=ubuntu:18.04 --pull --tag=zulip/ci:bionic
-#   docker push zulip/ci:bionic
+# To rebuild from this file for a given release, say Ubuntu 20.04 focal:
+#   docker build . --build-arg=BASE_IMAGE=ubuntu:20.04 --pull --tag=zulip/ci:focal
+#   docker push zulip/ci:focal
 #
 # tools/ci/build-docker-images will rebuild all images, but not push them.
 
@@ -17,16 +17,6 @@ RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime
 
 # Set the locale.
 ENV LC_ALL C.UTF-8
-
-# Upgrade git if it is less than v2.18 because GitHub Actions'
-# checkout installs source code using Rest API as an optimization
-# if the version is less than v2.18, which causes failure in provision
-# and tests because of the lack of git being initialized.
-RUN if (. /etc/os-release && [ "$ID $VERSION_ID" = 'ubuntu 18.04' ]); then \
-      apt-get update && \
-      apt-get -y install software-properties-common && \
-      add-apt-repository -y ppa:git-core/ppa; \
-    fi
 
 # Extra packages used by Zulip.
 RUN apt-get update \

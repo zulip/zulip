@@ -88,6 +88,7 @@ from zerver.lib.send_email import (
     send_future_email,
 )
 from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.lib.upload import handle_reupload_emojis_event
 from zerver.lib.url_preview import preview as url_preview
 from zerver.models import (
     Message,
@@ -797,6 +798,9 @@ class PushNotificationsWorker(QueueProcessingWorker):
 @assign_queue("error_reports")
 class ErrorReporter(QueueProcessingWorker):
     def consume(self, event: Mapping[str, Any]) -> None:
+        error_types = ["browser", "server"]
+        assert event["type"] in error_types
+
         logging.info(
             "Processing traceback with type %s for %s", event["type"], event.get("user_email")
         )
@@ -1061,6 +1065,13 @@ class DeferredWorker(QueueProcessingWorker):
                 user_profile.realm.string_id,
                 time.time() - start,
             )
+        elif event["type"] == "reupload_realm_emoji":
+            # This is a special event queued by the migration for reuploading emojis.
+            # We don't want to run the necessary code in the actual migration, so it simply
+            # queues the necessary event, and the actual work is done here in the queue worker.
+            realm = Realm.objects.get(id=event["realm_id"])
+            logger.info("Processing reupload_realm_emoji event for realm %s", realm.id)
+            handle_reupload_emojis_event(realm, logger)
 
         end = time.time()
         logger.info("deferred_work processed %s event (%dms)", event["type"], (end - start) * 1000)

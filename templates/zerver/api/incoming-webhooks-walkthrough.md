@@ -115,7 +115,7 @@ def api_helloworld_webhook(
     # send the message
     check_send_webhook_message(request, user_profile, topic, body)
 
-    return json_success()
+    return json_success(request)
 ```
 
 The above code imports the required functions and defines the main webhook
@@ -175,7 +175,7 @@ validate the message and do the following:
   message to the owner of the webhook bot.
 
 Finally, we return a 200 http status with a JSON format success message via
-`json_success()`.
+`json_success(request)`.
 
 ## Step 3: Create an API endpoint for the webhook
 
@@ -258,7 +258,7 @@ After running the above command, you should see something similar to:
 Using `manage.py` from within the Zulip development environment:
 
 ```console
-(zulip-py3-venv) vagrant@ubuntu-bionic:/srv/zulip$
+(zulip-py3-venv) vagrant@debian-10:/srv/zulip$
 ./manage.py send_webhook_fixture_message \
     --fixture=zerver/webhooks/helloworld/fixtures/hello.json \
     '--url=http://localhost:9991/api/v1/external/helloworld?api_key=<api_key>'
@@ -384,7 +384,7 @@ Once you have written some tests, you can run just these new tests from within
 the Zulip development environment with this command:
 
 ```console
-(zulip-py3-venv) vagrant@ubuntu-bionic:/srv/zulip$
+(zulip-py3-venv) vagrant@debian-10:/srv/zulip$
 ./tools/test-backend zerver/webhooks/helloworld
 ```
 
@@ -433,7 +433,7 @@ stream name:
 To trigger a notification using this webhook, use
 `send_webhook_fixture_message` from the Zulip command line:
 
-    (zulip-py3-venv) vagrant@ubuntu-bionic:/srv/zulip$
+    (zulip-py3-venv) vagrant@debian-10:/srv/zulip$
     ./manage.py send_webhook_fixture_message \
         --fixture=zerver/tests/fixtures/helloworld/hello.json \
         '--url=http://localhost:9991/api/v1/external/helloworld?api_key=&lt;api_key&gt;'

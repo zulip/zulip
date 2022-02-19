@@ -265,12 +265,18 @@ class CommonUtils {
     }
 
     async ensure_enter_does_not_send(page: Page): Promise<void> {
+        let enter_sends = false;
         await page.$eval(".enter_sends_false", (el) => {
             if ((el as HTMLElement).style.display !== "none") {
-                // Click events gets propagated to `.enter_sends` which toggles the value.
-                (el as HTMLElement).click();
+                enter_sends = true;
             }
         });
+
+        if (enter_sends) {
+            const enter_sends_false_selector = ".enter_sends_choice input[value='false']";
+            await page.waitForSelector(enter_sends_false_selector);
+            await page.click(enter_sends_false_selector);
+        }
     }
 
     async assert_compose_box_content(page: Page, expected_value: string): Promise<void> {
@@ -403,7 +409,7 @@ class CommonUtils {
     }
 
     /**
-     * This method returns a array, which is formmated as:
+     * This method returns a array, which is formatted as:
      *  [
      *    ['stream > topic', ['message 1', 'message 2']],
      *    ['You and Cordelia, Lear's daughter', ['message 1', 'message 2']]
@@ -485,6 +491,11 @@ class CommonUtils {
             `//*[@class="typeahead dropdown-menu" and contains(@style, "display: block")]//li[contains(normalize-space(), "${item}")]//a`,
             {visible: true},
         );
+        const entry_x = (await entry?.boundingBox())?.x;
+        const entry_y = (await entry?.boundingBox())?.y;
+        if (entry_x && entry_y) {
+            await page.mouse.move(entry_x, entry_y);
+        }
         await page.evaluate((entry) => {
             entry.click();
         }, entry);

@@ -47,6 +47,7 @@ BATCH_SIZE = 1000
 parser = argparse.ArgumentParser()
 parser.add_argument("--quiet", action="store_true")
 parser.add_argument("--nagios-check", action="store_true")
+parser.add_argument("--nagios-user")
 options = parser.parse_args()
 
 logging.Formatter.converter = time.gmtime
@@ -140,7 +141,15 @@ except ImportError:
     config_file = configparser.RawConfigParser()
     config_file.read("/etc/zulip/zulip.conf")
 
-    if config_file.has_option("machine", "pgroonga"):
+    if get_config(config_file, "machine", "pgroonga", "false").lower() in [
+        "1",
+        "y",
+        "t",
+        "yes",
+        "true",
+        "enable",
+        "enabled",
+    ]:
         USING_PGROONGA = True
 
     pg_args["user"] = get_config(config_file, "postgresql", "database_user", "zulip")
@@ -154,6 +163,11 @@ except ImportError:
 conn: Optional[psycopg2.extensions.connection]
 
 if options.nagios_check:
+    # Nagios connects as itself, unless you specify otherwise
+    if options.nagios_user:
+        pg_args["user"] = options.nagios_user
+    else:
+        del pg_args["user"]
     conn = psycopg2.connect(**pg_args)
     cursor = conn.cursor()
     cursor.execute("SELECT count(*) FROM fts_update_log")

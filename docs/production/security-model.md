@@ -4,7 +4,7 @@ This section attempts to document the Zulip security model. It likely
 does not cover every issue; if there are details you're curious about,
 please feel free to ask questions in [#production
 help](https://chat.zulip.org/#narrow/stream/31-production-help) on the
-[Zulip community server](https://zulip.com/developer-community/) (or if you
+[Zulip community server](https://zulip.com/development-community/) (or if you
 think you've found a security bug, please report it to
 security@zulip.com so we can do a responsible security
 announcement).
@@ -35,11 +35,11 @@ announcement).
 - Zulip requires CSRF tokens in all interactions with the web API to
   prevent CSRF attacks.
 
-- The preferred way to log in to Zulip is using an SSO solution like
-  Google auth, LDAP, or similar, but Zulip also supports password
-  authentication. See
-  [the authentication methods documentation](../production/authentication-methods.md)
-  for details on Zulip's available authentication methods.
+- The preferred way to log in to Zulip is using a single sign-on (SSO)
+  solution like Google authentication, LDAP, or similar, but Zulip
+  also supports password authentication. See [the authentication
+  methods documentation](../production/authentication-methods.md) for
+  details on Zulip's available authentication methods.
 
 ### Passwords
 
@@ -168,11 +168,11 @@ strength allowed is controlled by two settings in
 
 - To properly remove a user's access to a Zulip team, it does not
   suffice to change their password or deactivate their account in a
-  SSO system, since neither of those prevents authenticating with the
-  user's API key or those of bots the user has created. Instead, you
-  should
-  [deactivate the user's account](https://zulip.com/help/deactivate-or-reactivate-a-user)
-  via Zulip's "Organization settings" interface.
+  single sign-on (SSO) system, since neither of those prevents
+  authenticating with the user's API key or those of bots the user has
+  created. Instead, you should [deactivate the user's
+  account](https://zulip.com/help/deactivate-or-reactivate-a-user) via
+  Zulip's "Organization settings" interface.
 
 - The Zulip mobile apps authenticate to the server by sending the
   user's password and retrieving the user's API key; the apps then use
@@ -260,15 +260,20 @@ strength allowed is controlled by two settings in
 
 - Notably, these first 3 features give end users (limited) control to cause
   the Zulip server to make HTTP requests on their behalf. Because of this,
-  Zulip routes all outgoing outgoing HTTP requests [through
+  Zulip routes all outgoing HTTP requests [through
   Smokescreen][smokescreen-setup] to ensure that Zulip cannot be
   used to execute [SSRF attacks][ssrf] against other systems on an
   internal corporate network. The default Smokescreen configuration
   denies access to all non-public IP addresses, including 127.0.0.1.
 
+  The Camo image server does not, by default, route its traffic
+  through Smokescreen, since Camo includes logic to deny access to
+  private subnets; this can be [overridden][proxy.enable_for_camo].
+
 [go-camo]: https://github.com/cactus/go-camo
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
 [smokescreen-setup]: ../production/deployment.html#customizing-the-outgoing-http-proxy
+[proxy.enable_for_camo]: ../production/deployment.html#enable-for-camo
 
 ## Final notes and security response
 

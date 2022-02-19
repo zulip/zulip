@@ -4,7 +4,7 @@ module.exports = {
     extends: ["stylelint-config-standard", "stylelint-config-prettier"],
     rules: {
         // Add some exceptions for recommended rules
-        "at-rule-no-unknown": [true, {ignoreAtRules: ["extend"]}],
+        "at-rule-no-unknown": [true, {ignoreAtRules: ["extend", "define-mixin", "mixin"]}],
         "font-family-no-missing-generic-family-keyword": [
             true,
             {ignoreFontFamilies: ["FontAwesome"]},

@@ -27,9 +27,7 @@ export function down(with_centering) {
             message_viewport.scrollTop(
                 current_msg_table.safeOuterHeight(true) - message_viewport.height() * 0.1,
             );
-            if (message_lists.current.can_mark_messages_read()) {
-                unread_ops.mark_current_list_as_read();
-            }
+            unread_ops.process_scrolled_to_bottom();
         }
 
         return;
@@ -53,9 +51,7 @@ export function to_end() {
     const next_id = message_lists.current.last().id;
     message_viewport.set_last_movement_direction(1);
     message_lists.current.select_id(next_id, {then_scroll: true, from_scroll: true});
-    if (message_lists.current.can_mark_messages_read()) {
-        unread_ops.mark_current_list_as_read();
-    }
+    unread_ops.process_scrolled_to_bottom();
 }
 
 function amount_to_paginate() {
@@ -115,9 +111,7 @@ export function page_up() {
 export function page_down() {
     if (message_viewport.at_bottom() && !message_lists.current.empty()) {
         message_lists.current.select_id(message_lists.current.last().id, {then_scroll: false});
-        if (message_lists.current.can_mark_messages_read()) {
-            unread_ops.mark_current_list_as_read();
-        }
+        unread_ops.process_scrolled_to_bottom();
     } else {
         page_down_the_right_amount();
     }

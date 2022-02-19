@@ -84,6 +84,7 @@ exports.test_realm_emojis = {
         author_id: 222,
         deactivated: false,
         source_url: "/some/path/to/emoji",
+        still_url: null,
     },
 };
 

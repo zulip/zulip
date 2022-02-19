@@ -17,6 +17,7 @@ import * as compose_actions from "./compose_actions";
 import * as compose_error from "./compose_error";
 import * as compose_state from "./compose_state";
 import {media_breakpoints_num} from "./css_variables";
+import * as dark_theme from "./dark_theme";
 import * as emoji_picker from "./emoji_picker";
 import * as hash_util from "./hash_util";
 import * as hotspots from "./hotspots";
@@ -26,8 +27,11 @@ import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
+import * as navigate from "./navigate";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
+import * as people from "./people";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics_ui from "./recent_topics_ui";
@@ -173,6 +177,10 @@ export function initialize() {
         }
 
         message_lists.current.select_id(id);
+
+        if (page_params.is_spectator) {
+            return;
+        }
         compose_actions.respond_to_message({trigger: "message click"});
         e.stopPropagation();
         popovers.hide_all();
@@ -240,6 +248,13 @@ export function initialize() {
             return;
         }
         window.location.href = $(this).attr("href");
+    });
+
+    $("body").on("click", "#scroll-to-bottom-button-clickable-area", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        navigate.to_end();
     });
 
     // MESSAGE EDITING
@@ -370,6 +385,13 @@ export function initialize() {
     });
 
     // RECENT TOPICS
+
+    $("#recent_topics_table").on("click", ".participant_profile", function (e) {
+        const participant_user_id = Number.parseInt($(this).attr("data-user-id"), 10);
+        e.stopPropagation();
+        const user = people.get_by_user_id(participant_user_id);
+        popovers.show_user_info_popover(this, user);
+    });
 
     $("body").on("keydown", ".on_hover_topic_mute", ui_util.convert_enter_to_click);
 
@@ -647,16 +669,20 @@ export function initialize() {
     });
 
     function handle_compose_click(e) {
+        const $target = $(e.target);
         // Emoji clicks should be handled by their own click handler in emoji_picker.js
-        if (
-            $(e.target).is(".emoji_map, img.emoji, .drag, .compose_gif_icon, .compose_control_menu")
-        ) {
+        if ($target.is(".emoji_map, img.emoji, .drag, .compose_gif_icon, .compose_control_menu")) {
             return;
         }
 
         // The mobile compose button has its own popover when clicked, so it already.
         // hides other popovers.
-        if ($(e.target).is(".compose_mobile_button, .compose_mobile_button *")) {
+        if ($target.is(".compose_mobile_button, .compose_mobile_button *")) {
+            return;
+        }
+
+        if ($(".enter_sends").has(e.target).length) {
+            e.preventDefault();
             return;
         }
 
@@ -665,7 +691,7 @@ export function initialize() {
         // clicking "Press Enter to send" should not
         // trigger the composebox-closing code in MAIN CLICK HANDLER.
         // But do allow our formatting link.
-        if (!$(e.target).is("a")) {
+        if (!$target.is("a")) {
             e.stopPropagation();
         }
         // Still hide the popovers, however
@@ -800,15 +826,6 @@ export function initialize() {
         $(`#hotspot_${CSS.escape(hotspot_name)}_icon`).remove();
     });
 
-    $("body").on("click", ".hotspot-button", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        hotspots.post_hotspot_as_read("intro_reply");
-        hotspots.close_hotspot_icon($("#hotspot_intro_reply_icon"));
-        $("#hotspot_intro_reply_icon").remove();
-    });
-
     // stop propagation
     $("body").on("click", ".hotspot.overlay .hotspot-popover", (e) => {
         e.stopPropagation();
@@ -821,6 +838,20 @@ export function initialize() {
         // TODO: Remove this once Bootstrap is upgraded.
         // See: https://github.com/zulip/zulip/pull/18720
         $(".modal.in").removeClass("in");
+    });
+
+    // GEAR MENU
+
+    $("body").on("click", "#gear-menu .dark-theme", (e) => {
+        // Allow propagation to close gear menu.
+        e.preventDefault();
+        dark_theme.enable();
+    });
+
+    $("body").on("click", "#gear-menu .light-theme", (e) => {
+        // Allow propagation to close gear menu.
+        e.preventDefault();
+        dark_theme.disable();
     });
 
     // MAIN CLICK HANDLER
@@ -881,6 +912,7 @@ export function initialize() {
                 !$(e.target).closest(".micromodal").length &&
                 !$(e.target).closest("[data-tippy-root]").length &&
                 !$(e.target).closest(".modal-backdrop").length &&
+                !$(e.target).closest(".enter_sends").length &&
                 $(e.target).closest("body").length
             ) {
                 // Unfocus our compose area if we click out of it. Don't let exits out

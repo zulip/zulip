@@ -13,7 +13,6 @@ if settings.DEBUG:
     def static_path(path: str) -> str:
         return find(path) or "/nonexistent"
 
-
 else:
 
     def static_path(path: str) -> str:
@@ -39,7 +38,7 @@ class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
             # Similarly, don't hash-rename image files; we only serve
             # the original file paths (not the hashed file paths), and
             # so the only effect of hash-renaming these is to increase
-            # the size of release tarballs with duplicate copies of thesex.
+            # the size of release tarballs with duplicate copies of these.
             #
             # One could imagine a future world in which we instead
             # used the hashed paths for these; in that case, though,

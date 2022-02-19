@@ -638,6 +638,8 @@ div.overlay {
     display: flex;
     justify-content: center;
     background-color: hsl(0, 0%, 90%);
+    color: hsl(0, 0%, 0%);
+    border-radius: 4px;
 
     span {
         color: hsl(0, 0%, 0%);
@@ -645,7 +647,7 @@ div.overlay {
 
     &:hover {
         cursor: pointer;
-        background-color: hsl(228, 96%, 71%);
+        background-color: hsl(240, 96%, 68%);
         color: hsl(0, 0%, 100%);
 
         span {

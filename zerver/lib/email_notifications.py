@@ -1,5 +1,6 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/notifications.html
 
+import logging
 import math
 import re
 from collections import defaultdict
@@ -31,17 +32,20 @@ from zerver.lib.url_encoding import (
     stream_narrow_url,
     topic_narrow_url,
 )
-from zerver.lib.user_groups import access_user_group_by_id, get_user_group_direct_members
+from zerver.lib.user_groups import get_user_group_direct_members
 from zerver.models import (
     Message,
     Recipient,
     Stream,
+    UserGroup,
     UserMessage,
     UserProfile,
     get_context_for_message,
     get_display_recipient,
     get_user_profile_by_id,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def relative_to_full_url(fragment: lxml.html.HtmlElement, base_url: str) -> None:
@@ -367,7 +371,7 @@ def get_mentioned_user_group_name(
     smallest_user_group_size = math.inf
     smallest_user_group_name = None
     for user_group_id in mentioned_user_group_ids:
-        current_user_group = access_user_group_by_id(user_group_id, user_profile, for_mention=True)
+        current_user_group = UserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
         current_user_group_size = len(get_user_group_direct_members(current_user_group))
 
         if current_user_group_size < smallest_user_group_size:
@@ -569,8 +573,13 @@ def handle_missedmessage_emails(
     }
 
     user_profile = get_user_profile_by_id(user_profile_id)
-    if user_profile.is_bot:  # nocoverage # TODO -- needs a test.
-        # Never email bot users.
+    if user_profile.is_bot:  # nocoverage
+        # We don't expect to reach here for bot users. However, this code exists
+        # to find and throw away any pre-existing events in the queue while
+        # upgrading from versions before our notifiability logic was implemented.
+        # TODO/compatibility: This block can be removed when one can no longer
+        # upgrade from versions <= 4.0 to versions >= 5.0
+        logger.warning("Send-email event found for bot user %s. Skipping.", user_profile_id)
         return
 
     if not user_profile.enable_offline_email_notifications:

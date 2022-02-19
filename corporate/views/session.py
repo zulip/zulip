@@ -37,10 +37,11 @@ def start_card_update_stripe_session(request: HttpRequest, user: UserProfile) ->
         type=Session.CARD_UPDATE_FROM_BILLING_PAGE,
     )
     return json_success(
+        request,
         data={
             "stripe_session_url": stripe_session.url,
             "stripe_session_id": stripe_session.id,
-        }
+        },
     )
 
 
@@ -93,8 +94,9 @@ def start_retry_payment_intent_session(
     session.save(update_fields=["payment_intent"])
     session.save()
     return json_success(
+        request,
         data={
             "stripe_session_id": stripe_session.id,
             "stripe_session_url": stripe_session.url,
-        }
+        },
     )

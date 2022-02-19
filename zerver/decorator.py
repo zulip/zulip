@@ -28,6 +28,7 @@ from two_factor.utils import default_device
 from zerver.lib.cache import cache_with_key
 from zerver.lib.exceptions import (
     AccessDeniedError,
+    AnomalousWebhookPayload,
     ErrorCode,
     InvalidAPIKeyError,
     InvalidAPIKeyFormatError,
@@ -38,8 +39,10 @@ from zerver.lib.exceptions import (
     OrganizationOwnerRequired,
     RateLimited,
     RealmDeactivatedError,
+    RemoteServerDeactivatedError,
     UnsupportedWebhookEventType,
     UserDeactivatedError,
+    WebhookError,
 )
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimitedIPAddr, RateLimitedUser
@@ -62,6 +65,7 @@ rate_limiter_logger = logging.getLogger("zerver.lib.rate_limiter")
 
 webhook_logger = logging.getLogger("zulip.zerver.webhooks")
 webhook_unsupported_events_logger = logging.getLogger("zulip.zerver.webhooks.unsupported")
+webhook_anomalous_payloads_logger = logging.getLogger("zulip.zerver.webhooks.anomalous")
 
 FuncT = TypeVar("FuncT", bound=Callable[..., object])
 
@@ -244,6 +248,9 @@ def validate_api_key(
         if api_key != remote_server.api_key:
             raise InvalidZulipServerKeyError(role)
 
+        if remote_server.deactivated:
+            raise RemoteServerDeactivatedError()
+
         if get_subdomain(request) != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
             raise JsonableError(_("Invalid subdomain for push notifications bouncer"))
         request.user = remote_server
@@ -305,14 +312,23 @@ def access_user_by_api_key(
     return user_profile
 
 
-def log_exception_to_webhook_logger(
-    summary: str,
-    unsupported_event: bool,
-) -> None:
-    if unsupported_event:
-        webhook_unsupported_events_logger.exception(summary, stack_info=True)
+def log_unsupported_webhook_event(summary: str) -> None:
+    # This helper is primarily used by some of our more complicated
+    # webhook integrations (e.g. GitHub) that need to log an unsupported
+    # event based on attributes nested deep within a complicated JSON
+    # payload. In such cases, the error message we want to log may not
+    # really fit what a regular UnsupportedWebhookEventType exception
+    # represents.
+    webhook_unsupported_events_logger.exception(summary, stack_info=True)
+
+
+def log_exception_to_webhook_logger(err: Exception) -> None:
+    if isinstance(err, AnomalousWebhookPayload):
+        webhook_anomalous_payloads_logger.exception(str(err), stack_info=True)
+    elif isinstance(err, UnsupportedWebhookEventType):
+        webhook_unsupported_events_logger.exception(str(err), stack_info=True)
     else:
-        webhook_logger.exception(summary, stack_info=True)
+        webhook_logger.exception(str(err), stack_info=True)
 
 
 def full_webhook_client_name(raw_client_name: Optional[str] = None) -> Optional[str]:
@@ -357,17 +373,12 @@ def webhook_view(
                     from zerver.lib.webhooks.common import notify_bot_owner_about_invalid_json
 
                     notify_bot_owner_about_invalid_json(user_profile, webhook_client_name)
-                elif isinstance(err, JsonableError) and not isinstance(
-                    err, UnsupportedWebhookEventType
-                ):
+                elif isinstance(err, JsonableError) and not isinstance(err, WebhookError):
                     pass
                 else:
-                    if isinstance(err, UnsupportedWebhookEventType):
+                    if isinstance(err, WebhookError):
                         err.webhook_name = webhook_client_name
-                    log_exception_to_webhook_logger(
-                        summary=str(err),
-                        unsupported_event=isinstance(err, UnsupportedWebhookEventType),
-                    )
+                    log_exception_to_webhook_logger(err)
                 raise err
 
         _wrapped_func_arguments._all_event_types = all_event_types
@@ -531,15 +542,7 @@ def web_public_view(
     """
     This wrapper adds client info for unauthenticated users but
     forces authenticated users to go through 2fa.
-
-    NOTE: This function == zulip_login_required in a production environment as
-          web_public_view path has only been enabled for development purposes
-          currently.
     """
-    if not settings.DEVELOPMENT:
-        # Coverage disabled because DEVELOPMENT is always true in development.
-        return zulip_login_required(view_func, redirect_field_name, login_url)  # nocoverage
-
     actual_decorator = lambda view_func: zulip_otp_required(
         redirect_field_name=redirect_field_name, login_url=login_url
     )(add_logging_data(view_func))
@@ -693,16 +696,13 @@ def authenticated_rest_api_view(
                 if not webhook_client_name:
                     raise err
                 if isinstance(err, JsonableError) and not isinstance(
-                    err, UnsupportedWebhookEventType
+                    err, WebhookError
                 ):  # nocoverage
                     raise err
 
-                if isinstance(err, UnsupportedWebhookEventType):
+                if isinstance(err, WebhookError):
                     err.webhook_name = webhook_client_name
-                log_exception_to_webhook_logger(
-                    summary=str(err),
-                    unsupported_event=isinstance(err, UnsupportedWebhookEventType),
-                )
+                log_exception_to_webhook_logger(err)
                 raise err
 
         return _wrapped_func_arguments
@@ -906,7 +906,7 @@ def get_tor_ips() -> Set[str]:
     # Circuit-breaking will ensure that we back off on re-reading the
     # file.
     if len(exit_node_list) == 0:
-        raise IOError("File is empty")
+        raise OSError("File is empty")
 
     return set(exit_node_list)
 
@@ -932,7 +932,7 @@ def rate_limit_request_by_ip(request: HttpRequest, domain: str) -> None:
             pass
         elif ip_addr in get_tor_ips():
             ip_addr = "tor-exit-node"
-    except (IOError, CircuitBreakerError) as err:
+    except (OSError, CircuitBreakerError) as err:
         # In the event that we can't get an updated list of TOR exit
         # nodes, assume the IP is _not_ one, and leave it unchanged.
         # We log a warning so that this endpoint being taken out of
@@ -992,7 +992,7 @@ def return_success_on_head_request(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
         if request.method == "HEAD":
-            return json_success()
+            return json_success(request)
         return view_func(request, *args, **kwargs)
 
     return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927

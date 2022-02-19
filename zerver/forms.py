@@ -14,7 +14,7 @@ from django.http import HttpRequest
 from django.urls import reverse
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
-from jinja2.utils import Markup as mark_safe
+from markupsafe import Markup as mark_safe
 from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationTokenForm
 from two_factor.utils import totp_digits
 
@@ -126,7 +126,7 @@ class RegistrationForm(forms.Form):
         del kwargs["realm_creation"]
 
         super().__init__(*args, **kwargs)
-        if settings.TERMS_OF_SERVICE:
+        if settings.TERMS_OF_SERVICE_VERSION is not None:
             self.fields["terms"] = forms.BooleanField(required=True)
         self.fields["realm_name"] = forms.CharField(
             max_length=Realm.MAX_REALM_NAME_LENGTH, required=self.realm_creation

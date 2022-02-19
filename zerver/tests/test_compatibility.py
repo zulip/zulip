@@ -5,9 +5,10 @@ from zerver.lib.test_classes import ZulipTestCase
 
 
 class VersionTest(ZulipTestCase):
-    data = [
-        case.split()
-        for case in """
+    data = (
+        [
+            case.split()
+            for case in """
         1.2.3    <  1.2.4
         1.2.3    =  1.2.3
         1.4.1    >  1.2.3
@@ -25,12 +26,14 @@ class VersionTest(ZulipTestCase):
         16.2.96  =  16.2.96
         20.0.103 >  16.2.96
     """.strip().split(
-            "\n"
-        )
-    ] + [
-        ["", "?", "1"],
-        ["", "?", "a"],
-    ]
+                "\n"
+            )
+        ]
+        + [
+            ["", "?", "1"],
+            ["", "?", "a"],
+        ]
+    )
 
     def test_version_lt(self) -> None:
         for ver1, cmp, ver2 in self.data:

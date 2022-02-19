@@ -38,7 +38,7 @@ people.add_active_user(vronsky);
 people.add_active_user(levin);
 people.add_active_user(kitty);
 
-run_test("render_notifications_for_narrow", ({override, mock_template}) => {
+run_test("render_notifications_for_narrow", ({override_rewire, mock_template}) => {
     const typing_notifications = $("#typing_notifications");
 
     const two_typing_users_ids = [anna.user_id, vronsky.user_id];
@@ -49,7 +49,7 @@ run_test("render_notifications_for_narrow", ({override, mock_template}) => {
 
     // Having only two(<MAX_USERS_TO_DISPLAY_NAME) typists, both of them
     // should be rendered but not 'Several people are typing…'
-    override(typing_events, "get_users_typing_for_narrow", () => two_typing_users_ids);
+    override_rewire(typing_events, "get_users_typing_for_narrow", () => two_typing_users_ids);
     typing_events.render_notifications_for_narrow();
     assert.ok(typing_notifications.visible());
     assert.ok(typing_notifications.html().includes(`${anna.full_name} is typing…`));
@@ -57,7 +57,7 @@ run_test("render_notifications_for_narrow", ({override, mock_template}) => {
     assert.ok(!typing_notifications.html().includes("Several people are typing…"));
 
     // Having 3(=MAX_USERS_TO_DISPLAY_NAME) typists should also display only names
-    override(typing_events, "get_users_typing_for_narrow", () => three_typing_users_ids);
+    override_rewire(typing_events, "get_users_typing_for_narrow", () => three_typing_users_ids);
     typing_events.render_notifications_for_narrow();
     assert.ok(typing_notifications.visible());
     assert.ok(typing_notifications.html().includes(`${anna.full_name} is typing…`));
@@ -66,7 +66,7 @@ run_test("render_notifications_for_narrow", ({override, mock_template}) => {
     assert.ok(!typing_notifications.html().includes("Several people are typing…"));
 
     // Having 4(>MAX_USERS_TO_DISPLAY_NAME) typists should display "Several people are typing…"
-    override(typing_events, "get_users_typing_for_narrow", () => four_typing_users_ids);
+    override_rewire(typing_events, "get_users_typing_for_narrow", () => four_typing_users_ids);
     typing_events.render_notifications_for_narrow();
     assert.ok(typing_notifications.visible());
     assert.ok(typing_notifications.html().includes("Several people are typing…"));
@@ -76,7 +76,7 @@ run_test("render_notifications_for_narrow", ({override, mock_template}) => {
     assert.ok(!typing_notifications.html().includes(`${kitty.full_name} is typing…`));
 
     // #typing_notifications should be hidden when there are no typists.
-    override(typing_events, "get_users_typing_for_narrow", () => []);
+    override_rewire(typing_events, "get_users_typing_for_narrow", () => []);
     typing_events.render_notifications_for_narrow();
     assert.ok(!typing_notifications.visible());
 });

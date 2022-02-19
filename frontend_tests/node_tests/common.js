@@ -79,8 +79,8 @@ run_test("copy_data_attribute_value", ({override}) => {
     assert.ok(faded_out);
 });
 
-run_test("adjust_mac_shortcuts non-mac", ({override}) => {
-    override(common, "has_mac_keyboard", () => false);
+run_test("adjust_mac_shortcuts non-mac", ({override_rewire}) => {
+    override_rewire(common, "has_mac_keyboard", () => false);
 
     // The adjust_mac_shortcuts has a really simple guard
     // at the top, and we just test the early-return behavior
@@ -88,7 +88,7 @@ run_test("adjust_mac_shortcuts non-mac", ({override}) => {
     common.adjust_mac_shortcuts("selector-that-does-not-exist");
 });
 
-run_test("adjust_mac_shortcuts mac", ({override}) => {
+run_test("adjust_mac_shortcuts mac", ({override_rewire}) => {
     const keys_to_test_mac = new Map([
         ["Backspace", "Delete"],
         ["Enter", "Return"],
@@ -104,7 +104,7 @@ run_test("adjust_mac_shortcuts mac", ({override}) => {
         ["Ctrl + Backspace + End", "⌘ + Delete + Fn + →"],
     ]);
 
-    override(common, "has_mac_keyboard", () => true);
+    override_rewire(common, "has_mac_keyboard", () => true);
 
     const test_items = [];
     let key_no = 1;

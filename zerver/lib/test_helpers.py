@@ -65,7 +65,7 @@ from zproject.backends import ExternalAuthDataDict, ExternalAuthResult
 
 if TYPE_CHECKING:
     # Avoid an import cycle; we only need these for type annotations.
-    from zerver.lib.test_classes import MigrationsTestCase, ZulipTestCase
+    from zerver.lib.test_classes import ClientArg, MigrationsTestCase, ZulipTestCase
 
 
 class MockLDAP(fakeldap.MockLDAP):
@@ -186,8 +186,10 @@ def stdout_suppressed() -> Iterator[IO[str]]:
 
     with open(os.devnull, "a") as devnull:
         stdout, sys.stdout = sys.stdout, devnull
-        yield stdout
-        sys.stdout = stdout
+        try:
+            yield stdout
+        finally:
+            sys.stdout = stdout
 
 
 def reset_emails_in_zulip_realm() -> None:
@@ -203,6 +205,11 @@ def reset_emails_in_zulip_realm() -> None:
 def get_test_image_file(filename: str) -> IO[bytes]:
     test_avatar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../tests/images"))
     return open(os.path.join(test_avatar_dir, filename), "rb")
+
+
+def read_test_image_file(filename: str) -> bytes:
+    with get_test_image_file(filename) as img_file:
+        return img_file.read()
 
 
 def avatar_disk_path(
@@ -354,7 +361,7 @@ def instrument_url(f: UrlFuncT) -> UrlFuncT:
     else:
 
         def wrapper(
-            self: "ZulipTestCase", url: str, info: object = {}, **kwargs: Any
+            self: "ZulipTestCase", url: str, info: object = {}, **kwargs: "ClientArg"
         ) -> HttpResponse:
             start = time.time()
             result = f(self, url, info, **kwargs)
@@ -401,8 +408,13 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
         # Find our untested urls.
         pattern_cnt: Dict[str, int] = collections.defaultdict(int)
 
-        def re_strip(r: Any) -> str:
-            return str(r).lstrip("^").rstrip("$")
+        def re_strip(r: str) -> str:
+            assert r.startswith(r"^")
+            if r.endswith(r"$"):
+                return r[1:-1]
+            else:
+                assert r.endswith(r"\Z")
+                return r[1:-2]
 
         def find_patterns(patterns: List[Any], prefixes: List[str]) -> None:
             for pattern in patterns:

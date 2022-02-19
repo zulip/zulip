@@ -20,6 +20,38 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 5.0
 
+
+**Feature level 115**
+
+* Mobile push notifications about stream messages now include the
+  `stream_id` field.
+
+**Feature level 114**
+
+* [`GET /events`](/api/get-events): Added `rendering_only` field to
+  `update_message` event type to indicate if the message change only
+  updated the rendering of the message or if it was the result of a
+  user interaction.
+
+* [`GET /events`](/api/get-events): Updated `update_message` event type
+  to always include `edit_timestamp` and `user_id` fields. If the event
+  only updates the rendering of the message, then the `user_id` field
+  will be present, but with a value of null as the update was not the
+  result of a user interaction.
+
+**Feature level 113**
+
+* `GET /realm/emoji`, `POST /realm/emoji/{emoji_name}`, [`GET
+  /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  The `still_url` field for custom emoji objects is now always
+  present, with a value of null for non-animated emoji. Previously, it
+  only was present for animated emoji.
+
+**Feature level 112**
+
+* [`GET /events`](/api/get-events): Updated `update_message` event type
+  to include `stream_id` field for all edits to stream messages.
+
 **Feature level 111**
 
 * [`POST /subscriptions/properties`](/api/update-subscription-settings):
@@ -44,6 +76,7 @@ format used by the Zulip server that they are interacting with.
   final `zulip://` redirect URL.
 
 **Feature level 107**
+
 * [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
   [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
   Added user setting `escape_navigates_to_default_view` to allow users to
@@ -67,12 +100,12 @@ format used by the Zulip server that they are interacting with.
 
 * [`PATCH /realm`]: Added `string_id` parameter for changing an
   organization's subdomain. Currently, this is only allowed for
-  changing changing a demo organization to a normal one.
+  changing a demo organization to a normal one.
 
 **Feature level 103**
 
 * [`POST /register`](/api/register-queue): Added `create_web_public_stream_policy`
-  policy for which users can create web public streams.
+  policy for which users can create web-public streams.
 * [`PATCH /realm`]: Added support for updating `create_web_public_stream_policy`.
 * [`POST /register`](/api/register-queue): Added `can_create_web_public_streams` boolean
   field to the response.
@@ -576,7 +609,7 @@ field with an integer field `invite_to_realm_policy`.
 * [`POST /users`](/api/create-user): Restricted access to organization
   administrators with the `can_create_users` permission.
 * [Error handling](/api/rest-error-handling): The `code` property will
-  not be present in errors due to rate limits.
+  now be present in errors due to rate limits.
 
 **Feature level 35**
 

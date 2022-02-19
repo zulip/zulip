@@ -97,4 +97,4 @@ def events_register_backend(
         client_capabilities=client_capabilities,
         fetch_event_types=fetch_event_types,
     )
-    return json_success(ret)
+    return json_success(request, data=ret)

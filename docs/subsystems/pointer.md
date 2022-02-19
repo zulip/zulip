@@ -45,7 +45,7 @@ will instead select the first unread message matching that narrow, or
 if there are none, the most recent messages matching that narrow.
 
 This provides the nice user experience of taking you to the start of
-the new stuff (with enough messages you'ev seen before still in view
+the new stuff (with enough messages you've seen before still in view
 at the top to provide you with context), which is usually what you
 want. (When finding the "first unread message", Zulip ignores unread
 messages in muted streams or in muted topics within non-muted

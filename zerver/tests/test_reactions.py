@@ -4,11 +4,7 @@ from unittest import mock
 import orjson
 from django.http import HttpResponse
 
-from zerver.lib.actions import (
-    do_change_stream_invite_only,
-    do_make_stream_web_public,
-    notify_reaction_update,
-)
+from zerver.lib.actions import do_change_stream_permission, notify_reaction_update
 from zerver.lib.cache import cache_get, to_dict_cache_key_id
 from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.exceptions import JsonableError
@@ -87,29 +83,38 @@ class ReactionEmojiTest(ZulipTestCase):
         """
         Formatted reactions data is saved in cache.
         """
-        sender = self.example_user("hamlet")
-        reaction_info = {
-            "emoji_name": "smile",
-        }
-        result = self.api_post(sender, "/api/v1/messages/1/reactions", reaction_info)
+        senders = [self.example_user("hamlet"), self.example_user("cordelia")]
+        emojis = ["smile", "tada"]
+        expected_emoji_codes = ["1f642", "1f389"]
 
-        self.assert_json_success(result)
-        self.assertEqual(200, result.status_code)
+        for sender, emoji in zip(senders, emojis):
+            reaction_info = {
+                "emoji_name": emoji,
+            }
+            result = self.api_post(sender, "/api/v1/messages/1/reactions", reaction_info)
+
+            self.assert_json_success(result)
+            self.assertEqual(200, result.status_code)
+
         key = to_dict_cache_key_id(1)
         message = extract_message_dict(cache_get(key)[0])
 
         expected_reaction_data = [
             {
-                "emoji_name": "smile",
-                "emoji_code": "1f642",
+                "emoji_name": emoji,
+                "emoji_code": emoji_code,
                 "reaction_type": "unicode_emoji",
                 "user": {
                     "email": f"user{sender.id}@zulip.testserver",
                     "id": sender.id,
-                    "full_name": "King Hamlet",
+                    "full_name": sender.full_name,
                 },
                 "user_id": sender.id,
             }
+            # It's important that we preserve the loop order in this
+            # test, since this is our test to verify that we're
+            # returning reactions in chronological order.
+            for sender, emoji, emoji_code in zip(senders, emojis, expected_emoji_codes)
         ]
         self.assertEqual(expected_reaction_data, message["reactions"])
 
@@ -538,7 +543,9 @@ class ReactionEventTest(ZulipTestCase):
         self.assert_json_success(remove)
 
         # Make stream history public to subscribers
-        do_change_stream_invite_only(stream, False, history_public_to_subscribers=True)
+        do_change_stream_permission(
+            stream, invite_only=False, history_public_to_subscribers=True, acting_user=iago
+        )
         # Since stream history is public to subscribers, reacting to
         # message_before_id should notify all subscribers:
         # Iago and Hamlet.
@@ -557,7 +564,7 @@ class ReactionEventTest(ZulipTestCase):
         self.assert_json_success(remove)
 
         # Make stream web_public as well.
-        do_make_stream_web_public(stream)
+        do_change_stream_permission(stream, is_web_public=True, acting_user=iago)
         # For is_web_public streams, events even on old messages
         # should go to all subscribers, including guests like polonius.
         with self.tornado_redirected_to_list(events, expected_num_events=1):
@@ -594,7 +601,7 @@ class ReactionEventTest(ZulipTestCase):
         huddle_message_id = self.send_huddle_message(
             hamlet,
             [polonius, iago],
-            "hello message to muliple receiver",
+            "hello message to multiple receiver",
         )
         with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.api_post(
@@ -1100,7 +1107,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
         into a problem.
         """
         hamlet = self.example_user("hamlet")
-        self.send_stream_message(hamlet, "Scotland")
+        self.send_stream_message(hamlet, "Denmark")
         message = self.get_last_message()
         reaction = Reaction(
             user_profile=hamlet,

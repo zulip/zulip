@@ -97,7 +97,7 @@ stream_data.create_streams([
 ]);
 
 function test(label, f) {
-    run_test(label, ({override, mock_template}) => {
+    run_test(label, ({override, override_rewire, mock_template}) => {
         pm_conversations.clear_for_testing();
         recent_senders.clear_for_testing();
         peer_data.clear_for_testing();
@@ -107,11 +107,11 @@ function test(label, f) {
         page_params.realm_email_address_visibility =
             settings_config.email_address_visibility_values.admins_only.code;
 
-        f({override, mock_template});
+        f({override, override_rewire, mock_template});
     });
 }
 
-test("sort_streams", ({override}) => {
+test("sort_streams", ({override_rewire}) => {
     let test_streams = [
         {
             stream_id: 101,
@@ -150,7 +150,7 @@ test("sort_streams", ({override}) => {
         },
     ];
 
-    override(stream_data, "is_active", (sub) => sub.name !== "dead");
+    override_rewire(stream_data, "is_active", (sub) => sub.name !== "dead");
 
     test_streams = th.sort_streams(test_streams, "d");
     assert.deepEqual(test_streams[0].name, "Denmark"); // Pinned streams first
@@ -524,7 +524,7 @@ test("sort_recipients subscribers", () => {
 
 test("sort_recipients pm partners", () => {
     // b_user_3 is a pm partner and b_user_2 is not and
-    // both are not subscribered to the stream Linux.
+    // both are not subscribed to the stream Linux.
     const small_matches = [b_user_3, b_user_2];
     const recipients = th.sort_recipients({
         users: small_matches,
@@ -697,6 +697,7 @@ test("render_emoji", ({mock_template}) => {
         is_emoji: true,
         has_image: false,
         has_secondary: false,
+        has_status: false,
     };
     let rendered = false;
     let test_emoji = {
@@ -725,6 +726,7 @@ test("render_emoji", ({mock_template}) => {
         is_emoji: true,
         has_image: true,
         has_secondary: false,
+        has_status: false,
     };
     test_emoji = {
         emoji_name: "realm_emoji",

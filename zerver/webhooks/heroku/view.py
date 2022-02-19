@@ -30,4 +30,4 @@ def api_heroku_webhook(
     content = TEMPLATE.format(user=user, head=head, app=app, url=url, git_log=git_log)
 
     check_send_webhook_message(request, user_profile, app, content)
-    return json_success()
+    return json_success(request)

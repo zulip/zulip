@@ -93,7 +93,7 @@ def send_initial_pms(user: UserProfile) -> None:
             )
             + "\n\n",
             _("Here are a few messages I understand:") + " ",
-            bot_commands(is_initial_pm=True),
+            bot_commands(),
         ]
     )
 
@@ -109,7 +109,7 @@ def send_initial_pms(user: UserProfile) -> None:
     )
 
 
-def bot_commands(is_initial_pm: bool = False) -> str:
+def bot_commands(no_help_command: bool = False) -> str:
     commands = [
         "apps",
         "profile",
@@ -119,7 +119,7 @@ def bot_commands(is_initial_pm: bool = False) -> str:
         "message formatting",
         "keyboard shortcuts",
     ]
-    if is_initial_pm:
+    if not no_help_command:
         commands.append("help")
     return ", ".join(["`" + command + "`" for command in commands]) + "."
 
@@ -201,7 +201,7 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
         return "".join(
             [
                 _("Here are a few messages I understand:") + " ",
-                bot_commands() + "\n\n",
+                bot_commands(no_help_command=True) + "\n\n",
                 _(
                     "Check out our [Getting started guide](/help/getting-started-with-zulip), "
                     "or browse the [Help center](/help/) to learn more!"

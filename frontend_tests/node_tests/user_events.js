@@ -223,8 +223,14 @@ run_test("updates", () => {
         updated = true;
     };
 
+    let confirm_banner_hidden = false;
+    settings_account.hide_confirm_email_banner = () => {
+        confirm_banner_hidden = true;
+    };
+
     user_events.update_person({user_id: me.user_id, delivery_email: "you@example.org"});
     assert.ok(updated);
+    assert.ok(confirm_banner_hidden);
 
     const test_bot = {
         email: "test-bot@example.com",

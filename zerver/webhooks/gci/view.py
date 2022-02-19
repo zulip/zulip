@@ -144,7 +144,7 @@ def api_gci_webhook(
         )
         check_send_webhook_message(request, user_profile, subject, body, event)
 
-    return json_success()
+    return json_success(request)
 
 
 def get_event(payload: Dict[str, Any]) -> Optional[str]:

@@ -150,7 +150,7 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assertEqual(self.email_envelope_from(email_message), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertRegex(
             self.email_display_from(email_message),
-            fr"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
+            rf"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
         )
 
         self.assertEqual(email_message.extra_headers["List-Id"], "Zulip Dev <zulip.testserver>")

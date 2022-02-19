@@ -11,18 +11,16 @@
                 <p>
                     {{#tr}}
                         Since you are not logged in, you can only view messages in
-                        <z-link>web public streams</z-link>.
+                        <z-link>web-public streams</z-link>.
                         {{#*inline "z-link"}}<a target="_blank" href="https://zulipchat.com/help/stream-permissions">{{> @partial-block}}</a>{{/inline}}
                     {{/tr}}
                 </p>
             </main>
             <footer class="modal__footer">
                 <a class="modal__btn dialog_submit_button" href="{{signup_link}}">
-                    <i class="fa fa-pencil-square-o"></i>
                     <span>{{t "Sign up" }}</span>
                 </a>
                 <a class="modal__btn dialog_submit_button" href="{{login_link}}">
-                    <i class="fa fa-sign-in"></i>
                     <span>{{t "Log in" }}</span>
                 </a>
             </footer>

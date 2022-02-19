@@ -23,7 +23,7 @@
                     <label for="profile_field_type" class="control-label">{{t "Type" }}</label>
                     <select id="profile_field_type" name="field_type">
                         {{#each custom_profile_field_types}}
-                        <option value='{{this.id}}'>{{this.name}}</option>
+                            <option value='{{this.id}}'>{{this.name}}</option>
                         {{/each}}
                     </select>
                 </div>
@@ -31,7 +31,7 @@
                     <label for="profile_field_external_accounts_type" class="control-label">{{t "External account type" }}</label>
                     <select id="profile_field_external_accounts_type" name="external_acc_field_type">
                         {{#each realm_default_external_accounts}}
-                        <option value='{{@key}}'>{{this.text}}</option>
+                            <option value='{{@key}}'>{{this.text}}</option>
                         {{/each}}
                         <option value="custom">{{t 'Custom' }}</option>
                     </select>

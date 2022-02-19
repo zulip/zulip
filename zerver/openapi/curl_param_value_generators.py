@@ -115,8 +115,10 @@ def fetch_api_key() -> Dict[str, object]:
     ]
 )
 def iago_message_id() -> Dict[str, object]:
+    iago = helpers.example_user("iago")
+    helpers.subscribe(iago, "Denmark")
     return {
-        "message_id": helpers.send_stream_message(helpers.example_user("iago"), "Denmark"),
+        "message_id": helpers.send_stream_message(iago, "Denmark"),
     }
 
 
@@ -124,8 +126,9 @@ def iago_message_id() -> Dict[str, object]:
 def add_emoji_to_message() -> Dict[str, object]:
     user_profile = helpers.example_user("iago")
 
-    # from OpenAPI format data in zulip.yaml
-    message_id = 43
+    # The message ID here is hardcoded based on the corresponding value
+    # for the example message IDs we use in zulip.yaml.
+    message_id = 46
     emoji_name = "octopus"
     emoji_code = "1f419"
     reaction_type = "unicode_emoji"

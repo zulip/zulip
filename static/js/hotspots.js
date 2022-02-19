@@ -3,7 +3,6 @@ import _ from "lodash";
 
 import render_hotspot_icon from "../templates/hotspot_icon.hbs";
 import render_hotspot_overlay from "../templates/hotspot_overlay.hbs";
-import render_intro_reply_hotspot from "../templates/intro_reply_hotspot.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
@@ -21,15 +20,6 @@ const VIEWPORT_CENTER = "viewport_center";
 // popover orientation can optionally be fixed here (property: popover),
 // otherwise popovers.compute_placement is used to compute orientation
 const HOTSPOT_LOCATIONS = new Map([
-    [
-        "intro_reply",
-        {
-            element: ".selected_message .messagebox-content",
-            offset_x: 0.85,
-            offset_y: 0.7,
-            popover: BOTTOM,
-        },
-    ],
     [
         "intro_streams",
         {
@@ -213,11 +203,6 @@ function place_popover(hotspot) {
 }
 
 function insert_hotspot_into_DOM(hotspot) {
-    if (hotspot.name === "intro_reply") {
-        $("#bottom_whitespace").append(render_intro_reply_hotspot({}));
-        return;
-    }
-
     const hotspot_overlay_HTML = render_hotspot_overlay({
         name: hotspot.name,
         title: hotspot.title,

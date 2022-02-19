@@ -120,12 +120,12 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         self.assertEqual(Stream.objects.get(id=latest_msg.recipient.type_id).name, "Denmark")
         self.assertEqual(latest_msg.topic_name(), "WordPress notifications")
 
-    def test_get_fixtures_for_nonexistant_integration(self) -> None:
-        target_url = "/devtools/integrations/somerandomnonexistantintegration/fixtures"
+    def test_get_fixtures_for_nonexistent_integration(self) -> None:
+        target_url = "/devtools/integrations/somerandomnonexistentintegration/fixtures"
         response = self.client_get(target_url)
         expected_response = {
             "code": "BAD_REQUEST",
-            "msg": '"somerandomnonexistantintegration" is not a valid webhook integration.',
+            "msg": '"somerandomnonexistentintegration" is not a valid webhook integration.',
             "result": "error",
         }
         self.assertEqual(response.status_code, 404)

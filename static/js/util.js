@@ -1,5 +1,3 @@
-import _ from "lodash";
-
 import {$t} from "./i18n";
 
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
@@ -202,8 +200,8 @@ export function sorted_ids(ids) {
     // This mapping makes sure we are using ints, and
     // it also makes sure we don't mutate the list.
     let id_list = ids.map((s) => Number.parseInt(s, 10));
+    id_list = Array.from(new Set(id_list));
     id_list.sort((a, b) => a - b);
-    id_list = _.sortedUniq(id_list);
 
     return id_list;
 }

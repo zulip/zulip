@@ -5,6 +5,42 @@
 set -e
 set -x
 
+usage() {
+    cat <<'EOF'
+Usage:
+  production-verify
+  production-verify --test-custom-db
+  production-verify --help
+
+Options:
+  --test-custom-db
+      Use custom database and user names.
+
+EOF
+}
+
+# Shell option parsing.
+args="$(getopt -o '' --long help,test-custom-db -n "$0" -- "$@")"
+eval "set -- $args"
+NAGIOS_USER="zulip"
+while true; do
+    case "$1" in
+        --help)
+            usage
+            exit 0
+            ;;
+
+        --test-custom-db)
+            NAGIOS_USER="zulipcustomuser"
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+done
+
 cat >>/etc/zulip/settings.py <<EOF
 # CircleCI override settings above
 AUTHENTICATION_BACKENDS = ( 'zproject.backends.EmailAuthBackend', )
@@ -111,7 +147,7 @@ echo
 echo "Now running additional Nagios tests"
 echo
 if ! /usr/lib/nagios/plugins/zulip_app_frontend/check_queue_worker_errors \
-    || ! su zulip -c "/usr/local/bin/process_fts_updates --nagios-check"; then # || \
+    || ! su zulip -c "/usr/local/bin/process_fts_updates --nagios-check --nagios-user=$NAGIOS_USER"; then # || \
     #   ! su zulip -c "/usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time --site=https://127.0.0.1/api --nagios --insecure"; then
     set +x
     echo

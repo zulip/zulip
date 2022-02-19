@@ -356,7 +356,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         legacy=True,
     ),
     WebhookIntegration("buildbot", ["continuous-integration"], display_name="Buildbot"),
-    WebhookIntegration("canarytoken", ["monitoring"], display_name="Thinkst Canarytoken"),
+    WebhookIntegration("canarytoken", ["monitoring"], display_name="Thinkst Canarytokens"),
     WebhookIntegration("circleci", ["continuous-integration"], display_name="CircleCI"),
     WebhookIntegration("clubhouse", ["project-management"]),
     WebhookIntegration("codeship", ["continuous-integration", "deployment"]),
@@ -431,7 +431,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration("pivotal", ["project-management"], display_name="Pivotal Tracker"),
     WebhookIntegration("radarr", ["entertainment"], display_name="Radarr"),
     WebhookIntegration("raygun", ["monitoring"], display_name="Raygun"),
-    WebhookIntegration("reviewboard", ["version-control"], display_name="ReviewBoard"),
+    WebhookIntegration("reviewboard", ["version-control"], display_name="Review Board"),
     WebhookIntegration("semaphore", ["continuous-integration", "deployment"]),
     WebhookIntegration("sentry", ["monitoring"]),
     WebhookIntegration(
@@ -454,12 +454,12 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration("travis", ["continuous-integration"], display_name="Travis CI"),
     WebhookIntegration("trello", ["project-management"]),
     WebhookIntegration("updown", ["monitoring"]),
-    WebhookIntegration("uptimerobot", ["monitoring"], display_name="Uptime Robot"),
+    WebhookIntegration("uptimerobot", ["monitoring"], display_name="UptimeRobot"),
     WebhookIntegration(
         "yo",
         ["communication"],
         function="zerver.webhooks.yo.view.api_yo_app_webhook",
-        display_name="Yo App",
+        display_name="Yo",
     ),
     WebhookIntegration("wordpress", ["marketing"], display_name="WordPress"),
     WebhookIntegration("zapier", ["meta-integration"]),
@@ -642,7 +642,7 @@ HUBOT_INTEGRATIONS: List[HubotIntegration] = [
         # _ needed to get around adblock plus
         logo="images/integrations/logos/instagra_m.svg",
     ),
-    HubotIntegration("mailchimp", ["communication", "marketing"], display_name="MailChimp"),
+    HubotIntegration("mailchimp", ["communication", "marketing"], display_name="Mailchimp"),
     HubotIntegration(
         "google-translate",
         ["misc"],

@@ -229,6 +229,9 @@ async function get_suggestions(page: Page, str: string): Promise<void> {
 async function select_from_suggestions(page: Page, item: string): Promise<void> {
     await page.evaluate((item: string) => {
         const tah = $(".create_default_stream").data().typeahead;
+        tah.mousemove({
+            currentTarget: $(`.typeahead:visible li:contains("${CSS.escape(item)}")`)[0],
+        });
         tah.mouseenter({
             currentTarget: $(`.typeahead:visible li:contains("${CSS.escape(item)}")`)[0],
         });

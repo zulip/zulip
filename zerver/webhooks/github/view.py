@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import log_exception_to_webhook_logger, webhook_view
+from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -45,9 +45,8 @@ class Helper:
 
     def log_unsupported(self, event: str) -> None:
         summary = f"The '{event}' event isn't currently supported by the GitHub webhook"
-        log_exception_to_webhook_logger(
+        log_unsupported_webhook_event(
             summary=summary,
-            unsupported_event=True,
         )
 
 
@@ -734,7 +733,7 @@ def api_github_webhook(
         # This is nothing to worry about--get_event() returns None
         # for events that are valid but not yet handled by us.
         # See IGNORED_EVENTS, for example.
-        return json_success()
+        return json_success(request)
 
     subject = get_subject_based_on_type(payload, event)
 
@@ -747,7 +746,7 @@ def api_github_webhook(
     body = body_function(helper)
 
     check_send_webhook_message(request, user_profile, subject, body, event)
-    return json_success()
+    return json_success(request)
 
 
 def get_zulip_event_name(

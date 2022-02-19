@@ -19,6 +19,8 @@ exclude_lines =
     @abstractmethod
     # PEP 484 overloading syntax
     ^\s*\.\.\.
+    # Skipped unit tests
+    @skip
 
 [run]
 data_file=var/.coverage

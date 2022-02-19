@@ -11,16 +11,16 @@ outside of the handful of people who do a ton of reviews -- and
 `@`-mention them with something like "`@person`, would you review
 this?". Good choices include
 
-- someone based in your timezone or a nearby timezone
+- someone based in your time zone or a nearby time zone
 - people working on similar things, or in a loosely related area
 
 Alternatively, posting a message in
 [#code-review](https://chat.zulip.org/#narrow/stream/91-code-review) on [the Zulip
-development community server](https://zulip.com/developer-community/), would
+development community server](https://zulip.com/development-community/), would
 help in reaching out to a wider group of reviewers. Either way, please be
 patient and mindful of the fact that it isn't possible to provide a
 quick reply always, but that the reviewer would get to it sooner or later.
-Lastly, ensuring the your PR passes CI and is organized into coherent
+Lastly, ensuring that your PR passes CI and is organized into coherent
 commits would help save reviewers time, which could otherwise be used
 to dive right into reviewing the PR's core functionality.
 
@@ -98,7 +98,7 @@ just saying you're busy and when you'll have time to look harder -- is
 still really valuable for the author and for anyone else who might
 review the PR.
 
-People in the Zulip project live and work in many timezones, and code
+People in the Zulip project live and work in many time zones, and code
 reviewers also need focused chunks of time to write code and do other
 things, so an immediate reply isn't always possible. But a good
 benchmark is to try to always reply **within one workday**, at least
@@ -117,7 +117,7 @@ sooner is better.
   the job to fail by clicking on the failed job. This will open
   up a page in the CI that has more details on why the job failed.
   For example [this](https://github.com/zulip/zulip/runs/2092955762)
-  is the page of the `Ubuntu 18.04 Bionic (Python 3.6, backend + frontend)` job.
+  is the page of the "Debian 10 Buster (Python 3.7, backend + frontend)" job.
   See our docs on [continuous integration](../testing/continuous-integration.md)
   to learn more.
 
@@ -170,8 +170,8 @@ sooner is better.
   conflicts) if there are still user experience issues under
   discussion for the feature itself.
 
-- _Completeness._ For refactorings, verify that the changes are
-  complete. Usually one can check that efficiently using `git grep`,
+- _Completeness._ When reviewing a refactor, verify that the changes are
+  complete. Usually, one can check that efficiently using `git grep`,
   and it's worth it, as we very frequently find issues by doing so.
 
 - _Documentation updates._ If this changes how something works, does it

@@ -47,7 +47,7 @@
           {
             "amount": 240000,
             "currency": "usd",
-            "description": "Zulip Standard - renewal",
+            "description": "Zulip Cloud Standard - renewal",
             "discount_amounts": [],
             "discountable": false,
             "discounts": [],
@@ -113,7 +113,7 @@
       "quote": null,
       "receipt_number": null,
       "starting_balance": 0,
-      "statement_descriptor": "Zulip Standard",
+      "statement_descriptor": "Zulip Cloud Standard",
       "status": "open",
       "status_transitions": {
         "finalized_at": 1000000000,
@@ -243,7 +243,7 @@
       "quote": null,
       "receipt_number": null,
       "starting_balance": 0,
-      "statement_descriptor": "Zulip Standard",
+      "statement_descriptor": "Zulip Cloud Standard",
       "status": "open",
       "status_transitions": {
         "finalized_at": 1000000000,
@@ -351,7 +351,7 @@
           {
             "amount": 160000,
             "currency": "usd",
-            "description": "Zulip Standard - renewal",
+            "description": "Zulip Cloud Standard - renewal",
             "discount_amounts": [],
             "discountable": false,
             "discounts": [],
@@ -417,7 +417,7 @@
       "quote": null,
       "receipt_number": null,
       "starting_balance": 0,
-      "statement_descriptor": "Zulip Standard",
+      "statement_descriptor": "Zulip Cloud Standard",
       "status": "open",
       "status_transitions": {
         "finalized_at": 1000000000,
@@ -547,7 +547,7 @@
       "quote": null,
       "receipt_number": null,
       "starting_balance": 0,
-      "statement_descriptor": "Zulip Standard",
+      "statement_descriptor": "Zulip Cloud Standard",
       "status": "open",
       "status_transitions": {
         "finalized_at": 1000000000,
@@ -611,7 +611,7 @@
           {
             "amount": 4800,
             "currency": "usd",
-            "description": "Zulip Standard",
+            "description": "Zulip Cloud Standard",
             "discount_amounts": [],
             "discountable": false,
             "discounts": [],
@@ -721,7 +721,7 @@
       "quote": null,
       "receipt_number": null,
       "starting_balance": 0,
-      "statement_descriptor": "Zulip Standard",
+      "statement_descriptor": "Zulip Cloud Standard",
       "status": "paid",
       "status_transitions": {
         "finalized_at": 1000000000,

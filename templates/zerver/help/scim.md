@@ -12,7 +12,7 @@ The instructions below explain how to configure SCIM in Okta for Zulip
 Cloud customers. Like SAML, feature is currently only available in
 Zulip Cloud with the Zulip Cloud Plus plan.
 
-These instructions can also be used by self-hosters to setup the Okta
+These instructions can also be used by self-hosters to set up the Okta
 side of SCIM for their deployment.
 
 ## Configure SCIM with Okta

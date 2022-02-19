@@ -32,7 +32,7 @@ function make_person_highlighter(query) {
 function match_criteria(operators, criteria) {
     const filter = new Filter(operators);
     return criteria.some((cr) => {
-        if (Object.prototype.hasOwnProperty.call(cr, "operand")) {
+        if (Object.hasOwn(cr, "operand")) {
             return filter.has_operand(cr.operator, cr.operand);
         }
         return filter.has_operator(cr.operator);
@@ -64,7 +64,7 @@ function compare_by_huddle(huddle) {
         return person && person.user_id;
     });
 
-    // Construct dict for all huddles, so we can lookup each's recency
+    // Construct dict for all huddles, so we can look up each's recency
     const huddles = huddle_data.get_huddles();
     const huddle_dict = new Map();
     for (const [i, huddle] of huddles.entries()) {
@@ -282,6 +282,38 @@ function get_default_suggestion(operators) {
     return format_as_suggestion(operators);
 }
 
+export function get_topic_suggestions_from_candidates({candidate_topics, guess}) {
+    // This function is exported for unit testing purposes.
+    const max_num_topics = 10;
+
+    if (guess === "") {
+        // In the search UI, once you autocomplete the stream,
+        // we just show you the most recent topics before you even
+        // need to start typing any characters.
+        return candidate_topics.slice(0, max_num_topics);
+    }
+
+    // Once the user starts typing characters for a topic name,
+    // it is pretty likely they want to get suggestions for
+    // topics that may be fairly low in our list of candidates,
+    // so we do an aggressive search here.
+    //
+    // The following loop can be expensive if you have lots
+    // of topics in a stream, so we try to exit the loop as
+    // soon as we find enough matches.
+    const topics = [];
+    for (const topic of candidate_topics) {
+        if (common.phrase_match(guess, topic)) {
+            topics.push(topic);
+            if (topics.length >= max_num_topics) {
+                break;
+            }
+        }
+    }
+
+    return topics;
+}
+
 function get_topic_suggestions(last, operators) {
     const invalid = [
         {operator: "pm-with"},
@@ -343,22 +375,21 @@ function get_topic_suggestions(last, operators) {
     }
 
     // Fetch topic history from the server, in case we will need it.
+    // Note that we won't actually use the results from the server here
+    // for this particular keystroke from the user, because we want to
+    // show results immediately. Assuming the server responds quickly,
+    // as the user makes their search more specific, subsequent calls to
+    // this function will get more candidates from calling
+    // stream_topic_history.get_recent_topic_names.
     stream_topic_history_util.get_server_history(stream_id, () => {});
-    let topics = stream_topic_history.get_recent_topic_names(stream_id);
 
-    if (!topics || !topics.length) {
+    const candidate_topics = stream_topic_history.get_recent_topic_names(stream_id);
+
+    if (!candidate_topics || !candidate_topics.length) {
         return [];
     }
 
-    // Be defensive here in case stream_data.get_recent_topics gets
-    // super huge, but still slice off enough topics to find matches.
-    topics = topics.slice(0, 300);
-
-    if (guess !== "") {
-        topics = topics.filter((topic) => common.phrase_match(guess, topic));
-    }
-
-    topics = topics.slice(0, 10);
+    const topics = get_topic_suggestions_from_candidates({candidate_topics, guess});
 
     // Just use alphabetical order.  While recency and read/unreadness of
     // topics do matter in some contexts, you can get that from the left sidebar,
@@ -512,10 +543,6 @@ function get_has_filter_suggestions(last, operators) {
 }
 
 function get_sent_by_me_suggestions(last, operators) {
-    if (page_params.is_spectator) {
-        return [];
-    }
-
     const last_string = Filter.unparse([last]).toLowerCase();
     const negated = last.negated || (last.operator === "search" && last.operand[0] === "-");
     const negated_symbol = negated ? "-" : "";
@@ -641,7 +668,6 @@ export function get_search_result(base_query, query) {
     }
 
     const person_suggestion_ops = ["sender", "pm-with", "from", "group-pm"];
-    const search_operators_len = search_operators.length;
 
     // Handle spaces in person name in new suggestions only. Checks if the last operator is 'search'
     // and the second last operator in search_operators is one out of person_suggestion_ops.
@@ -650,11 +676,11 @@ export function get_search_result(base_query, query) {
     // is an email of a user, both of these operators remain unchanged. Otherwise search operator
     // will be deleted and new last will become {operator:'sender', operand: 'Ted sm`....}.
     if (
-        search_operators_len > 1 &&
+        search_operators.length > 1 &&
         last.operator === "search" &&
-        person_suggestion_ops.includes(search_operators[search_operators_len - 2].operator)
+        person_suggestion_ops.includes(search_operators.at(-2).operator)
     ) {
-        const person_op = search_operators[search_operators_len - 2];
+        const person_op = search_operators.at(-2);
         if (!people.reply_to_to_user_ids_string(person_op.operand)) {
             last = {
                 operator: person_op.operator,
@@ -662,11 +688,11 @@ export function get_search_result(base_query, query) {
                 negated: person_op.negated,
             };
             if (page_params.search_pills_enabled) {
-                all_operators[all_operators.length - 2] = last;
-                all_operators.splice(-1, 1);
+                all_operators.splice(-2);
+                all_operators.push(last);
             }
-            search_operators[search_operators_len - 2] = last;
-            search_operators.splice(-1, 1);
+            search_operators.splice(-2);
+            search_operators.push(last);
         }
     }
 
@@ -691,7 +717,8 @@ export function get_search_result(base_query, query) {
         };
     }
 
-    const filterers = [
+    // Remember to update the spectator list when changing this.
+    let filterers = [
         get_streams_filter_suggestions,
         get_is_filter_suggestions,
         get_sent_by_me_suggestions,
@@ -705,6 +732,17 @@ export function get_search_result(base_query, query) {
         get_operator_suggestions,
         get_has_filter_suggestions,
     ];
+
+    if (page_params.is_spectator) {
+        filterers = [
+            get_stream_suggestions,
+            get_people("sender"),
+            get_people("from"),
+            get_topic_suggestions,
+            get_operator_suggestions,
+            get_has_filter_suggestions,
+        ];
+    }
 
     if (!page_params.search_pills_enabled) {
         all_operators = search_operators;

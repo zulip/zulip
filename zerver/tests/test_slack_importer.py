@@ -43,7 +43,7 @@ from zerver.data_import.slack import (
 )
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import get_test_image_file
+from zerver.lib.test_helpers import read_test_image_file
 from zerver.lib.topic import EXPORT_TOPIC_NAME
 from zerver.models import Realm, RealmAuditLog, Recipient, UserProfile, get_realm
 
@@ -392,7 +392,7 @@ class SlackImporter(ZulipTestCase):
                 "is_bot": False,
                 "is_mirror_dummy": False,
                 "profile": {
-                    "email": "geroge@yahoo.com",
+                    "email": "george@yahoo.com",
                     "avatar_hash": "hash",
                     "image_32": "https://secure.gravatar.com/avatar/random5.png",
                 },
@@ -1103,8 +1103,7 @@ class SlackImporter(ZulipTestCase):
             {},
             team_info_fixture["team"],
         ]
-        with get_test_image_file("img.png") as f:
-            mock_requests_get.return_value.raw = BytesIO(f.read())
+        mock_requests_get.return_value.raw = BytesIO(read_test_image_file("img.png"))
 
         with self.assertLogs(level="INFO"):
             do_convert_data(test_slack_zip_file, output_dir, token)

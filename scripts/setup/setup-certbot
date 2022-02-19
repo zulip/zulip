@@ -5,7 +5,7 @@ set -e
 usage() {
     cat <<EOF >&2
 Usage: $0 --email=admin@example.com [--method={webroot|standalone}] \
-[--no-zulip-conf] hostname.example.com [another.example.com]
+hostname.example.com [another.example.com]
 EOF
     exit 1
 }
@@ -16,7 +16,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 method=webroot
-args="$(getopt -o '' --long help,email:,method:,deploy-hook:,no-zulip-conf,agree-tos -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,email:,method:,skip-symlink,agree-tos -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
@@ -30,17 +30,12 @@ while true; do
             shift
             shift
             ;;
-        --deploy-hook)
-            deploy_hook=(--deploy-hook "$2")
-            shift
+        --skip-symlink)
+            skip_symlink=1
             shift
             ;;
         --agree-tos)
             agree_tos=--agree-tos
-            shift
-            ;;
-        --no-zulip-conf)
-            no_zulip_conf=1
             shift
             ;;
         --help)
@@ -71,7 +66,7 @@ fi
 
 case "$method" in
     standalone)
-        method_args=(--standalone)
+        method_args=(--standalone --no-directory-hooks)
         ;;
     webroot)
         method_args=(--webroot '--webroot-path=/var/lib/zulip/certbot-webroot/')
@@ -112,7 +107,6 @@ esac
 certbot certonly "${method_args[@]}" \
     "${HOSTNAMES[@]}" -m "$EMAIL" \
     $agree_tos \
-    "${deploy_hook[@]}" \
     --force-interactive --no-eff-email
 
 symlink_with_backup() {
@@ -125,22 +119,18 @@ symlink_with_backup() {
     ln -nsf "$1" "$2"
 }
 
-if [ ${#deploy_hook} -eq 0 ]; then
-    # If no deploy hook was specified, assume we're deploying to the default
-    # location Zulip wants.
+if [ -z "$skip_symlink" ]; then
     CERT_DIR=/etc/letsencrypt/live/"$DOMAIN"
     symlink_with_backup "$CERT_DIR"/privkey.pem /etc/ssl/private/zulip.key
     symlink_with_backup "$CERT_DIR"/fullchain.pem /etc/ssl/certs/zulip.combined-chain.crt
 fi
 
+# "certbot certonly" does not run deploy hooks, so reload nginx if
+# need be to pick up the new certificate.
 case "$method" in
     webroot)
         service nginx reload
         ;;
 esac
-
-if [ -z "$no_zulip_conf" ]; then
-    crudini --set /etc/zulip/zulip.conf certbot auto_renew yes
-fi
 
 echo "Certbot SSL certificate configuration succeeded."

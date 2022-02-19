@@ -104,10 +104,10 @@ const short_msg = {
 };
 
 function test(label, f) {
-    run_test(label, ({override, mock_template}) => {
+    run_test(label, ({override, override_rewire, mock_template}) => {
         $("#draft_overlay").css = () => {};
         localStorage.clear();
-        f({override, mock_template});
+        f({override, override_rewire, mock_template});
     });
 }
 
@@ -139,7 +139,7 @@ test("draft_model edit", () => {
     const unread_count = $('<span class="unread_count"></span>');
     $(".top_left_drafts").set_find_results(".unread_count", unread_count);
 
-    with_overrides((override) => {
+    with_overrides(({override}) => {
         override(Date, "now", () => 1);
         const expected = {...draft_1};
         expected.updatedAt = 1;
@@ -147,7 +147,7 @@ test("draft_model edit", () => {
         assert.deepEqual(draft_model.getDraft(id), expected);
     });
 
-    with_overrides((override) => {
+    with_overrides(({override}) => {
         override(Date, "now", () => 2);
         const expected = {...draft_2};
         expected.updatedAt = 2;
@@ -201,11 +201,11 @@ test("snapshot_message", ({override}) => {
     assert.equal(drafts.snapshot_message(), undefined);
 });
 
-test("initialize", ({override}) => {
+test("initialize", ({override_rewire}) => {
     window.addEventListener = (event_name, f) => {
         assert.equal(event_name, "beforeunload");
         let called = false;
-        override(drafts, "update_draft", () => {
+        override_rewire(drafts, "update_draft", () => {
             called = true;
         });
         f();
@@ -320,7 +320,7 @@ test("delete_all_drafts", () => {
     assert.deepEqual(draft_model.get(), {});
 });
 
-test("format_drafts", ({override, mock_template}) => {
+test("format_drafts", ({override_rewire, mock_template}) => {
     function feb12() {
         return new Date(1549958107000); // 2/12/2019 07:55:07 AM (UTC+0)
     }
@@ -419,7 +419,9 @@ test("format_drafts", ({override, mock_template}) => {
     assert.deepEqual(draft_model.get(), data);
 
     const stub_render_now = timerender.render_now;
-    override(timerender, "render_now", (time) => stub_render_now(time, new Date(1549958107000)));
+    override_rewire(timerender, "render_now", (time) =>
+        stub_render_now(time, new Date(1549958107000)),
+    );
 
     sub_store.get = function (stream_id) {
         assert.equal(stream_id, 30);
@@ -432,8 +434,8 @@ test("format_drafts", ({override, mock_template}) => {
         return "<draft table stub>";
     });
 
-    override(drafts, "open_overlay", noop);
-    override(drafts, "set_initial_element", noop);
+    override_rewire(drafts, "open_overlay", noop);
+    override_rewire(drafts, "set_initial_element", noop);
 
     $.create("#drafts_table .draft-row", {children: []});
     drafts.launch();

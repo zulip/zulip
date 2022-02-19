@@ -25,7 +25,8 @@
             font-size: 1.5rem;
             color: hsl(0, 0%, 67%);
             font-weight: 600;
-            margin: 1px 15px;
+            margin: 0 15px;
+            cursor: pointer;
         }
     }
 

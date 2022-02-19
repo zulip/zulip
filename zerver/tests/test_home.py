@@ -13,7 +13,7 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from corporate.models import Customer, CustomerPlan
-from zerver.lib.actions import change_user_is_active, do_change_plan_type, do_create_user
+from zerver.lib.actions import change_user_is_active, do_change_realm_plan_type, do_create_user
 from zerver.lib.compatibility import LAST_SERVER_UPGRADE_TIME, is_outdated_server
 from zerver.lib.home import (
     get_billing_info,
@@ -219,7 +219,7 @@ class HomeTest(ZulipTestCase):
     def test_home(self) -> None:
         # Keep this list sorted!!!
         html_bits = [
-            "start the conversation",
+            "message_feed_errors_container",
             "Loading...",
             # Verify that the app styles get included
             "app-stubentry.js",
@@ -313,7 +313,7 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, "/login/")
 
-        # Tell server that user wants to login anonymously
+        # Tell server that user wants to log in anonymously
         # Redirects to load webapp.
         realm = get_realm("zulip")
         result = self.client_post("/", {"prefers_web_public_view": "true"})
@@ -360,7 +360,7 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(actual_keys, expected_keys)
         self.assertEqual(self.client.session.get("prefers_web_public_view"), True)
 
-        # Web public session key should clear once user is logged in
+        # Web-public session key should clear once user is logged in
         self.login("hamlet")
         self.client_get("/")
         self.assertEqual(self.client.session.get("prefers_web_public_view"), None)
@@ -387,6 +387,7 @@ class HomeTest(ZulipTestCase):
             # Should be successful after calling 2fa login function.
             self.check_rendered_logged_in_app(result)
 
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_num_queries_for_realm_admin(self) -> None:
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")
@@ -446,7 +447,7 @@ class HomeTest(ZulipTestCase):
         which still want the home page to load properly.
         """
         html = result.content.decode()
-        if "start a conversation" not in html:
+        if "message_feed_errors_container" not in html:
             raise AssertionError("Home page probably did not load.")
 
     def test_terms_of_service(self) -> None:
@@ -457,12 +458,11 @@ class HomeTest(ZulipTestCase):
             user.tos_version = user_tos_version
             user.save()
 
-            with self.settings(TERMS_OF_SERVICE="whatever"), self.settings(TOS_VERSION="99.99"):
-
+            with self.settings(TERMS_OF_SERVICE_VERSION="99.99"):
                 result = self.client_get("/", dict(stream="Denmark"))
 
             html = result.content.decode()
-            self.assertIn("Accept the new Terms of Service", html)
+            self.assertIn("Accept the Terms of Service", html)
 
     def test_banned_desktop_app_versions(self) -> None:
         user = self.example_user("hamlet")
@@ -494,8 +494,8 @@ class HomeTest(ZulipTestCase):
         user.tos_version = None
         user.save()
 
-        with self.settings(FIRST_TIME_TOS_TEMPLATE="hello.html"), self.settings(
-            TOS_VERSION="99.99"
+        with self.settings(FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE="zerver/hello.html"), self.settings(
+            TERMS_OF_SERVICE_VERSION="99.99"
         ):
             result = self.client_post("/accounts/accept_terms/")
             self.assertEqual(result.status_code, 200)
@@ -752,7 +752,7 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_plans)
 
         # realm owner, with inactive CustomerPlan and realm plan_type LIMITED -> show billing link and plans
-        do_change_plan_type(user.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
         with self.settings(CORPORATE_ENABLED=True):
             billing_info = get_billing_info(user)
         self.assertTrue(billing_info.show_billing)
@@ -781,7 +781,7 @@ class HomeTest(ZulipTestCase):
         # billing admin, with CustomerPlan and realm plan_type STANDARD -> show only billing link
         user.role = UserProfile.ROLE_MEMBER
         user.is_billing_admin = True
-        do_change_plan_type(user.realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
+        do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
         user.save(update_fields=["role", "is_billing_admin"])
         with self.settings(CORPORATE_ENABLED=True):
             billing_info = get_billing_info(user)
@@ -789,7 +789,7 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_plans)
 
         # billing admin, with CustomerPlan and realm plan_type PLUS -> show only billing link
-        do_change_plan_type(user.realm, Realm.PLAN_TYPE_PLUS, acting_user=None)
+        do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_PLUS, acting_user=None)
         user.save(update_fields=["role", "is_billing_admin"])
         with self.settings(CORPORATE_ENABLED=True):
             billing_info = get_billing_info(user)
@@ -797,7 +797,7 @@ class HomeTest(ZulipTestCase):
         self.assertFalse(billing_info.show_plans)
 
         # member, with CustomerPlan and realm plan_type STANDARD -> neither billing link or plans
-        do_change_plan_type(user.realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
+        do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
         user.is_billing_admin = False
         user.save(update_fields=["is_billing_admin"])
         with self.settings(CORPORATE_ENABLED=True):
@@ -808,7 +808,7 @@ class HomeTest(ZulipTestCase):
         # guest, with CustomerPlan and realm plan_type SELF_HOSTED -> neither billing link or plans
         user.role = UserProfile.ROLE_GUEST
         user.save(update_fields=["role"])
-        do_change_plan_type(user.realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=None)
+        do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=None)
         with self.settings(CORPORATE_ENABLED=True):
             billing_info = get_billing_info(user)
         self.assertFalse(billing_info.show_billing)
@@ -842,7 +842,7 @@ class HomeTest(ZulipTestCase):
     def test_promote_sponsoring_zulip_in_realm(self) -> None:
         realm = get_realm("zulip")
 
-        do_change_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=None)
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=None)
         promote_zulip = promote_sponsoring_zulip_in_realm(realm)
         self.assertTrue(promote_zulip)
 
@@ -850,15 +850,15 @@ class HomeTest(ZulipTestCase):
             promote_zulip = promote_sponsoring_zulip_in_realm(realm)
         self.assertFalse(promote_zulip)
 
-        do_change_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=None)
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=None)
         promote_zulip = promote_sponsoring_zulip_in_realm(realm)
         self.assertTrue(promote_zulip)
 
-        do_change_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
         promote_zulip = promote_sponsoring_zulip_in_realm(realm)
         self.assertFalse(promote_zulip)
 
-        do_change_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
         promote_zulip = promote_sponsoring_zulip_in_realm(realm)
         self.assertFalse(promote_zulip)
 

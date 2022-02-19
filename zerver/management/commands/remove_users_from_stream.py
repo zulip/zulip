@@ -25,7 +25,7 @@ class Command(ZulipBaseCommand):
         stream_name = options["stream"].strip()
         stream = get_stream(stream_name, realm)
 
-        result = bulk_remove_subscriptions(user_profiles, [stream], acting_user=None)
+        result = bulk_remove_subscriptions(realm, user_profiles, [stream], acting_user=None)
         not_subscribed = result[1]
         not_subscribed_users = {tup[0] for tup in not_subscribed}
 

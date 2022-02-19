@@ -12,10 +12,10 @@ window.location.hash = "#bogus";
 const browser_history = zrequire("browser_history");
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, (...args) => {
         window.location.hash = "#bogus";
         browser_history.clear_for_testing();
-        f({override});
+        f(...args);
     });
 }
 
@@ -49,10 +49,10 @@ test("error for bad hashes", () => {
     browser_history.update(hash);
 });
 
-test("update internal hash if required", ({override}) => {
+test("update internal hash if required", ({override_rewire}) => {
     const hash = "#test/hash";
     const stub = make_stub();
-    override(browser_history, "update", stub.f);
+    override_rewire(browser_history, "update", stub.f);
     browser_history.update_hash_internally_if_required(hash);
     assert.equal(stub.num_calls, 1);
 
@@ -66,7 +66,7 @@ test("update internal hash if required", ({override}) => {
     assert.equal(stub.num_calls, 1);
 });
 
-test("web public view hash restore", () => {
+test("web-public view hash restore", () => {
     browser_history.update("#");
     assert.equal(window.location.hash, "");
     const new_hash = "#narrow/is/private";

@@ -15,7 +15,7 @@ communication with students, and among the 30-50 person course staff.
 
 [Tobias Lasser](https://ciip.in.tum.de/people/lasser.html), lecturer
 at the TUM Department of Informatics, set out to teach an introductory
-algorithms class with 1400 students in April 2020, as the Covid-19
+algorithms class with 1400 students in April 2020, as the COVID-19
 pandemic was sweeping across Europe. With instruction moving online,
 he knew that finding an effective communication platform was more
 important than ever.

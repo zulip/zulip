@@ -106,7 +106,7 @@ application:
 
 - PostgreSQL
 - RabbitMQ
-- Nginx
+- nginx
 - Redis
 - memcached
 
@@ -158,7 +158,7 @@ regularly install apt upgrades manually!
 :::
 
 Restarting one of the system services that Zulip uses (PostgreSQL,
-memcached, Redis, or Rabbitmq) will drop the connections that
+memcached, Redis, or RabbitMQ) will drop the connections that
 Zulip processes have to the service, resulting in future operations on
 those connections throwing errors.
 
@@ -216,7 +216,7 @@ standard stuff:
   especially for the database and where uploads are stored.
 - Service uptime and standard monitoring for the [services Zulip
   depends on](#troubleshooting-services). Most monitoring software
-  has standard plugins for Nginx, PostgreSQL, Redis, RabbitMQ,
+  has standard plugins for nginx, PostgreSQL, Redis, RabbitMQ,
   and memcached, and those will work well with Zulip.
 - `supervisorctl status` showing all services `RUNNING`.
 - Checking for processes being OOM killed.

@@ -89,7 +89,7 @@ to learn more about creating and applying database migrations.
 
 **Test your changes:** Once you've run the migration, flush memcached
 on your development server (`./scripts/setup/flush-memcached`) and then
-[restart the development server](../development/remote.html?highlight=tools%2Frun-dev.py#running-the-development-server)
+[restart the development server](../development/remote.html#running-the-development-server)
 to avoid interacting with cached objects.
 
 ### Backend changes
@@ -156,10 +156,11 @@ any existing documentation that might be relevant to the new feature.
 For detailed information on the kinds of documentation Zulip has, see
 [Documentation](../documentation/overview.md).
 
-**End user documentation:** You will likely need to at least update,
-extend and link to `/help` articles that are related to your new
-feature. See [User documentation](../documentation/user.md) for more
-detailed information about writing and editing feature `/help` articles.
+**Help center documentation:** You will likely need to at least update,
+extend and link to `/help/` articles that are related to your new
+feature. [Writing help center articles](../documentation/helpcenter.md)
+provides more detailed information about writing and editing feature
+`/help/` articles.
 
 **API documentation:** A new feature will probably impact the REST API
 documentation as well, which will mean updating `zerver/openapi/zulip.yaml`
@@ -264,7 +265,7 @@ Running migrations:
 ```
 
 Once you've run the migration, restart memcached on your development
-server (`/etc/init.d/memcached restart`) and then [restart the development server](../development/remote.html?highlight=tools%2Frun-dev.py#running-the-development-server)
+server (`/etc/init.d/memcached restart`) and then [restart the development server](../development/remote.html#running-the-development-server)
 to avoid interacting with cached objects.
 
 ### Handle database interactions
@@ -575,7 +576,7 @@ in. For example in this case of `mandatory_topics` it will lie in
 
 _If you're not sure in which section your feature belongs, it's
 better to discuss it in
-[the Zulip development community](https://zulip.com/developer-community/)
+[the Zulip development community](https://zulip.com/development-community/)
 before implementing it._
 
 Note that some settings, like `realm_msg_edit_limit_setting`,
@@ -686,15 +687,15 @@ important to make sure that your new feature is well documented.
 This example feature adds new functionality that requires messages to
 have topics if the setting is enabled. A recommended way to document
 this feature would be to update and/or augment Zulip's existing
-[end user documentation (Help Center)](https://zulip.com/help/)
-to reflect your changes and additions.
+[help center documentation](https://zulip.com/help/) to reflect your
+changes and additions.
 
 At the very least, this will involve modifying (or adding) a Markdown
 file documenting the feature to `templates/zerver/help/` in the main
 Zulip server repository, where the source for Zulip's end user
 documentation is stored. Details about writing, editing and testing
 these Markdown files can be found in:
-[User documentation](../documentation/user.md).
+[Writing help center articles](../documentation/helpcenter.md).
 
 Also, new features will often impact Zulip's REST API documentation,
 which is found in `zerver/openapi/zulip.yaml`. You may have noticed
