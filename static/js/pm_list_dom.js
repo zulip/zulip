@@ -19,13 +19,13 @@ export function keyed_pm_li(convo) {
     };
 }
 
-export function pm_ul(convos) {
+export function pm_ul(nodes) {
     const attrs = [
         ["class", "expanded_private_messages"],
         ["data-name", "private"],
     ];
     return vdom.ul({
         attrs,
-        keyed_nodes: convos.map((convo) => keyed_pm_li(convo)),
+        keyed_nodes: nodes,
     });
 }
