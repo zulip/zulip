@@ -27,6 +27,17 @@ body.dark-theme {
         color: inherit;
     }
 
+    .narrows_panel {
+        li a {
+            color: inherit;
+
+            &:hover {
+                text-decoration: none;
+                color: inherit;
+            }
+        }
+    }
+
     /************************* MODAL DARK THEME *******************/
     .dialog_cancel_button {
         background-color: hsl(211, 29%, 14%);
@@ -240,6 +251,10 @@ body.dark-theme {
 
     .private-message .alert-msg {
         background-color: hsl(208, 17%, 29%);
+    }
+
+    .active_private_messages_section {
+        background-color: hsla(199,33%,46%,.2);
     }
 
     /* do not turn the .message_header .stream_label text dark on hover because they're

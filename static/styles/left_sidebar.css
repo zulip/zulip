@@ -47,7 +47,7 @@ $topic_resolve_width: 13px;
 
 .pm_left_col {
     min-width: $left_col_size;
-    margin-left: 15px;
+    margin-left: 13px;
 }
 
 #stream_filters,
@@ -59,6 +59,32 @@ li.show-more-topics {
     a {
         font-size: 12px;
         margin-left: $topic_resolve_width;
+    }
+}
+
+#all_private_messages_icon {
+    opacity: 0.7;
+    display: inline;
+    right: 0;
+    position: absolute;
+    margin-right: 24px;
+    margin-top: 3px;
+
+    &:hover {
+        opacity: 1;
+        cursor: pointer;
+    }
+}
+
+#toggle_private_messages_section_icon {
+    opacity: 0.7;
+    padding: 1px;
+    width: 11px;
+    margin-left: 4.5px;
+
+    &:hover {
+        opacity: 1;
+        cursor: pointer;
     }
 }
 
@@ -122,7 +148,7 @@ li.show-more-topics {
     }
 
     .subscription_block .unread_count {
-        margin-right: 15px;
+        margin-right: 20px;
     }
 
     .subscription_block {
@@ -164,6 +190,7 @@ li.show-more-topics {
 .narrows_panel {
     li a {
         margin-top: 1px;
+        color: inherit;
 
         &:hover {
             text-decoration: none;
@@ -180,18 +207,10 @@ li.show-more-topics {
     width: 100%;
 }
 
-#private-container {
-    max-height: 210px;
-
-    /* Match the opacity for global-filters icons. */
-    span.fa-group {
-        opacity: 0.7;
-    }
-}
-
 :not(.active-sub-filter) {
     &.top_left_row:hover,
     &.bottom_left_row:hover,
+    &.expanded_private_message:hover,
     &#stream_filters li.highlighted_stream {
         background-color: hsla(120, 12.3%, 71.4%, 0.38);
         border-radius: 4px;
@@ -291,7 +310,6 @@ li.active-sub-filter {
 }
 
 li.top_left_all_messages,
-.private_messages_header,
 li.top_left_mentions,
 li.top_left_starred_messages,
 li.top_left_drafts,
@@ -310,10 +328,12 @@ li.top_left_recent_topics {
     padding-right: 10px;
 }
 
-.top_left_row,
-.bottom_left_row,
-.top_left_private_messages {
-    border-radius: 4px;
+#private_messages_unread_count {
+    margin-right: 36px;
+}
+
+.private_message_unread_count {
+    margin-right: 16px;
 }
 
 .conversation-partners {
@@ -323,12 +343,6 @@ li.top_left_recent_topics {
 .top_left_all_messages i.fa-align-left {
     position: relative;
     font-size: 15px;
-}
-
-.top_left_private_messages i.fa-envelope {
-    position: relative;
-    top: -1px;
-    font-size: 11px;
 }
 
 .top_left_mentions i.fa-at,
@@ -460,7 +474,6 @@ ul.expanded_private_messages {
     }
     font-weight: 400;
     margin-left: 0;
-    padding-bottom: 2px;
 }
 
 li.topic-list-item {
@@ -478,16 +491,6 @@ li.expanded_private_message {
     }
 }
 
-.show-all-streams {
-    a {
-        color: hsl(0, 0%, 20%);
-    }
-
-    .fa-chevron-left {
-        text-decoration: none;
-    }
-}
-
 .pm-box,
 .topic-box {
     display: flex;
@@ -500,6 +503,7 @@ li.expanded_private_message {
 .pm-box {
     margin-right: 20px;
     align-items: center;
+    text-align: left;
 
     .user_circle {
         min-width: 8px;
@@ -512,6 +516,11 @@ li.expanded_private_message {
     }
 }
 
+#more-pm-conversations {
+    text-align: left;
+    margin-left: 31px;
+}
+
 .zero-pm-unreads .pm-box,
 .zero-topic-unreads .more-topics-box,
 .zero-topic-unreads .topic-box {
@@ -519,26 +528,62 @@ li.expanded_private_message {
 }
 
 .zoom-out {
-    #topics_header {
+    #topics_header,
+    #more_pms_header {
         display: none;
     }
 }
 
-#topics_header {
+#topics_header,
+#more_pms_header {
     margin-right: 10px;
     color: hsl(0, 0%, 43%);
+    margin-top: 3px;
 
     a {
         color: inherit;
         text-decoration: none;
         text-transform: uppercase;
+    }
 
-        i {
-            margin: 0 5px 0 10px;
-            position: relative;
-            top: 1px;
+    .hide-more-pms,
+    .show-all-streams {
+        margin-left: 13px;
+
+        .fa-chevron-left {
+            margin-right: 3px;
         }
     }
+}
+
+#private_messages {
+    margin-bottom: 16px;
+    margin-right: 12px;
+    padding-top: 5px;
+}
+
+.active_private_messages_section {
+    background-color: hsl(202, 56%, 91%);
+    border-radius: 4px;
+}
+
+#private_messages_header {
+    padding-left: 9px;
+    cursor: pointer;
+    margin-top: 3px;
+
+    a {
+        display: inline;
+        color: inherit;
+        text-decoration: none;
+        outline: none;
+        border: none;
+    }
+}
+
+#more_pms_unread_count {
+    margin-right: 36px;
+    margin-top: 1px;
 }
 
 #streams_header {
