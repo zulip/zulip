@@ -13,7 +13,7 @@ Jinja2
 
 # Needed for Markdown processing
 Markdown
-importlib-metadata;python_version<"3.10"  # for Markdown
+importlib-metadata ; python_version < "3.10"  # for Markdown
 Pygments
 jsx-lexer
 
@@ -121,6 +121,7 @@ py3dns
 # Install Python Social Auth
 social-auth-app-django
 social-auth-core[azuread,openidconnect,saml]
+python3-saml<1.13.0  # https://github.com/onelogin/python3-saml/pull/297
 
 # For encrypting a login token to the desktop app
 cryptography
@@ -159,7 +160,7 @@ requests-oauthlib
 
 # For OpenAPI schema validation.
 openapi-core
-openapi-schema-validator<0.2.0  # https://github.com/p1c2u/openapi-spec-validator/issues/135
+importlib-resources ; python_version < "3.9"  # for jsonschema
 
 # For reporting errors to sentry.io
 sentry-sdk
