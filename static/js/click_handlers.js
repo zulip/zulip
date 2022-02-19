@@ -32,15 +32,18 @@ import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics_ui from "./recent_topics_ui";
+import * as resize from "./resize";
 import * as rows from "./rows";
 import * as server_events from "./server_events";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
+import * as top_left_corner from "./top_left_corner";
 import * as topic_list from "./topic_list";
 import * as ui_util from "./ui_util";
 import {parse_html} from "./ui_util";
@@ -530,6 +533,41 @@ export function initialize() {
         if (sidebarHidden) {
             stream_popover.show_streamlist_sidebar();
         }
+    });
+
+    $("body").on("click", "#all_private_messages_icon", (e) => {
+        e.preventDefault();
+        $("#private_messages").addClass("active_private_messages_section");
+        top_left_corner.deselect_top_left_corner_items();
+        window.location.href = "#narrow/is/private";
+    });
+
+    $("#toggle_private_messages_section_icon").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        $("#toggle_private_messages_section_icon").toggleClass(
+            "'fa fa-caret-down fa-lg' 'fa fa-caret-right fa-lg'",
+        );
+        const private_messages_section_is_open = pm_list.return_private_messages_state();
+        const active_li = $(".expanded_private_messages li.active-sub-filter");
+        if (
+            !private_messages_section_is_open &&
+            ($(".expanded_private_messages").children().length === 0 ||
+                (active_li.is($(".expanded_private_messages").children()[0]) &&
+                    $(".expanded_private_messages").children().length === 1))
+        ) {
+            // To expand the PM section list we need the PM section state to be collapsed
+            // then there comes 2 possible conditions regarding the number of PMs present in the section
+            // either there should 0 PMs present or else only 1 which is active PM can be present in the collapsed PM section.
+            pm_list.expand();
+        } else {
+            // If we find all the PMs present already in the section (which indicates that PM section is expanded)
+            // we trigger function to close it and mark the state as collapsed.
+            pm_list.close();
+        }
+        setTimeout(() => {
+            resize.resize_sidebars();
+        }, 0);
     });
 
     $("#user_presences")
