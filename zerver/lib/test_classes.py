@@ -21,6 +21,7 @@ from typing import (
     Set,
     Tuple,
     Union,
+    cast,
 )
 from unittest import TestResult, mock
 
@@ -541,8 +542,10 @@ Output:
     def _get_page_params(self, result: HttpResponse) -> Dict[str, Any]:
         """Helper for parsing page_params after fetching the web app's home view."""
         doc = lxml.html.document_fromstring(result.content)
-        [div] = doc.xpath("//div[@id='page-params']")
+        div = cast(lxml.html.HtmlMixin, doc).get_element_by_id("page-params")
+        assert div is not None
         page_params_json = div.get("data-params")
+        assert page_params_json is not None
         page_params = orjson.loads(page_params_json)
         return page_params
 

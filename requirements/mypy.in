@@ -7,7 +7,7 @@ mypy
 backoff-stubs
 boto3-stubs[s3]
 lxml-stubs
-sqlalchemy[mypy]
+SQLAlchemy[mypy]
 types-beautifulsoup4
 types-boto
 types-certifi
@@ -31,4 +31,4 @@ types-requests
 types-six
 types-stripe
 
-importlib-metadata;python_version<"3.10"  # for sqlalchemy
+importlib-metadata ; python_version < "3.10"  # for SQLAlchemy
