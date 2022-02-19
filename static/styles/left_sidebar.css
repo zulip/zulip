@@ -376,6 +376,7 @@ li.top_left_recent_topics {
         display: inline-block;
         width: 13px;
         vertical-align: middle;
+        opacity: 1 !important;
     }
 
     /*
