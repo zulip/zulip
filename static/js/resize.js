@@ -240,7 +240,9 @@ export function resize_sidebars() {
     const h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
 
     $("#buddy_list_wrapper").css("max-height", h.buddy_list_wrapper_max_height);
-    $("#stream-filters-container").css("max-height", h.stream_filters_max_height);
+    let height = h.stream_filters_max_height;
+    height = height - $("#private_messages").safeOuterHeight(true);
+    $("#stream-filters-container").css("max-height", height);
 
     return h;
 }
