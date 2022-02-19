@@ -24,6 +24,7 @@ import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as pm_list from "./pm_list";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as resize from "./resize";
@@ -427,6 +428,7 @@ export function activate(raw_operators, opts) {
     const current_filter = narrow_state.filter();
 
     top_left_corner.handle_narrow_activated(current_filter);
+    pm_list.handle_narrow_activated(current_filter);
     stream_list.handle_narrow_activated(current_filter);
     typing_events.render_notifications_for_narrow();
     message_view_header.initialize();
@@ -833,6 +835,7 @@ function handle_post_narrow_deactivate_processes() {
     }
 
     top_left_corner.handle_narrow_deactivated();
+    pm_list.handle_narrow_deactivated();
     stream_list.handle_narrow_deactivated();
     compose_closed_ui.update_buttons_for_stream();
     message_edit.handle_narrow_deactivated();

@@ -1,6 +1,5 @@
 import $ from "jquery";
 
-import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as resize from "./resize";
 import * as ui_util from "./ui_util";
@@ -28,33 +27,11 @@ function remove(elem) {
     elem.removeClass("active-filter active-sub-filter");
 }
 
-function deselect_top_left_corner_items() {
+export function deselect_top_left_corner_items() {
     remove($(".top_left_all_messages"));
-    remove($(".top_left_private_messages"));
     remove($(".top_left_starred_messages"));
     remove($(".top_left_mentions"));
     remove($(".top_left_recent_topics"));
-}
-
-function should_expand_pm_list(filter) {
-    const op_is = filter.operands("is");
-
-    if (op_is.length >= 1 && op_is.includes("private")) {
-        return true;
-    }
-
-    const op_pm = filter.operands("pm-with");
-
-    if (op_pm.length !== 1) {
-        return false;
-    }
-
-    const emails_strings = op_pm[0];
-    const emails = emails_strings.split(",");
-
-    const has_valid_emails = people.is_valid_bulk_emails_for_compose(emails);
-
-    return has_valid_emails;
 }
 
 export function handle_narrow_activated(filter) {
@@ -79,22 +56,17 @@ export function handle_narrow_activated(filter) {
         if (filter_name === "starred") {
             filter_li = $(".top_left_starred_messages");
             filter_li.addClass("active-filter");
+            pm_list.handle_narrow_deactivated();
         } else if (filter_name === "mentioned") {
             filter_li = $(".top_left_mentions");
             filter_li.addClass("active-filter");
+            pm_list.handle_narrow_deactivated();
         }
-    }
-
-    if (should_expand_pm_list(filter)) {
-        pm_list.expand();
-    } else {
-        pm_list.close();
     }
 }
 
 export function handle_narrow_deactivated() {
     deselect_top_left_corner_items();
-    pm_list.close();
 
     const filter_li = $(".top_left_all_messages");
     filter_li.addClass("active-filter");
@@ -102,11 +74,9 @@ export function handle_narrow_deactivated() {
 
 export function narrow_to_recent_topics() {
     remove($(".top_left_all_messages"));
-    remove($(".top_left_private_messages"));
     remove($(".top_left_starred_messages"));
     remove($(".top_left_mentions"));
     $(".top_left_recent_topics").addClass("active-filter");
-    pm_list.close();
     setTimeout(() => {
         resize.resize_stream_filters_container();
     }, 0);

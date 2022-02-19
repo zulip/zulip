@@ -11,6 +11,7 @@ import * as keydown_util from "./keydown_util";
 import {ListCursor} from "./list_cursor";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
+import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
@@ -437,6 +438,7 @@ export function update_stream_sidebar_for_narrow(filter) {
 
     if (!info.topic_selected) {
         stream_li.addClass("active-filter");
+        pm_list.handle_narrow_deactivated();
     }
 
     if (stream_id !== topic_list.active_stream_id()) {
