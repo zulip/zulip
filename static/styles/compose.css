@@ -232,28 +232,36 @@
     position: absolute;
     right: 0;
     float: right;
-
+    
     button {
-        background: transparent;
-        font-size: 20px;
-        font-weight: bold;
-        line-height: 20px;
-        opacity: 0.6;
+        background: transparent ;
+        opacity:0.6;
         border: 0;
-        padding: 0;
-        margin-left: 4px;
-        vertical-align: unset;
+        margin-left:-4px;
+        
 
         &:hover {
             opacity: 1;
         }
+        #compose_close{
+            font-weight:lighter !important;
+            text-shadow: none;
+            font-size: 15px;
+        }
+
     }
 }
 
-.collapse_composebox_button,
-#compose_close {
+.collapse_composebox_button {
     display: none;
 }
+.expand_composebox_button,
+.collapse_composebox_button {
+    font-size: 18px;
+    margin-top:-1px;
+    font-weight: bold;
+}
+
 
 .compose_invite_user,
 .compose_private_stream_alert,
