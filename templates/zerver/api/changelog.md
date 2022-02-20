@@ -21,6 +21,13 @@ format used by the Zulip server that they are interacting with.
 ## Changes in Zulip 5.0
 
 
+**Feature level 116**
+
+* [`GET /server_settings`](/api/get-server-settings): Added
+  `realm_web_public_access_enabled` as a realm-specific server setting,
+  which can be used by clients to detect whether the realm allows and
+  has at least one [web-public stream](/help/web-public-streams).
+
 **Feature level 115**
 
 * Mobile push notifications about stream messages now include the

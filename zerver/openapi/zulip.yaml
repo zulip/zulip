@@ -11966,6 +11966,18 @@ paths:
                         description: |
                           HTML description of the organization, as configured by the [organization
                           profile](/help/create-your-organization-profile).
+                      realm_web_public_access_enabled:
+                        type: boolean
+                        description: |
+                          Whether the organization has enabled the creation of
+                          [web-public streams](/help/web-public-streams) and
+                          at least one web-public stream on the server currently
+                          exists. Clients that support viewing content
+                          in web-public streams without an account can
+                          use this to determine whether to offer that
+                          feature on the login page for an organization.
+
+                          **Changes**: New in Zulip 5.0 (feature level 116).
                     example:
                       {
                         "authentication_methods":
@@ -11991,6 +12003,7 @@ paths:
                         "realm_name": "Zulip Dev",
                         "realm_icon": "https://secure.gravatar.com/avatar/62429d594b6ffc712f54aee976a18b44?d=identicon",
                         "realm_description": "<p>The Zulip development environment default organization.  It's great for testing!</p>",
+                        "realm_web_public_access_enabled": false,
                         "result": "success",
                         "external_authentication_methods":
                           [
