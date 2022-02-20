@@ -138,7 +138,7 @@ Handlebars templates located in `static/templates`. Templates are
 precompiled as part of the build/deploy process.
 
 Zulip is fully internationalized, so when writing both HTML templates
-or JavaScript/TypeScript code that generates user-facing strings, be sure to
+or JavaScript/TypeScript/Python code that generates user-facing strings, be sure to
 [tag those strings for translation](../translating/translating.md).
 
 **Testing:** There are two types of frontend tests: node-based unit
