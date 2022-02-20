@@ -318,6 +318,12 @@ test("is_active", () => {
     assert.ok(stream_data.is_active(sub));
 });
 
+test("is_muted_active", () => {
+    const sub = {name: "cats", subscribed: true, stream_id: 111, is_muted: true};
+    stream_data.add_sub(sub);
+    assert.ok(stream_data.is_muted_active(sub));
+});
+
 test("admin_options", () => {
     function make_sub() {
         const sub = {
