@@ -82,6 +82,11 @@ def topic_match_sa(topic_name: str) -> "ColumnElement[Boolean]":
     return topic_cond
 
 
+def topic_contains_sa(partial_topic_name: str) -> "ColumnElement[Boolean]":
+    topic_contains_cond = column("subject", Text).ilike(partial_topic_name)
+    return topic_contains_cond
+
+
 def get_resolved_topic_condition_sa() -> "ColumnElement[Boolean]":
     resolved_topic_cond = column("subject", Text).startswith(RESOLVED_TOPIC_PREFIX)
     return resolved_topic_cond
