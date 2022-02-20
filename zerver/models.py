@@ -26,7 +26,6 @@ from bitfield.types import BitHandler
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager
 from django.contrib.contenttypes.fields import GenericRelation
-from django.contrib.postgres.indexes import GinIndex
 from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator, RegexValidator, URLValidator, validate_email
 from django.db import models, transaction
@@ -2772,15 +2771,6 @@ class Message(AbstractMessage):
         if content.startswith("/me "):
             return True
         return False
-
-    class Meta:
-        indexes = [
-            GinIndex(
-                fields=["subject"],
-                opclasses=["gin_trgm_ops"],
-                name="zerver_message_subject_gin_idx",
-            )
-        ]
 
 
 def get_context_for_message(message: Message) -> Sequence[Message]:
