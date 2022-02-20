@@ -123,13 +123,11 @@ function make_list_widget({parent_container, name, user_ids}) {
     });
 }
 
-function submit_add_subscriber_form(stream_id) {
-    const sub = get_sub(stream_id);
+function subscribe_new_users({pill_user_ids}) {
+    const sub = get_sub(current_stream_id);
     if (!sub) {
         return;
     }
-
-    const pill_user_ids = add_subscribers_pill.get_pill_user_ids(pill_widget);
 
     const deactivated_users = new Set();
     const active_user_ids = pill_user_ids.filter((user_id) => {
@@ -301,25 +299,13 @@ function update_subscribers_list_widget(subscriber_ids) {
 }
 
 export function initialize() {
-    $("#manage_streams_container").on(
-        "keyup",
-        ".edit_subscribers_for_stream .subscriber_list_add form",
-        (e) => {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                submit_add_subscriber_form(current_stream_id);
-            }
-        },
-    );
-
-    $("#manage_streams_container").on(
-        "submit",
-        ".edit_subscribers_for_stream .subscriber_list_add form",
-        (e) => {
-            e.preventDefault();
-            submit_add_subscriber_form(current_stream_id);
-        },
-    );
+    add_subscribers_pill.set_up_handlers({
+        get_pill_widget: () => pill_widget,
+        parent_container: $("#manage_streams_container"),
+        pill_selector: ".edit_subscribers_for_stream .pill-container",
+        button_selector: ".edit_subscribers_for_stream .add-subscriber-button",
+        action: subscribe_new_users,
+    });
 
     $("#manage_streams_container").on(
         "submit",
