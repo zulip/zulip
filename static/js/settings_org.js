@@ -1097,6 +1097,14 @@ export function build_page() {
         );
     });
 
+    $("#id_realm_digest_emails_enabled").on("change", (e) => {
+        const digest_emails_enabled = $(e.target).is(":checked");
+        change_element_block_display_property(
+            "id_realm_digest_weekday",
+            digest_emails_enabled === true,
+        );
+    });
+
     $("#id_realm_org_join_restrictions").on("change", (e) => {
         const org_join_restrictions = e.target.value;
         const node = $("#allowed_domains_label").parent();
