@@ -44,6 +44,20 @@ const stream_hyphen_underscore_slash = {
     stream_id: 6,
     pin_to_top: false,
 };
+const muted_active = {
+    subscribed: true,
+    name: "muted active",
+    stream_id: 7,
+    pin_to_top: false,
+    is_muted: true,
+};
+const muted_pinned = {
+    subscribed: true,
+    name: "muted pinned",
+    stream_id: 8,
+    pin_to_top: true,
+    is_muted: true,
+};
 
 function sort_groups(query) {
     const streams = stream_data.subscribed_stream_ids();
@@ -61,6 +75,8 @@ test("no_subscribed_streams", () => {
     const sorted = sort_groups("");
     assert.deepEqual(sorted, {
         dormant_streams: [],
+        muted_active_streams: [],
+        muted_pinned_streams: [],
         normal_streams: [],
         pinned_streams: [],
         same_as_before: sorted.same_as_before,
@@ -75,6 +91,8 @@ test("basics", ({override_rewire}) => {
     stream_data.add_sub(clarinet);
     stream_data.add_sub(weaving);
     stream_data.add_sub(stream_hyphen_underscore_slash);
+    stream_data.add_sub(muted_active);
+    stream_data.add_sub(muted_pinned);
 
     override_rewire(stream_data, "is_active", (sub) => sub.name !== "pneumonia");
 
@@ -86,13 +104,16 @@ test("basics", ({override_rewire}) => {
         fast_tortoise.stream_id,
         stream_hyphen_underscore_slash.stream_id,
     ]);
+    assert.deepEqual(sorted.muted_pinned_streams, [muted_pinned.stream_id]);
+    assert.deepEqual(sorted.muted_active_streams, [muted_active.stream_id]);
     assert.deepEqual(sorted.dormant_streams, [pneumonia.stream_id]);
 
     // Test cursor helpers.
     assert.equal(stream_sort.first_stream_id(), scalene.stream_id);
 
     assert.equal(stream_sort.prev_stream_id(scalene.stream_id), undefined);
-    assert.equal(stream_sort.prev_stream_id(clarinet.stream_id), scalene.stream_id);
+    assert.equal(stream_sort.prev_stream_id(muted_pinned.stream_id), scalene.stream_id);
+    assert.equal(stream_sort.prev_stream_id(clarinet.stream_id), muted_pinned.stream_id);
 
     assert.equal(
         stream_sort.next_stream_id(fast_tortoise.stream_id),
@@ -100,8 +121,13 @@ test("basics", ({override_rewire}) => {
     );
     assert.equal(
         stream_sort.next_stream_id(stream_hyphen_underscore_slash.stream_id),
-        pneumonia.stream_id,
+        muted_active.stream_id,
     );
+    assert.equal(
+        stream_sort.next_stream_id(fast_tortoise.stream_id),
+        stream_hyphen_underscore_slash.stream_id,
+    );
+    assert.equal(stream_sort.next_stream_id(muted_active.stream_id), pneumonia.stream_id);
     assert.equal(stream_sort.next_stream_id(pneumonia.stream_id), undefined);
 
     // Test filtering

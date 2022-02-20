@@ -169,6 +169,15 @@ li.show-more-topics {
     .inactive_stream {
         opacity: 0.5;
     }
+
+    .toggle_stream_mute {
+        margin-right: 3px;
+        opacity: 0.5;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
 }
 
 .narrows_panel {
@@ -558,6 +567,42 @@ li.expanded_private_message {
 
     input {
         padding-right: 20px;
+    }
+}
+
+.streams_subheader {
+    font-size: 0.8em;
+    font-weight: normal;
+    padding-left: $far_left_gutter_size;
+    cursor: pointer;
+    text-align: center;
+    margin-right: 12px;
+
+    span {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        left: 0.5em;
+        right: 0.5em;
+        opacity: 0.5;
+    }
+
+    span::before,
+    span::after {
+        content: " ";
+        flex: 1 1;
+        vertical-align: middle;
+        margin: auto;
+        border-top: 1px solid hsl(0, 0%, 88%);
+        border-bottom: 1px solid hsl(0, 0%, 100%);
+    }
+
+    span::before {
+        margin-right: 0.5em;
+    }
+
+    span::after {
+        margin-left: 0.5em;
     }
 }
 

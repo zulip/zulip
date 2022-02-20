@@ -3,10 +3,12 @@ import _ from "lodash";
 
 import render_stream_privacy from "../templates/stream_privacy.hbs";
 import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
+import render_stream_subheader from "../templates/streams_subheader.hbs";
 
 import * as blueslip from "./blueslip";
 import * as color_class from "./color_class";
 import * as hash_util from "./hash_util";
+import {$t} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import {ListCursor} from "./list_cursor";
 import * as narrow from "./narrow";
@@ -100,10 +102,12 @@ export function create_initial_sidebar_rows() {
 }
 
 export function build_stream_list(force_rerender) {
-    // This function assumes we have already created the individual
-    // sidebar rows.  Our job here is to build the bigger widget,
-    // which largely is a matter of arranging the individual rows in
-    // the right order.
+    // The stream list in the left sidebar contains 3 sections:
+    // pinned, normal, and dormant streams, with headings above them
+    // as appropriate.
+    //
+    // Within the first two sections, muted streams are sorted to the
+    // bottom; we skip that for dormant streams to simplify discovery.
     const streams = stream_data.subscribed_stream_ids();
     const $parent = $("#stream_filters");
     if (streams.length === 0) {
@@ -112,7 +116,7 @@ export function build_stream_list(force_rerender) {
     }
 
     // The main logic to build the list is in stream_sort.js, and
-    // we get three lists of streams (pinned/normal/dormant).
+    // we get five lists of streams (pinned/normal/muted_pinned/muted_normal/dormant).
     const stream_groups = stream_sort.sort_groups(streams, get_search_term());
 
     if (stream_groups.same_as_before && !force_rerender) {
@@ -130,24 +134,54 @@ export function build_stream_list(force_rerender) {
     topic_list.clear();
     $parent.empty();
 
-    for (const stream_id of stream_groups.pinned_streams) {
-        add_sidebar_li(stream_id);
-    }
-
     const any_pinned_streams = stream_groups.pinned_streams.length > 0;
     const any_normal_streams = stream_groups.normal_streams.length > 0;
     const any_dormant_streams = stream_groups.dormant_streams.length > 0;
 
-    if (any_pinned_streams && (any_normal_streams || any_dormant_streams)) {
-        elems.push('<hr class="stream-split">');
+    if (any_pinned_streams) {
+        elems.push(
+            render_stream_subheader({
+                subheader_name: $t({
+                    defaultMessage: "Pinned",
+                }),
+            }),
+        );
+    }
+
+    for (const stream_id of stream_groups.pinned_streams) {
+        add_sidebar_li(stream_id);
+    }
+
+    for (const stream_id of stream_groups.muted_pinned_streams) {
+        add_sidebar_li(stream_id);
+    }
+
+    if (any_normal_streams) {
+        elems.push(
+            render_stream_subheader({
+                subheader_name: $t({
+                    defaultMessage: "Active",
+                }),
+            }),
+        );
     }
 
     for (const stream_id of stream_groups.normal_streams) {
         add_sidebar_li(stream_id);
     }
 
-    if (any_dormant_streams && any_normal_streams) {
-        elems.push('<hr class="stream-split">');
+    for (const stream_id of stream_groups.muted_active_streams) {
+        add_sidebar_li(stream_id);
+    }
+
+    if (any_dormant_streams) {
+        elems.push(
+            render_stream_subheader({
+                subheader_name: $t({
+                    defaultMessage: "Inactive",
+                }),
+            }),
+        );
     }
 
     for (const stream_id of stream_groups.dormant_streams) {
@@ -195,7 +229,7 @@ export function zoom_in_topics(options) {
     $(".stream-filters-label").each(function () {
         $(this).hide();
     });
-    $(".stream-split").each(function () {
+    $(".streams_subheader").each(function () {
         $(this).hide();
     });
 
@@ -216,7 +250,7 @@ export function zoom_out_topics() {
     $(".stream-filters-label").each(function () {
         $(this).show();
     });
-    $(".stream-split").each(function () {
+    $(".streams_subheader").each(function () {
         $(this).show();
     });
 
@@ -374,6 +408,11 @@ export function refresh_pinned_or_unpinned_stream(sub) {
         }
         scroll_stream_into_view($stream_li);
     }
+}
+
+export function refresh_muted_or_unmuted_stream(sub) {
+    build_stream_sidebar_row(sub);
+    update_streams_sidebar();
 }
 
 export function get_sidebar_stream_topic_info(filter) {
