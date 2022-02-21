@@ -46,6 +46,7 @@ from zerver.lib.upload import upload_avatar_image
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import (
     access_bot_by_id,
+    access_user_by_email,
     access_user_by_id,
     add_service,
     check_bot_creation_policy,
@@ -82,7 +83,6 @@ from zerver.models import (
     Service,
     Stream,
     UserProfile,
-    get_user,
     get_user_by_delivery_email,
     get_user_by_id_in_realm_including_cross_realm,
     get_user_including_cross_realm,
@@ -687,13 +687,9 @@ def get_user_by_email(
     include_custom_profile_fields: bool = REQ(json_validator=check_bool, default=False),
     client_gravatar: bool = REQ(json_validator=check_bool, default=True),
 ) -> HttpResponse:
-    realm = user_profile.realm
+    target_user = access_user_by_email(
+        user_profile, email, allow_deactivated=True, allow_bots=True, for_admin=False
+    )
 
-    target_user = None
-    if email is not None:
-        try:
-            target_user = get_user(email, realm)
-        except UserProfile.DoesNotExist:
-            raise JsonableError(_("No such user"))
-
-    return get_members_backend(request, user_profile, user_id=target_user.id)
+    data = get_user_data(user_profile, include_custom_profile_fields, client_gravatar, target_user)
+    return json_success(request, data)
