@@ -175,6 +175,7 @@ EXEMPT_FILES = make_set(
         "static/js/stream_subscribers_ui.js",
         "static/js/stream_ui_updates.js",
         "static/js/submessage.js",
+        "static/js/subscriber_api.js",
         "static/js/timerender.ts",
         "static/js/tippyjs.js",
         "static/js/todo_widget.js",
