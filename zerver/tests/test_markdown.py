@@ -2358,7 +2358,6 @@ class MarkdownTest(ZulipTestCase):
             result = self.client_patch(
                 "/json/messages/" + str(msg_id),
                 {
-                    "message_id": msg_id,
                     "content": content,
                 },
             )

@@ -472,7 +472,6 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "content": new_body,
             },
         )
@@ -492,7 +491,6 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "content": new_body,
             },
         )
