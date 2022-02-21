@@ -66,7 +66,7 @@
 
 {generate_api_title(/mark_topic_as_read:post)}
 
-{generate_api_description(/mark_all_as_read:post)}
+{generate_api_description(/mark_topic_as_read:post)}
 
 `POST {{ api_url }}/v1/mark_topic_as_read`
 
