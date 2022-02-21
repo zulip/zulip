@@ -21,8 +21,8 @@ export function populate_list() {
 
     ListWidget.create(muted_users_table, all_muted_users, {
         name: "muted-users-list",
-        modifier(muted_users) {
-            return render_muted_user_ui_row({muted_users});
+        modifier(muted_user) {
+            return render_muted_user_ui_row({muted_user});
         },
         filter: {
             element: $search_input,
