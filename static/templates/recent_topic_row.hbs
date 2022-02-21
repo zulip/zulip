@@ -32,7 +32,7 @@
     <td class='recent_topic_users'>
         <ul class="recent_topics_participants">
             {{#if other_senders_count}}
-            <li class="recent_topics_participant_item tippy-zulip-tooltip" data-tippy-content="{{other_sender_names}}" data-tippy-allowHtml="true">
+            <li class="recent_topics_participant_item tippy-zulip-tooltip" data-tippy-content="{{other_sender_names_html}}" data-tippy-allowHTML="true">
                 <span class="recent_topics_participant_overflow">+{{other_senders_count}}</span>
             </li>
             {{/if}}

@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 
 import render_recent_topic_row from "../templates/recent_topic_row.hbs";
 import render_recent_topics_filters from "../templates/recent_topics_filters.hbs";
@@ -291,7 +292,9 @@ function format_topic(topic_data) {
             ),
         );
     }
-    const other_sender_names = displayed_other_names.join("<br/>");
+    const other_sender_names_html = displayed_other_names
+        .map((name) => _.escape(name))
+        .join("<br />");
 
     return {
         // stream info
@@ -309,7 +312,7 @@ function format_topic(topic_data) {
         topic_url: hash_util.by_stream_topic_uri(stream_id, topic),
         senders: senders_info,
         other_senders_count: Math.max(0, all_senders.length - MAX_AVATAR),
-        other_sender_names,
+        other_sender_names_html,
         muted,
         topic_muted,
         participated: topic_data.participated,

@@ -35,7 +35,7 @@ tippy.setDefaultProps({
     appendTo: "parent",
 
     // html content is not supported by default
-    // enable it by passing data-tippy-allowHtml="true"
+    // enable it by passing data-tippy-allowHTML="true"
     // in the tag or a parameter.
 });
 
@@ -200,7 +200,6 @@ export function initialize() {
             ".rendered_markdown .copy_codeblock",
             "#compose_top_right [data-tippy-content]",
         ],
-        allowHTML: true,
         appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();

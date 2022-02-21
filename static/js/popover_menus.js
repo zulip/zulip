@@ -32,7 +32,6 @@ const default_popover_props = {
     delay: 0,
     appendTo: () => document.body,
     trigger: "click",
-    allowHTML: true,
     interactive: true,
     hideOnClick: true,
     /* The light-border TippyJS theme is a bit of a misnomer; it
@@ -60,6 +59,7 @@ export function initialize() {
     delegate("body", {
         ...default_popover_props,
         target: "#streams_inline_icon",
+        allowHTML: true,
         onShow(instance) {
             const can_create_streams =
                 settings_data.user_can_create_private_streams() ||
@@ -89,6 +89,7 @@ export function initialize() {
         ...default_popover_props,
         target: ".compose_mobile_button",
         placement: "top",
+        allowHTML: true,
         onShow(instance) {
             on_show_prep(instance);
             instance.setContent(
@@ -125,6 +126,7 @@ export function initialize() {
         ...default_popover_props,
         target: ".compose_control_menu_wrapper",
         placement: "top",
+        allowHTML: true,
         onShow(instance) {
             instance.setContent(
                 render_compose_control_buttons_popover({
@@ -143,6 +145,7 @@ export function initialize() {
         ...default_popover_props,
         target: ".enter_sends",
         placement: "top",
+        allowHTML: true,
         onShow(instance) {
             on_show_prep(instance);
             instance.setContent(

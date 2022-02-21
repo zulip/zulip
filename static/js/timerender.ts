@@ -226,17 +226,17 @@ export function render_date(time: Date, time_above: Date | undefined, today: Dat
 // Renders the timestamp returned by the <time:> Markdown syntax.
 export function render_markdown_timestamp(time: number | Date): {
     text: string;
-    tooltip_content: string;
+    tooltip_content_html: string;
 } {
     const hourformat = user_settings.twenty_four_hour_time ? "HH:mm" : "h:mm a";
     const timestring = format(time, "E, MMM d yyyy, " + hourformat);
 
     const tz_offset_str = get_tz_with_UTC_offset(time);
-    const tooltip_html_content = render_markdown_time_tooltip({tz_offset_str});
+    const tooltip_content_html = render_markdown_time_tooltip({tz_offset_str});
 
     return {
         text: timestring,
-        tooltip_content: tooltip_html_content,
+        tooltip_content_html: tooltip_content_html,
     };
 }
 
