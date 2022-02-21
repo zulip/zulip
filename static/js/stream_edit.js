@@ -20,10 +20,10 @@ import * as settings_config from "./settings_config";
 import * as settings_ui from "./settings_ui";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
+import * as stream_edit_subscribers from "./stream_edit_subscribers";
 import * as stream_settings_containers from "./stream_settings_containers";
 import * as stream_settings_data from "./stream_settings_data";
 import * as stream_settings_ui from "./stream_settings_ui";
-import * as stream_subscribers_ui from "./stream_subscribers_ui";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as ui from "./ui";
@@ -188,7 +188,7 @@ function show_subscription_settings(sub) {
     }
 
     const subscriber_container = edit_container.find(".edit_subscribers_for_stream");
-    stream_subscribers_ui.enable_subscriber_management({
+    stream_edit_subscribers.enable_subscriber_management({
         sub,
         parent_container: subscriber_container,
     });
