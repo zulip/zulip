@@ -552,6 +552,11 @@ input.recipient_box {
         line-height: 18px;
     }
 
+    .fa-eye {
+        position: relative;
+        top: -0.7px;
+    }
+
     .compose_control_menu {
         padding: 0 7px;
         font-size: 15px;
@@ -582,6 +587,8 @@ input.recipient_box {
         font-weight: 600;
         font-family: "Source Sans 3", sans-serif;
         padding: 0 5px;
+        position: relative;
+        top: 0.7px;
     }
 
     .compose_help_button {
