@@ -1,5 +1,5 @@
 {{! Alert word in the settings page that can be removed }}
-
+{{#with alert_word}}
 <tr class="alert-word-item" data-word='{{word}}'>
     <td>
         <div class="alert_word_listing">
@@ -12,3 +12,4 @@
         </button>
     </td>
 </tr>
+{{/with}}

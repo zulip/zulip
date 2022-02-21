@@ -978,7 +978,7 @@ input[type="checkbox"] {
     }
 }
 
-#alert_words_list {
+#alert-words-table {
     margin: 0;
 
     li {
@@ -997,7 +997,7 @@ input[type="checkbox"] {
     }
 }
 
-#alert_words_list,
+#alert-words-table,
 #attachments_list {
     .edit-attachment-buttons {
         position: absolute;
