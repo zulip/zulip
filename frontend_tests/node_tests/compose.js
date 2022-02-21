@@ -37,7 +37,7 @@ const resize = mock_esm("../../static/js/resize");
 const sent_messages = mock_esm("../../static/js/sent_messages");
 const server_events = mock_esm("../../static/js/server_events");
 const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
-const stream_subscribers_ui = mock_esm("../../static/js/stream_subscribers_ui");
+const subscriber_api = mock_esm("../../static/js/subscriber_api");
 const transmit = mock_esm("../../static/js/transmit");
 
 const compose_closed_ui = zrequire("compose_closed_ui");
@@ -621,9 +621,7 @@ test_ui("on_events", ({override, override_rewire}) => {
         };
         people.add_active_user(mentioned);
 
-        let invite_user_to_stream_called = false;
-        override(stream_subscribers_ui, "invite_user_to_stream", (user_ids, sub, success) => {
-            invite_user_to_stream_called = true;
+        override(subscriber_api, "add_user_ids_to_stream", (user_ids, sub, success) => {
             assert.deepEqual(user_ids, [mentioned.user_id]);
             assert.equal(sub, subscription);
             success(); // This will check success callback path.
@@ -660,7 +658,6 @@ test_ui("on_events", ({override, override_rewire}) => {
 
         assert.ok(helper.container_was_removed());
         assert.ok(!$("#compose_invite_users").visible());
-        assert.ok(invite_user_to_stream_called);
         assert.ok(all_invite_children_called);
     })();
 
