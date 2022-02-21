@@ -30,10 +30,10 @@
     <div class="progressive-table-wrapper" data-simplebar>
         <table class="table table-condensed table-striped wrapped-table">
             <thead>
-                <th class="active">{{t "Word" }}</th>
+                <th data-sort="alphabetic" data-sort-prop="word">{{t "Word" }}</th>
                 <th>{{t "Actions" }}</th>
             </thead>
-            <tbody id="alert_words_list" class="alert_words_list required-text thick"
+            <tbody id="alert-words-table" class="alert-words-table required-text thick"
               data-empty="{{t 'There are no current alert words.' }}"></tbody>
         </table>
     </div>
