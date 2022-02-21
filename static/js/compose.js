@@ -27,8 +27,8 @@ import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
 import * as stream_data from "./stream_data";
 import * as stream_settings_ui from "./stream_settings_ui";
-import * as stream_subscribers_ui from "./stream_subscribers_ui";
 import * as sub_store from "./sub_store";
+import * as subscriber_api from "./subscriber_api";
 import * as transmit from "./transmit";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
@@ -507,7 +507,7 @@ export function initialize() {
 
         const sub = sub_store.get(stream_id);
 
-        stream_subscribers_ui.invite_user_to_stream([user_id], sub, success, xhr_failure);
+        subscriber_api.add_user_ids_to_stream([user_id], sub, success, xhr_failure);
     });
 
     $("#compose_invite_users").on("click", ".compose_invite_close", (event) => {

@@ -5,7 +5,6 @@ import render_stream_member_list_entry from "../templates/stream_settings/stream
 import render_stream_subscription_request_result from "../templates/stream_settings/stream_subscription_request_result.hbs";
 
 import * as blueslip from "./blueslip";
-import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
@@ -19,6 +18,7 @@ import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as stream_pill from "./stream_pill";
 import * as sub_store from "./sub_store";
+import * as subscriber_api from "./subscriber_api";
 import * as ui from "./ui";
 import * as user_group_pill from "./user_group_pill";
 import * as user_pill from "./user_pill";
@@ -171,31 +171,6 @@ function make_list_widget({parent_container, name, user_ids}) {
     });
 }
 
-export function invite_user_to_stream(user_ids, sub, success, failure) {
-    // TODO: use stream_id when backend supports it
-    const stream_name = sub.name;
-    return channel.post({
-        url: "/json/users/me/subscriptions",
-        data: {
-            subscriptions: JSON.stringify([{name: stream_name}]),
-            principals: JSON.stringify(user_ids),
-        },
-        success,
-        error: failure,
-    });
-}
-
-export function remove_user_from_stream(user_id, sub, success, failure) {
-    // TODO: use stream_id when backend supports it
-    const stream_name = sub.name;
-    return channel.del({
-        url: "/json/users/me/subscriptions",
-        data: {subscriptions: JSON.stringify([stream_name]), principals: JSON.stringify([user_id])},
-        success,
-        error: failure,
-    });
-}
-
 export function get_pill_user_ids() {
     const user_ids = user_pill.get_user_ids(pill_widget);
     const stream_user_ids = stream_pill.get_user_ids(pill_widget);
@@ -274,7 +249,7 @@ function submit_add_subscriber_form(stream_id) {
         });
     }
 
-    invite_user_to_stream(user_ids, sub, invite_success, invite_failure);
+    subscriber_api.add_user_ids_to_stream(user_ids, sub, invite_success, invite_failure);
 }
 
 function remove_subscriber({stream_id, target_user_id, list_entry}) {
@@ -315,7 +290,12 @@ function remove_subscriber({stream_id, target_user_id, list_entry}) {
     }
 
     function remove_user_from_private_stream() {
-        remove_user_from_stream(target_user_id, sub, removal_success, removal_failure);
+        subscriber_api.remove_user_id_from_stream(
+            target_user_id,
+            sub,
+            removal_success,
+            removal_failure,
+        );
     }
 
     if (sub.invite_only && people.is_my_user_id(target_user_id)) {
@@ -332,7 +312,12 @@ function remove_subscriber({stream_id, target_user_id, list_entry}) {
         return;
     }
 
-    remove_user_from_stream(target_user_id, sub, removal_success, removal_failure);
+    subscriber_api.remove_user_id_from_stream(
+        target_user_id,
+        sub,
+        removal_success,
+        removal_failure,
+    );
 }
 
 export function update_subscribers_list(sub) {
