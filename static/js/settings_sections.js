@@ -115,5 +115,6 @@ export function reset_sections() {
     settings_user_groups.reset();
     settings_muted_topics.reset();
     settings_muted_users.reset();
+    alert_words_ui.reset();
     // settings_users doesn't need a reset()
 }
