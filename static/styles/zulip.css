@@ -3164,3 +3164,9 @@ select.inline_select_topic_edit {
         }
     }
 }
+
+.tooltip_right_arrow {
+    position: relative;
+    top: -1px;
+    font-weight: 600;
+}
