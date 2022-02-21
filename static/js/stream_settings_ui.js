@@ -29,10 +29,10 @@ import * as settings_data from "./settings_data";
 import * as stream_create from "./stream_create";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
+import * as stream_edit_subscribers from "./stream_edit_subscribers";
 import * as stream_list from "./stream_list";
 import * as stream_muting from "./stream_muting";
 import * as stream_settings_data from "./stream_settings_data";
-import * as stream_subscribers_ui from "./stream_subscribers_ui";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as ui from "./ui";
@@ -244,7 +244,7 @@ export function set_color(stream_id, color) {
 
 export function update_subscribers_ui(sub) {
     update_left_panel_row(sub);
-    stream_subscribers_ui.update_subscribers_list(sub);
+    stream_edit_subscribers.update_subscribers_list(sub);
     message_view_header.maybe_rerender_title_area_for_stream(sub);
 }
 
@@ -315,7 +315,7 @@ export function update_settings_for_subscribed(slim_sub) {
         add_sub_to_table(sub);
     }
 
-    stream_subscribers_ui.update_subscribers_list(sub);
+    stream_edit_subscribers.update_subscribers_list(sub);
 
     // Display the swatch and subscription stream_settings
     stream_ui_updates.update_regular_sub_settings(sub);
@@ -333,7 +333,7 @@ export function show_active_stream_in_left_panel() {
 export function update_settings_for_unsubscribed(slim_sub) {
     const sub = stream_settings_data.get_sub_for_settings(slim_sub);
     update_left_panel_row(sub);
-    stream_subscribers_ui.update_subscribers_list(sub);
+    stream_edit_subscribers.update_subscribers_list(sub);
     stream_ui_updates.update_toggler_for_sub(sub);
     stream_ui_updates.update_settings_button_for_sub(sub);
     stream_ui_updates.update_regular_sub_settings(sub);
