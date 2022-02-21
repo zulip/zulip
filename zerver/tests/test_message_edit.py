@@ -862,7 +862,7 @@ class EditMessageTest(EditMessageTestCase):
         ) -> None:
             new_topic = "topic" + unique_str
             new_content = "content" + unique_str
-            params_dict = {"message_id": id_, "topic": new_topic}
+            params_dict = {"topic": new_topic}
             if not topic_only:
                 params_dict["content"] = new_content
             result = self.client_patch(f"/json/messages/{id_}", params_dict)
@@ -880,7 +880,7 @@ class EditMessageTest(EditMessageTestCase):
             old_content = message.content
             new_topic = "topic" + unique_str
             new_content = "content" + unique_str
-            params_dict = {"message_id": id_, "topic": new_topic}
+            params_dict = {"topic": new_topic}
             if not topic_only:
                 params_dict["content"] = new_content
             result = self.client_patch(f"/json/messages/{id_}", params_dict)
@@ -948,7 +948,7 @@ class EditMessageTest(EditMessageTestCase):
         def do_edit_message_assert_success(id_: int, unique_str: str, acting_user: str) -> None:
             self.login(acting_user)
             new_topic = "topic" + unique_str
-            params_dict = {"message_id": id_, "topic": new_topic}
+            params_dict = {"topic": new_topic}
             result = self.client_patch(f"/json/messages/{id_}", params_dict)
             self.assert_json_success(result)
             self.check_topic(id_, topic_name=new_topic)
@@ -961,7 +961,7 @@ class EditMessageTest(EditMessageTestCase):
             old_topic = message.topic_name()
             old_content = message.content
             new_topic = "topic" + unique_str
-            params_dict = {"message_id": id_, "topic": new_topic}
+            params_dict = {"topic": new_topic}
             result = self.client_patch(f"/json/messages/{id_}", params_dict)
             message = Message.objects.get(id=id_)
             self.assert_json_error(result, error)

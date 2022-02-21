@@ -335,7 +335,6 @@ class MutedUsersTests(ZulipTestCase):
             result = self.client_patch(
                 "/json/messages/" + str(message_id),
                 dict(
-                    message_id=message_id,
                     content="@**King Hamlet**",
                 ),
             )
@@ -359,7 +358,6 @@ class MutedUsersTests(ZulipTestCase):
             result = self.client_patch(
                 "/json/messages/" + str(message_id),
                 dict(
-                    message_id=message_id,
                     content="@**King Hamlet**",
                 ),
             )

@@ -15,7 +15,6 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         url = "/json/messages/" + str(message_id)
 
         request = dict(
-            message_id=message_id,
             content=content,
         )
 
@@ -93,7 +92,6 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         url = "/json/messages/" + str(message_id)
 
         request = dict(
-            message_id=message_id,
             content=content,
         )
 
