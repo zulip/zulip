@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 5.0
 
+**Feature level 122**
+
+* API endpoints that return `role` values can now return `800`, the
+  encoding of the limited guest role.
+
 **Feature level 121**
 
 * [`GET /events`](/api/get-events): Added `message_details` field

@@ -1726,6 +1726,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     ROLE_MODERATOR = 300
     ROLE_MEMBER = 400
     ROLE_GUEST = 600
+    ROLE_LIMITED_GUEST = 800
     role: int = models.PositiveSmallIntegerField(default=ROLE_MEMBER, db_index=True)
 
     ROLE_TYPES = [
@@ -1831,6 +1832,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         ROLE_MODERATOR: gettext_lazy("Moderator"),
         ROLE_MEMBER: gettext_lazy("Member"),
         ROLE_GUEST: gettext_lazy("Guest"),
+        ROLE_LIMITED_GUEST: gettext_lazy("Limited guest"),
     }
 
     def get_role_name(self) -> str:
@@ -1927,7 +1929,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     @property
     def is_guest(self) -> bool:
-        return self.role == UserProfile.ROLE_GUEST
+        return self.role == UserProfile.ROLE_GUEST or self.role == UserProfile.ROLE_LIMITED_GUEST
 
     @is_guest.setter
     def is_guest(self, value: bool) -> None:

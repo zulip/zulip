@@ -6444,6 +6444,7 @@ paths:
                           - 300
                           - 400
                           - 600
+                          - 800
                         description: |
                           [Organization-level role](/help/roles-and-permissions) of the user.
                           Possible values are:
@@ -6453,8 +6454,9 @@ paths:
                           - Organization moderator => 300
                           - Member => 400
                           - Guest => 600
+                          - Limited guest => 800
 
-                          **Changes**: New in Zulip 4.0 (feature level 59).
+                          **Changes**: New in Zulip 4.0 (feature level 59). Limited guest role added in Zulip 5.0 (feature level 122).
                       is_guest:
                         type: boolean
                         description: |
@@ -15299,6 +15301,7 @@ components:
             - 300
             - 400
             - 600
+            - 800
           description: |
             [Organization-level role](/help/roles-and-permissions) of the user.
             Possible values are:
@@ -15308,8 +15311,9 @@ components:
             - Organization moderator => 300
             - Member => 400
             - Guest => 600
+            - Limited guest => 800
 
-            **Changes**: New in Zulip 4.0 (feature level 59).
+            **Changes**: New in Zulip 4.0 (feature level 59). Limited guest role added in Zulip 5.0 (feature level 122).
         bot_type:
           type: integer
           nullable: true
