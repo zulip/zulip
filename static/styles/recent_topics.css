@@ -57,6 +57,7 @@
             display: block;
             font-style: italic;
             color: hsl(0, 0%, 67%);
+            position: absolute;
         }
 
         .fa-check-square-o,
