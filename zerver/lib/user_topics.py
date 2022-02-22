@@ -8,25 +8,57 @@ from sqlalchemy.types import Integer
 
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import topic_match_sa
+from zerver.lib.types import UserTopicDict
 from zerver.models import UserProfile, UserTopic, get_stream
+
+
+def get_user_topics(
+    user_profile: UserProfile,
+    include_deactivated: bool = False,
+    visibility_policy: Optional[int] = None,
+) -> List[UserTopicDict]:
+    """
+    Fetches UserTopic objects associated with the target user.
+    * include_deactivated: Whether to include those associated with
+      deactivated streams.
+    * visibility_policy: If specified, returns only UserTopic objects
+      with the specified visibility_policy value.
+    """
+    query = UserTopic.objects.filter(user_profile=user_profile)
+
+    if visibility_policy is not None:
+        query = query.filter(visibility_policy=visibility_policy)
+
+    # Exclude user topics that are part of deactivated streams unless
+    # explicitly requested.
+    if not include_deactivated:
+        query = query.filter(stream__deactivated=False)
+
+    rows = query.values(
+        "stream_id", "stream__name", "topic_name", "last_updated", "visibility_policy"
+    )
+
+    result = []
+    for row in rows:
+        row["last_updated"] = datetime_to_timestamp(row["last_updated"])
+        result.append(row)
+
+    return result
 
 
 def get_topic_mutes(
     user_profile: UserProfile, include_deactivated: bool = False
-) -> List[Tuple[str, str, float]]:
-    query = UserTopic.objects.filter(user_profile=user_profile, visibility_policy=UserTopic.MUTED)
-    # Exclude muted topics that are part of deactivated streams unless
-    # explicitly requested.
-    if not include_deactivated:
-        query = query.filter(stream__deactivated=False)
-    rows = query.values(
-        "stream__name",
-        "topic_name",
-        "last_updated",
+) -> List[Tuple[str, str, int]]:
+
+    user_topics = get_user_topics(
+        user_profile=user_profile,
+        include_deactivated=include_deactivated,
+        visibility_policy=UserTopic.MUTED,
     )
+
     return [
-        (row["stream__name"], row["topic_name"], datetime_to_timestamp(row["last_updated"]))
-        for row in rows
+        (user_topic["stream__name"], user_topic["topic_name"], user_topic["last_updated"])
+        for user_topic in user_topics
     ]
 
 
