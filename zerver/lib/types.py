@@ -147,6 +147,18 @@ class FormattedEditHistoryEvent(TypedDict, total=False):
     content_html_diff: str
 
 
+class UserTopicDict(TypedDict, total=False):
+    """Dictionary containing fields fetched from the UserTopic model that
+    are needed to encode the UserTopic object for the API.
+    """
+
+    stream_id: int
+    stream__name: str
+    topic_name: str
+    last_updated: int
+    visibility_policy: int
+
+
 # This next batch of types is for Stream/Subscription objects.
 class RawStreamDict(TypedDict):
     """Dictionary containing fields fetched from the Stream model that
