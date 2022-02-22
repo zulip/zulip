@@ -40,14 +40,18 @@ def get_active_subscriptions_for_stream_id(
     return query
 
 
-def get_active_subscriptions_for_stream_ids(stream_ids: Set[int]) -> QuerySet:
+def get_active_subscriptions_for_stream_ids(
+    stream_ids: Set[int], *, include_deactivated_users: bool = False
+) -> QuerySet:
     # TODO: Change return type to QuerySet[Subscription]
-    return Subscription.objects.filter(
+    query = Subscription.objects.filter(
         recipient__type=Recipient.STREAM,
         recipient__type_id__in=stream_ids,
         active=True,
-        is_user_active=True,
     )
+    if not include_deactivated_users:
+        query = query.filter(is_user_active=True)
+    return query
 
 
 def get_subscribed_stream_ids_for_user(user_profile: UserProfile) -> QuerySet:
