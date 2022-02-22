@@ -254,7 +254,7 @@ body.dark-theme {
     }
 
     .active_private_messages_section {
-        background-color: hsla(199,33%,46%,.2);
+        background-color: hsla(199, 33%, 46%, 0.2);
     }
 
     /* do not turn the .message_header .stream_label text dark on hover because they're
