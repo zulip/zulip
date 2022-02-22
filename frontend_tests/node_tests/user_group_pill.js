@@ -11,14 +11,14 @@ const user_group_pill = zrequire("user_group_pill");
 const admins = {
     name: "Admins",
     description: "foo",
-    id: 1,
+    id: 101,
     members: [10, 20],
 };
 const testers = {
     name: "Testers",
     description: "bar",
-    id: 2,
-    members: [20, 30, 40],
+    id: 102,
+    members: [20, 50, 30, 40],
 };
 
 const admins_pill = {
@@ -53,4 +53,20 @@ run_test("create_item", () => {
 
 run_test("get_stream_id", () => {
     assert.equal(user_group_pill.get_group_name_from_item(admins_pill), admins.name);
+});
+
+run_test("get_user_ids", () => {
+    const items = [admins_pill, testers_pill];
+    const widget = {items: () => items};
+
+    const user_ids = user_group_pill.get_user_ids(widget);
+    assert.deepEqual(user_ids, [10, 20, 30, 40, 50]);
+});
+
+run_test("get_group_ids", () => {
+    const items = [admins_pill, testers_pill];
+    const widget = {items: () => items};
+
+    const group_ids = user_group_pill.get_group_ids(widget);
+    assert.deepEqual(group_ids, [101, 102]);
 });
