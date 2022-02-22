@@ -543,7 +543,6 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
             "/json/mark_stream_as_read",
             {
                 "stream_id": str(stream.id),
-                "topic_name": "test_topic",
             },
         )
         self.assertEqual(self.get_mobile_push_notification_ids(user_profile), [third_message_id])
