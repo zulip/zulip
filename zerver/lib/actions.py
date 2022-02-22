@@ -347,6 +347,7 @@ def realm_user_count_by_role(realm: Realm) -> Dict[str, Any]:
         str(UserProfile.ROLE_MODERATOR): 0,
         str(UserProfile.ROLE_MEMBER): 0,
         str(UserProfile.ROLE_GUEST): 0,
+        str(UserProfile.ROLE_LIMITED_GUEST): 0,
     }
     for value_dict in list(
         UserProfile.objects.filter(realm=realm, is_bot=False, is_active=True)
