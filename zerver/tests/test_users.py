@@ -49,7 +49,13 @@ from zerver.lib.test_helpers import (
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.user_topics import add_topic_mute
-from zerver.lib.users import Accounts, access_user_by_id, get_accounts_for_email, user_ids_to_users
+from zerver.lib.users import (
+    Accounts,
+    access_user_by_id,
+    accessible_user_dicts,
+    get_accounts_for_email,
+    user_ids_to_users,
+)
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     CustomProfileField,
@@ -1370,6 +1376,46 @@ class UserProfileTest(ZulipTestCase):
             self.client_get(f"/json/users/{iago.id}/subscriptions/{stream.id}").content
         )
         self.assertFalse(result["is_subscribed"])
+
+    def test_accessible_user_dicts(self) -> None:
+        cordelia = self.example_user("cordelia")
+        shylock = self.example_user("shylock")
+        polonius = self.example_user("polonius")
+
+        realm = cordelia.realm
+        with queries_captured() as queries:
+            with simulated_empty_cache() as cache_queries:
+                users = accessible_user_dicts(realm.id, shylock)
+                self.assert_length(users, 6)
+
+        self.assert_length(queries, 1)
+        self.assert_length(cache_queries, 0)
+
+        user_emails = [user["delivery_email"] for user in users]
+        self.assertCountEqual(
+            user_emails,
+            [
+                "iago@zulip.com",
+                "othello@zulip.com",
+                "prospero@zulip.com",
+                "shylock@zulip.com",
+                "ZOE@zulip.com",
+                "shiva@zulip.com",
+            ],
+        )
+
+        with queries_captured() as queries:
+            with simulated_empty_cache() as cache_queries:
+                users = accessible_user_dicts(realm.id, cordelia)
+                self.assert_length(users, 15)
+
+        self.assert_length(queries, 1)
+        self.assert_length(cache_queries, 1)
+
+        with queries_captured() as queries:
+            with simulated_empty_cache() as cache_queries:
+                users = accessible_user_dicts(realm.id, polonius)
+                self.assert_length(users, 15)
 
 
 class ActivateTest(ZulipTestCase):

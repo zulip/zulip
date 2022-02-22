@@ -24,6 +24,10 @@ from zerver.lib.exceptions import (
     OrganizationAdministratorRequired,
     OrganizationOwnerRequired,
 )
+from zerver.lib.stream_subscription import (
+    get_active_subscriptions_for_stream_ids,
+    get_subscribed_stream_ids_for_user,
+)
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.types import ProfileDataElementValue
 from zerver.models import (
@@ -564,6 +568,18 @@ def get_custom_profile_field_values(
                 "value": profile_field.value,
             }
     return profiles_by_user_id
+
+
+def accessible_user_dicts(realm_id: int, acting_user: UserProfile) -> List[Dict[str, Any]]:
+    if not acting_user.is_limited_guest:
+        return get_realm_user_dicts(realm_id)
+
+    subscribed_stream_ids = get_subscribed_stream_ids_for_user(acting_user)
+    user_ids = get_active_subscriptions_for_stream_ids(
+        subscribed_stream_ids, include_deactivated_users=True
+    ).values_list("user_profile_id", flat=True)
+
+    return UserProfile.objects.filter(id__in=user_ids).values(*realm_user_dict_fields)
 
 
 def get_raw_user_data(
