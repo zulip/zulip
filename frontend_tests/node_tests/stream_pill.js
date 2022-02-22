@@ -10,17 +10,17 @@ const stream_data = zrequire("stream_data");
 const stream_pill = zrequire("stream_pill");
 
 const denmark = {
-    stream_id: 1,
+    stream_id: 101,
     name: "Denmark",
     subscribed: true,
 };
 const sweden = {
-    stream_id: 2,
+    stream_id: 102,
     name: "Sweden",
     subscribed: false,
 };
 
-peer_data.set_subscribers(denmark.stream_id, [1, 2, 3]);
+peer_data.set_subscribers(denmark.stream_id, [1, 2, 3, 77]);
 peer_data.set_subscribers(sweden.stream_id, [1, 2, 3, 4, 5]);
 
 const denmark_pill = {
@@ -55,4 +55,20 @@ run_test("create_item", () => {
 
 run_test("get_stream_id", () => {
     assert.equal(stream_pill.get_stream_name_from_item(denmark_pill), denmark.name);
+});
+
+run_test("get_user_ids", () => {
+    const items = [denmark_pill, sweden_pill];
+    const widget = {items: () => items};
+
+    const user_ids = stream_pill.get_user_ids(widget);
+    assert.deepEqual(user_ids, [1, 2, 3, 4, 5, 77]);
+});
+
+run_test("get_stream_ids", () => {
+    const items = [denmark_pill, sweden_pill];
+    const widget = {items: () => items};
+
+    const stream_ids = stream_pill.get_stream_ids(widget);
+    assert.deepEqual(stream_ids, [101, 102]);
 });
