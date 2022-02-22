@@ -8,7 +8,6 @@ class LegacySubjectTest(ZulipTestCase):
         payload = dict(
             type="stream",
             to="Verona",
-            client="test suite",
             content="Test message",
         )
 
