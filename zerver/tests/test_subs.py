@@ -445,7 +445,6 @@ class StreamAdminTest(ZulipTestCase):
 
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         params = {
-            "stream_name": orjson.dumps("private_stream_1").decode(),
             "is_private": orjson.dumps(False).decode(),
         }
         stream_id = get_stream("private_stream_1", user_profile.realm).id
@@ -457,7 +456,6 @@ class StreamAdminTest(ZulipTestCase):
 
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         params = {
-            "stream_name": orjson.dumps("private_stream_1").decode(),
             "is_private": orjson.dumps(False).decode(),
         }
         result = self.client_patch(f"/json/streams/{stream_id}", params)
@@ -508,7 +506,6 @@ class StreamAdminTest(ZulipTestCase):
 
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         params = {
-            "stream_name": orjson.dumps("private_stream_2").decode(),
             "is_private": orjson.dumps(False).decode(),
         }
         stream = self.subscribe(user_profile, "private_stream_2")
@@ -579,7 +576,6 @@ class StreamAdminTest(ZulipTestCase):
 
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         params = {
-            "stream_name": orjson.dumps("public_stream_1").decode(),
             "is_private": orjson.dumps(True).decode(),
         }
         stream_id = self.subscribe(user_profile, "public_stream_1").id
@@ -630,7 +626,6 @@ class StreamAdminTest(ZulipTestCase):
         default_stream = self.make_stream("default_stream", realm=realm)
         do_add_default_stream(default_stream)
         params = {
-            "stream_name": orjson.dumps("default_stream").decode(),
             "is_private": orjson.dumps(True).decode(),
         }
         result = self.client_patch(f"/json/streams/{default_stream.id}", params)
@@ -639,7 +634,6 @@ class StreamAdminTest(ZulipTestCase):
 
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         params = {
-            "stream_name": orjson.dumps("public_stream_2").decode(),
             "is_private": orjson.dumps(True).decode(),
         }
         stream = self.subscribe(user_profile, "public_stream_2")
@@ -757,7 +751,6 @@ class StreamAdminTest(ZulipTestCase):
 
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         params = {
-            "stream_name": orjson.dumps("target_stream").decode(),
             "is_private": orjson.dumps(False).decode(),
         }
         stream_id = get_stream("target_stream", realm).id
@@ -798,7 +791,6 @@ class StreamAdminTest(ZulipTestCase):
 
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         params = {
-            "stream_name": orjson.dumps("public_history_stream").decode(),
             "is_private": orjson.dumps(True).decode(),
             "history_public_to_subscribers": orjson.dumps(True).decode(),
         }
@@ -840,7 +832,6 @@ class StreamAdminTest(ZulipTestCase):
             history_public_to_subscribers=False,
         )
         params = {
-            "stream_name": orjson.dumps("public_protected_stream").decode(),
             "is_private": orjson.dumps(True).decode(),
             "history_public_to_subscribers": orjson.dumps(True).decode(),
         }
@@ -881,7 +872,6 @@ class StreamAdminTest(ZulipTestCase):
         stream_id = self.subscribe(user_profile, "test_stream").id
 
         params = {
-            "stream_name": orjson.dumps("test_stream").decode(),
             "is_web_public": orjson.dumps(True).decode(),
             "history_public_to_subscribers": orjson.dumps(True).decode(),
         }
@@ -911,7 +901,6 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_error(result, "Web-public streams are not enabled.")
 
         bad_params = {
-            "stream_name": orjson.dumps("test_stream").decode(),
             "is_web_public": orjson.dumps(True).decode(),
             "is_private": orjson.dumps(True).decode(),
             "history_public_to_subscribers": orjson.dumps(True).decode(),
@@ -920,7 +909,6 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_error(result, "Invalid parameters")
 
         bad_params = {
-            "stream_name": orjson.dumps("test_stream").decode(),
             "is_web_public": orjson.dumps(True).decode(),
             "is_private": orjson.dumps(False).decode(),
             "history_public_to_subscribers": orjson.dumps(False).decode(),
@@ -969,7 +957,6 @@ class StreamAdminTest(ZulipTestCase):
 
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         params = {
-            "stream_name": orjson.dumps("public_stream").decode(),
             "is_private": orjson.dumps(False).decode(),
             "history_public_to_subscribers": orjson.dumps(False).decode(),
         }
@@ -1415,7 +1402,6 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_patch(
             f"/json/streams/{stream_id}",
             {
-                "stream_name": orjson.dumps("private_stream").decode(),
                 "is_private": orjson.dumps(True).decode(),
             },
         )
@@ -1448,7 +1434,6 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_patch(
             f"/json/streams/{stream_id}",
             {
-                "stream_name": "private_stream_1",
                 "is_private": orjson.dumps(True).decode(),
             },
         )
