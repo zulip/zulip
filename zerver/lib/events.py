@@ -47,10 +47,10 @@ from zerver.lib.stream_subscription import handle_stream_notifications_compatibi
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
-from zerver.lib.topic_mutes import get_topic_mutes
 from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.lib.user_mutes import get_user_mutes
 from zerver.lib.user_status import get_user_info_dict
+from zerver.lib.user_topics import get_topic_mutes
 from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data, is_administrator_role
 from zerver.models import (
     MAX_TOPIC_NAME_LENGTH,

@@ -172,7 +172,6 @@ from zerver.lib.topic import (
     update_edit_history,
     update_messages_for_topic_edit,
 )
-from zerver.lib.topic_mutes import add_topic_mute, get_topic_mutes, remove_topic_mute
 from zerver.lib.types import (
     EditHistoryEvent,
     ProfileDataElementValue,
@@ -189,6 +188,7 @@ from zerver.lib.upload import (
 from zerver.lib.user_groups import access_user_group_by_id, create_user_group
 from zerver.lib.user_mutes import add_user_mute, get_muting_users, get_user_mutes
 from zerver.lib.user_status import update_user_status
+from zerver.lib.user_topics import add_topic_mute, get_topic_mutes, remove_topic_mute
 from zerver.lib.users import (
     check_bot_name_available,
     check_full_name,

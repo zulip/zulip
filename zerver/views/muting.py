@@ -17,8 +17,8 @@ from zerver.lib.streams import (
     access_stream_for_unmute_topic_by_name,
     check_for_exactly_one_stream_arg,
 )
-from zerver.lib.topic_mutes import topic_is_muted
 from zerver.lib.user_mutes import get_mute_object
+from zerver.lib.user_topics import topic_is_muted
 from zerver.lib.users import access_user_by_id
 from zerver.lib.validator import check_int
 from zerver.models import UserProfile

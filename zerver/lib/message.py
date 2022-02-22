@@ -37,8 +37,8 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.streams import get_web_public_streams_queryset
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import DB_TOPIC_NAME, MESSAGE__TOPIC, TOPIC_LINKS, TOPIC_NAME
-from zerver.lib.topic_mutes import build_topic_mute_checker, topic_is_muted
 from zerver.lib.types import DisplayRecipientT, EditHistoryEvent, UserDisplayRecipient
+from zerver.lib.user_topics import build_topic_mute_checker, topic_is_muted
 from zerver.models import (
     MAX_TOPIC_NAME_LENGTH,
     Message,

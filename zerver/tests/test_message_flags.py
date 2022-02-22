@@ -17,7 +17,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription, queries_captured
-from zerver.lib.topic_mutes import add_topic_mute
+from zerver.lib.user_topics import add_topic_mute
 from zerver.models import (
     Message,
     Recipient,

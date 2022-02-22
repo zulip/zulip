@@ -53,8 +53,8 @@ from zerver.lib.topic import (
     topic_column_sa,
     topic_match_sa,
 )
-from zerver.lib.topic_mutes import exclude_topic_mutes
 from zerver.lib.types import Validator
+from zerver.lib.user_topics import exclude_topic_mutes
 from zerver.lib.utils import statsd
 from zerver.lib.validator import (
     check_bool,

@@ -45,8 +45,8 @@ from zerver.lib.test_helpers import (
     reset_emails_in_zulip_realm,
     simulated_empty_cache,
 )
-from zerver.lib.topic_mutes import add_topic_mute
 from zerver.lib.upload import upload_avatar_image
+from zerver.lib.user_topics import add_topic_mute
 from zerver.lib.users import Accounts, access_user_by_id, get_accounts_for_email, user_ids_to_users
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
