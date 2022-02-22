@@ -2398,7 +2398,7 @@ class RealmPropertyActionTest(BaseAction):
                 val,
             ]:
                 # email update event is sent for each user.
-                num_events = 11
+                num_events = 12
 
             events = self.verify_action(
                 lambda: do_set_realm_property(

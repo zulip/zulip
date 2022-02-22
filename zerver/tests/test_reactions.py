@@ -87,6 +87,11 @@ class ReactionEmojiTest(ZulipTestCase):
         emojis = ["smile", "tada"]
         expected_emoji_codes = ["1f642", "1f389"]
 
+        # delete the initial reactions created while generating the test database.
+        Reaction.objects.filter(
+            message=Message.objects.get(id=1),
+        ).delete()
+
         for sender, emoji in zip(senders, emojis):
             reaction_info = {
                 "emoji_name": emoji,

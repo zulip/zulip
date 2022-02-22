@@ -518,6 +518,9 @@ class TestArchivingReactions(ArchiveMessagesTestingBase):
     def test_archiving_reactions(self) -> None:
         expired_msg_ids = self._make_expired_zulip_messages(2)
 
+        # delete the existing reactions created when generating test database
+        Reaction.objects.filter(message_id__in=expired_msg_ids).delete()
+
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
 

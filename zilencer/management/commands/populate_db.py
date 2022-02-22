@@ -363,6 +363,7 @@ class Command(BaseCommand):
                 ("Polonius", "polonius@zulip.com"),
                 ("Desdemona", "desdemona@zulip.com"),
                 ("शिव", "shiva@zulip.com"),
+                ("Shylock", "shylock@zulip.com"),
             ]
 
             # For testing really large batches:
@@ -538,6 +539,9 @@ class Command(BaseCommand):
             polonius = get_user_by_delivery_email("polonius@zulip.com", zulip_realm)
             do_change_user_role(polonius, UserProfile.ROLE_GUEST, acting_user=None)
 
+            shylock = get_user_by_delivery_email("shylock@zulip.com", zulip_realm)
+            do_change_user_role(shylock, UserProfile.ROLE_LIMITED_GUEST, acting_user=None)
+
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
             zulip_realm_bots = [
@@ -644,6 +648,7 @@ class Command(BaseCommand):
                         signups_stream,
                     ],
                     "shiva@zulip.com": ["Verona", "Denmark", "Scotland"],
+                    "shylock@zulip.com": ["Scotland", "Rome"],
                 }
 
                 for profile in profiles:

@@ -384,7 +384,7 @@ class RealmImportExportTest(ExportFile):
 
         # We set up 4 alert words for Hamlet, Cordelia, etc.
         # when we populate the test database.
-        num_zulip_users = 10
+        num_zulip_users = 11
         self.assert_length(exported_alert_words, num_zulip_users * 4)
 
         self.assertIn("robotics", {r["word"] for r in exported_alert_words})
