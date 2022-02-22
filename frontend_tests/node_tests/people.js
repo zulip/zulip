@@ -370,6 +370,9 @@ test_people("basics", () => {
         active_humans.sort((p) => p.user_id),
         [me.user_id, isaac.user_id],
     );
+
+    // get_users_from_ids
+    assert.deepEqual(people.get_users_from_ids([me.user_id, isaac.user_id]), [me, isaac]);
 });
 
 test_people("sort_but_pin_current_user_on_top with me", () => {
