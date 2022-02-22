@@ -158,14 +158,14 @@ def make_zoom_video_call(request: HttpRequest, user: UserProfile) -> HttpRespons
     elif not res.ok:
         raise JsonableError(_("Failed to create Zoom call"))
 
-    return json_success({"url": res.json()["join_url"]})
+    return json_success(request, data={"url": res.json()["join_url"]})
 
 
 @csrf_exempt
 @require_POST
 @has_request_variables
 def deauthorize_zoom_user(request: HttpRequest) -> HttpResponse:
-    return json_success()
+    return json_success(request)
 
 
 def get_bigbluebutton_url(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
@@ -196,7 +196,7 @@ def get_bigbluebutton_url(request: HttpRequest, user_profile: UserProfile) -> Ht
             }
         ),
     )
-    return json_success({"url": url})
+    return json_success(request, data={"url": url})
 
 
 # We use zulip_login_required here mainly to get access to the user's

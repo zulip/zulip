@@ -50,7 +50,7 @@
     .message_reaction_count {
         position: relative;
         top: 4px;
-        font-size: 0.8em;
+        font-size: 90%;
         display: inline-block;
         vertical-align: top;
         color: hsl(200, 100%, 40%);

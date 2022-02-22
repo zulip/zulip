@@ -23,11 +23,10 @@ requests contains a few parameters. The most important is "status",
 which had 2 valid values:
 
 - "active" -- this means the user has interacted with the client
-  recently. We use this for the "green" state in the web app.
+  recently.
 - "idle" -- the user has not interacted with the client recently.
   This is important for the case where a user left a Zulip tab open on
-  their desktop at work and went home for the weekend. We use this
-  for the "orange" state in the web app.
+  their desktop at work and went home for the weekend.
 
 The client receives in the response to that request a data set that,
 for each user, contains their status and timestamp that we last heard

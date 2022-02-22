@@ -19,7 +19,7 @@ ensure you can always move from our hosting to yours (and back).
 ## Related resources
 
 * [Sign up for Zulip Cloud](/new/)
-* [Installing a Zulip server](https://zulip.readthedocs.io/en/stable/production/install.html)
+* [Self-hosting Zulip](/self-hosting/)
 * [Trying out Zulip](/help/trying-out-zulip)
 * [Setting up your organization](/help/getting-your-organization-started-with-zulip)
 * [Migrating from other chat tools](/help/migrating-from-other-chat-tools)

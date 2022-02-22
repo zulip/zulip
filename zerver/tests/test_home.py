@@ -219,7 +219,7 @@ class HomeTest(ZulipTestCase):
     def test_home(self) -> None:
         # Keep this list sorted!!!
         html_bits = [
-            "empty_feed_notice_main",
+            "message_feed_errors_container",
             "Loading...",
             # Verify that the app styles get included
             "app-stubentry.js",
@@ -313,7 +313,7 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, "/login/")
 
-        # Tell server that user wants to login anonymously
+        # Tell server that user wants to log in anonymously
         # Redirects to load webapp.
         realm = get_realm("zulip")
         result = self.client_post("/", {"prefers_web_public_view": "true"})
@@ -360,7 +360,7 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(actual_keys, expected_keys)
         self.assertEqual(self.client.session.get("prefers_web_public_view"), True)
 
-        # Web public session key should clear once user is logged in
+        # Web-public session key should clear once user is logged in
         self.login("hamlet")
         self.client_get("/")
         self.assertEqual(self.client.session.get("prefers_web_public_view"), None)
@@ -447,7 +447,7 @@ class HomeTest(ZulipTestCase):
         which still want the home page to load properly.
         """
         html = result.content.decode()
-        if "empty_feed_notice_main" not in html:
+        if "message_feed_errors_container" not in html:
             raise AssertionError("Home page probably did not load.")
 
     def test_terms_of_service(self) -> None:
@@ -462,7 +462,7 @@ class HomeTest(ZulipTestCase):
                 result = self.client_get("/", dict(stream="Denmark"))
 
             html = result.content.decode()
-            self.assertIn("Accept the new Terms of Service", html)
+            self.assertIn("Accept the Terms of Service", html)
 
     def test_banned_desktop_app_versions(self) -> None:
         user = self.example_user("hamlet")

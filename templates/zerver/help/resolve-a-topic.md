@@ -10,7 +10,8 @@ investigation, or notification. Marking a topic as resolved:
 * Puts a ✔ at the beginning of the topic name, e.g. `example topic`
   becomes `✔ example topic`.
 * Triggers an automated message from Notification Bot indicating that
-  you resolved the topic.
+  you resolved the topic. This message will be marked as unread
+  only for users who had participated in the topic.
 * Changes whether the topic appears when using the `is:resolved` and
   `-is:resolved` [search operators](/help/search-for-messages).
 

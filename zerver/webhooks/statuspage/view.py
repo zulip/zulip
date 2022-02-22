@@ -73,4 +73,4 @@ def api_statuspage_webhook(
         raise UnsupportedWebhookEventType("unknown-event")
 
     check_send_webhook_message(request, user_profile, topic, body, event)
-    return json_success()
+    return json_success(request)

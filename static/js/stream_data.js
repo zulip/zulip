@@ -105,7 +105,7 @@ const default_stream_ids = new Set();
 export const stream_privacy_policy_values = {
     web_public: {
         code: "web-public",
-        name: $t({defaultMessage: "Web public"}),
+        name: $t({defaultMessage: "Web-public"}),
         description: $t({
             defaultMessage:
                 "Organization members can join (guests must be invited by a subscriber); anyone on the Internet can view complete message history without creating an account",
@@ -522,12 +522,15 @@ export function can_toggle_subscription(sub) {
     //
     // One can only join a stream if it is public (!invite_only) and
     // your role is Member or above (!is_guest).
+    // Spectators cannot subscribe to any streams.
     //
     // Note that the correctness of this logic relies on the fact that
     // one cannot be subscribed to a deactivated stream, and
     // deactivated streams are automatically made private during the
     // archive stream process.
-    return sub.subscribed || (!page_params.is_guest && !sub.invite_only);
+    return (
+        (sub.subscribed || (!page_params.is_guest && !sub.invite_only)) && !page_params.is_spectator
+    );
 }
 
 export function can_preview(sub) {

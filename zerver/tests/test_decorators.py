@@ -395,11 +395,11 @@ class SkipRateLimitingTest(ZulipTestCase):
     def test_authenticated_rest_api_view(self) -> None:
         @authenticated_rest_api_view(skip_rate_limiting=False)
         def my_rate_limited_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-            return json_success()  # nocoverage # mock prevents this from being called
+            return json_success(request)  # nocoverage # mock prevents this from being called
 
         @authenticated_rest_api_view(skip_rate_limiting=True)
         def my_unlimited_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-            return json_success()
+            return json_success(request)
 
         request = HostRequestMock(host="zulip.testserver")
         request.META["HTTP_AUTHORIZATION"] = self.encode_email(self.example_email("hamlet"))
@@ -418,11 +418,11 @@ class SkipRateLimitingTest(ZulipTestCase):
     def test_authenticated_uploads_api_view(self) -> None:
         @authenticated_uploads_api_view(skip_rate_limiting=False)
         def my_rate_limited_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-            return json_success()  # nocoverage # mock prevents this from being called
+            return json_success(request)  # nocoverage # mock prevents this from being called
 
         @authenticated_uploads_api_view(skip_rate_limiting=True)
         def my_unlimited_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-            return json_success()
+            return json_success(request)
 
         request = HostRequestMock(host="zulip.testserver")
         request.method = "POST"
@@ -440,7 +440,7 @@ class SkipRateLimitingTest(ZulipTestCase):
 
     def test_authenticated_json_view(self) -> None:
         def my_view(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-            return json_success()
+            return json_success(request)
 
         my_rate_limited_view = authenticated_json_view(my_view, skip_rate_limiting=False)
         my_unlimited_view = authenticated_json_view(my_view, skip_rate_limiting=True)
@@ -771,7 +771,7 @@ class ValidatorTestCase(ZulipTestCase):
         with self.assertRaisesRegex(ValueError, re.escape("5 is too large (max 4)")):
             to_non_negative_int("5", max_int_size=4)
         with self.assertRaisesRegex(ValueError, re.escape(f"{2**32} is too large (max {2**32-1})")):
-            to_non_negative_int(str(2 ** 32))
+            to_non_negative_int(str(2**32))
 
     def test_check_float(self) -> None:
         x: Any = 5.5
@@ -1143,7 +1143,7 @@ class FetchAPIKeyTest(ZulipTestCase):
     def test_fetch_api_key_wrong_password(self) -> None:
         self.login("cordelia")
         result = self.client_post("/json/fetch_api_key", dict(password="wrong_password"))
-        self.assert_json_error_contains(result, "password is incorrect")
+        self.assert_json_error_contains(result, "Password is incorrect")
 
 
 class InactiveUserTest(ZulipTestCase):

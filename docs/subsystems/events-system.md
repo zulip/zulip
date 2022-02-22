@@ -304,7 +304,7 @@ There are some notable optional parameters for `verify_action`:
   doesn't actually require state changes for some reason; otherwise,
   `verify_action` will complain that your test doesn't really
   exercise any `apply_events` logic. Typing notifications (which
-  are ephemereal) are a common place where we use this.
+  are ephemeral) are a common place where we use this.
 
 - `num_events` will tell `verify_action` how many events the
   `hamlet` user will receive after the action (the default is 1).

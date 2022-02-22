@@ -50,7 +50,7 @@ def api_sonarr_webhook(
     subject = get_subject_for_http_request(payload)
 
     check_send_webhook_message(request, user_profile, subject, body, payload["eventType"])
-    return json_success()
+    return json_success(request)
 
 
 def get_subject_for_http_request(payload: Dict[str, Any]) -> str:

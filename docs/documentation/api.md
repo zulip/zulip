@@ -30,7 +30,7 @@ Our API documentation is defined by a few sets of files:
   [OpenAPI description](../documentation/openapi.md) at
   `zerver/openapi/zulip.yaml`.
 - The documentation is written the same Markdown framework that powers
-  our [user docs](../documentation/user.md), with some special
+  our [help center docs](../documentation/helpcenter.md), with some special
   extensions for rendering nice code blocks and example
   responses. Most API endpoints share a common template,
   `templates/zerver/api/api-doc-template.md`, which renders the

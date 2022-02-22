@@ -13,14 +13,21 @@ const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
-set_global("document", {});
+set_global("document", {
+    querySelector: () => {},
+});
 set_global("navigator", {});
+// eslint-disable-next-line prefer-arrow-callback
+set_global("ResizeObserver", function () {
+    return {
+        observe: () => {},
+    };
+});
 
 const fake_now = 555;
 
 const channel = mock_esm("../../static/js/channel");
 const compose_actions = mock_esm("../../static/js/compose_actions");
-const giphy = mock_esm("../../static/js/giphy");
 const loading = mock_esm("../../static/js/loading");
 const markdown = mock_esm("../../static/js/markdown");
 const notifications = mock_esm("../../static/js/notifications");
@@ -95,7 +102,6 @@ function test_ui(label, f) {
 
 function initialize_handlers({override, override_rewire}) {
     override_rewire(compose, "compute_show_video_chat_button", () => false);
-    override_rewire(compose, "render_compose_box", () => {});
     override_rewire(upload, "setup_upload", () => undefined);
     override(resize, "watch_manual_resize", () => {});
     compose.initialize();
@@ -400,9 +406,7 @@ test_ui("finish", ({override, override_rewire}) => {
     })();
 });
 
-test_ui("initialize", ({override, override_rewire, mock_template}) => {
-    override(giphy, "is_giphy_enabled", () => true);
-
+test_ui("initialize", ({override, override_rewire}) => {
     let compose_actions_expected_opts;
     let compose_actions_start_checked;
 
@@ -443,13 +447,6 @@ test_ui("initialize", ({override, override_rewire, mock_template}) => {
                 uppy_cancel_all_called = true;
             },
         };
-    });
-
-    mock_template("compose.hbs", false, (context) => {
-        assert.equal(context.embedded, false);
-        assert.equal(context.file_upload_enabled, true);
-        assert.equal(context.giphy_enabled, true);
-        return "fake-compose-template";
     });
 
     compose.initialize();
@@ -760,6 +757,11 @@ test_ui("on_events", ({override, override_rewire}) => {
     })();
 
     (function test_markdown_preview_compose_clicked() {
+        let reset_compose_message_max_height_called = false;
+        override(resize, "reset_compose_message_max_height", () => {
+            reset_compose_message_max_height_called = true;
+        });
+
         // Tests setup
         function setup_visibilities() {
             $("#compose-textarea").show();
@@ -845,6 +847,7 @@ test_ui("on_events", ({override, override_rewire}) => {
 
         assert.equal($("#compose .preview_content").html(), "translated HTML: Nothing to preview");
         assert_visibilities();
+        assert.ok(reset_compose_message_max_height_called);
 
         let make_indicator_called = false;
         $("#compose-textarea").val("```foobarfoobar```");

@@ -327,7 +327,7 @@ exports.with_field = function (obj, field, val, f) {
         );
     }
 
-    const had_val = Object.prototype.hasOwnProperty.call(obj, field);
+    const had_val = Object.hasOwn(obj, field);
     const old_val = obj[field];
     try {
         obj[field] = val;

@@ -266,4 +266,4 @@ def api_pagerduty_webhook(
             format_dict = build_pagerduty_formatdict_v3(event)
             send_formated_pagerduty(request, user_profile, event_type, format_dict)
 
-    return json_success()
+    return json_success(request)

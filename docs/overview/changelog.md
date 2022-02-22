@@ -121,6 +121,44 @@ log][commit-log] for an up-to-date list of raw changes.
 
 ## Zulip 4.x series
 
+## Zulip 4.9 -- 2022-01-24
+
+- CVE-2021-43799: Remote execution of code involving RabbitMQ.
+- Closed access to RabbitMQ port 25672; initial installs tried to
+  close this port, but failed to restart RabbitMQ for the
+  configuration.
+- Removed the `rabbitmq.nodename` configuration in `zulip.conf`; all
+  RabbitMQ instances will be reconfigured to have a nodename of
+  `zulip@localhost`. You can remove this setting from your
+  `zulip.conf` configuration file, if it exists.
+- Added missing support for the Camo image proxy in the Docker
+  image. This resolves a longstanding issue with image previews, if
+  enabled, appearing as broken images for Docker-based installs.
+- Fixed a bug which allowed a user to edit a message to add a wildcard
+  mention when they did not have permissions to send such messages
+  originally.
+- Fixed a bug in the tool that corrects database corruption caused by
+  updating the operating system hosting PostgreSQL, which previously
+  omitted some indexes from its verification. If you updated the
+  operating system of your Zulip instance from Ubuntu 18.04 to 20.04,
+  or from Debian Stretch to Debian Buster, you should run the tool,
+  even if you did so previously; full details and instructions are
+  available in the previous blog post.
+- Began routing requests from the Camo image proxy through a
+  non-Smokescreen proxy, if one is configured; because Camo includes
+  logic to deny access to private subnets, routing its requests
+  through Smokescreen is generally not necessary.
+- Fixed a bug where changing the Camo secret required running
+  `zulip-puppet-apply`.
+- Fixed `scripts/setup/compare-settings-to-template` to be able to run
+  from any directory.
+- Switched Let's Encrypt renewal to use its own timer, rather than our
+  custom cron job. This fixes a bug where occasionally `nginx` would
+  not reload after getting an updated certificate.
+- Updated documentation and tooling to note that installs using
+  `upgrade-zulip-from-git` require 3 GB of RAM, or 2 GB and at least 1
+  GB of swap.
+
 ## Zulip 4.8 -- 2021-12-01
 
 - CVE-2021-43791: Zulip could fail to enforce expiration dates
@@ -267,7 +305,7 @@ log][commit-log] for an up-to-date list of raw changes.
 - Improved formatting for Grafana integration.
 - Fixed previews of Dropbox image links.
 - Fixed support for storing avatars/emoji in non-S3 upload backends.
-- Fixed an overly strict database constaint for code playgrounds.
+- Fixed an overly strict database constraint for code playgrounds.
 - Tagged user status strings for translation.
 - Updated translation data from Transifex.
 
@@ -367,7 +405,7 @@ log][commit-log] for an up-to-date list of raw changes.
 - Added new [release lifecycle documentation](../overview/release-lifecycle.md).
 - Added support for subscribing another stream's membership to a stream.
 - Added RealmAuditLog for most settings state changes in Zulip; this
-  data will fascilitate future features showing a log of activity by
+  data will facilitate future features showing a log of activity by
   a given user or changes to an organization's settings.
 - Added support for using Sentry for processing backend exceptions.
 - Added documentation for using `wal-g` for continuous PostgreSQL backups.
@@ -454,7 +492,7 @@ log][commit-log] for an up-to-date list of raw changes.
   `can_create_user` and `can_forge_sender` (used for mirroring).
 - Various API endpoints creating objects now return the ID of the
   created object.
-- Fixed screenreader accessibility of many components, including
+- Fixed screen reader accessibility of many components, including
   the compose box, message editing, popovers, and many more.
 - Fixed transparency issues uploading some animated GIFs as custom emoji.
 - Improved positioning logic for inline YouTube previews.
@@ -784,7 +822,7 @@ log][commit-log] for an up-to-date list of raw changes.
   mobile apps.
 - Removed the legacy websockets-based system for sending messages. This
   system was always a hack, was only ever used for one endpoint, and
-  did not provide a measureable latency benefit over HTTP/2.
+  did not provide a measurable latency benefit over HTTP/2.
 
 ## Zulip 2.1.x series
 
@@ -1093,7 +1131,7 @@ details.
 - Fixed buggy rendering of bulleted lists inside blockquotes.
 - Fixed several bugs with CORS in the nginx configuration.
 - Fixed error message for GitHub login attempts with a deactivated account.
-- Fixed email gateway issues with non-latin characters in stream names.
+- Fixed email gateway issues with non-Latin characters in stream names.
 - Fixed endless re-synchronization of LDAP user avatars (which
   could cause user-visible performance issues for desktop/web clients).
 - Fixed all known bugs with advanced LDAP data synchronization.
@@ -1806,7 +1844,7 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 #### Full feature changelog
 
 - Simplified the process for installing a new Zulip server, as well as
-  fixing the most common roadbumps and confusing error messages.
+  fixing the most common road bumps and confusing error messages.
 - Added a new "incoming webhook" bot type, limited to only sending
   messages into Zulip, for better security.
 - Added experimental support for outgoing webhooks.
@@ -1820,7 +1858,7 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 - Added new "getting started" guides to the user documentation.
 - Added support for installing a Zulip server from a Git checkout.
 - Added support for mentioning a user when editing a message.
-- Added OpsGenie, Google Code-In, Google Search, and xkcd integrations.
+- Added Opsgenie, Google Code-In, Google Search, and xkcd integrations.
 - Added support for organization administrators deleting private streams.
 - Added support for using any LDAP attribute for login username.
 - Added support for searching by group-pm-with.
@@ -1890,7 +1928,7 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 - Fixed zombie process leaks on servers with <4GB of RAM.
 - Fixed Markdown previews of /me messages.
 - Fixed a subtle bug involving timestamps of locally echoed messages.
-- Fixed the behavior of key combintions like Ctrl+Enter in the compose box.
+- Fixed the behavior of key combinations like Ctrl+Enter in the compose box.
 - Worked around Google Compute Engine's default boto configuration,
   which broke Zulip (and any other app using boto).
 - Zulip now will gracefully handle the PostgreSQL server being restarted.
@@ -2365,7 +2403,7 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
   /etc/zulip/secrets.conf.
 - Improved the styling for the Administration page and added tabs.
 - Substantially improved loading performance on slow networks by enabling
-  GZIP compression on more assets.
+  gzip compression on more assets.
 - Changed the page title in narrowed views to include the current narrow.
 - Fixed several backend performance issues affecting very large realms.
 - Fixed bugs where draft compose content might be lost when reloading site.

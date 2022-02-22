@@ -21,6 +21,7 @@ from typing import (
     Set,
     Tuple,
     Union,
+    cast,
 )
 from unittest import TestResult, mock
 
@@ -205,7 +206,7 @@ Output:
 
     The linter will prevent direct calls to self.client.foo, so the wrapper
     functions have to fake out the linter by using a local variable called
-    django_client to fool the regext.
+    django_client to fool the regex.
     """
     DEFAULT_SUBDOMAIN = "zulip"
     TOKENIZED_NOREPLY_REGEX = settings.TOKENIZED_NOREPLY_EMAIL_ADDRESS.format(token="[a-z0-9_]{24}")
@@ -541,8 +542,10 @@ Output:
     def _get_page_params(self, result: HttpResponse) -> Dict[str, Any]:
         """Helper for parsing page_params after fetching the web app's home view."""
         doc = lxml.html.document_fromstring(result.content)
-        [div] = doc.xpath("//div[@id='page-params']")
+        div = cast(lxml.html.HtmlMixin, doc).get_element_by_id("page-params")
+        assert div is not None
         page_params_json = div.get("data-params")
+        assert page_params_json is not None
         page_params = orjson.loads(page_params_json)
         return page_params
 
@@ -924,8 +927,7 @@ Output:
 
         return [subscription.user_profile for subscription in subscriptions]
 
-    def assert_url_serves_contents_of_file(self, url: str, result: bytes) -> None:
-        response = self.client_get(url)
+    def assert_streaming_content(self, response: HttpResponse, result: bytes) -> None:
         assert isinstance(response, StreamingHttpResponse)
         data = b"".join(response.streaming_content)
         self.assertEqual(result, data)
@@ -1486,7 +1488,7 @@ Output:
         """
         DB tables that refer to RealmEmoji use int(emoji_code) as the
         foreign key. Those tables tend to de-normalize emoji_name due
-        to our inherintance-based setup. This helper makes sure those
+        to our inheritance-based setup. This helper makes sure those
         invariants are intact, which is particularly tricky during
         the import/export process (or during conversions from things
         like Slack/RocketChat/MatterMost/etc.).

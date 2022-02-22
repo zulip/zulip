@@ -9,6 +9,9 @@ preparing a new release.
   - Upgrade all Python dependencies in
     `requirements` to latest upstream versions so they can burn in (use
     `pip list --outdated`).
+  - Upgrade all puppet dependencies in `puppet/deps.yaml`
+  - Upgrade all puppet-installed dependencies (e.g. Smokescreen, go,
+    etc) in `puppet/zulip/manifests/common.pp`
   - [Upload strings to
     Transifex](../translating/internationalization.html#translation-process)
     using `push-translations`. Post a Transifex
@@ -33,7 +36,7 @@ preparing a new release.
   Transifex and commit them.
 - Use `build-release-tarball` to generate a release tarball.
 - Test the new tarball extensively, both new install and upgrade from last
-  release, on both Bionic and Focal.
+  release, on Ubuntu 20.04.
 - Repeat until release is ready.
 - Send around the Paper blog post draft for review.
 - Move the blog post draft to Ghost. (For a draft in Dropbox Paper,

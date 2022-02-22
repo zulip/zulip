@@ -5,6 +5,7 @@ import tippy from "tippy.js";
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
 import render_browse_streams_list_item from "../templates/stream_settings/browse_streams_list_item.hbs";
+import render_selected_stream_title from "../templates/stream_settings/selected_stream_title.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
 import render_stream_settings_overlay from "../templates/stream_settings/stream_settings_overlay.hbs";
 
@@ -38,16 +39,26 @@ import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
 
+export function set_right_panel_title(sub) {
+    let title_icon_color = "#333333";
+    if (settings_data.using_dark_theme()) {
+        title_icon_color = "#dddeee";
+    }
+    $("#subscription_overlay .stream-info-title").html(
+        render_selected_stream_title({sub, title_icon_color}),
+    );
+}
+
 export const show_subs_pane = {
     nothing_selected() {
         $(".settings, #stream-creation").hide();
         $(".nothing-selected").show();
         $("#subscription_overlay .stream-info-title").text($t({defaultMessage: "Stream settings"}));
     },
-    settings(stream_name) {
+    settings(sub) {
         $(".settings, #stream-creation").hide();
         $(".settings").show();
-        $("#subscription_overlay .stream-info-title").text("#" + stream_name);
+        set_right_panel_title(sub);
     },
     create_stream() {
         $(".nothing-selected, .settings, #stream-creation").hide();
@@ -207,6 +218,11 @@ export function update_stream_privacy(slim_sub, values) {
     stream_ui_updates.update_add_subscriptions_elements(sub);
     stream_list.redraw_stream_privacy(sub);
 
+    const active_data = get_active_data();
+    if (active_data.id === sub.stream_id) {
+        set_right_panel_title(sub);
+    }
+
     // Update navbar if needed
     message_view_header.maybe_rerender_title_area_for_stream(sub);
 }
@@ -237,7 +253,7 @@ export function add_sub_to_table(sub) {
         // If a stream is already listed/added in subscription modal,
         // display stream in `Subscribed` tab and return.
         // This can happen in some corner cases (which might
-        // be backend bugs) where a realm adminsitrator is subscribed
+        // be backend bugs) where a realm administrator is subscribed
         // to a private stream, in which case they might get two
         // stream-create events.
         stream_ui_updates.update_stream_row_in_settings_tab(sub);

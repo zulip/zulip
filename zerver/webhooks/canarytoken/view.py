@@ -37,4 +37,4 @@ def api_canarytoken_webhook(
         topic = user_specified_topic
 
     check_send_webhook_message(request, user_profile, topic, body)
-    return json_success()
+    return json_success(request)

@@ -126,6 +126,7 @@ class SendMessageRequest:
     submessages: List[Dict[str, Any]] = field(default_factory=list)
     deliver_at: Optional[datetime.datetime] = None
     delivery_type: Optional[str] = None
+    limit_unread_user_ids: Optional[Set[int]] = None
 
 
 # We won't try to fetch more unread message IDs from the database than
@@ -717,7 +718,7 @@ def access_web_public_message(
     message_id: int,
 ) -> Message:
     """Access control method for unauthenticated requests interacting
-    with a message in web public streams.
+    with a message in web-public streams.
     """
 
     # We throw a MissingAuthenticationError for all errors in this
@@ -1307,7 +1308,7 @@ def update_first_visible_message_id(realm: Realm) -> None:
 
 def get_last_message_id() -> int:
     # We generally use this function to populate RealmAuditLog, and
-    # the max id here is actually systemwide, not per-realm.  I
+    # the max id here is actually system-wide, not per-realm.  I
     # assume there's some advantage in not filtering by realm.
     last_id = Message.objects.aggregate(Max("id"))["id__max"]
     if last_id is None:

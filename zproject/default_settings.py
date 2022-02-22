@@ -355,8 +355,16 @@ REALM_CREATION_LINK_VALIDITY_DAYS = 7
 # user to click through to re-accept terms of service before using
 # Zulip again on the web.
 TERMS_OF_SERVICE_VERSION: Optional[str] = None
-# Template to use when bumping TERMS_OF_SERVICE_VERSION to explain situation.
+# HTML template path (e.g. "corporate/zulipchat_migration_tos.html")
+# displayed to users when increasing TERMS_OF_SERVICE_VERSION when a
+# user is to accept the terms of service for the first time, but
+# already has an account. This primarily comes up when doing a data
+# import.
 FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE: Optional[str] = None
+# Custom message (HTML allowed) to be displayed to explain why users
+# need to re-accept the terms of service when a new major version is
+# written.
+TERMS_OF_SERVICE_MESSAGE: Optional[str] = None
 
 # Hostname used for Zulip's statsd logging integration.
 STATSD_HOST = ""
@@ -396,7 +404,7 @@ CUSTOM_LOGO_URL: Optional[str] = None
 # development.
 INITIAL_PASSWORD_SALT: Optional[str] = None
 
-# Settings configuring the special instrumention of the send_event
+# Settings configuring the special instrumentation of the send_event
 # code path used in generating API documentation for /events.
 LOG_API_EVENT_TYPES = False
 

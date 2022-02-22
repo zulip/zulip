@@ -288,7 +288,7 @@ class Command(BaseCommand):
                 # due to these numbers happening to coincide in such a way that it makes tests
                 # accidentally pass. By bumping the Recipient.id sequence by a large enough number,
                 # we can have those ids in a completely different range of values than object ids,
-                # eliminatng the possibility of such coincidences.
+                # eliminating the possibility of such coincidences.
                 cursor.execute("SELECT setval('zerver_recipient_id_seq', 100)")
 
         # If max_topics is not set, we set it proportional to the
@@ -366,7 +366,7 @@ class Command(BaseCommand):
             # For testing really large batches:
             # Create extra users with semi realistic names to make search
             # functions somewhat realistic.  We'll still create 1000 users
-            # like Extra222 User for some predicability.
+            # like Extra222 User for some predictability.
             num_names = options["extra_users"]
             num_boring_names = 300
 
@@ -895,7 +895,7 @@ class Command(BaseCommand):
             count = options["num_messages"] // threads
             if i < options["num_messages"] % threads:
                 count += 1
-            jobs.append((count, personals_pairs, options, random.randint(0, 10 ** 10)))
+            jobs.append((count, personals_pairs, options, random.randint(0, 10**10)))
 
         for job in jobs:
             generate_and_send_messages(job)

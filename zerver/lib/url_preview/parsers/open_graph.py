@@ -1,4 +1,5 @@
 from typing import Dict
+from urllib.parse import urlparse
 
 from .base import BaseParser
 
@@ -22,6 +23,14 @@ class OpenGraphParser(BaseParser):
             og_property_name = tag["property"][len("og:") :]
             if not tag.has_attr("content"):
                 continue
+
+            if og_property_name == "image":
+                try:
+                    # We use urlparse and not URLValidator because we
+                    # need to support relative URLs.
+                    urlparse(tag["content"])
+                except ValueError:
+                    continue
 
             result[og_property_name] = tag["content"]
 

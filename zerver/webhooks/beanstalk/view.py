@@ -88,7 +88,7 @@ def api_beanstalk_webhook(
     git_repo = "uri" in payload
     if git_repo:
         if branches is not None and branches.find(payload["branch"]) == -1:
-            return json_success()
+            return json_success(request)
         # To get a linkable url,
         for commit in payload["commits"]:
             commit["author"] = {"username": commit["author"]["name"]}
@@ -113,4 +113,4 @@ def api_beanstalk_webhook(
         content = f"{author} pushed [revision {revision}]({url}):\n\n> {short_commit_msg}"
 
     check_send_webhook_message(request, user_profile, subject, content)
-    return json_success()
+    return json_success(request)

@@ -35,8 +35,8 @@ typically involve running subsets of the tests with commands like these:
 ./tools/lint zerver/lib/actions.py # Lint the file you just changed
 ./tools/test-backend zerver.tests.test_markdown.MarkdownTest.test_inline_youtube
 ./tools/test-backend MarkdownTest # Run `test-backend --help` for more options
-./tools/test-js-with-puppeteer navigation.ts
-./tools/test-js-with-node utils.js
+./tools/test-js-with-node util
+# etc.
 ```
 
 The commands above will all run in just a few seconds. Many more
@@ -66,7 +66,7 @@ Additionally, Zulip also has about a dozen smaller tests suites:
 - `tools/test-documentation`: Checks for broken links in this
   ReadTheDocs documentation site.
 - `tools/test-help-documentation`: Checks for broken links in the
-  `/help` user documentation site, and related pages.
+  `/help/` help center documentation, and related pages.
 - `tools/test-api`: Tests that the API documentation at `/api`
   actually works; the actual code for this is defined in
   `zerver/openapi/python_examples.py`.

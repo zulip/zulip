@@ -15,7 +15,7 @@ from zerver.lib.validator import (
 # to realm admins, where realm admin only need to select
 # the default field and other values(i.e. name, url) will be
 # fetch from this dictionary.
-# text: Field text for admins - custom profile field in org settngs view
+# text: Field text for admins - custom profile field in org settings view
 # name: Field label or name - user profile in user settings view
 # hint: Field hint for realm users
 # url_pattern: Field URL linkifier

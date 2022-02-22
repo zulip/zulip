@@ -48,7 +48,7 @@ paths:
         This API endpoint is used by clients such as the Zulip mobile and
         terminal apps to implement password-based authentication. Given the
         user's Zulip login credentials, it returns a Zulip API key that the client
-        can use to make requests requests as the user.
+        can use to make requests as the user.
 
         This endpoint is only useful for Zulip servers/organizations with
         EmailAuthBackend or LDAPAuthBackend enabled.
@@ -243,7 +243,7 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent to clients that that have requested the
+                                Event sent to clients that have requested the
                                 `update_display_settings` event type and did not include
                                 `user_settings_object` in their `client_capabilities` when
                                 registering the event queue.
@@ -1366,7 +1366,7 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent sent to a user's clients when details of a file that user
+                                Event sent to a user's clients when details of a file that user
                                 uploaded are changed. Most updates will be changes in the list of
                                 messages that reference the uploaded file.
                               properties:
@@ -1966,9 +1966,14 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent when a message has been edited.
+                                Event sent when a message's content, topic and/or
+                                stream has been edited or when a message's content
+                                has a rendering update, such as for an
+                                [inline URL preview][inline-url-previews].
                                 Sent to all users who had received the original
                                 message.
+
+                                [inline-url-previews]: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#inline-url-previews
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1979,20 +1984,42 @@ paths:
                                         - update_message
                                 user_id:
                                   type: integer
+                                  nullable: true
                                   description: |
                                     The ID of the user who sent the message.
 
-                                    Not present if update_message event is for providing inline URL
-                                    preview in message.
+                                    Null when event is for a rendering update of the original message,
+                                    such as for an [inline URL preview][inline-url-previews].
+
+                                    **Changes**: As of Zulip 5.0 (feature level 114), this field
+                                    is present for all `update_message` events. Previously, this
+                                    field was omitted for [inline URL preview][inline-url-previews]
+                                    updates.
+                                rendering_only:
+                                  type: boolean
+                                  description: |
+                                    Whether the event only updates the rendered content of the message.
+
+                                    This field should be used by clients to determine if the event
+                                    only provides a rendering update to the message content,
+                                    such as for an [inline URL preview][inline-url-previews].
+                                    When `True`, the event does not reflect a user-generated edit
+                                    and does not modify the message history.
+
+                                    **Changes**: New in Zulip 5.0 (feature level 114). Clients can
+                                    correctly identify these rendering update event with earlier
+                                    Zulip versions by checking whether the `user_id` field was omitted.
                                 message_id:
                                   type: integer
                                   description: |
-                                    The ID of the message which was edited.
+                                    The ID of the message which was edited or updated.
 
                                     This field should be used to apply content edits to the client's
-                                    cached message history. If the stream or topic was changed, the
-                                    set of moved messages is encoded in the separate `message_ids`
-                                    field, which is guaranteed to include `message_id`.
+                                    cached message history, or to apply rendered content updates.
+
+                                    If the stream or topic was changed, the set of moved messages is
+                                    encoded in the separate `message_ids` field, which is guaranteed
+                                    to include `message_id`.
                                 message_ids:
                                   type: array
                                   items:
@@ -2033,19 +2060,21 @@ paths:
                                     The time when this message edit operation was processed by the
                                     server.
 
-                                    Not present if update_message event is for providing inline URL
-                                    preview in message.
+                                    **Changes**: As of Zulip 5.0 (feature level 114), this field
+                                    is present for all `update_message` events. Previously, this
+                                    field was omitted for [inline URL preview][inline-url-previews]
+                                    updates.
                                 stream_name:
                                   type: string
                                   description: |
-                                    Only present if the message was originally sent to a stream.
+                                    Only present if the message was edited and originally sent to a stream.
 
                                     The name of the stream that the message was sent to. Clients
                                     are recommended to use the `stream_id` field instead.
                                 stream_id:
                                   type: integer
                                   description: |
-                                    Only present if the message was originally sent to a stream.
+                                    Only present if the message was edited and originally sent to a stream.
 
                                     The pre-edit stream for all of the messages with IDs in
                                     `message_ids`.
@@ -2068,9 +2097,12 @@ paths:
                                     topic and/or stream.
 
                                     The choice the editing user made about which messages should be
-                                    affected by a stream/topic edit: just the one indicated in
-                                    `message_id`, messages in the same topic that had been sent
-                                    after this one, or all messages in that topic.
+                                    affected by a stream/topic edit:
+
+                                    - `change_one` => Just change the one indicated in `message_id`.
+                                    - `change_later` => Change messages in the same topic that had
+                                      been sent after this one.
+                                    - `change_all`=> Change all messages in that topic.
 
                                     This parameter should be used to decide whether to change
                                     navigation and compose box state in response to the edit. For
@@ -2159,14 +2191,18 @@ paths:
                                 content:
                                   type: string
                                   description: |
-                                    Only present if this event changed the message content.
+                                    Only present if this event changed the message content or
+                                    updated the message content for an
+                                    [inline URL preview][inline-url-previews].
 
                                     The new content of the message with ID `message_id`, in the
                                     original Markdown.
                                 rendered_content:
                                   type: string
                                   description: |
-                                    Only present if this event changed the message content.
+                                    Only present if this event changed the message content or
+                                    updated the message content for an
+                                    [inline URL preview][inline-url-previews].
 
                                     The new content of the message with ID `message_id`,
                                     rendered in HTML.
@@ -2180,11 +2216,14 @@ paths:
 
                                     [status-messages]: /help/format-your-message-using-markdown#status-messages
                               required:
-                                - "type"
-                                - "id"
-                                - "message_id"
-                                - "message_ids"
-                                - "flags"
+                                - type
+                                - id
+                                - user_id
+                                - message_id
+                                - message_ids
+                                - flags
+                                - edit_timestamp
+                                - rendering_only
                               example:
                                 {
                                   "type": "update_message",
@@ -2205,6 +2244,7 @@ paths:
                                   "topic_links": [],
                                   "message_ids": [58, 57],
                                   "flags": [],
+                                  "rendering_only": false,
                                   "id": 0,
                                 }
                             - type: object
@@ -3565,7 +3605,7 @@ paths:
                                     enable_spectator_access:
                                       type: boolean
                                       description: |
-                                        Whether web public streams are enabled in this organization.
+                                        Whether web-public streams are enabled in this organization.
 
                                         Can only be enabled if the `WEB_PUBLIC_STREAMS_ENABLED`
                                         [server setting][server-settings] is enabled on the Zulip
@@ -3686,7 +3726,7 @@ paths:
                                         Indicates whether users are
                                         [allowed to change](/help/restrict-name-and-email-changes) their name
                                         via the Zulip UI in this organization. Typically disabled
-                                        in organizations syncing this this type of account information
+                                        in organizations syncing this type of account information from
                                         an external user database like LDAP.
                                     night_logo_source:
                                       type: string
@@ -3778,7 +3818,7 @@ paths:
                                         - 4 => Only stream and organization administrators can use wildcard mentions in large streams.
                                         - 5 => Only organization administrators can use wildcard mentions in large streams.
                                         - 6 => Nobody can use wildcard mentions in large streams.
-                                        - 7 => Only organization adminstartors and moderators can use wildcard mentions in large streams.
+                                        - 7 => Only organization administrators and moderators can use wildcard mentions in large streams.
 
                                         All users will receive a warning/reminder when using
                                         mentions in large streams, even when permitted to do so.
@@ -3854,11 +3894,11 @@ paths:
                                   allOf:
                                     - $ref: "#/components/schemas/EventTypeSchema"
                                     - enum:
-                                        - "drafts"
+                                        - drafts
                                 op:
                                   type: string
                                   enum:
-                                    - "add"
+                                    - add
                                 drafts:
                                   type: array
                                   description: |
@@ -3892,11 +3932,11 @@ paths:
                                   allOf:
                                     - $ref: "#/components/schemas/EventTypeSchema"
                                     - enum:
-                                        - "drafts"
+                                        - drafts
                                 op:
                                   type: string
                                   enum:
-                                    - "update"
+                                    - update
                                 draft:
                                   $ref: "#/components/schemas/Draft"
                               example:
@@ -3924,11 +3964,11 @@ paths:
                                   allOf:
                                     - $ref: "#/components/schemas/EventTypeSchema"
                                     - enum:
-                                        - "drafts"
+                                        - drafts
                                 op:
                                   type: string
                                   enum:
-                                    - "remove"
+                                    - remove
                                 draft_id:
                                   type: integer
                                   description: |
@@ -6131,8 +6171,8 @@ paths:
                           - 400
                           - 600
                         description: |
-                          [Organization-level role](/help/roles-and-permissions)) of the user.
-                          Poosible values are:
+                          [Organization-level role](/help/roles-and-permissions) of the user.
+                          Possible values are:
 
                           - Organization owner => 100
                           - Organization administrator => 200
@@ -6630,6 +6670,24 @@ paths:
                 type: array
                 items:
                   type: object
+                  additionalProperties: false
+                  properties:
+                    name:
+                      type: string
+                      description: |
+                        The name of the stream.
+                    description:
+                      type: string
+                      description: |
+                        The [description](/help/change-the-stream-description)
+                        to use for a new stream being created, in text/markdown format.
+                  required:
+                    - name
+                  example:
+                    no-description:
+                      value: {"name": "Verona"}
+                    with-description:
+                      value: {"name": "Verona", "description": "Italian city"}
               example: [{"name": "Verona", "description": "Italian city"}]
           required: true
         - $ref: "#/components/parameters/Principals"
@@ -6649,7 +6707,7 @@ paths:
         - name: announce
           in: query
           description: |
-            If one of the streams specified did not exist previously and is thus craeted
+            If one of the streams specified did not exist previously and is thus created
             by this call, this determines whether [notification bot](/help/configure-notification-bot)
             will send an announcement about the new stream's creation.
           schema:
@@ -6674,9 +6732,9 @@ paths:
           in: query
           description: |
             This parameter determines whether any newly created streams will be
-            web public streams.
+            web-public streams.
 
-            Note that creating web public streams requires the
+            Note that creating web-public streams requires the
             `WEB_PUBLIC_STREAMS_ENABLED` [server setting][server-settings]
             to be enabled on the Zulip server in question, the organization
             to have enabled the `enable_spectator_access` realm setting, and
@@ -6744,7 +6802,7 @@ paths:
       summary: Update subscriptions
       tags: ["streams"]
       description: |
-        Update which streams you are are subscribed to.
+        Update which streams you are subscribed to.
       parameters:
         - name: delete
           in: query
@@ -7566,15 +7624,13 @@ paths:
 
             Automatic detection is implementing using the standard `prefers-color-scheme`
             media query.
-          content:
-            application/json:
-              schema:
-                type: integer
-                enum:
-                  - 1
-                  - 2
-                  - 3
-              example: 1
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
         - name: enable_drafts_synchronization
           in: query
           description: |
@@ -7646,15 +7702,13 @@ paths:
             - 1 - Automatic
             - 2 - Always
             - 3 - Never
-          content:
-            application/json:
-              schema:
-                type: integer
-                enum:
-                  - 1
-                  - 2
-                  - 3
-              example: 1
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
         - name: enable_stream_desktop_notifications
           in: query
           description: |
@@ -7774,15 +7828,13 @@ paths:
             - 1 - All unreads
             - 2 - Private messages and mentions
             - 3 - None
-          content:
-            application/json:
-              schema:
-                type: integer
-                enum:
-                  - 1
-                  - 2
-                  - 3
-              example: 1
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
         - name: realm_name_in_notifications
           in: query
           description: |
@@ -7883,7 +7935,7 @@ paths:
 
         **Changes**: Prior to Zulip 5.0 (feature level 111), response
         object included the `subscription_data` in the the
-        request. The endpoint now returns the more ergonimic
+        request. The endpoint now returns the more ergonomic
         `ignored_parameters_unsupported` field instead.
       parameters:
         - name: subscription_data
@@ -7893,32 +7945,74 @@ paths:
             each subscription. Each object represents a subscription, and must have
             a `stream_id` key that identifies the stream, as well as the `property`
             being modified and its new `value`.
-
-            The possible values for each `property` and `value` pairs are:
-
-            - `color` (string): The hex value of the user's display color for the stream.
-            - `is_muted` (boolean): Whether the stream is [muted](/help/mute-a-stream).<br>
-              **Changes**: Prior to Zulip 2.1, this feature was
-              represented by the more confusingly named `in_home_view` (with the
-              opposite value, `in_home_view=!is_muted`); for
-              backwards-compatibility, modern Zulip still accepts that property.
-            - `pin_to_top` (boolean): Whether to pin the stream at the top of the stream list.
-            - `desktop_notifications` (boolean): Whether to show desktop notifications
-              for all messages sent to the stream.
-            - `audible_notifications` (boolean): Whether to play a sound
-              notification for all messages sent to the stream.
-            - `push_notifications` (boolean): Whether to trigger a mobile push
-              notification for all messages sent to the stream.
-            - `email_notifications` (boolean): Whether to trigger an email
-              notification for all messages sent to the stream.
-            - `wildcard_mentions_notify` (boolean): Whether wildcard mentions trigger
-              notifications as though they were personal mentions in this stream.
           content:
             application/json:
               schema:
                 type: array
                 items:
                   type: object
+                  additionalProperties: false
+                  properties:
+                    stream_id:
+                      type: integer
+                      description: |
+                        The unique ID of a stream.
+                    property:
+                      type: string
+                      enum:
+                        - color
+                        - is_muted
+                        - in_home_view
+                        - pin_to_top
+                        - desktop_notifications
+                        - audible_notifications
+                        - push_notifications
+                        - email_notifications
+                        - wildcard_mentions_notify
+                      description: |
+                        One of the stream properties described below:
+
+                        - `"color"`: The hex value of the user's display color for the stream.
+
+                        - `"is_muted"`: Whether the stream is [muted](/help/mute-a-stream).<br>
+                          **Changes**: Prior to Zulip 2.1, this feature was represented
+                          by the more confusingly named `in_home_view` (with the
+                          opposite value: `in_home_view=!is_muted`); for
+                          backwards-compatibility, modern Zulip still accepts that property.
+
+                        - `"pin_to_top"`: Whether to pin the stream at the top of the stream list.
+
+                        - `"desktop_notifications"`: Whether to show desktop notifications
+                          for all messages sent to the stream.
+
+                        - `"audible_notifications"`: Whether to play a sound
+                          notification for all messages sent to the stream.
+
+                        - `"push_notifications"`: Whether to trigger a mobile push
+                          notification for all messages sent to the stream.
+
+                        - `"email_notifications"`: Whether to trigger an email
+                          notification for all messages sent to the stream.
+
+                        - `"wildcard_mentions_notify"`: Whether wildcard mentions trigger
+                          notifications as though they were personal mentions in this stream.
+                    value:
+                      oneOf:
+                        - type: boolean
+                        - type: string
+                      description: |
+                        The new value of the property being modified.
+
+                        If the property is `"color"`, then `value` is a string
+                        representing the hex value of the user's display
+                        color for the stream. For all other above properties,
+                        `value` is a boolean.
+                  required:
+                    - stream_id
+                    - property
+                    - value
+                  example:
+                    {"stream_id": 2, "property": "is_muted", "value": true}
               example:
                 [
                   {"stream_id": 1, "property": "pin_to_top", "value": true},
@@ -10393,7 +10487,7 @@ paths:
                           - 4 => Only stream and organization administrators can use wildcard mentions in large streams.
                           - 5 => Only organization administrators can use wildcard mentions in large streams.
                           - 6 => Nobody can use wildcard mentions in large streams.
-                          - 7 => Only organization adminstartors and moderators can use wildcard mentions in large streams.
+                          - 7 => Only organization administrators and moderators can use wildcard mentions in large streams.
 
                           All users will receive a warning/reminder when using
                           mentions in large streams, even when permitted to do so.
@@ -10529,7 +10623,7 @@ paths:
                           Indicates whether users are
                           [allowed to change](/help/restrict-name-and-email-changes) their name
                           via the Zulip UI in this organization. Typically disabled
-                          in organizations syncing this this type of account information
+                          in organizations syncing this type of account information from
                           an external user database like LDAP.
                       realm_avatar_changes_disabled:
                         type: boolean
@@ -10539,7 +10633,7 @@ paths:
                           Indicates whether users are
                           [allowed to change](/help/restrict-name-and-email-changes) their avatar
                           via the Zulip UI in this organization. Typically disabled
-                          in organizations syncing this this type of account information
+                          in organizations syncing this type of account information from
                           an external user database like LDAP.
                       realm_emails_restricted_to_domains:
                         type: boolean
@@ -10569,7 +10663,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Whether web public streams and related anonymous access APIs/features
+                          Whether web-public streams and related anonymous access APIs/features
                           are enabled in this organization.
 
                           Can only be enabled if the `WEB_PUBLIC_STREAMS_ENABLED`
@@ -12071,16 +12165,13 @@ paths:
             media query.
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
-            the `PATCH /settings/display` endpoint.
-          content:
-            application/json:
-              schema:
-                type: integer
-                enum:
-                  - 1
-                  - 2
-                  - 3
-              example: 1
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
         - name: enable_drafts_synchronization
           in: query
           description: |
@@ -12190,15 +12281,13 @@ paths:
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
             the `PATCH /settings/display` endpoint.
-          content:
-            application/json:
-              schema:
-                type: integer
-                enum:
-                  - 1
-                  - 2
-                  - 3
-              example: 1
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
         - name: timezone
           in: query
           description: |
@@ -12402,15 +12491,13 @@ paths:
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
             the `PATCH /settings/notifications` endpoint.
-          content:
-            application/json:
-              schema:
-                type: integer
-                enum:
-                  - 1
-                  - 2
-                  - 3
-              example: 1
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
         - name: realm_name_in_notifications
           in: query
           description: |
@@ -12576,7 +12663,7 @@ paths:
         - name: include_web_public
           in: query
           description: |
-            Include all web public streams.
+            Include all web-public streams.
           schema:
             type: boolean
             default: false
@@ -12827,7 +12914,7 @@ paths:
           description: |
             Change whether the stream is a web-public stream.
 
-            Note that creating web public streams requires the
+            Note that creating web-public streams requires the
             `WEB_PUBLIC_STREAMS_ENABLED` [server setting][server-settings]
             to be enabled on the Zulip server in question, the organization
             to have enabled the `enable_spectator_access` realm setting, and
@@ -13365,7 +13452,7 @@ paths:
       summary: Outgoing webhooks
       tags: ["webhooks"]
       description: |
-        Outgoing webhooks allows to build or set up Zulip integrations which are
+        Outgoing webhooks allow you to build or set up Zulip integrations which are
         notified when certain types of messages are sent in Zulip.
       responses:
         "200":
@@ -14125,13 +14212,15 @@ components:
         description:
           type: string
           description: |
-            The short description of a stream in text/markdown format,
+            The [description](/help/change-the-stream-description) of the stream in text/markdown format,
             intended to be used to prepopulate UI for editing a stream's
             description.
+
+            See also `rendered_description`.
         rendered_description:
           type: string
           description: |
-            A short description of a stream rendered as HTML, intended to
+            The [description](/help/change-the-stream-description) of the stream rendered as HTML, intended to
             be used when displaying the stream description in a UI.
 
             One should use the standard Zulip rendered_markdown CSS when
@@ -14139,6 +14228,8 @@ components:
             work correctly. And any client-side security logic for
             user-generated message content should be applied when displaying
             this HTML as though it were the body of a Zulip message.
+
+            See also `description`.
         date_created:
           type: integer
           description: |
@@ -14711,8 +14802,8 @@ components:
             or "private" (for PMs and private group messages).
           enum:
             - ""
-            - "stream"
-            - "private"
+            - stream
+            - private
         to:
           type: array
           description: |
@@ -15126,8 +15217,8 @@ components:
           description: |
             ## Missing request parameter(s)
 
-            A typical failed JSON response for when a required request parameter:
-            is not supplied
+            A typical failed JSON response for when a required request parameter
+            is not supplied:
           properties:
             result: {}
             msg: {}
@@ -15185,6 +15276,12 @@ components:
             }
           description: |
             ## Rate limit exceeded
+
+            The `retry-after` parameter in the response indicates how many seconds
+            the client must wait before making additional requests.
+
+            **Changes**: The `code` field was not present in rate
+            limit errors before Zulip 4.0 (feature level 36).
 
             A typical failed JSON response for when a rate limit is exceeded:
     RealmDeactivatedError:
@@ -15492,7 +15589,7 @@ components:
         Unicode codepoints and human-readable names, sending the
         `emoji_code` in the data for the original reaction allows the
         Zulip server to correctly interpret your upvote as an upvote
-        rather than a reaction with a "diffenent" emoji.
+        rather than a reaction with a "different" emoji.
       schema:
         type: string
       example: "1f419"

@@ -145,7 +145,7 @@ def deactivate_stream_backend(
 ) -> HttpResponse:
     (stream, sub) = access_stream_for_delete_or_update(user_profile, stream_id)
     do_deactivate_stream(stream, acting_user=user_profile)
-    return json_success()
+    return json_success(request)
 
 
 @require_realm_admin
@@ -157,7 +157,7 @@ def add_default_stream(
     if stream.invite_only:
         raise JsonableError(_("Private streams cannot be made default."))
     do_add_default_stream(stream)
-    return json_success()
+    return json_success(request)
 
 
 @require_realm_admin
@@ -174,7 +174,7 @@ def create_default_stream_group(
         (stream, sub) = access_stream_by_name(user_profile, stream_name)
         streams.append(stream)
     do_create_default_stream_group(user_profile.realm, group_name, description, streams)
-    return json_success()
+    return json_success(request)
 
 
 @require_realm_admin
@@ -194,7 +194,7 @@ def update_default_stream_group_info(
         do_change_default_stream_group_name(user_profile.realm, group, new_group_name)
     if new_description is not None:
         do_change_default_stream_group_description(user_profile.realm, group, new_description)
-    return json_success()
+    return json_success(request)
 
 
 @require_realm_admin
@@ -218,7 +218,7 @@ def update_default_stream_group_streams(
         do_remove_streams_from_default_stream_group(user_profile.realm, group, streams)
     else:
         raise JsonableError(_('Invalid value for "op". Specify one of "add" or "remove".'))
-    return json_success()
+    return json_success(request)
 
 
 @require_realm_admin
@@ -228,7 +228,7 @@ def remove_default_stream_group(
 ) -> HttpResponse:
     group = access_default_stream_group_by_id(user_profile.realm, group_id)
     do_remove_default_stream_group(user_profile.realm, group)
-    return json_success()
+    return json_success(request)
 
 
 @require_realm_admin
@@ -242,7 +242,7 @@ def remove_default_stream(
         allow_realm_admin=True,
     )
     do_remove_default_stream(stream)
-    return json_success()
+    return json_success(request)
 
 
 @has_request_variables
@@ -316,7 +316,7 @@ def update_stream_backend(
     if is_web_public:
         # Enforce restrictions on creating web-public streams.
         if not user_profile.realm.web_public_streams_enabled():
-            raise JsonableError(_("Web public streams are not enabled."))
+            raise JsonableError(_("Web-public streams are not enabled."))
         if not user_profile.can_create_web_public_streams():
             raise JsonableError(_("Insufficient permission"))
         # Forbid parameter combinations that are inconsistent
@@ -325,9 +325,13 @@ def update_stream_backend(
 
     if is_private is not None or is_web_public is not None:
         do_change_stream_permission(
-            stream, is_private, history_public_to_subscribers, is_web_public
+            stream,
+            invite_only=is_private,
+            history_public_to_subscribers=history_public_to_subscribers,
+            is_web_public=is_web_public,
+            acting_user=user_profile,
         )
-    return json_success()
+    return json_success(request)
 
 
 @has_request_variables
@@ -340,7 +344,7 @@ def list_subscriptions_backend(
         user_profile,
         include_subscribers=include_subscribers,
     )
-    return json_success({"subscriptions": subscribed})
+    return json_success(request, data={"subscriptions": subscribed})
 
 
 add_subscriptions_schema = check_list(
@@ -370,10 +374,12 @@ def update_subscriptions_backend(
         lambda: add_subscriptions_backend(request, user_profile, streams_raw=add),
         lambda: remove_subscriptions_backend(request, user_profile, streams_raw=delete),
     ]
-    return compose_views(thunks)
+    data = compose_views(thunks)
+
+    return json_success(request, data)
 
 
-def compose_views(thunks: List[Callable[[], HttpResponse]]) -> HttpResponse:
+def compose_views(thunks: List[Callable[[], HttpResponse]]) -> Dict[str, Any]:
     """
     This takes a series of thunks and calls them in sequence, and it
     smushes all the json results into a single response when
@@ -387,7 +393,7 @@ def compose_views(thunks: List[Callable[[], HttpResponse]]) -> HttpResponse:
         for thunk in thunks:
             response = thunk()
             json_dict.update(orjson.loads(response.content))
-    return json_success(json_dict)
+    return json_dict
 
 
 check_principals: Validator[Union[List[str], List[int]]] = check_union(
@@ -433,7 +439,7 @@ def remove_subscriptions_backend(
     for (subscriber, not_subscribed_stream) in not_subscribed:
         result["not_removed"].append(not_subscribed_stream.name)
 
-    return json_success(result)
+    return json_success(request, data=result)
 
 
 def you_were_just_subscribed_message(
@@ -580,7 +586,7 @@ def add_subscriptions_backend(
     result["already_subscribed"] = dict(result["already_subscribed"])
     if not authorization_errors_fatal:
         result["unauthorized"] = [s.name for s in unauthorized_streams]
-    return json_success(result)
+    return json_success(request, data=result)
 
 
 def send_messages_for_new_subscribers(
@@ -702,7 +708,7 @@ def get_subscribers_backend(
     )
     subscribers = get_subscriber_ids(stream, user_profile)
 
-    return json_success({"subscribers": list(subscribers)})
+    return json_success(request, data={"subscribers": list(subscribers)})
 
 
 # By default, lists all streams that the user has access to --
@@ -728,7 +734,7 @@ def get_streams_backend(
         include_default=include_default,
         include_owner_subscribed=include_owner_subscribed,
     )
-    return json_success({"streams": streams})
+    return json_success(request, data={"streams": streams})
 
 
 @has_request_variables
@@ -765,7 +771,7 @@ def get_topics_backend(
             public_history=stream.is_history_public_to_subscribers(),
         )
 
-    return json_success(dict(topics=result))
+    return json_success(request, data=dict(topics=result))
 
 
 @transaction.atomic
@@ -791,7 +797,7 @@ def delete_in_topic(
 
     do_delete_messages(user_profile.realm, messages)
 
-    return json_success()
+    return json_success(request)
 
 
 @require_post
@@ -823,7 +829,7 @@ def json_stream_exists(
         )
         result["subscribed"] = True
 
-    return json_success(result)  # results are ignored for HEAD requests
+    return json_success(request, data=result)  # results are ignored for HEAD requests
 
 
 @has_request_variables
@@ -831,7 +837,7 @@ def json_get_stream_id(
     request: HttpRequest, user_profile: UserProfile, stream_name: str = REQ("stream")
 ) -> HttpResponse:
     (stream, sub) = access_stream_by_name(user_profile, stream_name)
-    return json_success({"stream_id": stream.id})
+    return json_success(request, data={"stream_id": stream.id})
 
 
 @has_request_variables
@@ -919,4 +925,4 @@ def update_subscription_properties_backend(
     if len(request_notes.ignored_parameters) > 0:
         result["ignored_parameters_unsupported"] = list(request_notes.ignored_parameters)
 
-    return json_success(result)
+    return json_success(request, data=result)

@@ -62,7 +62,7 @@ class RemotePushDeviceToken(AbstractPushDeviceToken):
     """Like PushDeviceToken, but for a device connected to a remote server."""
 
     server: RemoteZulipServer = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
-    # The user id on the remote server for this device device this is
+    # The user id on the remote server for this device
     user_id: int = models.BigIntegerField(db_index=True)
 
     class Meta:
@@ -140,7 +140,7 @@ class RateLimitedRemoteZulipServer(RateLimitedObject):
         self, remote_server: RemoteZulipServer, domain: str = "api_by_remote_server"
     ) -> None:
         # Remote servers can only make API requests regarding push notifications
-        # which requires ZILENCED_ENABLED and of course can't happen on API endpoints
+        # which requires ZILENCER_ENABLED and of course can't happen on API endpoints
         # inside Tornado.
         assert not settings.RUNNING_INSIDE_TORNADO
         assert settings.ZILENCER_ENABLED

@@ -45,7 +45,7 @@ mock_esm("../../static/js/message_lists", {
     },
 });
 mock_esm("../../static/js/resize", {
-    reset_compose_textarea_max_height: noop,
+    reset_compose_message_max_height: noop,
 });
 
 const people = zrequire("people");
@@ -434,14 +434,9 @@ test("get_focus_area", () => {
 });
 
 test("focus_in_empty_compose", ({override_rewire}) => {
-    $("#compose-textarea").is = (attr) => {
-        assert.equal(attr, ":focus");
-        return $("#compose-textarea").is_focused;
-    };
-
+    document.activeElement = {id: "compose-textarea"};
     override_rewire(compose_state, "composing", () => true);
     $("#compose-textarea").val("");
-    $("#compose-textarea").trigger("focus");
     assert.ok(compose_state.focus_in_empty_compose());
 
     override_rewire(compose_state, "composing", () => false);

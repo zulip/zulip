@@ -75,7 +75,7 @@ def api_basecamp_webhook(
         raise UnsupportedWebhookEventType(event)
 
     check_send_webhook_message(request, user_profile, subject, body, event)
-    return json_success()
+    return json_success(request)
 
 
 def get_project_name(payload: Dict[str, Any]) -> str:

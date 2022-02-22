@@ -135,7 +135,7 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str = REQ()) -> HttpRe
 
     do_login(request, user_profile)
     api_key = get_api_key(user_profile)
-    return json_success({"api_key": api_key, "email": user_profile.delivery_email})
+    return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})
 
 
 @csrf_exempt
@@ -144,7 +144,8 @@ def api_dev_list_users(request: HttpRequest) -> HttpResponse:
 
     users = get_dev_users()
     return json_success(
-        dict(
+        request,
+        data=dict(
             direct_admins=[
                 dict(email=u.delivery_email, realm_uri=u.realm.uri)
                 for u in users
@@ -155,5 +156,5 @@ def api_dev_list_users(request: HttpRequest) -> HttpResponse:
                 for u in users
                 if not u.is_realm_admin
             ],
-        )
+        ),
     )

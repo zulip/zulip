@@ -6,14 +6,14 @@ import os
 import sys
 import time
 
-import psycopg2
-import psycopg2.extensions
-from psycopg2.sql import SQL, Identifier
-
 sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 from scripts.lib.setup_path import setup_path
 
 setup_path()
+
+import psycopg2
+import psycopg2.extensions
+from psycopg2.sql import SQL, Identifier
 
 from scripts.lib.zulip_tools import su_to_zulip
 

@@ -74,4 +74,4 @@ def webathena_kerberos_login(
         logging.exception("Error updating the user's ccache", stack_info=True)
         raise JsonableError(_("We were unable to set up mirroring for you"))
 
-    return json_success()
+    return json_success(request)

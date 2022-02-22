@@ -35,7 +35,7 @@ def upload_logo(
     do_change_logo_source(
         user_profile.realm, user_profile.realm.LOGO_UPLOADED, night, acting_user=user_profile
     )
-    return json_success()
+    return json_success(request)
 
 
 @require_realm_admin
@@ -49,7 +49,7 @@ def delete_logo_backend(
     do_change_logo_source(
         user_profile.realm, user_profile.realm.LOGO_DEFAULT, night, acting_user=user_profile
     )
-    return json_success()
+    return json_success(request)
 
 
 @has_request_variables

@@ -73,7 +73,7 @@
 
 .message_comp {
     display: none;
-    padding: 10px 10px 0 5px;
+    padding: 5px 10px 0 5px;
 }
 
 .autocomplete_secondary {
@@ -189,13 +189,6 @@
     .compose_bottom_bottom_container {
         display: flex;
         justify-content: space-between;
-
-        .message-control-link {
-            .fa-question-circle {
-                margin-right: 4px;
-            }
-            padding-left: 5px;
-        }
     }
 }
 
@@ -222,17 +215,27 @@
 }
 
 #compose-container {
+    display: flex;
+    flex-direction: column;
     width: 100%;
     /* This should match the value for .app-main */
     max-width: 1400px;
     margin: auto;
 }
 
+#compose_top {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 5px;
+}
+
 #compose_top_right {
+
     position: absolute;
     right: 0;
     float: right;
     
+
     button {
         background: transparent ;
         opacity:0.6;
@@ -263,6 +266,7 @@
 }
 
 
+.compose_resolved_topic,
 .compose_invite_user,
 .compose_private_stream_alert,
 .compose-all-everyone,
@@ -280,6 +284,7 @@
     position: absolute;
 }
 
+.compose_resolved_topic_close,
 .compose_invite_close,
 .compose_private_stream_alert_close {
     display: inline-block;
@@ -288,6 +293,7 @@
     width: 10px;
 }
 
+.compose_resolved_topic_user_controls,
 .compose-all-everyone-controls,
 .compose-announce-controls,
 .compose_invite_user_controls,
@@ -297,8 +303,9 @@
 }
 
 .compose_invite_user p,
+.compose_resolved_topic p,
 .compose_not_subscribed p {
-    margin: 0 20px;
+    margin: 5px 20px;
     display: inline-block;
     max-width: calc(100% - 100px);
 }
@@ -420,7 +427,10 @@ input.recipient_box {
     width: 20%;
     border-radius: 0 3px 3px 0;
     border-left: 0;
-    min-width: 120px;
+
+    @media (width > $sm_min) {
+        min-width: 120px;
+    }
 
     &:focus {
         border-left: none;
@@ -532,21 +542,10 @@ input.recipient_box {
 
 #private-message {
     align-items: center;
+    width: 100%;
 }
 
 .tippy-content .compose_control_buttons_container {
-    .message-control-link {
-        /* Override tippy theme. */
-        padding: 4px 4px 0;
-        color: hsl(200, 100%, 40%);
-        font-size: 14px;
-
-        &:hover,
-        &:focus {
-            color: hsl(200, 100%, 25%);
-        }
-    }
-
     .compose_gif_icon {
         bottom: 5px;
     }
@@ -561,12 +560,11 @@ input.recipient_box {
     .compose_gif_icon {
         font-size: 22px;
         height: 18px;
-        position: relative;
-        bottom: 6px;
+        line-height: 18px;
     }
 
     .compose_control_menu {
-        padding: 3px 7px 0;
+        padding: 0 7px;
         font-size: 15px;
     }
 
@@ -588,6 +586,18 @@ input.recipient_box {
         color: hsl(0, 0%, 88%);
         font-size: 20px;
         margin: 0 3px;
+    }
+
+    .compose_draft_button {
+        font-size: 15px;
+        font-weight: 600;
+        font-family: "Source Sans 3", sans-serif;
+        padding: 0 5px;
+    }
+
+    .compose_help_button {
+        font-size: 20px;
+        line-height: 17px;
     }
 }
 
@@ -703,7 +713,7 @@ a.compose_control_button.hide {
 @media (width < $mm_min) {
     #stream_message_recipient_topic.recipient_box {
         width: calc(100% - 192px);
-        min-width: 75px;
+        min-width: 110px;
     }
 
     #compose-content {
@@ -725,14 +735,9 @@ a.compose_control_button.hide {
         flex-flow: column;
     }
 
-    #compose-textarea {
-        max-height: none !important;
-        flex: 1;
-    }
-
+    #compose-textarea,
     #preview_message_area {
-        max-height: none;
-        height: 1.5em;
+        max-height: none !important;
         flex: 1;
     }
 }

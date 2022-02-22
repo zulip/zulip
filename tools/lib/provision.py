@@ -83,8 +83,6 @@ if vendor == "debian" and os_version == "10":  # buster
     POSTGRESQL_VERSION = "11"
 elif vendor == "debian" and os_version == "11":  # bullseye
     POSTGRESQL_VERSION = "13"
-elif vendor == "ubuntu" and os_version == "18.04":  # bionic
-    POSTGRESQL_VERSION = "10"
 elif vendor == "ubuntu" and os_version == "20.04":  # focal
     POSTGRESQL_VERSION = "12"
 elif vendor == "ubuntu" and os_version == "21.10":  # impish
@@ -272,6 +270,7 @@ def install_apt_deps(deps_to_install: List[str]) -> None:
             "apt-get",
             "-y",
             "install",
+            "--allow-downgrades",
             "--no-install-recommends",
             *deps_to_install,
         ]
@@ -398,6 +397,24 @@ def main(options: argparse.Namespace) -> "NoReturn":
             hash_file.write(new_apt_dependencies_hash)
     else:
         print("No changes to apt dependencies, so skipping apt operations.")
+
+    # Binary-patch ARM64 assembly bug in OpenSSL 1.1.1b through 1.1.1h.
+    # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=989604
+    # https://bugs.launchpad.net/ubuntu/+source/openssl/+bug/1951279
+    try:
+        with open("/usr/lib/aarch64-linux-gnu/libcrypto.so.1.1", "rb") as fb:
+            if b"\xbf#\x03\xd5\xfd\x07E\xf8" in fb.read():
+                run_as_root(
+                    [
+                        "sed",
+                        "-i",
+                        r"s/\(\xbf#\x03\xd5\)\(\xfd\x07E\xf8\)/\2\1/",
+                        "/usr/lib/aarch64-linux-gnu/libcrypto.so.1.1",
+                    ],
+                    env={**os.environ, "LC_ALL": "C"},
+                )
+    except FileNotFoundError:
+        pass
 
     # Here we install node.
     proxy_env = [

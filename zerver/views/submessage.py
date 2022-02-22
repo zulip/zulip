@@ -60,4 +60,4 @@ def process_submessage(
         msg_type=msg_type,
         content=content,
     )
-    return json_success()
+    return json_success(request)

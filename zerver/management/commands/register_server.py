@@ -1,11 +1,12 @@
 import subprocess
 from argparse import ArgumentParser
-from typing import Any
+from typing import Any, Dict
 
 import requests
 from django.conf import settings
 from django.core.management.base import CommandError
 from django.utils.crypto import get_random_string
+from requests.models import Response
 
 from zerver.lib.management import ZulipBaseCommand, check_config
 from zerver.lib.remote_server import PushBouncerSession
@@ -63,10 +64,7 @@ class Command(ZulipBaseCommand):
         if options["rotate_key"]:
             request["new_org_key"] = get_random_string(64)
 
-        print("The following data will be submitted to the push notification service:")
-        for key in sorted(request.keys()):
-            print(f"  {key}: {request[key]}")
-        print("")
+        self._log_params(request)
 
         if not options["agree_to_terms_of_service"] and not options["rotate_key"]:
             print(
@@ -80,22 +78,9 @@ class Command(ZulipBaseCommand):
             ):
                 raise CommandError("Aborting, since Terms of Service have not been accepted.")
 
-        registration_url = (
-            settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/server/register"
+        response = self._request_push_notification_bouncer_url(
+            "/api/v1/remotes/server/register", request
         )
-        session = PushBouncerSession()
-        try:
-            response = session.post(registration_url, params=request)
-        except requests.RequestException:
-            raise CommandError(
-                "Network error connecting to push notifications service "
-                f"({settings.PUSH_NOTIFICATION_BOUNCER_URL})",
-            )
-        try:
-            response.raise_for_status()
-        except requests.HTTPError:
-            content_dict = response.json()
-            raise CommandError("Error: " + content_dict["msg"])
 
         if response.json()["created"]:
             print(
@@ -120,3 +105,32 @@ class Command(ZulipBaseCommand):
                     ]
                 )
             print("Mobile Push Notification Service registration successfully updated!")
+
+    def _request_push_notification_bouncer_url(self, url: str, params: Dict[str, Any]) -> Response:
+        registration_url = settings.PUSH_NOTIFICATION_BOUNCER_URL + url
+        session = PushBouncerSession()
+        try:
+            response = session.post(registration_url, params=params)
+        except requests.RequestException:
+            raise CommandError(
+                "Network error connecting to push notifications service "
+                f"({settings.PUSH_NOTIFICATION_BOUNCER_URL})",
+            )
+        try:
+            response.raise_for_status()
+        except requests.HTTPError as e:
+            # Report nice errors from the Zulip API if possible.
+            try:
+                content_dict = response.json()
+            except Exception:
+                raise e
+
+            raise CommandError("Error: " + content_dict["msg"])
+
+        return response
+
+    def _log_params(self, params: Dict[str, Any]) -> None:
+        print("The following data will be submitted to the push notification service:")
+        for key in sorted(params.keys()):
+            print(f"  {key}: {params[key]}")
+        print("")

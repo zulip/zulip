@@ -5,7 +5,7 @@ import orjson
 from django.db import connection
 from django.http import HttpResponse
 
-from zerver.lib.actions import do_change_stream_invite_only
+from zerver.lib.actions import do_change_stream_permission
 from zerver.lib.fix_unreads import fix, fix_unsubscribed
 from zerver.lib.message import (
     MessageDict,
@@ -866,7 +866,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
 
         # The count here reflects the count of unread messages that we will
         # report to users in the bankruptcy dialog, and for now it excludes unread messages
-        # from muted treams, but it doesn't exclude unread messages from muted topics yet.
+        # from muted streams, but it doesn't exclude unread messages from muted topics yet.
         self.assertEqual(result["count"], 4)
         self.assertFalse(result["old_unreads_missing"])
 
@@ -1264,12 +1264,16 @@ class MessageAccessTests(ZulipTestCase):
 
         # Guest user can access messages of subscribed private streams if
         # history is public to subscribers
-        do_change_stream_invite_only(stream, True, history_public_to_subscribers=True)
+        do_change_stream_permission(
+            stream, invite_only=True, history_public_to_subscribers=True, acting_user=guest_user
+        )
         result = self.change_star(message_id)
         self.assert_json_success(result)
 
         # With history not public to subscribers, they can still see new messages
-        do_change_stream_invite_only(stream, True, history_public_to_subscribers=False)
+        do_change_stream_permission(
+            stream, invite_only=True, history_public_to_subscribers=False, acting_user=guest_user
+        )
         self.login_user(normal_user)
         message_id = [
             self.send_stream_message(normal_user, stream_name, "test 2"),
@@ -1312,7 +1316,12 @@ class MessageAccessTests(ZulipTestCase):
         self.assert_length(filtered_messages, 1)
         self.assertEqual(filtered_messages[0].id, message_two_id)
 
-        do_change_stream_invite_only(stream, True, history_public_to_subscribers=True)
+        do_change_stream_permission(
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=True,
+            acting_user=self.example_user("cordelia"),
+        )
 
         with queries_captured() as queries:
             filtered_messages = bulk_access_messages(later_subscribed_user, messages, stream=stream)

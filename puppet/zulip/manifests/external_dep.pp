@@ -6,9 +6,9 @@ define zulip::external_dep(
 ) {
   if $sha256 == '' {
     if $zulip::common::versions[$title]['sha256'] =~ Hash {
-      $sha256_filled = $zulip::common::versions[$title]['sha256'][$::architecture]
+      $sha256_filled = $zulip::common::versions[$title]['sha256'][$::os['architecture']]
       if $sha256_filled == undef {
-        err("No sha256 found for ${title} for architecture ${::architecture}")
+        err("No sha256 found for ${title} for architecture ${::os['architecture']}")
         fail()
       }
     } else {
@@ -34,17 +34,11 @@ define zulip::external_dep(
     require => Zulip::Sha256_Tarball_To[$title],
   }
 
-  unless $::operatingsystem == 'Ubuntu' and $::operatingsystemrelease == '18.04' {
-    # Puppet 5.5.0 and below make this always-noisy, as they spout out
-    # a notify line about tidying the managed directory above.  Skip
-    # on Bionic, which has that old version; they'll get tidied upon
-    # upgrade to 20.04.
-    tidy { "/srv/zulip-${title}-*":
-      path    => '/srv/',
-      recurse => 1,
-      rmdirs  => true,
-      matches => "zulip-${title}-*",
-      require => File[$dir],
-    }
+  tidy { "/srv/zulip-${title}-*":
+    path    => '/srv/',
+    recurse => 1,
+    rmdirs  => true,
+    matches => "zulip-${title}-*",
+    require => File[$dir],
   }
 }

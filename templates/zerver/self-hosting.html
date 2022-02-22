@@ -1,0 +1,348 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "landing-page" %}
+
+{% set OPEN_GRAPH_TITLE = 'Self-host Zulip today.' %}
+{% set OPEN_GRAPH_DESCRIPTION = 'Open-source software that provides enterprise-grade reliability and security.' %}
+
+{% block title %}
+<title>Self-host Zulip today. Open-source software that provides enterprise-grade reliability and security.</title>
+{% endblock %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing why-page no-slide solutions-page self-hosting-page">
+    <div class="hero bg-pycon security">
+        <div class="bg-dimmer"></div>
+        <div class="content">
+            <h1 class="center">Self-host Zulip today.</h1>
+            <p>Open-source team chat with enterprise-grade reliability and security.</p>
+        </div>
+        <div class="hero-buttons center">
+            <a href="#feature-pricing-self-hosting" class="button">
+                {{ _('Features & pricing') }}
+            </a>
+            <a href="https://zulip.readthedocs.io/en/stable/production/install.html" class="button">Install Zulip {{ latest_release_version }}</a>
+            <a href="/for/business/" class="button">
+                {{ _('Zulip for business') }}
+            </a>
+        </div>
+    </div>
+
+    <div class="alternative-features">
+        <div class="feature-container">
+            <div class="feature-half">
+                <div class="feature-text">
+                    <h1>
+                        100% free and open-source software.
+                    </h1>
+                    <p>
+                        When you self-host Zulip, you get <a href="https://github.com/zulip/zulip#readme">
+                        the same software</a> as our <a href="/plans/">Zulip
+                        Cloud Standard</a> customers.
+                    </p>
+                    <p>
+                        Unlike the competition, you don't pay for
+                        <a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html">SAML
+                            authentication</a>, <a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#synchronizing-data">LDAP
+                        sync</a>, or advanced <a href="/help/roles-and-permissions">roles</a> and <a href="/help/stream-permissions">permissions</a>. There
+                        is no “open core” catch — just freely available world-class software.
+                    </p>
+                </div>
+            </div>
+            <div class="feature-half">
+                <div class="feature-icon">
+                    <img alt="" src="/static/images/landing-page/open_source/build_inclusive_communities.svg" />
+                </div>
+            </div>
+        </div>
+
+        <div class="feature-container alternate-grid">
+            <div class="feature-half md-hide">
+                <div class="feature-icon">
+                    <img class="mirror-image" alt="" src="/static/images/landing-page/education/privacy.svg" />
+                </div>
+            </div>
+            <div class="feature-half">
+                <div class="feature-text">
+                    <h1>
+                        Enterprise-grade security and compliance.
+                    </h1>
+                    <p>
+                        Protect your sensitive conversations and simplify
+                        compliance by self-hosting Zulip behind your
+                        firewall.
+                    </p>
+                    <p>
+                        Zulip's <a
+                        href="/help/configure-authentication-methods">authentication</a>
+                        and <a
+                        href="/help/roles-and-permissions">permissions</a>
+                        systems are designed to flexibly support every
+                        organization's security tools and policies.
+                    </p>
+                    <p>Making sure your information stays protected is <a href="https://zulip.com/security/">our highest priority</a>.</p>
+                </div>
+            </div>
+            <div class="feature-half md-display">
+                <div class="feature-icon">
+                    <img class="mirror-image" alt="" src="/static/images/landing-page/education/privacy.svg" />
+                </div>
+            </div>
+        </div>
+
+        <div class="feature-container">
+            <div class="feature-half">
+                <div class="feature-text">
+                    <h1>
+                        Take charge of your mission-critical communication platform.
+                    </h1>
+                    <p>
+                        Keep full control of your data and avoid <a
+                        href="https://www.theverge.com/2021/9/30/22702876/slack-is-down-outage-morning-disruption-work-chat">
+                        unpredictable downtime</a>
+                        from <a
+                        href="https://www.theverge.com/2021/4/27/22405300/microsoft-teams-down-outage-worldwide-issues">SaaS
+                        team chat vendors</a> by hosting Zulip on
+                        your own infrastructure.
+                    </p>
+                    <p>
+                        Our extensive <a
+                        href="https://zulip.readthedocs.io/en/stable/production/settings.html">
+                        configuration options</a> let you set up Zulip
+                        to suit the needs of your organization.
+                        Zulip offers <a
+                        href="/integrations/">over one hundred native
+                        integrations</a>, and hundreds more via third-party
+                        extensions.
+                    </p>
+                </div>
+            </div>
+            <div class="feature-half">
+                <div class="feature-icon">
+                    <img class="mirror-image" alt="" src="/static/images/landing-page/education/mobile.svg" />
+                </div>
+            </div>
+        </div>
+
+        <div class="feature-container alternate-grid">
+            <div class="feature-half md-hide">
+                <div class="feature-icon">
+                    <img alt="" src="/static/images/landing-page/education/flexible-administration.svg" />
+                </div>
+            </div>
+            <div class="feature-half">
+                <div class="feature-text">
+                    <h1>
+                        Installation and upgrades that Just Work.
+                    </h1>
+                    <p>
+                        Our well-documented scripts help you
+                        <a href="https://zulip.readthedocs.io/en/stable/production/install.html">setup</a>,
+                        <a href="https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups">backup</a>, and
+                        <a href="https://zulip.readthedocs.io/en/stable/production/upgrade-or-modify.html">upgrade</a>
+                        your self-hosted Zulip installation. Migrate your
+                        <a href="/help/migrating-from-other-chat-tools">data</a>
+                        and <a href="/integrations/doc/slack_incoming">integrations</a>
+                        from other chat tools for a smooth transition.
+                    </p>
+                    <p>
+                        Self-host Zulip directly on Ubuntu or Debian Linux,
+                        in <a href="https://github.com/zulip/docker-zulip">Docker</a>,
+                        or with prebuilt images for <a href="https://marketplace.digitalocean.com/apps/zulip">Digital Ocean</a>
+                        and <a href="https://render.com/docs/deploy-zulip">Render</a>.
+                    </p>
+                </div>
+            </div>
+            <div class="feature-half md-display">
+                <div class="feature-icon">
+                    <img alt="" src="/static/images/landing-page/education/flexible-administration.svg" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="quote">
+        <div class="triangle"></div>
+        <blockquote>
+            Zulip has been extremely stable and requires no maintenance beyond installing updates.
+            <div class="author">
+                &mdash;  Robert Imschweiler, <a href="/case-studies/tum/">Technical University of Munich</a>
+            </div>
+        </blockquote>
+    </div>
+
+    <div class="feature-grid">
+        <div class="feature-row">
+            <div class="feature-box">
+                <div class="feature-icon">
+                    <img alt="" src="/static/images/landing-page/self-hosting/growth.png" />
+                </div>
+                <div class="feature-text">
+                    <h1>
+                        Rock-solid reliability at scale.
+                    </h1>
+                    <p>
+                        Zulip is engineered to make every interaction snappy and
+                        efficient, even for organizations with 10,000s of users,
+                        with a simple deployment on
+                        <a href="https://zulip.readthedocs.io/en/stable/production/requirements.html#scalability">
+                        modest hardware</a>.
+                    </p>
+                    <p>
+                        With a user experience designed to work great at any
+                        size, organizations that send <a
+                        href="/case-studies/rust/">thousands</a> of <a
+                        href="/case-studies/tum/">messages</a> per week <a
+                        href="/case-studies/lean/">thrive on Zulip</a>.
+                    </p>
+                </div>
+            </div>
+            <div class="feature-box">
+                <div class="feature-icon">
+                    <img alt="" src="/static/images/landing-page/self-hosting/database.png" />
+                </div>
+                <div class="feature-text">
+                    <h1>
+                        No lock-in.
+                    </h1>
+                    <p>
+                        You can <a href="https://zulip.com/help/zulip-cloud-or-self-hosting">move
+                        freely</a> between <a href="/plans/">Zulip Cloud</a>
+                        hosting and your own servers with our high quality <a
+                        href="/help/export-your-organization">export</a> and
+                        <a href="https://zulip.readthedocs.io/en/stable/production/export-and-import.html">import
+                        </a> tools.
+                    </p>
+                    <p>
+                        Zulip also supports exporting your organization's
+                        message history to a <a
+                        href="https://github.com/zulip/zulip-archive">static
+                        HTML archive</a>.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="feature-row">
+            <div class="feature-box">
+                <div class="feature-icon">
+                    <img alt="" src="/static/images/landing-page/self-hosting/fork.png" />
+                </div>
+                <div class="feature-text">
+                    <h1>
+                        Yours to customize.
+                    </h1>
+                    <p>
+                        <a href="/api/incoming-webhooks-overview">Creating custom integrations</a> is a breeze with
+                        our well-documented <a href="/api">REST API</a>.
+                    </p>
+                    <p>
+                        Zulip makes it easy to
+                        <a href="https://zulip.readthedocs.io/en/stable/production/upgrade-or-modify.html#modifying-zulip">
+                        maintain a fork</a> with customized features, with 175,000 words of documentation for
+                        system administrators and developers.
+                    </p>
+                </div>
+            </div>
+            <div class="feature-box">
+                <div class="feature-icon">
+                    <img alt="" src="/static/images/landing-page/self-hosting/help.png" />
+                </div>
+                <div class="feature-text">
+                    <h1>
+                        Amazing support experience.
+                    </h1>
+                    <p>
+                        <a href="mailto:sales@zulip.com">Contact Sales</a> to
+                        discuss Enterprise support offerings.
+                    </p>
+                    <p>
+                        We provide free, interactive support for the vast
+                        majority of questions about running a Zulip server. Stop by <a href="/developer-community/">our friendly
+                        development community</a> to ask for help or suggest
+                        improvements!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="feature-end">
+        <div class="feature-pricing" id="feature-pricing-self-hosting">
+            <h1 class="center"> Self-hosting plans </h1>
+            <div class="pricing-model">
+                <div class="padded-content">
+                    <div class="pricing-container">
+                        <div class="price-box" tabindex="-1">
+                            <div class="text-content">
+                                <h2>Free</h2>
+                                <div class="description">
+                                    Retain full control over your data.
+                                </div>
+                                <hr />
+                                <ul class="feature-list">
+                                    <li>All Zulip Cloud features included</li>
+                                    <li>Friendly community support</li>
+                                    <li><a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html">SAML, OIDC, Google, social SSO</a></li>
+                                    <li><a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#synchronizing-data">LDAP/Active Directory sync</a></li>
+                                    <li>Advanced <a href="/help/roles-and-permissions">roles</a> and <a href="/help/stream-permissions">permissions</a></li>
+                                    <li>Easy <a href="https://zulip.readthedocs.io/en/stable/production/install.html">installation</a>
+                                        and <a href="https://zulip.readthedocs.io/en/stable/production/upgrade-or-modify.html">maintenance</a></li>
+                                </ul>
+                            </div>
+                            <div class="bottom">
+                                <div class="text-content">
+                                    <div class="pricing-details multi-line">
+                                        Zulip is 100% free and open
+                                        source, with no proprietary version. <br />
+                                    </div>
+                                    <a href="https://zulip.readthedocs.io/en/stable/production/install.html" class="button green">
+                                        Install a Zulip server
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="price-box" tabindex="-1">
+                            <div class="text-content">
+                                <h2>Enterprise</h2>
+                                <div class="description">
+                                    For mission-critical installations.
+                                </div>
+                                <hr />
+                                <ul class="feature-list">
+                                    <li>All self service features included</li>
+                                    <li>Professional support with SLAs</li>
+                                    <li>High availability</li>
+                                    <li>Incident collaboration</li>
+                                    <li>Advanced compliance</li>
+                                    <li>Funds the Zulip open source project</li>
+                                </ul>
+                            </div>
+                            <div class="bottom">
+                                <div class="text-content">
+                                    <div class="pricing-details multi-line">
+                                        Affordable pricing depends on support required.
+                                    </div>
+                                    <a href="mailto:sales@zulip.com" target="_blank" rel="noopener noreferrer" class="no-action button green">
+                                        Contact sales
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+{% endblock %}

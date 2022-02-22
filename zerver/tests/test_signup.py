@@ -360,7 +360,7 @@ class PasswordResetTest(ZulipTestCase):
         self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertRegex(
             self.email_display_from(message),
-            fr"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
+            rf"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
         )
         self.assertIn(f"{subdomain}.testserver", message.extra_headers["List-Id"])
 
@@ -809,7 +809,7 @@ class LoginTest(ZulipTestCase):
             )
             self.assert_logged_in_user_id(None)
 
-    def test_login_nonexist_user(self) -> None:
+    def test_login_nonexistent_user(self) -> None:
         result = self.login_with_return("xxx@zulip.com", "xxx")
         self.assertEqual(result.status_code, 200)
         self.assert_in_response("Please enter a correct email and password", result)
@@ -1036,7 +1036,7 @@ class InviteUserBase(ZulipTestCase):
 
         self.assertEqual(self.email_envelope_from(outbox[0]), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertRegex(
-            self.email_display_from(outbox[0]), fr" <{self.TOKENIZED_NOREPLY_REGEX}>\Z"
+            self.email_display_from(outbox[0]), rf" <{self.TOKENIZED_NOREPLY_REGEX}>\Z"
         )
 
         self.assertEqual(outbox[0].extra_headers["List-Id"], "Zulip Dev <zulip.testserver>")
@@ -2167,7 +2167,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         registration_key = "invalid_confirmation_key"
         url = "/accounts/register/"
         response = self.client_post(
-            url, {"key": registration_key, "from_confirmation": 1, "full_nme": "alice"}
+            url, {"key": registration_key, "from_confirmation": 1, "full_name": "alice"}
         )
         self.assertEqual(response.status_code, 404)
         self.assert_in_response(
@@ -2176,7 +2176,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
         registration_key = confirmation_link.split("/")[-1]
         response = self.client_post(
-            url, {"key": registration_key, "from_confirmation": 1, "full_nme": "alice"}
+            url, {"key": registration_key, "from_confirmation": 1, "full_name": "alice"}
         )
         self.assert_in_success_response(["We just need you to do one last thing."], response)
         response = self.submit_reg_form_for_user(email, password, key=registration_key)
@@ -3786,7 +3786,7 @@ class UserSignUpTest(InviteUserBase):
         """
         email = self.nonreg_email("newguy")
         password = "newpassword"
-        timezone = "US/Mountain"
+        timezone = "America/Denver"
         realm = get_realm("zulip")
         do_set_realm_property(realm, "default_language", "de", acting_user=None)
 

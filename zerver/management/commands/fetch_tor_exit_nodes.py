@@ -4,7 +4,7 @@ from typing import Any, Set
 
 import orjson
 from django.conf import settings
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util import Retry
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.outgoing_http import OutgoingSession
@@ -12,7 +12,7 @@ from zerver.lib.outgoing_http import OutgoingSession
 
 class TorDataSession(OutgoingSession):
     def __init__(self, max_retries: int) -> None:
-        Retry.BACKOFF_MAX = 64
+        Retry.DEFAULT_BACKOFF_MAX = 64
         retry = Retry(
             total=max_retries,
             backoff_factor=2.0,

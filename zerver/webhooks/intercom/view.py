@@ -313,7 +313,7 @@ def api_intercom_webhook(
 ) -> HttpResponse:
     event_type = payload["topic"]
     if event_type == "ping":
-        return json_success()
+        return json_success(request)
 
     handler = EVENT_TO_FUNCTION_MAPPER.get(event_type)
     if handler is None:
@@ -321,4 +321,4 @@ def api_intercom_webhook(
     topic, body = handler(payload)
 
     check_send_webhook_message(request, user_profile, topic, body, event_type)
-    return json_success()
+    return json_success(request)

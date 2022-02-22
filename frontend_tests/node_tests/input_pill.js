@@ -22,17 +22,23 @@ set_global("getSelection", () => ({
 
 const input_pill = zrequire("input_pill");
 
-function pill_html(value, data_id, img_src) {
+function pill_html(value, data_id, img_src, status_emoji_info) {
     const has_image = img_src !== undefined;
+    const has_status = status_emoji_info !== undefined;
 
     const opts = {
         id: data_id,
         display_value: value,
         has_image,
+        has_status,
     };
 
     if (has_image) {
         opts.img_src = img_src;
+    }
+
+    if (has_status) {
+        opts.status_emoji_info = status_emoji_info;
     }
 
     return require("../../static/templates/input_pill.hbs")(opts);
@@ -76,7 +82,11 @@ run_test("basics", ({override_rewire, mock_template}) => {
     input_pill.create(config);
 
     config.get_text_from_item = noop;
+    config.pill_config = {
+        show_user_status_emoji: true,
+    };
     const widget = input_pill.create(config);
+    const status_emoji_info = {emoji_code: 5};
 
     // type for a pill can be any string but it needs to be
     // defined while creating any pill.
@@ -85,10 +95,11 @@ run_test("basics", ({override_rewire, mock_template}) => {
         language: "js",
         type: "language",
         img_src: example_img_link,
+        status_emoji_info,
     };
 
     let inserted_before;
-    const expected_html = pill_html("JavaScript", "some_id1", example_img_link);
+    const expected_html = pill_html("JavaScript", "some_id1", example_img_link, status_emoji_info);
 
     pill_input.before = (elem) => {
         inserted_before = true;

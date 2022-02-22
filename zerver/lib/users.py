@@ -28,6 +28,7 @@ from zerver.models import (
     Service,
     UserProfile,
     get_realm_user_dicts,
+    get_user,
     get_user_profile_by_id_in_realm,
 )
 
@@ -241,6 +242,25 @@ def access_bot_by_id(user_profile: UserProfile, user_id: int) -> UserProfile:
     return target
 
 
+def access_user_common(
+    target: UserProfile,
+    user_profile: UserProfile,
+    allow_deactivated: bool,
+    allow_bots: bool,
+    for_admin: bool,
+) -> UserProfile:
+    if target.is_bot and not allow_bots:
+        raise JsonableError(_("No such user"))
+    if not target.is_active and not allow_deactivated:
+        raise JsonableError(_("User is deactivated"))
+    if not for_admin:
+        # Administrative access is not required just to read a user.
+        return target
+    if not user_profile.can_admin_user(target):
+        raise JsonableError(_("Insufficient permission"))
+    return target
+
+
 def access_user_by_id(
     user_profile: UserProfile,
     target_user_id: int,
@@ -258,16 +278,25 @@ def access_user_by_id(
         target = get_user_profile_by_id_in_realm(target_user_id, user_profile.realm)
     except UserProfile.DoesNotExist:
         raise JsonableError(_("No such user"))
-    if target.is_bot and not allow_bots:
+
+    return access_user_common(target, user_profile, allow_deactivated, allow_bots, for_admin)
+
+
+def access_user_by_email(
+    user_profile: UserProfile,
+    email: str,
+    *,
+    allow_deactivated: bool = False,
+    allow_bots: bool = False,
+    for_admin: bool,
+) -> UserProfile:
+
+    try:
+        target = get_user(email, user_profile.realm)
+    except UserProfile.DoesNotExist:
         raise JsonableError(_("No such user"))
-    if not target.is_active and not allow_deactivated:
-        raise JsonableError(_("User is deactivated"))
-    if not for_admin:
-        # Administrative access is not required just to read a user.
-        return target
-    if not user_profile.can_admin_user(target):
-        raise JsonableError(_("Insufficient permission"))
-    return target
+
+    return access_user_common(target, user_profile, allow_deactivated, allow_bots, for_admin)
 
 
 class Accounts(TypedDict):
@@ -477,7 +506,7 @@ def get_cross_realm_dicts() -> List[Dict[str, Any]]:
         if user.realm.string_id != settings.SYSTEM_BOT_REALM:  # nocoverage
             continue
         user_row = user_profile_to_user_row(user)
-        # Because we want to avoid clients becing exposed to the
+        # Because we want to avoid clients being exposed to the
         # implementation detail that these bots are self-owned, we
         # just set bot_owner_id=None.
         user_row["bot_owner_id"] = None

@@ -54,8 +54,8 @@ test("pan_and_zoom", ({override_rewire}) => {
     };
 
     override_rewire(lightbox, "render_lightbox_list_images", () => {});
-
-    lightbox.open(img);
+    const open_image = lightbox.build_open_image_function();
+    open_image(img);
 
     assert.equal(fetched_zid, 1234);
 });
@@ -88,6 +88,7 @@ test("youtube", ({override_rewire}) => {
 
     override_rewire(lightbox, "render_lightbox_list_images", () => {});
 
-    lightbox.open(img);
+    const open_image = lightbox.build_open_image_function();
+    open_image(img);
     assert.equal($(".image-actions .open").attr("href"), href);
 });

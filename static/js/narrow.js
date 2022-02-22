@@ -153,16 +153,21 @@ function update_narrow_title(filter) {
     }
 }
 
+export function hide_mark_as_read_turned_off_banner() {
+    $("#mark_as_read_turned_off_banner").hide();
+}
+
 export function reset_ui_state() {
     // Resets the state of various visual UI elements that are
     // a function of the current narrow.
     narrow_banner.hide_empty_narrow_message();
     message_scroll.hide_top_of_narrow_notices();
     message_scroll.hide_indicators();
+    hide_mark_as_read_turned_off_banner();
 }
 
 export function activate(raw_operators, opts) {
-    /* Main entrypoint for switching to a new view / message list.
+    /* Main entry point for switching to a new view / message list.
        Note that for historical reasons related to the current
        client-side caching structure, the "All messages"/message_lists.home
        view is reached via `narrow.deactivate()`.
@@ -324,7 +329,6 @@ export function activate(raw_operators, opts) {
     const msg_list = new message_list.MessageList({
         data: msg_data,
         table_name: "zfilt",
-        collapse_messages: !narrow_state.filter().is_search(),
     });
 
     msg_list.start_time = start_time;

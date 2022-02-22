@@ -25,7 +25,7 @@ def api_appfollow_webhook(
     topic = app_name
 
     check_send_webhook_message(request, user_profile, topic, body=convert_markdown(message))
-    return json_success()
+    return json_success(request)
 
 
 def convert_markdown(text: str) -> str:

@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import render_change_email_modal from "../templates/change_email_modal.hbs";
 import render_confirm_deactivate_own_user from "../templates/confirm_dialog/confirm_deactivate_own_user.hbs";
 import render_dialog_change_password from "../templates/dialog_change_password.hbs";
 import render_settings_api_key_modal from "../templates/settings/api_key_modal.hbs";
@@ -396,10 +397,8 @@ export function set_up() {
         overlays.open_modal("api_key_modal", {
             autoremove: true,
             micromodal: true,
-            micromodal_opts: {
-                onShow: () => {
-                    $("#get_api_key_password").trigger("focus");
-                },
+            on_show: () => {
+                $("#get_api_key_password").trigger("focus");
             },
         });
         e.preventDefault();
@@ -560,12 +559,12 @@ export function set_up() {
         );
     });
 
-    $("#change_email_button").on("click", (e) => {
+    function do_change_email(e) {
         e.preventDefault();
         e.stopPropagation();
-        const change_email_error = $("#change_email_modal").find(".change_email_info").expectOne();
+        const change_email_error = $("#change_email_modal").find("#dialog_error");
         const data = {};
-        data.email = $(".email_change_container").find("input[name='email']").val();
+        data.email = $("#change_email_container").find("input[name='email']").val();
 
         const opts = {
             success_continuation() {
@@ -577,7 +576,10 @@ export function set_up() {
                         4000,
                     );
                 }
-                overlays.close_modal("#change_email_modal");
+                dialog_widget.close_modal();
+            },
+            error_continuation() {
+                dialog_widget.hide_dialog_spinner();
             },
             error_msg_element: change_email_error,
             success_msg_html: $t_html(
@@ -593,15 +595,31 @@ export function set_up() {
             $("#account-settings-status").expectOne(),
             opts,
         );
-    });
+    }
+
+    function change_email_post_render() {
+        const input_elem = $("#change_email_container").find("input[name='email']");
+        const email = $("#change_email").text().trim();
+        input_elem.val(email);
+    }
 
     $("#change_email").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
         if (!page_params.realm_email_changes_disabled || page_params.is_admin) {
-            overlays.open_modal("#change_email_modal");
-            const email = $("#change_email").text().trim();
-            $(".email_change_container").find("input[name='email']").val(email);
+            dialog_widget.launch({
+                html_heading: $t_html({defaultMessage: "Change email"}),
+                html_body: render_change_email_modal(),
+                html_submit_button: $t_html({defaultMessage: "Change"}),
+                loading_spinner: true,
+                id: "change_email_modal",
+                form_id: "change_email_container",
+                on_click: do_change_email,
+                post_render: change_email_post_render,
+                on_shown: () => {
+                    $("#change_email_container input").trigger("focus");
+                },
+            });
         }
     });
 

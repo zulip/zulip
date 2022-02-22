@@ -410,7 +410,7 @@ def get_chart_data(
         data["display_order"] = labels_sort_function(data)
     else:
         data["display_order"] = None
-    return json_success(data=data)
+    return json_success(request, data=data)
 
 
 def sort_by_totals(value_arrays: Dict[str, List[int]]) -> List[str]:

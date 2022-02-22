@@ -90,6 +90,12 @@ try:
     )
 
     # Generate the deployment directory via git worktree from our local repository.
+    commit_hash = subprocess.check_output(
+        ["git", "rev-parse", refname],
+        preexec_fn=su_to_zulip,
+        text=True,
+    ).strip()
+    logging.info("Upgrading to %s, in %s", commit_hash, deploy_path)
     subprocess.check_call(
         ["git", "worktree", "add", "--detach", deploy_path, refname],
         stdout=subprocess.DEVNULL,

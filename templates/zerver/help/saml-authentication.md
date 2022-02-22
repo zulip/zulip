@@ -4,7 +4,7 @@ Zulip supports using SAML authentication for single sign-on, both when
 self-hosting or on the Zulip Cloud Plus plan.
 
 This page documents details on how to set up SAML authentication with
-Zulip with various common SAML identity providers. Once you have setup
+Zulip with various common SAML identity providers. Once you have set up
 SAML, you may also want to consider configuring [SCIM](/help/scim).
 
 If you are self-hosting, this documentation is likely still useful for

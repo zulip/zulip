@@ -8,12 +8,12 @@ from zerver.models import Stream
 
 # There are 66 Unicode non-characters; see
 # https://www.unicode.org/faq/private_use.html#nonchar4
-unicode_non_chars = set(
+unicode_non_chars = {
     chr(x)
     for x in list(range(0xFDD0, 0xFDF0))  # FDD0 through FDEF, inclusive
     + list(range(0xFFFE, 0x110000, 0x10000))  # 0xFFFE, 0x1FFFE, ... 0x10FFFE inclusive
     + list(range(0xFFFF, 0x110000, 0x10000))  # 0xFFFF, 0x1FFFF, ... 0x10FFFF inclusive
-)
+}
 
 
 def check_string_is_printable(var: str) -> Optional[int]:
@@ -34,11 +34,12 @@ def check_stream_name(stream_name: str) -> None:
         raise JsonableError(
             _("Stream name too long (limit: {} characters).").format(Stream.MAX_NAME_LENGTH)
         )
-    for i in stream_name:
-        if ord(i) == 0:
-            raise JsonableError(
-                _("Stream name '{}' contains NULL (0x00) characters.").format(stream_name)
-            )
+
+    invalid_character_pos = check_string_is_printable(stream_name)
+    if invalid_character_pos is not None:
+        raise JsonableError(
+            _("Invalid character in stream name, at position {}!").format(invalid_character_pos)
+        )
 
 
 def check_stream_topic(topic: str) -> None:

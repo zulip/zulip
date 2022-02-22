@@ -59,7 +59,7 @@ class InstrumentedPoll:
         result = self._underlying.poll(timeout)
         t1 = time.time()
 
-        # Log this datapoint and restrict our log to the past minute
+        # Log this data point and restrict our log to the past minute
         self._times.append((t0, t1))
         while self._times and self._times[0][0] < t1 - 60:
             self._times.pop(0)

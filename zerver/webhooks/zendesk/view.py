@@ -30,4 +30,4 @@ def api_zendesk_webhook(
     """
     subject = truncate(f"#{ticket_id}: {ticket_title}", 60)
     check_send_webhook_message(request, user_profile, subject, message)
-    return json_success()
+    return json_success(request)

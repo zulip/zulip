@@ -97,7 +97,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     "1f630": {"canonical_name": "cold_sweat", "aliases": []},
     "1f622": {"canonical_name": "cry", "aliases": []},
     # stressed from https://beebom.com/emoji-meanings/. The internet generally
-    # didn't seem to know what to make of the dissapointed_relieved name, and I
+    # didn't seem to know what to make of the disappointed_relieved name, and I
     # got the sense it wasn't an emotion that was often used. Hence replaced it
     # with exhausted.
     "1f625": {"canonical_name": "exhausted", "aliases": ["disappointed_relieved", "stressed"]},
@@ -178,7 +178,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # applause from https://emojipedia.org/clapping-hands-sign/
     "1f44f": {"canonical_name": "clap", "aliases": ["applause"]},
     # welcome and thank_you from
-    # https://emojipedia.org/person-with-folded-hands/, namaste from indian
+    # https://emojipedia.org/person-with-folded-hands/, namaste from Indian
     # culture
     "1f64f": {"canonical_name": "pray", "aliases": ["welcome", "thank_you", "namaste"]},
     # done_deal seems like a natural addition
@@ -889,7 +889,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     "1f69e": {"canonical_name": "mountain_railway", "aliases": []},
     # elevated_train seems like a reasonable addition
     "1f69d": {"canonical_name": "monorail", "aliases": ["elevated_train"]},
-    # from gemoji/Unicode. Also, don't thin we need two bullettrain's
+    # from gemoji/Unicode. Also, don't think we need two bullettrain's
     "1f684": {"canonical_name": "high_speed_train", "aliases": []},
     # Google, Wikipedia, etc. prefer bullet train to bullettrain
     "1f685": {"canonical_name": "bullet_train", "aliases": []},
@@ -1518,6 +1518,8 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     "25fb": {"canonical_name": "white_medium_square", "aliases": []},
     "2b1b": {"canonical_name": "black_large_square", "aliases": []},
     "2b1c": {"canonical_name": "white_large_square", "aliases": []},
+    "1f7e8": {"canonical_name": "yellow_large_square", "aliases": []},
+    "1f7e9": {"canonical_name": "green_large_square", "aliases": []},
     "1f508": {"canonical_name": "speaker", "aliases": []},
     "1f507": {"canonical_name": "mute", "aliases": ["no_sound"]},
     "1f509": {"canonical_name": "softer", "aliases": []},

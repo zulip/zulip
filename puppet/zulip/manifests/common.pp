@@ -1,7 +1,7 @@
 class zulip::common {
   # Common parameters
-  case $::osfamily {
-    'debian': {
+  case $::os['family'] {
+    'Debian': {
       $nagios_plugins = 'monitoring-plugins-basic'
       $nagios_plugins_dir = '/usr/lib/nagios/plugins'
       $nginx = 'nginx-full'
@@ -14,7 +14,7 @@ class zulip::common {
       $supervisor_reload = '/etc/init.d/supervisor restart && (/etc/init.d/supervisor start || /bin/true) && /etc/init.d/supervisor status'
       $supervisor_status = '/etc/init.d/supervisor status'
     }
-    'redhat': {
+    'RedHat': {
       $nagios_plugins = 'nagios-plugins'
       $nagios_plugins_dir = '/usr/lib64/nagios/plugins'
       $nginx = 'nginx'
@@ -31,24 +31,31 @@ class zulip::common {
   }
   $supervisor_conf_dir = "${supervisor_system_conf_dir}/zulip"
 
-  $total_memory_mb = Integer($::memorysize_mb)
+  $total_memory_bytes = $::memory['system']['total_bytes']
+  $total_memory_mb = $total_memory_bytes / 1024 / 1024
+
+  $goarch = $::os['architecture'] ? {
+    'amd64'   => 'amd64',
+    'aarch64' => 'arm64',
+  }
 
   $versions = {
     # https://github.com/cactus/go-camo/releases
     'go-camo' => {
-      'version' => '2.3.0',
-      'sha256' => {
-        'amd64'   => '965506e6edb9d974c810519d71e847afb7ca69d1d01ae7d8be6d7a91de669c0c',
-        'aarch64' => '40463f6790eb0d2da69ad6a902fcc4c6b0c0ac24106a6c28fbfce9dfa4cb15cd',
+      'version'   => '2.4.0',
+      'goversion' => '1176',
+      'sha256'    => {
+        'amd64'   => '0033c412d1da09caca1774d2a7e3de3ec281e0450d67c574846f167ce253b67c',
+        'aarch64' => '81bdf24e769cdf9a8bd2c5d9ecc633437eb3b22be73bdc10e03e517dd887b2b7',
       },
     },
 
     # https://go.dev/dl/
     'golang' => {
-      'version' => '1.17.5',
+      'version' => '1.17.6',
       'sha256' => {
-        'amd64'   => 'bd78114b0d441b029c8fe0341f4910370925a4d270a6a590668840675b0c653e',
-        'aarch64' => '6f95ce3da40d9ce1355e48f31f4eb6508382415ca4d7413b1e7a3314e6430e7e',
+        'amd64'   => '231654bbf2dab3d86c1619ce799e77b03d96f9b50770297c8f4dff8836fc8ca2',
+        'aarch64' => '82c1a033cce9bc1b47073fd6285233133040f0378439f3c4659fe77cc534622a',
       },
     },
 
@@ -73,10 +80,10 @@ class zulip::common {
 
     # https://grafana.com/grafana/download?edition=oss
     'grafana' => {
-      'version' => '8.3.4',
+      'version' => '8.3.6',
       'sha256' => {
-        'amd64'   => '508f8da2e491c10566020c75f4e1e159ca032e3f4a0f4e71879effd602ef5a60',
-        'aarch64' => '0067da625741d4c0a04f9b66f79def4cbb6b22af5cd3b02afd12086af5af28f7',
+        'amd64'   => 'f2047de7ec42243ddedb95b16e6b5704cb12ec775b07ebf0adc67db00a52c459',
+        'aarch64' => 'd7dfdc1d08499f19b84b51f878d5380ba293468cf753420ce25caf423fb7231a',
       },
     },
 
@@ -91,10 +98,10 @@ class zulip::common {
 
     # https://prometheus.io/download/#prometheus
     'prometheus' => {
-      'version' => '2.32.1',
+      'version' => '2.33.1',
       'sha256' => {
-        'amd64'   => 'f08e96d73330a9ee7e6922a9f5b72ea188988a083bbfa9932359339fcf504a74',
-        'aarch64' => '2d185a8ed46161babeaaac8ce00ef1efdeccf3ef4ed234cd181eac6cad1ae4b2',
+        'amd64'   => '55de29727fc4d3977d3400c54fa222ebb52755bd0201936f1e1052fea6f2b44b',
+        'aarch64' => '21d89df7a98882a1a872bd3210aeaac3915a7f7be9f2ad28c986c80ad64ee77d',
       },
     },
 

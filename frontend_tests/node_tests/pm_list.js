@@ -19,6 +19,12 @@ mock_esm("../../static/js/stream_popover", {
 mock_esm("../../static/js/ui", {
     get_content_element: (element) => element,
 });
+mock_esm("../../static/js/user_status", {
+    is_away: () => false,
+    get_status_emoji: () => ({
+        emoji_code: 20,
+    }),
+});
 
 const people = zrequire("people");
 const pm_conversations = zrequire("pm_conversations");
@@ -72,7 +78,7 @@ test("close", () => {
 test("build_private_messages_list", ({override}) => {
     const timestamp = 0;
     pm_conversations.recent.insert([101, 102], timestamp);
-
+    pm_conversations.recent.insert([103], timestamp);
     let num_unread_for_person = 1;
     override(unread, "num_unread_for_person", () => num_unread_for_person);
 
@@ -87,14 +93,28 @@ test("build_private_messages_list", ({override}) => {
 
     const expected_data = [
         {
+            is_active: false,
+            is_group: false,
+            is_zero: false,
+            recipients: "Me Myself",
+            unread: 1,
+            url: "#narrow/pm-with/103-me",
+            user_circle_class: "user_circle_empty",
+            user_ids_string: "103",
+            status_emoji_info: {
+                emoji_code: 20,
+            },
+        },
+        {
             recipients: "Alice, Bob",
             user_ids_string: "101,102",
             unread: 1,
             is_zero: false,
             is_active: false,
             url: "#narrow/pm-with/101,102-group",
-            user_circle_class: "user_circle_fraction",
+            user_circle_class: undefined,
             is_group: true,
+            status_emoji_info: undefined,
         },
     ];
 
@@ -104,6 +124,8 @@ test("build_private_messages_list", ({override}) => {
     pm_list._build_private_messages_list();
     expected_data[0].unread = 0;
     expected_data[0].is_zero = true;
+    expected_data[1].unread = 0;
+    expected_data[1].is_zero = true;
     assert.deepEqual(pm_data, expected_data);
 
     pm_list._build_private_messages_list();
@@ -133,6 +155,7 @@ test("build_private_messages_list_bot", ({override}) => {
             is_zero: false,
             is_active: false,
             url: "#narrow/pm-with/314-outgoingwebhook",
+            status_emoji_info: undefined,
             user_circle_class: "user_circle_green",
             is_group: false,
         },
@@ -143,7 +166,8 @@ test("build_private_messages_list_bot", ({override}) => {
             is_zero: false,
             is_active: false,
             url: "#narrow/pm-with/101,102-group",
-            user_circle_class: "user_circle_fraction",
+            user_circle_class: undefined,
+            status_emoji_info: undefined,
             is_group: true,
         },
     ];

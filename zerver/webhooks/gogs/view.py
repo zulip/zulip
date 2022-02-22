@@ -171,7 +171,7 @@ def gogs_webhook_main(
     if event == "push":
         branch = payload["ref"].replace("refs/heads/", "")
         if branches is not None and branch not in branches.split(","):
-            return json_success()
+            return json_success(request)
         body = format_push_event(payload)
         topic = TOPIC_WITH_BRANCH_TEMPLATE.format(
             repo=repo,
@@ -231,4 +231,4 @@ def gogs_webhook_main(
         raise UnsupportedWebhookEventType(event)
 
     check_send_webhook_message(request, user_profile, topic, body, event)
-    return json_success()
+    return json_success(request)

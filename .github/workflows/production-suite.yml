@@ -30,13 +30,13 @@ jobs:
   production_build:
     # This job builds a release tarball from the current commit, which
     # will be used for all of the following install/upgrade tests.
-    name: Bionic production build
+    name: Debian 10 production build
     runs-on: ubuntu-latest
 
     # Docker images are built from 'tools/ci/Dockerfile'; the comments at
     # the top explain how to build and upload these images.
-    # Bionic ships with Python 3.6.
-    container: zulip/ci:bionic
+    # Debian 10 ships with Python 3.7.3.
+    container: zulip/ci:buster
     steps:
       - name: Add required permissions
         run: |
@@ -66,28 +66,22 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /srv/zulip-npm-cache
-          key: v1-yarn-deps-${{ github.job }}-${{ hashFiles('package.json') }}-${{ hashFiles('yarn.lock') }}
-          restore-keys: v1-yarn-deps-${{ github.job }}
+          key: v1-yarn-deps-buster-${{ hashFiles('package.json') }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: v1-yarn-deps-buster
 
       - name: Restore python cache
         uses: actions/cache@v2
         with:
           path: /srv/zulip-venv-cache
-          key: v1-venv-${{ github.job }}-${{ hashFiles('requirements/dev.txt') }}
-          restore-keys: v1-venv-${{ github.job }}
+          key: v1-venv-buster-${{ hashFiles('requirements/dev.txt') }}
+          restore-keys: v1-venv-buster
 
       - name: Restore emoji cache
         uses: actions/cache@v2
         with:
           path: /srv/zulip-emoji-cache
-          key: v1-emoji-${{ github.job }}-${{ hashFiles('tools/setup/emoji/emoji_map.json') }}-${{ hashFiles('tools/setup/emoji/build_emoji') }}-${{ hashFiles('tools/setup/emoji/emoji_setup_utils.py') }}-${{ hashFiles('tools/setup/emoji/emoji_names.py') }}-${{ hashFiles('package.json') }}
-          restore-keys: v1-emoji-${{ github.job }}
-
-      - name: Do Bionic hack
-        run: |
-          # Temporary hack till `sudo service redis-server start` gets fixes in Bionic. See
-          # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
-          sudo sed -i '/^bind/s/bind.*/bind 0.0.0.0/' /etc/redis/redis.conf
+          key: v1-emoji-buster-${{ hashFiles('tools/setup/emoji/emoji_map.json') }}-${{ hashFiles('tools/setup/emoji/build_emoji') }}-${{ hashFiles('tools/setup/emoji/emoji_setup_utils.py') }}-${{ hashFiles('tools/setup/emoji/emoji_names.py') }}-${{ hashFiles('package.json') }}
+          restore-keys: v1-emoji-buster
 
       - name: Build production tarball
         run: ./tools/ci/production-build
@@ -115,27 +109,18 @@ jobs:
         include:
           # Docker images are built from 'tools/ci/Dockerfile'; the comments at
           # the top explain how to build and upload these images.
-          - docker_image: zulip/ci:bionic
-            name: Bionic production install with custom db name and user
-            is_bionic: true
-            os: bionic
-            extra_args: --test-custom-db
-
           - docker_image: zulip/ci:focal
             name: Focal production install
-            is_focal: true
             os: focal
             extra_args: ""
 
           - docker_image: zulip/ci:buster
-            name: Buster production install
-            is_buster: true
+            name: Buster production install with custom db name and user
             os: buster
-            extra_args: ""
+            extra_args: --test-custom-db
 
           - docker_image: zulip/ci:bullseye
             name: Bullseye production install
-            is_bullseye: true
             os: bullseye
             extra_args: ""
 
@@ -181,13 +166,6 @@ jobs:
           key: v1-yarn-deps-${{ matrix.os }}-${{ hashFiles('/tmp/package.json') }}-${{ hashFiles('/tmp/yarn.lock') }}
           restore-keys: v1-yarn-deps-${{ matrix.os }}
 
-      - name: Do Bionic hack
-        if: ${{ matrix.is_bionic }}
-        run: |
-          # Temporary hack till `sudo service redis-server start` gets fixes in Bionic. See
-          # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
-          sudo sed -i '/^bind/s/bind.*/bind 0.0.0.0/' /etc/redis/redis.conf
-
       - name: Install production
         run: |
           sudo service rabbitmq-server restart
@@ -197,19 +175,19 @@ jobs:
         run: sudo /tmp/production-verify ${{ matrix.extra-args }}
 
       - name: Install pgroonga
-        if: ${{ matrix.is_bionic }}
+        if: ${{ matrix.os == 'focal' }}
         run: sudo /tmp/production-pgroonga
 
       - name: Verify install after installing pgroonga
-        if: ${{ matrix.is_bionic }}
+        if: ${{ matrix.os == 'focal' }}
         run: sudo /tmp/production-verify ${{ matrix.extra-args }}
 
       - name: Upgrade postgresql
-        if: ${{ matrix.is_bionic }}
+        if: ${{ matrix.os == 'focal' }}
         run: sudo /tmp/production-upgrade-pg
 
       - name: Verify install after upgrading postgresql
-        if: ${{ matrix.is_bionic }}
+        if: ${{ matrix.os == 'focal' }}
         run: sudo /tmp/production-verify ${{ matrix.extra-args }}
 
       - name: Report status

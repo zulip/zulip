@@ -47,7 +47,7 @@ Zulip has a number of [keyboard shortcuts](/help/keyboard-shortcuts)
 designed to enhance the user experience in the app.
 
 By default, the `Esc` key shortcut will ultimately navigate to your
-default view. You can disable this keybinding if you would prefer.
+default view. You can disable this key binding if you would prefer.
 This will not disable other `Esc` key shortcuts used in Zulip,
 and will not affect the behavior of the `Ctrl+[` shortcut.
 

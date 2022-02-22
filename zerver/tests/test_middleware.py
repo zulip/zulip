@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 
 from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.utils import assert_is_not_none
 from zerver.middleware import is_slow_query, write_log_line
 from zerver.models import get_realm
 
@@ -70,10 +71,14 @@ class OpenGraphTest(ZulipTestCase):
         response = self.client_get(path)
         self.assertEqual(response.status_code, status_code)
         bs = BeautifulSoup(response.content, features="lxml")
-        open_graph_title = bs.select_one('meta[property="og:title"]').get("content")
+        open_graph_title = assert_is_not_none(bs.select_one('meta[property="og:title"]')).get(
+            "content"
+        )
         self.assertEqual(open_graph_title, title)
 
-        open_graph_description = bs.select_one('meta[property="og:description"]').get("content")
+        open_graph_description = assert_is_not_none(
+            bs.select_one('meta[property="og:description"]')
+        ).get("content")
         for substring in in_description:
             self.assertIn(substring, open_graph_description)
         for substring in not_in_description:
@@ -195,7 +200,9 @@ class OpenGraphTest(ZulipTestCase):
         self.assertEqual(response.status_code, 200)
 
         bs = BeautifulSoup(response.content, features="lxml")
-        open_graph_image = bs.select_one('meta[property="og:image"]').get("content")
+        open_graph_image = assert_is_not_none(bs.select_one('meta[property="og:image"]')).get(
+            "content"
+        )
         self.assertEqual(open_graph_image, f"{realm.uri}{realm_icon}")
 
     def test_login_page_realm_icon_absolute_url(self) -> None:
@@ -210,7 +217,9 @@ class OpenGraphTest(ZulipTestCase):
         self.assertEqual(response.status_code, 200)
 
         bs = BeautifulSoup(response.content, features="lxml")
-        open_graph_image = bs.select_one('meta[property="og:image"]').get("content")
+        open_graph_image = assert_is_not_none(bs.select_one('meta[property="og:image"]')).get(
+            "content"
+        )
         self.assertEqual(open_graph_image, icon_url)
 
     def test_no_realm_api_page_og_url(self) -> None:
@@ -218,6 +227,7 @@ class OpenGraphTest(ZulipTestCase):
         self.assertEqual(response.status_code, 200)
 
         bs = BeautifulSoup(response.content, features="lxml")
-        open_graph_url = bs.select_one('meta[property="og:url"]').get("content")
+        open_graph_url = assert_is_not_none(bs.select_one('meta[property="og:url"]')).get("content")
 
+        assert isinstance(open_graph_url, str)
         self.assertTrue(open_graph_url.endswith("/api/"))

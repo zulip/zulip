@@ -1,23 +1,21 @@
+import autosize from "autosize";
 import $ from "jquery";
 import _ from "lodash";
 
-import render_compose from "../templates/compose.hbs";
-
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import * as common from "./common";
 import * as compose_actions from "./compose_actions";
 import * as compose_error from "./compose_error";
 import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
-import * as composebox_typeahead from "./composebox_typeahead";
 import * as echo from "./echo";
-import * as giphy from "./giphy";
+import * as flatpickr from "./flatpickr";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
+import * as message_edit from "./message_edit";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -88,6 +86,7 @@ export function clear_preview_area() {
     $("#compose .preview_message_area").hide();
     $("#compose .preview_content").empty();
     $("#compose .markdown_preview").show();
+    autosize.update($("#compose-textarea"));
 }
 
 export function update_fade() {
@@ -96,6 +95,7 @@ export function update_fade() {
     }
 
     const msg_type = compose_state.get_message_type();
+    compose_validate.warn_if_topic_resolved();
     compose_fade.set_focused_recipient(msg_type);
     compose_fade.update_all();
 }
@@ -387,21 +387,7 @@ export function render_and_show_preview(preview_spinner, preview_content_box, co
     }
 }
 
-export function render_compose_box() {
-    $("#compose-container").append(
-        render_compose({
-            embedded: $("#compose").attr("data-embedded") === "",
-            file_upload_enabled: page_params.max_file_upload_size_mib > 0,
-            giphy_enabled: giphy.is_giphy_enabled(),
-        }),
-    );
-    $(`.enter_sends_${user_settings.enter_sends}`).show();
-    common.adjust_mac_shortcuts(".enter_sends kbd");
-}
-
 export function initialize() {
-    render_compose_box();
-
     $("#below-compose-content .video_link").toggle(compute_show_video_chat_button());
     $(
         "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient",
@@ -426,6 +412,13 @@ export function initialize() {
     });
 
     resize.watch_manual_resize("#compose-textarea");
+
+    // Update position of scroll to bottom button based on
+    // height of the compose box.
+    const update_scroll_to_bottom_position = new ResizeObserver(() => {
+        $("#scroll-to-bottom-button-container").css("bottom", $("#compose").outerHeight());
+    });
+    update_scroll_to_bottom_position.observe(document.querySelector("#compose"));
 
     upload.feature_check($("#compose .compose_upload_file"));
 
@@ -463,6 +456,25 @@ export function initialize() {
         event.preventDefault();
 
         $("#compose-send-status").hide();
+    });
+
+    $("#compose_resolved_topic").on("click", ".compose_unresolve_topic", (event) => {
+        event.preventDefault();
+
+        const target = $(event.target).parents(".compose_resolved_topic");
+        const stream_id = Number.parseInt(target.attr("data-stream-id"), 10);
+        const topic_name = target.attr("data-topic-name");
+
+        message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
+            message_edit.toggle_resolve_topic(message_id, topic_name);
+            compose_validate.clear_topic_resolved_warning();
+        });
+    });
+
+    $("#compose_resolved_topic").on("click", ".compose_resolved_topic_close", (event) => {
+        event.preventDefault();
+
+        compose_validate.clear_topic_resolved_warning();
     });
 
     $("#compose_invite_users").on("click", ".compose_invite_link", (event) => {
@@ -637,12 +649,12 @@ export function initialize() {
                 compose_ui.insert_syntax_and_focus(timestr, target_textarea);
             };
 
-            composebox_typeahead.show_flatpickr(
+            flatpickr.show_flatpickr(
                 $(compose_click_target)[0],
                 on_timestamp_selection,
                 new Date(),
                 {
-                    // place the time picker above the icon and centerize it horizontally
+                    // place the time picker above the icon and center it horizontally
                     position: "above center",
                 },
             );
@@ -664,6 +676,7 @@ export function initialize() {
             $("#compose .preview_content"),
             content,
         );
+        resize.reset_compose_message_max_height();
     });
 
     $("#compose").on("click", ".undo_markdown_preview", (e) => {

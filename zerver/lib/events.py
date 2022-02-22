@@ -45,6 +45,7 @@ from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.topic_mutes import get_topic_mutes
 from zerver.lib.user_groups import user_groups_in_realm_serialized
@@ -557,7 +558,7 @@ def fetch_initial_state_data(
         for prop in UserProfile.display_settings_legacy:
             state[prop] = getattr(settings_user, prop)
         state["emojiset_choices"] = UserProfile.emojiset_choices()
-        state["timezone"] = settings_user.timezone
+        state["timezone"] = canonicalize_timezone(settings_user.timezone)
 
     if want("update_global_notifications") and not user_settings_object:
         for notification in UserProfile.notification_settings_legacy:
@@ -571,7 +572,7 @@ def fetch_initial_state_data(
             state["user_settings"][prop] = getattr(settings_user, prop)
 
         state["user_settings"]["emojiset_choices"] = UserProfile.emojiset_choices()
-        state["user_settings"]["timezone"] = settings_user.timezone
+        state["user_settings"]["timezone"] = canonicalize_timezone(settings_user.timezone)
         state["user_settings"][
             "available_notification_sounds"
         ] = get_available_notification_sounds()

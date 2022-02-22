@@ -1,6 +1,5 @@
 import md5 from "blueimp-md5";
 import {format, utcToZonedTime} from "date-fns-tz";
-import _ from "lodash";
 
 import * as typeahead from "../shared/js/typeahead";
 
@@ -548,7 +547,8 @@ export function pm_with_operand_ids(operand) {
 
     // If your email is included in a PM group with other people, just ignore it
     if (persons.length > 1) {
-        persons = _.without(persons, people_by_user_id_dict.get(my_user_id));
+        const my_user = people_by_user_id_dict.get(my_user_id);
+        persons = persons.filter((person) => person !== my_user);
     }
 
     if (!persons.every(Boolean)) {

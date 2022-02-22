@@ -446,7 +446,7 @@ export function initialize(helper_config) {
         return translate_emoticons_to_names(src);
     }
 
-    // Disable lheadings
+    // Disable headings
     // We only keep the # Heading format.
     disable_markdown_regex(marked.Lexer.rules.tables, "lheading");
 

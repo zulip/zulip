@@ -39,6 +39,7 @@ from zerver.lib.exceptions import (
     OrganizationOwnerRequired,
     RateLimited,
     RealmDeactivatedError,
+    RemoteServerDeactivatedError,
     UnsupportedWebhookEventType,
     UserDeactivatedError,
     WebhookError,
@@ -246,6 +247,9 @@ def validate_api_key(
             raise InvalidZulipServerError(role)
         if api_key != remote_server.api_key:
             raise InvalidZulipServerKeyError(role)
+
+        if remote_server.deactivated:
+            raise RemoteServerDeactivatedError()
 
         if get_subdomain(request) != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
             raise JsonableError(_("Invalid subdomain for push notifications bouncer"))
@@ -538,15 +542,7 @@ def web_public_view(
     """
     This wrapper adds client info for unauthenticated users but
     forces authenticated users to go through 2fa.
-
-    NOTE: This function == zulip_login_required in a production environment as
-          web_public_view path has only been enabled for development purposes
-          currently.
     """
-    if not settings.DEVELOPMENT:
-        # Coverage disabled because DEVELOPMENT is always true in development.
-        return zulip_login_required(view_func, redirect_field_name, login_url)  # nocoverage
-
     actual_decorator = lambda view_func: zulip_otp_required(
         redirect_field_name=redirect_field_name, login_url=login_url
     )(add_logging_data(view_func))
@@ -910,7 +906,7 @@ def get_tor_ips() -> Set[str]:
     # Circuit-breaking will ensure that we back off on re-reading the
     # file.
     if len(exit_node_list) == 0:
-        raise IOError("File is empty")
+        raise OSError("File is empty")
 
     return set(exit_node_list)
 
@@ -936,7 +932,7 @@ def rate_limit_request_by_ip(request: HttpRequest, domain: str) -> None:
             pass
         elif ip_addr in get_tor_ips():
             ip_addr = "tor-exit-node"
-    except (IOError, CircuitBreakerError) as err:
+    except (OSError, CircuitBreakerError) as err:
         # In the event that we can't get an updated list of TOR exit
         # nodes, assume the IP is _not_ one, and leave it unchanged.
         # We log a warning so that this endpoint being taken out of
@@ -996,7 +992,7 @@ def return_success_on_head_request(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
         if request.method == "HEAD":
-            return json_success()
+            return json_success(request)
         return view_func(request, *args, **kwargs)
 
     return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927

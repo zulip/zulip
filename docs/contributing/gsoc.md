@@ -2,13 +2,13 @@
 
 ## About us
 
-[Zulip](https://zulip.com) the only modern team chat app that is ideal for both
+[Zulip](https://zulip.com) is the only modern team chat app that is ideal for both
 live and asynchronous conversations. Zulip has a web app, a cross-platform
 mobile app for iOS and Android, cross-platform desktop and terminal apps, and
 over 100 native integrations. The entire Zulip codebase is 100% open source.
 
 Zulip has been gaining in popularity since it was [released as open source
-software][oss-release] in late 2015, with code contributions from [over 700
+software][oss-release] in late 2015, with code contributions from [over 1000
 people](https://zulip.com/team) from all around the world. Thousands of people
 use Zulip every day, and your work on Zulip will have meaningful impact
 on their experience.
@@ -35,7 +35,7 @@ post](https://blog.zulip.com/2021/04/28/why-zulip-is-on-github-sponsors/)!
 
 ## The Zulip GSoC experience
 
-Zulip has been a GSoC mentoring organization since 2016, and we to accept 15-20
+Zulip has been a GSoC mentoring organization since 2016, and we accept 15-20
 GSoC participants each summer. We have also mentored several interns through the
 [Outreachy](https://www.outreachy.org/) program, and hundreds of Google Code-In
 participants.
@@ -117,7 +117,7 @@ is correct.
 For all of our projects, an important skill to develop is a good
 command of Git; read [our Git guide](../git/overview.md) in full to
 learn how to use it well. Of particular importance is mastering using
-Git rebase so that you can construct commits that are clearly correct
+`git rebase` so that you can construct commits that are clearly correct
 and explain why they are correct. We highly recommend investing in
 learning a [graphical Git client](../git/setup.md) and learning to
 write good commit structures and messages; this is more important than
@@ -228,10 +228,10 @@ set of 8 issues may not be the right ones to invest in.
 ### Focus areas
 
 For 2022, we are particularly interested in GSoC contributors who have
-strong skills at visual design, HTML/CSS, mobile development,
-performance optimization, or Electron. So if you're an applicant with
-those skills and are looking for an organization to join, we'd love to
-talk to you!
+strong skills at visual design, HTML/CSS, mobile development, full
+stack feature development, performance optimization, or Electron. So
+if you're an applicant with those skills and are looking for an
+organization to join, we'd love to talk to you!
 
 The Zulip project has a huge surface area, so even when we're focused
 on something, a large amount of essential work goes into other parts of
@@ -239,20 +239,27 @@ the project. Every area of Zulip could benefit from the work of a
 contributor with strong programming skills, so don't feel discouraged if
 the areas mentioned above are not your main strength.
 
-As a data point, in Summer 2017, we had 4 students working on the
-React Native mobile app (1 focused primarily on visual design), 1 on
-the Electron desktop app, 2 on bots/integrations, 1 on web app visual
-design, 2 on our development tooling and automated testing
-infrastructure, and the remaining 4 on various other parts of the
-backend and core web app.
+### Project size
 
-**Please note that the project ideas described below have not yet been updated
-for GSoC 2022.**
+GSoC offers two project size options: 175 hours and 350 hours. We have
+designed all our projects to have incremental milestones that can be
+completed throughout the summer. Consequently, all Zulip projects
+described below are compatible with either project size. Of course,
+the amount of progress you will be expected to make depends on whether
+you are doing a 175-hour or 350-hour project.
 
 ### Full stack and web frontend focused projects
 
 Code: [github.com/zulip/zulip -- Python, Django, JavaScript, and
 CSS](https://github.com/zulip/zulip/).
+
+- Implement new full stack features for Zulip. The [high priority
+  label](https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22priority%3A+high%22)
+  documents hundreds of issues that we've identified as important to
+  the project. A great project can be 3-5 significant features around
+  a theme (often, but not necessarily, an [area
+  label](https://github.com/zulip/zulip/labels). Experts: Depends on
+  the features!
 
 - Zulip's [REST API documentation](https://zulip.com/api), which is an
   important resource for any organization integrating with Zulip.
@@ -272,12 +279,12 @@ CSS](https://github.com/zulip/zulip/).
 
 - Finish important full-stack features for open source projects using
   Zulip, including [default stream
-  groups](https://github.com/zulip/zulip/issues/13670), [Mute
-  User](https://github.com/zulip/zulip/issues/168), and [public
-  access](https://github.com/zulip/zulip/issues/13172). Expert: Tim
-  Abbott. Many of these issues have open PRs with substantial work
-  towards the goal, but each of them is likely to have dozens of
-  adjacent or follow-up tasks.
+  groups](https://github.com/zulip/zulip/issues/13670) and
+  improvements to the upcoming [public
+  access](https://github.com/zulip/zulip/issues/13172)
+  feature. Expert: Tim Abbott. Many of these issues have open PRs with
+  substantial work towards the goal, but each of them is likely to
+  have dozens of adjacent or follow-up tasks.
 
 - Fill in gaps, fix bugs, and improve the framework for Zulip's
   library of native integrations. We have about 100 integrations, but
@@ -359,8 +366,8 @@ CSS](https://github.com/zulip/zulip/).
   (whether logged-in or logged-out pages). Expert: Aman Agrawal.
 
 - Build support for outgoing webhooks and slash commands into Zulip to
-  improve its chat-ops capabilities. There's an existing
-  [pull request](https://github.com/zulip/zulip/pull/1393) with a lot
+  improve its chat-ops capabilities. There's an
+  [old pull request](https://github.com/zulip/zulip/pull/1393) with a lot
   of work on the outgoing webhooks piece of this feature that would
   need to be cleaned up and finished, and then we need to build support for slash
   commands, some example integrations, and a full set of
@@ -419,22 +426,16 @@ CSS](https://github.com/zulip/zulip/).
   features is [well documented](../tutorials/new-feature-tutorial.md).
   Expert: Shubham Dhama.
 
-- Write cool new features for Zulip. Play around with the software,
-  browse Zulip's issues for things that seem important, and suggest
-  something you’d like to build! A great project can combine 3-5
-  significant features. Experts: Depends on the features!
-
 - Work on Zulip's development and testing infrastructure. Zulip is a
   project that takes great pride in building great tools for
   development, but there's always more to do to make the experience
-  delightful. Significantly, a full 10% of Zulip's open issues are
-  ideas for how to improve the project, and are
-  [in](https://github.com/zulip/zulip/labels/area%3A%20tooling)
+  delightful. Significantly, about 10% of Zulip's open issues are
+  ideas for how to improve the project's contributor experience, and
+  are [in](https://github.com/zulip/zulip/labels/area%3A%20tooling)
   [these](https://github.com/zulip/zulip/labels/area%3A%20testing-coverage)
   [four](https://github.com/zulip/zulip/labels/area%3A%20testing-infrastructure)
   [labels](https://github.com/zulip/zulip/labels/area%3A%20provision)
-  for tooling improvements. A good place to start is
-  [backend test coverage](https://github.com/zulip/zulip/issues/7089).
+  for tooling improvements..
 
   This is a somewhat unusual project, in that it would likely consist
   of dozens of small improvements to the overall codebase, but this
@@ -449,7 +450,9 @@ CSS](https://github.com/zulip/zulip/).
   [our mypy blog post](https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/)
   for details on how mypy works and is integrated into Zulip. This
   specific project is ideal for a strong contributor interested in
-  type systems.
+  type systems. See [this
+  issue](https://github.com/zulip/zulip/pull/18777) for details on the
+  current state of this work.
 
   **Skills required**: Python, some DevOps, and a passion for checking
   your work carefully. A strong applicant for this will have
@@ -468,19 +471,6 @@ CSS](https://github.com/zulip/zulip/).
   from its original author, and we'd like to convert them to
   Typescript. **Skills required**: Experience with the target
   language and API design. Expert: Depends on language.
-
-- Develop [**@zulipbot**](https://github.com/zulip/zulipbot), the GitHub
-  workflow bot for the Zulip organization and its repositories. By utilizing the
-  [GitHub API](https://developer.github.com/v3/),
-  [**@zulipbot**](https://github.com/zulipbot) improves the experience of Zulip
-  contributors by managing the issues and pull requests in the Zulip repositories,
-  such as assigning issues to contributors and appropriately labeling issues with
-  their current status to help contributors gain a better understanding of which
-  issues are being worked on. Since the project is in its early stages of
-  development, there are a variety of possible tasks that can be done, including
-  adding new features, writing unit tests and creating a testing framework, and
-  writing documentation. **Skills required**: Node.js, ECMAScript 6, and API
-  experience. Experts: Cynthia Lin, Joshua Pan.
 
 ### React Native mobile app
 

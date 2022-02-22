@@ -52,6 +52,7 @@ from django.core.validators import URLValidator, validate_email
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.types import ProfileFieldData, Validator
 
 ResultT = TypeVar("ResultT")
@@ -529,7 +530,7 @@ def validate_todo_data(todo_data: object) -> None:
 
 
 # Converter functions for use with has_request_variables
-def to_non_negative_int(s: str, max_int_size: int = 2 ** 32 - 1) -> int:
+def to_non_negative_int(s: str, max_int_size: int = 2**32 - 1) -> int:
     x = int(s)
     if x < 0:
         raise ValueError("argument is negative")
@@ -548,7 +549,7 @@ def to_decimal(s: str) -> Decimal:
 
 def to_timezone_or_empty(s: str) -> str:
     if s in pytz.all_timezones_set:
-        return s
+        return canonicalize_timezone(s)
     else:
         return ""
 

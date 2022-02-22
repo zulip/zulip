@@ -67,7 +67,7 @@ how long they pause to think, and how frequently they get interrupted.
 
 ## Server
 
-The server piece of typing notificiations is currently pretty
+The server piece of typing notifications is currently pretty
 straightforward, since we take advantage of Zulip's
 [events system](../subsystems/events-system.md).
 

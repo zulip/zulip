@@ -181,4 +181,4 @@ def api_librato_webhook(
         raise JsonableError(str(e))
 
     check_send_webhook_message(request, user_profile, topic, content)
-    return json_success()
+    return json_success(request)

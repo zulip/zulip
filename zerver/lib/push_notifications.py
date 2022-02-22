@@ -78,25 +78,28 @@ def get_apns_context() -> Optional[APNsContext]:
     # which fills the logs; see https://github.com/Fatal1ty/aioapns/issues/15
     logging.getLogger("aioapns").setLevel(logging.CRITICAL)
 
-    if settings.APNS_CERT_FILE is None:
+    if settings.APNS_CERT_FILE is None:  # nocoverage
         return None
 
     # NB if called concurrently, this will make excess connections.
     # That's a little sloppy, but harmless unless a server gets
     # hammered with a ton of these all at once after startup.
     loop = asyncio.new_event_loop()
-    apns = aioapns.APNs(
-        client_cert=settings.APNS_CERT_FILE,
-        topic=settings.APNS_TOPIC,
-        max_connection_attempts=APNS_MAX_RETRIES,
-        loop=loop,
-        use_sandbox=settings.APNS_SANDBOX,
-    )
+
+    async def make_apns() -> aioapns.APNs:
+        return aioapns.APNs(
+            client_cert=settings.APNS_CERT_FILE,
+            topic=settings.APNS_TOPIC,
+            max_connection_attempts=APNS_MAX_RETRIES,
+            use_sandbox=settings.APNS_SANDBOX,
+        )
+
+    apns = loop.run_until_complete(make_apns())
     return APNsContext(apns=apns, loop=loop)
 
 
 def apns_enabled() -> bool:
-    return get_apns_context() is not None
+    return settings.APNS_CERT_FILE is not None
 
 
 def modernize_apns_payload(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -714,6 +717,7 @@ def get_message_payload(
     if message.recipient.type == Recipient.STREAM:
         data["recipient_type"] = "stream"
         data["stream"] = get_display_recipient(message.recipient)
+        data["stream_id"] = message.recipient.type_id
         data["topic"] = message.topic_name()
     elif message.recipient.type == Recipient.HUDDLE:
         data["recipient_type"] = "private"

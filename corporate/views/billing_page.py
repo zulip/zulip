@@ -49,7 +49,7 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
             brand=default_payment_method.card.brand,
             last4=default_payment_method.card.last4,
         )
-    # There might be oneoff stuff we do for a particular customer that
+    # There might be one-off stuff we do for a particular customer that
     # would land them here. E.g. by default we don't support ACH for
     # automatic payments, but in theory we could add it for a customer via
     # the Stripe dashboard.
@@ -198,7 +198,7 @@ def update_plan(
         elif status == CustomerPlan.ENDED:
             assert plan.is_free_trial()
             downgrade_now_without_creating_additional_invoices(user.realm)
-        return json_success()
+        return json_success(request)
 
     if licenses is not None:
         if plan.automanage_licenses:
@@ -221,7 +221,7 @@ def update_plan(
             )
         validate_licenses(plan.charge_automatically, licenses, get_latest_seat_count(user.realm))
         update_license_ledger_for_manual_plan(plan, timezone_now(), licenses=licenses)
-        return json_success()
+        return json_success(request)
 
     if licenses_at_next_renewal is not None:
         if plan.automanage_licenses:
@@ -244,6 +244,6 @@ def update_plan(
         update_license_ledger_for_manual_plan(
             plan, timezone_now(), licenses_at_next_renewal=licenses_at_next_renewal
         )
-        return json_success()
+        return json_success(request)
 
     raise JsonableError(_("Nothing to change."))

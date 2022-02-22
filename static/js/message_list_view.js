@@ -62,11 +62,14 @@ function message_was_only_moved(message) {
     // edited.
     let moved = false;
     if (message.edit_history !== undefined) {
-        for (const msg of message.edit_history) {
-            if (msg.prev_content) {
+        for (const edit_history_event of message.edit_history) {
+            if (edit_history_event.prev_content) {
                 return false;
             }
-            if (util.get_edit_event_prev_topic(msg) || msg.prev_stream) {
+            if (
+                util.get_edit_event_prev_topic(edit_history_event) ||
+                edit_history_event.prev_stream
+            ) {
                 moved = true;
             }
         }
@@ -238,7 +241,7 @@ export class MessageListView {
 
     _add_msg_edited_vars(message_container) {
         // This adds variables to message_container object which calculate bools for
-        // checking position of "(EDITED)" label as well as the edited timestring
+        // checking position of "EDITED" label as well as the edited timestring
         // The bools can be defined only when the message is edited
         // (or when the `last_edit_timestr` is defined). The bools are:
         //   * `edited_in_left_col`      -- when label appears in left column.
@@ -292,6 +295,16 @@ export class MessageListView {
             message_container.include_sender = true;
         }
 
+        message_container.sender_is_bot = people.sender_is_bot(message_container.msg);
+        message_container.sender_is_guest = people.sender_is_guest(message_container.msg);
+
+        message_container.small_avatar_url = people.small_avatar_url(message_container.msg);
+        if (message_container.msg.stream) {
+            message_container.background_color = stream_data.get_color(
+                message_container.msg.stream,
+            );
+        }
+
         this._maybe_format_me_message(message_container);
         // Once all other variables are updated
         this._add_msg_edited_vars(message_container);
@@ -308,15 +321,15 @@ export class MessageListView {
 
         if (!last_subscribed && first_subscribed) {
             group.bookend_top = true;
-            group.subscribed = stream;
-            group.bookend_content = this.list.subscribed_bookend_content(stream);
+            group.subscribed = true;
+            group.stream_name = stream;
             return;
         }
 
         if (last_subscribed && !first_subscribed) {
             group.bookend_top = true;
-            group.unsubscribed = stream;
-            group.bookend_content = this.list.unsubscribed_bookend_content(stream);
+            group.just_unsubscribed = true;
+            group.stream_name = stream;
             return;
         }
     }
@@ -344,9 +357,7 @@ export class MessageListView {
                     current_group,
                     current_group.message_containers[0],
                 );
-                current_group.message_containers[
-                    current_group.message_containers.length - 1
-                ].include_footer = true;
+                current_group.message_containers.at(-1).include_footer = true;
                 new_message_groups.push(current_group);
             }
         };
@@ -410,16 +421,6 @@ export class MessageListView {
                 message_container.include_sender = false;
             }
 
-            message_container.sender_is_bot = people.sender_is_bot(message_container.msg);
-            message_container.sender_is_guest = people.sender_is_guest(message_container.msg);
-
-            message_container.small_avatar_url = people.small_avatar_url(message_container.msg);
-            if (message_container.msg.stream) {
-                message_container.background_color = stream_data.get_color(
-                    message_container.msg.stream,
-                );
-            }
-
             this.set_calculated_message_container_variables(message_container);
 
             prev = message_container;
@@ -439,8 +440,8 @@ export class MessageListView {
         if (first_group === undefined || second_group === undefined) {
             return false;
         }
-        const last_msg_container = _.last(first_group.message_containers);
-        const first_msg_container = _.first(second_group.message_containers);
+        const last_msg_container = first_group.message_containers.at(-1);
+        const first_msg_container = second_group.message_containers[0];
 
         // Join two groups into one.
         if (
@@ -468,7 +469,6 @@ export class MessageListView {
             this.list !== message_lists.home &&
             last_msg_container.msg.historical !== first_msg_container.msg.historical
         ) {
-            second_group.bookend_top = true;
             this.add_subscription_marker(second_group, last_msg_container, first_msg_container);
         }
         return false;
@@ -500,19 +500,19 @@ export class MessageListView {
         let prev_msg_container;
 
         if (where === "top") {
-            first_group = _.last(new_message_groups);
-            second_group = _.first(this._message_groups);
+            first_group = new_message_groups.at(-1);
+            second_group = this._message_groups[0];
         } else {
-            first_group = _.last(this._message_groups);
-            second_group = _.first(new_message_groups);
+            first_group = this._message_groups.at(-1);
+            second_group = new_message_groups[0];
         }
 
         if (first_group) {
-            prev_msg_container = _.last(first_group.message_containers);
+            prev_msg_container = first_group.message_containers.at(-1);
         }
 
         if (second_group) {
-            curr_msg_container = _.first(second_group.message_containers);
+            curr_msg_container = second_group.message_containers[0];
         }
 
         const was_joined = this.join_message_groups(first_group, second_group);
@@ -538,7 +538,7 @@ export class MessageListView {
                 this._message_groups.shift();
                 this._message_groups.unshift(first_group);
 
-                new_message_groups = _.initial(new_message_groups);
+                new_message_groups = new_message_groups.slice(0, -1);
             } else if (
                 !same_day(second_group.message_containers[0], first_group.message_containers[0])
             ) {
@@ -553,8 +553,8 @@ export class MessageListView {
             if (was_joined) {
                 // rerender the last message
                 message_actions.rerender_messages_next_same_sender.push(prev_msg_container);
-                message_actions.append_messages = _.first(new_message_groups).message_containers;
-                new_message_groups = _.tail(new_message_groups);
+                message_actions.append_messages = new_message_groups[0].message_containers;
+                new_message_groups = new_message_groups.slice(1);
             } else if (first_group !== undefined && second_group !== undefined) {
                 if (same_day(prev_msg_container, curr_msg_container)) {
                     clear_group_date_divider(second_group);
@@ -663,7 +663,7 @@ export class MessageListView {
 
         // The messages we are being asked to render are shared with between
         // all messages lists. To prevent having both list views overwriting
-        // each others data we will make a new message object to add data to
+        // each others' data we will make a new message object to add data to
         // for rendering.
         const message_containers = messages.map((message) => {
             if (message.starred) {
@@ -726,7 +726,7 @@ export class MessageListView {
             this._post_process(dom_messages);
 
             // The date row will be included in the message groups or will be
-            // added in a rerenderd in the group below
+            // added in a rerendered in the group below
             table.find(".recipient_row").first().prev(".date_row").remove();
             table.prepend(rendered_groups);
             condense.condense_and_collapse(dom_messages);
@@ -827,11 +827,10 @@ export class MessageListView {
 
         restore_scroll_position();
 
-        const last_message_group = _.last(this._message_groups);
+        const last_message_group = this._message_groups.at(-1);
         if (last_message_group !== undefined) {
-            list.last_message_historical = _.last(
-                last_message_group.message_containers,
-            ).msg.historical;
+            list.last_message_historical =
+                last_message_group.message_containers.at(-1).msg.historical;
         }
 
         const stream_name = narrow_state.stream();
@@ -839,7 +838,7 @@ export class MessageListView {
             // If user narrows to a stream, doesn't update
             // trailing bookend if user is subscribed.
             const sub = stream_data.get_sub(stream_name);
-            if (sub === undefined || !sub.subscribed) {
+            if (sub === undefined || !sub.subscribed || page_params.is_spectator) {
                 list.update_trailing_bookend();
             }
         }
@@ -936,7 +935,7 @@ export class MessageListView {
             // background and might be having some functionality
             // throttled by modern Chrome's aggressive power-saving
             // features.
-            blueslip.log("Suppressing scrolldown due to inactivity");
+            blueslip.log("Suppressing scroll down due to inactivity");
             return false;
         }
 
@@ -1143,7 +1142,7 @@ export class MessageListView {
         const message_group_id = recipient_row.attr("id");
 
         // Since there might be multiple dates within the message
-        // group, it's important to lookup the original/full message
+        // group, it's important to look up the original/full message
         // group rather than doing an artificial rerendering of the
         // message header from the set of message containers passed in
         // here.
@@ -1212,7 +1211,7 @@ export class MessageListView {
         for (const message_container of message_containers) {
             if (
                 current_group.length === 0 ||
-                same_recipient(current_group[current_group.length - 1], message_container)
+                same_recipient(current_group.at(-1), message_container)
             ) {
                 current_group.push(message_container);
             } else {
@@ -1298,12 +1297,25 @@ export class MessageListView {
         trailing_bookend.remove();
     }
 
-    render_trailing_bookend(trailing_bookend_content, subscribed, show_button) {
+    render_trailing_bookend(
+        stream_name,
+        subscribed,
+        deactivated,
+        just_unsubscribed,
+        can_toggle_subscription,
+        is_spectator,
+    ) {
+        // This is not the only place we render bookends; see also the
+        // partial in message_group.hbs, which do not set is_trailing_bookend.
         const rendered_trailing_bookend = $(
             render_bookend({
-                bookend_content: trailing_bookend_content,
-                trailing: show_button,
+                stream_name,
+                can_toggle_subscription,
                 subscribed,
+                deactivated,
+                just_unsubscribed,
+                is_spectator,
+                is_trailing_bookend: true,
             }),
         );
         rows.get_table(this.table_name).append(rendered_trailing_bookend);

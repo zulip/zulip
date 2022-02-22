@@ -141,7 +141,7 @@ def get_issue_id(payload: Dict[str, Any]) -> str:
     if "issue" not in payload:
         # Some ancient version of Jira or one of its extensions posts
         # comment_created events without an "issue" element.  For
-        # these, the best we can do is extract the Jira-intenral
+        # these, the best we can do is extract the Jira-internal
         # issue number and use that in the topic.
         #
         # Users who want better formatting can upgrade Jira.
@@ -154,7 +154,7 @@ def get_issue_title(payload: Dict[str, Any]) -> str:
     if "issue" not in payload:
         # Some ancient version of Jira or one of its extensions posts
         # comment_created events without an "issue" element.  For
-        # these, the best we can do is extract the Jira-intenral
+        # these, the best we can do is extract the Jira-internal
         # issue number and use that in the topic.
         #
         # Users who want better formatting can upgrade Jira.
@@ -347,7 +347,7 @@ def api_jira_webhook(
 
     event = get_event_type(payload)
     if event in IGNORED_EVENTS:
-        return json_success()
+        return json_success(request)
 
     if event is None:
         raise AnomalousWebhookPayload()
@@ -364,4 +364,4 @@ def api_jira_webhook(
     check_send_webhook_message(
         request, user_profile, subject, content, event, unquote_url_parameters=True
     )
-    return json_success()
+    return json_success(request)

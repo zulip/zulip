@@ -97,7 +97,7 @@ def team_view(request: HttpRequest) -> HttpResponse:
 
 @add_google_analytics
 def landing_view(request: HttpRequest, template_name: str) -> HttpResponse:
-    return TemplateResponse(request, template_name)
+    return TemplateResponse(request, template_name, latest_info_context())
 
 
 @add_google_analytics

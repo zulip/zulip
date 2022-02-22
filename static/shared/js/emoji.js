@@ -76,7 +76,7 @@ const zulip_emoji = {
 
 export function get_emoji_name(codepoint) {
     // get_emoji_name('1f384') === 'holiday_tree'
-    if (Object.prototype.hasOwnProperty.call(emoji_codes.codepoint_to_name, codepoint)) {
+    if (Object.hasOwn(emoji_codes.codepoint_to_name, codepoint)) {
         return emoji_codes.codepoint_to_name[codepoint];
     }
     return undefined;
@@ -84,7 +84,7 @@ export function get_emoji_name(codepoint) {
 
 export function get_emoji_codepoint(emoji_name) {
     // get_emoji_codepoint('avocado') === '1f951'
-    if (Object.prototype.hasOwnProperty.call(emoji_codes.name_to_codepoint, emoji_name)) {
+    if (Object.hasOwn(emoji_codes.name_to_codepoint, emoji_name)) {
         return emoji_codes.name_to_codepoint[emoji_name];
     }
     return undefined;

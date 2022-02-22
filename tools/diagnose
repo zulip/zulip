@@ -114,7 +114,7 @@ def check_venv() -> bool:
     cache_dir = "/srv/zulip-venv-cache/"
     for fn in ["dev.txt"]:
         requirements_file = os.path.join(ROOT_DIR, "requirements", fn)
-        output = subprocess.check_output([path, requirements_file], universal_newlines=True)
+        output = subprocess.check_output([path, requirements_file], text=True)
         sha1sum = output.split()[0]
         print(fn, "venv sha: ", sha1sum)
         if not os.path.exists(os.path.join(cache_dir, sha1sum)):

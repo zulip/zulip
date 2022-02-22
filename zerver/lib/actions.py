@@ -105,6 +105,7 @@ from zerver.lib.message import (
     MessageDict,
     SendMessageRequest,
     access_message,
+    bulk_access_messages,
     get_last_message_id,
     normalize_body,
     render_markdown,
@@ -150,6 +151,7 @@ from zerver.lib.streams import (
     check_stream_access_based_on_stream_post_policy,
     create_stream_if_needed,
     get_default_value_for_history_public_to_subscribers,
+    get_stream_permission_policy_name,
     get_web_public_streams_queryset,
     render_stream_description,
     send_stream_creation_event,
@@ -166,6 +168,7 @@ from zerver.lib.topic import (
     TOPIC_NAME,
     filter_by_exact_message_topic,
     filter_by_topic_name_via_message,
+    messages_for_topic,
     save_message_for_edit_use_case,
     update_edit_history,
     update_messages_for_topic_edit,
@@ -842,6 +845,7 @@ def active_humans_in_realm(realm: Realm) -> Sequence[UserProfile]:
     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
 
 
+@transaction.atomic(savepoint=False)
 def do_set_realm_property(
     realm: Realm, name: str, value: Any, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -863,7 +867,7 @@ def do_set_realm_property(
         property=name,
         value=value,
     )
-    send_event(realm, event, active_user_ids(realm.id))
+    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
@@ -891,12 +895,14 @@ def do_set_realm_property(
         user_profiles = UserProfile.objects.filter(realm=realm, is_bot=False)
         for user_profile in user_profiles:
             user_profile.email = get_display_email_address(user_profile)
-            # TODO: Design a bulk event for this or force-reload all clients
-            send_user_email_update_event(user_profile)
         UserProfile.objects.bulk_update(user_profiles, ["email"])
 
         for user_profile in user_profiles:
-            flush_user_profile(sender=UserProfile, instance=user_profile)
+            transaction.on_commit(
+                lambda: flush_user_profile(sender=UserProfile, instance=user_profile)
+            )
+            # TODO: Design a bulk event for this or force-reload all clients
+            send_user_email_update_event(user_profile)
 
 
 def do_set_realm_authentication_methods(
@@ -1365,6 +1371,7 @@ def do_deactivate_user(
         send_event(user_profile.realm, event, bot_owner_user_ids(user_profile))
 
 
+@transaction.atomic(savepoint=False)
 def do_deactivate_stream(
     stream: Stream, log: bool = True, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -1377,7 +1384,7 @@ def do_deactivate_stream(
         "type": "mark_stream_messages_as_read_for_everyone",
         "stream_recipient_id": stream.recipient_id,
     }
-    queue_json_publish("deferred_work", deferred_work_event)
+    transaction.on_commit(lambda: queue_json_publish("deferred_work", deferred_work_event))
 
     # Get the affected user ids *before* we deactivate everybody.
     affected_user_ids = can_access_stream_user_ids(stream)
@@ -1420,7 +1427,7 @@ def do_deactivate_stream(
     stream_dict = stream.to_dict()
     stream_dict.update(dict(name=old_name, invite_only=was_invite_only))
     event = dict(type="stream", op="delete", streams=[stream_dict])
-    send_event(stream.realm, event, affected_user_ids)
+    transaction.on_commit(lambda: send_event(stream.realm, event, affected_user_ids))
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
@@ -1434,13 +1441,17 @@ def do_deactivate_stream(
 
 def send_user_email_update_event(user_profile: UserProfile) -> None:
     payload = dict(user_id=user_profile.id, new_email=user_profile.email)
-    send_event(
-        user_profile.realm,
-        dict(type="realm_user", op="update", person=payload),
-        active_user_ids(user_profile.realm_id),
+    event = dict(type="realm_user", op="update", person=payload)
+    transaction.on_commit(
+        lambda: send_event(
+            user_profile.realm,
+            event,
+            active_user_ids(user_profile.realm_id),
+        )
     )
 
 
+@transaction.atomic(savepoint=False)
 def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> None:
     delete_user_profile_caches([user_profile])
 
@@ -1456,7 +1467,7 @@ def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> 
     # about their new delivery email, since that field is private.
     payload = dict(user_id=user_profile.id, delivery_email=new_email)
     event = dict(type="realm_user", op="update", person=payload)
-    send_event(user_profile.realm, event, [user_profile.id])
+    transaction.on_commit(lambda: send_event(user_profile.realm, event, [user_profile.id]))
 
     if user_profile.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
         # If the user is using Gravatar to manage their email address,
@@ -1901,6 +1912,7 @@ def build_message_send_dict(
     widget_content_dict: Optional[Dict[str, Any]] = None,
     email_gateway: bool = False,
     mention_backend: Optional[MentionBackend] = None,
+    limit_unread_user_ids: Optional[Set[int]] = None,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -2006,6 +2018,7 @@ def build_message_send_dict(
         wildcard_mention_user_ids=wildcard_mention_user_ids,
         links_for_embed=links_for_embed,
         widget_content=widget_content_dict,
+        limit_unread_user_ids=limit_unread_user_ids,
     )
 
     return message_send_dict
@@ -2048,8 +2061,8 @@ def do_send_messages(
             mentioned_user_ids = send_request.rendering_result.mentions_user_ids
 
             # Extend the set with users who have muted the sender.
-            mark_as_read_for_users = send_request.muted_sender_user_ids
-            mark_as_read_for_users.update(mark_as_read)
+            mark_as_read_user_ids = send_request.muted_sender_user_ids
+            mark_as_read_user_ids.update(mark_as_read)
 
             user_messages = create_user_messages(
                 message=send_request.message,
@@ -2059,7 +2072,8 @@ def do_send_messages(
                 stream_push_user_ids=send_request.stream_push_user_ids,
                 stream_email_user_ids=send_request.stream_email_user_ids,
                 mentioned_user_ids=mentioned_user_ids,
-                mark_as_read_for_users=mark_as_read_for_users,
+                mark_as_read_user_ids=mark_as_read_user_ids,
+                limit_unread_user_ids=send_request.limit_unread_user_ids,
             )
 
             for um in user_messages:
@@ -2270,7 +2284,8 @@ def create_user_messages(
     stream_push_user_ids: AbstractSet[int],
     stream_email_user_ids: AbstractSet[int],
     mentioned_user_ids: AbstractSet[int],
-    mark_as_read_for_users: Set[int],
+    mark_as_read_user_ids: Set[int],
+    limit_unread_user_ids: Optional[Set[int]],
 ) -> List[UserMessageLite]:
     # These properties on the Message are set via
     # render_markdown by code in the Markdown inline patterns
@@ -2307,8 +2322,10 @@ def create_user_messages(
     for user_profile_id in um_eligible_user_ids:
         flags = base_flags
         if (
-            user_profile_id == sender_id and message.sent_by_human()
-        ) or user_profile_id in mark_as_read_for_users:
+            (user_profile_id == sender_id and message.sent_by_human())
+            or user_profile_id in mark_as_read_user_ids
+            or (limit_unread_user_ids is not None and user_profile_id not in limit_unread_user_ids)
+        ):
             flags |= UserMessage.flags.read
         if user_profile_id in mentioned_user_ids:
             flags |= UserMessage.flags.mentioned
@@ -2532,7 +2549,7 @@ def check_add_reaction(
         # In this "voting for an existing reaction" case, we shouldn't
         # check whether the emoji code and emoji name match, since
         # it's possible that the (emoji_type, emoji_name, emoji_code)
-        # triple for this existing rection xmay not pass validation
+        # triple for this existing reaction may not pass validation
         # now (e.g. because it is for a realm emoji that has been
         # since deactivated).  We still want to allow users to add a
         # vote any old reaction they see in the UI even if that is a
@@ -3063,7 +3080,7 @@ def check_update_message(
     if not user_profile.realm.allow_message_editing:
         raise JsonableError(_("Your organization has turned off message editing"))
 
-    # The zerver/views/message_edit.py callpoint already strips this
+    # The zerver/views/message_edit.py call point already strips this
     # via REQ_topic; so we can delete this line if we arrange a
     # contract where future callers in the embedded bots system strip
     # use REQ_topic as well (or otherwise are guaranteed to strip input).
@@ -3355,6 +3372,7 @@ def check_message(
     *,
     skip_stream_access_check: bool = False,
     mention_backend: Optional[MentionBackend] = None,
+    limit_unread_user_ids: Optional[Set[int]] = None,
 ) -> SendMessageRequest:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -3407,6 +3425,9 @@ def check_message(
             # is security-sensitive code, it's beneficial to ensure nothing
             # else can sneak past the access check.
             assert sender.bot_type == sender.OUTGOING_WEBHOOK_BOT
+
+        if realm.mandatory_topics and topic_name == "(no topic)":
+            raise JsonableError(_("Topics are required in this organization"))
 
     elif addressee.is_private():
         user_profiles = addressee.user_profiles()
@@ -3481,6 +3502,7 @@ def check_message(
         widget_content_dict=widget_content_dict,
         email_gateway=email_gateway,
         mention_backend=mention_backend,
+        limit_unread_user_ids=limit_unread_user_ids,
     )
 
     if stream is not None and message_send_dict.rendering_result.mentions_wildcard:
@@ -3498,6 +3520,7 @@ def _internal_prep_message(
     content: str,
     email_gateway: bool = False,
     mention_backend: Optional[MentionBackend] = None,
+    limit_unread_user_ids: Optional[Set[int]] = None,
 ) -> Optional[SendMessageRequest]:
     """
     Create a message object and checks it, but doesn't send it or save it to the database.
@@ -3528,6 +3551,7 @@ def _internal_prep_message(
             realm=realm,
             email_gateway=email_gateway,
             mention_backend=mention_backend,
+            limit_unread_user_ids=limit_unread_user_ids,
         )
     except JsonableError as e:
         logging.exception(
@@ -3546,6 +3570,7 @@ def internal_prep_stream_message(
     topic: str,
     content: str,
     email_gateway: bool = False,
+    limit_unread_user_ids: Optional[Set[int]] = None,
 ) -> Optional[SendMessageRequest]:
     """
     See _internal_prep_message for details of how this works.
@@ -3559,6 +3584,7 @@ def internal_prep_stream_message(
         addressee=addressee,
         content=content,
         email_gateway=email_gateway,
+        limit_unread_user_ids=limit_unread_user_ids,
     )
 
 
@@ -3620,9 +3646,12 @@ def internal_send_stream_message(
     topic: str,
     content: str,
     email_gateway: bool = False,
+    limit_unread_user_ids: Optional[Set[int]] = None,
 ) -> Optional[int]:
 
-    message = internal_prep_stream_message(sender, stream, topic, content, email_gateway)
+    message = internal_prep_stream_message(
+        sender, stream, topic, content, email_gateway, limit_unread_user_ids=limit_unread_user_ids
+    )
 
     if message is None:
         return None
@@ -3754,7 +3783,7 @@ def validate_user_access_to_subscribers_helper(
     if stream_dict["is_web_public"]:
         return
 
-    # With the exception of web public streams, a guest must
+    # With the exception of web-public streams, a guest must
     # be subscribed to a stream (even a public one) in order
     # to see subscribers.
     if user_profile.is_guest:
@@ -4060,7 +4089,7 @@ def bulk_add_subscriptions(
 # subscribing users to streams; we use a transaction to ensure that
 # the RealmAuditLog entries are created atomically with the
 # Subscription object creation (and updates).
-@transaction.atomic
+@transaction.atomic(savepoint=False)
 def bulk_add_subs_to_db_with_logging(
     realm: Realm,
     acting_user: Optional[UserProfile],
@@ -4636,17 +4665,20 @@ def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -
 
 def notify_avatar_url_change(user_profile: UserProfile) -> None:
     if user_profile.is_bot:
-        send_event(
-            user_profile.realm,
-            dict(
-                type="realm_bot",
-                op="update",
-                bot=dict(
-                    user_id=user_profile.id,
-                    avatar_url=avatar_url(user_profile),
-                ),
+        bot_event = dict(
+            type="realm_bot",
+            op="update",
+            bot=dict(
+                user_id=user_profile.id,
+                avatar_url=avatar_url(user_profile),
             ),
-            bot_owner_user_ids(user_profile),
+        )
+        transaction.on_commit(
+            lambda: send_event(
+                user_profile.realm,
+                bot_event,
+                bot_owner_user_ids(user_profile),
+            )
         )
 
     payload = dict(
@@ -4659,13 +4691,17 @@ def notify_avatar_url_change(user_profile: UserProfile) -> None:
         user_id=user_profile.id,
     )
 
-    send_event(
-        user_profile.realm,
-        dict(type="realm_user", op="update", person=payload),
-        active_user_ids(user_profile.realm_id),
+    event = dict(type="realm_user", op="update", person=payload)
+    transaction.on_commit(
+        lambda: send_event(
+            user_profile.realm,
+            event,
+            active_user_ids(user_profile.realm_id),
+        )
     )
 
 
+@transaction.atomic(savepoint=False)
 def do_change_avatar_fields(
     user_profile: UserProfile,
     avatar_source: str,
@@ -4776,6 +4812,7 @@ def do_change_realm_org_type(
     )
 
 
+@transaction.atomic(savepoint=False)
 def do_change_realm_plan_type(
     realm: Realm, plan_type: int, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -4824,7 +4861,7 @@ def do_change_realm_plan_type(
         "value": plan_type,
         "extra_data": {"upload_quota": realm.upload_quota_bytes()},
     }
-    send_event(realm, event, active_user_ids(realm.id))
+    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
 
 
 @transaction.atomic(durable=True)
@@ -4959,7 +4996,7 @@ def do_change_default_all_public_streams(
         )
 
 
-@transaction.atomic
+@transaction.atomic(durable=True)
 def do_change_user_role(
     user_profile: UserProfile, value: int, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -5007,65 +5044,149 @@ def do_change_can_create_users(user_profile: UserProfile, value: bool) -> None:
     user_profile.save(update_fields=["can_create_users"])
 
 
-def do_change_stream_invite_only(
-    stream: Stream, invite_only: bool, history_public_to_subscribers: Optional[bool] = None
+def send_change_stream_permission_notification(
+    stream: Stream,
+    *,
+    old_policy_name: str,
+    new_policy_name: str,
+    acting_user: UserProfile,
 ) -> None:
-    history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
-        stream.realm,
-        invite_only,
-        history_public_to_subscribers,
-    )
-    stream.invite_only = invite_only
-    stream.history_public_to_subscribers = history_public_to_subscribers
-    stream.is_web_public = False
-    stream.save(update_fields=["invite_only", "history_public_to_subscribers", "is_web_public"])
-    event = dict(
-        op="update",
-        type="stream",
-        property="invite_only",
-        value=invite_only,
-        history_public_to_subscribers=history_public_to_subscribers,
-        is_web_public=False,
-        stream_id=stream.id,
-        name=stream.name,
-    )
-    send_event(stream.realm, event, can_access_stream_user_ids(stream))
+    sender = get_system_bot(settings.NOTIFICATION_BOT, acting_user.realm_id)
+    user_mention = silent_mention_syntax_for_user(acting_user)
 
-
-def do_make_stream_web_public(stream: Stream) -> None:
-    stream.is_web_public = True
-    stream.invite_only = False
-    stream.history_public_to_subscribers = True
-    stream.save(update_fields=["invite_only", "history_public_to_subscribers", "is_web_public"])
-
-    # We reuse "invite_only" stream update API route here because
-    # both are similar events and similar UI updates will be required
-    # by the client to update this property for the user.
-    event = dict(
-        op="update",
-        type="stream",
-        property="invite_only",
-        value=False,
-        history_public_to_subscribers=True,
-        is_web_public=True,
-        stream_id=stream.id,
-        name=stream.name,
-    )
-    send_event(stream.realm, event, can_access_stream_user_ids(stream))
+    with override_language(stream.realm.default_language):
+        notification_string = _(
+            "{user} changed the [access permissions](/help/stream-permissions) "
+            "for this stream from **{old_policy}** to **{new_policy}**."
+        )
+        notification_string = notification_string.format(
+            user=user_mention,
+            old_policy=old_policy_name,
+            new_policy=new_policy_name,
+        )
+        internal_send_stream_message(
+            sender, stream, Realm.STREAM_EVENTS_NOTIFICATION_TOPIC, notification_string
+        )
 
 
 def do_change_stream_permission(
     stream: Stream,
+    *,
     invite_only: Optional[bool] = None,
     history_public_to_subscribers: Optional[bool] = None,
     is_web_public: Optional[bool] = None,
+    acting_user: UserProfile,
 ) -> None:
-    # TODO: Ideally this would be just merged with do_change_stream_invite_only.
+    old_invite_only_value = stream.invite_only
+    old_history_public_to_subscribers_value = stream.history_public_to_subscribers
+    old_is_web_public_value = stream.is_web_public
+
+    # A note on these assertions: It's possible we'd be better off
+    # making all callers of this function pass the full set of
+    # parameters, rather than having default values.  Doing so would
+    # allow us to remove the messy logic below, where we sometimes
+    # ignore the passed parameters.
+    #
+    # But absent such a refactoring, it's important to assert that
+    # we're not requesting an unsupported configurations.
     if is_web_public:
-        do_make_stream_web_public(stream)
+        assert history_public_to_subscribers is not False
+        assert invite_only is not True
+        stream.is_web_public = True
+        stream.invite_only = False
+        stream.history_public_to_subscribers = True
     else:
         assert invite_only is not None
-        do_change_stream_invite_only(stream, invite_only, history_public_to_subscribers)
+        # is_web_public is falsey
+        history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
+            stream.realm,
+            invite_only,
+            history_public_to_subscribers,
+        )
+        stream.invite_only = invite_only
+        stream.history_public_to_subscribers = history_public_to_subscribers
+        stream.is_web_public = False
+
+    with transaction.atomic():
+        stream.save(update_fields=["invite_only", "history_public_to_subscribers", "is_web_public"])
+
+        event_time = timezone_now()
+        if old_invite_only_value != stream.invite_only:
+            RealmAuditLog.objects.create(
+                realm=stream.realm,
+                acting_user=acting_user,
+                modified_stream=stream,
+                event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+                event_time=event_time,
+                extra_data=orjson.dumps(
+                    {
+                        RealmAuditLog.OLD_VALUE: old_invite_only_value,
+                        RealmAuditLog.NEW_VALUE: stream.invite_only,
+                        "property": "invite_only",
+                    }
+                ).decode(),
+            )
+
+        if old_history_public_to_subscribers_value != stream.history_public_to_subscribers:
+            RealmAuditLog.objects.create(
+                realm=stream.realm,
+                acting_user=acting_user,
+                modified_stream=stream,
+                event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+                event_time=event_time,
+                extra_data=orjson.dumps(
+                    {
+                        RealmAuditLog.OLD_VALUE: old_history_public_to_subscribers_value,
+                        RealmAuditLog.NEW_VALUE: stream.history_public_to_subscribers,
+                        "property": "history_public_to_subscribers",
+                    }
+                ).decode(),
+            )
+
+        if old_is_web_public_value != stream.is_web_public:
+            RealmAuditLog.objects.create(
+                realm=stream.realm,
+                acting_user=acting_user,
+                modified_stream=stream,
+                event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+                event_time=event_time,
+                extra_data=orjson.dumps(
+                    {
+                        RealmAuditLog.OLD_VALUE: old_is_web_public_value,
+                        RealmAuditLog.NEW_VALUE: stream.is_web_public,
+                        "property": "is_web_public",
+                    }
+                ).decode(),
+            )
+
+    event = dict(
+        op="update",
+        type="stream",
+        property="invite_only",
+        value=stream.invite_only,
+        history_public_to_subscribers=stream.history_public_to_subscribers,
+        is_web_public=stream.is_web_public,
+        stream_id=stream.id,
+        name=stream.name,
+    )
+    send_event(stream.realm, event, can_access_stream_user_ids(stream))
+
+    old_policy_name = get_stream_permission_policy_name(
+        invite_only=old_invite_only_value,
+        history_public_to_subscribers=old_history_public_to_subscribers_value,
+        is_web_public=old_is_web_public_value,
+    )
+    new_policy_name = get_stream_permission_policy_name(
+        invite_only=stream.invite_only,
+        history_public_to_subscribers=stream.history_public_to_subscribers,
+        is_web_public=stream.is_web_public,
+    )
+    send_change_stream_permission_notification(
+        stream,
+        old_policy_name=old_policy_name,
+        new_policy_name=new_policy_name,
+        acting_user=acting_user,
+    )
 
 
 def send_change_stream_post_policy_notification(
@@ -5230,11 +5351,11 @@ def send_change_stream_description_notification(
     with override_language(stream.realm.default_language):
         notification_string = _(
             "{user} changed the description for this stream.\n\n"
-            "Old description:\n"
+            "* **Old description:**\n"
             "``` quote\n"
             "{old_description}\n"
             "```\n"
-            "New description:\n"
+            "* **New description:**\n"
             "``` quote\n"
             "{new_description}\n"
             "```"
@@ -5308,25 +5429,29 @@ def send_change_stream_message_retention_days_notification(
 
     with override_language(stream.realm.default_language):
         if old_value == Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP["unlimited"]:
-            notification_string = _(
-                "{user} has changed the [message retention period](/help/message-retention-policy) for this stream from "
-                "**Forever** to **{new_value} days**. Messages will be automatically deleted after {new_value} days."
-            )
-            notification_string = notification_string.format(user=user_mention, new_value=new_value)
+            old_retention_period = _("Forever")
+            new_retention_period = f"{new_value} days"
+            summary_line = f"Messages in this stream will now be automatically deleted {new_value} days after they are sent."
         elif new_value == Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP["unlimited"]:
-            notification_string = _(
-                "{user} has changed the [message retention period](/help/message-retention-policy) for this stream from "
-                "**{old_value} days** to **Forever**."
-            )
-            notification_string = notification_string.format(user=user_mention, old_value=old_value)
+            old_retention_period = f"{old_value} days"
+            new_retention_period = _("Forever")
+            summary_line = _("Messages in this stream will now be retained forever.")
         else:
-            notification_string = _(
-                "{user} has changed the [message retention period](/help/message-retention-policy) for this stream from "
-                "**{old_value} days** to **{new_value} days**. Messages will be automatically deleted after {new_value} days."
-            )
-            notification_string = notification_string.format(
-                user=user_mention, old_value=old_value, new_value=new_value
-            )
+            old_retention_period = f"{old_value} days"
+            new_retention_period = f"{new_value} days"
+            summary_line = f"Messages in this stream will now be automatically deleted {new_value} days after they are sent."
+        notification_string = _(
+            "{user} has changed the [message retention period](/help/message-retention-policy) for this stream:\n"
+            "* **Old retention period**: {old_retention_period}\n"
+            "* **New retention period**: {new_retention_period}\n\n"
+            "{summary_line}"
+        )
+        notification_string = notification_string.format(
+            user=user_mention,
+            old_retention_period=old_retention_period,
+            new_retention_period=new_retention_period,
+            summary_line=summary_line,
+        )
         internal_send_stream_message(
             sender, stream, Realm.STREAM_EVENTS_NOTIFICATION_TOPIC, notification_string
         )
@@ -5539,6 +5664,7 @@ def do_change_user_setting(
 
     if setting_name == "timezone":
         assert isinstance(setting_value, str)
+        setting_value = canonicalize_timezone(setting_value)
     else:
         property_type = UserProfile.property_types[setting_name]
         assert isinstance(setting_value, property_type)
@@ -5589,7 +5715,7 @@ def do_change_user_setting(
     transaction.on_commit(lambda: send_event(user_profile.realm, event, [user_profile.id]))
 
     if setting_name in UserProfile.notification_settings_legacy:
-        # This legacy event format is for backwards-compatiblity with
+        # This legacy event format is for backwards-compatibility with
         # clients that don't support the new user_settings event type.
         # We only send this for settings added before Feature level 89.
         legacy_event = {
@@ -5603,7 +5729,7 @@ def do_change_user_setting(
         )
 
     if setting_name in UserProfile.display_settings_legacy or setting_name == "timezone":
-        # This legacy event format is for backwards-compatiblity with
+        # This legacy event format is for backwards-compatibility with
         # clients that don't support the new user_settings event type.
         # We only send this for settings added before Feature level 89.
         legacy_event = {
@@ -5662,7 +5788,7 @@ def notify_default_streams(realm: Realm) -> None:
         type="default_streams",
         default_streams=streams_to_dicts_sorted(get_default_streams_for_realm(realm.id)),
     )
-    send_event(realm, event, active_non_guest_user_ids(realm.id))
+    transaction.on_commit(lambda: send_event(realm, event, active_non_guest_user_ids(realm.id)))
 
 
 def notify_default_stream_groups(realm: Realm) -> None:
@@ -5672,7 +5798,7 @@ def notify_default_stream_groups(realm: Realm) -> None:
             get_default_stream_groups(realm)
         ),
     )
-    send_event(realm, event, active_non_guest_user_ids(realm.id))
+    transaction.on_commit(lambda: send_event(realm, event, active_non_guest_user_ids(realm.id)))
 
 
 def do_add_default_stream(stream: Stream) -> None:
@@ -5683,6 +5809,7 @@ def do_add_default_stream(stream: Stream) -> None:
         notify_default_streams(stream.realm)
 
 
+@transaction.atomic(savepoint=False)
 def do_remove_default_stream(stream: Stream) -> None:
     realm_id = stream.realm_id
     stream_id = stream.id
@@ -5798,7 +5925,7 @@ def get_default_subs(user_profile: UserProfile) -> List[Stream]:
     return get_default_streams_for_realm(user_profile.realm_id)
 
 
-# returns default streams in json serializeable format
+# returns default streams in JSON serializable format
 def streams_to_dicts_sorted(streams: List[Stream]) -> List[Dict[str, Any]]:
     return sorted((stream.to_dict() for stream in streams), key=lambda elt: elt["name"])
 
@@ -6301,6 +6428,7 @@ def maybe_send_resolve_topic_notifications(
     stream: Stream,
     old_topic: str,
     new_topic: str,
+    changed_messages: List[Message],
 ) -> None:
     # Note that topics will have already been stripped in check_update_message.
     #
@@ -6332,6 +6460,14 @@ def maybe_send_resolve_topic_notifications(
         # not a bug with the "resolve topics" feature.
         return
 
+    # Compute the users who either sent or reacted to messages that
+    # were moved via the "resolve topic' action. Only those users
+    # should be eligible for this message being managed as unread.
+    affected_participant_ids = (set(message.sender_id for message in changed_messages)) | set(
+        Reaction.objects.filter(message__in=changed_messages).values_list(
+            "user_profile_id", flat=True
+        )
+    )
     sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
     user_mention = silent_mention_syntax_for_user(user_profile)
     with override_language(stream.realm.default_language):
@@ -6347,6 +6483,7 @@ def maybe_send_resolve_topic_notifications(
             notification_string.format(
                 user=user_mention,
             ),
+            limit_unread_user_ids=affected_participant_ids,
         )
 
 
@@ -6358,6 +6495,7 @@ def send_message_moved_breadcrumbs(
     new_stream: Stream,
     new_topic: Optional[str],
     new_thread_notification_string: Optional[str],
+    changed_messages_count: int,
 ) -> None:
     # Since moving content between streams is highly disruptive,
     # it's worth adding a couple tombstone messages showing what
@@ -6380,6 +6518,7 @@ def send_message_moved_breadcrumbs(
                 new_thread_notification_string.format(
                     old_location=old_topic_link,
                     user=user_mention,
+                    changed_messages_count=changed_messages_count,
                 ),
             )
 
@@ -6393,6 +6532,7 @@ def send_message_moved_breadcrumbs(
                 old_thread_notification_string.format(
                     user=user_mention,
                     new_location=new_topic_link,
+                    changed_messages_count=changed_messages_count,
                 ),
             )
 
@@ -6476,7 +6616,14 @@ def do_update_embedded_data(
     content: Optional[str],
     rendering_result: MessageRenderingResult,
 ) -> None:
-    event: Dict[str, Any] = {"type": "update_message", "message_id": message.id}
+    timestamp = timezone_now()
+    event: Dict[str, Any] = {
+        "type": "update_message",
+        "user_id": None,
+        "edit_timestamp": datetime_to_timestamp(timestamp),
+        "message_id": message.id,
+        "rendering_only": True,
+    }
     changed_messages = [message]
     rendered_content: Optional[str] = None
 
@@ -6512,7 +6659,7 @@ class DeleteMessagesEvent(TypedDict, total=False):
 
 
 # We use transaction.atomic to support select_for_update in the attachment codepath.
-@transaction.atomic
+@transaction.atomic(savepoint=False)
 def do_update_message(
     user_profile: UserProfile,
     target_message: Message,
@@ -6545,6 +6692,7 @@ def do_update_message(
         "user_id": user_profile.id,
         "edit_timestamp": datetime_to_timestamp(timestamp),
         "message_id": target_message.id,
+        "rendering_only": False,
     }
 
     edit_history_event: Dict[str, Any] = {
@@ -6855,7 +7003,7 @@ def do_update_message(
                 # TODO: Guest users don't see the new moved topic
                 # unless breadcrumb message for new stream is
                 # enabled. Excluding these users from receiving this
-                # event helps us avoid a error trackeback for our
+                # event helps us avoid a error traceback for our
                 # clients. We should figure out a way to inform the
                 # guest users of this new topic if sending a 'message'
                 # event for these messages is not an option.
@@ -6879,17 +7027,65 @@ def do_update_message(
 
     if len(changed_messages) > 0 and new_stream is not None and stream_being_edited is not None:
         # Notify users that the topic was moved.
+        changed_messages_count = len(changed_messages)
+
+        if propagate_mode == "change_all":
+            moved_all_visible_messages = True
+        else:
+            # With other propagate modes, if the user in fact moved
+            # all messages in the stream, we want to explain it was a
+            # full-topic move.
+            #
+            # For security model reasons, we don't want to allow a
+            # user to take any action that would leak information
+            # about older messages they cannot access (E.g. the only
+            # remaining messages are in a stream without shared
+            # history). The bulk_access_messages call below addresses
+            # that concern.
+            #
+            # bulk_access_messages is inefficient for this task, since
+            # we just want to do the exists() version of this
+            # query. But it's nice to reuse code, and this bulk
+            # operation is likely cheaper than a `GET /messages`
+            # unless the topic has thousands of messages of history.
+            unmoved_messages = messages_for_topic(
+                stream_being_edited.recipient_id,
+                orig_topic_name,
+            )
+            visible_unmoved_messages = bulk_access_messages(
+                user_profile, unmoved_messages, stream=stream_being_edited
+            )
+            moved_all_visible_messages = len(visible_unmoved_messages) == 0
+
         old_thread_notification_string = None
         if send_notification_to_old_thread:
-            old_thread_notification_string = gettext_lazy(
-                "This topic was moved by {user} to {new_location}"
-            )
+            if moved_all_visible_messages:
+                old_thread_notification_string = gettext_lazy(
+                    "This topic was moved to {new_location} by {user}."
+                )
+            elif changed_messages_count == 1:
+                old_thread_notification_string = gettext_lazy(
+                    "A message was moved from this topic to {new_location} by {user}."
+                )
+            else:
+                old_thread_notification_string = gettext_lazy(
+                    "{changed_messages_count} messages were moved from this topic to {new_location} by {user}."
+                )
 
         new_thread_notification_string = None
         if send_notification_to_new_thread:
-            new_thread_notification_string = gettext_lazy(
-                "This topic was moved here from {old_location} by {user}"
-            )
+            if moved_all_visible_messages:
+                new_thread_notification_string = gettext_lazy(
+                    "This topic was moved here from {old_location} by {user}."
+                )
+            elif changed_messages_count == 1:
+                new_thread_notification_string = gettext_lazy(
+                    "A message was moved here from {old_location} by {user}."
+                )
+            else:
+                new_thread_notification_string = gettext_lazy(
+                    "{changed_messages_count} messages were moved here from {old_location} by {user}."
+                )
 
         send_message_moved_breadcrumbs(
             user_profile,
@@ -6899,6 +7095,7 @@ def do_update_message(
             new_stream,
             topic_name,
             new_thread_notification_string,
+            changed_messages_count,
         )
 
     if (
@@ -6913,6 +7110,7 @@ def do_update_message(
             stream=stream_being_edited,
             old_topic=orig_topic_name,
             new_topic=topic_name,
+            changed_messages=changed_messages,
         )
 
     return len(changed_messages)
@@ -7714,7 +7912,7 @@ def notify_realm_emoji(realm: Realm) -> None:
 
 def check_add_realm_emoji(
     realm: Realm, name: str, author: UserProfile, image_file: IO[bytes]
-) -> Optional[RealmEmoji]:
+) -> RealmEmoji:
     try:
         realm_emoji = RealmEmoji(realm=realm, name=name, author=author)
         realm_emoji.full_clean()
@@ -7737,12 +7935,10 @@ def check_add_realm_emoji(
     finally:
         if not emoji_uploaded_successfully:
             realm_emoji.delete()
-            return None
-        else:
-            realm_emoji.file_name = emoji_file_name
-            realm_emoji.is_animated = is_animated
-            realm_emoji.save(update_fields=["file_name", "is_animated"])
-            notify_realm_emoji(realm_emoji.realm)
+    realm_emoji.file_name = emoji_file_name
+    realm_emoji.is_animated = is_animated
+    realm_emoji.save(update_fields=["file_name", "is_animated"])
+    notify_realm_emoji(realm_emoji.realm)
     return realm_emoji
 
 

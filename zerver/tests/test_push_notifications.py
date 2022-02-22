@@ -8,6 +8,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 from unittest import mock, skipUnless
 from urllib import parse
 
+import aioapns
 import orjson
 import responses
 from django.conf import settings
@@ -76,6 +77,7 @@ from zerver.models import (
     get_realm,
     get_stream,
 )
+from zilencer.models import RemoteZulipServerAuditLog
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import (
@@ -91,13 +93,13 @@ if settings.ZILENCER_ENABLED:
 class BouncerTestCase(ZulipTestCase):
     def setUp(self) -> None:
         self.server_uuid = "6cde5f7a-1f7e-4978-9716-49f69ebfc9fe"
-        server = RemoteZulipServer(
+        self.server = RemoteZulipServer(
             uuid=self.server_uuid,
             api_key="magic_secret_api_key",
             hostname="demo.example.com",
             last_updated=now(),
         )
-        server.save()
+        self.server.save()
         super().setUp()
 
     def tearDown(self) -> None:
@@ -164,7 +166,17 @@ class PushBouncerNotificationTest(BouncerTestCase):
         )
         self.assert_json_error(result, "Must validate with valid Zulip server API key")
 
-    def test_register_remote_push_user_paramas(self) -> None:
+        # Try with deactivated remote servers
+        self.server.deactivated = True
+        self.server.save()
+        result = self.uuid_post(self.server_uuid, endpoint, self.get_generic_payload("unregister"))
+        self.assert_json_error_contains(
+            result,
+            "The mobile push notification service registration for your server has been deactivated",
+            401,
+        )
+
+    def test_register_remote_push_user_params(self) -> None:
         token = "111222"
         user_id = 11
         token_kind = PushDeviceToken.GCM
@@ -267,6 +279,16 @@ class PushBouncerNotificationTest(BouncerTestCase):
             result,
             f"Zulip server auth failure: {credentials_uuid} is not registered -- did you run `manage.py register_server`?",
             status_code=401,
+        )
+
+        # Try with deactivated remote servers
+        self.server.deactivated = True
+        self.server.save()
+        result = self.uuid_post(self.server_uuid, endpoint, self.get_generic_payload("register"))
+        self.assert_json_error_contains(
+            result,
+            "The mobile push notification service registration for your server has been deactivated",
+            401,
         )
 
     def test_remote_push_user_endpoints(self) -> None:
@@ -1094,7 +1116,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         mock_send_android.assert_not_called()
 
     def test_deleted_message(self) -> None:
-        """Simulates the race where message is deleted before handlingx push notifications"""
+        """Simulates the race where message is deleted before handling push notifications"""
         user_profile = self.example_user("hamlet")
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(
@@ -1457,11 +1479,14 @@ class TestAPNs(PushNotificationTest):
 
         zerver.lib.push_notifications.get_apns_context.cache_clear()
         try:
-            with self.settings(APNS_CERT_FILE="/foo.pem"), mock.patch("aioapns.APNs") as mock_apns:
+            with self.settings(APNS_CERT_FILE="/foo.pem"), mock.patch(
+                "ssl.SSLContext.load_cert_chain"
+            ) as mock_load_cert_chain:
                 apns_context = get_apns_context()
                 assert apns_context is not None
                 try:
-                    self.assertEqual(mock_apns.return_value, apns_context.apns)
+                    mock_load_cert_chain.assert_called_once_with("/foo.pem")
+                    assert apns_context.apns.pool.loop == apns_context.loop
                 finally:
                     apns_context.loop.close()
         finally:
@@ -1514,8 +1539,6 @@ class TestAPNs(PushNotificationTest):
                 )
 
     def test_http_retry_eventually_fails(self) -> None:
-        import aioapns
-
         self.setup_apns_tokens()
         with self.mock_apns() as apns_context, self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
@@ -1696,6 +1719,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "sender_email": self.sender.email,
                     "sender_id": self.sender.id,
                     "stream": get_display_recipient(message.recipient),
+                    "stream_id": stream.id,
                     "topic": message.topic_name(),
                     "server": settings.EXTERNAL_HOST,
                     "realm_id": self.sender.realm.id,
@@ -1726,6 +1750,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "sender_email": self.sender.email,
                     "sender_id": self.sender.id,
                     "stream": get_display_recipient(message.recipient),
+                    "stream_id": stream.id,
                     "topic": message.topic_name(),
                     "server": settings.EXTERNAL_HOST,
                     "realm_id": self.sender.realm.id,
@@ -1759,6 +1784,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "sender_email": self.sender.email,
                     "sender_id": self.sender.id,
                     "stream": get_display_recipient(message.recipient),
+                    "stream_id": stream.id,
                     "topic": message.topic_name(),
                     "server": settings.EXTERNAL_HOST,
                     "realm_id": self.sender.realm.id,
@@ -1793,6 +1819,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "sender_email": self.sender.email,
                     "sender_id": self.sender.id,
                     "stream": get_display_recipient(message.recipient),
+                    "stream_id": stream.id,
                     "topic": message.topic_name(),
                     "server": settings.EXTERNAL_HOST,
                     "realm_id": self.sender.realm.id,
@@ -1880,6 +1907,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "sender_avatar_url": absolute_avatar_url(message.sender),
             "recipient_type": "stream",
             "stream": get_display_recipient(message.recipient),
+            "stream_id": stream.id,
             "topic": message.topic_name(),
         }
 
@@ -1974,6 +2002,7 @@ class TestGetGCMPayload(PushNotificationTest):
                 "recipient_type": "stream",
                 "topic": "Test topic",
                 "stream": "Denmark",
+                "stream_id": stream.id,
             },
         )
         self.assertDictEqual(
@@ -2011,6 +2040,7 @@ class TestGetGCMPayload(PushNotificationTest):
                 "recipient_type": "stream",
                 "topic": "Test topic",
                 "stream": "Denmark",
+                "stream_id": stream.id,
             },
         )
         self.assertDictEqual(
@@ -2269,7 +2299,7 @@ class GCMSendTest(PushNotificationTest):
             )
 
     def test_json_request_raises_ioerror(self, mock_gcm: mock.MagicMock) -> None:
-        mock_gcm.json_request.side_effect = IOError("error")
+        mock_gcm.json_request.side_effect = OSError("error")
         with self.assertLogs("zerver.lib.push_notifications", level="WARNING") as logger:
             send_android_push_notification_to_user(self.user_profile, {}, {})
             self.assertIn(
@@ -2465,6 +2495,44 @@ class TestPushNotificationsContent(ZulipTestCase):
 
 @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
 class PushBouncerSignupTest(ZulipTestCase):
+    def test_deactivate_remote_server(self) -> None:
+        zulip_org_id = str(uuid.uuid4())
+        zulip_org_key = get_random_string(64)
+        request = dict(
+            zulip_org_id=zulip_org_id,
+            zulip_org_key=zulip_org_key,
+            hostname="example.com",
+            contact_email="server-admin@example.com",
+        )
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_success(result)
+        server = RemoteZulipServer.objects.get(uuid=zulip_org_id)
+        self.assertEqual(server.hostname, "example.com")
+        self.assertEqual(server.contact_email, "server-admin@example.com")
+
+        request = dict(zulip_org_id=zulip_org_id, zulip_org_key=zulip_org_key)
+        result = self.uuid_post(
+            zulip_org_id, "/api/v1/remotes/server/deactivate", request, subdomain=""
+        )
+        self.assert_json_success(result)
+
+        server = RemoteZulipServer.objects.get(uuid=zulip_org_id)
+        remote_realm_audit_log = RemoteZulipServerAuditLog.objects.filter(
+            event_type=RealmAuditLog.REMOTE_SERVER_DEACTIVATED
+        ).last()
+        assert remote_realm_audit_log is not None
+        self.assertTrue(server.deactivated)
+
+        # Now test that trying to deactivate again reports the right error.
+        result = self.uuid_post(
+            zulip_org_id, "/api/v1/remotes/server/deactivate", request, subdomain=""
+        )
+        self.assert_json_error(
+            result,
+            "The mobile push notification service registration for your server has been deactivated",
+            status_code=401,
+        )
+
     def test_push_signup_invalid_host(self) -> None:
         zulip_org_id = str(uuid.uuid4())
         zulip_org_key = get_random_string(64)

@@ -101,20 +101,7 @@ test("basic_get_suggestions_for_spectator", ({override_rewire}) => {
 
     const query = "";
     const suggestions = get_suggestions("", query);
-    assert.deepEqual(suggestions.strings, [
-        "",
-        "streams:public",
-        "is:private",
-        "is:starred",
-        "is:mentioned",
-        "is:alerted",
-        "is:unread",
-        "is:resolved",
-        "has:link",
-        "has:image",
-        "has:attachment",
-        // "sender:myself@zulip.com",
-    ]);
+    assert.deepEqual(suggestions.strings, ["", "has:link", "has:image", "has:attachment"]);
     page_params.is_spectator = false;
 });
 
@@ -759,6 +746,49 @@ test("topic_suggestions", ({override, override_rewire}) => {
     suggestions = get_suggestions("topic:REXX stream:devel", "topic:");
     expected = ["topic:"];
     assert.deepEqual(suggestions.strings, expected);
+});
+
+test("topic_suggestions (limits)", () => {
+    let candidate_topics = [];
+
+    function assert_result(guess, expected_topics) {
+        assert.deepEqual(
+            search.get_topic_suggestions_from_candidates({candidate_topics, guess}),
+            expected_topics,
+        );
+    }
+
+    assert_result("", []);
+    assert_result("zzz", []);
+
+    candidate_topics = ["a", "b", "c"];
+    assert_result("", ["a", "b", "c"]);
+    assert_result("b", ["b"]);
+    assert_result("z", []);
+
+    candidate_topics = [
+        "a1",
+        "a2",
+        "b1",
+        "b2",
+        "a3",
+        "a4",
+        "a5",
+        "c1",
+        "a6",
+        "a7",
+        "a8",
+        "c2",
+        "a9",
+        "a10",
+        "a11",
+        "a12",
+    ];
+    // We max out at 10 topics, so as not to overwhelm the user.
+    assert_result("", ["a1", "a2", "b1", "b2", "a3", "a4", "a5", "c1", "a6", "a7"]);
+    assert_result("a", ["a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "a9", "a10"]);
+    assert_result("b", ["b1", "b2"]);
+    assert_result("z", []);
 });
 
 test("whitespace_glitch", ({override_rewire}) => {

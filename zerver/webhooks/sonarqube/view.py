@@ -129,4 +129,4 @@ def api_sonarqube_webhook(
         topic = project
         message = render_body_without_branch(payload)
     check_send_webhook_message(request, user_profile, topic, message)
-    return json_success()
+    return json_success(request)

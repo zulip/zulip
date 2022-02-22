@@ -27,12 +27,12 @@ def api_trello_webhook(
     action_type = payload["action"].get("type")
     message = get_subject_and_body(payload, action_type)
     if message is None:
-        return json_success()
+        return json_success(request)
     else:
         subject, body = message
 
     check_send_webhook_message(request, user_profile, subject, body)
-    return json_success()
+    return json_success(request)
 
 
 def get_subject_and_body(payload: Mapping[str, Any], action_type: str) -> Optional[Tuple[str, str]]:

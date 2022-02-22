@@ -309,7 +309,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         realm = get_realm("zulip")
         users = self.active_human_users(realm)
 
-        # Check that all users without an a UserActivityInterval entry are considered
+        # Check that all users without a UserActivityInterval entry are considered
         # inactive users and get enqueued.
         with mock.patch("zerver.worker.queue_processors.bulk_handle_digest_email") as queue_mock:
             _enqueue_emails_for_realm(realm, cutoff)
@@ -425,7 +425,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.assertEqual(stream_count, 0)
         self.assertEqual(stream_info["html"], [])
 
-        # but they do if we make it web public
+        # but they do if we make it web-public
         stream.is_web_public = True
         stream.save()
 

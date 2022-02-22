@@ -41,7 +41,7 @@ export function get_user_circle_class(user_id) {
         case "active":
             return "user_circle_green";
         case "idle":
-            return "user_circle_orange";
+            return "user_circle_idle";
         case "away_them":
         case "away_me":
             return "user_circle_empty_line";
@@ -265,25 +265,6 @@ export function get_items_for_users(user_ids) {
     const user_info = user_ids.map((user_id) => info_for(user_id));
     compose_fade_users.update_user_info(user_info, fade_config);
     return user_info;
-}
-
-export function huddle_fraction_present(huddle) {
-    const user_ids = huddle.split(",").map((s) => Number.parseInt(s, 10));
-
-    let num_present = 0;
-
-    for (const user_id of user_ids) {
-        if (presence.is_active(user_id)) {
-            num_present += 1;
-        }
-    }
-
-    if (num_present === user_ids.length) {
-        return 1;
-    } else if (num_present !== 0) {
-        return 0.5;
-    }
-    return undefined;
 }
 
 function user_is_recently_active(user_id) {

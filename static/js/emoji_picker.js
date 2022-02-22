@@ -195,7 +195,7 @@ export function hide_emoji_popover() {
         // Re-enable clicking events for other elements after closing
         // the popover.  This is the inverse of the hack of in the
         // handler that opens the "user status modal" emoji picker.
-        $(".app, .header, .modal-backdrop, #set_user_status_modal").css("pointer-events", "all");
+        $(".app, .header, .modal__overlay, #set_user_status_modal").css("pointer-events", "all");
     }
     if (reactions_popped()) {
         current_message_emoji_popover_elem.popover("destroy");
@@ -563,7 +563,7 @@ export function emoji_select_tab(elt) {
     // Handles the corner case of the last category being
     // smaller than half of the emoji picker height.
     if (elt_height + scrolltop === scrollheight) {
-        currently_selected = section_head_offsets[section_head_offsets.length - 1].section;
+        currently_selected = section_head_offsets.at(-1).section;
     }
     // Handles the corner case of the scrolling back to top.
     if (scrolltop === 0) {
@@ -779,7 +779,7 @@ export function register_click_handlers() {
         // status modal, we need this hack to make clicking outside
         // the emoji picker only close the emoji picker, and not the
         // whole user status modal.
-        $(".app, .header, .modal-backdrop, #set_user_status_modal").css("pointer-events", "none");
+        $(".app, .header, .modal__overlay, #set_user_status_modal").css("pointer-events", "none");
     });
 
     $(document).on("click", ".emoji-popover-emoji.status_emoji", function (e) {

@@ -247,11 +247,11 @@ class Realm(models.Model):
     disallow_disposable_email_addresses: bool = models.BooleanField(default=True)
     authentication_methods: BitHandler = BitField(
         flags=AUTHENTICATION_FLAGS,
-        default=2 ** 31 - 1,
+        default=2**31 - 1,
     )
 
-    # Allow users to access web public streams without login. This
-    # setting also controls API access of web public streams.
+    # Allow users to access web-public streams without login. This
+    # setting also controls API access of web-public streams.
     enable_spectator_access: bool = models.BooleanField(default=False)
 
     # Whether the organization has enabled inline image and URL previews.
@@ -546,7 +546,7 @@ class Realm(models.Model):
         choices=[(t["id"], t["name"]) for t in ORG_TYPES.values()],
     )
 
-    UPGRADE_TEXT_STANDARD = gettext_lazy("Available on Zulip Standard. Upgrade to access.")
+    UPGRADE_TEXT_STANDARD = gettext_lazy("Available on Zulip Cloud Standard. Upgrade to access.")
     # plan_type controls various features around resource/feature
     # limitations for a Zulip organization on multi-tenant installations
     # like Zulip Cloud.
@@ -924,7 +924,7 @@ class Realm(models.Model):
         If any of the streams in the realm is web
         public and `enable_spectator_access` and
         settings.WEB_PUBLIC_STREAMS_ENABLED is True,
-        then the Realm is web public.
+        then the Realm is web-public.
         """
         return self.has_web_public_streams()
 
@@ -2239,6 +2239,41 @@ class Stream(models.Model):
     # Foreign key to the Recipient object for STREAM type messages to this stream.
     recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
 
+    # Various permission policy configurations
+    PERMISSION_POLICIES: Dict[str, Dict[str, Any]] = {
+        "web_public": {
+            "invite_only": False,
+            "history_public_to_subscribers": True,
+            "is_web_public": True,
+            "policy_name": gettext_lazy("Web-public"),
+        },
+        "public": {
+            "invite_only": False,
+            "history_public_to_subscribers": True,
+            "is_web_public": False,
+            "policy_name": gettext_lazy("Public"),
+        },
+        "private_shared_history": {
+            "invite_only": True,
+            "history_public_to_subscribers": True,
+            "is_web_public": False,
+            "policy_name": gettext_lazy("Private, shared history"),
+        },
+        "private_protected_history": {
+            "invite_only": True,
+            "history_public_to_subscribers": False,
+            "is_web_public": False,
+            "policy_name": gettext_lazy("Private, protected history"),
+        },
+        # Public streams with protected history are currently only
+        # available in Zephyr realms
+        "public_protected_history": {
+            "invite_only": False,
+            "history_public_to_subscribers": False,
+            "is_web_public": False,
+            "policy_name": gettext_lazy("Public, protected history"),
+        },
+    }
     invite_only: Optional[bool] = models.BooleanField(null=True, default=False)
     history_public_to_subscribers: bool = models.BooleanField(default=False)
 
@@ -4180,7 +4215,7 @@ class Service(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     name: str = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH)
     # Bot user corresponding to the Service.  The bot_type of this user
-    # deterines the type of service.  If non-bot services are added later,
+    # determines the type of service.  If non-bot services are added later,
     # user_profile can also represent the owner of the Service.
     user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     base_url: str = models.TextField()

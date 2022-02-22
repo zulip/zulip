@@ -6,19 +6,7 @@
           data-user-id="{{user_id}}"
           data-name="{{name}}">
             <span class="user-name">{{name}}</span>
-            {{#if status_emoji_info}}
-                {{#if status_emoji_info.emoji_alt_code}}
-                    <div class="emoji_alt_code">&nbsp:{{status_emoji_info.emoji_name}}:</div>
-                {{else}}
-                    {{#if status_emoji_info.still_url}}
-                    <img src="{{status_emoji_info.still_url}}" class="emoji status_emoji" data-animated-url="{{status_emoji_info.url}}" data-still-url="{{status_emoji_info.still_url}}" />
-                    {{else if status_emoji_info.url}}
-                    <img src="{{status_emoji_info.url}}" class="emoji status_emoji" data-animated-url="{{status_emoji_info.url}}" data-still-url="{{status_emoji_info.still_url}}" />
-                    {{else}}
-                    <div class="emoji status_emoji emoji-{{status_emoji_info.emoji_code}}"></div>
-                    {{/if}}
-                {{/if}}
-            {{/if}}
+            {{> status_emoji status_emoji_info}}
         </a>
         <span class="unread_count">{{#if num_unread}}{{num_unread}}{{/if}}</span>
     </div>

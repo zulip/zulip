@@ -208,7 +208,7 @@ class MarkdownDirectoryView(ApiURLView):
                 context["OPEN_GRAPH_TITLE"] = title_base
             request_notes = RequestNotes.get_notes(self.request)
             request_notes.placeholder_open_graph_description = (
-                f"REPLACMENT_OPEN_GRAPH_DESCRIPTION_{int(2**24 * random.random())}"
+                f"REPLACEMENT_OPEN_GRAPH_DESCRIPTION_{int(2**24 * random.random())}"
             )
             context["OPEN_GRAPH_DESCRIPTION"] = request_notes.placeholder_open_graph_description
 

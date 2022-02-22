@@ -46,7 +46,7 @@ export function wrap_code(code, lang) {
     // the `/shared` folder. To handle such a case we check if pygments data is empty and fallback to
     // using the default header if it is.
     if (lang !== undefined && lang !== "" && Object.keys(pygments_data).length > 0) {
-        const code_language = _.get(pygments_data, [lang, "pretty_name"], lang);
+        const code_language = pygments_data[lang]?.pretty_name ?? lang;
         header = `<div class="codehilite" data-code-language="${_.escape(
             code_language,
         )}"><pre><span></span><code>`;
@@ -209,18 +209,18 @@ export function process_fenced_code(content) {
     handler_stack.push(current_handler);
 
     for (const line of input) {
-        const handler = handler_stack[handler_stack.length - 1];
+        const handler = handler_stack.at(-1);
         handler.handle_line(line);
     }
 
     // Clean up all trailing blocks by letting them
     // insert closing fences
     while (handler_stack.length !== 0) {
-        const handler = handler_stack[handler_stack.length - 1];
+        const handler = handler_stack.at(-1);
         handler.done();
     }
 
-    if (output.length > 2 && output[output.length - 2] !== "") {
+    if (output.length > 2 && output.at(-2) !== "") {
         output.push("");
     }
 

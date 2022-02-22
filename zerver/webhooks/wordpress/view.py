@@ -58,4 +58,4 @@ def api_wordpress_webhook(
     topic = "WordPress notification"
 
     check_send_webhook_message(request, user_profile, topic, data, hook)
-    return json_success()
+    return json_success(request)

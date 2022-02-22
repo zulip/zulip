@@ -52,7 +52,7 @@ def add_realm_playground(
         )
     except ValidationError as e:
         raise ValidationFailureError(e)
-    return json_success({"id": playground_id})
+    return json_success(request, data={"id": playground_id})
 
 
 @require_realm_admin
@@ -62,4 +62,4 @@ def delete_realm_playground(
 ) -> HttpResponse:
     realm_playground = access_playground_by_id(user_profile.realm, playground_id)
     do_remove_realm_playground(user_profile.realm, realm_playground)
-    return json_success()
+    return json_success(request)

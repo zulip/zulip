@@ -7,13 +7,13 @@ import sys
 import time
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+from scripts.lib.supervisor import list_supervisor_processes
 from scripts.lib.zulip_tools import (
     ENDC,
     OKGREEN,
     WARNING,
     has_application_server,
     has_process_fts_updates,
-    list_supervisor_processes,
 )
 
 deploy_path = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
@@ -48,8 +48,10 @@ if has_application_server():
         # if they currently exist according to `supervisorctl`.
         services.extend(
             list_supervisor_processes(
-                "zulip_deliver_scheduled_emails",
-                "zulip_deliver_scheduled_messages",
+                [
+                    "zulip_deliver_scheduled_emails",
+                    "zulip_deliver_scheduled_messages",
+                ]
             ),
         )
 

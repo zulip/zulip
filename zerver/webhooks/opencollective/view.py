@@ -36,7 +36,7 @@ def api_opencollective_webhook(
     # send the message
     check_send_webhook_message(request, user_profile, topic, body)
 
-    return json_success()
+    return json_success(request)
 
 
 def get_name(payload: Dict[str, Any]) -> str:

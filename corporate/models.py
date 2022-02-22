@@ -273,7 +273,7 @@ class CustomerPlan(models.Model):
     @property
     def name(self) -> str:
         return {
-            CustomerPlan.STANDARD: "Zulip Standard",
+            CustomerPlan.STANDARD: "Zulip Cloud Standard",
             CustomerPlan.PLUS: "Zulip Plus",
             CustomerPlan.ENTERPRISE: "Zulip Enterprise",
         }[self.tier]

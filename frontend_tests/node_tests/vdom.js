@@ -232,7 +232,7 @@ run_test("eq_array easy cases", () => {
     assert.equal(vdom.eq_array(x, z, eq), false);
 });
 
-run_test("eq_array elementwise", () => {
+run_test("eq_array element-wise", () => {
     const a = [51, 32, 93];
     const b = [31, 52, 43];
     const eq = (a, b) => a % 10 === b % 10;

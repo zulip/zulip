@@ -4,8 +4,8 @@ import * as emoji from "../shared/js/emoji";
 import render_set_status_overlay from "../templates/set_status_overlay.hbs";
 import render_status_emoji_selector from "../templates/status_emoji_selector.hbs";
 
-import {$t} from "./i18n";
-import * as overlays from "./overlays";
+import * as dialog_widget from "./dialog_widget";
+import {$t, $t_html} from "./i18n";
 import * as people from "./people";
 import * as user_status from "./user_status";
 
@@ -21,7 +21,7 @@ export function input_field() {
 }
 
 export function submit_button() {
-    return $("#set_user_status_modal .set_user_status");
+    return $("#set_user_status_modal .dialog_submit_button");
 }
 
 export function open_user_status_modal() {
@@ -31,24 +31,18 @@ export function open_user_status_modal() {
         default_status_messages_and_emoji_info,
         selected_emoji_info,
     });
-    $(".app").append(rendered_set_status_overlay);
 
-    overlays.open_modal("#set_user_status_modal", {autoremove: true});
-
-    const old_status_text = user_status.get_status_text(user_id);
-    const old_emoji_info = user_status.get_status_emoji(user_id) || {};
-    set_selected_emoji_info(old_emoji_info);
-    const field = input_field();
-    field.val(old_status_text);
-    field.trigger("select");
-    toggle_clear_message_button();
-
-    const button = submit_button();
-    button.prop("disabled", true);
-}
-
-export function close_user_status_modal() {
-    overlays.close_modal("#set_user_status_modal");
+    dialog_widget.launch({
+        html_heading: $t_html({defaultMessage: "Set status"}),
+        html_body: rendered_set_status_overlay,
+        html_submit_button: $t_html({defaultMessage: "Save"}),
+        id: "set_user_status_modal",
+        on_click: submit_new_status,
+        post_render: user_status_post_render,
+        on_shown: () => {
+            input_field().trigger("focus");
+        },
+    });
 }
 
 export function submit_new_status() {
@@ -64,7 +58,7 @@ export function submit_new_status() {
         old_emoji_info.reaction_type === selected_emoji_info.reaction_type &&
         old_emoji_info.emoji_code === selected_emoji_info.emoji_code
     ) {
-        close_user_status_modal();
+        dialog_widget.close_modal();
         return;
     }
 
@@ -74,7 +68,7 @@ export function submit_new_status() {
         emoji_code: selected_emoji_info.emoji_code || "",
         reaction_type: selected_emoji_info.reaction_type || "",
         success() {
-            close_user_status_modal();
+            dialog_widget.close_modal();
         },
     });
 }
@@ -126,6 +120,51 @@ function rebuild_status_emoji_selector_ui(selected_emoji_info) {
     $("#set_user_status_modal .status_emoji_wrapper").html(rendered_status_emoji_selector);
 }
 
+function user_status_post_render() {
+    const user_id = people.my_current_user_id();
+    const old_status_text = user_status.get_status_text(user_id);
+    const old_emoji_info = user_status.get_status_emoji(user_id) || {};
+    set_selected_emoji_info(old_emoji_info);
+    const field = input_field();
+    field.val(old_status_text);
+    toggle_clear_message_button();
+
+    const button = submit_button();
+    button.prop("disabled", true);
+
+    $("#set_user_status_modal .user-status-value").on("click", (event) => {
+        event.stopPropagation();
+        const user_status_value = $(event.currentTarget).text().trim();
+        $("input.user_status").val(user_status_value);
+
+        const emoji_info = default_status_messages_and_emoji_info.find(
+            (status) => status.status_text === user_status_value,
+        ).emoji;
+        set_selected_emoji_info(emoji_info);
+        toggle_clear_message_button();
+        update_button();
+    });
+
+    input_field().on("keypress", (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+
+            submit_new_status();
+        }
+    });
+
+    input_field().on("keyup", () => {
+        update_button();
+        toggle_clear_message_button();
+    });
+
+    $("#clear_status_message_button").on("click", () => {
+        clear_message();
+        set_selected_emoji_info();
+        update_button();
+    });
+}
+
 export function initialize() {
     default_status_messages_and_emoji_info = [
         {
@@ -149,44 +188,4 @@ export function initialize() {
             emoji: emoji.get_emoji_details_by_name("house"),
         },
     ];
-    $("body").on("click", ".user-status-value", (event) => {
-        event.stopPropagation();
-        const user_status_value = $(event.currentTarget).text().trim();
-        $("input.user_status").val(user_status_value);
-
-        const emoji_info = default_status_messages_and_emoji_info.find(
-            (status) => status.status_text === user_status_value,
-        ).emoji;
-        set_selected_emoji_info(emoji_info);
-        toggle_clear_message_button();
-        update_button();
-    });
-
-    $("body").on("click", "#set_user_status_modal .set_user_status", () => {
-        submit_new_status();
-    });
-
-    $("body").on("shown.bs.modal", "#set_user_status_modal", () => {
-        const field = input_field();
-        field.trigger("focus");
-    });
-
-    $("body").on("keypress", "#set_user_status_modal .user_status", (event) => {
-        if (event.key === "Enter") {
-            event.preventDefault();
-
-            submit_new_status();
-        }
-    });
-
-    $("body").on("keyup", "#set_user_status_modal input.user_status", () => {
-        update_button();
-        toggle_clear_message_button();
-    });
-
-    $("body").on("click", "#clear_status_message_button", () => {
-        clear_message();
-        set_selected_emoji_info();
-        update_button();
-    });
 }

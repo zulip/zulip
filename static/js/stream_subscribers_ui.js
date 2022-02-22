@@ -196,17 +196,23 @@ export function remove_user_from_stream(user_id, sub, success, failure) {
     });
 }
 
+export function get_pill_user_ids() {
+    const user_ids = user_pill.get_user_ids(pill_widget);
+    const stream_user_ids = stream_pill.get_user_ids(pill_widget);
+    const group_user_ids = user_group_pill.get_user_ids(pill_widget);
+    return [...user_ids, ...stream_user_ids, ...group_user_ids];
+}
+
 function submit_add_subscriber_form(stream_id) {
     const sub = get_sub(stream_id);
     if (!sub) {
         return;
     }
 
-    let user_ids = user_pill.get_user_ids(pill_widget);
-    user_ids = user_ids.concat(stream_pill.get_user_ids(pill_widget));
-    user_ids = user_ids.concat(user_group_pill.get_user_ids(pill_widget));
+    const pill_user_ids = get_pill_user_ids();
+
     const deactivated_users = new Set();
-    user_ids = user_ids.filter((user_id) => {
+    const active_user_ids = pill_user_ids.filter((user_id) => {
         if (!people.is_person_active(user_id)) {
             deactivated_users.add(user_id);
             return false;
@@ -214,13 +220,13 @@ function submit_add_subscriber_form(stream_id) {
         return true;
     });
 
-    user_ids = new Set(user_ids);
+    const user_id_set = new Set(active_user_ids);
 
-    if (user_ids.has(page_params.user_id) && sub.subscribed) {
+    if (user_id_set.has(page_params.user_id) && sub.subscribed) {
         // We don't want to send a request to subscribe ourselves
         // if we are already subscribed to this stream. This
         // case occurs when creating user pills from a stream.
-        user_ids.delete(page_params.user_id);
+        user_id_set.delete(page_params.user_id);
     }
     let ignored_deactivated_users;
     if (deactivated_users.size > 0) {
@@ -229,7 +235,7 @@ function submit_add_subscriber_form(stream_id) {
             people.get_by_user_id(user_id),
         );
     }
-    if (user_ids.size === 0) {
+    if (user_id_set.size === 0) {
         show_stream_subscription_request_result({
             message: $t({defaultMessage: "No user to subscribe."}),
             add_class: "text-error",
@@ -238,7 +244,8 @@ function submit_add_subscriber_form(stream_id) {
         });
         return;
     }
-    user_ids = Array.from(user_ids);
+
+    const user_ids = Array.from(user_id_set);
 
     function invite_success(data) {
         pill_widget.clear();

@@ -24,7 +24,7 @@ from zerver.models import UserProfile, validate_attachment_request
 def serve_s3(request: HttpRequest, url_path: str, url_only: bool) -> HttpResponse:
     url = get_signed_upload_url(url_path)
     if url_only:
-        return json_success(dict(url=url))
+        return json_success(request, data=dict(url=url))
 
     return redirect(url)
 
@@ -36,7 +36,7 @@ def serve_local(request: HttpRequest, path_id: str, url_only: bool) -> HttpRespo
 
     if url_only:
         url = generate_unauthed_file_access_url(path_id)
-        return json_success(dict(url=url))
+        return json_success(request, data=dict(url=url))
 
     # Here we determine whether a browser should treat the file like
     # an attachment (and thus clicking a link to it should download)
@@ -129,4 +129,4 @@ def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     check_upload_within_quota(user_profile.realm, file_size)
 
     uri = upload_message_image_from_request(request, user_file, user_profile)
-    return json_success({"uri": uri})
+    return json_success(request, data={"uri": uri})

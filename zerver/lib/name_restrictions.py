@@ -102,7 +102,7 @@ ZULIP_RESERVED_SUBDOMAINS = {
     "open",
     "code",
     "license",
-    # intership programs
+    # internship programs
     "intern",
     "outreachy",
     "gsoc",

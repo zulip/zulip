@@ -99,6 +99,7 @@ mock_esm("../../static/js/muted_topics", {
 });
 mock_esm("../../static/js/narrow", {
     set_narrow_title: noop,
+    hide_mark_as_read_turned_off_banner: noop,
 });
 mock_esm("../../static/js/recent_senders", {
     get_topic_recent_senders: () => [1, 2],
@@ -911,7 +912,7 @@ test("test_topic_edit", ({override, override_rewire}) => {
     assert.equal(all_topics.get(get_topic_key(stream2, topic1)), undefined);
     verify_topic_data(all_topics, stream3, topic9, messages[0].id, true);
 
-    // Message was moveed to a deleted stream, hence hidden regardless of filter.
+    // Message was moved to a deleted stream, hence hidden regardless of filter.
     messages[0].stream_id = stream5;
     messages[0].topic = topic8;
     rt.process_topic_edit(stream3, topic9, topic8, stream5);

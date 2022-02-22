@@ -30,4 +30,4 @@ def api_homeassistant_webhook(
     check_send_webhook_message(request, user_profile, topic, body)
 
     # return json result
-    return json_success()
+    return json_success(request)

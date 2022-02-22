@@ -14,6 +14,7 @@ def backfill_user_deleted_logs(apps: StateApps, schema_editor: DatabaseSchemaEdi
         is_mirror_dummy=True, is_active=False, delivery_email__regex=r"^deleteduser\d+@.+"
     ):
         entry = RealmAuditLog(
+            realm_id=user_profile.realm_id,
             modified_user=user_profile,
             acting_user=user_profile,
             event_type=RealmAuditLog.USER_DELETED,

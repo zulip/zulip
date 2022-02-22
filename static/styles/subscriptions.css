@@ -522,6 +522,10 @@ h4.stream_setting_subsection_title {
                 line-height: 1;
                 margin: 9px 0;
                 font-weight: 600;
+
+                .large-icon {
+                    display: inline-block;
+                }
             }
         }
 
@@ -907,6 +911,8 @@ h4.stream_setting_subsection_title {
 
             &.hash::after {
                 top: 1px;
+                font-size: 1.09em;
+                font-weight: 800;
             }
         }
 
@@ -967,8 +973,6 @@ h4.stream_setting_subsection_title {
     .hash::after {
         position: relative;
         content: "#";
-        font-size: 1.09em;
-        font-weight: 800;
     }
 
     .settings {
