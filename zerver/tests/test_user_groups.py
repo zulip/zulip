@@ -302,7 +302,6 @@ class UserGroupAPITestCase(UserGroupTestCase):
         payload = dict(
             type="stream",
             to=stream_name,
-            client="test suite",
             topic="whatever",
             content=content_with_group_mention,
         )
