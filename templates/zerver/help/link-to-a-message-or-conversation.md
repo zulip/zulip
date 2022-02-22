@@ -25,7 +25,7 @@ The easiest way to link to a stream or topic is:
 
 {end_tabs}
 
-Alternately, it is possible to manually format stream and topic links:
+Alternatively, it is possible to manually format stream and topic links:
 
 ```
 Stream: #**stream name**
