@@ -380,7 +380,6 @@ class TestMissedMessages(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "client": "website",
                 "to": hamlet.email,
             },
         )

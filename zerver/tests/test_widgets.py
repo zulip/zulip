@@ -65,7 +65,6 @@ class WidgetContentTestCase(ZulipTestCase):
         payload = dict(
             type="stream",
             to=stream_name,
-            client="test suite",
             topic="whatever",
             content="whatever",
         )
@@ -122,7 +121,6 @@ class WidgetContentTestCase(ZulipTestCase):
         payload = dict(
             type="stream",
             to=stream_name,
-            client="test suite",
             topic="whatever",
             content=content,
             widget_content=orjson.dumps(widget_content).decode(),
@@ -153,7 +151,6 @@ class WidgetContentTestCase(ZulipTestCase):
         payload = dict(
             type="stream",
             to=stream_name,
-            client="test suite",
             topic="whatever",
             content=content,
         )
@@ -182,7 +179,6 @@ class WidgetContentTestCase(ZulipTestCase):
         payload = dict(
             type="stream",
             to=stream_name,
-            client="test suite",
             topic="whatever",
             content=content,
         )
@@ -234,7 +230,6 @@ class WidgetContentTestCase(ZulipTestCase):
         payload = dict(
             type="stream",
             to=stream_name,
-            client="test suite",
             topic="whatever",
             content=content,
         )
@@ -263,7 +258,6 @@ class WidgetContentTestCase(ZulipTestCase):
         payload = dict(
             type="stream",
             to=stream_name,
-            client="test suite",
             topic="whatever",
             content=content,
         )
@@ -322,7 +316,6 @@ class WidgetContentTestCase(ZulipTestCase):
         payload = dict(
             type="stream",
             to=stream_name,
-            client="test suite",
             topic="whatever",
             content=content,
         )
@@ -380,7 +373,6 @@ class WidgetContentTestCase(ZulipTestCase):
         payload = dict(
             type="stream",
             to=stream_name,
-            client="test suite",
             topic="whatever",
             content=content,
         )

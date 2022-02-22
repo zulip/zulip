@@ -1008,7 +1008,6 @@ class DeactivatedRealmTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "client": "test suite",
                 "to": self.example_email("othello"),
             },
         )
@@ -1026,7 +1025,6 @@ class DeactivatedRealmTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "client": "test suite",
                 "to": self.example_email("othello"),
             },
         )
@@ -1040,7 +1038,6 @@ class DeactivatedRealmTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "client": "test suite",
                 "to": self.example_email("othello"),
             },
         )
@@ -1161,7 +1158,6 @@ class InactiveUserTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "client": "test suite",
                 "to": self.example_email("othello"),
             },
         )
@@ -1177,7 +1173,6 @@ class InactiveUserTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "client": "test suite",
                 "to": self.example_email("othello"),
             },
         )
@@ -1189,7 +1184,6 @@ class InactiveUserTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "client": "test suite",
                 "to": self.example_email("othello"),
             },
         )
@@ -1291,7 +1285,6 @@ class TestIncomingWebhookBot(ZulipTestCase):
         payload = dict(
             type="private",
             content="Test message",
-            client="test suite",
             to=othello.email,
         )
 

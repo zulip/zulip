@@ -850,7 +850,6 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
             {
                 "type": "private",
                 "content": "test_receive_missed_message_email_messages",
-                "client": "test suite",
                 "to": orjson.dumps([othello.id]).decode(),
             },
         )
@@ -895,7 +894,6 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
             {
                 "type": "private",
                 "content": "test_receive_missed_message_email_messages",
-                "client": "test suite",
                 "to": orjson.dumps([cordelia.id, iago.id]).decode(),
             },
         )
@@ -949,7 +947,6 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
                 "type": "stream",
                 "topic": "test topic",
                 "content": "test_receive_missed_stream_message_email_messages",
-                "client": "test suite",
                 "to": "Denmark",
             },
         )
@@ -989,7 +986,6 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
                 "type": "stream",
                 "topic": "test topic",
                 "content": "test_receive_email_response_for_auth_failures",
-                "client": "test suite",
                 "to": "announce",
             },
         )
@@ -1034,7 +1030,6 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
                 "type": "stream",
                 "topic": "test topic",
                 "content": "test_receive_missed_stream_message_email_messages",
-                "client": "test suite",
                 "to": "Denmark",
             },
         )
@@ -1080,7 +1075,6 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
                 "type": "stream",
                 "topic": "test topic",
                 "content": "test_receive_missed_stream_message_email_messages",
-                "client": "test suite",
                 "to": "Denmark",
             },
         )
@@ -1117,7 +1111,6 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
                 "type": "stream",
                 "topic": "test topic",
                 "content": "test_receive_missed_stream_message_email_messages",
-                "client": "test suite",
                 "to": "Denmark",
             },
         )
@@ -1155,7 +1148,6 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
                 "type": "stream",
                 "topic": "test topic",
                 "content": "test_receive_missed_stream_message_email_messages",
-                "client": "test suite",
                 "to": "Denmark",
             },
         )
@@ -1188,7 +1180,6 @@ class TestEmptyGatewaySetting(ZulipTestCase):
         payload = dict(
             type="private",
             content="test_receive_missed_message_email_messages",
-            client="test suite",
             to=orjson.dumps([cordelia.id, iago.id]).decode(),
         )
         result = self.client_post("/json/messages", payload)
@@ -1358,7 +1349,6 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
             {
                 "type": "private",
                 "content": "test_receive_missed_message_email_messages",
-                "client": "test suite",
                 "to": orjson.dumps([cordelia.id, iago.id]).decode(),
             },
         )
@@ -1624,7 +1614,6 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
             {
                 "type": "private",
                 "content": "test_redact_email_message",
-                "client": "test suite",
                 "to": orjson.dumps([cordelia.email, iago.email]).decode(),
             },
         )
