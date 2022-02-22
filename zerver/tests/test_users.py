@@ -142,6 +142,14 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(user_profile.is_moderator, False)
         self.assertEqual(user_profile.role, UserProfile.ROLE_MEMBER)
 
+        user_profile.is_limited_guest = True
+        self.assertEqual(user_profile.is_limited_guest, True)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_LIMITED_GUEST)
+
+        user_profile.is_limited_guest = False
+        self.assertEqual(user_profile.is_limited_guest, False)
+        self.assertEqual(user_profile.role, UserProfile.ROLE_MEMBER)
+
     def test_get_admin_users(self) -> None:
         user_profile = self.example_user("hamlet")
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)

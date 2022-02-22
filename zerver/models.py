@@ -1954,6 +1954,19 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
             self.role = UserProfile.ROLE_MEMBER
 
     @property
+    def is_limited_guest(self) -> bool:
+        return self.role == UserProfile.ROLE_LIMITED_GUEST
+
+    @is_limited_guest.setter
+    def is_limited_guest(self, value: bool) -> None:
+        if value:
+            self.role = UserProfile.ROLE_LIMITED_GUEST
+        elif self.role == UserProfile.ROLE_LIMITED_GUEST:
+            # We need to be careful to not accidentally change
+            # ROLE_REALM_ADMINISTRATOR to ROLE_MEMBER here.
+            self.role = UserProfile.ROLE_MEMBER
+
+    @property
     def is_incoming_webhook(self) -> bool:
         return self.bot_type == UserProfile.INCOMING_WEBHOOK_BOT
 
