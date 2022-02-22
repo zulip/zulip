@@ -869,28 +869,35 @@ export function register_click_handlers() {
         }
     });
 
-    $("#main_div, #compose .preview_content").on("click", ".code_external_link", function (e) {
-        const view_in_playground_button = $(this);
-        const codehilite_div = $(this).closest(".codehilite");
-        e.stopPropagation();
-        const playground_info = realm_playground.get_playground_info_for_languages(
-            codehilite_div.data("code-language"),
-        );
-        // We do the code extraction here and set the target href combining the url_prefix
-        // and the extracted code. Depending on whether the language has multiple playground
-        // links configured, a popover is show.
-        const extracted_code = codehilite_div.find("code").text();
-        if (playground_info.length === 1) {
-            const url_prefix = playground_info[0].url_prefix;
-            view_in_playground_button.attr("href", url_prefix + encodeURIComponent(extracted_code));
-        } else {
-            for (const $playground of playground_info) {
-                $playground.playground_url =
-                    $playground.url_prefix + encodeURIComponent(extracted_code);
+    $("#main_div, #preview_content, #message-history").on(
+        "click",
+        ".code_external_link",
+        function (e) {
+            const view_in_playground_button = $(this);
+            const codehilite_div = $(this).closest(".codehilite");
+            e.stopPropagation();
+            const playground_info = realm_playground.get_playground_info_for_languages(
+                codehilite_div.data("code-language"),
+            );
+            // We do the code extraction here and set the target href combining the url_prefix
+            // and the extracted code. Depending on whether the language has multiple playground
+            // links configured, a popover is show.
+            const extracted_code = codehilite_div.find("code").text();
+            if (playground_info.length === 1) {
+                const url_prefix = playground_info[0].url_prefix;
+                view_in_playground_button.attr(
+                    "href",
+                    url_prefix + encodeURIComponent(extracted_code),
+                );
+            } else {
+                for (const $playground of playground_info) {
+                    $playground.playground_url =
+                        $playground.url_prefix + encodeURIComponent(extracted_code);
+                }
+                toggle_playground_link_popover(this, playground_info);
             }
-            toggle_playground_link_popover(this, playground_info);
-        }
-    });
+        },
+    );
 
     $("body").on("click", ".popover_playground_link", (e) => {
         hide_playground_links_popover();

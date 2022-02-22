@@ -515,6 +515,18 @@
     display: none;
 }
 
+.message_edit_history_content .copy_codeblock {
+    /*  Copy code block button is hidden in edit history, this is done
+        because of issues faced in copying code blocks in edit history
+        modal. This may be changed later as we decide upon a proper ux
+        for displaying edit-history. */
+    display: none;
+}
+
+.message_edit_history_content .code_external_link {
+    right: 5px;
+}
+
 .preview_content .code_external_link {
     right: 12px;
 }
