@@ -29,9 +29,11 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator, RegexValidator, URLValidator, validate_email
 from django.db import models, transaction
+from django.db.backends.base.base import BaseDatabaseWrapper
 from django.db.models import CASCADE, Manager, Q, Sum
 from django.db.models.query import QuerySet
 from django.db.models.signals import post_delete, post_save, pre_delete
+from django.db.models.sql.compiler import SQLCompiler
 from django.utils.functional import Promise
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -108,6 +110,30 @@ class EmojiInfo(TypedDict):
     deactivated: bool
     author_id: Optional[int]
     still_url: Optional[str]
+
+
+@models.Field.register_lookup
+class AndZero(models.Lookup):
+    lookup_name = "andz"
+
+    def as_sql(
+        self, compiler: SQLCompiler, connection: BaseDatabaseWrapper
+    ) -> Tuple[str, List[object]]:  # nocoverage # currently only used in migrations
+        lhs, lhs_params = self.process_lhs(compiler, connection)
+        rhs, rhs_params = self.process_rhs(compiler, connection)
+        return f"{lhs} & {rhs} = 0", lhs_params + rhs_params
+
+
+@models.Field.register_lookup
+class AndNonZero(models.Lookup):
+    lookup_name = "andnz"
+
+    def as_sql(
+        self, compiler: SQLCompiler, connection: BaseDatabaseWrapper
+    ) -> Tuple[str, List[object]]:  # nocoverage # currently only used in migrations
+        lhs, lhs_params = self.process_lhs(compiler, connection)
+        rhs, rhs_params = self.process_rhs(compiler, connection)
+        return f"{lhs} & {rhs} != 0", lhs_params + rhs_params
 
 
 def query_for_ids(query: QuerySet, user_ids: List[int], field: str) -> QuerySet:
