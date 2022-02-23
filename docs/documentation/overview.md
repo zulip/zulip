@@ -124,7 +124,7 @@ with Zulip. This documentation also serves as our main mechanism for
 Zulip server developers to communicate with client developers about
 how the Zulip API works.
 
-See the [API documentation tutorial](../documentation/api.md) for
+See the [API documentation tutorial](api.md) for
 details on how to contribute to this documentation.
 
 ## Automated testing

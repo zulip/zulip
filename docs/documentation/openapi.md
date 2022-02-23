@@ -10,7 +10,7 @@ for that file to fully describe every endpoint in the Zulip API, and
 for the Zulip test suite to fail should the API every change without a
 corresponding adjustment to the documentation. In particular,
 essentially all content in Zulip's [REST API
-documentation](../documentation/api.md) is generated from our OpenAPI
+documentation](api.md) is generated from our OpenAPI
 file.
 
 In an OpenAPI Swagger file, every configuration section is an object.

@@ -64,7 +64,7 @@ depend on the version of the base OS and/or Python.
 
 Our code for running the tests in CI lives under `tools/ci`; but that
 logic is mostly thin wrappers around [Zulip's test
-suites](../testing/testing.md) or production installer.
+suites](testing.md) or production installer.
 
 The `Legacy OS` tests are designed to ensure we give good error
 messages when trying to upgrade Zulip servers running on very old base

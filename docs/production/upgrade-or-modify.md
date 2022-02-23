@@ -60,7 +60,7 @@ involved (these will be documented in the [release
 notes](../overview/changelog.md), and usually can be avoided with
 some care). If downtime is problematic for your organization,
 consider testing the upgrade on a
-[backup](../production/export-and-import.html#backups) in advance,
+[backup](export-and-import.html#backups) in advance,
 doing the final upgrade at off hours, or buying a support contract.
 
 See the [troubleshooting guide](#troubleshooting-and-rollback) if you
@@ -156,13 +156,13 @@ suggest using that updated template to update
    su zulip -c '/home/zulip/deployments/current/scripts/restart-server'
    ```
 
-[backups]: ../production/export-and-import.html#backups
+[backups]: export-and-import.html#backups
 [changelog]: ../overview/changelog.md
 
 ## Troubleshooting and rollback
 
 See also the general Zulip server [troubleshooting
-guide](../production/troubleshooting.md).
+guide](troubleshooting.md).
 
 The upgrade scripts are idempotent, so there's no harm in trying again
 after resolving an issue. The most common causes of errors are:
@@ -800,7 +800,7 @@ upgrading to `main`, make sure you understand:
 - We do not support downgrading from `main` to earlier versions, so
   if downtime for your Zulip server is unacceptable, make sure you
   have a current
-  [backup](../production/export-and-import.html#backups) in case the
+  [backup](export-and-import.html#backups) in case the
   upgrade fails.
 - Our changelog contains [draft release
   notes](../overview/changelog.md) available listing major changes

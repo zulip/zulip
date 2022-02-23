@@ -4,7 +4,7 @@ Zulip is early in the process of migrating our codebase to use
 [TypeScript](https://www.typescriptlang.org/), the leading static type
 system for JavaScript. It works as an extension of the ES6 JavaScript
 standard, and provides similar benefits to our use of
-[the mypy static type system for Python](../testing/mypy.md).
+[the mypy static type system for Python](mypy.md).
 
 We expect to eventually migrate the entire JavaScript codebase to
 TypeScript, though our current focus is on getting the tooling and

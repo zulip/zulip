@@ -93,7 +93,7 @@ See the mobile project's documentation on [using a development server
 for mobile development][mobile-dev-server].
 
 [rest-api]: https://zulip.com/api/rest
-[authentication-dev-server]: ./authentication.md
+[authentication-dev-server]: authentication.md
 [django-runserver]: https://docs.djangoproject.com/en/3.2/ref/django-admin/#runserver
 [new-feature-tutorial]: ../tutorials/new-feature-tutorial.md
 [testing-docs]: ../testing/testing.md

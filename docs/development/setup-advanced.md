@@ -21,9 +21,9 @@ that's running one of:
 You can just run the Zulip provision script on your machine.
 
 **Note**: You should not use the `root` user to run the installation.
-If you are using a [remote server](../development/remote.md), see
+If you are using a [remote server](remote.md), see
 the
-[section on creating appropriate user accounts](../development/remote.html#setting-up-user-accounts).
+[section on creating appropriate user accounts](remote.html#setting-up-user-accounts).
 
 :::{warning}
 There is no supported uninstallation process with this
@@ -50,7 +50,7 @@ source /srv/zulip-py3-venv/bin/activate
 
 Once you've done the above setup, you can pick up the [documentation
 on using the Zulip development
-environment](../development/setup-vagrant.html#step-4-developing),
+environment](setup-vagrant.html#step-4-developing),
 ignoring the parts about `vagrant` (since you're not using it).
 
 ## Installing directly on Windows 10 with WSL 2
@@ -151,7 +151,7 @@ installation method described here.
    to open VSCode connected to your WSL environment.
 
 1. You're done! You can pick up the [documentation on using the
-   Zulip development environment](../development/setup-vagrant.html#step-4-developing),
+   Zulip development environment](setup-vagrant.html#step-4-developing),
    ignoring the parts about `vagrant` (since you're not using it).
 
 WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
