@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunSQL(
             """
-            CREATE INDEX IF NOT EXISTS zerver_usermessage_wildcard_mentioned_message_id
+            CREATE INDEX zerver_usermessage_wildcard_mentioned_message_id
                 ON zerver_usermessage (user_profile_id, message_id)
                 WHERE (flags & 8) != 0 OR (flags & 16) != 0;
             """,

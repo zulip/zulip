@@ -97,7 +97,7 @@ class Migration(migrations.Migration):
         ),
         migrations.RunSQL(
             """
-            CREATE INDEX IF NOT EXISTS zerver_usermessage_is_private_message_id
+            CREATE INDEX zerver_usermessage_is_private_message_id
                 ON zerver_usermessage (user_profile_id, message_id)
                 WHERE (flags & 2048) != 0;
             """,

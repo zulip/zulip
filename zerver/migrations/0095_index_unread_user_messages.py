@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunSQL(
             """
-            CREATE INDEX IF NOT EXISTS zerver_usermessage_unread_message_id
+            CREATE INDEX zerver_usermessage_unread_message_id
                 ON zerver_usermessage (user_profile_id, message_id)
                 WHERE (flags & 1) = 0;
             """,

@@ -57,7 +57,7 @@ class Migration(migrations.Migration):
         ),
         migrations.RunSQL(
             """
-            CREATE INDEX IF NOT EXISTS zerver_usermessage_active_mobile_push_notification_id
+            CREATE INDEX zerver_usermessage_active_mobile_push_notification_id
                 ON zerver_usermessage (user_profile_id, message_id)
                 WHERE (flags & 4096) != 0;
             """,
