@@ -65,11 +65,11 @@ IGNORED_PHRASES = [
     r"iPhone",
     r"iOS",
     r"Emoji One",
-    r"mailinator.com",
+    r"mailinator\.com",
     r"HQ",
     r"BigBlueButton",
     # Code things
-    r".zuliprc",
+    r"\.zuliprc",
     r"__\w+\.\w+__",
     # Things using "I"
     r"I understand",
@@ -81,8 +81,8 @@ IGNORED_PHRASES = [
     r"beta",
     r"and",
     r"bot",
-    r"e.g.",
-    r"etc.",
+    r"e\.g\.",
+    r"etc\.",
     r"images",
     r"enabled",
     r"disabled",
@@ -93,24 +93,24 @@ IGNORED_PHRASES = [
     # Placeholders
     r"keyword",
     r"streamname",
-    r"user@example.com",
+    r"user@example\.com",
     # Fragments of larger strings
     (r"your subscriptions on your Streams page"),
     (
         r"Change notification settings for individual streams on your "
-        '<a href="/#streams">Streams page</a>.'
+        r'<a href="/#streams">Streams page</a>\.'
     ),
     (
         r"Looking for our "
-        '<a href="/integrations" target="_blank">Integrations</a> or '
-        '<a href="/api" target="_blank">API</a> documentation?'
+        r'<a href="/integrations" target="_blank">Integrations</a> or '
+        r'<a href="/api" target="_blank">API</a> documentation\?'
     ),
-    r'Most stream administration is done on the <a href="/#streams">Streams page</a>.',
-    r"Add global time<br />Everyone sees global times in their own time zone.",
-    r"one or more people...",
+    r'Most stream administration is done on the <a href="/#streams">Streams page</a>\.',
+    r"Add global time<br />Everyone sees global times in their own time zone\.",
+    r"one or more people\.\.\.",
     r"confirmation email",
     r"invites remaining",
-    r"was too large; the maximum file size is 25MiB.",
+    r"was too large; the maximum file size is 25MiB\.",
     r"selected message",
     r"a-z",
     r"organization administrator",
@@ -143,8 +143,8 @@ IGNORED_PHRASES = [
     r"\bN\b",
     # Capital c feels obtrusive in clear status option
     r"clear",
-    r"group private messages with {recipient}",
-    r"private messages with {recipient}",
+    r"group private messages with \{recipient\}",
+    r"private messages with \{recipient\}",
     r"private messages with yourself",
     # TO CLEAN UP
     # Just want to avoid churning login.html right now
