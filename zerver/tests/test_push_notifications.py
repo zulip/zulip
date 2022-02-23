@@ -13,7 +13,7 @@ import orjson
 import responses
 from django.conf import settings
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Q
 from django.http.response import ResponseHeaders
 from django.test import override_settings
 from django.utils.crypto import get_random_string
@@ -34,6 +34,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
     APNsContext,
     DeviceToken,
+    UserPushIndentityCompat,
     b64_to_hex,
     get_apns_badge_count,
     get_apns_badge_count_future,
@@ -192,7 +193,13 @@ class PushBouncerNotificationTest(BouncerTestCase):
         result = self.uuid_post(
             self.server_uuid, endpoint, {"token": token, "token_kind": token_kind}
         )
-        self.assert_json_error(result, "Missing 'user_id' argument")
+        self.assert_json_error(result, "Missing user_id or user_uuid")
+        result = self.uuid_post(
+            self.server_uuid,
+            endpoint,
+            {"user_id": user_id, "user_uuid": "xxx", "token": token, "token_kind": token_kind},
+        )
+        self.assert_json_error(result, "Specify only one of user_id or user_uuid")
         result = self.uuid_post(
             self.server_uuid, endpoint, {"user_id": user_id, "token": token, "token_kind": 17}
         )
@@ -367,12 +374,14 @@ class PushBouncerNotificationTest(BouncerTestCase):
             logger.output,
             [
                 "INFO:zilencer.views:"
-                f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:{hamlet.id}: "
+                f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:id:{hamlet.id}: "
                 "2 via FCM devices, 1 via APNs devices"
             ],
         )
+
+        user_identity = UserPushIndentityCompat(user_id=hamlet.id)
         apple_push.assert_called_once_with(
-            hamlet.id,
+            user_identity,
             [apple_token],
             {
                 "badge": 0,
@@ -386,7 +395,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             remote=server,
         )
         android_push.assert_called_once_with(
-            hamlet.id,
+            user_identity,
             list(reversed(android_tokens)),
             {"event": "remove", "zulip_message_ids": ",".join(str(i) for i in range(50, 250))},
             {},
@@ -962,7 +971,9 @@ class HandlePushNotificationTest(PushNotificationTest):
                 (b64_to_hex(device.token), device.ios_app_id, device.token)
                 for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.GCM)
             ]
-            mock_gcm.json_request.return_value = {"success": {gcm_devices[0][2]: message.id}}
+            mock_gcm.json_request.return_value = {
+                "success": {device[2]: message.id for device in gcm_devices}
+            }
             result = mock.Mock()
             result.is_successful = True
             apns_context.apns.send_notification.return_value = asyncio.Future(
@@ -974,14 +985,14 @@ class HandlePushNotificationTest(PushNotificationTest):
                 views_logger.output,
                 [
                     "INFO:zilencer.views:"
-                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:{self.user_profile.id}: "
+                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:id:{self.user_profile.id}: "
                     f"{len(gcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices"
                 ],
             )
             for _, _, token in apns_devices:
                 self.assertIn(
                     "INFO:zerver.lib.push_notifications:"
-                    f"APNs: Success sending for user {self.user_profile.id} to device {token}",
+                    f"APNs: Success sending for user id:{self.user_profile.id} to device {token}",
                     pn_logger.output,
                 )
             for _, _, token in gcm_devices:
@@ -1035,7 +1046,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 views_logger.output,
                 [
                     "INFO:zilencer.views:"
-                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:{self.user_profile.id}: "
+                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:id:{self.user_profile.id}: "
                     f"{len(gcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices"
                 ],
             )
@@ -1249,10 +1260,9 @@ class HandlePushNotificationTest(PushNotificationTest):
         ) as mock_push_notifications:
 
             handle_push_notification(self.user_profile.id, missed_message)
-            mock_send_apple.assert_called_with(self.user_profile.id, apple_devices, {"apns": True})
-            mock_send_android.assert_called_with(
-                self.user_profile.id, android_devices, {"gcm": True}, {}
-            )
+            user_identity = UserPushIndentityCompat(user_id=self.user_profile.id)
+            mock_send_apple.assert_called_with(user_identity, apple_devices, {"apns": True})
+            mock_send_android.assert_called_with(user_identity, android_devices, {"gcm": True}, {})
             mock_push_notifications.assert_called_once()
 
     def test_send_remove_notifications_to_bouncer(self) -> None:
@@ -1324,8 +1334,9 @@ class HandlePushNotificationTest(PushNotificationTest):
         ) as mock_send_apple:
             handle_remove_push_notification(self.user_profile.id, [message.id])
             mock_push_notifications.assert_called_once()
+            user_identity = UserPushIndentityCompat(user_id=self.user_profile.id)
             mock_send_android.assert_called_with(
-                self.user_profile.id,
+                user_identity,
                 android_devices,
                 {
                     "server": "testserver",
@@ -1339,7 +1350,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 {"priority": "normal"},
             )
             mock_send_apple.assert_called_with(
-                self.user_profile.id,
+                user_identity,
                 apple_devices,
                 {
                     "badge": 0,
@@ -1451,10 +1462,9 @@ class HandlePushNotificationTest(PushNotificationTest):
         ) as mock_push_notifications:
             handle_push_notification(self.user_profile.id, missed_message)
             mock_logger.assert_not_called()
-            mock_send_apple.assert_called_with(self.user_profile.id, apple_devices, {"apns": True})
-            mock_send_android.assert_called_with(
-                self.user_profile.id, android_devices, {"gcm": True}, {}
-            )
+            user_identity = UserPushIndentityCompat(user_id=self.user_profile.id)
+            mock_send_apple.assert_called_with(user_identity, apple_devices, {"apns": True})
+            mock_send_android.assert_called_with(user_identity, android_devices, {"gcm": True}, {})
             mock_push_notifications.assert_called_once()
 
     @mock.patch("zerver.lib.push_notifications.logger.info")
@@ -1492,7 +1502,9 @@ class TestAPNs(PushNotificationTest):
         payload_data: Dict[str, Any] = {},
     ) -> None:
         send_apple_push_notification(
-            self.user_profile.id, devices if devices is not None else self.devices(), payload_data
+            UserPushIndentityCompat(user_id=self.user_profile.id),
+            devices if devices is not None else self.devices(),
+            payload_data,
         )
 
     def test_get_apns_context(self) -> None:
@@ -1559,7 +1571,7 @@ class TestAPNs(PushNotificationTest):
             self.send()
             for device in self.devices():
                 self.assertIn(
-                    f"INFO:zerver.lib.push_notifications:APNs: Success sending for user {self.user_profile.id} to device {device.token}",
+                    f"INFO:zerver.lib.push_notifications:APNs: Success sending for user id:{self.user_profile.id} to device {device.token}",
                     logger.output,
                 )
 
@@ -1576,7 +1588,7 @@ class TestAPNs(PushNotificationTest):
             )
             self.send(devices=self.devices()[0:1])
             self.assertIn(
-                f"WARNING:zerver.lib.push_notifications:APNs: ConnectionError sending for user {self.user_profile.id} to device {self.devices()[0].token}: ConnectionError",
+                f"WARNING:zerver.lib.push_notifications:APNs: ConnectionError sending for user id:{self.user_profile.id} to device {self.devices()[0].token}: ConnectionError",
                 logger.output,
             )
 
@@ -1594,7 +1606,7 @@ class TestAPNs(PushNotificationTest):
             apns_context.apns.send_notification.return_value.set_result(result)
             self.send(devices=self.devices()[0:1])
             self.assertIn(
-                f"WARNING:zerver.lib.push_notifications:APNs: Failed to send for user {self.user_profile.id} to device {self.devices()[0].token}: InternalServerError",
+                f"WARNING:zerver.lib.push_notifications:APNs: Failed to send for user id:{self.user_profile.id} to device {self.devices()[0].token}: InternalServerError",
                 logger.output,
             )
 
@@ -2340,7 +2352,7 @@ class GCMSendTest(PushNotificationTest):
         with self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger:
             send_android_push_notification_to_user(self.user_profile, data, {})
         self.assert_length(logger.output, 3)
-        log_msg1 = f"INFO:zerver.lib.push_notifications:GCM: Sending notification for local user {self.user_profile.id} to 2 devices"
+        log_msg1 = f"INFO:zerver.lib.push_notifications:GCM: Sending notification for local user id:{self.user_profile.id} to 2 devices"
         log_msg2 = f"INFO:zerver.lib.push_notifications:GCM: Sent {1111} as {0}"
         log_msg3 = f"INFO:zerver.lib.push_notifications:GCM: Sent {2222} as {1}"
         self.assertEqual([log_msg1, log_msg2, log_msg3], logger.output)
@@ -2400,7 +2412,7 @@ class GCMSendTest(PushNotificationTest):
         with self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger:
             send_android_push_notification_to_user(self.user_profile, data, {})
             self.assertEqual(
-                f"INFO:zerver.lib.push_notifications:GCM: Sending notification for local user {self.user_profile.id} to 2 devices",
+                f"INFO:zerver.lib.push_notifications:GCM: Sending notification for local user id:{self.user_profile.id} to 2 devices",
                 logger.output[0],
             )
             self.assertEqual(
@@ -2427,7 +2439,7 @@ class GCMSendTest(PushNotificationTest):
         with self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger:
             send_android_push_notification_to_user(self.user_profile, data, {})
             self.assertEqual(
-                f"INFO:zerver.lib.push_notifications:GCM: Sending notification for local user {self.user_profile.id} to 2 devices",
+                f"INFO:zerver.lib.push_notifications:GCM: Sending notification for local user id:{self.user_profile.id} to 2 devices",
                 logger.output[0],
             )
             self.assertEqual(
@@ -2668,3 +2680,24 @@ class PushBouncerSignupTest(ZulipTestCase):
         self.assert_json_error(
             result, f"Zulip server auth failure: key does not match role {zulip_org_id}"
         )
+
+
+class TestUserPushIndentityCompat(ZulipTestCase):
+    def test_filter_q(self) -> None:
+        user_identity_id = UserPushIndentityCompat(user_id=1)
+        user_identity_uuid = UserPushIndentityCompat(user_uuid="aaaa")
+        user_identity_both = UserPushIndentityCompat(user_id=1, user_uuid="aaaa")
+
+        self.assertEqual(user_identity_id.filter_q(), Q(user_id=1))
+        self.assertEqual(user_identity_uuid.filter_q(), Q(user_uuid="aaaa"))
+        self.assertEqual(user_identity_both.filter_q(), Q(user_uuid="aaaa") | Q(user_id=1))
+
+    def test_eq(self) -> None:
+        user_identity_a = UserPushIndentityCompat(user_id=1)
+        user_identity_b = UserPushIndentityCompat(user_id=1)
+        user_identity_c = UserPushIndentityCompat(user_id=2)
+        self.assertEqual(user_identity_a, user_identity_b)
+        self.assertNotEqual(user_identity_a, user_identity_c)
+
+        # An integer can't be equal to an instance of the class.
+        self.assertNotEqual(user_identity_a, 1)

@@ -13,7 +13,7 @@ import lxml.html
 import orjson
 from django.conf import settings
 from django.db import IntegrityError, transaction
-from django.db.models import F
+from django.db.models import F, Q
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
@@ -56,6 +56,49 @@ def b64_to_hex(data: str) -> str:
 
 def hex_to_b64(data: str) -> str:
     return base64.b64encode(bytes.fromhex(data)).decode()
+
+
+class UserPushIndentityCompat:
+    """Compatibility class for supporting the transition from remote servers
+    sending their UserProfile ids to the bouncer to sending UserProfile uuids instead.
+
+    Until we can drop support for receiving user_id, we need this
+    class, because a user's identity in the push notification context
+    may be represented either by an id or uuid.
+    """
+
+    def __init__(self, user_id: Optional[int] = None, user_uuid: Optional[str] = None) -> None:
+        assert user_id is not None or user_uuid is not None
+        self.user_id = user_id
+        self.user_uuid = user_uuid
+
+    def filter_q(self) -> Q:
+        """
+        This aims to support correctly querying for RemotePushDeviceToken.
+        If only one of (user_id, user_uuid) is provided, the situation is trivial,
+        If both are provided, we want to query for tokens matching EITHER the
+        uuid or the id - because the user may have devices with old registrations,
+        so user_id-based, as well as new registration with uuid. Notifications
+        naturally should be sent to both.
+        """
+        if self.user_id is not None and self.user_uuid is None:
+            return Q(user_id=self.user_id)
+        elif self.user_uuid is not None and self.user_id is None:
+            return Q(user_uuid=self.user_uuid)
+        else:
+            assert self.user_id is not None and self.user_uuid is not None
+            return Q(user_uuid=self.user_uuid) | Q(user_id=self.user_id)
+
+    def __str__(self) -> str:
+        if self.user_uuid is not None:
+            return f"uuid:{self.user_uuid}"
+
+        return f"id:{self.user_id}"
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, UserPushIndentityCompat):
+            return self.user_id == other.user_id and self.user_uuid == other.user_uuid
+        return False
 
 
 #
@@ -134,7 +177,7 @@ APNS_MAX_RETRIES = 3
 
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(
-    user_id: int,
+    user_identity: UserPushIndentityCompat,
     devices: Sequence[DeviceToken],
     payload_data: Dict[str, Any],
     remote: Optional["RemoteZulipServer"] = None,
@@ -164,14 +207,16 @@ def send_apple_push_notification(
 
     if remote:
         logger.info(
-            "APNs: Sending notification for remote user %s:%d to %d devices",
+            "APNs: Sending notification for remote user %s:%s to %d devices",
             remote.uuid,
-            user_id,
+            user_identity,
             len(devices),
         )
     else:
         logger.info(
-            "APNs: Sending notification for local user %d to %d devices", user_id, len(devices)
+            "APNs: Sending notification for local user %s to %d devices",
+            user_identity,
+            len(devices),
         )
     payload_data = modernize_apns_payload(payload_data).copy()
     message = {**payload_data.pop("custom", {}), "aps": payload_data}
@@ -187,15 +232,17 @@ def send_apple_push_notification(
             )
         except aioapns.exceptions.ConnectionError as e:
             logger.warning(
-                "APNs: ConnectionError sending for user %d to device %s: %s",
-                user_id,
+                "APNs: ConnectionError sending for user %s to device %s: %s",
+                user_identity,
                 device.token,
                 e.__class__.__name__,
             )
             continue
 
         if result.is_successful:
-            logger.info("APNs: Success sending for user %d to device %s", user_id, device.token)
+            logger.info(
+                "APNs: Success sending for user %s to device %s", user_identity, device.token
+            )
         elif result.description in ["Unregistered", "BadDeviceToken", "DeviceTokenNotForTopic"]:
             logger.info(
                 "APNs: Removing invalid/expired token %s (%s)", device.token, result.description
@@ -205,8 +252,8 @@ def send_apple_push_notification(
             DeviceTokenClass.objects.filter(token=device.token, kind=DeviceTokenClass.APNS).delete()
         else:
             logger.warning(
-                "APNs: Failed to send for user %d to device %s: %s",
-                user_id,
+                "APNs: Failed to send for user %s to device %s: %s",
+                user_identity,
                 device.token,
                 result.description,
             )
@@ -256,7 +303,9 @@ def send_android_push_notification_to_user(
     user_profile: UserProfile, data: Dict[str, Any], options: Dict[str, Any]
 ) -> None:
     devices = list(PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM))
-    send_android_push_notification(user_profile.id, devices, data, options)
+    send_android_push_notification(
+        UserPushIndentityCompat(user_id=user_profile.id), devices, data, options
+    )
 
 
 def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
@@ -306,7 +355,7 @@ def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
 
 @statsd_increment("android_push_notification")
 def send_android_push_notification(
-    user_id: int,
+    user_identity: UserPushIndentityCompat,
     devices: Sequence[DeviceToken],
     data: Dict[str, Any],
     options: Dict[str, Any],
@@ -334,14 +383,14 @@ def send_android_push_notification(
 
     if remote:
         logger.info(
-            "GCM: Sending notification for remote user %s:%d to %d devices",
+            "GCM: Sending notification for remote user %s:%s to %d devices",
             remote.uuid,
-            user_id,
+            user_identity,
             len(devices),
         )
     else:
         logger.info(
-            "GCM: Sending notification for local user %d to %d devices", user_id, len(devices)
+            "GCM: Sending notification for local user %s to %d devices", user_identity, len(devices)
         )
     reg_ids = [device.token for device in devices]
     priority = parse_gcm_options(options, data)
@@ -947,6 +996,7 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
     if uses_notification_bouncer():
         send_notifications_to_bouncer(user_profile_id, apns_payload, gcm_payload, gcm_options)
     else:
+        user_identity = UserPushIndentityCompat(user_id=user_profile_id)
         android_devices = list(
             PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM)
         )
@@ -954,11 +1004,9 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
             PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS)
         )
         if android_devices:
-            send_android_push_notification(
-                user_profile_id, android_devices, gcm_payload, gcm_options
-            )
+            send_android_push_notification(user_identity, android_devices, gcm_payload, gcm_options)
         if apple_devices:
-            send_apple_push_notification(user_profile_id, apple_devices, apns_payload)
+            send_apple_push_notification(user_identity, apple_devices, apns_payload)
 
     # We intentionally use the non-truncated message_ids here.  We are
     # assuming in this very rare case that the user has manually
@@ -1077,5 +1125,6 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         len(android_devices),
         len(apple_devices),
     )
-    send_apple_push_notification(user_profile.id, apple_devices, apns_payload)
-    send_android_push_notification(user_profile.id, android_devices, gcm_payload, gcm_options)
+    user_identity = UserPushIndentityCompat(user_id=user_profile.id)
+    send_apple_push_notification(user_identity, apple_devices, apns_payload)
+    send_android_push_notification(user_identity, android_devices, gcm_payload, gcm_options)
