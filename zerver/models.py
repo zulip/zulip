@@ -4220,26 +4220,18 @@ class ScheduledEmail(AbstractScheduledJob):
 
 
 class MissedMessageEmailAddress(models.Model):
-    EXPIRY_SECONDS = 60 * 60 * 24 * 5
-    ALLOWED_USES = 1
-
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     message: Message = models.ForeignKey(Message, on_delete=CASCADE)
     user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     email_token: str = models.CharField(max_length=34, unique=True, db_index=True)
 
     # Timestamp of when the missed message address generated.
-    # The address is valid until timestamp + EXPIRY_SECONDS.
     timestamp: datetime.datetime = models.DateTimeField(db_index=True, default=timezone_now)
+    # Number of times the missed message address has been used.
     times_used: int = models.PositiveIntegerField(default=0, db_index=True)
 
     def __str__(self) -> str:
         return settings.EMAIL_GATEWAY_PATTERN % (self.email_token,)
-
-    def is_usable(self) -> bool:
-        not_expired = timezone_now() <= self.timestamp + timedelta(seconds=self.EXPIRY_SECONDS)
-        has_uses_left = self.times_used < self.ALLOWED_USES
-        return has_uses_left and not_expired
 
     def increment_times_used(self) -> None:
         self.times_used += 1
