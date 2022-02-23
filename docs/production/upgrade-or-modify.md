@@ -323,9 +323,9 @@ instructions for other supported platforms.
    only upgrade to Zulip 3.0 and newer after completing this process,
    since newer releases don't support Ubuntu 16.04 Xenial.
 
-2. Same as for Bionic to Focal.
+2. Same as for Ubuntu 18.04 to 20.04.
 
-3. Same as for Bionic to Focal.
+3. Same as for Ubuntu 18.04 to 20.04.
 
 4. As root, upgrade the database installation and OS configuration to
    match the new OS version:
@@ -364,8 +364,8 @@ instructions for other supported platforms.
    /home/zulip/deployments/current/manage.py audit_fts_indexes
    ```
 
-8. [Upgrade from Bionic to
-   Focal](#upgrading-from-ubuntu-18-04-bionic-to-20-04-focal), so that
+8. [Upgrade from Ubuntu 18.04 to
+   20.04](#upgrading-from-ubuntu-18-04-bionic-to-20-04-focal), so that
    you are running a supported operating system.
 
 ### Upgrading from Ubuntu 14.04 Trusty to 16.04 Xenial
@@ -374,9 +374,9 @@ instructions for other supported platforms.
    only upgrade to Zulip `2.1.x` and newer after completing this
    process, since newer releases don't support Ubuntu 14.04 Trusty.
 
-2. Same as for Bionic to Focal.
+2. Same as for Ubuntu 18.04 to 20.04.
 
-3. Same as for Bionic to Focal.
+3. Same as for Ubuntu 18.04 to 20.04.
 
 4. As root, upgrade the database installation and OS configuration to
    match the new OS version:
@@ -407,11 +407,11 @@ instructions for other supported platforms.
    able to navigate to its URL and confirm everything is working
    correctly.
 
-6. [Upgrade from Xenial to
-   Bionic](#upgrading-from-ubuntu-16-04-xenial-to-18-04-bionic), so
+6. [Upgrade from Ubuntu 16.04 to
+   18.04](#upgrading-from-ubuntu-16-04-xenial-to-18-04-bionic), so
    that you are running a supported operating system.
 
-### Upgrading from Debian Buster to Debian Bullseye
+### Upgrading from Debian 10 to 11
 
 1. Upgrade your server to the latest Zulip `4.x` release.
 
@@ -455,7 +455,7 @@ instructions for other supported platforms.
    be able to navigate to its URL and confirm everything is working
    correctly.
 
-6. Debian Bullseye has a different version of the low-level glibc
+6. Debian 11 has a different version of the low-level glibc
    library, which affects how PostgreSQL orders text data (known as
    "collations"); this corrupts database indexes that rely on
    collations. Regenerate the affected indexes by running:
@@ -472,11 +472,11 @@ instructions for other supported platforms.
 
 8. As an additional step, you can also [upgrade the postgresql version](#upgrading-postgresql).
 
-### Upgrading from Debian Stretch to Debian Buster
+### Upgrading from Debian 9 to 10
 
 1. Upgrade your server to the latest Zulip `2.1.x` release. You can
    only upgrade to Zulip 3.0 and newer after completing this process,
-   since newer releases don't support Ubuntu Debian Stretch.
+   since newer releases don't support Debian 9.
 
 2. As the Zulip user, stop the Zulip server and run the following
    to back up the system:
@@ -528,7 +528,7 @@ instructions for other supported platforms.
 6. [Upgrade to the latest Zulip release](#upgrading-to-a-release), now
    that your server is running a supported operating system.
 
-7. Debian Buster has a different version of the low-level glibc
+7. Debian 10 has a different version of the low-level glibc
    library, which affects how PostgreSQL orders text data (known as
    "collations"); this corrupts database indexes that rely on
    collations. Regenerate the affected indexes by running:
