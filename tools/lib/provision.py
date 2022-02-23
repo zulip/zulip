@@ -181,7 +181,7 @@ if vendor == "debian" and os_version in [] or vendor == "ubuntu" and os_version 
 elif "debian" in os_families():
     DEBIAN_DEPENDECIES = UBUNTU_COMMON_APT_DEPENDENCIES
     # The below condition is required since libappindicator is
-    # not available for bullseye (sid). "libgroonga1" is an
+    # not available for Debian 11. "libgroonga1" is an
     # additional dependency for postgresql-13-pgdg-pgroonga.
     #
     # See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=895037

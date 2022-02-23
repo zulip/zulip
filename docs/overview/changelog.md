@@ -141,7 +141,7 @@ log][commit-log] for an up-to-date list of raw changes.
   updating the operating system hosting PostgreSQL, which previously
   omitted some indexes from its verification. If you updated the
   operating system of your Zulip instance from Ubuntu 18.04 to 20.04,
-  or from Debian Stretch to Debian Buster, you should run the tool,
+  or from Debian 9 to 10, you should run the tool,
   even if you did so previously; full details and instructions are
   available in the previous blog post.
 - Began routing requests from the Camo image proxy through a
@@ -422,8 +422,8 @@ log][commit-log] for an up-to-date list of raw changes.
 - Added API endpoint to fetch presence details by user ID.
 - Added new LDAP configuration options for servers hosting multiple organizations.
 - Added new `@**|user_id**` mention syntax intended for use in bots.
-- Added preliminary support for Zulip on Debian Bullseye; this
-  release is expected to support Bullseye without any further changes.
+- Added preliminary support for Zulip on Debian 11; this
+  release is expected to support Debian 11 without any further changes.
 - Added several useful new management commands, including
   `change_realm_subdomain` and `delete_user`.
 - Added support for subscribing all members of a user group to a stream.
@@ -841,7 +841,7 @@ log][commit-log] for an up-to-date list of raw changes.
 ### 2.1.6 -- 2020-06-17
 
 - Fixed use of Python 3.6+ syntax in 2.1.5 release that prevented
-  installation on Ubuntu Xenial.
+  installation on Ubuntu 16.04.
 
 ### 2.1.5 -- 2020-06-16
 
@@ -953,7 +953,7 @@ details.
 
 #### Highlights
 
-- Added support for Debian buster. Removed support for EOL Ubuntu Trusty.
+- Added support for Debian 10. Removed support for EOL Ubuntu 14.04.
 - Added support for SAML authentication.
 - Removed our dependency on `tsearch_extras`, making it possible to
   run a production Zulip server against any PostgreSQL database
@@ -1195,7 +1195,7 @@ details.
 
 ### 2.0.6 -- 2019-09-23
 
-- Updated signing keys for the PGroonga repository for Debian Stretch.
+- Updated signing keys for the PGroonga repository for Debian 9.
 - Fixed creation of linkifiers with URLs containing &.
 - Fixed a subtle bug that could cause the message list to suddenly
   scroll up in certain rare race conditions.
@@ -1204,7 +1204,7 @@ details.
 
 - CVE-2019-16215: Fix DoS vulnerability in Markdown LINK_RE.
 - CVE-2019-16216: Fix MIME type validation.
-- Fixed email gateway postfix configuration for Ubuntu Bionic.
+- Fixed email gateway postfix configuration for Ubuntu 18.04.
 - Fixed support for hidden_by_limit messages in Slack import.
 - Fixed confusing output from the `knight` management command.
 
@@ -1244,7 +1244,7 @@ details.
 
 ### 2.0.1 -- 2019-03-04
 
-- Fixed handling of uploaded file routing on Ubuntu Trusty.
+- Fixed handling of uploaded file routing on Ubuntu 14.04.
 - Fixed buggy behavior of branding logos in night theme.
 - Fixed handling of deployment directories being owned by root.
 - The styling of "unavailable" status icons is now less prominent.
@@ -1273,9 +1273,9 @@ details.
   Our HipChat and Slack import tools are now well-tested with millions
   of messages, 10,000s of users, and 100,000s of uploaded files.
 - Added a built-in tool for backups and restoration.
-- Deprecated support for Ubuntu Trusty. Zulip 2.0.x will continue to
-  support Ubuntu Trusty, but Zulip 2.1.0 will remove support for
-  installing on Trusty.
+- Deprecated support for Ubuntu 14.04. Zulip 2.0.x will continue to
+  support Ubuntu 14.04, but Zulip 2.1.0 will remove support for
+  installing on Ubuntu 14.04.
 
 #### Upgrade notes for 2.0.0
 
@@ -1390,10 +1390,10 @@ Zulip installations; it has minimal changes for existing servers.
 
 #### Highlights
 
-- Support for Ubuntu bionic and Debian stretch (our first non-Ubuntu
+- Support for Ubuntu 18.04 and Debian 9 (our first non-Ubuntu
   platform!). We expect to deprecate support for installing a new
-  Zulip server on Ubuntu Trusty in the coming months, in preparation
-  for Trusty’s end-of-life in April 2019.
+  Zulip server on Ubuntu 14.04 in the coming months, in preparation
+  for Ubuntu 14.04’s end-of-life in April 2019.
 - New data import tools for HipChat and Gitter. The Slack importer
   is now out of beta.
 - Zulip Python process startup time is about 30% faster; this effort
@@ -1549,9 +1549,9 @@ Zulip installations; it has minimal changes for existing servers.
   organization administrators can remove users, edit descriptions, and
   rename private streams they are not subscribed to. See Zulip's
   security model documentation for details.
-- On Xenial, the local uploads backend now does the same security
+- On Ubuntu 16.04, the local uploads backend now does the same security
   checks that the S3 backend did before serving files to users.
-  Ubuntu Trusty's version of nginx is too old to support this and so
+  Ubuntu 14.04's version of nginx is too old to support this and so
   the legacy model is the default; we recommend upgrading.
 - Added an organization setting to limit creation of bots.
 - Refactored the authentication backends codebase to be much easier to
@@ -2218,7 +2218,7 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 - Fixed unnecessary loading of zxcvbn password strength checker. This
   saves a huge fraction of the uncached network transfer for loading
   Zulip.
-- Added support for using Ubuntu Xenial in production.
+- Added support for using Ubuntu 16.04 in production.
 - Added a powerful and complete realm import/export tool.
 - Added nice UI for selecting a default language to display settings.
 - Added UI for searching streams in left sidebar with hotkeys.

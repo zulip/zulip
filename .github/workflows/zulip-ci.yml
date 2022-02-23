@@ -23,13 +23,13 @@ jobs:
             name: Debian 10 Buster (Python 3.7, backend + frontend)
             os: buster
             include_frontend_tests: true
-          # Focal ships with Python 3.8.2.
+          # Ubuntu 20.04 ships with Python 3.8.2.
           - docker_image: zulip/ci:focal
             name: Ubuntu 20.04 Focal (Python 3.8, backend)
             os: focal
             is_focal: true
             include_frontend_tests: false
-          # Bullseye ships with Python 3.9.2.
+          # Debian 11 ships with Python 3.9.2.
           - docker_image: zulip/ci:bullseye
             name: Debian 11 Bullseye (Python 3.9, backend)
             os: bullseye
