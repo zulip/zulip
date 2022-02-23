@@ -2460,6 +2460,7 @@ class UserTopic(models.Model):
         unique_together = ("user_profile", "stream", "topic_name")
 
         indexes = [
+            models.Index("stream", Upper("topic_name"), name="zerver_mutedtopic_stream_topic"),
             # This index is designed to optimize queries fetching the
             # set of users who have special policy for a stream,
             # e.g. for the send-message code paths.
