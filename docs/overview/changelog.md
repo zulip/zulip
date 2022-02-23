@@ -1431,9 +1431,8 @@ Zulip installations; it has minimal changes for existing servers.
   disruption by running this migration first, before beginning the
   user-facing downtime. However, if you'd like to watch the downtime
   phase of the upgrade closely, we recommend
-  [running them first manually](../production/expensive-migrations.md)
-  and as well as the usual trick of
-  doing an apt upgrade first.
+  [running them first manually](https://zulip.readthedocs.io/en/1.9.0/production/expensive-migrations.html)
+  as well as the usual trick of doing an apt upgrade first.
 
 #### Full feature changelog
 
@@ -1821,9 +1820,8 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
   minimizes disruption by running these first, before beginning the
   user-facing downtime. However, if you'd like to watch the downtime
   phase of the upgrade closely, we recommend
-  [running them first manually](../production/expensive-migrations.md) and as well
-  as the usual trick of
-  doing an apt upgrade first.
+  [running them first manually](https://zulip.readthedocs.io/en/1.9.0/production/expensive-migrations.html)
+  as well as the usual trick of doing an apt upgrade first.
 
 - We've removed support for an uncommon legacy deployment model where
   a Zulip server served multiple organizations on the same domain.
