@@ -487,6 +487,9 @@ def send_notifications_to_bouncer(
     gcm_options: Dict[str, Any],
 ) -> Tuple[int, int]:
     post_data = {
+        "user_uuid": str(get_user_profile_by_id(user_profile_id).uuid),
+        # user_uuid is the intended future format, but we also need to send user_id
+        # to avoid breaking old mobile registrations, which were made with user_id.
         "user_id": user_profile_id,
         "apns_payload": apns_payload,
         "gcm_payload": gcm_payload,
@@ -539,7 +542,7 @@ def add_push_device_token(
     if uses_notification_bouncer():
         post_data = {
             "server_uuid": settings.ZULIP_ORG_ID,
-            "user_id": user_profile.id,
+            "user_uuid": str(user_profile.uuid),
             "token": token_str,
             "token_kind": kind,
         }
@@ -573,6 +576,9 @@ def remove_push_device_token(user_profile: UserProfile, token_str: str, kind: in
         # TODO: Make this a remove item
         post_data = {
             "server_uuid": settings.ZULIP_ORG_ID,
+            # We don't know here if the token was registered with uuid
+            # or using the legacy id format, so we need to send both.
+            "user_uuid": str(user_profile.uuid),
             "user_id": user_profile.id,
             "token": token_str,
             "token_kind": kind,
@@ -584,8 +590,12 @@ def remove_push_device_token(user_profile: UserProfile, token_str: str, kind: in
 def clear_push_device_tokens(user_profile_id: int) -> None:
     # Deletes all of a user's PushDeviceTokens.
     if uses_notification_bouncer():
+        user_uuid = str(get_user_profile_by_id(user_profile_id).uuid)
         post_data = {
             "server_uuid": settings.ZULIP_ORG_ID,
+            # We want to clear all registered token, and they may have
+            # been registered with either uuid or id.
+            "user_uuid": user_uuid,
             "user_id": user_profile_id,
         }
         send_to_push_bouncer("POST", "push/unregister/all", post_data)

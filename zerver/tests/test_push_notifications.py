@@ -77,6 +77,7 @@ from zerver.models import (
     get_display_recipient,
     get_realm,
     get_stream,
+    get_user_profile_by_id,
 )
 from zilencer.models import RemoteZulipServerAuditLog
 
@@ -508,13 +509,15 @@ class PushBouncerNotificationTest(BouncerTestCase):
             self.assert_json_success(result)
 
             tokens = list(
-                RemotePushDeviceToken.objects.filter(user_id=user.id, token=token, server=server)
+                RemotePushDeviceToken.objects.filter(
+                    user_uuid=user.uuid, token=token, server=server
+                )
             )
             self.assert_length(tokens, 1)
             self.assertEqual(tokens[0].token, token)
 
         # User should have tokens for both devices now.
-        tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, server=server))
+        tokens = list(RemotePushDeviceToken.objects.filter(user_uuid=user.uuid, server=server))
         self.assert_length(tokens, 2)
 
         # Remove tokens
@@ -524,7 +527,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
             )
             self.assert_json_success(result)
             tokens = list(
-                RemotePushDeviceToken.objects.filter(user_id=user.id, token=token, server=server)
+                RemotePushDeviceToken.objects.filter(
+                    user_uuid=user.uuid, token=token, server=server
+                )
             )
             self.assert_length(tokens, 0)
 
@@ -532,7 +537,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         for endpoint, token, kind in endpoints:
             result = self.client_post(endpoint, {"token": token}, subdomain="zulip")
             self.assert_json_success(result)
-        tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, server=server))
+        tokens = list(RemotePushDeviceToken.objects.filter(user_uuid=user.uuid, server=server))
         self.assert_length(tokens, 2)
 
         # Now we want to remove them using the bouncer after an API key change.
@@ -545,12 +550,12 @@ class PushBouncerNotificationTest(BouncerTestCase):
             mock_retry.assert_called()
 
             # We didn't manage to communicate with the bouncer, to the tokens are still there:
-            tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, server=server))
+            tokens = list(RemotePushDeviceToken.objects.filter(user_uuid=user.uuid, server=server))
             self.assert_length(tokens, 2)
 
         # Now we successfully remove them:
         do_regenerate_api_key(user, user)
-        tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, server=server))
+        tokens = list(RemotePushDeviceToken.objects.filter(user_uuid=user.uuid, server=server))
         self.assert_length(tokens, 0)
 
 
@@ -897,12 +902,22 @@ class PushNotificationTest(BouncerTestCase):
                 ios_app_id=settings.ZULIP_IOS_APP_ID,
             )
 
-        self.remote_tokens = ["cccc"]
-        for token in self.remote_tokens:
+        self.remote_tokens = [("cccc", "ffff")]
+        for id_token, uuid_token in self.remote_tokens:
+            # We want to set up both types of RemotePushDeviceToken here:
+            # the legacy one with user_id and the new with user_uuid.
+            # This allows tests to work with either, without needing to
+            # do their own setup.
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.APNS,
-                token=hex_to_b64(token),
+                token=hex_to_b64(id_token),
                 user_id=self.user_profile.id,
+                server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
+            )
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.APNS,
+                token=hex_to_b64(uuid_token),
+                user_uuid=self.user_profile.uuid,
                 server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
             )
 
@@ -916,12 +931,18 @@ class PushNotificationTest(BouncerTestCase):
                 ios_app_id=None,
             )
 
-        self.remote_gcm_tokens = ["dddd"]
-        for token in self.remote_gcm_tokens:
+        self.remote_gcm_tokens = [("dddd", "eeee")]
+        for id_token, uuid_token in self.remote_gcm_tokens:
             RemotePushDeviceToken.objects.create(
                 kind=RemotePushDeviceToken.GCM,
-                token=hex_to_b64(token),
+                token=hex_to_b64(id_token),
                 user_id=self.user_profile.id,
+                server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
+            )
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.GCM,
+                token=hex_to_b64(uuid_token),
+                user_uuid=self.user_profile.uuid,
                 server=RemoteZulipServer.objects.get(uuid=self.server_uuid),
             )
 
@@ -985,14 +1006,14 @@ class HandlePushNotificationTest(PushNotificationTest):
                 views_logger.output,
                 [
                     "INFO:zilencer.views:"
-                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:id:{self.user_profile.id}: "
+                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:uuid:{str(self.user_profile.uuid)}: "
                     f"{len(gcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices"
                 ],
             )
             for _, _, token in apns_devices:
                 self.assertIn(
                     "INFO:zerver.lib.push_notifications:"
-                    f"APNs: Success sending for user id:{self.user_profile.id} to device {token}",
+                    f"APNs: Success sending for user uuid:{str(self.user_profile.uuid)} to device {token}",
                     pn_logger.output,
                 )
             for _, _, token in gcm_devices:
@@ -1046,7 +1067,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 views_logger.output,
                 [
                     "INFO:zilencer.views:"
-                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:id:{self.user_profile.id}: "
+                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:uuid:{str(self.user_profile.uuid)}: "
                     f"{len(gcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices"
                 ],
             )
@@ -2094,6 +2115,7 @@ class TestSendNotificationsToBouncer(ZulipTestCase):
             1, {"apns": True}, {"gcm": True}, {}
         )
         post_data = {
+            "user_uuid": get_user_profile_by_id(1).uuid,
             "user_id": 1,
             "apns_payload": {"apns": True},
             "gcm_payload": {"gcm": True},
@@ -2248,7 +2270,7 @@ class TestPushApi(BouncerTestCase):
                 self.assertEqual(tokens[0].token, token)
 
                 remote_tokens = list(
-                    RemotePushDeviceToken.objects.filter(user_id=user.id, token=token)
+                    RemotePushDeviceToken.objects.filter(user_uuid=user.uuid, token=token)
                 )
                 self.assert_length(remote_tokens, 1)
                 self.assertEqual(remote_tokens[0].token, token)
@@ -2279,7 +2301,7 @@ class TestPushApi(BouncerTestCase):
                 self.assert_json_success(result)
                 tokens = list(PushDeviceToken.objects.filter(user=user, token=token))
                 remote_tokens = list(
-                    RemotePushDeviceToken.objects.filter(user_id=user.id, token=token)
+                    RemotePushDeviceToken.objects.filter(user_uuid=user.uuid, token=token)
                 )
                 self.assert_length(tokens, 0)
                 self.assert_length(remote_tokens, 0)

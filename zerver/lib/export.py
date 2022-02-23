@@ -976,12 +976,19 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
     )
 
 
+# We exclude these fields for the following reasons:
+# * api_key is a secret.
+# * password is a secret.
+# * uuid is unlikely to be useful if the domain changes.
+EXCLUDED_USER_PROFILE_FIELDS = ["api_key", "password", "uuid"]
+
+
 def custom_fetch_user_profile(response: TableData, context: Context) -> None:
     realm = context["realm"]
     exportable_user_ids = context["exportable_user_ids"]
 
     query = UserProfile.objects.filter(realm_id=realm.id)
-    exclude = ["password", "api_key"]
+    exclude = EXCLUDED_USER_PROFILE_FIELDS
     rows = make_raw(list(query), exclude=exclude)
 
     normal_rows: List[Record] = []
@@ -1979,7 +1986,7 @@ def get_single_user_config() -> Config:
     user_profile_config = Config(
         table="zerver_userprofile",
         is_seeded=True,
-        exclude=["password", "api_key"],
+        exclude=EXCLUDED_USER_PROFILE_FIELDS,
     )
 
     # zerver_subscription
