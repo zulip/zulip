@@ -20,7 +20,7 @@ destination streams.
 
 {start_tabs}
 
-{!stream-actions.md!}
+{!topic-actions.md!}
 
 1. Select **Move topic**.
 
