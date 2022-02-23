@@ -39,7 +39,6 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish, most_recent_message, most_recent_usermessage
 from zerver.models import (
     Attachment,
-    MissedMessageEmailAddress,
     Recipient,
     Stream,
     UserProfile,
@@ -1246,10 +1245,8 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = user_profile.delivery_email
 
-        for i in range(0, MissedMessageEmailAddress.ALLOWED_USES):
-            process_missed_message(mm_address, incoming_valid_message)
-
-        with self.assertRaises(ZulipEmailForwardError):
+        # there is no longer a usage limit.  Ensure we can send multiple times.
+        for i in range(0, 5):
             process_missed_message(mm_address, incoming_valid_message)
 
 
@@ -1502,14 +1499,10 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
 
     def test_using_mm_address_multiple_times(self) -> None:
         mm_address = self.send_private_message()
-        for i in range(0, MissedMessageEmailAddress.ALLOWED_USES):
+        # there is no longer a usage limit.  Ensure we can send multiple times.
+        for i in range(0, 5):
             result = self.send_offline_message(mm_address, self.example_user("cordelia"))
             self.assert_json_success(result)
-
-        result = self.send_offline_message(mm_address, self.example_user("cordelia"))
-        self.assert_json_error(
-            result, "5.1.1 Bad destination mailbox address: Missed message address out of uses."
-        )
 
     def test_wrong_missed_email_private_message(self) -> None:
         self.send_private_message()
@@ -1517,7 +1510,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
         result = self.send_offline_message(mm_address, self.example_user("cordelia"))
         self.assert_json_error(
             result,
-            "5.1.1 Bad destination mailbox address: Missed message address expired or doesn't exist.",
+            "5.1.1 Bad destination mailbox address: Zulip notification reply address is invalid.",
         )
 
 

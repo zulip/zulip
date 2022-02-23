@@ -6,8 +6,6 @@ from email.message import EmailMessage
 from typing import Dict, List, Match, Optional, Tuple
 
 from django.conf import settings
-from django.utils.timezone import now as timezone_now
-from django.utils.timezone import timedelta
 
 from zerver.actions.message_send import (
     check_send_message,
@@ -134,18 +132,9 @@ def get_missed_message_token_from_address(address: str) -> str:
 def get_usable_missed_message_address(address: str) -> MissedMessageEmailAddress:
     token = get_missed_message_token_from_address(address)
     try:
-        mm_address = MissedMessageEmailAddress.objects.select_related().get(
-            email_token=token,
-            timestamp__gt=timezone_now()
-            - timedelta(seconds=MissedMessageEmailAddress.EXPIRY_SECONDS),
-        )
+        mm_address = MissedMessageEmailAddress.objects.select_related().get(email_token=token)
     except MissedMessageEmailAddress.DoesNotExist:
-        raise ZulipEmailForwardUserError("Missed message address expired or doesn't exist.")
-
-    if not mm_address.is_usable():
-        # Technical, this also checks whether the event is expired,
-        # but that case is excluded by the logic above.
-        raise ZulipEmailForwardUserError("Missed message address out of uses.")
+        raise ZulipEmailForwardError("Zulip notification reply address is invalid.")
 
     return mm_address
 
