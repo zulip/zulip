@@ -30,7 +30,8 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator, RegexValidator, URLValidator, validate_email
 from django.db import models, transaction
 from django.db.backends.base.base import BaseDatabaseWrapper
-from django.db.models import CASCADE, Manager, Q, Sum
+from django.db.models import CASCADE, F, Manager, Q, Sum
+from django.db.models.functions import Upper
 from django.db.models.query import QuerySet
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.db.models.sql.compiler import SQLCompiler
@@ -2797,6 +2798,22 @@ class Message(AbstractMessage):
         if content.startswith("/me "):
             return True
         return False
+
+    class Meta:
+        indexes = [
+            models.Index(
+                "recipient",
+                Upper("subject"),
+                F("id").desc(nulls_last=True),
+                name="zerver_message_recipient_upper_subject",
+            ),
+            models.Index(
+                "recipient",
+                "subject",
+                F("id").desc(nulls_last=True),
+                name="zerver_message_recipient_subject",
+            ),
+        ]
 
 
 def get_context_for_message(message: Message) -> Sequence[Message]:
