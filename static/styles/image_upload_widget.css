@@ -41,7 +41,6 @@
 
     .image-delete-button:focus,
     .image-delete-button:hover {
-        opacity: 1;
         color: hsl(0, 0%, 100%);
     }
 
@@ -95,6 +94,10 @@
     &:hover {
         .image-upload-text {
             visibility: visible;
+        }
+
+        .image-delete-button {
+            opacity: 1;
         }
 
         .image-upload-background {
