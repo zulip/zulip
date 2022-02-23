@@ -3131,6 +3131,12 @@ class UserMessage(AbstractUserMessage):
             models.Index(
                 "user_profile",
                 "message",
+                condition=Q(flags__andz=AbstractUserMessage.flags.read.mask),
+                name="zerver_usermessage_unread_message_id",
+            ),
+            models.Index(
+                "user_profile",
+                "message",
                 condition=Q(flags__andnz=AbstractUserMessage.flags.has_alert_word.mask),
                 name="zerver_usermessage_has_alert_word_message_id",
             ),
