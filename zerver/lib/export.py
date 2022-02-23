@@ -154,6 +154,7 @@ ALL_ZULIP_TABLES = {
     "zerver_scimclient",
     "zerver_service",
     "zerver_stream",
+    "zerver_topic",
     "zerver_submessage",
     "zerver_subscription",
     "zerver_useractivity",

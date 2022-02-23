@@ -4472,3 +4472,21 @@ class SCIMClient(models.Model):
         request.user.is_authenticated verifications.
         """
         return True
+
+
+class Topic(models.Model):
+    """
+    Settings for a Topic. If we ever create a Topic table, this should
+    no longer be associated with a recipient.
+    """
+
+    id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
+    realm: Realm = models.ForeignKey(Realm, db_index=True, on_delete=CASCADE)
+    # Topics are linked to a recipient instead of stream to set up support for topics
+    # in private messages, which we might build in the future.
+    recipient: Recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
+    name: str = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)
+    pinned: bool = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ("recipient", "name")
