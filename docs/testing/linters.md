@@ -101,7 +101,7 @@ find limitations in either the Zulip home-grown stuff or our third party
 tools, feedback will be highly appreciated.
 
 Finally, one way to clean up your code is to thoroughly exercise it
-with tests. The [Zulip test documentation](../testing/testing.md)
+with tests. The [Zulip test documentation](testing.md)
 describes our test system in detail.
 
 ## Lint checks
@@ -120,7 +120,7 @@ following checks:
 - Check CSS for parsability and formatting.
 - Check JavaScript code for addClass calls.
 - Running `mypy` to check static types in Python code. Our
-  [documentation on using mypy](../testing/mypy.md) covers mypy in
+  [documentation on using mypy](mypy.md) covers mypy in
   more detail.
 - Running `tsc` to compile TypeScript code. Our [documentation on
   TypeScript](typescript.md) covers TypeScript in more detail.

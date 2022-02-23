@@ -18,8 +18,8 @@ git clone https://github.com/zulip/zulip.git zulip-server-git
 ```
 
 and then
-[continue the normal installation instructions](../production/install.html#step-2-install-zulip).
-You can also [upgrade Zulip from Git](../production/upgrade-or-modify.html#upgrading-from-a-git-repository).
+[continue the normal installation instructions](install.html#step-2-install-zulip).
+You can also [upgrade Zulip from Git](upgrade-or-modify.html#upgrading-from-a-git-repository).
 
 The most common use case for this is upgrading to `main` to get a
 feature that hasn't made it into an official release yet (often
@@ -33,14 +33,14 @@ In particular, we are always very glad to investigate problems with
 installing Zulip from `main`; they are rare and help us ensure that
 our next major release has a reliable install experience.
 
-[upgrade-to-main]: ../production/upgrade-or-modify.html#upgrading-to-main
-[upgrade-to-future-release]: ../production/upgrade-or-modify.html#upgrading-to-future-releases
+[upgrade-to-main]: upgrade-or-modify.html#upgrading-to-main
+[upgrade-to-future-release]: upgrade-or-modify.html#upgrading-to-future-releases
 
 ## Zulip in Docker
 
 Zulip has an officially supported, experimental
 [docker image](https://github.com/zulip/docker-zulip). Please note
-that Zulip's [normal installer](../production/install.md) has been
+that Zulip's [normal installer](install.md) has been
 extremely reliable for years, whereas the Docker image is new and has
 rough edges, so we recommend the normal installer unless you have a
 specific reason to prefer Docker.
@@ -49,7 +49,7 @@ specific reason to prefer Docker.
 
 The Zulip installer supports the following advanced installer options
 as well as those mentioned in the
-[install](../production/install.html#installer-options) documentation:
+[install](install.html#installer-options) documentation:
 
 - `--postgresql-version`: Sets the version of PostgreSQL that will be
   installed. We currently support PostgreSQL 10, 11, 12, 13, and 14.
@@ -83,7 +83,7 @@ as well as those mentioned in the
 Zulip's installation process assumes it is the only application
 running on the server; though installing alongside other applications
 is not recommended, we do have [some notes on the
-process](../production/install-existing-server.md).
+process](install-existing-server.md).
 
 ## Running Zulip's service dependencies on different machines
 
@@ -132,7 +132,7 @@ below.
 
 #### Step 1: Set up Zulip
 
-Follow the [standard instructions](../production/install.md), with one
+Follow the [standard instructions](install.md), with one
 change. When running the installer, pass the `--no-init-db`
 flag, e.g.:
 
@@ -535,7 +535,7 @@ configuration of `pg_hba.conf` and client certificates on the
 replica.
 
 [warm-standby]: https://www.postgresql.org/docs/current/warm-standby.html
-[wal-g]: ../production/export-and-import.html#backup-details
+[wal-g]: export-and-import.html#backup-details
 
 ## System and deployment configuration
 
@@ -575,7 +575,7 @@ that include:
 - **`zulip::profile::rabbitmq`**
 
 If you are using a [Apache as a single-sign-on
-authenticator](../production/authentication-methods.html#apache-based-sso-with-remote-user),
+authenticator](authentication-methods.html#apache-based-sso-with-remote-user),
 you will need to add **`zulip::apache_sso`** to the list.
 
 #### `pgroonga`
@@ -604,7 +604,7 @@ for servers that are upgraded frequently by core Zulip developers.
 #### `git_repo_url`
 
 Default repository URL used when [upgrading from a Git
-repository](../production/upgrade-or-modify.html#upgrading-from-a-git-repository).
+repository](upgrade-or-modify.html#upgrading-from-a-git-repository).
 
 ### `[application_server]`
 
@@ -626,7 +626,7 @@ configure `settings.py` and set this to true to configure
 `nginx`. Remove this field to return to the local uploads backend (any
 non-empty value is currently equivalent to true).
 
-[s3-uploads]: ../production/upload-backends.html#s3-backend-configuration
+[s3-uploads]: upload-backends.html#s3-backend-configuration
 
 #### `queue_workers_multiprocess`
 
@@ -669,7 +669,7 @@ more than 3.5GiB of RAM, 4 on hosts with less.
 #### `mailname`
 
 The hostname that [Postfix should be configured to receive mail
-at](../production/email-gateway.html#local-delivery-setup).
+at](email-gateway.html#local-delivery-setup).
 
 ### `[postgresql]`
 
@@ -694,7 +694,7 @@ Set to true to enable replication to enable [log shipping replication
 between PostgreSQL servers](#postgresql-warm-standby). This should be
 enabled on the primary, as well as any replicas, and further requires
 configuration of
-[wal-g](../production/export-and-import.html#backup-details).
+[wal-g](export-and-import.html#backup-details).
 
 #### `replication_primary`
 
@@ -726,7 +726,7 @@ connections.
 #### `version`
 
 The version of PostgreSQL that is in use. Do not set by hand; use the
-[PostgreSQL upgrade tool](../production/upgrade-or-modify.html#upgrading-postgresql).
+[PostgreSQL upgrade tool](upgrade-or-modify.html#upgrading-postgresql).
 
 ### `[memcached]`
 

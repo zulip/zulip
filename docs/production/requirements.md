@@ -16,7 +16,7 @@ To run a Zulip server, you will need:
 
 For details on each of these requirements, see below.
 
-[upgrade-from-git]: ../production/upgrade-or-modify.html#upgrading-from-a-git-repository
+[upgrade-from-git]: upgrade-or-modify.html#upgrading-from-a-git-repository
 
 ## Server
 
@@ -52,7 +52,7 @@ sudo apt update
 ```
 
 [docker-zulip-homepage]: https://github.com/zulip/docker-zulip#readme
-[upgrade-os]: ../production/upgrade-or-modify.html#upgrading-the-operating-system
+[upgrade-os]: upgrade-or-modify.html#upgrading-the-operating-system
 [ubuntu-repositories]: https://help.ubuntu.com/community/Repositories/Ubuntu
 [enable-universe]: https://help.ubuntu.com/community/Repositories/CommandLine#Adding_the_Universe_and_Multiverse_Repositories
 
@@ -77,13 +77,13 @@ on hardware requirements for larger organizations.
 #### Network and security specifications
 
 - Incoming HTTPS access (usually port 443, though this is
-  [configurable](../production/deployment.html#using-an-alternate-port))
+  [configurable](deployment.html#using-an-alternate-port))
   from the networks where your users are (usually, the public
   Internet).
 - Incoming port 80 access (optional). Zulip only serves content over
   HTTPS, and will redirect HTTP requests to HTTPS.
 - Incoming port 25 if you plan to enable Zulip's [incoming email
-  integration](../production/email-gateway.md).
+  integration](email-gateway.md).
 - Incoming port 4369 should be protected by a firewall to prevent
   exposing `epmd`, an Erlang service which does not support binding
   only to localhost. Leaving this exposed will allow unauthenticated
@@ -95,7 +95,7 @@ on hardware requirements for larger organizations.
   [disable those
   features](https://zulip.com/help/allow-image-link-previews).
 - Outgoing SMTP access (usually port 587) to your [SMTP
-  server](../production/email.md) so that Zulip can send emails.
+  server](email.md) so that Zulip can send emails.
 - A domain name (e.g. `zulip.example.com`) that your users will use to
   access the Zulip server. In order to generate valid SSL
   certificates [with Certbot][doc-certbot], and to enable other
@@ -111,8 +111,8 @@ on hardware requirements for larger organizations.
   Zulip supports using that instead.
 
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
-[smokescreen-proxy]: ../production/deployment.html#customizing-the-outgoing-http-proxy
-[reverse-proxy]: ../production/deployment.html#putting-the-zulip-application-behind-a-reverse-proxy
+[smokescreen-proxy]: deployment.html#customizing-the-outgoing-http-proxy
+[reverse-proxy]: deployment.html#putting-the-zulip-application-behind-a-reverse-proxy
 [email-mirror-code]: https://github.com/zulip/zulip/blob/main/zerver/management/commands/email_mirror.py
 
 ## Credentials needed
@@ -145,7 +145,7 @@ certificate documentation](ssl-certificates.md).
   [free outgoing SMTP options and options for prototyping](email.html#free-outgoing-email-services).
 
 Once you have met these requirements, see [full instructions for installing
-Zulip in production](../production/install.md).
+Zulip in production](install.md).
 
 [trusty-eol]: https://wiki.ubuntu.com/Releases
 
@@ -167,7 +167,7 @@ server services, Django dominates the resource requirements. One can
 run every service on its own system (as
 [docker-zulip](https://github.com/zulip/docker-zulip) does) but for
 most use cases, there's little scalability benefit to doing so. See
-[deployment options](../production/deployment.md) for details on
+[deployment options](deployment.md) for details on
 installing Zulip with a dedicated database server.
 
 - **Dedicated database**. For installations with hundreds of daily
@@ -240,6 +240,6 @@ For readers interested in technical details around what features
 impact Zulip's scalability, this [performance and scalability design
 document](../subsystems/performance.md) may also be of interest.
 
-[s3-uploads]: ../production/upload-backends.html#s3-backend-configuration
-[streaming-replication]: ../production/deployment.html#postgresql-warm-standby
+[s3-uploads]: upload-backends.html#s3-backend-configuration
+[streaming-replication]: deployment.html#postgresql-warm-standby
 [contact-support]: https://zulip.com/help/contact-support

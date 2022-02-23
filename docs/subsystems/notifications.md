@@ -3,7 +3,7 @@
 This is a design document aiming to provide context for developers
 working on Zulip's email notifications and mobile push notifications
 code paths. We recommend first becoming familiar with [sending
-messages](../subsystems/sending-messages.md); this document expands on
+messages](sending-messages.md); this document expands on
 the details of the email/mobile push notifications code path.
 
 ## Important corner cases
@@ -43,7 +43,7 @@ as follows:
     structure ignores users for whom the message is not notifiable,
     which is important to avoid this being thousands of `user_ids` for
     messages to large streams with few currently active users.
-- The Tornado [event queue system](../subsystems/events-system.md)
+- The Tornado [event queue system](events-system.md)
   processes that data, as well as data about each user's active event
   queues, to (1) push an event to each queue needing that message and
   (2) for notifiable messages, pushing an event onto the
@@ -64,7 +64,7 @@ as follows:
     if a user was present 1 minute before a message was sent, and then
     closed their laptop, the user will not be in
     `presence_idle_user_ids` (because it takes a
-    [few minutes](../subsystems/presence.md) of being idle for Zulip
+    [few minutes](presence.md) of being idle for Zulip
     clients to declare to the server that the user is actually idle),
     and so without an additional mechanism, messages sent shortly after
     a user leaves would never trigger a notification (!).

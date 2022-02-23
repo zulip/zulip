@@ -145,7 +145,7 @@ developing new features for Zulip that require front-end changes,
 especially those that involve adding new files. For a more general
 overview, see the [new feature tutorial](../tutorials/new-feature-tutorial.md).
 
-Our [dependencies documentation](../subsystems/dependencies.md) has useful
+Our [dependencies documentation](dependencies.md) has useful
 relevant background as well.
 
 ### Primary build process

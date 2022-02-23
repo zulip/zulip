@@ -113,4 +113,4 @@ See also [fixing commits][fix-commit]
 
 [fix-commit]: fixing-commits.md
 [git-config-clone]: cloning.html#step-1b-clone-to-your-machine
-[git-overview]: ./overview.md
+[git-overview]: overview.md

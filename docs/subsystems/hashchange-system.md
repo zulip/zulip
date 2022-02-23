@@ -121,4 +121,4 @@ box as a draft).
 
 [testing-with-puppeteer]: ../testing/testing-with-puppeteer.md
 [self-server-reloads]: #server-initiated-reloads
-[events-system]: ../subsystems/events-system.md
+[events-system]: events-system.md

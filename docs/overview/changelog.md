@@ -1,7 +1,7 @@
 # Version history
 
 This page the release history for the Zulip server. See also the
-[Zulip release lifecycle](../overview/release-lifecycle.md).
+[Zulip release lifecycle](release-lifecycle.md).
 
 ## Zulip 5.x series
 
@@ -402,7 +402,7 @@ log][commit-log] for an up-to-date list of raw changes.
 
 #### Full feature changelog
 
-- Added new [release lifecycle documentation](../overview/release-lifecycle.md).
+- Added new [release lifecycle documentation](release-lifecycle.md).
 - Added support for subscribing another stream's membership to a stream.
 - Added RealmAuditLog for most settings state changes in Zulip; this
   data will facilitate future features showing a log of activity by

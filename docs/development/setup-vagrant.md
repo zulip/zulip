@@ -151,7 +151,7 @@ Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
 #### Windows 10
 
 :::{note}
-We recommend using [WSL 2 for Windows development](../development/setup-advanced.html#installing-directly-on-windows-10-with-wsl-2).
+We recommend using [WSL 2 for Windows development](setup-advanced.html#installing-directly-on-windows-10-with-wsl-2).
 :::
 
 1. Install [Git for Windows][git-bash], which installs _Git BASH_.
@@ -1041,7 +1041,7 @@ remove the `GUEST_CPUS` and `GUEST_MEMORY_MB` lines from
 [cygwin-dl]: https://cygwin.com/
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
-[install-advanced]: ../development/setup-advanced.md
+[install-advanced]: setup-advanced.md
 [rtd-git-guide]: ../git/index.md
 [rtd-testing]: ../testing/testing.md
 [rtd-using-dev-env]: using.md
