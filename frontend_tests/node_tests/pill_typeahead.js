@@ -146,6 +146,9 @@ run_test("set_up", ({mock_template}) => {
             query: "me",
         };
         const fake_group_this = {
+            query: "@test",
+        };
+        const wrong_group_query = {
             query: "test",
         };
 
@@ -193,8 +196,14 @@ run_test("set_up", ({mock_template}) => {
                 // group query, with correct item.
                 result = config.matcher.call(fake_group_this, testers);
                 assert.ok(result);
+                // group query, with correct item but incorrect syntax.
+                result = config.matcher.call(wrong_group_query, testers);
+                assert.ok(!result);
                 // group query, with wrong item.
                 result = config.matcher.call(fake_group_this, admins);
+                assert.ok(!result);
+                // group query, with person as item.
+                result = config.matcher.call(fake_group_this, me);
                 assert.ok(!result);
                 // person query with correct item.
                 result = config.matcher.call(fake_person_this, me);
@@ -206,6 +215,8 @@ run_test("set_up", ({mock_template}) => {
             if (opts.user_group && !opts.user) {
                 result = config.matcher.call(fake_group_this, testers);
                 assert.ok(result);
+                result = config.matcher.call(wrong_group_query, testers);
+                assert.ok(!result);
                 result = config.matcher.call(fake_group_this, admins);
                 assert.ok(!result);
             }
@@ -244,39 +255,40 @@ run_test("set_up", ({mock_template}) => {
                 assert.deepEqual(stream_ids, expected_stream_ids);
             }
 
-            let expected_result = [];
-            let actual_result = [];
-            function is_group(item) {
-                return item.members;
-            }
-            result = config.source.call(fake_person_this);
-            actual_result = result
-                .map((item) => {
-                    if (is_group(item)) {
-                        return item.id;
+            function user_source_test(query) {
+                let expected_result = [];
+                let actual_result = [];
+                result = config.source.call(query);
+                actual_result = result.map((item) => item.user_id).filter(Boolean);
+
+                if (opts.user) {
+                    if (opts.user_source) {
+                        expected_result = opts.user_source();
+                    } else {
+                        expected_result = persons;
                     }
-                    return item.user_id;
-                })
-                .filter(Boolean);
-            if (opts.user_group) {
-                expected_result = expected_result.concat(groups);
+                }
+                expected_result = expected_result.map((item) => item.user_id).filter(Boolean);
+                assert.deepEqual(actual_result, expected_result);
             }
-            if (opts.user) {
-                if (opts.user_source) {
-                    expected_result = expected_result.concat(opts.user_source());
-                } else {
-                    expected_result = expected_result.concat(persons);
+
+            if (opts.user_group) {
+                // check we give only user groups for correct user group query.
+                result = config.source.call(fake_group_this);
+                const group_ids = result.map((group) => group.id);
+                const expected_group_ids = [admins.id, testers.id];
+                assert.deepEqual(group_ids, expected_group_ids);
+
+                if (opts.user) {
+                    // for incorrect syntax, we give only user source
+                    // as inclusion of user groups depends on both
+                    // query and opts.
+                    user_source_test(wrong_group_query);
                 }
             }
-            expected_result = expected_result
-                .map((item) => {
-                    if (is_group(item)) {
-                        return item.id;
-                    }
-                    return item.user_id;
-                })
-                .filter(Boolean);
-            assert.deepEqual(actual_result, expected_result);
+            if (opts.user) {
+                user_source_test(fake_person_this);
+            }
         })();
 
         (function test_updater() {

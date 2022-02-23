@@ -208,7 +208,7 @@ test_ui("subscriber_pills", ({override_rewire, mock_template}) => {
             query: "me",
         };
         const fake_group_this = {
-            query: "test",
+            query: "@test",
         };
 
         (function test_highlighter() {
