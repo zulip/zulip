@@ -3130,6 +3130,12 @@ class UserMessage(AbstractUserMessage):
             models.Index(
                 "user_profile",
                 "message",
+                condition=Q(flags__andnz=AbstractUserMessage.flags.is_private.mask),
+                name="zerver_usermessage_is_private_message_id",
+            ),
+            models.Index(
+                "user_profile",
+                "message",
                 condition=Q(
                     flags__andnz=AbstractUserMessage.flags.active_mobile_push_notification.mask
                 ),
