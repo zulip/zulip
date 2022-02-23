@@ -139,6 +139,13 @@ jobs:
           ./tools/setup/optimize-svg --check
           ./tools/setup/generate_integration_bots_avatars.py --check-missing
 
+          # Ban check-database-compatibility.py from transitively
+          # relying on static/generated, because it might not be
+          # up-to-date at that point in upgrade-zulip-stage-2.
+          chmod 000 static/generated
+          ./scripts/lib/check-database-compatibility.py
+          chmod 755 static/generated
+
       - name: Run documentation and api tests
         run: |
           source tools/ci/activate-venv
