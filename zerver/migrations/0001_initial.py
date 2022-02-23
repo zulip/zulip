@@ -5,9 +5,12 @@ import django.core.validators
 import django.db.models.deletion
 import django.utils.timezone
 from django.conf import settings
+from django.contrib.postgres.indexes import GinIndex
+from django.contrib.postgres.search import SearchVectorField
 from django.db import migrations, models
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
+from django.db.models.functions import Upper
 
 from zerver.models import generate_email_token_for_stream
 
@@ -61,10 +64,6 @@ CREATE FUNCTION escape_html(text) RETURNS text IMMUTABLE LANGUAGE 'sql' AS $$
   SELECT replace(replace(replace(replace(replace($1, '&', '&amp;'), '<', '&lt;'),
                                  '>', '&gt;'), '"', '&quot;'), '''', '&#39;');
 $$ ;
-
-ALTER TABLE zerver_message ADD COLUMN search_tsvector tsvector;
-CREATE INDEX zerver_message_search_tsvector ON zerver_message USING gin(search_tsvector);
-ALTER INDEX zerver_message_search_tsvector SET (fastupdate = OFF);
 
 CREATE TABLE fts_update_log (id SERIAL PRIMARY KEY, message_id INTEGER NOT NULL);
 CREATE FUNCTION do_notify_fts_update_log() RETURNS trigger LANGUAGE plpgsql AS
@@ -706,6 +705,17 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
                 verbose_name="user permissions",
             ),
         ),
+        migrations.AddField(
+            model_name="message",
+            name="search_tsvector",
+            field=SearchVectorField(null=True),
+        ),
+        migrations.AddIndex(
+            model_name="message",
+            index=GinIndex(
+                "search_tsvector", fastupdate=False, name="zerver_message_search_tsvector"
+            ),
+        ),
         migrations.RunSQL(
             sql=fts_sql,
         ),
@@ -745,13 +755,13 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
             name="last_login",
             field=models.DateTimeField(blank=True, null=True, verbose_name="last login"),
         ),
-        migrations.RunSQL(
-            sql="CREATE INDEX upper_subject_idx ON zerver_message ((upper(subject)));",
-            reverse_sql="DROP INDEX upper_subject_idx;",
+        migrations.AddIndex(
+            model_name="message",
+            index=models.Index(Upper("subject"), name="upper_subject_idx"),
         ),
-        migrations.RunSQL(
-            sql="CREATE INDEX upper_stream_name_idx ON zerver_stream ((upper(name)));",
-            reverse_sql="DROP INDEX upper_stream_name_idx;",
+        migrations.AddIndex(
+            model_name="stream",
+            index=models.Index(Upper("name"), name="upper_stream_name_idx"),
         ),
         migrations.AddField(
             model_name="userprofile",
@@ -767,9 +777,9 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
                 )
             },
         ),
-        migrations.RunSQL(
-            sql="CREATE INDEX upper_userprofile_email_idx ON zerver_userprofile ((upper(email)));",
-            reverse_sql="DROP INDEX upper_userprofile_email_idx;",
+        migrations.AddIndex(
+            model_name="userprofile",
+            index=models.Index(Upper("email"), name="upper_userprofile_email_idx"),
         ),
         migrations.AlterField(
             model_name="userprofile",
@@ -781,9 +791,9 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
             name="is_bot",
             field=models.BooleanField(db_index=True, default=False),
         ),
-        migrations.RunSQL(
-            sql="CREATE INDEX upper_preregistration_email_idx ON zerver_preregistrationuser ((upper(email)));",
-            reverse_sql="DROP INDEX upper_preregistration_email_idx;",
+        migrations.AddIndex(
+            model_name="preregistrationuser",
+            index=models.Index(Upper("email"), name="upper_preregistration_email_idx"),
         ),
         migrations.AlterField(
             model_name="userprofile",

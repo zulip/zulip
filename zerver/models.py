@@ -26,6 +26,8 @@ from bitfield.types import BitHandler
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager
 from django.contrib.contenttypes.fields import GenericRelation
+from django.contrib.postgres.indexes import GinIndex
+from django.contrib.postgres.search import SearchVectorField
 from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator, RegexValidator, URLValidator, validate_email
 from django.db import models, transaction
@@ -2061,6 +2063,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
         super().set_password(password)
 
+    class Meta:
+        indexes = [
+            models.Index(Upper("email"), name="upper_userprofile_email_idx"),
+        ]
+
 
 class PasswordTooWeakError(Exception):
     pass
@@ -2168,6 +2175,11 @@ class PreregistrationUser(models.Model):
         GUEST_USER=600,
     )
     invited_as: int = models.PositiveSmallIntegerField(default=INVITE_AS["MEMBER"])
+
+    class Meta:
+        indexes = [
+            models.Index(Upper("email"), name="upper_preregistration_email_idx"),
+        ]
 
 
 def filter_to_valid_prereg_users(
@@ -2414,6 +2426,11 @@ class Stream(models.Model):
             result[field_name] = getattr(self, field_name)
         result["is_announcement_only"] = self.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS
         return result
+
+    class Meta:
+        indexes = [
+            models.Index(Upper("name"), name="upper_stream_name_idx"),
+        ]
 
 
 post_save.connect(flush_stream, sender=Stream)
@@ -2724,6 +2741,7 @@ class ArchivedMessage(AbstractMessage):
 
 class Message(AbstractMessage):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
+    search_tsvector = SearchVectorField(null=True)
 
     def topic_name(self) -> str:
         """
@@ -2802,6 +2820,8 @@ class Message(AbstractMessage):
 
     class Meta:
         indexes = [
+            GinIndex("search_tsvector", fastupdate=False, name="zerver_message_search_tsvector"),
+            models.Index(Upper("subject"), name="upper_subject_idx"),
             models.Index("date_sent", name="zerver_message_date_sent_3b5b05d8"),
             models.Index(
                 "recipient",
