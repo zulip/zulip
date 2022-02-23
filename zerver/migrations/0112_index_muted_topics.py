@@ -1,4 +1,5 @@
-from django.db import migrations
+from django.db import migrations, models
+from django.db.models.functions import Upper
 
 
 class Migration(migrations.Migration):
@@ -8,12 +9,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(
-            """
-            CREATE INDEX zerver_mutedtopic_stream_topic
-            ON zerver_mutedtopic
-            (stream_id, upper(topic_name))
-            """,
-            reverse_sql="DROP INDEX zerver_mutedtopic_stream_topic;",
+        migrations.AddIndex(
+            model_name="mutedtopic",
+            index=models.Index(
+                "stream", Upper("topic_name"), name="zerver_mutedtopic_stream_topic"
+            ),
         ),
     ]
