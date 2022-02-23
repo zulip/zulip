@@ -2801,6 +2801,7 @@ class Message(AbstractMessage):
 
     class Meta:
         indexes = [
+            models.Index("date_sent", name="zerver_message_date_sent_3b5b05d8"),
             models.Index(
                 "recipient",
                 Upper("subject"),
