@@ -32,15 +32,15 @@ export class PanZoomControl {
                 return true;
             },
         });
-        // Start with pan/zoom disabled.
-        this.disablePanZoom();
-
         // The following events are necessary to prevent the click event
         // firing where the user "unclicks" at the end of the drag, which
         // was causing accidental overlay closes in some situations.
         this.panzoom.on("pan", () => {
             // Marks this overlay as needing to stay open.
             $("#lightbox_overlay").data("noclose", true);
+
+            // Enable the panzoom reset button.
+            $("#lightbox_overlay .lightbox-zoom-reset").removeClass("disabled");
         });
 
         this.panzoom.on("panend", (e) => {
@@ -61,6 +61,9 @@ export class PanZoomControl {
             // event does not fire when using the scroll wheel or pinch to zoom.
             // https://github.com/anvaka/panzoom/issues/250
             this.constrainImage(e);
+
+            // Enable the panzoom reset button.
+            $("#lightbox_overlay .lightbox-zoom-reset").removeClass("disabled");
         });
 
         // key bindings
@@ -144,17 +147,9 @@ export class PanZoomControl {
         // of which there is some anecdotal evidence that suggests they
         // might be prone to race conditions.
         $("#lightbox_overlay").data("noclose", false);
-    }
-
-    disablePanZoom() {
-        $(".image-preview .zoom-element img").css("cursor", "auto");
-        this.reset();
-        this.panzoom.pause();
-    }
-
-    enablePanZoom() {
-        $(".image-preview .zoom-element img").css("cursor", "move");
-        this.panzoom.resume();
+        // Disable the lightbox reset button to reflect the state that
+        // the image has not been panned or zoomed.
+        $("#lightbox_overlay .lightbox-zoom-reset").addClass("disabled");
     }
 
     zoomIn() {
@@ -208,9 +203,7 @@ function display_image(payload) {
     render_lightbox_list_images(payload.preview);
 
     $(".player-container").hide();
-    $(
-        ".image-preview, .image-actions, .image-description, .download, .lightbox-canvas-trigger",
-    ).show();
+    $(".image-preview, .image-actions, .image-description, .download, .lightbox-zoom-reset").show();
 
     const img_container = $("#lightbox_overlay .image-preview > .zoom-element");
     const img = new Image();
@@ -229,7 +222,7 @@ function display_video(payload) {
     render_lightbox_list_images(payload.preview);
 
     $(
-        "#lightbox_overlay .image-preview, .image-description, .download, .lightbox-canvas-trigger",
+        "#lightbox_overlay .image-preview, .image-description, .download, .lightbox-zoom-reset",
     ).hide();
 
     let source;
@@ -453,9 +446,8 @@ export function initialize() {
         is_open = false;
         document.activeElement.blur();
         if (pan_zoom_control.isActive()) {
-            pan_zoom_control.disablePanZoom();
+            pan_zoom_control.reset();
         }
-        $(".lightbox-canvas-trigger").removeClass("enabled");
     };
 
     const open_image = build_open_image_function(reset_lightbox_state);
@@ -516,22 +508,12 @@ export function initialize() {
         }
     });
 
-    $("#lightbox_overlay").on("click", ".lightbox-canvas-trigger", function () {
-        const $img = $("#lightbox_overlay").find(".image-preview img");
-        open_image($img);
-
-        if ($(this).hasClass("enabled")) {
-            pan_zoom_control.disablePanZoom();
-            $(this).removeClass("enabled");
-        } else {
-            pan_zoom_control.enablePanZoom();
-            $(this).addClass("enabled");
+    $("#lightbox_overlay").on("click", ".lightbox-zoom-reset", () => {
+        if (!$("#lightbox_overlay .lightbox-zoom-reset").hasClass("disabled")) {
+            const $img = $("#lightbox_overlay").find(".image-preview img");
+            open_image($img);
+            pan_zoom_control.reset();
         }
-    });
-
-    $("#lightbox_overlay .image-preview").on("dblclick", "img, canvas", (e) => {
-        $("#lightbox_overlay .lightbox-canvas-trigger").trigger("click");
-        e.preventDefault();
     });
 
     $("#lightbox_overlay .player-container").on("click", function () {
