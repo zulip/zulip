@@ -44,7 +44,7 @@ Email takes about a quarter second per email to process and send. Generally
 speaking, if you're sending just one email, doing it in the current process
 is fine. If you're sending emails in a loop, you probably want to send it
 from a queue. Documentation on our queueing system is available
-[here](../subsystems/queuing.md).
+[here](queuing.md).
 
 ## Development and testing
 

@@ -162,7 +162,7 @@ its data, clients would recover, just as if they had lost Internet
 access briefly (there is some DoS risk to manage, though).
 
 Note that the garbage-collection system has hooks that are important
-for the implementation of [notifications](../subsystems/notifications.md).
+for the implementation of [notifications](notifications.md).
 
 (The event queue server is designed to save any event queues to disk
 and reload them when the server is restarted, and catches exceptions
@@ -407,7 +407,7 @@ correctly, clients are responsible for discarding events related to
 messages that the client has not yet fetched.
 
 Additionally, see
-[the main documentation on sending messages](../subsystems/sending-messages.md).
+[the main documentation on sending messages](sending-messages.md).
 
 ## Schema changes
 

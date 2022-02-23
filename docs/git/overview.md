@@ -59,7 +59,7 @@ Git workflow, or if you'd like a Git refresher.
 [github-zulip]: https://github.com/zulip/
 [github-zulip-zulip]: https://github.com/zulip/zulip/
 [continuous-integration]: ../testing/continuous-integration.md
-[zulip-git-guide-fork-ci]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork
+[zulip-git-guide-fork-ci]: cloning.html#step-3-configure-continuous-integration-for-your-fork
 [zulip-rtd-code-style]: ../contributing/code-style.md
 [zulip-rtd-commit-discipline]: ../contributing/version-control.html#commit-discipline
 [zulip-rtd-commit-messages]: ../contributing/version-control.html#commit-messages
@@ -67,5 +67,5 @@ Git workflow, or if you'd like a Git refresher.
 [zulip-rtd-lint-tools]: ../contributing/code-style.html#lint-tools
 [zulip-rtd-mypy]: ../testing/mypy.md
 [zulip-rtd-testing]: ../testing/testing.md
-[zulip-rtd-zulip-tools]: ../git/zulip-tools.md
+[zulip-rtd-zulip-tools]: zulip-tools.md
 [zulip-rtd-zulipbot-usage]: ../contributing/zulipbot-usage.md

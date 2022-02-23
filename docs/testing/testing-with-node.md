@@ -2,7 +2,7 @@
 
 Our node-based unit tests system is the preferred way to test
 JavaScript/TypeScript code in Zulip. We prefer it over the [Puppeteer
-black-box whole-app testing](../testing/testing-with-puppeteer.md),
+black-box whole-app testing](testing-with-puppeteer.md),
 system since it is much (>100x) faster and also easier to do correctly
 than the Puppeteer system.
 
@@ -50,7 +50,7 @@ A good first test to read is
 
 ## How the node tests work
 
-Unlike the [Puppeteer unit tests](../testing/testing-with-puppeteer.md),
+Unlike the [Puppeteer unit tests](testing-with-puppeteer.md),
 which use a headless Chromium browser connected to a running Zulip
 development server, our node unit tests don't have a browser, don't
 talk to a server, and generally don't use a complete virtual DOM (a

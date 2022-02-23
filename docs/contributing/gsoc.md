@@ -54,7 +54,7 @@ maintainers.
 To learn more about the experience of doing GSoC with Zulip, check out our
 [Zulip's Google Summer of Code 2021 blog
 post](https://blog.zulip.com/2021/09/30/google-summer-of-code-2021/). Our [guide
-for having a great summer with Zulip](../contributing/summer-with-zulip.md) will
+for having a great summer with Zulip](summer-with-zulip.md) will
 also give you a feel for what it's like to do GSoC with us.
 
 > _“It has been the best summer I've ever had! I'm thankful to my mentors, my

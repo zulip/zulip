@@ -167,7 +167,7 @@ and report to the server the following whenever a message is sent:
 - Whether the message was locally echoed.
 - If so, whether there was a disparity between the echoed content and
   the server-rendered content, which can be used for statistics on how
-  effective our [local echo system](../subsystems/markdown.md) is.
+  effective our [local echo system](markdown.md) is.
 
 The code is all in `zerver/lib/report.py` and `static/js/sent_messages.js`.
 
