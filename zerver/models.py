@@ -3125,6 +3125,18 @@ class AbstractUserMessage(models.Model):
 class UserMessage(AbstractUserMessage):
     message: Message = models.ForeignKey(Message, on_delete=CASCADE)
 
+    class Meta(AbstractUserMessage.Meta):
+        indexes = [
+            models.Index(
+                "user_profile",
+                "message",
+                condition=Q(
+                    flags__andnz=AbstractUserMessage.flags.active_mobile_push_notification.mask
+                ),
+                name="zerver_usermessage_active_mobile_push_notification_id",
+            ),
+        ]
+
 
 def get_usermessage_by_message_id(
     user_profile: UserProfile, message_id: int
