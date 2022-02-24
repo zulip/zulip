@@ -157,7 +157,7 @@ export const update_elements = (content) => {
 
     content.find("time").each(function () {
         // Populate each timestamp span with mentioned time
-        // in user's local timezone.
+        // in user's local time zone.
         const time_str = $(this).attr("datetime");
         if (time_str === undefined) {
             return;

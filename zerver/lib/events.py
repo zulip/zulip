@@ -1207,7 +1207,7 @@ def apply_event(
         assert event["notification_name"] in UserProfile.notification_settings_legacy
         state[event["notification_name"]] = event["setting"]
     elif event["type"] == "user_settings":
-        # timezone setting is not included in property_types dict because
+        # time zone setting is not included in property_types dict because
         # this setting is not a part of UserBaseSettings class.
         if event["property"] != "timezone":
             assert event["property"] in UserProfile.property_types

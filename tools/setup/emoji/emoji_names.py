@@ -1545,7 +1545,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # 24-hour time (used in many countries), like what is 00:30 or 01:00
     # called, c) it's hard to make the compose typeahead experience great, and
     # d) we should have a dedicated time voting widget that takes care of
-    # timezone and locale issues, and uses a digital representation.
+    # time zone and locale issues, and uses a digital representation.
     # '1f550': {'canonical_name': 'X', 'aliases': ['clock1']},
     # '1f551': {'canonical_name': 'X', 'aliases': ['clock2']},
     # '1f552': {'canonical_name': 'X', 'aliases': ['clock3']},

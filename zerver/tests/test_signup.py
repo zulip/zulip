@@ -5719,7 +5719,7 @@ class FollowupEmailTest(ZulipTestCase):
 
         # Time offset of America/Phoenix is -07:00
         user_profile.timezone = "America/Phoenix"
-        # Test date_joined == Friday in UTC, but Thursday in the user's timezone
+        # Test date_joined == Friday in UTC, but Thursday in the user's time zone
         user_profile.date_joined = datetime.datetime(
             2018, 1, 5, 1, 0, 0, 0, tzinfo=datetime.timezone.utc
         )

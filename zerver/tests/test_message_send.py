@@ -1456,7 +1456,7 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assertEqual(message.content, "Test message 5")
         self.assertEqual(message.delivery_type, ScheduledMessage.REMIND)
 
-        # Scheduling a message while guessing timezone.
+        # Scheduling a message while guessing time zone.
         tz_guess = "Asia/Kolkata"
         result = self.do_schedule_message(
             "stream", "Verona", content + " 6", defer_until_str, tz_guess=tz_guess
@@ -1469,8 +1469,8 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assertEqual(message.scheduled_timestamp, convert_to_UTC(utz_defer_until))
         self.assertEqual(message.delivery_type, ScheduledMessage.SEND_LATER)
 
-        # Test with users timezone setting as set to some timezone rather than
-        # empty. This will help interpret timestamp in users local timezone.
+        # Test with users time zone setting as set to some time zone rather than
+        # empty. This will help interpret timestamp in users local time zone.
         user = self.example_user("hamlet")
         user.timezone = "US/Pacific"
         user.save(update_fields=["timezone"])

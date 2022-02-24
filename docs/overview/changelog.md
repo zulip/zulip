@@ -708,7 +708,7 @@ log][commit-log] for an up-to-date list of raw changes.
 - Added new email address visibility option hiding real email
   addresses from organization administrators in the Zulip UI.
 - Added new "Mention time" Markdown feature to communicate about times
-  in a timezone-aware fashion.
+  in a time-zone-aware fashion.
 - Added new "Spoiler" Markdown feature to hide text until interaction.
 - Added a new API that allows the mobile/desktop/terminal apps to
   open uploaded files in an external browser that may not be logged in.
