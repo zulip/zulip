@@ -1020,9 +1020,8 @@ mypy-extensions==0.4.3 \
     #   black
     #   mypy
     #   typing-inspect
-myst-parser==0.16.1 \
-    --hash=sha256:617a90ceda2162ebf81cd13ad17d879bd4f49e7fb5c4f177bb905272555a2268 \
-    --hash=sha256:a6473b9735c8c74959b49b36550725464f4aecc4481340c9a5f9153829191f83
+https://github.com/executablebooks/MyST-Parser/archive/0bc41ef82cdbcf3ccbf71a3a6caffe8ac2d1b1f3.zip#egg=MyST-Parser==0.17.0+git \
+    --hash=sha256:5b213691ab441a291b4e07000efa0a10e652f8cc2a802274f0bde6b53b7b75fb
     # via -r requirements/docs.in
 natsort==8.1.0 \
     --hash=sha256:c7c1f3f27c375719a4dfcab353909fe39f26c2032a062a8c80cc844eaaca0445 \
@@ -2079,6 +2078,7 @@ typing-extensions==4.1.1 \
     #   markdown-it-py
     #   mypy
     #   mypy-boto3-s3
+    #   myst-parser
     #   pyre-check
     #   pyre-extensions
     #   sqlalchemy2-stubs
