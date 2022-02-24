@@ -177,7 +177,7 @@ def create_user(
     # If a source profile was specified, we copy settings from that
     # user.  Note that this is positioned in a way that overrides
     # other arguments passed in, which is correct for most defaults
-    # like timezone where the source profile likely has a better value
+    # like time zone where the source profile likely has a better value
     # than the guess. As we decide on details like avatars and full
     # names for this feature, we may want to move it.
     if source_profile is not None:

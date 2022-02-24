@@ -476,7 +476,7 @@ class Command(BaseCommand):
                 u.timezone = new_time_zone
                 u.save(update_fields=["timezone"])
 
-            # Note: Hamlet keeps default timezone of "".
+            # Note: Hamlet keeps default time zone of "".
             assign_time_zone_by_delivery_email("AARON@zulip.com", "US/Pacific")
             assign_time_zone_by_delivery_email("othello@zulip.com", "US/Pacific")
             assign_time_zone_by_delivery_email("ZOE@zulip.com", "US/Eastern")

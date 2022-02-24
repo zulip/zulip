@@ -37,7 +37,7 @@ random spam.
 
 ## Remote workers can’t participate.
 
-This means that workers in different timezones can only effectively
+This means that workers in different time zones can only effectively
 collaborate during the narrow windows when everyone is at their
 keyboards.  As a result, Slack isn’t an effective communication
 platform for remote work.
@@ -97,7 +97,7 @@ However, asynchronous communication is fundamental to how work happens today:
 * Managers, PMs, and others in meetings all day need to reply to things in
   batch, either in the few minutes they have between meetings, or at the end
   of the day.
-* Anyone in a different timezone or on a different work schedule than the
+* Anyone in a different time zone or on a different work schedule than the
   rest of the team has parts of their day where they are working
   asynchronously.
 * Individual contributors cannot do focused work if they need to check their

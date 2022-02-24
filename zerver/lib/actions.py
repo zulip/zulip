@@ -5746,7 +5746,7 @@ def do_change_user_setting(
             lambda: send_event(user_profile.realm, legacy_event, [user_profile.id])
         )
 
-    # Updates to the timezone display setting are sent to all users
+    # Updates to the time zone display setting are sent to all users
     if setting_name == "timezone":
         payload = dict(
             email=user_profile.email,

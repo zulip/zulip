@@ -24,7 +24,7 @@ class TestChoosePubDate(ZulipTestCase):
             )
 
 
-class TestUserTimezones(ZulipTestCase):
+class TestUserTimeZones(ZulipTestCase):
     def test_timezones_assigned_to_users(self) -> None:
         othello = self.example_user("othello")
         self.assertEqual(othello.timezone, "US/Pacific")

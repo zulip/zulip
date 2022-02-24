@@ -74,7 +74,7 @@ django-bmemcached
 # Needed for zerver/tests/test_timestamp.py
 python-dateutil
 
-# Needed for timezone work
+# Needed for time zone work
 pytz
 
 # Needed for Redis

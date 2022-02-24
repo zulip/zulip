@@ -1761,7 +1761,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     )
     default_all_public_streams: bool = models.BooleanField(default=False)
 
-    # A timezone name from the `tzdata` database, as found in pytz.all_timezones.
+    # A time zone name from the `tzdata` database, as found in pytz.all_timezones.
     #
     # The longest existing name is 32 characters long, so max_length=40 seems
     # like a safe choice.
@@ -3277,7 +3277,7 @@ class Attachment(AbstractAttachment):
             "path_id": self.path_id,
             "size": self.size,
             # convert to JavaScript-style UNIX timestamp so we can take
-            # advantage of client timezones.
+            # advantage of client time zones.
             "create_time": int(time.mktime(self.create_time.timetuple()) * 1000),
             "messages": [
                 {
