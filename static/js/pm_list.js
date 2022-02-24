@@ -19,6 +19,8 @@ import * as vdom from "./vdom";
 let prior_dom;
 let private_messages_open = true;
 let zoomed_pm_list = false;
+const max_convos_to_show = 5;
+const max_convos_to_show_with_unreads = 8;
 
 export function show_more_pms() {
     zoomed_pm_list = true;
@@ -151,18 +153,33 @@ export function _build_private_messages_list() {
     if (zoomed_pm_list) {
         nodes = convos_to_be_shown.map((convo) => pm_list_dom.keyed_pm_li(convo));
     } else {
-        if (convos.length > 4) {
-            convos_to_be_shown = convos.slice(0, 4);
-            const active_convo = convos.find((convo) => {
-                if (convo.is_active === true) {
-                    return convo;
+        if (convos.length > max_convos_to_show) {
+            convos_to_be_shown = convos.slice(0, max_convos_to_show);
+
+            function should_show_convo(convo) {
+                if (!convos_to_be_shown.includes(convo)) {
+                    if (
+                        convo.unread !== 0 &&
+                        convos_to_be_shown.length < max_convos_to_show_with_unreads
+                    ) {
+                        return true;
+                    }
+                    if (convo.is_active && convos_to_be_shown.length) {
+                        return true;
+                    }
+                    return false;
                 }
                 return false;
-            });
-            if (active_convo && !convos_to_be_shown.includes(active_convo)) {
-                convos_to_be_shown.push(active_convo);
             }
+
+            for (const convo of convos) {
+                if (should_show_convo(convo)) {
+                    convos_to_be_shown.push(convo);
+                }
+            }
+
             nodes = convos_to_be_shown.map((convo) => pm_list_dom.keyed_pm_li(convo));
+
             if (convos_to_be_shown.length !== convos.length) {
                 convos.map((convo) => {
                     if (!convos_to_be_shown.includes(convo)) {
@@ -308,8 +325,9 @@ export function handle_narrow_deactivated() {
         close();
     }
     $(".expanded_private_messages li.active-sub-filter").removeClass("active-sub-filter");
+    update_private_messages();
     setTimeout(() => {
-        resize.resize_sidebars();
+        resize.resize_stream_filters_container();
     }, 0);
 }
 
@@ -322,6 +340,9 @@ export function initialize() {
         $("#private_messages").removeClass("zoom-out").addClass("zoom-in");
         $("#streams_list").hide();
         $(".left-sidebar .right-sidebar-items").hide();
+        setTimeout(() => {
+            resize.resize_stream_filters_container();
+        }, 0);
     });
 
     $("#private_messages").on("click", ".hide-more-pms", (e) => {
@@ -331,9 +352,9 @@ export function initialize() {
         update_private_messages();
         $("#private_messages").removeClass("zoom-in").addClass("zoom-out");
         $("#streams_list").show();
-        setTimeout(() => {
-            resize.resize_sidebars();
-        }, 0);
         $(".left-sidebar .right-sidebar-items").show();
+        setTimeout(() => {
+            resize.resize_stream_filters_container();
+        }, 0);
     });
 }

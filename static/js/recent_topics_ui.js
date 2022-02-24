@@ -631,7 +631,6 @@ export function show() {
     // Hide selected elements in the left sidebar.
     top_left_corner.narrow_to_recent_topics();
     stream_list.handle_narrow_deactivated();
-    pm_list.handle_narrow_deactivated();
 
     // Hide "middle-column" which has html for rendering
     // a messages narrow. We hide it and show recent topics.
@@ -651,6 +650,7 @@ export function show() {
     narrow_state.reset_current_filter();
     narrow.set_narrow_title("Recent topics");
     message_view_header.render_title_area();
+    pm_list.handle_narrow_deactivated();
 
     complete_rerender();
 }

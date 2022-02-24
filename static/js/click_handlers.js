@@ -566,7 +566,7 @@ export function initialize() {
             pm_list.close();
         }
         setTimeout(() => {
-            resize.resize_sidebars();
+            resize.resize_stream_filters_container();
         }, 0);
     });
 

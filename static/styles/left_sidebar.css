@@ -519,6 +519,10 @@ li.expanded_private_message {
 #more-pm-conversations {
     text-align: left;
     margin-left: 31px;
+
+    a {
+        font-size: 12px;
+    }
 }
 
 .zero-pm-unreads .pm-box,
@@ -543,7 +547,6 @@ li.expanded_private_message {
     a {
         color: inherit;
         text-decoration: none;
-        text-transform: uppercase;
     }
 
     .hide-more-pms,
