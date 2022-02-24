@@ -2,7 +2,7 @@ Receive Job Notifications in Zulip!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-contruct-url-indented.md!}
+1. {!create-bot-construct-url-indented.md!}
 
 1. Go to your Rundeck web interface and click on the desired job. Click on **Actions** and then select **Edit this Job...**. Go to the **Notifications** tab.
 
