@@ -221,7 +221,7 @@ configure that as follows:
 We also have documentation for a Zulip server [using HTTP][using-http] for use
 behind reverse proxies.
 
-[using-http]: ../production/deployment.html#configuring-zulip-to-allow-http
+[using-http]: #configuring-zulip-to-allow-http
 
 ## Customizing the outgoing HTTP proxy
 
