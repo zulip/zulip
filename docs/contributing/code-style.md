@@ -164,11 +164,11 @@ of getting at least one of these things wrong.
 
 ### Naive datetime objects
 
-Python allows datetime objects to not have an associated timezone, which can
+Python allows datetime objects to not have an associated time zone, which can
 cause time-related bugs that are hard to catch with a test suite, or bugs
 that only show up during daylight savings time.
 
-Good ways to make timezone-aware datetimes are below. We import timezone
+Good ways to make time-zone-aware datetimes are below. We import time zone
 libraries as `from datetime import datetime, timezone` and
 `from django.utils.timezone import now as timezone_now`.
 
@@ -184,7 +184,7 @@ Use:
 - `datetime.strptime(date_string, format).replace(tzinfo=timezone.utc)` if
   creating a datetime from a formatted string that is in UTC.
 
-Idioms that result in timezone-naive datetimes, and should be avoided, are
+Idioms that result in time-zone-naive datetimes, and should be avoided, are
 `datetime.now()` and `datetime.fromtimestamp(timestamp)` without a `tz`
 parameter, `datetime.utcnow()` and `datetime.utcfromtimestamp()`, and
 `datetime.strptime(date_string, format)` without replacing the `tzinfo` at

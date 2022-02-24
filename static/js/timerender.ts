@@ -33,7 +33,7 @@ export function get_tz_with_UTC_offset(time: number | Date): string {
         return "UTC";
     }
 
-    // When user's locale doesn't match their timezone (eg. en_US for IST),
+    // When user's locale doesn't match their time zone (eg. en_US for IST),
     // we get `timezone` in the format of'GMT+x:y. We don't want to
     // show that along with (UTC+x:y)
     timezone = /GMT[+-][\d:]*/.test(timezone ?? "") ? "" : timezone;

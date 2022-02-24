@@ -435,7 +435,7 @@ paths:
                                     - type: object
                                       additionalProperties: false
                                       description: |
-                                        When a user changes their timezone setting.
+                                        When a user changes their time zone setting.
                                       properties:
                                         user_id:
                                           type: integer
@@ -452,7 +452,7 @@ paths:
                                         timezone:
                                           type: string
                                           description: |
-                                            The new timezone of the user.
+                                            The new time zone of the user.
                                     - type: object
                                       additionalProperties: false
                                       description: |
@@ -9597,9 +9597,9 @@ paths:
                           timezone:
                             type: string
                             description: |
-                              The user's [configured timezone](/help/change-your-timezone).
+                              The user's [configured time zone](/help/change-your-timezone).
 
-                              Timezone values supported by the server are served at
+                              Time zone values supported by the server are served at
                               [/static/generated/timezones.json](/static/generated/timezones.json).
                           enter_sends:
                             type: boolean
@@ -10296,8 +10296,8 @@ paths:
                           and only for clients that did not include `user_settings_object` in
                           their client_capabilities` when registering the event queue.
 
-                          The timezone configured for the user. This is used primarily to display
-                          the user's timezone to other users.
+                          The time zone configured for the user. This is used primarily to display
+                          the user's time zone to other users.
 
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
@@ -12304,9 +12304,9 @@ paths:
         - name: timezone
           in: query
           description: |
-            The user's [configured timezone](/help/change-your-timezone).
+            The user's [configured time zone](/help/change-your-timezone).
 
-            Timezone values supported by the server are served at
+            Time zone values supported by the server are served at
             [/static/generated/timezones.json](/static/generated/timezones.json).
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by

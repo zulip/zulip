@@ -733,7 +733,7 @@ export function get_candidates(query) {
         const time_jump_regex = /<time(:([^>]*?)>?)?$/;
         if (time_jump_regex.test(split[0])) {
             this.completing = "time_jump";
-            return [$t({defaultMessage: "Mention a timezone-aware time"})];
+            return [$t({defaultMessage: "Mention a time-zone-aware time"})];
         }
     }
     return false;

@@ -168,7 +168,7 @@ def do_update_fill_state(fill_state: FillState, end_time: datetime, state: int) 
 
 
 # We assume end_time is valid (e.g. is on a day or hour boundary as appropriate)
-# and is timezone aware. It is the caller's responsibility to enforce this!
+# and is time-zone-aware. It is the caller's responsibility to enforce this!
 def do_fill_count_stat_at_hour(
     stat: CountStat, end_time: datetime, realm: Optional[Realm] = None
 ) -> None:

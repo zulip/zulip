@@ -46,7 +46,7 @@
 * [Review your settings](/help/review-your-settings)
 * [Dark theme](/help/dark-theme)
 * [Change your language](/help/change-your-language)
-* [Change your timezone](/help/change-your-timezone)
+* [Change your time zone](/help/change-your-timezone)
 * [Use 24-hour time](/help/change-the-time-format)
 * [Enable emoticon translations](/help/enable-emoticon-translations)
 * [Configure default view](/help/configure-default-view)
