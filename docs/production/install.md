@@ -42,7 +42,7 @@ sudo -s  # If not already root
 ```
 
 This takes a few minutes to run, as it installs Zulip's dependencies.
-For more on what the installer does, [see details below](#installer-details).
+For more on what the installer does, [see details below](#details-what-the-installer-does).
 
 If the script gives an error, consult [Troubleshooting](#troubleshooting) below.
 
@@ -122,8 +122,6 @@ Learning more:
   server.
 
 [realm-admin-docs]: https://zulip.com/help/getting-your-organization-started-with-zulip
-
-(installer-details)=
 
 ## Details: What the installer does
 
