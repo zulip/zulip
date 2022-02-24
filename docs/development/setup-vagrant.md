@@ -830,7 +830,7 @@ Likely causes are:
 1. Networking issues
 2. Insufficient RAM. Check whether you've allotted at least two
    gigabytes of RAM, which is the minimum Zulip
-   [requires](../development/setup-vagrant.html#requirements). If
+   [requires](#requirements). If
    not, go to your VM settings and increase the RAM, then restart
    the VM.
 
