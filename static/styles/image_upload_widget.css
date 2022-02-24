@@ -109,11 +109,11 @@
 .user-avatar-section,
 .realm-logo-section,
 .realm-icon-section {
-    margin-bottom: 20px;
+    margin: 0 20px 20px 0;
     position: relative;
 
     .inline-block {
-        margin: 5px 20px 0 0;
+        margin-top: 15px;
         vertical-align: top;
         border-radius: 4px;
     }
@@ -124,6 +124,15 @@
     .image_upload_button {
         border-radius: 5px;
         box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
+        z-index: 99;
+    }
+
+    .image-disabled-text {
+        color: hsl(0, 0%, 85%);
+        cursor: not-allowed;
+        position: absolute;
+        text-align: center;
+        visibility: hidden;
         z-index: 99;
     }
 
@@ -154,6 +163,12 @@
         width: 200px;
         height: 200px;
         top: 0;
+    }
+
+    &:hover {
+        .image-disabled-text {
+            visibility: visible;
+        }
     }
 }
 
