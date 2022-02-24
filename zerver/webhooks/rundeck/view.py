@@ -10,10 +10,11 @@ from zerver.models import UserProfile
 
 RUNDECK_MESSAGE_TEMPLATE = "**{name}** - {status} - [E{id}]({link})"
 
+
 @webhook_view("Rundeck")
 @has_request_variables
 def api_rundeck_webhook(
-    request:HttpRequest,
+    request: HttpRequest,
     user_profile: UserProfile,
     payload: Dict[str, Sequence[Dict[str, Any]]] = REQ(argument_type="body"),
 ) -> HttpResponse:
@@ -24,6 +25,7 @@ def api_rundeck_webhook(
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success(request)
 
+
 def get_body(payload: Dict[str, Any]) -> str:
     data = {
         "name": payload["execution"]["job"]["name"],
@@ -31,12 +33,12 @@ def get_body(payload: Dict[str, Any]) -> str:
         "id": payload["execution"]["id"],
         "link": payload["execution"]["href"],
     }
-    
+
     # clarify status messages
-    if data["status"]=="RUNNING":
+    if data["status"] == "RUNNING":
         data["status"] = "RUNNING LONG"
 
-    if data["status"]=="SCHEDULED":
+    if data["status"] == "SCHEDULED":
         data["status"] = "STARTED"
 
     return RUNDECK_MESSAGE_TEMPLATE.format(**data)
