@@ -8,7 +8,7 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-RUNDECK_MESSAGE_TEMPLATE = "**{name}** - {status} - [E{id}](link)"
+RUNDECK_MESSAGE_TEMPLATE = "**{name}** - {status} - [E{id}]({link})"
 
 @webhook_view("Rundeck")
 @has_request_variables
