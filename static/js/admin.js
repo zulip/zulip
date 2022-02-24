@@ -23,8 +23,7 @@ const admin_settings_label = {
     realm_notifications_stream: $t({defaultMessage: "New stream notifications"}),
     realm_signup_notifications_stream: $t({defaultMessage: "New user notifications"}),
     realm_signup_notifications_include_referrer: $t({
-        defaultMessage:
-            "Include referrer's name(if any) in the signup notification in the core-team stream",
+        defaultMessage: "Include referrer's name in new user signup notifications",
     }),
     realm_inline_image_preview: $t({defaultMessage: "Show previews of uploaded and linked images"}),
     realm_inline_url_embed_preview: $t({defaultMessage: "Show previews of linked websites"}),
