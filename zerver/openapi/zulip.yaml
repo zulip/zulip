@@ -3777,7 +3777,7 @@ paths:
                                     signup_notifications_include_referrer:
                                       type: boolean
                                       description: |
-                                        Whether the referrer's name has to be mentioned in the signup notification in the core-team stream.
+                                        Whether new user signup notifications contain the referrer's name.
                                     message_content_allowed_in_email_notifications:
                                       type: boolean
                                       description: |
@@ -10902,7 +10902,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Whether the referrer's name has to be mentioned in the signup notification in the core-team stream.
+                          Whether new user signup notifications contain the referrer's name.
                       realm_message_retention_days:
                         type: integer
                         description: |
