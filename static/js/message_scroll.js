@@ -131,9 +131,16 @@ export function hide_top_of_narrow_notices() {
     hide_history_limit_notice();
 }
 
+let show_scroll_to_bottom_button_blocked = false;
 let hide_scroll_to_bottom_timer;
-export function hide_scroll_to_bottom() {
+export function hide_scroll_to_bottom(character_keypress) {
     const $show_scroll_to_bottom_button = $("#scroll-to-bottom-button-container");
+    if (character_keypress) {
+        show_scroll_to_bottom_button_blocked = true;
+        $show_scroll_to_bottom_button.hide();
+        return;
+    }
+
     if (message_viewport.bottom_message_visible() || message_lists.current.empty()) {
         // If last message is visible, just hide the
         // scroll to bottom button.
@@ -153,27 +160,20 @@ export function hide_scroll_to_bottom() {
     }, 3000);
 }
 
+export function allow_show_scroll_to_bottom_button() {
+    show_scroll_to_bottom_button_blocked = false;
+}
+
 export function show_scroll_to_bottom_button() {
-    if (message_viewport.bottom_message_visible()) {
+    clearTimeout(hide_scroll_to_bottom_timer);
+    if (show_scroll_to_bottom_button_blocked || message_viewport.bottom_message_visible()) {
         // Only show scroll to bottom button when
         // last message is not visible in the
         // current scroll position.
         return;
     }
-
-    clearTimeout(hide_scroll_to_bottom_timer);
     $("#scroll-to-bottom-button-container").fadeIn(500);
 }
-
-$(document).on("keydown", (e) => {
-    if (e.shiftKey || e.ctrlKey || e.metaKey) {
-        return;
-    }
-
-    // Instantly hide scroll to bottom button on any keypress.
-    // Keyboard users are very less likely to use this button.
-    $("#scroll-to-bottom-button-container").hide();
-});
 
 export function is_actively_scrolling() {
     return actively_scrolling;
