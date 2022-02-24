@@ -1,0 +1,23 @@
+{
+    "trigger": "start",
+    "status": "scheduled",
+    "executionId": 12,
+    "execution": {
+      "id": 12,
+      "href": "https://rundeck.com/project/myproject/execution/follow/12",
+      "permalink": null,
+      "status": "scheduled",
+      "project": "myproject",
+      "executionType": "user",
+      "user": "guest",
+      "job": {
+        "id": "a0296d93-4b10-48d7-8b7d-86ad3f603b85",
+        "name": "Global Log Filter Usage",
+        "group": "Basic Examples/Basic Workflows",
+        "project": "MyProject",
+        "description": "Global Log Filter basic example. \n\nMore information: https://docs.rundeck.com/docs/manual/log-filters/#log-filters",
+        "href": "https://rundeck.com/api/1/job/a0296d93-4b10-48d7-8b7d-86ad3f603b85",
+        "permalink": "https://rundeck.com/project/myproject/job/show/a0296d93-4b10-48d7-8b7d-86ad3f603b85"
+      }
+    }
+  }
