@@ -23,6 +23,7 @@ import * as list_util from "./list_util";
 import * as message_edit from "./message_edit";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
+import * as message_scroll from "./message_scroll";
 import * as message_view_header from "./message_view_header";
 import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
@@ -542,6 +543,9 @@ export function process_shift_tab_key() {
 export function process_hotkey(e, hotkey) {
     const event_name = hotkey.name;
 
+    const character_keypress = true;
+    message_scroll.hide_scroll_to_bottom(character_keypress);
+
     // This block needs to be before the `Tab` handler.
     switch (event_name) {
         case "up_arrow":
@@ -940,6 +944,11 @@ export function process_hotkey(e, hotkey) {
    so we bail in .keydown if the event is a letter or number and
    instead just let keypress go for it. */
 
+// Since keypress is only called on pressing character keys while keydown is always called,
+// We avoid calling `allow_show_scroll_to_bottom_button` in `keydown` when `keypress`
+// event is triggered. We wait for the scroll action to be rendered before calling
+// `allow_show_scroll_to_bottom_button`.
+let keypress_processing = false;
 export function process_keydown(e) {
     activity.set_new_user_input(true);
     const hotkey = get_keydown_hotkey(e);
@@ -953,6 +962,9 @@ $(document).on("keydown", (e) => {
     if (process_keydown(e)) {
         e.preventDefault();
     }
+    if (!keypress_processing) {
+        setTimeout(message_scroll.allow_show_scroll_to_bottom_button, 0);
+    }
 });
 
 export function process_keypress(e) {
@@ -964,7 +976,10 @@ export function process_keypress(e) {
 }
 
 $(document).on("keypress", (e) => {
+    keypress_processing = true;
     if (process_keypress(e)) {
         e.preventDefault();
     }
+    setTimeout(message_scroll.allow_show_scroll_to_bottom_button, 0);
+    keypress_processing = false;
 });
