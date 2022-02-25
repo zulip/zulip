@@ -20,6 +20,18 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 134**
+
+* [`GET /events`](/api/get-events): Added `user_topic` event type
+  which is sent when a topic is muted or unmuted. This generalizes and
+  replaces the previous `muted_topics` array, which will no longer be
+  sent if `user_topic` was included in `event_types` when registering
+  the queue.
+* [`POST /register`](/api/register-queue): Added `user_topics` array
+  to the response. This generalizes and replaces the previous
+  `muted_topics` array, which will no longer be sent if `user_topic`
+  is included in `fetch_event_types`.
+
 **Feature level 133**
 
 * [`POST /register`](/api/register-queue), `PATCH /realm`: Removed

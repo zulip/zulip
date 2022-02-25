@@ -181,6 +181,7 @@ from zerver.lib.event_schema import (
     check_user_group_update,
     check_user_settings_update,
     check_user_status,
+    check_user_topic,
 )
 from zerver.lib.events import (
     RestartEventException,
@@ -1332,11 +1333,23 @@ class NormalActionsTest(BaseAction):
 
     def test_muted_topics_events(self) -> None:
         stream = get_stream("Denmark", self.user_profile.realm)
-        events = self.verify_action(lambda: do_mute_topic(self.user_profile, stream, "topic"))
+        events = self.verify_action(
+            lambda: do_mute_topic(self.user_profile, stream, "topic"), num_events=2
+        )
         check_muted_topics("events[0]", events[0])
+        check_user_topic("events[1]", events[1])
 
-        events = self.verify_action(lambda: do_unmute_topic(self.user_profile, stream, "topic"))
+        events = self.verify_action(
+            lambda: do_unmute_topic(self.user_profile, stream, "topic"), num_events=2
+        )
         check_muted_topics("events[0]", events[0])
+        check_user_topic("events[1]", events[1])
+
+        events = self.verify_action(
+            lambda: do_mute_topic(self.user_profile, stream, "topic"),
+            event_types=["muted_topics", "user_topic"],
+        )
+        check_user_topic("events[0]", events[0])
 
     def test_muted_users_events(self) -> None:
         muted_user = self.example_user("othello")

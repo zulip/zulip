@@ -2545,6 +2545,9 @@ class UserTopic(models.Model):
     # Implicitly, if a UserTopic does not exist, the (user, topic)
     # pair should have normal behavior for that (user, stream) pair.
 
+    # We use this in our code to represent the condition in the comment above.
+    VISIBILITY_POLICY_INHERIT = 0
+
     # A normal muted topic. No notifications and unreads hidden.
     MUTED = 1
 
@@ -2559,6 +2562,7 @@ class UserTopic(models.Model):
         (MUTED, "Muted topic"),
         (UNMUTED, "Unmuted topic in muted stream"),
         (FOLLOWED, "Followed topic"),
+        (VISIBILITY_POLICY_INHERIT, "User's default policy for the stream."),
     )
 
     visibility_policy: int = models.SmallIntegerField(

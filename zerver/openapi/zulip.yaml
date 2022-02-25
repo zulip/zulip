@@ -1886,12 +1886,19 @@ paths:
                                         - muted_topics
                                 muted_topics:
                                   type: array
+                                  deprecated: true
                                   description: |
                                     Array of tuples, where each tuple describes a muted topic.
                                     The first element of the tuple is the stream name in which the topic
                                     has to be muted, the second element is the topic name to be muted
                                     and the third element is an integer UNIX timestamp representing
                                     when the topic was muted.
+
+                                    **Changes**: Deprecated in Zulip 6.0 (feature level
+                                    134). Starting with this version, clients that explicitly
+                                    requested the replacement `user_topic` event type when
+                                    registering their event queue will not receive this legacy
+                                    event type.
 
                                     **Changes**: Before Zulip 3.0 (feature level 1), the `muted_topics`
                                     array objects were 2-item tuples and did not include the timestamp
@@ -1909,6 +1916,57 @@ paths:
                                   "muted_topics":
                                     [["Denmark", "topic", 1594825442]],
                                   "id": 0,
+                                }
+                            - type: object
+                              description: |
+                                Event sent to a user's clients when the user mutes/unmutes
+                                a topic, or otherwise modifies their personal per-topic
+                                configuration.
+
+                                **Changes**: New in Zulip 6.0 (feature level 134). Previously,
+                                clients were notified about changes in muted topic
+                                configuration via the `muted_topics` event type.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - user_topic
+                                stream_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the stream to which the topic belongs.
+                                topic_name:
+                                  type: string
+                                  description: |
+                                    The name of the topic.
+                                last_updated:
+                                  type: integer
+                                  description: |
+                                    An integer UNIX timestamp representing when the user-topic
+                                    relationship was last changed.
+                                visibility_policy:
+                                  type: integer
+                                  description: |
+                                    An integer indicating the user's visibility
+                                    preferences for the topic, such as whether the topic
+                                    is muted.
+
+                                    - 0 = None. Used in events to indicate that the user no
+                                      longer has a special visibility policy for this
+                                      topic (for example, the user just unmuted it).
+                                    - 1 = Muted. Used to record muted topics.
+                              additionalProperties: false
+                              example:
+                                {
+                                  "id": 1,
+                                  "type": "user_topic",
+                                  "stream_id": 1,
+                                  "topic_name": "topic",
+                                  "last_updated": 1594825442,
+                                  "visibility_policy": 1,
                                 }
                             - type: object
                               description: |
@@ -9332,6 +9390,7 @@ paths:
                           this always had value 10000.
                       muted_topics:
                         type: array
+                        deprecated: true
                         description: |
                           Present if `muted_topics` is present in `fetch_event_types`.
 
@@ -9340,6 +9399,11 @@ paths:
                           has to be muted, the second element is the topic name to be muted
                           and the third element is an integer UNIX timestamp representing
                           when the topic was muted.
+
+                          **Changes**: Deprecated in Zulip 6.0 (feature level 134). Starting
+                          with this version, `muted_topics` will only be present in the
+                          response if the `user_topic` object, which generalizes and replaces
+                          this field, is not explicitly requested via `fetch_event_types`.
 
                           **Changes**: Before Zulip 3.0 (feature level 1), the `muted_topics`
                           array objects were 2-item tuples and did not include the timestamp
@@ -10192,6 +10256,39 @@ paths:
                               read messages.
 
                               **Changes**: New in Zulip 5.0 (feature level 105).
+                      user_topics:
+                        type: array
+                        description: |
+                          Present if `user_topic` is present in `fetch_event_types`.
+
+                          **Changes**: New in Zulip 6.0 (feature level 134), deprecating and
+                          replacing the previous `muted_topics` structure.
+                        items:
+                          type: object
+                          description: |
+                            Object describing the user's configuration for a given topic.
+                          additionalProperties: false
+                          properties:
+                            stream_id:
+                              type: integer
+                              description: |
+                                The ID of the stream to which the topic belongs.
+                            topic_name:
+                              type: string
+                              description: |
+                                The name of the topic.
+                            last_updated:
+                              type: integer
+                              description: |
+                                An integer UNIX timestamp representing when the user-topic
+                                relationship was changed.
+                            visibility_policy:
+                              type: integer
+                              description: |
+                                An integer indicating the user's visibility configuration for
+                                the topic.
+
+                                - 1 = Muted. Used to record [muted topics](/help/mute-a-topic).
                       has_zoom_token:
                         type: boolean
                         description: |
