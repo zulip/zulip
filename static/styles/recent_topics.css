@@ -62,6 +62,7 @@
         .fa-check-square-o,
         .fa-square-o {
             padding: 0 2px;
+            width: 10px;
         }
 
         .fa-lock {
