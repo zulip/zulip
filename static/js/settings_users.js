@@ -84,7 +84,8 @@ function get_user_info_row(user_id) {
     return $(`tr.user_row[data-user-id='${CSS.escape(user_id)}']`);
 }
 
-function update_view_on_deactivate(row) {
+function update_view_on_deactivate(user_id) {
+    const row = get_user_info_row(user_id);
     const button = row.find("button.deactivate");
     const user_role = row.find(".user_role");
     button.prop("disabled", false);
@@ -365,7 +366,7 @@ export function update_user_data(user_id, new_data) {
     if (new_data.is_active !== undefined) {
         if (new_data.is_active === false) {
             // Deactivate the user/bot in the table
-            update_view_on_deactivate(user_row);
+            update_view_on_deactivate(user_id);
         } else {
             // Reactivate the user/bot in the table
             update_view_on_reactivate(user_row);
@@ -456,7 +457,7 @@ function handle_deactivation(tbody, status_field) {
             row_deactivate_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
             const opts = {
                 success_continuation() {
-                    update_view_on_deactivate(row);
+                    update_view_on_deactivate(user_id);
                 },
                 error_continuation() {
                     row_deactivate_button.text($t({defaultMessage: "Deactivate"}));
@@ -482,7 +483,7 @@ function handle_bot_deactivation(tbody, status_field) {
 
         const opts = {
             success_continuation() {
-                update_view_on_deactivate(row);
+                update_view_on_deactivate(bot_id);
             },
             error_continuation(xhr) {
                 ui_report.generic_row_button_error(xhr, button_elem);
@@ -574,7 +575,7 @@ export function show_edit_user_info_modal(user_id, from_user_info_popover, statu
                         dialog_widget.close_modal();
                         if (!from_user_info_popover) {
                             const row = get_user_info_row(user_id);
-                            update_view_on_deactivate(row);
+                            update_view_on_deactivate(user_id);
                         }
                     },
                     error(xhr) {
