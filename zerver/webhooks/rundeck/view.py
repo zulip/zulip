@@ -19,7 +19,7 @@ def api_rundeck_webhook(
     payload: Dict[str, Sequence[Dict[str, Any]]] = REQ(argument_type="body"),
 ) -> HttpResponse:
 
-    subject = "Rundeck"
+    subject = "alerts"
     body = get_body(payload)
 
     check_send_webhook_message(request, user_profile, subject, body)

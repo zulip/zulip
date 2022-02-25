@@ -6,7 +6,7 @@
     "id": 13,
     "href": "https://rundeck.com/project/myproject/execution/follow/13",
     "permalink": null,
-    "status": "failed",
+    "status": "running",
     "project": "myproject",
     "executionType": "user",
     "user": "guest",
