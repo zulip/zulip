@@ -367,16 +367,6 @@ export function update_user_data(user_id, new_data) {
         user_row.find(".user_name").text(new_data.full_name);
     }
 
-    if (new_data.is_active !== undefined) {
-        if (new_data.is_active === false) {
-            // Deactivate the user/bot in the table
-            update_view_on_deactivate(user_id);
-        } else {
-            // Reactivate the user/bot in the table
-            update_view_on_reactivate(user_row);
-        }
-    }
-
     if (new_data.role !== undefined) {
         user_row.find(".user_role").text(people.get_user_type(user_id));
     }
