@@ -2,16 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-
-const ui_report = mock_esm("../../static/js/ui_report", {
-    displayed_error: false,
-
-    error: () => {
-        ui_report.displayed_error = true;
-    },
-});
 
 const hash_util = zrequire("hash_util");
 const stream_data = zrequire("stream_data");
@@ -66,11 +58,6 @@ run_test("hash_util", () => {
     operand = "testing 123";
 
     encode_decode_operand(operator, operand, "testing.20123");
-
-    // Test invalid url decode.
-    const result = hash_util.decodeHashComponent("foo.foo");
-    assert.equal(result, "");
-    assert.equal(ui_report.displayed_error, true);
 });
 
 run_test("test_get_hash_category", () => {

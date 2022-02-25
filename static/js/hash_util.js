@@ -1,9 +1,5 @@
-import $ from "jquery";
-
-import {$t_html} from "./i18n";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
-import * as ui_report from "./ui_report";
 
 export function get_hash_category(hash) {
     // given "#streams/subscribed", returns "streams"
@@ -84,23 +80,13 @@ export function encode_stream_name(operand) {
 }
 
 export function decodeHashComponent(str) {
-    try {
-        // This fails for URLs containing
-        // foo.foo or foo%foo due to our fault in special handling
-        // of such characters when encoding. This can also,
-        // fail independent of our fault, so just tell the user
-        // that the URL is invalid.
-        // TODO: Show possible valid URLs to the user.
-        return decodeURIComponent(str.replace(/\./g, "%"));
-    } catch {
-        ui_report.error(
-            $t_html({defaultMessage: "Invalid URL"}),
-            undefined,
-            $("#home-error"),
-            2000,
-        );
-        return "";
-    }
+    // This fails for URLs containing
+    // foo.foo or foo%foo due to our fault in special handling
+    // of such characters when encoding. This can also,
+    // fail independent of our fault, so just tell the user
+    // that the URL is invalid.
+    // TODO: Show possible valid URLs to the user.
+    return decodeURIComponent(str.replace(/\./g, "%"));
 }
 
 export function decode_operand(operator, operand) {
@@ -200,6 +186,8 @@ export function search_public_streams_notice_url(operators) {
 }
 
 export function parse_narrow(hash) {
+    // This will throw an exception when passed an invalid hash
+    // at the decodeHashComponent call, handle appropriately.
     let i;
     const operators = [];
     for (i = 1; i < hash.length; i += 2) {
