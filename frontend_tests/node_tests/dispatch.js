@@ -609,6 +609,7 @@ run_test("realm_user", ({override}) => {
 
     event = event_fixtures.realm_user__remove;
     override(stream_events, "remove_deactivated_user_from_all_streams", noop);
+    override(settings_users, "update_view_on_deactivate", noop);
     dispatch(event);
 
     // We don't actually remove the person, we just deactivate them.
