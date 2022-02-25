@@ -84,8 +84,12 @@ function get_user_info_row(user_id) {
     return $(`tr.user_row[data-user-id='${CSS.escape(user_id)}']`);
 }
 
-function update_view_on_deactivate(user_id) {
+export function update_view_on_deactivate(user_id) {
     const row = get_user_info_row(user_id);
+    if (row.length === 0) {
+        return;
+    }
+
     const button = row.find("button.deactivate");
     const user_role = row.find(".user_role");
     button.prop("disabled", false);
@@ -456,9 +460,6 @@ function handle_deactivation(tbody, status_field) {
             const row_deactivate_button = row.find("button.deactivate");
             row_deactivate_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
             const opts = {
-                success_continuation() {
-                    update_view_on_deactivate(user_id);
-                },
                 error_continuation() {
                     row_deactivate_button.text($t({defaultMessage: "Deactivate"}));
                 },
@@ -482,9 +483,6 @@ function handle_bot_deactivation(tbody, status_field) {
         const url = "/json/bots/" + encodeURIComponent(bot_id);
 
         const opts = {
-            success_continuation() {
-                update_view_on_deactivate(bot_id);
-            },
             error_continuation(xhr) {
                 ui_report.generic_row_button_error(xhr, button_elem);
             },
@@ -573,10 +571,6 @@ export function show_edit_user_info_modal(user_id, from_user_info_popover, statu
                     url,
                     success() {
                         dialog_widget.close_modal();
-                        if (!from_user_info_popover) {
-                            const row = get_user_info_row(user_id);
-                            update_view_on_deactivate(user_id);
-                        }
                     },
                     error(xhr) {
                         ui_report.error(
