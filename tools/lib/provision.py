@@ -87,6 +87,8 @@ elif vendor == "ubuntu" and os_version == "20.04":  # focal
     POSTGRESQL_VERSION = "12"
 elif vendor == "ubuntu" and os_version == "21.10":  # impish
     POSTGRESQL_VERSION = "13"
+elif vendor == "ubuntu" and os_version == "22.04":  # jammy
+    POSTGRESQL_VERSION = "14"
 elif vendor == "neon" and os_version == "20.04":  # KDE Neon
     POSTGRESQL_VERSION = "12"
 elif vendor == "fedora" and os_version == "33":
@@ -163,7 +165,7 @@ COMMON_YUM_DEPENDENCIES = [
 ]
 
 BUILD_PGROONGA_FROM_SOURCE = False
-if vendor == "debian" and os_version in [] or vendor == "ubuntu" and os_version in []:
+if vendor == "debian" and os_version in [] or vendor == "ubuntu" and os_version in ["22.04"]:
     # For platforms without a PGroonga release, we need to build it
     # from source.
     BUILD_PGROONGA_FROM_SOURCE = True

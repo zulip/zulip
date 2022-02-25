@@ -168,6 +168,7 @@ if os.path.exists("/etc/init.d/postgresql"):
             ("debian", "10"): "11",
             ("debian", "11"): "13",
             ("ubuntu", "20.04"): "12",
+            ("ubuntu", "22.04"): "14",
             ("centos", "7"): "11",
         }
         if (vendor, os_version) in default_postgresql_version:
