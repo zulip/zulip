@@ -8,7 +8,7 @@ from django.core import mail
 from django.test import override_settings
 
 from corporate.lib.stripe import get_latest_seat_count
-from zerver.lib.actions import do_change_user_setting, notify_new_user
+from zerver.lib.actions import do_change_user_setting, do_set_realm_property, notify_new_user
 from zerver.lib.initial_password import initial_password
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
@@ -251,7 +251,12 @@ class TestNotifyNewUser(ZulipTestCase):
         message_count = self.get_message_count()
 
         # When new user is referred and signup_notifications_include_referrer is true
-        new_user.realm.signup_notifications_include_referrer = True
+        do_set_realm_property(
+            new_user.realm,
+            "signup_notifications_include_referrer",
+            True,
+            acting_user=None,
+        )
         notify_new_user(new_user, referring_user)
         self.assertEqual(self.get_message_count(), message_count + 2)
         message = self.get_second_to_last_message()
@@ -264,7 +269,12 @@ class TestNotifyNewUser(ZulipTestCase):
         )
 
         # When new user is referred and signup_notifications_include_referrer is false
-        new_user.realm.signup_notifications_include_referrer = False
+        do_set_realm_property(
+            new_user.realm,
+            "signup_notifications_include_referrer",
+            False,
+            acting_user=None,
+        )
         notify_new_user(new_user, referring_user)
         self.assertEqual(self.get_message_count(), message_count + 4)
         message = self.get_second_to_last_message()
