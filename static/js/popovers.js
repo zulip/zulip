@@ -981,6 +981,12 @@ export function register_click_handlers() {
      * relevant part of the Zulip UI, so we don't want preventDefault,
      * but we do want to close the modal when you click them. */
 
+    $("body").on("click", ".exit_user_info_popover", (e) => {
+        hide_all();
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
     $("body").on("click", ".set_away_status", (e) => {
         hide_all();
         user_status.server_set_away();
