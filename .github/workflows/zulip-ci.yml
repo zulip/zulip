@@ -27,13 +27,16 @@ jobs:
           - docker_image: zulip/ci:focal
             name: Ubuntu 20.04 Focal (Python 3.8, backend)
             os: focal
-            is_focal: true
             include_frontend_tests: false
           # Debian 11 ships with Python 3.9.2.
           - docker_image: zulip/ci:bullseye
             name: Debian 11 Bullseye (Python 3.9, backend)
             os: bullseye
-            is_bullseye: true
+            include_frontend_tests: false
+          # Ubuntu 22.04 ships with Python 3.9.10.
+          - docker_image: zulip/ci:jammy
+            name: Ubuntu 22.04 Jammy (Python 3.9, backend)
+            os: jammy
             include_frontend_tests: false
 
     runs-on: ubuntu-latest
@@ -218,7 +221,7 @@ jobs:
           retention-days: 60
 
       - name: Check development database build
-        if: ${{ matrix.is_focal || matrix.is_bullseye }}
+        if: ${{ matrix.os == 'focal' || matrix.os == 'bullseye' || matrix.os == 'jammy' }}
         run: ./tools/ci/setup-backend
 
       - name: Report status
