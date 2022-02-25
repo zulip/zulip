@@ -27,6 +27,7 @@ const overlays = mock_esm("../../static/js/overlays");
 const settings = mock_esm("../../static/js/settings");
 const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
 const ui_util = mock_esm("../../static/js/ui_util");
+const ui_report = mock_esm("../../static/js/ui_report");
 mock_esm("../../static/js/top_left_corner", {
     handle_narrow_deactivated: () => {},
 });
@@ -135,6 +136,7 @@ function test_helper({override, override_rewire, change_tab}) {
     stub(settings, "launch");
     stub(stream_settings_ui, "launch");
     stub(ui_util, "blur_active_element");
+    stub(ui_report, "error");
 
     if (change_tab) {
         override(ui_util, "change_tab_to", (hash) => {
@@ -233,6 +235,18 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     ]);
     terms = helper.get_narrow_terms();
     assert.equal(terms.length, 0);
+
+    // Test an invalid narrow hash
+    window.location.hash = "#narrow/foo.foo";
+
+    helper.clear_events();
+    window_stub.trigger("hashchange");
+    helper.assert_events([
+        [overlays, "close_for_hash_change"],
+        [message_viewport, "stop_auto_scrolling"],
+        "change_tab_to #message_feed_container",
+        [ui_report, "error"],
+    ]);
 
     window.location.hash = "#streams/whatever";
 
