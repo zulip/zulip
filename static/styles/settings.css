@@ -113,9 +113,22 @@ h3 .fa-question-circle-o {
     flex-wrap: wrap-reverse;
 }
 
-.user-avatar-section {
-    float: right;
+.profile-main-panel {
+    margin-right: 20px;
+}
 
+.profile-side-panel {
+    margin-right: 10px;
+}
+
+.user-details-title {
+    display: inline-block;
+    min-width: 80px;
+    font-weight: 600;
+    padding-right: 5px;
+}
+
+.user-avatar-section {
     .avatar-controls {
         margin-top: 20px;
         box-shadow: none;
@@ -1882,7 +1895,6 @@ input[type="checkbox"] {
 @media (width < $lg_min) {
     .user-avatar-section,
     .realm-icon-section {
-        float: none;
         display: block;
     }
 
