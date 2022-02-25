@@ -109,7 +109,7 @@
 .user-avatar-section,
 .realm-logo-section,
 .realm-icon-section {
-    margin: 0 20px 20px 0;
+    margin-bottom: 20px;
     position: relative;
 
     .inline-block {
@@ -175,11 +175,7 @@
 #user-avatar-source {
     font-size: 1em;
     z-index: 99;
-
-    a {
-        position: relative;
-        top: 10px;
-    }
+    margin-top: 10px;
 }
 
 /* CSS related to settings page realm icon upload widget only */
