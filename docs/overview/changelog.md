@@ -13,14 +13,14 @@ up-to-date list of raw changes.
   for other organizations.
 - CVE-2021-3967: Enforce that regenerating an API key must be done
   with an API key, not a cookie. Thanks to nhiephon
-  (twitter.com/_nhiephon) for their responsible disclosure of this
+  (twitter.com/\_nhiephon) for their responsible disclosure of this
   vulnerability.
 - Fixed a bug with the `reindex-textual-data` tool, where it would
   sometimes fail to find the libraries it needed.
 - Pin PostgreSQL to 10.19, 11.14, 12.9, 13.5 or 14.1 to avoid a
   regression which caused deploys with PGroonga enabled to
-  unpredictably fail database queries with the error `variable not
-  found in subplan target list`.
+  unpredictably fail database queries with the error
+  `variable not found in subplan target list`.
 - Fix ARM64 support; however, the wal-g binary is not yet supported on
   ARM64 (zulip/zulip#21070).
 
