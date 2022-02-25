@@ -182,6 +182,9 @@ format used by the Zulip server that they are interacting with.
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
   Added new endpoint to update default values of user settings in a realm.
+* `POST /invites`, `POST /invites/multiuse`: Added
+  `invite_expires_in_days` parameter encoding the number days before
+  the invitation should expire.
 
 **Feature level 95**
 
@@ -440,8 +443,8 @@ No changes; feature level used for Zulip 4.0 release.
 
 **Feature level 61**
 
-* Added support for inviting users as moderators to the invitation
-  endpoints.
+* `POST /invites`, `POST /invites/multiuse`: Added support for
+  inviting users as moderators.
 
 **Feature level 60**
 
