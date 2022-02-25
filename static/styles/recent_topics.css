@@ -80,16 +80,6 @@
         .table_fix_head table {
             /* To keep border properties to the thead th. */
             border-collapse: separate;
-            /* For visual reasons, in a message feed, we require a large
-             * bottom_whitespace to make it convenient to display new
-             * messages as they come in and prevent occluding the last
-             * message with an open compose box. Here, the bottom item
-             * is rarely interesting context for a message one is
-             * composing, but we do need at least 41px to allow the
-             * close-compose-box UI element (including border) to not
-             * overlap content. Add some more margin so that user
-             * can clearly see the end of the topics.
-             */
             margin-bottom: 100px;
         }
 
@@ -305,6 +295,35 @@
             .recent_topic_actions {
                 margin-right: 5px;
                 font-size: 15px;
+            }
+        }
+    }
+
+    #recent_topics_bottom_whitespace {
+        /* For visual reasons, in a message feed, we require a large
+         * bottom_whitespace to make it convenient to display new
+         * messages as they come in and prevent occluding the last
+         * message with an open compose box. Here, the bottom item
+         * is rarely interesting context for a message one is
+         * composing, but we do need at least 41px to allow the
+         * close-compose-box UI element (including border) to not
+         * overlap content. Add some more margin so that user
+         * can clearly see the end of the topics.
+         */
+        height: 120px;
+
+        #recent_topics_loading_messages_indicator,
+        .bottom-messages-logo {
+            display: block;
+            position: absolute;
+            top: 200px;
+            left: 0;
+            right: 0;
+            margin: auto;
+
+            .loading_indicator_spinner {
+                position: relative;
+                top: -7px;
             }
         }
     }

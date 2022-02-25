@@ -8,6 +8,7 @@ import * as compose_closed_ui from "./compose_closed_ui";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
+import * as loading from "./loading";
 import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
@@ -206,6 +207,19 @@ export function revive_current_focus() {
         current_focus_elem.trigger("focus");
     }
     return true;
+}
+
+export function show_loading_indicator() {
+    loading.make_indicator($("#recent_topics_loading_messages_indicator"));
+}
+
+export function hide_loading_indicator() {
+    $("#recent_topics_bottom_whitespace").hide();
+    loading.destroy_indicator($("#recent_topics_loading_messages_indicator"), {
+        abs_positioned: false,
+    });
+    // Show empty table text if there are no messages fetched.
+    $("#recent_topics_table tbody").addClass("required-text");
 }
 
 export function process_messages(messages) {

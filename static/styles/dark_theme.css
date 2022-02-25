@@ -1131,8 +1131,11 @@ body.dark-theme {
         color: hsl(200, 79%, 66%);
     }
 
-    #loading_older_messages_indicator path {
-        fill: hsl(0, 0%, 100%);
+    #loading_older_messages_indicator,
+    #recent_topics_loading_messages_indicator {
+        path {
+            fill: hsl(0, 0%, 100%);
+        }
     }
 
     .small_square_button {
