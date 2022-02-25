@@ -211,8 +211,8 @@ if [ -f /etc/os-release ]; then
     esac
 fi
 
-case "$os_id$os_version_id" in
-    debian10 | debian11 | ubuntu20.04) ;;
+case "$os_id $os_version_id" in
+    'debian 10' | 'debian 11' | 'ubuntu 20.04' | 'ubuntu 22.04') ;;
     *)
         set +x
         cat <<EOF
@@ -223,6 +223,7 @@ Zulip in production is supported only on:
  - Debian 10 "buster"
  - Debian 11 "bullseye"
  - Ubuntu 20.04 LTS "focal"
+ - Ubuntu 22.04 LTS "jammy"
 
 For more information, see:
   https://zulip.readthedocs.io/en/latest/production/requirements.html

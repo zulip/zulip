@@ -12,7 +12,7 @@ Contents:
 If you'd like to install a Zulip development environment on a computer
 that's running one of:
 
-- Ubuntu 20.04 Focal
+- Ubuntu 20.04 Focal, 22.04 Jammy (beta)
 - Debian 10 Buster, 11 Bullseye
 - CentOS 7 (beta)
 - Fedora 33 and 34 (beta)
