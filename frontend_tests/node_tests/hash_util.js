@@ -25,17 +25,7 @@ const frontend = {
 stream_data.add_sub(frontend);
 
 run_test("hash_util", () => {
-    // Test encodeHashComponent
-    const str = "https://www.zulipexample.com";
-    const result1 = hash_util.encodeHashComponent(str);
-    assert.equal(result1, "https.3A.2F.2Fwww.2Ezulipexample.2Ecom");
-
-    // Test decodeHashComponent
-    const result2 = hash_util.decodeHashComponent(result1);
-    assert.equal(result2, str);
-
     // Test encode_operand and decode_operand
-
     function encode_decode_operand(operator, operand, expected_val) {
         const encode_result = hash_util.encode_operand(operator, operand);
         assert.equal(encode_result, expected_val);
