@@ -8,6 +8,7 @@ import * as alert_words_ui from "./alert_words_ui";
 import * as attachments_ui from "./attachments_ui";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
+import {buddy_list} from "./buddy_list";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_fade from "./compose_fade";
@@ -424,6 +425,7 @@ export function dispatch_normal_event(event) {
                     people.deactivate(event.person);
                     stream_events.remove_deactivated_user_from_all_streams(event.person.user_id);
                     settings_users.update_view_on_deactivate(event.person.user_id);
+                    buddy_list.maybe_remove_key({key: event.person.user_id});
                     break;
                 case "update":
                     user_events.update_person(event.person);
