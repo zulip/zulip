@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import {$t_html} from "./i18n";
 import * as about_zulip from "./about_zulip";
 import * as admin from "./admin";
 import * as blueslip from "./blueslip";
@@ -25,6 +26,7 @@ import * as spectators from "./spectators";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as top_left_corner from "./top_left_corner";
 import * as ui_util from "./ui_util";
+import * as ui_report from "./ui_report";
 import {user_settings} from "./user_settings";
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
@@ -136,7 +138,23 @@ function do_hashchange_normal(from_reload) {
         case "#narrow": {
             maybe_hide_recent_topics();
             ui_util.change_tab_to("#message_feed_container");
-            const operators = hash_util.parse_narrow(hash);
+            let operators = undefined;
+            try {
+                // This fails for URLs containing
+                // foo.foo or foo%foo due to our fault in special handling
+                // of such characters when encoding. This can also,
+                // fail independent of our fault, so just tell the user
+                // that the URL is invalid.
+                // TODO: Show possible valid URLs to the user.
+                operators = hash_util.parse_narrow(hash);
+            } catch {
+                ui_report.error(
+                    $t_html({defaultMessage: "Invalid URL"}),
+                    undefined,
+                    $("#home-error"),
+                    2000,
+                );
+            }
             if (operators === undefined) {
                 // If the narrow URL didn't parse,
                 // send them to default_view.
