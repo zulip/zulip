@@ -500,10 +500,16 @@ export function initialize(home_view_loaded) {
         filter: new Filter([{operator: "in", operand: "home"}]),
         excludes_muted_topics: true,
     });
+    // TODO: Ideally we'd have loading indicators for recent topics at
+    // both top and bottom be managed by load_messages, but that
+    // likely depends on other reorganizations of the early loading
+    // sequence.
+    recent_topics_ui.show_loading_indicator();
     load_messages({
         anchor: "newest",
         num_before: consts.recent_topics_initial_fetch_size,
         num_after: 0,
         msg_list: recent_topics_message_list,
+        cont: recent_topics_ui.hide_loading_indicator,
     });
 }
