@@ -206,8 +206,16 @@ class ClientDescriptor:
         return False
 
     def accepts_event(self, event: Mapping[str, Any]) -> bool:
-        if self.event_types is not None and event["type"] not in self.event_types:
-            return False
+        if self.event_types is not None:
+            if event["type"] not in self.event_types:
+                return False
+            if event["type"] == "muted_topics" and "user_topic" in self.event_types:
+                # Suppress muted_topics events for clients that
+                # support user_topic. This allows clients to request
+                # both the user_topic and muted_topics event types,
+                # and receive the duplicate muted_topics data only on
+                # older servers that don't support user_topic.
+                return False
         if event["type"] == "message":
             return self.narrow_filter(event)
         if event["type"] == "typing" and "stream_id" in event:

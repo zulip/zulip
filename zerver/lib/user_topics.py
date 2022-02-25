@@ -15,12 +15,15 @@ from zerver.models import UserProfile, UserTopic, get_stream
 def get_user_topics(
     user_profile: UserProfile,
     include_deactivated: bool = False,
+    include_stream_name: bool = False,
     visibility_policy: Optional[int] = None,
 ) -> List[UserTopicDict]:
     """
     Fetches UserTopic objects associated with the target user.
     * include_deactivated: Whether to include those associated with
       deactivated streams.
+    * include_stream_name: Whether to include stream names in the
+      returned dictionaries.
     * visibility_policy: If specified, returns only UserTopic objects
       with the specified visibility_policy value.
     """
@@ -40,6 +43,9 @@ def get_user_topics(
 
     result = []
     for row in rows:
+        if not include_stream_name:
+            del row["stream__name"]
+
         row["last_updated"] = datetime_to_timestamp(row["last_updated"])
         result.append(row)
 
@@ -53,6 +59,7 @@ def get_topic_mutes(
     user_topics = get_user_topics(
         user_profile=user_profile,
         include_deactivated=include_deactivated,
+        include_stream_name=True,
         visibility_policy=UserTopic.MUTED,
     )
 

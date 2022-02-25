@@ -49,7 +49,7 @@ from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.lib.user_mutes import get_user_mutes
 from zerver.lib.user_status import get_user_info_dict
-from zerver.lib.user_topics import get_topic_mutes
+from zerver.lib.user_topics import get_topic_mutes, get_user_topics
 from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data, is_administrator_role
 from zerver.models import (
     MAX_TOPIC_NAME_LENGTH,
@@ -63,6 +63,7 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     UserStatus,
+    UserTopic,
     custom_profile_fields_for_realm,
     get_default_stream_groups,
     get_realm_domains,
@@ -192,7 +193,13 @@ def fetch_initial_state_data(
             state["drafts"] = user_draft_dicts
 
     if want("muted_topics"):
-        state["muted_topics"] = [] if user_profile is None else get_topic_mutes(user_profile)
+        # Suppress muted_topics data for clients that explicitly
+        # support user_topic. This allows clients to request both the
+        # user_topic and muted_topics, and receive the duplicate
+        # muted_topics data only from older servers that don't yet
+        # support user_topic.
+        if event_types is None or not want("user_topic"):
+            state["muted_topics"] = [] if user_profile is None else get_topic_mutes(user_profile)
 
     if want("muted_users"):
         state["muted_users"] = [] if user_profile is None else get_user_mutes(user_profile)
@@ -583,6 +590,9 @@ def fetch_initial_state_data(
     if want("user_status"):
         # We require creating an account to access statuses.
         state["user_status"] = {} if user_profile is None else get_user_info_dict(realm_id=realm.id)
+
+    if want("user_topic"):
+        state["user_topics"] = [] if user_profile is None else get_user_topics(user_profile)
 
     if want("video_calls"):
         state["has_zoom_token"] = settings_user.zoom_token is not None
@@ -1319,6 +1329,19 @@ def apply_event(
             user_status.pop(user_id_str, None)
 
         state["user_status"] = user_status
+    elif event["type"] == "user_topic":
+        if event["visibility_policy"] == UserTopic.VISIBILITY_POLICY_INHERIT:
+            user_topics_state = state["user_topics"]
+            for i in range(len(user_topics_state)):
+                if (
+                    user_topics_state[i]["stream_id"] == event["stream_id"]
+                    and user_topics_state[i]["topic_name"] == event["topic_name"]
+                ):
+                    del user_topics_state[i]
+                    break
+        else:
+            fields = ["stream_id", "topic_name", "visibility_policy", "last_updated"]
+            state["user_topics"].append({x: event[x] for x in fields})
     elif event["type"] == "has_zoom_token":
         state["has_zoom_token"] = event["value"]
     else:

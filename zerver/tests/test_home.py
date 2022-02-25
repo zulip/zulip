@@ -213,6 +213,7 @@ class HomeTest(ZulipTestCase):
         "user_id",
         "user_settings",
         "user_status",
+        "user_topics",
         "warn_no_email",
         "webpack_public_path",
         "zulip_feature_level",
@@ -250,7 +251,7 @@ class HomeTest(ZulipTestCase):
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
         )
 
-        self.assert_length(queries, 46)
+        self.assert_length(queries, 47)
         self.assert_length(cache_mock.call_args_list, 5)
 
         html = result.content.decode()
@@ -394,7 +395,7 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
                 self.check_rendered_logged_in_app(result)
                 self.assert_length(cache_mock.call_args_list, 6)
-            self.assert_length(queries, 43)
+            self.assert_length(queries, 44)
 
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user("hamlet")
@@ -425,7 +426,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries2:
             result = self._get_home_page()
 
-        self.assert_length(queries2, 41)
+        self.assert_length(queries2, 42)
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode()

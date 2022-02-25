@@ -1051,7 +1051,7 @@ class FetchQueriesTest(ZulipTestCase):
             with mock.patch("zerver.lib.events.always_want") as want_mock:
                 fetch_initial_state_data(user)
 
-        self.assert_length(queries, 36)
+        self.assert_length(queries, 37)
 
         expected_counts = dict(
             alert_words=1,
@@ -1086,6 +1086,7 @@ class FetchQueriesTest(ZulipTestCase):
             update_message_flags=5,
             user_settings=0,
             user_status=1,
+            user_topic=1,
             video_calls=0,
             giphy=0,
         )

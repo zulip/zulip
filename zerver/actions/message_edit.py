@@ -61,6 +61,7 @@ from zerver.models import (
     Stream,
     UserMessage,
     UserProfile,
+    UserTopic,
     get_stream_by_id_in_realm,
     get_system_bot,
 )
@@ -804,6 +805,17 @@ def do_update_message(
                 # immediate succession; this is correct only because
                 # muted_topics events always send the full set of topics.
                 remove_topic_mute(muting_user, stream_being_edited.id, orig_topic_name)
+
+                date_unmuted = timezone_now()
+                user_topic_event: Dict[str, Any] = {
+                    "type": "user_topic",
+                    "stream_id": stream_being_edited.id,
+                    "topic_name": orig_topic_name,
+                    "last_updated": datetime_to_timestamp(date_unmuted),
+                    "visibility_policy": UserTopic.VISIBILITY_POLICY_INHERIT,
+                }
+                send_event(user_profile.realm, user_topic_event, [user_profile.id])
+
                 do_mute_topic(
                     muting_user,
                     new_stream if new_stream is not None else stream_being_edited,
