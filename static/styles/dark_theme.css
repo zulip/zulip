@@ -351,8 +351,7 @@ body.dark-theme {
     .new-style .tab-switcher .ind-tab.selected,
     div.message_content thead,
     .table-striped thead th,
-    .emoji-popover .reaction.reacted,
-    .message_reactions .message_reaction.reacted {
+    .emoji-popover .reaction.reacted {
         background-color: hsla(0, 0%, 0%, 0.5);
         border-color: hsla(0, 0%, 0%, 0.9);
     }
@@ -361,14 +360,30 @@ body.dark-theme {
         color: hsla(0, 0%, 42%, 0.9) !important;
     }
 
-    .message_reactions:hover .message_reaction + .reaction_button,
-    .message_reactions .message_reaction {
-        background-color: transparent;
-        border-color: hsla(0, 0%, 0%, 0.8);
-        color: inherit;
+    .message_reactions {
+        .message_reaction {
+            background-color: hsla(0, 0%, 0%, 0.25);
+            border-color: hsla(0, 0%, 0%, 0.25);
+            color: inherit;
 
-        &:hover {
-            border-color: hsl(236, 33%, 90%);
+            &.reacted {
+                background-color: hsla(0, 0%, 0%, 0.9);
+                border-color: hsla(0, 0%, 0%, 0.9);
+            }
+
+            &:hover {
+                background-color: hsla(0, 0%, 0%, 0.9);
+            }
+
+            + .reaction_button {
+                background-color: hsla(0, 0%, 0%, 0.25);
+                border-color: hsla(0, 0%, 0%, 0.25);
+                color: inherit;
+
+                &:hover {
+                    border-color: hsl(236, 33%, 90%);
+                }
+            }
         }
     }
 
