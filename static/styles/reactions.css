@@ -10,16 +10,21 @@
         padding: 0 2px 0 0;
         height: 19px;
         cursor: pointer;
-        background-color: hsl(0, 0%, 100%);
+        background-color: hsl(194, 48.1%, 94.7%, 0.35);
         border: 1px solid hsl(194, 37%, 84%);
         border-radius: 4px;
 
         &.reacted {
-            background-color: hsl(195, 50%, 95%);
+            background-color: hsl(194, 48.1%, 94.7%);
+            border: 1px solid hsl(200, 100%, 50%);
+
+            &:hover {
+                border: 1px solid hsl(200, 100%, 50%);
+            }
         }
 
         &:hover {
-            border: 1px solid hsl(200, 100%, 40%);
+            background-color: hsl(194, 48.1%, 94.7%);
         }
 
         + .reaction_button {
