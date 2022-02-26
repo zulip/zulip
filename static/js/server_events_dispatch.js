@@ -78,7 +78,7 @@ export function dispatch_normal_event(event) {
     switch (event.type) {
         case "alert_words":
             alert_words.set_words(event.alert_words);
-            alert_words_ui.render_alert_words_ui();
+            alert_words_ui.rerender_alert_words_ui();
             break;
 
         case "attachment":

@@ -17,7 +17,7 @@ alert_words.initialize({
 });
 const noop = () => {};
 
-run_test("render_alert_words_ui", ({mock_template}) => {
+run_test("rerender_alert_words_ui", ({mock_template}) => {
     let list_widget_create_called = false;
     alert_words_ui.reset();
     assert.ok(!$("#create_alert_word_name").is_focused());
@@ -37,7 +37,7 @@ run_test("render_alert_words_ui", ({mock_template}) => {
         assert.ok(["foo", "bar"].includes(args.alert_word.word));
     });
     assert.equal(alert_words_ui.loaded, false);
-    alert_words_ui.render_alert_words_ui();
+    alert_words_ui.rerender_alert_words_ui();
     assert.equal(list_widget_create_called, false);
     alert_words_ui.set_up_alert_words();
     assert.equal(alert_words_ui.loaded, true);
@@ -46,7 +46,7 @@ run_test("render_alert_words_ui", ({mock_template}) => {
 });
 
 run_test("add_alert_word", ({override_rewire}) => {
-    override_rewire(alert_words_ui, "render_alert_words_ui", () => {}); // we've already tested this above
+    override_rewire(alert_words_ui, "rerender_alert_words_ui", () => {}); // we've already tested this above
 
     alert_words_ui.set_up_alert_words();
 
@@ -101,7 +101,7 @@ run_test("add_alert_word", ({override_rewire}) => {
 });
 
 run_test("add_alert_word_keypress", ({override_rewire}) => {
-    override_rewire(alert_words_ui, "render_alert_words_ui", () => {});
+    override_rewire(alert_words_ui, "rerender_alert_words_ui", () => {});
     alert_words_ui.set_up_alert_words();
 
     const create_form = $("#create_alert_word_form");
@@ -127,7 +127,7 @@ run_test("add_alert_word_keypress", ({override_rewire}) => {
 });
 
 run_test("remove_alert_word", ({override_rewire}) => {
-    override_rewire(alert_words_ui, "render_alert_words_ui", () => {});
+    override_rewire(alert_words_ui, "rerender_alert_words_ui", () => {});
     alert_words_ui.set_up_alert_words();
 
     const word_list = $("#alert-words-table");
@@ -174,7 +174,7 @@ run_test("remove_alert_word", ({override_rewire}) => {
 });
 
 run_test("close_status_message", ({override_rewire}) => {
-    override_rewire(alert_words_ui, "render_alert_words_ui", () => {});
+    override_rewire(alert_words_ui, "rerender_alert_words_ui", () => {});
     alert_words_ui.set_up_alert_words();
 
     const alert_word_settings = $("#alert-word-settings");

@@ -9,10 +9,11 @@ import * as ListWidget from "./list_widget";
 
 export let loaded = false;
 
-export function render_alert_words_ui() {
+export function rerender_alert_words_ui() {
     if (!loaded) {
         return;
     }
+
     const words = alert_words.get_word_list();
     words.sort();
     const word_list = $("#alert-words-table");
@@ -90,7 +91,7 @@ function remove_alert_word(alert_word) {
 export function set_up_alert_words() {
     // The settings page must be rendered before this function gets called.
     loaded = true;
-    render_alert_words_ui();
+    rerender_alert_words_ui();
 
     $("#create_alert_word_form").on("click", "#create_alert_word_button", () => {
         const word = $("#create_alert_word_name").val();

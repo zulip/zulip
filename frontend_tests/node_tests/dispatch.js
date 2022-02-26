@@ -126,7 +126,7 @@ run_test("alert_words", ({override}) => {
     assert.ok(!alert_words.has_alert_word("fire"));
     assert.ok(!alert_words.has_alert_word("lunch"));
 
-    override(alert_words_ui, "render_alert_words_ui", noop);
+    override(alert_words_ui, "rerender_alert_words_ui", noop);
     const event = event_fixtures.alert_words;
     dispatch(event);
 
