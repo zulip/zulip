@@ -1556,7 +1556,7 @@ class RealmUserDefault(UserBaseSettings):
     """
 
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
-    realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
+    realm: Realm = models.OneToOneField(Realm, on_delete=CASCADE)
 
 
 class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
