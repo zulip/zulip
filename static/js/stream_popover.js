@@ -14,6 +14,7 @@ import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
+import * as composebox_typeahead from "./composebox_typeahead";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
 import * as drafts from "./drafts";
@@ -389,13 +390,6 @@ function build_drafts_popover(e) {
 }
 
 function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
-    // TODO: Add support for keyboard-alphabet navigation. Some orgs
-    // many streams and scrolling can be a painful process in that
-    // case.
-    //
-    // NOTE: Private streams are also included in this list.  We
-    // likely will make it possible to move messages to/from private
-    // streams in the future.
     const current_stream_name = stream_data.maybe_get_stream_name(current_stream_id);
     const args = {
         topic_name,
@@ -474,7 +468,21 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
         );
     }
 
+    function set_stream_topic_typeahead() {
+        const $topic_input = $("#move_topic_form .inline_topic_edit");
+        const new_stream_id = Number(stream_widget.value(), 10);
+        const new_stream_name = sub_store.get(new_stream_id).name;
+        $topic_input.data("typeahead").unlisten();
+        composebox_typeahead.initialize_topic_edit_typeahead($topic_input, new_stream_name, false);
+    }
+
+    function move_topic_on_update() {
+        update_submit_button_disabled_state();
+        set_stream_topic_typeahead();
+    }
+
     function move_topic_post_render() {
+        const $topic_input = $("#move_topic_form .inline_topic_edit");
         $stream_header_colorblock = $("#dialog_widget_modal .topic_stream_edit_header").find(
             ".stream_header_colorblock",
         );
@@ -487,9 +495,16 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
             default_text: $t({defaultMessage: "No streams"}),
             include_current_item: false,
             value: current_stream_id,
-            on_update: update_submit_button_disabled_state,
+            on_update: move_topic_on_update,
         };
         stream_widget = new DropdownListWidget(opts);
+
+        composebox_typeahead.initialize_topic_edit_typeahead(
+            $topic_input,
+            current_stream_name,
+            false,
+        );
+
         stream_widget.setup();
 
         update_submit_button_disabled_state(stream_widget.value());
