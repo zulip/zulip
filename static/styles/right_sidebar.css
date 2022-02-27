@@ -137,6 +137,7 @@
 
     &.user-with-count .unread_count {
         display: block;
+        margin-left: 4px;
     }
 }
 
