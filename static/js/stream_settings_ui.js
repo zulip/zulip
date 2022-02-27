@@ -612,6 +612,10 @@ export function setup_page(callback) {
 
         // show the "Stream settings" header by default.
         $(".display-type #stream_settings_title").show();
+
+        if (!$("#stream_filter input[type='text']").val()) {
+            $("#clear_search_stream_name").css("visibility", "hidden");
+        }
     }
 
     function populate_and_fill() {
@@ -651,6 +655,13 @@ export function setup_page(callback) {
 
         const throttled_redraw_left_panel = _.throttle(redraw_left_panel, 50);
         $("#stream_filter input[type='text']").on("input", () => {
+            if (!$("#stream_filter input[type='text']").val()) {
+                $("#clear_search_stream_name").css("visibility", "hidden");
+            }
+
+            if ($("#stream_filter input[type='text']").val()) {
+                $("#clear_search_stream_name").css("visibility", "visible");
+            }
             // Debounce filtering in case a user is typing quickly
             throttled_redraw_left_panel();
         });
@@ -680,6 +691,7 @@ export function setup_page(callback) {
 
         $("#clear_search_stream_name").on("click", () => {
             $("#stream_filter input[type='text']").val("");
+            $("#clear_search_stream_name").css("visibility", "hidden");
             redraw_left_panel();
         });
 
