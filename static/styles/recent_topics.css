@@ -109,6 +109,7 @@
         }
 
         #recent_topics_search_clear {
+            visibility: hidden;
             margin-top: -10px !important;
         }
 

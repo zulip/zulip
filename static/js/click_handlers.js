@@ -468,10 +468,19 @@ export function initialize() {
             // Wait for user to go idle before initiating search.
         }, 300),
     );
+    $("body").on("input", "#recent_topics_search", () => {
+        if ($("#recent_topics_search").val()) {
+            $("#recent_topics_search_clear").css("visibility", "visible");
+        }
+        if (!$("#recent_topics_search").val()) {
+            $("#recent_topics_search_clear").css("visibility", "hidden");
+        }
+    });
 
     $("body").on("click", "#recent_topics_search_clear", (e) => {
         e.stopPropagation();
         $("#recent_topics_search").val("");
+        $("#recent_topics_search_clear").css("visibility", "hidden");
         recent_topics_ui.update_filters_view();
     });
 
