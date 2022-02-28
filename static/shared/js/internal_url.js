@@ -20,3 +20,13 @@ export function decodeHashComponent(str) {
     // Here we let the calling code handle the exception.
     return decodeURIComponent(str.replace(/\./g, "%"));
 }
+
+export function stream_id_to_slug(stream_id, maybe_get_stream_name) {
+    let name = maybe_get_stream_name(stream_id) || "unknown";
+
+    // The name part of the URL doesn't really matter, so we try to
+    // make it pretty.
+    name = name.replaceAll(" ", "-");
+
+    return stream_id + "-" + name;
+}

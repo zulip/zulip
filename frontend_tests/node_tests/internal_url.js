@@ -20,3 +20,15 @@ run_test("test decodeHashComponent", () => {
     const result = internal_url.decodeHashComponent(encoded);
     assert.equal(result, decoded);
 });
+
+run_test("test stream_id_to_slug", () => {
+    const maybe_get_stream_name = () => "onetwo three";
+    const result = internal_url.stream_id_to_slug(123, maybe_get_stream_name);
+    assert.equal(result, "123-onetwo-three");
+});
+
+run_test("test stream_id_to_slug failed lookup", () => {
+    const maybe_get_stream_name = () => undefined;
+    const result = internal_url.stream_id_to_slug(123, maybe_get_stream_name);
+    assert.equal(result, "123-unknown");
+});
