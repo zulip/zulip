@@ -93,7 +93,7 @@ class BaseDocumentationSpider(scrapy.Spider):
         if url.startswith(ZULIP_SERVER_GITHUB_FILE_URL_PREFIX) or url.startswith(
             ZULIP_SERVER_GITHUB_DIRECTORY_URL_PREFIX
         ):
-            # We can verify these links directly in the local git repo without making any requests to GitHub servers.
+            # We can verify these links directly in the local Git repo without making any requests to GitHub servers.
             return False
         if "github.com/zulip" in url:
             # We want to check these links but due to rate limiting from GitHub, these checks often
