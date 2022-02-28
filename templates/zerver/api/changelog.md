@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 127**
+
+* [`GET /user_groups`](/api/get-user-groups),[`POST
+  /register`](/api/register-queue): Added `subgroups` field,
+  which is a list of IDs of all the subgroups of the user group, to
+  user group objects.
+
 **Feature level 126**
 
 * `POST /invites`, `POST /invites/multiuse`: Replaced `invite_expires_in_days`

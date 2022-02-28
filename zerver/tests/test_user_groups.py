@@ -50,6 +50,12 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[0]["name"], "@role:owners")
         self.assertEqual(user_groups[0]["description"], "Owners of this organization")
         self.assertEqual(set(user_groups[0]["members"]), set(membership))
+        self.assertEqual(user_groups[0]["subgroups"], [])
+
+        admins_system_group = UserGroup.objects.get(name="@role:administrators", realm=realm)
+        self.assertEqual(user_groups[1]["id"], admins_system_group.id)
+        # Check that owners system group is present in "subgroups"
+        self.assertEqual(user_groups[1]["subgroups"], [user_group.id])
 
         self.assertEqual(user_groups[8]["id"], empty_user_group.id)
         self.assertEqual(user_groups[8]["name"], "newgroup")

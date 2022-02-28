@@ -13807,6 +13807,14 @@ paths:
                                 The integer user IDs of the user group members.
                               items:
                                 type: integer
+                            subgroups:
+                              type: array
+                              description: |
+                                The integer user group IDs of the subgroups.
+
+                                **Changes**: New in Zulip 6.0 (feature level 127).
+                              items:
+                                type: integer
                             name:
                               type: string
                               description: |
@@ -13832,6 +13840,7 @@ paths:
                               "id": 1,
                               "name": "hamletcharacters",
                               "members": [3, 4],
+                              "subgroups": [],
                               "is_system_group": false,
                             },
                             {
@@ -13839,6 +13848,7 @@ paths:
                               "id": 2,
                               "name": "other users",
                               "members": [1, 2],
+                              "subgroups": [1, 2],
                               "is_system_group": true,
                             },
                           ],
@@ -14650,6 +14660,15 @@ components:
           description: |
             Array containing the id of the users who are
             members of this user group.
+        subgroups:
+          type: array
+          items:
+            type: integer
+          description: |
+            Array containing the id of the subgroups of this
+            user group.
+
+            **Changes**: New in Zulip 6.0 (feature level 127).
         id:
           type: integer
           description: |

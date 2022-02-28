@@ -1676,6 +1676,7 @@ group_type = DictType(
         ("id", int),
         ("name", str),
         ("members", ListType(int)),
+        ("subgroups", ListType(int)),
         ("description", str),
         ("is_system_group", bool),
     ]
