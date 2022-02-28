@@ -32,3 +32,9 @@ run_test("test stream_id_to_slug failed lookup", () => {
     const result = internal_url.stream_id_to_slug(123, maybe_get_stream_name);
     assert.equal(result, "123-unknown");
 });
+
+run_test("test encode_stream_id", () => {
+    const maybe_get_stream_name = () => "stream (with brackets)";
+    const result = internal_url.encode_stream_id(123, maybe_get_stream_name);
+    assert.equal(result, "123-stream-.28with-brackets.29");
+});
