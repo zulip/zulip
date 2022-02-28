@@ -51,14 +51,6 @@ export function encode_operand(operator, operand) {
     return internal_url.encodeHashComponent(operand);
 }
 
-export function encode_stream_id(stream_id) {
-    // stream_data appends the stream name, but it does not do the
-    // URI encoding piece
-    const slug = internal_url.stream_id_to_slug(stream_id, stream_data.maybe_get_stream_name);
-
-    return internal_url.encodeHashComponent(slug);
-}
-
 export function encode_stream_name(operand) {
     // stream_data prefixes the stream id, but it does not do the
     // URI encoding piece
@@ -85,13 +77,16 @@ export function decode_operand(operator, operand) {
 }
 
 export function by_stream_uri(stream_id) {
-    return "#narrow/stream/" + encode_stream_id(stream_id);
+    return (
+        "#narrow/stream/" +
+        internal_url.encode_stream_id(stream_id, stream_data.maybe_get_stream_name)
+    );
 }
 
 export function by_stream_topic_uri(stream_id, topic) {
     return (
         "#narrow/stream/" +
-        encode_stream_id(stream_id) +
+        internal_url.encode_stream_id(stream_id, stream_data.maybe_get_stream_name) +
         "/topic/" +
         internal_url.encodeHashComponent(topic)
     );
