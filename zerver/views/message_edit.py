@@ -1,7 +1,6 @@
 import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import List, Optional, Union
 
-import orjson
 from django.contrib.auth.models import AnonymousUser
 from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse
@@ -17,19 +16,22 @@ from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import REQ_topic
+from zerver.lib.types import EditHistoryEvent, FormattedEditHistoryEvent
 from zerver.lib.validator import check_bool, check_string_in, to_non_negative_int
 from zerver.models import Message, UserProfile
 
 
-def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Message) -> None:
-    """This fills out the message edit history entries from the database,
-    which are designed to have the minimum data possible, to instead
-    have the current topic + content as of that time, plus data on
-    whatever changed.  This makes it much simpler to do future
-    processing.
-
-    Note that this mutates what is passed to it, which is sorta a bad pattern.
+def fill_edit_history_entries(
+    message_history: List[EditHistoryEvent], message: Message
+) -> List[FormattedEditHistoryEvent]:
     """
+    This fills out the message edit history entries from the database
+    to have the current message topic + content as of that time for
+    every entry, plus data on whatever changed. This makes it much
+    simpler to do future processing.
+    """
+    formatted_edit_history: List[FormattedEditHistoryEvent] = []
+
     prev_content = message.content
     prev_rendered_content = message.rendered_content
     prev_topic = message.topic_name()
@@ -42,25 +44,39 @@ def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Me
 
     for entry in message_history:
 
-        if "topic" not in entry:
-            entry["topic"] = prev_topic
+        formatted_entry: FormattedEditHistoryEvent = {
+            "user_id": entry["user_id"],
+            "timestamp": entry["timestamp"],
+            "content": prev_content,
+            "rendered_content": prev_rendered_content,
+            "topic": prev_topic,
+        }
 
         if "prev_topic" in entry:
+            assert entry["topic"] == prev_topic
+            formatted_entry["prev_topic"] = entry["prev_topic"]
             prev_topic = entry["prev_topic"]
 
-        entry["content"] = prev_content
-        entry["rendered_content"] = prev_rendered_content
+        if "prev_stream" in entry:
+            formatted_entry["stream"] = entry["stream"]
+            formatted_entry["prev_stream"] = entry["prev_stream"]
+
         if "prev_content" in entry:
-            del entry["prev_rendered_content_version"]
+            formatted_entry["prev_content"] = entry["prev_content"]
             prev_content = entry["prev_content"]
+            formatted_entry["prev_rendered_content"] = entry["prev_rendered_content"]
             prev_rendered_content = entry["prev_rendered_content"]
             assert prev_rendered_content is not None
-            entry["content_html_diff"] = highlight_html_differences(
-                prev_rendered_content, entry["rendered_content"], message.id
+            rendered_content = formatted_entry["rendered_content"]
+            assert rendered_content is not None
+            formatted_entry["content_html_diff"] = highlight_html_differences(
+                prev_rendered_content, rendered_content, message.id
             )
 
-    message_history.append(
-        dict(
+        formatted_edit_history.append(formatted_entry)
+
+    formatted_edit_history.append(
+        FormattedEditHistoryEvent(
             topic=prev_topic,
             content=prev_content,
             rendered_content=prev_rendered_content,
@@ -68,6 +84,8 @@ def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Me
             user_id=message.sender_id,
         )
     )
+
+    return formatted_edit_history
 
 
 @has_request_variables
@@ -82,13 +100,13 @@ def get_message_edit_history(
 
     # Extract the message edit history from the message
     if message.edit_history is not None:
-        message_edit_history = orjson.loads(message.edit_history)
+        message_edit_history = message.edit_history
     else:
         message_edit_history = []
 
     # Fill in all the extra data that will make it usable
-    fill_edit_history_entries(message_edit_history, message)
-    return json_success(request, data={"message_history": list(reversed(message_edit_history))})
+    formatted_edit_history = fill_edit_history_entries(message_edit_history, message)
+    return json_success(request, data={"message_history": list(reversed(formatted_edit_history))})
 
 
 PROPAGATE_MODE_VALUES = ["change_later", "change_one", "change_all"]

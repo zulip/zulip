@@ -173,7 +173,12 @@ from zerver.lib.topic import (
     update_messages_for_topic_edit,
 )
 from zerver.lib.topic_mutes import add_topic_mute, get_topic_mutes, remove_topic_mute
-from zerver.lib.types import ProfileDataElementValue, ProfileFieldData, UnspecifiedValue
+from zerver.lib.types import (
+    EditHistoryEvent,
+    ProfileDataElementValue,
+    ProfileFieldData,
+    UnspecifiedValue,
+)
 from zerver.lib.upload import (
     claim_attachment,
     delete_avatar_image,
@@ -6694,7 +6699,7 @@ def do_update_message(
         "rendering_only": False,
     }
 
-    edit_history_event: Dict[str, Any] = {
+    edit_history_event: EditHistoryEvent = {
         "user_id": user_profile.id,
         "timestamp": event["edit_timestamp"],
     }
@@ -6880,16 +6885,16 @@ def do_update_message(
         assert stream_being_edited is not None
 
         # Other messages should only get topic/stream fields in their edit history.
-        topic_only_edit_history_event = {
-            k: v
-            for (k, v) in edit_history_event.items()
-            if k
-            not in [
-                "prev_content",
-                "prev_rendered_content",
-                "prev_rendered_content_version",
-            ]
+        topic_only_edit_history_event: EditHistoryEvent = {
+            "user_id": edit_history_event["user_id"],
+            "timestamp": edit_history_event["timestamp"],
         }
+        if topic_name is not None:
+            topic_only_edit_history_event["prev_topic"] = edit_history_event["prev_topic"]
+            topic_only_edit_history_event["topic"] = edit_history_event["topic"]
+        if new_stream is not None:
+            topic_only_edit_history_event["prev_stream"] = edit_history_event["prev_stream"]
+            topic_only_edit_history_event["stream"] = edit_history_event["stream"]
 
         messages_list = update_messages_for_topic_edit(
             acting_user=user_profile,

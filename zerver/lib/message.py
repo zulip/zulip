@@ -38,7 +38,7 @@ from zerver.lib.streams import get_web_public_streams_queryset
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import DB_TOPIC_NAME, MESSAGE__TOPIC, TOPIC_LINKS, TOPIC_NAME
 from zerver.lib.topic_mutes import build_topic_mute_checker, topic_is_muted
-from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
+from zerver.lib.types import DisplayRecipientT, EditHistoryEvent, UserDisplayRecipient
 from zerver.models import (
     MAX_TOPIC_NAME_LENGTH,
     Message,
@@ -463,7 +463,7 @@ class MessageDict:
     def build_message_dict(
         message_id: int,
         last_edit_time: Optional[datetime.datetime],
-        edit_history: Optional[str],
+        edit_history: Optional[List[EditHistoryEvent]],
         content: str,
         topic_name: str,
         date_sent: datetime.datetime,
@@ -502,7 +502,7 @@ class MessageDict:
         if last_edit_time is not None:
             obj["last_edit_timestamp"] = datetime_to_timestamp(last_edit_time)
             assert edit_history is not None
-            obj["edit_history"] = orjson.loads(edit_history)
+            obj["edit_history"] = edit_history
 
         if Message.need_to_render_content(
             rendered_content, rendered_content_version, markdown_version
