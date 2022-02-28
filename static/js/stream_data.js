@@ -282,7 +282,7 @@ export function id_to_slug(stream_id) {
 
     // The name part of the URL doesn't really matter, so we try to
     // make it pretty.
-    name = name.replace(" ", "-");
+    name = name.replaceAll(" ", "-");
 
     return stream_id + "-" + name;
 }
@@ -296,7 +296,7 @@ export function name_to_slug(name) {
 
     // The name part of the URL doesn't really matter, so we try to
     // make it pretty.
-    name = name.replace(" ", "-");
+    name = name.replaceAll(" ", "-");
 
     return stream_id + "-" + name;
 }
