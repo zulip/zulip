@@ -38,3 +38,16 @@ export function encode_stream_id(stream_id, maybe_get_stream_name) {
 
     return encodeHashComponent(slug);
 }
+
+export function by_stream_uri(stream_id, maybe_get_stream_name) {
+    return "#narrow/stream/" + encode_stream_id(stream_id, maybe_get_stream_name);
+}
+
+export function by_stream_topic_uri(stream_id, topic, maybe_get_stream_name) {
+    return (
+        "#narrow/stream/" +
+        encode_stream_id(stream_id, maybe_get_stream_name) +
+        "/topic/" +
+        encodeHashComponent(topic)
+    );
+}
