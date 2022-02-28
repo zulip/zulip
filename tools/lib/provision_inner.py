@@ -166,7 +166,7 @@ def need_to_run_build_timezone_data() -> bool:
 
 def need_to_run_compilemessages() -> bool:
     if not os.path.exists("locale/language_name_map.json"):
-        # User may have cleaned their git checkout.
+        # User may have cleaned their Git checkout.
         print("Need to run compilemessages due to missing language_name_map.json")
         return True
 

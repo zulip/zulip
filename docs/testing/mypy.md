@@ -504,7 +504,7 @@ unfortunately give up some type safety by falling back to
 ## Troubleshooting advice
 
 All of our linters, including mypy, are designed to only check files
-that have been added in git (this is by design, since it means you
+that have been added in Git (this is by design, since it means you
 have untracked files in your Zulip checkout safely). So if you get a
 `mypy` error like this after adding a new file that is referenced by
 the existing codebase:
