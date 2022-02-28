@@ -77,19 +77,13 @@ export function decode_operand(operator, operand) {
 }
 
 export function by_stream_uri(stream_id) {
-    return (
-        "#narrow/stream/" +
-        internal_url.encode_stream_id(stream_id, stream_data.maybe_get_stream_name)
-    );
+    // Wrapper for web use of internal_url.by_stream_uri
+    return internal_url.by_stream_uri(stream_id, stream_data.maybe_get_stream_name);
 }
 
 export function by_stream_topic_uri(stream_id, topic) {
-    return (
-        "#narrow/stream/" +
-        internal_url.encode_stream_id(stream_id, stream_data.maybe_get_stream_name) +
-        "/topic/" +
-        internal_url.encodeHashComponent(topic)
-    );
+    // Wrapper for web use of internal_url.by_stream_topic_uri
+    return internal_url.by_stream_topic_uri(stream_id, topic, stream_data.maybe_get_stream_name);
 }
 
 // Encodes an operator list into the

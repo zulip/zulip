@@ -38,3 +38,15 @@ run_test("test encode_stream_id", () => {
     const result = internal_url.encode_stream_id(123, maybe_get_stream_name);
     assert.equal(result, "123-stream-.28with-brackets.29");
 });
+
+run_test("test by_stream_uri", () => {
+    const maybe_get_stream_name = () => "a test stream";
+    const result = internal_url.by_stream_uri(123, maybe_get_stream_name);
+    assert.equal(result, "#narrow/stream/123-a-test-stream");
+});
+
+run_test("test by_stream_topic_uri", () => {
+    const maybe_get_stream_name = () => "a test stream";
+    const result = internal_url.by_stream_topic_uri(123, "test topic", maybe_get_stream_name);
+    assert.equal(result, "#narrow/stream/123-a-test-stream/topic/test.20topic");
+});
