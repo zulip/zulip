@@ -281,9 +281,6 @@ function open_edit_form(e) {
     profile_field.row.hide();
     profile_field.form.show();
     const field = get_profile_field(field_id);
-    // Set initial value in edit form
-    profile_field.form.find("input[name=name]").val(field.name);
-    profile_field.form.find("input[name=hint]").val(field.hint);
     let field_data = {};
     if (field.field_data) {
         field_data = JSON.parse(field.field_data);
@@ -297,6 +294,10 @@ function open_edit_form(e) {
         profile_field.form.find("select[name=external_acc_field_type]").val(field_data.subtype);
         set_up_external_account_field_edit_form(profile_field, field_data.url_pattern);
     }
+
+    // Set initial value in edit form
+    profile_field.form.find("input[name=name]").val(field.name);
+    profile_field.form.find("input[name=hint]").val(field.hint);
 
     profile_field.form.find(".reset").on("click", () => {
         profile_field.form.hide();
