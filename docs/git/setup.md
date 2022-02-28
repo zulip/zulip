@@ -31,7 +31,7 @@ We also highly recommend the following:
 
 ## Get a graphical client
 
-Even if you're comfortable using git on the command line, having a graphical
+Even if you're comfortable using Git on the command line, having a graphical
 client can be useful for viewing your repository. This is especially true
 when doing complicated rebases and similar operations because you can check
 the state of your repository after each command to see what changed. If

@@ -72,7 +72,7 @@ you a lot of time, by automatically detecting linter errors as you
 make them.
 :::
 
-**Note:** The linters only check files that git tracks. Remember to `git add`
+**Note:** The linters only check files that Git tracks. Remember to `git add`
 new files before running lint checks.
 
 Our linting tools generally support the ability to lint files
