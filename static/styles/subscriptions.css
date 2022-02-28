@@ -836,6 +836,10 @@ h4.stream_setting_subsection_title {
         margin: 20px;
     }
 
+    .stream_section {
+        padding-left: 2px;
+    }
+
     .stream_settings_header {
         white-space: nowrap;
         display: flex;
