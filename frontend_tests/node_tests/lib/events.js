@@ -721,6 +721,7 @@ exports.fixtures = {
             description: "mobile folks",
             members: [1],
             is_system_group: false,
+            subgroups: [2],
         },
     },
 

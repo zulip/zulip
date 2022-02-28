@@ -40,6 +40,7 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[Dict[str, Any]]:
             name=user_group.name,
             description=user_group.description,
             members=[],
+            subgroups=[],
             is_system_group=user_group.is_system_group,
         )
 
@@ -48,8 +49,16 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[Dict[str, Any]]:
     )
     for (user_group_id, user_profile_id) in membership:
         group_dicts[user_group_id]["members"].append(user_profile_id)
+
+    group_membership = GroupGroupMembership.objects.filter(subgroup__realm=realm).values_list(
+        "subgroup_id", "supergroup_id"
+    )
+    for (subgroup_id, supergroup_id) in group_membership:
+        group_dicts[supergroup_id]["subgroups"].append(subgroup_id)
+
     for group_dict in group_dicts.values():
         group_dict["members"] = sorted(group_dict["members"])
+        group_dict["subgroups"] = sorted(group_dict["subgroups"])
 
     return sorted(group_dicts.values(), key=lambda group_dict: group_dict["id"])
 
