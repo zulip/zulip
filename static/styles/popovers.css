@@ -307,6 +307,13 @@ ul {
         &.guest-avatar::after {
             outline: 9px solid hsl(0, 0%, 100%);
         }
+
+        #avatar_image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 5px;
+        }
     }
 
     #name {
