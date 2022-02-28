@@ -54,7 +54,7 @@ export function encode_operand(operator, operand) {
 export function encode_stream_id(stream_id) {
     // stream_data appends the stream name, but it does not do the
     // URI encoding piece
-    const slug = stream_data.id_to_slug(stream_id);
+    const slug = internal_url.stream_id_to_slug(stream_id, stream_data.maybe_get_stream_name);
 
     return internal_url.encodeHashComponent(slug);
 }
