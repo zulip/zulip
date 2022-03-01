@@ -236,7 +236,7 @@ export function render_markdown_timestamp(time: number | Date): {
 
     return {
         text: timestring,
-        tooltip_content_html: tooltip_content_html,
+        tooltip_content_html,
     };
 }
 
