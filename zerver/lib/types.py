@@ -89,3 +89,40 @@ class UnspecifiedValue:
     """
 
     pass
+
+
+class APIEditHistoryEvent(TypedDict, total=False):
+    """Format of legacy edit history events in the API. Contains legacy
+    fields like LEGACY_PREV_TOPIC that we intend to remove from the
+    API eventually.
+    """
+
+    # Commented fields are fields we plan to add.
+    user_id: Optional[int]
+    timestamp: int
+    prev_stream: int
+    # stream: int
+    prev_subject: str
+    # prev_topic: str
+    # topic: str
+    prev_content: str
+    prev_rendered_content: Optional[str]
+    prev_rendered_content_version: Optional[int]
+
+
+class EditHistoryEvent(TypedDict, total=False):
+    """
+    Database format for edit history events.
+    """
+
+    # Commented fields are fields we plan to add.
+    user_id: Optional[int]
+    timestamp: int
+    prev_stream: int
+    # stream: int
+    prev_subject: str
+    # prev_topic: str
+    # topic: str
+    prev_content: str
+    prev_rendered_content: Optional[str]
+    prev_rendered_content_version: Optional[int]
