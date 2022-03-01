@@ -265,7 +265,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
 
     override(
         hash_util,
-        "by_conversation_and_time_uri",
+        "by_conversation_and_time_url",
         () => "https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado",
     );
 

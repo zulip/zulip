@@ -652,7 +652,7 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
 function get_above_composebox_narrow_url(message) {
     let above_composebox_narrow_url;
     if (message.type === "stream") {
-        above_composebox_narrow_url = hash_util.by_stream_topic_uri(
+        above_composebox_narrow_url = hash_util.by_stream_topic_url(
             message.stream_id,
             message.topic,
         );

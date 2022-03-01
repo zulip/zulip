@@ -171,14 +171,14 @@ run_test("uris", () => {
     people.add_active_user(me);
     people.initialize_current_user(me.user_id);
 
-    let uri = hash_util.pm_with_uri(ray.email);
-    assert.equal(uri, "#narrow/pm-with/22-ray");
+    let url = hash_util.pm_with_url(ray.email);
+    assert.equal(url, "#narrow/pm-with/22-ray");
 
-    uri = hash_util.huddle_with_uri("22,23");
-    assert.equal(uri, "#narrow/pm-with/22,23-group");
+    url = hash_util.huddle_with_url("22,23");
+    assert.equal(url, "#narrow/pm-with/22,23-group");
 
-    uri = hash_util.by_sender_uri(ray.email);
-    assert.equal(uri, "#narrow/sender/22-ray");
+    url = hash_util.by_sender_url(ray.email);
+    assert.equal(url, "#narrow/sender/22-ray");
 
     let emails = hash_util.decode_operand("pm-with", "22,23-group");
     assert.equal(emails, "alice@example.com,ray@example.com");

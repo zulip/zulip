@@ -103,7 +103,7 @@ export function get_list_info(stream_id, zoomed) {
             is_zero: num_unread === 0,
             is_muted: is_topic_muted,
             is_active_topic,
-            url: hash_util.by_stream_topic_uri(stream_id, topic_name),
+            url: hash_util.by_stream_topic_url(stream_id, topic_name),
             resolved,
             resolved_topic_prefix: message_edit.RESOLVED_TOPIC_PREFIX,
         };

@@ -137,7 +137,7 @@ export function do_set_reminder_for_message(message_id, timestamp) {
         return;
     }
 
-    const link_to_msg = hash_util.by_conversation_and_time_uri(message);
+    const link_to_msg = hash_util.by_conversation_and_time_url(message);
     const reminder_msg_content =
         message.raw_content + "\n\n[Link to conversation](" + link_to_msg + ")";
     let reminder_message = {

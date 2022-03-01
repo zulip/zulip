@@ -225,10 +225,10 @@ function render_user_info_popover(
         is_bot: user.is_bot,
         is_me,
         is_sender_popover,
-        pm_with_uri: hash_util.pm_with_uri(user.email),
+        pm_with_url: hash_util.pm_with_url(user.email),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         private_message_class: private_msg_class,
-        sent_by_uri: hash_util.by_sender_uri(user.email),
+        sent_by_uri: hash_util.by_sender_url(user.email),
         show_email: settings_data.show_email(),
         show_user_profile: !user.is_bot,
         user_email: people.get_visible_email(user),
@@ -504,7 +504,7 @@ export function toggle_actions_popover(element, id) {
         const should_display_quote_and_reply =
             message.content !== "<p>(deleted)</p>" && not_spectator;
 
-        const conversation_time_uri = hash_util.by_conversation_and_time_uri(message);
+        const conversation_time_uri = hash_util.by_conversation_and_time_url(message);
 
         const should_display_delete_option =
             message_edit.get_deletability(message) && not_spectator;
