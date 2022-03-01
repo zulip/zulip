@@ -4087,6 +4087,8 @@ class AbstractRealmAuditLog(models.Model):
     STREAM_MESSAGE_RETENTION_DAYS_CHANGED = 605
     STREAM_PROPERTY_CHANGED = 607
 
+    TOPIC_PROPERTY_CHANGED = 700
+
     # The following values are only for RemoteZulipServerAuditLog
     # Values should be exactly 10000 greater than the corresponding
     # value used for the same purpose in RealmAuditLog (e.g.

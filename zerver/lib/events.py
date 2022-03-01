@@ -901,6 +901,12 @@ def apply_event(
                         bot.update(event["bot"])
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
+    elif event["type"] == "topic":
+        if event["op"] == "update" and event["field"] == "pinned":
+            for stream_id in state["topics_by_stream_id"].keys():
+                for topic in state["topics_by_stream_id"][stream_id]:
+                    if topic["name"] == event["topic_name"]:
+                        state["topics_by_stream_id"][stream_id][topic["name"]]["pinned"] = event["is_pinned"]
     elif event["type"] == "stream":
         if event["op"] == "create":
             for stream in event["streams"]:

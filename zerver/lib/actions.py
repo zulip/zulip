@@ -228,6 +228,7 @@ from zerver.models import (
     Stream,
     SubMessage,
     Subscription,
+    Topic,
     UserActivity,
     UserActivityInterval,
     UserGroup,
@@ -5936,6 +5937,43 @@ def streams_to_dicts_sorted(streams: List[Stream]) -> List[Dict[str, Any]]:
 
 def default_stream_groups_to_dicts_sorted(groups: List[DefaultStreamGroup]) -> List[Dict[str, Any]]:
     return sorted((group.to_dict() for group in groups), key=lambda elt: elt["name"])
+
+
+def do_update_whether_topic_is_pinned(topic: Topic, new_value: bool) -> None:
+    if topic.pinned == new_value:
+        return
+    with transaction.atomic():
+        topic.pinned = new_value
+        topic.save(update_fields=["pinned"])
+        stream_id = topic.recipient.type_id
+        stream = get_stream_by_id_in_realm(stream_id, topic.realm)
+        RealmAuditLog.objects.create(
+            realm=topic.realm,
+            modified_stream=stream,
+            event_type=RealmAuditLog.TOPIC_PROPERTY_CHANGED,
+            event_time=timezone_now(),
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.OLD_VALUE: not new_value,
+                    RealmAuditLog.NEW_VALUE: new_value,
+                    "property": "is_pinned",
+                }
+            ).decode(),
+        )
+        notify_pinned_topic(topic, stream)
+
+
+def notify_pinned_topic(topic: Topic, stream: Stream) -> None:
+    event = dict(
+        type="topic",
+        op="update",
+        field="pinned",
+        topic_name=topic.name,
+        is_pinned=topic.pinned,
+    )
+    transaction.on_commit(
+        lambda: send_event(topic.realm, event, can_access_stream_user_ids(stream))
+    )
 
 
 def do_update_user_activity_interval(
