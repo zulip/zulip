@@ -28,6 +28,7 @@ import {page_params} from "./page_params";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
+import {show_copied_confirmation} from "./show_copied_confirmation";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
@@ -328,13 +329,9 @@ function create_copy_to_clipboard_handler($row, source, message_id) {
 
     clipboard.on("success", () => {
         end_message_row_edit($row);
-        $row.find(".alert-msg").text($t({defaultMessage: "Copied!"}));
-        $row.find(".alert-msg").css("display", "block");
-        $row.find(".alert-msg").delay(1000).fadeOut(300);
-        if ($(".tooltip").is(":visible")) {
-            $(".tooltip").hide();
-        }
     });
+
+    show_copied_confirmation(source, clipboard);
 }
 
 function edit_message($row, raw_content) {
