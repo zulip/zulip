@@ -2833,6 +2833,82 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event sent to all users when subgroups have been added to
+                                a user group.
+
+                                **Changes**: New in Zulip 6.0 (feature level 127).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - user_group
+                                op:
+                                  type: string
+                                  enum:
+                                    - add_subgroups
+                                group_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the user group whose details have changed.
+                                subgroup_ids:
+                                  type: array
+                                  items:
+                                    type: integer
+                                  description: |
+                                    Array containing the IDs of the subgroups that have been added
+                                    to the user group.
+                              example:
+                                {
+                                  "type": "user_group",
+                                  "op": "add_subgroups",
+                                  "group_id": 2,
+                                  "subgroup_ids": [10],
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to all users when subgroups have been removed from
+                                a user group.
+
+                                **Changes**: New in Zulip 6.0 (feature level 127).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - user_group
+                                op:
+                                  type: string
+                                  enum:
+                                    - remove_subgroups
+                                group_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the user group whose details have changed.
+                                subgroup_ids:
+                                  type: array
+                                  items:
+                                    type: integer
+                                  description: |
+                                    Array containing the IDs of the subgroups that have been
+                                    removed from the user group.
+                              example:
+                                {
+                                  "type": "user_group",
+                                  "op": "remove_subgroups",
+                                  "group_id": 2,
+                                  "subgroup_ids": [10],
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event sent to all users when a user group has been deleted.
                               properties:
                                 id:

@@ -1748,6 +1748,28 @@ def check_user_group_update(var_name: str, event: Dict[str, object], field: str)
     assert set(event["data"].keys()) == {field}
 
 
+user_group_add_subgroups_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("user_group")),
+        ("op", Equals("add_subgroups")),
+        ("group_id", int),
+        ("subgroup_ids", ListType(int)),
+    ]
+)
+check_user_group_add_subgroups = make_checker(user_group_add_subgroups_event)
+
+
+user_group_remove_subgroups_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("user_group")),
+        ("op", Equals("remove_subgroups")),
+        ("group_id", int),
+        ("subgroup_ids", ListType(int)),
+    ]
+)
+check_user_group_remove_subgroups = make_checker(user_group_remove_subgroups_event)
+
+
 user_status_event = event_dict_type(
     required_keys=[
         # force vertical

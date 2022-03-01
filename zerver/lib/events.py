@@ -1245,6 +1245,17 @@ def apply_event(
                     members = set(user_group["members"])
                     user_group["members"] = list(members - set(event["user_ids"]))
                     user_group["members"].sort()
+        elif event["op"] == "add_subgroups":
+            for user_group in state["realm_user_groups"]:
+                if user_group["id"] == event["group_id"]:
+                    user_group["subgroups"].extend(event["subgroup_ids"])
+                    user_group["subgroups"].sort()
+        elif event["op"] == "remove_subgroups":
+            for user_group in state["realm_user_groups"]:
+                if user_group["id"] == event["group_id"]:
+                    subgroups = set(user_group["subgroups"])
+                    user_group["subgroups"] = list(subgroups - set(event["subgroup_ids"]))
+                    user_group["subgroups"].sort()
         elif event["op"] == "remove":
             state["realm_user_groups"] = [
                 ug for ug in state["realm_user_groups"] if ug["id"] != event["group_id"]
