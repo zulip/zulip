@@ -34,6 +34,12 @@ function make_message_view_header(filter) {
     }
     message_view_header.title = filter.get_title();
     message_view_header.icon = filter.get_icon();
+    if (message_view_header.icon === "globe") {
+        // This is a bit hacky, but it works as a way to communicate
+        // to the HTML template that we need to use the different HTML
+        // required for the globe icon.
+        message_view_header.web_public_stream = true;
+    }
     if (filter.has_operator("stream") && !filter._sub) {
         message_view_header.sub_count = "0";
         message_view_header.formatted_sub_count = "0";
