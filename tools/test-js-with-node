@@ -162,6 +162,7 @@ EXEMPT_FILES = make_set(
         "static/js/settings_ui.js",
         "static/js/settings_users.js",
         "static/js/setup.js",
+        "static/js/show_copied_confirmation.js",
         "static/js/spectators.js",
         "static/js/spoilers.ts",
         "static/js/starred_messages_ui.js",

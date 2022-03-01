@@ -11,6 +11,7 @@ import {$t, $t_html} from "./i18n";
 import * as people from "./people";
 import * as realm_playground from "./realm_playground";
 import * as rtl from "./rtl";
+import {show_copied_confirmation} from "./show_copied_confirmation";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import * as user_groups from "./user_groups";
@@ -227,11 +228,12 @@ export const update_elements = ($content) => {
         }
         const $copy_button = $(copy_code_button());
         $pre.prepend($copy_button);
-        new ClipboardJS($copy_button[0], {
+        const clipboard = new ClipboardJS($copy_button[0], {
             text(copy_element) {
                 return $(copy_element).siblings("code").text();
             },
         });
+        show_copied_confirmation($copy_button[0], clipboard);
     });
 
     // Display emoji (including realm emoji) as text if
