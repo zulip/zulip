@@ -332,7 +332,7 @@ CSS](https://github.com/zulip/zulip/).
 [prod-label]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22area%3A+production%22
 
 - Extract JavaScript logic modules from the Zulip web app that we'd
-  like to be able to share with the Zulip web app. This work can have
+  like to be able to share with the Zulip mobile app. This work can have
   big benefits it terms of avoiding code duplication for complex
   logic. We have prototyped for a few modules by migrating them to
   `static/shared/`; this project will involve closely collaborating
