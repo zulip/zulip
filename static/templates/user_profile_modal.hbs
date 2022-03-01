@@ -14,8 +14,8 @@
                 <div id="tab-toggle" class="center"></div>
                 <div class="tab-data">
                     <div class="tabcontent active" id="profile-tab">
-                        <div id="avatar" {{#if user_is_guest}} class="guest-avatar" {{/if}}>
-                            <img id="avatar_image" src ="{{user_avatar}}" alt=""/>
+                        <div id="avatar" {{#if user_is_guest}} class="guest-avatar" {{/if}}
+                          style="background-image: url('{{user_avatar}}');">
                         </div>
                         <div id="default-section">
                             {{#if show_email}}
