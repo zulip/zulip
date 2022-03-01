@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import orjson
 from django.db import connection
@@ -9,7 +9,7 @@ from sqlalchemy.types import Boolean, Text
 
 from zerver.lib.request import REQ
 from zerver.lib.types import EditHistoryEvent
-from zerver.models import Message, Stream, UserMessage, UserProfile
+from zerver.models import Message, Realm, Stream, Topic, UserMessage, UserProfile
 
 # Only use these constants for events.
 ORIG_TOPIC = "orig_subject"
@@ -267,3 +267,14 @@ def get_topic_history_for_stream(
     cursor.close()
 
     return generate_topic_history_from_db_rows(rows)
+
+
+"""
+
+Below this point are functions relating to the Topic table.
+
+"""
+
+
+def get_topics_for_realm(realm: Realm) -> Sequence[Topic]:
+    return Topic.objects.filter(realm=realm)

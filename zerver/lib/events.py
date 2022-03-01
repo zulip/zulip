@@ -2,6 +2,7 @@
 # high-level documentation on how this system works.
 import copy
 import time
+from collections import defaultdict
 from typing import Any, Callable, Collection, Dict, Iterable, Optional, Sequence, Set
 
 from django.conf import settings
@@ -46,7 +47,7 @@ from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
-from zerver.lib.topic import TOPIC_NAME
+from zerver.lib.topic import TOPIC_NAME, get_topics_for_realm
 from zerver.lib.topic_mutes import get_topic_mutes
 from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.lib.user_mutes import get_user_mutes
@@ -550,6 +551,23 @@ def fetch_initial_state_data(
             state["realm_default_stream_groups"] = default_stream_groups_to_dicts_sorted(
                 get_default_stream_groups(realm)
             )
+
+    if want("topic"):
+        # NOTE: As of March 2022 we're only returning pinned topics, which are visible to all users. If we
+        # start storing other topics, we might need to modify the query to account for what the user
+        # profile is allowed to see.
+        topics_by_stream_id = defaultdict(list)
+
+        for topic in get_topics_for_realm(realm):
+            if topic.pinned is False:
+                continue
+            topics_by_stream_id[topic.recipient.id].append(
+                {
+                    "name": topic.name,
+                    "pinned": topic.pinned,
+                }
+            )
+        state["topics_by_stream_id"] = topics_by_stream_id
 
     if want("stop_words"):
         state["stop_words"] = read_stop_words()
