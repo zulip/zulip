@@ -285,7 +285,7 @@ function generate_topic_data(topic_info_array) {
     for (const [stream_id, topic, unread_count, muted, participated] of topic_info_array) {
         data.push({
             other_senders_count: 0,
-            other_sender_names: "",
+            other_sender_names_html: "",
             invite_only: false,
             is_web_public: true,
             last_msg_time: "Just now",
