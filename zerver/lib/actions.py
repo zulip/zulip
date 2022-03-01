@@ -161,7 +161,6 @@ from zerver.lib.string_validation import check_stream_name, check_stream_topic
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import (
-    LEGACY_PREV_TOPIC,
     ORIG_TOPIC,
     RESOLVED_TOPIC_PREFIX,
     TOPIC_LINKS,
@@ -174,7 +173,12 @@ from zerver.lib.topic import (
     update_messages_for_topic_edit,
 )
 from zerver.lib.topic_mutes import add_topic_mute, get_topic_mutes, remove_topic_mute
-from zerver.lib.types import ProfileDataElementValue, ProfileFieldData, UnspecifiedValue
+from zerver.lib.types import (
+    EditHistoryEvent,
+    ProfileDataElementValue,
+    ProfileFieldData,
+    UnspecifiedValue,
+)
 from zerver.lib.upload import (
     claim_attachment,
     delete_avatar_image,
@@ -6695,7 +6699,7 @@ def do_update_message(
         "rendering_only": False,
     }
 
-    edit_history_event: Dict[str, Any] = {
+    edit_history_event: EditHistoryEvent = {
         "user_id": user_profile.id,
         "timestamp": event["edit_timestamp"],
     }
@@ -6869,7 +6873,7 @@ def do_update_message(
         event[ORIG_TOPIC] = orig_topic_name
         event[TOPIC_NAME] = topic_name
         event[TOPIC_LINKS] = topic_links(target_message.sender.realm_id, topic_name)
-        edit_history_event[LEGACY_PREV_TOPIC] = orig_topic_name
+        edit_history_event["prev_subject"] = orig_topic_name
 
     update_edit_history(target_message, timestamp, edit_history_event)
 
@@ -6879,16 +6883,14 @@ def do_update_message(
         assert stream_being_edited is not None
 
         # Other messages should only get topic/stream fields in their edit history.
-        topic_only_edit_history_event = {
-            k: v
-            for (k, v) in edit_history_event.items()
-            if k
-            not in [
-                "prev_content",
-                "prev_rendered_content",
-                "prev_rendered_content_version",
-            ]
+        topic_only_edit_history_event: EditHistoryEvent = {
+            "user_id": edit_history_event["user_id"],
+            "timestamp": edit_history_event["timestamp"],
         }
+        if topic_name is not None:
+            topic_only_edit_history_event["prev_subject"] = edit_history_event["prev_subject"]
+        if new_stream is not None:
+            topic_only_edit_history_event["prev_stream"] = edit_history_event["prev_stream"]
 
         messages_list = update_messages_for_topic_edit(
             acting_user=user_profile,
