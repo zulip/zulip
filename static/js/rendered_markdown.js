@@ -171,9 +171,8 @@ export const update_elements = (content) => {
                 text: rendered_time.text,
             });
             $(this).html(rendered_timestamp);
-            $(this)
-                .attr("data-tippy-content", rendered_time.tooltip_content_html)
-                .attr("data-tippy-allowHTML", "true");
+            $(this).attr("data-tippy-content", rendered_time.tooltip_content_html);
+            $(this).attr("data-tippy-allowHTML", "true");
         } else {
             // This shouldn't happen. If it does, we're very interested in debugging it.
             blueslip.error(`Could not parse datetime supplied by backend: ${time_str}`);
