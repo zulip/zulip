@@ -26,6 +26,9 @@ format used by the Zulip server that they are interacting with.
   /register`](/api/register-queue): Added `subgroups` field,
   which is a list of IDs of all the subgroups of the user group, to
   user group objects.
+* [`GET /events`](/api/get-events): Added new `user_group` events
+  operations for live updates to subgroups (`add_subgroups` and
+  `remove_subgroups`).
 
 **Feature level 126**
 

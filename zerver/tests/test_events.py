@@ -92,12 +92,14 @@ from zerver.actions.streams import (
 from zerver.actions.submessage import do_add_submessage
 from zerver.actions.typing import check_send_typing_notification, do_send_stream_typing_notification
 from zerver.actions.user_groups import (
+    add_subgroups_to_user_group,
     bulk_add_members_to_user_group,
     check_add_user_group,
     check_delete_user_group,
     do_update_user_group_description,
     do_update_user_group_name,
     remove_members_from_user_group,
+    remove_subgroups_from_user_group,
 )
 from zerver.actions.user_settings import (
     do_change_avatar_fields,
@@ -171,8 +173,10 @@ from zerver.lib.event_schema import (
     check_update_message_flags_remove,
     check_user_group_add,
     check_user_group_add_members,
+    check_user_group_add_subgroups,
     check_user_group_remove,
     check_user_group_remove_members,
+    check_user_group_remove_subgroups,
     check_user_group_update,
     check_user_settings_update,
     check_user_status,
@@ -194,6 +198,7 @@ from zerver.lib.test_helpers import (
     stdout_suppressed,
 )
 from zerver.lib.topic import TOPIC_NAME
+from zerver.lib.user_groups import create_user_group
 from zerver.lib.user_mutes import get_mute_object
 from zerver.models import (
     Attachment,
@@ -1224,6 +1229,18 @@ class NormalActionsTest(BaseAction):
         hamlet = self.example_user("hamlet")
         events = self.verify_action(lambda: remove_members_from_user_group(backend, [hamlet.id]))
         check_user_group_remove_members("events[0]", events[0])
+
+        api_design = create_user_group(
+            "api-design", [hamlet], hamlet.realm, description="API design team"
+        )
+
+        # Test add subgroups
+        events = self.verify_action(lambda: add_subgroups_to_user_group(backend, [api_design]))
+        check_user_group_add_subgroups("events[0]", events[0])
+
+        # Test remove subgroups
+        events = self.verify_action(lambda: remove_subgroups_from_user_group(backend, [api_design]))
+        check_user_group_remove_subgroups("events[0]", events[0])
 
         # Test remove event
         events = self.verify_action(lambda: check_delete_user_group(backend.id, othello))
