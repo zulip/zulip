@@ -244,7 +244,7 @@ export function initialize() {
         // so we re-encode the hash.
         const stream_id = Number.parseInt($(this).attr("data-stream-id"), 10);
         if (stream_id) {
-            browser_history.go_to_location(hash_util.by_stream_uri(stream_id));
+            browser_history.go_to_location(hash_util.by_stream_url(stream_id));
             return;
         }
         window.location.href = $(this).attr("href");

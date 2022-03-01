@@ -35,7 +35,7 @@ export let toggler;
 export let select_tab = "personal_settings";
 
 function setup_subscriptions_stream_hash(sub) {
-    const hash = hash_util.stream_edit_uri(sub);
+    const hash = hash_util.stream_edit_url(sub);
     browser_history.update(hash);
 }
 

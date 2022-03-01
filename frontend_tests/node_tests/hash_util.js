@@ -129,15 +129,15 @@ run_test("test_parse_narrow", () => {
     ]);
 });
 
-run_test("test_stream_edit_uri", () => {
+run_test("test_stream_edit_url", () => {
     const sub = {
         name: "research & development",
         stream_id: 42,
     };
-    assert.equal(hash_util.stream_edit_uri(sub), "#streams/42/research.20.26.20development");
+    assert.equal(hash_util.stream_edit_url(sub), "#streams/42/research.20.26.20development");
 });
 
-run_test("test_by_conversation_and_time_uri", () => {
+run_test("test_by_conversation_and_time_url", () => {
     let message = {
         type: "stream",
         stream_id: frontend.stream_id,
@@ -146,7 +146,7 @@ run_test("test_by_conversation_and_time_uri", () => {
     };
 
     assert.equal(
-        hash_util.by_conversation_and_time_uri(message),
+        hash_util.by_conversation_and_time_url(message),
         "http://zulip.zulipdev.com/#narrow/stream/99-frontend/topic/testing/near/42",
     );
 
@@ -161,7 +161,7 @@ run_test("test_by_conversation_and_time_uri", () => {
     };
 
     assert.equal(
-        hash_util.by_conversation_and_time_uri(message),
+        hash_util.by_conversation_and_time_url(message),
         "http://zulip.zulipdev.com/#narrow/pm-with/15-pm/near/43",
     );
 });

@@ -243,7 +243,7 @@ function build_stream_sidebar_li(sub) {
     const args = {
         name,
         id: sub.stream_id,
-        uri: hash_util.by_stream_uri(sub.stream_id),
+        uri: hash_util.by_stream_url(sub.stream_id),
         is_muted: stream_data.is_muted(sub.stream_id) === true,
         invite_only: sub.invite_only,
         is_web_public: sub.is_web_public,

@@ -97,7 +97,7 @@ export function _get_convos() {
             unread: num_unread,
             is_zero: num_unread === 0,
             is_active,
-            url: hash_util.pm_with_uri(reply_to),
+            url: hash_util.pm_with_url(reply_to),
             status_emoji_info,
             user_circle_class,
             is_group,

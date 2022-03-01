@@ -76,14 +76,14 @@ export function decode_operand(operator, operand) {
     return operand;
 }
 
-export function by_stream_uri(stream_id) {
-    // Wrapper for web use of internal_url.by_stream_uri
-    return internal_url.by_stream_uri(stream_id, stream_data.maybe_get_stream_name);
+export function by_stream_url(stream_id) {
+    // Wrapper for web use of internal_url.by_stream_url
+    return internal_url.by_stream_url(stream_id, stream_data.maybe_get_stream_name);
 }
 
-export function by_stream_topic_uri(stream_id, topic) {
-    // Wrapper for web use of internal_url.by_stream_topic_uri
-    return internal_url.by_stream_topic_uri(stream_id, topic, stream_data.maybe_get_stream_name);
+export function by_stream_topic_url(stream_id, topic) {
+    // Wrapper for web use of internal_url.by_stream_topic_url
+    return internal_url.by_stream_topic_url(stream_id, topic, stream_data.maybe_get_stream_name);
 }
 
 // Encodes an operator list into the
@@ -113,16 +113,16 @@ export function operators_to_hash(operators) {
     return hash;
 }
 
-export function by_sender_uri(reply_to) {
+export function by_sender_url(reply_to) {
     return operators_to_hash([{operator: "sender", operand: reply_to}]);
 }
 
-export function pm_with_uri(reply_to) {
+export function pm_with_url(reply_to) {
     const slug = people.emails_to_slug(reply_to);
     return "#narrow/pm-with/" + slug;
 }
 
-export function huddle_with_uri(user_ids_string) {
+export function huddle_with_url(user_ids_string) {
     // This method is convenient for callers
     // that have already converted emails to a comma-delimited
     // list of user_ids.  We should be careful to keep this
@@ -130,7 +130,7 @@ export function huddle_with_uri(user_ids_string) {
     return "#narrow/pm-with/" + user_ids_string + "-group";
 }
 
-export function by_conversation_and_time_uri(message) {
+export function by_conversation_and_time_url(message) {
     const absolute_url =
         window.location.protocol +
         "//" +
@@ -141,13 +141,13 @@ export function by_conversation_and_time_uri(message) {
     const suffix = "/near/" + internal_url.encodeHashComponent(message.id);
 
     if (message.type === "stream") {
-        return absolute_url + by_stream_topic_uri(message.stream_id, message.topic) + suffix;
+        return absolute_url + by_stream_topic_url(message.stream_id, message.topic) + suffix;
     }
 
     return absolute_url + people.pm_perma_link(message) + suffix;
 }
 
-export function stream_edit_uri(sub) {
+export function stream_edit_url(sub) {
     const hash = `#streams/${sub.stream_id}/${internal_url.encodeHashComponent(sub.name)}`;
     return hash;
 }
