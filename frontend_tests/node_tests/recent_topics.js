@@ -76,9 +76,9 @@ mock_esm("../../static/js/compose_closed_ui", {
     update_buttons_for_recent_topics: noop,
 });
 mock_esm("../../static/js/hash_util", {
-    by_stream_uri: () => "https://www.example.com",
+    by_stream_url: () => "https://www.example.com",
 
-    by_stream_topic_uri: () => "https://www.example.com",
+    by_stream_topic_url: () => "https://www.example.com",
 });
 mock_esm("../../static/js/message_list_data", {
     MessageListData: class {},

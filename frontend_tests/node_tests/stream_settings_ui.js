@@ -14,7 +14,7 @@ const ui = mock_esm("../../static/js/ui", {
 });
 
 mock_esm("../../static/js/hash_util", {
-    by_stream_uri: () => {},
+    by_stream_url: () => {},
     get_current_hash_section: () => denmark_stream_id,
 });
 

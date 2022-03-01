@@ -399,10 +399,10 @@ export class MessageListView {
                 }
 
                 if (message_container.msg.stream) {
-                    message_container.stream_url = hash_util.by_stream_uri(
+                    message_container.stream_url = hash_util.by_stream_url(
                         message_container.msg.stream_id,
                     );
-                    message_container.topic_url = hash_util.by_stream_topic_uri(
+                    message_container.topic_url = hash_util.by_stream_topic_url(
                         message_container.msg.stream_id,
                         message_container.msg.topic,
                     );
@@ -672,7 +672,7 @@ export class MessageListView {
                 message.starred_status = $t({defaultMessage: "Star"});
             }
 
-            message.url = hash_util.by_conversation_and_time_uri(message);
+            message.url = hash_util.by_conversation_and_time_url(message);
 
             return {msg: message};
         });

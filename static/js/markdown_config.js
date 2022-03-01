@@ -40,8 +40,8 @@ export const get_helpers = () => ({
 
     // stream hashes
     get_stream_by_name: stream_data.get_sub,
-    stream_hash: hash_util.by_stream_uri,
-    stream_topic_hash: hash_util.by_stream_topic_uri,
+    stream_hash: hash_util.by_stream_url,
+    stream_topic_hash: hash_util.by_stream_topic_url,
 
     // settings
     should_translate_emoticons: () => user_settings.translate_emoticons,

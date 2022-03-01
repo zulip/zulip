@@ -507,7 +507,7 @@ export function quote_and_reply(opts) {
             {defaultMessage: "{username} [said]({link_to_message}):"},
             {
                 username: `@_**${message.sender_full_name}|${message.sender_id}**`,
-                link_to_message: `${hash_util.by_conversation_and_time_uri(message)}`,
+                link_to_message: `${hash_util.by_conversation_and_time_url(message)}`,
             },
         );
         content += "\n";
