@@ -542,15 +542,7 @@ export function show_edit_user_info_modal(user_id, from_user_info_popover, $stat
         return;
     }
 
-    let user_email = settings_data.email_for_user_settings(person);
-    if (!user_email) {
-        // When email_address_visibility is "Nobody", we still
-        // want to show the fake email address in the edit form.
-        //
-        // We may in the future want to just hide the form field
-        // for this situation, once we display user IDs.
-        user_email = person.email;
-    }
+    const user_email = settings_data.email_for_user_settings(person);
 
     const html_body = render_admin_human_form({
         user_id,
