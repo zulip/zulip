@@ -17,8 +17,7 @@ Zulip web application without needing to create an account.
 Users who wish to post content will need to create an account in order
 to do so.
 
-Web-public streams are indicated with a globe (<i class="fa
-fa-globe"></i>) icon.
+Web-public streams are indicated with a globe (<i class="zulip-icon zulip-icon-globe"></i>) icon.
 
 ## Enabling web-public streams in your organization
 

@@ -1088,7 +1088,12 @@ td.pointer {
 
     .recipient-row-stream-icon {
         font-size: 12px;
-        line-height: 17px;
+        line-height: 12px;
+    }
+
+    .zulip-icon.zulip-icon-globe {
+        position: relative;
+        top: 1px;
     }
 
     &:hover {
@@ -1760,6 +1765,10 @@ div.focused_table {
 
     .hidden {
         display: none;
+    }
+
+    .zulip-icon.zulip-icon-globe {
+        font-size: 14px;
     }
 
     .sub_count,

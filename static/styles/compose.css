@@ -133,8 +133,11 @@
 
     #compose-globe-icon {
         top: 1px;
-        left: 4.5px;
-        padding-right: 2px;
+        left: 3.5px;
+
+        .zulip-icon-globe {
+            font-size: 12px;
+        }
     }
 
     .message_header {
