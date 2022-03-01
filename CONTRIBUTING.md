@@ -189,11 +189,6 @@ below.
 
 ### Submitting a pull request
 
-If it helps your workflow, you can make a pull request before your work is
-ready for review, and we encourage you to do so. Simply prefix the title of
-work in progress pull requests with `[WIP]`, and then remove the prefix when
-you think it's time for someone else to review your work.
-
 When you believe your code is ready, follow the [guide on how to review
 code](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#how-to-review-code)
 to review your own work. You can often find things you missed by taking a step
@@ -201,16 +196,28 @@ back to look over your work before asking others to do so. Catching mistakes
 yourself will help your PRs be merged faster, and folks will appreciate the
 quality and professionalism of your work.
 
-Once you are satisfied with the quality of your PR, follow the [guidelines on
-asking for a code
+Then, submit your changes. Carefully reading our [Git guide][git-guide], and in
+particular the section on [making a pull request][git-guide-make-pr],
+will help avoid many common mistakes.
+
+Once you are satisfied with the quality of your PR, follow the
+[guidelines on asking for a code
 review](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#asking-for-a-code-review)
-to request a review. If you are not sure what's best, simply post a comment on
-the main GitHub thread for your PR clearly indicating that it is ready for
-review, and the project maintainers will take a look and follow up with next
-steps.
+to request a review. If you are not sure what's best, simply post a
+comment on the main GitHub thread for your PR clearly indicating that
+it is ready for review, and the project maintainers will take a look
+and follow up with next steps.
 
 It's OK if your first issue takes you a while; that's normal! You'll be
 able to work a lot faster as you build experience.
+
+If it helps your workflow, you can submit a work-in-progress pull
+request before your work is ready for review. Simply prefix the title
+of work in progress pull requests with `[WIP]`, and then remove the
+prefix when you think it's time for someone else to review your work.
+
+[git-guide]: https://zulip.readthedocs.io/en/latest/git/
+[git-guide-make-pr]: https://zulip.readthedocs.io/en/latest/git/pull-requests.html
 
 ### Beyond the first issue
 
