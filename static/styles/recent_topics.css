@@ -328,6 +328,10 @@
             }
         }
     }
+
+    .stream-privacy .zulip-icon.zulip-icon-globe {
+        left: -1px;
+    }
 }
 
 #recent_topics_view {
