@@ -6874,7 +6874,6 @@ def do_update_message(
         event[ORIG_TOPIC] = orig_topic_name
         event[TOPIC_NAME] = topic_name
         event[TOPIC_LINKS] = topic_links(target_message.sender.realm_id, topic_name)
-        edit_history_event["prev_subject"] = orig_topic_name
         edit_history_event["prev_topic"] = orig_topic_name
         edit_history_event["topic"] = topic_name
 
@@ -6891,8 +6890,6 @@ def do_update_message(
             "timestamp": edit_history_event["timestamp"],
         }
         if topic_name is not None:
-            # For backwards-compatability, we include this legacy field name.
-            topic_only_edit_history_event["prev_subject"] = edit_history_event["prev_subject"]
             topic_only_edit_history_event["prev_topic"] = edit_history_event["prev_topic"]
             topic_only_edit_history_event["topic"] = edit_history_event["topic"]
         if new_stream is not None:

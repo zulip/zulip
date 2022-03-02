@@ -23,7 +23,7 @@ from zerver.lib.actions import (
 from zerver.lib.message import MessageDict, has_message_access, messages_for_ids
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import cache_tries_captured, queries_captured
-from zerver.lib.topic import LEGACY_PREV_TOPIC, RESOLVED_TOPIC_PREFIX, TOPIC_NAME
+from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, TOPIC_NAME
 from zerver.models import Message, Realm, Stream, UserMessage, UserProfile, get_realm, get_stream
 
 
@@ -749,13 +749,12 @@ class EditMessageTest(EditMessageTestCase):
         )
         self.assert_json_success(result)
         history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
-        self.assertEqual(history[0][LEGACY_PREV_TOPIC], "topic 1")
         self.assertEqual(history[0]["prev_topic"], "topic 1")
         self.assertEqual(history[0]["topic"], "topic 2")
         self.assertEqual(history[0]["user_id"], hamlet.id)
         self.assertEqual(
             set(history[0].keys()),
-            {"timestamp", LEGACY_PREV_TOPIC, "prev_topic", "topic", "user_id"},
+            {"timestamp", "prev_topic", "topic", "user_id"},
         )
 
         self.login("iago")
@@ -783,7 +782,6 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_json_success(result)
         history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
         self.assertEqual(history[0]["prev_content"], "content 2")
-        self.assertEqual(history[0][LEGACY_PREV_TOPIC], "topic 2")
         self.assertEqual(history[0]["prev_topic"], "topic 2")
         self.assertEqual(history[0]["topic"], "topic 3")
         self.assertEqual(history[0]["user_id"], hamlet.id)
@@ -791,7 +789,6 @@ class EditMessageTest(EditMessageTestCase):
             set(history[0].keys()),
             {
                 "timestamp",
-                LEGACY_PREV_TOPIC,
                 "prev_topic",
                 "topic",
                 "prev_content",
@@ -822,7 +819,6 @@ class EditMessageTest(EditMessageTestCase):
         )
         self.assert_json_success(result)
         history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
-        self.assertEqual(history[0][LEGACY_PREV_TOPIC], "topic 3")
         self.assertEqual(history[0]["prev_topic"], "topic 3")
         self.assertEqual(history[0]["topic"], "topic 4")
         self.assertEqual(history[0]["prev_stream"], stream_2.id)
@@ -832,7 +828,6 @@ class EditMessageTest(EditMessageTestCase):
             set(history[0].keys()),
             {
                 "timestamp",
-                LEGACY_PREV_TOPIC,
                 "prev_topic",
                 "topic",
                 "prev_stream",
@@ -844,9 +839,6 @@ class EditMessageTest(EditMessageTestCase):
         # Now, we verify that all of the edits stored in the message.edit_history
         # have the correct data structure
         history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
-        self.assertEqual(history[0][LEGACY_PREV_TOPIC], "topic 3")
-        self.assertEqual(history[2][LEGACY_PREV_TOPIC], "topic 2")
-        self.assertEqual(history[4][LEGACY_PREV_TOPIC], "topic 1")
 
         self.assertEqual(history[0]["prev_topic"], "topic 3")
         self.assertEqual(history[0]["topic"], "topic 4")
