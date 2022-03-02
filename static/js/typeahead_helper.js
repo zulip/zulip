@@ -133,7 +133,7 @@ export function render_stream(stream) {
 export function render_emoji(item) {
     const args = {
         is_emoji: true,
-        primary: item.emoji_name.split("_").join(" "),
+        primary: item.emoji_name.replace(/_/g, " "),
     };
 
     if (item.emoji_url) {
