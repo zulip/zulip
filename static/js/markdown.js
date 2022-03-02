@@ -304,7 +304,7 @@ function handleUnicodeEmoji(unicode_emoji) {
 
     if (emoji_name) {
         const alt_text = ":" + emoji_name + ":";
-        const title = emoji_name.split("_").join(" ");
+        const title = emoji_name.replace(/_/g, " ");
         return make_emoji_span(codepoint, title, alt_text);
     }
 
@@ -313,7 +313,7 @@ function handleUnicodeEmoji(unicode_emoji) {
 
 function handleEmoji(emoji_name) {
     const alt_text = ":" + emoji_name + ":";
-    const title = emoji_name.split("_").join(" ");
+    const title = emoji_name.replace(/_/g, " ");
 
     // Zulip supports both standard/Unicode emoji, served by a
     // spritesheet and custom realm-specific emoji (served by URL).
