@@ -6815,6 +6815,7 @@ def do_update_message(
         assert stream_being_edited is not None
 
         edit_history_event["prev_stream"] = stream_being_edited.id
+        edit_history_event["stream"] = new_stream.id
         event[ORIG_TOPIC] = orig_topic_name
         target_message.recipient_id = new_stream.recipient_id
 
@@ -6874,6 +6875,8 @@ def do_update_message(
         event[TOPIC_NAME] = topic_name
         event[TOPIC_LINKS] = topic_links(target_message.sender.realm_id, topic_name)
         edit_history_event["prev_subject"] = orig_topic_name
+        edit_history_event["prev_topic"] = orig_topic_name
+        edit_history_event["topic"] = topic_name
 
     update_edit_history(target_message, timestamp, edit_history_event)
 
@@ -6888,9 +6891,13 @@ def do_update_message(
             "timestamp": edit_history_event["timestamp"],
         }
         if topic_name is not None:
+            # For backwards-compatability, we include this legacy field name.
             topic_only_edit_history_event["prev_subject"] = edit_history_event["prev_subject"]
+            topic_only_edit_history_event["prev_topic"] = edit_history_event["prev_topic"]
+            topic_only_edit_history_event["topic"] = edit_history_event["topic"]
         if new_stream is not None:
             topic_only_edit_history_event["prev_stream"] = edit_history_event["prev_stream"]
+            topic_only_edit_history_event["stream"] = edit_history_event["stream"]
 
         messages_list = update_messages_for_topic_edit(
             acting_user=user_profile,
