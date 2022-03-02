@@ -24,6 +24,15 @@ export function has_alert_word(word) {
     return my_alert_words.includes(word);
 }
 
+const alert_regex_replacements = new Map([
+    ["&", "&amp;"],
+    ["<", "&lt;"],
+    [">", "&gt;"],
+    // Accept quotes with or without HTML escaping
+    ['"', '(?:"|&quot;)'],
+    ["'", "(?:'|&#39;)"],
+]);
+
 export function process_message(message) {
     // Parsing for alert words is expensive, so we rely on the host
     // to tell us there any alert words to even look for.
@@ -32,7 +41,9 @@ export function process_message(message) {
     }
 
     for (const word of my_alert_words) {
-        const clean = _.escapeRegExp(word);
+        const clean = _.escapeRegExp(word).replace(/["&'<>]/g, (c) =>
+            alert_regex_replacements.get(c),
+        );
         const before_punctuation = "\\s|^|>|[\\(\\\".,';\\[]";
         const after_punctuation = "(?=\\s)|$|<|[\\)\\\"\\?!:.,';\\]!]";
 
@@ -49,7 +60,7 @@ export function process_message(message) {
                 const check_string = pre_match + match.slice(0, -1);
                 const in_tag = check_string.lastIndexOf("<") > check_string.lastIndexOf(">");
                 // Matched word is inside a HTML tag so don't perform any highlighting.
-                if (in_tag === true) {
+                if (in_tag) {
                     return before + word + after;
                 }
                 return before + "<span class='alert-word'>" + word + "</span>" + after;
