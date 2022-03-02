@@ -33,11 +33,6 @@ jobs:
             name: Debian 11 Bullseye (Python 3.9, backend)
             os: bullseye
             include_frontend_tests: false
-          # Ubuntu 22.04 ships with Python 3.9.10.
-          - docker_image: zulip/ci:jammy
-            name: Ubuntu 22.04 Jammy (Python 3.9, backend)
-            os: jammy
-            include_frontend_tests: false
 
     runs-on: ubuntu-latest
     name: ${{ matrix.name }}

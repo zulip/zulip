@@ -114,11 +114,6 @@ jobs:
             os: focal
             extra_args: ""
 
-          - docker_image: zulip/ci:jammy
-            name: Ubuntu 22.04 production install
-            os: jammy
-            extra_args: ""
-
           - docker_image: zulip/ci:buster
             name: Debian 10 production install with custom db name and user
             os: buster
