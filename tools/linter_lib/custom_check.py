@@ -14,6 +14,7 @@ FILES_WITH_LEGACY_SUBJECT = {
     # This basically requires a big DB migration:
     "zerver/lib/topic.py",
     "zerver/lib/types.py",
+    "zerver/views/message_edit.py",
     # This is for backward compatibility.
     "zerver/tests/test_legacy_subject.py",
     # Other migration-related changes require extreme care.

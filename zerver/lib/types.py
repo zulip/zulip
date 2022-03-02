@@ -126,3 +126,21 @@ class EditHistoryEvent(TypedDict, total=False):
     prev_content: str
     prev_rendered_content: Optional[str]
     prev_rendered_content_version: Optional[int]
+
+
+class FormattedEditHistoryEvent(TypedDict, total=False):
+    """
+    Extended format used in the edit history endpoint.
+    """
+
+    user_id: int
+    timestamp: int
+    prev_stream: int
+    stream: int
+    prev_topic: str
+    topic: str
+    prev_content: str
+    content: str
+    prev_rendered_content: Optional[str]
+    rendered_content: Optional[str]
+    content_html_diff: str
