@@ -514,7 +514,7 @@ class MessageDict:
                 if "prev_topic" in edit_history_event:
                     # The prev_subject field has been renamed in the
                     # database, but not the API.
-                    edit_history_event["prev_subject"] = edit_history_event["prev_topic"]
+                    edit_history_event["prev_subject"] = edit_history_event["prev_topic"]  # type: ignore # Temporary type-checking violation
 
                 # New fields not consistently available, and thus
                 # intentionally not exposed to the API.
@@ -525,7 +525,7 @@ class MessageDict:
                 if "topic" in edit_history_event:
                     del edit_history_event["topic"]
 
-                edit_history.append(edit_history_event)
+                edit_history.append(edit_history_event)  # type: ignore # Temporary type-checking violation
             obj["edit_history"] = edit_history
 
         if Message.need_to_render_content(
