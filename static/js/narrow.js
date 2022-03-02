@@ -13,6 +13,7 @@ import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
 import * as message_edit from "./message_edit";
 import * as message_fetch from "./message_fetch";
+import * as message_helper from "./message_helper";
 import * as message_list from "./message_list";
 import {MessageListData} from "./message_list_data";
 import * as message_lists from "./message_lists";
@@ -251,6 +252,96 @@ export function activate(raw_operators, opts) {
     }
     if (filter.has_operator("id")) {
         id_info.target_id = Number.parseInt(filter.operands("id")[0], 10);
+    }
+
+    // Narrow with near / id operator. There are two possibilities:
+    // * The user is clicking a permanent link to a conversation, in which
+    //   case we want to look up the anchor message and see if it has moved.
+    // * The user did a search for something like stream:foo topic:bar near:1
+    //   (or some other ID that is not an actual message in the topic).
+    //
+    // We attempt the match the stream and topic with that of the
+    // message in case the message was moved after the link was
+    // created. This ensures near / id links work will redirect
+    // correctly if the topic was moved (including being resolved).
+    if (id_info.target_id && filter.has_operator("stream") && filter.has_operator("topic")) {
+        const target_message = message_store.get(id_info.target_id);
+        const adjusted_operators = [];
+        let operators_changed = false;
+
+        function adjusted_operators_if_moved(operators, message) {
+            // TODO/BUG: Should this only rewrite the operators if,
+            // after parsing message_edit_history, we find that the
+            // requested stream/topic matches some historical state?
+            for (const operator of operators) {
+                const adjusted_operator = {...operator};
+                if (
+                    operator.operator === "stream" &&
+                    operator.operand !== message.display_recipient
+                ) {
+                    adjusted_operator.operand = message.display_recipient;
+                    operators_changed = true;
+                } else if (operator.operator === "topic" && operator.operand !== message.topic) {
+                    adjusted_operator.operand = message.topic;
+                    operators_changed = true;
+                }
+                adjusted_operators.push(adjusted_operator);
+            }
+            return adjusted_operators;
+        }
+
+        if (target_message) {
+            // If we have the target message ID for the narrow in our
+            // local cache, and the target message has been moved from
+            // the stream/topic pair that was requested to some other
+            // location, then we should retarget this narrow operation
+            // to where the message is located now.
+            const adjusted_operators = adjusted_operators_if_moved(raw_operators, target_message);
+            if (operators_changed) {
+                activate(adjusted_operators, {
+                    ...opts,
+                    // Update the URL fragment to reflect the redirect.
+                    change_hash: true,
+                });
+                return;
+            }
+        } else if (!opts.fetched_target_message) {
+            // If we don't have the target message ID locally and
+            // haven't attempted to fetch it, then we ask the server
+            // for it.
+            channel.get({
+                url: `/json/messages/${id_info.target_id}`,
+                idempotent: true,
+                success(data) {
+                    // After the message is fetched, we make the
+                    // message locally available and then call
+                    // narrow.activate recursively, setting a flag to
+                    // indicate we've already done this.
+                    message_helper.process_new_message(data.message);
+                    activate(raw_operators, {
+                        ...opts,
+                        fetched_target_message: true,
+                    });
+                },
+                error() {
+                    // Message doesn't exist or user doesn't have
+                    // access to the target message ID. This will
+                    // happen, for example, if a user types
+                    // `stream:foo topic:bar near:1` into the search
+                    // box. No special rewriting is required, so call
+                    // narrow.activate recursively.
+                    activate(raw_operators, {
+                        fetched_target_message: true,
+                        ...opts,
+                    });
+                },
+            });
+
+            // The channel.get will call narrow.activate recursively
+            // from a continuation unconditionally; the correct thing
+            // to do here is return.
+            return;
+        }
     }
 
     // IMPORTANT: No code that modifies UI state should appear above
