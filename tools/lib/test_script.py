@@ -106,15 +106,19 @@ def add_provision_check_override_param(parser: ArgumentParser) -> None:
 def find_js_test_files(test_dir: str, files: Iterable[str]) -> List[str]:
     test_files = []
     for file in files:
-        file = min(
+        relative_file_path = min(
             (
                 os.path.join(test_dir, file_name)
                 for file_name in os.listdir(test_dir)
                 if file_name.startswith(file)
             ),
-            default=file,
+            default=None,
         )
-        test_files.append(os.path.abspath(file))
+
+        if relative_file_path is None:
+            raise Exception(f"Cannot find a matching file for '{file}' in '{test_dir}'")
+
+        test_files.append(os.path.abspath(relative_file_path))
 
     if not test_files:
         test_files = sorted(
