@@ -19,6 +19,7 @@ import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as recent_senders from "./recent_senders";
 import {get, process_message, topics} from "./recent_topics_data";
@@ -87,6 +88,9 @@ export function save_filters() {
 }
 
 export function load_filters() {
+    if (page_params.is_spectator) {
+        ls.set(ls_key, null);
+    }
     filters = new Set(ls.get(ls_key));
 }
 
@@ -472,6 +476,11 @@ function show_selected_filters() {
                 .addClass("btn-recent-selected")
                 .attr("aria-checked", "true");
         }
+    }
+
+    if (page_params.is_spectator) {
+        $("#recent_filters_group").css("cursor", "not-allowed");
+        $("#recent_filters_group button").attr("disabled", "true");
     }
 }
 

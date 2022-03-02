@@ -431,10 +431,12 @@ export function initialize() {
 
     $("body").on("click", ".btn-recent-filters", (e) => {
         e.stopPropagation();
-        recent_topics_ui.change_focused_element($(e.target), "click");
-        recent_topics_ui.set_filter(e.currentTarget.dataset.filter);
-        recent_topics_ui.update_filters_view();
-        recent_topics_ui.revive_current_focus();
+        if (!page_params.is_spectator) {
+            recent_topics_ui.change_focused_element($(e.target), "click");
+            recent_topics_ui.set_filter(e.currentTarget.dataset.filter);
+            recent_topics_ui.update_filters_view();
+            recent_topics_ui.revive_current_focus();
+        }
     });
 
     $("body").on("click", "td.recent_topic_stream", (e) => {
