@@ -621,6 +621,7 @@ export function setup_page(callback) {
         // the user can create, by showing other options as disabled.
         const stream_privacy_policy = stream_data.stream_privacy_policy_values.public.code;
         const template_data = {
+            ask_to_announce_stream: true,
             can_create_streams:
                 settings_data.user_can_create_private_streams() ||
                 settings_data.user_can_create_public_streams() ||
