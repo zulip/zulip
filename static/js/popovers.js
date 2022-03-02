@@ -481,7 +481,7 @@ export function toggle_actions_popover(element, id) {
                 (entry) =>
                     entry.prev_content !== undefined ||
                     entry.prev_stream !== undefined ||
-                    util.get_edit_event_prev_topic(entry) !== undefined,
+                    entry.prev_topic !== undefined,
             ) &&
             page_params.realm_allow_edit_history &&
             not_spectator;
