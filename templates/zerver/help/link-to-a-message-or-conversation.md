@@ -32,35 +32,73 @@ Stream: #**stream name**
 Topic: #**stream name>topic name**
 ```
 
-## Link to a stream or topic from anywhere
+## Link to Zulip from anywhere
 
-{start_tabs}
+All URLs in Zulip are designed to be shareable.
+Copying the URL from the browser's address bar will work
+for all views, including searches.
+### Get a link to a specific message
 
-1. Click on a stream or topic in the left sidebar.
-
-1. Copy the URL from your browser's address bar.
-
-{end_tabs}
-
-!!! warn ""
-
-    This works for all views, including searches.
-    All URLs in Zulip are designed to be shareable.
-
-## Link to a specific message
-
-This will copy to your clipboard a permanent link to the message,
+This copies to your clipboard a permanent link to the message,
 displayed in its thread (i.e. topic view for messages in a stream).
 Viewing a topic via a message link will never mark messages as read.
+
+These links will still work even when the message is
+[moved to another topic](/help/move-content-to-another-topic)
+or [stream](/help/move-content-to-another-stream) or
+if its [topic is resolved](/help/resolve-a-topic).
 
 Zulip uses the same permanent link syntax when [quoting a
 message](/help/quote-and-reply).
 
 {start_tabs}
 
+{tab|desktop}
+
 {!message-actions-menu.md!}
 
 1. Click **Copy link to message**.
+
+{tab|via-browser-address-bar}
+
+1. Click on the timestamp of the message.
+
+1. Copy the URL from your browser's address bar.
+
+{end_tabs}
+
+### Get a link to a specific topic:
+
+{start_tabs}
+
+{tab|desktop}
+
+{!topic-actions.md!}
+
+1. Click **Copy link to topic**.
+
+{tab|via-browser-address-bar}
+
+1. Click on a topic in the left sidebar.
+
+1. Copy the URL from your browser's address bar.
+
+{end_tabs}
+### Get a link to a specific stream:
+
+{start_tabs}
+
+{tab|desktop}
+
+1. Right-click on the stream in the left sidebar.
+
+1. Click **Copy Link**.
+
+{tab|via-browser-address-bar}
+
+1. Click on a stream in the left sidebar.
+
+1. Copy the URL from your browser's address bar.
 
 {end_tabs}
 
