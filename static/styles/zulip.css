@@ -1751,6 +1751,9 @@ div.focused_table {
 
     .zulip-icon.zulip-icon-globe {
         font-size: 14px;
+        position: relative;
+        top: 0.5px;
+        margin: 0 3px;
     }
 
     .sub_count,
