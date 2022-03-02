@@ -511,6 +511,13 @@ class MessageDict:
             edit_history: List[APIEditHistoryEvent] = []
             for edit_history_event in raw_edit_history:
                 # Drop fields we're not yet ready to have appear in the API
+                if "prev_topic" in edit_history_event:
+                    # The prev_subject field has been renamed in the
+                    # database, but not the API.
+                    edit_history_event["prev_subject"] = edit_history_event["prev_topic"]
+
+                # New fields not consistently available, and thus
+                # intentionally not exposed to the API.
                 del edit_history_event["prev_topic"]
                 del edit_history_event["stream"]
                 del edit_history_event["topic"]

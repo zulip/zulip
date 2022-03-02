@@ -53,8 +53,11 @@ def fill_edit_history_entries(
             "user_id": edit_history_event["user_id"],
         }
 
-        # Add current topic, map LEGACY_PREV_TOPIC => "prev_topic".
-        if LEGACY_PREV_TOPIC in edit_history_event:
+        if "prev_topic" in edit_history_event:
+            prev_topic = edit_history_event["prev_topic"]
+            formatted_entry["prev_topic"] = prev_topic
+        elif LEGACY_PREV_TOPIC in edit_history_event:
+            # TODO: Delete this once we've finished migrating legacy message objects.
             prev_topic = edit_history_event["prev_subject"]
             formatted_entry["prev_topic"] = prev_topic
 
