@@ -4995,6 +4995,12 @@ paths:
                               type: string
                               description: |
                                 the topic for the message before being edited.
+                            prev_stream:
+                              type: integer
+                              description: |
+                                Only present if message's stream was edited.
+
+                                The stream ID of the message prior to being edited.
                             content:
                               type: string
                               description: |
