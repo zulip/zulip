@@ -216,6 +216,10 @@ js_rules = RuleList(
             "good_lines": ["assert.ok(...)"],
             "bad_lines": ["assert(...)"],
         },
+        {
+            "pattern": r"allowHTML|(?i:data-tippy-allowHTML)",
+            "description": "Never use Tippy.js allowHTML; for an HTML tooltip, get a DocumentFragment with ui_util.parse_html.",
+        },
         *whitespace_rules,
     ],
 )
@@ -723,6 +727,10 @@ html_rules: List["Rule"] = [
         },
         "good_lines": ["#my-style {color: blue;}", 'style="display: none"', "style='display: none"],
         "bad_lines": ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"'],
+    },
+    {
+        "pattern": r"(?i:data-tippy-allowHTML)",
+        "description": "Never use data-tippy-allowHTML; for an HTML tooltip, set data-tooltip-template-id to the id of a <template>.",
     },
 ]
 

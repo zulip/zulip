@@ -17,6 +17,7 @@ import * as giphy from "./giphy";
 import * as narrow_state from "./narrow_state";
 import * as popovers from "./popovers";
 import * as settings_data from "./settings_data";
+import {parse_html} from "./ui_util";
 import {user_settings} from "./user_settings";
 
 let left_sidebar_stream_setting_popover_displayed = false;
@@ -59,7 +60,6 @@ export function initialize() {
     delegate("body", {
         ...default_popover_props,
         target: "#streams_inline_icon",
-        allowHTML: true,
         onShow(instance) {
             const can_create_streams =
                 settings_data.user_can_create_private_streams() ||
@@ -75,7 +75,7 @@ export function initialize() {
                 return false;
             }
 
-            instance.setContent(render_left_sidebar_stream_setting_popover());
+            instance.setContent(parse_html(render_left_sidebar_stream_setting_popover()));
             left_sidebar_stream_setting_popover_displayed = true;
             return true;
         },
@@ -89,13 +89,14 @@ export function initialize() {
         ...default_popover_props,
         target: ".compose_mobile_button",
         placement: "top",
-        allowHTML: true,
         onShow(instance) {
             on_show_prep(instance);
             instance.setContent(
-                render_mobile_message_buttons_popover_content({
-                    is_in_private_narrow: narrow_state.narrowed_to_pms(),
-                }),
+                parse_html(
+                    render_mobile_message_buttons_popover_content({
+                        is_in_private_narrow: narrow_state.narrowed_to_pms(),
+                    }),
+                ),
             );
             compose_mobile_button_popover_displayed = true;
 
@@ -126,12 +127,13 @@ export function initialize() {
         ...default_popover_props,
         target: ".compose_control_menu_wrapper",
         placement: "top",
-        allowHTML: true,
         onShow(instance) {
             instance.setContent(
-                render_compose_control_buttons_popover({
-                    giphy_enabled: giphy.is_giphy_enabled(),
-                }),
+                parse_html(
+                    render_compose_control_buttons_popover({
+                        giphy_enabled: giphy.is_giphy_enabled(),
+                    }),
+                ),
             );
             compose_control_buttons_popover_instance = instance;
             popovers.hide_all_except_sidebars(instance);
@@ -145,13 +147,14 @@ export function initialize() {
         ...default_popover_props,
         target: ".enter_sends",
         placement: "top",
-        allowHTML: true,
         onShow(instance) {
             on_show_prep(instance);
             instance.setContent(
-                render_compose_select_enter_behaviour_popover({
-                    enter_sends_true: user_settings.enter_sends,
-                }),
+                parse_html(
+                    render_compose_select_enter_behaviour_popover({
+                        enter_sends_true: user_settings.enter_sends,
+                    }),
+                ),
             );
             compose_enter_sends_popover_displayed = true;
         },

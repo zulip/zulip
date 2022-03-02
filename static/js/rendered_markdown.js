@@ -165,14 +165,10 @@ export const update_elements = (content) => {
 
         const timestamp = parseISO(time_str);
         if (isValid(timestamp)) {
-            const text = $(this).text();
-            const rendered_time = timerender.render_markdown_timestamp(timestamp, text);
             const rendered_timestamp = render_markdown_timestamp({
-                text: rendered_time.text,
+                text: timerender.format_markdown_time(timestamp),
             });
             $(this).html(rendered_timestamp);
-            $(this).attr("data-tippy-content", rendered_time.tooltip_content_html);
-            $(this).attr("data-tippy-allowHTML", "true");
         } else {
             // This shouldn't happen. If it does, we're very interested in debugging it.
             blueslip.error(`Could not parse datetime supplied by backend: ${time_str}`);

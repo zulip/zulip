@@ -4,11 +4,12 @@
     minimal css and no JS. We keep it `position: absolute` to prevent
     it changing compose box layout in any way. --}}
     <div id="scroll-to-bottom-button-container">
-        <div id="scroll-to-bottom-button-clickable-area"  data-tippy-content="{{t 'Scroll to bottom' }}  &lt;span class='hotkey-hint'&gt;({{scroll_to_bottom_key_html}})&lt;/span&gt;" data-tippy-allowHTML="true">
+        <div id="scroll-to-bottom-button-clickable-area" data-tooltip-template-id="scroll-to-bottom-button-tooltip">
             <div id="scroll-to-bottom-button">
                 <i class="fa fa-chevron-down"></i>
             </div>
         </div>
+        <template id="scroll-to-bottom-button-tooltip">{{t 'Scroll to bottom' }} <span class="hotkey-hint">({{{scroll_to_bottom_key_html}}})</span></template>
     </div>
     <div id="compose_controls" class="new-style">
         <div id="compose_buttons">
@@ -69,7 +70,8 @@
                         <div id="compose_top_right" class="order-2">
                             <button type="button" class="expand_composebox_button fa fa-angle-up" aria-label="{{t 'Expand compose' }}" data-tippy-content="{{t 'Expand compose' }}"></button>
                             <button type="button" class="collapse_composebox_button fa fa-angle-down" aria-label="{{t 'Collapse compose' }}" data-tippy-content="{{t 'Collapse compose' }}"></button>
-                            <button type="button" class="close" id='compose_close' data-tippy-content="{{t 'Cancel compose' }} &lt;span class='hotkey-hint'&gt;(Esc)&lt;/span&gt;" data-tippy-allowHTML="true">&times;</button>
+                            <button type="button" class="close" id="compose_close" data-tooltip-template-id="compose_close_tooltip">&times;</button>
+                            <template id="compose_close_tooltip">{{t 'Cancel compose' }} <span class="hotkey-hint">(Esc)</span></template>
                         </div>
                         <div id="stream-message" class="order-1">
                             <div class="stream-selection-header-colorblock message_header_stream left_part" tab-index="-1"></div>
@@ -142,3 +144,5 @@
         </div>
     </div>
 </div>
+
+<template id="add-global-time-tooltip">{{#tr}}Add global time<br />Everyone sees global times in their own time zone.{{/tr}}</template>
