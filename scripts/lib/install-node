@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-version=16.13.2
+version=16.14.0
 arch="$(uname -m)"
 
 case $arch in
     x86_64)
         tarball="node-v$version-linux-x64.tar.xz"
-        sha256=7f5e9a42d6e86147867d35643c7b1680c27ccd45db85666fc52798ead5e74421
+        sha256=0570b9354959f651b814e56a4ce98d4a067bf2385b9a0e6be075739bc65b0fae
         ;;
 
     aarch64)
         tarball="node-v$version-linux-arm64.tar.xz"
-        sha256=a3cf8e4e9fbea27573eee6da84720bf7227ddd22842b842d48049d6dfe55fb03
+        sha256=5a6e818c302527a4b1cdf61d3188408c8a3e4a1bbca1e3f836c93ea8469826ce
         ;;
 esac
 
