@@ -36,7 +36,9 @@ export function get_list_info(stream_id, zoomed) {
         let topic_display_name = topic_name;
 
         if (resolved) {
-            topic_display_name = topic_display_name.replace(message_edit.RESOLVED_TOPIC_PREFIX, "");
+            topic_display_name = topic_display_name.slice(
+                message_edit.RESOLVED_TOPIC_PREFIX.length,
+            );
         }
 
         if (!zoomed) {

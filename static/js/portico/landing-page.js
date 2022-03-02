@@ -130,7 +130,7 @@ const events = function () {
     // get the location url like `zulip.com/features/`, cut off the trailing
     // `/` and then split by `/` to get ["zulip.com", "features"], then
     // pop the last element to get the current section (eg. `features`).
-    const location = window.location.pathname.replace(/\/#*$/, "").split(/\//).pop();
+    const location = window.location.pathname.replace(/\/$/, "").split(/\//).pop();
 
     $(`[data-on-page='${CSS.escape(location)}']`).addClass("active");
 

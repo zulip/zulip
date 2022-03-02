@@ -103,11 +103,7 @@ export function update_view_on_deactivate(user_id) {
 
     if (user_role) {
         const user_id = row.data("user-id");
-        user_role.text(
-            "%state (%role)"
-                .replace("%state", $t({defaultMessage: "Deactivated"}))
-                .replace("%role", people.get_user_type(user_id)),
-        );
+        user_role.text(`${$t({defaultMessage: "Deactivated"})} (${people.get_user_type(user_id)})`);
     }
 }
 

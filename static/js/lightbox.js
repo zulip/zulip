@@ -283,7 +283,7 @@ export function build_open_image_function(on_close) {
                 // the lightbox.  A better fix will be to check a
                 // `data-thumbnail-src` attribute that we add to the
                 // canvas elements.
-                $preview_src = $preview_src.replace(/.{4}$/, "thumbnail");
+                $preview_src = $preview_src.slice(0, -"full".length) + "thumbnail";
                 payload = asset_map.get($preview_src);
             }
             if (payload === undefined) {
