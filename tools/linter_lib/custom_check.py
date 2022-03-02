@@ -12,6 +12,7 @@ from zulint.custom_rules import Rule, RuleList
 
 FILES_WITH_LEGACY_SUBJECT = {
     # This basically requires a big DB migration:
+    "zerver/lib/message.py",
     "zerver/lib/topic.py",
     "zerver/lib/types.py",
     "zerver/views/message_edit.py",
