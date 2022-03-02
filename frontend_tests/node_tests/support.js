@@ -9,7 +9,7 @@ const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const template = fs.readFileSync("templates/analytics/realm_details.html", "utf-8");
+const template = fs.readFileSync("templates/analytics/realm_details.html", "utf8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 

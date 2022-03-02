@@ -11,7 +11,7 @@ const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
-const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
+const template = fs.readFileSync("templates/corporate/upgrade.html", "utf8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 const location = set_global("location", {});
