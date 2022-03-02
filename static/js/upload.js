@@ -40,6 +40,8 @@ export function get_item(key, config) {
                 return $(".compose-send-status-close");
             case "send_status_message":
                 return $("#compose-error-msg");
+            case "send_status_upload_count":
+                return $("#compose-upload-count");
             case "file_input_identifier":
                 return "#compose .file_input";
             case "source":
@@ -88,6 +90,14 @@ export function get_item(key, config) {
     }
 }
 
+// Update count of active uploads in the UI. We treat `on_upload`
+// updates exceptionally because uppy state updates after the event completes which we account for here.
+function update_upload_count(uppy, config, on_upload = false) {
+    get_item("send_status_upload_count", config).text(
+        `${uppy.getFiles().length - (on_upload ? 1 : 0)}`,
+    );
+}
+
 export function hide_upload_status(config) {
     get_item("send_button", config).prop("disabled", false);
     get_item("send_status", config).removeClass("alert-info").hide();
@@ -129,7 +139,16 @@ export function upload_files(uppy, config, files) {
 
     get_item("send_button", config).prop("disabled", true);
     get_item("send_status", config).addClass("alert-info").removeClass("alert-error").show();
-    get_item("send_status_message", config).html($("<p>").text($t({defaultMessage: "Uploading…"})));
+    get_item("send_status_message", config).html(
+        $(`
+    <p>
+        ${$t(
+            {defaultMessage: "Uploading {uploadCount} files"},
+            {uploadCount: `<span id="compose-upload-count"> ${uppy.getFiles().length}</span>`},
+        )}
+    </p>
+    `),
+    );
     get_item("send_status_close_button", config).one("click", () => {
         for (const file of uppy.getFiles()) {
             compose_ui.replace_syntax(
@@ -164,6 +183,7 @@ export function upload_files(uppy, config, files) {
             break;
         }
     }
+    update_upload_count(uppy, config);
 }
 
 export function setup_upload(config) {
@@ -253,6 +273,7 @@ export function setup_upload(config) {
             get_item("textarea", config),
         );
         compose_ui.autosize_textarea(get_item("textarea", config));
+        update_upload_count(uppy, config, true);
     });
 
     uppy.on("complete", () => {
