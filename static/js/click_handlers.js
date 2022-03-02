@@ -43,6 +43,7 @@ import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as topic_list from "./topic_list";
 import * as ui_util from "./ui_util";
+import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import * as user_profile from "./user_profile";
 import * as util from "./util";
@@ -557,10 +558,9 @@ export function initialize() {
             // so that they don't stick and overlap with
             // each other.
             delay: 0,
-            content: render_buddy_list_tooltip_content(title_data),
+            content: () => parse_html(render_buddy_list_tooltip_content(title_data)),
             arrow: true,
             placement,
-            allowHTML: true,
             showOnCreate: true,
             onHidden: (instance) => {
                 instance.destroy();
