@@ -4,12 +4,14 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
 from zerver.actions.user_groups import (
+    add_subgroups_to_user_group,
     bulk_add_members_to_user_group,
     check_add_user_group,
     check_delete_user_group,
     do_update_user_group_description,
     do_update_user_group_name,
     remove_members_from_user_group,
+    remove_subgroups_from_user_group,
 )
 from zerver.decorator import require_member_or_admin, require_user_group_edit_permission
 from zerver.lib.exceptions import JsonableError
@@ -17,6 +19,7 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.user_groups import (
     access_user_group_by_id,
+    access_user_groups_as_potential_subgroups,
     get_direct_memberships_of_users,
     get_user_group_direct_members,
     user_groups_in_realm_serialized,
@@ -147,3 +150,70 @@ def remove_members_from_group_backend(
     user_profile_ids = [user.id for user in user_profiles]
     remove_members_from_user_group(user_group, user_profile_ids)
     return json_success(request)
+
+
+def add_subgroups_to_group_backend(
+    request: HttpRequest, user_profile: UserProfile, user_group_id: int, subgroup_ids: Sequence[int]
+) -> HttpResponse:
+    if not subgroup_ids:
+        return json_success(request)
+
+    subgroups = access_user_groups_as_potential_subgroups(subgroup_ids, user_profile)
+    user_group = access_user_group_by_id(user_group_id, user_profile)
+    existing_subgroups = user_group.direct_subgroups.all().values_list("id", flat=True)
+    for group in subgroups:
+        if group.id in existing_subgroups:
+            raise JsonableError(
+                _("User group {group_id} is already a subgroup of this group.").format(
+                    group_id=group.id
+                )
+            )
+
+    add_subgroups_to_user_group(user_group, subgroups)
+    return json_success(request)
+
+
+def remove_subgroups_from_group_backend(
+    request: HttpRequest, user_profile: UserProfile, user_group_id: int, subgroup_ids: Sequence[int]
+) -> HttpResponse:
+    if not subgroup_ids:
+        return json_success(request)
+
+    subgroups = access_user_groups_as_potential_subgroups(subgroup_ids, user_profile)
+    user_group = access_user_group_by_id(user_group_id, user_profile)
+    existing_subgroups = user_group.direct_subgroups.all().values_list("id", flat=True)
+    for group in subgroups:
+        if group.id not in existing_subgroups:
+            raise JsonableError(
+                _("User group {group_id} is not a subgroup of this group.").format(
+                    group_id=group.id
+                )
+            )
+
+    remove_subgroups_from_user_group(user_group, subgroups)
+    return json_success(request)
+
+
+@require_user_group_edit_permission
+@has_request_variables
+def update_subgroups_of_user_group(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    user_group_id: int = REQ(json_validator=check_int, path_only=True),
+    delete: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
+    add: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
+) -> HttpResponse:
+    if not add and not delete:
+        raise JsonableError(_('Nothing to do. Specify at least one of "add" or "delete".'))
+
+    thunks = [
+        lambda: add_subgroups_to_group_backend(
+            request, user_profile, user_group_id=user_group_id, subgroup_ids=add
+        ),
+        lambda: remove_subgroups_from_group_backend(
+            request, user_profile, user_group_id=user_group_id, subgroup_ids=delete
+        ),
+    ]
+    data = compose_views(thunks)
+
+    return json_success(request, data)
