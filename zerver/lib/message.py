@@ -38,12 +38,7 @@ from zerver.lib.streams import get_web_public_streams_queryset
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import DB_TOPIC_NAME, MESSAGE__TOPIC, TOPIC_LINKS, TOPIC_NAME
 from zerver.lib.topic_mutes import build_topic_mute_checker, topic_is_muted
-from zerver.lib.types import (
-    APIEditHistoryEvent,
-    DisplayRecipientT,
-    EditHistoryEvent,
-    UserDisplayRecipient,
-)
+from zerver.lib.types import DisplayRecipientT, EditHistoryEvent, UserDisplayRecipient
 from zerver.models import (
     MAX_TOPIC_NAME_LENGTH,
     Message,
@@ -507,16 +502,7 @@ class MessageDict:
         if last_edit_time is not None:
             obj["last_edit_timestamp"] = datetime_to_timestamp(last_edit_time)
             assert edit_history_json is not None
-            raw_edit_history: List[EditHistoryEvent] = orjson.loads(edit_history_json)
-            edit_history: List[APIEditHistoryEvent] = []
-            for edit_history_event in raw_edit_history:
-                # Drop fields we're not yet ready to have appear in the API
-                if "prev_topic" in edit_history_event:
-                    # The prev_subject field has been renamed in the
-                    # database, but not the API.
-                    edit_history_event["prev_subject"] = edit_history_event["prev_topic"]
-
-                edit_history.append(edit_history_event)
+            edit_history: List[EditHistoryEvent] = orjson.loads(edit_history_json)
             obj["edit_history"] = edit_history
 
         if Message.need_to_render_content(
