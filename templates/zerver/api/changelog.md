@@ -29,6 +29,8 @@ format used by the Zulip server that they are interacting with.
 * [`GET /events`](/api/get-events): Added new `user_group` events
   operations for live updates to subgroups (`add_subgroups` and
   `remove_subgroups`).
+* [`PATCH /user_groups/{user_group_id}/subgroups`](/api/update-user-group-subgroups):
+  Added new endpoint for updating subgroups of a user group.
 
 **Feature level 126**
 

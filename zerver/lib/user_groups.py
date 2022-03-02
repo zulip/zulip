@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Sequence
 
 from django.db import transaction
 from django.db.models import QuerySet
@@ -24,6 +24,19 @@ def access_user_group_by_id(user_group_id: int, user_profile: UserProfile) -> Us
     except UserGroup.DoesNotExist:
         raise JsonableError(_("Invalid user group"))
     return user_group
+
+
+def access_user_groups_as_potential_subgroups(
+    user_group_ids: Sequence[int], acting_user: UserProfile
+) -> List[UserGroup]:
+    user_groups = UserGroup.objects.filter(id__in=user_group_ids, realm=acting_user.realm)
+
+    valid_group_ids = [group.id for group in user_groups]
+    invalid_group_ids = [group_id for group_id in user_group_ids if group_id not in valid_group_ids]
+    if invalid_group_ids:
+        raise JsonableError(_("Invalid user group ID: {}").format(invalid_group_ids[0]))
+
+    return list(user_groups)
 
 
 def user_groups_in_realm_serialized(realm: Realm) -> List[Dict[str, Any]]:

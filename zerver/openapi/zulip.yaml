@@ -13929,6 +13929,52 @@ paths:
                             },
                           ],
                       }
+  /user_groups/{user_group_id}/subgroups:
+    post:
+      operationId: update-user-group-subgroups
+      summary: Update subgroups of a user group
+      tags: ["users"]
+      description: |
+        Update the subgroups of a [user group](/help/user-groups).
+
+        `POST {{ api_url }}/v1/user_groups/{user_group_id}/subgroups`
+
+        **Changes**: New in Zulip 6.0 (feature level 127).
+      x-curl-examples-parameters:
+        oneOf:
+          - type: exclude
+            parameters:
+              enum:
+                - delete
+      parameters:
+        - $ref: "#/components/parameters/UserGroupId"
+        - name: delete
+          in: query
+          description: |
+            The list of user group ids to be removed from the user group.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+              example: [10]
+          required: false
+        - name: add
+          in: query
+          description: |
+            The list of user group ids to be added to the user group.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+              example: [1, 2]
+          required: false
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
   /real-time:
     # This entry is a hack; it exists to give us a place to put the text
     # documenting the parameters for call_on_each_event and friends.

@@ -779,3 +779,84 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 user_profile=hamlet, user_group=full_members_group
             ).exists()
         )
+
+    def test_updating_subgroups_of_user_group(self) -> None:
+        realm = get_realm("zulip")
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        leadership_group = create_user_group("leadership", [desdemona, iago, hamlet], realm)
+        support_group = create_user_group("support", [hamlet, othello], realm)
+
+        self.login("cordelia")
+        # Non-admin and non-moderators who are not a member of group cannot add or remove subgroups.
+        params = {"add": orjson.dumps([leadership_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_error(result, "Insufficient permission")
+
+        self.login("iago")
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_success(result)
+
+        params = {"delete": orjson.dumps([leadership_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_success(result)
+
+        self.login("shiva")
+        params = {"add": orjson.dumps([leadership_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_success(result)
+
+        params = {"delete": orjson.dumps([leadership_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_success(result)
+
+        self.login("hamlet")
+        # Non-admin and non-moderators who are a member of the user group can add or remove subgroups.
+        params = {"add": orjson.dumps([leadership_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_success(result)
+
+        params = {"delete": orjson.dumps([leadership_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_success(result)
+
+        # Users need not be part of the subgroup to add or remove it from a user group.
+        self.login("othello")
+        params = {"add": orjson.dumps([leadership_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_success(result)
+
+        params = {"delete": orjson.dumps([leadership_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_success(result)
+
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_error(
+            result,
+            ("User group {group_id} is not a subgroup of this group.").format(
+                group_id=leadership_group.id
+            ),
+        )
+
+        params = {"add": orjson.dumps([leadership_group.id]).decode()}
+        self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_error(
+            result,
+            ("User group {group_id} is already a subgroup of this group.").format(
+                group_id=leadership_group.id
+            ),
+        )
+
+        # Invalid subgroup id will raise an error.
+        params = {"add": orjson.dumps([leadership_group.id, 101]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_error(result, "Invalid user group ID: 101")
+
+        # Test when nothing is provided
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info={})
+        self.assert_json_error(result, 'Nothing to do. Specify at least one of "add" or "delete".')
