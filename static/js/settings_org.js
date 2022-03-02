@@ -210,7 +210,7 @@ export function extract_property_name(elem, for_realm_default_settings) {
         // ID approach.
         return elem.attr("name");
     }
-    return /^id_(.*)$/.exec(elem.attr("id").split("-").join("_"))[1];
+    return /^id_(.*)$/.exec(elem.attr("id").replace(/-/g, "_"))[1];
 }
 
 function get_subsection_property_elements(element) {
@@ -1011,7 +1011,7 @@ export function register_save_discard_widget_handlers(
             // fields that must be submitted together, which is
             // managed by the get_complete_data_for_subsection function.
             const [, subsection_id] = /^org-submit-(.*)$/.exec(save_button.attr("id"));
-            const subsection = subsection_id.split("-").join("_");
+            const subsection = subsection_id.replace(/-/g, "_");
             extra_data = get_complete_data_for_subsection(subsection);
         }
 

@@ -100,7 +100,7 @@ export function clean_query_lowercase(query) {
 
 export function get_emoji_matcher(query) {
     // replaces spaces with underscores for emoji matching
-    query = query.split(" ").join("_");
+    query = query.replace(/ /g, "_");
     query = clean_query_lowercase(query);
 
     return function (emoji) {
