@@ -752,7 +752,7 @@ input[type="checkbox"] {
         cursor: move;
 
         .fa-ellipsis-v {
-            color: hsl(0, 0, 75%);
+            color: hsl(0, 0%, 75%);
             position: relative;
             top: 1px;
 
