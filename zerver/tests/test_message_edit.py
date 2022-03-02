@@ -743,7 +743,10 @@ class EditMessageTest(EditMessageTestCase):
         history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
         self.assertEqual(history[0][LEGACY_PREV_TOPIC], "topic 1")
         self.assertEqual(history[0]["user_id"], hamlet.id)
-        self.assertEqual(set(history[0].keys()), {"timestamp", LEGACY_PREV_TOPIC, "user_id"})
+        self.assertEqual(
+            set(history[0].keys()),
+            {"timestamp", LEGACY_PREV_TOPIC, "prev_topic", "topic", "user_id"},
+        )
 
         result = self.client_patch(
             f"/json/messages/{msg_id}",
@@ -762,6 +765,8 @@ class EditMessageTest(EditMessageTestCase):
             {
                 "timestamp",
                 LEGACY_PREV_TOPIC,
+                "prev_topic",
+                "topic",
                 "prev_content",
                 "user_id",
                 "prev_rendered_content",
@@ -813,6 +818,7 @@ class EditMessageTest(EditMessageTestCase):
             expected_entries = {"content", "rendered_content", "topic", "timestamp", "user_id"}
             if i in {0, 2, 3}:
                 expected_entries.add("prev_topic")
+                expected_entries.add("topic")
             if i in {1, 2, 4}:
                 expected_entries.add("prev_content")
                 expected_entries.add("prev_rendered_content")
