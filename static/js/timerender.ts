@@ -15,6 +15,7 @@ import _ from "lodash";
 import render_markdown_time_tooltip from "../templates/markdown_time_tooltip.hbs";
 
 import {$t} from "./i18n";
+import {parse_html} from "./ui_util";
 import {user_settings} from "./user_settings";
 
 let next_timerender_id = 0;
@@ -224,20 +225,18 @@ export function render_date(time: Date, time_above: Date | undefined, today: Dat
 }
 
 // Renders the timestamp returned by the <time:> Markdown syntax.
-export function render_markdown_timestamp(time: number | Date): {
-    text: string;
-    tooltip_content_html: string;
-} {
+export function format_markdown_time(time: number | Date): string {
     const hourformat = user_settings.twenty_four_hour_time ? "HH:mm" : "h:mm a";
-    const timestring = format(time, "E, MMM d yyyy, " + hourformat);
+    return format(time, "E, MMM d yyyy, " + hourformat);
+}
 
-    const tz_offset_str = get_tz_with_UTC_offset(time);
-    const tooltip_content_html = render_markdown_time_tooltip({tz_offset_str});
-
-    return {
-        text: timestring,
-        tooltip_content_html,
-    };
+export function get_markdown_time_tooltip(reference: HTMLElement): DocumentFragment | string {
+    if (reference instanceof HTMLTimeElement) {
+        const time = parseISO(reference.dateTime);
+        const tz_offset_str = get_tz_with_UTC_offset(time);
+        return parse_html(render_markdown_time_tooltip({tz_offset_str}));
+    }
+    return "";
 }
 
 // This isn't expected to be called externally except manually for

@@ -32,9 +32,10 @@
     <td class='recent_topic_users'>
         <ul class="recent_topics_participants">
             {{#if other_senders_count}}
-            <li class="recent_topics_participant_item tippy-zulip-tooltip" data-tippy-content="{{other_sender_names_html}}" data-tippy-allowHTML="true">
+            <li class="recent_topics_participant_item tippy-zulip-tooltip" data-tooltip-template-id="recent_topics_participant_overflow_tooltip:{{topic_key}}">
                 <span class="recent_topics_participant_overflow">+{{other_senders_count}}</span>
             </li>
+            <template id="recent_topics_participant_overflow_tooltip:{{topic_key}}">{{{other_sender_names_html}}}</template>
             {{/if}}
             {{#each senders}}
                 {{#if this.is_muted}}
