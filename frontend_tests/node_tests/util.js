@@ -136,10 +136,6 @@ run_test("get_edit_event_orig_topic", () => {
     assert.equal(util.get_edit_event_orig_topic({orig_subject: "lunch"}), "lunch");
 });
 
-run_test("get_edit_event_prev_topic", () => {
-    assert.equal(util.get_edit_event_prev_topic({prev_subject: "dinner"}), "dinner");
-});
-
 run_test("is_mobile", () => {
     window.navigator = {userAgent: "Android"};
     assert.ok(util.is_mobile());
