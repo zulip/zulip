@@ -50,7 +50,7 @@ describes how to go about it.
 
 If you are reviewing somebody else's code, you will likely need to first fetch
 it so that you can play around with the new functionality. If you're working in
-the Zulip server codebase, use our [git tool][git-tool]
+the Zulip server codebase, use our [Git tool][git-tool]
 `tools/fetch-rebase-pull-request` to check out a pull request locally and rebase
 it onto `main`.
 
