@@ -73,11 +73,12 @@ class EditMessageTestCase(ZulipTestCase):
             msg.sender_id,
         )
 
-        if msg.edit_history:
-            self.assertEqual(
-                fetch_message_dict["edit_history"],
-                orjson.loads(msg.edit_history),
-            )
+        # TODO: uncomment assertion when edit_history fields in API match fields in database.
+        # if msg.edit_history:
+        #     self.assertEqual(
+        #         fetch_message_dict["edit_history"],
+        #         orjson.loads(msg.edit_history),
+        #     )
 
     def prepare_move_topics(
         self,
@@ -709,9 +710,16 @@ class EditMessageTest(EditMessageTestCase):
         history data structures."""
         self.login("hamlet")
         hamlet = self.example_user("hamlet")
+        stream_1 = self.make_stream("stream 1")
+        stream_2 = self.make_stream("stream 2")
+        stream_3 = self.make_stream("stream 3")
+        self.subscribe(hamlet, stream_1.name)
+        self.subscribe(hamlet, stream_2.name)
+        self.subscribe(hamlet, stream_3.name)
         msg_id = self.send_stream_message(
-            self.example_user("hamlet"), "Denmark", topic_name="topic 1", content="content 1"
+            self.example_user("hamlet"), "stream 1", topic_name="topic 1", content="content 1"
         )
+
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
@@ -742,9 +750,29 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_json_success(result)
         history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
         self.assertEqual(history[0][LEGACY_PREV_TOPIC], "topic 1")
+        self.assertEqual(history[0]["prev_topic"], "topic 1")
+        self.assertEqual(history[0]["topic"], "topic 2")
         self.assertEqual(history[0]["user_id"], hamlet.id)
-        self.assertEqual(set(history[0].keys()), {"timestamp", LEGACY_PREV_TOPIC, "user_id"})
+        self.assertEqual(
+            set(history[0].keys()),
+            {"timestamp", LEGACY_PREV_TOPIC, "prev_topic", "topic", "user_id"},
+        )
 
+        self.login("iago")
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "stream_id": stream_2.id,
+            },
+        )
+        self.assert_json_success(result)
+        history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
+        self.assertEqual(history[0]["prev_stream"], stream_1.id)
+        self.assertEqual(history[0]["stream"], stream_2.id)
+        self.assertEqual(history[0]["user_id"], self.example_user("iago").id)
+        self.assertEqual(set(history[0].keys()), {"timestamp", "prev_stream", "stream", "user_id"})
+
+        self.login("hamlet")
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
@@ -756,12 +784,16 @@ class EditMessageTest(EditMessageTestCase):
         history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
         self.assertEqual(history[0]["prev_content"], "content 2")
         self.assertEqual(history[0][LEGACY_PREV_TOPIC], "topic 2")
+        self.assertEqual(history[0]["prev_topic"], "topic 2")
+        self.assertEqual(history[0]["topic"], "topic 3")
         self.assertEqual(history[0]["user_id"], hamlet.id)
         self.assertEqual(
             set(history[0].keys()),
             {
                 "timestamp",
                 LEGACY_PREV_TOPIC,
+                "prev_topic",
+                "topic",
                 "prev_content",
                 "user_id",
                 "prev_rendered_content",
@@ -785,20 +817,55 @@ class EditMessageTest(EditMessageTestCase):
             f"/json/messages/{msg_id}",
             {
                 "topic": "topic 4",
+                "stream_id": stream_3.id,
             },
         )
         self.assert_json_success(result)
         history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
         self.assertEqual(history[0][LEGACY_PREV_TOPIC], "topic 3")
+        self.assertEqual(history[0]["prev_topic"], "topic 3")
+        self.assertEqual(history[0]["topic"], "topic 4")
+        self.assertEqual(history[0]["prev_stream"], stream_2.id)
+        self.assertEqual(history[0]["stream"], stream_3.id)
         self.assertEqual(history[0]["user_id"], self.example_user("iago").id)
+        self.assertEqual(
+            set(history[0].keys()),
+            {
+                "timestamp",
+                LEGACY_PREV_TOPIC,
+                "prev_topic",
+                "topic",
+                "prev_stream",
+                "stream",
+                "user_id",
+            },
+        )
 
+        # Now, we verify that all of the edits stored in the message.edit_history
+        # have the correct data structure
         history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
         self.assertEqual(history[0][LEGACY_PREV_TOPIC], "topic 3")
         self.assertEqual(history[2][LEGACY_PREV_TOPIC], "topic 2")
-        self.assertEqual(history[3][LEGACY_PREV_TOPIC], "topic 1")
+        self.assertEqual(history[4][LEGACY_PREV_TOPIC], "topic 1")
+
+        self.assertEqual(history[0]["prev_topic"], "topic 3")
+        self.assertEqual(history[0]["topic"], "topic 4")
+        self.assertEqual(history[0]["stream"], stream_3.id)
+        self.assertEqual(history[0]["prev_stream"], stream_2.id)
+
         self.assertEqual(history[1]["prev_content"], "content 3")
+
+        self.assertEqual(history[2]["prev_topic"], "topic 2")
+        self.assertEqual(history[2]["topic"], "topic 3")
         self.assertEqual(history[2]["prev_content"], "content 2")
-        self.assertEqual(history[4]["prev_content"], "content 1")
+
+        self.assertEqual(history[3]["stream"], stream_2.id)
+        self.assertEqual(history[3]["prev_stream"], stream_1.id)
+
+        self.assertEqual(history[4]["prev_topic"], "topic 1")
+        self.assertEqual(history[4]["topic"], "topic 2")
+
+        self.assertEqual(history[5]["prev_content"], "content 1")
 
         # Now, we verify that the edit history data sent back has the
         # correct filled-out fields
@@ -811,35 +878,50 @@ class EditMessageTest(EditMessageTestCase):
         i = 0
         for entry in message_history:
             expected_entries = {"content", "rendered_content", "topic", "timestamp", "user_id"}
-            if i in {0, 2, 3}:
+            if i in {0, 2, 4}:
                 expected_entries.add("prev_topic")
-            if i in {1, 2, 4}:
+                expected_entries.add("topic")
+            if i in {1, 2, 5}:
                 expected_entries.add("prev_content")
                 expected_entries.add("prev_rendered_content")
                 expected_entries.add("content_html_diff")
+            if i in {0, 3}:
+                expected_entries.add("prev_stream")
+                # TODO: uncomment when stream field is added to API
+                # expected_entries.add("stream")
             i += 1
             self.assertEqual(expected_entries, set(entry.keys()))
-        self.assert_length(message_history, 6)
-        self.assertEqual(message_history[0]["prev_topic"], "topic 3")
+        self.assert_length(message_history, 7)
         self.assertEqual(message_history[0]["topic"], "topic 4")
-        self.assertEqual(message_history[1]["topic"], "topic 3")
-        self.assertEqual(message_history[2]["topic"], "topic 3")
-        self.assertEqual(message_history[2]["prev_topic"], "topic 2")
-        self.assertEqual(message_history[3]["topic"], "topic 2")
-        self.assertEqual(message_history[3]["prev_topic"], "topic 1")
-        self.assertEqual(message_history[4]["topic"], "topic 1")
-
+        self.assertEqual(message_history[0]["prev_topic"], "topic 3")
+        # self.assertEqual(message_history[0]["stream"], stream_3.id)
+        self.assertEqual(message_history[0]["prev_stream"], stream_2.id)
         self.assertEqual(message_history[0]["content"], "content 4")
+
+        self.assertEqual(message_history[1]["topic"], "topic 3")
         self.assertEqual(message_history[1]["content"], "content 4")
         self.assertEqual(message_history[1]["prev_content"], "content 3")
+
+        self.assertEqual(message_history[2]["topic"], "topic 3")
+        self.assertEqual(message_history[2]["prev_topic"], "topic 2")
         self.assertEqual(message_history[2]["content"], "content 3")
         self.assertEqual(message_history[2]["prev_content"], "content 2")
-        self.assertEqual(message_history[3]["content"], "content 2")
-        self.assertEqual(message_history[4]["content"], "content 2")
-        self.assertEqual(message_history[4]["prev_content"], "content 1")
 
-        self.assertEqual(message_history[5]["content"], "content 1")
+        self.assertEqual(message_history[3]["topic"], "topic 2")
+        # self.assertEqual(message_history[3]["stream"], stream_2.id)
+        self.assertEqual(message_history[3]["prev_stream"], stream_1.id)
+        self.assertEqual(message_history[3]["content"], "content 2")
+
+        self.assertEqual(message_history[4]["topic"], "topic 2")
+        self.assertEqual(message_history[4]["prev_topic"], "topic 1")
+        self.assertEqual(message_history[4]["content"], "content 2")
+
         self.assertEqual(message_history[5]["topic"], "topic 1")
+        self.assertEqual(message_history[5]["content"], "content 2")
+        self.assertEqual(message_history[5]["prev_content"], "content 1")
+
+        self.assertEqual(message_history[6]["content"], "content 1")
+        self.assertEqual(message_history[6]["topic"], "topic 1")
 
     def test_edit_message_content_limit(self) -> None:
         def set_message_editing_params(
