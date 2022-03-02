@@ -54,6 +54,7 @@ parser = argparse.ArgumentParser(usage)
 parser.add_argument("--interactive", action="store_true", help="Run tests interactively")
 add_provision_check_override_param(parser)
 parser.add_argument("--firefox", action="store_true", help="Run tests with firefox.")
+parser.add_argument("--loop", nargs="?", type=int, default=1)
 parser.add_argument(
     "tests", nargs=argparse.REMAINDER, help="Specific tests to run; by default, runs all tests"
 )
@@ -90,7 +91,7 @@ def run_single_test(test_file: str, test_number: int, total_tests: int) -> int:
     return ret
 
 
-def run_tests(files: Iterable[str], external_host: str) -> None:
+def run_tests(files: Iterable[str], external_host: str, loop: int = 1) -> None:
     test_dir = os.path.join(ZULIP_PATH, "frontend_tests/puppeteer_tests")
     test_files = find_js_test_files(test_dir, files)
     total_tests = len(test_files)
@@ -118,7 +119,14 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
                     response = input('Tests failed. Press Enter to re-run tests, "q" to quit: ')
         else:
             ret = 1
-            ret, current_test_num = run_tests()
+            for loop_num in range(1, loop + 1):
+                print(f"\n\nRunning tests in loop ({loop_num}/{loop})\n")
+                ret, current_test_num = run_tests()
+                if ret == 0:
+                    print(f"{OKGREEN}All tests passed!{ENDC}")
+                else:
+                    break
+
     if ret != 0:
         failed_test_file_name = os.path.basename(test_files[current_test_num])
         print(
@@ -151,6 +159,5 @@ Screenshots are extremely helpful for understanding puppeteer test failures.
 external_host = "zulipdev.com:9981"
 assert_provisioning_status_ok(options.skip_provision_check)
 prepare_puppeteer_run(is_firefox=options.firefox)
-run_tests(options.tests, external_host)
-print(f"{OKGREEN}All tests passed!{ENDC}")
+run_tests(options.tests, external_host, options.loop)
 sys.exit(0)
