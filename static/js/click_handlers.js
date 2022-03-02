@@ -784,11 +784,9 @@ export function initialize() {
         hotspots.close_hotspot_icon(this);
 
         // show popover
-        const hotspot_name = $(e.target)
-            .closest(".hotspot-icon")
-            .attr("id")
-            .replace("hotspot_", "")
-            .replace("_icon", "");
+        const [, hotspot_name] = /^hotspot_(.*)_icon$/.exec(
+            $(e.target).closest(".hotspot-icon").attr("id"),
+        );
         const overlay_name = "hotspot_" + hotspot_name + "_overlay";
 
         overlays.open_overlay({
@@ -817,7 +815,7 @@ export function initialize() {
 
         const overlay_name = $(this).closest(".hotspot.overlay").attr("id");
 
-        const hotspot_name = overlay_name.replace("hotspot_", "").replace("_overlay", "");
+        const [, hotspot_name] = /^hotspot_(.*)_overlay$/.exec(overlay_name);
 
         // Comment below to disable marking hotspots as read in production
         hotspots.post_hotspot_as_read(hotspot_name);

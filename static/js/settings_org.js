@@ -210,7 +210,7 @@ export function extract_property_name(elem, for_realm_default_settings) {
         // ID approach.
         return elem.attr("name");
     }
-    return elem.attr("id").split("-").join("_").replace("id_", "");
+    return /^id_(.*)$/.exec(elem.attr("id").split("-").join("_"))[1];
 }
 
 function get_subsection_property_elements(element) {
@@ -989,7 +989,7 @@ export function register_save_discard_widget_handlers(
                         // ID approach.
                         property_name = input_elem.attr("name");
                     } else {
-                        property_name = input_elem.attr("id").replace("id_realm_", "");
+                        [, property_name] = /^id_realm_(.*)$/.exec(input_elem.attr("id"));
                     }
                     data[property_name] = input_value;
                 }
@@ -1010,7 +1010,7 @@ export function register_save_discard_widget_handlers(
             // The organization settings system has some coupled
             // fields that must be submitted together, which is
             // managed by the get_complete_data_for_subsection function.
-            const subsection_id = save_button.attr("id").replace("org-submit-", "");
+            const [, subsection_id] = /^org-submit-(.*)$/.exec(save_button.attr("id"));
             const subsection = subsection_id.split("-").join("_");
             extra_data = get_complete_data_for_subsection(subsection);
         }
