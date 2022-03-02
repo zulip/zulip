@@ -692,8 +692,6 @@ strong {
                     hsl(200, 100%, 40%),
                     hsl(200, 100%, 35%)
                 );
-                background-repeat: repeat-x;
-                filter: progid:dximagetransform.microsoft.gradient(startcolorstr='hsla(328, 100%, 50%, 0.8)', endcolorstr='hsla(332, 100%, 50%, 0.7)', gradienttype=0);
             }
             /* styles defined for user_circle here only deal with positioning of user_presence_circle
             in typeahead list in order to ensure they are rendered correctly in in all screen sizes.
@@ -720,9 +718,7 @@ strong {
             hsl(200, 100%, 40%),
             hsl(200, 100%, 35%)
         );
-        background-repeat: repeat-x;
         outline: 0;
-        filter: progid:dximagetransform.microsoft.gradient(startcolorstr='hsla(328, 100%, 50%, 0.8)', endcolorstr='hsla(332, 100%, 50%, 0.7)', gradienttype=0);
 
         .user_circle_empty {
             border-color: hsl(0, 0%, 25%);
@@ -740,7 +736,6 @@ li.actual-dropdown-menu > a:focus {
     text-decoration: none;
     background-color: none;
     background-image: none;
-    background-repeat: repeat-x;
     filter: none;
     outline: 0;
 }
