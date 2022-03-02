@@ -256,10 +256,10 @@ export function process_notification(notification) {
             content = "New private message from " + message.sender_full_name;
         }
         key = message.display_reply_to;
-        other_recipients = message.display_reply_to;
         // Remove the sender from the list of other recipients
-        other_recipients = other_recipients.replace(", " + message.sender_full_name, "");
-        other_recipients = other_recipients.replace(message.sender_full_name + ", ", "");
+        other_recipients = `, ${message.display_reply_to}, `
+            .replace(`, ${message.sender_full_name}, `, ", ")
+            .slice(", ".length, -", ".length);
         notification_source = "pm";
     } else {
         key = message.sender_full_name + " to " + message.stream + " > " + topic;
@@ -736,7 +736,7 @@ export function handle_global_notification_updates(notification_name, setting) {
     }
 
     if (settings_config.stream_notification_settings.includes(notification_name)) {
-        notification_name = notification_name.replace("enable_stream_", "");
+        [, notification_name] = /^enable_stream_(.*)$/.exec(notification_name);
         stream_ui_updates.update_notification_setting_checkbox(notification_name);
     }
 

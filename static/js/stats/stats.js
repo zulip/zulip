@@ -80,7 +80,10 @@ function update_last_full_update(end_times) {
         month: "long",
         day: "numeric",
     });
-    const locale_time = update_time.toLocaleTimeString().replace(":00 ", " ");
+    const locale_time = update_time.toLocaleTimeString(undefined, {
+        hour: "numeric",
+        minute: "numeric",
+    });
 
     $("#id_last_full_update").text(locale_time + " on " + locale_date);
     $("#id_last_full_update").closest(".last-update").show();

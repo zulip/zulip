@@ -773,39 +773,39 @@ test("translate_emoticons_to_names", () => {
     // Extensive tests.
     // The following code loops over the test cases and each emoticon conversion
     // to generate multiple test cases.
-    const testcases = [
-        {name: "only emoticon", original: "<original>", expected: "<converted>"},
-        {name: "space at start", original: " <original>", expected: " <converted>"},
-        {name: "space at end", original: "<original> ", expected: "<converted> "},
-        {name: "symbol at end", original: "<original>!", expected: "<converted>!"},
-        {name: "symbol at start", original: "Hello,<original>", expected: "Hello,<converted>"},
-        {name: "after a word", original: "Hello<original>", expected: "Hello<original>"},
-        {name: "between words", original: "Hello<original>World", expected: "Hello<original>World"},
-        {
-            name: "end of sentence",
-            original: "End of sentence. <original>",
-            expected: "End of sentence. <converted>",
-        },
-        {
-            name: "between symbols",
-            original: "Hello.<original>! World.",
-            expected: "Hello.<original>! World.",
-        },
-        {
-            name: "before end of sentence",
-            original: "Hello <original>!",
-            expected: "Hello <converted>!",
-        },
-    ];
     for (const [shortcut, full_name] of Object.entries(emoji_codes.emoticon_conversions)) {
-        for (const t of testcases) {
-            const converted_value = full_name;
-            let original = t.original;
-            let expected = t.expected;
-            original = original.replace(/(<original>)/g, shortcut);
-            expected = expected
-                .replace(/(<original>)/g, shortcut)
-                .replace(/(<converted>)/g, converted_value);
+        for (const {original, expected} of [
+            {name: `only emoticon`, original: shortcut, expected: full_name},
+            {name: `space at start`, original: ` ${shortcut}`, expected: ` ${full_name}`},
+            {name: `space at end`, original: `${shortcut} `, expected: `${full_name} `},
+            {name: `symbol at end`, original: `${shortcut}!`, expected: `${full_name}!`},
+            {
+                name: `symbol at start`,
+                original: `Hello,${shortcut}`,
+                expected: `Hello,${full_name}`,
+            },
+            {name: `after a word`, original: `Hello${shortcut}`, expected: `Hello${shortcut}`},
+            {
+                name: `between words`,
+                original: `Hello${shortcut}World`,
+                expected: `Hello${shortcut}World`,
+            },
+            {
+                name: `end of sentence`,
+                original: `End of sentence. ${shortcut}`,
+                expected: `End of sentence. ${full_name}`,
+            },
+            {
+                name: `between symbols`,
+                original: `Hello.${shortcut}! World.`,
+                expected: `Hello.${shortcut}! World.`,
+            },
+            {
+                name: `before end of sentence`,
+                original: `Hello ${shortcut}!`,
+                expected: `Hello ${full_name}!`,
+            },
+        ]) {
             const result = markdown.translate_emoticons_to_names(original);
             assert.equal(result, expected);
         }
