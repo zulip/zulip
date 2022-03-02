@@ -119,9 +119,6 @@ class EditHistoryEvent(TypedDict, total=False):
     timestamp: int
     prev_stream: int
     stream: int
-    # One of prev_subject and prev_topic is guaranteed to exist; if
-    # both exist they will have identical values.
-    prev_subject: str
     prev_topic: str
     topic: str
     prev_content: str
