@@ -12,7 +12,7 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.actions import check_update_message, do_delete_messages
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.html_diff import highlight_html_differences
-from zerver.lib.message import access_message, access_web_public_message
+from zerver.lib.message import access_message, access_web_public_message, messages_for_ids
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -190,6 +190,7 @@ def json_fetch_raw_message(
     request: HttpRequest,
     maybe_user_profile: Union[UserProfile, AnonymousUser],
     message_id: int = REQ(converter=to_non_negative_int, path_only=True),
+    apply_markdown: bool = REQ(json_validator=check_bool, default=True),
 ) -> HttpResponse:
 
     if not maybe_user_profile.is_authenticated:
@@ -198,4 +199,30 @@ def json_fetch_raw_message(
     else:
         (message, user_message) = access_message(maybe_user_profile, message_id)
 
-    return json_success(request, data={"raw_content": message.content})
+    flags = ["read"]
+    if not maybe_user_profile.is_authenticated:
+        allow_edit_history = realm.allow_edit_history
+    else:
+        if user_message:
+            flags = user_message.flags_list()
+        allow_edit_history = maybe_user_profile.realm.allow_edit_history
+
+    # Security note: It's important that we call this only with a
+    # message already fetched via `access_message` type methods,
+    # as we do above.
+    message_dict_list = messages_for_ids(
+        message_ids=[message.id],
+        user_message_flags={message_id: flags},
+        search_fields={},
+        apply_markdown=apply_markdown,
+        client_gravatar=True,
+        allow_edit_history=allow_edit_history,
+    )
+    response = dict(
+        message=message_dict_list[0],
+        # raw_content is deprecated; we will need to wait until
+        # clients have been fully migrated to using the modern API
+        # before removing this, probably in 2023.
+        raw_content=message.content,
+    )
+    return json_success(request, response)
