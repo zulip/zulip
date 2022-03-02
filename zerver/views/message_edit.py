@@ -54,10 +54,6 @@ def fill_edit_history_entries(
         if "prev_topic" in edit_history_event:
             prev_topic = edit_history_event["prev_topic"]
             formatted_entry["prev_topic"] = prev_topic
-        elif LEGACY_PREV_TOPIC in edit_history_event:
-            # TODO: Delete this once we've finished migrating legacy message objects.
-            prev_topic = edit_history_event["prev_subject"]
-            formatted_entry["prev_topic"] = prev_topic
 
         # Fill current values for content/rendered_content.
         if "prev_content" in edit_history_event:
