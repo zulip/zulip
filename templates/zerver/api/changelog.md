@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 5.0
 
+**Feature level 119**
+
+* [`GET /messages/{message_id}`](/api/get-raw-message): This endpoint
+  now sends the full message details.
+
 **Feature level 118**
 
 * [`GET /messages`](/api/get-messages), [`GET

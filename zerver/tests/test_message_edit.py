@@ -304,18 +304,57 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_json_success(result)
         self.check_topic(msg_id, topic_name="edited")
 
-    def test_fetch_raw_message(self) -> None:
+    def test_fetch_message_from_id(self) -> None:
         self.login("hamlet")
         msg_id = self.send_personal_message(
             from_user=self.example_user("hamlet"),
             to_user=self.example_user("cordelia"),
-            content="**before** edit",
+            content="Personal message",
         )
-        result = self.client_get(f"/json/messages/{msg_id}")
+        result = self.client_get("/json/messages/" + str(msg_id))
         self.assert_json_success(result)
-        self.assertEqual(result.json()["raw_content"], "**before** edit")
+        self.assertEqual(result.json()["raw_content"], "Personal message")
+        self.assertEqual(result.json()["message"]["id"], msg_id)
+
+        # Send message to web public stream where hamlet is not subscribed.
+        # This will test case of user having no `UserMessage` but having access
+        # to message.
+        web_public_stream = self.make_stream("web-public-stream", is_web_public=True)
+        self.subscribe(self.example_user("cordelia"), web_public_stream.name)
+        web_public_stream_msg_id = self.send_stream_message(
+            self.example_user("cordelia"), web_public_stream.name, content="web-public message"
+        )
+        result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        self.assert_json_success(result)
+        self.assertEqual(result.json()["raw_content"], "web-public message")
+        self.assertEqual(result.json()["message"]["id"], web_public_stream_msg_id)
+
+        # Spectator should be able to fetch message in web public stream.
+        self.logout()
+        result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        self.assert_json_success(result)
+        self.assertEqual(result.json()["raw_content"], "web-public message")
+        self.assertEqual(result.json()["message"]["id"], web_public_stream_msg_id)
+
+        # Verify default is apply_markdown=True
+        self.assertEqual(result.json()["message"]["content"], "<p>web-public message</p>")
+
+        # Verify apply_markdown=False works correctly.
+        result = self.client_get(
+            "/json/messages/" + str(web_public_stream_msg_id), {"apply_markdown": "false"}
+        )
+        self.assert_json_success(result)
+        self.assertEqual(result.json()["raw_content"], "web-public message")
+        self.assertEqual(result.json()["message"]["content"], "web-public message")
+
+        with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
+            result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", status_code=401
+        )
 
         # Test error cases
+        self.login("hamlet")
         result = self.client_get("/json/messages/999999")
         self.assert_json_error(result, "Invalid message(s)")
 

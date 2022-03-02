@@ -5476,19 +5476,36 @@ paths:
   /messages/{message_id}:
     get:
       operationId: get-raw-message
-      summary: Get a message's raw Markdown
+      summary: Fetch a single message given its message ID.
       tags: ["messages"]
       description: |
-        Get the raw content of a message.
+        Given a message ID, return the message object.
 
         `GET {{ api_url }}/v1/messages/{msg_id}`
 
-        This is a rarely-used endpoint relevant for clients that primarily
-        work with HTML-rendered messages but might need to occasionally fetch
-        the message's raw Markdown (e.g. for pre-filling a message-editing
-        UI).
+        Additionally, a `raw_content` field is included. This field is
+        useful for clients that primarily work with HTML-rendered
+        messages but might need to occasionally fetch the message's
+        raw Markdown (e.g. for [view
+        source](/help/view-the-markdown-source-of-a-message) or
+        prefilling a message edit textarea.
+
+        **Changes**: Before Zulip 5.0 (feature level 119), this
+        endpoint only returned the `raw_content` field.
       parameters:
         - $ref: "#/components/parameters/MessageId"
+        - name: apply_markdown
+          in: query
+          description: |
+            If `true`, message content is returned in the rendered HTML
+            format. If `false`, message content is returned in the raw
+            Markdown-format text that user entered.
+
+            **Changes**: New in Zulip 5.0 (feature level 119).
+          schema:
+            type: boolean
+            default: true
+          example: false
       responses:
         "200":
           description: Success.
@@ -5504,13 +5521,63 @@ paths:
                       msg: {}
                       raw_content:
                         type: string
+                        deprecated: true
                         description: |
-                          The raw content of the message.
+                          The raw Markdown content of the message.
+
+                          **Deprecated** and to be removed once no longer required for
+                          legacy clients. Modern clients should prefer passing
+                          apply_markdown=false to request raw message content.
+                      message:
+                        # BUG: This incorrectly includes match_content.
+                        $ref: "#/components/schemas/GetMessages"
                     example:
                       {
                         "raw_content": "**Don't** forget your towel!",
                         "result": "success",
                         "msg": "",
+                        "message":
+                          {
+                            "subject": "",
+                            "sender_realm_str": "zulip",
+                            "type": "private",
+                            "content": "<p>Security experts agree that relational algorithms are an interesting new topic in the field of networking, and scholars concur.</p>",
+                            "flags": ["read"],
+                            "id": 16,
+                            "display_recipient":
+                              [
+                                {
+                                  "id": 4,
+                                  "is_mirror_dummy": false,
+                                  "email": "hamlet@zulip.com",
+                                  "full_name": "King Hamlet",
+                                },
+                                {
+                                  "id": 5,
+                                  "is_mirror_dummy": false,
+                                  "email": "iago@zulip.com",
+                                  "full_name": "Iago",
+                                },
+                                {
+                                  "id": 8,
+                                  "is_mirror_dummy": false,
+                                  "email": "prospero@zulip.com",
+                                  "full_name": "Prospero from The Tempest",
+                                },
+                              ],
+                            "content_type": "text/html",
+                            "is_me_message": false,
+                            "timestamp": 1527921326,
+                            "sender_id": 4,
+                            "sender_full_name": "King Hamlet",
+                            "recipient_id": 27,
+                            "topic_links": [],
+                            "client": "populate_db",
+                            "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
+                            "submessages": [],
+                            "sender_email": "hamlet@zulip.com",
+                            "reactions": [],
+                          },
                       }
         "400":
           description: Bad request.
