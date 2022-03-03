@@ -289,6 +289,15 @@ export function setup_stream_settings(node) {
     show_settings_for(node);
 }
 
+export function update_muting_rendering(sub) {
+    const edit_container = stream_settings_containers.get_edit_container(sub);
+    const notification_checkboxes = edit_container.find(".sub_notification_setting");
+
+    edit_container.find(".mute-note").toggleClass("hide-mute-note", !sub.is_muted);
+    notification_checkboxes.toggleClass("muted-sub", sub.is_muted);
+    notification_checkboxes.find("input[type='checkbox']").prop("disabled", sub.is_muted);
+}
+
 function stream_is_muted_changed(e) {
     const sub = get_sub_for_target(e.target);
     if (!sub) {
@@ -296,17 +305,14 @@ function stream_is_muted_changed(e) {
         return;
     }
 
-    const edit_container = stream_settings_containers.get_edit_container(sub);
-    const notification_checkboxes = edit_container.find(".sub_notification_setting");
-
     stream_settings_ui.set_muted(
         sub,
         e.target.checked,
         `#stream_change_property_status${CSS.escape(sub.stream_id)}`,
     );
-    edit_container.find(".mute-note").toggleClass("hide-mute-note", !sub.is_muted);
-    notification_checkboxes.toggleClass("muted-sub", sub.is_muted);
-    notification_checkboxes.find("input[type='checkbox']").prop("disabled", sub.is_muted);
+
+    // TODO: This should be done via server_events.
+    update_muting_rendering(sub);
 }
 
 export function stream_setting_changed(e, from_notification_settings) {
