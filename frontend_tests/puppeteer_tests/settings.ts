@@ -46,6 +46,22 @@ async function test_change_full_name(page: Page): Promise<void> {
     await page.waitForFunction(() => $("#full_name").val() === "New name");
 }
 
+async function test_change_password(page: Page): Promise<void> {
+    await page.click("#change_password");
+
+    const change_password_button_selector = "#change_password_modal .dialog_submit_button";
+    await page.waitForSelector(change_password_button_selector, {visible: true});
+
+    await common.wait_for_micromodal_to_open(page);
+    await page.type("#old_password", test_credentials.default_user.password);
+    test_credentials.default_user.password = "new_password";
+    await page.type("#new_password", test_credentials.default_user.password);
+    await page.click(change_password_button_selector);
+
+    // On success the change password modal gets closed.
+    await common.wait_for_micromodal_to_close(page);
+}
+
 async function test_get_api_key(page: Page): Promise<void> {
     await page.click('[data-section="account-and-privacy"]');
     const show_change_api_key_selector = "#api_key_button";
@@ -382,11 +398,16 @@ async function settings_tests(page: Page): Promise<void> {
     await common.log_in(page);
     await open_settings(page);
     await test_change_full_name(page);
-    await test_get_api_key(page);
     await test_alert_words_section(page);
     await test_your_bots_section(page);
     await test_default_language_setting(page);
     await test_notifications_section(page);
+    await test_get_api_key(page);
+    await test_change_password(page);
+    // test_change_password should be the very last test, because it
+    // replaces your session, which can lead to some nondeterministic
+    // failures in test code after it, involving `GET /events`
+    // returning a 401. (We reset the test database after each file).
 }
 
 common.run_test(settings_tests);
