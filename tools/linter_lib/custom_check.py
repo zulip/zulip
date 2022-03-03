@@ -12,10 +12,7 @@ from zulint.custom_rules import Rule, RuleList
 
 FILES_WITH_LEGACY_SUBJECT = {
     # This basically requires a big DB migration:
-    "zerver/lib/message.py",
     "zerver/lib/topic.py",
-    "zerver/lib/types.py",
-    "zerver/views/message_edit.py",
     # This is for backward compatibility.
     "zerver/tests/test_legacy_subject.py",
     # Other migration-related changes require extreme care.
@@ -232,7 +229,7 @@ python_rules = RuleList(
     rules=[
         {
             "pattern": "subject|SUBJECT",
-            "exclude_pattern": "subject to the|email|outbox|edit_history_event",
+            "exclude_pattern": "subject to the|email|outbox",
             "description": "avoid subject as a var",
             "good_lines": ["topic_name"],
             "bad_lines": ['subject="foo"', " MAX_SUBJECT_LEN"],

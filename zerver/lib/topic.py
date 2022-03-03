@@ -20,12 +20,6 @@ MATCH_TOPIC = "match_subject"
 # Prefix use to mark topic as resolved.
 RESOLVED_TOPIC_PREFIX = "✔ "
 
-# This constant is actually embedded into
-# the JSON data for message edit history,
-# so we'll always need to handle legacy data
-# unless we do a pretty tricky migration.
-LEGACY_PREV_TOPIC = "prev_subject"
-
 # This constant is pretty closely coupled to the
 # database, but it's the JSON field.
 EXPORT_TOPIC_NAME = "subject"
