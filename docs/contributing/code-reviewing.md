@@ -310,7 +310,9 @@ process](#how-to-review-code) described above for your own PR will make your
 code easier and faster to review, which makes it much more likely that it will
 be reviewed quickly and require fewer review cycles.
 
-### Fast replies are key
+### Reviewing someone else's code
+
+#### Fast replies are key
 
 For the author of a PR, getting feedback quickly is really important
 for making progress quickly and staying productive. That means that
@@ -330,6 +332,25 @@ things, so an immediate reply isn't always possible. But a good
 benchmark is to try to always reply **within one workday**, at least
 with a short initial reply, if you're working regularly on Zulip. And
 sooner is better.
+
+#### Communication style
+
+Any time you leave a code review, be sure to treat the author with respect.
+Remember that they are generously spending their time on an effort to improve
+the Zulip project. Thank them for their work, and express your appreciation for
+anything the author did especially well, whether it's a nice commit message, a
+prompt response to earlier feedback, or a well-written test.
+
+Be as clear and direct as you can when describing requested changes. There is no
+need to apologize when asking for a change; you're collaborating with the
+author to make the PR as good as you can together.
+
+Be sure to explain the motivation for the changes you're requesting if it's not
+obvious, so that the author can learn for next time. It may be helpful to point
+to developer documentation, such as the [commit discipline
+guide][commit-discipline].
+
+#### Fixing up the PR
 
 If a pull request just needs a little fixing to make it mergeable,
 feel free to do that in a new commit, then push your branch to GitHub
