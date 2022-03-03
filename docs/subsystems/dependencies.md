@@ -232,7 +232,7 @@ reasoning here.
   dependencies in the `yarn.lock` file; `yarn install` updates the
   `yarn.lock` files.
 - `tools/update-prod-static`. This process is discussed in detail in
-  the [static asset pipeline](../subsystems/html-css.html#static-asset-pipeline)
+  the [static asset pipeline](html-css.md#static-asset-pipeline)
   article, but we don't use the `node_modules` directories directly in
   production. Instead, static assets are compiled using our static
   asset pipeline and it is the compiled assets that are served
@@ -290,7 +290,7 @@ Zulip uses the [iamcal emoji data package][iamcal] for its emoji data
 and sprite sheets. We download this dependency using `npm`, and then
 have a tool, `tools/setup/build_emoji`, which reformats the emoji data
 into the files under `static/generated/emoji`. Those files are in
-turn used by our [Markdown processor](../subsystems/markdown.md) and
+turn used by our [Markdown processor](markdown.md) and
 `tools/update-prod-static` to make Zulip's emoji work in the various
 environments where they need to be displayed.
 

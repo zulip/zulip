@@ -34,7 +34,15 @@ function reset_error_messages() {
 
 function get_common_invitation_data() {
     const invite_as = Number.parseInt($("#invite_as").val(), 10);
-    const expires_in = Number.parseFloat($("#expires_in").val());
+    let expires_in = $("#expires_in").val();
+
+    // See settings_config.expires_in_values for why we do this conversion.
+    if (expires_in === "null") {
+        expires_in = JSON.stringify(null);
+    } else {
+        expires_in = Number.parseFloat($("#expires_in").val());
+    }
+
     const stream_ids = [];
     $("#invite-stream-checkboxes input:checked").each(function () {
         const stream_id = Number.parseInt($(this).val(), 10);

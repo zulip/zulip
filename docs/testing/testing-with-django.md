@@ -330,7 +330,7 @@ with self.settings(RATE_LIMITING=True):
 self.assertTrue(rate_limit_mock.called)
 ```
 
-Follow [this link](../subsystems/settings.html#testing-non-default-settings) for more
+Follow [this link](../subsystems/settings.md#testing-non-default-settings) for more
 information on the "settings" context manager.
 
 Zulip has several features, like outgoing webhooks or social
@@ -411,7 +411,7 @@ We use mocks and stubs for all the typical reasons:
 - to stub out calls to third-party services
 - to make it so that you can [run the Zulip tests on the airplane without wifi][no-internet]
 
-[no-internet]: testing.html#internet-access-inside-test-suites
+[no-internet]: testing.md#internet-access-inside-test-suites
 
 A detailed description of mocks, along with useful coded snippets, can be found in the section
 [Testing with mocks](#testing-with-mocks).
@@ -449,7 +449,7 @@ the same data structure as performing an action that generates said event.
 
 This is a bit esoteric, but if you read the tests, you will see some of
 the patterns. You can also learn more about our event system in the
-[new feature tutorial](../tutorials/new-feature-tutorial.html#handle-database-interactions).
+[new feature tutorial](../tutorials/new-feature-tutorial.md#handle-database-interactions).
 
 ### Negative tests
 

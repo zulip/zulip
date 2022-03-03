@@ -225,10 +225,10 @@ function render_user_info_popover(
         is_bot: user.is_bot,
         is_me,
         is_sender_popover,
-        pm_with_uri: hash_util.pm_with_uri(user.email),
+        pm_with_url: hash_util.pm_with_url(user.email),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         private_message_class: private_msg_class,
-        sent_by_uri: hash_util.by_sender_uri(user.email),
+        sent_by_uri: hash_util.by_sender_url(user.email),
         show_email: settings_data.show_email(),
         show_user_profile: !user.is_bot,
         user_email: people.get_visible_email(user),
@@ -504,7 +504,7 @@ export function toggle_actions_popover(element, id) {
         const should_display_quote_and_reply =
             message.content !== "<p>(deleted)</p>" && not_spectator;
 
-        const conversation_time_uri = hash_util.by_conversation_and_time_uri(message);
+        const conversation_time_uri = hash_util.by_conversation_and_time_url(message);
 
         const should_display_delete_option =
             message_edit.get_deletability(message) && not_spectator;
@@ -869,28 +869,35 @@ export function register_click_handlers() {
         }
     });
 
-    $("#main_div, #compose .preview_content").on("click", ".code_external_link", function (e) {
-        const view_in_playground_button = $(this);
-        const codehilite_div = $(this).closest(".codehilite");
-        e.stopPropagation();
-        const playground_info = realm_playground.get_playground_info_for_languages(
-            codehilite_div.data("code-language"),
-        );
-        // We do the code extraction here and set the target href combining the url_prefix
-        // and the extracted code. Depending on whether the language has multiple playground
-        // links configured, a popover is show.
-        const extracted_code = codehilite_div.find("code").text();
-        if (playground_info.length === 1) {
-            const url_prefix = playground_info[0].url_prefix;
-            view_in_playground_button.attr("href", url_prefix + encodeURIComponent(extracted_code));
-        } else {
-            for (const $playground of playground_info) {
-                $playground.playground_url =
-                    $playground.url_prefix + encodeURIComponent(extracted_code);
+    $("#main_div, #preview_content, #message-history").on(
+        "click",
+        ".code_external_link",
+        function (e) {
+            const view_in_playground_button = $(this);
+            const codehilite_div = $(this).closest(".codehilite");
+            e.stopPropagation();
+            const playground_info = realm_playground.get_playground_info_for_languages(
+                codehilite_div.data("code-language"),
+            );
+            // We do the code extraction here and set the target href combining the url_prefix
+            // and the extracted code. Depending on whether the language has multiple playground
+            // links configured, a popover is show.
+            const extracted_code = codehilite_div.find("code").text();
+            if (playground_info.length === 1) {
+                const url_prefix = playground_info[0].url_prefix;
+                view_in_playground_button.attr(
+                    "href",
+                    url_prefix + encodeURIComponent(extracted_code),
+                );
+            } else {
+                for (const $playground of playground_info) {
+                    $playground.playground_url =
+                        $playground.url_prefix + encodeURIComponent(extracted_code);
+                }
+                toggle_playground_link_popover(this, playground_info);
             }
-            toggle_playground_link_popover(this, playground_info);
-        }
-    });
+        },
+    );
 
     $("body").on("click", ".popover_playground_link", (e) => {
         hide_playground_links_popover();

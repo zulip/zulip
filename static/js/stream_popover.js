@@ -567,7 +567,7 @@ export function register_stream_handlers() {
         const sub = stream_popover_sub(e);
         hide_stream_popover();
 
-        const stream_edit_hash = hash_util.stream_edit_uri(sub);
+        const stream_edit_hash = hash_util.stream_edit_url(sub);
         browser_history.go_to_location(stream_edit_hash);
     });
 

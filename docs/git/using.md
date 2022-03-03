@@ -3,7 +3,7 @@
 ## Know what branch you're working on
 
 When using Git, it's important to know which branch you currently have checked
-out because most git commands implicitly operate on the current branch. You can
+out because most Git commands implicitly operate on the current branch. You can
 determine the currently checked out branch several ways.
 
 One way is with [git status][gitbook-git-status]:
@@ -44,7 +44,7 @@ You can also configure [Bash][gitbook-other-envs-bash] and
 You'll want to [keep your fork][github-help-sync-fork] up-to-date with changes
 from Zulip's main repositories.
 
-**Note about git pull**: You might be used to using `git pull` on other
+**Note about `git pull`**: You might be used to using `git pull` on other
 projects. With Zulip, because we don't use merge commits, you'll want to avoid
 it. Rather than using `git pull`, which by default is a shortcut for
 `git fetch && git merge FETCH_HEAD` ([docs][gitbook-git-pull]), you
@@ -164,7 +164,7 @@ Untracked files:
 nothing added to commit but untracked files present (use "git add" to track)
 ```
 
-### Stage additions with git add
+### Stage additions with `git add`
 
 To add changes to your staging area, use `git add <filename>`. Because
 `git add` is all about staging the changes you want to commit, you use
@@ -212,7 +212,7 @@ Untracked files:
 nothing added to commit but untracked files present (use "git add" to track)
 ```
 
-### Stage deletions with git rm
+### Stage deletions with `git rm`
 
 To remove existing files from your repository, use `git rm`
 ([documentation][gitbook-rm]). This command can either stage the file for
@@ -264,7 +264,7 @@ $ git reset HEAD test2.txt
 
 Unfortunately, you can't restore a file deleted with `git rm` if you didn't use
 the `--cache` option. However, `git rm` only deletes files it knows about.
-Files you have never added to git won't be deleted.
+Files you have never added to Git won't be deleted.
 
 ## Commit changes
 
@@ -349,7 +349,7 @@ To git@github.com:christi3k/zulip.git
  * [new branch]      issue-demo -> issue-demo
 ```
 
-If you want to see what git will do without actually performing the push, add
+If you want to see what Git will do without actually performing the push, add
 the `-n` (dry-run) option: `git push -n origin <branch-name>`. If everything
 looks good, re-run the push command without `-n`.
 
@@ -450,8 +450,8 @@ complicated rebase.
 [github-help-push]: https://help.github.com/en/articles/pushing-to-a-remote
 [github-help-rebase]: https://help.github.com/en/articles/using-git-rebase
 [github-help-sync-fork]: https://help.github.com/en/articles/syncing-a-fork
-[how-git-is-different]: ./the-git-difference.md
-[self-multiple-computers]: ../git/troubleshooting.html#working-from-multiple-computers
-[zulip-git-guide-up-to-date]: ../git/using.html#keep-your-fork-up-to-date
-[zulip-rtd-commit-discipline]: ../contributing/version-control.html#commit-discipline
-[zulip-rtd-commit-messages]: ../contributing/version-control.html#commit-messages
+[how-git-is-different]: the-git-difference.md
+[self-multiple-computers]: troubleshooting.md#working-from-multiple-computers
+[zulip-git-guide-up-to-date]: #keep-your-fork-up-to-date
+[zulip-rtd-commit-discipline]: ../contributing/version-control.md#commit-discipline
+[zulip-rtd-commit-messages]: ../contributing/version-control.md#commit-messages

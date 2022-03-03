@@ -8,6 +8,18 @@ import * as reactions from "./reactions";
 import * as rows from "./rows";
 import * as timerender from "./timerender";
 
+// For tooltips without data-tippy-content, we use the HTML content of
+// a <template> whose id is given by data-tooltip-template-id.
+function get_tooltip_content(reference) {
+    if ("tooltipTemplateId" in reference.dataset) {
+        const template = document.querySelector(
+            `template#${CSS.escape(reference.dataset.tooltipTemplateId)}`,
+        );
+        return template.content.cloneNode(true);
+    }
+    return "";
+}
+
 // We override the defaults set by tippy library here,
 // so make sure to check this too after checking tippyjs
 // documentation for default properties.
@@ -34,9 +46,10 @@ tippy.setDefaultProps({
     // tooltips.
     appendTo: "parent",
 
-    // html content is not supported by default
-    // enable it by passing data-tippy-allowHtml="true"
-    // in the tag or a parameter.
+    // To add a text tooltip, override this by setting data-tippy-content.
+    // To add an HTML tooltip, set data-tooltip-template-id to the id of a <template>.
+    // Or, override this with a function returning string (text) or DocumentFragment (HTML).
+    content: get_tooltip_content,
 });
 
 export function initialize() {
@@ -195,12 +208,20 @@ export function initialize() {
     });
 
     delegate("body", {
+        target: ".rendered_markdown time",
+        content: timerender.get_markdown_time_tooltip,
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    delegate("body", {
         target: [
-            ".rendered_markdown time",
             ".rendered_markdown .copy_codeblock",
             "#compose_top_right [data-tippy-content]",
+            "#compose_top_right [data-tooltip-template-id]",
         ],
-        allowHTML: true,
         appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();

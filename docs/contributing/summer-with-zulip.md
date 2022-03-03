@@ -264,8 +264,8 @@ Success for the contributor means a few things, in order of importance:
 
 - Timely feedback is more important than complete feedback, so get a fast
   feedback cadence going with your contributor. It's amazing how useful just 5
-  minutes of feedback can be. Pay attention to the relative timezones; if you
-  plan it, you can get several round trips in per day even with big timezone
+  minutes of feedback can be. Pay attention to the relative time zones; if you
+  plan it, you can get several round trips in per day even with big time zone
   differences like USA + India.
 
 - What exactly you focus on in your mentorship will vary from week to week and

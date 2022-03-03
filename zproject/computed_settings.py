@@ -147,7 +147,7 @@ USE_I18N = True
 # calendars according to the current locale.
 USE_L10N = True
 
-# If you set this to False, Django will not use timezone-aware datetimes.
+# If you set this to False, Django will not use time-zone-aware datetimes.
 USE_TZ = True
 
 # this directory will be used to store logs for development environment

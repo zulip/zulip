@@ -21,6 +21,7 @@
         position: absolute;
         display: none;
         cursor: pointer;
+        border-radius: 5px;
     }
 
     .image-delete-button {
@@ -105,6 +106,7 @@
 .user-avatar-section,
 .realm-logo-section,
 .realm-icon-section {
+    margin-bottom: 20px;
     position: relative;
 
     .inline-block {
@@ -189,7 +191,6 @@
 
 .realm-icon-section {
     float: none;
-    margin-bottom: 20px;
     display: inline-block;
 }
 
@@ -225,10 +226,6 @@
 
 #realm-night-logo-upload-widget {
     background-color: hsl(212, 28%, 18%);
-}
-
-.realm-logo-section {
-    margin-bottom: 20px;
 }
 
 .realm-logo-block {

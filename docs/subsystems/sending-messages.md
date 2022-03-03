@@ -7,7 +7,7 @@ experience.
 This document aims to explain conceptually what happens when a message
 is sent in Zulip, and why that is correct behavior. It assumes the
 reader is familiar with our
-[real-time sync system](../subsystems/events-system.md) for
+[real-time sync system](events-system.md) for
 server-to-client communication and
 [new application feature tutorial](../tutorials/new-feature-tutorial.md),
 and we generally don't repeat the content discussed there.
@@ -53,13 +53,13 @@ This section details the ways in which it is different:
   function in `zerver/tornado/event_queue.py`. This custom code has a
   number of purposes:
   - Triggering [email and mobile push
-    notifications](../subsystems/notifications.md) for any users who
+    notifications](notifications.md) for any users who
     do not have active clients and have settings of the form "push
     notifications when offline". In order to avoid doing any real
     computational work inside the Tornado codebase, this logic aims
     to just do the check for whether a notification should be
     generated, and then put an event into an appropriate
-    [queue](../subsystems/queuing.md) to actually send the message.
+    [queue](queuing.md) to actually send the message.
     See `maybe_enqueue_notifications` and `zerver/lib/notification_data.py` for
     this part of the logic.
   - Splicing user-dependent data (E.g. `flags` such as when the user
@@ -73,7 +73,7 @@ This section details the ways in which it is different:
 - Following our standard naming convention, input validation is done
   inside the `check_message` function in `zerver/lib/actions.py`, which is responsible for
   validating the user can send to the recipient,
-  [rendering the Markdown](../subsystems/markdown.md), etc. --
+  [rendering the Markdown](markdown.md), etc. --
   basically everything that can fail due to bad user input.
 - The core `do_send_messages` function (which handles actually sending
   the message) in `zerver/lib/actions.py` is one of the most optimized and thus complex parts of
@@ -89,7 +89,7 @@ This section details the ways in which it is different:
     open organizations.
   - Do all the database queries to fetch relevant data for and then
     send a `message` event to the
-    [events system](../subsystems/events-system.md) containing the
+    [events system](events-system.md) containing the
     data it will need for the calculations described above. This
     step adds a lot of complexity, because the events system cannot
     make queries to the database directly.
@@ -115,7 +115,7 @@ browser, and then replace it with data from the server when it
 changes.
 
 Zulip aims for a near-perfect local echo experience, which requires is
-why our [Markdown system](../subsystems/markdown.md) requires both
+why our [Markdown system](markdown.md) requires both
 an authoritative (backend) Markdown implementation and a secondary
 (frontend) Markdown implementation, the latter used only for the local
 echo feature. Read our Markdown documentation for all the tricky
@@ -151,7 +151,7 @@ messages.
   unique value within that namespace identifying the message.
 - The `do_send_messages` backend code path includes the `queue_id` and
   `local_id` in the data it passes to the
-  [events system](../subsystems/events-system.md). The events
+  [events system](events-system.md). The events
   system will extend the `message` event dictionary it delivers to
   the client containing the `queue_id` with `local_message_id` field,
   containing the `local_id` that the relevant client used when sending
@@ -238,7 +238,7 @@ users.
   message without including the URL embeds/previews, but it will add a
   deferred work item into the `embed_links` queue.
 
-- The [queue processor](../subsystems/queuing.md) for the
+- The [queue processor](queuing.md) for the
   `embed_links` queue will fetch the URLs, and then if they return
   results, rerun the Markdown processor and notify clients of the
   updated message `rendered_content`.
@@ -286,7 +286,7 @@ latency was unacceptable: The server backend was introducing a latency
 of about 1 second per 2000 users subscribed to receive the message.
 While these delays may not be immediately obvious to users (Zulip,
 like many other chat applications,
-[local echoes](../subsystems/markdown.md) messages that a user sends
+[local echoes](markdown.md) messages that a user sends
 as soon as the user hits “Send”), latency beyond a second or two
 significantly impacts the feeling of interactivity in a chat
 experience (i.e. it feels like everyone takes a long time to reply to
@@ -378,7 +378,7 @@ the extra 4500 inactive subscribers didn’t exist.
 There are a few details that require special care with this system:
 
 - [Email and mobile push
-  notifications](../subsystems/notifications.md). We need to make
+  notifications](notifications.md). We need to make
   sure these are still correctly delivered to soft-deactivated users;
   making this work required careful work for those code paths that
   assumed a `UserMessage` row would always exist for a message that

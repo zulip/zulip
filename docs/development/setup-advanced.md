@@ -12,8 +12,8 @@ Contents:
 If you'd like to install a Zulip development environment on a computer
 that's running one of:
 
-- Ubuntu 20.04 Focal
-- Debian 10 Buster, 11 Bullseye (beta)
+- Ubuntu 20.04 Focal, 22.04 Jammy (beta)
+- Debian 10 Buster, 11 Bullseye
 - CentOS 7 (beta)
 - Fedora 33 and 34 (beta)
 - RHEL 7 (beta)
@@ -21,9 +21,9 @@ that's running one of:
 You can just run the Zulip provision script on your machine.
 
 **Note**: You should not use the `root` user to run the installation.
-If you are using a [remote server](../development/remote.md), see
+If you are using a [remote server](remote.md), see
 the
-[section on creating appropriate user accounts](../development/remote.html#setting-up-user-accounts).
+[section on creating appropriate user accounts](remote.md#setting-up-user-accounts).
 
 :::{warning}
 There is no supported uninstallation process with this
@@ -50,7 +50,7 @@ source /srv/zulip-py3-venv/bin/activate
 
 Once you've done the above setup, you can pick up the [documentation
 on using the Zulip development
-environment](../development/setup-vagrant.html#step-4-developing),
+environment](setup-vagrant.md#step-4-developing),
 ignoring the parts about `vagrant` (since you're not using it).
 
 ## Installing directly on Windows 10 with WSL 2
@@ -101,7 +101,7 @@ installation method described here.
    cd ~  # or cd /home/USERNAME
    ```
 
-1. [Create your fork](../git/cloning.html#step-1a-create-your-fork) of
+1. [Create your fork](../git/cloning.md#step-1a-create-your-fork) of
    the [Zulip server repository](https://github.com/zulip/zulip).
 
 1. [Create a new SSH key][create-ssh-key] for the WSL-2 Virtual
@@ -151,7 +151,7 @@ installation method described here.
    to open VSCode connected to your WSL environment.
 
 1. You're done! You can pick up the [documentation on using the
-   Zulip development environment](../development/setup-vagrant.html#step-4-developing),
+   Zulip development environment](setup-vagrant.md#step-4-developing),
    ignoring the parts about `vagrant` (since you're not using it).
 
 WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
@@ -302,5 +302,5 @@ submit a pull request, or you can ask for help in
 in [the Zulip development community](https://zulip.com/development-community/),
 and a core team member can help guide you through adding support for the platform.
 
-[zulip-rtd-git-cloning]: ../git/cloning.html#step-1b-clone-to-your-machine
-[zulip-rtd-git-connect]: ../git/cloning.html#step-1c-connect-your-fork-to-zulip-upstream
+[zulip-rtd-git-cloning]: ../git/cloning.md#step-1b-clone-to-your-machine
+[zulip-rtd-git-connect]: ../git/cloning.md#step-1c-connect-your-fork-to-zulip-upstream

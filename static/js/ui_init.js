@@ -85,9 +85,9 @@ import * as starred_messages from "./starred_messages";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
+import * as stream_edit_subscribers from "./stream_edit_subscribers";
 import * as stream_list from "./stream_list";
 import * as stream_settings_ui from "./stream_settings_ui";
-import * as stream_subscribers_ui from "./stream_subscribers_ui";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
 import * as topic_list from "./topic_list";
@@ -203,7 +203,9 @@ function initialize_compose_box() {
             embedded: $("#compose").attr("data-embedded") === "",
             file_upload_enabled: page_params.max_file_upload_size_mib > 0,
             giphy_enabled: giphy.is_giphy_enabled(),
-            scroll_to_bottom_key: common.has_mac_keyboard() ? "Fn + Right arrow" : "End",
+            scroll_to_bottom_key_html: common.has_mac_keyboard()
+                ? "Fn + <span class='tooltip_right_arrow'>→</span>"
+                : "End",
         }),
     );
     $(`.enter_sends_${user_settings.enter_sends}`).show();
@@ -609,7 +611,7 @@ export function initialize_everything() {
     initialize_kitchen_sink_stuff();
     echo.initialize();
     stream_edit.initialize();
-    stream_subscribers_ui.initialize();
+    stream_edit_subscribers.initialize();
     stream_data.initialize(stream_data_params);
     pm_conversations.recent.initialize(pm_conversations_params);
     muted_topics.initialize();

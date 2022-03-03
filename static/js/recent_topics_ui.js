@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 
 import render_recent_topic_row from "../templates/recent_topic_row.hbs";
 import render_recent_topics_filters from "../templates/recent_topics_filters.hbs";
@@ -8,6 +9,7 @@ import * as compose_closed_ui from "./compose_closed_ui";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
+import * as loading from "./loading";
 import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
@@ -208,6 +210,19 @@ export function revive_current_focus() {
     return true;
 }
 
+export function show_loading_indicator() {
+    loading.make_indicator($("#recent_topics_loading_messages_indicator"));
+}
+
+export function hide_loading_indicator() {
+    $("#recent_topics_bottom_whitespace").hide();
+    loading.destroy_indicator($("#recent_topics_loading_messages_indicator"), {
+        abs_positioned: false,
+    });
+    // Show empty table text if there are no messages fetched.
+    $("#recent_topics_table tbody").addClass("required-text");
+}
+
 export function process_messages(messages) {
     // While this is inexpensive and handles all the cases itself,
     // the UX can be bad if user wants to scroll down the list as
@@ -239,7 +254,7 @@ function format_topic(topic_data) {
     }
     const topic = last_msg.topic;
     const time = new Date(last_msg.timestamp * 1000);
-    const last_msg_time = timerender.last_seen_status_from_date(time);
+    const last_msg_time = timerender.format_time_modern(time);
     const full_datetime = timerender.get_full_datetime(time);
 
     // We hide the row according to filters or if it's muted.
@@ -277,7 +292,9 @@ function format_topic(topic_data) {
             ),
         );
     }
-    const other_sender_names = displayed_other_names.join("<br/>");
+    const other_sender_names_html = displayed_other_names
+        .map((name) => _.escape(name))
+        .join("<br />");
 
     return {
         // stream info
@@ -286,16 +303,16 @@ function format_topic(topic_data) {
         stream_color: stream_info.color,
         invite_only: stream_info.invite_only,
         is_web_public: stream_info.is_web_public,
-        stream_url: hash_util.by_stream_uri(stream_id),
+        stream_url: hash_util.by_stream_url(stream_id),
 
         topic,
         topic_key: get_topic_key(stream_id, topic),
         unread_count,
         last_msg_time,
-        topic_url: hash_util.by_stream_topic_uri(stream_id, topic),
+        topic_url: hash_util.by_stream_topic_url(stream_id, topic),
         senders: senders_info,
         other_senders_count: Math.max(0, all_senders.length - MAX_AVATAR),
-        other_sender_names,
+        other_sender_names_html,
         muted,
         topic_muted,
         participated: topic_data.participated,

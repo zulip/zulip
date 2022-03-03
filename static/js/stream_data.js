@@ -277,16 +277,6 @@ export function get_sub_by_name(name) {
     return sub_store.get(stream_id);
 }
 
-export function id_to_slug(stream_id) {
-    let name = maybe_get_stream_name(stream_id) || "unknown";
-
-    // The name part of the URL doesn't really matter, so we try to
-    // make it pretty.
-    name = name.replace(" ", "-");
-
-    return stream_id + "-" + name;
-}
-
 export function name_to_slug(name) {
     const stream_id = get_stream_id(name);
 
@@ -296,7 +286,7 @@ export function name_to_slug(name) {
 
     // The name part of the URL doesn't really matter, so we try to
     // make it pretty.
-    name = name.replace(" ", "-");
+    name = name.replaceAll(" ", "-");
 
     return stream_id + "-" + name;
 }

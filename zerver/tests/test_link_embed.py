@@ -393,7 +393,6 @@ class PreviewTestCase(ZulipTestCase):
             result = self.client_patch(
                 "/json/messages/" + str(msg_id),
                 {
-                    "message_id": msg_id,
                     "content": url,
                 },
             )
@@ -515,7 +514,6 @@ class PreviewTestCase(ZulipTestCase):
             result = self.client_patch(
                 "/json/messages/" + str(msg_id),
                 {
-                    "message_id": msg_id,
                     "content": edited_url,
                 },
             )

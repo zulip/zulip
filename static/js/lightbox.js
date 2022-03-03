@@ -1,5 +1,5 @@
-import panzoom from "@panzoom/panzoom";
 import $ from "jquery";
+import panzoom from "panzoom";
 
 import render_lightbox_overlay from "../templates/lightbox_overlay.hbs";
 
@@ -21,26 +21,46 @@ export class PanZoomControl {
     constructor(container) {
         this.container = container;
         this.panzoom = panzoom(this.container, {
-            disablePan: true,
-            disableZoom: true,
-            cursor: "auto",
+            smoothScroll: false,
+            // Ideally we'd set `bounds` here, but that feature is
+            // currently broken upstream.  See
+            // https://github.com/anvaka/panzoom/issues/112.
+            maxZoom: 100,
+            minZoom: 0.1,
+            filterKey() {
+                // Disable the library's built in keybindings
+                return true;
+            },
         });
+        // Start with pan/zoom disabled.
+        this.disablePanZoom();
 
         // The following events are necessary to prevent the click event
         // firing where the user "unclicks" at the end of the drag, which
         // was causing accidental overlay closes in some situations.
-        this.container.addEventListener("panzoomstart", () => {
+        this.panzoom.on("pan", () => {
             // Marks this overlay as needing to stay open.
             $("#lightbox_overlay").data("noclose", true);
         });
 
-        this.container.addEventListener("panzoomend", () => {
+        this.panzoom.on("panend", (e) => {
+            // Check if the image has been panned out of view.
+            this.constrainImage(e);
+
             // Don't remove the noclose attribute on this overlay until after paint,
             // otherwise it will be removed too early and close the lightbox
             // unintentionally.
             setTimeout(() => {
                 $("#lightbox_overlay").data("noclose", false);
             }, 0);
+        });
+
+        this.panzoom.on("zoom", (e) => {
+            // Check if the image has been zoomed out of view.
+            // We are using the zoom event instead of zoomend because the zoomend
+            // event does not fire when using the scroll wheel or pinch to zoom.
+            // https://github.com/anvaka/panzoom/issues/250
+            this.constrainImage(e);
         });
 
         // key bindings
@@ -66,27 +86,91 @@ export class PanZoomControl {
         });
     }
 
+    constrainImage(e) {
+        // Instead of using panzoom's built in bounds option which was buggy
+        // at the time of this writing, we act on pan/zoom events and move the
+        // image back in to view if it is moved beyond the image-preview container.
+        // See https://github.com/anvaka/panzoom/issues/112 for upstream discussion.
+
+        const {scale, x, y} = e.getTransform();
+        const image_width = $(".zoom-element > img")[0].clientWidth * scale;
+        const image_height = $(".zoom-element > img")[0].clientHeight * scale;
+        const zoom_element_width = $(".zoom-element")[0].clientWidth * scale;
+        const zoom_element_height = $(".zoom-element")[0].clientHeight * scale;
+        const max_translate_x = $(".image-preview")[0].clientWidth;
+        const max_translate_y = $(".image-preview")[0].clientHeight;
+
+        // When the image is dragged out of the image-preview container
+        // (max_translate) it will be "snapped" back so that the number
+        // of pixels set below will remain visible in the dimension it was dragged.
+        const return_buffer = 50 * scale;
+        // Move the image if it gets within this many pixels of the edge.
+        const border = 20;
+
+        const zoom_border_width = (zoom_element_width - image_width) / 2 + image_width;
+        const zoom_border_height = (zoom_element_height - image_height) / 2 + image_height;
+        const modified_x = x + zoom_border_width;
+        const modified_y = y + zoom_border_height;
+
+        if (modified_x < 0 + border) {
+            // Image has been dragged beyond the LEFT of the view.
+            const move_by = modified_x * -1;
+            e.moveBy(move_by + return_buffer, 0, false);
+        } else if (modified_x - image_width > max_translate_x - border) {
+            // Image has been dragged beyond the RIGHT of the view.
+            const move_by = modified_x - max_translate_x - image_width;
+            e.moveBy(-move_by - return_buffer, 0, false);
+        }
+
+        if (modified_y < 0 + border) {
+            // Image has been dragged beyond the TOP of the view.
+            const move_by = modified_y * -1;
+            e.moveBy(0, move_by + return_buffer, false);
+        } else if (modified_y - image_height > max_translate_y - border) {
+            // Image has been dragged beyond the BOTTOM of the view.
+            const move_by = modified_y - max_translate_y - image_height;
+            e.moveBy(0, -move_by - return_buffer, false);
+        }
+    }
+
     reset() {
-        this.panzoom.reset();
+        // To reset the panzoom state, we want to:
+        // Reset zoom to the initial state.
+        this.panzoom.zoomAbs(0, 0, 1);
+        // Re-center the image.
+        this.panzoom.moveTo(0, 0);
+        // Always ensure that the overlay is available for click to close.
+        // This way we don't rely on the above events firing panend,
+        // of which there is some anecdotal evidence that suggests they
+        // might be prone to race conditions.
+        $("#lightbox_overlay").data("noclose", false);
     }
 
     disablePanZoom() {
-        this.container.removeEventListener("wheel", this.panzoom.zoomWithWheel);
-        this.panzoom.setOptions({disableZoom: true, disablePan: true, cursor: "auto"});
+        $(".image-preview .zoom-element img").css("cursor", "auto");
         this.reset();
+        this.panzoom.pause();
     }
 
     enablePanZoom() {
-        this.panzoom.setOptions({disableZoom: false, disablePan: false, cursor: "move"});
-        this.container.addEventListener("wheel", this.panzoom.zoomWithWheel);
+        $(".image-preview .zoom-element img").css("cursor", "move");
+        this.panzoom.resume();
     }
 
     zoomIn() {
-        this.panzoom.zoomIn();
+        const w = $(".image-preview").width();
+        const h = $(".image-preview").height();
+        this.panzoom.smoothZoom(w / 2, h / 2, 1.5);
     }
 
     zoomOut() {
-        this.panzoom.zoomOut();
+        const w = $(".image-preview").width();
+        const h = $(".image-preview").height();
+        this.panzoom.smoothZoom(w / 2, h / 2, 0.5);
+    }
+
+    isActive() {
+        return $(".image-preview .zoom-element img").length > 0;
     }
 }
 
@@ -124,7 +208,9 @@ function display_image(payload) {
     render_lightbox_list_images(payload.preview);
 
     $(".player-container").hide();
-    $(".image-actions, .image-description, .download, .lightbox-canvas-trigger").show();
+    $(
+        ".image-preview, .image-actions, .image-description, .download, .lightbox-canvas-trigger",
+    ).show();
 
     const img_container = $("#lightbox_overlay .image-preview > .zoom-element");
     const img = new Image();
@@ -364,7 +450,9 @@ export function initialize() {
         $(".player-container iframe").remove();
         is_open = false;
         document.activeElement.blur();
-        pan_zoom_control.disablePanZoom();
+        if (pan_zoom_control.isActive()) {
+            pan_zoom_control.disablePanZoom();
+        }
         $(".lightbox-canvas-trigger").removeClass("enabled");
     };
 
@@ -453,6 +541,15 @@ export function initialize() {
 
     $("#lightbox_overlay").on("click", ".image-info-wrapper, .center", (e) => {
         if ($(e.target).is(".image-info-wrapper, .center")) {
+            reset_lightbox_state();
+            overlays.close_overlay("lightbox");
+        }
+    });
+
+    $("#lightbox_overlay .image-preview").on("click", (e) => {
+        // Ensure that the click isn't on the image itself, and that
+        // the window isn't marked as disabled to click to close.
+        if (!$(e.target).is("img") && !$("#lightbox_overlay").data("noclose")) {
             reset_lightbox_state();
             overlays.close_overlay("lightbox");
         }

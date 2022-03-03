@@ -174,7 +174,7 @@ from zerver.lib.topic import (
     update_messages_for_topic_edit,
 )
 from zerver.lib.topic_mutes import add_topic_mute, get_topic_mutes, remove_topic_mute
-from zerver.lib.types import ProfileDataElementValue, ProfileFieldData
+from zerver.lib.types import ProfileDataElementValue, ProfileFieldData, UnspecifiedValue
 from zerver.lib.upload import (
     claim_attachment,
     delete_avatar_image,
@@ -5746,7 +5746,7 @@ def do_change_user_setting(
             lambda: send_event(user_profile.realm, legacy_event, [user_profile.id])
         )
 
-    # Updates to the timezone display setting are sent to all users
+    # Updates to the time zone display setting are sent to all users
     if setting_name == "timezone":
         payload = dict(
             email=user_profile.email,
@@ -7526,7 +7526,7 @@ def do_send_confirmation_email(
     invitee: PreregistrationUser,
     referrer: UserProfile,
     email_language: str,
-    invite_expires_in_days: Optional[int] = None,
+    invite_expires_in_days: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
 ) -> str:
     """
     Send the confirmation/welcome e-mail to an invited user.
@@ -7625,7 +7625,7 @@ def do_invite_users(
     invitee_emails: Collection[str],
     streams: Collection[Stream],
     *,
-    invite_expires_in_days: int,
+    invite_expires_in_days: Optional[int],
     invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
 ) -> None:
     num_invites = len(invitee_emails)
@@ -7737,6 +7737,13 @@ def do_invite_users(
     notify_invites_changed(user_profile.realm)
 
 
+def get_invitation_expiry_date(confirmation_obj: Confirmation) -> Optional[int]:
+    expiry_date = confirmation_obj.expiry_date
+    if expiry_date is None:
+        return expiry_date
+    return datetime_to_timestamp(expiry_date)
+
+
 def do_get_invites_controlled_by_user(user_profile: UserProfile) -> List[Dict[str, Any]]:
     """
     Returns a list of dicts representing invitations that can be controlled by user_profile.
@@ -7755,13 +7762,12 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> List[Dict[st
     invites = []
 
     for invitee in prereg_users:
-        expiry_date = invitee.confirmation.get().expiry_date
         invites.append(
             dict(
                 email=invitee.email,
                 invited_by_user_id=invitee.referred_by.id,
                 invited=datetime_to_timestamp(invitee.invited_at),
-                expiry_date=datetime_to_timestamp(expiry_date),
+                expiry_date=get_invitation_expiry_date(invitee.confirmation.get()),
                 id=invitee.id,
                 invited_as=invitee.invited_as,
                 is_multiuse=False,
@@ -7773,8 +7779,8 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> List[Dict[st
         return invites
 
     multiuse_confirmation_objs = Confirmation.objects.filter(
-        realm=user_profile.realm, type=Confirmation.MULTIUSE_INVITE, expiry_date__gte=timezone_now()
-    )
+        realm=user_profile.realm, type=Confirmation.MULTIUSE_INVITE
+    ).filter(Q(expiry_date__gte=timezone_now()) | Q(expiry_date=None))
     for confirmation_obj in multiuse_confirmation_objs:
         invite = confirmation_obj.content_object
         assert invite is not None
@@ -7782,7 +7788,7 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> List[Dict[st
             dict(
                 invited_by_user_id=invite.referred_by.id,
                 invited=datetime_to_timestamp(confirmation_obj.date_sent),
-                expiry_date=datetime_to_timestamp(confirmation_obj.expiry_date),
+                expiry_date=get_invitation_expiry_date(confirmation_obj),
                 id=invite.id,
                 link_url=confirmation_url(
                     confirmation_obj.confirmation_key,
@@ -7812,9 +7818,8 @@ def get_valid_invite_confirmations_generated_by_user(
     confirmations += list(
         Confirmation.objects.filter(
             type=Confirmation.MULTIUSE_INVITE,
-            expiry_date__gte=timezone_now(),
             object_id__in=multiuse_invite_ids,
-        )
+        ).filter(Q(expiry_date__gte=timezone_now()) | Q(expiry_date=None))
     )
 
     return confirmations
@@ -7834,7 +7839,7 @@ def revoke_invites_generated_by_user(user_profile: UserProfile) -> None:
 def do_create_multiuse_invite_link(
     referred_by: UserProfile,
     invited_as: int,
-    invite_expires_in_days: int,
+    invite_expires_in_days: Optional[int],
     streams: Sequence[Stream] = [],
 ) -> str:
     realm = referred_by.realm
@@ -7883,9 +7888,14 @@ def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
 
     prereg_user.invited_at = timezone_now()
     prereg_user.save()
-    invite_expires_in_days = (
-        prereg_user.confirmation.get().expiry_date - prereg_user.invited_at
-    ).days
+
+    expiry_date = prereg_user.confirmation.get().expiry_date
+    if expiry_date is None:
+        invite_expires_in_days = None
+    else:
+        # The resent invitation is reset to expire as long after the
+        # reminder is sent as it lasted originally.
+        invite_expires_in_days = (expiry_date - prereg_user.invited_at).days
     prereg_user.confirmation.clear()
 
     do_increment_logging_stat(

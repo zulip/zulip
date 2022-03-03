@@ -10,19 +10,14 @@ from bs4 import BeautifulSoup
 # this list without any modification.
 IGNORED_PHRASES = [
     # Proper nouns and acronyms
-    r"Android",
     r"API",
     r"APNS",
-    r"App Store",
     r"Botserver",
     r"Cookie Bot",
     r"DevAuthBackend",
-    r"Dropbox",
     r"GCM",
     r"GitHub",
-    r"Google",
     r"Gravatar",
-    r"Hamlet",
     r"Help Center",
     r"HTTP",
     r"ID",
@@ -31,128 +26,68 @@ IGNORED_PHRASES = [
     r"JSON",
     r"Kerberos",
     r"LDAP",
-    r"Mac",
-    r"macOS",
     r"Markdown",
-    r"MiB",
-    r"OAuth",
     r"OTP",
     r"Pivotal",
-    r"Play Store",
     r"PM",
     r"PMs",
-    r"REMOTE_USER",
     r"Slack",
-    r"SSO",
     r"Terms of Service",
     r"Tuesday",
     r"URL",
-    r"Ubuntu",
-    r"Updown",
     r"UUID",
-    r"V5",
     r"Webathena",
-    r"Windows",
     r"WordPress",
-    r"XML",
     r"Zephyr",
     r"Zoom",
     r"Zulip",
     r"Zulip Account Security",
     r"Zulip Security",
     r"Zulip Cloud Standard",
-    r"Zulip Team",
-    r"iPhone",
-    r"iOS",
-    r"Emoji One",
-    r"mailinator.com",
-    r"HQ",
     r"BigBlueButton",
     # Code things
-    r".zuliprc",
-    r"__\w+\.\w+__",
+    r"\.zuliprc",
     # Things using "I"
     r"I understand",
-    r"I say",
-    r"I want",
     r"I'm",
     r"I've",
     # Specific short words
     r"beta",
     r"and",
     r"bot",
-    r"e.g.",
-    r"etc.",
-    r"images",
+    r"e\.g\.",
     r"enabled",
-    r"disabled",
-    r"zulip_org_id",
-    r"admins",
-    r"members",
     r"signups",
     # Placeholders
     r"keyword",
     r"streamname",
-    r"user@example.com",
+    r"user@example\.com",
     # Fragments of larger strings
     (r"your subscriptions on your Streams page"),
-    (
-        r"Change notification settings for individual streams on your "
-        '<a href="/#streams">Streams page</a>.'
-    ),
-    (
-        r"Looking for our "
-        '<a href="/integrations" target="_blank">Integrations</a> or '
-        '<a href="/api" target="_blank">API</a> documentation?'
-    ),
-    r'Most stream administration is done on the <a href="/#streams">Streams page</a>.',
-    r"Add global time<br />Everyone sees global times in their own time zone.",
-    r"one or more people...",
-    r"confirmation email",
-    r"invites remaining",
-    r"was too large; the maximum file size is 25MiB.",
-    r"selected message",
-    r"a-z",
-    r"organization administrator",
+    r"Add global time<br />Everyone sees global times in their own time zone\.",
     r"user",
     r"an unknown operating system",
     r"Go to Settings",
-    r"Like Organization logo",
     # SPECIAL CASES
-    # Enter is usually capitalized
-    r"Press Enter to send",
-    r"Send message on pressing Enter",
     # Because topics usually are lower-case, this would look weird if it were capitalized
     r"more topics",
-    # For consistency with "more topics"
-    r"more conversations",
     # Capital 'i' looks weird in reminders popover
     r"in 1 hour",
     r"in 20 minutes",
     r"in 3 hours",
-    # We should probably just delete this string from translations
-    r"activation key",
     # these are used as topics
     r"^new streams$",
     r"^stream events$",
     # These are used as example short names (e.g. an uncapitalized context):
     r"^marketing$",
     r"^cookie$",
-    r"^new_emoji$",
     # Used to refer custom time limits
     r"\bN\b",
     # Capital c feels obtrusive in clear status option
     r"clear",
-    r"group private messages with {recipient}",
-    r"private messages with {recipient}",
+    r"group private messages with \{recipient\}",
+    r"private messages with \{recipient\}",
     r"private messages with yourself",
-    # TO CLEAN UP
-    # Just want to avoid churning login.html right now
-    r"or Choose a user",
-    # This is a parsing bug in the tool
-    r"argument ",
-    # I can't find this one
-    r"text",
     r"GIF",
     # Emoji name placeholder
     r"leafy green vegetable",

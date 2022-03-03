@@ -116,7 +116,6 @@ class RateLimitTests(ZulipTestCase):
             {
                 "type": "stream",
                 "to": "Verona",
-                "client": "test suite",
                 "content": content,
                 "topic": "whatever",
             },

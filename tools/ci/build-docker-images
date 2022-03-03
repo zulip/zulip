@@ -2,7 +2,8 @@
 set -eux
 cd "$(dirname "${BASH_SOURCE[0]}")"
 docker build . --build-arg=BASE_IMAGE=ubuntu:20.04 --pull --tag=zulip/ci:focal
+docker build . --build-arg=BASE_IMAGE=ubuntu:22.04 --pull --tag=zulip/ci:jammy
 docker build . --build-arg=BASE_IMAGE=debian:10 --pull --tag=zulip/ci:buster
 docker build . --build-arg=BASE_IMAGE=debian:11 --pull --tag=zulip/ci:bullseye
 docker build . -f Dockerfile.prod --build-arg=BASE_IMAGE=zulip/ci:buster --build-arg=VERSION=3.4 --tag=zulip/ci:buster-3.4
-docker build . -f Dockerfile.prod --build-arg=BASE_IMAGE=zulip/ci:bullseye --build-arg=VERSION=4.7 --tag=zulip/ci:bullseye-4.7
+docker build . -f Dockerfile.prod --build-arg=BASE_IMAGE=zulip/ci:bullseye --build-arg=VERSION=4.10 --tag=zulip/ci:bullseye-4.10

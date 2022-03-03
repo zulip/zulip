@@ -6,8 +6,8 @@ from zerver.models import Realm, Stream, UserProfile
 
 
 def hash_util_encode(string: str) -> str:
-    # Do the same encoding operation as hash_util.encodeHashComponent on the
-    # frontend.
+    # Do the same encoding operation as shared internal_url.encodeHashComponent
+    # on the frontend.
     # `safe` has a default value of "/", but we want those encoded, too.
     return quote(string, safe=b"").replace(".", "%2E").replace("%", ".")
 

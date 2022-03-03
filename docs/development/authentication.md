@@ -138,16 +138,16 @@ details worth understanding:
 Some OAuth providers (such as Facebook) require HTTPS on the callback
 URL they post back to, which isn't supported directly by the Zulip
 development environment. If you run a
-[remote Zulip development server](../development/remote.md), we have
+[remote Zulip development server](remote.md), we have
 instructions for
-[an nginx reverse proxy with SSL](../development/remote.html#using-an-nginx-reverse-proxy)
+[an nginx reverse proxy with SSL](remote.md#using-an-nginx-reverse-proxy)
 that you can use for your development efforts.
 
 ## Testing LDAP in development
 
 Before Zulip 2.0, one of the more common classes of bug reports with
 Zulip's authentication was users having trouble getting [LDAP
-authentication](../production/authentication-methods.html#ldap-including-active-directory)
+authentication](../production/authentication-methods.md#ldap-including-active-directory)
 working. The root cause was because setting up a local LDAP server
 for development was difficult, which meant most developers were unable
 to work on fixing even simple issues with it.
@@ -161,7 +161,7 @@ actual flows for LDAP configuration.
 - To enable fakeldap, set `FAKE_LDAP_MODE` in
   `zproject/dev_settings.py` to one of the following options. For more
   information on these modes, refer to
-  [our production docs](../production/authentication-methods.html#ldap-including-active-directory):
+  [our production docs](../production/authentication-methods.md#ldap-including-active-directory):
 
   - `a`: If users' email addresses are in LDAP and used as username.
   - `b`: If LDAP only has usernames but email addresses are of the form

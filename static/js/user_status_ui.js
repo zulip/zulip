@@ -168,6 +168,10 @@ function user_status_post_render() {
 export function initialize() {
     default_status_messages_and_emoji_info = [
         {
+            status_text: $t({defaultMessage: "Busy"}),
+            emoji: emoji.get_emoji_details_by_name("working_on_it"),
+        },
+        {
             status_text: $t({defaultMessage: "In a meeting"}),
             emoji: emoji.get_emoji_details_by_name("calendar"),
         },

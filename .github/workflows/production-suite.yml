@@ -110,17 +110,17 @@ jobs:
           # Docker images are built from 'tools/ci/Dockerfile'; the comments at
           # the top explain how to build and upload these images.
           - docker_image: zulip/ci:focal
-            name: Focal production install
+            name: Ubuntu 20.04 production install
             os: focal
             extra_args: ""
 
           - docker_image: zulip/ci:buster
-            name: Buster production install with custom db name and user
+            name: Debian 10 production install with custom db name and user
             os: buster
             extra_args: --test-custom-db
 
           - docker_image: zulip/ci:bullseye
-            name: Bullseye production install
+            name: Debian 11 production install
             os: bullseye
             extra_args: ""
 
@@ -213,8 +213,8 @@ jobs:
             name: 3.4 Version Upgrade
             os: buster
 
-          - docker_image: zulip/ci:bullseye-4.7
-            name: 4.7 Version Upgrade
+          - docker_image: zulip/ci:bullseye-4.10
+            name: 4.10 Version Upgrade
             os: bullseye
 
     name: ${{ matrix.name  }}

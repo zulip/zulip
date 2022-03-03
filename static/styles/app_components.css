@@ -605,7 +605,7 @@ div.overlay {
     }
 
     .only-visible-for-spectators {
-        display: unset;
+        display: revert;
     }
 }
 

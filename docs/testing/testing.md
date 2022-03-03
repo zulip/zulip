@@ -8,9 +8,9 @@ similar.
 
 This page focused on the mechanics of running automated tests in a
 [development environment](../development/overview.md); you may also
-want to read about our [testing philosophy](../testing/philosophy.md)
+want to read about our [testing philosophy](philosophy.md)
 and [continuous integration
-setup](../testing/continuous-integration.md).
+setup](continuous-integration.md).
 
 Manual testing with a web browser is primarily discussed in the docs
 on [using the development environment](../development/using.md).
@@ -48,11 +48,11 @@ useful options are discussed in each tool's documentation (e.g.
 Zulip has a handful of major tests suite that every developer will
 eventually work with, each with its own page detailing how it works:
 
-- [Linters](../testing/linters.md): Our dozen or so linters run in parallel.
-- [Django](../testing/testing-with-django.md): Server/backend Python tests.
-- [Node](../testing/testing-with-node.md): JavaScript tests for the
+- [Linters](linters.md): Our dozen or so linters run in parallel.
+- [Django](testing-with-django.md): Server/backend Python tests.
+- [Node](testing-with-node.md): JavaScript tests for the
   frontend run via node.js.
-- [Puppeteer](../testing/testing-with-puppeteer.md): End-to-end
+- [Puppeteer](testing-with-puppeteer.md): End-to-end
   UI tests run via a Chromium browser.
 
 ## Other test suites
@@ -126,7 +126,7 @@ This is easy to do using test fixtures (a fancy word for fixed data
 used in tests) and the `mock.patch` function to specify what HTTP
 response should be used by the tests for every outgoing HTTP (or other
 network) request. Consult
-[our guide on mocking](../testing/testing-with-django.html#zulip-mocking-practices) to
+[our guide on mocking](testing-with-django.md#zulip-mocking-practices) to
 learn how to mock network requests easily; there are also a number of
 examples throughout the codebase.
 

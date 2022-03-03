@@ -21,6 +21,8 @@ mock_esm("../../static/js/message_list_view", {
 
 mock_esm("../../static/js/recent_topics_ui", {
     process_messages: noop,
+    show_loading_indicator: noop,
+    hide_loading_indicator: noop,
 });
 mock_esm("../../static/js/ui_report", {
     hide_error: noop,

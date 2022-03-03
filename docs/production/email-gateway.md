@@ -96,7 +96,7 @@ using an [HTTP reverse proxy][reverse-proxy]).
 
 Congratulations! The integration should be fully operational.
 
-[reverse-proxy]: ../production/deployment.html#putting-the-zulip-application-behind-a-reverse-proxy
+[reverse-proxy]: deployment.md#putting-the-zulip-application-behind-a-reverse-proxy
 
 ## Polling setup
 

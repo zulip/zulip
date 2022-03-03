@@ -217,7 +217,6 @@ class AlertWordTests(ZulipTestCase):
         result = self.client_patch(
             "/json/messages/" + str(original_message.id),
             {
-                "message_id": original_message.id,
                 "content": "new ALERT for you",
             },
         )
@@ -230,7 +229,6 @@ class AlertWordTests(ZulipTestCase):
         result = self.client_patch(
             "/json/messages/" + str(original_message.id),
             {
-                "message_id": original_message.id,
                 "content": "sorry false alarm",
             },
         )

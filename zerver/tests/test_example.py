@@ -137,7 +137,7 @@ class TestFullStack(ZulipTestCase):
                 is_guest=False,
                 is_owner=False,
                 role=UserProfile.ROLE_MEMBER,
-                timezone="",
+                timezone="Etc/UTC",
                 user_id=cordelia.id,
             ),
         )

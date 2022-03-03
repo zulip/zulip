@@ -5,6 +5,7 @@ from urllib.parse import urlencode
 
 from django.conf import settings
 from django.contrib.auth import authenticate, get_backends
+from django.contrib.sessions.models import Session
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.db.models import Q
@@ -539,7 +540,9 @@ def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> Htt
 
 def prepare_activation_url(
     email: str,
-    request: HttpRequest,
+    session: Session,
+    *,
+    realm: Optional[Realm],
     realm_creation: bool = False,
     streams: Optional[List[Stream]] = None,
     invited_as: Optional[int] = None,
@@ -548,7 +551,7 @@ def prepare_activation_url(
     Send an email with a confirmation link to the provided e-mail so the user
     can complete their registration.
     """
-    prereg_user = create_preregistration_user(email, request, realm_creation)
+    prereg_user = create_preregistration_user(email, realm, realm_creation)
 
     if streams is not None:
         prereg_user.streams.set(streams)
@@ -563,7 +566,7 @@ def prepare_activation_url(
 
     activation_url = create_confirmation_link(prereg_user, confirmation_type)
     if settings.DEVELOPMENT and realm_creation:
-        request.session["confirmation_key"] = {"confirmation_key": activation_url.split("/")[-1]}
+        session["confirmation_key"] = {"confirmation_key": activation_url.split("/")[-1]}
     return activation_url
 
 
@@ -632,7 +635,9 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
                 )
 
             email = form.cleaned_data["email"]
-            activation_url = prepare_activation_url(email, request, realm_creation=True)
+            activation_url = prepare_activation_url(
+                email, request.session, realm=None, realm_creation=True
+            )
             if key_record is not None and key_record.presume_email_valid:
                 # The user has a token created from the server command line;
                 # skip confirming the email is theirs, taking their word for it.
@@ -676,7 +681,11 @@ def accounts_home(
     invited_as = None
 
     if multiuse_object:
-        realm = multiuse_object.realm
+        # multiuse_object's realm should have been validated by the caller,
+        # so this code shouldn't be reachable with a multiuse_object which
+        # has its realm mismatching the realm of the request.
+        assert realm == multiuse_object.realm
+
         streams_to_subscribe = multiuse_object.streams.all()
         from_multiuse_invite = True
         invited_as = multiuse_object.invited_as
@@ -703,7 +712,11 @@ def accounts_home(
                 return redirect_to_email_login_url(email)
 
             activation_url = prepare_activation_url(
-                email, request, streams=streams_to_subscribe, invited_as=invited_as
+                email,
+                request.session,
+                realm=realm,
+                streams=streams_to_subscribe,
+                invited_as=invited_as,
             )
             try:
                 send_confirm_registration_email(email, activation_url, request=request, realm=realm)
@@ -726,12 +739,14 @@ def accounts_home(
 
 
 def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: str) -> HttpResponse:
+    realm = get_realm_from_request(request)
     multiuse_object = None
     try:
         multiuse_object = get_object_from_key(confirmation_key, [Confirmation.MULTIUSE_INVITE])
+        if realm != multiuse_object.realm:
+            return render(request, "confirmation/link_does_not_exist.html", status=404)
         # Required for OAuth 2
     except ConfirmationKeyException as exception:
-        realm = get_realm_from_request(request)
         if realm is None or realm.invite_required:
             return render_confirmation_key_error(request, exception)
     return accounts_home(

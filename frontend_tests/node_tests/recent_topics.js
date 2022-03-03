@@ -76,9 +76,9 @@ mock_esm("../../static/js/compose_closed_ui", {
     update_buttons_for_recent_topics: noop,
 });
 mock_esm("../../static/js/hash_util", {
-    by_stream_uri: () => "https://www.example.com",
+    by_stream_url: () => "https://www.example.com",
 
-    by_stream_topic_uri: () => "https://www.example.com",
+    by_stream_topic_url: () => "https://www.example.com",
 });
 mock_esm("../../static/js/message_list_data", {
     MessageListData: class {},
@@ -115,8 +115,7 @@ mock_esm("../../static/js/stream_list", {
     handle_narrow_deactivated: noop,
 });
 mock_esm("../../static/js/timerender", {
-    last_seen_status_from_date: () => "Just now",
-
+    format_time_modern: () => "Just now",
     get_full_datetime: () => "date at time",
 });
 mock_esm("../../static/js/sub_store", {
@@ -286,7 +285,7 @@ function generate_topic_data(topic_info_array) {
     for (const [stream_id, topic, unread_count, muted, participated] of topic_info_array) {
         data.push({
             other_senders_count: 0,
-            other_sender_names: "",
+            other_sender_names_html: "",
             invite_only: false,
             is_web_public: true,
             last_msg_time: "Just now",

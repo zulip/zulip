@@ -1,0 +1,6 @@
+deb http://apt.postgresql.org/pub/repos/apt/ jammy-pgdg main
+deb-src http://apt.postgresql.org/pub/repos/apt/ jammy-pgdg main
+
+# Old versions for https://github.com/pgroonga/pgroonga/issues/203 were not built for jammy
+deb http://apt-archive.postgresql.org/pub/repos/apt/ impish-pgdg-archive main
+deb-src http://apt-archive.postgresql.org/pub/repos/apt/ impish-pgdg-archive main

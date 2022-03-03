@@ -18,7 +18,7 @@ support forwarding push notifications to a central push notification
 forwarding service. Accessing this service requires outgoing HTTPS
 access to the public Internet; if that is restricted by a proxy, you
 will need to [configure Zulip to use your outgoing HTTP
-proxy](../production/deployment.html#customizing-the-outgoing-http-proxy)
+proxy](deployment.md#customizing-the-outgoing-http-proxy)
 first.
 
 You can enable this for your Zulip server as follows:
@@ -27,7 +27,7 @@ You can enable this for your Zulip server as follows:
    `PUSH_NOTIFICATION_BOUNCER_URL = 'https://push.zulipchat.com'` line
    in your `/etc/zulip/settings.py` file (i.e. remove the `#` at the
    start of the line), and [restart your Zulip
-   server](../production/settings.html#making-changes). If you
+   server](settings.md#making-changes). If you
    installed your Zulip server with a version older than 1.6, you'll
    need to add the line (it won't be there to uncomment).
 

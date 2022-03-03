@@ -126,11 +126,11 @@ run_test("alert_words", ({override}) => {
     assert.ok(!alert_words.has_alert_word("fire"));
     assert.ok(!alert_words.has_alert_word("lunch"));
 
-    override(alert_words_ui, "render_alert_words_ui", noop);
+    override(alert_words_ui, "rerender_alert_words_ui", noop);
     const event = event_fixtures.alert_words;
     dispatch(event);
 
-    assert.deepEqual(alert_words.get_word_list(), ["fire", "lunch"]);
+    assert.deepEqual(alert_words.get_word_list(), [{word: "fire"}, {word: "lunch"}]);
     assert.ok(alert_words.has_alert_word("fire"));
     assert.ok(alert_words.has_alert_word("lunch"));
 });
@@ -609,6 +609,7 @@ run_test("realm_user", ({override}) => {
 
     event = event_fixtures.realm_user__remove;
     override(stream_events, "remove_deactivated_user_from_all_streams", noop);
+    override(settings_users, "update_view_on_deactivate", noop);
     dispatch(event);
 
     // We don't actually remove the person, we just deactivate them.

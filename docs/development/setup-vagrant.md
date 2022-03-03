@@ -12,7 +12,7 @@ all related services will run.
 Contents:
 
 - [Requirements](#requirements)
-- [Step 0: Set up Git & GitHub](#step-0-set-up-git-github)
+- [Step 0: Set up Git & GitHub](#step-0-set-up-git--github)
 - [Step 1: Install prerequisites](#step-1-install-prerequisites)
 - [Step 2: Get Zulip code](#step-2-get-zulip-code)
 - [Step 3: Start the development environment](#step-3-start-the-development-environment)
@@ -49,7 +49,7 @@ a proxy to access the internet.)
 
 - **All**: 2GB available RAM, Active broadband internet connection, [GitHub account][set-up-git].
 - **macOS**: macOS (10.11 El Capitan or newer recommended)
-- **Ubuntu LTS**: 20.04
+- **Ubuntu LTS**: 20.04 or 22.04
   - or **Debian**: 10 "buster" or 11 "bullseye"
 - **Windows**: Windows 64-bit (Win 10 recommended), hardware
   virtualization enabled (VT-x or AMD-V), administrator access.
@@ -151,7 +151,7 @@ Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
 #### Windows 10
 
 :::{note}
-We recommend using [WSL 2 for Windows development](../development/setup-advanced.html#installing-directly-on-windows-10-with-wsl-2).
+We recommend using [WSL 2 for Windows development](setup-advanced.md#installing-directly-on-windows-10-with-wsl-2).
 :::
 
 1. Install [Git for Windows][git-bash], which installs _Git BASH_.
@@ -236,8 +236,8 @@ projects and to instead follow these instructions exactly.)
 2. Open Terminal (macOS/Linux) or Git BASH (Windows; must
    **run as an Administrator**).
 3. In Terminal/Git BASH,
-   [clone your fork of the Zulip repository](../git/cloning.html#step-1b-clone-to-your-machine) and
-   [connect the Zulip upstream repository](../git/cloning.html#step-1c-connect-your-fork-to-zulip-upstream):
+   [clone your fork of the Zulip repository](../git/cloning.md#step-1b-clone-to-your-machine) and
+   [connect the Zulip upstream repository](../git/cloning.md#step-1c-connect-your-fork-to-zulip-upstream):
 
 ```bash
 git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git
@@ -830,7 +830,7 @@ Likely causes are:
 1. Networking issues
 2. Insufficient RAM. Check whether you've allotted at least two
    gigabytes of RAM, which is the minimum Zulip
-   [requires](../development/setup-vagrant.html#requirements). If
+   [requires](#requirements). If
    not, go to your VM settings and increase the RAM, then restart
    the VM.
 
@@ -1041,7 +1041,7 @@ remove the `GUEST_CPUS` and `GUEST_MEMORY_MB` lines from
 [cygwin-dl]: https://cygwin.com/
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
-[install-advanced]: ../development/setup-advanced.md
+[install-advanced]: setup-advanced.md
 [rtd-git-guide]: ../git/index.md
 [rtd-testing]: ../testing/testing.md
 [rtd-using-dev-env]: using.md
@@ -1049,4 +1049,4 @@ remove the `GUEST_CPUS` and `GUEST_MEMORY_MB` lines from
 [git-bash]: https://git-for-windows.github.io/
 [bash-admin-setup]: https://superuser.com/questions/1002262/run-applications-as-administrator-by-default-in-windows-10
 [set-up-git]: ../git/setup.md
-[ci]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork
+[ci]: ../git/cloning.md#step-3-configure-continuous-integration-for-your-fork

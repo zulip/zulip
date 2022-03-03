@@ -692,8 +692,6 @@ strong {
                     hsl(200, 100%, 40%),
                     hsl(200, 100%, 35%)
                 );
-                background-repeat: repeat-x;
-                filter: progid:dximagetransform.microsoft.gradient(startcolorstr='hsla(328, 100%, 50%, 0.8)', endcolorstr='hsla(332, 100%, 50%, 0.7)', gradienttype=0);
             }
             /* styles defined for user_circle here only deal with positioning of user_presence_circle
             in typeahead list in order to ensure they are rendered correctly in in all screen sizes.
@@ -720,9 +718,7 @@ strong {
             hsl(200, 100%, 40%),
             hsl(200, 100%, 35%)
         );
-        background-repeat: repeat-x;
         outline: 0;
-        filter: progid:dximagetransform.microsoft.gradient(startcolorstr='hsla(328, 100%, 50%, 0.8)', endcolorstr='hsla(332, 100%, 50%, 0.7)', gradienttype=0);
 
         .user_circle_empty {
             border-color: hsl(0, 0%, 25%);
@@ -740,7 +736,6 @@ li.actual-dropdown-menu > a:focus {
     text-decoration: none;
     background-color: none;
     background-image: none;
-    background-repeat: repeat-x;
     filter: none;
     outline: 0;
 }
@@ -1088,7 +1083,12 @@ td.pointer {
 
     .recipient-row-stream-icon {
         font-size: 12px;
-        line-height: 17px;
+        line-height: 12px;
+    }
+
+    .zulip-icon.zulip-icon-globe {
+        position: relative;
+        top: 1px;
     }
 
     &:hover {
@@ -1285,6 +1285,7 @@ td.pointer {
 .unread_marker {
     display: block;
     position: absolute;
+    height: 100%;
     left: 2px;
     top: 0;
     opacity: 0;
@@ -1742,6 +1743,10 @@ div.focused_table {
 
     .hidden {
         display: none;
+    }
+
+    .zulip-icon.zulip-icon-globe {
+        font-size: 14px;
     }
 
     .sub_count,
@@ -3145,4 +3150,10 @@ select.inline_select_topic_edit {
             }
         }
     }
+}
+
+.tooltip_right_arrow {
+    position: relative;
+    top: -1px;
+    font-weight: 600;
 }

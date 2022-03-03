@@ -72,3 +72,20 @@ class SAMLIdPConfigDict(TypedDict, total=False):
     extra_attrs: List[str]
     x509cert: str
     x509cert_path: str
+
+
+class UnspecifiedValue:
+    """In most API endpoints, we use a default value of `None"` to encode
+    parameters that the client did not pass, which is nicely Pythonic.
+
+    However, that design does not work for those few endpoints where
+    we want to allow clients to pass an explicit `null` (which
+    JSON-decodes to `None`).
+
+    We use this type as an explicit sentinel value for such endpoints.
+
+    TODO: Can this be merged with the _NotSpecified class, which is
+    currently an internal implementation detail of the REQ class?
+    """
+
+    pass

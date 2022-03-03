@@ -2,16 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-
-const ui_report = mock_esm("../../static/js/ui_report", {
-    displayed_error: false,
-
-    error: () => {
-        ui_report.displayed_error = true;
-    },
-});
 
 const hash_util = zrequire("hash_util");
 const stream_data = zrequire("stream_data");
@@ -33,17 +25,7 @@ const frontend = {
 stream_data.add_sub(frontend);
 
 run_test("hash_util", () => {
-    // Test encodeHashComponent
-    const str = "https://www.zulipexample.com";
-    const result1 = hash_util.encodeHashComponent(str);
-    assert.equal(result1, "https.3A.2F.2Fwww.2Ezulipexample.2Ecom");
-
-    // Test decodeHashComponent
-    const result2 = hash_util.decodeHashComponent(result1);
-    assert.equal(result2, str);
-
     // Test encode_operand and decode_operand
-
     function encode_decode_operand(operator, operand, expected_val) {
         const encode_result = hash_util.encode_operand(operator, operand);
         assert.equal(encode_result, expected_val);
@@ -66,11 +48,6 @@ run_test("hash_util", () => {
     operand = "testing 123";
 
     encode_decode_operand(operator, operand, "testing.20123");
-
-    // Test invalid url decode.
-    const result = hash_util.decodeHashComponent("foo.foo");
-    assert.equal(result, "");
-    assert.equal(ui_report.displayed_error, true);
 });
 
 run_test("test_get_hash_category", () => {
@@ -152,15 +129,15 @@ run_test("test_parse_narrow", () => {
     ]);
 });
 
-run_test("test_stream_edit_uri", () => {
+run_test("test_stream_edit_url", () => {
     const sub = {
         name: "research & development",
         stream_id: 42,
     };
-    assert.equal(hash_util.stream_edit_uri(sub), "#streams/42/research.20.26.20development");
+    assert.equal(hash_util.stream_edit_url(sub), "#streams/42/research.20.26.20development");
 });
 
-run_test("test_by_conversation_and_time_uri", () => {
+run_test("test_by_conversation_and_time_url", () => {
     let message = {
         type: "stream",
         stream_id: frontend.stream_id,
@@ -169,7 +146,7 @@ run_test("test_by_conversation_and_time_uri", () => {
     };
 
     assert.equal(
-        hash_util.by_conversation_and_time_uri(message),
+        hash_util.by_conversation_and_time_url(message),
         "http://zulip.zulipdev.com/#narrow/stream/99-frontend/topic/testing/near/42",
     );
 
@@ -184,7 +161,7 @@ run_test("test_by_conversation_and_time_uri", () => {
     };
 
     assert.equal(
-        hash_util.by_conversation_and_time_uri(message),
+        hash_util.by_conversation_and_time_url(message),
         "http://zulip.zulipdev.com/#narrow/pm-with/15-pm/near/43",
     );
 });

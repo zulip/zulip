@@ -26,12 +26,17 @@ from bitfield.types import BitHandler
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager
 from django.contrib.contenttypes.fields import GenericRelation
+from django.contrib.postgres.indexes import GinIndex
+from django.contrib.postgres.search import SearchVectorField
 from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator, RegexValidator, URLValidator, validate_email
 from django.db import models, transaction
-from django.db.models import CASCADE, Manager, Q, Sum
+from django.db.backends.base.base import BaseDatabaseWrapper
+from django.db.models import CASCADE, F, Manager, Q, Sum
+from django.db.models.functions import Upper
 from django.db.models.query import QuerySet
 from django.db.models.signals import post_delete, post_save, pre_delete
+from django.db.models.sql.compiler import SQLCompiler
 from django.utils.functional import Promise
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -81,6 +86,7 @@ from zerver.lib.types import (
     ProfileDataElementBase,
     ProfileDataElementValue,
     RealmUserValidator,
+    UnspecifiedValue,
     UserFieldElement,
     Validator,
 )
@@ -108,6 +114,30 @@ class EmojiInfo(TypedDict):
     deactivated: bool
     author_id: Optional[int]
     still_url: Optional[str]
+
+
+@models.Field.register_lookup
+class AndZero(models.Lookup):
+    lookup_name = "andz"
+
+    def as_sql(
+        self, compiler: SQLCompiler, connection: BaseDatabaseWrapper
+    ) -> Tuple[str, List[object]]:  # nocoverage # currently only used in migrations
+        lhs, lhs_params = self.process_lhs(compiler, connection)
+        rhs, rhs_params = self.process_rhs(compiler, connection)
+        return f"{lhs} & {rhs} = 0", lhs_params + rhs_params
+
+
+@models.Field.register_lookup
+class AndNonZero(models.Lookup):
+    lookup_name = "andnz"
+
+    def as_sql(
+        self, compiler: SQLCompiler, connection: BaseDatabaseWrapper
+    ) -> Tuple[str, List[object]]:  # nocoverage # currently only used in migrations
+        lhs, lhs_params = self.process_lhs(compiler, connection)
+        rhs, rhs_params = self.process_rhs(compiler, connection)
+        return f"{lhs} & {rhs} != 0", lhs_params + rhs_params
 
 
 def query_for_ids(query: QuerySet, user_ids: List[int], field: str) -> QuerySet:
@@ -1732,7 +1762,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     )
     default_all_public_streams: bool = models.BooleanField(default=False)
 
-    # A timezone name from the `tzdata` database, as found in pytz.all_timezones.
+    # A time zone name from the `tzdata` database, as found in pytz.all_timezones.
     #
     # The longest existing name is 32 characters long, so max_length=40 seems
     # like a safe choice.
@@ -2034,6 +2064,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
         super().set_password(password)
 
+    class Meta:
+        indexes = [
+            models.Index(Upper("email"), name="upper_userprofile_email_idx"),
+        ]
+
 
 class PasswordTooWeakError(Exception):
     pass
@@ -2142,20 +2177,38 @@ class PreregistrationUser(models.Model):
     )
     invited_as: int = models.PositiveSmallIntegerField(default=INVITE_AS["MEMBER"])
 
+    class Meta:
+        indexes = [
+            models.Index(Upper("email"), name="upper_preregistration_email_idx"),
+        ]
+
 
 def filter_to_valid_prereg_users(
     query: QuerySet,
-    invite_expires_in_days: Optional[int] = None,
+    invite_expires_in_days: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
 ) -> QuerySet:
+    """
+    If invite_expires_in_days is specified, we return only those PreregistrationUser
+    objects that were created at most that many days in the past.
+    """
     active_value = confirmation_settings.STATUS_ACTIVE
     revoked_value = confirmation_settings.STATUS_REVOKED
 
     query = query.exclude(status__in=[active_value, revoked_value])
-    if invite_expires_in_days:
+    if invite_expires_in_days is None:
+        # Since invite_expires_in_days is None, we're invitation will never
+        # expire, we do not need to check anything else and can simply return
+        # after excluding objects with active and revoked status.
+        return query
+
+    assert invite_expires_in_days is not None
+    if not isinstance(invite_expires_in_days, UnspecifiedValue):
         lowest_datetime = timezone_now() - datetime.timedelta(days=invite_expires_in_days)
         return query.filter(invited_at__gte=lowest_datetime)
     else:
-        return query.filter(confirmation__expiry_date__gte=timezone_now())
+        return query.filter(
+            Q(confirmation__expiry_date=None) | Q(confirmation__expiry_date__gte=timezone_now())
+        )
 
 
 class MultiuseInvite(models.Model):
@@ -2388,6 +2441,11 @@ class Stream(models.Model):
         result["is_announcement_only"] = self.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS
         return result
 
+    class Meta:
+        indexes = [
+            models.Index(Upper("name"), name="upper_stream_name_idx"),
+        ]
+
 
 post_save.connect(flush_stream, sender=Stream)
 post_delete.connect(flush_stream, sender=Stream)
@@ -2433,6 +2491,7 @@ class UserTopic(models.Model):
         unique_together = ("user_profile", "stream", "topic_name")
 
         indexes = [
+            models.Index("stream", Upper("topic_name"), name="zerver_mutedtopic_stream_topic"),
             # This index is designed to optimize queries fetching the
             # set of users who have special policy for a stream,
             # e.g. for the send-message code paths.
@@ -2696,6 +2755,7 @@ class ArchivedMessage(AbstractMessage):
 
 class Message(AbstractMessage):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
+    search_tsvector = SearchVectorField(null=True)
 
     def topic_name(self) -> str:
         """
@@ -2771,6 +2831,25 @@ class Message(AbstractMessage):
         if content.startswith("/me "):
             return True
         return False
+
+    class Meta:
+        indexes = [
+            GinIndex("search_tsvector", fastupdate=False, name="zerver_message_search_tsvector"),
+            models.Index(Upper("subject"), name="upper_subject_idx"),
+            models.Index("date_sent", name="zerver_message_date_sent_3b5b05d8"),
+            models.Index(
+                "recipient",
+                Upper("subject"),
+                F("id").desc(nulls_last=True),
+                name="zerver_message_recipient_upper_subject",
+            ),
+            models.Index(
+                "recipient",
+                "subject",
+                F("id").desc(nulls_last=True),
+                name="zerver_message_recipient_subject",
+            ),
+        ]
 
 
 def get_context_for_message(message: Message) -> Sequence[Message]:
@@ -3081,6 +3160,55 @@ class AbstractUserMessage(models.Model):
 class UserMessage(AbstractUserMessage):
     message: Message = models.ForeignKey(Message, on_delete=CASCADE)
 
+    class Meta(AbstractUserMessage.Meta):
+        indexes = [
+            models.Index(
+                "user_profile",
+                "message",
+                condition=Q(flags__andnz=AbstractUserMessage.flags.starred.mask),
+                name="zerver_usermessage_starred_message_id",
+            ),
+            models.Index(
+                "user_profile",
+                "message",
+                condition=Q(flags__andnz=AbstractUserMessage.flags.mentioned.mask),
+                name="zerver_usermessage_mentioned_message_id",
+            ),
+            models.Index(
+                "user_profile",
+                "message",
+                condition=Q(flags__andz=AbstractUserMessage.flags.read.mask),
+                name="zerver_usermessage_unread_message_id",
+            ),
+            models.Index(
+                "user_profile",
+                "message",
+                condition=Q(flags__andnz=AbstractUserMessage.flags.has_alert_word.mask),
+                name="zerver_usermessage_has_alert_word_message_id",
+            ),
+            models.Index(
+                "user_profile",
+                "message",
+                condition=Q(flags__andnz=AbstractUserMessage.flags.mentioned.mask)
+                | Q(flags__andnz=AbstractUserMessage.flags.wildcard_mentioned.mask),
+                name="zerver_usermessage_wildcard_mentioned_message_id",
+            ),
+            models.Index(
+                "user_profile",
+                "message",
+                condition=Q(flags__andnz=AbstractUserMessage.flags.is_private.mask),
+                name="zerver_usermessage_is_private_message_id",
+            ),
+            models.Index(
+                "user_profile",
+                "message",
+                condition=Q(
+                    flags__andnz=AbstractUserMessage.flags.active_mobile_push_notification.mask
+                ),
+                name="zerver_usermessage_active_mobile_push_notification_id",
+            ),
+        ]
+
 
 def get_usermessage_by_message_id(
     user_profile: UserProfile, message_id: int
@@ -3163,7 +3291,7 @@ class Attachment(AbstractAttachment):
             "path_id": self.path_id,
             "size": self.size,
             # convert to JavaScript-style UNIX timestamp so we can take
-            # advantage of client timezones.
+            # advantage of client time zones.
             "create_time": int(time.mktime(self.create_time.timetuple()) * 1000),
             "messages": [
                 {

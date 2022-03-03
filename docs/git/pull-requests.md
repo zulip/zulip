@@ -29,7 +29,7 @@ work from being merged before you're confident in it.
 ### Step 0: Make sure you're on a feature branch (not `main`)
 
 It is important to [work on a feature
-branch](using.html#work-on-a-feature-branch) when creating a pull
+branch](using.md#work-on-a-feature-branch) when creating a pull
 request. Your new pull request will be inextricably linked with your
 branch while it is open, so you will need to reserve your branch only
 for changes related to your issue, and avoid introducing extraneous
@@ -158,7 +158,7 @@ for another review.
 [github-help-about-pr]: https://help.github.com/en/articles/about-pull-requests
 [github-help-create-pr-fork]: https://help.github.com/en/articles/creating-a-pull-request-from-a-fork
 [images-create-pr]: ../images/zulip-open-pr.png
-[keep-up-to-date]: ../git/using.html#keep-your-fork-up-to-date
-[self-push-commits]: ../git/using.html#push-your-commits-to-github
+[keep-up-to-date]: using.md#keep-your-fork-up-to-date
+[self-push-commits]: using.md#push-your-commits-to-github
 [screenshots-gifs]: ../tutorials/screenshot-and-gif-software.md
 [wip-prs]: #work-in-progress-pull-requests

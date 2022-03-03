@@ -124,7 +124,7 @@ with Zulip. This documentation also serves as our main mechanism for
 Zulip server developers to communicate with client developers about
 how the Zulip API works.
 
-See the [API documentation tutorial](../documentation/api.md) for
+See the [API documentation tutorial](api.md) for
 details on how to contribute to this documentation.
 
 ## Automated testing
@@ -134,7 +134,7 @@ recommend running locally when making significant edits:
 
 - `tools/lint` catches a number of common mistakes, and we highly
   recommend
-  [using our linter pre-commit hook](../git/zulip-tools.html#set-up-git-repo-script).
+  [using our linter pre-commit hook](../git/zulip-tools.md#set-up-git-repo-script).
   See the [main linter doc](../testing/linters.md) for more details.
 
 - The ReadTheDocs docs are built and the links tested by

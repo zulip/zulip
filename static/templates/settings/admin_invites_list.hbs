@@ -22,7 +22,11 @@
         <span class="invited_at">{{invited_absolute_time}}</span>
     </td>
     <td>
+        {{#if expiry_date_absolute_time}}
         <span class="expires_at">{{expiry_date_absolute_time}}</span>
+        {{else}}
+        <span class="expires_at">{{t "Never expires"}}</span>
+        {{/if}}
     </td>
     <td>
         <span>{{invited_as_text}}</span>

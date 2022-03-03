@@ -1,4 +1,5 @@
-from django.db import migrations
+from django.db import migrations, models
+from django.db.models import Q
 
 
 class Migration(migrations.Migration):
@@ -8,12 +9,13 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(
-            """
-            CREATE INDEX IF NOT EXISTS zerver_usermessage_wildcard_mentioned_message_id
-                ON zerver_usermessage (user_profile_id, message_id)
-                WHERE (flags & 8) != 0 OR (flags & 16) != 0;
-            """,
-            reverse_sql="DROP INDEX zerver_usermessage_wildcard_mentioned_message_id;",
+        migrations.AddIndex(
+            model_name="usermessage",
+            index=models.Index(
+                "user_profile",
+                "message",
+                condition=Q(flags__andnz=8) | Q(flags__andnz=16),
+                name="zerver_usermessage_wildcard_mentioned_message_id",
+            ),
         ),
     ]

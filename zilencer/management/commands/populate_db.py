@@ -467,6 +467,25 @@ class Command(BaseCommand):
 
             create_users(zulip_realm, names, tos_version=settings.TERMS_OF_SERVICE_VERSION)
 
+            # Add time zones to some users. Ideally, this would be
+            # done in the initial create_users calls, but the
+            # tuple-based interface for that function doesn't support
+            # doing so.
+            def assign_time_zone_by_delivery_email(delivery_email: str, new_time_zone: str) -> None:
+                u = get_user_by_delivery_email(delivery_email, zulip_realm)
+                u.timezone = new_time_zone
+                u.save(update_fields=["timezone"])
+
+            # Note: Hamlet keeps default time zone of "".
+            assign_time_zone_by_delivery_email("AARON@zulip.com", "US/Pacific")
+            assign_time_zone_by_delivery_email("othello@zulip.com", "US/Pacific")
+            assign_time_zone_by_delivery_email("ZOE@zulip.com", "US/Eastern")
+            assign_time_zone_by_delivery_email("iago@zulip.com", "US/Eastern")
+            assign_time_zone_by_delivery_email("desdemona@zulip.com", "Canada/Newfoundland")
+            assign_time_zone_by_delivery_email("polonius@zulip.com", "Asia/Shanghai")  # China
+            assign_time_zone_by_delivery_email("shiva@zulip.com", "Asia/Kolkata")  # India
+            assign_time_zone_by_delivery_email("cordelia@zulip.com", "UTC")
+
             iago = get_user_by_delivery_email("iago@zulip.com", zulip_realm)
             do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
             iago.is_staff = True
@@ -507,7 +526,9 @@ class Command(BaseCommand):
             for i in range(options["extra_bots"]):
                 zulip_realm_bots.append((f"Extra Bot {i}", f"extrabot{i}@zulip.com"))
 
-            create_users(zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
+            create_users(
+                zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT, bot_owner=desdemona
+            )
 
             zoe = get_user_by_delivery_email("zoe@zulip.com", zulip_realm)
             zulip_webhook_bots = [
@@ -911,7 +932,10 @@ class Command(BaseCommand):
                     ("Zulip Nagios Bot", "nagios-bot@zulip.com"),
                 ]
                 create_users(
-                    zulip_realm, internal_zulip_users_nosubs, bot_type=UserProfile.DEFAULT_BOT
+                    zulip_realm,
+                    internal_zulip_users_nosubs,
+                    bot_type=UserProfile.DEFAULT_BOT,
+                    bot_owner=desdemona,
                 )
 
             mark_all_messages_as_read()

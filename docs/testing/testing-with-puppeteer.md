@@ -1,6 +1,6 @@
 # Web frontend black-box Puppeteer tests
 
-While our [node test suite](../testing/testing-with-node.md) is the
+While our [node test suite](testing-with-node.md) is the
 preferred way to test most frontend code because they are easy to
 write and maintain, some code is best tested in a real browser, either
 because of navigation (E.g. login) or because we want to verify the
@@ -64,7 +64,7 @@ familiar with [async/await][learn-async-await].
 
 The following questions are useful when debugging Puppeteer test
 failures you might see in [continuous
-integration](../testing/continuous-integration.md):
+integration](continuous-integration.md):
 
 - Does the flow being tested work properly in the Zulip browser UI?
   Test failures can reflect real bugs, and often it's easier and more
@@ -159,7 +159,7 @@ notes above:
 - The test suite uses a smaller set of default user accounts and other
   data initialized in the database than the normal development
   environment; specifically, it uses the same setup as the [backend
-  tests](../testing/testing-with-django.md). To see what differs from
+  tests](testing-with-django.md). To see what differs from
   the development environment, check out the conditions on
   `options["test_suite"]` in
   `zilencer/management/commands/populate_db.py`.

@@ -1461,6 +1461,21 @@ class ActivateTest(ZulipTestCase):
             invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
         )
 
+        do_invite_users(
+            iago,
+            ["new5@zulip.com"],
+            [],
+            invite_expires_in_days=None,
+            invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+        )
+        do_invite_users(
+            desdemona,
+            ["new6@zulip.com"],
+            [],
+            invite_expires_in_days=None,
+            invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+        )
+
         iago_multiuse_key = do_create_multiuse_invite_link(
             iago, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_days
         ).split("/")[-2]
@@ -1468,17 +1483,24 @@ class ActivateTest(ZulipTestCase):
             desdemona, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_days
         ).split("/")[-2]
 
+        iago_never_expire_multiuse_key = do_create_multiuse_invite_link(
+            iago, PreregistrationUser.INVITE_AS["MEMBER"], None
+        ).split("/")[-2]
+        desdemona_never_expire_multiuse_key = do_create_multiuse_invite_link(
+            desdemona, PreregistrationUser.INVITE_AS["MEMBER"], None
+        ).split("/")[-2]
+
         self.assertEqual(
             filter_to_valid_prereg_users(
                 PreregistrationUser.objects.filter(referred_by=iago)
             ).count(),
-            2,
+            3,
         )
         self.assertEqual(
             filter_to_valid_prereg_users(
                 PreregistrationUser.objects.filter(referred_by=desdemona)
             ).count(),
-            2,
+            3,
         )
         self.assertTrue(
             Confirmation.objects.get(confirmation_key=iago_multiuse_key).expiry_date
@@ -1487,6 +1509,14 @@ class ActivateTest(ZulipTestCase):
         self.assertTrue(
             Confirmation.objects.get(confirmation_key=desdemona_multiuse_key).expiry_date
             > timezone_now()
+        )
+        self.assertIsNone(
+            Confirmation.objects.get(confirmation_key=iago_never_expire_multiuse_key).expiry_date
+        )
+        self.assertIsNone(
+            Confirmation.objects.get(
+                confirmation_key=desdemona_never_expire_multiuse_key
+            ).expiry_date
         )
 
         do_deactivate_user(iago, acting_user=None)
@@ -1503,7 +1533,7 @@ class ActivateTest(ZulipTestCase):
             filter_to_valid_prereg_users(
                 PreregistrationUser.objects.filter(referred_by=desdemona)
             ).count(),
-            2,
+            3,
         )
         self.assertTrue(
             Confirmation.objects.get(confirmation_key=iago_multiuse_key).expiry_date
@@ -1512,6 +1542,15 @@ class ActivateTest(ZulipTestCase):
         self.assertTrue(
             Confirmation.objects.get(confirmation_key=desdemona_multiuse_key).expiry_date
             > timezone_now()
+        )
+        self.assertTrue(
+            Confirmation.objects.get(confirmation_key=iago_never_expire_multiuse_key).expiry_date
+            <= timezone_now()
+        )
+        self.assertIsNone(
+            Confirmation.objects.get(
+                confirmation_key=desdemona_never_expire_multiuse_key
+            ).expiry_date
         )
 
     def test_clear_scheduled_jobs(self) -> None:

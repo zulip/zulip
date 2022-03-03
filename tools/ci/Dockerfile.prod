@@ -1,4 +1,4 @@
-# To build these production upgrade test images, say a Debian Buster system
+# To build these production upgrade test images, say a Debian 10 Buster system
 # preinstalled with Zulip 3.4:
 #   docker build . -f Dockerfile.prod --build-arg=BASE_IMAGE=zulip/ci:buster --build-arg=VERSION=3.4 --tag=zulip/ci:buster-3.4
 #   docker push zulip/ci:buster-3.4

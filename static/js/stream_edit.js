@@ -20,10 +20,10 @@ import * as settings_config from "./settings_config";
 import * as settings_ui from "./settings_ui";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
+import * as stream_edit_subscribers from "./stream_edit_subscribers";
 import * as stream_settings_containers from "./stream_settings_containers";
 import * as stream_settings_data from "./stream_settings_data";
 import * as stream_settings_ui from "./stream_settings_ui";
-import * as stream_subscribers_ui from "./stream_subscribers_ui";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as ui from "./ui";
@@ -35,7 +35,7 @@ export let toggler;
 export let select_tab = "personal_settings";
 
 function setup_subscriptions_stream_hash(sub) {
-    const hash = hash_util.stream_edit_uri(sub);
+    const hash = hash_util.stream_edit_url(sub);
     browser_history.update(hash);
 }
 
@@ -188,7 +188,7 @@ function show_subscription_settings(sub) {
     }
 
     const subscriber_container = edit_container.find(".edit_subscribers_for_stream");
-    stream_subscribers_ui.enable_subscriber_management({
+    stream_edit_subscribers.enable_subscriber_management({
         sub,
         parent_container: subscriber_container,
     });
@@ -478,6 +478,7 @@ export function initialize() {
         const stream = sub_store.get(stream_id);
 
         const template_data = {
+            ask_to_announce_stream: false,
             stream_privacy_policy_values: stream_data.stream_privacy_policy_values,
             stream_privacy_policy: stream_data.get_stream_privacy_policy(stream_id),
             stream_post_policy_values: stream_data.stream_post_policy_values,

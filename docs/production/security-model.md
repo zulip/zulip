@@ -38,7 +38,7 @@ announcement).
 - The preferred way to log in to Zulip is using a single sign-on (SSO)
   solution like Google authentication, LDAP, or similar, but Zulip
   also supports password authentication. See [the authentication
-  methods documentation](../production/authentication-methods.md) for
+  methods documentation](authentication-methods.md) for
   details on Zulip's available authentication methods.
 
 ### Passwords
@@ -67,7 +67,7 @@ strength allowed is controlled by two settings in
   By default, `PASSWORD_MIN_GUESSES` is 10000. This provides
   significant protection against online attacks, while limiting the
   burden imposed on users choosing a password. See
-  [password strength](../production/password-strength.md) for an extended
+  [password strength](password-strength.md) for an extended
   discussion on how we chose this value.
 
   Estimating the guessability of a password is a complex problem and
@@ -272,8 +272,8 @@ strength allowed is controlled by two settings in
 
 [go-camo]: https://github.com/cactus/go-camo
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
-[smokescreen-setup]: ../production/deployment.html#customizing-the-outgoing-http-proxy
-[proxy.enable_for_camo]: ../production/deployment.html#enable-for-camo
+[smokescreen-setup]: deployment.md#customizing-the-outgoing-http-proxy
+[proxy.enable_for_camo]: deployment.md#enable_for_camo
 
 ## Final notes and security response
 

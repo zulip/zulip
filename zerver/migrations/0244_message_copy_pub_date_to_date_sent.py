@@ -1,6 +1,7 @@
 import time
 
-from django.db import connection, migrations
+from django.contrib.postgres.operations import AddIndexConcurrently
+from django.db import connection, migrations, models
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import Min
@@ -78,11 +79,8 @@ class Migration(migrations.Migration):
         """
         ),
         migrations.RunPython(copy_pub_date_to_date_sent, elidable=True),
-        # The name for the index was chosen to match the name of the index Django would create
-        # in a normal migration with AlterField of date_sent to have db_index=True:
-        migrations.RunSQL(
-            """
-        CREATE INDEX CONCURRENTLY zerver_message_date_sent_3b5b05d8 ON zerver_message (date_sent);
-        """
+        AddIndexConcurrently(
+            model_name="message",
+            index=models.Index("date_sent", name="zerver_message_date_sent_3b5b05d8"),
         ),
     ]

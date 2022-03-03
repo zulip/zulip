@@ -91,6 +91,7 @@ from zerver.models import (
     PreregistrationUser,
     Realm,
     RealmDomain,
+    Stream,
     UserProfile,
     clear_supported_auth_backends_cache,
     email_to_username,
@@ -1580,6 +1581,48 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         )
         self.stage_two_of_registration(
             result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
+        )
+
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
+    def test_social_auth_registration_using_multiuse_invite_realm_validation(self) -> None:
+        """If the user doesn't exist yet, social auth can be used to register an account"""
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+        realm.invite_required = True
+        realm.save()
+
+        streams: List[Stream] = []
+
+        # Generate an invitation for a different realm than the one we'll attempt to join:
+        lear_realm = get_realm("lear")
+        multiuse_obj = MultiuseInvite.objects.create(
+            realm=lear_realm, referred_by=UserProfile.objects.filter(realm=lear_realm).first()
+        )
+        multiuse_obj.streams.set(streams)
+        validity_in_days = 2
+        create_confirmation_link(
+            multiuse_obj, Confirmation.MULTIUSE_INVITE, validity_in_days=validity_in_days
+        )
+        multiuse_confirmation = Confirmation.objects.all().last()
+        assert multiuse_confirmation is not None
+        multiuse_object_key = multiuse_confirmation.confirmation_key
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+
+        # Now we try to use the invitation for the lear realm to join the zulip realm,
+        # which should fail.
+        result = self.social_auth_test(
+            account_data_dict,
+            subdomain=subdomain,
+            is_signup=True,
+            expect_choose_email_screen=True,
+            multiuse_object_key=multiuse_object_key,
+        )
+
+        result = self.client_get(result.url)
+        self.assert_in_response(
+            "Whoops. We couldn't find your confirmation link in the system.", result
         )
 
     def test_social_auth_registration_without_is_signup(self) -> None:
@@ -4800,6 +4843,7 @@ class FetchAuthBackends(ZulipTestCase):
                     ("zulip_merge_base", check_string),
                     ("zulip_feature_level", check_int),
                     ("push_notifications_enabled", check_bool),
+                    ("realm_web_public_access_enabled", check_bool),
                     ("msg", check_string),
                     ("result", check_string),
                     *extra_fields,
@@ -6555,7 +6599,7 @@ class TestRequireEmailFormatUsernames(ZulipTestCase):
 
 class TestMaybeSendToRegistration(ZulipTestCase):
     def test_sso_only_when_preregistration_user_does_not_exist(self) -> None:
-        rf = RequestFactory()
+        rf = RequestFactory(HTTP_HOST=Realm.host_for_subdomain("zulip"))
         request = rf.get("/")
         request.session = {}
         request.user = None
@@ -6585,10 +6629,12 @@ class TestMaybeSendToRegistration(ZulipTestCase):
         self.assert_in_response(f'value="{confirmation_key}" name="key"', result)
 
     def test_sso_only_when_preregistration_user_exists(self) -> None:
-        rf = RequestFactory()
+        rf = RequestFactory(HTTP_HOST=Realm.host_for_subdomain("zulip"))
         request = rf.get("/")
         request.session = {}
         request.user = None
+
+        realm = get_realm("zulip")
 
         # Creating a mock Django form in order to keep the test simple.
         # This form will be returned by the create_homepage_form function
@@ -6599,7 +6645,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
                 return True
 
         email = self.example_email("hamlet")
-        user = PreregistrationUser(email=email)
+        user = PreregistrationUser(email=email, realm=realm)
         user.save()
         create_confirmation_link(user, Confirmation.USER_REGISTRATION)
 

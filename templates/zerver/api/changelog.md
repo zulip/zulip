@@ -21,6 +21,19 @@ format used by the Zulip server that they are interacting with.
 ## Changes in Zulip 5.0
 
 
+**Feature level 117**
+
+* `POST /invites`, `POST /invites/multiuse`: Added support for passing
+  `null` as the `invite_expires_in_days` parameter to request an
+  invitation that never expires.
+
+**Feature level 116**
+
+* [`GET /server_settings`](/api/get-server-settings): Added
+  `realm_web_public_access_enabled` as a realm-specific server setting,
+  which can be used by clients to detect whether the realm allows and
+  has at least one [web-public stream](/help/web-public-streams).
+
 **Feature level 115**
 
 * Mobile push notifications about stream messages now include the
@@ -169,6 +182,9 @@ format used by the Zulip server that they are interacting with.
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
   Added new endpoint to update default values of user settings in a realm.
+* `POST /invites`, `POST /invites/multiuse`: Added
+  `invite_expires_in_days` parameter encoding the number days before
+  the invitation should expire.
 
 **Feature level 95**
 
@@ -427,8 +443,8 @@ No changes; feature level used for Zulip 4.0 release.
 
 **Feature level 61**
 
-* Added support for inviting users as moderators to the invitation
-  endpoints.
+* `POST /invites`, `POST /invites/multiuse`: Added support for
+  inviting users as moderators.
 
 **Feature level 60**
 

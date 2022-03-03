@@ -84,7 +84,12 @@ function get_user_info_row(user_id) {
     return $(`tr.user_row[data-user-id='${CSS.escape(user_id)}']`);
 }
 
-function update_view_on_deactivate(row) {
+export function update_view_on_deactivate(user_id) {
+    const row = get_user_info_row(user_id);
+    if (row.length === 0) {
+        return;
+    }
+
     const button = row.find("button.deactivate");
     const user_role = row.find(".user_role");
     button.prop("disabled", false);
@@ -362,16 +367,6 @@ export function update_user_data(user_id, new_data) {
         user_row.find(".user_name").text(new_data.full_name);
     }
 
-    if (new_data.is_active !== undefined) {
-        if (new_data.is_active === false) {
-            // Deactivate the user/bot in the table
-            update_view_on_deactivate(user_row);
-        } else {
-            // Reactivate the user/bot in the table
-            update_view_on_reactivate(user_row);
-        }
-    }
-
     if (new_data.role !== undefined) {
         user_row.find(".user_role").text(people.get_user_type(user_id));
     }
@@ -424,7 +419,7 @@ function get_human_profile_data(fields_user_pills) {
     return new_profile_data;
 }
 
-function confirm_deactivation(row, user_id, status_field) {
+export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
     const user = people.get_by_user_id(user_id);
     const opts = {
         username: user.full_name,
@@ -432,26 +427,11 @@ function confirm_deactivation(row, user_id, status_field) {
     };
     const html_body = render_settings_deactivation_user_modal(opts);
 
-    function handle_confirm() {
-        const row = get_user_info_row(user_id);
-        const row_deactivate_button = row.find("button.deactivate");
-        row_deactivate_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
-        const opts = {
-            success_continuation() {
-                update_view_on_deactivate(row);
-            },
-            error_continuation() {
-                row_deactivate_button.text($t({defaultMessage: "Deactivate"}));
-            },
-        };
-        const url = "/json/users/" + encodeURIComponent(user_id);
-        settings_ui.do_settings_change(channel.del, url, {}, status_field, opts);
-    }
-
     confirm_dialog.launch({
         html_heading: $t_html({defaultMessage: "Deactivate {name}"}, {name: user.full_name}),
         html_body,
         on_click: handle_confirm,
+        loading_spinner,
     });
 }
 
@@ -464,7 +444,21 @@ function handle_deactivation(tbody, status_field) {
 
         const row = $(e.target).closest(".user_row");
         const user_id = row.data("user-id");
-        confirm_deactivation(row, user_id, status_field);
+
+        function handle_confirm() {
+            const row = get_user_info_row(user_id);
+            const row_deactivate_button = row.find("button.deactivate");
+            row_deactivate_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
+            const opts = {
+                error_continuation() {
+                    row_deactivate_button.text($t({defaultMessage: "Deactivate"}));
+                },
+            };
+            const url = "/json/users/" + encodeURIComponent(user_id);
+            settings_ui.do_settings_change(channel.del, url, {}, status_field, opts);
+        }
+
+        confirm_deactivation(user_id, handle_confirm, false);
     });
 }
 
@@ -479,9 +473,6 @@ function handle_bot_deactivation(tbody, status_field) {
         const url = "/json/bots/" + encodeURIComponent(bot_id);
 
         const opts = {
-            success_continuation() {
-                update_view_on_deactivate(row);
-            },
             error_continuation(xhr) {
                 ui_report.generic_row_button_error(xhr, button_elem);
             },
@@ -559,6 +550,32 @@ export function show_edit_user_info_modal(user_id, from_user_info_popover, statu
             true,
             false,
         );
+
+        $("#edit-user-form").on("click", ".deactivate_user_button", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const user_id = $("#edit-user-form").data("user-id");
+            function handle_confirm() {
+                const url = "/json/users/" + encodeURIComponent(user_id);
+                channel.del({
+                    url,
+                    success() {
+                        dialog_widget.close_modal();
+                    },
+                    error(xhr) {
+                        ui_report.error(
+                            $t_html({defaultMessage: "Failed"}),
+                            xhr,
+                            $("#dialog_error"),
+                        );
+                        dialog_widget.hide_dialog_spinner();
+                    },
+                });
+            }
+            const open_deactivate_modal_callback = () =>
+                confirm_deactivation(user_id, handle_confirm, true);
+            dialog_widget.close_modal(open_deactivate_modal_callback);
+        });
     }
 
     function submit_user_details() {

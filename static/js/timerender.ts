@@ -1,5 +1,6 @@
 import {
     differenceInCalendarDays,
+    differenceInHours,
     differenceInMinutes,
     format,
     formatISO,
@@ -14,6 +15,7 @@ import _ from "lodash";
 import render_markdown_time_tooltip from "../templates/markdown_time_tooltip.hbs";
 
 import {$t} from "./i18n";
+import {parse_html} from "./ui_util";
 import {user_settings} from "./user_settings";
 
 let next_timerender_id = 0;
@@ -33,7 +35,7 @@ export function get_tz_with_UTC_offset(time: number | Date): string {
         return "UTC";
     }
 
-    // When user's locale doesn't match their timezone (eg. en_US for IST),
+    // When user's locale doesn't match their time zone (eg. en_US for IST),
     // we get `timezone` in the format of'GMT+x:y. We don't want to
     // show that along with (UTC+x:y)
     timezone = /GMT[+-][\d:]*/.test(timezone ?? "") ? "" : timezone;
@@ -223,20 +225,18 @@ export function render_date(time: Date, time_above: Date | undefined, today: Dat
 }
 
 // Renders the timestamp returned by the <time:> Markdown syntax.
-export function render_markdown_timestamp(time: number | Date): {
-    text: string;
-    tooltip_content: string;
-} {
+export function format_markdown_time(time: number | Date): string {
     const hourformat = user_settings.twenty_four_hour_time ? "HH:mm" : "h:mm a";
-    const timestring = format(time, "E, MMM d yyyy, " + hourformat);
+    return format(time, "E, MMM d yyyy, " + hourformat);
+}
 
-    const tz_offset_str = get_tz_with_UTC_offset(time);
-    const tooltip_html_content = render_markdown_time_tooltip({tz_offset_str});
-
-    return {
-        text: timestring,
-        tooltip_content: tooltip_html_content,
-    };
+export function get_markdown_time_tooltip(reference: HTMLElement): DocumentFragment | string {
+    if (reference instanceof HTMLTimeElement) {
+        const time = parseISO(reference.dateTime);
+        const tz_offset_str = get_tz_with_UTC_offset(time);
+        return parse_html(render_markdown_time_tooltip({tz_offset_str}));
+    }
+    return "";
 }
 
 // This isn't expected to be called externally except manually for
@@ -302,6 +302,26 @@ export function stringify_time(time: number | Date): string {
         return format(time, "HH:mm");
     }
     return format(time, "h:mm a");
+}
+
+export function format_time_modern(time: number | Date, today = new Date()): String {
+    const hours = differenceInHours(today, time);
+    const days_old = differenceInCalendarDays(today, time);
+
+    if (time > today) {
+        /* For timestamps in the future, we always show the year*/
+        return format(time, "MMM\u00A0dd,\u00A0yyyy");
+    } else if (hours < 24) {
+        return stringify_time(time);
+    } else if (days_old === 1) {
+        return $t({defaultMessage: "Yesterday"});
+    } else if (days_old < 7) {
+        return format(time, "EEEE");
+    } else if (days_old <= 180) {
+        return format(time, "MMM\u00A0dd");
+    }
+
+    return format(time, "MMM\u00A0dd,\u00A0yyyy");
 }
 
 // this is for rendering absolute time based off the preferences for twenty-four

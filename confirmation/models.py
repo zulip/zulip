@@ -18,6 +18,7 @@ from django.urls import reverse
 from django.utils.timezone import now as timezone_now
 from typing_extensions import Protocol
 
+from zerver.lib.types import UnspecifiedValue
 from zerver.models import EmailChangeStatus, MultiuseInvite, PreregistrationUser, Realm, UserProfile
 
 
@@ -70,7 +71,7 @@ def get_object_from_key(
     except Confirmation.DoesNotExist:
         raise ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST)
 
-    if timezone_now() > confirmation.expiry_date:
+    if confirmation.expiry_date is not None and timezone_now() > confirmation.expiry_date:
         raise ConfirmationKeyException(ConfirmationKeyException.EXPIRED)
 
     obj = confirmation.content_object
@@ -85,7 +86,7 @@ def create_confirmation_link(
     obj: Union[Realm, HasRealmObject, OptionalHasRealmObject],
     confirmation_type: int,
     *,
-    validity_in_days: Optional[int] = None,
+    validity_in_days: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
     url_args: Mapping[str, str] = {},
 ) -> str:
     # validity_in_days is an override for the default values which are
@@ -100,8 +101,12 @@ def create_confirmation_link(
 
     current_time = timezone_now()
     expiry_date = None
-    if validity_in_days:
-        expiry_date = current_time + datetime.timedelta(days=validity_in_days)
+    if not isinstance(validity_in_days, UnspecifiedValue):
+        if validity_in_days is None:
+            expiry_date = None
+        else:
+            assert validity_in_days is not None
+            expiry_date = current_time + datetime.timedelta(days=validity_in_days)
     else:
         expiry_date = current_time + datetime.timedelta(
             days=_properties[confirmation_type].validity_in_days
@@ -138,7 +143,7 @@ class Confirmation(models.Model):
     content_object = GenericForeignKey("content_type", "object_id")
     date_sent: datetime.datetime = models.DateTimeField(db_index=True)
     confirmation_key: str = models.CharField(max_length=40, db_index=True)
-    expiry_date: datetime.datetime = models.DateTimeField(db_index=True)
+    expiry_date: Optional[datetime.datetime] = models.DateTimeField(db_index=True, null=True)
     realm: Optional[Realm] = models.ForeignKey(Realm, null=True, on_delete=CASCADE)
 
     # The following list is the set of valid types

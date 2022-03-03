@@ -109,7 +109,7 @@ def billing_home(
             licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
             seat_count = get_latest_seat_count(user.realm)
 
-            # Should do this in javascript, using the user's timezone
+            # Should do this in JavaScript, using the user's time zone
             if plan.is_free_trial():
                 assert plan.next_invoice_date is not None
                 renewal_date = "{dt:%B} {dt.day}, {dt.year}".format(dt=plan.next_invoice_date)

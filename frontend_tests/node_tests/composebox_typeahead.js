@@ -1364,11 +1364,13 @@ test("begins_typeahead", ({override, override_rewire}) => {
     // time_jump
     assert_typeahead_equals("<tim", false);
     assert_typeahead_equals("<timerandom", false);
-    assert_typeahead_equals("<time", ["translated: Mention a timezone-aware time"]);
-    assert_typeahead_equals("<time:", ["translated: Mention a timezone-aware time"]);
-    assert_typeahead_equals("<time:something", ["translated: Mention a timezone-aware time"]);
-    assert_typeahead_equals("<time:something", "> ", ["translated: Mention a timezone-aware time"]);
-    assert_typeahead_equals("<time:something>", ["translated: Mention a timezone-aware time"]);
+    assert_typeahead_equals("<time", ["translated: Mention a time-zone-aware time"]);
+    assert_typeahead_equals("<time:", ["translated: Mention a time-zone-aware time"]);
+    assert_typeahead_equals("<time:something", ["translated: Mention a time-zone-aware time"]);
+    assert_typeahead_equals("<time:something", "> ", [
+        "translated: Mention a time-zone-aware time",
+    ]);
+    assert_typeahead_equals("<time:something>", ["translated: Mention a time-zone-aware time"]);
     assert_typeahead_equals("<time:something> ", false); // Already completed the mention
 
     // Following tests place the cursor before the second string

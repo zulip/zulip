@@ -22,3 +22,13 @@ class TestChoosePubDate(ZulipTestCase):
             self.assertTrue(
                 datetimes_list[i] - datetimes_list[i - 1] > timezone_timedelta(minutes=5)
             )
+
+
+class TestUserTimeZones(ZulipTestCase):
+    def test_timezones_assigned_to_users(self) -> None:
+        othello = self.example_user("othello")
+        self.assertEqual(othello.timezone, "US/Pacific")
+        shiva = self.example_user("shiva")
+        self.assertEqual(shiva.timezone, "Asia/Kolkata")
+        cordelia = self.example_user("cordelia")
+        self.assertEqual(cordelia.timezone, "UTC")

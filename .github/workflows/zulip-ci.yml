@@ -23,17 +23,15 @@ jobs:
             name: Debian 10 Buster (Python 3.7, backend + frontend)
             os: buster
             include_frontend_tests: true
-          # Focal ships with Python 3.8.2.
+          # Ubuntu 20.04 ships with Python 3.8.2.
           - docker_image: zulip/ci:focal
             name: Ubuntu 20.04 Focal (Python 3.8, backend)
             os: focal
-            is_focal: true
             include_frontend_tests: false
-          # Bullseye ships with Python 3.9.2.
+          # Debian 11 ships with Python 3.9.2.
           - docker_image: zulip/ci:bullseye
             name: Debian 11 Bullseye (Python 3.9, backend)
             os: bullseye
-            is_bullseye: true
             include_frontend_tests: false
 
     runs-on: ubuntu-latest
@@ -139,6 +137,13 @@ jobs:
           ./tools/setup/optimize-svg --check
           ./tools/setup/generate_integration_bots_avatars.py --check-missing
 
+          # Ban check-database-compatibility.py from transitively
+          # relying on static/generated, because it might not be
+          # up-to-date at that point in upgrade-zulip-stage-2.
+          chmod 000 static/generated
+          ./scripts/lib/check-database-compatibility.py
+          chmod 755 static/generated
+
       - name: Run documentation and api tests
         run: |
           source tools/ci/activate-venv
@@ -211,7 +216,7 @@ jobs:
           retention-days: 60
 
       - name: Check development database build
-        if: ${{ matrix.is_focal || matrix.is_bullseye }}
+        if: ${{ matrix.os == 'focal' || matrix.os == 'bullseye' || matrix.os == 'jammy' }}
         run: ./tools/ci/setup-backend
 
       - name: Report status

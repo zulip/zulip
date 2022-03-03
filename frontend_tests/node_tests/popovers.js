@@ -11,7 +11,6 @@ const {page_params} = require("../zjsunit/zpage_params");
 const noop = function () {};
 
 const rows = mock_esm("../../static/js/rows");
-const stream_data = mock_esm("../../static/js/stream_data");
 mock_esm("../../static/js/emoji_picker", {
     hide_emoji_popover: noop,
 });
@@ -183,7 +182,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
             user_circle_class: "user_circle_empty",
             user_last_seen_time_status:
                 "translated: Last active: translated: More than 2 weeks ago",
-            pm_with_uri: "#narrow/pm-with/42-alice",
+            pm_with_url: "#narrow/pm-with/42-alice",
             sent_by_uri: "#narrow/sender/42-alice",
             private_message_class: "respond_personal_button",
             show_email: false,
@@ -242,11 +241,6 @@ test_ui("actions_popover", ({override, override_rewire, mock_template}) => {
 
     override_rewire(message_edit, "get_editability", () => 4);
 
-    stream_data.id_to_slug = (stream_id) => {
-        assert.equal(stream_id, 123);
-        return "Bracket ( stream";
-    };
-
     target.closest = (sel) => {
         assert.equal(sel, ".message_row");
         return {
@@ -258,7 +252,7 @@ test_ui("actions_popover", ({override, override_rewire, mock_template}) => {
         // TODO: Test all the properties of the popover
         assert.equal(
             opts.conversation_time_uri,
-            "http://zulip.zulipdev.com/#narrow/stream/Bracket.20.28.20stream/topic/Actions.20.281.29/near/999",
+            "http://zulip.zulipdev.com/#narrow/stream/123-unknown/topic/Actions.20.281.29/near/999",
         );
         return "actions-content";
     });

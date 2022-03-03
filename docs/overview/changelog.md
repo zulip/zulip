@@ -1,7 +1,7 @@
 # Version history
 
 This page the release history for the Zulip server. See also the
-[Zulip release lifecycle](../overview/release-lifecycle.md).
+[Zulip release lifecycle](release-lifecycle.md).
 
 ## Zulip 5.x series
 
@@ -121,6 +121,23 @@ log][commit-log] for an up-to-date list of raw changes.
 
 ## Zulip 4.x series
 
+## Zulip 4.10 -- 2022-02-25
+
+- CVE-2022-21706: Reusable invitation links could be improperly used
+  for other organizations.
+- CVE-2021-3967: Enforce that regenerating an API key must be done
+  with an API key, not a cookie. Thanks to nhiephon
+  (twitter.com/\_nhiephon) for their responsible disclosure of this
+  vulnerability.
+- Fixed a bug with the `reindex-textual-data` tool, where it would
+  sometimes fail to find the libraries it needed.
+- Pin PostgreSQL to 10.19, 11.14, 12.9, 13.5 or 14.1 to avoid a
+  regression which caused deploys with PGroonga enabled to
+  unpredictably fail database queries with the error
+  `variable not found in subplan target list`.
+- Fix ARM64 support; however, the wal-g binary is not yet supported on
+  ARM64 (zulip/zulip#21070).
+
 ## Zulip 4.9 -- 2022-01-24
 
 - CVE-2021-43799: Remote execution of code involving RabbitMQ.
@@ -141,7 +158,7 @@ log][commit-log] for an up-to-date list of raw changes.
   updating the operating system hosting PostgreSQL, which previously
   omitted some indexes from its verification. If you updated the
   operating system of your Zulip instance from Ubuntu 18.04 to 20.04,
-  or from Debian Stretch to Debian Buster, you should run the tool,
+  or from Debian 9 to 10, you should run the tool,
   even if you did so previously; full details and instructions are
   available in the previous blog post.
 - Began routing requests from the Camo image proxy through a
@@ -397,12 +414,12 @@ log][commit-log] for an up-to-date list of raw changes.
   major release.
 
 [docker-zulip-manual]: https://github.com/zulip/docker-zulip#manual-configuration
-[smokescreen]: ../production/deployment.html#customizing-the-outgoing-http-proxy
-[update-settings-docs]: ../production/upgrade-or-modify.html#updating-settings-py-inline-documentation
+[smokescreen]: ../production/deployment.md#customizing-the-outgoing-http-proxy
+[update-settings-docs]: ../production/upgrade-or-modify.md#updating-settingspy-inline-documentation
 
 #### Full feature changelog
 
-- Added new [release lifecycle documentation](../overview/release-lifecycle.md).
+- Added new [release lifecycle documentation](release-lifecycle.md).
 - Added support for subscribing another stream's membership to a stream.
 - Added RealmAuditLog for most settings state changes in Zulip; this
   data will facilitate future features showing a log of activity by
@@ -422,8 +439,8 @@ log][commit-log] for an up-to-date list of raw changes.
 - Added API endpoint to fetch presence details by user ID.
 - Added new LDAP configuration options for servers hosting multiple organizations.
 - Added new `@**|user_id**` mention syntax intended for use in bots.
-- Added preliminary support for Zulip on Debian Bullseye; this
-  release is expected to support Bullseye without any further changes.
+- Added preliminary support for Zulip on Debian 11; this
+  release is expected to support Debian 11 without any further changes.
 - Added several useful new management commands, including
   `change_realm_subdomain` and `delete_user`.
 - Added support for subscribing all members of a user group to a stream.
@@ -517,7 +534,7 @@ log][commit-log] for an up-to-date list of raw changes.
   codebase with Prettier.
 - Migrated testing from CircleCI to GitHub Actions.
 
-[zulip-conf-settings]: ../production/deployment.html#system-and-deployment-configuration
+[zulip-conf-settings]: ../production/deployment.md#system-and-deployment-configuration
 
 ## Zulip 3.x series
 
@@ -686,8 +703,8 @@ log][commit-log] for an up-to-date list of raw changes.
 - The changelog now has a section that makes it easy to find the
   Upgrade notes for all releases one is upgrading across.
 
-[manage-shell]: ../production/management-commands.html#manage-py-shell
-[postgresql-upgrade]: ../production/upgrade-or-modify.html#upgrading-postgresql
+[manage-shell]: ../production/management-commands.md#managepy-shell
+[postgresql-upgrade]: ../production/upgrade-or-modify.md#upgrading-postgresql
 
 #### Full feature changelog
 
@@ -708,7 +725,7 @@ log][commit-log] for an up-to-date list of raw changes.
 - Added new email address visibility option hiding real email
   addresses from organization administrators in the Zulip UI.
 - Added new "Mention time" Markdown feature to communicate about times
-  in a timezone-aware fashion.
+  in a time-zone-aware fashion.
 - Added new "Spoiler" Markdown feature to hide text until interaction.
 - Added a new API that allows the mobile/desktop/terminal apps to
   open uploaded files in an external browser that may not be logged in.
@@ -841,7 +858,7 @@ log][commit-log] for an up-to-date list of raw changes.
 ### 2.1.6 -- 2020-06-17
 
 - Fixed use of Python 3.6+ syntax in 2.1.5 release that prevented
-  installation on Ubuntu Xenial.
+  installation on Ubuntu 16.04.
 
 ### 2.1.5 -- 2020-06-16
 
@@ -953,7 +970,7 @@ details.
 
 #### Highlights
 
-- Added support for Debian buster. Removed support for EOL Ubuntu Trusty.
+- Added support for Debian 10. Removed support for EOL Ubuntu 14.04.
 - Added support for SAML authentication.
 - Removed our dependency on `tsearch_extras`, making it possible to
   run a production Zulip server against any PostgreSQL database
@@ -981,7 +998,7 @@ details.
 - We merged significant preparatory work for supporting RHEL/CentOS in
   production. We're now interested in beta testers for this feature.
 - Reorganized Zulip's documentation for sysadmins, and added [new
-  documentation](../production/upgrade-or-modify.html#modifying-zulip)
+  documentation](../production/upgrade-or-modify.md#modifying-zulip)
   on maintaining a fork of Zulip.
 - Added new `streams:public` search operator that searches the public
   history of all streams in the organization (even before you joined).
@@ -1017,7 +1034,7 @@ details.
   Zulip how to look up a user in LDAP given their email address:
   `AUTH_LDAP_REVERSE_EMAIL_SEARCH` and `AUTH_LDAP_USERNAME_ATTR`. See
   the [LDAP configuration
-  instructions](../production/authentication-methods.html#ldap-including-active-directory)
+  instructions](../production/authentication-methods.md#ldap-including-active-directory)
   for details. You can use the usual `manage.py query_ldap` method to
   verify whether your configuration is working correctly.
 - The Zulip web and desktop apps have been converted to directly count
@@ -1195,7 +1212,7 @@ details.
 
 ### 2.0.6 -- 2019-09-23
 
-- Updated signing keys for the PGroonga repository for Debian Stretch.
+- Updated signing keys for the PGroonga repository for Debian 9.
 - Fixed creation of linkifiers with URLs containing &.
 - Fixed a subtle bug that could cause the message list to suddenly
   scroll up in certain rare race conditions.
@@ -1204,7 +1221,7 @@ details.
 
 - CVE-2019-16215: Fix DoS vulnerability in Markdown LINK_RE.
 - CVE-2019-16216: Fix MIME type validation.
-- Fixed email gateway postfix configuration for Ubuntu Bionic.
+- Fixed email gateway postfix configuration for Ubuntu 18.04.
 - Fixed support for hidden_by_limit messages in Slack import.
 - Fixed confusing output from the `knight` management command.
 
@@ -1244,7 +1261,7 @@ details.
 
 ### 2.0.1 -- 2019-03-04
 
-- Fixed handling of uploaded file routing on Ubuntu Trusty.
+- Fixed handling of uploaded file routing on Ubuntu 14.04.
 - Fixed buggy behavior of branding logos in night theme.
 - Fixed handling of deployment directories being owned by root.
 - The styling of "unavailable" status icons is now less prominent.
@@ -1273,9 +1290,9 @@ details.
   Our HipChat and Slack import tools are now well-tested with millions
   of messages, 10,000s of users, and 100,000s of uploaded files.
 - Added a built-in tool for backups and restoration.
-- Deprecated support for Ubuntu Trusty. Zulip 2.0.x will continue to
-  support Ubuntu Trusty, but Zulip 2.1.0 will remove support for
-  installing on Trusty.
+- Deprecated support for Ubuntu 14.04. Zulip 2.0.x will continue to
+  support Ubuntu 14.04, but Zulip 2.1.0 will remove support for
+  installing on Ubuntu 14.04.
 
 #### Upgrade notes for 2.0.0
 
@@ -1285,7 +1302,7 @@ details.
   and is enabled by default in that case. To disable it, set
   `SUBMIT_USAGE_STATISTICS = False` in `/etc/zulip/settings.py`.
 
-[mpns-statistics-docs]: ../production/mobile-push-notifications.html#submitting-statistics
+[mpns-statistics-docs]: ../production/mobile-push-notifications.md#submitting-statistics
 
 #### Full feature changelog
 
@@ -1390,10 +1407,10 @@ Zulip installations; it has minimal changes for existing servers.
 
 #### Highlights
 
-- Support for Ubuntu bionic and Debian stretch (our first non-Ubuntu
+- Support for Ubuntu 18.04 and Debian 9 (our first non-Ubuntu
   platform!). We expect to deprecate support for installing a new
-  Zulip server on Ubuntu Trusty in the coming months, in preparation
-  for Trusty’s end-of-life in April 2019.
+  Zulip server on Ubuntu 14.04 in the coming months, in preparation
+  for Ubuntu 14.04’s end-of-life in April 2019.
 - New data import tools for HipChat and Gitter. The Slack importer
   is now out of beta.
 - Zulip Python process startup time is about 30% faster; this effort
@@ -1431,9 +1448,8 @@ Zulip installations; it has minimal changes for existing servers.
   disruption by running this migration first, before beginning the
   user-facing downtime. However, if you'd like to watch the downtime
   phase of the upgrade closely, we recommend
-  [running them first manually](../production/expensive-migrations.md)
-  and as well as the usual trick of
-  doing an apt upgrade first.
+  [running them first manually](https://zulip.readthedocs.io/en/1.9.0/production/expensive-migrations.html)
+  as well as the usual trick of doing an apt upgrade first.
 
 #### Full feature changelog
 
@@ -1444,7 +1460,7 @@ Zulip installations; it has minimal changes for existing servers.
 - Renamed the hotkey for starring a message to Ctrl+S.
 - Added the new `SOCIAL_AUTH_SUBDOMAIN` setting, which all servers using
   both GitHub authentication and hosting multiple Zulip organizations
-  should set (see [the docs for details](../production/multiple-organizations.html#authentication)).
+  should set (see [the docs for details](../production/multiple-organizations.md#authentication)).
 - Added automatic thumbnailing of images, powered by thumbor. The new
   THUMBOR_URL setting controls this feature; it is disabled by default
   in this release, because the mobile apps don't support it yet.
@@ -1550,9 +1566,9 @@ Zulip installations; it has minimal changes for existing servers.
   organization administrators can remove users, edit descriptions, and
   rename private streams they are not subscribed to. See Zulip's
   security model documentation for details.
-- On Xenial, the local uploads backend now does the same security
+- On Ubuntu 16.04, the local uploads backend now does the same security
   checks that the S3 backend did before serving files to users.
-  Ubuntu Trusty's version of nginx is too old to support this and so
+  Ubuntu 14.04's version of nginx is too old to support this and so
   the legacy model is the default; we recommend upgrading.
 - Added an organization setting to limit creation of bots.
 - Refactored the authentication backends codebase to be much easier to
@@ -1821,9 +1837,8 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
   minimizes disruption by running these first, before beginning the
   user-facing downtime. However, if you'd like to watch the downtime
   phase of the upgrade closely, we recommend
-  [running them first manually](../production/expensive-migrations.md) and as well
-  as the usual trick of
-  doing an apt upgrade first.
+  [running them first manually](https://zulip.readthedocs.io/en/1.9.0/production/expensive-migrations.html)
+  as well as the usual trick of doing an apt upgrade first.
 
 - We've removed support for an uncommon legacy deployment model where
   a Zulip server served multiple organizations on the same domain.
@@ -2220,7 +2235,7 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 - Fixed unnecessary loading of zxcvbn password strength checker. This
   saves a huge fraction of the uncached network transfer for loading
   Zulip.
-- Added support for using Ubuntu Xenial in production.
+- Added support for using Ubuntu 16.04 in production.
 - Added a powerful and complete realm import/export tool.
 - Added nice UI for selecting a default language to display settings.
 - Added UI for searching streams in left sidebar with hotkeys.
@@ -2447,15 +2462,15 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 This section links to the upgrade notes from past releases, so you can
 easily read them all when upgrading across multiple releases.
 
-- [Draft upgrade notes for 5.0](#upgrade-notes-for-5-0)
-- [Upgrade notes for 4.0](#upgrade-notes-for-4-0)
-- [Upgrade notes for 3.0](#upgrade-notes-for-3-0)
-- [Upgrade notes for 2.1.5](#upgrade-notes-for-2-1-5)
-- [Upgrade notes for 2.1.0](#upgrade-notes-for-2-1-0)
-- [Upgrade notes for 2.0.0](#upgrade-notes-for-2-0-0)
-- [Upgrade notes for 1.9.0](#upgrade-notes-for-1-9-0)
-- [Upgrade notes for 1.8.0](#upgrade-notes-for-1-8-0)
-- [Upgrade notes for 1.7.0](#upgrade-notes-for-1-7-0)
+- [Draft upgrade notes for 5.0](#upgrade-notes-for-50)
+- [Upgrade notes for 4.0](#upgrade-notes-for-40)
+- [Upgrade notes for 3.0](#upgrade-notes-for-30)
+- [Upgrade notes for 2.1.5](#upgrade-notes-for-215)
+- [Upgrade notes for 2.1.0](#upgrade-notes-for-210)
+- [Upgrade notes for 2.0.0](#upgrade-notes-for-200)
+- [Upgrade notes for 1.9.0](#upgrade-notes-for-190)
+- [Upgrade notes for 1.8.0](#upgrade-notes-for-180)
+- [Upgrade notes for 1.7.0](#upgrade-notes-for-170)
 
 [docker-zulip]: https://github.com/zulip/docker-zulip
 [commit-log]: https://github.com/zulip/zulip/commits/main

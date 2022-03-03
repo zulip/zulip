@@ -48,9 +48,9 @@ service (or back):
   decommissioning a Zulip organization.
 
 - It's possible to set up [PostgreSQL streaming
-  replication](../production/deployment.html#postgresql-warm-standby)
+  replication](deployment.md#postgresql-warm-standby)
   and the [S3 file upload
-  backend](../production/upload-backends.html#s3-backend-configuration)
+  backend](upload-backends.md#s3-backend-configuration)
   as part of a high availability environment.
 
 ## Backups
@@ -99,7 +99,7 @@ disrupting service (e.g. `zuliptest.example.com` rather than
 `zulip.example.com`).
 
 If you do so, just like any other time you change the hostname, you'll
-need to [update `EXTERNAL_HOST`](../production/settings.md) and then
+need to [update `EXTERNAL_HOST`](settings.md) and then
 restart the Zulip server (after backup restoration completes).
 
 Until you do, your Zulip server will think its user-facing hostname is
@@ -118,7 +118,7 @@ extracting the entire archive.
 tar -Oaxf /path/to/archive/zulip-backup-rest.tar.gz zulip-backup/zulip-version
 ```
 
-[install-server]: ../production/install.md
+[install-server]: install.md
 
 ### What is included
 
@@ -134,7 +134,7 @@ and you may want to back up separately:
   the rest of the data for a Zulip server.
 
 - Files uploaded with the Zulip
-  [S3 file upload backend](../production/upload-backends.md). We
+  [S3 file upload backend](upload-backends.md). We
   don't include these for two reasons. First, the uploaded file data
   in S3 can easily be many times larger than the rest of the backup,
   and downloading it all to a server doing a backup could easily
@@ -193,7 +193,7 @@ data includes:
   filenames are computed using a hash of `avatar_salt` and user's
   email), etc.
 
-[export-import]: ../production/export-and-import.md
+[export-import]: export-and-import.md
 
 ### Restore from manual backups
 
@@ -285,7 +285,7 @@ archive of all the organization's uploaded files.
 
 ## Import into a new Zulip server
 
-1. [Install a new Zulip server](../production/install.md),
+1. [Install a new Zulip server](install.md),
    **skipping Step 3** (you'll create your Zulip organization via the data
    import tool instead).
 
@@ -320,7 +320,7 @@ archive of all the organization's uploaded files.
      `/etc/zulip/zulip-secrets.conf` (details below).
    - If you copy `zulip_org_id` and `zulip_org_key` (the credentials
      for the [mobile push notifications
-     service](../production/mobile-push-notifications.md)), you should
+     service](mobile-push-notifications.md)), you should
      be very careful to make sure the no users had their IDs
      renumbered during the import process (this can be checked using
      `manage.py shell` with some care). The push notifications
@@ -365,7 +365,7 @@ cd /home/zulip/deployments/current
 This could take several minutes to run depending on how much data you're
 importing.
 
-[upgrade-zulip-from-git]: ../production/upgrade-or-modify.html#upgrading-from-a-git-repository
+[upgrade-zulip-from-git]: upgrade-or-modify.md#upgrading-from-a-git-repository
 
 #### Import options
 
@@ -411,10 +411,10 @@ delete the test import data from your Zulip server before doing a
 final import. You can **permanently delete** all data from a Zulip
 organization using the following procedure:
 
-- Start a [Zulip management shell](../production/management-commands.html#manage-py-shell)
+- Start a [Zulip management shell](management-commands.md#managepy-shell)
 - In the management shell, run the following commands, replacing `""`
   with the subdomain if [you are hosting the organization on a
-  subdomain](../production/multiple-organizations.md):
+  subdomain](multiple-organizations.md):
 
 ```python
 realm = Realm.objects.get(string_id="")
@@ -430,7 +430,7 @@ Now, exit the management shell and run this to clear Zulip's cache:
 ```
 
 Assuming you're using the
-[local file uploads backend](../production/upload-backends.md), you
+[local file uploads backend](upload-backends.md), you
 can additionally delete all file uploads, avatars, and custom emoji on
 a Zulip server (across **all organizations**) with the following
 command:

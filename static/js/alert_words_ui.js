@@ -5,20 +5,27 @@ import render_alert_word_settings_item from "../templates/settings/alert_word_se
 import * as alert_words from "./alert_words";
 import * as channel from "./channel";
 import {$t} from "./i18n";
+import * as ListWidget from "./list_widget";
 
-export function render_alert_words_ui() {
+export let loaded = false;
+
+export function rerender_alert_words_ui() {
+    if (!loaded) {
+        return;
+    }
+
     const words = alert_words.get_word_list();
     words.sort();
-    const word_list = $("#alert_words_list");
+    const word_list = $("#alert-words-table");
 
-    word_list.find(".alert-word-item").remove();
-
-    for (const alert_word of words) {
-        const rendered_alert_word = render_alert_word_settings_item({
-            word: alert_word,
-        });
-        word_list.append(rendered_alert_word);
-    }
+    ListWidget.create(word_list, words, {
+        name: "alert-words-list",
+        modifier(alert_word) {
+            return render_alert_word_settings_item({alert_word});
+        },
+        parent_container: $("#alert-word-settings"),
+        simplebar_container: $("#alert-word-settings .progressive-table-wrapper"),
+    });
 
     // Focus new alert word name text box.
     $("#create_alert_word_name").trigger("focus");
@@ -83,15 +90,15 @@ function remove_alert_word(alert_word) {
 
 export function set_up_alert_words() {
     // The settings page must be rendered before this function gets called.
-
-    render_alert_words_ui();
+    loaded = true;
+    rerender_alert_words_ui();
 
     $("#create_alert_word_form").on("click", "#create_alert_word_button", () => {
         const word = $("#create_alert_word_name").val();
         add_alert_word(word);
     });
 
-    $("#alert_words_list").on("click", ".remove-alert-word", (event) => {
+    $("#alert-words-table").on("click", ".remove-alert-word", (event) => {
         const word = $(event.currentTarget).parents("tr").find(".value").text().trim();
         remove_alert_word(word);
     });
@@ -110,4 +117,8 @@ export function set_up_alert_words() {
         const alert = $(event.currentTarget).parents(".alert");
         alert.hide();
     });
+}
+
+export function reset() {
+    loaded = false;
 }

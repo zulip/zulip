@@ -11,6 +11,7 @@ import * as message_lists from "./message_lists";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popovers from "./popovers";
+import * as rendered_markdown from "./rendered_markdown";
 import * as rows from "./rows";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
@@ -125,6 +126,13 @@ export function fetch_and_render_message_history(message) {
                     edited_messages: content_edit_history,
                 }),
             );
+            // Pass the history through rendered_markdown.js
+            // to update dynamic_elements in the content.
+            $("#message-history")
+                .find(".rendered_markdown")
+                .each(function () {
+                    rendered_markdown.update_elements($(this));
+                });
         },
         error(xhr) {
             ui_report.error(

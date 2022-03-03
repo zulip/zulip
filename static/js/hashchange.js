@@ -7,6 +7,7 @@ import * as browser_history from "./browser_history";
 import * as drafts from "./drafts";
 import * as floating_recipient_bar from "./floating_recipient_bar";
 import * as hash_util from "./hash_util";
+import {$t_html} from "./i18n";
 import * as info_overlay from "./info_overlay";
 import * as invite from "./invite";
 import * as message_lists from "./message_lists";
@@ -24,6 +25,7 @@ import * as settings_toggle from "./settings_toggle";
 import * as spectators from "./spectators";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as top_left_corner from "./top_left_corner";
+import * as ui_report from "./ui_report";
 import * as ui_util from "./ui_util";
 import {user_settings} from "./user_settings";
 
@@ -136,7 +138,18 @@ function do_hashchange_normal(from_reload) {
         case "#narrow": {
             maybe_hide_recent_topics();
             ui_util.change_tab_to("#message_feed_container");
-            const operators = hash_util.parse_narrow(hash);
+            let operators;
+            try {
+                // TODO: Show possible valid URLs to the user.
+                operators = hash_util.parse_narrow(hash);
+            } catch {
+                ui_report.error(
+                    $t_html({defaultMessage: "Invalid URL"}),
+                    undefined,
+                    $("#home-error"),
+                    2000,
+                );
+            }
             if (operators === undefined) {
                 // If the narrow URL didn't parse,
                 // send them to default_view.

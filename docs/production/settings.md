@@ -28,7 +28,7 @@ from an old version of Zulip, we recommend [carefully updating your
 comment documentation for new configuration settings after upgrading
 to each new major release.
 
-[update-settings-docs]: ../production/upgrade-or-modify.html#updating-settings-py-inline-documentation
+[update-settings-docs]: upgrade-or-modify.md#updating-settingspy-inline-documentation
 [settings-py-template]: https://github.com/zulip/zulip/blob/main/zproject/prod_settings_template.py
 
 Since Zulip's settings file is a Python script, there are a number of
@@ -61,7 +61,7 @@ If you want an additional or different authentication backend, you
 will need to uncomment one or more and then do any additional
 configuration required for that backend as documented in the
 `settings.py` file. See the
-[section on authentication](../production/authentication-methods.md) for more
+[section on authentication](authentication-methods.md) for more
 detail on the available authentication backends and how to configure
 them.
 
@@ -112,9 +112,9 @@ Some popular settings in `/etc/zulip/settings.py` include:
 
 - The Twitter integration, which provides pretty inline previews of
   tweets.
-- The [email gateway](../production/email-gateway.md), which lets
+- The [email gateway](email-gateway.md), which lets
   users send emails into Zulip.
-- The [Video call integrations](../production/video-calls.md).
+- The [Video call integrations](video-calls.md).
 
 ## Zulip announcement list
 
@@ -132,5 +132,5 @@ request; we love even small contributions, and we'd love to make the
 Zulip documentation cover everything anyone might want to know about
 running Zulip in production.
 
-Next: [Backups, export and import](../production/export-and-import.md) and
-[upgrading](../production/upgrade-or-modify.md) Zulip in production.
+Next: [Backups, export and import](export-and-import.md) and
+[upgrading](upgrade-or-modify.md) Zulip in production.

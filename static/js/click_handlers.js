@@ -44,6 +44,7 @@ import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as topic_list from "./topic_list";
 import * as ui_util from "./ui_util";
+import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import * as user_profile from "./user_profile";
 import * as util from "./util";
@@ -245,7 +246,7 @@ export function initialize() {
         // so we re-encode the hash.
         const stream_id = Number.parseInt($(this).attr("data-stream-id"), 10);
         if (stream_id) {
-            browser_history.go_to_location(hash_util.by_stream_uri(stream_id));
+            browser_history.go_to_location(hash_util.by_stream_url(stream_id));
             return;
         }
         window.location.href = $(this).attr("href");
@@ -577,6 +578,11 @@ export function initialize() {
             ...user_list_tooltip_props,
             placement,
             content: render_buddy_list_tooltip_content(title_data),
+            delay: 0,
+            content: () => parse_html(render_buddy_list_tooltip_content(title_data)),
+            arrow: true,
+            placement,
+            showOnCreate: true,
             onHidden: (instance) => {
                 if (status_emoji_name_tooltip) {
                     status_emoji_name_tooltip.destroy();

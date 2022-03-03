@@ -384,7 +384,7 @@ it as follows:
      the "SAML ACS url" in SAML terminology.
 
      If you're
-     [hosting multiple organizations](../production/multiple-organizations.html#authentication),
+     [hosting multiple organizations](multiple-organizations.md#authentication),
      you need to use `SOCIAL_AUTH_SUBDOMAIN`. For example,
      if `SOCIAL_AUTH_SUBDOMAIN="auth"` and `EXTERNAL_HOST=zulip.example.com`,
      this should be `https://auth.zulip.example.com/complete/saml/`.
@@ -478,7 +478,7 @@ it as follows:
    profile fields during login, not during account creation; we
    consider this [a bug](https://github.com/zulip/zulip/issues/18746).
 
-1. [Restart the Zulip server](../production/settings.md) to ensure
+1. [Restart the Zulip server](settings.md) to ensure
    your settings changes take effect. The Zulip login page should now
    have a button for SAML authentication that you can use to log in or
    create an account (including when creating a new organization).
@@ -817,7 +817,7 @@ self-hosted servers. To do so, you'll need to do the following:
 [apple-developer]: https://developer.apple.com/account/resources/
 [apple-create-private-key]: https://help.apple.com/developer-account/?lang=en#/dev77c875b7e
 [apple-get-started]: https://developer.apple.com/sign-in-with-apple/get-started/
-[outgoing-email]: ../production/email.md
+[outgoing-email]: email.md
 
 ## OpenID Connect
 
@@ -876,4 +876,4 @@ passwordless login as any user in a development environment. It's
 mentioned on this page only for completeness.
 
 [custom-profile-fields]: https://zulip.com/help/add-custom-profile-fields
-[update-inline-comments]: ../production/upgrade-or-modify.html#updating-settings-py-inline-documentation
+[update-inline-comments]: upgrade-or-modify.md#updating-settingspy-inline-documentation

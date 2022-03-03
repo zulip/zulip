@@ -472,7 +472,6 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "content": new_body,
             },
         )
@@ -492,7 +491,6 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "content": new_body,
             },
         )
@@ -563,6 +561,9 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             password = initial_password(email)
             if password is not None:
                 self.register(email, password, subdomain=realm_id)
+                # self.register has the side-effect of ending up with a logged in session
+                # for the new user. We don't want that in these tests.
+                self.logout()
             return get_user_by_delivery_email(email, get_realm(realm_id))
 
         test_subdomain = "uploadtest.example.com"

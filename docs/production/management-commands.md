@@ -52,7 +52,7 @@ containing system-internal bots like `Notification Bot`; you are
 unlikely to ever need to interact with that realm.)
 
 Unless you are
-[hosting multiple organizations on your Zulip server](../production/multiple-organizations.md),
+[hosting multiple organizations on your Zulip server](multiple-organizations.md),
 your single Zulip organization on the root domain will have the empty
 string (`''`) as its `string_id`. So you can run e.g.:
 
@@ -123,7 +123,7 @@ There are dozens of useful management commands under
   UI](https://zulip.com/help/change-a-users-role)) or give bots the
   `can_forge_sender` permission, which is needed for certain special API features.
 - `./manage.py export_single_user`: does a limited version of the [main
-  export tools](../production/export-and-import.md) containing just
+  export tools](export-and-import.md) containing just
   the messages accessible by a single user.
 - `./manage.py reactivate_realm`: Reactivates a realm.
 - `./manage.py deactivate_user`: Deactivates a user. This can be done
@@ -148,7 +148,7 @@ self-hosted Zulip server:
   [webhook integration][webhook-integrations] or [bot][writing-bots].
 - Writing a program using the [Zulip API][zulip-api].
 - [Modifying the Zulip server][modifying-zulip].
-- Using the interactive [management shell](#manage-py-shell),
+- Using the interactive [management shell](#managepy-shell),
   documented above, for one-time work or prototyping.
 - Writing a custom management command, detailed here.
 
@@ -171,12 +171,12 @@ the Zulip server.
 Instead, we recommend deploying custom management commands either via
 the [modifying Zulip][modifying-zulip] process or by storing them in
 `/etc/zulip` (so they are included in
-[backups](../production/export-and-import.html#backups)) and then
+[backups](export-and-import.md#backups)) and then
 symlinking them into
 `/home/zulip/deployments/current/zerver/management/` after each
 upgrade.
 
-[modifying-zulip]: ../production/upgrade-or-modify.html#modifying-zulip
+[modifying-zulip]: upgrade-or-modify.md#modifying-zulip
 [writing-bots]: https://zulip.com/api/writing-bots
 [integrations]: https://zulip.com/integrations
 [zulip-api]: https://zulip.com/api/rest

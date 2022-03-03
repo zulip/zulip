@@ -1,9 +1,7 @@
-import $ from "jquery";
+import * as internal_url from "../shared/js/internal_url";
 
-import {$t_html} from "./i18n";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
-import * as ui_report from "./ui_report";
 
 export function get_hash_category(hash) {
     // given "#streams/subscribed", returns "streams"
@@ -30,20 +28,6 @@ export function get_current_hash_section() {
     return get_hash_section(window.location.hash);
 }
 
-const hashReplacements = new Map([
-    ["%", "."],
-    ["(", ".28"],
-    [")", ".29"],
-    [".", ".2E"],
-]);
-
-// Some browsers zealously URI-decode the contents of
-// window.location.hash.  So we hide our URI-encoding
-// by replacing % with . (like MediaWiki).
-export function encodeHashComponent(str) {
-    return encodeURIComponent(str).replace(/[%().]/g, (matched) => hashReplacements.get(matched));
-}
-
 export function build_reload_url() {
     let hash = window.location.hash;
     if (hash.length !== 0 && hash[0] === "#") {
@@ -64,15 +48,7 @@ export function encode_operand(operator, operand) {
         return encode_stream_name(operand);
     }
 
-    return encodeHashComponent(operand);
-}
-
-export function encode_stream_id(stream_id) {
-    // stream_data appends the stream name, but it does not do the
-    // URI encoding piece
-    const slug = stream_data.id_to_slug(stream_id);
-
-    return encodeHashComponent(slug);
+    return internal_url.encodeHashComponent(operand);
 }
 
 export function encode_stream_name(operand) {
@@ -80,27 +56,7 @@ export function encode_stream_name(operand) {
     // URI encoding piece
     operand = stream_data.name_to_slug(operand);
 
-    return encodeHashComponent(operand);
-}
-
-export function decodeHashComponent(str) {
-    try {
-        // This fails for URLs containing
-        // foo.foo or foo%foo due to our fault in special handling
-        // of such characters when encoding. This can also,
-        // fail independent of our fault, so just tell the user
-        // that the URL is invalid.
-        // TODO: Show possible valid URLs to the user.
-        return decodeURIComponent(str.replace(/\./g, "%"));
-    } catch {
-        ui_report.error(
-            $t_html({defaultMessage: "Invalid URL"}),
-            undefined,
-            $("#home-error"),
-            2000,
-        );
-        return "";
-    }
+    return internal_url.encodeHashComponent(operand);
 }
 
 export function decode_operand(operator, operand) {
@@ -111,7 +67,7 @@ export function decode_operand(operator, operand) {
         }
     }
 
-    operand = decodeHashComponent(operand);
+    operand = internal_url.decodeHashComponent(operand);
 
     if (operator === "stream") {
         return stream_data.slug_to_name(operand);
@@ -120,12 +76,14 @@ export function decode_operand(operator, operand) {
     return operand;
 }
 
-export function by_stream_uri(stream_id) {
-    return "#narrow/stream/" + encode_stream_id(stream_id);
+export function by_stream_url(stream_id) {
+    // Wrapper for web use of internal_url.by_stream_url
+    return internal_url.by_stream_url(stream_id, stream_data.maybe_get_stream_name);
 }
 
-export function by_stream_topic_uri(stream_id, topic) {
-    return "#narrow/stream/" + encode_stream_id(stream_id) + "/topic/" + encodeHashComponent(topic);
+export function by_stream_topic_url(stream_id, topic) {
+    // Wrapper for web use of internal_url.by_stream_topic_url
+    return internal_url.by_stream_topic_url(stream_id, topic, stream_data.maybe_get_stream_name);
 }
 
 // Encodes an operator list into the
@@ -146,7 +104,7 @@ export function operators_to_hash(operators) {
             hash +=
                 "/" +
                 sign +
-                encodeHashComponent(operator) +
+                internal_url.encodeHashComponent(operator) +
                 "/" +
                 encode_operand(operator, operand);
         }
@@ -155,16 +113,16 @@ export function operators_to_hash(operators) {
     return hash;
 }
 
-export function by_sender_uri(reply_to) {
+export function by_sender_url(reply_to) {
     return operators_to_hash([{operator: "sender", operand: reply_to}]);
 }
 
-export function pm_with_uri(reply_to) {
+export function pm_with_url(reply_to) {
     const slug = people.emails_to_slug(reply_to);
     return "#narrow/pm-with/" + slug;
 }
 
-export function huddle_with_uri(user_ids_string) {
+export function huddle_with_url(user_ids_string) {
     // This method is convenient for callers
     // that have already converted emails to a comma-delimited
     // list of user_ids.  We should be careful to keep this
@@ -172,7 +130,7 @@ export function huddle_with_uri(user_ids_string) {
     return "#narrow/pm-with/" + user_ids_string + "-group";
 }
 
-export function by_conversation_and_time_uri(message) {
+export function by_conversation_and_time_url(message) {
     const absolute_url =
         window.location.protocol +
         "//" +
@@ -180,17 +138,17 @@ export function by_conversation_and_time_uri(message) {
         "/" +
         window.location.pathname.split("/")[1];
 
-    const suffix = "/near/" + encodeHashComponent(message.id);
+    const suffix = "/near/" + internal_url.encodeHashComponent(message.id);
 
     if (message.type === "stream") {
-        return absolute_url + by_stream_topic_uri(message.stream_id, message.topic) + suffix;
+        return absolute_url + by_stream_topic_url(message.stream_id, message.topic) + suffix;
     }
 
     return absolute_url + people.pm_perma_link(message) + suffix;
 }
 
-export function stream_edit_uri(sub) {
-    const hash = `#streams/${sub.stream_id}/${encodeHashComponent(sub.name)}`;
+export function stream_edit_url(sub) {
+    const hash = `#streams/${sub.stream_id}/${internal_url.encodeHashComponent(sub.name)}`;
     return hash;
 }
 
@@ -200,12 +158,14 @@ export function search_public_streams_notice_url(operators) {
 }
 
 export function parse_narrow(hash) {
+    // This will throw an exception when passed an invalid hash
+    // at the decodeHashComponent call, handle appropriately.
     let i;
     const operators = [];
     for (i = 1; i < hash.length; i += 2) {
         // We don't construct URLs with an odd number of components,
         // but the user might write one.
-        let operator = decodeHashComponent(hash[i]);
+        let operator = internal_url.decodeHashComponent(hash[i]);
         // Do not parse further if empty operator encountered.
         if (operator === "") {
             break;

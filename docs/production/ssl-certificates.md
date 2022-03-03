@@ -81,7 +81,7 @@ Internet.
 If you need to configure a multiple domain certificate, you can generate
 one as described in the section below after installing Zulip.
 
-[doc-install-script]: ../production/install.html#step-2-install-zulip
+[doc-install-script]: install.md#step-2-install-zulip
 
 ### After Zulip is already installed
 

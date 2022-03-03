@@ -4,7 +4,7 @@ This page explains how to upgrade, patch, or modify Zulip, including:
 
 - [Upgrading to a release](#upgrading-to-a-release)
 - [Upgrading from a Git repository](#upgrading-from-a-git-repository)
-- [Updating `settings.py` inline documentation](#updating-settings-py-inline-documentation)
+- [Updating `settings.py` inline documentation](#updating-settingspy-inline-documentation)
 - [Troubleshooting and rollback](#troubleshooting-and-rollback)
 - [Preserving local changes to service configuration files](#preserving-local-changes-to-service-configuration-files)
 - [Upgrading the operating system](#upgrading-the-operating-system)
@@ -20,7 +20,7 @@ or have [modified Zulip-managed configuration
 files](#preserving-local-changes-to-service-configuration-files). To upgrade
 to a new Zulip release:
 
-1. Read the [upgrade notes](../overview/changelog.html#upgrade-notes)
+1. Read the [upgrade notes](../overview/changelog.md#upgrade-notes)
    for all releases newer than what is currently installed.
 
 1. Download the appropriate release tarball from
@@ -60,7 +60,7 @@ involved (these will be documented in the [release
 notes](../overview/changelog.md), and usually can be avoided with
 some care). If downtime is problematic for your organization,
 consider testing the upgrade on a
-[backup](../production/export-and-import.html#backups) in advance,
+[backup](export-and-import.md#backups) in advance,
 doing the final upgrade at off hours, or buying a support contract.
 
 See the [troubleshooting guide](#troubleshooting-and-rollback) if you
@@ -156,13 +156,13 @@ suggest using that updated template to update
    su zulip -c '/home/zulip/deployments/current/scripts/restart-server'
    ```
 
-[backups]: ../production/export-and-import.html#backups
+[backups]: export-and-import.md#backups
 [changelog]: ../overview/changelog.md
 
 ## Troubleshooting and rollback
 
 See also the general Zulip server [troubleshooting
-guide](../production/troubleshooting.md).
+guide](troubleshooting.md).
 
 The upgrade scripts are idempotent, so there's no harm in trying again
 after resolving an issue. The most common causes of errors are:
@@ -298,7 +298,7 @@ instructions for other supported platforms.
    collations. Regenerate the affected indexes by running:
 
    ```bash
-   /home/zulip/deployments/current/zulip-py3-venv/bin/python /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
+   /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
    ```
 
 6. Finally, we need to reinstall the current version of Zulip, which
@@ -323,9 +323,9 @@ instructions for other supported platforms.
    only upgrade to Zulip 3.0 and newer after completing this process,
    since newer releases don't support Ubuntu 16.04 Xenial.
 
-2. Same as for Bionic to Focal.
+2. Same as for Ubuntu 18.04 to 20.04.
 
-3. Same as for Bionic to Focal.
+3. Same as for Ubuntu 18.04 to 20.04.
 
 4. As root, upgrade the database installation and OS configuration to
    match the new OS version:
@@ -364,8 +364,8 @@ instructions for other supported platforms.
    /home/zulip/deployments/current/manage.py audit_fts_indexes
    ```
 
-8. [Upgrade from Bionic to
-   Focal](#upgrading-from-ubuntu-18-04-bionic-to-20-04-focal), so that
+8. [Upgrade from Ubuntu 18.04 to
+   20.04](#upgrading-from-ubuntu-1804-bionic-to-2004-focal), so that
    you are running a supported operating system.
 
 ### Upgrading from Ubuntu 14.04 Trusty to 16.04 Xenial
@@ -374,9 +374,9 @@ instructions for other supported platforms.
    only upgrade to Zulip `2.1.x` and newer after completing this
    process, since newer releases don't support Ubuntu 14.04 Trusty.
 
-2. Same as for Bionic to Focal.
+2. Same as for Ubuntu 18.04 to 20.04.
 
-3. Same as for Bionic to Focal.
+3. Same as for Ubuntu 18.04 to 20.04.
 
 4. As root, upgrade the database installation and OS configuration to
    match the new OS version:
@@ -407,11 +407,11 @@ instructions for other supported platforms.
    able to navigate to its URL and confirm everything is working
    correctly.
 
-6. [Upgrade from Xenial to
-   Bionic](#upgrading-from-ubuntu-16-04-xenial-to-18-04-bionic), so
+6. [Upgrade from Ubuntu 16.04 to
+   18.04](#upgrading-from-ubuntu-1604-xenial-to-1804-bionic), so
    that you are running a supported operating system.
 
-### Upgrading from Debian Buster to Debian Bullseye
+### Upgrading from Debian 10 to 11
 
 1. Upgrade your server to the latest Zulip `4.x` release.
 
@@ -455,13 +455,13 @@ instructions for other supported platforms.
    be able to navigate to its URL and confirm everything is working
    correctly.
 
-6. Debian Bullseye has a different version of the low-level glibc
+6. Debian 11 has a different version of the low-level glibc
    library, which affects how PostgreSQL orders text data (known as
    "collations"); this corrupts database indexes that rely on
    collations. Regenerate the affected indexes by running:
 
    ```bash
-   /home/zulip/deployments/current/zulip-py3-venv/bin/python /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
+   /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
    ```
 
 7. As root, finish by verifying the contents of the full-text indexes:
@@ -472,11 +472,11 @@ instructions for other supported platforms.
 
 8. As an additional step, you can also [upgrade the postgresql version](#upgrading-postgresql).
 
-### Upgrading from Debian Stretch to Debian Buster
+### Upgrading from Debian 9 to 10
 
 1. Upgrade your server to the latest Zulip `2.1.x` release. You can
    only upgrade to Zulip 3.0 and newer after completing this process,
-   since newer releases don't support Ubuntu Debian Stretch.
+   since newer releases don't support Debian 9.
 
 2. As the Zulip user, stop the Zulip server and run the following
    to back up the system:
@@ -528,13 +528,13 @@ instructions for other supported platforms.
 6. [Upgrade to the latest Zulip release](#upgrading-to-a-release), now
    that your server is running a supported operating system.
 
-7. Debian Buster has a different version of the low-level glibc
+7. Debian 10 has a different version of the low-level glibc
    library, which affects how PostgreSQL orders text data (known as
    "collations"); this corrupts database indexes that rely on
    collations. Regenerate the affected indexes by running:
 
    ```bash
-   /home/zulip/deployments/current/zulip-py3-venv/bin/python /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
+   /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
    ```
 
 8. As root, finish by verifying the contents of the full-text indexes:
@@ -800,7 +800,7 @@ upgrading to `main`, make sure you understand:
 - We do not support downgrading from `main` to earlier versions, so
   if downtime for your Zulip server is unacceptable, make sure you
   have a current
-  [backup](../production/export-and-import.html#backups) in case the
+  [backup](export-and-import.md#backups) in case the
   upgrade fails.
 - Our changelog contains [draft release
   notes](../overview/changelog.md) available listing major changes
@@ -821,7 +821,7 @@ contributors like you. If your changes are likely to be of useful to
 other organizations, consider [contributing
 them](../overview/contributing.md).
 
-[fork-clone]: ../git/cloning.html#get-zulip-code
+[fork-clone]: ../git/cloning.md#get-zulip-code
 [upgrade-zulip-from-git]: #upgrading-from-a-git-repository
 [upgrade-zulip]: #upgrading
 [git-guide]: ../git/index.md

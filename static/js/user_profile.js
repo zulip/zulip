@@ -20,8 +20,8 @@ import * as settings_account from "./settings_account";
 import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
 import * as stream_data from "./stream_data";
-import * as stream_subscribers_ui from "./stream_subscribers_ui";
 import * as sub_store from "./sub_store";
+import * as subscriber_api from "./subscriber_api";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
 import * as util from "./util";
@@ -43,7 +43,7 @@ function format_user_stream_list_item(stream, user) {
         is_web_public: stream.is_web_public,
         show_unsubscribe_button,
         show_private_stream_unsub_tooltip,
-        stream_edit_url: hash_util.stream_edit_uri(stream),
+        stream_edit_url: hash_util.stream_edit_url(stream),
     });
 }
 
@@ -213,7 +213,7 @@ function handle_remove_stream_subscription(target_user_id, sub, success, failure
         });
     } else {
         // Unsubscribed by admin.
-        stream_subscribers_ui.remove_user_from_stream(target_user_id, sub, success, failure);
+        subscriber_api.remove_user_id_from_stream(target_user_id, sub, success, failure);
     }
 }
 
@@ -278,7 +278,7 @@ export function register_click_handlers() {
         }
 
         if (sub.invite_only && people.is_my_user_id(target_user_id)) {
-            const new_hash = hash_util.stream_edit_uri(sub);
+            const new_hash = hash_util.stream_edit_url(sub);
             hide_user_profile();
             browser_history.go_to_location(new_hash);
             return;

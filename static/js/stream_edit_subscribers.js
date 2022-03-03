@@ -4,68 +4,24 @@ import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog
 import render_stream_member_list_entry from "../templates/stream_settings/stream_member_list_entry.hbs";
 import render_stream_subscription_request_result from "../templates/stream_settings/stream_subscription_request_result.hbs";
 
+import * as add_subscribers_pill from "./add_subscribers_pill";
 import * as blueslip from "./blueslip";
-import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
-import * as input_pill from "./input_pill";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
-import * as pill_typeahead from "./pill_typeahead";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
-import * as stream_pill from "./stream_pill";
 import * as sub_store from "./sub_store";
+import * as subscriber_api from "./subscriber_api";
 import * as ui from "./ui";
-import * as user_group_pill from "./user_group_pill";
-import * as user_pill from "./user_pill";
 
 export let pill_widget;
 let current_stream_id;
 let subscribers_list_widget;
-
-function create_item_from_text(text, current_items) {
-    const funcs = [
-        stream_pill.create_item_from_stream_name,
-        user_group_pill.create_item_from_group_name,
-        user_pill.create_item_from_email,
-    ];
-    for (const func of funcs) {
-        const item = func(text, current_items);
-        if (item) {
-            return item;
-        }
-    }
-    return undefined;
-}
-
-function get_text_from_item(item) {
-    const funcs = [
-        stream_pill.get_stream_name_from_item,
-        user_group_pill.get_group_name_from_item,
-        user_pill.get_email_from_item,
-    ];
-    for (const func of funcs) {
-        const text = func(item);
-        if (text) {
-            return text;
-        }
-    }
-    return undefined;
-}
-
-function set_up_pill_typeahead({pill_container, get_users}) {
-    const opts = {
-        user_source: get_users,
-        stream: true,
-        user_group: true,
-        user: true,
-    };
-    pill_typeahead.set_up(pill_container.find(".input"), pill_widget, opts);
-}
 
 function format_member_list_elem(person) {
     return render_stream_member_list_entry({
@@ -120,18 +76,14 @@ export function enable_subscriber_management({sub, parent_container}) {
     // current_stream_id and pill_widget are module-level variables
     current_stream_id = stream_id;
 
-    pill_widget = input_pill.create({
-        container: pill_container,
-        create_item_from_text,
-        get_text_from_item,
-    });
-
-    function get_users_for_subscriber_typeahead() {
-        const potential_subscribers = peer_data.potential_subscribers(stream_id);
-        return user_pill.filter_taken_users(potential_subscribers, pill_widget);
+    function get_potential_subscribers() {
+        return peer_data.potential_subscribers(stream_id);
     }
 
-    set_up_pill_typeahead({pill_container, get_users: get_users_for_subscriber_typeahead});
+    pill_widget = add_subscribers_pill.create({
+        pill_container,
+        get_potential_subscribers,
+    });
 
     const user_ids = peer_data.get_subscribers(stream_id);
 
@@ -171,45 +123,11 @@ function make_list_widget({parent_container, name, user_ids}) {
     });
 }
 
-export function invite_user_to_stream(user_ids, sub, success, failure) {
-    // TODO: use stream_id when backend supports it
-    const stream_name = sub.name;
-    return channel.post({
-        url: "/json/users/me/subscriptions",
-        data: {
-            subscriptions: JSON.stringify([{name: stream_name}]),
-            principals: JSON.stringify(user_ids),
-        },
-        success,
-        error: failure,
-    });
-}
-
-export function remove_user_from_stream(user_id, sub, success, failure) {
-    // TODO: use stream_id when backend supports it
-    const stream_name = sub.name;
-    return channel.del({
-        url: "/json/users/me/subscriptions",
-        data: {subscriptions: JSON.stringify([stream_name]), principals: JSON.stringify([user_id])},
-        success,
-        error: failure,
-    });
-}
-
-export function get_pill_user_ids() {
-    const user_ids = user_pill.get_user_ids(pill_widget);
-    const stream_user_ids = stream_pill.get_user_ids(pill_widget);
-    const group_user_ids = user_group_pill.get_user_ids(pill_widget);
-    return [...user_ids, ...stream_user_ids, ...group_user_ids];
-}
-
-function submit_add_subscriber_form(stream_id) {
-    const sub = get_sub(stream_id);
+function subscribe_new_users({pill_user_ids}) {
+    const sub = get_sub(current_stream_id);
     if (!sub) {
         return;
     }
-
-    const pill_user_ids = get_pill_user_ids();
 
     const deactivated_users = new Set();
     const active_user_ids = pill_user_ids.filter((user_id) => {
@@ -274,7 +192,7 @@ function submit_add_subscriber_form(stream_id) {
         });
     }
 
-    invite_user_to_stream(user_ids, sub, invite_success, invite_failure);
+    subscriber_api.add_user_ids_to_stream(user_ids, sub, invite_success, invite_failure);
 }
 
 function remove_subscriber({stream_id, target_user_id, list_entry}) {
@@ -315,7 +233,12 @@ function remove_subscriber({stream_id, target_user_id, list_entry}) {
     }
 
     function remove_user_from_private_stream() {
-        remove_user_from_stream(target_user_id, sub, removal_success, removal_failure);
+        subscriber_api.remove_user_id_from_stream(
+            target_user_id,
+            sub,
+            removal_success,
+            removal_failure,
+        );
     }
 
     if (sub.invite_only && people.is_my_user_id(target_user_id)) {
@@ -332,7 +255,12 @@ function remove_subscriber({stream_id, target_user_id, list_entry}) {
         return;
     }
 
-    remove_user_from_stream(target_user_id, sub, removal_success, removal_failure);
+    subscriber_api.remove_user_id_from_stream(
+        target_user_id,
+        sub,
+        removal_success,
+        removal_failure,
+    );
 }
 
 export function update_subscribers_list(sub) {
@@ -371,25 +299,13 @@ function update_subscribers_list_widget(subscriber_ids) {
 }
 
 export function initialize() {
-    $("#manage_streams_container").on(
-        "keyup",
-        ".edit_subscribers_for_stream .subscriber_list_add form",
-        (e) => {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                submit_add_subscriber_form(current_stream_id);
-            }
-        },
-    );
-
-    $("#manage_streams_container").on(
-        "submit",
-        ".edit_subscribers_for_stream .subscriber_list_add form",
-        (e) => {
-            e.preventDefault();
-            submit_add_subscriber_form(current_stream_id);
-        },
-    );
+    add_subscribers_pill.set_up_handlers({
+        get_pill_widget: () => pill_widget,
+        parent_container: $("#manage_streams_container"),
+        pill_selector: ".edit_subscribers_for_stream .pill-container",
+        button_selector: ".edit_subscribers_for_stream .add-subscriber-button",
+        action: subscribe_new_users,
+    });
 
     $("#manage_streams_container").on(
         "submit",

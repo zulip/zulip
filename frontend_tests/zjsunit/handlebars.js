@@ -23,7 +23,7 @@ ZJavaScriptCompiler.prototype.compiler = ZJavaScriptCompiler;
 hb.JavaScriptCompiler = ZJavaScriptCompiler;
 
 function compile_hbs(module, filename) {
-    const code = fs.readFileSync(filename, "utf-8");
+    const code = fs.readFileSync(filename, "utf8");
     const pc = hb.precompile(code, {preventIndent: true, srcName: filename});
     const node = new SourceNode();
     node.add([

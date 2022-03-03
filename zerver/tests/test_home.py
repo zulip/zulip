@@ -360,6 +360,27 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(actual_keys, expected_keys)
         self.assertEqual(self.client.session.get("prefers_web_public_view"), True)
 
+        # Test information passed to client about users.
+        page_params = self._get_page_params(result)
+        self.assertEqual(
+            sorted(page_params["realm_users"][0].keys()),
+            [
+                "avatar_url",
+                "avatar_version",
+                "date_joined",
+                "email",
+                "full_name",
+                "is_admin",
+                "is_bot",
+                "is_guest",
+                "is_owner",
+                "role",
+                "user_id",
+            ],
+        )
+        date_length = len("YYYY-MM-DD")
+        self.assert_length(page_params["realm_users"][0]["date_joined"], date_length)
+
         # Web-public session key should clear once user is logged in
         self.login("hamlet")
         self.client_get("/")
