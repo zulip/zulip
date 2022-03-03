@@ -598,11 +598,6 @@ h4.stream_setting_subsection_title {
     font-weight: 400;
 }
 
-.stream-creation-info {
-    font-style: italic;
-    margin-bottom: 10px;
-}
-
 .stream-creation-body {
     section.block {
         margin-bottom: 20px;
