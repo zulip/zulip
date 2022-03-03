@@ -5,17 +5,17 @@
         <div id="stream_creating_indicator"></div>
         <div class="stream-creation-body">
             <section class="block">
-                <div class="stream-title">
+                <label for="create_stream_name">
                     {{t "Stream name" }}
-                </div>
+                </label>
                 <input type="text" name="stream_name" id="create_stream_name"
                   placeholder="{{t 'Stream name' }}" value="" autocomplete="off" maxlength="{{ max_name_length }}" />
                 <div id="stream_name_error" class="stream_creation_error"></div>
             </section>
             <section class="block">
-                <div class="stream-title">
+                <label for="create_stream_description">
                     {{t "Stream description" }}
-                </div>
+                </label>
                 <input type="text" name="stream_description" id="create_stream_description"
                   placeholder="{{t 'Stream description' }}" value="" autocomplete="off" maxlength="{{ max_description_length }}" />
             </section>
