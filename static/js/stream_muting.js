@@ -1,5 +1,3 @@
-import $ from "jquery";
-
 import {all_messages_data} from "./all_messages_data";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
@@ -7,6 +5,7 @@ import * as message_util from "./message_util";
 import * as message_viewport from "./message_viewport";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
+import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
 
 export function update_is_muted(sub, value) {
@@ -59,12 +58,6 @@ export function update_is_muted(sub, value) {
         }
     }, 0);
 
+    stream_edit.update_muting_rendering(sub);
     stream_list.set_in_home_view(sub.stream_id, !sub.is_muted);
-
-    const is_muted_checkbox = $(
-        `.subscription_settings[data-stream-id='${CSS.escape(
-            sub.stream_id,
-        )}'] #sub_is_muted_setting .sub_setting_control`,
-    );
-    is_muted_checkbox.prop("checked", value);
 }
