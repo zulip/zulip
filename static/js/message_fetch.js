@@ -431,6 +431,12 @@ export function initialize(home_view_loaded) {
         }
 
         if (data.found_newest) {
+            if (page_params.is_spectator) {
+                // Since for spectators, this is the main fetch, we
+                // hide the Recent Topics loading indicator here.
+                recent_topics_ui.hide_loading_indicator();
+            }
+
             // See server_events.js for this callback.
             home_view_loaded();
             start_backfilling_messages();
@@ -472,6 +478,10 @@ export function initialize(home_view_loaded) {
     if (page_params.is_spectator) {
         // Since spectators never have old unreads, we can skip the
         // hacky fetch below for them (which would just waste resources).
+
+        // This optimization requires a bit of duplicated loading
+        // indicator code, here and hiding logic in hide_more.
+        recent_topics_ui.show_loading_indicator();
         return;
     }
 
