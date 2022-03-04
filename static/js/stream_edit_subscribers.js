@@ -27,6 +27,7 @@ function format_member_list_elem(person) {
     return render_stream_member_list_entry({
         name: person.full_name,
         user_id: person.user_id,
+        is_current_user: person.user_id === page_params.user_id,
         email: settings_data.email_for_user_settings(person),
         displaying_for_admin: page_params.is_admin,
         show_email: settings_data.show_email(),
