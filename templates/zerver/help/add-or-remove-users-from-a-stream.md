@@ -17,7 +17,7 @@ to a stream][configure-invites].
 
 1. Select a stream.
 
-1. Under **Stream membership**, enter a name or email address. The typeahead
+1. Under **Add subscribers**, enter a name or email address. The typeahead
    will only include users who aren't already subscribed to the stream.
 
 1. Click **Add**.
@@ -39,9 +39,9 @@ including streams the admin is not subscribed to.
 
 1. Select a stream.
 
-1. Under **Stream membership**, find the user you would like to remove.
+1. Under **Subscribers**, find the user you would like to remove.
 
-1. Click **Unsubscribe** to the right of their email address.
+1. Click the **Unsubscribe** button in that row.
 
 {end_tabs}
 
