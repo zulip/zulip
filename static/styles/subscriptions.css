@@ -22,11 +22,8 @@
 
 .stream-email {
     font-family: "Source Code Pro", monospace;
-    padding: 5px;
-    /* We need a smaller font because this is fixed-width and we really
-       want it to fit without line-wrapping. 82.5% copies our code block
-       font size. */
-    font-size: 82.5%;
+    padding: 10px;
+    font-size: 0.85rem;
     background-color: hsl(0, 0%, 98%);
     border: 1px solid hsl(0, 0%, 87%);
     border-radius: 4px;
@@ -936,6 +933,10 @@ h4.user_group_setting_subsection_title {
         .stream_change_property_status {
             margin: 9px auto 3px 3px;
         }
+    }
+
+    .copy_email_button {
+        padding: 10px 15px;
     }
 
     .loading_indicator_text {

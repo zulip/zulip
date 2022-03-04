@@ -117,14 +117,11 @@ export function update_regular_sub_settings(sub) {
     }
     const $settings = $(`.subscription_settings[data-stream-id='${CSS.escape(sub.stream_id)}']`);
     if (sub.subscribed) {
-        if ($settings.find(".email-address").val().length === 0) {
-            // Rerender stream email address, if not.
-            $settings.find(".email-address").text(sub.email_address);
-            $settings.find(".stream-email-box").show();
-        }
         $settings.find(".personal_settings").addClass("in");
+        $settings.find(".copy_email_button").prop("disabled", false);
     } else {
         $settings.find(".personal_settings").removeClass("in");
+        $settings.find(".copy_email_button").prop("disabled", true);
     }
 }
 

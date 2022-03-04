@@ -1,8 +1,10 @@
+import ClipboardJS from "clipboard";
 import $ from "jquery";
 
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
 import render_stream_privacy from "../templates/stream_privacy.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
+import render_copy_email_address_modal from "../templates/stream_settings/copy_email_address_modal.hbs";
 import render_stream_description from "../templates/stream_settings/stream_description.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
 import render_stream_types from "../templates/stream_settings/stream_types.hbs";
@@ -591,6 +593,34 @@ export function initialize() {
         dialog_widget.close_modal();
         settings_ui.do_settings_change(channel.patch, url, data, $status_element);
     }
+
+    $("#manage_streams_container").on("click", ".copy_email_button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const stream_id = get_stream_id(e.target);
+        const stream = sub_store.get(stream_id);
+        const address = stream.email_address;
+
+        const copy_email_address = render_copy_email_address_modal({
+            email_address: address,
+        });
+
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Generate stream email address"}),
+            html_body: copy_email_address,
+            id: "copy_email_address_modal",
+            html_submit_button: $t_html({defaultMessage: "Copy address"}),
+            on_click: () => {},
+            close_on_submit: true,
+        });
+
+        new ClipboardJS("#copy_email_address_modal .dialog_submit_button", {
+            text() {
+                return address;
+            },
+        });
+    });
 
     $("#manage_streams_container").on(
         "click",
