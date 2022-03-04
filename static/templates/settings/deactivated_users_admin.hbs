@@ -1,10 +1,13 @@
 <div id="admin-deactivated-users-list" class="settings-section" data-name="deactivated-users-admin">
-    <h3 class="inline-block">{{t "Deactivated users" }}
-        {{> ../help_link_widget link="/help/deactivate-or-reactivate-a-user" }}
-    </h3>
-    <input type="text" class="search" placeholder="{{t 'Filter deactivated users' }}" aria-label="{{t 'Filter deactivated users' }}"/>
     <div class="alert-notification" id="deactivated-user-field-status"></div>
     <div class="clear-float"></div>
+
+    <div class="settings_panel_list_header">
+        <h3>{{t "Deactivated users" }}
+            {{> ../help_link_widget link="/help/deactivate-or-reactivate-a-user" }}
+        </h3>
+        <input type="text" class="search" placeholder="{{t 'Filter deactivated users' }}" aria-label="{{t 'Filter deactivated users' }}"/>
+    </div>
 
     <div class="progressive-table-wrapper" data-simplebar>
         <table class="table table-condensed table-striped wrapped-table">

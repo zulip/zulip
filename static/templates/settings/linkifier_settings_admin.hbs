@@ -65,8 +65,13 @@
         </form>
         {{/if}}
 
-        <input type="text" class="search" placeholder="{{t 'Filter linkifiers' }}" aria-label="{{t 'Filter linkifiers' }}"/>
         <div class="alert-notification edit-linkifier-status" id="linkifier-field-status"></div>
+
+        <div class="settings_panel_list_header">
+            <h3>{{t "Linkifiers"}}</h3>
+            <input type="text" class="search" placeholder="{{t 'Filter linkifiers' }}" aria-label="{{t 'Filter linkifiers' }}"/>
+        </div>
+
         <div class="progressive-table-wrapper" data-simplebar>
             <table class="table table-condensed table-striped wrapped-table admin_linkifiers_table">
                 <thead class="table-sticky-headers">
