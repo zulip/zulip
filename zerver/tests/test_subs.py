@@ -4127,6 +4127,7 @@ class SubscriptionAPITest(ZulipTestCase):
         invitee_data: Union[str, int],
         invitee_realm: Realm,
         streams: List[str],
+        policy_name: str,
         invite_only: bool = False,
     ) -> None:
         """
@@ -4162,7 +4163,9 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(msg.topic_name(), "stream events")
         self.assertEqual(msg.sender.email, settings.NOTIFICATION_BOT)
         self.assertIn(
-            f"Stream created by @_**{self.test_user.full_name}|{self.test_user.id}**", msg.content
+            f"**{policy_name}** stream created by @_**{self.test_user.full_name}|{self.test_user.id}**. **Description:**\n"
+            "```` quote",
+            msg.content,
         )
 
     def test_multi_user_subscription(self) -> None:
@@ -4604,13 +4607,17 @@ class SubscriptionAPITest(ZulipTestCase):
         invitee = self.example_user("iago")
         current_streams = self.get_streams(invitee)
         invite_streams = self.make_random_stream_names(current_streams)
-        self.assert_adding_subscriptions_for_principal(invitee.id, invitee.realm, invite_streams)
+        self.assert_adding_subscriptions_for_principal(
+            invitee.id, invitee.realm, invite_streams, policy_name="Public"
+        )
 
     def test_subscriptions_add_for_principal_legacy_emails(self) -> None:
         invitee = self.example_user("iago")
         current_streams = self.get_streams(invitee)
         invite_streams = self.make_random_stream_names(current_streams)
-        self.assert_adding_subscriptions_for_principal(invitee.email, invitee.realm, invite_streams)
+        self.assert_adding_subscriptions_for_principal(
+            invitee.email, invitee.realm, invite_streams, policy_name="Public"
+        )
 
     def test_subscriptions_add_for_principal_deactivated(self) -> None:
         """
@@ -4640,7 +4647,11 @@ class SubscriptionAPITest(ZulipTestCase):
         current_streams = self.get_streams(invitee)
         invite_streams = self.make_random_stream_names(current_streams)
         self.assert_adding_subscriptions_for_principal(
-            invitee.id, invitee.realm, invite_streams, invite_only=True
+            invitee.id,
+            invitee.realm,
+            invite_streams,
+            invite_only=True,
+            policy_name="Private, protected history",
         )
 
     def test_non_ascii_subscription_for_principal(self) -> None:
@@ -4649,7 +4660,9 @@ class SubscriptionAPITest(ZulipTestCase):
         non-ASCII characters.
         """
         iago = self.example_user("iago")
-        self.assert_adding_subscriptions_for_principal(iago.id, get_realm("zulip"), ["hümbüǵ"])
+        self.assert_adding_subscriptions_for_principal(
+            iago.id, get_realm("zulip"), ["hümbüǵ"], policy_name="Public"
+        )
 
     def test_subscription_add_invalid_principal_legacy_emails(self) -> None:
         """
@@ -4907,7 +4920,7 @@ class SubscriptionAPITest(ZulipTestCase):
         current_stream = self.get_streams(user_profile)[0]
         invite_streams = self.make_random_stream_names([current_stream])
         self.assert_adding_subscriptions_for_principal(
-            invitee_user_id, invitee_realm, invite_streams
+            invitee_user_id, invitee_realm, invite_streams, policy_name="Public"
         )
         subscription = self.get_subscription(user_profile, invite_streams[0])
 
