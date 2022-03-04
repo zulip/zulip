@@ -69,9 +69,14 @@
                     {{t "Email address" }}
                     {{> ../help_link_widget link="/help/message-a-stream-by-email" }}
                 </h3>
-                <div class="stream-email">
-                    <span class="email-address">{{sub.email_address}}</span>
-                </div>
+                <p>
+                    {{t "You can use email to send messages to Zulip streams."}}
+                </p>
+                <p>
+                    <button class="button rounded copy_email_button" type="button" name="button">
+                        <span class="copy_button">{{#tr}}Generate email address{{/tr}}</span>
+                    </button>
+                </p>
             </div>
         </div>
 
