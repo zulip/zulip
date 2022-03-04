@@ -1,5 +1,5 @@
 <div id="data-exports" class="settings-section" data-name="data-exports-admin">
-    <h3>{{t "Data exports" }}
+    <h3>{{t "Export organization" }}
         {{> ../help_link_widget link="/help/export-your-organization" }}
     </h3>
     <p>
@@ -29,8 +29,13 @@
         </div>
     </form>
     {{/if}}
-    <input type="hidden" class="search" placeholder="{{t 'Filter exports' }}"
-      aria-label="{{t 'Filter exports' }}"/>
+
+    <div class="settings_panel_list_header">
+        <h3>{{t "Data exports"}}</h3>
+        <input type="hidden" class="search" placeholder="{{t 'Filter exports' }}"
+          aria-label="{{t 'Filter exports' }}"/>
+    </div>
+
     <div class="progressive-table-wrapper" data-simplebar>
         <table class="table table-condensed table-striped wrapped-table admin_exports_table">
             <thead class="table-sticky-headers">
