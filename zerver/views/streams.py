@@ -63,6 +63,7 @@ from zerver.lib.streams import (
     access_web_public_stream,
     check_stream_name_available,
     filter_stream_authorization,
+    get_stream_permission_policy_name,
     list_to_streams,
 )
 from zerver.lib.string_validation import check_stream_name
@@ -685,8 +686,19 @@ def send_messages_for_new_subscribers(
                         sender=sender,
                         stream=stream,
                         topic=Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
-                        content=_("Stream created by {user_name}.").format(
+                        content=_(
+                            "**{policy}** stream created by {user_name}. **Description:**\n"
+                            "```` quote\n"
+                            "{description}\n"
+                            "````"
+                        ).format(
                             user_name=silent_mention_syntax_for_user(user_profile),
+                            description=stream.description,
+                            policy=get_stream_permission_policy_name(
+                                invite_only=stream.invite_only,
+                                history_public_to_subscribers=stream.history_public_to_subscribers,
+                                is_web_public=stream.is_web_public,
+                            ),
                         ),
                     ),
                 )
