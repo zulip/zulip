@@ -265,7 +265,7 @@ function remove_subscriber({stream_id, target_user_id, list_entry}) {
 }
 
 export function update_subscribers_list(sub) {
-    // This is for the "Stream membership" section of the right panel.
+    // This is for the "Subscribers" tab of the right panel.
     // Render subscriptions only if stream settings is open
     if (!hash_util.is_editing_stream(sub.stream_id)) {
         blueslip.info("ignoring subscription for stream that is no longer being edited");
