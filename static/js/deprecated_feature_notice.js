@@ -30,10 +30,11 @@ export function maybe_show_deprecation_notice(key) {
 
     // Here we handle the tracking for showing deprecation notices,
     // whether or not local storage is available.
+    const ls = localstorage();
     if (localstorage.supported()) {
-        const notices_from_storage = JSON.parse(localStorage.getItem("shown_deprecation_notices"));
-        if (notices_from_storage !== null) {
-            shown_deprecation_notices = notices_from_storage;
+        const notices_from_storage = ls.get("shown_deprecation_notices");
+        if (notices_from_storage !== undefined) {
+            shown_deprecation_notices = JSON.parse(notices_from_storage);
         } else {
             shown_deprecation_notices = [];
         }
@@ -52,10 +53,7 @@ export function maybe_show_deprecation_notice(key) {
 
         shown_deprecation_notices.push(key);
         if (localstorage.supported()) {
-            localStorage.setItem(
-                "shown_deprecation_notices",
-                JSON.stringify(shown_deprecation_notices),
-            );
+            ls.set("shown_deprecation_notices", JSON.stringify(shown_deprecation_notices));
         }
     }
 }
