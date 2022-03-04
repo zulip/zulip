@@ -537,17 +537,14 @@ export function initialize() {
 
     $("body").on("click", "#all_private_messages_icon", (e) => {
         e.preventDefault();
-        $("#private_messages").addClass("active_private_messages_section");
+        $("#private_messages_section").addClass("active_private_messages_section");
         top_left_corner.deselect_top_left_corner_items();
         window.location.href = "#narrow/is/private";
     });
 
-    $("#toggle_private_messages_section_icon").on("click", (e) => {
+    $("#toggle_private_messages_section").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        $("#toggle_private_messages_section_icon").toggleClass(
-            "'fa fa-caret-down fa-lg' 'fa fa-caret-right fa-lg'",
-        );
         const private_messages_section_is_open = pm_list.return_private_messages_state();
         const active_li = $(".expanded_private_messages li.active-sub-filter");
         if (

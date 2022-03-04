@@ -4,6 +4,7 @@ import render_more_pms from "../templates/more_pms.hbs";
 
 import * as buddy_data from "./buddy_data";
 import * as hash_util from "./hash_util";
+import {localstorage} from "./localstorage";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
@@ -44,7 +45,7 @@ export function return_private_messages_state() {
 // left corner of the app.  This was split out from stream_list.js.
 
 function get_filter_li() {
-    return $("#private_messages #private_messages_header");
+    return $("#private_messages .private-messages-section-header");
 }
 
 function set_count(count) {
@@ -58,6 +59,14 @@ function remove_expanded_private_messages() {
 }
 
 export function close() {
+    // Toggle the collapse icon of PM section.
+    $("#toggle_private_messages_section_icon").toggleClass(
+        "'fa fa-caret-down fa-lg' 'fa fa-caret-right fa-lg'",
+    );
+    // Set the localstorage variable of `private_messages_section` as `false`.
+    if (localstorage.supported()) {
+        localStorage.setItem("private_messages_open", false);
+    }
     private_messages_open = false;
     prior_dom = undefined;
     remove_expanded_private_messages();
@@ -199,8 +208,18 @@ export function _build_private_messages_list() {
 }
 
 export function update_private_messages() {
+    // we preserve the state of PM section (collapsed/expanded) in localstorage.
+    if (localstorage.supported()) {
+        // Check if there exists a value with key "private_messages_open" in localstorage
+        // else keep PM section as expanded by-default.
+        if (JSON.parse(localStorage.getItem("private_messages_open")) !== null) {
+            private_messages_open = JSON.parse(localStorage.getItem("private_messages_open"));
+        } else {
+            private_messages_open = true;
+        }
+    }
     if (private_messages_open) {
-        const container = ui.get_content_element($("#private-container"));
+        const container = ui.get_content_element($("#private_messages_container"));
         const new_dom = _build_private_messages_list();
 
         function replace_content(html) {
@@ -213,6 +232,15 @@ export function update_private_messages() {
 
         vdom.update(replace_content, find, new_dom, prior_dom);
         prior_dom = new_dom;
+    } else {
+        // If we collapsed the PM section with 1 active PM outside of it, then append it again while
+        // preserving the state of PM section.
+        append_new_active_pm_in_collapsed_pms();
+
+        // Change the toggle icon of private_messages_section to collapsed if
+        // we have private_messages_section as `false`
+        $("#toggle_private_messages_section_icon").removeClass("'fa fa-caret-down fa-lg'");
+        $("#toggle_private_messages_section_icon").addClass("'fa fa-caret-right fa-lg'");
     }
 }
 
@@ -227,11 +255,19 @@ export function is_all_privates() {
 }
 
 export function expand() {
+    // Toggle the collapse icon of PM section.
+    $("#toggle_private_messages_section_icon").toggleClass(
+        "'fa fa-caret-down fa-lg' 'fa fa-caret-right fa-lg'",
+    );
+    // Set the localstorage variable of `private_messages_section` as `true`.
+    if (localstorage.supported()) {
+        localStorage.setItem("private_messages_open", true);
+    }
     private_messages_open = true;
     stream_popover.hide_topic_popover();
     update_private_messages();
     if (is_all_privates()) {
-        $("#private-container").addClass("active-filter");
+        $("#private_messages_container").addClass("active-filter");
     }
 }
 
@@ -268,7 +304,7 @@ export function append_new_active_pm_in_collapsed_pms() {
         // through keyed_pm_li and update the dom with vdom.update() function.
         const node = [pm_list_dom.keyed_pm_li(active_convo)];
         const new_dom = pm_list_dom.pm_ul(node);
-        const container = ui.get_content_element($("#private-container"));
+        const container = ui.get_content_element($("#private_messages_container"));
         function replace_content(html) {
             container.html(html);
         }
@@ -298,7 +334,7 @@ export function handle_narrow_activated(filter) {
         ) {
             append_new_active_pm_in_collapsed_pms();
         }
-        $("#private_messages").removeClass("active_private_messages_section");
+        $("#private_messages_section").removeClass("active_private_messages_section");
     } else {
         // If we find no PMs in narrow filter and we see that state of PM section is
         // suppose to be collapsed we then empty out the list of PMs and close it.
@@ -316,7 +352,7 @@ export function handle_narrow_deactivated() {
     // to it's initial state (even in the cae of zoomed PM section) and deactivate the previously activated
     // PM and resize the stream bar again.
     hide_more_pms();
-    $("#private_messages").removeClass("active_private_messages_section");
+    $("#private_messages_section").removeClass("active_private_messages_section");
     $("#private_messages").removeClass("zoom-in").addClass("zoom-out");
     $("#streams_list").show();
     $(".left-sidebar .right-sidebar-items").show();

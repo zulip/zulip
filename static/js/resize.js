@@ -206,7 +206,7 @@ export function resize_stream_filters_container(h) {
     let height = h.stream_filters_max_height;
     height = height - $("#private_messages").safeOuterHeight(true);
     $("#stream-filters-container").css("max-height", height);
-    $("#private-container").css("max-height", h.stream_filters_max_height - 50);
+    $("#private_messages_container").css("max-height", h.stream_filters_max_height - 65);
 }
 
 export function resize_sidebars() {
