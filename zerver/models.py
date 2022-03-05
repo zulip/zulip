@@ -1693,7 +1693,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # provide a unique key for a user for the mobile push
     # notifications bouncer that will not have collisions after doing
     # a data export and then import.
-    uuid: Optional[UUID] = models.UUIDField(null=True, default=uuid4, unique=True)
+    uuid: UUID = models.UUIDField(default=uuid4, unique=True)
 
     # Whether the user has access to server-level administrator pages, like /activity
     is_staff: bool = models.BooleanField(default=False)
