@@ -667,5 +667,9 @@ li.expanded_private_message {
         .fa-chevron-left {
             margin-right: 3px;
         }
+
+        &:hover {
+            color: hsl(0, 0%, 43%);
+        }
     }
 }

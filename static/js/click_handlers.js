@@ -538,6 +538,7 @@ export function initialize() {
     $("body").on("click", "#all_private_messages_icon", (e) => {
         e.preventDefault();
         $("#private_messages_section").addClass("active_private_messages_section");
+        $(".more-private-messages-sidebar-title").css("font-weight", "bold");
         top_left_corner.deselect_top_left_corner_items();
         window.location.href = "#narrow/is/private";
     });
@@ -545,10 +546,13 @@ export function initialize() {
     $("#toggle_private_messages_section").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const private_messages_section_is_open = pm_list.return_private_messages_state();
+        $("#toggle_private_messages_section_icon").toggleClass(
+            "'fa fa-caret-down fa-lg' 'fa fa-caret-right fa-lg'",
+        );
+        const private_messages_collapsed = pm_list.return_private_messages_state();
         const active_li = $(".expanded_private_messages li.active-sub-filter");
         if (
-            !private_messages_section_is_open &&
+            private_messages_collapsed &&
             ($(".expanded_private_messages").children().length === 0 ||
                 (active_li.is($(".expanded_private_messages").children()[0]) &&
                     $(".expanded_private_messages").children().length === 1))

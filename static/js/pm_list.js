@@ -18,10 +18,11 @@ import * as user_status from "./user_status";
 import * as vdom from "./vdom";
 
 let prior_dom;
-let private_messages_open = true;
+let private_messages_collapsed = false;
 let zoomed_pm_list = false;
 const max_convos_to_show = 5;
 const max_convos_to_show_with_unreads = 8;
+const ls = localstorage();
 
 export function show_more_pms() {
     zoomed_pm_list = true;
@@ -38,7 +39,7 @@ export function clear_for_testing() {
 export function return_private_messages_state() {
     // This function returns the state of PM section which
     // we use to toggle the PM section in click handlers.js
-    return private_messages_open;
+    return private_messages_collapsed;
 }
 
 // This module manages the "Private messages" section in the upper
@@ -59,15 +60,11 @@ function remove_expanded_private_messages() {
 }
 
 export function close() {
-    // Toggle the collapse icon of PM section.
-    $("#toggle_private_messages_section_icon").toggleClass(
-        "'fa fa-caret-down fa-lg' 'fa fa-caret-right fa-lg'",
-    );
     // Set the localstorage variable of `private_messages_section` as `false`.
     if (localstorage.supported()) {
-        localStorage.setItem("private_messages_open", false);
+        ls.set("private_messages_collapsed", true);
     }
-    private_messages_open = false;
+    private_messages_collapsed = true;
     prior_dom = undefined;
     remove_expanded_private_messages();
 }
@@ -210,15 +207,15 @@ export function _build_private_messages_list() {
 export function update_private_messages() {
     // we preserve the state of PM section (collapsed/expanded) in localstorage.
     if (localstorage.supported()) {
-        // Check if there exists a value with key "private_messages_open" in localstorage
+        // Check if there exists a value with key "private_messages_collapsed" in localstorage
         // else keep PM section as expanded by-default.
-        if (JSON.parse(localStorage.getItem("private_messages_open")) !== null) {
-            private_messages_open = JSON.parse(localStorage.getItem("private_messages_open"));
+        if (ls.get("private_messages_collapsed") !== undefined) {
+            private_messages_collapsed = ls.get("private_messages_collapsed");
         } else {
-            private_messages_open = true;
+            private_messages_collapsed = false;
         }
     }
-    if (private_messages_open) {
+    if (!private_messages_collapsed) {
         const container = ui.get_content_element($("#private_messages_container"));
         const new_dom = _build_private_messages_list();
 
@@ -255,15 +252,11 @@ export function is_all_privates() {
 }
 
 export function expand() {
-    // Toggle the collapse icon of PM section.
-    $("#toggle_private_messages_section_icon").toggleClass(
-        "'fa fa-caret-down fa-lg' 'fa fa-caret-right fa-lg'",
-    );
     // Set the localstorage variable of `private_messages_section` as `true`.
     if (localstorage.supported()) {
-        localStorage.setItem("private_messages_open", true);
+        ls.set("private_messages_collapsed", false);
     }
-    private_messages_open = true;
+    private_messages_collapsed = false;
     stream_popover.hide_topic_popover();
     update_private_messages();
     if (is_all_privates()) {
@@ -335,10 +328,11 @@ export function handle_narrow_activated(filter) {
             append_new_active_pm_in_collapsed_pms();
         }
         $("#private_messages_section").removeClass("active_private_messages_section");
+        $(".more-private-messages-sidebar-title").css("font-weight", "normal");
     } else {
         // If we find no PMs in narrow filter and we see that state of PM section is
         // suppose to be collapsed we then empty out the list of PMs and close it.
-        if (!private_messages_open) {
+        if (private_messages_collapsed) {
             $(".expanded_private_messages").empty();
             close();
         }
@@ -353,10 +347,11 @@ export function handle_narrow_deactivated() {
     // PM and resize the stream bar again.
     hide_more_pms();
     $("#private_messages_section").removeClass("active_private_messages_section");
+    $(".more-private-messages-sidebar-title").css("font-weight", "normal");
     $("#private_messages").removeClass("zoom-in").addClass("zoom-out");
     $("#streams_list").show();
     $(".left-sidebar .right-sidebar-items").show();
-    if (!private_messages_open) {
+    if (private_messages_collapsed) {
         $(".expanded_private_messages").empty();
         close();
     }

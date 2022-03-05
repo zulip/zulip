@@ -245,4 +245,20 @@ export function initialize() {
         },
         appendTo: () => document.body,
     });
+
+    delegate("body", {
+        target: "#toggle_private_messages_section_icon",
+        onShow(instance) {
+            const collapse_private_messages_tooptip = $t({
+                defaultMessage: "Collapse private messages",
+            });
+            const expand_private_messages_tooptip = $t({defaultMessage: "Expand private messages"});
+            if ($("#toggle_private_messages_section_icon").hasClass("fa-caret-down")) {
+                instance.setContent(collapse_private_messages_tooptip);
+            } else {
+                instance.setContent(expand_private_messages_tooptip);
+            }
+        },
+        appendTo: () => document.body,
+    });
 }
