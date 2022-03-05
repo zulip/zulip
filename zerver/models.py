@@ -17,6 +17,7 @@ from typing import (
     TypeVar,
     Union,
 )
+from uuid import UUID, uuid4
 
 import django.contrib.auth
 import orjson
@@ -1687,6 +1688,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     date_joined: datetime.datetime = models.DateTimeField(default=timezone_now)
     tos_version: Optional[str] = models.CharField(null=True, max_length=10)
     api_key: str = models.CharField(max_length=API_KEY_LENGTH)
+
+    # A UUID generated on user creation. Introduced primarily to
+    # provide a unique key for a user for the mobile push
+    # notifications bouncer that will not have collisions after doing
+    # a data export and then import.
+    uuid: Optional[UUID] = models.UUIDField(null=True, default=uuid4, unique=True)
 
     # Whether the user has access to server-level administrator pages, like /activity
     is_staff: bool = models.BooleanField(default=False)
