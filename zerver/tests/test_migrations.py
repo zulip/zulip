@@ -5,6 +5,7 @@
 #   https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
 # to get a tutorial on the framework that inspired this feature.
 from typing import Optional
+from unittest import skip
 
 import orjson
 from django.db.migrations.state import StateApps
@@ -30,9 +31,8 @@ from zerver.models import get_stream
 # been tested for a migration being merged.
 
 
+@skip("Will not pass once newer migrations are merged.")  # nocoverage # skipped
 class MessageEditHistoryLegacyFormats(MigrationsTestCase):
-    __unittest_skip__ = False
-
     migrate_from = "0376_set_realmemoji_author_and_reupload_realmemoji"
     migrate_to = "0377_message_edit_history_format"
 
@@ -170,9 +170,8 @@ class MessageEditHistoryLegacyFormats(MigrationsTestCase):
         )
 
 
+@skip("Will not pass once newer migrations are merged.")  # nocoverage # skipped
 class MessageEditHistoryModernFormats(MigrationsTestCase):
-    __unittest_skip__ = False
-
     migrate_from = "0376_set_realmemoji_author_and_reupload_realmemoji"
     migrate_to = "0377_message_edit_history_format"
 
@@ -293,9 +292,8 @@ class MessageEditHistoryModernFormats(MigrationsTestCase):
         )
 
 
+@skip("Will not pass once newer migrations are merged.")  # nocoverage # skipped
 class MessageEditHistoryIntermediateFormats(MigrationsTestCase):
-    __unittest_skip__ = False
-
     migrate_from = "0376_set_realmemoji_author_and_reupload_realmemoji"
     migrate_to = "0377_message_edit_history_format"
 
