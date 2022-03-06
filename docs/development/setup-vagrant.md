@@ -49,7 +49,7 @@ a proxy to access the internet.)
 
 - **All**: 2GB available RAM, Active broadband internet connection, [GitHub account][set-up-git].
 - **macOS**: macOS (10.11 El Capitan or newer recommended)
-- **Ubuntu LTS**: 20.04 or 22.04
+- **Ubuntu LTS**: 20.04
   - or **Debian**: 10 "buster" or 11 "bullseye"
 - **Windows**: Windows 64-bit (Win 10 recommended), hardware
   virtualization enabled (VT-x or AMD-V), administrator access.
