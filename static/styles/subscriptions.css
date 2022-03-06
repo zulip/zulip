@@ -141,22 +141,6 @@
     margin-right: 10px;
 }
 
-.preview-stream {
-    display: none;
-    float: right;
-    padding: 3px 10px;
-    border: 1px solid hsl(0, 0%, 80%);
-    margin: 9px 10px 0 0;
-    color: hsl(0, 0%, 20%);
-}
-
-.preview-stream:hover {
-    color: hsl(0, 0%, 20%);
-    text-decoration: none;
-    background-color: hsl(0, 0%, 92%);
-    border: 1px solid hsl(0, 0%, 68%);
-}
-
 .create_stream_plus_button {
     font-size: 24px;
     font-weight: 500;
@@ -755,10 +739,6 @@ h4.stream_setting_subsection_title {
         float: right;
         margin-left: 10px;
         color: hsl(0, 0%, 67%);
-    }
-
-    &:hover .preview-stream {
-        display: inline-block;
     }
 
     &:hover .check:not(.checked) svg,
