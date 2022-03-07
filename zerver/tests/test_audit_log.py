@@ -18,6 +18,7 @@ from zerver.lib.actions import (
     do_change_default_sending_stream,
     do_change_icon_source,
     do_change_password,
+    do_change_realm_domain,
     do_change_subscription_property,
     do_change_tos_version,
     do_change_user_delivery_email,
@@ -666,7 +667,7 @@ class TestRealmAuditLog(ZulipTestCase):
         initial_domains = get_realm_domains(user.realm)
 
         now = timezone_now()
-        do_add_realm_domain(user.realm, "zulip.org", False, acting_user=user)
+        realm_domain = do_add_realm_domain(user.realm, "zulip.org", False, acting_user=user)
         added_domain: Dict[str, Union[str, bool]] = {
             "domain": "zulip.org",
             "allow_subdomains": False,
@@ -679,6 +680,27 @@ class TestRealmAuditLog(ZulipTestCase):
             RealmAuditLog.objects.filter(
                 realm=user.realm,
                 event_type=RealmAuditLog.REALM_DOMAIN_ADDED,
+                event_time__gte=now,
+                acting_user=user,
+                extra_data=orjson.dumps(expected_extra_data).decode(),
+            ).count(),
+            1,
+        )
+
+        now = timezone_now()
+        do_change_realm_domain(realm_domain, True, acting_user=user)
+        changed_domain: Dict[str, Union[str, bool]] = {
+            "domain": "zulip.org",
+            "allow_subdomains": True,
+        }
+        expected_extra_data = {
+            "realm_domains": initial_domains + [changed_domain],
+            "changed_domain": changed_domain,
+        }
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=RealmAuditLog.REALM_DOMAIN_CHANGED,
                 event_time__gte=now,
                 acting_user=user,
                 extra_data=orjson.dumps(expected_extra_data).decode(),

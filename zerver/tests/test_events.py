@@ -1696,7 +1696,9 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(events[0]["realm_domain"]["allow_subdomains"], False)
 
         test_domain = RealmDomain.objects.get(realm=self.user_profile.realm, domain="zulip.org")
-        events = self.verify_action(lambda: do_change_realm_domain(test_domain, True))
+        events = self.verify_action(
+            lambda: do_change_realm_domain(test_domain, True, acting_user=None)
+        )
 
         check_realm_domains_change("events[0]", events[0])
         self.assertEqual(events[0]["realm_domain"]["domain"], "zulip.org")
