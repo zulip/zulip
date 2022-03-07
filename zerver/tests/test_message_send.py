@@ -1042,7 +1042,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         zephyr_realm = get_realm("zephyr")
         self.make_stream("Verona", zephyr_realm)
-        do_add_realm_domain(zephyr_realm, "zulip.com", False)
+        do_add_realm_domain(zephyr_realm, "zulip.com", False, acting_user=None)
         result = self.api_post(
             user,
             "/api/v1/messages",

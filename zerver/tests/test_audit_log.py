@@ -10,6 +10,7 @@ from zerver.lib.actions import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
     do_activate_mirror_dummy_user,
+    do_add_realm_domain,
     do_change_avatar_fields,
     do_change_bot_owner,
     do_change_default_all_public_streams,
@@ -47,6 +48,7 @@ from zerver.models import (
     Subscription,
     UserProfile,
     get_realm,
+    get_realm_domains,
     get_stream,
 )
 
@@ -658,3 +660,28 @@ class TestRealmAuditLog(ZulipTestCase):
                 1,
             )
             self.assertEqual(getattr(user, setting), value)
+
+    def test_realm_domain_entries(self) -> None:
+        user = self.example_user("iago")
+        initial_domains = get_realm_domains(user.realm)
+
+        now = timezone_now()
+        do_add_realm_domain(user.realm, "zulip.org", False, acting_user=user)
+        added_domain: Dict[str, Union[str, bool]] = {
+            "domain": "zulip.org",
+            "allow_subdomains": False,
+        }
+        expected_extra_data = {
+            "realm_domains": initial_domains + [added_domain],
+            "added_domain": added_domain,
+        }
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=RealmAuditLog.REALM_DOMAIN_ADDED,
+                event_time__gte=now,
+                acting_user=user,
+                extra_data=orjson.dumps(expected_extra_data).decode(),
+            ).count(),
+            1,
+        )

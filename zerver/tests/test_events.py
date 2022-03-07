@@ -1686,7 +1686,9 @@ class NormalActionsTest(BaseAction):
 
     def test_realm_domain_events(self) -> None:
         events = self.verify_action(
-            lambda: do_add_realm_domain(self.user_profile.realm, "zulip.org", False)
+            lambda: do_add_realm_domain(
+                self.user_profile.realm, "zulip.org", False, acting_user=None
+            )
         )
 
         check_realm_domains_add("events[0]", events[0])

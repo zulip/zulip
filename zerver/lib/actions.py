@@ -252,6 +252,7 @@ from zerver.models import (
     get_huddle_user_ids,
     get_old_unclaimed_attachments,
     get_realm,
+    get_realm_domains,
     get_realm_playgrounds,
     get_stream,
     get_stream_by_id_in_realm,
@@ -8086,10 +8087,26 @@ def do_update_linkifier(realm: Realm, id: int, pattern: str, url_format_string: 
     notify_linkifiers(realm)
 
 
-def do_add_realm_domain(realm: Realm, domain: str, allow_subdomains: bool) -> (RealmDomain):
+def do_add_realm_domain(
+    realm: Realm, domain: str, allow_subdomains: bool, *, acting_user: Optional[UserProfile]
+) -> (RealmDomain):
     realm_domain = RealmDomain.objects.create(
         realm=realm, domain=domain, allow_subdomains=allow_subdomains
     )
+
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=RealmAuditLog.REALM_DOMAIN_ADDED,
+        event_time=timezone_now(),
+        extra_data=orjson.dumps(
+            {
+                "realm_domains": get_realm_domains(realm),
+                "added_domain": {"domain": domain, "allow_subdomains": allow_subdomains},
+            }
+        ).decode(),
+    )
+
     event = dict(
         type="realm_domains",
         op="add",
@@ -8098,6 +8115,7 @@ def do_add_realm_domain(realm: Realm, domain: str, allow_subdomains: bool) -> (R
         ),
     )
     send_event(realm, event, active_user_ids(realm.id))
+
     return realm_domain
 
 
