@@ -79,6 +79,8 @@ def email_is_not_mit_mailing_list(email: str) -> None:
             DNS.dnslookup(f"{username}.pobox.ns.athena.mit.edu", DNS.Type.TXT)
         except DNS.Base.ServerError as e:
             if e.rcode == DNS.Status.NXDOMAIN:
+                # This error is mark_safe only because 1. it needs to render HTML
+                # 2. It's not formatted with any user input.
                 raise ValidationError(mark_safe(MIT_VALIDATION_ERROR))
             else:
                 raise AssertionError("Unexpected DNS error")
@@ -143,7 +145,7 @@ class RegistrationForm(forms.Form):
         if self.fields["password"].required and not check_password_strength(password):
             # The frontend code tries to stop the user from submitting the form with a weak password,
             # but if the user bypasses that protection, this error code path will run.
-            raise ValidationError(mark_safe(PASSWORD_TOO_WEAK_ERROR))
+            raise ValidationError(PASSWORD_TOO_WEAK_ERROR)
 
         return password
 
@@ -432,21 +434,21 @@ class OurAuthenticationForm(AuthenticationForm):
                 raise AssertionError("Programming error: inactive realm in authentication form")
 
             if return_data.get("password_reset_needed"):
-                raise ValidationError(mark_safe(PASSWORD_RESET_NEEDED_ERROR))
+                raise ValidationError(PASSWORD_RESET_NEEDED_ERROR)
 
             if return_data.get("inactive_user") and not return_data.get("is_mirror_dummy"):
                 # We exclude mirror dummy accounts here. They should be treated as the
                 # user never having had an account, so we let them fall through to the
                 # normal invalid_login case below.
                 error_message = DEACTIVATED_ACCOUNT_ERROR.format(username=username)
-                raise ValidationError(mark_safe(error_message))
+                raise ValidationError(error_message)
 
             if return_data.get("invalid_subdomain"):
                 logging.warning(
                     "User %s attempted password login to wrong subdomain %s", username, subdomain
                 )
                 error_message = WRONG_SUBDOMAIN_ERROR.format(username=username)
-                raise ValidationError(mark_safe(error_message))
+                raise ValidationError(error_message)
 
             if self.user_cache is None:
                 raise forms.ValidationError(
