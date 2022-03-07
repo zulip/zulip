@@ -302,7 +302,7 @@ run_test("is:alerted with no unreads and one match", () => {
 });
 
 run_test("is:resolved with one unread", () => {
-    const resolved_topic_name = resolved_topic.RESOLVED_TOPIC_PREFIX + "foo";
+    const resolved_topic_name = resolved_topic.resolve_name("foo");
     const fixture = {
         filter_terms: [{operator: "is", operand: "resolved"}],
         unread_info: {
@@ -327,7 +327,7 @@ run_test("is:resolved with one unread", () => {
 });
 
 run_test("is:resolved with no unreads", () => {
-    const resolved_topic_name = resolved_topic.RESOLVED_TOPIC_PREFIX + "foo";
+    const resolved_topic_name = resolved_topic.resolve_name("foo");
     const fixture = {
         filter_terms: [{operator: "is", operand: "resolved"}],
         unread_info: {

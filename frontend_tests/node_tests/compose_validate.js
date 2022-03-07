@@ -786,7 +786,7 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
 
     compose_state.set_message_type("stream");
     compose_state.stream_name("Do not exist");
-    compose_state.topic(resolved_topic.RESOLVED_TOPIC_PREFIX + "hello");
+    compose_state.topic(resolved_topic.resolve_name("hello"));
 
     // Do not show a warning if stream name does not exist
     compose_validate.warn_if_topic_resolved();

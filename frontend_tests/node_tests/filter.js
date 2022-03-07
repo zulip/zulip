@@ -685,7 +685,7 @@ test("predicate_basics", () => {
     assert.ok(predicate({}));
 
     predicate = get_predicate([["is", "resolved"]]);
-    const resolved_topic_name = resolved_topic.RESOLVED_TOPIC_PREFIX + "foo";
+    const resolved_topic_name = resolved_topic.resolve_name("foo");
     assert.ok(predicate({type: "stream", topic: resolved_topic_name}));
     assert.ok(!predicate({topic: resolved_topic_name}));
     assert.ok(!predicate({type: "stream", topic: "foo"}));

@@ -1,6 +1,5 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
-import _ from "lodash";
 
 import * as resolved_topic from "../shared/js/resolved_topic";
 import render_delete_message_modal from "../templates/confirm_dialog/confirm_delete_message.hbs";
@@ -641,10 +640,10 @@ export function start(row, edit_box_open_callback) {
 
 export function toggle_resolve_topic(message_id, old_topic_name) {
     let new_topic_name;
-    if (old_topic_name.startsWith(resolved_topic.RESOLVED_TOPIC_PREFIX)) {
-        new_topic_name = _.trimStart(old_topic_name, resolved_topic.RESOLVED_TOPIC_PREFIX);
+    if (resolved_topic.is_resolved(old_topic_name)) {
+        new_topic_name = resolved_topic.unresolve_name(old_topic_name);
     } else {
-        new_topic_name = resolved_topic.RESOLVED_TOPIC_PREFIX + old_topic_name;
+        new_topic_name = resolved_topic.resolve_name(old_topic_name);
     }
 
     const request = {
