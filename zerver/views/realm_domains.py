@@ -34,7 +34,9 @@ def create_realm_domain(
         raise JsonableError(
             _("The domain {domain} is already a part of your organization.").format(domain=domain)
         )
-    realm_domain = do_add_realm_domain(user_profile.realm, domain, allow_subdomains)
+    realm_domain = do_add_realm_domain(
+        user_profile.realm, domain, allow_subdomains, acting_user=user_profile
+    )
     return json_success(request, data={"new_domain": [realm_domain.id, realm_domain.domain]})
 
 
