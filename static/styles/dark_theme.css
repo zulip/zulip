@@ -356,7 +356,7 @@ body.dark-theme {
     .message_condenser {
         background-color: hsl(212, 28%, 18%);
     }
-    
+
     .new-style .tab-switcher .ind-tab.selected,
     div.message_content thead,
         background-color: hsla(0, 0%, 0%, 0.5);
