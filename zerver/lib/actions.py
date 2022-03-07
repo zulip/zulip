@@ -8155,6 +8155,7 @@ def do_change_realm_domain(
     )
 
 
+@transaction.atomic(durable=True)
 def do_remove_realm_domain(
     realm_domain: RealmDomain, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -8185,7 +8186,7 @@ def do_remove_realm_domain(
         # confusing than the alternative.
         do_set_realm_property(realm, "emails_restricted_to_domains", False, acting_user=acting_user)
     event = dict(type="realm_domains", op="remove", domain=domain)
-    send_event(realm, event, active_user_ids(realm.id))
+    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
 
 
 def notify_realm_playgrounds(realm: Realm) -> None:
