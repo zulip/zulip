@@ -1,0 +1,3 @@
+// @flow strict
+
+declare export var RESOLVED_TOPIC_PREFIX: string;

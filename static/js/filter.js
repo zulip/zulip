@@ -1,9 +1,10 @@
 import Handlebars from "handlebars/runtime";
 import _ from "lodash";
 
+import * as resolved_topic from "../shared/js/resolved_topic";
+
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
-import * as message_edit from "./message_edit";
 import * as message_parser from "./message_parser";
 import * as message_store from "./message_store";
 import {page_params} from "./page_params";
@@ -97,7 +98,7 @@ function message_matches_search_term(message, operator, operand) {
                 case "resolved":
                     return (
                         message.type === "stream" &&
-                        message.topic.startsWith(message_edit.RESOLVED_TOPIC_PREFIX)
+                        message.topic.startsWith(resolved_topic.RESOLVED_TOPIC_PREFIX)
                     );
                 default:
                     return false; // is:whatever returns false

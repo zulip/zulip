@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as resolved_topic from "../shared/js/resolved_topic";
 import render_compose_all_everyone from "../templates/compose_all_everyone.hbs";
 import render_compose_announce from "../templates/compose_announce.hbs";
 import render_compose_invite_users from "../templates/compose_invite_users.hbs";
@@ -13,7 +14,6 @@ import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import {$t_html} from "./i18n";
-import * as message_edit from "./message_edit";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
@@ -178,7 +178,7 @@ export function warn_if_topic_resolved() {
 
     const sub = stream_data.get_sub(stream_name);
 
-    if (sub && topic_name.startsWith(message_edit.RESOLVED_TOPIC_PREFIX)) {
+    if (sub && topic_name.startsWith(resolved_topic.RESOLVED_TOPIC_PREFIX)) {
         const error_area = $("#compose_resolved_topic");
 
         if (error_area.html()) {
