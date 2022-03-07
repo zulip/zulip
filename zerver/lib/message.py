@@ -89,10 +89,26 @@ class RawUnreadMessagesResult(TypedDict):
     old_unreads_missing: bool
 
 
+class UnreadStreamInfo(TypedDict):
+    stream_id: int
+    topic: str
+    unread_message_ids: List[int]
+
+
+class UnreadPrivateMessageInfo(TypedDict):
+    sender_id: int
+    unread_message_ids: List[int]
+
+
+class UnreadHuddleInfo(TypedDict):
+    user_ids_string: str
+    unread_message_ids: List[int]
+
+
 class UnreadMessagesResult(TypedDict):
-    pms: List[Dict[str, Any]]
-    streams: List[Dict[str, Any]]
-    huddles: List[Dict[str, Any]]
+    pms: List[UnreadPrivateMessageInfo]
+    streams: List[UnreadStreamInfo]
+    huddles: List[UnreadHuddleInfo]
     mentions: List[int]
     count: int
     old_unreads_missing: bool
@@ -914,61 +930,6 @@ def huddle_users(recipient_id: int) -> str:
     return ",".join(str(uid) for uid in user_ids)
 
 
-def aggregate_message_dict(
-    input_dict: Dict[int, Any], lookup_fields: List[str]
-) -> List[Dict[str, Any]]:
-    lookup_dict: Dict[Tuple[Any, ...], Dict[str, Any]] = {}
-
-    """
-    A concrete example might help explain the inputs here:
-
-    input_dict = {
-        1002: dict(stream_id=5, topic='foo'),
-        1003: dict(stream_id=5, topic='foo'),
-        1004: dict(stream_id=6, topic='baz'),
-    }
-
-    lookup_fields = ['stream_id', 'topic']
-
-    The first time through the loop:
-        attribute_dict = dict(stream_id=5, topic='foo')
-        lookup_key = (5, 'foo')
-
-    lookup_dict = {
-        (5, 'foo'): dict(stream_id=5, topic='foo',
-                         unread_message_ids=[1002, 1003],
-                        ),
-        ...
-    }
-
-    result = [
-        dict(stream_id=5, topic='foo',
-             unread_message_ids=[1002, 1003],
-            ),
-        ...
-    ]
-    """
-
-    for message_id, attribute_dict in input_dict.items():
-        lookup_key = tuple(attribute_dict[f] for f in lookup_fields)
-        if lookup_key not in lookup_dict:
-            obj = {}
-            for f in lookup_fields:
-                obj[f] = attribute_dict[f]
-            obj["unread_message_ids"] = []
-            lookup_dict[lookup_key] = obj
-
-        bucket = lookup_dict[lookup_key]
-        bucket["unread_message_ids"].append(message_id)
-
-    for dct in lookup_dict.values():
-        dct["unread_message_ids"].sort()
-
-    sorted_keys = sorted(lookup_dict.keys())
-
-    return [lookup_dict[k] for k in sorted_keys]
-
-
 def get_inactive_recipient_ids(user_profile: UserProfile) -> List[int]:
     rows = (
         get_stream_subscriptions_for_user(user_profile)
@@ -1157,6 +1118,77 @@ def extract_unread_data_from_um_rows(
     return raw_unread_messages
 
 
+def aggregate_streams(*, input_dict: Dict[int, RawUnreadStreamDict]) -> List[UnreadStreamInfo]:
+    lookup_dict: Dict[Tuple[int, str], UnreadStreamInfo] = {}
+    for message_id, attribute_dict in input_dict.items():
+        stream_id = attribute_dict["stream_id"]
+        topic = attribute_dict["topic"]
+        lookup_key = (stream_id, topic)
+        if lookup_key not in lookup_dict:
+            obj = UnreadStreamInfo(
+                stream_id=stream_id,
+                topic=topic,
+                unread_message_ids=[],
+            )
+            lookup_dict[lookup_key] = obj
+
+        bucket = lookup_dict[lookup_key]
+        bucket["unread_message_ids"].append(message_id)
+
+    for dct in lookup_dict.values():
+        dct["unread_message_ids"].sort()
+
+    sorted_keys = sorted(lookup_dict.keys())
+
+    return [lookup_dict[k] for k in sorted_keys]
+
+
+def aggregate_pms(
+    *, input_dict: Dict[int, RawUnreadPrivateMessageDict]
+) -> List[UnreadPrivateMessageInfo]:
+    lookup_dict: Dict[int, UnreadPrivateMessageInfo] = {}
+    for message_id, attribute_dict in input_dict.items():
+        other_user_id = attribute_dict["sender_id"]
+        if other_user_id not in lookup_dict:
+            obj = UnreadPrivateMessageInfo(
+                sender_id=other_user_id,
+                unread_message_ids=[],
+            )
+            lookup_dict[other_user_id] = obj
+
+        bucket = lookup_dict[other_user_id]
+        bucket["unread_message_ids"].append(message_id)
+
+    for dct in lookup_dict.values():
+        dct["unread_message_ids"].sort()
+
+    sorted_keys = sorted(lookup_dict.keys())
+
+    return [lookup_dict[k] for k in sorted_keys]
+
+
+def aggregate_huddles(*, input_dict: Dict[int, RawUnreadHuddleDict]) -> List[UnreadHuddleInfo]:
+    lookup_dict: Dict[str, UnreadHuddleInfo] = {}
+    for message_id, attribute_dict in input_dict.items():
+        user_ids_string = attribute_dict["user_ids_string"]
+        if user_ids_string not in lookup_dict:
+            obj = UnreadHuddleInfo(
+                user_ids_string=user_ids_string,
+                unread_message_ids=[],
+            )
+            lookup_dict[user_ids_string] = obj
+
+        bucket = lookup_dict[user_ids_string]
+        bucket["unread_message_ids"].append(message_id)
+
+    for dct in lookup_dict.values():
+        dct["unread_message_ids"].sort()
+
+    sorted_keys = sorted(lookup_dict.keys())
+
+    return [lookup_dict[k] for k in sorted_keys]
+
+
 def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesResult:
 
     pm_dict = raw_data["pm_dict"]
@@ -1167,27 +1199,9 @@ def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesRe
 
     count = len(pm_dict) + len(unmuted_stream_msgs) + len(huddle_dict)
 
-    pm_objects = aggregate_message_dict(
-        input_dict=pm_dict,
-        lookup_fields=[
-            "sender_id",
-        ],
-    )
-
-    stream_objects = aggregate_message_dict(
-        input_dict=stream_dict,
-        lookup_fields=[
-            "stream_id",
-            "topic",
-        ],
-    )
-
-    huddle_objects = aggregate_message_dict(
-        input_dict=huddle_dict,
-        lookup_fields=[
-            "user_ids_string",
-        ],
-    )
+    pm_objects = aggregate_pms(input_dict=pm_dict)
+    stream_objects = aggregate_streams(input_dict=stream_dict)
+    huddle_objects = aggregate_huddles(input_dict=huddle_dict)
 
     result: UnreadMessagesResult = dict(
         pms=pm_objects,

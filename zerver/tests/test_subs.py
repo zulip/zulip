@@ -44,7 +44,7 @@ from zerver.lib.actions import (
     validate_user_access_to_subscribers_helper,
 )
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.message import aggregate_unread_data, get_raw_unread_data
+from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
 from zerver.lib.response import json_success
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
@@ -405,7 +405,7 @@ class TestCreateStreams(ZulipTestCase):
             final_usermessage_count - initial_usermessage_count, 4 + announce_stream_subs.count()
         )
 
-        def get_unread_stream_data(user: UserProfile) -> List[Dict[str, Any]]:
+        def get_unread_stream_data(user: UserProfile) -> List[UnreadStreamInfo]:
             raw_unread_data = get_raw_unread_data(user)
             aggregated_data = aggregate_unread_data(raw_unread_data)
             return aggregated_data["streams"]
@@ -4955,7 +4955,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.send_stream_message(random_user, "stream2", "test", "test")
         self.send_stream_message(random_user, "private_stream", "test", "test")
 
-        def get_unread_stream_data() -> List[Dict[str, Any]]:
+        def get_unread_stream_data() -> List[UnreadStreamInfo]:
             raw_unread_data = get_raw_unread_data(user)
             aggregated_data = aggregate_unread_data(raw_unread_data)
             return aggregated_data["streams"]
