@@ -57,8 +57,8 @@ run ./tools/test-migrations
 # Not running missing bot avatar detection since it's low churn
 # ./tools/setup/generate_integration_bots_avatars.py --check-missing
 # Not running documentation tests since it takes 20s and only tests documentation
-# run ./tools/test-documentation
-run ./tools/test-help-documentation $FORCEARG
+# run ./tools/test-documentation --skip-external-links
+run ./tools/test-help-documentation --skip-external-links $FORCEARG
 run ./tools/test-api
 # Not running requirements check locally, because slow and low-churn
 # run ./tools/test-locked-requirements
