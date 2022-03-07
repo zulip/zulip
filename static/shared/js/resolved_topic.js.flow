@@ -1,3 +1,5 @@
 // @flow strict
 
 declare export var RESOLVED_TOPIC_PREFIX: string;
+
+declare export function is_resolved(topic_name: string): boolean;
