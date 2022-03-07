@@ -7,6 +7,7 @@ import re
 import secrets
 import time
 import urllib
+from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional, Sequence, Tuple, Type
 from unittest import mock
@@ -825,7 +826,7 @@ class DesktopFlowTestingLib(ZulipTestCase):
         return AESGCM(key).decrypt(iv, ciphertext, b"").decode()
 
 
-class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
+class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
     """This is a base class for testing social-auth backends. These
     methods are often overridden by subclasses:
 
@@ -835,10 +836,6 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         get_account_data_dict() - Return the data returned by the user info endpoint
                                   according to the respective backend.
     """
-
-    # Don't run base class tests, make sure to set it to False
-    # in subclass otherwise its tests will not run.
-    __unittest_skip__ = True
 
     BACKEND_CLASS: "Type[SocialAuthMixin]"
     LOGIN_URL: str
@@ -850,9 +847,9 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
     CLIENT_KEY_SETTING: str
     CLIENT_SECRET_SETTING: str
 
-    # Functions that subclasses must implement.
+    @abstractmethod
     def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
-        ...
+        raise NotImplementedError
 
     def setUp(self) -> None:
         super().setUp()
@@ -1866,8 +1863,6 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
 
 class SAMLAuthBackendTest(SocialAuthBase):
-    __unittest_skip__ = False
-
     BACKEND_CLASS = SAMLAuthBackend
     LOGIN_URL = "/accounts/login/social/saml/test_idp"
     SIGNUP_URL = "/accounts/register/social/saml/test_idp"
@@ -2945,8 +2940,6 @@ class AppleAuthMixin:
 
 
 class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
-    __unittest_skip__ = False
-
     LOGIN_URL = "/accounts/login/social/apple"
     SIGNUP_URL = "/accounts/register/social/apple"
 
@@ -3076,8 +3069,6 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
 
 
 class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
-    __unittest_skip__ = False
-
     SIGNUP_URL = "/complete/apple/"
     LOGIN_URL = "/complete/apple/"
 
@@ -3284,8 +3275,6 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
 
 
 class GenericOpenIdConnectTest(SocialAuthBase):
-    __unittest_skip__ = False
-
     BACKEND_CLASS = GenericOpenIdConnectBackend
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_TESTOIDC_KEY"
     CLIENT_SECRET_SETTING = "SOCIAL_AUTH_TESTOIDC_SECRET"
@@ -3497,8 +3486,6 @@ class GenericOpenIdConnectTest(SocialAuthBase):
 
 
 class GitHubAuthBackendTest(SocialAuthBase):
-    __unittest_skip__ = False
-
     BACKEND_CLASS = GitHubAuthBackend
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_GITHUB_KEY"
     CLIENT_SECRET_SETTING = "SOCIAL_AUTH_GITHUB_SECRET"
@@ -4018,8 +4005,6 @@ class GitHubAuthBackendTest(SocialAuthBase):
 
 
 class GitLabAuthBackendTest(SocialAuthBase):
-    __unittest_skip__ = False
-
     BACKEND_CLASS = GitLabAuthBackend
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_GITLAB_KEY"
     CLIENT_SECRET_SETTING = "SOCIAL_AUTH_GITLAB_SECRET"
@@ -4039,8 +4024,6 @@ class GitLabAuthBackendTest(SocialAuthBase):
 
 
 class GoogleAuthBackendTest(SocialAuthBase):
-    __unittest_skip__ = False
-
     BACKEND_CLASS = GoogleAuthBackend
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_GOOGLE_KEY"
     CLIENT_SECRET_SETTING = "SOCIAL_AUTH_GOOGLE_SECRET"
@@ -6776,3 +6759,7 @@ class LDAPBackendTest(ZulipTestCase):
             warn_log.output,
             ["WARNING:django_auth_ldap:('Realm is None', 1) while authenticating hamlet"],
         )
+
+
+# Don't load the base class as a test: https://bugs.python.org/issue17519.
+del SocialAuthBase
