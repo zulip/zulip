@@ -8120,6 +8120,7 @@ def do_add_realm_domain(
     return realm_domain
 
 
+@transaction.atomic(durable=True)
 def do_change_realm_domain(
     realm_domain: RealmDomain, allow_subdomains: bool, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -8149,7 +8150,9 @@ def do_change_realm_domain(
             domain=realm_domain.domain, allow_subdomains=realm_domain.allow_subdomains
         ),
     )
-    send_event(realm_domain.realm, event, active_user_ids(realm_domain.realm_id))
+    transaction.on_commit(
+        lambda: send_event(realm_domain.realm, event, active_user_ids(realm_domain.realm_id))
+    )
 
 
 def do_remove_realm_domain(
