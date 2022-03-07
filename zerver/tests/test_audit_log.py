@@ -31,6 +31,7 @@ from zerver.lib.actions import (
     do_reactivate_realm,
     do_reactivate_user,
     do_regenerate_api_key,
+    do_remove_realm_domain,
     do_rename_stream,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
@@ -701,6 +702,27 @@ class TestRealmAuditLog(ZulipTestCase):
             RealmAuditLog.objects.filter(
                 realm=user.realm,
                 event_type=RealmAuditLog.REALM_DOMAIN_CHANGED,
+                event_time__gte=now,
+                acting_user=user,
+                extra_data=orjson.dumps(expected_extra_data).decode(),
+            ).count(),
+            1,
+        )
+
+        now = timezone_now()
+        do_remove_realm_domain(realm_domain, acting_user=user)
+        removed_domain = {
+            "domain": "zulip.org",
+            "allow_subdomains": True,
+        }
+        expected_extra_data = {
+            "realm_domains": initial_domains,
+            "removed_domain": removed_domain,
+        }
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=RealmAuditLog.REALM_DOMAIN_REMOVED,
                 event_time__gte=now,
                 acting_user=user,
                 extra_data=orjson.dumps(expected_extra_data).decode(),

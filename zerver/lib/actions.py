@@ -8164,6 +8164,23 @@ def do_remove_realm_domain(
     realm = realm_domain.realm
     domain = realm_domain.domain
     realm_domain.delete()
+
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=RealmAuditLog.REALM_DOMAIN_REMOVED,
+        event_time=timezone_now(),
+        extra_data=orjson.dumps(
+            {
+                "realm_domains": get_realm_domains(realm),
+                "removed_domain": {
+                    "domain": realm_domain.domain,
+                    "allow_subdomains": realm_domain.allow_subdomains,
+                },
+            }
+        ).decode(),
+    )
+
     if RealmDomain.objects.filter(realm=realm).count() == 0 and realm.emails_restricted_to_domains:
         # If this was the last realm domain, we mark the realm as no
         # longer restricted to domain, because the feature doesn't do
