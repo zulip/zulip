@@ -96,10 +96,7 @@ function message_matches_search_term(message, operator, operand) {
                 case "unread":
                     return unread.message_unread(message);
                 case "resolved":
-                    return (
-                        message.type === "stream" &&
-                        message.topic.startsWith(resolved_topic.RESOLVED_TOPIC_PREFIX)
-                    );
+                    return message.type === "stream" && resolved_topic.is_resolved(message.topic);
                 default:
                     return false; // is:whatever returns false
             }

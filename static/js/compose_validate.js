@@ -178,7 +178,7 @@ export function warn_if_topic_resolved() {
 
     const sub = stream_data.get_sub(stream_name);
 
-    if (sub && topic_name.startsWith(resolved_topic.RESOLVED_TOPIC_PREFIX)) {
+    if (sub && resolved_topic.is_resolved(topic_name)) {
         const error_area = $("#compose_resolved_topic");
 
         if (error_area.html()) {

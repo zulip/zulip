@@ -770,7 +770,7 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
 
     mock_template("compose_resolved_topic.hbs", false, (context) => {
         assert.ok(context.can_move_topic);
-        assert.ok(context.topic_name.startsWith(resolved_topic.RESOLVED_TOPIC_PREFIX));
+        assert.ok(resolved_topic.is_resolved(context.topic_name));
         return "fake-compose_resolved_topic";
     });
 
