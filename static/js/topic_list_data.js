@@ -33,16 +33,8 @@ export function get_list_info(stream_id, zoomed) {
         const num_unread = unread.num_unread_for_topic(stream_id, topic_name);
         const is_active_topic = active_topic === topic_name.toLowerCase();
         const is_topic_muted = muted_topics.is_topic_muted(stream_id, topic_name);
-
-        let topic_resolved_prefix = "";
-        let topic_display_name = topic_name;
-        const resolved = topic_name.startsWith(resolved_topic.RESOLVED_TOPIC_PREFIX);
-        if (resolved) {
-            topic_resolved_prefix = resolved_topic.RESOLVED_TOPIC_PREFIX;
-            topic_display_name = topic_display_name.slice(
-                resolved_topic.RESOLVED_TOPIC_PREFIX.length,
-            );
-        }
+        const [topic_resolved_prefix, topic_display_name] =
+            resolved_topic.display_parts(topic_name);
 
         if (!zoomed) {
             function should_show_topic(topics_selected) {
