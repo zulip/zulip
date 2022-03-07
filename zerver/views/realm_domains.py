@@ -50,7 +50,7 @@ def patch_realm_domain(
 ) -> HttpResponse:
     try:
         realm_domain = RealmDomain.objects.get(realm=user_profile.realm, domain=domain)
-        do_change_realm_domain(realm_domain, allow_subdomains)
+        do_change_realm_domain(realm_domain, allow_subdomains, acting_user=user_profile)
     except RealmDomain.DoesNotExist:
         raise JsonableError(_("No entry found for domain {domain}.").format(domain=domain))
     return json_success(request)
