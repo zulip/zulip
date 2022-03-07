@@ -379,7 +379,7 @@ function change_stream_privacy(e) {
 
     const privacy_setting = $("#stream_privacy_modal input[name=privacy]:checked").val();
     const stream_post_policy = Number.parseInt(
-        $("#stream_privacy_modal input[name=stream-post-policy]:checked").val(),
+        $("#stream_privacy_modal select[name=stream-post-policy]").val(),
         10,
     );
 

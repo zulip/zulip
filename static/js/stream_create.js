@@ -196,7 +196,7 @@ function create_stream() {
     data.history_public_to_subscribers = JSON.stringify(history_public_to_subscribers);
 
     const stream_post_policy = Number.parseInt(
-        $("#stream_creation_form input[name=stream-post-policy]:checked").val(),
+        $("#stream_creation_form select[name=stream-post-policy]").val(),
         10,
     );
 

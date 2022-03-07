@@ -25,17 +25,16 @@
 {{/if}}
 
 <div class="input-group">
-    <h4>{{t 'Who can post to the stream?'}}
+    <label>{{t 'Who can post to the stream?'}}
         {{> ../help_link_widget link="/help/stream-sending-policy" }}
-    </h4>
-    {{#each stream_post_policy_values}}
-        <div class="radio-input-parent">
-            <label class="radio">
-                <input type="radio" name="stream-post-policy" value="{{ this.code }}" {{#if (eq this.code ../stream_post_policy) }}checked{{/if}} />
-                {{ this.description }}
-            </label>
-        </div>
-    {{/each}}
+    </label>
+    <select name="stream-post-policy" class="stream_post_policy_setting prop-element">
+        {{#each stream_post_policy_values}}
+            <option value="{{this.code}}" {{#if (eq this.code ../stream_post_policy) }}selected{{/if}}>
+                {{ this.description}}
+            </option>
+        {{/each}}
+    </select>
 </div>
 
 {{#if (or is_owner is_stream_edit)}}
