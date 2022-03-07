@@ -359,7 +359,7 @@ body.dark-theme {
 
     .new-style .tab-switcher .ind-tab.selected,
     div.message_content thead,
-        background-color: hsla(0, 0%, 0%, 0.5);
+        background-color: hsla(0, 0%, 0%, 0.5);.tab-switcher.ind-tab.selected,div.message_contentthead,background-color
         border-color: hsla(0, 0%, 0%, 0.9);
     }
 
@@ -1217,7 +1217,6 @@ body.dark-theme {
             color: hsl(0, 0%, 100%);
         }
     }
-}
 
 @supports (-moz-appearance: none) {
     body.dark-theme #settings_page select {
@@ -1229,4 +1228,5 @@ body.dark-theme {
     body.color-scheme-automatic {
         @extend body.dark-theme;
     }
+}
 }
