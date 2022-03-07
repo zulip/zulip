@@ -8094,6 +8094,7 @@ def do_update_linkifier(realm: Realm, id: int, pattern: str, url_format_string: 
     notify_linkifiers(realm)
 
 
+@transaction.atomic(durable=True)
 def do_add_realm_domain(
     realm: Realm, domain: str, allow_subdomains: bool, *, acting_user: Optional[UserProfile]
 ) -> (RealmDomain):
@@ -8121,7 +8122,7 @@ def do_add_realm_domain(
             domain=realm_domain.domain, allow_subdomains=realm_domain.allow_subdomains
         ),
     )
-    send_event(realm, event, active_user_ids(realm.id))
+    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
 
     return realm_domain
 
