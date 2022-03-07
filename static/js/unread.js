@@ -98,7 +98,7 @@ class UnreadPMCounter {
 
     set_pms(pms) {
         for (const obj of pms) {
-            const user_ids_string = obj.sender_id.toString();
+            const user_ids_string = obj.other_user_id.toString();
             this.set_message_ids(user_ids_string, obj.unread_message_ids);
         }
     }

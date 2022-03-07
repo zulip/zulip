@@ -72,7 +72,7 @@ class RawUnreadStreamDict(TypedDict):
 
 
 class RawUnreadPrivateMessageDict(TypedDict):
-    sender_id: int
+    other_user_id: int
 
 
 class RawUnreadHuddleDict(TypedDict):
@@ -96,6 +96,8 @@ class UnreadStreamInfo(TypedDict):
 
 
 class UnreadPrivateMessageInfo(TypedDict):
+    other_user_id: int
+    # Deprecated and misleading synonym for other_user_id
     sender_id: int
     unread_message_ids: List[int]
 
@@ -1080,14 +1082,8 @@ def extract_unread_data_from_um_rows(
             else:
                 other_user_id = sender_id
 
-            # The `sender_id` field here is misnamed.  It's really
-            # just the other participant in a PM conversation.  For
-            # most unread PM messages, the other user is also the sender,
-            # but that's not true for certain messages sent from the
-            # API.  Unfortunately, it's difficult now to rename the
-            # field without breaking mobile.
             pm_dict[message_id] = dict(
-                sender_id=other_user_id,
+                other_user_id=other_user_id,
             )
 
         elif msg_type == Recipient.HUDDLE:
@@ -1148,9 +1144,13 @@ def aggregate_pms(
 ) -> List[UnreadPrivateMessageInfo]:
     lookup_dict: Dict[int, UnreadPrivateMessageInfo] = {}
     for message_id, attribute_dict in input_dict.items():
-        other_user_id = attribute_dict["sender_id"]
+        other_user_id = attribute_dict["other_user_id"]
         if other_user_id not in lookup_dict:
+            # The `sender_id` field here is only supported for
+            # legacy mobile clients. Its actual semantics are the same
+            # as `other_user_id`.
             obj = UnreadPrivateMessageInfo(
+                other_user_id=other_user_id,
                 sender_id=other_user_id,
                 unread_message_ids=[],
             )
@@ -1248,13 +1248,12 @@ def apply_unread_message_event(
 
     elif message_type == "private":
         if len(others) == 1:
-            other_id = others[0]["id"]
+            other_user_id = others[0]["id"]
         else:
-            other_id = user_profile.id
+            other_user_id = user_profile.id
 
-        # The `sender_id` field here is misnamed.
         state["pm_dict"][message_id] = RawUnreadPrivateMessageDict(
-            sender_id=other_id,
+            other_user_id=other_user_id,
         )
 
     else:

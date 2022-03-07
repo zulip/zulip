@@ -9386,14 +9386,29 @@ paths:
                             items:
                               type: object
                               description: |
-                                Object containing the details of a unread private
-                                message with a specific user.
+                                Object containing the details of a unread private message with
+                                a specific user. Note that in rare situations, it is possible
+                                for a message that you sent to another user to be marked as
+                                unread and thus appear here.
                               additionalProperties: false
                               properties:
-                                sender_id:
+                                other_user_id:
                                   type: integer
                                   description: |
-                                    The user id of the other participant in a PM conversation.
+                                    The user id of the other participant in this non-group private
+                                    message conversation. Will be your own user ID for messages
+                                    that you sent to only yourself.
+                                sender_id:
+                                  deprecated: true
+                                  type: integer
+                                  description: |
+                                    Old name for `other_user_id`. Clients should access this
+                                    field in Zulip server versions that do not yet support
+                                    `other_user_id`.
+
+                                    **Changes**: Deprecated in Zulip 5.0 (feature level 119).
+                                    We expect to provide a next version of the full `unread_msgs`
+                                    API before removing this legacy name.
                                 message_ids:
                                   type: array
                                   description: |

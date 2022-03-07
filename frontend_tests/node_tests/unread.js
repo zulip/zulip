@@ -625,6 +625,8 @@ test("server_counts", () => {
     page_params.unread_msgs = {
         pms: [
             {
+                other_user_id: 101,
+                // sender_id is deprecated.
                 sender_id: 101,
                 unread_message_ids: [31, 32, 60, 61, 62, 63],
             },

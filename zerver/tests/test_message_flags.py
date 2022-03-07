@@ -712,7 +712,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
 
         self.assertEqual(
             pm_dict[cordelia_pm_message_ids[0]],
-            dict(sender_id=cordelia.id),
+            dict(other_user_id=cordelia.id),
         )
 
     def test_raw_unread_personal_from_self(self) -> None:
@@ -756,12 +756,9 @@ class GetUnreadMsgsTest(ZulipTestCase):
 
         self.assertEqual(set(pm_dict.keys()), {othello_msg.id})
 
-        # For legacy reason we call the field `sender_id` here,
-        # but it really refers to the other user id in the conversation,
-        # which is Othello.
         self.assertEqual(
             pm_dict[othello_msg.id],
-            dict(sender_id=othello.id),
+            dict(other_user_id=othello.id),
         )
 
         cordelia = self.example_user("cordelia")
@@ -778,10 +775,9 @@ class GetUnreadMsgsTest(ZulipTestCase):
             {othello_msg.id, cordelia_msg.id},
         )
 
-        # Again, `sender_id` is misnamed here.
         self.assertEqual(
             pm_dict[cordelia_msg.id],
-            dict(sender_id=cordelia.id),
+            dict(other_user_id=cordelia.id),
         )
 
         # Send a message to ourself.
@@ -797,10 +793,9 @@ class GetUnreadMsgsTest(ZulipTestCase):
             {othello_msg.id, cordelia_msg.id, hamlet_msg.id},
         )
 
-        # Again, `sender_id` is misnamed here.
         self.assertEqual(
             pm_dict[hamlet_msg.id],
-            dict(sender_id=hamlet.id),
+            dict(other_user_id=hamlet.id),
         )
 
         # Call get_raw_unread_data again.
@@ -814,10 +809,9 @@ class GetUnreadMsgsTest(ZulipTestCase):
             {othello_msg.id, cordelia_msg.id, hamlet_msg.id},
         )
 
-        # Again, `sender_id` is misnamed here.
         self.assertEqual(
             pm_dict[hamlet_msg.id],
-            dict(sender_id=hamlet.id),
+            dict(other_user_id=hamlet.id),
         )
 
     def test_unread_msgs(self) -> None:
