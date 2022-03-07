@@ -1,5 +1,6 @@
+import * as resolved_topic from "../shared/js/resolved_topic";
+
 import * as hash_util from "./hash_util";
-import * as message_edit from "./message_edit";
 import * as muted_topics from "./muted_topics";
 import * as narrow_state from "./narrow_state";
 import * as stream_topic_history from "./stream_topic_history";
@@ -32,12 +33,12 @@ export function get_list_info(stream_id, zoomed) {
         const num_unread = unread.num_unread_for_topic(stream_id, topic_name);
         const is_active_topic = active_topic === topic_name.toLowerCase();
         const is_topic_muted = muted_topics.is_topic_muted(stream_id, topic_name);
-        const resolved = topic_name.startsWith(message_edit.RESOLVED_TOPIC_PREFIX);
+        const resolved = topic_name.startsWith(resolved_topic.RESOLVED_TOPIC_PREFIX);
         let topic_display_name = topic_name;
 
         if (resolved) {
             topic_display_name = topic_display_name.slice(
-                message_edit.RESOLVED_TOPIC_PREFIX.length,
+                resolved_topic.RESOLVED_TOPIC_PREFIX.length,
             );
         }
 
@@ -107,7 +108,7 @@ export function get_list_info(stream_id, zoomed) {
             is_active_topic,
             url: hash_util.by_stream_topic_url(stream_id, topic_name),
             resolved,
-            resolved_topic_prefix: message_edit.RESOLVED_TOPIC_PREFIX,
+            resolved_topic_prefix: resolved_topic.RESOLVED_TOPIC_PREFIX,
         };
 
         items.push(topic_info);

@@ -16,9 +16,9 @@ const ui_util = mock_esm("../../static/js/ui_util");
 
 const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_validate = zrequire("compose_validate");
-const message_edit = zrequire("message_edit");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
+const resolved_topic = zrequire("../shared/js/resolved_topic");
 const settings_config = zrequire("settings_config");
 const settings_data = mock_esm("../../static/js/settings_data");
 const stream_data = zrequire("stream_data");
@@ -770,7 +770,7 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
 
     mock_template("compose_resolved_topic.hbs", false, (context) => {
         assert.ok(context.can_move_topic);
-        assert.ok(context.topic_name.startsWith(message_edit.RESOLVED_TOPIC_PREFIX));
+        assert.ok(context.topic_name.startsWith(resolved_topic.RESOLVED_TOPIC_PREFIX));
         return "fake-compose_resolved_topic";
     });
 
@@ -786,7 +786,7 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
 
     compose_state.set_message_type("stream");
     compose_state.stream_name("Do not exist");
-    compose_state.topic(message_edit.RESOLVED_TOPIC_PREFIX + "hello");
+    compose_state.topic(resolved_topic.RESOLVED_TOPIC_PREFIX + "hello");
 
     // Do not show a warning if stream name does not exist
     compose_validate.warn_if_topic_resolved();

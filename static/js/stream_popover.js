@@ -1,6 +1,7 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
 
+import * as resolved_topic from "../shared/js/resolved_topic";
 import render_all_messages_sidebar_actions from "../templates/all_messages_sidebar_actions.hbs";
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
 import render_drafts_sidebar_actions from "../templates/drafts_sidebar_action.hbs";
@@ -290,7 +291,7 @@ function build_topic_popover(opts) {
         topic_muted,
         can_move_topic,
         is_realm_admin: page_params.is_admin,
-        topic_is_resolved: topic_name.startsWith(message_edit.RESOLVED_TOPIC_PREFIX),
+        topic_is_resolved: topic_name.startsWith(resolved_topic.RESOLVED_TOPIC_PREFIX),
         color: sub.color,
         has_starred_messages,
     });
