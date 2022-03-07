@@ -86,6 +86,7 @@ export function launch(conf) {
     // * on_shown: Callback to run when the modal is shown.
     // * on_hide: Callback to run when the modal is triggered to hide.
     // * on_hidden: Callback to run when the modal is hidden.
+    // * post_render: Callback to run after the modal body is added to DOM.
 
     for (const f of mandatory_fields) {
         if (conf[f] === undefined) {
