@@ -6683,7 +6683,9 @@ def do_update_message(
     * the message's content (in which case the caller will have
       set both content and rendered_content),
     * the topic, in which case the caller will have set topic_name
-    * or both
+    * or both message's content and the topic
+    * or stream and/or topic, in which case the caller will have set
+        new_stream and/or topic_name.
 
     With topic edits, propagate_mode determines whether other message
     also have their topics edited.
