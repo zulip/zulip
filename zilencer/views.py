@@ -257,6 +257,12 @@ def remote_server_notify_push(
             payload["zulip_message_ids"] = ",".join(str(id) for id in truncated_ids)
         return payload
 
+    # The full request must complete within 30s, the timeout set by
+    # Zulip remote hosts for push notification requests (see
+    # PushBouncerSession).  The timeouts in the FCM and APNS codepaths
+    # must be set accordingly; see send_android_push_notification and
+    # send_apple_push_notification.
+
     gcm_payload = truncate_payload(gcm_payload)
     send_android_push_notification(
         user_id, android_devices, gcm_payload, gcm_options, remote=server
