@@ -62,7 +62,7 @@ li.show-more-topics {
     }
 }
 
-li.show-more-pms {
+#show_more_pms {
     cursor: pointer;
     padding-top: 1px;
     padding-bottom: 1px;
@@ -482,7 +482,7 @@ ul.topic-list {
     font-weight: normal;
 }
 
-ul.expanded_private_messages {
+ul.expanded-private-messages {
     list-style-type: none;
 
     span.fa-group {
@@ -545,7 +545,7 @@ li.expanded_private_message {
         display: none;
     }
 
-    .hide-more-pms {
+    #hide_more_pms {
         display: none;
     }
 }
@@ -612,7 +612,7 @@ li.expanded_private_message {
 
     .more-private-messages-sidebar-title {
         margin: 0;
-        padding-left: 29px;
+        padding-left: 13px;
         color: inherit;
     }
 }
@@ -657,7 +657,7 @@ li.expanded_private_message {
         padding-left: 14px;
     }
 
-    .hide-more-pms {
+    #hide_more_pms {
         display: block;
         margin-left: 13px;
         padding-top: 2px;

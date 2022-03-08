@@ -21,7 +21,7 @@ export function keyed_pm_li(convo) {
 
 export function pm_ul(nodes) {
     const attrs = [
-        ["class", "expanded_private_messages"],
+        ["class", "expanded-private-messages"],
         ["data-name", "private"],
     ];
     return vdom.ul({

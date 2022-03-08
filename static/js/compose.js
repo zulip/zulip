@@ -251,7 +251,7 @@ export function send_message(request = create_message_object()) {
     }
 
     transmit.send_message(request, success, error);
-    if (request.type === "private" && $(".expanded_private_messages").children().length === 0) {
+    if (request.type === "private" && $(".expanded-private-messages").children().length === 0) {
         pm_list.append_new_active_pm_in_collapsed_pms();
     }
     server_events.assert_get_events_running(

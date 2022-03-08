@@ -537,8 +537,7 @@ export function initialize() {
 
     $("body").on("click", "#all_private_messages_icon", (e) => {
         e.preventDefault();
-        $("#private_messages_section").addClass("active_private_messages_section");
-        $(".more-private-messages-sidebar-title").css("font-weight", "bold");
+        pm_list.activate_all_private_messages_view();
         top_left_corner.deselect_top_left_corner_items();
         window.location.href = "#narrow/is/private";
     });
@@ -550,23 +549,21 @@ export function initialize() {
             "'fa fa-caret-down fa-lg' 'fa fa-caret-right fa-lg'",
         );
         const private_messages_collapsed = pm_list.return_private_messages_state();
-        const active_li = $(".expanded_private_messages li.active-sub-filter");
         if (
             private_messages_collapsed &&
-            ($(".expanded_private_messages").children().length === 0 ||
-                (active_li.is($(".expanded_private_messages").children()[0]) &&
-                    $(".expanded_private_messages").children().length === 1))
+            ($(".expanded-private-messages").children().length === 0 ||
+                pm_list.only_active_pm_out_of_collapsed_pms)
         ) {
             // To expand the PM section list we need the PM section state to be collapsed
             // then there comes 2 possible conditions regarding the number of PMs present in the section
-            // either there should 0 PMs present or else only 1 which is active PM can be present in the collapsed PM section.
+            // either it should 0 PMs present or else only 1 which is active PM can be present outside the collapsed PM section.
             pm_list.expand();
         } else {
-            // If we find all the PMs present already in the section (which indicates that PM section is expanded)
-            // we trigger function to close it and mark the state as collapsed.
+            // If PM section state is expanded we trigger function to close it and mark the state as collapsed.
             pm_list.close();
         }
         setTimeout(() => {
+            // We resize the STREAMS section after changing the state of PM section.
             resize.resize_stream_filters_container();
         }, 0);
     });
