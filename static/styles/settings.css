@@ -1590,7 +1590,8 @@ input[type="checkbox"] {
         }
 
         textarea {
-            width: 320px;
+            width: max(206px, 25vw);
+            max-width: 320px;
             height: 80px;
         }
 
