@@ -242,6 +242,16 @@ body.dark-theme {
         background-color: hsl(208, 17%, 29%);
     }
 
+    .private-message .message_expander,
+    .message_condenser {
+        background-color: hsl(208, 17%, 29%);
+    }
+
+    .message_expander,
+    .message_condenser {
+        background-color: hsl(212, 28%, 18%);
+    }
+
     /* do not turn the .message_header .stream_label text dark on hover because they're
        on a dark background, and don't change the dark labels dark either. */
     .message_header:not(.dark_background)

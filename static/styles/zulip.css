@@ -1482,9 +1482,10 @@ div.focused_table {
     }
 
     &.condensed {
-        max-height: 8.5em;
+        max-height: 10em;
         min-height: 0;
         overflow: hidden;
+        mask-image: linear-gradient(to top, transparent 0%, hsl(0, 0%, 0%));
     }
 
     &.collapsed {
@@ -1492,6 +1493,22 @@ div.focused_table {
         min-height: 0;
         overflow: hidden;
     }
+}
+
+.message_expander,
+.message_condenser {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 90px;
+    height: 23px;
+    margin-top: 4px;
+    margin-bottom: 8px;
+    position: relative;
+    left: 50%;
+    background-color: hsl(0, 11%, 96%);
+    border-radius: 6px;
+    border: solid 1px hsl(220, 1%, 45%);
 }
 
 .rtl {
@@ -1633,7 +1650,7 @@ div.focused_table {
 .message_length_controller {
     display: none;
     text-align: center;
-    color: hsl(200, 100%, 40%);
+    color: inherit;
 
     /* to match .message_content */
     margin-left: 5px;
