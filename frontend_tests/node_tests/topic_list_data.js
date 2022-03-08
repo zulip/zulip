@@ -81,6 +81,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
 
     assert.deepEqual(list_info.items[0], {
         is_active_topic: true,
+        is_topic_pinned: false,
         is_muted: false,
         is_zero: true,
         topic_display_name: "topic 6",
@@ -92,6 +93,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
 
     assert.deepEqual(list_info.items[1], {
         is_active_topic: false,
+        is_topic_pinned: false,
         is_muted: false,
         is_zero: true,
         topic_display_name: "topic 5",

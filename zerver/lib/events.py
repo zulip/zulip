@@ -38,6 +38,7 @@ from zerver.lib.message import (
     remove_message_id_from_unread_mgs,
 )
 from zerver.lib.narrow import check_supported_events_narrow_filter, read_stop_words
+from zerver.lib.pinned_topics import get_pinned_topics
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.realm_icon import realm_icon_url
@@ -190,6 +191,12 @@ def fetch_initial_state_data(
             )[: settings.MAX_DRAFTS_IN_REGISTER_RESPONSE]
             user_draft_dicts = [draft.to_dict() for draft in user_draft_objects]
             state["drafts"] = user_draft_dicts
+
+    if want("pinned_topics"):
+        if user_profile is not None:
+            state["pinned_topics"] = get_pinned_topics(user_profile)
+        else:
+            state["pinned_topics"] = []
 
     if want("muted_topics"):
         state["muted_topics"] = [] if user_profile is None else get_topic_mutes(user_profile)
@@ -1035,6 +1042,10 @@ def apply_event(
             # remove them from never_subscribed if they had been there
             state["never_subscribed"] = [s for s in state["never_subscribed"] if not was_added(s)]
 
+            # big hammer
+            if "pinned_topics" in state:
+                state["pinned_topics"] = get_pinned_topics(user_profile)
+
         elif event["op"] == "remove":
             removed_stream_ids = {sub["stream_id"] for sub in event["subscriptions"]}
             was_removed = lambda s: s["stream_id"] in removed_stream_ids
@@ -1051,6 +1062,10 @@ def apply_event(
 
             # Now filter out the removed subscriptions from subscriptions.
             state["subscriptions"] = [s for s in state["subscriptions"] if not was_removed(s)]
+
+            state["pinned_topics"] = [
+                row for row in state["pinned_topics"] if row["stream_id"] not in removed_stream_ids
+            ]
 
         elif event["op"] == "update":
             for sub in state["subscriptions"]:
@@ -1189,6 +1204,19 @@ def apply_event(
         pass
     elif event["type"] == "alert_words":
         state["alert_words"] = event["alert_words"]
+    elif event["type"] == "pinned_topics":
+        pinned_topics = state["pinned_topics"]
+        pinned_topics = [
+            row
+            for row in pinned_topics
+            if not (
+                row["stream_id"] == event["stream_id"] and row["topic_name"] == event["topic_name"]
+            )
+        ]
+        if event["op"] == "add":
+            pinned_topics.append(dict(stream_id=event["stream_id"], topic_name=event["topic_name"]))
+            pinned_topics.sort(key=lambda d: (d["stream_id"], d["topic_name"]))
+        state["pinned_topics"] = pinned_topics
     elif event["type"] == "muted_topics":
         state["muted_topics"] = event["muted_topics"]
     elif event["type"] == "muted_users":

@@ -161,6 +161,10 @@ def get_user_ids_for_streams(stream_ids: Set[int]) -> Dict[int, Set[int]]:
     return result
 
 
+def get_user_ids_for_stream(stream_id: int) -> Set[int]:
+    return get_user_ids_for_streams({stream_id}).get(stream_id, set())
+
+
 def bulk_get_subscriber_peer_info(
     realm: Realm,
     streams: List[Stream],

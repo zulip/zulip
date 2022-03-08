@@ -40,6 +40,7 @@ const message_lists = mock_esm("../../static/js/message_lists");
 const muted_topics_ui = mock_esm("../../static/js/muted_topics_ui");
 const muted_users_ui = mock_esm("../../static/js/muted_users_ui");
 const notifications = mock_esm("../../static/js/notifications");
+const pinned_topics = mock_esm("../../static/js/pinned_topics");
 const reactions = mock_esm("../../static/js/reactions");
 const realm_icon = mock_esm("../../static/js/realm_icon");
 const realm_logo = mock_esm("../../static/js/realm_logo");
@@ -259,6 +260,24 @@ run_test("muted_users", ({override}) => {
     assert.equal(stub.num_calls, 1);
     const args = stub.get_args("muted_users");
     assert_same(args.muted_users, event.muted_users);
+});
+
+run_test("pinned_topics add", ({override}) => {
+    const event = {type: "pinned_topics", op: "add"}; // TODO: add to event_fixtures
+
+    const stub = make_stub();
+    override(pinned_topics, "add", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+});
+
+run_test("pinned_topics remove", ({override}) => {
+    const event = {type: "pinned_topics", op: "remove"}; // TODO: add to event_fixtures
+
+    const stub = make_stub();
+    override(pinned_topics, "remove", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
 });
 
 run_test("presence", ({override}) => {

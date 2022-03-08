@@ -733,7 +733,44 @@ export function register_topic_handlers() {
         e.stopPropagation();
     });
 
-    // Deleting all message in a topic
+    $("body").on("click", ".sidebar-popover-pin-topic", (e) => {
+        const stream_id = topic_popover_stream_id(e);
+        if (!stream_id) {
+            return;
+        }
+
+        const topic_name = $(e.currentTarget).attr("data-topic-name");
+
+        hide_topic_popover();
+
+        const data = {stream_id, topic_name};
+        channel.post({
+            url: "/json/pin_topic",
+            data,
+        });
+
+        e.stopPropagation();
+    });
+
+    $("body").on("click", ".sidebar-popover-unpin-topic", (e) => {
+        const stream_id = topic_popover_stream_id(e);
+        if (!stream_id) {
+            return;
+        }
+
+        const topic_name = $(e.currentTarget).attr("data-topic-name");
+
+        hide_topic_popover();
+
+        const data = {stream_id, topic_name};
+        channel.post({
+            url: "/json/unpin_topic",
+            data,
+        });
+
+        e.stopPropagation();
+    });
+
     $("body").on("click", ".sidebar-popover-delete-topic-messages", (e) => {
         const stream_id = topic_popover_stream_id(e);
         if (!stream_id) {

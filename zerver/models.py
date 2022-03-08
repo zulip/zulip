@@ -2451,6 +2451,12 @@ post_save.connect(flush_stream, sender=Stream)
 post_delete.connect(flush_stream, sender=Stream)
 
 
+class PinnedTopic(models.Model):
+    id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
+    stream: Stream = models.ForeignKey(Stream, on_delete=CASCADE)
+    topic_name: str = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)
+
+
 class UserTopic(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)

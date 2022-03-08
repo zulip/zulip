@@ -56,6 +56,7 @@ import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as pinned_topics from "./pinned_topics";
 import * as pm_conversations from "./pm_conversations";
 import * as popover_menus from "./popover_menus";
 import * as presence from "./presence";
@@ -672,6 +673,8 @@ export function initialize_everything() {
     user_status_ui.initialize();
     fenced_code.initialize(generated_pygments_data);
     message_edit_history.initialize();
+
+    pinned_topics.initialize();
 }
 
 $(() => {

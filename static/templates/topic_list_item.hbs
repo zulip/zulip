@@ -4,6 +4,7 @@
             {{topic_resolved_prefix}}
         </span>
         <a href='{{url}}' class="topic-name" title="{{topic_name}}">
+            {{#if is_topic_pinned}}<b>PINNED</b>{{/if}}
             {{topic_display_name}}
         </a>
         <span class="unread_count {{#if is_zero}}zero_count{{/if}}">

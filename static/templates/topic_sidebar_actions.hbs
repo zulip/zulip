@@ -75,5 +75,17 @@
             {{t "Delete topic"}}
         </a>
     </li>
+    <li>
+        <a tabindex="0" class="sidebar-popover-pin-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-thumb-tack" aria-hidden="true"></i>
+            {{t "Pin topic"}}
+        </a>
+    </li>
+    <li>
+        <a tabindex="0" class="sidebar-popover-unpin-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-thumb-tack" aria-hidden="true"></i>
+            {{t "Unpin topic"}}
+        </a>
+    </li>
     {{/if}}
 </ul>

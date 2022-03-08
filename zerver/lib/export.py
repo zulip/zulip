@@ -135,6 +135,7 @@ ALL_ZULIP_TABLES = {
     "zerver_missedmessageemailaddress",
     "zerver_multiuseinvite",
     "zerver_multiuseinvite_streams",
+    "zerver_pinnedtopic",
     "zerver_preregistrationuser",
     "zerver_preregistrationuser_streams",
     "zerver_pushdevicetoken",
@@ -176,6 +177,7 @@ ALL_ZULIP_TABLES = {
 # every table in the database is either exported or listed here, to
 # ensure we never accidentally fail to export a table.
 NON_EXPORTED_TABLES = {
+    "zerver_pinnedtopic",  # TODO
     # These invitation/confirmation flow tables don't make sense to
     # export, since invitations links will be broken by the server URL
     # change anyway:

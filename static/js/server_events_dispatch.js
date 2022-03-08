@@ -34,6 +34,7 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
+import * as pinned_topics from "./pinned_topics";
 import * as pm_list from "./pm_list";
 import * as reactions from "./reactions";
 import * as realm_icon from "./realm_icon";
@@ -148,6 +149,15 @@ export function dispatch_normal_event(event) {
 
         case "muted_users":
             muted_users_ui.handle_user_updates(event.muted_users);
+            break;
+
+        case "pinned_topics":
+            blueslip.info(event);
+            if (event.op === "add") {
+                pinned_topics.add({stream_id: event.stream_id, topic_name: event.topic_name});
+            } else {
+                pinned_topics.remove({stream_id: event.stream_id, topic_name: event.topic_name});
+            }
             break;
 
         case "presence":

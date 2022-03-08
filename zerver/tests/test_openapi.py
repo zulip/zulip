@@ -193,6 +193,8 @@ class OpenAPIArgumentsTest(ZulipTestCase):
     checked_endpoints: Set[str] = set()
     pending_endpoints = {
         #### TODO: These endpoints are a priority to document:
+        "/pin_topic",
+        "/unpin_topic",
         "/realm/presence",
         "/users/me/presence",
         "/users/me/alert_words",

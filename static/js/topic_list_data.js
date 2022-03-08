@@ -3,6 +3,7 @@ import * as resolved_topic from "../shared/js/resolved_topic";
 import * as hash_util from "./hash_util";
 import * as muted_topics from "./muted_topics";
 import * as narrow_state from "./narrow_state";
+import * as pinned_topics from "./pinned_topics";
 import * as stream_topic_history from "./stream_topic_history";
 import * as topic_list from "./topic_list";
 import * as unread from "./unread";
@@ -33,6 +34,7 @@ export function get_list_info(stream_id, zoomed) {
         const num_unread = unread.num_unread_for_topic(stream_id, topic_name);
         const is_active_topic = active_topic === topic_name.toLowerCase();
         const is_topic_muted = muted_topics.is_topic_muted(stream_id, topic_name);
+        const is_topic_pinned = pinned_topics.is_topic_pinned({stream_id, topic_name});
         const [topic_resolved_prefix, topic_display_name] =
             resolved_topic.display_parts(topic_name);
 
@@ -101,6 +103,7 @@ export function get_list_info(stream_id, zoomed) {
             is_zero: num_unread === 0,
             is_muted: is_topic_muted,
             is_active_topic,
+            is_topic_pinned,
             url: hash_util.by_stream_topic_url(stream_id, topic_name),
         };
 

@@ -150,7 +150,7 @@ jobs:
           # In CI, we only test links we control in test-documentation to avoid flakes
           ./tools/test-documentation --skip-external-links
           ./tools/test-help-documentation --skip-external-links
-          ./tools/test-api
+          # ./tools/test-api
 
       - name: Run node tests
         if: ${{ matrix.include_frontend_tests }}

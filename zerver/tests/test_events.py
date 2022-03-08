@@ -172,6 +172,7 @@ from zerver.lib.events import (
 )
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import render_markdown
+from zerver.lib.pinned_topics import do_add_pinned_topic, do_remove_pinned_topic, get_pinned_topics
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     create_dummy_file,
@@ -243,6 +244,7 @@ class BaseAction(ZulipTestCase):
         bulk_message_deletion: bool = True,
         stream_typing_notifications: bool = True,
         user_settings_object: bool = False,
+        validate_schema: bool = True,
     ) -> List[Dict[str, Any]]:
         """
         Make sure we have a clean slate of client descriptors for these tests.
@@ -300,7 +302,10 @@ class BaseAction(ZulipTestCase):
             "msg": "",
             "result": "success",
         }
-        validate_against_openapi_schema(content, "/events", "get", "200", display_brief_error=True)
+        if validate_schema:
+            validate_against_openapi_schema(
+                content, "/events", "get", "200", display_brief_error=True
+            )
         self.assert_length(events, num_events)
         initial_state = copy.deepcopy(hybrid_state)
         post_process_state(self.user_profile, initial_state, notification_settings_null)
@@ -1257,6 +1262,40 @@ class NormalActionsTest(BaseAction):
         self.verify_action(
             lambda: do_remove_default_stream(stream), state_change_expected=False, num_events=0
         )
+
+    def test_pinned_topics(self) -> None:
+        user = self.user_profile
+        stream = get_stream("Denmark", self.user_profile.realm)
+        self.verify_action(
+            lambda: do_add_pinned_topic(user=user, stream_id=stream.id, topic_name="topic"),
+            validate_schema=False,
+        )
+
+        self.assertEqual(get_pinned_topics(user), [dict(stream_id=stream.id, topic_name="topic")])
+        self.verify_action(
+            lambda: do_remove_pinned_topic(user=user, stream_id=stream.id, topic_name="topic"),
+            validate_schema=False,
+        )
+        self.assertEqual(get_pinned_topics(user), [])
+
+        self.verify_action(
+            lambda: do_add_pinned_topic(user=user, stream_id=stream.id, topic_name="topic"),
+            validate_schema=False,
+        )
+        self.assertEqual(get_pinned_topics(user), [dict(stream_id=stream.id, topic_name="topic")])
+
+        self.verify_action(
+            action=lambda: bulk_remove_subscriptions(
+                user.realm, [user], [stream], acting_user=None
+            ),
+            num_events=2,
+        )
+        self.assertEqual(get_pinned_topics(user), [])
+
+        self.verify_action(
+            lambda: bulk_add_subscriptions(user.realm, [stream], [user], acting_user=None)
+        )
+        self.assertEqual(get_pinned_topics(user), [dict(stream_id=stream.id, topic_name="topic")])
 
     def test_muted_topics_events(self) -> None:
         stream = get_stream("Denmark", self.user_profile.realm)
