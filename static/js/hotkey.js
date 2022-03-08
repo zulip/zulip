@@ -438,7 +438,7 @@ export function process_enter_key(e) {
 
     if ($(e.target).attr("role") === "button") {
         e.target.click();
-        return false;
+        return true;
     }
 
     // All custom logic for overlays/modals is above; if we're in a
