@@ -561,8 +561,17 @@ input.recipient_box {
     }
 
     .compose_control_menu_wrapper {
+        opacity: 0.7;
         padding: 0;
         margin: 0;
+
+        &:hover {
+            opacity: 1;
+        }
+
+        .compose_control_menu {
+            opacity: 1;
+        }
     }
 
     .hide-sm,

@@ -1154,7 +1154,8 @@ body.dark-theme {
     .new-style label.checkbox input[type="checkbox"]:focus ~ span,
     i.fa:focus,
     i.zulip-icon:focus,
-    .auto-select:focus {
+    .auto-select:focus,
+    [role="button"]:focus {
         outline-color: hsl(0, 0%, 67%);
     }
 
