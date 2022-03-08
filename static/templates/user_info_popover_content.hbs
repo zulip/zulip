@@ -28,10 +28,6 @@
         {{/if}}
 
 
-        {{#if user_time}}
-        <li class="hidden-for-spectators">{{ user_time }} {{#tr}}Local time{{/tr}}</li>
-        {{/if}}
-
         {{#if is_bot}}
             {{#if bot_owner}}
                 <li>{{#tr}}Owner{{/tr}}:
@@ -49,6 +45,11 @@
         {{else}}
             <li>{{ user_type }}</li>
         {{/if}}
+
+        {{#if user_time}}
+            <li class="hidden-for-spectators">{{ user_time }} {{#tr}}Local time{{/tr}}</li>
+        {{/if}}
+
         <li class="only-visible-for-spectators">Joined {{date_joined}}</li>
     </div>
 
