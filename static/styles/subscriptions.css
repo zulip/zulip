@@ -608,7 +608,7 @@ h4.stream_setting_subsection_title {
     }
 
     #announce-new-stream {
-        margin-top: 10px;
+        margin: 25px auto;
 
         div[class^="fa"] {
             margin-left: 3px;
@@ -1055,8 +1055,8 @@ h4.stream_setting_subsection_title {
 
         .radio-input-parent {
             border-bottom: 1px solid hsl(0, 0%, 87%);
-            margin: 5px 0 5px 5px;
-            padding: 5px 0;
+            margin: 2px 0 2px 5px;
+            padding: 2px 0;
 
             &:last-of-type {
                 border-bottom: none;
@@ -1076,10 +1076,15 @@ h4.stream_setting_subsection_title {
             }
 
             select {
-                width: auto;
                 margin-bottom: 0;
             }
         }
+    }
+
+    select {
+        /* Match .setting_desktop_icon_count_display */
+        width: 325px;
+        height: fit-content;
     }
 }
 
