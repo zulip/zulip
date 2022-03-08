@@ -524,7 +524,9 @@ function validate_stream_message() {
 
     if (page_params.realm_mandatory_topics) {
         const topic = compose_state.topic();
-        if (topic === "") {
+        // TODO: We plan to migrate the empty topic to only using the
+        // `""` representation for i18n reasons, but have not yet done so.
+        if (topic === "" || topic === "(no topic)") {
             compose_error.show(
                 $t_html({defaultMessage: "Topics are required in this organization"}),
                 $("#stream_message_recipient_topic"),

@@ -247,6 +247,13 @@ test_ui("validate", ({override, mock_template}) => {
         $("#compose-error-msg").html(),
         $t_html({defaultMessage: "Topics are required in this organization"}),
     );
+
+    compose_state.topic("(no topic)");
+    assert.ok(!compose_validate.validate());
+    assert.equal(
+        $("#compose-error-msg").html(),
+        $t_html({defaultMessage: "Topics are required in this organization"}),
+    );
 });
 
 test_ui("get_invalid_recipient_emails", ({override_rewire}) => {
