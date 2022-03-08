@@ -343,7 +343,10 @@ def send_android_push_notification(
         # Two kwargs `retries` and `session` get eaten by `json_request`;
         # the rest pass through to the GCM server.
         res = gcm_client.json_request(
-            registration_ids=reg_ids, priority=priority, data=data, retries=10
+            registration_ids=reg_ids,
+            priority=priority,
+            data=data,
+            retries=2,
         )
     except OSError:
         logger.warning("Error while pushing to GCM", exc_info=True)
