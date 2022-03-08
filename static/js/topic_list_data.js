@@ -33,10 +33,12 @@ export function get_list_info(stream_id, zoomed) {
         const num_unread = unread.num_unread_for_topic(stream_id, topic_name);
         const is_active_topic = active_topic === topic_name.toLowerCase();
         const is_topic_muted = muted_topics.is_topic_muted(stream_id, topic_name);
-        const resolved = topic_name.startsWith(resolved_topic.RESOLVED_TOPIC_PREFIX);
-        let topic_display_name = topic_name;
 
+        let topic_resolved_prefix = "";
+        let topic_display_name = topic_name;
+        const resolved = topic_name.startsWith(resolved_topic.RESOLVED_TOPIC_PREFIX);
         if (resolved) {
+            topic_resolved_prefix = resolved_topic.RESOLVED_TOPIC_PREFIX;
             topic_display_name = topic_display_name.slice(
                 resolved_topic.RESOLVED_TOPIC_PREFIX.length,
             );
@@ -101,14 +103,13 @@ export function get_list_info(stream_id, zoomed) {
 
         const topic_info = {
             topic_name,
+            topic_resolved_prefix,
             topic_display_name,
             unread: num_unread,
             is_zero: num_unread === 0,
             is_muted: is_topic_muted,
             is_active_topic,
             url: hash_util.by_stream_topic_url(stream_id, topic_name),
-            resolved,
-            resolved_topic_prefix: resolved_topic.RESOLVED_TOPIC_PREFIX,
         };
 
         items.push(topic_info);

@@ -1,9 +1,7 @@
 <li class='bottom_left_row {{#if is_active_topic}}active-sub-filter{{/if}} {{#if is_zero}}zero-topic-unreads{{/if}} {{#if is_muted}}muted_topic{{/if}} topic-list-item' data-topic-name='{{topic_name}}'>
     <span class='topic-box'>
         <span class="sidebar-topic-check">
-            {{#if resolved}}
-            {{resolved_topic_prefix}}
-            {{/if}}
+            {{topic_resolved_prefix}}
         </span>
         <a href='{{url}}' class="topic-name" title="{{topic_name}}">
             {{topic_display_name}}

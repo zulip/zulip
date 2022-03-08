@@ -83,10 +83,9 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         is_active_topic: true,
         is_muted: false,
         is_zero: true,
-        resolved: false,
-        resolved_topic_prefix: "✔ ",
         topic_display_name: "topic 6",
         topic_name: "topic 6",
+        topic_resolved_prefix: "",
         unread: 0,
         url: "#narrow/stream/556-general/topic/topic.206",
     });
@@ -95,10 +94,9 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         is_active_topic: false,
         is_muted: false,
         is_zero: true,
-        resolved: true,
-        resolved_topic_prefix: "✔ ",
         topic_display_name: "topic 5",
         topic_name: "✔ topic 5",
+        topic_resolved_prefix: "✔ ",
         unread: 0,
         url: "#narrow/stream/556-general/topic/.E2.9C.94.20topic.205",
     });
