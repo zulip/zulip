@@ -100,7 +100,7 @@ export const get_all_display_settings = (): DisplaySettings => ({
 export const email_address_visibility_values = {
     everyone: {
         code: 1,
-        description: $t({defaultMessage: "Admins, moderators, members and guests"}),
+        description: $t({defaultMessage: "Everyone"}),
     },
     // // Backend support for this configuration is not available yet.
     // admins_and_members: {
@@ -176,7 +176,7 @@ export const private_message_policy_values = {
     by_anyone: {
         order: 1,
         code: 1,
-        description: $t({defaultMessage: "Admins, moderators, members and guests"}),
+        description: $t({defaultMessage: "Everyone"}),
     },
     disabled: {
         order: 2,
@@ -189,7 +189,7 @@ export const wildcard_mention_policy_values = {
     by_everyone: {
         order: 1,
         code: 1,
-        description: $t({defaultMessage: "Admins, moderators, members and guests"}),
+        description: $t({defaultMessage: "Everyone"}),
     },
     by_members: {
         order: 2,
@@ -254,7 +254,7 @@ export const common_message_policy_values = {
     by_everyone: {
         order: 1,
         code: 5,
-        description: $t({defaultMessage: "Admins, moderators, members and guests"}),
+        description: $t({defaultMessage: "Everyone"}),
     },
     by_members: {
         order: 2,
