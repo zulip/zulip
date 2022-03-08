@@ -97,7 +97,7 @@ body.dark-theme {
             color: hsl(236, 33%, 90%);
 
             &.compose_control_button:hover {
-                color: hsl(200, 79%, 66%);
+                color: hsl(236, 31%, 90%);
             }
         }
 
@@ -398,6 +398,11 @@ body.dark-theme {
 
     .compose_control_buttons_container .divider {
         color: hsla(236, 33%, 90%, 0.5);
+    }
+
+    /* Override the color of icons with anchor tag of compose box on dark theme */
+    .compose_control_button:hover {
+        color: hsl(236, 31%, 90%);
     }
 
     /* Not that .message_row (below) needs to be more contrast on dark theme */
