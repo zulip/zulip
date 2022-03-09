@@ -1316,11 +1316,14 @@ class HandlePushNotificationTest(PushNotificationTest):
         )
 
         with mock.patch(
+            "zerver.lib.push_notifications.push_notifications_enabled", return_value=True
+        ) as mock_push_notifications, mock.patch(
             "zerver.lib.push_notifications.send_android_push_notification"
         ) as mock_send_android, mock.patch(
             "zerver.lib.push_notifications.send_apple_push_notification"
         ) as mock_send_apple:
             handle_remove_push_notification(self.user_profile.id, [message.id])
+            mock_push_notifications.assert_called_once()
             mock_send_android.assert_called_with(
                 self.user_profile.id,
                 android_devices,
