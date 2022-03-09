@@ -21,7 +21,7 @@ from django.utils.translation import override as override_language
 from zerver.decorator import statsd_increment
 from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.message import access_message, bulk_access_messages_expect_usermessage, huddle_users
+from zerver.lib.message import access_message, huddle_users
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.remote_server import send_json_to_push_bouncer, send_to_push_bouncer
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -911,7 +911,16 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
         return
 
     user_profile = get_user_profile_by_id(user_profile_id)
-    message_ids = bulk_access_messages_expect_usermessage(user_profile_id, message_ids)
+
+    # We may no longer have access to the message here; for example,
+    # the user (1) got a message, (2) read the message in the web UI,
+    # and then (3) it was deleted.  When trying to send the push
+    # notification for (2), after (3) has happened, there is no
+    # message to fetch -- but we nonetheless want to remove the mobile
+    # notification.  Because of this, the usual access control of
+    # `bulk_access_messages_expect_usermessage` is skipped here.
+    # Because of this, no access to the Message objects should be
+    # done; they are treated as a list of opaque ints.
 
     # APNs has a 4KB limit on the maximum size of messages, which
     # translated to several hundred message IDs in one of these

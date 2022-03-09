@@ -1379,6 +1379,28 @@ class HandlePushNotificationTest(PushNotificationTest):
             )
             mock_push_notifications.assert_called_once()
 
+    def test_user_message_does_not_exist_remove(self) -> None:
+        """This simulates a condition that should only be an error if the user is
+        not long-term idle; we fake it, though, in the sense that the user should
+        not have received the message in the first place"""
+        self.setup_apns_tokens()
+        self.setup_gcm_tokens()
+        self.make_stream("public_stream")
+        sender = self.example_user("iago")
+        self.subscribe(sender, "public_stream")
+        message_id = self.send_stream_message(sender, "public_stream", "test")
+        with mock.patch(
+            "zerver.lib.push_notifications.push_notifications_enabled", return_value=True
+        ) as mock_push_notifications, mock.patch(
+            "zerver.lib.push_notifications.send_android_push_notification"
+        ) as mock_send_android, mock.patch(
+            "zerver.lib.push_notifications.send_apple_push_notification"
+        ) as mock_send_apple:
+            handle_remove_push_notification(self.user_profile.id, [message_id])
+            mock_push_notifications.assert_called_once()
+            mock_send_android.assert_called_once()
+            mock_send_apple.assert_called_once()
+
     def test_user_message_soft_deactivated(self) -> None:
         """This simulates a condition that should only be an error if the user is
         not long-term idle; we fake it, though, in the sense that the user should
