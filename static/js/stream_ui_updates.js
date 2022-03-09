@@ -118,10 +118,10 @@ export function update_regular_sub_settings(sub) {
     const $settings = $(`.subscription_settings[data-stream-id='${CSS.escape(sub.stream_id)}']`);
     if (sub.subscribed) {
         $settings.find(".personal_settings").addClass("in");
-        $settings.find(".copy_email_button").prop("disabled", false);
+        $settings.find(".stream-email-box").show();
     } else {
         $settings.find(".personal_settings").removeClass("in");
-        $settings.find(".copy_email_button").prop("disabled", true);
+        $settings.find(".stream-email-box").hide();
     }
 }
 
