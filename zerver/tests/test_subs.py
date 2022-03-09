@@ -1497,13 +1497,13 @@ class StreamAdminTest(ZulipTestCase):
         expected_notification = (
             f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this stream.\n\n"
             "* **Old description:**\n"
-            "``` quote\n"
+            "```` quote\n"
             "Test description\n"
-            "```\n"
+            "````\n"
             "* **New description:**\n"
-            "``` quote\n"
+            "```` quote\n"
             "a multi line description\n"
-            "```"
+            "````"
         )
         self.assertEqual(messages[-1].content, expected_notification)
 
@@ -1559,13 +1559,13 @@ class StreamAdminTest(ZulipTestCase):
         expected_notification = (
             f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this stream.\n\n"
             "* **Old description:**\n"
-            "``` quote\n"
+            "```` quote\n"
             "See https://zulip.com/team\n"
-            "```\n"
+            "````\n"
             "* **New description:**\n"
-            "``` quote\n"
+            "```` quote\n"
             "Test description\n"
-            "```"
+            "````"
         )
         self.assertEqual(messages[-1].content, expected_notification)
 
