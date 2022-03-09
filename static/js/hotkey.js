@@ -806,10 +806,14 @@ export function process_hotkey(e, hotkey) {
             compose_actions.respond_to_message({trigger: "hotkey"});
             return true;
         case "compose": // 'c': compose
-            compose_actions.start("stream", {trigger: "compose_hotkey"});
+            if (!compose_state.composing()) {
+                compose_actions.start("stream", {trigger: "compose_hotkey"});
+            }
             return true;
         case "compose_private_message":
-            compose_actions.start("private", {trigger: "compose_hotkey"});
+            if (!compose_state.composing()) {
+                compose_actions.start("private", {trigger: "compose_hotkey"});
+            }
             return true;
         case "open_drafts":
             browser_history.go_to_location("drafts");
