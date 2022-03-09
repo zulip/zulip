@@ -6,6 +6,7 @@ from unittest import mock
 import orjson
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sessions.models import Session
 from django.core.exceptions import ValidationError
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
@@ -1392,6 +1393,24 @@ class ActivateTest(ZulipTestCase):
             "/json/users/{}/reactivate".format(self.example_user("hamlet").id)
         )
         self.assert_json_error(result, "Insufficient permission")
+
+    def test_clear_sessions(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        session_key = self.client.session.session_key
+        self.assertTrue(session_key)
+
+        result = self.client_get("/json/users")
+        self.assert_json_success(result)
+        self.assertEqual(Session.objects.filter(pk=session_key).count(), 1)
+
+        do_deactivate_user(user, acting_user=None)
+        self.assertEqual(Session.objects.filter(pk=session_key).count(), 0)
+
+        result = self.client_get("/json/users")
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
+        )
 
     def test_clear_scheduled_jobs(self) -> None:
         user = self.example_user("hamlet")

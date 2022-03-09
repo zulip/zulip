@@ -1170,7 +1170,6 @@ def do_deactivate_user(
 
         change_user_is_active(user_profile, False)
 
-        delete_user_sessions(user_profile)
         clear_scheduled_emails(user_profile.id)
 
         event_time = timezone_now()
@@ -1196,6 +1195,7 @@ def do_deactivate_user(
         if settings.BILLING_ENABLED:
             update_license_ledger_if_needed(user_profile.realm, event_time)
 
+    delete_user_sessions(user_profile)
     event = dict(
         type="realm_user",
         op="remove",
