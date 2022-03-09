@@ -19,11 +19,15 @@ function animate($emoji) {
 }
 
 export function handle_mouseenter_for_status_emoji(event) {
-    const $status_emoji = $(event.target).closest(".user_sidebar_entry").find("img.status_emoji");
-    animate($status_emoji);
+    const $animatable_status_emoji = $(event.target)
+        .closest(".user_sidebar_entry")
+        .find("img.status_emoji[data-still-url]");
+    animate($animatable_status_emoji);
 }
 
 export function handle_mouseleave_for_status_emoji(event) {
-    const $status_emoji = $(event.target).closest(".user_sidebar_entry").find("img.status_emoji");
-    stop_animation($status_emoji);
+    const $animatable_status_emoji = $(event.target)
+        .closest(".user_sidebar_entry")
+        .find("img.status_emoji[data-still-url]");
+    stop_animation($animatable_status_emoji);
 }
