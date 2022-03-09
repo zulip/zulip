@@ -3,12 +3,12 @@ from zerver.lib.test_classes import WebhookTestCase
 
 class RundeckHookTests(WebhookTestCase):
     STREAM_NAME = "Rundeck"
-    TOPIC_NAME = "alerts"
+    TOPIC_NAME = "Global Log Filter Usage"
     URL_TEMPLATE = "/api/v1/external/rundeck?&api_key={api_key}&stream={stream}"
     WEBHOOK_DIR_NAME = "rundeck"
 
     def test_start_message(self) -> None:
-        expected_message = "**Global Log Filter Usage** - STARTED - [E12](https://rundeck.com/project/myproject/execution/follow/12)"
+        expected_message = "Job Execution [STARTED](https://rundeck.com/project/myproject/execution/follow/12) :running:"
 
         self.check_webhook(
             "start",
@@ -18,7 +18,7 @@ class RundeckHookTests(WebhookTestCase):
         )
 
     def test_success_message(self) -> None:
-        expected_message = "**Global Log Filter Usage** - SUCCEEDED - [E12](https://rundeck.com/project/myproject/execution/follow/12)"
+        expected_message = "Job Execution [SUCCEEDED](https://rundeck.com/project/myproject/execution/follow/12) :check:"
 
         self.check_webhook(
             "success",
@@ -28,7 +28,7 @@ class RundeckHookTests(WebhookTestCase):
         )
 
     def test_failure_message(self) -> None:
-        expected_message = "**Global Log Filter Usage** - FAILED - [E13](https://rundeck.com/project/myproject/execution/follow/13)"
+        expected_message = "Job Execution [FAILED](https://rundeck.com/project/myproject/execution/follow/13) :cross_mark:"
 
         self.check_webhook(
             "failure",
@@ -38,7 +38,7 @@ class RundeckHookTests(WebhookTestCase):
         )
 
     def test_duration_message(self) -> None:
-        expected_message = "**Global Log Filter Usage** - RUNNING LONG - [E13](https://rundeck.com/project/myproject/execution/follow/13)"
+        expected_message = "Job Execution [RUNNING LONG](https://rundeck.com/project/myproject/execution/follow/13) :time_ticking:"
 
         self.check_webhook(
             "duration",
