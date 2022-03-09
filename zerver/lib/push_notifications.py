@@ -907,6 +907,9 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
     mobile app, when the message is read on the server, to remove the
     message from the notification.
     """
+    if not push_notifications_enabled():
+        return
+
     user_profile = get_user_profile_by_id(user_profile_id)
     message_ids = bulk_access_messages_expect_usermessage(user_profile_id, message_ids)
 
