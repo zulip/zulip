@@ -2,20 +2,10 @@
 
 !!! warn ""
 
-    This feature is under development, and is not yet available on Zulip Cloud.
+    This feature is in beta. Contact [support@zulip.com](mailto:support@zulip.com) to
+    enable it for your Zulip Cloud organization.
 
-Administrators may enable the option to create **web-public streams**.
-Web-public streams can be viewed by anyone on the Internet without
-creating an account in your organization.
-
-For example, you can [link to a Zulip
-topic](/help/link-to-a-message-or-conversation) in a web-public stream
-from a GitHub issue, a social media post, or a forum thread, and
-anyone will be able to click the link and view the discussion in the
-Zulip web application without needing to create an account.
-
-Users who wish to post content will need to create an account in order
-to do so.
+{!web-public-streams-intro.md!}
 
 Web-public streams are indicated with a globe (<i class="zulip-icon zulip-icon-globe"></i>) icon.
 

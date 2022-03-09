@@ -4,7 +4,7 @@ Streams are similar to chat rooms, IRC channels, or email lists in that they
 determine who receives a message. Zulip supports a few types of streams:
 
 * **Public** (**#**): Members can join and view the complete message history.
-  Public streams are visible to Guest users only if they are
+  Public streams are visible to guest users only if they are
   subscribed (exactly like private streams with shared history).
 
 * **Private** (<i class="fa fa-lock"></i>): New subscribers must be
@@ -15,6 +15,11 @@ determine who receives a message. Zulip supports a few types of streams:
     access the stream's full message history.
     * In **private streams with protected history**, new subscribers
     can only see messages sent after they join.
+
+* [**Web-public**](/help/web-public-streams) (<i class="zulip-icon
+  zulip-icon-globe"></i>): Members can join (guests must be invited by a
+  subscriber). Anyone on the Internet can view complete message history without
+  creating an account.
 
 ## Privacy model for private streams
 
@@ -74,8 +79,8 @@ administrator can access private stream messages:
 <span class="legend_symbol">&#9726;</span><span class="legend_label">If subscribed to the stream</span>
 
 <span class="legend_symbol">&#10038;</span><span class="legend_label">[Configurable](/help/stream-sending-policy).  Owners,
-Administrators, and Members can, by default, post to any public
-stream, and Guests can only post to public streams if they are
+administrators, and members can, by default, post to any public
+stream, and guests can only post to public streams if they are
 subscribed.</span>
 
 ### Private streams
@@ -108,3 +113,4 @@ must be subscribed to the stream.</span>
 
 * [Roles and permissions](/help/roles-and-permissions)
 * [Stream sending policy](/help/stream-sending-policy)
+* [Web-public streams](/help/web-public-streams)
