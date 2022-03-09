@@ -687,19 +687,16 @@ def send_messages_for_new_subscribers(
                         stream=stream,
                         topic=Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
                         content=_(
-                            "**{policy}** stream created by {user_name}. **Description:**\n"
-                            "```` quote\n"
-                            "{description}\n"
-                            "````"
+                            "**{policy}** stream created by {user_name}. **Description:**"
                         ).format(
                             user_name=silent_mention_syntax_for_user(user_profile),
-                            description=stream.description,
                             policy=get_stream_permission_policy_name(
                                 invite_only=stream.invite_only,
                                 history_public_to_subscribers=stream.history_public_to_subscribers,
                                 is_web_public=stream.is_web_public,
                             ),
-                        ),
+                        )
+                        + f"\n```` quote\n{stream.description}\n````",
                     ),
                 )
 
