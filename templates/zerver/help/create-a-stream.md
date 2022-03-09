@@ -48,5 +48,5 @@ There are several parameters you can set while creating a stream. All but
 
 * **Who can post to the stream?**: See [Stream permissions](/help/stream-permissions).
 
-* **People to add**: You can copy the membership from an existing stream, or
-  enter users one by one.
+* **Choose subscribers**: You can copy the membership from an existing stream or
+  [user group](/help/user-groups), add all users, or enter users one by one.
