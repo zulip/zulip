@@ -21,6 +21,7 @@ class zulip::profile::postgresql {
   $ssl_cert_file = zulipconf('postgresql', 'ssl_cert_file', undef)
   $ssl_key_file = zulipconf('postgresql', 'ssl_key_file', undef)
   $ssl_ca_file = zulipconf('postgresql', 'ssl_ca_file', undef)
+  $ssl_mode = zulipconf('postgresql', 'ssl_mode', undef)
 
   file { $zulip::postgresql_base::postgresql_confdirs:
     ensure => directory,
