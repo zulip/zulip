@@ -1049,7 +1049,7 @@ class EmailContainsPlusError(Exception):
     pass
 
 
-def get_realm_domains(realm: Realm) -> List[Dict[str, str]]:
+def get_realm_domains(realm: Realm) -> List[Dict[str, Union[str, bool]]]:
     return list(realm.realmdomain_set.values("domain", "allow_subdomains"))
 
 
