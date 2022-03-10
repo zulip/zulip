@@ -712,6 +712,15 @@ client connections.
 Set to the path to the PEM-encoded private key used to secure client
 connections.
 
+#### `ssl_mode`
+
+The mode that should be used to verify the server certificate. The
+PostgreSQL default is `prefer`, which provides no security benefit; we
+strongly suggest setting this to `require` or better if you are using
+certificate authentication. See the [PostgreSQL
+documentation](https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-SSLMODE-STATEMENTS)
+for potential values.
+
 #### `version`
 
 The version of PostgreSQL that is in use. Do not set by hand; use the
