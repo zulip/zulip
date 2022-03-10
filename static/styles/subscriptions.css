@@ -1002,10 +1002,8 @@ h4.stream_setting_subsection_title {
         font-weight: 400;
         line-height: 20px;
     }
-}
 
-#subscription_overlay .subsection-parent {
-    .input-group {
+    .subsection-parent .input-group {
         input[type="checkbox"] {
             margin-top: 0;
         }
