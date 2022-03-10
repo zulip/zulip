@@ -331,7 +331,7 @@ if __name__ == "__main__":
         # Broken in two to satisfy linter (line too long)
         # curl -X GET -H "Content-Type: application/json" -u <API_KEY>: "https://api.digitaloc
         # ean.com/v2/images?page=5" | grep --color=always base.zulipdev.org
-        template_id = "63219191"
+        template_id = "103231841"
 
     assert_droplet_does_not_exist(
         my_token=api_token, droplet_name=droplet_domain_name, recreate=args.recreate
