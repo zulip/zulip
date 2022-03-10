@@ -523,8 +523,10 @@ replication_primary = hostname-of-primary.example.com
 
 The `postgres` user on the replica will need to be able to
 authenticate as the `replicator` user, which may require further
-configuration of `pg_hba.conf` and client certificates on the
-replica.
+configuration of `pg_hba.conf` and client certificates on the replica.
+If you are using password authentication, you can set a
+`postgresql_replication_password` secret in
+`/etc/zulip/zulip-secrets.conf`.
 
 [warm-standby]: https://www.postgresql.org/docs/current/warm-standby.html
 [wal-g]: export-and-import.md#backup-details
@@ -690,7 +692,10 @@ should be done from.
 
 On the [warm standby replicas](#postgresql-warm-standby), set to the
 username that the host should authenticate to the primary PostgreSQL
-server as, for streaming replication.
+server as, for streaming replication. Authentication will be done
+based on the `pg_hba.conf` file; if you are using password
+authentication, you can set a `postgresql_replication_password` secret
+for authentication.
 
 #### `ssl_ca_file`
 

@@ -16,6 +16,7 @@ class zulip::profile::postgresql {
   $s3_backups_bucket = zulipsecret('secrets', 's3_backups_bucket', '')
   $replication_primary = zulipconf('postgresql', 'replication_primary', undef)
   $replication_user = zulipconf('postgresql', 'replication_user', undef)
+  $replication_password = zulipsecret('secrets', 'postgresql_replication_password', '')
 
   $ssl_cert_file = zulipconf('postgresql', 'ssl_cert_file', undef)
   $ssl_key_file = zulipconf('postgresql', 'ssl_key_file', undef)
