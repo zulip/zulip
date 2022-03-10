@@ -30,6 +30,7 @@ parser.add_argument(
 )
 parser.add_argument("--tags", nargs="+", default=[])
 parser.add_argument("-f", "--recreate", action="store_true")
+parser.add_argument("-s", "--subdomain")
 parser.add_argument("-p", "--production", action="store_true")
 
 
@@ -109,7 +110,9 @@ def get_ssh_keys_string_from_github_ssh_key_dicts(userkey_dicts: List[Dict[str, 
     return "\n".join([userkey_dict["key"] for userkey_dict in userkey_dicts])
 
 
-def generate_dev_droplet_user_data(username: str, userkey_dicts: List[Dict[str, Any]]) -> str:
+def generate_dev_droplet_user_data(
+    username: str, subdomain: str, userkey_dicts: List[Dict[str, Any]]
+) -> str:
     ssh_keys_string = get_ssh_keys_string_from_github_ssh_key_dicts(userkey_dicts)
     setup_root_ssh_keys = f"printf '{ssh_keys_string}' > /root/.ssh/authorized_keys"
     setup_zulipdev_ssh_keys = f"printf '{ssh_keys_string}' > /home/zulipdev/.ssh/authorized_keys"
@@ -117,7 +120,7 @@ def generate_dev_droplet_user_data(username: str, userkey_dicts: List[Dict[str, 
     # We pass the hostname as username.zulipdev.org to the DigitalOcean API.
     # But some droplets (eg on 18.04) are created with with hostname set to just username.
     # So we fix the hostname using cloud-init.
-    hostname_setup = f"hostnamectl set-hostname {username}.zulipdev.org"
+    hostname_setup = f"hostnamectl set-hostname {subdomain}.zulipdev.org"
 
     setup_repo = (
         "cd /home/zulipdev/{1} && "
@@ -291,6 +294,12 @@ def get_zulip_oneclick_app_slug(api_token: str) -> str:
 if __name__ == "__main__":
     args = parser.parse_args()
     username = args.username.lower()
+    if args.subdomain:
+        subdomain = args.subdomain.lower()
+    elif args.production:
+        subdomain = "{username}-prod"
+    else:
+        subdomain = username
 
     if args.production:
         print(f"Creating production droplet for GitHub user {username}...")
@@ -305,7 +314,6 @@ if __name__ == "__main__":
     public_keys = get_ssh_public_keys_from_github(github_username=username)
 
     if args.production:
-        subdomain = f"{username}-prod"
         droplet_domain_name = f"{subdomain}.zulipdev.org"
         template_id = get_zulip_oneclick_app_slug(api_token)
         user_data = generate_prod_droplet_user_data(username=username, userkey_dicts=public_keys)
@@ -313,9 +321,10 @@ if __name__ == "__main__":
     else:
         assert_user_forked_zulip_server_repo(username=username)
 
-        subdomain = username
         droplet_domain_name = f"{subdomain}.zulipdev.org"
-        user_data = generate_dev_droplet_user_data(username=username, userkey_dicts=public_keys)
+        user_data = generate_dev_droplet_user_data(
+            username=username, subdomain=subdomain, userkey_dicts=public_keys
+        )
 
         # define id of image to create new droplets from
         # You can get this with something like the following. You may need to try other pages.
