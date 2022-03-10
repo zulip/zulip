@@ -90,10 +90,13 @@ class UserPushIndentityCompat:
             return Q(user_uuid=self.user_uuid) | Q(user_id=self.user_id)
 
     def __str__(self) -> str:
+        result = ""
+        if self.user_id is not None:
+            result += f"<id:{self.user_id}>"
         if self.user_uuid is not None:
-            return f"uuid:{self.user_uuid}"
+            result += f"<uuid:{self.user_uuid}>"
 
-        return f"id:{self.user_id}"
+        return result
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, UserPushIndentityCompat):
