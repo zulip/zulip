@@ -15,6 +15,7 @@ import argparse
 import configparser
 import json
 import os
+import secrets
 import sys
 import time
 import urllib.error
@@ -132,11 +133,19 @@ def generate_dev_droplet_user_data(
     server_repo_setup = setup_repo.format(username, "zulip")
     python_api_repo_setup = setup_repo.format(username, "python-zulip-api")
 
+    erlang_cookie = secrets.token_hex(16)
+    setup_erlang_cookie = (
+        f"echo '{erlang_cookie}' > /var/lib/rabbitmq/.erlang.cookie && "
+        "chown rabbitmq:rabbitmq /var/lib/rabbitmq/.erlang.cookie && "
+        "service rabbitmq-server restart"
+    )
+
     cloudconf = f"""\
 #!/bin/bash
 
 {setup_zulipdev_ssh_keys}
 {setup_root_ssh_keys}
+{setup_erlang_cookie}
 sed -i "s/PasswordAuthentication yes/PasswordAuthentication no/g" /etc/ssh/sshd_config
 service ssh restart
 {hostname_setup}
