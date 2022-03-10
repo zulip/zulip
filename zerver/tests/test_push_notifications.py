@@ -375,7 +375,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
             logger.output,
             [
                 "INFO:zilencer.views:"
-                f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:id:{hamlet.id}: "
+                f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{hamlet.id}>: "
                 "2 via FCM devices, 1 via APNs devices"
             ],
         )
@@ -1006,14 +1006,14 @@ class HandlePushNotificationTest(PushNotificationTest):
                 views_logger.output,
                 [
                     "INFO:zilencer.views:"
-                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:uuid:{str(self.user_profile.uuid)}: "
+                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{str(self.user_profile.id)}><uuid:{str(self.user_profile.uuid)}>: "
                     f"{len(gcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices"
                 ],
             )
             for _, _, token in apns_devices:
                 self.assertIn(
                     "INFO:zerver.lib.push_notifications:"
-                    f"APNs: Success sending for user uuid:{str(self.user_profile.uuid)} to device {token}",
+                    f"APNs: Success sending for user <id:{str(self.user_profile.id)}><uuid:{str(self.user_profile.uuid)}> to device {token}",
                     pn_logger.output,
                 )
             for _, _, token in gcm_devices:
@@ -1067,7 +1067,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 views_logger.output,
                 [
                     "INFO:zilencer.views:"
-                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:uuid:{str(self.user_profile.uuid)}: "
+                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{str(self.user_profile.id)}><uuid:{str(self.user_profile.uuid)}>: "
                     f"{len(gcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices"
                 ],
             )
@@ -1592,7 +1592,7 @@ class TestAPNs(PushNotificationTest):
             self.send()
             for device in self.devices():
                 self.assertIn(
-                    f"INFO:zerver.lib.push_notifications:APNs: Success sending for user id:{self.user_profile.id} to device {device.token}",
+                    f"INFO:zerver.lib.push_notifications:APNs: Success sending for user <id:{self.user_profile.id}> to device {device.token}",
                     logger.output,
                 )
 
@@ -1609,7 +1609,7 @@ class TestAPNs(PushNotificationTest):
             )
             self.send(devices=self.devices()[0:1])
             self.assertIn(
-                f"WARNING:zerver.lib.push_notifications:APNs: ConnectionError sending for user id:{self.user_profile.id} to device {self.devices()[0].token}: ConnectionError",
+                f"WARNING:zerver.lib.push_notifications:APNs: ConnectionError sending for user <id:{self.user_profile.id}> to device {self.devices()[0].token}: ConnectionError",
                 logger.output,
             )
 
@@ -1627,7 +1627,7 @@ class TestAPNs(PushNotificationTest):
             apns_context.apns.send_notification.return_value.set_result(result)
             self.send(devices=self.devices()[0:1])
             self.assertIn(
-                f"WARNING:zerver.lib.push_notifications:APNs: Failed to send for user id:{self.user_profile.id} to device {self.devices()[0].token}: InternalServerError",
+                f"WARNING:zerver.lib.push_notifications:APNs: Failed to send for user <id:{self.user_profile.id}> to device {self.devices()[0].token}: InternalServerError",
                 logger.output,
             )
 
@@ -2374,7 +2374,7 @@ class GCMSendTest(PushNotificationTest):
         with self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger:
             send_android_push_notification_to_user(self.user_profile, data, {})
         self.assert_length(logger.output, 3)
-        log_msg1 = f"INFO:zerver.lib.push_notifications:GCM: Sending notification for local user id:{self.user_profile.id} to 2 devices"
+        log_msg1 = f"INFO:zerver.lib.push_notifications:GCM: Sending notification for local user <id:{self.user_profile.id}> to 2 devices"
         log_msg2 = f"INFO:zerver.lib.push_notifications:GCM: Sent {1111} as {0}"
         log_msg3 = f"INFO:zerver.lib.push_notifications:GCM: Sent {2222} as {1}"
         self.assertEqual([log_msg1, log_msg2, log_msg3], logger.output)
@@ -2434,7 +2434,7 @@ class GCMSendTest(PushNotificationTest):
         with self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger:
             send_android_push_notification_to_user(self.user_profile, data, {})
             self.assertEqual(
-                f"INFO:zerver.lib.push_notifications:GCM: Sending notification for local user id:{self.user_profile.id} to 2 devices",
+                f"INFO:zerver.lib.push_notifications:GCM: Sending notification for local user <id:{self.user_profile.id}> to 2 devices",
                 logger.output[0],
             )
             self.assertEqual(
@@ -2461,7 +2461,7 @@ class GCMSendTest(PushNotificationTest):
         with self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger:
             send_android_push_notification_to_user(self.user_profile, data, {})
             self.assertEqual(
-                f"INFO:zerver.lib.push_notifications:GCM: Sending notification for local user id:{self.user_profile.id} to 2 devices",
+                f"INFO:zerver.lib.push_notifications:GCM: Sending notification for local user <id:{self.user_profile.id}> to 2 devices",
                 logger.output[0],
             )
             self.assertEqual(
