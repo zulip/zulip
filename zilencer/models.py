@@ -63,7 +63,7 @@ class RemotePushDeviceToken(AbstractPushDeviceToken):
 
     server: RemoteZulipServer = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
     # The user id on the remote server for this device
-    user_id: int = models.BigIntegerField(db_index=True, null=True)
+    user_id: int = models.BigIntegerField(null=True)
     user_uuid: UUID = models.UUIDField(null=True)
 
     class Meta:
