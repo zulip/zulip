@@ -317,6 +317,22 @@ STREAM_ASSIGNMENT_COLORS = [
 ]
 
 
+def create_historical_user_messages(*, user_id: int, message_ids: List[int]) -> None:
+    # Users can see and interact with messages sent to streams with
+    # public history for which they do not have a UserMessage because
+    # they were not a subscriber at the time the message was sent.
+    # In order to add emoji reactions or mutate message flags for
+    # those messages, we create UserMessage objects for those messages;
+    # these have the special historical flag which keeps track of the
+    # fact that the user did not receive the message at the time it was sent.
+    for message_id in message_ids:
+        UserMessage.objects.create(
+            user_profile_id=user_id,
+            message_id=message_id,
+            flags=UserMessage.flags.historical | UserMessage.flags.read,
+        )
+
+
 def subscriber_info(user_id: int) -> Dict[str, Any]:
     return {"id": user_id, "flags": ["read"]}
 
@@ -2569,16 +2585,8 @@ def check_add_reaction(
         check_emoji_request(user_profile.realm, emoji_name, emoji_code, reaction_type)
 
     if user_message is None:
-        # Users can see and react to messages sent to streams they
-        # were not a subscriber to; in order to receive events for
-        # those, we give the user a `historical` UserMessage objects
-        # for the message.  This is the same trick we use for starring
-        # messages.
-        UserMessage.objects.create(
-            user_profile=user_profile,
-            message=message,
-            flags=UserMessage.flags.historical | UserMessage.flags.read,
-        )
+        # See called function for more context.
+        create_historical_user_messages(user_id=user_profile.id, message_ids=[message.id])
 
     do_add_reaction(user_profile, message, emoji_name, emoji_code, reaction_type)
 
@@ -6358,31 +6366,16 @@ def do_update_message_flags(
     flagattr = getattr(UserMessage.flags, flag)
 
     msgs = UserMessage.objects.filter(user_profile=user_profile, message_id__in=messages)
-    # This next block allows you to star any message, even those you
-    # didn't receive (e.g. because you're looking at a public stream
-    # you're not subscribed to, etc.).  The problem is that starring
-    # is a flag boolean on UserMessage, and UserMessage rows are
-    # normally created only when you receive a message to support
-    # searching your personal history.  So we need to create one.  We
-    # add UserMessage.flags.historical, so that features that need
-    # "messages you actually received" can exclude these UserMessages.
-    if msgs.count() == 0:
-        if not len(messages) == 1:
-            raise JsonableError(_("Invalid message(s)"))
-        if flag != "starred":
-            raise JsonableError(_("Invalid message(s)"))
-        # Validate that the user could have read the relevant message
-        message = access_message(user_profile, messages[0])[0]
+    um_message_ids = {um.message_id for um in msgs}
+    historical_message_ids = list(set(messages) - um_message_ids)
 
-        # OK, this is a message that you legitimately have access
-        # to via narrowing to the stream it is on, even though you
-        # didn't actually receive it.  So we create a historical,
-        # read UserMessage message row for you to star.
-        UserMessage.objects.create(
-            user_profile=user_profile,
-            message=message,
-            flags=UserMessage.flags.historical | UserMessage.flags.read,
-        )
+    # Users can mutate flags for messages that don't have a UserMessage yet.
+    # First, validate that the user is even allowed to access these message_ids.
+    for message_id in historical_message_ids:
+        access_message(user_profile, message_id)
+
+    # And then create historical UserMessage records.  See the called function for more context.
+    create_historical_user_messages(user_id=user_profile.id, message_ids=historical_message_ids)
 
     if operation == "add":
         count = msgs.update(flags=F("flags").bitor(flagattr))

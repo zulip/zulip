@@ -1060,6 +1060,26 @@ class MessageAccessTests(ZulipTestCase):
             if msg["id"] in message_ids:
                 check_flags(msg["flags"], set())
 
+    def test_change_collapsed_public_stream_historical(self) -> None:
+        hamlet = self.example_user("hamlet")
+        stream_name = "new_stream"
+        self.subscribe(hamlet, stream_name)
+        self.login_user(hamlet)
+        message_id = self.send_stream_message(hamlet, stream_name, "test")
+
+        # Now login as another user who wasn't on that stream
+        cordelia = self.example_user("cordelia")
+        self.login_user(cordelia)
+
+        result = self.client_post(
+            "/json/messages/flags",
+            dict(messages=orjson.dumps([message_id]).decode(), op="add", flag="collapsed"),
+        )
+        self.assert_json_success(result)
+
+        um = UserMessage.objects.get(user_profile_id=cordelia.id, message_id=message_id)
+        self.assertEqual(um.flags_list(), ["read", "collapsed", "historical"])
+
     def test_change_star_public_stream_historical(self) -> None:
         """
         You can set a message as starred/un-starred through
@@ -1097,17 +1117,6 @@ class MessageAccessTests(ZulipTestCase):
             "/json/messages/flags",
             {"messages": orjson.dumps(sent_message_ids).decode(), "op": "add", "flag": "read"},
         )
-
-        # We can't change flags other than "starred" on historical messages:
-        result = self.client_post(
-            "/json/messages/flags",
-            {"messages": orjson.dumps(message_ids).decode(), "op": "add", "flag": "read"},
-        )
-        self.assert_json_error(result, "Invalid message(s)")
-
-        # Trying to change a list of more than one historical message fails
-        result = self.change_star(message_ids * 2)
-        self.assert_json_error(result, "Invalid message(s)")
 
         # Confirm that one can change the historical flag now
         result = self.change_star(message_ids)
