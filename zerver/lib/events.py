@@ -297,7 +297,7 @@ def fetch_initial_state_data(
         state["server_inline_url_embed_preview"] = settings.INLINE_URL_EMBED_PREVIEW
         state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
         state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
-        state["server_web_public_streams_enabled"] = settings.WEB_PUBLIC_STREAMS_ENABLED
+        state["server_web_public_streams_enabled"] = realm.web_public_streams_available_for_realm()
         state["giphy_rating_options"] = realm.GIPHY_RATING_OPTIONS
 
         state["server_needs_upgrade"] = is_outdated_server(user_profile)
