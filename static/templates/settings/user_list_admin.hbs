@@ -3,9 +3,18 @@
     <div class="alert-notification" id="user-field-status"></div>
     <div class="clear-float"></div>
 
-    <div class="settings_panel_list_header">
+    <div class="settings_panel_user_list_header">
         <h3>{{t "Users"}}</h3>
-        <input type="text" class="search" placeholder="{{t 'Filter users' }}" aria-label="{{t 'Filter users' }}"/>
+
+        <div class="filter">
+            <select name="roles" id="user_roles" class>
+                {{#each roles}}
+                    <option value="{{ this.code }}">{{ this.role }}</option>
+                {{/each}}
+            </select>
+            <input type="text" class="search" placeholder="{{t 'Filter users' }}" aria-label="{{t 'Filter users' }}" />
+        </div>
+
     </div>
 
     <div class="progressive-table-wrapper" data-simplebar>

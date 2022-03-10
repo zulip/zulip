@@ -2044,3 +2044,23 @@ input[type="checkbox"] {
         margin-top: 12px;
     }
 }
+
+.settings_panel_user_list_header {
+    position: relative;
+
+    h3 {
+        display: inline-block;
+    }
+
+    .filter {
+        display: flex;
+        float: right;
+        font-size: 1em;
+        max-width: 320px;
+        margin-top: 12px;
+
+        input.search {
+            margin-left: 5px;
+        }
+    }
+}

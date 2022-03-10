@@ -70,6 +70,17 @@ export function get_filtered_items(value, list, opts) {
     return list.filter((item) => predicate(item));
 }
 
+export function get_filtered_roles(value, list, opts) {
+    if (value === 0) {
+        return list;
+    }
+
+    if (opts.filter.role_filterer) {
+        return opts.filter.role_filterer(list, value);
+    }
+    return list;
+}
+
 export function alphabetic_sort(prop) {
     return function (a, b) {
         // The conversion to uppercase helps make the sorting case insensitive.
@@ -161,6 +172,7 @@ export function create($container, list, opts) {
         filtered_list: list,
         reverse_mode: false,
         filter_value: "",
+        role_filter_value: 0,
     };
 
     if (!valid_filter_opts(opts)) {
@@ -180,6 +192,7 @@ export function create($container, list, opts) {
 
     widget.filter_and_sort = function () {
         meta.filtered_list = get_filtered_items(meta.filter_value, meta.list, opts);
+        meta.filtered_list = get_filtered_roles(meta.role_filter_value, meta.filtered_list, opts);
 
         if (meta.sorting_function) {
             meta.filtered_list.sort(meta.sorting_function);
@@ -286,6 +299,10 @@ export function create($container, list, opts) {
         meta.filter_value = filter_value;
     };
 
+    widget.set_role_filter_value = function (filter_value) {
+        meta.role_filter_value = filter_value;
+    };
+
     widget.set_reverse_mode = function (reverse_mode) {
         meta.reverse_mode = reverse_mode;
     };
@@ -335,6 +352,14 @@ export function create($container, list, opts) {
             opts.filter.element.on("input.list_widget_filter", function () {
                 const value = this.value.toLocaleLowerCase();
                 widget.set_filter_value(value);
+                widget.hard_redraw();
+            });
+        }
+
+        if (opts.filter && opts.filter.role_element) {
+            opts.filter.role_element.on("change", function () {
+                const value = this.value;
+                widget.set_role_filter_value(Number.parseInt(value, 10));
                 widget.hard_redraw();
             });
         }
