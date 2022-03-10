@@ -321,16 +321,14 @@ if __name__ == "__main__":
     assert_github_user_exists(github_username=username)
 
     public_keys = get_ssh_public_keys_from_github(github_username=username)
+    droplet_domain_name = f"{subdomain}.zulipdev.org"
 
     if args.production:
-        droplet_domain_name = f"{subdomain}.zulipdev.org"
         template_id = get_zulip_oneclick_app_slug(api_token)
         user_data = generate_prod_droplet_user_data(username=username, userkey_dicts=public_keys)
 
     else:
         assert_user_forked_zulip_server_repo(username=username)
-
-        droplet_domain_name = f"{subdomain}.zulipdev.org"
         user_data = generate_dev_droplet_user_data(
             username=username, subdomain=subdomain, userkey_dicts=public_keys
         )
