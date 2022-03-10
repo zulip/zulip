@@ -166,9 +166,14 @@ with Zulip's Rules of Use.
 
 ## Caveats
 
-The web-public visitors feature is not yet integrated with Zulip's
-live-update system. As a result, a visitor will not see messages that are sent
-while Zulip is open until they reload the browser window.
+* Web-public streams do not yet support search engine indexing. You
+  can use [zulip-archive](https://github.com/zulip/zulip-archive) to
+  create an archive of a Zulip organization that can be indexed by
+  search engines.
+* The web-public view is not yet integrated with Zulip's live-update
+  system. As a result, a visitor will not see new messages that are
+  sent to a topic they are currently viewing without reloading the
+  browser window.
 
 ## Related articles
 
