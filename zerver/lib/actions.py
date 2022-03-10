@@ -6156,7 +6156,7 @@ class ReadMessagesEvent:
     flag: str = field(default="read", init=False)
 
 
-def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
+def do_mark_all_as_read(user_profile: UserProfile) -> int:
     log_statsd_event("bankruptcy")
 
     # First, we clear mobile push notifications.  This is safer in the
@@ -6351,7 +6351,7 @@ def do_clear_mobile_push_notifications_for_ids(
 
 
 def do_update_message_flags(
-    user_profile: UserProfile, client: Client, operation: str, flag: str, messages: List[int]
+    user_profile: UserProfile, operation: str, flag: str, messages: List[int]
 ) -> int:
     valid_flags = [item for item in UserMessage.flags if item not in UserMessage.NON_API_FLAGS]
     if flag not in valid_flags:

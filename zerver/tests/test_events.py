@@ -625,17 +625,13 @@ class NormalActionsTest(BaseAction):
         )
         user_profile = self.example_user("hamlet")
         events = self.verify_action(
-            lambda: do_update_message_flags(
-                user_profile, get_client("website"), "add", "starred", [message]
-            ),
+            lambda: do_update_message_flags(user_profile, "add", "starred", [message]),
             state_change_expected=True,
         )
         check_update_message_flags_add("events[0]", events[0])
 
         events = self.verify_action(
-            lambda: do_update_message_flags(
-                user_profile, get_client("website"), "remove", "starred", [message]
-            ),
+            lambda: do_update_message_flags(user_profile, "remove", "starred", [message]),
             state_change_expected=True,
         )
         check_update_message_flags_remove("events[0]", events[0])
@@ -653,9 +649,7 @@ class NormalActionsTest(BaseAction):
             )
 
             self.verify_action(
-                lambda: do_update_message_flags(
-                    user_profile, get_client("website"), "add", "read", [message]
-                ),
+                lambda: do_update_message_flags(user_profile, "add", "read", [message]),
                 state_change_expected=True,
             )
 
