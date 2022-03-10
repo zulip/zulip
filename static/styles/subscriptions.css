@@ -313,7 +313,7 @@ h4.stream_setting_subsection_title {
 
 .subscriber_list_add {
     width: 100%;
-    margin: 10px auto;
+    margin: 0 0 10px;
 
     .stream_subscription_request_result {
         a {
