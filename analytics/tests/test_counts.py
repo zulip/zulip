@@ -1431,8 +1431,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         self.subscribe(user2, stream.name)
 
         self.send_personal_message(user1, user2)
-        client = get_client("website")
-        do_mark_all_as_read(user2, client)
+        do_mark_all_as_read(user2)
         self.assertEqual(
             1,
             UserCount.objects.filter(property=read_count_property).aggregate(Sum("value"))[
@@ -1463,7 +1462,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         )
 
         message = self.send_stream_message(user2, stream.name)
-        do_update_message_flags(user1, client, "add", "read", [message])
+        do_update_message_flags(user1, "add", "read", [message])
         self.assertEqual(
             4,
             UserCount.objects.filter(property=read_count_property).aggregate(Sum("value"))[

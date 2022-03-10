@@ -1638,9 +1638,7 @@ class TestAPNs(PushNotificationTest):
         # Mark the messages as read and test whether
         # the count decreases correctly.
         for i, message_id in enumerate(message_ids):
-            do_update_message_flags(
-                user_profile, get_client("website"), "add", "read", [message_id]
-            )
+            do_update_message_flags(user_profile, "add", "read", [message_id])
             self.assertEqual(get_apns_badge_count(user_profile), 0)
             self.assertEqual(get_apns_badge_count_future(user_profile), num_messages - i - 1)
 
