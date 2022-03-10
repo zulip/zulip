@@ -234,11 +234,17 @@ export function update_messages(events) {
                      * messages that were moved are displayed as such
                      * without a browser reload. */
                     const edit_history_entry = {
-                        edited_by: event.edited_by,
-                        prev_topic: orig_topic,
-                        prev_stream: event.stream_id,
+                        user_id: event.user_id,
                         timestamp: event.edit_timestamp,
                     };
+                    if (stream_changed) {
+                        edit_history_entry.stream = event.new_stream_id;
+                        edit_history_entry.prev_stream = event.stream_id;
+                    }
+                    if (topic_edited) {
+                        edit_history_entry.topic = new_topic;
+                        edit_history_entry.prev_topic = orig_topic;
+                    }
                     if (msg.edit_history === undefined) {
                         msg.edit_history = [];
                     }
@@ -394,7 +400,7 @@ export function update_messages(events) {
                 // If an event changed both content and topic, we'll generate
                 // two client-side events, which is probably good for display.
                 const edit_history_entry = {
-                    edited_by: event.edited_by,
+                    user_id: event.user_id,
                     prev_content: event.orig_content,
                     prev_rendered_content: event.orig_rendered_content,
                     prev_rendered_content_version: event.prev_rendered_content_version,
