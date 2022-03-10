@@ -847,6 +847,10 @@ class RealmTest(ZulipTestCase):
             self.assertEqual(realm.has_web_public_streams(), False)
             self.assertEqual(realm.web_public_streams_enabled(), False)
 
+            with self.settings(WEB_PUBLIC_STREAMS_BETA_SUBDOMAINS=["zulip"]):
+                self.assertEqual(realm.has_web_public_streams(), True)
+                self.assertEqual(realm.web_public_streams_enabled(), True)
+
         realm.enable_spectator_access = False
         realm.save()
         self.assertEqual(realm.has_web_public_streams(), False)
