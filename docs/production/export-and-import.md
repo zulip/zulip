@@ -169,7 +169,7 @@ data includes:
   PostgreSQL server to add:
 
   ```ini
-  s3_region = # region to write to S3
+  s3_region = # region to write to S3; defaults to EC2 host's region
   s3_backups_key = # aws public key
   s3_backups_secret_key =  # aws secret key
   s3_backups_bucket = # name of S3 backup
