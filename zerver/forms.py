@@ -14,6 +14,7 @@ from django.http import HttpRequest
 from django.urls import reverse
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 from markupsafe import Markup as mark_safe
 from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationTokenForm
 from two_factor.utils import totp_digits
@@ -43,31 +44,20 @@ if settings.BILLING_ENABLED:
     from corporate.lib.registration import check_spare_licenses_available_for_registering_new_user
     from corporate.lib.stripe import LicenseLimitError
 
+# We don't mark this error for translation, because it's displayed
+# only to MIT users.
 MIT_VALIDATION_ERROR = (
     "That user does not exist at MIT or is a "
     + '<a href="https://ist.mit.edu/email-lists">mailing list</a>. '
     + "If you want to sign up an alias for Zulip, "
     + '<a href="mailto:support@zulip.com">contact us</a>.'
 )
-WRONG_SUBDOMAIN_ERROR = (
-    "Your Zulip account {username} is not a member of the "
-    + "organization associated with this subdomain.  "
-    + "Please contact your organization administrator with any questions."
-)
-DEACTIVATED_ACCOUNT_ERROR = (
+
+DEACTIVATED_ACCOUNT_ERROR = gettext_lazy(
     "Your account {username} has been deactivated. "
     + "Please contact your organization administrator to reactivate it."
 )
-PASSWORD_RESET_NEEDED_ERROR = (
-    "Your password has been disabled because it is too weak. "
-    "Reset your password to create a new one."
-)
-PASSWORD_TOO_WEAK_ERROR = "The password is too weak."
-AUTHENTICATION_RATE_LIMITED_ERROR = (
-    "You're making too many attempts to sign in. "
-    + "Try again in {} seconds or contact your organization administrator "
-    + "for help."
-)
+PASSWORD_TOO_WEAK_ERROR = gettext_lazy("The password is too weak.")
 
 
 def email_is_not_mit_mailing_list(email: str) -> None:
@@ -428,13 +418,23 @@ class OurAuthenticationForm(AuthenticationForm):
             except RateLimited as e:
                 assert e.secs_to_freedom is not None
                 secs_to_freedom = int(e.secs_to_freedom)
-                raise ValidationError(AUTHENTICATION_RATE_LIMITED_ERROR.format(secs_to_freedom))
+                error_message = _(
+                    "You're making too many attempts to sign in. "
+                    + "Try again in {} seconds or contact your organization administrator "
+                    + "for help."
+                )
+                raise ValidationError(error_message.format(secs_to_freedom))
 
             if return_data.get("inactive_realm"):
                 raise AssertionError("Programming error: inactive realm in authentication form")
 
             if return_data.get("password_reset_needed"):
-                raise ValidationError(PASSWORD_RESET_NEEDED_ERROR)
+                raise ValidationError(
+                    _(
+                        "Your password has been disabled because it is too weak. "
+                        "Reset your password to create a new one."
+                    )
+                )
 
             if return_data.get("inactive_user") and not return_data.get("is_mirror_dummy"):
                 # We exclude mirror dummy accounts here. They should be treated as the
@@ -447,7 +447,12 @@ class OurAuthenticationForm(AuthenticationForm):
                 logging.warning(
                     "User %s attempted password login to wrong subdomain %s", username, subdomain
                 )
-                error_message = WRONG_SUBDOMAIN_ERROR.format(username=username)
+                error_message = _(
+                    "Your Zulip account {username} is not a member of the "
+                    + "organization associated with this subdomain.  "
+                    + "Please contact your organization administrator with any questions."
+                )
+                error_message = error_message.format(username=username)
                 raise ValidationError(error_message)
 
             if self.user_cache is None:
