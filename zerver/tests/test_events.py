@@ -347,14 +347,17 @@ class BaseAction(ZulipTestCase):
         self, state1: Dict[str, Any], state2: Dict[str, Any], events: List[Dict[str, Any]]
     ) -> None:
         def normalize(state: Dict[str, Any]) -> None:
-            for u in state["never_subscribed"]:
-                if "subscribers" in u:
-                    u["subscribers"].sort()
-            for u in state["subscriptions"]:
-                if "subscribers" in u:
-                    u["subscribers"].sort()
-            state["subscriptions"] = {u["name"]: u for u in state["subscriptions"]}
-            state["unsubscribed"] = {u["name"]: u for u in state["unsubscribed"]}
+            if "never_subscribed" in state:
+                for u in state["never_subscribed"]:
+                    if "subscribers" in u:
+                        u["subscribers"].sort()
+            if "subscriptions" in state:
+                for u in state["subscriptions"]:
+                    if "subscribers" in u:
+                        u["subscribers"].sort()
+                state["subscriptions"] = {u["name"]: u for u in state["subscriptions"]}
+            if "unsubscribed" in state:
+                state["unsubscribed"] = {u["name"]: u for u in state["unsubscribed"]}
             if "realm_bots" in state:
                 state["realm_bots"] = {u["email"]: u for u in state["realm_bots"]}
             # Since time is different for every call, just fix the value
