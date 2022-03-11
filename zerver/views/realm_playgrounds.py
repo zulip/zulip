@@ -46,6 +46,7 @@ def add_realm_playground(
     try:
         playground_id = do_add_realm_playground(
             realm=user_profile.realm,
+            acting_user=user_profile,
             name=name.strip(),
             pygments_language=pygments_language.strip(),
             url_prefix=url_prefix.strip(),

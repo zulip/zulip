@@ -8104,7 +8104,9 @@ def notify_realm_playgrounds(
     send_event(realm, event, active_user_ids(realm.id))
 
 
-def do_add_realm_playground(realm: Realm, **kwargs: Any) -> int:
+def do_add_realm_playground(
+    realm: Realm, *, acting_user: Optional[UserProfile], **kwargs: Any
+) -> int:
     realm_playground = RealmPlayground(realm=realm, **kwargs)
     # We expect full_clean to always pass since a thorough input validation
     # is performed in the view (using check_url, check_pygments_language, etc)
@@ -8112,8 +8114,24 @@ def do_add_realm_playground(realm: Realm, **kwargs: Any) -> int:
     realm_playground.full_clean()
     realm_playground.save()
     realm_playgrounds = get_realm_playgrounds(realm)
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=RealmAuditLog.REALM_PLAYGROUND_ADDED,
+        event_time=timezone_now(),
+        extra_data=orjson.dumps(
+            {
+                "realm_playgrounds": realm_playgrounds,
+                "added_playground": {
+                    "id": realm_playground.id,
+                    "name": realm_playground.name,
+                    "pygments_language": realm_playground.pygments_language,
+                    "url_prefix": realm_playground.url_prefix,
+                },
+            }
+        ).decode(),
+    )
     notify_realm_playgrounds(realm, realm_playgrounds)
-
     return realm_playground.id
 
 
