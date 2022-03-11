@@ -99,7 +99,7 @@ class RealmPlaygroundTests(ZulipTestCase):
             pygments_language="Python",
             url_prefix="https://python.example.com",
         )
-        playground_id = do_add_realm_playground(realm, **playground_info)
+        playground_id = do_add_realm_playground(realm, acting_user=iago, **playground_info)
         self.assertTrue(RealmPlayground.objects.filter(name="Python playground").exists())
 
         result = self.api_delete(iago, f"/json/realm/playgrounds/{playground_id + 1}")

@@ -1761,7 +1761,9 @@ class NormalActionsTest(BaseAction):
             url_prefix="https://python.example.com",
         )
         events = self.verify_action(
-            lambda: do_add_realm_playground(self.user_profile.realm, **playground_info)
+            lambda: do_add_realm_playground(
+                self.user_profile.realm, acting_user=None, **playground_info
+            )
         )
         check_realm_playgrounds("events[0]", events[0])
 
