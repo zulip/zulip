@@ -23,6 +23,12 @@ class Bitbucket3HookTests(WebhookTestCase):
         )
         self.check_webhook("diagnostics_ping", "my topic", expected_message)
 
+    def test_missing(self) -> None:
+        result = self.client_post(
+            self.url, self.get_payload("missing"), content_type="application/json"
+        )
+        self.assert_json_error(result, "Invalid payload", 400)
+
     # Core repo events:
     def test_commit_comment_added(self) -> None:
         expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) commented on [508d1b6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/commits/508d1b67f1f8f3a25f543a030a7a178894aa9907):\n~~~ quote\nJust an arbitrary comment on a commit.\n~~~"""
