@@ -1772,7 +1772,9 @@ class NormalActionsTest(BaseAction):
         last_id = last_realm_playground.id
         realm_playground = access_playground_by_id(self.user_profile.realm, last_id)
         events = self.verify_action(
-            lambda: do_remove_realm_playground(self.user_profile.realm, realm_playground)
+            lambda: do_remove_realm_playground(
+                self.user_profile.realm, realm_playground, acting_user=None
+            )
         )
         check_realm_playgrounds("events[0]", events[0])
 

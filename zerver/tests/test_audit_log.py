@@ -33,6 +33,7 @@ from zerver.lib.actions import (
     do_reactivate_user,
     do_regenerate_api_key,
     do_remove_realm_domain,
+    do_remove_realm_playground,
     do_rename_stream,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
@@ -47,6 +48,7 @@ from zerver.models import (
     Message,
     Realm,
     RealmAuditLog,
+    RealmPlayground,
     Recipient,
     Subscription,
     UserProfile,
@@ -757,6 +759,33 @@ class TestRealmAuditLog(ZulipTestCase):
             RealmAuditLog.objects.filter(
                 realm=user.realm,
                 event_type=RealmAuditLog.REALM_PLAYGROUND_ADDED,
+                event_time__gte=now,
+                acting_user=user,
+                extra_data=orjson.dumps(expected_extra_data).decode(),
+            ).count(),
+            1,
+        )
+
+        now = timezone_now()
+        realm_playground = RealmPlayground.objects.get(id=playground_id)
+        do_remove_realm_playground(
+            user.realm,
+            realm_playground,
+            acting_user=user,
+        )
+        removed_playground = {
+            "name": "Python playground",
+            "pygments_language": "Python",
+            "url_prefix": "https://python.example.com",
+        }
+        expected_extra_data = {
+            "realm_playgrounds": intial_playgrounds,
+            "removed_playground": removed_playground,
+        }
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=RealmAuditLog.REALM_PLAYGROUND_REMOVED,
                 event_time__gte=now,
                 acting_user=user,
                 extra_data=orjson.dumps(expected_extra_data).decode(),
