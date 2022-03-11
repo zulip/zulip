@@ -77,7 +77,7 @@ from zerver.lib.cache import (
     user_profile_delivery_email_cache_key,
 )
 from zerver.lib.create_user import create_user, get_display_email_address
-from zerver.lib.email_mirror_helpers import encode_email_address, encode_email_address_helper
+from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.email_validation import (
     email_reserved_for_system_bots_error,
@@ -129,7 +129,7 @@ from zerver.lib.send_email import (
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.storage import static_path
-from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS, pick_colors
+from zerver.lib.stream_color import pick_colors
 from zerver.lib.stream_subscription import (
     SubInfo,
     bulk_get_private_peers,
@@ -160,6 +160,7 @@ from zerver.lib.streams import (
     subscribed_to_stream,
 )
 from zerver.lib.string_validation import check_stream_name, check_stream_topic
+from zerver.lib.subscription_info import build_stream_dict_for_never_sub, build_stream_dict_for_sub
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import (
@@ -176,8 +177,13 @@ from zerver.lib.topic import (
 )
 from zerver.lib.types import (
     EditHistoryEvent,
+    NeverSubscribedStreamDict,
     ProfileDataElementValue,
     ProfileFieldData,
+    RawStreamDict,
+    RawSubscriptionDict,
+    SubscriptionInfo,
+    SubscriptionStreamDict,
     UnspecifiedValue,
 )
 from zerver.lib.upload import (
@@ -276,17 +282,6 @@ if settings.BILLING_ENABLED:
         update_license_ledger_if_needed,
     )
 
-
-@dataclass
-class SubscriptionInfo:
-    subscriptions: List[Dict[str, Any]]
-    unsubscribed: List[Dict[str, Any]]
-    never_subscribed: List[Dict[str, Any]]
-
-
-# These are hard to type-check because of the API_FIELDS loops.
-RawStreamDict = Dict[str, Any]
-RawSubscriptionDict = Dict[str, Any]
 
 ONBOARDING_TOTAL_MESSAGES = 1000
 ONBOARDING_UNREAD_MESSAGES = 20
@@ -7108,115 +7103,6 @@ def do_delete_messages_by_sender(user: UserProfile) -> None:
         move_messages_to_archive(message_ids, chunk_size=retention.STREAM_MESSAGE_BATCH_SIZE)
 
 
-def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
-    color_idx = 0
-
-    def get_next_color() -> str:
-        nonlocal color_idx
-        color = STREAM_ASSIGNMENT_COLORS[color_idx]
-        color_idx = (color_idx + 1) % len(STREAM_ASSIGNMENT_COLORS)
-        return color
-
-    subscribed = []
-    for stream in get_web_public_streams_queryset(realm):
-        stream_dict = stream.to_dict()
-
-        # Add versions of the Subscription fields based on a simulated
-        # new user subscription set.
-        stream_dict["is_muted"] = False
-        stream_dict["color"] = get_next_color()
-        stream_dict["desktop_notifications"] = True
-        stream_dict["audible_notifications"] = True
-        stream_dict["push_notifications"] = True
-        stream_dict["email_notifications"] = True
-        stream_dict["pin_to_top"] = False
-        stream_weekly_traffic = get_average_weekly_stream_traffic(
-            stream.id, stream.date_created, {}
-        )
-        stream_dict["stream_weekly_traffic"] = stream_weekly_traffic
-        stream_dict["email_address"] = ""
-        subscribed.append(stream_dict)
-
-    return SubscriptionInfo(
-        subscriptions=subscribed,
-        unsubscribed=[],
-        never_subscribed=[],
-    )
-
-
-def build_stream_dict_for_sub(
-    user: UserProfile,
-    sub_dict: RawSubscriptionDict,
-    raw_stream_dict: RawStreamDict,
-    recent_traffic: Dict[int, int],
-) -> Dict[str, object]:
-    # We first construct a dictionary based on the standard Stream
-    # and Subscription models' API_FIELDS.
-    result = {}
-    for field_name in Stream.API_FIELDS:
-        if field_name == "id":
-            result["stream_id"] = raw_stream_dict["id"]
-            continue
-        elif field_name == "date_created":
-            result["date_created"] = datetime_to_timestamp(raw_stream_dict[field_name])
-            continue
-        result[field_name] = raw_stream_dict[field_name]
-
-    # Copy Subscription.API_FIELDS.
-    for field_name in Subscription.API_FIELDS:
-        result[field_name] = sub_dict[field_name]
-
-    # Backwards-compatibility for clients that haven't been
-    # updated for the in_home_view => is_muted API migration.
-    result["in_home_view"] = not result["is_muted"]
-
-    # Backwards-compatibility for clients that haven't been
-    # updated for the is_announcement_only -> stream_post_policy
-    # migration.
-    result["is_announcement_only"] = (
-        raw_stream_dict["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
-    )
-
-    # Add a few computed fields not directly from the data models.
-    result["stream_weekly_traffic"] = get_average_weekly_stream_traffic(
-        raw_stream_dict["id"], raw_stream_dict["date_created"], recent_traffic
-    )
-
-    result["email_address"] = encode_email_address_helper(
-        raw_stream_dict["name"], raw_stream_dict["email_token"], show_sender=True
-    )
-
-    # Our caller may add a subscribers field.
-    return result
-
-
-def build_stream_dict_for_never_sub(
-    raw_stream_dict: RawStreamDict,
-    recent_traffic: Dict[int, int],
-) -> Dict[str, object]:
-    result = {}
-    for field_name in Stream.API_FIELDS:
-        if field_name == "id":
-            result["stream_id"] = raw_stream_dict["id"]
-            continue
-        elif field_name == "date_created":
-            result["date_created"] = datetime_to_timestamp(raw_stream_dict[field_name])
-            continue
-        result[field_name] = raw_stream_dict[field_name]
-
-    result["stream_weekly_traffic"] = get_average_weekly_stream_traffic(
-        raw_stream_dict["id"], raw_stream_dict["date_created"], recent_traffic
-    )
-
-    # Backwards-compatibility addition of removed field.
-    result["is_announcement_only"] = (
-        raw_stream_dict["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
-    )
-
-    # Our caller may add a subscribers field.
-    return result
-
-
 # In general, it's better to avoid using .values() because it makes
 # the code pretty ugly, but in this case, it has significant
 # performance impact for loading / for users with large numbers of
@@ -7265,9 +7151,9 @@ def gather_subscriptions_helper(
 
     # Okay, now we finally get to populating our main results, which
     # will be these three lists.
-    subscribed = []
-    unsubscribed = []
-    never_subscribed = []
+    subscribed: List[SubscriptionStreamDict] = []
+    unsubscribed: List[SubscriptionStreamDict] = []
+    never_subscribed: List[NeverSubscribedStreamDict] = []
 
     sub_unsub_stream_ids = set()
     for sub_dict in sub_dicts:
@@ -7302,11 +7188,11 @@ def gather_subscriptions_helper(
     for raw_stream_dict in never_subscribed_streams:
         is_public = not raw_stream_dict["invite_only"]
         if is_public or user_profile.is_realm_admin:
-            stream_dict = build_stream_dict_for_never_sub(
+            slim_stream_dict = build_stream_dict_for_never_sub(
                 raw_stream_dict=raw_stream_dict, recent_traffic=recent_traffic
             )
 
-            never_subscribed.append(stream_dict)
+            never_subscribed.append(slim_stream_dict)
 
     if include_subscribers:
         # The highly optimized bulk_get_subscriber_user_ids wants to know which
@@ -7322,23 +7208,32 @@ def gather_subscriptions_helper(
             subscribed_stream_ids,
         )
 
-        for lst in [subscribed, unsubscribed, never_subscribed]:
+        for lst in [subscribed, unsubscribed]:
             for stream_dict in lst:
                 assert isinstance(stream_dict["stream_id"], int)
                 stream_id = stream_dict["stream_id"]
                 stream_dict["subscribers"] = subscriber_map[stream_id]
 
+        for slim_stream_dict in never_subscribed:
+            assert isinstance(slim_stream_dict["stream_id"], int)
+            stream_id = slim_stream_dict["stream_id"]
+            slim_stream_dict["subscribers"] = subscriber_map[stream_id]
+
+    subscribed.sort(key=lambda x: x["name"])
+    unsubscribed.sort(key=lambda x: x["name"])
+    never_subscribed.sort(key=lambda x: x["name"])
+
     return SubscriptionInfo(
-        subscriptions=sorted(subscribed, key=lambda x: x["name"]),
-        unsubscribed=sorted(unsubscribed, key=lambda x: x["name"]),
-        never_subscribed=sorted(never_subscribed, key=lambda x: x["name"]),
+        subscriptions=subscribed,
+        unsubscribed=unsubscribed,
+        never_subscribed=never_subscribed,
     )
 
 
 def gather_subscriptions(
     user_profile: UserProfile,
     include_subscribers: bool = False,
-) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+) -> Tuple[List[SubscriptionStreamDict], List[SubscriptionStreamDict]]:
     helper_result = gather_subscriptions_helper(
         user_profile,
         include_subscribers=include_subscribers,

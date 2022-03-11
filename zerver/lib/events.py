@@ -16,7 +16,6 @@ from zerver.lib.actions import (
     get_default_streams_for_realm,
     get_owned_bot_dicts,
     get_web_public_streams,
-    get_web_public_subs,
     streams_to_dicts_sorted,
 )
 from zerver.lib.alert_words import user_alert_words
@@ -44,6 +43,7 @@ from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
+from zerver.lib.subscription_info import get_web_public_subs
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
