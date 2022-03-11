@@ -830,6 +830,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             '    --data-urlencode \'narrow=[{"operand": "Denmark", "operator": "stream"}]\' \\',
             "    --data-urlencode client_gravatar=false \\",
             "    --data-urlencode apply_markdown=false \\",
+            "    --data-urlencode target_date=2022-03-17T18:37:30.806Z \\",
             "    --data-urlencode use_first_unread_anchor=true",
             "```",
         ]
@@ -892,7 +893,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
 
     def test_generate_and_render_curl_example_with_excludes(self) -> None:
         generated_curl_example = self.curl_example(
-            "/messages", "GET", exclude=["client_gravatar", "apply_markdown"]
+            "/messages", "GET", exclude=["client_gravatar", "apply_markdown", "target_date"]
         )
         expected_curl_example = [
             "```curl",

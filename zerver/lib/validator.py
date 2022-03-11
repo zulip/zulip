@@ -50,6 +50,7 @@ from typing import (
 )
 
 import orjson
+from dateutil.parser import isoparse
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.utils.translation import gettext as _
@@ -559,6 +560,13 @@ def validate_todo_data(todo_data: object) -> None:
         return
 
     raise ValidationError(f"Unknown type for todo data: {todo_data['type']}")
+
+
+def to_datetime(var_name: str, s: str) -> datetime:
+    try:
+        return isoparse(s)
+    except ValueError:
+        raise ValidationError(f"Invalid datetime: {s}. Please use ISO8601 format.")
 
 
 # Converter functions for use with has_request_variables

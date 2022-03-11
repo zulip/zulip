@@ -4816,6 +4816,7 @@ paths:
                 - client_gravatar
                 - apply_markdown
                 - use_first_unread_anchor
+                - target_date
       parameters:
         - name: anchor
           in: query
@@ -4828,6 +4829,8 @@ paths:
             - `oldest`: The oldest message.
             - `first_unread`: The oldest unread message matching the
               query, if any; otherwise, the most recent message.
+            - `first_after_date`: The first message after `target_date`
+              matching the given `narrow`
 
             The special values of `'newest'` and `'oldest'` are also supported
             for anchoring the query at the most recent or oldest messages.
@@ -4891,6 +4894,16 @@ paths:
             type: boolean
             default: true
           example: false
+        - name: target_date
+          in: query
+          description: |
+            Date time in ISO 8601 format to fetch the first message after
+            given date-time when anchor is set to 'first_after_date'.
+          required: false
+          schema:
+            type: string
+            format: date-time
+          example: "2022-03-17T18:37:30.806Z"
         - name: use_first_unread_anchor
           in: query
           deprecated: true

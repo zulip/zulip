@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 134**
+
+* [`GET /messages`](/api/get-messages): Extend `anchor` param to
+  include `first_after_date` which can be used with `target_date`
+  to get the first message in a narrow after `target_date`.
+
 **Feature level 133**
 
 * [`POST /register`](/api/register-queue), `PATCH /realm`: Removed
