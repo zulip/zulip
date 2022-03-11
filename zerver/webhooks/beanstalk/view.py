@@ -60,13 +60,19 @@ def beanstalk_decoder(view_func: ViewFuncT) -> ViewFuncT:
     def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
         auth_type: str
         encoded_value: str
-        auth_type, encoded_value = request.META["HTTP_AUTHORIZATION"].split()
-        if auth_type.lower() == "basic":
-            email, api_key = base64.b64decode(encoded_value).decode().split(":")
-            email = email.replace("%40", "@")
-            credentials = f"{email}:{api_key}"
-            encoded_credentials: str = base64.b64encode(credentials.encode()).decode()
-            request.META["HTTP_AUTHORIZATION"] = "Basic " + encoded_credentials
+        try:
+            auth_type, encoded_value = request.META["HTTP_AUTHORIZATION"].split()
+
+            if auth_type.lower() == "basic":
+                email, api_key = base64.b64decode(encoded_value).decode().split(":")
+                email = email.replace("%40", "@")
+                credentials = f"{email}:{api_key}"
+                encoded_credentials: str = base64.b64encode(credentials.encode()).decode()
+                request.META["HTTP_AUTHORIZATION"] = "Basic " + encoded_credentials
+        except Exception:
+            # Failure to have, split, or decode the header shouldn't
+            # 500, merely pass through whatever currently exists.
+            pass
 
         return view_func(request, *args, **kwargs)
 
