@@ -1,0 +1,15 @@
+// @flow strict
+
+// declare export var popular_emojis
+
+declare export function remove_diacritics(s: string): string;
+
+// declare export function query_matches_source_attrs
+
+// declare export function clean_query_lowercase
+
+// declare export function get_emoji_matcher
+
+// declare export function triage
+
+// declare export function sort_emojis
