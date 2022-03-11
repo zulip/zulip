@@ -125,15 +125,9 @@ and reusable invitation links expire 10 days after they are sent.
 
 {!owner-only.md!}
 
-By default, all members can invite new users to join your Zulip
-organization. However, you can restrict the permission to invite new
-users to other sets of roles:
-
-* Nobody
-* Organization administrators
-* Organization administrators and moderators
-* Organization administrators and all members
-* Organization administrators and [full members](/help/restrict-permissions-of-new-members)
+By default, all members can invite new users to join your Zulip organization.
+However, you can restrict the ability to do so to specific
+[roles](/help/roles-and-permissions).
 
 {start_tabs}
 
