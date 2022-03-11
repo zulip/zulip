@@ -8101,9 +8101,10 @@ def notify_realm_playgrounds(
     realm: Realm, realm_playgrounds: List[Dict[str, Union[int, str]]]
 ) -> None:
     event = dict(type="realm_playgrounds", realm_playgrounds=realm_playgrounds)
-    send_event(realm, event, active_user_ids(realm.id))
+    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
 
 
+@transaction.atomic(durable=True)
 def do_add_realm_playground(
     realm: Realm, *, acting_user: Optional[UserProfile], **kwargs: Any
 ) -> int:
