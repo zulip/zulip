@@ -222,6 +222,10 @@ export function start(msg_type, opts) {
         return;
     }
 
+    // We may be able to clear it to change the recipient, so save any
+    // existing content as a draft.
+    drafts.update_draft();
+
     autosize_message_content();
 
     if (reload_state.is_in_progress()) {
@@ -328,10 +332,6 @@ export function cancel() {
 }
 
 export function respond_to_message(opts) {
-    // Before initiating a reply to a message, if there's an
-    // in-progress composition, snapshot it.
-    drafts.update_draft();
-
     let message;
     let msg_type;
     if (recent_topics_util.is_visible()) {
