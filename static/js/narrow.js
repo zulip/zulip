@@ -204,13 +204,11 @@ export function activate(raw_operators, opts) {
     */
 
     const start_time = new Date();
-
-    reset_ui_state();
+    const was_narrowed_already = narrow_state.active();
 
     // Since narrow.activate is called directly from various
     // places in our code without passing through hashchange,
     // we need to check if the narrow is allowed for spectator here too.
-
     if (
         page_params.is_spectator &&
         raw_operators.length &&
@@ -222,39 +220,12 @@ export function activate(raw_operators, opts) {
         return;
     }
 
-    if (recent_topics_util.is_visible()) {
-        recent_topics_ui.hide();
-    } else {
-        // If recent topics was not visible, then we are switching
-        // from another message list view. Save the scroll position in
-        // that message list, so that we can restore it if/when we
-        // later navigate back to that view.
-        save_pre_narrow_offset_for_reload();
-    }
-
-    const was_narrowed_already = narrow_state.active();
-    // most users aren't going to send a bunch of a out-of-narrow messages
-    // and expect to visit a list of narrows, so let's get these out of the way.
-    notifications.clear_compose_notifications();
-
-    // Open tooltips are only interesting for current narrow,
-    // so hide them when activating a new one.
-    $(".tooltip").hide();
-
+    // The empty narrow is the home view; so deactivate any narrow if
+    // no operators were specified.
     if (raw_operators.length === 0) {
         deactivate();
         return;
     }
-    const filter = new Filter(raw_operators);
-    const operators = filter.operators();
-
-    update_narrow_title(filter);
-
-    blueslip.debug("Narrowed", {
-        operators: operators.map((e) => e.operator),
-        trigger: opts ? opts.trigger : undefined,
-        previous_id: message_lists.current.selected_id(),
-    });
 
     opts = {
         then_select_id: -1,
@@ -270,6 +241,9 @@ export function activate(raw_operators, opts) {
         final_select_id: undefined,
     };
 
+    const filter = new Filter(raw_operators);
+    const operators = filter.operators();
+
     // These two narrowing operators specify what message should be
     // selected and should be the center of the narrow.
     if (filter.has_operator("near")) {
@@ -278,6 +252,38 @@ export function activate(raw_operators, opts) {
     if (filter.has_operator("id")) {
         id_info.target_id = Number.parseInt(filter.operands("id")[0], 10);
     }
+
+    // IMPORTANT: No code that modifies UI state should appear above
+    // this point. This is important to prevent calling such functions
+    // more than once in the event that we call narrow.activate
+    // recursively.
+    reset_ui_state();
+
+    if (recent_topics_util.is_visible()) {
+        recent_topics_ui.hide();
+    } else {
+        // If recent topics was not visible, then we are switching
+        // from another message list view. Save the scroll position in
+        // that message list, so that we can restore it if/when we
+        // later navigate back to that view.
+        save_pre_narrow_offset_for_reload();
+    }
+
+    // most users aren't going to send a bunch of a out-of-narrow messages
+    // and expect to visit a list of narrows, so let's get these out of the way.
+    notifications.clear_compose_notifications();
+
+    // Open tooltips are only interesting for current narrow,
+    // so hide them when activating a new one.
+    $(".tooltip").hide();
+
+    update_narrow_title(filter);
+
+    blueslip.debug("Narrowed", {
+        operators: operators.map((e) => e.operator),
+        trigger: opts ? opts.trigger : undefined,
+        previous_id: message_lists.current.selected_id(),
+    });
 
     if (opts.then_select_id > 0) {
         // We override target_id in this case, since the user could be
