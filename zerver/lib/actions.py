@@ -8136,6 +8136,7 @@ def do_add_realm_playground(
     return realm_playground.id
 
 
+@transaction.atomic(durable=True)
 def do_remove_realm_playground(
     realm: Realm, realm_playground: RealmPlayground, *, acting_user: Optional[UserProfile]
 ) -> None:
