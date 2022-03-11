@@ -8135,9 +8135,31 @@ def do_add_realm_playground(
     return realm_playground.id
 
 
-def do_remove_realm_playground(realm: Realm, realm_playground: RealmPlayground) -> None:
+def do_remove_realm_playground(
+    realm: Realm, realm_playground: RealmPlayground, *, acting_user: Optional[UserProfile]
+) -> None:
+    removed_playground = {
+        "name": realm_playground.name,
+        "pygments_language": realm_playground.pygments_language,
+        "url_prefix": realm_playground.url_prefix,
+    }
+
     realm_playground.delete()
     realm_playgrounds = get_realm_playgrounds(realm)
+
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=RealmAuditLog.REALM_PLAYGROUND_REMOVED,
+        event_time=timezone_now(),
+        extra_data=orjson.dumps(
+            {
+                "realm_playgrounds": realm_playgrounds,
+                "removed_playground": removed_playground,
+            }
+        ).decode(),
+    )
+
     notify_realm_playgrounds(realm, realm_playgrounds)
 
 
