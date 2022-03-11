@@ -6,7 +6,7 @@ users at once. When you mention a user group, everyone in the group is
 individually mentioned.
 
 Note that user groups are not the same as group private messages. If you're
-trying to send a group of people a message, you'll want to either
+trying to send a message to a group of people, you'll want to either
 [create a stream](/help/create-a-stream), or send a
 [group private message](/help/private-messages).
 
@@ -15,9 +15,6 @@ trying to send a group of people a message, you'll want to either
 {!how-to-create-a-user-group.md!}
 
 ### Modify a user group
-
-Organization administrators can modify any user group. Members can modify
-any user group they are a part of. Guests cannot modify user groups.
 
 {start_tabs}
 
@@ -32,7 +29,32 @@ any user group they are a part of. Guests cannot modify user groups.
 
 {end_tabs}
 
+### Configure who can create and manage user groups
+
+{!admin-only.md!}
+
+By default, [all members](/help/roles-and-permissions) in a Zulip
+organization can create user groups and manage user groups that they
+are a member of. However, you can restrict that ability to specific
+[roles](/help/roles-and-permissions).
+
+Note that administrators and moderators can modify any user group,
+while other organization members can only modify user groups to which
+they belong. Guests cannot modify or create user groups.
+
+{start_tabs}
+
+{settings_tab|organization-permissions}
+
+1. Under **Other permissions**, configure **Who can create and manage user groups**.
+
+{!save-changes.md!}
+
+{end_tabs}
+
 ## Related articles
 
-* [Restrict user group management](/help/restrict-user-group-management)
+* [Mention a user or group](/help/mention-a-user-or-group)
 * [Create user groups](/help/create-user-groups)
+* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Roles and permissions](/help/roles-and-permissions)

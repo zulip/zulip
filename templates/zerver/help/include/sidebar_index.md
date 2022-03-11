@@ -177,7 +177,6 @@
 * [Restrict topic editing](/help/configure-who-can-edit-topics)
 * [Require topics in stream messages](/help/require-topics)
 * [Restrict private messages](/help/restrict-private-messages)
-* [Restrict user group management](/help/restrict-user-group-management)
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
 * [Block image and link previews](/help/allow-image-link-previews)
 * [Disable message edit history](/help/disable-message-edit-history)
