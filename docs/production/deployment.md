@@ -508,23 +508,15 @@ things you need to be careful about when configuring it:
 Zulip's configuration allows for [warm standby database
 replicas][warm-standby] as a disaster recovery solution; see the
 linked PostgreSQL documentation for details on this type of
-deployment. Zulip's configuration leverages `wal-g`, our [database
-backup solution][wal-g], and thus requires that it be configured for
-the primary and all secondary warm standby replicas.
+deployment. Zulip's configuration builds on top of `wal-g`, our
+[database backup solution][wal-g], and thus requires that it be
+configured for the primary and all secondary warm standby replicas.
 
-The primary should have log-shipping enabled, with:
-
-```ini
-[postgresql]
-replication = yes
-```
-
-Warm spare replicas should have log-shipping enabled, and their
-primary replica and replication username configured:
+Warm spare replicas should also have `wal-g` backups configured, and
+their primary replica and replication username set:
 
 ```ini
 [postgresql]
-replication = yes
 replication_user = replicator
 replication_primary = hostname-of-primary.example.com
 ```
@@ -687,14 +679,6 @@ setting](https://www.postgresql.org/docs/current/runtime-config-connection.html#
 
 Override PostgreSQL's [`random_page_cost`
 setting](https://www.postgresql.org/docs/current/runtime-config-query.html#GUC-RANDOM-PAGE-COST)
-
-#### `replication`
-
-Set to true to enable replication to enable [log shipping replication
-between PostgreSQL servers](#postgresql-warm-standby). This should be
-enabled on the primary, as well as any replicas, and further requires
-configuration of
-[wal-g](export-and-import.md#backup-details).
 
 #### `replication_primary`
 

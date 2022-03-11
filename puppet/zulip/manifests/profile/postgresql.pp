@@ -13,7 +13,7 @@ class zulip::profile::postgresql {
 
   $listen_addresses = zulipconf('postgresql', 'listen_addresses', undef)
 
-  $replication = zulipconf('postgresql', 'replication', undef)
+  $s3_backups_bucket = zulipsecret('secrets', 's3_backups_bucket', '')
   $replication_primary = zulipconf('postgresql', 'replication_primary', undef)
   $replication_user = zulipconf('postgresql', 'replication_user', undef)
 
@@ -38,6 +38,13 @@ class zulip::profile::postgresql {
   }
 
   if $replication_primary != '' and $replication_user != '' {
+    if $s3_backups_bucket == '' {
+      $message = @(EOT/L)
+          Replication is enabled, but s3_backups_bucket is not set in zulip-secrets.conf!  \
+          Streaming replication requires wal-g backups be configured.
+          |-EOT
+      warning($message)
+    }
     if $zulip::postgresql_common::version in ['10', '11'] {
       # PostgreSQL 11 and below used a recovery.conf file for replication
       file { "${zulip::postgresql_base::postgresql_confdir}/recovery.conf":
