@@ -10,6 +10,7 @@
 # Hrotkó Gábor <hrotko.gabor@gmail.com>, 2021
 # stuntsman, 2021
 # Eekain, 2021
+# Márk Tolmács, 2022
 # 
 #, fuzzy
 msgid ""
@@ -18,7 +19,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-05-26 18:04+0000\n"
 "PO-Revision-Date: 2021-04-02 21:39+0000\n"
-"Last-Translator: Eekain, 2021\n"
+"Last-Translator: Márk Tolmács, 2022\n"
 "Language-Team: Hungarian (https://www.transifex.com/zulip/teams/53893/hu/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -648,8 +649,8 @@ msgstr "Betöltés..."
 
 #: templates/zerver/app/index.html:34
 msgid ""
-"If this message does not go away, please wait a couple seconds and <a id"
-"=\"reload-lnk\">reload</a> the page."
+"If this message does not go away, please wait a couple seconds and <a "
+"id=\"reload-lnk\">reload</a> the page."
 msgstr ""
 "Ha ez az üzenet nem tűnik el, várj néhány másodpercet és <a id=\"reload-"
 "lnk\">töltsd újra</a> az oldalt!"
@@ -3341,6 +3342,11 @@ msgid ""
 "                    if you have any questions.\n"
 "                    "
 msgstr ""
+"\n"
+"                    Ezen Zulip telepítésben nincs konfigurálva a Használati feltételek tartalma. \n"
+"                    Keresd fel a <a href=\"mailto:%(support_email)s\">szerver adminisztrátort</a>\n"
+"                    ha bármi kérdésed van.\n"
+"                    "
 
 #: templates/zerver/realm_creation_failed.html:19
 msgid ""
@@ -3577,16 +3583,12 @@ msgstr ""
 #, python-format
 msgid ""
 "Please double-check that you have the full URL and try again, or <a "
-"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
-"%%20e-"
-"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
 " us</a> and we'll get this squared away!"
 msgstr ""
 "Kérjük, ellenőrizd újra, hogy a teljes URL-t használtad-e, és próbáld újra, "
 "vagy <a "
-"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
-"%%20e-"
-"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">írj"
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">írj"
 " nekünk e-mailt,</a> és megoldjuk a helyzetet!"
 
 #: templates/zerver/unsubscribe_success.html:10
@@ -4331,7 +4333,7 @@ msgstr "Érvénytelen subdomain"
 
 #: zerver/lib/external_accounts.py:49
 msgid "Custom external account must define URL pattern"
-msgstr ""
+msgstr "Az egyéni külső fióknak meg kell határoznia az URL-mintát"
 
 #: zerver/lib/external_accounts.py:51
 msgid "Invalid external account type"
@@ -4484,10 +4486,12 @@ msgid ""
 "Customize your account and notifications on your [Settings "
 "page]({settings_url})"
 msgstr ""
+"A felhasználói fiók és az értesítések testre szabhatóak a [Beállítások "
+"képernyőn]({settings_url})"
 
 #: zerver/lib/onboarding.py:83
 msgid "Type `?` to check out Zulip's keyboard shortcuts"
-msgstr ""
+msgstr "A `?` beírásával megtekinthetőek a Zulip billentyűparancsai"
 
 #: zerver/lib/onboarding.py:85
 msgid "The most important shortcut is `r` to reply."
@@ -4502,6 +4506,8 @@ msgid ""
 "If you're not into keyboards, that's okay too; clicking anywhere on this "
 "message will also do the trick!"
 msgstr ""
+"Billentyűzet használata helyett erre az üzenetre bárhol kattintva is "
+"elérhető a funkció!"
 
 #: zerver/lib/onboarding.py:107
 msgid "Congratulations on your first reply!"
@@ -4541,6 +4547,8 @@ msgid ""
 "This is a message on stream #**{default_notification_stream_name}** with the"
 " topic `topic demonstration`."
 msgstr ""
+"Ez egy üzenet a #**{default_notification_stream_name}** üzenetfolyamon`téma "
+"demonstráció` témában."
 
 #: zerver/lib/onboarding.py:147
 msgid "Topics are a lightweight tool to keep conversations organized."
@@ -4552,6 +4560,8 @@ msgid ""
 "You can learn more about topics at [Streams and "
 "topics]({about_topics_help_url})."
 msgstr ""
+"Több információ a témákról elérhető a [Üzenetfolyamoknál és "
+"témáknál]({about_topics_help_url})."
 
 #: zerver/lib/onboarding.py:154
 #, python-brace-format
@@ -4559,6 +4569,8 @@ msgid ""
 "This is a message on stream #**{default_notification_stream_name}** with the"
 " topic `swimming turtles`."
 msgstr ""
+"Ez egy üzenet a #**{default_notification_stream_name}** üzenetfolyamon "
+"`swimming turtles` témában."
 
 #: zerver/lib/onboarding.py:163
 #, python-brace-format
@@ -4566,6 +4578,8 @@ msgid ""
 "[Start a new topic]({start_topic_help_url}) any time you're not replying to "
 "a         previous message."
 msgstr ""
+"[Új téma indítása]({start_topic_help_url}) javasolt bármikor amikor nem az "
+"előző üzenetre vonatkozik a válasz."
 
 #: zerver/lib/outgoing_webhook.py:293
 msgid "Invalid JSON in response"
@@ -4577,11 +4591,11 @@ msgstr "Érvénytelen válasz format"
 
 #: zerver/lib/push_notifications.py:274
 msgid "Invalid GCM option to bouncer: priority {!r}"
-msgstr ""
+msgstr "Érvénytelen GCM bouncer: priority {!r} beállítás"
 
 #: zerver/lib/push_notifications.py:284
 msgid "Invalid GCM options to bouncer: {}"
-msgstr ""
+msgstr "Érvénytelen GCM bouncer: priority {} beállítás"
 
 #. error
 #: zerver/lib/push_notifications.py:484 zilencer/views.py:150
@@ -4600,7 +4614,7 @@ msgstr "{full_name} kihívott mindenkit:"
 
 #: zerver/lib/remote_server.py:84
 msgid "Push notifications bouncer error: {}"
-msgstr ""
+msgstr "Push értesítések bouncer hiba: {}"
 
 #: zerver/lib/request.py:39
 #, python-brace-format
@@ -4857,7 +4871,7 @@ msgstr "{var_name} nem tuple"
 #: zerver/lib/validator.py:210
 #, python-brace-format
 msgid "{var_name} should have exactly {desired_len} items"
-msgstr ""
+msgstr "{var_name} pontosan {desired_len} elemet kell tartalmazzon"
 
 #: zerver/lib/validator.py:256
 #, python-brace-format
@@ -4948,7 +4962,7 @@ msgstr "Elérhető a Zulip Standard csomagon. Válts csomagot, hogy te is elérd
 
 #: zerver/models.py:910
 msgid "Invalid linkifier pattern.  Valid characters are {}."
-msgstr ""
+msgstr "Érvénytelen linkifier kód. Érvényes karakterek listája: {}."
 
 #: zerver/models.py:928
 msgid "Invalid URL format string."
@@ -5255,7 +5269,7 @@ msgstr "Hiányzó küldő"
 
 #: zerver/views/message_send.py:256
 msgid "Mirroring not allowed with recipient user IDs"
-msgstr ""
+msgstr "Tükrözés nem engedélyezett a címzett felhasználó azonosítókkal"
 
 #: zerver/views/message_send.py:266 zerver/views/message_send.py:273
 msgid "Invalid mirrored message"
@@ -5418,6 +5432,8 @@ msgstr "Új szervezet létrehozása letiltva"
 #, python-brace-format
 msgid "User not authorized to execute queries on behalf of '{principal}'"
 msgstr ""
+"Felhasználó számára nem engedélyezett lekérdezések végrehajtása "
+"'{principal}' nevében"
 
 #: zerver/views/streams.py:151
 msgid "Private streams cannot be made default."
@@ -5486,7 +5502,7 @@ msgstr "Üzenetfolyam készítője {user_name}."
 
 #: zerver/views/streams.py:865
 msgid "Unknown subscription property: {}"
-msgstr ""
+msgstr "Ismeretlen feliratkozás paraméter: {}"
 
 #: zerver/views/streams.py:869
 msgid "Not subscribed to stream id {}"
@@ -5569,6 +5585,8 @@ msgstr "Az új jelszó túl gyenge!"
 #: zerver/views/user_settings.py:168
 msgid "Check your email for a confirmation link. "
 msgstr ""
+"A megerősítő link emailben elküldve a felhasználói fiókban megadott email "
+"címre."
 
 #: zerver/views/user_settings.py:218
 msgid "Invalid default_language"
@@ -5691,7 +5709,7 @@ msgstr "A Kerberos gyorsítótár érvénytelen"
 
 #: zerver/views/zephyr.py:74
 msgid "We were unable to set up mirroring for you"
-msgstr ""
+msgstr "Nem sikerült a mirror beállítása"
 
 #: zerver/webhooks/front/view.py:146
 msgid "Unknown webhook request"

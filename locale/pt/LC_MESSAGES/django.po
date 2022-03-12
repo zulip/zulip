@@ -418,8 +418,8 @@ msgstr "Verifique seu e-mail para que possamos começar."
 #: templates/zerver/accounts_send_confirm.html:21
 msgid "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>."
 msgstr ""
-"Nenhum e-mail ainda? Nós podemos <a href=\"#\" id=\"resend_email_link"
-"\">reenvia-lo</a>."
+"Nenhum e-mail ainda? Nós podemos <a href=\"#\" "
+"id=\"resend_email_link\">reenvia-lo</a>."
 
 #: templates/zerver/accounts_send_confirm.html:22
 msgid "Just in case, take a look at your Spam folder."
@@ -636,11 +636,11 @@ msgstr "Carregando..."
 
 #: templates/zerver/app/index.html:34
 msgid ""
-"If this message does not go away, please wait a couple seconds and <a id"
-"=\"reload-lnk\">reload</a> the page."
+"If this message does not go away, please wait a couple seconds and <a "
+"id=\"reload-lnk\">reload</a> the page."
 msgstr ""
-"Se esta mensagem não desaparecer, por favor, aguarde alguns segundos e <a id"
-"=\"reload-lnk\">recarregue</a> a página."
+"Se esta mensagem não desaparecer, por favor, aguarde alguns segundos e <a "
+"id=\"reload-lnk\">recarregue</a> a página."
 
 #: templates/zerver/app/index.html:67
 msgid ""
@@ -3447,17 +3447,13 @@ msgstr ""
 #, python-format
 msgid ""
 "Please double-check that you have the full URL and try again, or <a "
-"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
-"%%20e-"
-"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
 " us</a> and we'll get this squared away!"
 msgstr ""
 "Por favor, verifique novamente se você tem a URL completa e tente novamente,"
 " ou <a "
-"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
-"%%20e-"
-"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A"
-"\">envie-nos um e-mail</a>."
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">envie-"
+"nos um e-mail</a>."
 
 #: templates/zerver/unsubscribe_success.html:10
 msgid "Email settings updated"

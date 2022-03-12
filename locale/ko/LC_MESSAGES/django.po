@@ -18,7 +18,7 @@
 # Yeonjeong Noh <nyj2800@hanmail.net>, 2021
 # sung yong kim <hikimsy@gmail.com>, 2021
 # F4D3C0D3 0x, 2021
-# KIM JINWOO, 2021
+# 김진우, 2021
 # 
 #, fuzzy
 msgid ""
@@ -27,7 +27,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-05-26 18:04+0000\n"
 "PO-Revision-Date: 2021-04-02 21:39+0000\n"
-"Last-Translator: KIM JINWOO, 2021\n"
+"Last-Translator: 김진우, 2021\n"
 "Language-Team: Korean (https://www.transifex.com/zulip/teams/53893/ko/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -623,8 +623,8 @@ msgstr "불러오는 중..."
 
 #: templates/zerver/app/index.html:34
 msgid ""
-"If this message does not go away, please wait a couple seconds and <a id"
-"=\"reload-lnk\">reload</a> the page."
+"If this message does not go away, please wait a couple seconds and <a "
+"id=\"reload-lnk\">reload</a> the page."
 msgstr "만약 메시지가 전송되지 않는다면, 몇 초 후에 페이지를 <a id=\"reload-lnk\">새로고침</a>하십시오."
 
 #: templates/zerver/app/index.html:67
@@ -669,7 +669,7 @@ msgstr "휴가 중"
 
 #: templates/zerver/app/index.html:164
 msgid "Working remotely"
-msgstr ""
+msgstr "외근중"
 
 #: templates/zerver/app/index.html:169
 msgid "Save"
@@ -1198,7 +1198,7 @@ msgstr ""
 msgid ""
 "You are using an old version of the Zulip desktop app with known security "
 "bugs."
-msgstr ""
+msgstr "당신은 알려진 보완 버그들과 함계 오래된 Zulip 데스크톱을 사용 중 입니다."
 
 #: templates/zerver/app/navbar_alerts.html:43
 msgid "Download the latest version."
@@ -3255,15 +3255,11 @@ msgstr "안녕하세요! 귀하가 구독 취소를 시도했으나, URL을 인�
 #, python-format
 msgid ""
 "Please double-check that you have the full URL and try again, or <a "
-"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
-"%%20e-"
-"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
 " us</a> and we'll get this squared away!"
 msgstr ""
 "전체 URL을 가지고 있는지 다시 확인하고 다시 시도하십시오. 또는 <a "
-"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
-"%%20e-"
-"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">우리에게"
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">우리에게"
 " 메일을 주세요.</a> "
 
 #: templates/zerver/unsubscribe_success.html:10
@@ -3512,7 +3508,7 @@ msgstr "이 메시지를 편집할 수있는 권한이 없습니다."
 
 #: zerver/lib/actions.py:2735
 msgid "Widgets cannot be edited."
-msgstr ""
+msgstr "위젯들은 편집되지 않습니다."
 
 #: zerver/lib/actions.py:2746 zerver/lib/actions.py:2760
 msgid "The time limit for editing this message has passed"
@@ -3593,7 +3589,7 @@ msgstr ""
 
 #: zerver/lib/actions.py:3140
 msgid "You do not have permission to use wildcard mentions in this stream."
-msgstr ""
+msgstr "당신은 이 스트림에서 중요한 언급을 사용하도록 허가받지 못 하였습니다."
 
 #: zerver/lib/actions.py:3393
 msgid "Subscriber data is not available for this stream"

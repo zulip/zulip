@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-30 22:59+0000\n"
+"POT-Creation-Date: 2022-03-12 00:27+0000\n"
 "PO-Revision-Date: 2018-04-11 21:06+0000\n"
 "Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
 "Language-Team: Tamil (http://www.transifex.com/zulip/zulip/language/ta/)\n"
@@ -1694,21 +1694,6 @@ msgid ""
 "feedback, or just want to chat!"
 msgstr ""
 
-#: templates/zerver/emails/compiled/custom_email_0a044db0e6751f218a47a4331c50b45c.html:4
-#: templates/zerver/emails/compiled/custom_email_323d33263c802b7a808798ed9b6b5891.html:4
-#: templates/zerver/emails/compiled/custom_email_556550265caff1cd1fc70d6c7ef85cfc.html:4
-#: templates/zerver/emails/compiled/custom_email_71be297c80227efa5868a945ab2f03d5.html:4
-#: templates/zerver/emails/compiled/custom_email_76050a3fd18b4fc53c74b18de6b3cc57.html:4
-#: templates/zerver/emails/compiled/custom_email_8a64d4c3ba4c8579f83733107016b9b0.html:4
-#: templates/zerver/emails/compiled/custom_email_bb3181f792c96e031e57a0697a9ccba6.html:4
-#: templates/zerver/emails/compiled/custom_email_ebb5a4fe863941c2b7fc04a6f169a4ec.html:4
-#: templates/zerver/emails/compiled/custom_email_ed271a34d10d853722568eb6ada75850.html:4
-#: templates/zerver/emails/compiled/markdown_email.html:4
-#, fuzzy
-#| msgid "Zulip"
-msgid "Zulip logo"
-msgstr "சுலிப்பு"
-
 #: templates/zerver/emails/compiled/digest.html:28
 #: templates/zerver/emails/digest.source.html:27
 #, fuzzy
@@ -1724,55 +1709,6 @@ msgstr ""
 #: templates/zerver/emails/compiled/digest.html:40
 #: templates/zerver/emails/compiled/followup_day2.html:34
 #: templates/zerver/emails/compiled/notify_new_login.html:48
-#: templates/zerver/emails/custom/compiled/custom_email_098e9bd71faa6c36e43c5a0ea2064778.html:96
-#: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
-#: templates/zerver/emails/custom/compiled/custom_email_1409d92fc85cf3223f04c53f4d968b2e.html:55
-#: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
-#: templates/zerver/emails/custom/compiled/custom_email_1e4cfd33318438f830e0c3e40787ce19.html:96
-#: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
-#: templates/zerver/emails/custom/compiled/custom_email_2670cddb12bff952186115b92e0e0001.html:97
-#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
-#: templates/zerver/emails/custom/compiled/custom_email_4d6d4d7ca23407002e70eaebadf4a4d0.html:50
-#: templates/zerver/emails/custom/compiled/custom_email_50cda0b5e48c5a77eb5df74b94d74a9d.html:96
-#: templates/zerver/emails/custom/compiled/custom_email_5d6651a6bee23fa2ae49f64a1d0aeac0.html:66
-#: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
-#: templates/zerver/emails/custom/compiled/custom_email_7cdeb0d40275cef453ee0a2e5cbbba9c.html:57
-#: templates/zerver/emails/custom/compiled/custom_email_838c9c6ac478079cb2935d10c9f1a3c3.html:50
-#: templates/zerver/emails/custom/compiled/custom_email_8c519b0fe604b520d0453d67ff26eece.html:96
-#: templates/zerver/emails/custom/compiled/custom_email_a9094a7113ecb4fd1472c54dfc1c8725.html:96
-#: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
-#: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:16
-#: templates/zerver/emails/custom/compiled/custom_email_dab625ae2974493761ac9453f4022481.html:34
-#: templates/zerver/emails/custom/compiled/custom_email_e5e19063fd9915a8b2ec281fa4678a68.html:96
-#: templates/zerver/emails/custom/compiled/custom_email_e5f90f6ce84228d69eb2e871438e0321.html:96
-#: templates/zerver/emails/custom/compiled/custom_email_edbafec978446c47ea6c6960a29a245a.html:16
-#: templates/zerver/emails/custom/compiled/custom_email_f25fc427d4e556e25426d5d35b76e470.html:35
-#: templates/zerver/emails/custom/custom_email_098e9bd71faa6c36e43c5a0ea2064778.source.html:95
-#: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
-#: templates/zerver/emails/custom/custom_email_1409d92fc85cf3223f04c53f4d968b2e.source.html:54
-#: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
-#: templates/zerver/emails/custom/custom_email_1e4cfd33318438f830e0c3e40787ce19.source.html:95
-#: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
-#: templates/zerver/emails/custom/custom_email_2670cddb12bff952186115b92e0e0001.source.html:96
-#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
-#: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
-#: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
-#: templates/zerver/emails/custom/custom_email_4d6d4d7ca23407002e70eaebadf4a4d0.source.html:49
-#: templates/zerver/emails/custom/custom_email_50cda0b5e48c5a77eb5df74b94d74a9d.source.html:95
-#: templates/zerver/emails/custom/custom_email_5d6651a6bee23fa2ae49f64a1d0aeac0.source.html:65
-#: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
-#: templates/zerver/emails/custom/custom_email_724f2abbf3118920bfe8d10b8c520947.source.html:51
-#: templates/zerver/emails/custom/custom_email_7cdeb0d40275cef453ee0a2e5cbbba9c.source.html:56
-#: templates/zerver/emails/custom/custom_email_838c9c6ac478079cb2935d10c9f1a3c3.source.html:49
-#: templates/zerver/emails/custom/custom_email_8c519b0fe604b520d0453d67ff26eece.source.html:95
-#: templates/zerver/emails/custom/custom_email_a9094a7113ecb4fd1472c54dfc1c8725.source.html:95
-#: templates/zerver/emails/custom/custom_email_d5c63509cf008c626cdcbdde801f814c.source.html:34
-#: templates/zerver/emails/custom/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.source.html:15
-#: templates/zerver/emails/custom/custom_email_dab625ae2974493761ac9453f4022481.source.html:33
-#: templates/zerver/emails/custom/custom_email_e5e19063fd9915a8b2ec281fa4678a68.source.html:95
-#: templates/zerver/emails/custom/custom_email_e5f90f6ce84228d69eb2e871438e0321.source.html:95
-#: templates/zerver/emails/custom/custom_email_edbafec978446c47ea6c6960a29a245a.source.html:15
-#: templates/zerver/emails/custom/custom_email_f25fc427d4e556e25426d5d35b76e470.source.html:34
 #: templates/zerver/emails/custom_email_base.pre.html:15
 #: templates/zerver/emails/digest.source.html:39
 #: templates/zerver/emails/followup_day2.source.html:33
@@ -1789,10 +1725,6 @@ msgstr "அறிவிப்புகளை இயக்கு"
 
 #: templates/zerver/emails/compiled/email_base_default.html:90
 #: templates/zerver/emails/compiled/email_base_marketing.html:95
-#: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.txt:31
-#: templates/zerver/emails/custom/custom_email_5d6651a6bee23fa2ae49f64a1d0aeac0.txt:31
-#: templates/zerver/emails/custom/custom_email_87e5498dc967c76480e0895fe3f11751.txt:30
-#: templates/zerver/emails/custom/custom_email_b4026e4b7cec0fffdb28e3155fbc7653.txt:31
 #: templates/zerver/emails/email_base_default.source.html:31
 msgid "Swimming fish"
 msgstr ""
@@ -2367,55 +2299,6 @@ msgid ""
 "feedback, or just want to chat!"
 msgstr ""
 
-#: templates/zerver/emails/custom/compiled/custom_email_098e9bd71faa6c36e43c5a0ea2064778.html:96
-#: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
-#: templates/zerver/emails/custom/compiled/custom_email_1409d92fc85cf3223f04c53f4d968b2e.html:55
-#: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
-#: templates/zerver/emails/custom/compiled/custom_email_1e4cfd33318438f830e0c3e40787ce19.html:96
-#: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
-#: templates/zerver/emails/custom/compiled/custom_email_2670cddb12bff952186115b92e0e0001.html:97
-#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
-#: templates/zerver/emails/custom/compiled/custom_email_4d6d4d7ca23407002e70eaebadf4a4d0.html:50
-#: templates/zerver/emails/custom/compiled/custom_email_50cda0b5e48c5a77eb5df74b94d74a9d.html:96
-#: templates/zerver/emails/custom/compiled/custom_email_5d6651a6bee23fa2ae49f64a1d0aeac0.html:66
-#: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
-#: templates/zerver/emails/custom/compiled/custom_email_7cdeb0d40275cef453ee0a2e5cbbba9c.html:57
-#: templates/zerver/emails/custom/compiled/custom_email_838c9c6ac478079cb2935d10c9f1a3c3.html:50
-#: templates/zerver/emails/custom/compiled/custom_email_8c519b0fe604b520d0453d67ff26eece.html:96
-#: templates/zerver/emails/custom/compiled/custom_email_a9094a7113ecb4fd1472c54dfc1c8725.html:96
-#: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
-#: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:16
-#: templates/zerver/emails/custom/compiled/custom_email_dab625ae2974493761ac9453f4022481.html:34
-#: templates/zerver/emails/custom/compiled/custom_email_e5e19063fd9915a8b2ec281fa4678a68.html:96
-#: templates/zerver/emails/custom/compiled/custom_email_e5f90f6ce84228d69eb2e871438e0321.html:96
-#: templates/zerver/emails/custom/compiled/custom_email_edbafec978446c47ea6c6960a29a245a.html:16
-#: templates/zerver/emails/custom/compiled/custom_email_f25fc427d4e556e25426d5d35b76e470.html:35
-#: templates/zerver/emails/custom/custom_email_098e9bd71faa6c36e43c5a0ea2064778.source.html:95
-#: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
-#: templates/zerver/emails/custom/custom_email_1409d92fc85cf3223f04c53f4d968b2e.source.html:54
-#: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
-#: templates/zerver/emails/custom/custom_email_1e4cfd33318438f830e0c3e40787ce19.source.html:95
-#: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
-#: templates/zerver/emails/custom/custom_email_2670cddb12bff952186115b92e0e0001.source.html:96
-#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
-#: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
-#: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
-#: templates/zerver/emails/custom/custom_email_4d6d4d7ca23407002e70eaebadf4a4d0.source.html:49
-#: templates/zerver/emails/custom/custom_email_50cda0b5e48c5a77eb5df74b94d74a9d.source.html:95
-#: templates/zerver/emails/custom/custom_email_5d6651a6bee23fa2ae49f64a1d0aeac0.source.html:65
-#: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
-#: templates/zerver/emails/custom/custom_email_724f2abbf3118920bfe8d10b8c520947.source.html:51
-#: templates/zerver/emails/custom/custom_email_7cdeb0d40275cef453ee0a2e5cbbba9c.source.html:56
-#: templates/zerver/emails/custom/custom_email_838c9c6ac478079cb2935d10c9f1a3c3.source.html:49
-#: templates/zerver/emails/custom/custom_email_8c519b0fe604b520d0453d67ff26eece.source.html:95
-#: templates/zerver/emails/custom/custom_email_a9094a7113ecb4fd1472c54dfc1c8725.source.html:95
-#: templates/zerver/emails/custom/custom_email_d5c63509cf008c626cdcbdde801f814c.source.html:34
-#: templates/zerver/emails/custom/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.source.html:15
-#: templates/zerver/emails/custom/custom_email_dab625ae2974493761ac9453f4022481.source.html:33
-#: templates/zerver/emails/custom/custom_email_e5e19063fd9915a8b2ec281fa4678a68.source.html:95
-#: templates/zerver/emails/custom/custom_email_e5f90f6ce84228d69eb2e871438e0321.source.html:95
-#: templates/zerver/emails/custom/custom_email_edbafec978446c47ea6c6960a29a245a.source.html:15
-#: templates/zerver/emails/custom/custom_email_f25fc427d4e556e25426d5d35b76e470.source.html:34
 #: templates/zerver/emails/custom_email_base.pre.html:15
 #, fuzzy
 #| msgid "Enable notifications"
@@ -3582,7 +3465,7 @@ msgstr ""
 msgid "Invalid user ID {}"
 msgstr ""
 
-#: zerver/lib/actions.py:2450 zerver/lib/actions.py:7070
+#: zerver/lib/actions.py:2450 zerver/lib/actions.py:7077
 #: zerver/lib/streams.py:238 zerver/lib/streams.py:246
 #: zerver/tornado/views.py:105 zerver/views/events_register.py:73
 #: zerver/views/message_send.py:226 zerver/views/message_send.py:232
@@ -3648,195 +3531,195 @@ msgstr ""
 msgid "Topic can't be empty"
 msgstr ""
 
-#: zerver/lib/actions.py:2829
+#: zerver/lib/actions.py:2828 zerver/lib/actions.py:3171
+msgid "You do not have permission to use wildcard mentions in this stream."
+msgstr ""
+
+#: zerver/lib/actions.py:2836
 msgid "Message must be a stream message"
 msgstr ""
 
-#: zerver/lib/actions.py:2831
+#: zerver/lib/actions.py:2838
 msgid "You don't have permission to move this message"
 msgstr ""
 
-#: zerver/lib/actions.py:2837
+#: zerver/lib/actions.py:2844
 msgid ""
 "You don't have permission to move this message due to missing access to its "
 "stream"
 msgstr ""
 
-#: zerver/lib/actions.py:2841
+#: zerver/lib/actions.py:2848
 msgid "Cannot change message content while changing stream"
 msgstr ""
 
-#: zerver/lib/actions.py:2878
+#: zerver/lib/actions.py:2885
 msgid "Invalid default stream group name '{}'"
 msgstr ""
 
-#: zerver/lib/actions.py:2881
+#: zerver/lib/actions.py:2888
 msgid "Default stream group name too long (limit: {} characters)"
 msgstr ""
 
-#: zerver/lib/actions.py:2888
+#: zerver/lib/actions.py:2895
 msgid "Default stream group name '{}' contains NULL (0x00) characters."
 msgstr ""
 
-#: zerver/lib/actions.py:2954
+#: zerver/lib/actions.py:2961
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream ID {stream_id}, "
 "but there is no stream with that ID."
 msgstr ""
 
-#: zerver/lib/actions.py:2960
+#: zerver/lib/actions.py:2967
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}, but "
 "that stream does not exist. Click [here]({new_stream_link}) to create it."
 msgstr ""
 
-#: zerver/lib/actions.py:2968
+#: zerver/lib/actions.py:2975
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}. The "
 "stream exists but does not have any subscribers."
 msgstr ""
 
-#: zerver/lib/actions.py:3015
+#: zerver/lib/actions.py:3022
 msgid "Private messages are disabled in this organization."
 msgstr ""
 
-#: zerver/lib/actions.py:3140
+#: zerver/lib/actions.py:3147
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr ""
 
-#: zerver/lib/actions.py:3146
+#: zerver/lib/actions.py:3153
 #, python-brace-format
 msgid "Widgets: {error_msg}"
 msgstr ""
 
-#: zerver/lib/actions.py:3164
-msgid "You do not have permission to use wildcard mentions in this stream."
-msgstr ""
-
-#: zerver/lib/actions.py:3417
+#: zerver/lib/actions.py:3424
 msgid "Subscriber data is not available for this stream"
 msgstr ""
 
-#: zerver/lib/actions.py:3424
+#: zerver/lib/actions.py:3431
 msgid "Unable to retrieve subscribers for private stream"
 msgstr ""
 
-#: zerver/lib/actions.py:4677
+#: zerver/lib/actions.py:4684
 #, python-brace-format
 msgid "{user_name} renamed stream {old_stream_name} to {new_stream_name}."
 msgstr ""
 
-#: zerver/lib/actions.py:4783
+#: zerver/lib/actions.py:4790
 msgid "Signups enabled"
 msgstr ""
 
-#: zerver/lib/actions.py:4897
+#: zerver/lib/actions.py:4904
 msgid "Invalid default stream group {}"
 msgstr ""
 
-#: zerver/lib/actions.py:4943 zerver/lib/actions.py:4970
+#: zerver/lib/actions.py:4950 zerver/lib/actions.py:4977
 #, python-brace-format
 msgid ""
 "'{stream_name}' is a default stream and cannot be added to '{group_name}'"
 msgstr ""
 
-#: zerver/lib/actions.py:4954
+#: zerver/lib/actions.py:4961
 #, python-brace-format
 msgid "Default stream group '{group_name}' already exists"
 msgstr ""
 
-#: zerver/lib/actions.py:4976
+#: zerver/lib/actions.py:4983
 #, python-brace-format
 msgid ""
 "Stream '{stream_name}' is already present in default stream group "
 "'{group_name}'"
 msgstr ""
 
-#: zerver/lib/actions.py:4992
+#: zerver/lib/actions.py:4999
 #, python-brace-format
 msgid ""
 "Stream '{stream_name}' is not present in default stream group '{group_name}'"
 msgstr ""
 
-#: zerver/lib/actions.py:5006
+#: zerver/lib/actions.py:5013
 msgid "This default stream group is already named '{}'"
 msgstr ""
 
-#: zerver/lib/actions.py:5010
+#: zerver/lib/actions.py:5017
 msgid "Default stream group '{}' already exists"
 msgstr ""
 
-#: zerver/lib/actions.py:5452
+#: zerver/lib/actions.py:5459
 msgid "Invalid flag: '{}'"
 msgstr ""
 
-#: zerver/lib/actions.py:5454
+#: zerver/lib/actions.py:5461
 msgid "Flag not editable: '{}'"
 msgstr ""
 
-#: zerver/lib/actions.py:5456
+#: zerver/lib/actions.py:5463
 #, fuzzy
 #| msgid "Enable notifications"
 msgid "Invalid message flag operation: '{}'"
 msgstr "அறிவிப்புகளை இயக்கு"
 
-#: zerver/lib/actions.py:5470 zerver/lib/actions.py:5472
+#: zerver/lib/actions.py:5477 zerver/lib/actions.py:5479
 #: zerver/lib/message.py:671 zerver/lib/message.py:677
 msgid "Invalid message(s)"
 msgstr ""
 
-#: zerver/lib/actions.py:6044
+#: zerver/lib/actions.py:6051
 #, python-brace-format
 msgid "This topic was moved by {user} to {new_location}"
 msgstr ""
 
-#: zerver/lib/actions.py:6049
+#: zerver/lib/actions.py:6056
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}"
 msgstr ""
 
-#: zerver/lib/actions.py:6542
+#: zerver/lib/actions.py:6549
 #, python-brace-format
 msgid ""
 "You do not have enough remaining invites for today. Please contact {email} "
 "to have your limit raised. No invitations were sent."
 msgstr ""
 
-#: zerver/lib/actions.py:6593
+#: zerver/lib/actions.py:6600
 msgid ""
 "Your account is too new to send invites for this organization. Ask an "
 "organization admin, or a more experienced user."
 msgstr ""
 
-#: zerver/lib/actions.py:6633
+#: zerver/lib/actions.py:6640
 msgid "Some emails did not validate, so we didn't send any invitations."
 msgstr ""
 
-#: zerver/lib/actions.py:6641
+#: zerver/lib/actions.py:6648
 msgid "We weren't able to invite anyone."
 msgstr ""
 
-#: zerver/lib/actions.py:6672
+#: zerver/lib/actions.py:6679
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
 msgstr ""
 
-#: zerver/lib/actions.py:7289
+#: zerver/lib/actions.py:7296
 msgid "Invalid order mapping."
 msgstr ""
 
-#: zerver/lib/actions.py:7355 zerver/lib/users.py:344
+#: zerver/lib/actions.py:7362 zerver/lib/users.py:344
 #: zerver/views/custom_profile_fields.py:137
 #: zerver/views/custom_profile_fields.py:157
 #, python-brace-format
 msgid "Field id {id} not found."
 msgstr ""
 
-#: zerver/lib/actions.py:7381 zerver/lib/actions.py:7394
+#: zerver/lib/actions.py:7388 zerver/lib/actions.py:7401
 msgid "User group '{}' already exists."
 msgstr ""
 
@@ -4078,8 +3961,8 @@ msgid ""
 "webhook"
 msgstr ""
 
-#: zerver/lib/exceptions.py:355 zerver/views/auth.py:610
-#: zerver/views/auth.py:809 zerver/views/auth.py:870 zerver/views/auth.py:932
+#: zerver/lib/exceptions.py:355 zerver/views/auth.py:612
+#: zerver/views/auth.py:811 zerver/views/auth.py:872 zerver/views/auth.py:934
 #: zerver/views/development/dev_login.py:106
 msgid "Invalid subdomain"
 msgstr ""
@@ -4834,51 +4717,51 @@ msgstr ""
 msgid "You are not authorized to access this queue"
 msgstr ""
 
-#: zerver/views/auth.py:426
+#: zerver/views/auth.py:428
 msgid "Auth key for this subdomain not found."
 msgstr ""
 
-#: zerver/views/auth.py:433
+#: zerver/views/auth.py:435
 msgid "No JSON web token passed in request"
 msgstr ""
 
-#: zerver/views/auth.py:435
+#: zerver/views/auth.py:437
 msgid "Bad JSON web token"
 msgstr ""
 
-#: zerver/views/auth.py:439
+#: zerver/views/auth.py:441
 msgid "No user specified in JSON web token claims"
 msgstr ""
 
-#: zerver/views/auth.py:442
+#: zerver/views/auth.py:444
 msgid "No organization specified in JSON web token claims"
 msgstr ""
 
-#: zerver/views/auth.py:449
+#: zerver/views/auth.py:451
 msgid "Wrong subdomain"
 msgstr ""
 
-#: zerver/views/auth.py:820 zerver/views/development/dev_login.py:117
+#: zerver/views/auth.py:822 zerver/views/development/dev_login.py:117
 msgid "Your account has been disabled."
 msgstr ""
 
-#: zerver/views/auth.py:824 zerver/views/development/dev_login.py:111
+#: zerver/views/auth.py:826 zerver/views/development/dev_login.py:111
 msgid "This organization has been deactivated."
 msgstr ""
 
-#: zerver/views/auth.py:830
+#: zerver/views/auth.py:832
 msgid "Password auth is disabled in your team."
 msgstr ""
 
-#: zerver/views/auth.py:836 zproject/backends.py:413
+#: zerver/views/auth.py:838 zproject/backends.py:413
 msgid "You need to reset your password."
 msgstr ""
 
-#: zerver/views/auth.py:842 zerver/views/auth.py:937
+#: zerver/views/auth.py:844 zerver/views/auth.py:939
 msgid "Your username or password is incorrect."
 msgstr ""
 
-#: zerver/views/auth.py:876
+#: zerver/views/auth.py:878
 msgid "Subdomain required"
 msgstr ""
 
@@ -5178,11 +5061,11 @@ msgstr ""
 msgid "Invalid playground"
 msgstr "அறிவிப்புகளை இயக்கு"
 
-#: zerver/views/registration.py:558
+#: zerver/views/registration.py:579
 msgid "The organization creation link has expired or is not valid."
 msgstr ""
 
-#: zerver/views/registration.py:566
+#: zerver/views/registration.py:587
 msgid "New organization creation disabled"
 msgstr ""
 
@@ -5545,6 +5428,11 @@ msgstr ""
 #: zproject/backends.py:2285
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr ""
+
+#, fuzzy
+#~| msgid "Zulip"
+#~ msgid "Zulip logo"
+#~ msgstr "சுலிப்பு"
 
 #~ msgid "Reply"
 #~ msgstr "மறுமொழி"

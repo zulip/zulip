@@ -9,7 +9,8 @@
 # Jari Winberg <winjar@autistici.org>, 2021
 # Arto Leinonen <arto@vasemmistonuoret.fi>, 2021
 # Flammie <flammie@iki.fi>, 2021
-# Matti R, 2021
+# Matti R, 2022
+# Heidi Ahlberg, 2022
 # 
 #, fuzzy
 msgid ""
@@ -18,7 +19,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-05-26 18:04+0000\n"
 "PO-Revision-Date: 2021-04-02 21:39+0000\n"
-"Last-Translator: Matti R, 2021\n"
+"Last-Translator: Heidi Ahlberg, 2022\n"
 "Language-Team: Finnish (https://www.transifex.com/zulip/teams/53893/fi/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -645,11 +646,11 @@ msgstr "Ladataan..."
 
 #: templates/zerver/app/index.html:34
 msgid ""
-"If this message does not go away, please wait a couple seconds and <a id"
-"=\"reload-lnk\">reload</a> the page."
+"If this message does not go away, please wait a couple seconds and <a "
+"id=\"reload-lnk\">reload</a> the page."
 msgstr ""
-"Mikäli tämä viesti ei katoa, ole hyvä ja odota muutama sekuntti ja <a id"
-"=\"reload-lnk\">lataa</a>sivu uudelleen."
+"Mikäli tämä viesti ei katoa, ole hyvä ja odota muutama sekuntti ja <a "
+"id=\"reload-lnk\">lataa</a>sivu uudelleen."
 
 #: templates/zerver/app/index.html:67
 msgid ""
@@ -956,11 +957,11 @@ msgstr "Vaihda aiheen mykistyksen tilaa"
 #: templates/zerver/app/left_sidebar.html:51
 #: templates/zerver/app/left_sidebar.html:57
 msgid "Recent topics"
-msgstr "Aiheet"
+msgstr "Aktiiviset aiheet"
 
 #: templates/zerver/app/keyboard_shortcuts.html:247
 msgid "View recent topics"
-msgstr "Näytä viimeisimmät aiheet"
+msgstr "Näytä aktiiviset aiheet"
 
 #: templates/zerver/app/keyboard_shortcuts.html:251
 msgid "Filter topics"
@@ -1248,7 +1249,7 @@ msgstr ""
 
 #: templates/zerver/app/navbar_alerts.html:53
 msgid "Learn more"
-msgstr ""
+msgstr "Lisätietoja"
 
 #: templates/zerver/app/navbar_alerts.html:56
 msgid "Dismiss for a week"
@@ -3534,15 +3535,11 @@ msgstr ""
 #, python-format
 msgid ""
 "Please double-check that you have the full URL and try again, or <a "
-"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
-"%%20e-"
-"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
 " us</a> and we'll get this squared away!"
 msgstr ""
 "Ole hyvä ja tarkista, että käytit koko osoitetta ja yritä uudelleen, tai <a "
-"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
-"%%20e-"
-"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">lähetä"
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">lähetä"
 " meille sähköpostia</a>ja me hoidamme asian!"
 
 #: templates/zerver/unsubscribe_success.html:10

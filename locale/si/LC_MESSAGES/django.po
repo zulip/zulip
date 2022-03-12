@@ -4,7 +4,7 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# හෙළබස, 2021
+# හෙළබස, 2022
 # 
 #, fuzzy
 msgid ""
@@ -13,7 +13,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-05-26 18:04+0000\n"
 "PO-Revision-Date: 2021-04-02 21:39+0000\n"
-"Last-Translator: හෙළබස, 2021\n"
+"Last-Translator: හෙළබස, 2022\n"
 "Language-Team: Sinhala (https://www.transifex.com/zulip/teams/53893/si/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -23,7 +23,7 @@ msgstr ""
 
 #: analytics/views.py:140 zerver/decorator.py:538 zerver/decorator.py:550
 msgid "Not allowed for guest users"
-msgstr ""
+msgstr "පරිශීලක අමුත්තන්ට ඉඩ නැත"
 
 #: analytics/views.py:184
 msgid "Invalid organization"
@@ -57,7 +57,7 @@ msgstr ""
 
 #: analytics/views.py:367 analytics/views.py:398
 msgid "No analytics data available. Please contact your server administrator."
-msgstr ""
+msgstr "විශ්ලේෂණ දත්ත නැත. ඔබෙගේ සේවාදායක පරිපාලක අමතන්න."
 
 #: analytics/views.py:1275
 msgid "Invalid parameters"
@@ -599,8 +599,8 @@ msgstr ""
 
 #: templates/zerver/app/index.html:34
 msgid ""
-"If this message does not go away, please wait a couple seconds and <a id"
-"=\"reload-lnk\">reload</a> the page."
+"If this message does not go away, please wait a couple seconds and <a "
+"id=\"reload-lnk\">reload</a> the page."
 msgstr ""
 "මෙම පණිවිඩය ඉවත් නොවන්නේ නම් තත්පර කිහිපයක් රැඳී සිට පිටුව <a id=\"reload-"
 "lnk\">නැවත</a>පූරණය කරන්න."
@@ -1188,7 +1188,7 @@ msgstr "මෙම සුලිප් සේවාදායකය පරණ අ�
 
 #: templates/zerver/app/navbar_alerts.html:53
 msgid "Learn more"
-msgstr ""
+msgstr "තව දැනගන්න"
 
 #: templates/zerver/app/navbar_alerts.html:56
 msgid "Dismiss for a week"
@@ -1559,7 +1559,7 @@ msgstr ""
 
 #: templates/zerver/desktop_login.html:16
 msgid "Finish"
-msgstr ""
+msgstr "අහවරයි"
 
 #: templates/zerver/desktop_login.html:20
 msgid "Incorrect token."
@@ -1596,7 +1596,7 @@ msgstr "පරිපාලකයින්"
 
 #: templates/zerver/development/dev_login.html:49
 msgid "Guest users"
-msgstr ""
+msgstr "පරිශීලක අමුත්තන්"
 
 #: templates/zerver/development/dev_login.html:61
 msgid "Normal users"
@@ -1875,7 +1875,7 @@ msgstr ""
 #: templates/zerver/emails/followup_day2.source.html:8
 #: templates/zerver/emails/followup_day2.txt:1
 msgid "Hey,"
-msgstr ""
+msgstr "ආයුබෝ,"
 
 #: templates/zerver/emails/compiled/followup_day2.html:11
 #: templates/zerver/emails/followup_day2.source.html:10
@@ -1967,7 +1967,7 @@ msgstr "ආරම්භයට පහත බොත්තම ඔබන්න."
 #: templates/zerver/emails/invitation_reminder.source.html:8
 #: templates/zerver/emails/invitation_reminder.txt:1
 msgid "Hi again,"
-msgstr ""
+msgstr "ආයුබෝ,"
 
 #: templates/zerver/emails/compiled/invitation_reminder.html:11
 #, python-format
@@ -2595,11 +2595,11 @@ msgstr ""
 
 #: templates/zerver/emails/missed_message.txt:31
 msgid "Reply to this email directly, or view it in Zulip:"
-msgstr ""
+msgstr "වි-තැපෑලට සෘජුව පිළිතුරු දෙන්න, හෝ සුලිප් තුළින් දකින්න:"
 
 #: templates/zerver/emails/missed_message.txt:35
 msgid "View or reply in Zulip:"
-msgstr ""
+msgstr "දකින්න හෝ සුලිප් තුළින් පිළිතුරු දෙන්න:"
 
 #: templates/zerver/emails/missed_message.txt:39
 msgid "Reply in Zulip:"
@@ -2611,6 +2611,9 @@ msgid ""
 "Do not reply to this email. This Zulip server is not configured to accept\n"
 "incoming emails. Help:\n"
 msgstr ""
+"\n"
+"වි-තැපෑලට පිළිතුරු නොදෙන්න. සුලිප් සේවාදායකය ලැබෙන වි-තැපැල් පිළිගැනීමට\n"
+"වින්‍යාසගත කර නැත. උදව්:\n"
 
 #: templates/zerver/emails/missed_message.txt:50
 msgid "Manage email preferences: "
@@ -2810,7 +2813,7 @@ msgstr ""
 
 #: templates/zerver/hello.html:127 templates/zerver/hello.html:538
 msgid "See plans and pricing"
-msgstr ""
+msgstr "සැලසුම් සහ මිලකරණය දකින්න"
 
 #: templates/zerver/hello.html:146
 msgid "Previous"
@@ -3254,9 +3257,7 @@ msgstr ""
 #, python-format
 msgid ""
 "Please double-check that you have the full URL and try again, or <a "
-"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
-"%%20e-"
-"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
 " us</a> and we'll get this squared away!"
 msgstr ""
 
@@ -3981,7 +3982,7 @@ msgstr ""
 
 #: zerver/lib/hotspots.py:24
 msgid "Topics"
-msgstr ""
+msgstr "මාතෘකා"
 
 #: zerver/lib/hotspots.py:26
 msgid ""

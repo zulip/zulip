@@ -10,8 +10,9 @@
 # Giancarlo Di Massa <giancarlodimassa@gmail.com>, 2021
 # Alessio Schreiber <alessio.schreiber@gmail.com>, 2021
 # Paolo Midali <pmidali@latek.it>, 2021
-# Andrea, 2021
 # Alya Abbott <alya@zulip.com>, 2021
+# Maxxer <maxxer@ufficyo.com>, 2021
+# Andrea, 2022
 # 
 #, fuzzy
 msgid ""
@@ -20,7 +21,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-05-26 18:04+0000\n"
 "PO-Revision-Date: 2021-04-02 21:39+0000\n"
-"Last-Translator: Alya Abbott <alya@zulip.com>, 2021\n"
+"Last-Translator: Andrea, 2022\n"
 "Language-Team: Italian (https://www.transifex.com/zulip/teams/53893/it/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -573,7 +574,7 @@ msgid ""
 msgstr ""
 "\n"
 "            Perché non <a href=\"#\" class=\"empty_feed_compose_private\">\n"
-"            Iniziare una conversazione con te stesso?</a>?"
+"            Iniziare una conversazione con te stesso</a>?"
 
 #: templates/zerver/app/home.html:73
 msgid "You have no group private messages with this person yet!"
@@ -610,7 +611,7 @@ msgstr "Questo canale non esiste o è privato."
 
 #: templates/zerver/app/home.html:113
 msgid "You haven't starred anything yet!"
-msgstr "Non hai ancora messaggi contrassegnati!"
+msgstr "Non hai ancora messaggi speciali!"
 
 #: templates/zerver/app/home.html:116
 msgid ""
@@ -657,11 +658,11 @@ msgstr "Caricamento..."
 
 #: templates/zerver/app/index.html:34
 msgid ""
-"If this message does not go away, please wait a couple seconds and <a id"
-"=\"reload-lnk\">reload</a> the page."
+"If this message does not go away, please wait a couple seconds and <a "
+"id=\"reload-lnk\">reload</a> the page."
 msgstr ""
 "Se questo messaggio non parte, attendi un paio di secondi e <a id=\"reload-"
-"lnk\">ricarica</a>la pagina."
+"lnk\">ricarica</a> la pagina."
 
 #: templates/zerver/app/index.html:67
 msgid ""
@@ -1045,7 +1046,7 @@ msgstr "Menzioni"
 
 #: templates/zerver/app/left_sidebar.html:46
 msgid "Starred messages"
-msgstr "Messaggi contrassegnati"
+msgstr "Messaggi speciali"
 
 #: templates/zerver/app/left_sidebar.html:62
 msgid "STREAMS"
@@ -1370,7 +1371,7 @@ msgstr "Limita per messaggi privati."
 
 #: templates/zerver/app/search_operators.html:61
 msgid "Narrow to starred messages."
-msgstr "Limita per messaggi contrassegnati."
+msgstr "Limita per messaggi speciali."
 
 #: templates/zerver/app/search_operators.html:65
 msgid "Narrow to unread messages."
@@ -3610,15 +3611,11 @@ msgstr ""
 #, python-format
 msgid ""
 "Please double-check that you have the full URL and try again, or <a "
-"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
-"%%20e-"
-"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
 " us</a> and we'll get this squared away!"
 msgstr ""
 "Verifica di avere l'URL completo e riprova, o <a "
-"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
-"%%20e-"
-"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">scrivici"
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">scrivici"
 " una mail</a>e risolveremo la cosa!"
 
 #: templates/zerver/unsubscribe_success.html:10

@@ -901,7 +901,7 @@
   "{seconds} sec to edit": "{seconds} sekund na upravení",
   "{starred_status} this message": "{starred_status} tuto zprávu",
   "{starred_status} this message (Ctrl + s)": "{starred_status} tuto zprávu (Ctrl + s)",
-  "{username} [said]({link_to_message}):": "{username} [said]({link_to_message}):",
+  "{username} [said]({link_to_message}):": "{username} [napsal]({link_to_message}):",
   "{username} reacted with {emoji_name}": "{username} odpověděl {emoji_name}",
   "{wildcard_mention_token} (Notify stream)": "{wildcard_mention_token} (upozornit kanál)"
 }

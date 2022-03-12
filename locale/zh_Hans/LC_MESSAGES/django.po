@@ -616,8 +616,8 @@ msgstr "加载中..."
 
 #: templates/zerver/app/index.html:34
 msgid ""
-"If this message does not go away, please wait a couple seconds and <a id"
-"=\"reload-lnk\">reload</a> the page."
+"If this message does not go away, please wait a couple seconds and <a "
+"id=\"reload-lnk\">reload</a> the page."
 msgstr "如果这个消息没有消失，请等待几秒钟并<a id=\"reload-lnk\">重载</a>页面"
 
 #: templates/zerver/app/index.html:67
@@ -2549,8 +2549,8 @@ msgid ""
 "wants you to join them on Zulip -- the team communication tool designed for "
 "productivity."
 msgstr ""
-"友情提示：%(referrer_name)s（%(referrer_email)s）邀请您加入他们的Zulip — "
-"一个能大大提高工作效率的团队交流工具。"
+"友情提示：%(referrer_name)s（%(referrer_email)s）邀请您加入他们的Zulip "
+"— 一个能大大提高工作效率的团队交流工具。"
 
 #: templates/zerver/emails/invitation_reminder.txt:10
 #, python-format
@@ -3299,15 +3299,11 @@ msgstr "Hi！看起来您要退订某些东西，但是我们不认识这个URL�
 #, python-format
 msgid ""
 "Please double-check that you have the full URL and try again, or <a "
-"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
-"%%20e-"
-"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
 " us</a> and we'll get this squared away!"
 msgstr ""
 "请检查是否有完整的URL，然后再试一次。或<a "
-"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
-"%%20e-"
-"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">联系我们</a>我们会提供帮助！"
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">联系我们</a>我们会提供帮助！"
 
 #: templates/zerver/unsubscribe_success.html:10
 msgid "Email settings updated"

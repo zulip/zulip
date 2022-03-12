@@ -5,6 +5,7 @@
 # 
 # Translators:
 # João Alves <suri.cata.ja@gmail.com>, 2021
+# Cláudio Martins, 2022
 # 
 #, fuzzy
 msgid ""
@@ -13,7 +14,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-05-26 18:04+0000\n"
 "PO-Revision-Date: 2021-04-02 21:39+0000\n"
-"Last-Translator: João Alves <suri.cata.ja@gmail.com>, 2021\n"
+"Last-Translator: Cláudio Martins, 2022\n"
 "Language-Team: Portuguese (Portugal) (https://www.transifex.com/zulip/teams/53893/pt_PT/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -48,7 +49,7 @@ msgstr "Mensagens privadas de grupo"
 
 #: analytics/views.py:339
 msgid "Unknown chart name: {}"
-msgstr ""
+msgstr "Nome do gráfico desconhecido: {}"
 
 #: analytics/views.py:349
 #, python-brace-format
@@ -176,7 +177,7 @@ msgstr "Último ano"
 
 #: templates/analytics/stats.html:54 templates/analytics/stats.html:95
 msgid "All time"
-msgstr ""
+msgstr "Tempo todo"
 
 #: templates/analytics/stats.html:60
 msgid "Active users"
@@ -459,7 +460,7 @@ msgstr "Confirmar"
 
 #: templates/zerver/app/deprecation_notice.html:6
 msgid "Deprecation notice"
-msgstr ""
+msgstr "Aviso de suspensão de uso"
 
 #: templates/zerver/app/deprecation_notice.html:14
 msgid "Got it"
@@ -560,7 +561,7 @@ msgstr "Esse canal não existe ou é privado."
 
 #: templates/zerver/app/home.html:113
 msgid "You haven't starred anything yet!"
-msgstr ""
+msgstr "Você ainda não estrelou nada!"
 
 #: templates/zerver/app/home.html:116
 msgid ""
@@ -572,7 +573,7 @@ msgstr ""
 
 #: templates/zerver/app/home.html:123
 msgid "You have no unread messages!"
-msgstr ""
+msgstr "Não tem mensagens não lidas!"
 
 #: templates/zerver/app/home.html:126
 msgid "You haven't been mentioned yet!"
@@ -592,7 +593,7 @@ msgstr ""
 
 #: templates/zerver/app/home.html:136
 msgid "No search results"
-msgstr ""
+msgstr "Nenhum resultado de pesquisa"
 
 #: templates/zerver/app/home.html:139 templates/zerver/app/home.html:141
 msgid "Messages"
@@ -604,11 +605,11 @@ msgstr "A carregar..."
 
 #: templates/zerver/app/index.html:34
 msgid ""
-"If this message does not go away, please wait a couple seconds and <a id"
-"=\"reload-lnk\">reload</a> the page."
+"If this message does not go away, please wait a couple seconds and <a "
+"id=\"reload-lnk\">reload</a> the page."
 msgstr ""
-"Se esta mensagem não desaparecer, por favor aguarde alguns segundos e <a id"
-"=\"reload-lnk\">recarregue</a> a página."
+"Se esta mensagem não desaparecer, por favor aguarde alguns segundos e <a "
+"id=\"reload-lnk\">recarregue</a> a página."
 
 #: templates/zerver/app/index.html:67
 msgid ""
@@ -634,23 +635,23 @@ msgstr ""
 
 #: templates/zerver/app/index.html:160
 msgid "In a meeting"
-msgstr ""
+msgstr "Em reunião"
 
 #: templates/zerver/app/index.html:161
 msgid "Commuting"
-msgstr ""
+msgstr "Em viagem"
 
 #: templates/zerver/app/index.html:162
 msgid "Out sick"
-msgstr ""
+msgstr "Adoentado"
 
 #: templates/zerver/app/index.html:163
 msgid "Vacationing"
-msgstr ""
+msgstr "De férias"
 
 #: templates/zerver/app/index.html:164
 msgid "Working remotely"
-msgstr ""
+msgstr "Em trabalho remoto"
 
 #: templates/zerver/app/index.html:169
 msgid "Save"
@@ -679,7 +680,7 @@ msgstr "Gerar link de convite"
 
 #: templates/zerver/app/invite_user.html:33
 msgid "User(s) join as"
-msgstr ""
+msgstr "Utilizador(es) ingressam como"
 
 #: templates/zerver/app/invite_user.html:40
 msgid "Guests"
@@ -803,11 +804,11 @@ msgstr "Mensagem anterior"
 
 #: templates/zerver/app/keyboard_shortcuts.html:89
 msgid "Scroll up"
-msgstr ""
+msgstr "Rolar para cima"
 
 #: templates/zerver/app/keyboard_shortcuts.html:93
 msgid "Scroll down"
-msgstr ""
+msgstr "Scroll down"
 
 #: templates/zerver/app/keyboard_shortcuts.html:101
 msgid "First message"
@@ -839,7 +840,7 @@ msgstr "Inserir nova linha"
 
 #: templates/zerver/app/keyboard_shortcuts.html:155
 msgid "Narrowing"
-msgstr ""
+msgstr "A focar"
 
 #: templates/zerver/app/keyboard_shortcuts.html:159
 msgid "Narrow to stream"
@@ -859,11 +860,11 @@ msgstr "Focar próximo tema não lido"
 
 #: templates/zerver/app/keyboard_shortcuts.html:175
 msgid "Narrow to next unread private message"
-msgstr ""
+msgstr "Focar próxima mensagem privada não lida"
 
 #: templates/zerver/app/keyboard_shortcuts.html:179
 msgid "Cycle between stream narrows"
-msgstr ""
+msgstr "Movimentar entre fluxos estreita"
 
 #: templates/zerver/app/keyboard_shortcuts.html:183
 msgid "Narrow to all unmuted messages"
@@ -871,7 +872,7 @@ msgstr "Focar todas as mensagens não silenciadas"
 
 #: templates/zerver/app/keyboard_shortcuts.html:187
 msgid "Narrow to current compose box recipient"
-msgstr ""
+msgstr "Focar destinatário actual da caixa de composição"
 
 #: templates/zerver/app/keyboard_shortcuts.html:196
 msgid "Message actions"
@@ -887,7 +888,7 @@ msgstr "Ver perfil do remetente"
 
 #: templates/zerver/app/keyboard_shortcuts.html:208
 msgid "Show images in thread"
-msgstr ""
+msgstr "Mostrar imagens no tópico"
 
 #: templates/zerver/app/keyboard_shortcuts.html:212
 msgid "Edit selected message"
@@ -921,7 +922,7 @@ msgstr "Ver temas recentes"
 
 #: templates/zerver/app/keyboard_shortcuts.html:251
 msgid "Filter topics"
-msgstr ""
+msgstr "Filtrar temas"
 
 #: templates/zerver/app/keyboard_shortcuts.html:260
 msgid "Drafts"
@@ -941,7 +942,7 @@ msgstr "Menus"
 
 #: templates/zerver/app/keyboard_shortcuts.html:285
 msgid "Toggle the gear menu"
-msgstr ""
+msgstr "Alternar o menu de engrenagem"
 
 #: templates/zerver/app/keyboard_shortcuts.html:289
 msgid "Open message menu"
@@ -957,7 +958,7 @@ msgstr "Definições de canais"
 
 #: templates/zerver/app/keyboard_shortcuts.html:310
 msgid "Scroll through streams"
-msgstr ""
+msgstr "Percorra os fluxos"
 
 #: templates/zerver/app/keyboard_shortcuts.html:314
 msgid "Switch between tabs"
@@ -977,7 +978,7 @@ msgstr "Criar novo canal"
 
 #: templates/zerver/app/keyboard_shortcuts.html:332
 msgid "Detailed keyboard shortcuts documentation"
-msgstr ""
+msgstr "Documentação detalhada de atalhos de teclado"
 
 #: templates/zerver/app/left_sidebar.html:5
 #: templates/zerver/app/left_sidebar.html:11
@@ -1069,7 +1070,7 @@ msgstr "Gerir Organização"
 
 #: templates/zerver/app/navbar.html:83
 msgid "Usage statistics"
-msgstr ""
+msgstr "Estatísticas de utilização"
 
 #: templates/zerver/app/navbar.html:90 templates/zerver/footer.html:16
 msgid "Help center"
@@ -1090,7 +1091,7 @@ msgstr "Acerca do Zulip"
 
 #: templates/zerver/app/navbar.html:117
 msgid "Contact support"
-msgstr ""
+msgstr "Contactar Apoio"
 
 #: templates/zerver/app/navbar.html:124
 msgid "Desktop & mobile apps"
@@ -1106,11 +1107,11 @@ msgstr "Documentação de APIs"
 
 #: templates/zerver/app/navbar.html:147
 msgid "Support Zulip"
-msgstr ""
+msgstr "Apoiar o Zulip"
 
 #: templates/zerver/app/navbar.html:154
 msgid "Plans and pricing"
-msgstr ""
+msgstr "Planos e preços"
 
 #: templates/zerver/app/navbar.html:162
 msgid "Invite users"
@@ -1121,10 +1122,12 @@ msgid ""
 "Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via "
 "Webathena"
 msgstr ""
+"Conceda a Zulip os tíquetes Kerberos necessários para executar seu espelho "
+"Zephyr via Webathena"
 
 #: templates/zerver/app/navbar.html:170
 msgid "Link with Webathena"
-msgstr ""
+msgstr "Link com Webathena"
 
 #: templates/zerver/app/navbar.html:176
 msgid "Log out"
@@ -1145,6 +1148,8 @@ msgid ""
 "We strongly recommend enabling desktop notifications. They help Zulip keep "
 "your team connected."
 msgstr ""
+"Recomendamos fortemente que permita notificações de desktop. Elas ajudam o "
+"Zulip a manter a sua equipa conectada."
 
 #: templates/zerver/app/navbar_alerts.html:11
 msgid "Enable notifications"
@@ -1168,7 +1173,7 @@ msgstr ""
 
 #: templates/zerver/app/navbar_alerts.html:24
 msgid "See how to configure email."
-msgstr ""
+msgstr "Veja como configurar o e-mail."
 
 #: templates/zerver/app/navbar_alerts.html:31
 #, python-format
@@ -1195,6 +1200,7 @@ msgstr "Transferir última versão."
 #: templates/zerver/app/navbar_alerts.html:50
 msgid "This Zulip server is running an old version and should be upgraded."
 msgstr ""
+"Este servidor Zulip está a correr uma versão antiga e deve ser actualizado."
 
 #: templates/zerver/app/navbar_alerts.html:53
 msgid "Learn more"
@@ -1202,7 +1208,7 @@ msgstr "Saber mais"
 
 #: templates/zerver/app/navbar_alerts.html:56
 msgid "Dismiss for a week"
-msgstr ""
+msgstr "Ignorar por uma semana"
 
 #: templates/zerver/app/navbar_alerts.html:64
 #, python-format
@@ -1218,7 +1224,7 @@ msgstr "Sim, por favor!"
 
 #: templates/zerver/app/navbar_alerts.html:70
 msgid "No, I'll catch up."
-msgstr ""
+msgstr "Não, eu ponho-me a par."
 
 #: templates/zerver/app/navbar_alerts.html:76
 msgid ""
@@ -1314,7 +1320,7 @@ msgstr "Focar mensagens contendo imagens."
 
 #: templates/zerver/app/search_operators.html:77
 msgid "Narrow to messages containing uploads."
-msgstr ""
+msgstr "Restrinja a mensagens que contenham uploads."
 
 #: templates/zerver/app/search_operators.html:81
 msgid ""
@@ -1386,7 +1392,7 @@ msgstr "Palavras-alerta"
 
 #: templates/zerver/app/settings_overlay.html:39
 msgid "Uploaded files"
-msgstr ""
+msgstr "Ficheiros carregados"
 
 #: templates/zerver/app/settings_overlay.html:44
 msgid "Muted topics"
@@ -1394,7 +1400,7 @@ msgstr "Temas silenciados"
 
 #: templates/zerver/app/settings_overlay.html:48
 msgid "Muted users"
-msgstr ""
+msgstr "Utilizadores silenciados"
 
 #: templates/zerver/app/settings_overlay.html:55
 msgid "Organization profile"
@@ -1455,7 +1461,7 @@ msgstr "Geradores de Link"
 
 #: templates/zerver/app/settings_overlay.html:143
 msgid "Code playgrounds"
-msgstr ""
+msgstr "Playgrounds de código"
 
 #: templates/zerver/app/settings_overlay.html:151
 msgid "Custom profile fields"
@@ -2949,7 +2955,7 @@ msgstr "Categorias"
 
 #: templates/zerver/integrations/index.html:79
 msgid "All"
-msgstr ""
+msgstr "Todo"
 
 #: templates/zerver/invalid_email.html:4
 msgid "Invalid email"
@@ -3272,9 +3278,7 @@ msgstr ""
 #, python-format
 msgid ""
 "Please double-check that you have the full URL and try again, or <a "
-"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
-"%%20e-"
-"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
 " us</a> and we'll get this squared away!"
 msgstr ""
 
@@ -3524,7 +3528,7 @@ msgstr "Não tem permissão para editar esta mensagem"
 
 #: zerver/lib/actions.py:2735
 msgid "Widgets cannot be edited."
-msgstr ""
+msgstr "Os widgets não podem ser editados."
 
 #: zerver/lib/actions.py:2746 zerver/lib/actions.py:2760
 msgid "The time limit for editing this message has passed"
@@ -3605,7 +3609,7 @@ msgstr "Widgets: {error_msg}"
 
 #: zerver/lib/actions.py:3140
 msgid "You do not have permission to use wildcard mentions in this stream."
-msgstr ""
+msgstr "Você não tem permissão para usar menções wildcard neste fluxo."
 
 #: zerver/lib/actions.py:3393
 msgid "Subscriber data is not available for this stream"
@@ -5165,7 +5169,7 @@ msgstr ""
 
 #: zerver/views/user_settings.py:49
 msgid "Avatar changes are disabled in this organization."
-msgstr ""
+msgstr "Alterações de avatar estão bloqueadas nesta organização."
 
 #: zerver/views/user_settings.py:63 zerver/views/user_settings.py:149
 msgid "Email address changes are disabled in this organization."

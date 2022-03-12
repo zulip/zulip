@@ -7,6 +7,7 @@
 # Filip Mezera <filip.mezera@pirati.cz>, 2021
 # Filip Vařecha <filip.varecha@fragaria.cz>, 2021
 # Jiří Ryszawy <jiri@ryszawy.com>, 2021
+# Tomáš Hozman, 2021
 # fri, 2021
 # 
 #, fuzzy
@@ -647,8 +648,8 @@ msgstr "Nahrávání..."
 
 #: templates/zerver/app/index.html:34
 msgid ""
-"If this message does not go away, please wait a couple seconds and <a id"
-"=\"reload-lnk\">reload</a> the page."
+"If this message does not go away, please wait a couple seconds and <a "
+"id=\"reload-lnk\">reload</a> the page."
 msgstr ""
 "Pokud tato zpráva nezmizí, počkejte prosím několik sekund a </a>obnovte</a> "
 "stránku."
@@ -675,11 +676,11 @@ msgstr "Nastavit stav"
 
 #: templates/zerver/app/index.html:153
 msgid "Status message"
-msgstr ""
+msgstr "Stav"
 
 #: templates/zerver/app/index.html:160
 msgid "In a meeting"
-msgstr ""
+msgstr "Na schůzce"
 
 #: templates/zerver/app/index.html:161
 msgid "Commuting"
@@ -687,15 +688,15 @@ msgstr ""
 
 #: templates/zerver/app/index.html:162
 msgid "Out sick"
-msgstr ""
+msgstr "Nemocný"
 
 #: templates/zerver/app/index.html:163
 msgid "Vacationing"
-msgstr ""
+msgstr "Na dovolené"
 
 #: templates/zerver/app/index.html:164
 msgid "Working remotely"
-msgstr ""
+msgstr "Pracující na dálku"
 
 #: templates/zerver/app/index.html:169
 msgid "Save"
@@ -3589,15 +3590,11 @@ msgstr ""
 #, python-format
 msgid ""
 "Please double-check that you have the full URL and try again, or <a "
-"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
-"%%20e-"
-"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
 " us</a> and we'll get this squared away!"
 msgstr ""
 "Zkontrolujte prosím, že máte správnou URL a zkuste to znovu. Nebo nám <a "
-"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
-"%%20e-"
-"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">napište"
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">napište"
 " e-mail</a>a my to vyřešíme!"
 
 #: templates/zerver/unsubscribe_success.html:10
@@ -5664,19 +5661,22 @@ msgstr "Nepodařilo se vytvořit hovor Zoom"
 
 #: zerver/views/video_calls.py:215
 msgid "Big Blue Button is not configured."
-msgstr "Velké modré tlačítko není nastaveno."
+msgstr "Server BigBlueButton - Velké modré tlačítko, není nastaven."
 
 #: zerver/views/video_calls.py:233
 msgid "Error connecting to the Big Blue Button server."
-msgstr "Chyba při připojování se k serveru Velké modré tlačítko."
+msgstr ""
+"Chyba při připojování se k serveru BigBlueButton - Velké modré tlačítko."
 
 #: zerver/views/video_calls.py:237
 msgid "Error authenticating to the Big Blue Button server."
-msgstr "Chyba při ověřování serveru Velké modré tlačítko."
+msgstr ""
+"Chyba při přihlašování k serveru BigBlueButton - Velké modré tlačítko."
 
 #: zerver/views/video_calls.py:240
 msgid "Big Blue Button server returned an unexpected error."
-msgstr "Server Velké modré tlačítko vrátil neočekávanou chybu."
+msgstr ""
+"Server BigBlueButton - Velké modré tlačítko, vrátil neočekávanou chybu."
 
 #: zerver/views/zephyr.py:35
 msgid "Could not find Kerberos credential"
