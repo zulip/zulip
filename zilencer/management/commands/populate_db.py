@@ -19,7 +19,6 @@ from django.utils.timezone import timedelta as timezone_timedelta
 
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
 from zerver.lib.actions import (
-    STREAM_ASSIGNMENT_COLORS,
     build_message_send_dict,
     check_add_realm_emoji,
     do_change_user_role,
@@ -36,6 +35,7 @@ from zerver.lib.onboarding import create_if_missing_realm_internal_bots
 from zerver.lib.push_notifications import logger as push_notifications_logger
 from zerver.lib.server_initialization import create_internal_realm, create_users
 from zerver.lib.storage import static_path
+from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
 from zerver.lib.types import ProfileFieldData
 from zerver.lib.url_preview.preview import CACHE_NAME as PREVIEW_CACHE_NAME
 from zerver.lib.user_groups import create_user_group

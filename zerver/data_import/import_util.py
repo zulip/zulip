@@ -12,8 +12,8 @@ from django.forms.models import model_to_dict
 from typing_extensions import Protocol
 
 from zerver.data_import.sequencer import NEXT_ID
-from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
+from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as stream_colors
 from zerver.models import (
     Attachment,
     Huddle,

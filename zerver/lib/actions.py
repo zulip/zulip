@@ -129,6 +129,7 @@ from zerver.lib.send_email import (
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.storage import static_path
+from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS, pick_colors
 from zerver.lib.stream_subscription import (
     SubInfo,
     bulk_get_private_peers,
@@ -290,33 +291,6 @@ RawSubscriptionDict = Dict[str, Any]
 ONBOARDING_TOTAL_MESSAGES = 1000
 ONBOARDING_UNREAD_MESSAGES = 20
 ONBOARDING_RECENT_TIMEDELTA = datetime.timedelta(weeks=1)
-
-STREAM_ASSIGNMENT_COLORS = [
-    "#76ce90",
-    "#fae589",
-    "#a6c7e5",
-    "#e79ab5",
-    "#bfd56f",
-    "#f4ae55",
-    "#b0a5fd",
-    "#addfe5",
-    "#f5ce6e",
-    "#c2726a",
-    "#94c849",
-    "#bd86e5",
-    "#ee7e4a",
-    "#a6dcbf",
-    "#95a5fd",
-    "#53a063",
-    "#9987e1",
-    "#e4523d",
-    "#c2c2c2",
-    "#4f8de4",
-    "#c6a8ad",
-    "#e7cc4d",
-    "#c8bebf",
-    "#a47462",
-]
 
 
 def create_historical_user_messages(*, user_id: int, message_ids: List[int]) -> None:
@@ -3708,36 +3682,6 @@ def internal_send_huddle_message(
         return None
     message_ids = do_send_messages([message])
     return message_ids[0]
-
-
-def pick_colors(
-    used_colors: Set[str], color_map: Dict[int, str], recipient_ids: List[int]
-) -> Dict[int, str]:
-    used_colors = set(used_colors)
-    recipient_ids = sorted(recipient_ids)
-    result = {}
-
-    other_recipient_ids = []
-    for recipient_id in recipient_ids:
-        if recipient_id in color_map:
-            color = color_map[recipient_id]
-            result[recipient_id] = color
-            used_colors.add(color)
-        else:
-            other_recipient_ids.append(recipient_id)
-
-    available_colors = [s for s in STREAM_ASSIGNMENT_COLORS if s not in used_colors]
-
-    for i, recipient_id in enumerate(other_recipient_ids):
-        if i < len(available_colors):
-            color = available_colors[i]
-        else:
-            # We have to start re-using old colors, and we use recipient_id
-            # to choose the color.
-            color = STREAM_ASSIGNMENT_COLORS[recipient_id % len(STREAM_ASSIGNMENT_COLORS)]
-        result[recipient_id] = color
-
-    return result
 
 
 def validate_user_access_to_subscribers(

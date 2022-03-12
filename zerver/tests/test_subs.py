@@ -11,7 +11,6 @@ from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import (
-    STREAM_ASSIGNMENT_COLORS,
     bulk_add_subscriptions,
     bulk_get_subscriber_user_ids,
     bulk_remove_subscriptions,
@@ -38,12 +37,12 @@ from zerver.lib.actions import (
     get_default_streams_for_realm,
     get_topic_messages,
     lookup_default_stream_groups,
-    pick_colors,
     validate_user_access_to_subscribers_helper,
 )
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
 from zerver.lib.response import json_success
+from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS, pick_colors
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     num_subscribers_for_stream_id,
