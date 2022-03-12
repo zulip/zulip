@@ -2426,17 +2426,17 @@ class Stream(models.Model):
     # * "deactivated" streams are filtered from the API entirely.
     # * "realm" and "recipient" are not exposed to clients via the API.
     API_FIELDS = [
-        "name",
-        "id",
+        "date_created",
         "description",
-        "rendered_description",
+        "first_message_id",
+        "history_public_to_subscribers",
+        "id",
         "invite_only",
         "is_web_public",
-        "stream_post_policy",
-        "history_public_to_subscribers",
-        "first_message_id",
         "message_retention_days",
-        "date_created",
+        "name",
+        "rendered_description",
+        "stream_post_policy",
     ]
 
     @staticmethod
@@ -3450,15 +3450,15 @@ class Subscription(models.Model):
     # * "is_muted" often needs to be copied to not "in_home_view" for
     #   backwards-compatibility.
     API_FIELDS = [
-        "color",
-        "is_muted",
-        "pin_to_top",
         "audible_notifications",
+        "color",
         "desktop_notifications",
         "email_notifications",
+        "is_muted",
+        "pin_to_top",
         "push_notifications",
-        "wildcard_mentions_notify",
         "role",
+        "wildcard_mentions_notify",
     ]
 
 
