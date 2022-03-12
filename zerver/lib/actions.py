@@ -8550,15 +8550,14 @@ def do_send_user_group_members_update_event(
 
 
 @transaction.atomic(savepoint=False)
-def bulk_add_members_to_user_group(user_group: UserGroup, user_profiles: List[UserProfile]) -> None:
+def bulk_add_members_to_user_group(user_group: UserGroup, user_profile_ids: List[int]) -> None:
     memberships = [
-        UserGroupMembership(user_group_id=user_group.id, user_profile=user_profile)
-        for user_profile in user_profiles
+        UserGroupMembership(user_group_id=user_group.id, user_profile_id=user_id)
+        for user_id in user_profile_ids
     ]
     UserGroupMembership.objects.bulk_create(memberships)
 
-    user_ids = [up.id for up in user_profiles]
-    do_send_user_group_members_update_event("add_members", user_group, user_ids)
+    do_send_user_group_members_update_event("add_members", user_group, user_profile_ids)
 
 
 @transaction.atomic(savepoint=False)

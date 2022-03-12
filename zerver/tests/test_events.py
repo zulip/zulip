@@ -1161,7 +1161,7 @@ class NormalActionsTest(BaseAction):
 
         # Test add members
         hamlet = self.example_user("hamlet")
-        events = self.verify_action(lambda: bulk_add_members_to_user_group(backend, [hamlet]))
+        events = self.verify_action(lambda: bulk_add_members_to_user_group(backend, [hamlet.id]))
         check_user_group_add_members("events[0]", events[0])
 
         # Test remove members
