@@ -50,6 +50,7 @@ from zerver.models import Realm, RealmUserDefault, Stream, Subscription, UserPro
 # These fields are used for "stream" events, and are included in the
 # larger "subscription" events that also contain personal settings.
 basic_stream_fields = [
+    ("date_created", int),
     ("description", str),
     ("first_message_id", OptionalType(int)),
     ("history_public_to_subscribers", bool),
@@ -61,7 +62,6 @@ basic_stream_fields = [
     ("rendered_description", str),
     ("stream_id", int),
     ("stream_post_policy", int),
-    ("date_created", int),
 ]
 
 subscription_fields: Sequence[Tuple[str, object]] = [
