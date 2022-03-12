@@ -35,12 +35,10 @@ from zerver.lib.actions import (
     ensure_stream,
     gather_subscriptions,
     gather_subscriptions_helper,
-    get_average_weekly_stream_traffic,
     get_default_streams_for_realm,
     get_topic_messages,
     lookup_default_stream_groups,
     pick_colors,
-    round_to_2_significant_digits,
     validate_user_access_to_subscribers_helper,
 )
 from zerver.lib.exceptions import JsonableError
@@ -50,6 +48,10 @@ from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     num_subscribers_for_stream_id,
     subscriber_ids_with_stream_history_access,
+)
+from zerver.lib.stream_traffic import (
+    get_average_weekly_stream_traffic,
+    round_to_2_significant_digits,
 )
 from zerver.lib.streams import (
     StreamDict,
