@@ -1166,7 +1166,7 @@ class NormalActionsTest(BaseAction):
 
         # Test remove members
         hamlet = self.example_user("hamlet")
-        events = self.verify_action(lambda: remove_members_from_user_group(backend, [hamlet]))
+        events = self.verify_action(lambda: remove_members_from_user_group(backend, [hamlet.id]))
         check_user_group_remove_members("events[0]", events[0])
 
         # Test remove event

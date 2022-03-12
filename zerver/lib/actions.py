@@ -8561,13 +8561,12 @@ def bulk_add_members_to_user_group(user_group: UserGroup, user_profile_ids: List
 
 
 @transaction.atomic(savepoint=False)
-def remove_members_from_user_group(user_group: UserGroup, user_profiles: List[UserProfile]) -> None:
+def remove_members_from_user_group(user_group: UserGroup, user_profile_ids: List[int]) -> None:
     UserGroupMembership.objects.filter(
-        user_group_id=user_group.id, user_profile__in=user_profiles
+        user_group_id=user_group.id, user_profile_id__in=user_profile_ids
     ).delete()
 
-    user_ids = [up.id for up in user_profiles]
-    do_send_user_group_members_update_event("remove_members", user_group, user_ids)
+    do_send_user_group_members_update_event("remove_members", user_group, user_profile_ids)
 
 
 def do_send_delete_user_group_event(realm: Realm, user_group_id: int, realm_id: int) -> None:
