@@ -187,6 +187,24 @@ export function initialize() {
     });
 
     delegate("body", {
+        target: ".message_inline_image a",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            const id = $elem.attr("data-id");
+            const tooltip_content = document.createElement("div");
+
+            tooltip_content.textContent = "View or download ";
+            const image_name = document.createElement("span");
+            image_name.style.fontWeight = "bold";
+            image_name.textContent = id;
+
+            tooltip_content.append(image_name);
+            instance.setContent(tooltip_content);
+        },
+    });
+
+    delegate("body", {
         target: ".recipient_row_date > span",
         appendTo: () => document.body,
         onHidden(instance) {
