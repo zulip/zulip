@@ -1,5 +1,6 @@
 import $ from "jquery";
 import panzoom from "panzoom";
+import tippy from "tippy.js";
 
 import render_lightbox_overlay from "../templates/lightbox_overlay.hbs";
 
@@ -199,6 +200,38 @@ export function render_lightbox_list_images(preview_source) {
     }
 }
 
+export function get_file_name(payload) {
+    const file_name = payload.url.split("/").pop();
+
+    return file_name;
+}
+
+export function init_image_title_tooltip(payload) {
+    tippy(".image-description .title", {
+        arrow: true,
+        placement: "left",
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            const image_name = $elem.text();
+            const tooltip_content = document.createElement("div");
+
+            tooltip_content.textContent = image_name;
+
+            const file_name = document.createElement("p");
+            const text = document.createTextNode("File name: " + get_file_name(payload));
+            file_name.append(text);
+            tooltip_content.append(file_name);
+
+            instance.setContent(tooltip_content);
+        },
+        onHidden(instance) {
+            $(".exit span, .image-preview, .image-list").on("click", () => {
+                instance.destroy();
+            });
+        },
+    });
+}
+
 function display_image(payload) {
     render_lightbox_list_images(payload.preview);
 
@@ -210,12 +243,12 @@ function display_image(payload) {
     img.src = payload.source;
     $img_container.html(img).show();
 
-    $(".image-description .title")
-        .text(payload.title || "N/A")
-        .prop("title", payload.title || "N/A");
+    $(".image-description .title").text(payload.title || get_file_name(payload));
     $(".image-description .user").text(payload.user).prop("title", payload.user);
 
     $(".image-actions .open, .image-actions .download").attr("href", payload.source);
+
+    init_image_title_tooltip(payload);
 }
 
 function display_video(payload) {
@@ -411,7 +444,7 @@ export function parse_image_data(image) {
     }
     const payload = {
         user: sender_full_name,
-        title: $parent.attr("title"),
+        title: $parent.attr("data-id"),
         type,
         preview: preview_src,
         source,
