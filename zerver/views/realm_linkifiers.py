@@ -66,6 +66,7 @@ def update_linkifier(
             id=filter_id,
             pattern=pattern,
             url_format_string=url_format_string,
+            acting_user=user_profile,
         )
         return json_success(request)
     except RealmFilter.DoesNotExist:

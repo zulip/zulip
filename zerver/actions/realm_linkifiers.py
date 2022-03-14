@@ -76,7 +76,14 @@ def do_remove_linkifier(
     notify_linkifiers(realm, realm_linkifiers)
 
 
-def do_update_linkifier(realm: Realm, id: int, pattern: str, url_format_string: str) -> None:
+def do_update_linkifier(
+    realm: Realm,
+    id: int,
+    pattern: str,
+    url_format_string: str,
+    *,
+    acting_user: Optional[UserProfile],
+) -> None:
     pattern = pattern.strip()
     url_format_string = url_format_string.strip()
     linkifier = RealmFilter.objects.get(realm=realm, id=id)
@@ -86,4 +93,21 @@ def do_update_linkifier(realm: Realm, id: int, pattern: str, url_format_string: 
     linkifier.save(update_fields=["pattern", "url_format_string"])
 
     realm_linkifiers = linkifiers_for_realm(realm.id)
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=RealmAuditLog.REALM_LINKIFIER_CHANGED,
+        event_time=timezone_now(),
+        extra_data=orjson.dumps(
+            {
+                "realm_linkifiers": realm_linkifiers,
+                "changed_linkifier": LinkifierDict(
+                    pattern=pattern,
+                    url_format=url_format_string,
+                    id=linkifier.id,
+                ),
+            }
+        ).decode(),
+    )
+
     notify_linkifiers(realm, realm_linkifiers)
