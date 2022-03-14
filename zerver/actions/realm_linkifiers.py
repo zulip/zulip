@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional
 
 import orjson
+from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.types import LinkifierDict
@@ -18,20 +19,21 @@ from zerver.tornado.django_api import send_event
 
 def notify_linkifiers(realm: Realm, realm_linkifiers: List[LinkifierDict]) -> None:
     event: Dict[str, object] = dict(type="realm_linkifiers", realm_linkifiers=realm_linkifiers)
-    send_event(realm, event, active_user_ids(realm.id))
+    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
 
     # Below is code for backwards compatibility. The now deprecated
     # "realm_filters" event-type is used by older clients, and uses
     # tuples.
     realm_filters = realm_filters_for_realm(realm.id)
-    event = dict(type="realm_filters", realm_filters=realm_filters)
-    send_event(realm, event, active_user_ids(realm.id))
+    legacy_event = dict(type="realm_filters", realm_filters=realm_filters)
+    transaction.on_commit(lambda: send_event(realm, legacy_event, active_user_ids(realm.id)))
 
 
 # NOTE: Regexes must be simple enough that they can be easily translated to JavaScript
 # RegExp syntax. In addition to JS-compatible syntax, the following features are available:
 #   * Named groups will be converted to numbered groups automatically
 #   * Inline-regex flags will be stripped, and where possible translated to RegExp-wide flags
+@transaction.atomic(durable=True)
 def do_add_linkifier(
     realm: Realm, pattern: str, url_format_string: str, *, acting_user: Optional[UserProfile]
 ) -> int:
