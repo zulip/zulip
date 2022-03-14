@@ -1,9 +1,14 @@
 from typing import Dict, List, Optional
 
+import orjson
+from django.utils.timezone import now as timezone_now
+
 from zerver.lib.types import LinkifierDict
 from zerver.models import (
     Realm,
+    RealmAuditLog,
     RealmFilter,
+    UserProfile,
     active_user_ids,
     linkifiers_for_realm,
     realm_filters_for_realm,
@@ -27,7 +32,9 @@ def notify_linkifiers(realm: Realm, realm_linkifiers: List[LinkifierDict]) -> No
 # RegExp syntax. In addition to JS-compatible syntax, the following features are available:
 #   * Named groups will be converted to numbered groups automatically
 #   * Inline-regex flags will be stripped, and where possible translated to RegExp-wide flags
-def do_add_linkifier(realm: Realm, pattern: str, url_format_string: str) -> int:
+def do_add_linkifier(
+    realm: Realm, pattern: str, url_format_string: str, *, acting_user: Optional[UserProfile]
+) -> int:
     pattern = pattern.strip()
     url_format_string = url_format_string.strip()
     linkifier = RealmFilter(realm=realm, pattern=pattern, url_format_string=url_format_string)
@@ -35,6 +42,22 @@ def do_add_linkifier(realm: Realm, pattern: str, url_format_string: str) -> int:
     linkifier.save()
 
     realm_linkifiers = linkifiers_for_realm(realm.id)
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=RealmAuditLog.REALM_LINKIFIER_ADDED,
+        event_time=timezone_now(),
+        extra_data=orjson.dumps(
+            {
+                "realm_linkifiers": realm_linkifiers,
+                "added_linkifier": LinkifierDict(
+                    pattern=pattern,
+                    url_format=url_format_string,
+                    id=linkifier.id,
+                ),
+            }
+        ).decode(),
+    )
     notify_linkifiers(realm, realm_linkifiers)
 
     return linkifier.id

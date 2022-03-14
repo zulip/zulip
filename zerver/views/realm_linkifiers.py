@@ -33,6 +33,7 @@ def create_linkifier(
             realm=user_profile.realm,
             pattern=pattern,
             url_format_string=url_format_string,
+            acting_user=user_profile,
         )
         return json_success(request, data={"id": linkifier_id})
     except ValidationError as e:
