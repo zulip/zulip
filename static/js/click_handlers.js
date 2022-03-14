@@ -678,7 +678,7 @@ export function initialize() {
 
     // COMPOSE
 
-    $("body").on("click", "#compose-send-status .compose-send-status-close", () => {
+    $("body").on("click", "#compose-send-status #compose-send-status-close", () => {
         compose_error.hide();
     });
 

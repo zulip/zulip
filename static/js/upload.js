@@ -36,8 +36,12 @@ export function get_item(key, config) {
                 return "#compose-send-status";
             case "send_status":
                 return $("#compose-send-status");
+            case "send_status_visual":
+                return "#compose-status-visual";
+            case "send_status_cancel_button":
+                return $("#compose-send-status-cancel-upload");
             case "send_status_close_button":
-                return $(".compose-send-status-close");
+                return $("#compose-send-status-close");
             case "send_status_message":
                 return $("#compose-error-msg");
             case "send_status_upload_count":
@@ -68,6 +72,8 @@ export function get_item(key, config) {
                 return `#message-edit-send-status-${CSS.escape(config.row)}`;
             case "send_status":
                 return $(`#message-edit-send-status-${CSS.escape(config.row)}`);
+            case "send_status_visual":
+                return `#message-edit-send-status-${CSS.escape(config.row)}`;
             case "send_status_close_button":
                 return $(`#message-edit-send-status-${CSS.escape(config.row)}`).find(
                     ".send-status-close",
@@ -149,21 +155,6 @@ export function upload_files(uppy, config, files) {
     </p>
     `),
     );
-    get_item("send_status_close_button", config).one("click", () => {
-        for (const file of uppy.getFiles()) {
-            compose_ui.replace_syntax(
-                get_translated_status(file),
-                "",
-                get_item("textarea", config),
-            );
-        }
-        compose_ui.autosize_textarea(get_item("textarea", config));
-        uppy.cancelAll();
-        get_item("textarea", config).trigger("focus");
-        setTimeout(() => {
-            hide_upload_status(config);
-        }, 500);
-    });
 
     for (const file of files) {
         try {
@@ -219,7 +210,7 @@ export function setup_upload(config) {
     });
 
     uppy.use(ProgressBar, {
-        target: get_item("send_status_identifier", config),
+        target: get_item("send_status_visual", config),
         hideAfterFinish: false,
     });
 
@@ -227,6 +218,13 @@ export function setup_upload(config) {
         const files = event.target.files;
         upload_files(uppy, config, files);
         event.target.value = "";
+    });
+
+    get_item("send_status_cancel_button", config).on("click", () => {
+        uppy.cancelAll();
+        compose_ui.autosize_textarea(get_item("textarea", config));
+        get_item("textarea", config).trigger("focus");
+        setTimeout(() => hide_upload_status(config), 500);
     });
 
     const $drag_drop_container = get_item("drag_drop_container", config);
@@ -254,6 +252,12 @@ export function setup_upload(config) {
             files.push(file);
         }
         upload_files(uppy, config, files);
+    });
+
+    uppy.on("file-removed", (file) => {
+        const placeholder = get_translated_status(file);
+
+        compose_ui.replace_syntax(placeholder, "", get_item("textarea", config));
     });
 
     uppy.on("upload-success", (file, response) => {

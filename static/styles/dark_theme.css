@@ -155,12 +155,19 @@ body.dark-theme {
         }
     }
 
+    #compose_buttons
+        .reply_button_container
+        .compose_reply_button
+        .compose_reply_button_recipient_label {
+        color: hsl(215, 47%, 80%);
+    }
+
     .compose-send-status-close {
         color: hsl(0, 0%, 100%);
         opacity: 1;
     }
 
-    .compose-send-status-close:hover {
+    #compose-send-status-close:hover {
         opacity: 0.4;
     }
 

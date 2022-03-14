@@ -47,8 +47,16 @@
     </div>
     <div class="message_comp">
         <div class="alert" id="compose-send-status">
-            <span class="compose-send-status-close">&times;</span>
-            <span id="compose-error-msg"></span>
+            <div id="compose-send-status-core">
+                <span id="compose-error-msg"></span>
+                <div id="compose-status-visual"></div>
+            </div>
+            <div id="compose-send-status-controls">
+                <button type="button" id="compose-send-status-cancel-upload" class="btn btn-warning">
+                    {{t 'Cancel' }}
+                </button>
+                <button type="button" id="compose-send-status-close" class="close">×</button>
+            </div>
         </div>
         <div id="compose_resolved_topic" class="alert home-error-bar"></div>
         <div id="compose_invite_users" class="alert home-error-bar"></div>
