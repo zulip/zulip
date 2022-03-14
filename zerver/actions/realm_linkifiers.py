@@ -65,6 +65,7 @@ def do_add_linkifier(
     return linkifier.id
 
 
+@transaction.atomic(durable=True)
 def do_remove_linkifier(
     realm: Realm,
     pattern: Optional[str] = None,
