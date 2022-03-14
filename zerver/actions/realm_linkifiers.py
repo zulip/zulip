@@ -101,6 +101,7 @@ def do_remove_linkifier(
     notify_linkifiers(realm, realm_linkifiers)
 
 
+@transaction.atomic(durable=True)
 def do_update_linkifier(
     realm: Realm,
     id: int,
