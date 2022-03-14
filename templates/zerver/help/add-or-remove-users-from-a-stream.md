@@ -46,3 +46,25 @@ including streams the admin is not subscribed to.
 {end_tabs}
 
 [configure-invites]: /help/configure-who-can-invite-to-streams
+
+### From a user's profile (alternate method)
+
+This method is useful if you need to remove one user from multiple streams.
+
+{start_tabs}
+
+1. Hover over a user's name in the right sidebar.
+
+1. Click on the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>) to
+   the right of their name.
+
+1. Click **View full profile**.
+
+1. Select the **Streams** tab.
+
+1. Under **Subscribed streams**, find the stream you would like
+   to remove the user from.
+
+1. Click the **Unsubscribe** button in that row.
+
+{end_tabs}
