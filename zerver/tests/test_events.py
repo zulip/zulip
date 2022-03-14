@@ -1804,7 +1804,9 @@ class NormalActionsTest(BaseAction):
         regex = "#(?P<id>[0-9]+)"
         linkifier_id = events[0]["realm_linkifiers"][0]["id"]
         events = self.verify_action(
-            lambda: do_update_linkifier(self.user_profile.realm, linkifier_id, regex, url),
+            lambda: do_update_linkifier(
+                self.user_profile.realm, linkifier_id, regex, url, acting_user=None
+            ),
             num_events=2,
         )
         check_realm_linkifiers("events[0]", events[0])
