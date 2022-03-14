@@ -1795,7 +1795,8 @@ class NormalActionsTest(BaseAction):
         url = "https://realm.com/my_realm_filter/%(id)s"
 
         events = self.verify_action(
-            lambda: do_add_linkifier(self.user_profile.realm, regex, url), num_events=2
+            lambda: do_add_linkifier(self.user_profile.realm, regex, url, acting_user=None),
+            num_events=2,
         )
         check_realm_linkifiers("events[0]", events[0])
         check_realm_filters("events[1]", events[1])

@@ -56,7 +56,7 @@ Example: ./manage.py edit_linkifiers --realm=zulip --op=show
             if not url_format_string:
                 self.print_help("./manage.py", "edit_linkifiers")
                 raise CommandError
-            do_add_linkifier(realm, pattern, url_format_string)
+            do_add_linkifier(realm, pattern, url_format_string, acting_user=None)
             sys.exit(0)
         elif options["op"] == "remove":
             do_remove_linkifier(realm, pattern=pattern)

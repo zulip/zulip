@@ -23,6 +23,7 @@ from zerver.actions.realm_domains import (
     do_remove_realm_domain,
 )
 from zerver.actions.realm_icon import do_change_icon_source
+from zerver.actions.realm_linkifiers import do_add_linkifier
 from zerver.actions.realm_playgrounds import do_add_realm_playground, do_remove_realm_playground
 from zerver.actions.realm_settings import (
     do_deactivate_realm,
@@ -52,7 +53,7 @@ from zerver.lib.message import get_last_message_id
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.types import RealmPlaygroundDict
+from zerver.lib.types import LinkifierDict, RealmPlaygroundDict
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Message,
@@ -67,6 +68,7 @@ from zerver.models import (
     get_realm_domains,
     get_realm_playgrounds,
     get_stream,
+    linkifiers_for_realm,
 )
 
 
@@ -799,6 +801,37 @@ class TestRealmAuditLog(ZulipTestCase):
             RealmAuditLog.objects.filter(
                 realm=user.realm,
                 event_type=RealmAuditLog.REALM_PLAYGROUND_REMOVED,
+                event_time__gte=now,
+                acting_user=user,
+                extra_data=orjson.dumps(expected_extra_data).decode(),
+            ).count(),
+            1,
+        )
+
+    def test_realm_linkifier_entries(self) -> None:
+        user = self.example_user("iago")
+        intial_linkifiers = linkifiers_for_realm(user.realm.id)
+        now = timezone_now()
+        linkifier_id = do_add_linkifier(
+            user.realm,
+            pattern="#(?P<id>[123])",
+            url_format_string="https://realm.com/my_realm_filter/%(id)s",
+            acting_user=user,
+        )
+
+        added_linkfier = LinkifierDict(
+            pattern="#(?P<id>[123])",
+            url_format="https://realm.com/my_realm_filter/%(id)s",
+            id=linkifier_id,
+        )
+        expected_extra_data = {
+            "realm_linkifiers": intial_linkifiers + [added_linkfier],
+            "added_linkifier": added_linkfier,
+        }
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=RealmAuditLog.REALM_LINKIFIER_ADDED,
                 event_time__gte=now,
                 acting_user=user,
                 extra_data=orjson.dumps(expected_extra_data).decode(),
