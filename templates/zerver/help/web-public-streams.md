@@ -132,7 +132,8 @@ Zulip API:
 The following information is available to all users with an account,
 but not to logged out visitors:
 
-* Presence information, i.e. whether the user is currently online, their status,
+* Presence information, i.e. whether the user is currently online,
+  [their status](/help/status-and-availability),
   and whether they have set themselves as unavailable.
 * Detailed profile information, such as [custom profile
   fields](/help/add-custom-profile-fields).

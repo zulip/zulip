@@ -3,8 +3,9 @@
 Status and availability let your teammates know roughly how quickly you'll
 be responding to messages.
 
-A **status** is a customizable message visible to all team members. A
-typical status might be "in a meeting", "on vacation", or "visiting SF next week".
+A **status** is a customizable emoji and/or short message visible to all
+team members. A typical status message might be "in a meeting", "on vacation",
+or "visiting SF next week".
 
 Your **availability** is a colored dot (like <span class="indicator green solid"></span>)
 that indicates if you're currently active on Zulip, idle,
@@ -21,13 +22,17 @@ teammates know when you were last active.
 
 1. Click **Set a status**.
 
-1. Set a status messages and click **Save**.
+1. Select an emoji and/or write a short message, and click **Save**.
 
 {end_tabs}
 
-You can view anyone else's status by hovering over their name in the left or
-right sidebar, or by clicking their name or avatar in the main message feed. If
-they haven't set a status, no status will appear.
+Status emojis will appear to the right of a user's name in the right sidebar,
+in the list of private messages in the left sidebar and in the main message feed.
+
+You can view status messages by hovering over your or anyone else's name in the
+left or right sidebar, or by clicking the user's name or avatar in the main
+message feed. If someone hasn't set a message as part of their status, then no
+status message will appear.
 
 ## About availability
 
