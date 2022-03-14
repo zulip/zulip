@@ -80,3 +80,4 @@ you send. Zulip emoji are compatible with screen readers and other accessibility
 
 * [Add custom emoji](/help/custom-emoji)
 * [Emoji reactions](/help/emoji-reactions)
+* [Change how emoji are shown](/help/change-how-emoji-are-shown)

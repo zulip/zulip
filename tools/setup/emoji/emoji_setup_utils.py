@@ -34,7 +34,7 @@ REMAPPED_EMOJIS = {
 }
 
 # Emoticons and which emoji they should become. Duplicate emoji are allowed.
-# Changes here should be mimicked in `help/configure-emoticon-translations.md`.
+# Changes here should be mimicked in `help/change-how-emoji-are-shown#enable-emoticon-translations.md`.
 EMOTICON_CONVERSIONS = {
     ":)": ":smile:",
     "(:": ":smile:",

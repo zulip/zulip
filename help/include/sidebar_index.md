@@ -50,11 +50,10 @@
 * [Change your language](/help/change-your-language)
 * [Change your time zone](/help/change-your-timezone)
 * [Change the time format](/help/change-the-time-format)
-* [Configure emoticon translations](/help/configure-emoticon-translations)
+* [Change how emoji are shown](/help/change-how-emoji-are-shown)
 * [Configure default view](/help/configure-default-view)
 * [Enable full width display](/help/enable-full-width-display)
 * [Configure message view emoji animation behavior](/help/configure-message-view-emoji-animation)
-* [Manage your uploaded files](/help/manage-your-uploaded-files)
 
 ## Sending messages
 * [Open the compose box](/help/open-the-compose-box)

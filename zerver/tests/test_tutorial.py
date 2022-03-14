@@ -77,7 +77,7 @@ class TutorialTests(ZulipTestCase):
             expected_response = (
                 "Go to [Display settings](#settings/display-settings) "
                 "to [switch between the light and dark themes](/help/dark-theme), "
-                "[pick your favorite emoji theme](/help/emoji-and-emoticons#change-your-emoji-set), "
+                "[pick your favorite emoji theme](/help/change-how-emoji-are-shown#change-your-emoji-set), "
                 "[change your language](/help/change-your-language), and make other tweaks to your Zulip experience."
             )
             self.assertEqual(most_recent_message(user).content, expected_response)
