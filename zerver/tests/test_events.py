@@ -1813,7 +1813,8 @@ class NormalActionsTest(BaseAction):
         check_realm_filters("events[1]", events[1])
 
         events = self.verify_action(
-            lambda: do_remove_linkifier(self.user_profile.realm, regex), num_events=2
+            lambda: do_remove_linkifier(self.user_profile.realm, regex, acting_user=None),
+            num_events=2,
         )
         check_realm_linkifiers("events[0]", events[0])
         check_realm_filters("events[1]", events[1])

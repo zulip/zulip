@@ -59,7 +59,7 @@ Example: ./manage.py edit_linkifiers --realm=zulip --op=show
             do_add_linkifier(realm, pattern, url_format_string, acting_user=None)
             sys.exit(0)
         elif options["op"] == "remove":
-            do_remove_linkifier(realm, pattern=pattern)
+            do_remove_linkifier(realm, pattern=pattern, acting_user=None)
             sys.exit(0)
         else:
             self.print_help("./manage.py", "edit_linkifiers")

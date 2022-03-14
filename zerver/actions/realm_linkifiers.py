@@ -64,15 +64,38 @@ def do_add_linkifier(
 
 
 def do_remove_linkifier(
-    realm: Realm, pattern: Optional[str] = None, id: Optional[int] = None
+    realm: Realm,
+    pattern: Optional[str] = None,
+    id: Optional[int] = None,
+    *,
+    acting_user: Optional[UserProfile] = None,
 ) -> None:
     if pattern is not None:
-        RealmFilter.objects.get(realm=realm, pattern=pattern).delete()
+        realm_linkifier = RealmFilter.objects.get(realm=realm, pattern=pattern)
     else:
         assert id is not None
-        RealmFilter.objects.get(realm=realm, id=id).delete()
+        realm_linkifier = RealmFilter.objects.get(realm=realm, id=id)
+
+    pattern = realm_linkifier.pattern
+    url_format = realm_linkifier.url_format_string
+    realm_linkifier.delete()
 
     realm_linkifiers = linkifiers_for_realm(realm.id)
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=RealmAuditLog.REALM_LINKIFIER_REMOVED,
+        event_time=timezone_now(),
+        extra_data=orjson.dumps(
+            {
+                "realm_linkifiers": realm_linkifiers,
+                "removed_linkifier": {
+                    "pattern": pattern,
+                    "url_format": url_format,
+                },
+            }
+        ).decode(),
+    )
     notify_linkifiers(realm, realm_linkifiers)
 
 

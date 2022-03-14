@@ -45,7 +45,7 @@ def delete_linkifier(
     request: HttpRequest, user_profile: UserProfile, filter_id: int
 ) -> HttpResponse:
     try:
-        do_remove_linkifier(realm=user_profile.realm, id=filter_id)
+        do_remove_linkifier(realm=user_profile.realm, id=filter_id, acting_user=None)
     except RealmFilter.DoesNotExist:
         raise JsonableError(_("Linkifier not found."))
     return json_success(request)
