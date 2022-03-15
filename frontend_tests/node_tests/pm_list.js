@@ -7,7 +7,6 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const narrow_state = mock_esm("../../static/js/narrow_state");
-const pm_list_dom = mock_esm("../../static/js/pm_list_dom");
 const unread = mock_esm("../../static/js/unread");
 const vdom = mock_esm("../../static/js/vdom", {
     render: () => "fake-dom-for-pm-list",
@@ -76,21 +75,14 @@ test("close", () => {
     assert.ok(collapsed);
 });
 
-test("build_private_messages_list", ({override}) => {
+test("get_convos", ({override}) => {
     const timestamp = 0;
     pm_conversations.recent.insert([101, 102], timestamp);
     pm_conversations.recent.insert([103], timestamp);
     let num_unread_for_person = 1;
     override(unread, "num_unread_for_person", () => num_unread_for_person);
 
-    let pm_data;
-
-    override(pm_list_dom, "pm_ul", (data) => {
-        pm_data = data;
-    });
-
     override(narrow_state, "filter", () => {});
-    pm_list._build_private_messages_list();
 
     const expected_data = [
         {
@@ -119,35 +111,31 @@ test("build_private_messages_list", ({override}) => {
         },
     ];
 
+    let pm_data = pm_list_data.get_convos();
     assert.deepEqual(pm_data, expected_data);
 
     num_unread_for_person = 0;
-    pm_list._build_private_messages_list();
+
+    pm_data = pm_list_data.get_convos();
     expected_data[0].unread = 0;
     expected_data[0].is_zero = true;
     expected_data[1].unread = 0;
     expected_data[1].is_zero = true;
     assert.deepEqual(pm_data, expected_data);
 
-    pm_list._build_private_messages_list();
+    pm_data = pm_list_data.get_convos();
     assert.deepEqual(pm_data, expected_data);
 });
 
-test("build_private_messages_list_bot", ({override}) => {
+test("get_convos bot", ({override}) => {
     const timestamp = 0;
     pm_conversations.recent.insert([101, 102], timestamp);
-    pm_conversations.recent.insert([314], timestamp);
+    pm_conversations.recent.insert([bot_test.user_id], timestamp);
 
     override(unread, "num_unread_for_person", () => 1);
 
-    let pm_data;
-    override(pm_list_dom, "pm_ul", (data) => {
-        pm_data = data;
-    });
-
     override(narrow_state, "filter", () => {});
 
-    pm_list._build_private_messages_list();
     const expected_data = [
         {
             recipients: "Outgoing webhook",
@@ -173,6 +161,7 @@ test("build_private_messages_list_bot", ({override}) => {
         },
     ];
 
+    const pm_data = pm_list_data.get_convos();
     assert.deepEqual(pm_data, expected_data);
 });
 
