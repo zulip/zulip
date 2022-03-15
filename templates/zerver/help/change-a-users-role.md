@@ -15,11 +15,6 @@ there is at least one other owner in the organization (consider
 promoting a new owner or [deactivating the
 organization](/help/deactivate-your-organization) instead).
 
-**Changes**: Organization owners were introduced in Zulip 3.0. Users
-who were marked as administrators in older Zulip instances are
-automatically converted during the upgrade to Zulip 3.0 into owners
-(who have the same permissions as administrators did previously).
-
 ### Change a user's role
 
 {start_tabs}
