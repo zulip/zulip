@@ -28,6 +28,7 @@ mock_esm("../../static/js/user_status", {
 
 const people = zrequire("people");
 const pm_conversations = zrequire("pm_conversations");
+const pm_list_data = zrequire("pm_list_data");
 const pm_list = zrequire("pm_list");
 
 const alice = {
@@ -206,7 +207,7 @@ test("get_active_user_ids_string", ({override}) => {
 
     override(narrow_state, "filter", () => active_filter);
 
-    assert.equal(pm_list.get_active_user_ids_string(), undefined);
+    assert.equal(pm_list_data.get_active_user_ids_string(), undefined);
 
     function set_filter_result(emails) {
         active_filter = {
@@ -218,10 +219,10 @@ test("get_active_user_ids_string", ({override}) => {
     }
 
     set_filter_result([]);
-    assert.equal(pm_list.get_active_user_ids_string(), undefined);
+    assert.equal(pm_list_data.get_active_user_ids_string(), undefined);
 
     set_filter_result(["bob@zulip.com,alice@zulip.com"]);
-    assert.equal(pm_list.get_active_user_ids_string(), "101,102");
+    assert.equal(pm_list_data.get_active_user_ids_string(), "101,102");
 });
 
 function private_filter() {
@@ -238,10 +239,10 @@ test("is_all_privates", ({override}) => {
     override(narrow_state, "filter", () => filter);
 
     filter = undefined;
-    assert.equal(pm_list.is_all_privates(), false);
+    assert.equal(pm_list_data.is_all_privates(), false);
 
     filter = private_filter();
-    assert.equal(pm_list.is_all_privates(), true);
+    assert.equal(pm_list_data.is_all_privates(), true);
 });
 
 test("expand", ({override, override_rewire}) => {
