@@ -120,6 +120,7 @@ EXEMPT_FILES = make_set(
         "static/js/overlays.js",
         "static/js/padded_widget.ts",
         "static/js/page_params.ts",
+        "static/js/pm_list.js",
         "static/js/pm_list_dom.js",
         "static/js/poll_widget.js",
         "static/js/popover_menus.js",
