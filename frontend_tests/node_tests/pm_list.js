@@ -201,29 +201,6 @@ test("update_dom_with_unread_counts", ({override}) => {
     assert.ok(!total_count.visible());
 });
 
-test("get_active_user_ids_string", ({override}) => {
-    let active_filter;
-
-    override(narrow_state, "filter", () => active_filter);
-
-    assert.equal(pm_list.get_active_user_ids_string(), undefined);
-
-    function set_filter_result(emails) {
-        active_filter = {
-            operands: (operand) => {
-                assert.equal(operand, "pm-with");
-                return emails;
-            },
-        };
-    }
-
-    set_filter_result([]);
-    assert.equal(pm_list.get_active_user_ids_string(), undefined);
-
-    set_filter_result(["bob@zulip.com,alice@zulip.com"]);
-    assert.equal(pm_list.get_active_user_ids_string(), "101,102");
-});
-
 function private_filter() {
     return {
         operands: (operand) => {
