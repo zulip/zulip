@@ -55,9 +55,8 @@ function test(label, f) {
 }
 
 test("get_convos", ({override}) => {
-    const timestamp = 0;
-    pm_conversations.recent.insert([101, 102], timestamp);
-    pm_conversations.recent.insert([103], timestamp);
+    pm_conversations.recent.insert([alice.user_id, bob.user_id], 1);
+    pm_conversations.recent.insert([me.user_id], 2);
     let num_unread_for_person = 1;
     override(unread, "num_unread_for_person", () => num_unread_for_person);
 
@@ -107,9 +106,8 @@ test("get_convos", ({override}) => {
 });
 
 test("get_convos bot", ({override}) => {
-    const timestamp = 0;
-    pm_conversations.recent.insert([101, 102], timestamp);
-    pm_conversations.recent.insert([bot_test.user_id], timestamp);
+    pm_conversations.recent.insert([alice.user_id, bob.user_id], 1);
+    pm_conversations.recent.insert([bot_test.user_id], 2);
 
     override(unread, "num_unread_for_person", () => 1);
 
