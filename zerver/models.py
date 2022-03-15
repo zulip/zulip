@@ -86,6 +86,7 @@ from zerver.lib.types import (
     ProfileData,
     ProfileDataElementBase,
     ProfileDataElementValue,
+    RealmPlaygroundDict,
     RealmUserValidator,
     UnspecifiedValue,
     UserFieldElement,
@@ -1381,11 +1382,11 @@ class RealmPlayground(models.Model):
         return f"<RealmPlayground({self.realm.string_id}): {self.pygments_language} {self.name}>"
 
 
-def get_realm_playgrounds(realm: Realm) -> List[Dict[str, Union[int, str]]]:
-    playgrounds: List[Dict[str, Union[int, str]]] = []
+def get_realm_playgrounds(realm: Realm) -> List[RealmPlaygroundDict]:
+    playgrounds: List[RealmPlaygroundDict] = []
     for playground in RealmPlayground.objects.filter(realm=realm).all():
         playgrounds.append(
-            dict(
+            RealmPlaygroundDict(
                 id=playground.id,
                 name=playground.name,
                 pygments_language=playground.pygments_language,

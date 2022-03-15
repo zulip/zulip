@@ -44,6 +44,7 @@ from zerver.lib.message import get_last_message_id
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.types import RealmPlaygroundDict
 from zerver.models import (
     Message,
     Realm,
@@ -745,12 +746,12 @@ class TestRealmAuditLog(ZulipTestCase):
             pygments_language="Python",
             url_prefix="https://python.example.com",
         )
-        added_playground: Dict[str, Union[int, str]] = {
-            "id": playground_id,
-            "name": "Python playground",
-            "pygments_language": "Python",
-            "url_prefix": "https://python.example.com",
-        }
+        added_playground = RealmPlaygroundDict(
+            id=playground_id,
+            name="Python playground",
+            pygments_language="Python",
+            url_prefix="https://python.example.com",
+        )
         expected_extra_data = {
             "realm_playgrounds": intial_playgrounds + [added_playground],
             "added_playground": added_playground,

@@ -227,3 +227,10 @@ class SubscriptionInfo:
     subscriptions: List[SubscriptionStreamDict]
     unsubscribed: List[SubscriptionStreamDict]
     never_subscribed: List[NeverSubscribedStreamDict]
+
+
+class RealmPlaygroundDict(TypedDict):
+    id: int
+    name: str
+    pygments_language: str
+    url_prefix: str
