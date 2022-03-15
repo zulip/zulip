@@ -213,8 +213,8 @@ jobs:
             name: 3.4 Version Upgrade
             os: buster
 
-          - docker_image: zulip/ci:bullseye-4.10
-            name: 4.10 Version Upgrade
+          - docker_image: zulip/ci:bullseye-4.11
+            name: 4.11 Version Upgrade
             os: bullseye
 
     name: ${{ matrix.name  }}
