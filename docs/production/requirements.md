@@ -5,6 +5,7 @@ To run a Zulip server, you will need:
 - A dedicated machine or VM
 - A supported OS:
   - Ubuntu 20.04
+  - Ubuntu 22.04
   - Debian 11
 - At least 2 GB RAM, and 10 GB disk space
   - If you expect 100+ users: 4 GB RAM, and 2 CPUs
@@ -32,7 +33,7 @@ on issues you'll encounter](install-existing-server.md).
 
 #### Operating system
 
-Ubuntu 20.04 and Debian 11
+Ubuntu 20.04, Ubuntu 22.04, and Debian 11
 are supported for running Zulip in production. You can also
 run Zulip on other platforms that support Docker using
 [docker-zulip][docker-zulip-homepage].
