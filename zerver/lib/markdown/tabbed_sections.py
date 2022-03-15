@@ -76,6 +76,8 @@ TAB_SECTION_LABELS = {
     "instructions-for-all-platforms": "Instructions for all platforms",
     "public-streams": "Public streams",
     "private-streams": "Private streams",
+    "via-user-profile": "Via the user's profile",
+    "via-organization-settings": "Via organization settings",
 }
 
 
