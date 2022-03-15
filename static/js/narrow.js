@@ -262,31 +262,40 @@ export function activate(raw_operators, opts) {
     //
     // We attempt the match the stream and topic with that of the
     // message in case the message was moved after the link was
-    // created. This ensures near / id links work will redirect
+    // created. This ensures near / id links work and will redirect
     // correctly if the topic was moved (including being resolved).
     if (id_info.target_id && filter.has_operator("stream") && filter.has_operator("topic")) {
         const target_message = message_store.get(id_info.target_id);
-        const adjusted_operators = [];
-        let operators_changed = false;
 
         function adjusted_operators_if_moved(operators, message) {
-            // TODO/BUG: Should this only rewrite the operators if,
-            // after parsing message_edit_history, we find that the
-            // requested stream/topic matches some historical state?
+            const adjusted_operators = [];
+            let operators_changed = false;
+
             for (const operator of operators) {
                 const adjusted_operator = {...operator};
                 if (
                     operator.operator === "stream" &&
-                    operator.operand !== message.display_recipient
+                    !util.lower_same(operator.operand, message.display_recipient)
                 ) {
                     adjusted_operator.operand = message.display_recipient;
                     operators_changed = true;
-                } else if (operator.operator === "topic" && operator.operand !== message.topic) {
+                }
+
+                if (
+                    operator.operator === "topic" &&
+                    !util.lower_same(operator.operand, message.topic)
+                ) {
                     adjusted_operator.operand = message.topic;
                     operators_changed = true;
                 }
+
                 adjusted_operators.push(adjusted_operator);
             }
+
+            if (!operators_changed) {
+                return null;
+            }
+
             return adjusted_operators;
         }
 
@@ -296,14 +305,43 @@ export function activate(raw_operators, opts) {
             // the stream/topic pair that was requested to some other
             // location, then we should retarget this narrow operation
             // to where the message is located now.
-            const adjusted_operators = adjusted_operators_if_moved(raw_operators, target_message);
-            if (operators_changed) {
-                activate(adjusted_operators, {
-                    ...opts,
-                    // Update the URL fragment to reflect the redirect.
-                    change_hash: true,
-                });
-                return;
+            const narrow_topic = filter.operands("topic")[0];
+            const narrow_stream_name = filter.operands("stream")[0];
+            const narrow_stream_id = stream_data.get_sub(narrow_stream_name).stream_id;
+            const narrow_dict = {stream_id: narrow_stream_id, topic: narrow_topic};
+
+            const narrow_exists_in_edit_history =
+                message_edit.stream_and_topic_exist_in_edit_history(
+                    target_message,
+                    narrow_stream_id,
+                    narrow_topic,
+                );
+
+            // It's possible for a message to have moved to another
+            // topic and then moved back to the current topic. In this
+            // situation, narrow_exists_in_edit_history will be true,
+            // but we don't need to redirect the narrow.
+            const narrow_matches_target_message = util.same_stream_and_topic(
+                target_message,
+                narrow_dict,
+            );
+
+            if (
+                !narrow_matches_target_message &&
+                (narrow_exists_in_edit_history || !page_params.realm_allow_edit_history)
+            ) {
+                const adjusted_operators = adjusted_operators_if_moved(
+                    raw_operators,
+                    target_message,
+                );
+                if (adjusted_operators !== null) {
+                    activate(adjusted_operators, {
+                        ...opts,
+                        // Update the URL fragment to reflect the redirect.
+                        change_hash: true,
+                    });
+                    return;
+                }
             }
         } else if (!opts.fetched_target_message) {
             // If we don't have the target message ID locally and
