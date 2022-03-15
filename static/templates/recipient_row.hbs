@@ -25,9 +25,9 @@
 
             {{! topic stuff }}
             <span class="stream_topic">
-                {{! topic link }}
+                {{! link to topic or near view of message }}
                 <a class="message_label_clickable narrows_by_topic"
-                  href="{{topic_url}}"
+                  href="{{recipient_bar_url}}"
                   title="{{#tr}}Narrow to stream &quot;{display_recipient}&quot;, topic &quot;{topic}&quot;{{/tr}}">
                     {{#if use_match_properties}}
                         {{{match_topic}}}

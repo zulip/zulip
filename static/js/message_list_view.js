@@ -399,6 +399,13 @@ export class MessageListView {
                     current_group.message_containers[0],
                 );
                 current_group.message_containers.at(-1).include_footer = true;
+                // Clicking on the recipient bar from views like search (where
+                // collapse_messages is false) should link to the near view for
+                // the message so that the messages can't be marked read. Otherwise
+                // we link more generally to the topic.
+                current_group.recipient_bar_url = this.collapse_messages
+                    ? current_group.topic_url
+                    : current_group.message_containers[0].msg.url;
                 new_message_groups.push(current_group);
             }
         };

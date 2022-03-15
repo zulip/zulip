@@ -898,15 +898,13 @@ export function by_topic(target_id, opts) {
         return;
     }
 
-    // We don't check msg_list.can_mark_messages_read here only because
-    // the target msg_list isn't initialized yet; in any case, the
-    // message is about to be marked read in the new view.
-    unread_ops.notify_server_message_read(original);
-
     const search_terms = [
         {operator: "stream", operand: original.stream},
         {operator: "topic", operand: original.topic},
     ];
+    if (!message_lists.current.can_mark_messages_read()) {
+        search_terms.push({operator: "near", operand: target_id});
+    }
     opts = {then_select_id: target_id, ...opts};
     activate(search_terms, opts);
 }

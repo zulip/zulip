@@ -48,6 +48,7 @@ const {Filter} = zrequire("../js/filter");
 const {MessageListView} = zrequire("../js/message_list_view");
 const message_list = zrequire("message_list");
 const muted_users = zrequire("muted_users");
+const stream_data = zrequire("stream_data");
 
 let next_timestamp = 1500000000;
 
@@ -680,6 +681,71 @@ test("merge_message_groups", () => {
         assert.deepEqual(result.rerender_groups, []);
         assert.deepEqual(result.append_messages, []);
         assert.deepEqual(result.rerender_messages_next_same_sender, []);
+    })();
+});
+
+test("build_message_groups", () => {
+    function build_message(content, id) {
+        stream_data.add_sub({stream_id: 13, name: "test"});
+
+        return {
+            msg: {
+                clean_reactions: new Map(),
+                collapsed: false,
+                content,
+                display_recipient: "Zoolippy",
+                id,
+                is_stream: true,
+                recipient_id: 35,
+                sender_full_name: "King Hamlet",
+                sender_id: 10,
+                sender_email: "hamlet@zulip.com",
+                stream: "test",
+                stream_id: 13,
+                timestamp: 1646398167,
+                topic: "fancy topic",
+                type: "stream",
+                unread: false,
+                url: `http://zulip.zulipdev.com/#narrow/stream/13-test/topic/fancy.20topic/near/${id}`,
+            },
+            stream_url: "#narrow/stream/13-test",
+            timestr: "4:49 AM",
+            topic_url: "#narrow/stream/13-test/topic/fancy.20topic",
+        };
+    }
+
+    (function test_collapse_messages_true() {
+        // When messages are collapsed (e.g. All Messages view) the recipient bar
+        // should link to the recipient (topic) directly.
+        const list = new MessageListView(undefined, undefined, true);
+        const groups = list.build_message_groups([
+            build_message("<p>Ah what a beautiful message out today.</p>", 1),
+            build_message("<p>It sure is beautiful.</p>", 2),
+        ]);
+        assert.equal(groups.length, 1);
+        assert.equal(groups[0].message_containers.length, 2);
+        assert.equal(groups[0].recipient_bar_url, "#narrow/stream/13-test/topic/fancy.20topic");
+    })();
+
+    (function test_collapse_messages_false() {
+        // When messages are not collapsed (e.g. Search view) the recipient bar
+        // should link to the single attached message in a near view.
+        const list = new MessageListView(undefined, undefined, false);
+        const groups = list.build_message_groups([
+            build_message("<p>Ah what a beautiful message out today.</p>", 1),
+            build_message("<p>It sure is beautiful.</p>", 2),
+        ]);
+        assert.equal(groups.length, 2);
+        assert.equal(groups[0].message_containers.length, 1);
+        assert.equal(groups[1].message_containers.length, 1);
+        assert.equal(
+            groups[0].recipient_bar_url,
+            new URL("#narrow/stream/13-test/topic/fancy.20topic/near/1", window.location).href,
+        );
+        assert.equal(
+            groups[1].recipient_bar_url,
+            new URL("#narrow/stream/13-test/topic/fancy.20topic/near/2", window.location).href,
+        );
     })();
 });
 
