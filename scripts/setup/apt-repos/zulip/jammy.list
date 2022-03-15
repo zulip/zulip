@@ -4,3 +4,9 @@ deb-src http://apt.postgresql.org/pub/repos/apt/ jammy-pgdg main
 # Old versions for https://github.com/pgroonga/pgroonga/issues/203 were not built for jammy
 deb http://apt-archive.postgresql.org/pub/repos/apt/ impish-pgdg-archive main
 deb-src http://apt-archive.postgresql.org/pub/repos/apt/ impish-pgdg-archive main
+deb http://archive.ubuntu.com/ubuntu impish main
+deb http://archive.ubuntu.com/ubuntu impish-updates main
+deb http://archive.ubuntu.com/ubuntu impish-security main
+
+deb http://ppa.launchpad.net/groonga/ppa/ubuntu jammy main
+deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu jammy main
