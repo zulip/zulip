@@ -8097,8 +8097,10 @@ def do_remove_realm_domain(
     transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
 
 
-def notify_realm_playgrounds(realm: Realm) -> None:
-    event = dict(type="realm_playgrounds", realm_playgrounds=get_realm_playgrounds(realm))
+def notify_realm_playgrounds(
+    realm: Realm, realm_playgrounds: List[Dict[str, Union[int, str]]]
+) -> None:
+    event = dict(type="realm_playgrounds", realm_playgrounds=realm_playgrounds)
     send_event(realm, event, active_user_ids(realm.id))
 
 
@@ -8109,13 +8111,16 @@ def do_add_realm_playground(realm: Realm, **kwargs: Any) -> int:
     # before calling this function.
     realm_playground.full_clean()
     realm_playground.save()
-    notify_realm_playgrounds(realm)
+    realm_playgrounds = get_realm_playgrounds(realm)
+    notify_realm_playgrounds(realm, realm_playgrounds)
+
     return realm_playground.id
 
 
 def do_remove_realm_playground(realm: Realm, realm_playground: RealmPlayground) -> None:
     realm_playground.delete()
-    notify_realm_playgrounds(realm)
+    realm_playgrounds = get_realm_playgrounds(realm)
+    notify_realm_playgrounds(realm, realm_playgrounds)
 
 
 def get_occupied_streams(realm: Realm) -> QuerySet:
