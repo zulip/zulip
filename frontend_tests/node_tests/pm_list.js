@@ -2,22 +2,13 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const narrow_state = mock_esm("../../static/js/narrow_state");
 const unread = mock_esm("../../static/js/unread");
-const vdom = mock_esm("../../static/js/vdom", {
-    render: () => "fake-dom-for-pm-list",
-});
 
-mock_esm("../../static/js/stream_popover", {
-    hide_topic_popover() {},
-});
-mock_esm("../../static/js/ui", {
-    get_content_element: (element) => element,
-});
 mock_esm("../../static/js/user_status", {
     is_away: () => false,
     get_status_emoji: () => ({
@@ -61,19 +52,9 @@ people.initialize_current_user(me.user_id);
 function test(label, f) {
     run_test(label, ({override, override_rewire}) => {
         pm_conversations.clear_for_testing();
-        pm_list.clear_for_testing();
         f({override, override_rewire});
     });
 }
-
-test("close", () => {
-    let collapsed;
-    $("#private-container").empty = () => {
-        collapsed = true;
-    };
-    pm_list.close();
-    assert.ok(collapsed);
-});
 
 test("get_convos", ({override}) => {
     const timestamp = 0;
@@ -232,64 +213,4 @@ test("is_all_privates", ({override}) => {
 
     filter = private_filter();
     assert.equal(pm_list_data.is_all_privates(), true);
-});
-
-test("expand", ({override, override_rewire}) => {
-    override(narrow_state, "filter", private_filter);
-    override(narrow_state, "active", () => true);
-    override_rewire(pm_list, "_build_private_messages_list", () => "PM_LIST_CONTENTS");
-    let html_updated;
-    override(vdom, "update", () => {
-        html_updated = true;
-    });
-
-    assert.ok(!$(".top_left_private_messages").hasClass("active-filter"));
-
-    pm_list.expand();
-    assert.ok(html_updated);
-    assert.ok($(".top_left_private_messages").hasClass("active-filter"));
-});
-
-test("update_private_messages", ({override, override_rewire}) => {
-    let html_updated;
-    let container_found;
-
-    override(narrow_state, "filter", private_filter);
-    override(narrow_state, "active", () => true);
-    override_rewire(pm_list, "_build_private_messages_list", () => "PM_LIST_CONTENTS");
-
-    $("#private-container").find = (sel) => {
-        assert.equal(sel, "ul");
-        container_found = true;
-    };
-
-    override(vdom, "update", (replace_content, find) => {
-        html_updated = true;
-
-        // get line coverage for simple one-liners
-        replace_content();
-        find();
-    });
-
-    pm_list.expand();
-    pm_list.update_private_messages();
-    assert.ok(html_updated);
-    assert.ok(container_found);
-});
-
-test("ensure coverage", ({override}) => {
-    // These aren't rigorous; they just cover cases
-    // where functions early exit.
-    override(narrow_state, "active", () => false);
-
-    with_field(
-        vdom,
-        "update",
-        () => {
-            throw new Error("we should not update the dom");
-        },
-        () => {
-            pm_list.update_private_messages();
-        },
-    );
 });
