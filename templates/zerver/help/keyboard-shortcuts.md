@@ -67,6 +67,8 @@ below, and add more to your repertoire as needed.
 
 * **Scroll down**: `PgDn`, `J`, or `Spacebar`
 
+* **Jump to Previous Location**: `Alt + Left`(Windows) , `Option + Left`(MacOS)
+
 ## Narrowing
 
 * **Narrow to next unread topic**: `n`
