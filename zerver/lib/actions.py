@@ -182,6 +182,7 @@ from zerver.lib.types import (
     ProfileFieldData,
     RawStreamDict,
     RawSubscriptionDict,
+    RealmPlaygroundDict,
     SubscriptionInfo,
     SubscriptionStreamDict,
     UnspecifiedValue,
@@ -8097,9 +8098,7 @@ def do_remove_realm_domain(
     transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
 
 
-def notify_realm_playgrounds(
-    realm: Realm, realm_playgrounds: List[Dict[str, Union[int, str]]]
-) -> None:
+def notify_realm_playgrounds(realm: Realm, realm_playgrounds: List[RealmPlaygroundDict]) -> None:
     event = dict(type="realm_playgrounds", realm_playgrounds=realm_playgrounds)
     transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
 
@@ -8123,12 +8122,12 @@ def do_add_realm_playground(
         extra_data=orjson.dumps(
             {
                 "realm_playgrounds": realm_playgrounds,
-                "added_playground": {
-                    "id": realm_playground.id,
-                    "name": realm_playground.name,
-                    "pygments_language": realm_playground.pygments_language,
-                    "url_prefix": realm_playground.url_prefix,
-                },
+                "added_playground": RealmPlaygroundDict(
+                    id=realm_playground.id,
+                    name=realm_playground.name,
+                    pygments_language=realm_playground.pygments_language,
+                    url_prefix=realm_playground.url_prefix,
+                ),
             }
         ).decode(),
     )
