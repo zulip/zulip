@@ -7,6 +7,19 @@ up-to-date list of raw changes.
 
 ## Zulip 4.x series
 
+## Zulip 4.11 -- 2022-03-15
+
+- CVE-2022-24751: Zulip Server 4.0 and above were susceptible to a
+  race condition during user deactivation, where a simultaneous access
+  by the user being deactivated may, in rare cases, allow continued
+  access by the deactivated user. This access could theoretically
+  continue until one of the following events happens:
+  - The session expires from memcached; this defaults to two weeks, and
+    is controlled by SESSION_COOKIE_AGE in /etc/zulip/settings.py
+  - The session cache is evicted from memcached by other cached data.
+  - The server is upgraded, which clears the cache.
+- Updated translations.
+
 ## Zulip 4.10 -- 2022-02-25
 
 - CVE-2022-21706: Reusable invitation links could be improperly used
