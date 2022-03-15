@@ -2,21 +2,21 @@
   data-email="{{bot.email}}" data-type="{{bot.bot_type}}">
     <div class="bot_edit_errors alert alert-error hide"></div>
     <div>
-        <div>
-            <label>{{t "Bot email" }}</label>
-            <div class="edit_bot_email">{{bot.email}}</div>
-        </div>
         <div class="edit-bot-form-box">
+            <div class="input-group edit-bot-name">
+                <label for="edit_bot_name">{{t "Full name" }}</label>
+                <input id="edit_bot_name" type="text" name="bot_name" class="edit_bot_name required" value="{{bot.full_name}}" maxlength=50 />
+                <div><label for="edit_bot_name" generated="true" class="text-error"></label></div>
+            </div>
+            <div class="input-group">
+                <label for="bot_email">{{t "Bot email" }}</label>
+                <input type="text" autocomplete="off" name="bot_email" value="{{ bot.email }}" readonly/>
+            </div>
             <div class="edit-bot-owner">
                 <label>{{t "Owner" }}</label>
                 {{> dropdown_list_widget
                   widget_name="bot_owner"
                   list_placeholder=(t 'Filter users')}}
-            </div>
-            <div class="edit-bot-name">
-                <label for="edit_bot_name">{{t "Full name" }}</label>
-                <input id="edit_bot_name" type="text" name="bot_name" class="edit_bot_name required" value="{{bot.full_name}}" maxlength=50 />
-                <div><label for="edit_bot_name" generated="true" class="text-error"></label></div>
             </div>
             <div id="service_data">
             </div>

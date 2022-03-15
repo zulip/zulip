@@ -944,9 +944,6 @@ input[type="checkbox"] {
     padding: 0;
 
     label {
-        text-transform: uppercase;
-        font-weight: 600;
-        color: hsl(0, 0%, 67%);
         margin-top: 5px;
     }
 
@@ -960,7 +957,7 @@ input[type="checkbox"] {
     font-size: 18px;
     text-align: left;
     margin-top: 0;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
 
     overflow: hidden;
     max-height: 1.1em;
