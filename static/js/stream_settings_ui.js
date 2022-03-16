@@ -1022,12 +1022,14 @@ export function update_web_public_stream_privacy_option_state($container) {
         }
         $web_public_stream_elem.closest(".radio-input-parent").hide();
         $container
-            .find(".stream-privacy-values .radio-input-parent:visible:last")
+            .find(".stream-privacy-values .radio-input-parent:visible")
+            .last()
             .css("border-bottom", "none");
     } else {
         if (!$web_public_stream_elem.is(":visible")) {
             $container
-                .find(".stream-privacy-values .radio-input-parent:visible:last")
+                .find(".stream-privacy-values .radio-input-parent:visible")
+                .last()
                 .css("border-bottom", "");
             $web_public_stream_elem.closest(".radio-input-parent").show();
         }

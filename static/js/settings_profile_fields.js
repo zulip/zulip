@@ -126,7 +126,7 @@ function clear_form_data() {
     $("#custom_external_account_url_pattern").hide();
     $("#profile_field_external_accounts").hide();
     $("#profile_field_external_accounts_type").val(
-        $("#profile_field_external_accounts_type option:first").val(),
+        $("#profile_field_external_accounts_type option:first-child").val(),
     );
 }
 

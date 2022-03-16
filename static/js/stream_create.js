@@ -294,7 +294,7 @@ export function show_new_stream_modal() {
     stream_create_subscribers.build_widgets();
 
     // Select the first visible and enabled choice for stream privacy.
-    $("#make-invite-only input:visible:not([disabled]):first").prop("checked", true);
+    $("#make-invite-only input:visible:not([disabled])").first().prop("checked", true);
     // Make the options default to the same each time:
     // "announce stream" on.
     $("#stream_creation_form .stream-message-retention-days-input").hide();
