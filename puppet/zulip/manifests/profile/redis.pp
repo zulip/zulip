@@ -17,7 +17,7 @@ class zulip::profile::redis {
                       $redis,
                       ]
 
-  package { $redis_packages: ensure => 'installed' }
+  package { $redis_packages: ensure => installed }
 
   $file = "${redis_dir}/redis.conf"
   $zulip_redisconf = "${redis_dir}/zulip-redis.conf"
@@ -61,7 +61,7 @@ class zulip::profile::redis {
   }
 
   file { '/run/redis':
-    ensure  => 'directory',
+    ensure  => directory,
     owner   => 'redis',
     group   => 'redis',
     mode    => '0755',

@@ -17,7 +17,7 @@ class zulip_ops::profile::prometheus_server {
     tarball_prefix => "prometheus-${version}.linux-${zulip::common::goarch}",
   }
   file { '/usr/local/bin/promtool':
-    ensure  => 'link',
+    ensure  => link,
     target  => "${dir}/promtool",
     require => Zulip::External_Dep['prometheus'],
   }

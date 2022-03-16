@@ -1,5 +1,5 @@
 class zulip_ops::munin_node {
-  zulip::safepackage { ['munin-node', 'munin-plugins-extra']: ensure => 'installed' }
+  zulip::safepackage { ['munin-node', 'munin-plugins-extra']: ensure => installed }
 
   service { 'munin-node':
     ensure  => running,

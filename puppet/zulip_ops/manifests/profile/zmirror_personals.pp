@@ -16,7 +16,7 @@ class zulip_ops::profile::zmirror_personals {
     'cython',
   ]
   package { $zmirror_packages:
-    ensure  => 'installed',
+    ensure  => installed,
   }
 
   file { '/etc/krb5.conf':

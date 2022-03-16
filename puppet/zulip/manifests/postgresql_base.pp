@@ -44,12 +44,12 @@ class zulip::postgresql_base {
   }
 
   file { "${tsearch_datadir}/en_us.dict":
-    ensure  => 'link',
+    ensure  => link,
     require => Package[$postgresql],
     target  => $postgresql_dict_dict,
   }
   file { "${tsearch_datadir}/en_us.affix":
-    ensure  => 'link',
+    ensure  => link,
     require => Package[$postgresql],
     target  => $postgresql_dict_affix,
 
@@ -79,11 +79,11 @@ class zulip::postgresql_base {
     # Removed 2020-12 in version 4.0; these lines can be removed when
     # we drop support for upgrading from Zulip 3 or older.
     package{"${postgresql}-pgroonga":
-      ensure  => 'purged',
+      ensure  => purged,
     }
 
     package{"${postgresql}-pgdg-pgroonga":
-      ensure  => 'installed',
+      ensure  => installed,
       require => [Package[$postgresql],
                   Exec[$setup_system_deps]],
     }

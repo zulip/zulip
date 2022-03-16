@@ -16,7 +16,7 @@ class zulip::apache_sso {
       fail('osfamily not supported')
     }
   }
-  package { $apache_packages: ensure => 'installed' }
+  package { $apache_packages: ensure => installed }
 
   apache2mod { [ 'headers', 'proxy', 'proxy_http', 'rewrite', 'ssl', 'wsgi', ]:
     ensure  => present,

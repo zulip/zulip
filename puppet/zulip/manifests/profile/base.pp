@@ -60,9 +60,9 @@ class zulip::profile::base {
       fail('osfamily not supported')
     }
   }
-  package { 'ntp': ensure => 'purged', before => Package['chrony'] }
+  package { 'ntp': ensure => purged, before => Package['chrony'] }
   service { 'chrony': require => Package['chrony'] }
-  package { $base_packages: ensure => 'installed' }
+  package { $base_packages: ensure => installed }
 
   group { 'zulip':
     ensure => present,
@@ -78,21 +78,21 @@ class zulip::profile::base {
   }
 
   file { '/etc/zulip':
-    ensure => 'directory',
+    ensure => directory,
     mode   => '0644',
     owner  => 'zulip',
     group  => 'zulip',
-    links  => 'follow',
+    links  => follow,
   }
   file { ['/etc/zulip/zulip.conf', '/etc/zulip/settings.py']:
-    ensure  => 'file',
+    ensure  => file,
     require => File['/etc/zulip'],
     mode    => '0644',
     owner   => 'zulip',
     group   => 'zulip',
   }
   file { '/etc/zulip/zulip-secrets.conf':
-    ensure  => 'file',
+    ensure  => file,
     require => File['/etc/zulip'],
     mode    => '0640',
     owner   => 'zulip',
@@ -115,7 +115,7 @@ class zulip::profile::base {
   }
 
   file { '/var/log/zulip':
-    ensure => 'directory',
+    ensure => directory,
     owner  => 'zulip',
     group  => 'zulip',
     mode   => '0640',

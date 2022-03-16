@@ -3,5 +3,5 @@ class zulip::sasl_modules {
     'Debian' => [ 'libsasl2-modules' ],
     'RedHat' => [ 'cyrus-sasl-plain' ],
   }
-  package { $sasl_module_packages: ensure => 'installed' }
+  package { $sasl_module_packages: ensure => installed }
 }
