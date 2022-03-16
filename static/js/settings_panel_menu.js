@@ -82,12 +82,12 @@ export class SettingsPanelMenu {
     }
 
     prev() {
-        this.$curr_li.prevAll(":visible:first").trigger("focus").trigger("click");
+        this.$curr_li.prevAll(":visible").first().trigger("focus").trigger("click");
         return true;
     }
 
     next() {
-        this.$curr_li.nextAll(":visible:first").trigger("focus").trigger("click");
+        this.$curr_li.nextAll(":visible").first().trigger("focus").trigger("click");
         return true;
     }
 
