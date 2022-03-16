@@ -529,7 +529,7 @@ If you are using password authentication, you can set a
 `/etc/zulip/zulip-secrets.conf`.
 
 [warm-standby]: https://www.postgresql.org/docs/current/warm-standby.html
-[wal-g]: export-and-import.md#backup-details
+[wal-g]: export-and-import.md#database-only-backup-tools
 
 ## System and deployment configuration
 
