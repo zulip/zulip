@@ -184,11 +184,13 @@
         </li>
         {{/if}}
         {{#if show_manage_user_option}}
-        <li>
-            <a tabindex="0" class="sidebar-popover-manage-user">
-                <i class="fa fa-edit" aria-hidden="true"></i> {{#tr}}Manage this user{{/tr}}
-            </a>
-        </li>
+            {{#if is_active}}
+            <li>
+                <a tabindex="0" class="sidebar-popover-manage-user">
+                    <i class="fa fa-edit" aria-hidden="true"></i> {{#tr}}Manage this user{{/tr}}
+                </a>
+            </li>
+            {{/if}}
         {{/if}}
     {{/if}}
 </ul>
