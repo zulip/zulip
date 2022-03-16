@@ -47,7 +47,7 @@ export function create_handlers($container) {
     $container.on("click", ".add_all_users_to_stream", (e) => {
         e.preventDefault();
         add_all_users();
-        $(".add-user-list-filter").focus();
+        $(".add-user-list-filter").trigger("focus");
     });
 
     $container.on("click", ".remove_potential_subscriber", (e) => {

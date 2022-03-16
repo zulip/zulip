@@ -133,7 +133,7 @@ function submit_invitation_form() {
         complete() {
             $("#submit-invitation").text($t({defaultMessage: "Invite"}));
             $("#submit-invitation").prop("disabled", false);
-            $("#invitee_emails").focus();
+            $("#invitee_emails").trigger("focus");
             ui.get_scroll_element($("#invite_user_form .modal-body"))[0].scrollTop = 0;
         },
     });

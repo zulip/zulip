@@ -209,7 +209,7 @@ export function activate(opts) {
                 // so we need to just toggle the checkbox back to its
                 // previous state.
                 $(e.target).prop("checked", !$(e.target).is(":checked"));
-                $(e.target).blur();
+                $(e.target).trigger("blur");
                 return;
             }
             const key = $(e.target).attr("data-key");

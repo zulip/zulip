@@ -128,7 +128,7 @@ async function test_navigations_from_home(page: Page): Promise<void> {
     await page.evaluate(() =>
         $(
             '*[title="Narrow to your private messages with Cordelia, Lear\'s daughter, King Hamlet"]',
-        ).click(),
+        ).trigger("click"),
     );
     await un_narrow_by_clicking_org_icon(page);
     await expect_recent_topics(page);
