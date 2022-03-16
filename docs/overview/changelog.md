@@ -42,8 +42,13 @@ log][commit-log] for an up-to-date list of raw changes.
   preference settings for new users joining the organization.
 - Most permissions settings now support choosing which roles have the
   permission, rather than just allowing administrators or everyone.
+- Permanent links to conversations now correctly redirect if the
+  target message has been moved to a new stream or topic.
 - Added a data import tool for migrating from Rocket.Chat. Mattermost
   data import now supports importing uploaded files.
+- Improved handling of messages containing many images; now up to 20
+  images can be previewed in a single message (up from 5), and a new
+  grid layout will be used.
 - OpenID Connect joins SAML, LDAP, Google, GitHub, Azure Active
   Directory, and more as a supported Single Sign-On provider.
 - SAML authentication now supports syncing custom profile
@@ -87,6 +92,7 @@ log][commit-log] for an up-to-date list of raw changes.
   Sonarr, SonarQube.
 - Message edit notifications now indicate how many messages were
   moved, when only part of a topic was moved.
+- Muted topic records are now moved when an entire topic is moved.
 - Search views that don't mark messages as read now have an
   explanatory notice if any unread messages are present.
 - Added new "Scroll to bottom" widget hovering over the message feed.
@@ -102,7 +108,8 @@ log][commit-log] for an up-to-date list of raw changes.
 - Redesigned hover behavior for timestamps and time mentions.
 - Messages sent by muted users can now be rehidden after being
   revealed. One can also now mute deactivated users.
-- Rewrote Help Center guides for new organizations and users.
+- Rewrote Help Center guides for new organizations and users, and made
+  hundreds of other improvements to Help Center content and organization.
 - Reimplemented the image lightbox's pan/zoom functionality to be
   nicer, allowing us to enable it be default.
 - Added styled loading page for the web application.
@@ -110,8 +117,9 @@ log][commit-log] for an up-to-date list of raw changes.
 - Notifications now differentiate user group mentions from personal mentions.
 - Added support for configuring how long the server should wait before
   sending email notifications after a mention or PM.
-- Improved integrations: GitHub, Grafana, PagerDuty.
-- Improved various interaction details in Recent Topics.
+- Improved integrations: BigBlueButton, GitHub, Grafana, PagerDuty,
+  and many more.
+- Improved various interaction and performance details in Recent Topics.
 - Improved styling for poll and todo list widgets.
 - Zulip now supports configuring the database name and username when
   using a remote Postgres server. Previously, these were hardcoded to "zulip".
@@ -169,6 +177,7 @@ log][commit-log] for an up-to-date list of raw changes.
 - Fixed a bug where different messages in search results would be
   incorrectly shown with a shared recipient bar despite potentially
   not being temporally adjacent.
+- Fixed lightbox download button not working with the S3 upload backend.
 - Increased default retention period before permanently removing
   deleted messages from 7 days to 30 days.
 - Rate limiting now supports treating all Tor exit nodes as a single IP.
@@ -180,6 +189,8 @@ log][commit-log] for an up-to-date list of raw changes.
 - Reworked the `manage.py help` interface to hide Django commands that are
   useless or harmful to run on a production system. Also deleted
   several useless management commands.
+- Improved help and functionality of several management commands. New
+  create_realm management command supports some automation workflows.
 - Added `RealmAuditLog` logging for most administrative actions that
   were previously not tracked.
 - Added automated testing of the upgrade process from previous releases,
