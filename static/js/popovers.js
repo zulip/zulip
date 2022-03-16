@@ -470,11 +470,7 @@ export function toggle_actions_popover(element, id) {
             editability_menu_item = $t({defaultMessage: "View source"});
         }
         const topic = message.topic;
-        const can_mute_topic =
-            message.stream &&
-            topic &&
-            !muted_topics.is_topic_muted(message.stream_id, topic) &&
-            not_spectator;
+
         const can_unmute_topic =
             message.stream && topic && muted_topics.is_topic_muted(message.stream_id, topic);
 
@@ -518,7 +514,6 @@ export function toggle_actions_popover(element, id) {
             topic,
             use_edit_icon,
             editability_menu_item,
-            can_mute_topic,
             can_unmute_topic,
             should_display_collapse,
             should_display_uncollapse,
@@ -1234,16 +1229,6 @@ export function register_click_handlers() {
         hide_actions_popover();
         message_edit_history.show_history(message);
         $("#message-history-cancel").trigger("focus");
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
-    $("body").on("click", ".popover_mute_topic", (e) => {
-        const stream_id = Number.parseInt($(e.currentTarget).attr("data-msg-stream-id"), 10);
-        const topic = $(e.currentTarget).attr("data-msg-topic");
-
-        hide_actions_popover();
-        muted_topics_ui.mute_topic(stream_id, topic);
         e.stopPropagation();
         e.preventDefault();
     });
