@@ -154,7 +154,11 @@ export function build_stream_list(force_rerender) {
         add_sidebar_li(stream_id);
     }
 
-    parent.append(elems);
+    if (elems.length > 0) {
+        parent.append(elems);
+    } else {
+        parent.append('<div class="stream-not-found"> No search results </div>');
+    }
 }
 
 export function get_stream_li(stream_id) {

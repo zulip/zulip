@@ -98,6 +98,12 @@ li.show-more-topics {
     padding: 0;
     font-weight: normal;
 
+    .stream-not-found {
+        margin-left: 10px;
+        color: hsl(0, 0%, 67%);
+        font-style: italic;
+    }
+
     li {
         a {
             padding: 1px 0;
