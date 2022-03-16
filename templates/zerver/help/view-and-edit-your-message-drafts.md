@@ -15,7 +15,7 @@ To **save a draft**, simply close the compose box. You can hit `Esc`, click
 the <i class="fa fa-remove"></i> in the upper right corner of the
 compose box, or click on an empty part of the app.
 
-To **view your drafts**, click on `Drafts` at the bottom of the screen.
+To **view your drafts**, click on `Drafts` in the left sidebar.
 From there, you can **delete** or **restore** any of your drafts.
 
 !!! tip ""
