@@ -8,6 +8,7 @@
         "plugin:import/errors",
         "plugin:import/warnings",
         "plugin:no-jquery/recommended",
+        "plugin:no-jquery/deprecated",
         "plugin:unicorn/recommended",
         "prettier"
     ],
@@ -127,6 +128,12 @@
         "yoda": "error"
     },
     "overrides": [
+        {
+            "files": ["frontend_tests/node_tests/**", "frontend_tests/zjsunit/**"],
+            "rules": {
+                "no-jquery/no-selector-prop": "off"
+            }
+        },
         {
             "files": ["frontend_tests/puppeteer_lib/**", "frontend_tests/puppeteer_tests/**"],
             "globals": {
