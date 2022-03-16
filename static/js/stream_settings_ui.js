@@ -1,6 +1,5 @@
 import $ from "jquery";
 import _ from "lodash";
-import tippy from "tippy.js";
 
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
@@ -558,21 +557,21 @@ export function setup_page(callback) {
         const sort_toggler = components.toggle({
             values: [
                 {
-                    label_html: `<i class="fa fa-sort-alpha-asc tippy-bottom tippy-zulip-tooltip" data-tippy-content="${$t(
-                        {defaultMessage: "Sort by name"},
-                    )}"></i>`,
+                    label_html: `<i class="fa fa-sort-alpha-asc" data-tippy-content="${$t({
+                        defaultMessage: "Sort by name",
+                    })}"></i>`,
                     key: "by-stream-name",
                 },
                 {
-                    label_html: `<i class="fa fa-user-o tippy-bottom tippy-zulip-tooltip" data-tippy-content="${$t(
-                        {defaultMessage: "Sort by number of subscribers"},
-                    )}"></i>`,
+                    label_html: `<i class="fa fa-user-o" data-tippy-content="${$t({
+                        defaultMessage: "Sort by number of subscribers",
+                    })}"></i>`,
                     key: "by-subscriber-count",
                 },
                 {
-                    label_html: `<i class="fa fa-bar-chart tippy-bottom tippy-zulip-tooltip" data-tippy-content="${$t(
-                        {defaultMessage: "Sort by estimated weekly traffic"},
-                    )}"></i>`,
+                    label_html: `<i class="fa fa-bar-chart" data-tippy-content="${$t({
+                        defaultMessage: "Sort by estimated weekly traffic",
+                    })}"></i>`,
                     key: "by-weekly-traffic",
                 },
             ],
@@ -581,12 +580,8 @@ export function setup_page(callback) {
                 switch_stream_sort(key);
             },
         });
-        $("#manage_streams_container .search-container").prepend(sort_toggler.get());
 
-        // place subs tooltips at bottom
-        tippy(".tippy-bottom", {
-            placement: "bottom",
-        });
+        $("#manage_streams_container .search-container").prepend(sort_toggler.get());
 
         // Reset our internal state to reflect that we're initially in
         // the "Subscribed" tab if we're reopening "Manage streams".

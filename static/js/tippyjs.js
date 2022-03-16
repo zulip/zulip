@@ -287,4 +287,19 @@ export function initialize() {
             instance.destroy();
         },
     });
+
+    delegate("body", {
+        // Configure tooltips for the stream_sorter_toggle buttons.
+
+        // TODO: Ideally, we'd extend this to be a common mechanism for
+        // tab switchers, with the strings living in a more normal configuration
+        // location.
+        target: ".stream_sorter_toggle .ind-tab [data-tippy-content]",
+
+        // Adjust their placement to `bottom`.
+        placement: "bottom",
+
+        // Avoid inheriting `position: relative` CSS on the stream sorter widget.
+        appendTo: () => document.body,
+    });
 }
