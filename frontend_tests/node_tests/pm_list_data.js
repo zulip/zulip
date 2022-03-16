@@ -5,7 +5,6 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const narrow_state = mock_esm("../../static/js/narrow_state");
 const unread = mock_esm("../../static/js/unread");
 
 mock_esm("../../static/js/user_status", {
@@ -15,6 +14,7 @@ mock_esm("../../static/js/user_status", {
     }),
 });
 
+const narrow_state = zrequire("narrow_state");
 const people = zrequire("people");
 const pm_conversations = zrequire("pm_conversations");
 const pm_list_data = zrequire("pm_list_data");
@@ -49,6 +49,7 @@ people.initialize_current_user(me.user_id);
 
 function test(label, f) {
     run_test(label, ({override, override_rewire}) => {
+        narrow_state.reset_current_filter();
         pm_conversations.clear_for_testing();
         f({override, override_rewire});
     });
@@ -60,7 +61,7 @@ test("get_convos", ({override}) => {
     let num_unread_for_person = 1;
     override(unread, "num_unread_for_person", () => num_unread_for_person);
 
-    override(narrow_state, "filter", () => {});
+    assert.equal(narrow_state.filter(), undefined);
 
     const expected_data = [
         {
@@ -111,7 +112,7 @@ test("get_convos bot", ({override}) => {
 
     override(unread, "num_unread_for_person", () => 1);
 
-    override(narrow_state, "filter", () => {});
+    assert.equal(narrow_state.filter(), undefined);
 
     const expected_data = [
         {
@@ -142,20 +143,17 @@ test("get_convos bot", ({override}) => {
     assert.deepEqual(pm_data, expected_data);
 });
 
-test("get_active_user_ids_string", ({override}) => {
-    let active_filter;
-
-    override(narrow_state, "filter", () => active_filter);
-
+test("get_active_user_ids_string", () => {
     assert.equal(pm_list_data.get_active_user_ids_string(), undefined);
 
     function set_filter_result(emails) {
-        active_filter = {
+        const active_filter = {
             operands: (operand) => {
                 assert.equal(operand, "pm-with");
                 return emails;
             },
         };
+        narrow_state.set_current_filter(active_filter);
     }
 
     set_filter_result([]);
@@ -174,13 +172,10 @@ function private_filter() {
     };
 }
 
-test("is_all_privates", ({override}) => {
-    let filter;
-    override(narrow_state, "filter", () => filter);
-
-    filter = undefined;
+test("is_all_privates", () => {
+    assert.equal(narrow_state.filter(), undefined);
     assert.equal(pm_list_data.is_all_privates(), false);
 
-    filter = private_filter();
+    narrow_state.set_current_filter(private_filter());
     assert.equal(pm_list_data.is_all_privates(), true);
 });
