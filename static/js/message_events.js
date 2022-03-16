@@ -253,7 +253,7 @@ export function update_messages(events) {
             ) {
                 changed_compose = true;
                 compose_state.topic(new_topic);
-                compose_validate.warn_if_topic_resolved();
+                compose_validate.warn_if_topic_resolved(true);
                 compose_fade.set_focused_recipient("stream");
             }
 

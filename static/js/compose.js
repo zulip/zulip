@@ -403,6 +403,7 @@ export function initialize() {
     });
 
     $("#compose-textarea").on("input propertychange", () => {
+        compose_validate.warn_if_topic_resolved(false);
         compose_validate.check_overflow_text();
     });
 
@@ -467,14 +468,14 @@ export function initialize() {
 
         message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
             message_edit.toggle_resolve_topic(message_id, topic_name);
-            compose_validate.clear_topic_resolved_warning();
+            compose_validate.clear_topic_resolved_warning(true);
         });
     });
 
     $("#compose_resolved_topic").on("click", ".compose_resolved_topic_close", (event) => {
         event.preventDefault();
 
-        compose_validate.clear_topic_resolved_warning();
+        compose_validate.clear_topic_resolved_warning(true);
     });
 
     $("#compose_invite_users").on("click", ".compose_invite_link", (event) => {

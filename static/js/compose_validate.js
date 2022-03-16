@@ -172,17 +172,31 @@ export function clear_topic_resolved_warning() {
     $("#compose-send-status").hide();
 }
 
-export function warn_if_topic_resolved() {
-    const stream_name = compose_state.stream_name();
+export function warn_if_topic_resolved(topic_changed) {
+    // This function is called with topic_changed=false on every
+    // keypress when typing a message, so it should not do anything
+    // expensive in that case.
+    //
+    // Pass topic_changed=true if this function was called in response
+    // to a topic being edited.
     const topic_name = compose_state.topic();
 
+    if (!topic_changed && !resolved_topic.is_resolved(topic_name)) {
+        // The resolved topic warning will only ever appear when
+        // composing to a resolve topic, so we return early without
+        // inspecting additional fields in this case.
+        return;
+    }
+
+    const stream_name = compose_state.stream_name();
+    const message_content = compose_state.message_content();
     const sub = stream_data.get_sub(stream_name);
+    const $resolved_notice_area = $("#compose_resolved_topic");
 
-    if (sub && resolved_topic.is_resolved(topic_name)) {
-        const error_area = $("#compose_resolved_topic");
-
-        if (error_area.html()) {
-            clear_topic_resolved_warning(); // This warning already exists
+    if (sub && message_content !== "" && resolved_topic.is_resolved(topic_name)) {
+        if ($resolved_notice_area.html()) {
+            // Error is already displayed; no action required.
+            return;
         }
 
         const context = {
@@ -192,11 +206,14 @@ export function warn_if_topic_resolved() {
         };
 
         const new_row = render_compose_resolved_topic(context);
-        error_area.append(new_row);
+        $resolved_notice_area.append(new_row);
 
-        error_area.show();
+        $resolved_notice_area.show();
     } else {
-        clear_topic_resolved_warning();
+        // Only clear the notice if already displayed.
+        if ($resolved_notice_area.html()) {
+            clear_topic_resolved_warning();
+        }
     }
 }
 
@@ -638,6 +655,9 @@ function validate_private_message() {
 }
 
 export function check_overflow_text() {
+    // This function is called when typing every character in the
+    // compose box, so it's important that it not doing anything
+    // expensive.
     const text = compose_state.message_content();
     const max_length = page_params.max_message_length;
     const indicator = $("#compose_limit_indicator");
