@@ -789,25 +789,38 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
 
     // The error message area where it is shown
     const error_area = $("#compose_resolved_topic");
+    compose_validate.clear_topic_resolved_warning();
+    // Hack to make this empty for zjquery; this is conceptually done
+    // in the previous line.
     error_area.html("");
+    assert.ok(!error_area.visible());
 
     compose_state.set_message_type("stream");
     compose_state.stream_name("Do not exist");
     compose_state.topic(resolved_topic.resolve_name("hello"));
+    compose_state.message_content("content");
 
     // Do not show a warning if stream name does not exist
-    compose_validate.warn_if_topic_resolved();
+    compose_validate.warn_if_topic_resolved(true);
     assert.ok(!error_area.visible());
 
     compose_state.stream_name("random");
 
     // Show the warning now as stream also exists
-    compose_validate.warn_if_topic_resolved();
+    compose_validate.warn_if_topic_resolved(true);
+    assert.ok(error_area.visible());
+
+    // Call it again with false; this should be a noop.
+    compose_validate.warn_if_topic_resolved(false);
     assert.ok(error_area.visible());
 
     compose_state.topic("hello");
 
     // The warning will be cleared now
-    compose_validate.warn_if_topic_resolved();
+    compose_validate.warn_if_topic_resolved(true);
+    assert.ok(!error_area.visible());
+
+    // Calling with false won't do anything.
+    compose_validate.warn_if_topic_resolved(false);
     assert.ok(!error_area.visible());
 });
