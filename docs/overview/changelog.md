@@ -49,7 +49,7 @@ log][commit-log] for an up-to-date list of raw changes.
 - SAML authentication now supports syncing custom profile
   fields. Additionally, SAML authentication now supports automatic
   account creation and IdP-initiated logout.
-- Added SCIM integration for synchonizing accounts with an external
+- Added SCIM integration for synchronizing accounts with an external
   user database.
 - Added support for installation on ARM platforms (including Mac M1).
 - Removed support for Ubuntu 18.04, which no longer receives upstream
