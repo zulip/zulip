@@ -59,7 +59,7 @@ function make_zjquery() {
                 if (key === "stack") {
                     const error =
                         "\nInstead of doing equality checks on a full object, " +
-                        'do `assert_equal(foo.selector, ".some_class")\n';
+                        'do `assert_equal($foo.selector, ".some_class")\n';
                     throw new Error(error);
                 }
 
@@ -158,7 +158,7 @@ function make_zjquery() {
 
     zjquery.state = function () {
         // useful for debugging
-        let res = Array.from(elems.values(), (v) => v.debug());
+        let res = Array.from(elems.values(), ($v) => $v.debug());
 
         res = res.map((v) => [v.selector, v.value, v.shown]);
 
