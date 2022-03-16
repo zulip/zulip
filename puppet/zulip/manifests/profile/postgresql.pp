@@ -49,7 +49,7 @@ class zulip::profile::postgresql {
     }
     if $zulip::postgresql_common::version in ['10', '11'] {
       # PostgreSQL 11 and below used a recovery.conf file for replication
-      file { "${zulip::postgresql_base::postgresql_confdir}/recovery.conf":
+      file { "${zulip::postgresql_base::postgresql_datadir}/recovery.conf":
         ensure  => file,
         require => Package[$zulip::postgresql_base::postgresql],
         owner   => 'postgres',
@@ -60,7 +60,7 @@ class zulip::profile::postgresql {
     } else {
       # PostgreSQL 12 and above use the presence of a standby.signal
       # file to trigger replication
-      file { "${zulip::postgresql_base::postgresql_confdir}/standby.signal":
+      file { "${zulip::postgresql_base::postgresql_datadir}/standby.signal":
         ensure  => file,
         require => Package[$zulip::postgresql_base::postgresql],
         owner   => 'postgres',
