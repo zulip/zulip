@@ -183,10 +183,10 @@ function render_date_span(
     $elem.text("");
     if (rendered_time_above !== undefined) {
         $elem.append(
-            '<i class="date-direction fa fa-caret-up"></i>',
+            $("<i>").addClass(["date-direction", "fa", "fa-caret-up"]),
             _.escape(rendered_time_above.time_str),
-            '<hr class="date-line">',
-            '<i class="date-direction fa fa-caret-down"></i>',
+            $("<hr>").addClass("date-line"),
+            $("<i>").addClass(["date-direction", "fa", "fa-caret-down"]),
             _.escape(rendered_time.time_str),
         );
         return $elem;
@@ -208,7 +208,7 @@ export function render_date(time: Date, time_above: Date | undefined, today: Dat
     const className = `timerender${next_timerender_id}`;
     next_timerender_id += 1;
     const rendered_time = render_now(time, today);
-    let $node = $("<span />").attr("class", className);
+    let $node = $("<span>").attr("class", className);
     if (time_above !== undefined) {
         const rendered_time_above = render_now(time_above, today);
         $node = render_date_span($node, rendered_time, rendered_time_above);

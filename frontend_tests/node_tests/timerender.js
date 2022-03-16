@@ -210,7 +210,7 @@ run_test("render_date_renders_time_html", () => {
     const expected_html = $t({defaultMessage: "Today"});
 
     const attrs = {};
-    const $span_stub = $("<span />");
+    const $span_stub = $("<span>");
 
     $span_stub.attr = (name, val) => {
         attrs[name] = val;
@@ -234,7 +234,7 @@ run_test("render_date_renders_time_above_html", () => {
     const message_time = today;
     const message_time_above = add(today, {days: -1});
 
-    const $span_stub = $("<span />");
+    const $span_stub = $("<span>");
 
     let appended_val;
     $span_stub.append = (...val) => {
@@ -243,10 +243,10 @@ run_test("render_date_renders_time_above_html", () => {
     };
 
     const expected = [
-        '<i class="date-direction fa fa-caret-up"></i>',
+        $("<i>"),
         $t({defaultMessage: "Yesterday"}),
-        '<hr class="date-line">',
-        '<i class="date-direction fa fa-caret-down"></i>',
+        $("<hr>"),
+        $("<i>"),
         $t({defaultMessage: "Today"}),
     ];
 

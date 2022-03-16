@@ -59,7 +59,7 @@ run_test("basics", () => {
     assert.equal($widget.attr("data-department-name"), "hr");
     assert.equal($widget.data("department-name"), "hr");
 
-    $widget.html("<b>hello</b>");
+    $widget.html("<b>hello</b>"); // eslint-disable-line no-jquery/no-parse-html-literal
     assert.equal($widget.html(), "<b>hello</b>");
 
     $widget.prop("title", "My widget");
@@ -84,7 +84,7 @@ run_test("finding_related_objects", () => {
     // But you can set up your tests to simulate DOM relationships.
     //
     // We will use set_find_results(), which is a special zjquery helper.
-    const $emoji = $('<div class="emoji">');
+    const $emoji = $("<emoji-stub>");
     $("#my-message").set_find_results(".emoji", $emoji);
 
     // And then calling the function produces the desired effect:

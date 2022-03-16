@@ -237,7 +237,7 @@ export function process_notification(notification) {
     let msg_count = 1;
     let notification_source;
     // Convert the content to plain text, replacing emoji with their alt text
-    const $content = $("<div/>").html(message.content);
+    const $content = $("<div>").html(message.content);
     ui.replace_emoji_with_text($content);
     spoilers.hide_spoilers_in_notification($content);
     content = $content.text();

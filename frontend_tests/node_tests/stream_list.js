@@ -50,14 +50,14 @@ function create_devel_sidebar_row({mock_template}) {
     const $devel_count = $.create("devel-count");
     const $subscription_block = $.create("devel-block");
 
-    const $sidebar_row = $("<devel sidebar row>");
+    const $sidebar_row = $("<devel-sidebar-row-stub>");
 
     $sidebar_row.set_find_results(".subscription_block", $subscription_block);
     $subscription_block.set_find_results(".unread_count", $devel_count);
 
     mock_template("stream_sidebar_row.hbs", false, (data) => {
         assert.equal(data.uri, "#narrow/stream/100-devel");
-        return "<devel sidebar row>";
+        return "<devel-sidebar-row-stub>";
     });
 
     num_unread_for_stream = 42;
@@ -69,14 +69,14 @@ function create_social_sidebar_row({mock_template}) {
     const $social_count = $.create("social-count");
     const $subscription_block = $.create("social-block");
 
-    const $sidebar_row = $("<social sidebar row>");
+    const $sidebar_row = $("<social-sidebar-row-stub>");
 
     $sidebar_row.set_find_results(".subscription_block", $subscription_block);
     $subscription_block.set_find_results(".unread_count", $social_count);
 
     mock_template("stream_sidebar_row.hbs", false, (data) => {
         assert.equal(data.uri, "#narrow/stream/200-social");
-        return "<social sidebar row>";
+        return "<social-sidebar-row-stub>";
     });
 
     num_unread_for_stream = 99;
@@ -105,8 +105,8 @@ test_ui("create_sidebar_row", ({override_rewire, mock_template}) => {
     create_social_sidebar_row({mock_template});
 
     const split = '<hr class="stream-split">';
-    const $devel_sidebar = $("<devel sidebar row>");
-    const $social_sidebar = $("<social sidebar row>");
+    const $devel_sidebar = $("<devel-sidebar-row-stub>");
+    const $social_sidebar = $("<social-sidebar-row-stub>");
 
     let appended_elems;
     $("#stream_filters").append = (elems) => {
@@ -130,7 +130,7 @@ test_ui("create_sidebar_row", ({override_rewire, mock_template}) => {
 
     assert.deepEqual(appended_elems, expected_elems);
 
-    const $social_li = $("<social sidebar row>");
+    const $social_li = $("<social-sidebar-row-stub>");
     const stream_id = social.stream_id;
 
     $social_li.length = 0;
@@ -183,7 +183,7 @@ test_ui("pinned_streams_never_inactive", ({override_rewire, mock_template}) => {
     create_social_sidebar_row({mock_template});
 
     // non-pinned streams can be made inactive
-    const $social_sidebar = $("<social sidebar row>");
+    const $social_sidebar = $("<social-sidebar-row-stub>");
     let stream_id = social.stream_id;
     let row = stream_list.stream_sidebar.get_row(stream_id);
     override_rewire(stream_data, "is_active", () => false);
@@ -200,7 +200,7 @@ test_ui("pinned_streams_never_inactive", ({override_rewire, mock_template}) => {
     assert.ok($social_sidebar.hasClass("inactive_stream"));
 
     // pinned streams can never be made inactive
-    const $devel_sidebar = $("<devel sidebar row>");
+    const $devel_sidebar = $("<devel-sidebar-row-stub>");
     stream_id = devel.stream_id;
     row = stream_list.stream_sidebar.get_row(stream_id);
     override_rewire(stream_data, "is_active", () => false);
@@ -217,7 +217,7 @@ function add_row(sub) {
     const row = {
         update_whether_active() {},
         get_li() {
-            const html = "<" + sub.name + " sidebar row html>";
+            const html = "<" + sub.name + "-sidebar-row-stub>";
             const $obj = $(html);
 
             $obj.length = 1; // bypass blueslip error
@@ -372,7 +372,7 @@ test_ui("narrowing", ({override_rewire}) => {
     topic_list.get_stream_li = noop;
     override_rewire(scroll_util, "scroll_element_into_container", noop);
 
-    assert.ok(!$("<devel sidebar row html>").hasClass("active-filter"));
+    assert.ok(!$("<devel-sidebar-row-stub>").hasClass("active-filter"));
 
     stream_list.set_event_handlers();
 
@@ -380,7 +380,7 @@ test_ui("narrowing", ({override_rewire}) => {
 
     filter = new Filter([{operator: "stream", operand: "devel"}]);
     stream_list.handle_narrow_activated(filter);
-    assert.ok($("<devel sidebar row html>").hasClass("active-filter"));
+    assert.ok($("<devel-sidebar-row-stub>").hasClass("active-filter"));
 
     filter = new Filter([
         {operator: "stream", operand: "cars"},
@@ -388,12 +388,12 @@ test_ui("narrowing", ({override_rewire}) => {
     ]);
     stream_list.handle_narrow_activated(filter);
     assert.ok(!$("ul.filters li").hasClass("active-filter"));
-    assert.ok(!$("<cars sidebar row html>").hasClass("active-filter")); // false because of topic
+    assert.ok(!$("<cars-sidebar-row-stub>").hasClass("active-filter")); // false because of topic
 
     filter = new Filter([{operator: "stream", operand: "cars"}]);
     stream_list.handle_narrow_activated(filter);
     assert.ok(!$("ul.filters li").hasClass("active-filter"));
-    assert.ok($("<cars sidebar row html>").hasClass("active-filter"));
+    assert.ok($("<cars-sidebar-row-stub>").hasClass("active-filter"));
 
     let removed_classes;
     $("ul#stream_filters li").removeClass = (classes) => {
@@ -450,14 +450,14 @@ test_ui("sort_streams", ({override_rewire}) => {
 
     const split = '<hr class="stream-split">';
     const expected_elems = [
-        $("<devel sidebar row html>"),
-        $("<Rome sidebar row html>"),
-        $("<test sidebar row html>"),
+        $("<devel-sidebar-row-stub>"),
+        $("<Rome-sidebar-row-stub>"),
+        $("<test-sidebar-row-stub>"),
         split,
-        $("<announce sidebar row html>"),
-        $("<Denmark sidebar row html>"),
+        $("<announce-sidebar-row-stub>"),
+        $("<Denmark-sidebar-row-stub>"),
         split,
-        $("<cars sidebar row html>"),
+        $("<cars-sidebar-row-stub>"),
     ];
 
     assert.deepEqual(appended_elems, expected_elems);
@@ -529,11 +529,11 @@ test_ui("separators_only_pinned_and_dormant", ({override_rewire}) => {
     const split = '<hr class="stream-split">';
     const expected_elems = [
         // pinned
-        $("<devel sidebar row html>"),
-        $("<Rome sidebar row html>"),
+        $("<devel-sidebar-row-stub>"),
+        $("<Rome-sidebar-row-stub>"),
         split,
         // dormant
-        $("<Denmark sidebar row html>"),
+        $("<Denmark-sidebar-row-stub>"),
     ];
 
     assert.deepEqual(appended_elems, expected_elems);
@@ -573,8 +573,8 @@ test_ui("separators_only_pinned", () => {
 
     const expected_elems = [
         // pinned
-        $("<devel sidebar row html>"),
-        $("<Rome sidebar row html>"),
+        $("<devel-sidebar-row-stub>"),
+        $("<Rome-sidebar-row-stub>"),
         // no separator at the end as no stream follows
     ];
 

@@ -131,7 +131,7 @@ function createSaveButtons(subsection) {
     const $stub_save_button_text = $(".save-discard-widget-button-text");
     $stub_save_button_header.set_find_results(
         ".subsection-failed-status p",
-        $("<failed status element>"),
+        $("<failed-status-stub>"),
     );
     $stub_save_button.closest = () => $stub_save_button_header;
     $save_button_controls.set_find_results(".save-button", $stub_save_button);
