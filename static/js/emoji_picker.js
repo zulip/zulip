@@ -641,7 +641,7 @@ export function build_emoji_popover($elt, id) {
     };
     show_emoji_catalog();
 
-    $elt.ready(() => refill_section_head_offsets($popover));
+    $(() => refill_section_head_offsets($popover));
     register_popover_events($popover);
 }
 
