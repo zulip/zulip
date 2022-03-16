@@ -70,15 +70,6 @@
     </li>
     {{/if}}
 
-    {{#if can_unmute_topic}}
-    <li>
-        <a class="popover_unmute_topic" data-msg-stream-id="{{stream_id}}" data-msg-topic="{{topic}}" tabindex="0">
-            <i class="fa fa-bell" aria-hidden="true"></i>
-            {{#tr}}Unmute the topic <b>{topic}</b>{{/tr}}
-        </a>
-    </li>
-    {{/if}}
-
     {{#if should_display_add_reaction_option}}
     <li>
         <a class="reaction_button" data-message-id="{{message_id}}" tabindex="0">
