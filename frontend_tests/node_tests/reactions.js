@@ -398,9 +398,9 @@ test("get_reaction_section", () => {
     $message_table.set_find_results(`[zid='${CSS.escape(555)}']`, $message_row);
     $message_row.set_find_results(".message_reactions", $message_reactions);
 
-    const section = reactions.get_reaction_section(555);
+    const $section = reactions.get_reaction_section(555);
 
-    assert.equal(section, $message_reactions);
+    assert.equal($section, $message_reactions);
 });
 
 test("emoji_reaction_title", ({override}) => {
