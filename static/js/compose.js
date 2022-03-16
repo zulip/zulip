@@ -185,6 +185,7 @@ export function clear_compose_box() {
     }
     $("#compose-textarea").val("").trigger("focus");
     compose_validate.check_overflow_text();
+    compose_validate.clear_topic_resolved_warning();
     $("#compose-textarea").removeData("draft-id");
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-send-status").hide(0);
