@@ -944,7 +944,6 @@ input[type="checkbox"] {
     padding: 0;
 
     label {
-        text-transform: uppercase;
         font-weight: 600;
         color: hsl(0, 0%, 67%);
         margin-top: 5px;

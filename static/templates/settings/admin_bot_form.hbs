@@ -1,19 +1,30 @@
 <div id="bot-edit-form" data-user-id="{{user_id}}">
     <form class="new-style edit_bot_form form-horizontal name-setting">
+        <div class="input-group name_change_container">
+            <label for="full_name">{{t "Full name" }}</label>
+            <input type="text" autocomplete="off" name="full_name" value="{{ full_name }}" />
+        </div>
         <input type="hidden" name="is_full_name" value="true" />
+        <div class="input-group email_change_container">
+            <label for="email">{{t "Email" }}</label>
+            <input type="text" autocomplete="off" name="email" value="{{ email }}" readonly/>
+        </div>
+        <div class="input-group user_id_container">
+            <label for="user_id">{{t "User ID" }}</label>
+            <input type="text" autocomplete="off" name="user_id" value="{{ user_id }}" readonly/>
+        </div>
         <div class="input-group edit_bot_owner_container">
             <label for="bot_owner_select">{{t "Owner" }}</label>
             {{> dropdown_list_widget
               widget_name="edit_bot_owner"
               list_placeholder=(t 'Filter users')}}
         </div>
-        <div class="name_change_container">
-            <label for="full_name">{{t "Full name" }}</label>
-            <input type="text" autocomplete="off" name="full_name" value="{{ full_name }}" />
-        </div>
-        <div class="email_change_container">
-            <label for="email">{{t "Email" }}</label>
-            <input type="text" autocomplete="off" name="email" value="{{ email }}" readonly/>
+        <div class="input-group">
+            <label for="bot_type">
+                {{t "Bot type" }}
+                <i class="fa fa-question-circle settings-info-icon bot_type_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content='{{t "Incoming webhooks can only send messages." }}'></i>
+            </label>
+            <input type="text" autocomplete="off" name="bot_type" value="{{ bot_type }}" readonly/>
         </div>
     </form>
 </div>

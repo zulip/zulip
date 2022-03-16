@@ -641,6 +641,7 @@ function handle_bot_form($tbody, $status_field) {
             user_id,
             email: bot.email,
             full_name: bot.full_name,
+            bot_type: settings_bots.type_id_to_string(bot.bot_type),
         });
 
         let owner_widget;
@@ -686,7 +687,7 @@ function handle_bot_form($tbody, $status_field) {
         }
 
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Change bot info and owner"}),
+            html_heading: $t_html({defaultMessage: "Manage bot"}),
             html_body,
             id: "edit_bot_modal",
             on_click: submit_bot_details,
