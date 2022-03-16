@@ -121,11 +121,10 @@ mock_jquery((sel, attributes) => {
     }
 
     switch (sel) {
-        case "<div class='tab-switcher'></div>":
-            return env.switcher;
-        case "<div class='tab-switcher stream_sorter_toggle'></div>":
-            return env.switcher;
         case "<div>": {
+            if (attributes.class === "tab-switcher") {
+                return env.switcher;
+            }
             const tab_id = attributes["data-tab-id"];
             assert.deepEqual(
                 attributes,

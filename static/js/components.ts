@@ -32,7 +32,7 @@ export function toggle(opts: {
     child_wants_focus?: boolean;
     selected?: number;
 }): Toggle {
-    const $component = $("<div class='tab-switcher'></div>");
+    const $component = $("<div>", {class: "tab-switcher"});
     if (opts.html_class) {
         // add a check inside passed arguments in case some extra
         // classes need to be added for correct alignment or other purposes

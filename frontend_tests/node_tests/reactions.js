@@ -624,11 +624,11 @@ test("view.insert_new_reaction (me w/unicode emoji)", ({override_rewire, mock_te
             reaction_type: opts.reaction_type,
             is_realm_emoji: false,
         });
-        return "<new reaction html>";
+        return "<new-reaction-stub>";
     });
 
     let insert_called;
-    $("<new reaction html>").insertBefore = (element) => {
+    $("<new-reaction-stub>").insertBefore = (element) => {
         assert.equal(element, "reaction-button-stub");
         insert_called = true;
     };
@@ -673,11 +673,11 @@ test("view.insert_new_reaction (them w/zulip emoji)", ({override_rewire, mock_te
             still_url: undefined,
             reaction_type: opts.reaction_type,
         });
-        return "<new reaction html>";
+        return "<new-reaction-stub>";
     });
 
     let insert_called;
-    $("<new reaction html>").insertBefore = (element) => {
+    $("<new-reaction-stub>").insertBefore = (element) => {
         assert.equal(element, "reaction-button-stub");
         insert_called = true;
     };

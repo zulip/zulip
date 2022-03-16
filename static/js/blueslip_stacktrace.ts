@@ -102,7 +102,7 @@ export async function display_stacktrace(error: string, stack: string): Promise<
         }),
     );
 
-    const $alert = $("<div class='stacktrace'>").html(
+    const $alert = $("<div>", {class: "stacktrace"}).html(
         render_blueslip_stacktrace({error, stackframes}),
     );
     $(".alert-box").append($alert);

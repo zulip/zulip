@@ -183,7 +183,7 @@ export function render_lightbox_list_images(preview_source) {
             const src = img.getAttribute("src");
             const className = preview_source === src ? "image selected" : "image";
 
-            const $node = $("<div></div>", {
+            const $node = $("<div>", {
                 class: className,
                 "data-src": src,
             }).css({backgroundImage: "url(" + src + ")"});
@@ -244,7 +244,7 @@ function display_video(payload) {
             break;
     }
 
-    const $iframe = $("<iframe></iframe>");
+    const $iframe = $("<iframe>");
     $iframe.attr(
         "sandbox",
         "allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts",

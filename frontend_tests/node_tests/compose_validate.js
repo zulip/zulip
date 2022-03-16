@@ -736,7 +736,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, moc
     }
 
     // Simulate that the row was added to the DOM.
-    const $warning_row = $("<warning row>");
+    const $warning_row = $("<warning-row-stub>");
 
     let looked_for_existing;
     $warning_row.data = (field) => {

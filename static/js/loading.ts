@@ -29,13 +29,13 @@ export function make_indicator(
         $container = $inner_container;
     }
 
-    const $spinner_elem = $('<div class="loading_indicator_spinner" aria-hidden="true"></div>');
+    const $spinner_elem = $("<div>", {class: "loading_indicator_spinner", ["aria-hidden"]: "true"});
     $spinner_elem.html(render_loader({container_id: $outer_container.attr("id")}));
     $container.append($spinner_elem);
     let text_width = 0;
 
     if (text !== undefined) {
-        const $text_elem = $('<span class="loading_indicator_text"></span>');
+        const $text_elem = $("<span>", {class: "loading_indicator_text"});
         $text_elem.text(text);
         $container.append($text_elem);
         // See note, below
