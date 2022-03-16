@@ -46,7 +46,7 @@ class zulip::wal_g {
     }
   }
   file { '/usr/local/bin/wal-g':
-    ensure => 'link',
+    ensure => link,
     target => $bin,
   }
   # We used to install versions into /usr/local/bin/wal-g-VERSION,

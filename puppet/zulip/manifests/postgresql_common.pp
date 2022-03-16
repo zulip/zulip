@@ -43,7 +43,7 @@ class zulip::postgresql_common {
       }
       # allows ssl-cert group to read /etc/pki/tls/private
       file { '/etc/pki/tls/private':
-        ensure => 'directory',
+        ensure => directory,
         mode   => '0640',
         owner  => 'root',
         group  => 'ssl-cert',
@@ -59,7 +59,7 @@ class zulip::postgresql_common {
   }
 
   zulip::safepackage { $postgresql_packages:
-    ensure  => 'installed',
+    ensure  => installed,
     require => Exec['generate-default-snakeoil'],
   }
 

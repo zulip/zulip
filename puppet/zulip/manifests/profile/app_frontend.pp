@@ -31,7 +31,7 @@ class zulip::profile::app_frontend {
     source => 'puppet:///modules/zulip/logrotate/zulip',
   }
   file { '/etc/nginx/sites-enabled/zulip-enterprise':
-    ensure  => 'link',
+    ensure  => link,
     require => Package[$zulip::common::nginx],
     target  => '/etc/nginx/sites-available/zulip-enterprise',
     notify  => Service['nginx'],

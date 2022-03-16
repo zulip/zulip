@@ -6,7 +6,7 @@ class zulip::process_fts_updates {
         # Needed to run process_fts_updates
         'python3-psycopg2', # TODO: use a virtualenv instead
       ]
-      zulip::safepackage { $fts_updates_packages: ensure => 'installed' }
+      zulip::safepackage { $fts_updates_packages: ensure => installed }
     }
     'RedHat': {
       exec {'pip_process_fts_updates':

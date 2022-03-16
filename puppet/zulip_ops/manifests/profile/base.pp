@@ -35,7 +35,7 @@ class zulip_ops::profile::base {
     'git',
     'nagios-plugins-contrib',
   ]
-  zulip::safepackage { $org_base_packages: ensure => 'installed' }
+  zulip::safepackage { $org_base_packages: ensure => installed }
 
   # Uninstall the AWS kernel, but only after we install the usual one
   package { ['linux-image-aws', 'linux-headers-aws', 'linux-aws-*', 'linux-image-*-aws', 'linux-modules-*-aws']:
@@ -117,7 +117,7 @@ class zulip_ops::profile::base {
     # This conditional block is for for whether it's not
     # chat.zulip.org, which uses a different hosting provider.
     package { 'dhcpcd5':
-      ensure => 'installed',
+      ensure => installed,
     }
     file { '/root/.ssh/authorized_keys':
       ensure => file,

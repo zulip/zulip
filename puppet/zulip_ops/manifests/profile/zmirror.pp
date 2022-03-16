@@ -16,7 +16,7 @@ class zulip_ops::profile::zmirror {
     'cython',
   ]
   package { $zmirror_packages:
-    ensure  => 'installed',
+    ensure  => installed,
   }
 
   file { "${zulip::common::supervisor_conf_dir}/zmirror.conf":

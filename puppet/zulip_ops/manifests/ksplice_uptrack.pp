@@ -2,7 +2,7 @@ class zulip_ops::ksplice_uptrack {
   $ksplice_access_key = zulipsecret('secrets', 'ksplice_access_key', '')
   if $ksplice_access_key != '' {
     file { '/etc/uptrack':
-      ensure => 'directory',
+      ensure => directory,
       owner  => 'root',
       group  => 'adm',
       mode   => '0750',

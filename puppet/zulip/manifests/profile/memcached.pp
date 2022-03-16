@@ -16,7 +16,7 @@ class zulip::profile::memcached {
       fail('osfamily not supported')
     }
   }
-  package { $memcached_packages: ensure => 'installed' }
+  package { $memcached_packages: ensure => installed }
 
   $memcached_memory = zulipconf('memcached', 'memory', $zulip::common::total_memory_mb / 8)
   file { '/etc/sasl2':
@@ -82,7 +82,7 @@ saslpasswd2 -p -f /etc/sasl2/memcached-sasldb2 \
     content => template('zulip/memcached.conf.template.erb'),
   }
   file { '/run/memcached':
-    ensure  => 'directory',
+    ensure  => directory,
     owner   => 'memcache',
     group   => 'memcache',
     mode    => '0755',

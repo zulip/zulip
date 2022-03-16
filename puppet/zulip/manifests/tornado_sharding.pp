@@ -31,7 +31,7 @@ class zulip::tornado_sharding {
     onlyif    => "${::zulip_scripts_path}/lib/sharding.py --errors-ok",
     require   => [File['/etc/zulip/nginx_sharding.conf'], File['/etc/zulip/sharding.json']],
     logoutput => true,
-    loglevel  => 'warning',
+    loglevel  => warning,
   }
 
   # The ports of Tornado processes to run on the server; defaults to

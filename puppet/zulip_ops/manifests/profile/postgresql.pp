@@ -4,7 +4,7 @@ class zulip_ops::profile::postgresql {
   include zulip_ops::teleport::db
 
   $common_packages = ['xfsprogs']
-  package { $common_packages: ensure => 'installed' }
+  package { $common_packages: ensure => installed }
 
   zulip_ops::firewall_allow{ 'postgresql': }
 
