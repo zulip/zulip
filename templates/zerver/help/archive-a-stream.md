@@ -21,7 +21,7 @@ than archiving them.
 
 1. Select a stream.
 
-1. On the right, click **Archive**.
+1. Click the <i class="fa fa-trash-o"></i> on the right.
 
 1. Approve by clicking **Confirm**.
 
