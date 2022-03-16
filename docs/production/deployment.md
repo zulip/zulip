@@ -512,8 +512,9 @@ deployment. Zulip's configuration builds on top of `wal-g`, our
 [database backup solution][wal-g], and thus requires that it be
 configured for the primary and all secondary warm standby replicas.
 
-Warm spare replicas should also have `wal-g` backups configured, and
-their primary replica and replication username set:
+In addition to having `wal-g` backups configured, warm standby
+replicas should configure the hostname of their primary replica, and
+username to use for replication, in `/etc/zulip/zulip.conf`:
 
 ```ini
 [postgresql]
@@ -522,7 +523,7 @@ replication_primary = hostname-of-primary.example.com
 ```
 
 The `postgres` user on the replica will need to be able to
-authenticate as the `replicator` user, which may require further
+authenticate as the `replication_user` user, which may require further
 configuration of `pg_hba.conf` and client certificates on the replica.
 If you are using password authentication, you can set a
 `postgresql_replication_password` secret in
