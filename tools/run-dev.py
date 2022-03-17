@@ -84,8 +84,10 @@ if options.test:
     settings_module = "zproject.test_settings"
     # Don't auto-reload when running Puppeteer tests
     runserver_args = ["--noreload"]
+    tornado_autoreload = []
 else:
     settings_module = "zproject.settings"
+    tornado_autoreload = ["-m", "tornado.autoreload"]
 
 manage_args = [f"--settings={settings_module}"]
 os.environ["DJANGO_SETTINGS_MODULE"] = settings_module
@@ -134,6 +136,8 @@ def server_processes() -> List[List[str]]:
         [
             "env",
             "PYTHONUNBUFFERED=1",
+            "python3",
+            *tornado_autoreload,
             "./manage.py",
             "runtornado",
             *manage_args,
