@@ -44,9 +44,9 @@ cp -a \
     \
     /tmp/production-build
 
-# Check that webpack bundles use only ES5 syntax.
+# Check that webpack bundles use only ES2019 syntax.
 tar -C /tmp -xzf /tmp/production-build/zulip-server-test.tar.gz zulip-server-test/prod-static/serve/webpack-bundles
 (
     GLOBIGNORE=/tmp/zulip-server-test/prod-static/serve/webpack-bundles/katex-cli.js
-    yarn run es-check es5 /tmp/zulip-server-test/prod-static/serve/webpack-bundles/*.js
+    yarn run es-check es2019 /tmp/zulip-server-test/prod-static/serve/webpack-bundles/*.js
 )
