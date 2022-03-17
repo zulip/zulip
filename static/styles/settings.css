@@ -1128,11 +1128,31 @@ input[type="checkbox"] {
         border-radius: 5px;
 
         h4 {
-            font-weight: normal;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: left;
+            .name {
+                font-weight: bold;
+                margin: auto 0;
+            }
+
+            display: grid;
+            grid-template-columns: 5fr 1fr;
+            gap: 5px;
+
+            .buttons-container {
+                margin-left: auto;
+                display: flex;
+                justify-content: flex-end;
+                width: 140px;
+
+                button {
+                    height: 35px;
+                    width: 35px;
+                    margin: 0 2px;
+                }
+
+                .sea-green {
+                    width: 65px;
+                }
+            }
         }
 
         span[contenteditable] {
@@ -1166,10 +1186,6 @@ input[type="checkbox"] {
     p {
         line-height: 2;
         margin: 0;
-    }
-
-    .spacer {
-        margin: 0 2px;
     }
 
     .subscribers,
