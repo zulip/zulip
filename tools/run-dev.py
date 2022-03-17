@@ -5,7 +5,7 @@ import pwd
 import signal
 import subprocess
 import sys
-from typing import Any, Callable, Generator, List, Sequence
+from typing import Any, List, Sequence
 from urllib.parse import urlunparse
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -16,7 +16,7 @@ from tools.lib import sanity_check
 
 sanity_check.check_venv(__file__)
 
-from tornado import gen, httpclient, httputil, web
+from tornado import httpclient, httputil, web
 from tornado.ioloop import IOLoop
 
 from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
@@ -193,22 +193,7 @@ def transform_url(protocol: str, path: str, query: str, target_port: int, target
     return newpath
 
 
-@gen.engine
-def fetch_request(
-    url: str, callback: Any, **kwargs: Any
-) -> "Generator[Callable[..., Any], Any, None]":
-    # use large timeouts to handle polling requests
-    req = httpclient.HTTPRequest(
-        url,
-        connect_timeout=240.0,
-        request_timeout=240.0,
-        decompress_response=False,
-        **kwargs,
-    )
-    client = httpclient.AsyncHTTPClient()
-    # wait for response
-    response = yield gen.Task(client.fetch, req)
-    callback(response)
+client = httpclient.AsyncHTTPClient()
 
 
 class BaseHandler(web.RequestHandler):
@@ -264,8 +249,7 @@ class BaseHandler(web.RequestHandler):
                 self.write(response.body)
         self.finish()
 
-    @web.asynchronous
-    def prepare(self) -> None:
+    async def prepare(self) -> None:
         if "X-REAL-IP" not in self.request.headers:
             self.request.headers["X-REAL-IP"] = self.request.remote_ip
         if "X-FORWARDED_PORT" not in self.request.headers:
@@ -278,15 +262,21 @@ class BaseHandler(web.RequestHandler):
             self.target_host,
         )
         try:
-            fetch_request(
+            request = httpclient.HTTPRequest(
                 url=url,
-                callback=self.handle_response,
                 method=self.request.method,
                 headers=self._add_request_headers(["upgrade-insecure-requests"]),
                 follow_redirects=False,
                 body=getattr(self.request, "body"),
                 allow_nonstandard_methods=True,
+                # use large timeouts to handle polling requests
+                connect_timeout=240.0,
+                request_timeout=240.0,
+                # https://github.com/tornadoweb/tornado/issues/2743
+                decompress_response=False,
             )
+            response = await client.fetch(request, raise_error=False)
+            self.handle_response(response)
         except httpclient.HTTPError as e:
             if hasattr(e, "response") and e.response:
                 self.handle_response(e.response)
