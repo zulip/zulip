@@ -488,11 +488,17 @@ export function set_up() {
             validate_input,
         });
         $("#pw_change_controls").show();
+
         if (page_params.realm_password_auth_enabled !== false) {
             // zxcvbn.js is pretty big, and is only needed on password
             // change, so load it asynchronously.
             password_quality = (await import("./password_quality")).password_quality;
             $("#pw_strength .bar").removeClass("fade");
+
+            $("#new_password").on("input", () => {
+                const $field = $("#new_password");
+                password_quality($field.val(), $("#pw_strength .bar"), $field);
+            });
         }
     });
 
@@ -545,11 +551,6 @@ export function set_up() {
         );
         clear_password_change();
     }
-
-    $("#new_password").on("input", () => {
-        const $field = $("#new_password");
-        password_quality?.($field.val(), $("#pw_strength .bar"), $field);
-    });
 
     $("#full_name").on("change", (e) => {
         e.preventDefault();
