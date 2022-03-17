@@ -268,7 +268,9 @@ class Realm(models.Model):
     deactivated: bool = models.BooleanField(default=False)
 
     # Redirect URL if the Realm has moved to another server
-    deactivated_redirect = models.URLField(max_length=MAX_REALM_REDIRECT_URL_LENGTH, null=True)
+    deactivated_redirect: Optional[str] = models.URLField(
+        max_length=MAX_REALM_REDIRECT_URL_LENGTH, null=True
+    )
 
     # See RealmDomain for the domains that apply for a given organization.
     emails_restricted_to_domains: bool = models.BooleanField(default=False)
@@ -1535,7 +1537,7 @@ class UserBaseSettings(models.Model):
     presence_enabled: bool = models.BooleanField(default=True)
 
     # Whether or not the user wants to sync their drafts.
-    enable_drafts_synchronization = models.BooleanField(default=True)
+    enable_drafts_synchronization: bool = models.BooleanField(default=True)
 
     # Privacy settings
     send_stream_typing_notifications: bool = models.BooleanField(default=True)
@@ -2554,8 +2556,8 @@ class UserTopic(models.Model):
 
 
 class MutedUser(models.Model):
-    user_profile = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)
-    muted_user = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)
+    user_profile: UserProfile = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)
+    muted_user: UserProfile = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)
     date_muted: datetime.datetime = models.DateTimeField(default=timezone_now)
 
     class Meta:
@@ -2797,7 +2799,7 @@ class ArchivedMessage(AbstractMessage):
 
 class Message(AbstractMessage):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
-    search_tsvector = SearchVectorField(null=True)
+    search_tsvector: Optional[str] = SearchVectorField(null=True)
 
     def topic_name(self) -> str:
         """
