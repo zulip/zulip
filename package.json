@@ -17,6 +17,9 @@
     "@uppy/core": "^2.1.6",
     "@uppy/progress-bar": "^2.0.4",
     "@uppy/xhr-upload": "^2.0.7",
+    "@zxcvbn-ts/core": "^2.0.0",
+    "@zxcvbn-ts/language-common": "^2.0.0",
+    "@zxcvbn-ts/language-en": "^2.0.0",
     "autoprefixer": "^10.0.0",
     "autosize": "^5.0.1",
     "babel-loader": "^8.0.6",
@@ -79,8 +82,7 @@
     "webpack": "^5.61.0",
     "webpack-bundle-tracker": "^1.2.0",
     "webpack-cli": "^4.6.0",
-    "winchan": "^0.2.1",
-    "zxcvbn": "^4.4.2"
+    "winchan": "^0.2.1"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.11.3",
@@ -91,7 +93,6 @@
     "@types/node": "^16.11.6",
     "@types/node-fetch": "^2.5.8",
     "@types/webpack-dev-server": "^4.1.0",
-    "@types/zxcvbn": "^4.4.1",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "babel-plugin-rewire-ts": "^1.4.0",

@@ -1843,11 +1843,6 @@
   dependencies:
     "@types/node" "*"
 
-"@types/zxcvbn@^4.4.1":
-  version "4.4.1"
-  resolved "https://registry.yarnpkg.com/@types/zxcvbn/-/zxcvbn-4.4.1.tgz#46e42cbdcee681b22181478feaf4af2bc4c1abd2"
-  integrity sha512-3NoqvZC2W5gAC5DZbTpCeJ251vGQmgcWIHQJGq2J240HY6ErQ9aWKkwfoKJlHLx+A83WPNTZ9+3cd2ILxbvr1w==
-
 "@typescript-eslint/eslint-plugin@^5.0.0":
   version "5.15.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/eslint-plugin/-/eslint-plugin-5.15.0.tgz#c28ef7f2e688066db0b6a9d95fb74185c114fb9a"
@@ -2237,6 +2232,23 @@
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@yarnpkg/lockfile/-/lockfile-1.1.0.tgz#e77a97fbd345b76d83245edcd17d393b1b41fb31"
   integrity sha512-GpSwvyXOcOOlV70vbnzjj4fW5xW/FdUF6nQEt1ENy7m4ZCczi1+/buVUPAqmGfqznsORNFzUMjctTIp8a9tuCQ==
+
+"@zxcvbn-ts/core@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@zxcvbn-ts/core/-/core-2.0.0.tgz#4b6969cd98c6b56ee75bce11c2c9d7ed1168c1db"
+  integrity sha512-j9XY5TQq6fldHQ5BC/3kVNcw9zIg91i7ddeIZzwL8xAq3nqi7gw/YZxPY8Ry4KE4xmcYCiB+6AG6/jHO9uylPg==
+  dependencies:
+    fastest-levenshtein "1.0.12"
+
+"@zxcvbn-ts/language-common@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@zxcvbn-ts/language-common/-/language-common-2.0.0.tgz#77ee6c1107e116cb74e0e8c80147bc967dd2140c"
+  integrity sha512-RM4PmOev2pRQ1gMf5rjFKvsEb+qYTy+5YZY/g+vy7QibR66TiyD91VoOVaHArcj07wXj0J3eDpsiU+mpB1Oijg==
+
+"@zxcvbn-ts/language-en@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@zxcvbn-ts/language-en/-/language-en-2.0.0.tgz#454b09578f8713bd204465354565972d8512de85"
+  integrity sha512-ijDtOYeJxBpuoXdTtyXpoOcMRTDjRiABIWX3X7T7XquZ2c6IfrKwXVrvwzVSlRhhPqaCI0tienDeQYG7631eHA==
 
 abab@^2.0.3, abab@^2.0.5:
   version "2.0.5"
@@ -4945,7 +4957,7 @@ fast-xml-parser@^3.19.0:
   dependencies:
     strnum "^1.0.4"
 
-fastest-levenshtein@^1.0.12:
+fastest-levenshtein@1.0.12, fastest-levenshtein@^1.0.12:
   version "1.0.12"
   resolved "https://registry.yarnpkg.com/fastest-levenshtein/-/fastest-levenshtein-1.0.12.tgz#9990f7d3a88cc5a9ffd1f1745745251700d497e2"
   integrity sha512-On2N+BpYJ15xIC974QNVuYGMOlEVt4s0EOI3wwMqOmK1fdDY+FN/zltPV8vosq4ad4c/gJ1KHScUn/6AWIgiow==
@@ -11478,8 +11490,3 @@ zulip-js@^2.0.8:
     ini "^1.3.7"
     isomorphic-fetch "^3.0.0"
     isomorphic-form-data "2.0.0"
-
-zxcvbn@^4.4.2:
-  version "4.4.2"
-  resolved "https://registry.yarnpkg.com/zxcvbn/-/zxcvbn-4.4.2.tgz#28ec17cf09743edcab056ddd8b1b06262cc73c30"
-  integrity sha1-KOwXzwl0PtyrBW3dixsGJizHPDA=
