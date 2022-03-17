@@ -115,7 +115,6 @@ not_yet_fully_covered = [
     "zerver/lib/test_console_output.py",
     "zerver/openapi/python_examples.py",
     # Tornado should ideally have full coverage, but we're not there.
-    "zerver/tornado/autoreload.py",
     "zerver/tornado/descriptors.py",
     "zerver/tornado/django_api.py",
     "zerver/tornado/event_queue.py",

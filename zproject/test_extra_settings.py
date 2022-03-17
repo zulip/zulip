@@ -113,9 +113,6 @@ else:
     WEBPACK_STATS_FILE = os.path.join(DEPLOY_ROOT, "var", "webpack-stats-test.json")
 WEBPACK_BUNDLES = "webpack-bundles/"
 
-# Don't auto-restart Tornado server during automated tests
-AUTORELOAD = False
-
 if not PUPPETEER_TESTS:
     # Use local memory cache for backend tests.
     CACHES["default"] = {
