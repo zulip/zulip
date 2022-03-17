@@ -1,12 +1,15 @@
 import $ from "jquery";
 import tippy, {delegate} from "tippy.js";
 
+import render_message_inline_image_tooltip from "../templates/message_inline_image_tooltip.hbs";
+
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as popover_menus from "./popover_menus";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
 import * as timerender from "./timerender";
+import {parse_html} from "./ui_util";
 
 // For tooltips without data-tippy-content, we use the HTML content of
 // a <template> whose id is given by data-tooltip-template-id.
@@ -244,5 +247,24 @@ export function initialize() {
             return true;
         },
         appendTo: () => document.body,
+    });
+
+    delegate("body", {
+        target: ".message_inline_image > a > img",
+        appendTo: () => document.body,
+        // Add a short delay so the user can mouseover several inline images without
+        // tooltips showing and hiding rapidly
+        delay: [300, 20],
+        onShow(instance) {
+            // Some message_inline_images aren't actually images with a title,
+            // for example youtube videos, so we default to the actual href
+            const title =
+                $(instance.reference).parent().attr("aria-label") ||
+                $(instance.reference).parent().attr("href");
+            instance.setContent(parse_html(render_message_inline_image_tooltip({title})));
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
     });
 }
