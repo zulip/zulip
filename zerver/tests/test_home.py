@@ -182,7 +182,6 @@ class HomeTest(ZulipTestCase):
         "realm_wildcard_mention_policy",
         "recent_private_conversations",
         "request_language",
-        "search_pills_enabled",
         "server_avatar_changes_disabled",
         "server_generation",
         "server_inline_image_preview",

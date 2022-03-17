@@ -306,12 +306,7 @@ export function process_escape_key(e) {
 
         if ($("#searchbox").has(":focus")) {
             $("input:focus,textarea:focus").trigger("blur");
-            if (page_params.search_pills_enabled) {
-                $("#searchbox .pill").trigger("blur");
-                $("#searchbox #search_query").trigger("blur");
-            } else {
-                message_view_header.exit_search();
-            }
+            message_view_header.exit_search();
             return true;
         }
 

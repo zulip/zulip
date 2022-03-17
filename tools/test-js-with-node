@@ -137,7 +137,6 @@ EXEMPT_FILES = make_set(
         "static/js/resize.js",
         "static/js/rows.js",
         "static/js/scroll_bar.js",
-        "static/js/search_pill_widget.js",
         "static/js/sent_messages.js",
         "static/js/server_events.js",
         "static/js/settings.js",
