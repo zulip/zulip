@@ -93,6 +93,16 @@ test("basic_get_suggestions", ({override_rewire}) => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
+test("basic_get_suggestions_for_spectator", ({override_rewire}) => {
+    override_rewire(stream_data, "subscribed_streams", () => []);
+    page_params.is_spectator = true;
+
+    const query = "";
+    const suggestions = get_suggestions("", query);
+    assert.deepEqual(suggestions.strings, ["", "has:link", "has:image", "has:attachment"]);
+    page_params.is_spectator = false;
+});
+
 test("subset_suggestions", () => {
     const query = "stream:Denmark topic:Hamlet shakespeare";
 
