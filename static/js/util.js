@@ -36,9 +36,9 @@ export function lower_bound(array, value, less) {
     return first;
 }
 
-function lower_same(a, b) {
+export const lower_same = function lower_same(a, b) {
     return a.toLowerCase() === b.toLowerCase();
-}
+};
 
 export const same_stream_and_topic = function util_same_stream_and_topic(a, b) {
     // Streams and topics are case-insensitive.

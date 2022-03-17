@@ -33,6 +33,7 @@ import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
+import * as util from "./util";
 
 const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
@@ -182,6 +183,53 @@ export function get_deletability(message) {
     ) {
         return true;
     }
+    return false;
+}
+
+export function stream_and_topic_exist_in_edit_history(message, stream_id, topic) {
+    /*  Checks to see if a stream_id and a topic match any historical
+        stream_id and topic state in the message's edit history.
+
+        Does not check the message's current stream_id and topic for
+        a match to the stream_id and topic parameters.
+     */
+    const narrow_dict = {stream_id, topic};
+    const message_dict = {stream_id: message.stream_id, topic: message.topic};
+
+    if (!message.edit_history) {
+        // If message edit history is disabled in the organization,
+        // the client does not have the information locally to answer
+        // this question correctly.
+        return false;
+    }
+
+    for (const edit_history_event of message.edit_history) {
+        if (!edit_history_event.prev_stream && !edit_history_event.prev_topic) {
+            // Message was not moved in this edit event.
+            continue;
+        }
+
+        if (edit_history_event.prev_stream) {
+            // This edit event changed the stream.  We expect the
+            // following to be true due to the invariants of the edit
+            // history data structure:
+            // edit_history_event.stream === message_dict.stream_id
+            message_dict.stream_id = edit_history_event.prev_stream;
+        }
+
+        if (edit_history_event.prev_topic) {
+            // This edit event changed the topic.  We expect the
+            // following to be true due to the invariants of the edit
+            // history data structure:
+            // util.lower_same(edit_history_event.topic, message_dict.topic)
+            message_dict.topic = edit_history_event.prev_topic;
+        }
+
+        if (util.same_stream_and_topic(narrow_dict, message_dict)) {
+            return true;
+        }
+    }
+
     return false;
 }
 
