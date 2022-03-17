@@ -404,25 +404,6 @@ function get_topic_suggestions(last, operators) {
     });
 }
 
-function get_operator_subset_suggestions(operators) {
-    // For stream:a topic:b search:c, suggest:
-    //  stream:a topic:b
-    //  stream:a
-    if (operators.length < 1) {
-        return [];
-    }
-
-    let i;
-    const suggestions = [];
-
-    for (i = operators.length - 1; i >= 1; i -= 1) {
-        const subset = operators.slice(0, i);
-        suggestions.push(format_as_suggestion(subset));
-    }
-
-    return suggestions;
-}
-
 function get_special_filter_suggestions(last, operators, suggestions) {
     const is_search_operand_negated = last.operator === "search" && last.operand[0] === "-";
     // Negating suggestions on is_search_operand_negated is required for
@@ -644,11 +625,19 @@ class Attacher {
 export function get_search_result(base_query, query) {
     let suggestion;
 
-    // search_operators correspond to the operators for the query in the input.
+    const all_operators = Filter.parse((base_query + " " + query).trim());
     const search_operators = Filter.parse(query);
     let last = {operator: "", operand: "", negated: false};
     if (search_operators.length > 0) {
         last = search_operators.slice(-1)[0];
+    } else {
+        // We push an empty term so that we can get suggestions
+        // on the empty string based on the base query which is
+        // calculated from the created search pills.
+        // Else search results are returned as if the user is still
+        // typing the non-editable last search pill.
+        all_operators.push(last);
+        search_operators.push(last);
     }
 
     const person_suggestion_ops = ["sender", "pm-with", "from", "group-pm"];
@@ -671,6 +660,8 @@ export function get_search_result(base_query, query) {
                 operand: person_op.operand + " " + last.operand,
                 negated: person_op.negated,
             };
+            all_operators.splice(-2);
+            all_operators.push(last);
             search_operators.splice(-2);
             search_operators.push(last);
         }
@@ -724,7 +715,7 @@ export function get_search_result(base_query, query) {
         ];
     }
 
-    const base_operators = search_operators.slice(0, -1);
+    const base_operators = all_operators.slice(0, -1);
     const max_items = max_num_of_search_results;
 
     for (const filterer of filterers) {
@@ -732,11 +723,6 @@ export function get_search_result(base_query, query) {
             const suggestions = filterer(last, base_operators);
             attacher.attach_many(suggestions);
         }
-    }
-
-    if (attacher.result.length < max_items) {
-        const subset_suggestions = get_operator_subset_suggestions(search_operators);
-        attacher.concat(subset_suggestions);
     }
 
     return attacher.result.slice(0, max_items);

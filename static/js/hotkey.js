@@ -23,7 +23,6 @@ import * as list_util from "./list_util";
 import * as message_edit from "./message_edit";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
-import * as message_view_header from "./message_view_header";
 import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
 import * as navigate from "./navigate";
@@ -306,7 +305,8 @@ export function process_escape_key(e) {
 
         if ($("#searchbox").has(":focus")) {
             $("input:focus,textarea:focus").trigger("blur");
-            message_view_header.exit_search();
+            $("#searchbox .pill").trigger("blur");
+            $("#searchbox #search_query").trigger("blur");
             return true;
         }
 

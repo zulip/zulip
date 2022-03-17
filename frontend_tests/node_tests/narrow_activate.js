@@ -32,6 +32,12 @@ const message_view_header = mock_esm("../../static/js/message_view_header");
 const notifications = mock_esm("../../static/js/notifications");
 const search = mock_esm("../../static/js/search");
 const stream_list = mock_esm("../../static/js/stream_list");
+mock_esm("../../static/js/search_pill_widget", {
+    widget: {
+        clear: () => {},
+        appendValue: () => {},
+    },
+});
 const top_left_corner = mock_esm("../../static/js/top_left_corner");
 const typing_events = mock_esm("../../static/js/typing_events");
 const ui_util = mock_esm("../../static/js/ui_util");

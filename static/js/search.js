@@ -4,13 +4,15 @@ import {Filter} from "./filter";
 import * as message_view_header from "./message_view_header";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
+import * as search_pill from "./search_pill";
+import * as search_pill_widget from "./search_pill_widget";
 import * as search_suggestion from "./search_suggestion";
 import * as ui_util from "./ui_util";
 
 // Exported for unit testing
 export let is_using_input_method = false;
 
-export function narrow_or_search_for_term(search_string) {
+export function narrow_or_search_for_term() {
     const $search_query_box = $("#search_query");
     if (is_using_input_method) {
         // Neither narrow nor search when using input tools as
@@ -20,15 +22,13 @@ export function narrow_or_search_for_term(search_string) {
     }
     ui_util.change_tab_to("#message_feed_container");
 
-    const operators = Filter.parse(search_string);
+    // We have to take care to append the new pill before calling this
+    // function, so that the base_query includes the suggestion selected
+    // along with query corresponding to the existing pills.
+    const base_query = search_pill.get_search_string_for_current_filter(search_pill_widget.widget);
+    const operators = Filter.parse(base_query);
     narrow.activate(operators, {trigger: "search"});
 
-    // It's sort of annoying that this is not in a position to
-    // blur the search box, because it means that Esc won't
-    // unnarrow, it'll leave the searchbox.
-
-    // Narrowing will have already put some operators in the search box,
-    // so leave the current text in.
     $search_query_box.trigger("blur");
     return $search_query_box.val();
 }
@@ -50,6 +50,7 @@ export function update_button_visibility() {
 export function initialize() {
     const $search_query_box = $("#search_query");
     const $searchbox_form = $("#searchbox_form");
+    const $searchbox = $("#searchbox");
 
     // Data storage for the typeahead.
     // This maps a search string to an object with a "description" field.
@@ -60,7 +61,10 @@ export function initialize() {
 
     $search_query_box.typeahead({
         source(query) {
-            const base_query = "";
+            let base_query = "";
+            base_query = search_pill.get_search_string_for_current_filter(
+                search_pill_widget.widget,
+            );
             const suggestions = search_suggestion.get_suggestions(base_query, query);
             // Update our global search_map hash
             search_map = suggestions.lookup_table;
@@ -78,12 +82,18 @@ export function initialize() {
             return true;
         },
         updater(search_string) {
-            return narrow_or_search_for_term(search_string);
+            search_pill.append_search_string(search_string, search_pill_widget.widget);
+            return $search_query_box.val();
         },
         sorter(items) {
             return items;
         },
+        stopAdvance: true,
         advanceKeyCodes: [8],
+
+        on_move() {
+            ui_util.place_caret_at_end($search_query_box[0]);
+        },
         // Use our custom typeahead `on_escape` hook to exit
         // the search bar as soon as the user hits Esc.
         on_escape: message_view_header.exit_search,
@@ -134,7 +144,7 @@ export function initialize() {
     // more work to re-order everything and make them private.
 
     $search_query_box.on("focus", focus_search);
-    $search_query_box.on("blur", () => {
+    $search_query_box.on("blur", (e) => {
         // The search query box is a visual cue as to
         // whether search or narrowing is active.  If
         // the user blurs the search box, then we should
@@ -150,9 +160,27 @@ export function initialize() {
         // short enough that the user won't notice (though
         // really it would be OK if they did).
 
+        const pill_id = $(e.relatedTarget).closest(".pill").data("id");
+        const search_pill = search_pill_widget.widget.getByID(pill_id);
+        if (search_pill) {
+            // The searchbox loses focus while the search
+            // pill element gains focus.
+            // We do not consider the searchbox to actually
+            // lose focus when a pill inside it gets selected
+            // or deleted by a click.
+            return;
+        }
         setTimeout(() => {
             update_button_visibility();
         }, 100);
+    });
+
+    // Uses jquery instead of pure css as the `:focus` event occurs on `#search_query`,
+    // while we want to add box-shadow to `#searchbox`. This could have been done
+    // with `:focus-within` CSS selector, but it is not supported in IE or Opera.
+    $searchbox.on("focusout", () => {
+        message_view_header.close_search_bar_and_open_narrow_description();
+        $searchbox.css({"box-shadow": "unset"});
     });
 }
 
@@ -165,6 +193,8 @@ export function initiate_search() {
     message_view_header.open_search_bar_and_close_narrow_description();
     $("#searchbox").css({"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});
     $("#search_query").typeahead("lookup").trigger("select");
+    $("#search_query").trigger("focus");
+    ui_util.place_caret_at_end($("#search_query")[0]);
 }
 
 export function clear_search_form() {

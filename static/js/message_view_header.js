@@ -132,19 +132,19 @@ function build_message_view_header(filter) {
         const message_view_header_data = make_message_view_header(filter);
         append_and_display_title_area(message_view_header_data);
         bind_title_area_handlers();
-        close_search_bar_and_open_narrow_description();
+        if ($("#search_query").is(":focus")) {
+            open_search_bar_and_close_narrow_description();
+        } else {
+            close_search_bar_and_open_narrow_description();
+        }
     }
 }
 
 // we rely entirely on this function to ensure
 // the searchbar has the right text.
 export function reset_searchbox_text() {
-    let search_string = narrow_state.search_string();
+    const search_string = narrow_state.search_string();
     if (search_string !== "") {
-        if (!narrow_state.filter().is_search()) {
-            // saves the user a keystroke for quick searches
-            search_string = search_string + " ";
-        }
         $("#search_query").val(search_string);
     }
 }
