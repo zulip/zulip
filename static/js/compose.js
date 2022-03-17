@@ -2,6 +2,8 @@ import autosize from "autosize";
 import $ from "jquery";
 import _ from "lodash";
 
+import render_compose_not_subscribed from "../templates/compose_not_subscribed.hbs";
+
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
@@ -270,6 +272,38 @@ export function enter_with_preview_open() {
     }
 }
 
+function check_unsubscribed_stream_for_send(stream_name, autosubscribe) {
+    let result;
+    if (!autosubscribe) {
+        return "not-subscribed";
+    }
+
+    // In the rare circumstance of the autosubscribe option, we
+    // *Synchronously* try to subscribe to the stream before sending
+    // the message.  This is deprecated and we hope to remove it; see
+    // #4650.
+    channel.post({
+        url: "/json/subscriptions/exists",
+        data: {stream: stream_name, autosubscribe: true},
+        async: false,
+        success(data) {
+            if (data.subscribed) {
+                result = "subscribed";
+            } else {
+                result = "not-subscribed";
+            }
+        },
+        error(xhr) {
+            if (xhr.status === 404) {
+                result = "does-not-exist";
+            } else {
+                result = "error";
+            }
+        },
+    });
+    return result;
+}
+
 export function finish() {
     clear_preview_area();
     clear_invites();
@@ -277,6 +311,7 @@ export function finish() {
     notifications.clear_compose_notifications();
 
     const message_content = compose_state.message_content();
+    const stream_name = compose_state.stream_name();
 
     // Skip normal validation for zcommands, since they aren't
     // actual messages with recipients; users only send them
@@ -301,6 +336,20 @@ export function finish() {
         send_message();
     }
     do_post_send_tasks();
+
+    // Show not subscribed error message if the user is not subscribed to the stream
+    if (!stream_data.is_subscribed_by_name(stream_name)) {
+        const autosubscribe = page_params.narrow_stream !== undefined;
+        const error_type = check_unsubscribed_stream_for_send(stream_name, autosubscribe);
+        if (error_type === "not-subscribed") {
+            const sub = stream_data.get_sub(stream_name);
+            const new_row = render_compose_not_subscribed({
+                should_display_sub_button: stream_data.can_toggle_subscription(sub),
+            });
+            compose_error.show_not_subscribed(new_row, $("#stream_message_recipient_stream"));
+            compose_ui.hide_compose_spinner();
+        }
+    }
     return true;
 }
 

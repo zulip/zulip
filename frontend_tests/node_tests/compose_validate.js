@@ -9,7 +9,6 @@ const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
-const channel = mock_esm("../../static/js/channel");
 const compose_actions = mock_esm("../../static/js/compose_actions");
 const compose_state = zrequire("compose_state");
 const ui_util = mock_esm("../../static/js/ui_util");
@@ -65,61 +64,6 @@ function test_ui(label, f) {
         f({override, override_rewire, mock_template});
     });
 }
-
-test_ui("validate_stream_message_address_info", ({mock_template}) => {
-    const sub = {
-        stream_id: 101,
-        name: "social",
-        subscribed: true,
-    };
-    stream_data.add_sub(sub);
-    assert.ok(compose_validate.validate_stream_message_address_info("social"));
-
-    sub.subscribed = false;
-    stream_data.add_sub(sub);
-    mock_template("compose_not_subscribed.hbs", false, () => "compose_not_subscribed_stub");
-    assert.ok(!compose_validate.validate_stream_message_address_info("social"));
-    assert.equal($("#compose-error-msg").html(), "compose_not_subscribed_stub");
-
-    page_params.narrow_stream = false;
-    channel.post = (payload) => {
-        assert.equal(payload.data.stream, "social");
-        payload.data.subscribed = true;
-        payload.success(payload.data);
-    };
-    assert.ok(compose_validate.validate_stream_message_address_info("social"));
-
-    sub.name = "Frontend";
-    sub.stream_id = 102;
-    stream_data.add_sub(sub);
-    channel.post = (payload) => {
-        assert.equal(payload.data.stream, "Frontend");
-        payload.data.subscribed = false;
-        payload.success(payload.data);
-    };
-    assert.ok(!compose_validate.validate_stream_message_address_info("Frontend"));
-    assert.equal($("#compose-error-msg").html(), "compose_not_subscribed_stub");
-
-    channel.post = (payload) => {
-        assert.equal(payload.data.stream, "Frontend");
-        payload.error({status: 404});
-    };
-    assert.ok(!compose_validate.validate_stream_message_address_info("Frontend"));
-    assert.equal(
-        $("#compose-error-msg").html(),
-        "translated HTML: <p>The stream <b>Frontend</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>",
-    );
-
-    channel.post = (payload) => {
-        assert.equal(payload.data.stream, "social");
-        payload.error({status: 500});
-    };
-    assert.ok(!compose_validate.validate_stream_message_address_info("social"));
-    assert.equal(
-        $("#compose-error-msg").html(),
-        $t_html({defaultMessage: "Error checking subscription"}),
-    );
-});
 
 test_ui("validate", ({override, mock_template}) => {
     override(compose_actions, "update_placeholder_text", () => {});

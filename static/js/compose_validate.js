@@ -4,11 +4,9 @@ import * as resolved_topic from "../shared/js/resolved_topic";
 import render_compose_all_everyone from "../templates/compose_all_everyone.hbs";
 import render_compose_announce from "../templates/compose_announce.hbs";
 import render_compose_invite_users from "../templates/compose_invite_users.hbs";
-import render_compose_not_subscribed from "../templates/compose_not_subscribed.hbs";
 import render_compose_private_stream_alert from "../templates/compose_private_stream_alert.hbs";
 import render_compose_resolved_topic from "../templates/compose_resolved_topic.hbs";
 
-import * as channel from "./channel";
 import * as compose_error from "./compose_error";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
@@ -280,38 +278,6 @@ export function get_invalid_recipient_emails() {
     return invalid_recipients;
 }
 
-function check_unsubscribed_stream_for_send(stream_name, autosubscribe) {
-    let result;
-    if (!autosubscribe) {
-        return "not-subscribed";
-    }
-
-    // In the rare circumstance of the autosubscribe option, we
-    // *Synchronously* try to subscribe to the stream before sending
-    // the message.  This is deprecated and we hope to remove it; see
-    // #4650.
-    channel.post({
-        url: "/json/subscriptions/exists",
-        data: {stream: stream_name, autosubscribe: true},
-        async: false,
-        success(data) {
-            if (data.subscribed) {
-                result = "subscribed";
-            } else {
-                result = "not-subscribed";
-            }
-        },
-        error(xhr) {
-            if (xhr.status === 404) {
-                result = "does-not-exist";
-            } else {
-                result = "error";
-            }
-        },
-    });
-    return result;
-}
-
 export function wildcard_mention_allowed() {
     if (
         page_params.realm_wildcard_mention_policy ===
@@ -508,25 +474,8 @@ export function validation_error(error_type, stream_name) {
                 $("#stream_message_recipient_stream"),
             );
             return false;
-        case "not-subscribed": {
-            const sub = stream_data.get_sub(stream_name);
-            const new_row = render_compose_not_subscribed({
-                should_display_sub_button: stream_data.can_toggle_subscription(sub),
-            });
-            compose_error.show_not_subscribed(new_row, $("#stream_message_recipient_stream"));
-            return false;
-        }
     }
     return true;
-}
-
-export function validate_stream_message_address_info(stream_name) {
-    if (stream_data.is_subscribed_by_name(stream_name)) {
-        return true;
-    }
-    const autosubscribe = page_params.narrow_stream !== undefined;
-    const error_type = check_unsubscribed_stream_for_send(stream_name, autosubscribe);
-    return validation_error(error_type, stream_name);
 }
 
 function validate_stream_message() {
@@ -569,16 +518,12 @@ function validate_stream_message() {
     // If both `@all` is mentioned and it's in `#announce`, just validate
     // for `@all`. Users shouldn't have to hit "yes" more than once.
     if (wildcard_mention !== null && stream_name === "announce") {
-        if (
-            !validate_stream_message_address_info(stream_name) ||
-            !validate_stream_message_mentions(sub.stream_id)
-        ) {
+        if (!validate_stream_message_mentions(sub.stream_id)) {
             return false;
         }
         // If either criteria isn't met, just do the normal validation.
     } else {
         if (
-            !validate_stream_message_address_info(stream_name) ||
             !validate_stream_message_mentions(sub.stream_id) ||
             !validate_stream_message_announce(sub)
         ) {
