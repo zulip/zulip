@@ -47,7 +47,7 @@ def api_slack_incoming_webhook(
         for block in payload["blocks"]:
             body = add_block(block, body)
 
-    if "attachments" in payload:
+    if "attachments" in payload and payload["attachments"]:
         for attachment in payload["attachments"]:
             body = add_attachment(attachment, body)
 
