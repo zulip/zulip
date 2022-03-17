@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {page_params} = require("../zjsunit/zpage_params");
 
@@ -876,4 +876,59 @@ test("queries_with_spaces", ({override_rewire}) => {
     suggestions = get_suggestions("", query);
     expected = ["stream:offi", "stream:office"];
     assert.deepEqual(suggestions.strings, expected);
+});
+
+function people_suggestion_setup() {
+    const ted = {
+        email: "ted@zulip.com",
+        user_id: 201,
+        full_name: "Ted Smith",
+    };
+    people.add_active_user(ted);
+
+    const bob = {
+        email: "bob@zulip.com",
+        user_id: 202,
+        full_name: "Bob Térry",
+    };
+
+    people.add_active_user(bob);
+    const alice = {
+        email: "alice@zulip.com",
+        user_id: 203,
+        full_name: "Alice Ignore",
+    };
+    people.add_active_user(alice);
+}
+
+test("people_suggestion (Admin only email visibility)", ({override_rewire}) => {
+    /* Suggestions when realm_email_address_visibility is set to admin
+    only */
+    override_rewire(narrow_state, "stream", () => {});
+    people_suggestion_setup();
+
+    const query = "te";
+    const suggestions = with_field(page_params, "is_admin", false, () =>
+        get_suggestions("", query),
+    );
+
+    const expected = [
+        "te",
+        "sender:bob@zulip.com",
+        "sender:ted@zulip.com",
+        "pm-with:bob@zulip.com", // bob térry
+        "pm-with:ted@zulip.com",
+        "group-pm-with:bob@zulip.com",
+        "group-pm-with:ted@zulip.com",
+    ];
+
+    assert.deepEqual(suggestions.strings, expected);
+
+    const describe = (q) => suggestions.lookup_table.get(q).description;
+
+    assert.equal(
+        describe("pm-with:ted@zulip.com"),
+        "Private messages with <strong>Te</strong>d Smith",
+    );
+    assert.equal(describe("sender:ted@zulip.com"), "Sent by <strong>Te</strong>d Smith");
 });
