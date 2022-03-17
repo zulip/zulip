@@ -267,4 +267,24 @@ export function initialize() {
             instance.destroy();
         },
     });
+
+    delegate("body", {
+        target: ".image-info-wrapper > .image-description > .title",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const title = $(instance.reference).attr("aria-label");
+            const filename = $(instance.reference).prop("data-filename");
+            const $markup = $("<span>").text(title);
+            if (title !== filename) {
+                // If the image title is the same as the filename, there's no reason
+                // to show this next line.
+                const second_line = $t({defaultMessage: "File name: {filename}"}, {filename});
+                $markup.append($("<br>"), $("<span>").text(second_line));
+            }
+            instance.setContent($markup[0]);
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
 }

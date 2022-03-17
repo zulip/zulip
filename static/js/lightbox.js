@@ -210,9 +210,11 @@ function display_image(payload) {
     img.src = payload.source;
     $img_container.html(img).show();
 
+    const filename = payload.url?.split("/").pop();
     $(".image-description .title")
         .text(payload.title || "N/A")
-        .prop("title", payload.title || "N/A");
+        .attr("aria-label", payload.title || "N/A")
+        .prop("data-filename", filename || "N/A");
     $(".image-description .user").text(payload.user).prop("title", payload.user);
 
     $(".image-actions .open, .image-actions .download").attr("href", payload.source);
@@ -411,7 +413,7 @@ export function parse_image_data(image) {
     }
     const payload = {
         user: sender_full_name,
-        title: $parent.attr("title"),
+        title: $parent.attr("aria-label") || $parent.attr("href"),
         type,
         preview: preview_src,
         source,
