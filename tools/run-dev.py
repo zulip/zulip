@@ -238,22 +238,6 @@ class BaseHandler(web.RequestHandler):
     def delete(self) -> None:
         pass
 
-    def handle_response(self, response: httpclient.HTTPResponse) -> None:
-        if response.error and not isinstance(response.error, httpclient.HTTPError):
-            self.set_status(500)
-            self.write("Internal server error:\n" + str(response.error))
-        else:
-            self.set_status(response.code, response.reason)
-            self._headers = httputil.HTTPHeaders()  # clear tornado default header
-
-            for header, v in response.headers.get_all():
-                # some header appear multiple times, eg 'Set-Cookie'
-                if header.lower() != "transfer-encoding":
-                    self.add_header(header, v)
-            if response.body:
-                self.write(response.body)
-        self.finish()
-
     async def prepare(self) -> None:
         assert self.request.method is not None
         assert self.request.remote_ip is not None
@@ -283,14 +267,21 @@ class BaseHandler(web.RequestHandler):
                 decompress_response=False,
             )
             response = await client.fetch(request, raise_error=False)
-            self.handle_response(response)
-        except httpclient.HTTPError as e:
-            if hasattr(e, "response") and e.response:
-                self.handle_response(e.response)
-            else:
-                self.set_status(500)
-                self.write("Internal server error:\n" + str(e))
-                self.finish()
+
+            self.set_status(response.code, response.reason)
+            self._headers = httputil.HTTPHeaders()  # clear tornado default header
+
+            for header, v in response.headers.get_all():
+                # some header appear multiple times, eg 'Set-Cookie'
+                if header.lower() != "transfer-encoding":
+                    self.add_header(header, v)
+            if response.body:
+                self.write(response.body)
+            self.finish()
+        except (ConnectionError, httpclient.HTTPError) as e:
+            self.set_status(500)
+            self.write("Internal server error:\n" + str(e))
+            self.finish()
 
 
 class WebPackHandler(BaseHandler):

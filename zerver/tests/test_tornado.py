@@ -12,7 +12,7 @@ from django.db import close_old_connections
 from django.test import override_settings
 from tornado.httpclient import HTTPResponse
 from tornado.ioloop import IOLoop
-from tornado.platform.asyncio import AsyncIOMainLoop, to_asyncio_future
+from tornado.platform.asyncio import AsyncIOMainLoop
 from tornado.testing import AsyncHTTPTestCase, AsyncTestCase
 from tornado.web import Application
 from typing_extensions import ParamSpec
@@ -71,9 +71,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
         if "HTTP_HOST" in kwargs:
             kwargs["headers"]["Host"] = kwargs["HTTP_HOST"]
             del kwargs["HTTP_HOST"]
-        return await to_asyncio_future(
-            self.http_client.fetch(self.get_url(path), method="GET", **kwargs)
-        )
+        return await self.http_client.fetch(self.get_url(path), method="GET", **kwargs)
 
     async def fetch_async(self, method: str, path: str, **kwargs: Any) -> HTTPResponse:
         self.add_session_cookie(kwargs)
@@ -82,9 +80,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
         if "HTTP_HOST" in kwargs:
             kwargs["headers"]["Host"] = kwargs["HTTP_HOST"]
             del kwargs["HTTP_HOST"]
-        return await to_asyncio_future(
-            self.http_client.fetch(self.get_url(path), method=method, **kwargs)
-        )
+        return await self.http_client.fetch(self.get_url(path), method=method, **kwargs)
 
     async def client_get_async(self, path: str, **kwargs: Any) -> HTTPResponse:
         kwargs["skip_user_agent"] = True

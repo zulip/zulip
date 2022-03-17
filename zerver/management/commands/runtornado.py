@@ -10,7 +10,7 @@ from asgiref.sync import async_to_sync, sync_to_async
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError, CommandParser
 from tornado import autoreload
-from tornado.platform.asyncio import AsyncIOMainLoop, to_asyncio_future
+from tornado.platform.asyncio import AsyncIOMainLoop
 
 settings.RUNNING_INSIDE_TORNADO = True
 
@@ -111,9 +111,7 @@ class Command(BaseCommand):
 
                 # start tornado web server in single-threaded mode
                 http_server = httpserver.HTTPServer(application, xheaders=True)
-                stack.push_async_callback(
-                    lambda: to_asyncio_future(http_server.close_all_connections())
-                )
+                stack.push_async_callback(http_server.close_all_connections)
                 stack.callback(http_server.stop)
                 http_server.listen(port, address=addr)
 
