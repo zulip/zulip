@@ -1,13 +1,12 @@
 import logging
 import sys
-from typing import Any, Callable
+from typing import Any
 from urllib.parse import SplitResult
 
 import __main__
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError, CommandParser
 from tornado import autoreload, ioloop
-from tornado.log import app_log
 
 settings.RUNNING_INSIDE_TORNADO = True
 
@@ -25,11 +24,6 @@ if settings.USING_RABBITMQ:
     from zerver.lib.queue import TornadoQueueClient, get_queue_client
 
 
-def handle_callback_exception(callback: Callable[..., Any]) -> None:
-    logging.exception("Exception in callback", stack_info=True)
-    app_log.error("Exception in callback %r", callback, exc_info=True)
-
-
 class Command(BaseCommand):
     help = "Starts a Tornado Web server wrapping Django."
 
@@ -44,7 +38,6 @@ class Command(BaseCommand):
         addrport = options["addrport"]
         assert isinstance(addrport, str)
 
-        import django
         from tornado import httpserver
 
         if addrport.isdigit():
@@ -98,10 +91,6 @@ class Command(BaseCommand):
                 setup_tornado_rabbitmq()
 
                 instance = ioloop.IOLoop.instance()
-
-                if django.conf.settings.DEBUG:
-                    instance.set_blocking_log_threshold(5)
-                    instance.handle_callback_exception = handle_callback_exception
 
                 if hasattr(__main__, "add_reload_hook"):
                     autoreload.start()
