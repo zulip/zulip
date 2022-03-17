@@ -28,6 +28,18 @@ set_global("setTimeout", (func) => func());
 
 const search = zrequire("search");
 
+run_test("clear_search_form", () => {
+    $("#search_query").val("noise");
+    $("#search_query").trigger("focus");
+    $(".search_button").prop("disabled", false);
+
+    search.clear_search_form();
+
+    assert.equal($("#search_query").is_focused(), false);
+    assert.equal($("#search_query").val(), "");
+    assert.equal($(".search_button").prop("disabled"), true);
+});
+
 run_test("update_button_visibility", () => {
     const $search_query = $("#search_query");
     const $search_button = $(".search_button");
