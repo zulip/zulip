@@ -441,7 +441,7 @@ class Realm(models.Model):
     MESSAGE_CONTENT_DELETE_LIMIT_SPECIAL_VALUES_MAP = {
         "unlimited": None,
     }
-    message_content_delete_limit_seconds: int = models.PositiveIntegerField(
+    message_content_delete_limit_seconds: Optional[int] = models.PositiveIntegerField(
         default=DEFAULT_MESSAGE_CONTENT_DELETE_LIMIT_SECONDS, null=True
     )
 
