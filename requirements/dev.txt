@@ -1694,9 +1694,8 @@ requests-oauthlib==1.3.1 \
     #   -r requirements/common.in
     #   python-twitter
     #   social-auth-core
-responses==0.18.0 \
-    --hash=sha256:15c63ad16de13ee8e7182d99c9334f64fd81f1ee79f90748d527c28f7ca9dd51 \
-    --hash=sha256:380cad4c1c1dc942e5e8a8eaae0b4d4edf708f4f010db8b7bcfafad1fcd254ff
+https://github.com/getsentry/responses/archive/05a83d240ab5b01ecf762564c6db964cb3bd2cf0.zip#egg=responses==0.19.0+git \
+    --hash=sha256:b271a84e0016734be1067772fbc6c1ee0c2e08a9f716407f7d8564fbb75b4a17
     # via
     #   -r requirements/dev.in
     #   moto
