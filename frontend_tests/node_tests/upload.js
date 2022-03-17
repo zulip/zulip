@@ -15,11 +15,7 @@ let uppy_stub;
 function Uppy(options) {
     return uppy_stub.call(this, options);
 }
-Uppy.Plugin = {
-    prototype: {
-        constructor: null,
-    },
-};
+Uppy.UIPlugin = class UIPlugin {};
 mock_cjs("@uppy/core", Uppy);
 
 mock_esm("../../static/js/csrf", {csrf_token: "csrf_token"});
