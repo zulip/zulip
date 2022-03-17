@@ -302,7 +302,7 @@ class TornadoQueueClient(QueueClient[Channel]):
             "TornadoQueueClient couldn't connect to RabbitMQ, retrying in %d secs...",
             retry_secs,
         )
-        ioloop.IOLoop.instance().call_later(retry_secs, self._reconnect)
+        ioloop.IOLoop.current().call_later(retry_secs, self._reconnect)
 
     def _on_connection_closed(
         self, connection: pika.connection.Connection, reason: Exception
@@ -315,7 +315,7 @@ class TornadoQueueClient(QueueClient[Channel]):
             "TornadoQueueClient lost connection to RabbitMQ, reconnecting in %d secs...",
             retry_secs,
         )
-        ioloop.IOLoop.instance().call_later(retry_secs, self._reconnect)
+        ioloop.IOLoop.current().call_later(retry_secs, self._reconnect)
 
     def _on_open(self, connection: pika.connection.Connection) -> None:
         assert self.connection is not None

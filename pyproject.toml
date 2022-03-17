@@ -93,7 +93,6 @@ module = [
     "sourcemap.*",
     "talon_core.*",
     "tlds.*",
-    "tornado.*",
     "twitter.*",
     "two_factor.*",
     "zxcvbn.*",

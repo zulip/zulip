@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import urllib
 import weakref
@@ -151,9 +150,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
     async def get(self, *args: Any, **kwargs: Any) -> None:
         request = self.convert_tornado_request_to_django_request()
-        response = await asyncio.ensure_future(
-            sync_to_async(lambda: self.get_response(request), thread_sensitive=True)()
-        )
+        response = await sync_to_async(lambda: self.get_response(request), thread_sensitive=True)()
 
         try:
             if hasattr(response, "asynchronous"):
@@ -184,7 +181,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             # the Django side; this triggers cleanup work like
             # resetting the urlconf and any cache/database
             # connections.
-            await asyncio.ensure_future(sync_to_async(response.close, thread_sensitive=True)())
+            await sync_to_async(response.close, thread_sensitive=True)()
 
     async def head(self, *args: Any, **kwargs: Any) -> None:
         await self.get(*args, **kwargs)
@@ -262,9 +259,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             res_type=result_dict["result"], data=result_dict, status=self.get_status()
         )
 
-        response = await asyncio.ensure_future(
-            sync_to_async(lambda: self.get_response(request), thread_sensitive=True)()
-        )
+        response = await sync_to_async(lambda: self.get_response(request), thread_sensitive=True)()
         try:
             # Explicitly mark requests as varying by cookie, since the
             # middleware will not have seen a session access
@@ -273,4 +268,4 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             self.write_django_response_as_tornado_response(response)
         finally:
             # Tell Django we're done processing this request
-            await asyncio.ensure_future(sync_to_async(response.close, thread_sensitive=True)())
+            await sync_to_async(response.close, thread_sensitive=True)()
