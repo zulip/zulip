@@ -3,9 +3,10 @@ import sys
 from typing import Any, Callable
 from urllib.parse import SplitResult
 
+import __main__
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError, CommandParser
-from tornado import ioloop
+from tornado import autoreload, ioloop
 from tornado.log import app_log
 
 # We must call zerver.tornado.ioloop_logging.instrument_tornado_ioloop
@@ -20,7 +21,6 @@ instrument_tornado_ioloop()
 
 from zerver.lib.debug import interactive_debug_listen
 from zerver.tornado.application import create_tornado_application, setup_tornado_rabbitmq
-from zerver.tornado.autoreload import start as zulip_autoreload_start
 from zerver.tornado.event_queue import (
     add_client_gc_hook,
     get_wrapped_process_notification,
@@ -93,8 +93,6 @@ class Command(BaseCommand):
             try:
                 # Application is an instance of Django's standard wsgi handler.
                 application = create_tornado_application()
-                if settings.AUTORELOAD:
-                    zulip_autoreload_start()
 
                 # start tornado web server in single-threaded mode
                 http_server = httpserver.HTTPServer(application, xheaders=True)
@@ -112,8 +110,17 @@ class Command(BaseCommand):
                 if django.conf.settings.DEBUG:
                     instance.set_blocking_log_threshold(5)
                     instance.handle_callback_exception = handle_callback_exception
+
+                if hasattr(__main__, "add_reload_hook"):
+                    autoreload.start()
+
                 instance.start()
             except KeyboardInterrupt:
+                # Monkey patch tornado.autoreload to prevent it from continuing
+                # to watch for changes after catching our SystemExit. Otherwise
+                # the user needs to press Ctrl+C twice.
+                __main__.wait = lambda: None
+
                 sys.exit(0)
 
         inner_run()

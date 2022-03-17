@@ -35,6 +35,7 @@ import orjson
 import tornado.ioloop
 from django.conf import settings
 from django.utils.translation import gettext as _
+from tornado import autoreload
 from typing_extensions import TypedDict
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
@@ -46,7 +47,6 @@ from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.queue import queue_json_publish, retry_event
 from zerver.lib.utils import statsd
 from zerver.middleware import async_request_timer_restart
-from zerver.tornado.autoreload import add_reload_hook
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from zerver.tornado.exceptions import BadEventQueueIdError
 from zerver.tornado.handlers import (
@@ -622,7 +622,7 @@ def setup_event_queue(server: tornado.httpserver.HTTPServer, port: int) -> None:
             signal.SIGTERM,
             lambda signum, frame: ioloop.add_callback_from_signal(handle_sigterm, server),
         )
-        add_reload_hook(lambda: dump_event_queues(port))
+        autoreload.add_reload_hook(lambda: dump_event_queues(port))
 
     try:
         os.rename(persistent_queue_filename(port), persistent_queue_filename(port, last=True))
