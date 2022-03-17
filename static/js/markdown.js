@@ -1,5 +1,5 @@
 import {isValid} from "date-fns";
-import katex from "katex";
+import katex from "katex"; // eslint-disable-line import/no-unresolved
 import _ from "lodash";
 
 import * as emoji from "../shared/js/emoji";

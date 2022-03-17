@@ -1,4 +1,4 @@
-import katex from "katex";
+import katex from "katex"; // eslint-disable-line import/no-unresolved
 import _ from "lodash";
 
 // Parsing routine that can be dropped in to message parsing
