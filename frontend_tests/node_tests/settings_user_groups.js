@@ -81,8 +81,6 @@ test_ui("can_edit", () => {
 const user_group_selector = `#user-groups #${CSS.escape(1)}`;
 const cancel_selector = `#user-groups #${CSS.escape(1)} .undo-button.btn-danger`;
 const saved_selector = `#user-groups #${CSS.escape(1)} .save-status.sea-green`;
-const name_selector = `#user-groups #${CSS.escape(1)} .name`;
-const description_selector = `#user-groups #${CSS.escape(1)} .description`;
 const instructions_selector = `#user-groups #${CSS.escape(1)} .save-instructions`;
 
 test_ui("populate_user_groups", ({override_rewire, mock_template}) => {
@@ -457,15 +455,7 @@ test_ui("with_external_user", ({override_rewire, mock_template}) => {
     $(".user-group").attr("id", "1");
     set_attributes_called += 1;
 
-    const name_update_handler = $(user_group_selector).get_on_handler("input", ".name");
-
-    const des_update_handler = $(user_group_selector).get_on_handler("input", ".description");
-
     const member_change_handler = $(user_group_selector).get_on_handler("blur", ".input");
-
-    const name_change_handler = $(user_group_selector).get_on_handler("blur", ".name");
-
-    const des_change_handler = $(user_group_selector).get_on_handler("blur", ".description");
 
     const event = {
         stopPropagation: noop,
@@ -475,16 +465,10 @@ test_ui("with_external_user", ({override_rewire, mock_template}) => {
     pill_mouseenter_handler(event);
     pill_click_handler(event);
     assert.equal(delete_handler.call($fake_delete), undefined);
-    assert.equal(name_update_handler(), undefined);
-    assert.equal(des_update_handler(), undefined);
     assert.equal(member_change_handler(), undefined);
-    assert.equal(name_change_handler(), undefined);
-    assert.equal(des_change_handler(), undefined);
     assert.equal(set_parents_result_called, 1);
     assert.equal(set_attributes_called, 1);
-    assert.equal(can_edit_called, 9);
     assert.equal(can_edit_called, 5);
-    assert.equal(user_group_find_called, 2);
     assert.ok(exit_button_called);
     assert.equal(user_group_find_called, 0);
     assert.equal(pill_container_find_called, 4);
@@ -621,7 +605,7 @@ test_ui("on_events", ({override_rewire, mock_template}) => {
     })();
 
     (function test_do_not_blur() {
-        const blur_event_classes = [".name", ".description", ".input"];
+        const blur_event_classes = [".input"];
         let api_endpoint_called = false;
         channel.post = () => {
             api_endpoint_called = true;
@@ -637,13 +621,7 @@ test_ui("on_events", ({override_rewire, mock_template}) => {
         for (const class_name of blur_event_classes) {
             const handler = $(user_group_selector).get_on_handler("blur", class_name);
 
-            for (const blur_exception of [
-                ".pill-container",
-                ".name",
-                ".description",
-                ".input",
-                ".delete",
-            ]) {
+            for (const blur_exception of [".pill-container", ".delete"]) {
                 if (blur_exception === class_name) {
                     continue;
                 }
@@ -687,146 +665,6 @@ test_ui("on_events", ({override_rewire, mock_template}) => {
             assert.ok(!api_endpoint_called);
             assert.ok(settings_user_groups_reload_called);
         }
-    })();
-
-    (function test_update_cancel_button() {
-        const handler_name = $(user_group_selector).get_on_handler("input", ".name");
-        const handler_desc = $(user_group_selector).get_on_handler("input", ".description");
-        const $sib_des = $(description_selector);
-        const $sib_name = $(name_selector);
-        $sib_name.text($t({defaultMessage: "mobile"}));
-        $sib_des.text($t({defaultMessage: "All mobile members"}));
-
-        const group_data = {
-            name: "translated: mobile",
-            description: "translated: All mobile members",
-            members: new Set([2, 31]),
-        };
-        user_groups.get_user_group_from_id = () => group_data;
-
-        let cancel_fade_out_called = false;
-        let instructions_fade_out_called = false;
-        $(cancel_selector).show();
-        $(cancel_selector).fadeOut = () => {
-            cancel_fade_out_called = true;
-        };
-        $(instructions_selector).fadeOut = () => {
-            instructions_fade_out_called = true;
-        };
-
-        // Cancel button removed if user group if user group has no changes.
-        const $fake_this = $.create("fake-#update_cancel_button");
-        handler_name.call($fake_this);
-        assert.ok(cancel_fade_out_called);
-        assert.ok(instructions_fade_out_called);
-
-        // Check if cancel button removed if user group error is showing.
-        $(user_group_selector + " .user-group-status").show();
-        cancel_fade_out_called = false;
-        instructions_fade_out_called = false;
-        handler_name.call($fake_this);
-        assert.ok(cancel_fade_out_called);
-        assert.ok(instructions_fade_out_called);
-
-        // Check for handler_desc to achieve 100% coverage.
-        cancel_fade_out_called = false;
-        instructions_fade_out_called = false;
-        handler_desc.call($fake_this);
-        assert.ok(cancel_fade_out_called);
-        assert.ok(instructions_fade_out_called);
-    })();
-
-    (function test_user_groups_save_group_changes_triggered() {
-        const handler_name = $(user_group_selector).get_on_handler("blur", ".name");
-        const handler_desc = $(user_group_selector).get_on_handler("blur", ".description");
-        const $sib_des = $(description_selector);
-        const $sib_name = $(name_selector);
-        $sib_name.text($t({defaultMessage: "mobile"}));
-        $sib_des.text($t({defaultMessage: "All mobile members"}));
-
-        const group_data = {members: new Set([2, 31])};
-        user_groups.get_user_group_from_id = () => group_data;
-        let api_endpoint_called = false;
-        let cancel_fade_out_called = false;
-        let saved_fade_to_called = false;
-        let instructions_fade_out_called = false;
-        $(instructions_selector).fadeOut = () => {
-            instructions_fade_out_called = true;
-        };
-        $(cancel_selector).fadeOut = () => {
-            cancel_fade_out_called = true;
-        };
-        $(saved_selector).css = (data) => {
-            if (typeof data === "string") {
-                assert.equal(data, "display");
-            }
-            assert.equal(typeof data, "object");
-            assert.equal(data.display, "inline-block");
-            assert.equal(data.opacity, "0");
-            return $(saved_selector);
-        };
-        $(saved_selector).fadeTo = () => {
-            saved_fade_to_called = true;
-            return $(saved_selector);
-        };
-
-        channel.patch = (opts) => {
-            assert.equal(opts.url, "/json/user_groups/1");
-            assert.equal(opts.data.name, "translated: mobile");
-            assert.equal(opts.data.description, "translated: All mobile members");
-            api_endpoint_called = true;
-            (function test_post_success() {
-                set_global("setTimeout", (func) => {
-                    func();
-                });
-                opts.success();
-                assert.ok(cancel_fade_out_called);
-                assert.ok(instructions_fade_out_called);
-                assert.ok(saved_fade_to_called);
-            })();
-            (function test_post_error() {
-                const $user_group_error = $(user_group_selector + " .user-group-status");
-                $user_group_error.show();
-                ui_report.error = (error_msg, error_obj, ele) => {
-                    const xhr = {
-                        responseText: '{"msg":"fake-msg"}',
-                    };
-                    assert.equal(error_msg, "translated HTML: Failed");
-                    assert.deepEqual(error_obj, xhr);
-                    assert.equal(ele, $user_group_error);
-                };
-                const xhr = {
-                    responseText: '{"msg":"fake-msg", "attrib":"val"}',
-                };
-                opts.error(xhr);
-
-                assert.ok($user_group_error.visible());
-            })();
-        };
-
-        const $fake_this = $.create("fake-#user-groups_blur_name");
-        $fake_this.closest = () => [];
-        $fake_this.set_parents_result(user_group_selector, $(user_group_selector));
-        const event = {
-            // FIXME: event.relatedTarget should not be a jQuery object
-            relatedTarget: $fake_this,
-        };
-
-        api_endpoint_called = false;
-        handler_name.call($fake_this, event);
-        assert.ok(api_endpoint_called);
-
-        // Check API endpoint isn't called if name and desc haven't changed.
-        group_data.name = "translated: mobile";
-        group_data.description = "translated: All mobile members";
-        api_endpoint_called = false;
-        handler_name.call($fake_this, event);
-        assert.ok(!api_endpoint_called);
-
-        // Check for handler_desc to achieve 100% coverage.
-        api_endpoint_called = false;
-        handler_desc.call($fake_this, event);
-        assert.ok(!api_endpoint_called);
     })();
 
     (function test_user_groups_save_member_changes_triggered() {

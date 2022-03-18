@@ -84,8 +84,6 @@ export function populate_user_groups() {
             if (can_edit(group_id)) {
                 return;
             }
-            $userg.find(".name").attr("contenteditable", "false");
-            $userg.find(".description").attr("contenteditable", "false");
             $userg.addClass("ntm");
             $pill_container.find(".input").attr("contenteditable", "false");
             $pill_container.find(".input").css("display", "none");
@@ -107,23 +105,13 @@ export function populate_user_groups() {
             const group_data = user_groups.get_user_group_from_id(data.id);
             const original_group = Array.from(group_data.members);
             const same_groups = _.isEqual(_.sortBy(draft_group), _.sortBy(original_group));
-            const description = $(`#user-groups #${CSS.escape(data.id)} .description`)
-                .text()
-                .trim();
-            const name = $(`#user-groups #${CSS.escape(data.id)} .name`)
-                .text()
-                .trim();
             const $user_group_status = $(`#user-groups #${CSS.escape(data.id)} .user-group-status`);
 
             if ($user_group_status.is(":visible")) {
                 return false;
             }
 
-            if (
-                group_data.description === description &&
-                group_data.name === name &&
-                (!draft_group.length || same_groups)
-            ) {
+            if (!draft_group.length || same_groups) {
                 return false;
             }
             return true;
@@ -188,42 +176,6 @@ export function populate_user_groups() {
             });
         }
 
-        function save_name_desc() {
-            const $user_group_status = $(`#user-groups #${CSS.escape(data.id)} .user-group-status`);
-            const group_data = user_groups.get_user_group_from_id(data.id);
-            const description = $(`#user-groups #${CSS.escape(data.id)} .description`)
-                .text()
-                .trim();
-            const name = $(`#user-groups #${CSS.escape(data.id)} .name`)
-                .text()
-                .trim();
-            if (group_data.description === description && group_data.name === name) {
-                return;
-            }
-
-            channel.patch({
-                url: "/json/user_groups/" + data.id,
-                data: {
-                    name,
-                    description,
-                },
-                success() {
-                    $user_group_status.hide();
-                    setTimeout(show_saved_button, 200);
-                },
-                error(xhr) {
-                    const errors = JSON.parse(xhr.responseText).msg;
-                    xhr.responseText = JSON.stringify({msg: errors});
-                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $user_group_status);
-                    update_cancel_button();
-                    $(`#user-groups #${CSS.escape(data.id)} .name`).text(group_data.name);
-                    $(`#user-groups #${CSS.escape(data.id)} .description`).text(
-                        group_data.description,
-                    );
-                },
-            });
-        }
-
         function do_not_blur(except_class, event) {
             // Event generated from or inside the typeahead.
             if ($(event.relatedTarget).closest(".typeahead").length) {
@@ -231,7 +183,7 @@ export function populate_user_groups() {
             }
 
             if ($(event.relatedTarget).closest(`#user-groups #${CSS.escape(data.id)}`).length) {
-                return [".pill-container", ".name", ".description", ".input", ".delete"].some(
+                return [".pill-container", ".input", ".delete"].some(
                     (class_name) =>
                         class_name !== except_class &&
                         $(event.relatedTarget).closest(class_name).length,
@@ -255,26 +207,11 @@ export function populate_user_groups() {
                 reload();
                 return;
             }
-            save_name_desc();
             save_members();
         }
 
         $(`#user-groups #${CSS.escape(data.id)}`).on("blur", ".input", (event) => {
             auto_save(".input", event);
-        });
-
-        $(`#user-groups #${CSS.escape(data.id)}`).on("blur", ".name", (event) => {
-            auto_save(".name", event);
-        });
-        $(`#user-groups #${CSS.escape(data.id)}`).on("input", ".name", () => {
-            update_cancel_button();
-        });
-
-        $(`#user-groups #${CSS.escape(data.id)}`).on("blur", ".description", (event) => {
-            auto_save(".description", event);
-        });
-        $(`#user-groups #${CSS.escape(data.id)}`).on("input", ".description", () => {
-            update_cancel_button();
         });
 
         const $input = $pill_container.children(".input");

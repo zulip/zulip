@@ -1160,24 +1160,6 @@ input[type="checkbox"] {
             }
         }
 
-        span[contenteditable] {
-            display: inline-block;
-            word-break: break-all;
-
-            &:empty::before {
-                opacity: 0.5;
-                display: inline-block;
-                content: attr(data-placeholder);
-            }
-        }
-
-        span[contenteditable]:focus,
-        span[contenteditable="true"]:hover {
-            border-bottom: 1px solid hsl(0, 0%, 80%);
-            margin-bottom: -1px;
-            outline: none;
-        }
-
         .pill-container .input[contenteditable]:empty::after {
             content: attr(data-placeholder);
             opacity: 0.5;
