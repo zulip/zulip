@@ -641,17 +641,22 @@ function handle_bot_form($tbody, $status_field) {
             user_id,
             email: bot.email,
             full_name: bot.full_name,
+            user_role_values: settings_config.user_role_values,
+            disable_role_dropdown: bot.is_owner && !page_params.is_owner,
             bot_type: settings_bots.type_id_to_string(bot.bot_type),
         });
 
         let owner_widget;
 
         function submit_bot_details() {
+            const role = Number.parseInt($("#bot-role-select").val().trim(), 10);
             const $full_name = $("#dialog_widget_modal").find("input[name='full_name']");
 
             const url = "/json/bots/" + encodeURIComponent(user_id);
+            const url_for_role_change = "/json/users/" + encodeURIComponent(user_id);
             const data = {
                 full_name: $full_name.val(),
+                role: JSON.stringify(role),
             };
 
             if (owner_widget === undefined) {
@@ -663,10 +668,11 @@ function handle_bot_form($tbody, $status_field) {
             }
 
             settings_ui.do_settings_change(channel.patch, url, data, $status_field);
+            settings_ui.do_settings_change(channel.patch, url_for_role_change, data, $status_field);
             dialog_widget.close_modal();
         }
 
-        function get_bot_owner_widget() {
+        function get_bot_owner_widget_and_set_role_values() {
             const owner_id = bot_data.get(user_id).owner_id;
 
             const user_ids = people.get_active_human_ids();
@@ -684,6 +690,17 @@ function handle_bot_form($tbody, $status_field) {
             // Note: Rendering this is quite expensive in
             // organizations with 10Ks of users.
             owner_widget = new DropdownListWidget(opts);
+
+            $("#bot-role-select").val(bot.role);
+            if (!page_params.is_owner) {
+                $("#bot-role-select")
+                    .find(
+                        `option[value="${CSS.escape(
+                            settings_config.user_role_values.owner.code,
+                        )}"]`,
+                    )
+                    .hide();
+            }
         }
 
         dialog_widget.launch({
@@ -691,7 +708,7 @@ function handle_bot_form($tbody, $status_field) {
             html_body,
             id: "edit_bot_modal",
             on_click: submit_bot_details,
-            post_render: get_bot_owner_widget,
+            post_render: get_bot_owner_widget_and_set_role_values,
         });
     });
 }
