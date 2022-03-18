@@ -46,7 +46,7 @@ def gear_handle_match(key: str) -> str:
 
 stream_info = {
     "all": ["All streams", "/#streams/all"],
-    "subscribed": ["Your streams", "/#streams/subscribed"],
+    "subscribed": ["Subscribed", "/#streams/subscribed"],
 }
 
 stream_instructions_no_link = """
