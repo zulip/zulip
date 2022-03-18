@@ -704,6 +704,10 @@ export function initialize() {
         compose_actions.cancel();
     });
 
+    $("body").on("click", "#compose_clear_topic_name", () => {
+        compose_state.topic("");
+    });
+
     // LEFT SIDEBAR
 
     $("body").on("click", "#clear_search_topic_button", topic_list.clear_topic_search);

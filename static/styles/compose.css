@@ -435,10 +435,17 @@ input.recipient_box {
 }
 
 #stream_message_recipient_topic.recipient_box {
+<<<<<<< HEAD
     /* This width roughly corresponds to how long of a topic can appear in
        the left sidebar with a single digit unread count without being
        cut off. */
     width: 175px;
+=======
+    width: calc(20% + 41px);
+    padding-right: 18px;
+    min-width: 120px;
+    max-width: 165px;
+>>>>>>> 015b2cd4b2... compose: Add clear field button for compose topic name.
 }
 
 #private_message_recipient.recipient_box {
