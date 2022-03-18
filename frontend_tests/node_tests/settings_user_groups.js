@@ -79,7 +79,7 @@ test_ui("can_edit", () => {
 });
 
 const user_group_selector = `#user-groups #${CSS.escape(1)}`;
-const cancel_selector = `#user-groups #${CSS.escape(1)} .save-status.btn-danger`;
+const cancel_selector = `#user-groups #${CSS.escape(1)} .undo-button.btn-danger`;
 const saved_selector = `#user-groups #${CSS.escape(1)} .save-status.sea-green`;
 const name_selector = `#user-groups #${CSS.escape(1)} .name`;
 const description_selector = `#user-groups #${CSS.escape(1)} .description`;
@@ -483,8 +483,10 @@ test_ui("with_external_user", ({override_rewire, mock_template}) => {
     assert.equal(set_parents_result_called, 1);
     assert.equal(set_attributes_called, 1);
     assert.equal(can_edit_called, 9);
-    assert.ok(exit_button_called);
+    assert.equal(can_edit_called, 5);
     assert.equal(user_group_find_called, 2);
+    assert.ok(exit_button_called);
+    assert.equal(user_group_find_called, 0);
     assert.equal(pill_container_find_called, 4);
     assert.equal(turned_off["keydown/.pill"], true);
     assert.equal(turned_off["keydown/.input"], true);
@@ -674,7 +676,7 @@ test_ui("on_events", ({override_rewire, mock_template}) => {
             api_endpoint_called = false;
             $fake_this.closest = (class_name) => {
                 if (
-                    class_name === ".save-status.btn-danger" ||
+                    class_name === ".undo-button.btn-danger" ||
                     class_name === user_group_selector
                 ) {
                     return [1];

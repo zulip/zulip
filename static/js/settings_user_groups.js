@@ -134,7 +134,7 @@ export function populate_user_groups() {
                 return;
             }
             const $cancel_button = $(
-                `#user-groups #${CSS.escape(data.id)} .save-status.btn-danger`,
+                `#user-groups #${CSS.escape(data.id)} .undo-button.btn-danger`,
             );
             const $saved_button = $(`#user-groups #${CSS.escape(data.id)} .save-status.sea-green`);
             const $save_instructions = $(`#user-groups #${CSS.escape(data.id)} .save-instructions`);
@@ -151,7 +151,7 @@ export function populate_user_groups() {
 
         function show_saved_button() {
             const $cancel_button = $(
-                `#user-groups #${CSS.escape(data.id)} .save-status.btn-danger`,
+                `#user-groups #${CSS.escape(data.id)} .undo-button.btn-danger`,
             );
             const $saved_button = $(`#user-groups #${CSS.escape(data.id)} .save-status.sea-green`);
             const $save_instructions = $(`#user-groups #${CSS.escape(data.id)} .save-instructions`);
@@ -197,7 +197,6 @@ export function populate_user_groups() {
             const name = $(`#user-groups #${CSS.escape(data.id)} .name`)
                 .text()
                 .trim();
-
             if (group_data.description === description && group_data.name === name) {
                 return;
             }
@@ -251,7 +250,7 @@ export function populate_user_groups() {
             }
             if (
                 $(event.relatedTarget).closest(`#user-groups #${CSS.escape(data.id)}`) &&
-                $(event.relatedTarget).closest(".save-status.btn-danger").length
+                $(event.relatedTarget).closest(".undo-button.btn-danger").length
             ) {
                 reload();
                 return;
