@@ -17,12 +17,19 @@ to a stream][configure-invites].
 
 1. Select a stream.
 
+{!select-stream-view-subscribers.md!}
+
 1. Under **Add subscribers**, enter a name or email address. The typeahead
    will only include users who aren't already subscribed to the stream.
 
 1. Click **Add**.
 
 {end_tabs}
+
+!!! tip ""
+
+      To add users in bulk, you can copy members from an
+      existing stream or [user group](/help/user-groups).
 
 ## Remove users from a stream
 
@@ -38,6 +45,8 @@ including streams the admin is not subscribed to.
 {relative|stream|all}
 
 1. Select a stream.
+
+{!select-stream-view-subscribers.md!}
 
 1. Under **Subscribers**, find the user you would like to remove.
 
