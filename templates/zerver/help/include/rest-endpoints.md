@@ -62,6 +62,7 @@
 * [Delete a user group](/api/remove-user-group)
 * [Update user group members](/api/update-user-group-members)
 * [Update user group subgroups](/api/update-user-group-subgroups)
+* [Get user group membership status](/api/get-is-user-group-member)
 * [Mute a user](/api/mute-user)
 * [Unmute a user](/api/unmute-user)
 

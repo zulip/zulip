@@ -22,10 +22,11 @@ from zerver.lib.user_groups import (
     access_user_groups_as_potential_subgroups,
     get_direct_memberships_of_users,
     get_user_group_direct_members,
+    is_user_in_group,
     user_groups_in_realm_serialized,
 )
-from zerver.lib.users import user_ids_to_users
-from zerver.lib.validator import check_int, check_list
+from zerver.lib.users import access_user_by_id, user_ids_to_users
+from zerver.lib.validator import check_bool, check_int, check_list
 from zerver.models import UserProfile
 from zerver.views.streams import compose_views
 
@@ -217,3 +218,25 @@ def update_subgroups_of_user_group(
     data = compose_views(thunks)
 
     return json_success(request, data)
+
+
+@require_member_or_admin
+@has_request_variables
+def get_is_user_group_member(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    user_group_id: int = REQ(json_validator=check_int, path_only=True),
+    user_id: int = REQ(json_validator=check_int, path_only=True),
+    direct_member_only: bool = REQ(json_validator=check_bool, default=False),
+) -> HttpResponse:
+    user_group = access_user_group_by_id(user_group_id, user_profile, for_read=True)
+    target_user = access_user_by_id(user_profile, user_id, for_admin=False)
+
+    return json_success(
+        request,
+        data={
+            "is_user_group_member": is_user_in_group(
+                user_group, target_user, direct_member_only=direct_member_only
+            )
+        },
+    )

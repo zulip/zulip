@@ -13975,6 +13975,44 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
+  /user_groups/{user_group_id}/members/{user_id}:
+    get:
+      operationId: get-is-user-group-member
+      summary: Get user group membership status
+      tags: ["users"]
+      description: |
+        Check whether a user is member of user group.
+
+        `GET {{ api_url }}/v1/user_groups/{user_group_id}/members/{user_id}`
+
+        **Changes**: New in Zulip 6.0 (feature level 127).
+      parameters:
+        - $ref: "#/components/parameters/UserGroupId"
+        - $ref: "#/components/parameters/UserId"
+        - $ref: "#/components/parameters/DirectMemberOnly"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      is_user_group_member:
+                        type: boolean
+                        description: |
+                          Whether the user is member of user group.
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "is_user_group_member": false,
+                      }
   /real-time:
     # This entry is a hack; it exists to give us a place to put the text
     # documenting the parameters for call_on_each_event and friends.
@@ -16320,3 +16358,13 @@ components:
         type: string
       example: https://github.com/zulip/zulip/issues/%(id)s
       required: true
+    DirectMemberOnly:
+      name: direct_member_only
+      in: query
+      description: |
+        Whether to consider only the direct members of user group and not members
+        of its subgroups. Default is `False`.
+      schema:
+        type: boolean
+      example: false
+      required: false

@@ -884,3 +884,60 @@ class UserGroupAPITestCase(UserGroupTestCase):
         # Test when nothing is provided
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info={})
         self.assert_json_error(result, 'Nothing to do. Specify at least one of "add" or "delete".')
+
+    def test_get_is_user_group_member_status(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+        othello = self.example_user("othello")
+        admins_group = UserGroup.objects.get(
+            realm=realm, name="@role:administrators", is_system_group=True
+        )
+
+        # Invalid user ID.
+        result = self.client_get(f"/json/user_groups/{admins_group.id}/members/25")
+        self.assert_json_error(result, "No such user")
+
+        # Invalid user group ID.
+        result = self.client_get(f"/json/user_groups/25/members/{iago.id}")
+        self.assert_json_error(result, "Invalid user group")
+
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{admins_group.id}/members/{othello.id}").content
+        )
+        self.assertFalse(result_dict["is_user_group_member"])
+
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{admins_group.id}/members/{iago.id}").content
+        )
+        self.assertTrue(result_dict["is_user_group_member"])
+
+        # Checking membership of not a direct member but member of a subgroup.
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{admins_group.id}/members/{desdemona.id}").content
+        )
+        self.assertTrue(result_dict["is_user_group_member"])
+
+        # Checking membership of not a direct member but member of a subgroup when passing
+        # recursive parameter as False.
+        params = {"direct_member_only": orjson.dumps(True).decode()}
+        result_dict = orjson.loads(
+            self.client_get(
+                f"/json/user_groups/{admins_group.id}/members/{desdemona.id}", info=params
+            ).content
+        )
+        self.assertFalse(result_dict["is_user_group_member"])
+
+        # Logging in with a user not part of the group.
+        self.login("hamlet")
+
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{admins_group.id}/members/{iago.id}").content
+        )
+        self.assertTrue(result_dict["is_user_group_member"])
+
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{admins_group.id}/members/{othello.id}").content
+        )
+        self.assertFalse(result_dict["is_user_group_member"])

@@ -9,9 +9,18 @@ from zerver.lib.exceptions import JsonableError
 from zerver.models import GroupGroupMembership, Realm, UserGroup, UserGroupMembership, UserProfile
 
 
-def access_user_group_by_id(user_group_id: int, user_profile: UserProfile) -> UserGroup:
+def access_user_group_by_id(
+    user_group_id: int, user_profile: UserProfile, *, for_read: bool = False
+) -> UserGroup:
     try:
         user_group = UserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
+        if for_read and not user_profile.is_guest:
+            # Everyone is allowed to read a user group and check who
+            # are its members. Guests should be unable to reach this
+            # code path, since they can't access user groups API
+            # endpoints, but we check for guests here for defense in
+            # depth.
+            return user_group
         if user_group.is_system_group:
             raise JsonableError(_("Insufficient permission"))
         group_member_ids = get_user_group_direct_members(user_group)
