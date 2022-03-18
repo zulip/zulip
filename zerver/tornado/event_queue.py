@@ -1,12 +1,9 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
-import atexit
 import copy
 import logging
 import os
 import random
-import signal
-import sys
 import time
 import traceback
 from collections import deque
@@ -23,7 +20,6 @@ from typing import (
     List,
     Mapping,
     MutableMapping,
-    NoReturn,
     Optional,
     Sequence,
     Set,
@@ -604,24 +600,11 @@ def send_restart_events(immediate: bool = False) -> None:
             client.add_event(event)
 
 
-def handle_sigterm(server: tornado.httpserver.HTTPServer) -> NoReturn:
-    logging.warning("Got SIGTERM, shutting down...")
-    server.stop()
-    tornado.ioloop.IOLoop.instance().stop()
-    sys.exit(1)
-
-
-def setup_event_queue(server: tornado.httpserver.HTTPServer, port: int) -> None:
+async def setup_event_queue(server: tornado.httpserver.HTTPServer, port: int) -> None:
     ioloop = tornado.ioloop.IOLoop.instance()
 
     if not settings.TEST_SUITE:
         load_event_queues(port)
-        atexit.register(dump_event_queues, port)
-        # Make sure we dump event queues even if we exit via signal
-        signal.signal(
-            signal.SIGTERM,
-            lambda signum, frame: ioloop.add_callback_from_signal(handle_sigterm, server),
-        )
         autoreload.add_reload_hook(lambda: dump_event_queues(port))
 
     try:
