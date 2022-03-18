@@ -69,14 +69,22 @@ async function test_subscription_button(page: Page): Promise<void> {
     // We assume Venice is already subscribed, so the first line here
     // should happen immediately.
     button = await subscribed();
-    await button!.click();
-    button = await unsubscribed();
-    await button!.click();
-    button = await subscribed();
-    await button!.click();
-    button = await unsubscribed();
-    await button!.click();
-    button = await subscribed();
+
+    // Toggle subscriptions several times. This test code has been known
+    // to flake, so we add console statements. It appears that the console
+    // statements help prevent the flake, which is probably caused by some
+    // subtle race condition. We will hopefully diagnose the root cause of
+    // the flake, but I am confident that the test will mostly catch actual
+    // bugs in the real code, so as long as the console.info statements help
+    // here, we should just leave them in.
+    for (let i = 0; i < 10; i += 1) {
+        console.info(`\n unsubscribe/subscribe loop ${i}\n\n`);
+        await button!.click();
+        button = await unsubscribed();
+        await button!.click();
+        button = await subscribed();
+        console.info(`\n end loop ${i}\n\n`);
+    }
 }
 
 async function click_create_new_stream(page: Page): Promise<void> {
