@@ -339,7 +339,7 @@ cd ~
 tar -xf /path/to/export/file/zulip-export-zcmpxfm6.tar.gz
 cd /home/zulip/deployments/current
 ./manage.py import '' ~/zulip-export-zcmpxfm6
-# supervisorctl start all # Starts the Zulip server
+# ./scripts/start-server
 # ./manage.py reactivate_realm -r ''  # Reactivates the organization
 ```
 

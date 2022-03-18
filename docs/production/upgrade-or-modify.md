@@ -174,7 +174,7 @@ after resolving an issue. The most common causes of errors are:
   minimal RAM for running Zulip can run into out-of-memory issues
   during the upgrade process (generally `tools/webpack` is the step
   that fails). You can get past this by shutting down the Zulip
-  server with `supervisorctl stop all` to free up RAM before running
+  server with `./scripts/stop-server` to free up RAM before running
   the upgrade process.
 
 Useful logs are available in a few places:
@@ -419,7 +419,7 @@ instructions for other supported platforms.
    to back up the system:
 
    ```bash
-   supervisorctl stop all
+   /home/zulip/deployments/current/scripts/stop-server
    /home/zulip/deployments/current/manage.py backup --output=/home/zulip/release-upgrade.backup.tar.gz
    ```
 
