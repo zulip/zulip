@@ -146,7 +146,7 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
         os.setresuid(uid, uid, 0)
 
         if settings.PRODUCTION:
-            run(["supervisorctl", "restart", "all"])
+            run([os.path.join(settings.DEPLOY_ROOT, "scripts", "restart-server")])
 
         run([os.path.join(settings.DEPLOY_ROOT, "scripts", "setup", "flush-memcached")])
 
