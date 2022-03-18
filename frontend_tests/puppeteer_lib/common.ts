@@ -463,6 +463,16 @@ class CommonUtils {
         assert.deepStrictEqual(last_n_messages, messages);
     }
 
+    async open_streams_modal(page: Page): Promise<void> {
+        const all_streams_selector = "#add-stream-link";
+        await page.waitForSelector(all_streams_selector, {visible: true});
+        await page.click(all_streams_selector);
+
+        await page.waitForSelector("#subscription_overlay.new-style", {visible: true});
+        const url = await this.page_url_with_fragment(page);
+        assert.ok(url.includes("#streams/all"));
+    }
+
     async manage_organization(page: Page): Promise<void> {
         const menu_selector = "#settings-dropdown";
         await page.waitForSelector(menu_selector, {visible: true});
