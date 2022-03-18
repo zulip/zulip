@@ -47,7 +47,6 @@ When everything is running as expected, you will see something like this:
 ```console
 process-fts-updates                                             RUNNING   pid 11392, uptime 19:40:06
 smokescreen                                                     RUNNING   pid 3113, uptime 29 days, 21:58:32
-teleport_node                                                   RUNNING   pid 15683, uptime 3 days, 13:01:58
 zulip-django                                                    RUNNING   pid 11441, uptime 19:39:57
 zulip-tornado                                                   RUNNING   pid 11397, uptime 19:40:03
 zulip_deliver_scheduled_emails                                  RUNNING   pid 10289, uptime 19:41:04
