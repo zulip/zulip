@@ -204,7 +204,12 @@ from zerver.lib.user_groups import (
 )
 from zerver.lib.user_mutes import add_user_mute, get_muting_users, get_user_mutes
 from zerver.lib.user_status import update_user_status
-from zerver.lib.user_topics import add_topic_mute, get_topic_mutes, remove_topic_mute
+from zerver.lib.user_topics import (
+    add_topic_mute,
+    get_topic_mutes,
+    get_users_muting_topic,
+    remove_topic_mute,
+)
 from zerver.lib.users import (
     check_bot_name_available,
     check_full_name,
@@ -7086,6 +7091,47 @@ def do_update_message(
 
             users_to_be_notified += list(map(subscriber_info, sorted(list(subscriber_ids))))
 
+    # Migrate muted topic configuration in the following circumstances:
+    #
+    # * If propagate_mode is change_all, do so unconditionally.
+    #
+    # * If propagate_mode is change_later, it's likely that we want to
+    #   move these only when it appears that the intent is to move
+    #   most of the topic, not just the last 1-2 messages which may
+    #   have been "off topic". At present we do so unconditionally.
+    #
+    # * Never move muted topic configuration with change_one.
+    #
+    # We may want more complex behavior in cases where one appears to
+    # be merging topics (E.g. there are existing messages in the
+    # target topic).
+    #
+    # Moving a topic to another stream is complicated in that we want
+    # to avoid creating a UserTopic row for the user in a stream that
+    # they don't have access to; doing so could leak information about
+    # the existence of a private stream to some users. See the
+    # moved_all_visible_messages below for related details.
+    #
+    # So for now, we require new_stream=None for this feature.
+    if topic_name is not None and propagate_mode != "change_one" and new_stream is None:
+        assert stream_being_edited is not None
+        for muting_user in get_users_muting_topic(stream_being_edited.id, orig_topic_name):
+            # TODO: Ideally, this would be a bulk update operation,
+            # because we are doing database operations in a loop here.
+            #
+            # This loop is only acceptable in production because it is
+            # rare for more than a few users to have muted an
+            # individual topic that is being moved; as of this
+            # writing, no individual topic in Zulip Cloud had been
+            # muted by more than 100 users.
+
+            # We call remove_topic_mute rather than do_unmute_topic to
+            # avoid sending two events with new muted topics in
+            # immediate succession; this is correct only because
+            # muted_topics events always send the full set of topics.
+            remove_topic_mute(muting_user, stream_being_edited.id, orig_topic_name)
+            do_mute_topic(muting_user, stream_being_edited, topic_name)
+
     send_event(user_profile.realm, event, users_to_be_notified)
 
     if len(changed_messages) > 0 and new_stream is not None and stream_being_edited is not None:
@@ -7906,6 +7952,9 @@ def do_mute_topic(
 
 
 def do_unmute_topic(user_profile: UserProfile, stream: Stream, topic: str) -> None:
+    # Note: If you add any new code to this function, the
+    # remove_topic_mute call in do_update_message will need to be
+    # updated for correctness.
     try:
         remove_topic_mute(user_profile, stream.id, topic)
     except UserTopic.DoesNotExist:
